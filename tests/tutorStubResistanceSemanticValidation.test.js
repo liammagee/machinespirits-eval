@@ -332,7 +332,7 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
   assert.equal(loaded.registration.semanticAdjudication.failedV2Validation.reused, false);
   assert.throws(
     () => buildTutorStubResistanceActionRegisterConfirmationPlan({ registration: loaded.registration }),
-    /requires a registered V3, V4, V5, V6, or V7/u,
+    /requires a supported registered action\/register confirmation design/u,
   );
   const registration = JSON.parse(
     fs.readFileSync(

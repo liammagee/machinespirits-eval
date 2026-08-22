@@ -46,8 +46,16 @@ export function createTutorStubPromptTransport(dependencies) {
     signal = null,
     historyTurns = null,
     cliPolicyRetryCount = 0,
+    semanticRetryDelaysMs = null,
   }) {
     const semanticResistanceJudge = String(role || '').startsWith('tutor_stub_resistance_semantic_');
+    const semanticRetryDelays =
+      semanticResistanceJudge &&
+      Array.isArray(semanticRetryDelaysMs) &&
+      semanticRetryDelaysMs.length === 2 &&
+      semanticRetryDelaysMs.every((value) => Number.isInteger(value) && value >= 0)
+        ? semanticRetryDelaysMs
+        : null;
     let prompt = promptInput;
     let systemPrompt = systemPromptInput;
     const startedAt = new Date().toISOString();
@@ -336,7 +344,14 @@ export function createTutorStubPromptTransport(dependencies) {
       response.promptAudit = promptAudit;
       return response;
     } catch (err) {
-      const retryDecision = tutorStubCliPolicyRetryDecision(err, { retryCount: cliPolicyRetryCount });
+      const baseRetryDecision = tutorStubCliPolicyRetryDecision(err, {
+        retryCount: cliPolicyRetryCount,
+        allowClaudeResponseFreeError: semanticResistanceJudge,
+      });
+      const retryDecision =
+        baseRetryDecision.retry && semanticRetryDelays
+          ? { ...baseRetryDecision, delay_ms: semanticRetryDelays[cliPolicyRetryCount] }
+          : baseRetryDecision;
       appendTraceEvent(trace, {
         type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
         role,
@@ -355,8 +370,27 @@ export function createTutorStubPromptTransport(dependencies) {
           ...(semanticResistanceJudge ? { outputSchema } : {}),
         },
         error: err.message,
-        ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION' || err?.code === 'CLI_PROVIDER_TURN_FAILED'
+        ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION' ||
+        err?.code === 'CLI_PROVIDER_TURN_FAILED' ||
+        err?.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR'
           ? { cliPolicyViolation: retryDecision }
+          : {}),
+        ...(semanticResistanceJudge
+          ? {
+              transportDiagnostics: {
+                code: err?.code || null,
+                classification: err?.classification || null,
+                responseFree: err?.responseFree === true,
+                stdoutBytes: Number.isInteger(err?.stdoutBytes) ? err.stdoutBytes : null,
+                stderrBytes: Number.isInteger(err?.stderrBytes) ? err.stderrBytes : null,
+                stdoutSha256: err?.stdoutSha256 || null,
+                stderrSha256: err?.stderrSha256 || null,
+                stdoutText: typeof err?.stdoutText === 'string' ? err.stdoutText : null,
+                stderrText: typeof err?.stderrText === 'string' ? err.stderrText : null,
+                stdoutTextTruncated: err?.stdoutTextTruncated === true,
+                stderrTextTruncated: err?.stderrTextTruncated === true,
+              },
+            }
           : {}),
       });
       if (retryDecision.retry) {
@@ -387,6 +421,7 @@ export function createTutorStubPromptTransport(dependencies) {
           signal,
           historyTurns,
           cliPolicyRetryCount: cliPolicyRetryCount + 1,
+          semanticRetryDelaysMs: semanticRetryDelays,
         });
       }
       throw err;

@@ -10,10 +10,12 @@ import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } f
 import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 } from './tutorStubResistanceSemanticAdjudicationV2.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResistanceSemanticAdjudicationV3.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from './tutorStubResistanceSemanticAdjudicationV4.js';
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
   isTutorStubResistanceSemanticObservation,
   loadTutorStubResistanceSemanticRegistration,
   tutorStubResistanceSemanticPublicContext,
@@ -22,11 +24,13 @@ import {
 
 function resistanceSemanticRegistrationBinding(observationSemantics) {
   const registrationPath =
-    observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
-      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3
-      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
-        ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2
-        : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION;
+    observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4
+      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
+        ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3
+        : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
+          ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2
+          : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION;
   return loadTutorStubResistanceSemanticRegistration(registrationPath);
 }
 
@@ -90,13 +94,20 @@ function isV8Registration(registration) {
   );
 }
 
+function isV9Registration(registration) {
+  return (
+    registration?.schema === TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA && registration?.version === 9
+  );
+}
+
 function isConfirmationSuccessorRegistration(registration) {
   return (
     isV4Registration(registration) ||
     isV5Registration(registration) ||
     isV6Registration(registration) ||
     isV7Registration(registration) ||
-    isV8Registration(registration)
+    isV8Registration(registration) ||
+    isV9Registration(registration)
   );
 }
 
@@ -247,7 +258,7 @@ function normalizeRegistration(registration) {
     return registration;
   }
   const requiredStandingAuthorizationAttachmentSha256 =
-    isV7Registration(registration) || isV8Registration(registration)
+    isV7Registration(registration) || isV8Registration(registration) || isV9Registration(registration)
       ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
       : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b';
   if (
@@ -264,13 +275,15 @@ function normalizeRegistration(registration) {
     throw new Error('v2 registration must retain frame_defiant as diagnostic-only');
   }
   const requiredObservationSemantics = isConfirmationSuccessorRegistration(registration)
-    ? isV8Registration(registration)
-      ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
-      : isV7Registration(registration)
-        ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
-        : isV6Registration(registration)
-          ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6
-          : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
+    ? isV9Registration(registration)
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
+      : isV8Registration(registration)
+        ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
+        : isV7Registration(registration)
+          ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
+          : isV6Registration(registration)
+            ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6
+            : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
     : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   if (registration.design?.trigger?.observationSemantics !== requiredObservationSemantics) {
     throw new Error(`prospective registration must use ${requiredObservationSemantics} observation semantics`);
@@ -343,6 +356,117 @@ function normalizeRegistration(registration) {
       )
     ) {
       throw new Error('v3 confirmation must retain nine balanced four-dialogue batches capped at 240 each');
+    }
+    return registration;
+  }
+  if (isV9Registration(registration)) {
+    const blocks = registration.design?.factors?.confirmationBlock?.blocks;
+    const readiness = registration.executionReadiness;
+    const triggerSemantic = registration.semanticAdjudication;
+    const outcomeSemantic = registration.outcomeSemanticAdjudication;
+    const excluded = registration.preservation?.excludedConfirmationBlocks;
+    if (
+      registration.design?.stage !== 'frame_refuser_matched_action_plain_warm_confirmation_successor' ||
+      registration.design?.form !== 'fresh_independent_online_triggered_dialogues' ||
+      registration.design?.trigger?.eligibleByTurn !== 2 ||
+      registration.design?.trigger?.freshDialogueRequired !== true ||
+      registration.design?.trigger?.observerFirstEligibility !== true ||
+      registration.design?.trigger?.calibrationPrefixesConsumedAsInputs !== false ||
+      registration.design?.randomization?.masterSeed !== 20260826 ||
+      registration.design?.factors?.actionFit?.assignments?.frame_refuser?.matched !== 'test_bounded_distinction' ||
+      JSON.stringify(registration.design?.factors?.actionFit?.levels) !== JSON.stringify(['matched']) ||
+      JSON.stringify(registration.design?.factors?.realization?.levels) !== JSON.stringify(['plain', 'warm']) ||
+      !Array.isArray(blocks) ||
+      blocks.length !== 9 ||
+      blocks.some(
+        (block, index) =>
+          block.id !== `block_${String(index + 1).padStart(2, '0')}` ||
+          block.dialogues !== 4 ||
+          block.plain !== 2 ||
+          block.warm !== 2,
+      ) ||
+      registration.preservation?.calibration?.reportSha256 !==
+        '42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5' ||
+      registration.preservation?.calibration?.reused !== false ||
+      registration.preservation?.calibration?.pooled !== false ||
+      !Array.isArray(excluded) ||
+      JSON.stringify(excluded.map((row) => row.id)) !== JSON.stringify(['v1', 'v3', 'v4', 'v7']) ||
+      excluded.some((row) => row.reused !== false || row.pooled !== false || row.outcomeSelected !== false) ||
+      registration.preservation?.measurementValidationCasesReusedOrPooled !== false ||
+      triggerSemantic?.instrumentRegistrationPath !==
+        'config/tutor-stub-resistance-semantic-adjudication-registration.v4.json' ||
+      triggerSemantic?.instrumentRegistrationSha256 !==
+        'ced640b19fbecfd447c2fbd36cace29765e3cc6b7673a4b13932ec7d8790e135' ||
+      triggerSemantic?.validationReportSha256 !== 'ab9799d1d82f06e60398b505f1cccb6c0c593a781c8e8c0a59da4c2338023570' ||
+      triggerSemantic?.validationStatus !== 'passed' ||
+      triggerSemantic?.judgesPerCandidate !== 3 ||
+      triggerSemantic?.lexicalAndGeneratorSignals !== 'advisory_only_never_vote_tiebreak_veto_or_override' ||
+      outcomeSemantic?.instrumentRegistrationPath !==
+        'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json' ||
+      outcomeSemantic?.instrumentRegistrationSha256 !==
+        '20da1d03c3a6d9f6b5ffae5fe290879e70c9c83a36cd90049bd5e2556f2dd8bf' ||
+      outcomeSemantic?.validationCombinedStatus !== 'passed' ||
+      outcomeSemantic?.validationCombinedReportSha256 !==
+        '7e0ad9aad8aeb584e3f7512118d729e417f1de56bc7e7d1223dcca1b73e00f13' ||
+      outcomeSemantic?.observedReservations !== 727 ||
+      outcomeSemantic?.judgesPerPanel !== 3 ||
+      outcomeSemantic?.primaryAndFidelityCallsSeparate !== true ||
+      outcomeSemantic?.fidelityPacketContainsLearnerOutcome !== false ||
+      outcomeSemantic?.authority !== 'independent_llm_semantic_panels_only' ||
+      outcomeSemantic?.regexKeywordLearnerClassifierGeneratorAndTypedAuditAuthority !== 'none' ||
+      registration.measurement?.confirmatoryTest?.test !== 'fisher_exact_two_sided' ||
+      registration.measurement?.confirmatoryTest?.alpha !== 0.05 ||
+      registration.measurement?.confirmatoryTest?.interimAnalysis !== false ||
+      registration.measurement?.confirmatoryTest?.calibrationDataPooled !== false ||
+      registration.measurement?.confirmatoryTest?.powering?.minimumNPerArm !== 18 ||
+      registration.measurement?.treatmentFidelity?.authority !==
+        'separate_v8_three_judge_intervention_fidelity_panel_blind_to_outcome_and_assignment' ||
+      registration.confirmation?.freshIndependentDialogues !== 36 ||
+      registration.confirmation?.plainDialogues !== 18 ||
+      registration.confirmation?.warmDialogues !== 18 ||
+      registration.confirmation?.analysisCount !== 1 ||
+      registration.confirmation?.interimAnalysisCount !== 0 ||
+      registration.confirmation?.calibrationDialoguesReused !== 0 ||
+      registration.confirmation?.calibrationDialoguesPooled !== 0 ||
+      registration.confirmation?.priorIncompleteConfirmationDialoguesReused !== 0 ||
+      registration.confirmation?.priorIncompleteConfirmationDialoguesPooled !== 0 ||
+      registration.confirmation?.measurementValidationCasesReused !== 0 ||
+      registration.confirmation?.measurementValidationCasesPooled !== 0 ||
+      readiness?.plannedRoleCallDerivation?.maximumTriggerSemanticJudgeCalls !== 15 ||
+      readiness?.plannedRoleCallDerivation?.primaryRecoveryJudgeCallsAfterFinalHorizon !== 3 ||
+      readiness?.plannedRoleCallDerivation?.fidelityJudgeCallsAfterFinalHorizon !== 3 ||
+      readiness?.plannedRoleCallDerivation?.total !== 41 ||
+      readiness?.plannedRoleCallsPerDialogue !== 41 ||
+      readiness?.maximumReservationsPerPlannedCall !== 3 ||
+      readiness?.maximumModelAttemptReservationsPerDialogue !== 123 ||
+      readiness?.combinedDialogues !== 36 ||
+      readiness?.combinedPlannedRoleCalls !== 1476 ||
+      readiness?.combinedMaximumModelAttemptReservations !== 4428 ||
+      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== 8182 ||
+      readiness?.programmeLedgerAfterMaximum?.ceiling !== 10000 ||
+      readiness?.programmeLedgerAfterMaximum?.remaining !== 1818 ||
+      JSON.stringify(readiness?.responseFreeRetryDelaysMs) !== JSON.stringify([15000, 45000]) ||
+      readiness?.validUnitReruns !== false ||
+      readiness?.measurementIndeterminateReruns !== false ||
+      readiness?.outcomeSelection !== false ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !== 3754 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !== 10000 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== 6246 ||
+      registration.authorization?.launchRequiresFreshDigestBoundGoRequest !== true
+    ) {
+      throw new Error('v9 semantic confirmation design, validation evidence, exclusions, or budget arithmetic drifted');
+    }
+    if (
+      readiness.batches.some(
+        (batch, index) =>
+          batch.id !== blocks[index].id ||
+          batch.dialogues !== 4 ||
+          batch.plannedRoleCalls !== 164 ||
+          batch.maximumModelAttemptReservations !== 492 ||
+          batch.destination !== null,
+      )
+    ) {
+      throw new Error('v9 semantic confirmation must retain nine fresh balanced batches capped at 492 each');
     }
     return registration;
   }

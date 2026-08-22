@@ -1,0 +1,375 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1",
+  "version": 9,
+  "status": "prospective_zero_call_readiness_hold",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": "2026-08-22",
+  "registeredQuestion": "Among 36 wholly fresh independent frame-refuser dialogues, 18 per arm, does one matched test_bounded_distinction tutor move realized warm change two-post-trigger-turn semantic recovery relative to the same move realized plain?",
+  "claimBoundary": "Only the frame-refuser matched-action warm-versus-plain recovery contrast in 36 wholly fresh Luna dialogues is confirmatory. The 12 calibration dialogues, every incomplete confirmation block, and every measurement-validation case are excluded from reuse and pooling. No matched-versus-mismatched, general tutor-efficacy, learning, human-validity, or cell-harness claim is licensed.",
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "baselinePilotAuthorized": false,
+    "goRequestPrepared": false,
+    "standingAuthorizationAttachmentSha256": "538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce",
+    "standingArchitecturalCorrectionSha256": "dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4",
+    "programmeLedgerBeforeThisConfirmation": {
+      "role": "observed_model_attempt_reservations",
+      "reservedAttempts": 3754,
+      "ceiling": 10000,
+      "remaining": 6246
+    },
+    "launchRequiresFreshDigestBoundGoRequest": true
+  },
+  "preservation": {
+    "supersedesRegistrationPath": "config/tutor-stub-resistance-action-register-crossed-registration.v8.json",
+    "supersededRegistrationSha256": "92e1d9710d2abbbd54d43b5191cced81b6e8430ee76da3974112a940d7fa874b",
+    "priorRegistrationsRemainImmutable": true,
+    "calibration": {
+      "requestSha256": "965aca0ad1f61d2f43891c162861180016d79a8afa5c090ace0e3e88a436e0dd",
+      "reportSha256": "42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5",
+      "dialogues": 12,
+      "plainRecovered": 1,
+      "plainTotal": 6,
+      "warmRecovered": 4,
+      "warmTotal": 6,
+      "permittedUse": "powering_only",
+      "reused": false,
+      "pooled": false,
+      "outcomeSelected": false
+    },
+    "excludedConfirmationBlocks": [
+      {
+        "id": "v1",
+        "requestSha256": "16f93e48f0b19fe23f0b91dabc9ac318f210ecbba6fbe954d76677d43fb78554",
+        "reservedAttempts": 34,
+        "reused": false,
+        "pooled": false,
+        "outcomeSelected": false
+      },
+      {
+        "id": "v3",
+        "requestSha256": "e3df720358cc597e686f0007bfc1ce1a5d0b4a11273a725ce87b484d20c3fec9",
+        "reservedAttempts": 36,
+        "reused": false,
+        "pooled": false,
+        "outcomeSelected": false
+      },
+      {
+        "id": "v4",
+        "requestSha256": "8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab",
+        "reservedAttempts": 38,
+        "reused": false,
+        "pooled": false,
+        "outcomeSelected": false
+      },
+      {
+        "id": "v7",
+        "requestSha256": "d209cd7d647f1a35c48d1920444e5648ba72aca5d8f46cb211a2c81ec9f197fb",
+        "reservedAttempts": 38,
+        "reused": false,
+        "pooled": false,
+        "outcomeSelected": false
+      }
+    ],
+    "measurementValidationCasesReusedOrPooled": false
+  },
+  "semanticAdjudication": {
+    "role": "first_eligible_trigger_authority",
+    "instrumentRegistrationPath": "config/tutor-stub-resistance-semantic-adjudication-registration.v4.json",
+    "instrumentRegistrationSha256": "ced640b19fbecfd447c2fbd36cace29765e3cc6b7673a4b13932ec7d8790e135",
+    "instrumentFreezeCommit": "bc4edae085da2f2c9f328a584eb5b8c42b87efa5",
+    "validationRequestSha256": "72a04ac91dd2c9f152f9e3efd3f1c3e8e80b5c433c00c8950db4f36210a4ec92",
+    "validationSourceCommit": "2b734c5042603ec7cc18a6d11d9735253d9f3631",
+    "validationSourceTree": "654038103babecc55059bbf72e9fb12c3c4e9c8e",
+    "validationPlanSha256": "22a653fe7052008eb6f00d42b8b19b923baa3bdbcdf08e093ddb528a0a78e0b1",
+    "validationSealSha256": "29781dbe6784e05cf85cfb117611a2c0642cfb7b279a9798e64b83ec8fa86573",
+    "validationReportSha256": "ab9799d1d82f06e60398b505f1cccb6c0c593a781c8e8c0a59da4c2338023570",
+    "validationStatus": "passed",
+    "observedReservations": 242,
+    "judgesPerCandidate": 3,
+    "maximumCandidatesPerDialogue": 5,
+    "fullPanelAuthority": "two_of_three_high_confidence_primary_label_votes",
+    "lexicalAndGeneratorSignals": "advisory_only_never_vote_tiebreak_veto_or_override",
+    "measurementIndeterminateDisposition": "terminal_no_repair_rerun_replacement_selection_or_fisher_analysis"
+  },
+  "outcomeSemanticAdjudication": {
+    "role": "separate_final_horizon_recovery_and_intervention_fidelity_authority",
+    "instrumentRegistrationPath": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json",
+    "instrumentRegistrationSha256": "20da1d03c3a6d9f6b5ffae5fe290879e70c9c83a36cd90049bd5e2556f2dd8bf",
+    "instrumentFreezeCommit": "9cd37f0b6708ea9410930d97516aa707c762c632",
+    "validationGoRequestSha256": "8c4b9ac445ca65dc1493ba3bc027b1d4aa0e2475497b99579b4150afa4dd1bb0",
+    "validationSourceCommit": "bd33f69225daba35a23389d96ea5675ae480fd51",
+    "validationSourceTree": "125673cad90deeb5ea8bf811cd1c157a5665f6af",
+    "validationCombinedStatus": "passed",
+    "validationCombinedReportSha256": "7e0ad9aad8aeb584e3f7512118d729e417f1de56bc7e7d1223dcca1b73e00f13",
+    "primaryStageReportSha256": "db21e34f8d0662ab3f75f97cb5be4375d75c8d461f2ef5d719df74f8ada3d6d6",
+    "primarySealSha256": "40ddef33779ef0d68209f9fd01fad7ae8fb9d981d7377d24efd312651462e5d2",
+    "fidelityStageReportSha256": "874afce7baf5b3d580e4e522fb8ca039a8294a0a367222118ad287a9b8e1d860",
+    "fidelitySealSha256": "9a3a2ba77bab1d36283510d80fbcb5635cc7d2bf5162494259c6b7fcddf351ee",
+    "observedReservations": 727,
+    "judgesPerPanel": 3,
+    "primaryAndFidelityCallsSeparate": true,
+    "fidelityPacketContainsLearnerOutcome": false,
+    "authority": "independent_llm_semantic_panels_only",
+    "regexKeywordLearnerClassifierGeneratorAndTypedAuditAuthority": "none",
+    "measurementIndeterminateDisposition": "terminal_whole_fisher_analysis_withheld_no_repair_rerun_replacement_or_selection",
+    "fidelityFailureDisposition": "interpretability_gate_failure_not_outcome_rerun"
+  },
+  "design": {
+    "stage": "frame_refuser_matched_action_plain_warm_confirmation_successor",
+    "form": "fresh_independent_online_triggered_dialogues",
+    "world": "world_005_marrick",
+    "dagMode": "strict_dag",
+    "profiles": ["frame_refuser"],
+    "treatmentProfile": "frame_refuser",
+    "diagnosticProfile": "frame_defiant",
+    "diagnosticDisposition": "absent_from_confirmation",
+    "trigger": {
+      "observationSemantics": "prospective_frame_resistance_semantic_v4",
+      "timing": "first_eligible_frame_jurisdiction_refusal_by_public_turn_2",
+      "eligibleByTurn": 2,
+      "requiredObservation": "two_of_three_independent_high_confidence_frame_refuser_votes",
+      "profileIdentityMayTrigger": false,
+      "freshDialogueRequired": true,
+      "freshOpeningAndLearnerTrajectoryRequired": true,
+      "observerFirstEligibility": true,
+      "calibrationPrefixesConsumedAsInputs": false,
+      "priorIncompleteConfirmationConsumedAsInputs": false,
+      "missingTriggerDisposition": "substantive_registered_failure_stop_no_replacement"
+    },
+    "randomization": {
+      "unit": "fresh_independent_dialogue",
+      "allocation": "predeclared_balanced_blocks",
+      "algorithm": "sha256_ranked_balanced_block_permutation_v1",
+      "ratio": "1:1",
+      "masterSeed": 20260826,
+      "concealedFromPreTriggerPrompts": true,
+      "validOutputsMayNotBeSelectedOrRerolled": true
+    },
+    "factors": {
+      "actionFit": {
+        "levels": ["matched"],
+        "assignments": { "frame_refuser": { "matched": "test_bounded_distinction" } },
+        "fixedForConfirmation": true
+      },
+      "realization": {
+        "levels": ["plain", "warm"],
+        "plain": "plain",
+        "warm": "warm",
+        "referenceLevel": "plain",
+        "treatmentLevel": "warm",
+        "oneTutorTurnOnly": true,
+        "revertAfterUptake": true
+      },
+      "replicationBlock": {
+        "levels": [
+          "block_01",
+          "block_02",
+          "block_03",
+          "block_04",
+          "block_05",
+          "block_06",
+          "block_07",
+          "block_08",
+          "block_09"
+        ]
+      },
+      "confirmationBlock": {
+        "blocks": [
+          { "id": "block_01", "dialogues": 4, "plain": 2, "warm": 2 },
+          { "id": "block_02", "dialogues": 4, "plain": 2, "warm": 2 },
+          { "id": "block_03", "dialogues": 4, "plain": 2, "warm": 2 },
+          { "id": "block_04", "dialogues": 4, "plain": 2, "warm": 2 },
+          { "id": "block_05", "dialogues": 4, "plain": 2, "warm": 2 },
+          { "id": "block_06", "dialogues": 4, "plain": 2, "warm": 2 },
+          { "id": "block_07", "dialogues": 4, "plain": 2, "warm": 2 },
+          { "id": "block_08", "dialogues": 4, "plain": 2, "warm": 2 },
+          { "id": "block_09", "dialogues": 4, "plain": 2, "warm": 2 }
+        ],
+        "technicalTransportOnly": true,
+        "interimAnalysis": false,
+        "blockSelection": false
+      }
+    },
+    "intervention": {
+      "durationTutorTurns": 1,
+      "studyOnlyOptIn": true,
+      "applicationOrder": [
+        "public_semantic_observation",
+        "warrant",
+        "assigned_typed_pedagogical_move",
+        "assigned_compatible_register",
+        "public_realization"
+      ],
+      "legacyDefaultOutsideStudy": true,
+      "safetyOverride": "record_protected_condition_as_nonadherent_never_reroll"
+    },
+    "outcomeHorizon": {
+      "commonPostTriggerLearnerTurns": 2,
+      "maximumPublicLearnerTurn": 4,
+      "terminalTutorReply": false
+    }
+  },
+  "measurement": {
+    "primaryEndpoints": [
+      {
+        "id": "profile_specific_resistance_recovery",
+        "type": "binary_per_randomized_dialogue",
+        "definition": "Within two post-trigger learner turns, the independent semantic recovery panel finds either bounded-test merits engagement or a more precise publicly grounded jurisdictional condition.",
+        "authority": "v8_three_judge_primary_recovery_panel"
+      }
+    ],
+    "confirmatoryTest": {
+      "estimand": "warm_minus_plain_two_post_trigger_turn_recovery_rate_over_36_fresh_independent_dialogues",
+      "null": "warm and plain recovery probabilities are equal",
+      "alternative": "warm and plain recovery probabilities differ",
+      "test": "fisher_exact_two_sided",
+      "alpha": 0.05,
+      "decisionRule": "confirm separation only when the two-sided Fisher exact p-value is at most 0.05; report arm rates, risk difference, odds ratio, and exact p-value regardless",
+      "interimAnalysis": false,
+      "calibrationDataPooled": false,
+      "powering": {
+        "source": "calibration_only_1_of_6_plain_vs_4_of_6_warm",
+        "test": "fisher_exact_two_sided",
+        "alpha": 0.05,
+        "targetPower": 0.8,
+        "plainCalibrationRate": 0.16666666666666666,
+        "warmCalibrationRate": 0.6666666666666666,
+        "powerAt17PerArm": 0.796776592585303,
+        "powerAt18PerArm": 0.8388687257645503,
+        "minimumNPerArm": 18
+      }
+    },
+    "treatmentFidelity": {
+      "minimumActionVisibility": 0.9,
+      "minimumRegisterVisibility": 0.9,
+      "primaryAnalysis": "intention_to_treat",
+      "authority": "separate_v8_three_judge_intervention_fidelity_panel_blind_to_outcome_and_assignment",
+      "typedAuditRole": "advisory_process_evidence_only",
+      "failedFidelityDisposition": "fail_interpretability_gate_not_rerun"
+    },
+    "assemblyRule": "All nine batches must seal before the sole combined 36-dialogue analysis. No batch, arm, partial count, or calibration dialogue may be analyzed, selected, pooled, or interpreted before that point."
+  },
+  "confirmation": {
+    "status": "prospective_executable_only_after_fresh_digest_bound_go_request",
+    "freshIndependentDialogues": 36,
+    "plainDialogues": 18,
+    "warmDialogues": 18,
+    "analysisCount": 1,
+    "interimAnalysisCount": 0,
+    "calibrationDialoguesReused": 0,
+    "calibrationDialoguesPooled": 0,
+    "priorIncompleteConfirmationDialoguesReused": 0,
+    "priorIncompleteConfirmationDialoguesPooled": 0,
+    "measurementValidationCasesReused": 0,
+    "measurementValidationCasesPooled": 0
+  },
+  "executionReadiness": {
+    "modelRoute": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna",
+      "triggerSemanticJudges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "codex.gpt-5.5"],
+      "primaryRecoveryJudges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "codex.gpt-5.5"],
+      "fidelityJudges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "codex.gpt-5.5"],
+      "effort": "low"
+    },
+    "plannedRoleCallDerivation": {
+      "opening": 1,
+      "maximumLearnerTurns": 4,
+      "maximumLearnerAnalyses": 4,
+      "maximumTutorTurns": 3,
+      "oneFullLearnerRepair": 2,
+      "maximumTutorGuardRecoveryCalls": 6,
+      "maximumTriggerSemanticJudgeCalls": 15,
+      "primaryRecoveryJudgeCallsAfterFinalHorizon": 3,
+      "fidelityJudgeCallsAfterFinalHorizon": 3,
+      "total": 41
+    },
+    "plannedRoleCallsPerDialogue": 41,
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumModelAttemptReservationsPerDialogue": 123,
+    "batches": [
+      {
+        "id": "block_01",
+        "dialogues": 4,
+        "plannedRoleCalls": 164,
+        "maximumModelAttemptReservations": 492,
+        "destination": null
+      },
+      {
+        "id": "block_02",
+        "dialogues": 4,
+        "plannedRoleCalls": 164,
+        "maximumModelAttemptReservations": 492,
+        "destination": null
+      },
+      {
+        "id": "block_03",
+        "dialogues": 4,
+        "plannedRoleCalls": 164,
+        "maximumModelAttemptReservations": 492,
+        "destination": null
+      },
+      {
+        "id": "block_04",
+        "dialogues": 4,
+        "plannedRoleCalls": 164,
+        "maximumModelAttemptReservations": 492,
+        "destination": null
+      },
+      {
+        "id": "block_05",
+        "dialogues": 4,
+        "plannedRoleCalls": 164,
+        "maximumModelAttemptReservations": 492,
+        "destination": null
+      },
+      {
+        "id": "block_06",
+        "dialogues": 4,
+        "plannedRoleCalls": 164,
+        "maximumModelAttemptReservations": 492,
+        "destination": null
+      },
+      {
+        "id": "block_07",
+        "dialogues": 4,
+        "plannedRoleCalls": 164,
+        "maximumModelAttemptReservations": 492,
+        "destination": null
+      },
+      {
+        "id": "block_08",
+        "dialogues": 4,
+        "plannedRoleCalls": 164,
+        "maximumModelAttemptReservations": 492,
+        "destination": null
+      },
+      {
+        "id": "block_09",
+        "dialogues": 4,
+        "plannedRoleCalls": 164,
+        "maximumModelAttemptReservations": 492,
+        "destination": null
+      }
+    ],
+    "combinedDialogues": 36,
+    "combinedPlannedRoleCalls": 1476,
+    "combinedMaximumModelAttemptReservations": 4428,
+    "programmeLedgerAfterMaximum": {
+      "role": "conservative_operational_maximum_after_confirmation",
+      "reservedAttempts": 8182,
+      "ceiling": 10000,
+      "remaining": 1818
+    },
+    "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective",
+    "responseFreeRetryDelaysMs": [15000, 45000],
+    "boundedTechnicalRecovery": "missing_or_failed_units_only_when_no_semantic_or_outcome_return_would_be_recalled_within_the_same_123_dialogue_492_batch_4428_confirmation_and_10000_programme_caps",
+    "validUnitReruns": false,
+    "measurementIndeterminateReruns": false,
+    "outcomeSelection": false,
+    "currentLiveExecutionAvailable": false
+  }
+}
