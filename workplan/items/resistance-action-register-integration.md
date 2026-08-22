@@ -3107,7 +3107,7 @@ and explicit human approval.
   / tree `cd40ddc207fadc020c396abcc3938f72bc7a8869`. The request is
   `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-3.json`
   at SHA-256
-  `4df4d009f93f0c84924731c1d647eb14ac56f18132aa0739abbcd4b0a9118e97`.
+  `b20d55cc23483a1143b36a5d1dd620a53e453c6e0b13199a76daa1f3ea47d460`.
   Its 38-file closure includes all three consumed V3 requests, and the checker
   verifies every final artifact of the third partial root plus the tested JSON
   envelope predicates and fresh human route-decision digest. The create-once
