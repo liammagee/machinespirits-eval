@@ -655,6 +655,8 @@
         "tests/tutorStubResistanceRecoverySemanticValidation.test.js",
         "tests/tutorStubResistanceRecoverySemanticValidationV3GoRequest.test.js",
         "tests/tutorStubResistanceRecoverySemanticValidationV3Runtime.test.js",
+        "tests/tutorStubResistanceRecoverySemanticValidationV5.test.js",
+        "tests/tutorStubResistanceRecoverySemanticValidationV5Runtime.test.js",
         "tests/tutorStubResistanceSemanticAdjudication.test.js",
         "tests/tutorStubResistanceSemanticAdjudicationV2.test.js",
         "tests/tutorStubResistanceSemanticAdjudicationV3.test.js",

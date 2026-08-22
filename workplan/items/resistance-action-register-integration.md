@@ -10,13 +10,13 @@ created: 2026-08-18
 updated: 2026-08-22
 verification: >-
   The reopened measurement-redesign track has passed the prospective Claude
-  JSON result-envelope transport and wholly fresh 80-case hierarchical-panel
-  manipulation validation while preserving all earlier roots as immutable
-  excluded evidence. Before confirmation, the outcome semantic instrument must
-  pass its own fresh independent heldout validation. Regex remains
-  nonauthoritative for semantic constructs, and no efficacy, null, learning,
-  transfer, human, cell, or profile claim is licensed before the relevant
-  predeclared gate passes.
+  JSON result-envelope transport, the wholly fresh 80-case manipulation
+  validation, and the zero-call split-V5 outcome/fidelity engineering gates
+  while preserving all earlier roots as immutable excluded evidence. Before
+  confirmation, both V5 stages must pass their fresh independent 120-case
+  heldout validation. Regex remains nonauthoritative for semantic constructs,
+  and no efficacy, null, learning, transfer, human, cell, or profile claim is
+  licensed before the relevant predeclared gate passes.
 claim_status: methods
 links:
   items:
@@ -128,11 +128,16 @@ links:
     - services/tutorStubResistanceRecoverySemanticValidationRuntime.js
     - scripts/analyze-tutor-stub-resistance-recovery-offset-cleaning.js
     - services/tutorStubResistanceRecoverySemanticAdjudicationV2.js
+    - services/tutorStubResistanceRecoverySemanticAdjudicationV5.js
+    - services/tutorStubResistanceRecoverySemanticValidationV5.js
+    - services/tutorStubResistanceMeasurementValidationV5Runtime.js
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json
     - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json
     - config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json
     - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.json
     - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.endpoint-go.json
+    - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v5.json
+    - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v5.json
 tags:
   - tutor-stub
   - cells
@@ -140,7 +145,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-semantic-claude-json-transport
+branch: codex/resistance-outcome-v4-redesign
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -3359,3 +3364,36 @@ and explicit human approval.
   with diagnostic evidence-placement defects. Therefore no rerun follows from
   the offset defect itself. Any fresh validation must be justified separately
   by a substantive scoring-rule amendment, not by the cleaned metadata.
+
+- 2026-08-22 — Superseded the unlaunched combined V4 validation design with a
+  split V5 measurement architecture before exposing any fresh case. Primary
+  recovery and intervention fidelity now use separate prompts, response
+  schemas, validators, panels, and reports. The three primary judges see the
+  complete public horizon; the three fidelity judges see only the intervention
+  and cannot see or recode learner outcomes. Both accept determinate medium or
+  high confidence votes, derive offsets deterministically from unique exact
+  quote text, and map low confidence, invalidity, missing returns, or panel
+  disagreement to `measurement_indeterminate` without learner repair, semantic
+  recall, replacement, or selection. Regex, keyword, classifiers, and the Luna
+  generator/analysis route have no vote, veto, or tie-breaking authority.
+
+  The user raised the programme operational safeguard from `5000` to `10000`
+  attempts without changing the scientific design. The fresh validation keeps
+  the independently selected 120-case structure and now uses 720 planned judge
+  calls across two sealed stages, capped at 2160 reservations. A future
+  confirmation requires 4428 reservations after adding the independent
+  three-seat recovery and fidelity panels, for a conservative staged maximum
+  of `8098 / 10000`; attempt counts remain execution safeguards only.
+
+  The V5 instrument froze at commit
+  `6d07cc33b75182f9229a01d81f27a26ad3fa7f67` before corpus authoring. A new
+  deterministic stratified paraphrase corpus then froze at commit
+  `b752b91178e38a5dca10fd44211cc9d9dc1624a6`: 120 new cases, recovery strata
+  `32/32/16/40`, register strata `40/40/40`, 80 action-present cases, 24
+  intervening-turn-dependent cases, and zero exact field or evidence-text
+  reuse from the consumed V2/V3 corpus. Ten zero-call instrument/corpus tests
+  pass. The split checkpoint runtime also passes complete synthetic stage
+  seals, one exhausted response-free Sonnet seat followed by the remaining
+  judge, post-seal combined analysis, and byte-identical durable archiving;
+  all selected V1-V3 runtime regressions remain green. No V5 model call has
+  launched, and no validation or confirmation claim is yet licensed.

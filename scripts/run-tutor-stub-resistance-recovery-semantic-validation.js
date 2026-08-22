@@ -48,7 +48,9 @@ async function main() {
   const args = argsFrom(process.argv.slice(2));
   if (Boolean(args.live) === Boolean(args.preflight)) throw new Error('choose exactly one of --live or --preflight');
   const loaded = loadTutorStubResistanceRecoverySemanticValidationForRegistration(args['validation-registration']);
-  const registeredMaximum = loaded.registration.executionReadiness.hardValidationReservations;
+  const registeredMaximum =
+    loaded.registration.executionReadiness.hardValidationReservations ||
+    loaded.registration.executionReadiness.hardStageReservations;
   if (Number(args['maximum-reservations']) !== registeredMaximum) {
     throw new Error(`registered hard ceiling is ${registeredMaximum}`);
   }
