@@ -101,6 +101,27 @@ function failedSemanticJudges(events) {
   );
 }
 
+function assertRecoverableFrozenPrefix(events, jobId) {
+  if (
+    events.some((event) =>
+      [
+        'resistance_semantic_judge_result',
+        'resistance_action_register_outcome_learner_turn',
+        'auto_learner_profile_measurement_indeterminate',
+      ].includes(event.type),
+    )
+  ) {
+    throw new Error(`frozen-prefix recovery refuses a semantic or outcome response for ${jobId}`);
+  }
+  const errors = events.filter((event) => event.type === 'model_call_error');
+  if (
+    errors.length !== 1 ||
+    !/\b(timed out|response[- ]free|no structured output)\b/iu.test(String(errors[0].error || ''))
+  ) {
+    throw new Error(`frozen-prefix recovery requires one response-free technical error for ${jobId}`);
+  }
+}
+
 async function recoverOneJudge({ failed, events, attemptsPath, maximumAttempts }) {
   const binding = loadTutorStubResistanceSemanticRegistration(failed.registrationPath);
   const instrument = tutorStubResistanceSemanticRuntimeInstrument(binding);
@@ -256,17 +277,31 @@ async function main() {
   if (fs.existsSync(recoveryRoot)) throw new Error('interrupted-batch recovery destination must be fresh and absent');
   const planPath = path.join(batchDir, 'batch-plan.json');
   const plan = readJson(planPath);
+  const initialResultPath = path.join(batchDir, 'batch-result.json');
+  const initial = fs.existsSync(initialResultPath) ? readJson(initialResultPath) : null;
   if (
-    fs.existsSync(path.join(batchDir, 'batch-result.json')) ||
     fs.existsSync(path.join(batchDir, 'batch-final-result.json')) ||
     fs.existsSync(path.join(batchDir, 'batch-seal.json'))
   ) {
-    throw new Error('interrupted-batch recovery requires a plan-only unsealed batch');
+    throw new Error('interrupted-batch recovery requires an unsealed create-once batch');
+  }
+  if (
+    initial &&
+    (initial.status !== 'incomplete' ||
+      initial.results?.length !== plan.jobs.length ||
+      initial.results.some((row) => row.status !== 'failed' || !row.trace))
+  ) {
+    throw new Error('interrupted-batch recovery requires only preserved failed rows');
   }
   const perDialogueCap = plan.budget.maximum_model_attempt_reservations_per_dialogue;
   const perBatchCap = plan.budget.maximum_model_attempt_reservations;
   fs.mkdirSync(path.join(recoveryRoot, 'jobs'), { recursive: true });
-  const sources = plan.jobs.map((job) => ({ job, sourceTrace: onlyTrace(job.command.trace_dir) }));
+  const sources = plan.jobs.map((job) => {
+    const row = initial?.results?.find((candidate) => candidate.job_id === job.id);
+    const sourceTrace = row?.trace ? path.resolve(ROOT, row.trace) : onlyTrace(job.command.trace_dir);
+    assertRecoverableFrozenPrefix(readJsonLines(sourceTrace), job.id);
+    return { job, sourceTrace };
+  });
   const initialReservationsByJob = Object.fromEntries(
     sources.map(({ job, sourceTrace }) => [job.id, countReservations(sourceTrace)]),
   );
@@ -275,6 +310,7 @@ async function main() {
     status: 'planned_frozen_prefix_only',
     batch_id: plan.batch_id,
     original_plan_sha256: sha256(fs.readFileSync(planPath)),
+    original_result_sha256: initial ? sha256(fs.readFileSync(initialResultPath)) : null,
     initial_model_attempt_reservations_by_job: initialReservationsByJob,
     maximum_semantic_judge_recovery_attempts_per_missing_judge: maximumAttempts,
     learner_or_tutor_regeneration_allowed: false,
