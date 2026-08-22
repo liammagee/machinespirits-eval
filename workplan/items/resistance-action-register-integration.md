@@ -3232,3 +3232,35 @@ and explicit human approval.
   validation corpus remains excluded from confirmation outcomes, and outcome
   validation plus a new executable confirmation registration/request remain
   required before any warm-versus-plain inference.
+
+- 2026-08-22 — The post-pass blocking audit found that the unused V2 outcome
+  instrument still required two judges to agree on its complete five-field
+  vector. That is the same structurally fragile unanimity rule that caused the
+  manipulation V3 instrument to collapse valid shared primary judgments when
+  diagnostic components differed. No V2 outcome heldout case has ever been
+  sent to a judge and no V2 outcome response or result exists, so the audit
+  amended the panel before exposure rather than spending calls on a known
+  failure mode.
+
+  The additive V3 outcome instrument is frozen at commit
+  `4a58374052041d6ac7cb18ded0d6d009a5ee4060`. It preserves the V2 bounded
+  public horizon, prompt, schema, quote/span validation, constructs, and unused
+  independently authored 120-case heldout byte-for-byte. It changes only the
+  panel: Sol, Sonnet 5, and GPT-5.5 vote independently; two valid
+  high-confidence votes determine `final_recovery`, and every diagnostic field
+  aggregates separately by the same rule. Component disagreement cannot veto
+  primary recovery. Invalid, low-confidence, missing, response-free, or
+  individually indeterminate seats abstain; fewer than two eligible votes or
+  no majority is terminal `measurement_indeterminate`, with no semantic rerun,
+  learner repair, replacement, outcome selection, or Fisher authority.
+
+  The 120-case / 360-seat checkpointed runtime now continues to all remaining
+  never-dispatched judges after a terminal seat while preserving every failed
+  attempt. A full zero-call runtime regression passed with one Sonnet seat
+  exhausting three response-free attempts: GPT-5.5 still ran, the two valid
+  seats formed the registered majority, all 120 cases sealed, and the analyzer
+  accepted the immutable archive. V2 runtime regressions remain green. The V3
+  validation hard safeguard is 1,080 reservations, moving the observed
+  programme ledger from `1136` to at most `2216 / 5000`. This synthetic result
+  is wiring evidence only; live outcome accuracy remains unobserved and
+  confirmation remains unauthorized.
