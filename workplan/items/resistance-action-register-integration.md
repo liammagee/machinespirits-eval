@@ -11,10 +11,10 @@ updated: 2026-08-22
 verification: >-
   The reopened measurement-redesign track has passed the prospective Claude
   JSON result-envelope transport, the wholly fresh 80-case manipulation
-  validation, and the zero-call stance-aligned split-V7 outcome/fidelity
-  engineering gates
+  validation, and the zero-call transport-observable split-V8
+  outcome/fidelity engineering gates
   while preserving all earlier roots as immutable excluded evidence. Before
-  confirmation, both V7 stages must pass their fresh independent 120-case
+  confirmation, both sequential V8 stages must pass their fresh independent 120-case
   heldout validation. Regex remains nonauthoritative for semantic constructs,
   and no efficacy, null, learning, transfer, human, cell, or profile claim is
   licensed before the relevant predeclared gate passes.
@@ -3487,3 +3487,48 @@ and explicit human approval.
   safeguard; the conservative programme maximum through a later confirmation
   is `8861 / 10000`. Attempt counts remain operational safeguards rather than
   design objectives.
+
+- 2026-08-22 — The wholly fresh V7 split validation sealed both 120-case,
+  three-judge stages from 754 reservations, moving the observed programme
+  ledger to `3027 / 10000`. Its combined report SHA-256 is
+  `a0240a6be921befab79a248eae4ccbc372e60aae63af9b81c7efd81349eaebf2`.
+  No confirmation claim was licensed. Primary panel accuracy and coverage
+  were perfect, but Sonnet coverage was `0.8833`, below the frozen `0.90`
+  gate. Fidelity panel action accuracy and coverage were perfect and register
+  accuracy was `0.9917`, but GPT-5.5 register accuracy was `0.9333`, below its
+  `0.95` gate.
+
+  A zero-call audit found that 13 of 14 Sonnet abstentions were three-times
+  exhausted response-free transport failures; the remaining return had a
+  duplicate evidence quote. The bridge preserved only byte counts and hashes
+  in the stage attempt record, so the provider reason could not be recovered
+  there. All eight GPT register errors concerned action-present/plain
+  interventions split across an authority sentence and a separate bounded
+  action sentence; this recurring compositional form was semantically read as
+  performed stance. V7 remains immutable failed validation evidence and is
+  excluded from reuse or pooling. No outcome was repaired, replaced, selected,
+  or rerun.
+
+- 2026-08-22 — V8 prospectively integrates the V7 failures before another
+  call. The bridge/process-policy repair at commit
+  `75bf71208e1c84e8993388821b83043cade0c42e` retains capped stdout and stderr
+  text alongside full byte counts and hashes. The V8 stage runtime persists
+  those diagnostics in immutable response-free attempt records, uses frozen
+  `15000/45000` millisecond retry delays, and prevents fidelity launch until
+  the primary stage has sealed. These are operational transport safeguards,
+  not scientific endpoints.
+
+  The V8 semantic instrument froze at
+  `9cd37f0b6708ea9410930d97516aa707c762c632`; its fidelity codebook states
+  prospectively that a literal bounded authority distinction in the same
+  ordinary, checkable sentence remains plain. Its registration froze at
+  `932c20c70af6591d47782d8d23426c88d706d339` before heldout authoring. A
+  wholly fresh 120-case corpus then froze at
+  `e1c8f133d00be5730a65e1a769c13fc5174693c6`, preserving the registered
+  recovery, register, action, and intervening-turn strata while using new
+  settings, objects, measures, and paraphrases with zero exact reuse from V2,
+  V3, V5, V6, or V7. Action-present/plain cases use one literal, checkable
+  sentence. Sixteen focused zero-call tests pass, including sequential-stage
+  enforcement, exact checkpoint/archive reconstruction of the capped provider
+  reason, and full synthetic primary/fidelity seals. No V8 model call has
+  launched; the programme ledger remains `3027 / 10000`.
