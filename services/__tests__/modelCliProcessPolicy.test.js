@@ -141,7 +141,7 @@ describe('modelCliProcessPolicy', () => {
     );
   });
 
-  it('redacts child output, prompts, and commands from external-model failures', async () => {
+  it('attaches capped child output while keeping prompts and commands out of external-model failures', async () => {
     const secret = 'raw-model-secret-canary';
     await assert.rejects(
       () =>
@@ -157,6 +157,10 @@ describe('modelCliProcessPolicy', () => {
         assert.doesNotMatch(error.message, /--print/u);
         assert.equal(error.stdoutBytes > 0, true);
         assert.equal(error.stderrBytes > 0, true);
+        assert.match(error.stdoutText, new RegExp(secret, 'u'));
+        assert.match(error.stderrText, new RegExp(secret, 'u'));
+        assert.equal(error.stdoutTextTruncated, false);
+        assert.equal(error.stderrTextTruncated, false);
         return true;
       },
     );

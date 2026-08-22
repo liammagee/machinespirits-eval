@@ -798,7 +798,7 @@ describe('cliProviderBridge', () => {
     assert.equal(proseSuccess.reason, 'success_without_structured_output');
   });
 
-  it('retries no hidden content at the bridge boundary for response-free Claude errors', async () => {
+  it('attaches capped diagnostics at the bridge boundary for response-free Claude errors', async () => {
     const secretCanary = 'SECRET-CLAUDE-ERROR-CANARY';
     await assert.rejects(
       () =>
@@ -821,8 +821,36 @@ describe('cliProviderBridge', () => {
         assert.equal(error?.stderrBytes, Buffer.byteLength('stderr-private-canary'));
         assert.match(error?.stdoutSha256, /^[a-f0-9]{64}$/u);
         assert.match(error?.stderrSha256, /^[a-f0-9]{64}$/u);
-        assert.doesNotMatch(JSON.stringify(error), new RegExp(secretCanary, 'u'));
-        assert.doesNotMatch(JSON.stringify(error), /stderr-private-canary/u);
+        assert.match(error?.stdoutText, new RegExp(secretCanary, 'u'));
+        assert.match(error?.stderrText, /stderr-private-canary/u);
+        assert.equal(error?.stdoutTextTruncated, false);
+        assert.equal(error?.stderrTextTruncated, false);
+        assert.ok(Buffer.byteLength(error?.stdoutText) <= 4096);
+        assert.ok(Buffer.byteLength(error?.stderrText) <= 4096);
+        return true;
+      },
+    );
+  });
+
+  it('caps Claude failure diagnostics', async () => {
+    const longText = 'x'.repeat(5000);
+    await assert.rejects(
+      () =>
+        callAIWithCliBridge({ provider: 'claude-code', model: 'claude-test' }, 'system', 'user', 'semantic-judge', {
+          outputSchema: { type: 'object' },
+          timeoutMs: 1000,
+          spawnImpl: () =>
+            fakeChild({
+              stdoutText: claudeJsonEnvelope({ is_error: true, result: longText }),
+              stderrText: longText,
+              exitCode: 1,
+            }),
+        }),
+      (error) => {
+        assert.equal(Buffer.byteLength(error?.stdoutText), 4096);
+        assert.equal(Buffer.byteLength(error?.stderrText), 4096);
+        assert.equal(error?.stdoutTextTruncated, true);
+        assert.equal(error?.stderrTextTruncated, true);
         return true;
       },
     );
