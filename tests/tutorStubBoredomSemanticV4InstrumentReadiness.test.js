@@ -467,3 +467,74 @@ test('a stopped measurement says which rule stopped it and what the auxiliary sa
   assert.equal(adjudication.auxiliary.triggered_signals.uptake_from_classifier_content, true);
   assert.equal(adjudication.auxiliary.triggered_signals.uptake_from_supported_moves, 0);
 });
+
+test('a plain statement of giving up is not read as taking up the work', () => {
+  // The four turn-1 replies from live batch 1, third attempt, with the exact
+  // discourse labels the analysis model gave them (recorded in each job trace).
+  // All four were stopped because the auxiliary called them productive uptake.
+  // Reflection on one's own work no longer sits in the content-bearing set, so a
+  // learner saying it has stopped now reads as what it is.
+  const withheld = [
+    {
+      job: 'bored-confirm-w1-d1',
+      text: 'I have stopped before choosing a public test; the trial-book has no finding yet.',
+      evidence_use: 'none',
+    },
+    {
+      job: 'bored-confirm-w1-d2',
+      text: 'I stopped at naming Verrell and left the evidence unexamined.',
+      evidence_use: 'none',
+    },
+    {
+      job: 'bored-confirm-w1-d4',
+      text: 'I stopped at the first step and left the evidence unexamined.',
+      evidence_use: 'none',
+    },
+    {
+      job: 'bored-confirm-w1-d5',
+      text: 'I stopped at naming Verrell, before any coin or testimony was examined.',
+      evidence_use: 'repeats_setup',
+    },
+  ];
+
+  for (const row of withheld) {
+    const observed = observeResistantLearnerTurn({
+      learnerText: row.text,
+      classification: { turn: { discourse_move: 'metacognitive_reflection', evidence_use: row.evidence_use } },
+      tutorLearnerDag: null,
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9,
+    });
+    const composition = observed.boredom_composition;
+    assert.ok(composition, `${row.job}: the boredom composition must be present`);
+    assert.equal(composition.classifier_content_bearing, false, `${row.job}: reflection is not taking up the work`);
+    assert.equal(composition.productive_uptake, false, `${row.job}: no uptake input may fire on this turn`);
+    assert.equal(composition.productive_uptake_evidence, null, `${row.job}: the regex was silent here too`);
+  }
+});
+
+test('real forward moves still count as taking up the work', () => {
+  // Guards the correction above. Dropping reflection must not blunt the three
+  // moves that do carry the inquiry forward, nor the evidence-side inputs.
+  const forward = [
+    { discourse_move: 'hypothesis', evidence_use: 'none' },
+    { discourse_move: 'inference', evidence_use: 'none' },
+    { discourse_move: 'evidence_adoption', evidence_use: 'none' },
+    { discourse_move: 'metacognitive_reflection', evidence_use: 'cites_public_evidence' },
+    { discourse_move: 'metacognitive_reflection', evidence_use: 'links_evidence_to_rule' },
+    { discourse_move: 'metacognitive_reflection', evidence_use: 'revises_from_evidence' },
+  ];
+
+  for (const turn of forward) {
+    const observed = observeResistantLearnerTurn({
+      learnerText: 'The clipped edge is the deciding mark, so Verrell cannot be the striker.',
+      classification: { turn },
+      tutorLearnerDag: null,
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9,
+    });
+    assert.equal(
+      observed.boredom_composition?.classifier_content_bearing,
+      true,
+      `${turn.discourse_move} + ${turn.evidence_use} must still count as taking up the work`,
+    );
+  }
+});

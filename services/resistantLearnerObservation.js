@@ -352,9 +352,16 @@ const FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V7 = Object.freeze([
   /\bi (?:will not|won't|do not|don't|refuse to|decline to) permit\b[^.!?;]{0,180}\b(?:answer|examination|examine|inspection|inspect|test|testing)\b/iu,
 ]);
 
-const CONTENT_BEARING_MOVES = Object.freeze(
-  new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']),
-);
+// Reflection on one's own work is deliberately absent. The other three moves all
+// carry the inquiry forward; commenting on your own work does not. Live batch 1
+// (2026-08-21) stopped four dialogues because of it: the bored learner said "I
+// stopped at the first step and left the evidence unexamined", the analysis model
+// labelled that metacognitive_reflection, and this list turned a plain statement of
+// giving up into evidence of taking up the work. The judge read all four correctly.
+// A statement of withholding is the signal this study needs, so it must not read as
+// its opposite. See services/tutorStubResistanceActionRegisterStudy.js for the
+// separate recovery-scoring copy of this list, which is registered and unchanged.
+const CONTENT_BEARING_MOVES = Object.freeze(new Set(['hypothesis', 'inference', 'evidence_adoption']));
 const CONTENT_BEARING_EVIDENCE = Object.freeze(
   new Set(['cites_public_evidence', 'links_evidence_to_rule', 'revises_from_evidence']),
 );
