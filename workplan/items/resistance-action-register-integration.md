@@ -126,6 +126,7 @@ links:
     - config/tutor-stub-resistance-recovery-semantic-validation-registration.v1.json
     - services/tutorStubResistanceRecoverySemanticValidation.js
     - services/tutorStubResistanceRecoverySemanticValidationRuntime.js
+    - scripts/analyze-tutor-stub-resistance-recovery-offset-cleaning.js
     - services/tutorStubResistanceRecoverySemanticAdjudicationV2.js
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json
     - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json
@@ -3331,3 +3332,30 @@ and explicit human approval.
   zero case/text reuse or pooling from V2/V3; no judge-model authorship; and a
   new digest-bound request. Validation and confirmation calls remain
   unauthorized at this stage.
+
+- 2026-08-22 — Corrected the V3 numeric UTF-16 offsets as a zero-call,
+  non-overwriting data-cleaning derivative before considering any fresh run.
+  The raw plan, seal, report, checkpoints, response text, semantic labels,
+  cited sources, quote text, confidence, and provenance remain byte-for-byte
+  unchanged. Every one of the 1,138 quote texts matched exactly once in its
+  model-cited source; deterministic re-anchoring changed 466 numeric offset
+  pairs and left zero unresolved. The programme ledger remains `1510 / 5000`.
+  The audited derivative is preserved beside the raw run under private archive
+  suffix `offset-cleaned-v1-audited`: corrected records SHA-256
+  `793863f15969f6eb65f98d4e65e2dc8468a9961bca0288356af441720f3659f7`,
+  report SHA-256
+  `ebff73869063edad5db50a94efdd9e92ff04af37e18017f8781114b23318ccfc`,
+  and manifest SHA-256
+  `92ca6fe68c18046f45b3e2bf306eae1a22563371fce43c188497847ce5a33439`.
+
+  Scoring that derivative under the original frozen V3 rules improved primary
+  sensitivity to `0.9625`, specificity to `1.0`, exact accuracy and determined
+  coverage to `0.975`, and action accuracy to `0.9667`. V3 nevertheless still
+  fails for reasons not caused by numeric offsets: judgment validity is
+  `0.8889`, register accuracy is `0.9167`, aggregate component accuracy is
+  `0.8688`, mean pairwise recovery agreement is `0.6444`, and Fleiss kappa is
+  `0.4239`; Sonnet's registered per-judge score is `0.4583` because the frozen
+  rule abstains on valid determinate medium-confidence judgments and on records
+  with diagnostic evidence-placement defects. Therefore no rerun follows from
+  the offset defect itself. Any fresh validation must be justified separately
+  by a substantive scoring-rule amendment, not by the cleaned metadata.
