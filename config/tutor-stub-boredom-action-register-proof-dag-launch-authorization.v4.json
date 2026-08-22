@@ -3,7 +3,7 @@
   "approvedBy": "Liam Magee",
   "approvedOn": "2026-08-21",
   "registrationPath": "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
-  "designFingerprint": "f31affe8de390736dc6cf42344c1f51d4d90cb3c916cf2fda03a29d40b62fce5",
+  "designFingerprint": "93ca369aab498f7be4686e87841277b853f7974d3b3f6b16381837ad89fadf1c",
   "modelCallsAuthorized": true,
   "liveRunAuthorized": true,
   "approvalStatement": "Correct it, re-run with my approval, then start again - but this time stop locking approvals to commits.",
@@ -22,7 +22,10 @@
       "to": 2026082700,
       "why": "third live batch 1 produced no outcome; all four dialogues stopped as measurement_indeterminate on the reflection defect, which is now corrected in both the auxiliary cross-check and the outcome scorer, and the failed prefixes are excluded, so the restart draws fresh ones",
       "authority": "Liam Magee, 2026-08-21: enabled to repair and re-run without prior approval until we get through this dialogue batch",
-      "designChanged": false
+      "designChanged": false,
+      "designFingerprintFrom": "f31affe8de390736dc6cf42344c1f51d4d90cb3c916cf2fda03a29d40b62fce5",
+      "designFingerprintTo": "93ca369aab498f7be4686e87841277b853f7974d3b3f6b16381837ad89fadf1c",
+      "fingerprintNote": "the seed base sits inside design, so moving it moves the fingerprint; the registered question, claim boundary, measurement rules, power and safeguards are byte-identical, and the committed registration at seed base 2026082600 still reproduces the earlier fingerprint exactly"
     },
     {
       "on": "2026-08-21",
