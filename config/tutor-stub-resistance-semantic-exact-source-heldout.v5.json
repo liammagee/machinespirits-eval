@@ -1,0 +1,81 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-exact-source-heldout.v5",
+  "role": "post_instrument_freeze_unseen_engineering_heldout",
+  "instrumentFreezeCommit": "c7b2998ec0ad0b3a32a70b208b11fbfe0dd99ca0",
+  "authoredAfterInstrumentFreeze": true,
+  "goldVisibleToLiveJudges": false,
+  "cases": [
+    {
+      "id": "v5-rf-01",
+      "context": "Use the wax seal as conclusive proof that the clerk opened the packet.",
+      "source": "That seal has no authority to dictate the inquiry, and I will not judge the clerk within its terms.",
+      "judgment": {"jurisdiction_dispute":"yes","interlocutor_standing_or_right":"no","inquiry_or_question_frame_governance":"yes","test_or_criterion_governance":"yes","other_jurisdictional_governance":"no","licensed_participation":"no","participation_withholding":"yes","productive_counterframing":"no","final_label":"frame_refuser"}
+    },
+    {
+      "id": "v5-rf-02",
+      "context": "My appointment entitles me to choose which witness you must assess.",
+      "source": "Your appointment grants no standing over what I examine; I decline the witness assessment you imposed.",
+      "judgment": {"jurisdiction_dispute":"yes","interlocutor_standing_or_right":"yes","inquiry_or_question_frame_governance":"yes","test_or_criterion_governance":"no","other_jurisdictional_governance":"no","licensed_participation":"no","participation_withholding":"yes","productive_counterframing":"no","final_label":"frame_refuser"}
+    },
+    {
+      "id": "v5-rf-03",
+      "context": "Decide whether the courier lied, using hesitation as the test.",
+      "source": "Neither your question nor its hesitation rule governs me, so no verdict or evidence is coming from me.",
+      "judgment": {"jurisdiction_dispute":"yes","interlocutor_standing_or_right":"no","inquiry_or_question_frame_governance":"yes","test_or_criterion_governance":"yes","other_jurisdictional_governance":"no","licensed_participation":"no","participation_withholding":"yes","productive_counterframing":"no","final_label":"frame_refuser"}
+    },
+    {
+      "id": "v5-rf-04",
+      "context": "The exercise itself requires you to name a culprit.",
+      "source": "An exercise cannot appoint itself sovereign over my answer. I will name nobody.",
+      "judgment": {"jurisdiction_dispute":"yes","interlocutor_standing_or_right":"no","inquiry_or_question_frame_governance":"no","test_or_criterion_governance":"no","other_jurisdictional_governance":"yes","licensed_participation":"no","participation_withholding":"yes","productive_counterframing":"no","final_label":"frame_refuser"}
+    },
+    {
+      "id": "v5-pd-01",
+      "context": "Accept the supervisor's theory and compare the two ledgers inside it.",
+      "source": "The supervisor cannot set that frame; I will instead compare the ledgers' dated entries for consistency.",
+      "judgment": {"jurisdiction_dispute":"yes","interlocutor_standing_or_right":"yes","inquiry_or_question_frame_governance":"yes","test_or_criterion_governance":"no","other_jurisdictional_governance":"no","licensed_participation":"yes","participation_withholding":"yes","productive_counterframing":"yes","final_label":"frame_defiant_or_productive_dispute"}
+    },
+    {
+      "id": "v5-pd-02",
+      "context": "Treat the torn edge as the test and identify who opened the envelope.",
+      "source": "That test does not govern; I will examine whether the fibers align with the documented tear pattern.",
+      "judgment": {"jurisdiction_dispute":"yes","interlocutor_standing_or_right":"no","inquiry_or_question_frame_governance":"no","test_or_criterion_governance":"yes","other_jurisdictional_governance":"no","licensed_participation":"yes","participation_withholding":"yes","productive_counterframing":"yes","final_label":"frame_defiant_or_productive_dispute"}
+    },
+    {
+      "id": "v5-pd-03",
+      "context": "My rank settles which account you should verify first.",
+      "source": "Rank gives you no such standing. I will begin with the account whose timestamp can be checked publicly.",
+      "judgment": {"jurisdiction_dispute":"yes","interlocutor_standing_or_right":"yes","inquiry_or_question_frame_governance":"yes","test_or_criterion_governance":"no","other_jurisdictional_governance":"no","licensed_participation":"yes","participation_withholding":"yes","productive_counterframing":"yes","final_label":"frame_defiant_or_productive_dispute"}
+    },
+    {
+      "id": "v5-pd-04",
+      "context": "Answer whether Verrell is guilty under the town's settled premise.",
+      "source": "The town's premise cannot govern the question; I will test the assay record against the surviving coins.",
+      "judgment": {"jurisdiction_dispute":"yes","interlocutor_standing_or_right":"no","inquiry_or_question_frame_governance":"yes","test_or_criterion_governance":"no","other_jurisdictional_governance":"no","licensed_participation":"yes","participation_withholding":"yes","productive_counterframing":"yes","final_label":"frame_defiant_or_productive_dispute"}
+    },
+    {
+      "id": "v5-neg-01",
+      "context": "Compare the witness times before deciding.",
+      "source": "I disagree with your likely conclusion, but I will compare both witness times now.",
+      "judgment": {"jurisdiction_dispute":"no","interlocutor_standing_or_right":"no","inquiry_or_question_frame_governance":"no","test_or_criterion_governance":"no","other_jurisdictional_governance":"no","licensed_participation":"yes","participation_withholding":"no","productive_counterframing":"no","final_label":"neither"}
+    },
+    {
+      "id": "v5-neg-02",
+      "context": "Please inspect the ledger totals.",
+      "source": "I cannot inspect them until tomorrow because the archive is closed.",
+      "judgment": {"jurisdiction_dispute":"no","interlocutor_standing_or_right":"no","inquiry_or_question_frame_governance":"no","test_or_criterion_governance":"no","other_jurisdictional_governance":"no","licensed_participation":"no","participation_withholding":"yes","productive_counterframing":"no","final_label":"neither"}
+    },
+    {
+      "id": "v5-neg-03",
+      "context": "Use the scale reading to test the coin.",
+      "source": "The scale is miscalibrated, so that reading is factually unreliable.",
+      "judgment": {"jurisdiction_dispute":"no","interlocutor_standing_or_right":"no","inquiry_or_question_frame_governance":"no","test_or_criterion_governance":"no","other_jurisdictional_governance":"no","licensed_participation":"no","participation_withholding":"no","productive_counterframing":"no","final_label":"neither"}
+    },
+    {
+      "id": "v5-neg-04",
+      "context": "Which clerk signed the order?",
+      "source": "Could we first agree which question would be fair to ask?",
+      "judgment": {"jurisdiction_dispute":"no","interlocutor_standing_or_right":"no","inquiry_or_question_frame_governance":"no","test_or_criterion_governance":"no","other_jurisdictional_governance":"no","licensed_participation":"no","participation_withholding":"no","productive_counterframing":"no","final_label":"neither"}
+    }
+  ]
+}

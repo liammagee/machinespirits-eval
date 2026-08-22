@@ -58,7 +58,7 @@ function finalHorizonPacket(state, learnerText) {
 export function loadTutorStubResistanceConfirmationSemanticInstrument(registration) {
   const binding = registration?.outcomeSemanticAdjudication;
   if (
-    registration?.version !== 9 ||
+    registration?.version < 9 ||
     binding?.instrumentRegistrationPath !== INSTRUMENT_PATH ||
     binding?.instrumentRegistrationSha256 !== sha256File(INSTRUMENT_PATH)
   ) {
@@ -166,7 +166,7 @@ export function createTutorStubResistanceConfirmationSemanticRuntime({
   async function adjudicateFinalHorizon({ state, turnNumber, learnerText, signal = null } = {}) {
     const study = state?.resistanceActionRegisterStudy;
     const caseId = study?.job_id;
-    if (!caseId || study?.dynamic_confirmation !== true || study?.registration?.version !== 9) {
+    if (!caseId || study?.dynamic_confirmation !== true || study?.registration?.version < 9) {
       throw new Error('confirmation semantic outcome requires one registered V9 dialogue');
     }
     const loaded = loadTutorStubResistanceConfirmationSemanticInstrument(study.registration);

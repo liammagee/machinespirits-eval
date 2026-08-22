@@ -11,11 +11,13 @@ import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPrag
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 } from './tutorStubResistanceSemanticAdjudicationV2.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResistanceSemanticAdjudicationV3.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from './tutorStubResistanceSemanticAdjudicationV4.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5 } from './tutorStubResistanceSemanticAdjudicationV5.js';
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5,
   isTutorStubResistanceSemanticObservation,
   loadTutorStubResistanceSemanticRegistration,
   tutorStubResistanceSemanticPublicContext,
@@ -24,7 +26,9 @@ import {
 
 function resistanceSemanticRegistrationBinding(observationSemantics) {
   const registrationPath =
-    observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
+    observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5
+      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
       ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4
       : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
         ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3
@@ -100,6 +104,12 @@ function isV9Registration(registration) {
   );
 }
 
+function isV10Registration(registration) {
+  return (
+    registration?.schema === TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA && registration?.version === 10
+  );
+}
+
 function isConfirmationSuccessorRegistration(registration) {
   return (
     isV4Registration(registration) ||
@@ -107,7 +117,8 @@ function isConfirmationSuccessorRegistration(registration) {
     isV6Registration(registration) ||
     isV7Registration(registration) ||
     isV8Registration(registration) ||
-    isV9Registration(registration)
+    isV9Registration(registration) ||
+    isV10Registration(registration)
   );
 }
 
@@ -258,7 +269,10 @@ function normalizeRegistration(registration) {
     return registration;
   }
   const requiredStandingAuthorizationAttachmentSha256 =
-    isV7Registration(registration) || isV8Registration(registration) || isV9Registration(registration)
+    isV7Registration(registration) ||
+    isV8Registration(registration) ||
+    isV9Registration(registration) ||
+    isV10Registration(registration)
       ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
       : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b';
   if (
@@ -275,15 +289,17 @@ function normalizeRegistration(registration) {
     throw new Error('v2 registration must retain frame_defiant as diagnostic-only');
   }
   const requiredObservationSemantics = isConfirmationSuccessorRegistration(registration)
-    ? isV9Registration(registration)
-      ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
-      : isV8Registration(registration)
-        ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
-        : isV7Registration(registration)
-          ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
-          : isV6Registration(registration)
-            ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6
-            : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
+    ? isV10Registration(registration)
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5
+      : isV9Registration(registration)
+        ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
+        : isV8Registration(registration)
+          ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
+          : isV7Registration(registration)
+            ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
+            : isV6Registration(registration)
+              ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6
+              : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
     : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   if (registration.design?.trigger?.observationSemantics !== requiredObservationSemantics) {
     throw new Error(`prospective registration must use ${requiredObservationSemantics} observation semantics`);
@@ -359,7 +375,8 @@ function normalizeRegistration(registration) {
     }
     return registration;
   }
-  if (isV9Registration(registration)) {
+  if (isV9Registration(registration) || isV10Registration(registration)) {
+    const v10 = isV10Registration(registration);
     const blocks = registration.design?.factors?.confirmationBlock?.blocks;
     const readiness = registration.executionReadiness;
     const triggerSemantic = registration.semanticAdjudication;
@@ -372,7 +389,7 @@ function normalizeRegistration(registration) {
       registration.design?.trigger?.freshDialogueRequired !== true ||
       registration.design?.trigger?.observerFirstEligibility !== true ||
       registration.design?.trigger?.calibrationPrefixesConsumedAsInputs !== false ||
-      registration.design?.randomization?.masterSeed !== 20260826 ||
+      registration.design?.randomization?.masterSeed !== (v10 ? 20260827 : 20260826) ||
       registration.design?.factors?.actionFit?.assignments?.frame_refuser?.matched !== 'test_bounded_distinction' ||
       JSON.stringify(registration.design?.factors?.actionFit?.levels) !== JSON.stringify(['matched']) ||
       JSON.stringify(registration.design?.factors?.realization?.levels) !== JSON.stringify(['plain', 'warm']) ||
@@ -390,14 +407,22 @@ function normalizeRegistration(registration) {
       registration.preservation?.calibration?.reused !== false ||
       registration.preservation?.calibration?.pooled !== false ||
       !Array.isArray(excluded) ||
-      JSON.stringify(excluded.map((row) => row.id)) !== JSON.stringify(['v1', 'v3', 'v4', 'v7']) ||
+      JSON.stringify(excluded.map((row) => row.id)) !==
+        JSON.stringify(v10 ? ['v1', 'v3', 'v4', 'v7', 'v9'] : ['v1', 'v3', 'v4', 'v7']) ||
       excluded.some((row) => row.reused !== false || row.pooled !== false || row.outcomeSelected !== false) ||
       registration.preservation?.measurementValidationCasesReusedOrPooled !== false ||
       triggerSemantic?.instrumentRegistrationPath !==
-        'config/tutor-stub-resistance-semantic-adjudication-registration.v4.json' ||
+        (v10
+          ? 'config/tutor-stub-resistance-semantic-adjudication-registration.v5.json'
+          : 'config/tutor-stub-resistance-semantic-adjudication-registration.v4.json') ||
       triggerSemantic?.instrumentRegistrationSha256 !==
-        'ced640b19fbecfd447c2fbd36cace29765e3cc6b7673a4b13932ec7d8790e135' ||
-      triggerSemantic?.validationReportSha256 !== 'ab9799d1d82f06e60398b505f1cccb6c0c593a781c8e8c0a59da4c2338023570' ||
+        (v10
+          ? registration.v10Bindings?.semanticInstrumentSha256
+          : 'ced640b19fbecfd447c2fbd36cace29765e3cc6b7673a4b13932ec7d8790e135') ||
+      triggerSemantic?.validationReportSha256 !==
+        (v10
+          ? registration.v10Bindings?.zeroCallValidationReportSha256
+          : 'ab9799d1d82f06e60398b505f1cccb6c0c593a781c8e8c0a59da4c2338023570') ||
       triggerSemantic?.validationStatus !== 'passed' ||
       triggerSemantic?.judgesPerCandidate !== 3 ||
       triggerSemantic?.lexicalAndGeneratorSignals !== 'advisory_only_never_vote_tiebreak_veto_or_override' ||
@@ -442,19 +467,22 @@ function normalizeRegistration(registration) {
       readiness?.combinedDialogues !== 36 ||
       readiness?.combinedPlannedRoleCalls !== 1476 ||
       readiness?.combinedMaximumModelAttemptReservations !== 4428 ||
-      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== 8182 ||
+      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== (v10 ? 8387 : 8182) ||
       readiness?.programmeLedgerAfterMaximum?.ceiling !== 10000 ||
-      readiness?.programmeLedgerAfterMaximum?.remaining !== 1818 ||
+      readiness?.programmeLedgerAfterMaximum?.remaining !== (v10 ? 1613 : 1818) ||
       JSON.stringify(readiness?.responseFreeRetryDelaysMs) !== JSON.stringify([15000, 45000]) ||
       readiness?.validUnitReruns !== false ||
       readiness?.measurementIndeterminateReruns !== false ||
       readiness?.outcomeSelection !== false ||
-      registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !== 3754 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !== (v10 ? 3959 : 3754) ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !== 10000 ||
-      registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== 6246 ||
-      registration.authorization?.launchRequiresFreshDigestBoundGoRequest !== true
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== (v10 ? 6041 : 6246) ||
+      registration.authorization?.launchRequiresFreshDigestBoundGoRequest !== (v10 ? false : true) ||
+      (v10 &&
+        registration.authorization?.launchPolicy !==
+          'merged_design_clean_detached_commit_signed_go_note')
     ) {
-      throw new Error('v9 semantic confirmation design, validation evidence, exclusions, or budget arithmetic drifted');
+      throw new Error('v9/v10 semantic confirmation design, validation evidence, exclusions, or budget arithmetic drifted');
     }
     if (
       readiness.batches.some(
@@ -466,7 +494,7 @@ function normalizeRegistration(registration) {
           batch.destination !== null,
       )
     ) {
-      throw new Error('v9 semantic confirmation must retain nine fresh balanced batches capped at 492 each');
+      throw new Error('v9/v10 semantic confirmation must retain nine fresh balanced batches capped at 492 each');
     }
     return registration;
   }
@@ -929,11 +957,37 @@ function normalizeRegistration(registration) {
 export function loadTutorStubResistanceActionRegisterRegistration(filePath) {
   const absolute = path.resolve(filePath);
   const source = fs.readFileSync(absolute, 'utf8');
+  const raw = JSON.parse(source);
+  let resolved = raw;
+  if (raw?.version === 10 && raw?.baseRegistrationPath) {
+    const basePath = path.resolve(path.dirname(absolute), path.basename(raw.baseRegistrationPath));
+    const baseSource = fs.readFileSync(basePath, 'utf8');
+    if (sha256(baseSource) !== raw.baseRegistrationSha256) {
+      throw new Error('v10 base registration digest drifted');
+    }
+    const deepMerge = (base, override) => {
+      if (Array.isArray(override) || !override || typeof override !== 'object') return structuredClone(override);
+      const output = structuredClone(base || {});
+      for (const [key, value] of Object.entries(override)) {
+        output[key] =
+          value && typeof value === 'object' && !Array.isArray(value)
+            ? deepMerge(output[key], value)
+            : structuredClone(value);
+      }
+      return output;
+    };
+    resolved = deepMerge(JSON.parse(baseSource), raw.overrides || {});
+    resolved.version = 10;
+    resolved.baseRegistrationPath = raw.baseRegistrationPath;
+    resolved.baseRegistrationSha256 = raw.baseRegistrationSha256;
+    resolved.designSummary = raw.designSummary;
+    resolved.v10Bindings = raw.v10Bindings;
+  }
   return {
     path: absolute,
     source,
     sha256: sha256(source),
-    registration: normalizeRegistration(JSON.parse(source)),
+    registration: normalizeRegistration(resolved),
   };
 }
 

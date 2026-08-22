@@ -1,4 +1,24 @@
+import fs from 'node:fs';
+
 import { dispatchTutorStubCliBridgeRequest } from './tutorStubCliRequest.js';
+
+function loadFrozenModelCallReplay() {
+  const replayPath = String(process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH || '').trim();
+  if (!replayPath) return null;
+  const replay = JSON.parse(fs.readFileSync(replayPath, 'utf8'));
+  if (
+    replay?.schema !== 'machinespirits.tutor-stub.frozen-model-call-prefix-replay.v1' ||
+    !Array.isArray(replay.entries) ||
+    replay.entries.length === 0
+  ) {
+    throw new Error('frozen model-call replay file is invalid');
+  }
+  return { path: replayPath, entries: replay.entries, index: 0 };
+}
+
+function sameJson(left, right) {
+  return JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+}
 
 export function createTutorStubPromptTransport(dependencies) {
   const {
@@ -26,6 +46,7 @@ export function createTutorStubPromptTransport(dependencies) {
     waitTutorStubCliPolicyRetryDelay,
     write,
   } = dependencies;
+  const frozenReplay = loadFrozenModelCallReplay();
 
   async function callPromptModel({
     prompt: promptInput,
@@ -170,6 +191,52 @@ export function createTutorStubPromptTransport(dependencies) {
       throw new Error(
         `Prompt audit failed for ${role}: ${promptAudit.violations.map((violation) => violation.code).join(', ')}`,
       );
+    }
+    if (frozenReplay && frozenReplay.index < frozenReplay.entries.length) {
+      const entry = frozenReplay.entries[frozenReplay.index];
+      const expectedRequest = entry.request || {};
+      const matches =
+        entry.role === role &&
+        entry.turn === turn &&
+        entry.provider === resolved.provider &&
+        entry.model === resolved.model &&
+        expectedRequest.maxTokens === maxTokens &&
+        (expectedRequest.cliEffort ?? null) === (cliEffort ?? null) &&
+        sameJson(expectedRequest.systemPrompt, systemPrompt) &&
+        sameJson(expectedRequest.prompt, prompt) &&
+        sameJson(expectedRequest.messageHistory || [], publicMessageHistory) &&
+        sameJson(expectedRequest.outputSchema, semanticResistanceJudge ? outputSchema : undefined);
+      if (!matches) {
+        throw new Error(
+          `frozen model-call replay drift at entry ${frozenReplay.index + 1}: expected ${entry.role} turn ${entry.turn}, received ${role} turn ${turn}`,
+        );
+      }
+      frozenReplay.index += 1;
+      const response = {
+        ...entry.response,
+        provider: entry.provider,
+        model: entry.model,
+        reasoningEffort: entry.response?.effort || null,
+        promptSnapshot: {
+          systemPrompt,
+          userPrompt: prompt,
+          messageHistory: publicMessageHistory,
+          role,
+          promptAudit,
+        },
+        promptAudit,
+      };
+      appendTraceEvent(trace, {
+        type: 'model_call_replayed_from_frozen_prefix',
+        role,
+        turn,
+        replayPath: frozenReplay.path,
+        replayEntry: frozenReplay.index,
+        provider: entry.provider,
+        model: entry.model,
+        publicTranscriptChanged: false,
+      });
+      return response;
     }
     reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });
     reserveTutorStubMeteredModelCall({ trace, role, turn });
