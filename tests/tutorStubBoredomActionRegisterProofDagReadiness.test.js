@@ -13,7 +13,8 @@ import {
   exactBlockedScorePower,
   exactMcNemarPower,
   loadTutorStubBoredomProofDagRegistration,
-  objectiveProofProgressByTwoTurns,
+  boredomProofProgressNames,
+  objectiveProofProgress,
   runTutorStubBoredomProofDagEndpointPreflight,
   validateTutorStubBoredomProofDagRegistration,
 } from '../services/tutorStubBoredomActionRegisterProofDagPreflight.js';
@@ -207,17 +208,21 @@ test('objective composite, recovery Boolean, and exact randomized plan fail clos
   const registration = loadTutorStubBoredomProofDagRegistration({ root: ROOT });
   const contract = readJson(CONTRACT_PATH);
   const cases = buildTutorStubBoredomProofDagSyntheticCases(registration);
-  assert.equal(objectiveProofProgressByTwoTurns(cases[0].outcome), cases[0].outcome.proof_progress_by_two_turns);
+  // The field and the endpoint carry the registered window in their names, so
+  // the test reads them the same way the code writes them.
+  const progress = boredomProofProgressNames(registration);
+  assert.equal(progress.field, 'proof_progress_by_two_turns');
+  assert.equal(progress.endpoint, 'objective_proof_progress_by_two_turns');
+  assert.equal(objectiveProofProgress(cases[0].outcome), cases[0].outcome[progress.field]);
 
   const contradictory = structuredClone(cases);
-  contradictory[0].outcome.proof_progress_by_two_turns = true;
+  contradictory[0].outcome[progress.field] = true;
   contradictory[0].outcome.new_supported_public_premises = 0;
   contradictory[0].outcome.best_path_coverage_delta = 0;
   contradictory[0].outcome.proof_debt_delta = 0;
   contradictory[0].outcome.unsupported_public_claims = 99;
   assert.equal(
-    assembleTutorStubBoredomProofDagPreflight({ cases: contradictory, contract }).endpoint_status
-      .objective_proof_progress_by_two_turns,
+    assembleTutorStubBoredomProofDagPreflight({ cases: contradictory, contract }).endpoint_status[progress.endpoint],
     'incomplete',
   );
 

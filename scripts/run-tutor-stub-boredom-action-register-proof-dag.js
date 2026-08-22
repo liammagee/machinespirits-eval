@@ -16,9 +16,6 @@ import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtif
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.json';
-const PER_DIALOGUE_CAP = 60;
-const PER_BATCH_CAP = 240;
-const BATCH_SIZE = 4;
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -288,7 +285,45 @@ function classifyFailedChild(trace, signal) {
   }
 }
 
-function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE_CAP }) {
+// The caps used to be three numbers at the top of this file: 60 attempts a
+// dialogue, 240 a batch, 4 dialogues a batch. Each was also written in the
+// registration, and the two copies were never compared. That is the same fault
+// that gave v4 a turn window its worlds could not reach, so read them from the
+// registration. Every version from v1 carries all three, so v1 to v4 come out
+// exactly as before.
+function registrationCaps(loaded) {
+  const execution = loaded?.registration?.executionReadiness || {};
+  const dialogue = execution.dialogue || {};
+  const batches = execution.batches || {};
+  const design = loaded?.registration?.design || {};
+  const version = Number(loaded?.registration?.version) || 0;
+  return {
+    batchSize: batches.dialoguesPerBatch,
+    perDialogue: dialogue.maximumReservationsPerDialogue,
+    perBatch: batches.maximumReservationsPerBatch,
+    study: dialogue.maximumReservations,
+    programme: execution.programmeCeiling?.programmeSafeguard ?? (version >= 3 ? 5000 : 4539),
+    // The dialogue has to run long enough to hold every turn the tutor may act
+    // on, then every learner turn the endpoint watches.
+    turns: design.freshPrefixGeneration?.maximumTriggerTurn + design.treatment?.postTriggerLearnerTurns,
+  };
+}
+
+// Once a batch plan exists it carries the same caps, frozen at plan time. Later
+// checks read them from there, so a plan written yesterday is audited against
+// its own numbers and not against whatever the registration says today.
+function planCaps(plan) {
+  const budget = plan?.budget || {};
+  return {
+    batchSize: budget.dialogues,
+    perDialogue: budget.maximum_model_attempt_reservations_per_dialogue,
+    perBatch: budget.maximum_model_attempt_reservations,
+  };
+}
+
+function childCommand({ loaded, job, destination, modelCallBudget = null }) {
+  const caps = registrationCaps(loaded);
+  const budget = modelCallBudget ?? caps.perDialogue;
   const jobRoot = path.join(destination, 'jobs', job.id);
   const traceDir = path.join(jobRoot, 'traces');
   const transcript = path.join(jobRoot, 'transcript.json');
@@ -301,7 +336,7 @@ function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE
       '--acknowledge-research-use',
       ...requiredTutorStubArtifactArchiveArgs(),
       '--model-call-budget',
-      String(modelCallBudget),
+      String(budget),
       '--all-models',
       'codex.gpt-5.6-luna',
       '--model',
@@ -324,7 +359,7 @@ function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE
       '--auto-learner-profile',
       'bored',
       '--auto-turns',
-      '4',
+      String(caps.turns),
       '--no-auto-stop-on-grounded',
       '--no-memory-summary',
       '--no-turn-feedback',
@@ -433,7 +468,7 @@ export function buildTutorStubBoredomProofDagRecoveryJob({
   priorModelAttemptReservations,
 } = {}) {
   const prior = Number(priorModelAttemptReservations);
-  const remaining = PER_DIALOGUE_CAP - prior;
+  const remaining = registrationCaps(loaded).perDialogue - prior;
   if (!loaded?.registration || !job?.id || !Number.isInteger(prior) || prior < 0 || remaining <= 0) {
     throw new Error('boredom proof-DAG recovery requires one registered missing or failed unit with unused room');
   }
@@ -454,9 +489,10 @@ export function buildTutorStubBoredomProofDagBatchPlan({
     throw new Error('boredom proof-DAG batch must be execution_batch_1..execution_batch_9');
   }
   const { loaded, plan } = registeredPlan(registrationPath);
+  const caps = registrationCaps(loaded);
   const jobs = plan.jobs.filter((job) => job.batch_id === batchId);
   if (
-    jobs.length !== BATCH_SIZE ||
+    jobs.length !== caps.batchSize ||
     jobs.filter((job) => job.realization === 'plain').length !== 2 ||
     jobs.filter((job) => job.realization === 'warm').length !== 2
   ) {
@@ -483,11 +519,11 @@ export function buildTutorStubBoredomProofDagBatchPlan({
       assignment_manifest_sha256: plan.assignment_manifest_sha256,
     },
     budget: {
-      dialogues: BATCH_SIZE,
-      maximum_model_attempt_reservations_per_dialogue: PER_DIALOGUE_CAP,
-      maximum_model_attempt_reservations: PER_BATCH_CAP,
-      study_maximum_model_attempt_reservations: 2160,
-      programme_ceiling: loaded.registration.version >= 3 ? 5000 : 4539,
+      dialogues: caps.batchSize,
+      maximum_model_attempt_reservations_per_dialogue: caps.perDialogue,
+      maximum_model_attempt_reservations: caps.perBatch,
+      study_maximum_model_attempt_reservations: caps.study,
+      programme_ceiling: caps.programme,
       enlarges_ceiling: false,
     },
     destination: path.relative(ROOT, absoluteDestination),
@@ -609,13 +645,24 @@ export function selectTutorStubBoredomProofDagRecoveryCandidates({ plan, initial
   return { valid, missing };
 }
 
-export function assertTutorStubBoredomProofDagRecoveryBudget({ missing, initialReservations, usedBefore } = {}) {
-  if (!Array.isArray(missing) || !initialReservations || !Number.isInteger(usedBefore) || usedBefore < 0) {
-    throw new Error('boredom proof-DAG recovery budget audit requires candidates and observed reservations');
+// The caps come from the batch plan being audited, not from this file and not
+// from today's registration. A recovery is judged against the numbers its own
+// batch was planned under.
+export function assertTutorStubBoredomProofDagRecoveryBudget({ missing, initialReservations, usedBefore, plan } = {}) {
+  const caps = planCaps(plan);
+  if (
+    !Array.isArray(missing) ||
+    !initialReservations ||
+    !Number.isInteger(usedBefore) ||
+    usedBefore < 0 ||
+    !Number.isInteger(caps.perBatch) ||
+    !Number.isInteger(caps.perDialogue)
+  ) {
+    throw new Error('boredom proof-DAG recovery budget audit requires candidates, observed reservations, and a plan');
   }
   if (
-    usedBefore >= PER_BATCH_CAP ||
-    missing.some((job) => Number(initialReservations[job.id] || 0) >= PER_DIALOGUE_CAP)
+    usedBefore >= caps.perBatch ||
+    missing.some((job) => Number(initialReservations[job.id] || 0) >= caps.perDialogue)
   ) {
     throw new Error('boredom proof-DAG recovery has no room under the unchanged caps');
   }
@@ -623,6 +670,7 @@ export function assertTutorStubBoredomProofDagRecoveryBudget({ missing, initialR
 }
 
 function sealBatch(destination, plan, result, recovery = {}) {
+  const caps = planCaps(plan);
   const seal = {
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-seal.v1',
     status: 'sealed_complete',
@@ -630,8 +678,8 @@ function sealBatch(destination, plan, result, recovery = {}) {
     plan_sha256: sha256(fs.readFileSync(path.join(destination, 'batch-plan.json'))),
     result_sha256: sha256(fs.readFileSync(path.join(destination, recovery.resultFile || 'batch-result.json'))),
     ...recovery.hashes,
-    dialogues: BATCH_SIZE,
-    hard_ceiling: PER_BATCH_CAP,
+    dialogues: caps.batchSize,
+    hard_ceiling: caps.perBatch,
     valid_unit_reruns: false,
     outcome_selection: false,
   };
@@ -676,7 +724,8 @@ export function sealTutorStubBoredomProofDagBatchWithRegisteredStops({ destinati
   if (!stopped.every((row) => isRegisteredIndeterminateStop(row.failure))) {
     throw new Error('boredom proof-DAG registered-stop seal refuses a batch with a non-registered failure');
   }
-  if (result.results.length !== BATCH_SIZE) {
+  const caps = planCaps(plan);
+  if (result.results.length !== caps.batchSize) {
     throw new Error('boredom proof-DAG registered-stop seal requires the full planned unit list');
   }
   const seal = {
@@ -685,10 +734,10 @@ export function sealTutorStubBoredomProofDagBatchWithRegisteredStops({ destinati
     batch_id: plan.batch_id,
     plan_sha256: sha256(fs.readFileSync(planPath)),
     result_sha256: sha256(fs.readFileSync(path.join(absolute, resultFile))),
-    dialogues: BATCH_SIZE,
+    dialogues: caps.batchSize,
     completed_dialogues: result.results.length - stopped.length,
     registered_indeterminate_stops: stopped.map((row) => row.job_id).sort(),
-    hard_ceiling: PER_BATCH_CAP,
+    hard_ceiling: caps.perBatch,
     valid_unit_reruns: false,
     outcome_selection: false,
   };
@@ -720,16 +769,17 @@ export async function runTutorStubBoredomProofDagBatch({
   fs.mkdirSync(absoluteDestination, { recursive: false });
   fs.mkdirSync(path.join(absoluteDestination, 'jobs'), { recursive: false });
   writeJson(path.join(absoluteDestination, 'batch-plan.json'), plan);
+  const caps = planCaps(plan);
   const results = await runPool(plan.jobs, Number(parallelism), runChild);
   results.sort((left, right) => left.job_id.localeCompare(right.job_id));
   const completed = results.filter((row) => row.status === 'complete').length;
   const result = {
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-result.v1',
     batch_id: batchId,
-    status: completed === BATCH_SIZE ? 'complete' : 'incomplete',
+    status: completed === caps.batchSize ? 'complete' : 'incomplete',
     completed_dialogues: completed,
-    failed_or_missing_dialogues: BATCH_SIZE - completed,
-    maximum_model_attempt_reservations: PER_BATCH_CAP,
+    failed_or_missing_dialogues: caps.batchSize - completed,
+    maximum_model_attempt_reservations: caps.perBatch,
     results,
   };
   writeJson(path.join(absoluteDestination, 'batch-result.json'), result);
@@ -756,6 +806,7 @@ export async function recoverTutorStubBoredomProofDagBatch({
   }
   const plan = readJson(planPath);
   const initial = readJson(resultPath);
+  const caps = planCaps(plan);
   const { loaded, plan: registered } = registeredPlan(plan.source?.registration_path);
   const currentSource = sourceSnapshot(
     expectedSourceCommit,
@@ -767,7 +818,7 @@ export async function recoverTutorStubBoredomProofDagBatch({
     plan.source?.commit !== currentSource.commit ||
     plan.source?.tree !== currentSource.tree ||
     initial.status !== 'incomplete' ||
-    plan.budget?.maximum_model_attempt_reservations !== PER_BATCH_CAP
+    plan.budget?.maximum_model_attempt_reservations !== registrationCaps(loaded).perBatch
   ) {
     throw new Error('boredom proof-DAG recovery source, status, or ceiling drifted');
   }
@@ -777,7 +828,7 @@ export async function recoverTutorStubBoredomProofDagBatch({
     plan.jobs.map((job) => [job.id, reservationCountInDirectory(job.command.trace_dir)]),
   );
   const usedBefore = Object.values(initialReservations).reduce((sum, value) => sum + value, 0);
-  assertTutorStubBoredomProofDagRecoveryBudget({ missing, initialReservations, usedBefore });
+  assertTutorStubBoredomProofDagRecoveryBudget({ missing, initialReservations, usedBefore, plan });
   if (loaded.sha256 !== plan.source.registration_sha256) throw new Error('boredom proof-DAG registration drifted');
   assertTutorStubBoredomProofDagLaunchAuthorization({ loaded });
   const registeredById = new Map(registered.jobs.map((job) => [job.id, job]));
@@ -803,7 +854,7 @@ export async function recoverTutorStubBoredomProofDagBatch({
     original_plan_sha256: sha256(fs.readFileSync(planPath)),
     original_result_sha256: sha256(fs.readFileSync(resultPath)),
     used_reservations_before_recovery: usedBefore,
-    hard_ceiling: PER_BATCH_CAP,
+    hard_ceiling: caps.perBatch,
     valid_unit_ids_excluded: [...valid.keys()].sort(),
     jobs: recoveryJobs,
   };
@@ -835,7 +886,7 @@ export async function recoverTutorStubBoredomProofDagBatch({
     }),
   );
   const totalReservations = Object.values(totals).reduce((sum, value) => sum + value, 0);
-  if (totalReservations > PER_BATCH_CAP || Object.values(totals).some((value) => value > PER_DIALOGUE_CAP)) {
+  if (totalReservations > caps.perBatch || Object.values(totals).some((value) => value > caps.perDialogue)) {
     throw new Error('boredom proof-DAG recovery exceeded an unchanged cap');
   }
   const finalResultPath = path.join(absoluteDestination, 'batch-final-result.json');
@@ -843,9 +894,9 @@ export async function recoverTutorStubBoredomProofDagBatch({
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-result.v1',
     batch_id: plan.batch_id,
     status: 'complete',
-    completed_dialogues: BATCH_SIZE,
+    completed_dialogues: caps.batchSize,
     failed_or_missing_dialogues: 0,
-    maximum_model_attempt_reservations: PER_BATCH_CAP,
+    maximum_model_attempt_reservations: caps.perBatch,
     observed_model_attempt_reservations: totalReservations,
     observed_model_attempt_reservations_by_job: totals,
     technical_recovery_used: true,

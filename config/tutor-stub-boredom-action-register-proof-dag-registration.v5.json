@@ -134,6 +134,8 @@
       "assignment": "predeclared_seeded_sha256_rank_blocked_by_world_before_generation_hidden_until_action_selection",
       "algorithm": "sha256_rank_within_world",
       "assignmentSeed": 20260901,
+      "assignmentManifestSha256": "485f7442d2844dad9026c54ea47ed3214f5cf1e4c36bf372a2fb52dfb6304b28",
+      "assignmentManifestNote": "36 rows, 18 plain and 18 warm, 3 and 3 in each of the six worlds. Computed from the seed and the world list before any dialogue exists, and pinned here so the assignment cannot follow a later edit.",
       "tieBreak": "dialogue_index_ascending",
       "assignmentHiddenUntilAfterActionSelection": true,
       "plainDialogues": 18,
@@ -204,6 +206,16 @@
       "empiricalValidationCarriedForward": true,
       "revalidationRequired": false,
       "revalidationRequiredReason": "the adjudicator's bytes moved once since the sealed corpus was spent, and that move is argued and tested below under instrumentProvenance. No byte moves between v4 and v5. If any byte moves from here, this field becomes true and a fresh sealed corpus is required, because the v4 corpus is spent.",
+      "carriedForwardHeldoutCorpus": {
+        "path": "config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json",
+        "sha256": "5f65dd5dc3e193c9dc0368b4155a550bc9b5acd56de78e62704e35f750f50aa0",
+        "cases": 55,
+        "embeddedInPrompt": false,
+        "modelPredictionsPresent": false,
+        "spentForValidation": true,
+        "whatCarryingItForwardMeans": "v5 replays these 55 cases through the parser with no model call, which shows the instrument still reads them the way it did. That is a check on the code, not a new measurement. No fresh claim about the instrument's accuracy is earned from this corpus, because it is spent.",
+        "ifAFreshClaimIsEverNeeded": "a new sealed corpus has to be written and held out. This one cannot serve twice."
+      },
 
       "instrumentProvenance": {
         "whyThisSectionExists": "The bytes that the sealed 55-case corpus measured are not the bytes v5 will run. A reader must be able to see that difference and judge the argument, rather than take a carried-forward validation on trust.",
@@ -377,9 +389,9 @@
     "boundedTechnicalRecovery": "missing_or_failed_units_only_within_unchanged_per_unit_batch_study_and_programme_caps",
     "validUnitReruns": false,
     "outcomeSelection": false,
-    "liveExecutorAvailable": false,
-    "combinedAnalyzerAvailable": false,
-    "requestValidatorAvailable": false
+    "liveExecutorAvailable": true,
+    "combinedAnalyzerAvailable": true,
+    "requestValidatorAvailable": true
   },
 
   "authorization": {

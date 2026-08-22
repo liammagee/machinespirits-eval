@@ -528,7 +528,7 @@ test('boredom proof-DAG launch verifies the resolved production learner profile 
         appendTraceEvent() {},
         observationSemantics: 'prospective_v8',
       }),
-    /launch pins or remaining 60-attempt ceiling drifted/u,
+    /launch pins, 4-turn window, or remaining 60-attempt ceiling drifted/u,
   );
 });
 
@@ -552,7 +552,16 @@ test('boredom proof-DAG recovery selects only absent or trace-proven technical u
   writeTrace('valid', [terminal]);
   writeTrace('failed', [transportFailure]);
   writeTrace('partial-technical', [transportFailure]);
-  const plan = { jobs: [job('valid'), job('failed'), job('partial-technical'), job('missing')] };
+  // The caps travel with the plan, so the audit reads the numbers this batch was
+  // planned under. These are the v2 numbers, which is what this batch is.
+  const plan = {
+    jobs: [job('valid'), job('failed'), job('partial-technical'), job('missing')],
+    budget: {
+      dialogues: 4,
+      maximum_model_attempt_reservations_per_dialogue: 60,
+      maximum_model_attempt_reservations: 240,
+    },
+  };
   const initial = {
     results: [
       { job_id: 'valid', status: 'complete' },
@@ -626,6 +635,7 @@ test('boredom proof-DAG recovery selects only absent or trace-proven technical u
       missing: [{ id: 'missing' }],
       initialReservations: { valid: 60, missing: 0 },
       usedBefore: 60,
+      plan,
     }),
     true,
   );
@@ -635,8 +645,21 @@ test('boredom proof-DAG recovery selects only absent or trace-proven technical u
         missing: [{ id: 'missing' }],
         initialReservations: { valid: 0, missing: 60 },
         usedBefore: 60,
+        plan,
       }),
     /no room under the unchanged caps/u,
+  );
+  // A plan with no caps cannot be audited. It must not fall back to a number in
+  // this file, because that number is what v4 got wrong.
+  assert.throws(
+    () =>
+      assertTutorStubBoredomProofDagRecoveryBudget({
+        missing: [{ id: 'missing' }],
+        initialReservations: { valid: 60, missing: 0 },
+        usedBefore: 60,
+        plan: { jobs: plan.jobs },
+      }),
+    /requires candidates, observed reservations, and a plan/u,
   );
 });
 

@@ -436,12 +436,21 @@ export function configureTutorStubBoredomProofDagFromCli({
   const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.resolve(root, registrationPath) });
   const job = resolveTutorStubBoredomProofDagJob({ loaded, jobId });
   const budget = Number(args['model-call-budget']);
+  // A dialogue has to be long enough to hold the whole registered window: every
+  // turn on which the tutor may act, then every learner turn the endpoint
+  // watches. This used to read 4, and the per-dialogue ceiling used to read 60.
+  // Both were v4's numbers, written here and also in the registration, and never
+  // compared. v4 still comes out as 4 and 60, because 2 plus 2 is 4.
+  const expectedAutoTurns =
+    loaded.registration.design.freshPrefixGeneration.maximumTriggerTurn +
+    loaded.registration.design.treatment.postTriggerLearnerTurns;
+  const perDialogueCeiling = loaded.registration.executionReadiness.dialogue.maximumReservationsPerDialogue;
   if (
     !autoLearnerEnabled ||
-    Number(autoTurns) !== 4 ||
+    Number(autoTurns) !== expectedAutoTurns ||
     !Number.isInteger(budget) ||
     budget < 1 ||
-    budget > 60 ||
+    budget > perDialogueCeiling ||
     args.model !== 'codex.gpt-5.6-luna' ||
     args['classifier-model'] !== 'codex.gpt-5.6-luna' ||
     args['learner-record-model'] !== 'codex.gpt-5.6-luna' ||
@@ -459,7 +468,9 @@ export function configureTutorStubBoredomProofDagFromCli({
     args['register-palette'] !== 'plain,warm' ||
     observationSemantics !== loaded.registration.design.observationSemantics
   ) {
-    throw new Error('boredom proof-DAG launch pins or remaining 60-attempt ceiling drifted');
+    throw new Error(
+      `boredom proof-DAG launch pins, ${expectedAutoTurns}-turn window, or remaining ${perDialogueCeiling}-attempt ceiling drifted`,
+    );
   }
   configureTutorStubBoredomProofDagExecution({ state, loaded, jobId, appendTraceEvent });
   return { loaded, job };

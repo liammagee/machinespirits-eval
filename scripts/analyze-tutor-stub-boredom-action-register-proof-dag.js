@@ -6,11 +6,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  boredomProofProgressNames,
   exactBlockedScorePValue,
-  objectiveProofProgressByTwoTurns,
+  objectiveProofProgress,
 } from '../services/tutorStubBoredomActionRegisterProofDagPreflight.js';
 import {
   TUTOR_STUB_BOREDOM_PROOF_DAG_EXECUTION_START,
+  TUTOR_STUB_BOREDOM_UNREADABLE_TURN_PASS_OVER_DISPOSITION,
   loadTutorStubBoredomProofDagStudy,
 } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
 import { createTutorStubResistanceAxisShadow } from '../services/tutorStubActionBeforeRegisterShadow.js';
@@ -597,6 +599,22 @@ function analyzeTrace(batch, resultRow, loaded) {
         passedOverUnderRegisteredProtection(turn),
     )
     .map((turn) => ({ turn, reasons: preTriggerEligibility.get(turn).reasons }));
+  // v5 registers that a pre-treatment turn the adjudicator cannot read is passed
+  // over, and the next turn is read. Earlier registrations do not carry the
+  // field, so replaying a v4 plan keeps the original rule, where any
+  // indeterminate turn ends the unit. A passed-over turn is never scored and can
+  // never carry the trigger; it is only counted, so a reader can see how often
+  // the instrument could not read a turn.
+  const unreadableIsPassedOver =
+    loaded.registration.design.freshPrefixGeneration?.unreadableTurnDisposition ===
+    TUTOR_STUB_BOREDOM_UNREADABLE_TURN_PASS_OVER_DISPOSITION;
+  const unreadablePassOver = (turn, adjudication) =>
+    unreadableIsPassedOver &&
+    turn < triggerTurn &&
+    adjudication?.measurement_disposition === 'measurement_indeterminate';
+  const unreadablePassOvers = semanticEvents
+    .filter((event) => unreadablePassOver(Number(event.turn), event.adjudication))
+    .map((event) => Number(event.turn));
   const exactSemanticSequence =
     !semanticMode ||
     (semanticEvents.length === triggerTurn &&
@@ -604,6 +622,15 @@ function analyzeTrace(batch, resultRow, loaded) {
         const turn = index + 1;
         const completedTurn = completed.find((candidate) => Number(candidate.turn) === turn)?.turnRecord;
         const adjudication = event.adjudication;
+        if (unreadablePassOver(turn, adjudication)) {
+          // The turn was not read. Only its identity and its route are checked,
+          // because there is no reading to check.
+          return (
+            Number(event.turn) === turn &&
+            adjudication?.candidate_sha256 === sha256(String(completedTurn?.learner || '')) &&
+            adjudication?.independent_route?.required_model_ref === 'codex.gpt-5.6-sol'
+          );
+        }
         return (
           Number(event.turn) === turn &&
           adjudication?.candidate_sha256 === sha256(String(completedTurn?.learner || '')) &&
@@ -735,7 +762,9 @@ function analyzeTrace(batch, resultRow, loaded) {
     proof_debt_delta: finalDebt - initialDebt,
     unsupported_public_claims: finalUnsupported,
   };
-  objectiveOutcome.proof_progress_by_two_turns = objectiveProofProgressByTwoTurns(objectiveOutcome);
+  // The field name carries the registered outcome window, so it is derived from
+  // the registration the batches were planned under, never written here.
+  objectiveOutcome[boredomProofProgressNames(loaded.registration).field] = objectiveProofProgress(objectiveOutcome);
   // A zero on the objective endpoint has two causes that read the same in the
   // count. Either the learner could have taken a premise on the path to the
   // answer and did not, or the world had not handed out any such premise before
@@ -783,6 +812,7 @@ function analyzeTrace(batch, resultRow, loaded) {
       profile: 'bored',
       profile_identity_used: false,
       protected_pass_overs: protectedPassOvers,
+      unreadable_pass_overs: unreadablePassOvers,
     },
     ...(semanticMode
       ? {
@@ -970,13 +1000,20 @@ export function analyzeTutorStubBoredomProofDag({
       [...batch.reservationsByJob.values()].reduce((sum, value) => sum + value, 0),
     ]),
   );
-  if (Object.values(reservationsByBatch).some((value) => value > 240)) {
-    throw new Error('boredom proof-DAG analysis refuses a batch above 240 reservations');
+  // The caps come from the registration the batches were planned under, so a
+  // longer study is not judged against a shorter study's numbers.
+  const perBatchCeiling = loaded.registration.executionReadiness.batches.maximumReservationsPerBatch;
+  const studyCeiling = loaded.registration.executionReadiness.dialogue.maximumReservations;
+  if (Object.values(reservationsByBatch).some((value) => value > perBatchCeiling)) {
+    throw new Error(`boredom proof-DAG analysis refuses a batch above ${perBatchCeiling} reservations`);
   }
   const totalReservations = Object.values(reservationsByBatch).reduce((sum, value) => sum + value, 0);
-  if (totalReservations > 2160) throw new Error('boredom proof-DAG analysis refuses a run above 2160 reservations');
+  if (totalReservations > studyCeiling) {
+    throw new Error(`boredom proof-DAG analysis refuses a run above ${studyCeiling} reservations`);
+  }
+  const progressNames = boredomProofProgressNames(loaded.registration);
   const primary = blockedAnalysis(rows, 'recovered');
-  const keySecondary = blockedAnalysis(rows, 'proof_progress_by_two_turns');
+  const keySecondary = blockedAnalysis(rows, progressNames.field);
   const primaryRejects = primary.p_value <= 0.05;
   const keySecondaryRejects = primaryRejects && keySecondary.p_value <= 0.05;
   // Over the dialogues that produced an outcome, not over the 36 planned. A
@@ -1052,7 +1089,7 @@ export function analyzeTutorStubBoredomProofDag({
         : 'warm_plain_recovery_not_confirmed',
     },
     key_secondary_analysis: {
-      endpoint: 'objective_proof_progress_by_two_turns',
+      endpoint: progressNames.endpoint,
       ...keySecondary,
       fixed_sequence_gate_open: primaryRejects,
       significant_two_sided_under_fixed_sequence: keySecondaryRejects,
@@ -1075,6 +1112,17 @@ export function analyzeTutorStubBoredomProofDag({
           arm: row.arm,
           trigger_turn: row.trigger.observed_by_turn,
           passed_over: row.trigger.protected_pass_overs,
+        })),
+      // A turn the instrument could not read. Under a registration that passes
+      // such a turn over, the unit continues and the next turn is read, so this
+      // count says how often that happened rather than how many units were lost.
+      unreadable_pass_over_units: rows
+        .filter((row) => (row.trigger.unreadable_pass_overs || []).length > 0)
+        .map((row) => ({
+          case_id: row.case_id,
+          arm: row.arm,
+          trigger_turn: row.trigger.observed_by_turn,
+          passed_over: row.trigger.unreadable_pass_overs,
         })),
       opening_source_by_world: [...new Set(rows.map((row) => row.world))].sort().map((world) => {
         const inWorld = rows.filter((row) => row.world === world);

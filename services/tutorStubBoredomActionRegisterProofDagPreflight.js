@@ -261,6 +261,21 @@ export function loadTutorStubBoredomProofDagRegistration({
   return JSON.parse(fs.readFileSync(path.join(root, registrationPath), 'utf8'));
 }
 
+/** The endpoint names its deadline in words, so `5` has to read back as `five`. */
+function numberWord(value) {
+  return ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][Number(value)] || null;
+}
+
+// The secondary endpoint reads one rule on a window the registration sets. Its
+// name carries that window, so the name and the window must come from the same
+// number. v1-v4 read two post-trigger turns and v5 reads five; both render here.
+// A literal 'two' in one file and a 2 in another is the v4 defect in miniature.
+export function boredomProofProgressNames(registration) {
+  const word = numberWord(registration?.design?.treatment?.postTriggerLearnerTurns);
+  if (!word) return { field: null, endpoint: null };
+  return { field: `proof_progress_by_${word}_turns`, endpoint: `objective_proof_progress_by_${word}_turns` };
+}
+
 export function validateTutorStubBoredomProofDagRegistration(registration) {
   const errors = [];
   const worlds = registration?.design?.worlds || [];
@@ -271,14 +286,23 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   const prospectiveV2 = registration?.version === 2;
   const prospectiveV3 = registration?.version === 3;
   const prospectiveV4 = registration?.version === 4;
-  const semanticInstrumented = prospectiveV3 || prospectiveV4;
+  const prospectiveV5 = registration?.version === 5;
+  const semanticInstrumented = prospectiveV3 || prospectiveV4 || prospectiveV5;
   const currentProgrammeLedger = prospectiveV2 || prospectiveV3;
+  // v5 widens the trigger window and the outcome horizon, so the numbers that
+  // v1 to v4 assert as literals no longer describe it. Rather than add a fifth
+  // set of literals, v5 is checked on the arithmetic: every attempt figure has
+  // to derive from the turn budget it registers. That catches an inconsistent
+  // edit the same way, and it survives the next change of turn budget. The
+  // literals for v1 to v4 stay exactly as they are.
+  const sealedLiteralArithmetic = !prospectiveV5;
   if (
     ![
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v1',
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v2',
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v3',
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v4',
+      'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v5',
     ].includes(registration?.schema)
   ) {
     errors.push('unsupported boredom proof-DAG registration schema');
@@ -307,13 +331,25 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   ) {
     errors.push('design must isolate plain versus warm after the fixed boredom-appropriate action');
   }
+  // The primary endpoint is byte-comparable across every version: it reads the
+  // first post-trigger learner turn. The secondary endpoint names its own
+  // deadline, which moves with the outcome horizon, so v5 carries a different
+  // name for the same measure on a longer window.
+  const secondaryEndpointId = boredomProofProgressNames(registration).endpoint;
   if (
     registration?.measurement?.primaryEndpoint?.id !== 'profile_specific_resistance_recovery' ||
     registration?.measurement?.primaryEndpoint?.deadlinePostTriggerLearnerTurns !== 1 ||
     registration?.measurement?.primaryEndpoint?.analysis !== 'two_sided_exact_conditional_blocked_score_test' ||
-    registration?.measurement?.keySecondaryEndpoint?.id !== 'objective_proof_progress_by_two_turns'
+    registration?.measurement?.keySecondaryEndpoint?.id !== secondaryEndpointId
   ) {
     errors.push('registered recovery and objective proof-progress endpoints drifted');
+  }
+  if (
+    prospectiveV5 &&
+    registration?.measurement?.keySecondaryEndpoint?.deadlinePostTriggerLearnerTurns !==
+      registration?.design?.treatment?.postTriggerLearnerTurns
+  ) {
+    errors.push('objective proof-progress deadline does not match the registered outcome horizon');
   }
   const powerAt17 = exactBlockedScorePower({
     perArmByWorld: [2, 3, 3, 3, 3, 3],
@@ -335,60 +371,139 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     warmOnlyProbability: 4 / 6,
     plainOnlyProbability: 1 / 6,
   });
-  if (
+  if (sealedLiteralArithmetic) {
+    if (
+      power.minimumPerArm !== 18 ||
+      Math.abs(power.powerAt17PerArm - powerAt17) > 1e-10 ||
+      Math.abs(power.powerAt18PerArm - powerAt18) > 1e-10 ||
+      !(powerAt17 < 0.8 && powerAt18 >= 0.8)
+    ) {
+      errors.push('exact blocked score-test power proof does not establish 18 per arm as the minimum');
+    }
+    if (
+      power.designChoiceAudit?.pairedExactMcNemarMinimumPairs !== 28 ||
+      Math.abs(power.designChoiceAudit?.pairedPowerAt27 - pairedPowerAt27) > 1e-12 ||
+      Math.abs(power.designChoiceAudit?.pairedPowerAt28 - pairedPowerAt28) > 1e-12 ||
+      !(pairedPowerAt27 < 0.8 && pairedPowerAt28 >= 0.8) ||
+      power.designChoiceAudit?.pairedHardAttemptCeiling !== 2856 ||
+      power.designChoiceAudit?.selectedIndependentBlockedHardAttemptCeiling !== 2160
+    ) {
+      errors.push('independent-versus-paired smallest-design audit drifted');
+    }
+  } else if (
+    // v4 sized itself against plain 1 of 6 versus warm 4 of 6 and then observed
+    // 0 of 18 versus 0 of 15. That alternative is refuted, so v5 may not restate
+    // the same power figures. What v5 has to show instead is that it kept the
+    // sample size, that it records the refutation, and that it carries no
+    // leftover power number. The last clause is the one that matters: without it
+    // the discarded claim could return simply by being copied forward.
     power.minimumPerArm !== 18 ||
-    Math.abs(power.powerAt17PerArm - powerAt17) > 1e-10 ||
-    Math.abs(power.powerAt18PerArm - powerAt18) > 1e-10 ||
-    !(powerAt17 < 0.8 && powerAt18 >= 0.8)
+    typeof power.v4AlternativeRefuted?.v4Assumed !== 'string' ||
+    typeof power.v4AlternativeRefuted?.v4Observed !== 'string' ||
+    typeof power.v4AlternativeRefuted?.reading !== 'string' ||
+    typeof power.positionForV5?.statedPlainly !== 'string' ||
+    typeof power.positionForV5?.whatANullWouldMean !== 'string' ||
+    typeof power.positionForV5?.whatThisDesignStillCannotSettle !== 'string' ||
+    power.powerAt17PerArm !== undefined ||
+    power.powerAt18PerArm !== undefined ||
+    power.designChoiceAudit !== undefined
   ) {
-    errors.push('exact blocked score-test power proof does not establish 18 per arm as the minimum');
+    errors.push('power position does not record the refuted v4 alternative');
   }
-  if (
-    power.designChoiceAudit?.pairedExactMcNemarMinimumPairs !== 28 ||
-    Math.abs(power.designChoiceAudit?.pairedPowerAt27 - pairedPowerAt27) > 1e-12 ||
-    Math.abs(power.designChoiceAudit?.pairedPowerAt28 - pairedPowerAt28) > 1e-12 ||
-    !(pairedPowerAt27 < 0.8 && pairedPowerAt28 >= 0.8) ||
-    power.designChoiceAudit?.pairedHardAttemptCeiling !== 2856 ||
-    power.designChoiceAudit?.selectedIndependentBlockedHardAttemptCeiling !== 2160
-  ) {
-    errors.push('independent-versus-paired smallest-design audit drifted');
-  }
-  if (
-    execution.maximumReservationsPerPlannedCall !== 3 ||
-    dialogue.oneCumulativeFullLearnerRepairCalls !== (semanticInstrumented ? 0 : 2) ||
-    (semanticInstrumented && dialogue.maximumIndependentSemanticAdjudicationCalls !== 2) ||
-    (semanticInstrumented && dialogue.measurementIndeterminateRepairCalls !== 0) ||
-    dialogue.plannedCallsPerDialogue !== 20 ||
-    dialogue.maximumReservationsPerDialogue !== 60 ||
-    dialogue.dialogues !== 36 ||
-    dialogue.maximumReservations !== 2160 ||
-    execution.hardStudyAttemptCeiling !== 2160
-  ) {
-    errors.push('hard attempt arithmetic drifted');
+  if (sealedLiteralArithmetic) {
+    if (
+      execution.maximumReservationsPerPlannedCall !== 3 ||
+      dialogue.oneCumulativeFullLearnerRepairCalls !== (semanticInstrumented ? 0 : 2) ||
+      (semanticInstrumented && dialogue.maximumIndependentSemanticAdjudicationCalls !== 2) ||
+      (semanticInstrumented && dialogue.measurementIndeterminateRepairCalls !== 0) ||
+      dialogue.plannedCallsPerDialogue !== 20 ||
+      dialogue.maximumReservationsPerDialogue !== 60 ||
+      dialogue.dialogues !== 36 ||
+      dialogue.maximumReservations !== 2160 ||
+      execution.hardStudyAttemptCeiling !== 2160
+    ) {
+      errors.push('hard attempt arithmetic drifted');
+    }
+  } else {
+    // v5 is checked on derivation, not on literals. Every attempt figure has to
+    // fall out of the two turn counts the design registers, at the same three
+    // calls per turn v4 used. An edit that widens the window but forgets the
+    // ceiling fails here, and the check keeps working the next time the window
+    // moves.
+    const maximumTriggerTurn = registration?.design?.freshPrefixGeneration?.maximumTriggerTurn;
+    const postTriggerLearnerTurns = registration?.design?.treatment?.postTriggerLearnerTurns;
+    const callsPerTurn = 3;
+    const plannedParts =
+      dialogue.preTriggerBasePlannedCalls +
+      dialogue.preTriggerTutorGuardRecoveryReserveCalls +
+      dialogue.postTriggerBasePlannedCalls +
+      dialogue.postTriggerTutorGuardRecoveryReserveCalls +
+      dialogue.oneCumulativeFullLearnerRepairCalls +
+      dialogue.maximumIndependentSemanticAdjudicationCalls +
+      dialogue.measurementIndeterminateRepairCalls;
+    if (
+      execution.maximumReservationsPerPlannedCall !== 3 ||
+      dialogue.oneCumulativeFullLearnerRepairCalls !== 0 ||
+      dialogue.measurementIndeterminateRepairCalls !== 0 ||
+      dialogue.preTriggerBasePlannedCalls !== callsPerTurn * maximumTriggerTurn ||
+      dialogue.postTriggerBasePlannedCalls !== callsPerTurn * postTriggerLearnerTurns ||
+      dialogue.maximumIndependentSemanticAdjudicationCalls !== maximumTriggerTurn ||
+      dialogue.plannedCallsPerDialogue !== plannedParts ||
+      dialogue.maximumReservationsPerDialogue !== plannedParts * execution.maximumReservationsPerPlannedCall ||
+      dialogue.dialogues !== 36 ||
+      dialogue.maximumReservations !== dialogue.maximumReservationsPerDialogue * dialogue.dialogues ||
+      execution.hardStudyAttemptCeiling !== dialogue.maximumReservations
+    ) {
+      errors.push('hard attempt arithmetic drifted');
+    }
   }
   if (
     batches.executionBatches !== 9 ||
     batches.dialoguesPerBatch !== 4 ||
     batches.plainPerBatch !== 2 ||
     batches.warmPerBatch !== 2 ||
-    batches.maximumReservationsPerBatch !== 240 ||
+    batches.maximumReservationsPerBatch !==
+      (sealedLiteralArithmetic ? 240 : dialogue.maximumReservationsPerDialogue * batches.dialoguesPerBatch) ||
     batches.totalBatches !== 9 ||
     batches.noInterimAnalysis !== true
   ) {
     errors.push('predeclared batch partition drifted');
   }
-  const expectedLedger = prospectiveV4 ? 446 : currentProgrammeLedger ? 293 : 219;
-  const expectedStudyCeiling = prospectiveV4 ? 2606 : currentProgrammeLedger ? 2453 : 2379;
-  const expectedCombinedCeiling = prospectiveV4 ? 4766 : currentProgrammeLedger ? 4613 : 4539;
-  if (
-    execution.programmeCeilingForThisStudyAlone?.ledgerBefore !== expectedLedger ||
-    execution.programmeCeilingForThisStudyAlone?.requiredCeiling !== expectedStudyCeiling ||
-    execution.programmeCeilingForThisStudyAlone?.incrementAboveCurrentLedger !== 2160 ||
-    execution.programmeCeilingIfFrameRefusalConfirmationAlsoReserved?.requiredCeiling !== expectedCombinedCeiling ||
-    execution.attemptAccountingRole !==
-      'operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint'
-  ) {
-    errors.push('programme ceiling amendment arithmetic drifted');
+  if (sealedLiteralArithmetic) {
+    const expectedLedger = prospectiveV4 ? 446 : currentProgrammeLedger ? 293 : 219;
+    const expectedStudyCeiling = prospectiveV4 ? 2606 : currentProgrammeLedger ? 2453 : 2379;
+    const expectedCombinedCeiling = prospectiveV4 ? 4766 : currentProgrammeLedger ? 4613 : 4539;
+    if (
+      execution.programmeCeilingForThisStudyAlone?.ledgerBefore !== expectedLedger ||
+      execution.programmeCeilingForThisStudyAlone?.requiredCeiling !== expectedStudyCeiling ||
+      execution.programmeCeilingForThisStudyAlone?.incrementAboveCurrentLedger !== 2160 ||
+      execution.programmeCeilingIfFrameRefusalConfirmationAlsoReserved?.requiredCeiling !== expectedCombinedCeiling ||
+      execution.attemptAccountingRole !==
+        'operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint'
+    ) {
+      errors.push('programme ceiling amendment arithmetic drifted');
+    }
+  } else {
+    // v5 states one ledger rather than two candidate ceilings, because the
+    // human owner raised the safeguard outright. The check is that the ledger
+    // adds up and leaves room: what v4 actually spent is added to the ledger it
+    // started from, this study's own ceiling is the one derived above, and the
+    // headroom is what the safeguard leaves after both.
+    const ceiling = execution.programmeCeiling || {};
+    if (
+      ceiling.ledgerBeforeV4 !== 446 ||
+      ceiling.ledgerBeforeV5 !== ceiling.ledgerBeforeV4 + ceiling.v4Spend ||
+      ceiling.v5Maximum !== dialogue.maximumReservations ||
+      ceiling.requiredCeiling !== ceiling.ledgerBeforeV5 + ceiling.v5Maximum ||
+      ceiling.headroom !== ceiling.programmeSafeguard - ceiling.requiredCeiling ||
+      !(ceiling.headroom >= 0) ||
+      ceiling.shortfall !== 0 ||
+      ceiling.status !== 'SETTLED' ||
+      execution.attemptAccountingRole !==
+        'operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint'
+    ) {
+      errors.push('programme ceiling amendment arithmetic drifted');
+    }
   }
   if (
     (semanticInstrumented && registration.design?.observationSemantics !== 'prospective_v9') ||
@@ -412,7 +527,7 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   ) {
     errors.push('prospective-v9 independent semantic adjudicator boundary drifted');
   }
-  if (prospectiveV4) {
+  if (prospectiveV4 || prospectiveV5) {
     const adjudicator = registration.measurement?.semanticAdjudicator || {};
     const modulePath = path.join(ROOT, String(adjudicator.modulePath || ''));
     const moduleSource = fs.existsSync(modulePath) ? fs.readFileSync(modulePath) : null;
@@ -423,42 +538,83 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
       adjudicator.modulePath !== 'services/tutorStubBoredomSemanticAdjudicationV3.js' ||
       moduleSha !== adjudicator.moduleSha256 ||
       adjudicator.empiricalValidationStatus !== 'passed_all_predeclared_gates_on_sealed_heldout_v4_corpus' ||
-      adjudicator.confirmationLaunchReady !== true ||
-      validation.determinateSensitivity !== 1 ||
-      validation.determinateSpecificity !== 1 ||
-      validation.referenceAgreement !== 1 ||
-      validation.ambiguousIndeterminateRate !== 1 ||
-      validation.lowConfidenceIndeterminateRate !== 1 ||
-      typeof validation.reportSha256 !== 'string' ||
-      validation.reportSha256.length !== 64
+      (prospectiveV4 &&
+        (adjudicator.confirmationLaunchReady !== true ||
+          validation.determinateSensitivity !== 1 ||
+          validation.determinateSpecificity !== 1 ||
+          validation.referenceAgreement !== 1 ||
+          validation.ambiguousIndeterminateRate !== 1 ||
+          validation.lowConfidenceIndeterminateRate !== 1 ||
+          typeof validation.reportSha256 !== 'string' ||
+          validation.reportSha256.length !== 64))
     ) {
       errors.push('validated v3 semantic instrument binding drifted');
     }
+    // The sealed 55-case corpus is spent, so v5 cannot re-earn the gates. It
+    // carries them instead, and the price of carrying them is that the module's
+    // bytes have to be the same bytes and the one earlier move has to be written
+    // down and argued. If a byte moves from here, revalidationRequired turns
+    // true and a fresh sealed corpus is owed.
+    if (prospectiveV5) {
+      const provenance = adjudicator.instrumentProvenance || {};
+      const sealedRecord = path.join(ROOT, String(provenance.sealedRecordOfTheValidatedTree || ''));
+      if (
+        adjudicator.moduleUnchangedFromV4 !== true ||
+        adjudicator.empiricalValidationCarriedForward !== true ||
+        adjudicator.revalidationRequired !== false ||
+        typeof adjudicator.revalidationRequiredReason !== 'string' ||
+        provenance.bytesV5WillRun !== adjudicator.moduleSha256 ||
+        typeof provenance.validatedBytes !== 'string' ||
+        provenance.validatedBytes.length !== 64 ||
+        !Array.isArray(provenance.commitsBetween) ||
+        provenance.commitsBetween.length === 0 ||
+        provenance.commitsBetween.some(
+          (row) => typeof row?.commit !== 'string' || typeof row?.noVerdictMoved !== 'string',
+        ) ||
+        !fs.existsSync(sealedRecord)
+      ) {
+        errors.push('carried-forward semantic instrument provenance drifted');
+      }
+    }
   }
   if (semanticInstrumented) {
-    const heldout = registration.measurement?.semanticAdjudicator?.heldoutCorpus;
+    const adjudicator = registration.measurement?.semanticAdjudicator;
+    // v5 has no held-out corpus of its own. It names the v4 one as carried
+    // forward and marked spent, so the file check is the same and the claim is
+    // not.
+    const heldout = prospectiveV5 ? adjudicator?.carriedForwardHeldoutCorpus : adjudicator?.heldoutCorpus;
     const heldoutPath = path.join(ROOT, String(heldout?.path || ''));
     const heldoutSource = fs.existsSync(heldoutPath) ? fs.readFileSync(heldoutPath) : null;
     const heldoutSha = heldoutSource ? crypto.createHash('sha256').update(heldoutSource).digest('hex') : null;
-    const expectedHeldoutPath = prospectiveV4
-      ? 'config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json'
-      : 'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json';
-    const expectedHeldoutCases = prospectiveV4 ? 55 : 22;
+    const expectedHeldoutPath =
+      prospectiveV4 || prospectiveV5
+        ? 'config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json'
+        : 'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json';
+    const expectedHeldoutCases = prospectiveV4 || prospectiveV5 ? 55 : 22;
     if (
       heldout?.path !== expectedHeldoutPath ||
       heldout?.cases !== expectedHeldoutCases ||
       heldout?.embeddedInPrompt !== false ||
       heldout?.modelPredictionsPresent !== false ||
-      heldoutSha !== heldout?.sha256
+      heldoutSha !== heldout?.sha256 ||
+      (prospectiveV5 && heldout?.spentForValidation !== true)
     ) {
       errors.push('prospective-v9 held-out semantic corpus binding drifted');
     }
   }
+  // v5 changes three of the six worlds and moves the seed, so it has its own
+  // assignment manifest and its own pinned digest. Both pins are literals on
+  // purpose: the point of the pin is that the assignment was fixed before any
+  // dialogue was generated, so it must not be recomputed from whatever the
+  // registration currently says.
+  const expectedAssignmentSeed = prospectiveV5 ? 20260901 : 20260820;
+  const expectedAssignmentManifestSha256 = prospectiveV5
+    ? '485f7442d2844dad9026c54ea47ed3214f5cf1e4c36bf372a2fb52dfb6304b28'
+    : '4e256dfa65054747a5d6d1ac82d1aecb42f7c98f158cb76e686f24c37d71ef94';
   if (
     registration?.design?.randomization?.algorithm !== 'sha256_rank_within_world' ||
-    registration?.design?.randomization?.assignmentSeed !== 20260820 ||
-    registration?.design?.randomization?.assignmentManifestSha256 !==
-      '4e256dfa65054747a5d6d1ac82d1aecb42f7c98f158cb76e686f24c37d71ef94'
+    registration?.design?.randomization?.assignmentSeed !== expectedAssignmentSeed ||
+    registration?.design?.randomization?.assignmentManifestSha256 !== expectedAssignmentManifestSha256
   ) {
     errors.push('randomization assignment drifted');
   }
@@ -510,6 +666,16 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
   const validation = validateTutorStubBoredomProofDagRegistration(registration);
   if (!validation.ok) throw new Error(validation.errors.join('; '));
   const assignments = buildTutorStubBoredomProofDagAssignments(registration);
+  // These four numbers used to be written here as 2, 60, 240 and 2160. Each
+  // was also written in the registration, and the two copies were never
+  // compared. v5 widens the trigger window and the outcome horizon, so a
+  // hardcoded 2 would have built v5 jobs that stop at the v4 turn. Read them
+  // from the registration, which every version from v1 carries, so v1 to v4
+  // rebuild byte-identical plans and v5 gets its own numbers.
+  const maximumTriggerTurn = registration.design.freshPrefixGeneration.maximumTriggerTurn;
+  const perDialogueCeiling = registration.executionReadiness.dialogue.maximumReservationsPerDialogue;
+  const perBatchCeiling = registration.executionReadiness.batches.maximumReservationsPerBatch;
+  const studyCeiling = registration.executionReadiness.dialogue.maximumReservations;
   const candidates = assignments.manifest.map((row) => {
     const worldIndex = registration.design.worlds.indexOf(row.world);
     const ordinal = worldIndex * 6 + row.dialogue_index - 1;
@@ -519,12 +685,12 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
       assignment_index: ordinal + 1,
       world: row.world,
       seed: registration.design.freshPrefixGeneration.seedBase + ordinal + 1,
-      maximum_trigger_turn: 2,
+      maximum_trigger_turn: maximumTriggerTurn,
       pedagogical_move: 'ask_discriminating_question',
       realization: row.realization,
       assignment_rank_sha256: row.assignment_rank_sha256,
       assignment_manifest_sha256: assignments.digest,
-      maximum_model_attempt_reservations: 60,
+      maximum_model_attempt_reservations: perDialogueCeiling,
     };
   });
   const plain = candidates.filter((row) => row.realization === 'plain');
@@ -544,15 +710,26 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
       cases: 4,
       plain: 2,
       warm: 2,
-      ceiling: 240,
+      ceiling: perBatchCeiling,
     })),
-    total_maximum_model_attempt_reservations: 2160,
+    total_maximum_model_attempt_reservations: studyCeiling,
   };
+}
+
+/**
+ * Which registration versions measure the learner with the independent semantic
+ * adjudicator rather than with word matching alone. v3 introduced it, v4
+ * validated it on the sealed corpus, and v5 carries that validation forward.
+ * Written once here so a sixth version is one edit rather than five.
+ */
+function usesSemanticAdjudicator(version) {
+  return version === 3 || version === 4 || version === 5;
 }
 
 export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
   const plan = buildTutorStubBoredomProofDagPlan(registration);
-  const semanticMeasurement = registration.version === 3 || registration.version === 4;
+  const semanticMeasurement = usesSemanticAdjudicator(registration.version);
+  const progressField = boredomProofProgressNames(registration).field;
   let plainSeen = 0;
   let warmSeen = 0;
   return plan.jobs.map((job) => {
@@ -570,7 +747,10 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
       realization: job.realization,
       assignment_rank_sha256: job.assignment_rank_sha256,
       assignment_manifest_sha256: job.assignment_manifest_sha256,
-      trigger: { profile: 'bored', observed_by_turn: 2, profile_identity_used: false },
+      // The synthetic trigger sits on the last turn the window allows, so these
+      // self-check cases exercise the widest case the registration permits
+      // rather than a turn number copied from v4.
+      trigger: { profile: 'bored', observed_by_turn: job.maximum_trigger_turn, profile_identity_used: false },
       ...(semanticMeasurement
         ? {
             semantic_measurement: {
@@ -586,7 +766,7 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
         recovered,
         deadline_turns: 1,
         observed_turn: recovered ? 1 : null,
-        proof_progress_by_two_turns: recovered,
+        [progressField]: recovered,
         new_supported_public_premises: recovered ? 1 : 0,
         best_path_coverage_delta: recovered ? 0.1 : 0,
         proof_debt_delta: recovered ? -1 : 0,
@@ -793,7 +973,10 @@ export function assessTutorStubBoredomCompositionSyntheticCases(
   return { pass: results.every((row) => row.pass), results };
 }
 
-export function objectiveProofProgressByTwoTurns(outcome) {
+// The rule reads deltas only. It never sees a turn number, so it carries no
+// window in its name; the window lives in the registration and reaches the
+// field name through boredomProofProgressNames.
+export function objectiveProofProgress(outcome) {
   return Boolean(
     Number.isInteger(outcome?.new_supported_public_premises) &&
     outcome.new_supported_public_premises >= 1 &&
@@ -853,14 +1036,15 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       Object.hasOwn(row.outcome, 'observed_turn') &&
       (row.outcome.recovered ? row.outcome.observed_turn === 1 : row.outcome.observed_turn === null),
   );
+  const progress = boredomProofProgressNames(registration);
   const objective = cases.every(
     (row) =>
-      typeof row.outcome.proof_progress_by_two_turns === 'boolean' &&
+      typeof row.outcome[progress.field] === 'boolean' &&
       Number.isInteger(row.outcome.new_supported_public_premises) &&
       Number.isFinite(row.outcome.best_path_coverage_delta) &&
       Number.isFinite(row.outcome.proof_debt_delta) &&
       Number.isInteger(row.outcome.unsupported_public_claims) &&
-      row.outcome.proof_progress_by_two_turns === objectiveProofProgressByTwoTurns(row.outcome),
+      row.outcome[progress.field] === objectiveProofProgress(row.outcome),
   );
   const fidelity = cases.every(
     (row) =>
@@ -870,11 +1054,16 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       row.fidelity.protected_condition === false,
   );
   const composition = assessTutorStubBoredomCompositionSyntheticCases();
-  const semanticInstrumented = registration.version === 3 || registration.version === 4;
+  const semanticInstrumented = usesSemanticAdjudicator(registration.version);
+  // v3 and v4 earned their gates on a corpus they held out. v5 cannot earn them
+  // again, because that corpus is spent, so it names the same file under a
+  // different key. The replay below makes no model call and claims no accuracy;
+  // it only shows the parser still reads those 55 cases the way it did.
+  const semanticCorpus =
+    registration.measurement.semanticAdjudicator?.heldoutCorpus ||
+    registration.measurement.semanticAdjudicator?.carriedForwardHeldoutCorpus;
   const semantic = semanticInstrumented
-    ? assessTutorStubBoredomSemanticSyntheticCases({
-        corpusPath: registration.measurement.semanticAdjudicator.heldoutCorpus.path,
-      })
+    ? assessTutorStubBoredomSemanticSyntheticCases({ corpusPath: semanticCorpus.path })
     : null;
   const semanticCaseFidelity =
     !semanticInstrumented ||
@@ -909,7 +1098,7 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       : {}),
     profile_specific_resistance_recovery:
       exactPlanFidelity && recovery && plain.length === 18 && warm.length === 18 ? 'complete' : 'incomplete',
-    objective_proof_progress_by_two_turns: exactPlanFidelity && objective ? 'complete' : 'incomplete',
+    [progress.endpoint]: exactPlanFidelity && objective ? 'complete' : 'incomplete',
     randomized_register_assembly: exactPlanFidelity && distinctPrefixes === 36 ? 'complete' : 'incomplete',
     action_register_fidelity_and_safety: exactPlanFidelity && fidelity ? 'complete' : 'incomplete',
   };
@@ -947,35 +1136,47 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
     buildPackets: buildTutorStubBoredomProofDagPackets,
     assemble: assembleTutorStubBoredomProofDagPreflight,
   });
+  const execution = registration.executionReadiness;
+  const carriedForward = registration.version === 5;
+  // v1-v4 reserved a second confirmation alongside this study and so carried two
+  // ceilings. v5 carries one, because the frame-refusal reservation was settled
+  // before it was written. Emit whichever the registration actually holds rather
+  // than reaching for a key that is not there.
+  const ceilings = carriedForward
+    ? { required_programme_ceiling_study_alone: execution.programmeCeiling.requiredCeiling }
+    : {
+        required_programme_ceiling_study_alone: execution.programmeCeilingForThisStudyAlone.requiredCeiling,
+        required_programme_ceiling_with_frame_refusal_reservation:
+          execution.programmeCeilingIfFrameRefusalConfirmationAlsoReserved.requiredCeiling,
+      };
   return {
     ...preflight,
     readiness: {
-      status:
-        registration.version === 4
+      status: carriedForward
+        ? 'passed_zero_call_hold_carried_forward_semantic_instrument_launch_authorization_pending'
+        : registration.version === 4
           ? 'passed_zero_call_hold_empirical_semantic_validation_passed_launch_authorization_pending'
           : registration.version === 3
             ? 'passed_zero_call_hold_empirical_semantic_validation_pending'
             : 'passed_zero_call_hold',
-      source_prefixes: 36,
-      independent_dialogues: 36,
-      execution_batches: 9,
-      hard_study_attempt_ceiling: 2160,
-      required_programme_ceiling_study_alone:
-        registration.executionReadiness.programmeCeilingForThisStudyAlone.requiredCeiling,
-      required_programme_ceiling_with_frame_refusal_reservation:
-        registration.executionReadiness.programmeCeilingIfFrameRefusalConfirmationAlsoReserved.requiredCeiling,
-      live_executor_available: true,
-      combined_analyzer_available: true,
-      request_validator_available: true,
-      independent_semantic_adjudicator:
-        registration.version === 3 || registration.version === 4 ? 'codex.gpt-5.6-sol' : null,
-      empirical_semantic_validation_status:
-        registration.version === 4
+      source_prefixes: execution.dialogue.dialogues,
+      independent_dialogues: execution.dialogue.dialogues,
+      execution_batches: execution.batches.executionBatches,
+      hard_study_attempt_ceiling: execution.hardStudyAttemptCeiling,
+      ...ceilings,
+      live_executor_available: execution.liveExecutorAvailable === true,
+      combined_analyzer_available: execution.combinedAnalyzerAvailable === true,
+      request_validator_available: execution.requestValidatorAvailable === true,
+      independent_semantic_adjudicator: usesSemanticAdjudicator(registration.version) ? 'codex.gpt-5.6-sol' : null,
+      empirical_semantic_validation_status: carriedForward
+        ? 'carried_forward_from_sealed_heldout_v4_corpus_no_fresh_claim_earned'
+        : registration.version === 4
           ? 'passed_all_predeclared_gates_on_sealed_heldout_v4_corpus'
           : registration.version === 3
             ? 'pending_no_model_calls_authorized'
             : null,
-      confirmation_launch_ready: registration.version === 4 ? true : registration.version === 3 ? false : null,
+      confirmation_launch_ready:
+        carriedForward || registration.version === 4 ? true : registration.version === 3 ? false : null,
       model_calls: 0,
       production_writes: 0,
     },
@@ -989,12 +1190,13 @@ export default {
   buildTutorStubBoredomProofDagPackets,
   buildTutorStubBoredomProofDagPlan,
   buildTutorStubBoredomProofDagSyntheticCases,
+  boredomProofProgressNames,
   exactBlockedScorePValue,
   exactBlockedScorePower,
   exactMcNemarPower,
   exactTwoSidedMcNemarPValue,
   loadTutorStubBoredomProofDagRegistration,
   runTutorStubBoredomProofDagEndpointPreflight,
-  objectiveProofProgressByTwoTurns,
+  objectiveProofProgress,
   validateTutorStubBoredomProofDagRegistration,
 };
