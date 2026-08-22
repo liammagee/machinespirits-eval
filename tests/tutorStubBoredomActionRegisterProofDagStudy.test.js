@@ -119,6 +119,7 @@ function syntheticTrace({
   progressed,
   observationSemantics = 'prospective_v8',
   protectedPassOver = false,
+  authoredWorldOpening = false,
 }) {
   const triggerTurn = job.assignment_index % 2 === 0 ? 2 : 1;
   const outcomeTurn = triggerTurn + 2;
@@ -132,7 +133,7 @@ function syntheticTrace({
   const recoveryText = 'The public mark supports the left branch, so I will test that premise next.';
   const nonRecoveryText = 'Fine. Whatever you say.';
   const callRows = [
-    ...calls('tutor_stub_opening', 0),
+    ...(authoredWorldOpening ? [] : calls('tutor_stub_opening', 0)),
     ...Array.from({ length: outcomeTurn }, (_, index) => calls('tutor_stub_auto_learner', index + 1)).flat(),
     ...Array.from({ length: outcomeTurn }, (_, index) => calls('tutor_stub_learner_analysis', index + 1)).flat(),
     ...Array.from({ length: outcomeTurn - 1 }, (_, index) => calls('tutor_stub_tutor', index + 1)).flat(),
@@ -213,6 +214,15 @@ function syntheticTrace({
       },
     },
     {
+      type: 'tutor_opening_realization',
+      turn: 0,
+      realization: {
+        schema: 'machinespirits.tutor-stub.opening-realization.v1',
+        source: authoredWorldOpening ? 'authored_world_opening' : 'speaking_tutor_model',
+      },
+    },
+    { type: 'tutor_opening', turnId: `${job.id}:opening`, reason: 'auto_start', text: `Opening for ${job.world}.` },
+    {
       type: 'resistance_action_register_boredom_proof_dag_execution_start',
       jobId: job.id,
       batchId: job.batch_id,
@@ -286,7 +296,12 @@ function writeSyntheticBatch(
   root,
   plan,
   outcomes,
-  { observationSemantics = 'prospective_v8', stoppedJobIds = [], protectedPassOverJobIds = [] } = {},
+  {
+    observationSemantics = 'prospective_v8',
+    stoppedJobIds = [],
+    protectedPassOverJobIds = [],
+    authoredWorldOpeningWorlds = [],
+  } = {},
 ) {
   fs.mkdirSync(path.join(root, 'jobs'), { recursive: true });
   writeJson(path.join(root, 'batch-plan.json'), plan);
@@ -299,6 +314,7 @@ function writeSyntheticBatch(
       ...outcomes.get(job.id),
       observationSemantics,
       protectedPassOver: protectedPassOverJobIds.includes(job.id),
+      authoredWorldOpening: authoredWorldOpeningWorlds.includes(job.world),
     })
       .map((event) => JSON.stringify(event))
       .join('\n')}\n`;
@@ -969,6 +985,69 @@ test('a registered protected exclusion moves the trigger later without breaking 
         expectedSourceCommit: head,
       }),
     /an_earlier_turn_was_already_eligible/u,
+  );
+});
+
+test('a world that carries its own opening line needs no opening model call', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-opening-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V4) });
+  const authoredWorlds = loaded.registration.design.worlds.slice(2);
+  assert.equal(authoredWorlds.length, 4);
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  const roots = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION_V4,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    writeSyntheticBatch(root, plan, outcomes, {
+      observationSemantics: 'prospective_v9',
+      authoredWorldOpeningWorlds: authoredWorlds,
+    });
+    roots.push(root);
+  }
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION_V4,
+    expectedSourceCommit: head,
+  });
+  assert.equal(report.rows.length, 36);
+
+  // The source is disclosed, and it is fixed per world, so the blocked design
+  // absorbs it: within a world every unit reports the same opening source.
+  const byWorld = report.treatment_fidelity.opening_source_by_world;
+  assert.equal(byWorld.length, 6);
+  assert.ok(byWorld.every((entry) => entry.sources.length === 1));
+  assert.ok(byWorld.every((entry) => entry.plain === 3 && entry.warm === 3));
+  assert.deepEqual(
+    byWorld.filter((entry) => entry.sources[0] === 'authored_world_opening').map((entry) => entry.world),
+    authoredWorlds,
+  );
+
+  // A dialogue that never opened at all is still refused, and so is a
+  // model-opened world that lost its opening call.
+  const mutationRoot = roots.find((root) =>
+    JSON.parse(fs.readFileSync(path.join(root, 'batch-plan.json'), 'utf8')).jobs.some((job) =>
+      authoredWorlds.includes(job.world),
+    ),
+  );
+  const authoredJob = JSON.parse(fs.readFileSync(path.join(mutationRoot, 'batch-plan.json'), 'utf8')).jobs.find((job) =>
+    authoredWorlds.includes(job.world),
+  );
+  mutateTrace(mutationRoot, authoredJob.id, (events) => events.filter((event) => event.type !== 'tutor_opening'));
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION_V4,
+        expectedSourceCommit: head,
+      }),
+    /the_dialogue_never_opened/u,
   );
 });
 

@@ -373,8 +373,16 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
     }
     return allowedTutorRoles.has(event.role) && turn >= 1 && turn < outcomeTurn;
   });
+  // Four of the six registered worlds carry their opening line in the world
+  // file, so the tutor speaks it without a model call. That is a property of
+  // the world, the same for its plain and its warm units, and the design blocks
+  // by world. Demanding an opening model call everywhere would refuse those
+  // worlds for holding an authored line. The dialogue must still have opened.
+  const openingRealization = events.find((event) => event.type === 'tutor_opening_realization')?.realization || null;
+  const openingSpoken = events.some((event) => event.type === 'tutor_opening');
+  const openingFromWorldFile = openingRealization?.source === 'authored_world_opening';
   const required = [
-    ['tutor_stub_opening', 0],
+    ...(openingFromWorldFile ? [] : [['tutor_stub_opening', 0]]),
     ...Array.from({ length: outcomeTurn }, (_, index) => ['tutor_stub_auto_learner', index + 1]),
     ...Array.from({ length: outcomeTurn }, (_, index) => ['tutor_stub_learner_analysis', index + 1]),
     ...Array.from({ length: outcomeTurn - 1 }, (_, index) => ['tutor_stub_tutor', index + 1]),
@@ -424,6 +432,8 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
     [options?.['eval-repeat'] !== String(job.assignment_index), 'eval_repeat_option'],
     [options?.['eval-job-id'] !== job.id, 'eval_job_id_option'],
     [options?.['no-opening'] === true, 'opening_suppressed'],
+    [!openingSpoken, 'the_dialogue_never_opened'],
+    [!openingRealization, 'no_opening_realization_record'],
     [routePinned !== true, 'model_route_not_pinned'],
     [required !== true, 'a_required_role_and_turn_call_is_missing'],
     [semanticRequired !== true, 'a_required_semantic_adjudication_call_is_missing'],
@@ -453,7 +463,12 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
       `${job.id} violates its observed route, source, world, horizon, or attempt pins: ${envelopeFailures.join(', ')}`,
     );
   }
-  return { calls: calls.length, attempts: attempts.length, reservations: reservations.length };
+  return {
+    calls: calls.length,
+    attempts: attempts.length,
+    reservations: reservations.length,
+    opening_source: openingRealization.source,
+  };
 }
 
 function analyzeTrace(batch, resultRow, loaded) {
@@ -766,6 +781,7 @@ function analyzeTrace(batch, resultRow, loaded) {
       model_attempt_reservations: batch.reservationsByJob.get(job.id),
       observed_model_calls: observed.calls,
       observed_model_attempts: observed.attempts,
+      opening_source: observed.opening_source,
       technical_recovery_used: batch.recoveredIds.has(job.id),
       tutor_turns: outcomeTurn - 1,
       learner_turns: outcomeTurn,
@@ -1032,6 +1048,17 @@ export function analyzeTutorStubBoredomProofDag({
           trigger_turn: row.trigger.observed_by_turn,
           passed_over: row.trigger.protected_pass_overs,
         })),
+      opening_source_by_world: [...new Set(rows.map((row) => row.world))].sort().map((world) => {
+        const inWorld = rows.filter((row) => row.world === world);
+        return {
+          world,
+          sources: [...new Set(inWorld.map((row) => row.execution.opening_source))].sort(),
+          plain: inWorld.filter((row) => row.arm === 'plain').length,
+          warm: inWorld.filter((row) => row.arm === 'warm').length,
+        };
+      }),
+      opening_source_reading:
+        'a world whose file carries its own opening line needs no model call to speak it. The source is fixed per world, so it is the same for that world’s plain and warm units and the blocked design absorbs it.',
       protected_pass_over_reading:
         'the adjudicator read these earlier turns as actionable boredom and a registered protected exclusion blocked the treatment there, so the trigger fell to a later turn still inside the registered by-turn-2 deadline. The judge label was never recoded.',
       action_visibility_minimum: fidelity.minimumActionVisibility,
