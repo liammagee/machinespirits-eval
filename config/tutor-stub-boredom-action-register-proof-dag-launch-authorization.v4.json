@@ -41,6 +41,24 @@
         "method": "enumerates all 128 points of the decision space (16 judge-field masks x 4 auxiliary dispositions x confidence above and below the 0.8 minimum) and compares every disposition against an independent restatement of the pre-change rules",
         "gateTransfer": "the five predeclared gates measure verdicts on the sealed 55-case corpus; identical verdicts on every input carry the 1.00 gate results across the byte change without spending the corpus again"
       }
+    },
+    {
+      "on": "2026-08-21",
+      "modulePath": "services/tutorStubResistanceActionRegisterStudy.js",
+      "from": "2839d68a6f6405e4f341fa9cc0cc1695c2be352e8100f29b691dd1bdee07d770",
+      "to": "0f744f7485e7e29a7162b66663224b4a48c5bbfafdb766e266122ee82a9086ce",
+      "why": "scoreTutorStubResistanceRecovery counted metacognitive_reflection as content-bearing on the bored path, so a plain statement of giving up scored as recovery; withholding is the one stance a learner can show only by describing it, and the plain tutor fails more often, so the defect paid the plain tutor for failing",
+      "authority": "Liam Magee, 2026-08-21: enabled to repair and re-run without prior approval until we get through this dialogue batch",
+      "designChanged": false,
+      "verdictsChanged": true,
+      "verdictChangeScope": {
+        "changed": "bored-profile turns whose only content-bearing input was discourse_move metacognitive_reflection now score not-recovered",
+        "unchanged": "hypothesis, inference and evidence_adoption still score; the evidence-side list (cites_public_evidence, links_evidence_to_rule, revises_from_evidence) is untouched, so a reflection that cites public evidence still scores; frame_defiant and frame_refuser keep the wider move set on their two-turn deadline",
+        "againstRegisteredDefinition": "the registered endpoint requires the learner to engage the discriminating question on its merits with content-bearing evidence use; describing that one stopped is not that, so the correction moves the code toward the registered definition rather than changing it",
+        "dataAffected": "none: no dialogue has completed under this endpoint, so no measured outcome exists under either version",
+        "test": "tests/tutorStubResistanceActionRegisterStudy.test.js, cases 'bored recovery does not count a plain statement of giving up as the answer' and 'the narrower bored set keeps real uptake and leaves the frame profiles untouched'"
+      },
+      "twinOf": "services/resistantLearnerObservation.js, commit 9562dd98, the same correction in the auxiliary cross-check"
     }
   ]
 }
