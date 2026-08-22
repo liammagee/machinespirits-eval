@@ -11,10 +11,10 @@ updated: 2026-08-22
 verification: >-
   The reopened measurement-redesign track has passed the prospective Claude
   JSON result-envelope transport, the wholly fresh 80-case manipulation
-  validation, and the zero-call field-local split-V6 outcome/fidelity
+  validation, and the zero-call stance-aligned split-V7 outcome/fidelity
   engineering gates
   while preserving all earlier roots as immutable excluded evidence. Before
-  confirmation, both V6 stages must pass their fresh independent 120-case
+  confirmation, both V7 stages must pass their fresh independent 120-case
   heldout validation. Regex remains nonauthoritative for semantic constructs,
   and no efficacy, null, learning, transfer, human, cell, or profile claim is
   licensed before the relevant predeclared gate passes.
@@ -135,6 +135,9 @@ links:
     - services/tutorStubResistanceRecoverySemanticAdjudicationV6.js
     - services/tutorStubResistanceRecoverySemanticValidationV6.js
     - services/tutorStubResistanceMeasurementValidationV6Runtime.js
+    - services/tutorStubResistanceRecoverySemanticAdjudicationV7.js
+    - services/tutorStubResistanceRecoverySemanticValidationV7.js
+    - services/tutorStubResistanceMeasurementValidationV7Runtime.js
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json
     - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json
     - config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json
@@ -144,6 +147,8 @@ links:
     - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v5.json
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v6.json
     - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v6.json
+    - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v7.json
+    - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v7.json
 tags:
   - tutor-stub
   - cells
@@ -151,7 +156,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-outcome-v4-redesign
+branch: codex/resistance-measurement-v7-redesign
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -3439,3 +3444,46 @@ and explicit human approval.
   paths. The frozen V3 request digest test and the full V5/V6 synthetic
   lifecycle regressions pass together; no historical request or artifact was
   amended.
+
+- 2026-08-22 — The wholly fresh V6 split validation sealed 120 cases and 360
+  judge records in each stage from 763 reservations, moving the observed
+  programme ledger to `2273 / 10000`. Its combined report SHA-256 is
+  `b77f033d583e8b769c2bceceb56f5638cb7c120beabbab0446f5b12a4e41bc54`.
+  No confirmation claim was licensed. The primary panel was perfect at full
+  determined coverage, but Sonnet's individual conditional accuracy was
+  `0.9167`, below the frozen `0.95` per-judge gate. Fidelity failed with panel
+  action accuracy `0.775` and register accuracy `0.9833`.
+
+  A zero-call audit traced those failures to prospective measurement inputs,
+  not to a reason to repair or select outcomes: all action false negatives
+  came from a corpus branch whose gold said action-present although its ornate
+  text did not perform the registered bounded distinction; two warm labels
+  conflicted with the repository's warm stance contract; the register prompt
+  did not state the repository's warm/plain definitions or make determinate
+  ornate/mockery examples eligible as neither; and all nine Sonnet primary
+  false negatives used first-turn recovery followed by a non-retracting scope
+  closure. V6 remains immutable failed validation evidence and is excluded
+  from reuse or pooling.
+
+- 2026-08-22 — V7 prospectively integrates every V6 failure before another
+  call. The independently pinned three-judge instrument now states that
+  first-turn recovery persists unless explicitly retracted, uses the exact
+  warm and plain stance contracts from `config/engagement-registers.yaml`,
+  and treats hostile, mocking, ornate, or theatrical interventions as
+  determinately neither when their meaning is otherwise clear. The instrument
+  froze at commit `3cee32cdc2a2d786fae7dbda8ee137a5f6a46b87`; its registration
+  froze at `5e1c125907b3ff7adfb2ac2493d3397d8cffdbc7` before corpus
+  authorship. A wholly fresh 120-case corpus then froze at
+  `dd5f3aacc0dfc7cc8b26c2458cd82af3d61b1189`, preserving the registered
+  `32/32/16/40` recovery and `40/40/40` register strata, 80 action-present
+  cases, and 24 intervening-turn-dependent cases, with zero exact field or
+  evidence reuse from consumed V2/V3/V5/V6.
+
+  The V7 loader, separated primary/fidelity calls, field-local wrapper, sealed
+  stage lifecycle, proven response-free retry rule, remaining-judge
+  continuation, combined analysis, and durable archive all pass zero-call
+  tests; V5/V6 runtime regressions remain green. No V7 model call has launched.
+  The validation remains 720 planned calls with a 2160-reservation hard
+  safeguard; the conservative programme maximum through a later confirmation
+  is `8861 / 10000`. Attempt counts remain operational safeguards rather than
+  design objectives.
