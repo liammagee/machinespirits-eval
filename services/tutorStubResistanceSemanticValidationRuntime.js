@@ -1344,7 +1344,10 @@ export function analyzeTutorStubResistanceSemanticValidation({
       if (
         row.outcome === 'transport_failed' &&
         row.attempts.some((attempt) => Object.hasOwn(attempt, 'exit_code')) &&
-        row.invalid_reason !== CLAUDE_EXIT_BEFORE_RESPONSE_REASON
+        row.invalid_reason !==
+          (row.attempts.some((attempt) => attempt.classification === 'response_free_error')
+            ? CLAUDE_RESPONSE_FREE_ERROR_REASON
+            : CLAUDE_EXIT_BEFORE_RESPONSE_REASON)
       ) {
         issues.push('Claude exit failure reason is not the registered content-free disposition');
       }

@@ -82,12 +82,17 @@ function main() {
   if (snapshot.commit !== args['source-commit'] || snapshot.tree !== args['source-tree']) {
     throw new Error('semantic validation analysis source commit/tree does not match the command pin');
   }
+  const executionSourceCommit = args['execution-source-commit'] || snapshot.commit;
+  const executionSourceTree = args['execution-source-tree'] || snapshot.tree;
+  if (Boolean(args['execution-source-commit']) !== Boolean(args['execution-source-tree'])) {
+    throw new Error('--execution-source-commit and --execution-source-tree must be supplied together');
+  }
   const archiveDir = resolveTutorStubArtifactArchiveDirectory(args['archive-dir'], { cwd: ROOT, repoRoot: ROOT });
   if (!archiveDir) throw new Error('semantic validation analysis requires the stable private artifact archive');
   const report = writeTutorStubResistanceSemanticValidationReport({
     destination,
-    expectedSourceCommit: snapshot.commit,
-    expectedSourceTree: snapshot.tree,
+    expectedSourceCommit: executionSourceCommit,
+    expectedSourceTree: executionSourceTree,
     expectedGoRequestPath: request.relative,
     expectedGoRequestSha256: sha256(request.absolute),
     expectedGoRequest: goRequest,
