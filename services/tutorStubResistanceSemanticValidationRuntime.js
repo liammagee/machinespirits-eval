@@ -25,6 +25,8 @@ import {
   scoreTutorStubResistanceSemanticCorpusV3,
   wrapTutorStubResistanceSemanticModelOutputV3,
 } from './tutorStubResistanceSemanticAdjudicationV3.js';
+import { adjudicateTutorStubResistanceSemanticJudgesV4 } from './tutorStubResistanceSemanticAdjudicationV4.js';
+import { scoreTutorStubResistanceSemanticCorpusV4 } from './tutorStubResistanceSemanticScoringV4.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT } from './tutorStubResistanceSemanticRuntime.js';
 import {
   buildTutorStubResistanceSemanticBlindedValidationCases,
@@ -55,6 +57,17 @@ function semanticInstrument(loaded) {
   const buildBlindedCases = loaded?.buildBlindedCases || buildTutorStubResistanceSemanticBlindedValidationCases;
   const corpusCaseForExecutionId =
     loaded?.corpusCaseForExecutionId || tutorStubResistanceSemanticCorpusCaseForExecutionId;
+  if (loaded?.instrument?.registration?.version === 4) {
+    return {
+      outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
+      buildPrompt: buildTutorStubResistanceSemanticAdjudicationPromptV3,
+      wrapModelOutput: wrapTutorStubResistanceSemanticModelOutputV3,
+      adjudicate: adjudicateTutorStubResistanceSemanticJudgesV4,
+      scoreCorpus: scoreTutorStubResistanceSemanticCorpusV4,
+      buildBlindedCases,
+      corpusCaseForExecutionId,
+    };
+  }
   if (loaded?.instrument?.registration?.version === 3) {
     return {
       outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
@@ -977,7 +990,8 @@ export async function runTutorStubResistanceSemanticValidation({
   const requestBinding = validationRequestBinding(goRequest, loaded);
   const allowClaudeExitFailureCodeOne =
     loaded.registration.version === 3 && requestBinding.revision !== null && requestBinding.revision >= 2;
-  const allowClaudeResponseFreeError = loaded.registration.version === 3 && requestBinding.revision === 4;
+  const allowClaudeResponseFreeError =
+    (loaded.registration.version === 3 && requestBinding.revision === 4) || loaded.registration.version === 4;
   const blindedCases = instrument.buildBlindedCases(loaded.corpus.cases);
   const planPath = path.join(destination, 'plan.json');
   const sealPath = path.join(destination, 'seal.json');
@@ -1073,7 +1087,10 @@ export async function runTutorStubResistanceSemanticValidation({
       });
       continue;
     }
-    if (checkpoint.judge_results.some((row) => row.outcome !== 'recorded_response')) {
+    if (
+      loaded.registration.version < 4 &&
+      checkpoint.judge_results.some((row) => row.outcome !== 'recorded_response')
+    ) {
       checkpoint = finalizeCheckpoint({
         checkpoint,
         corpusCase: { ...corpusCase, case_id: blindedCase.case_id },
@@ -1299,7 +1316,7 @@ export function analyzeTutorStubResistanceSemanticValidation({
     const ids = checkpoint.judge_results.map((row) => row.judge_id);
     if (
       ids.length < 1 ||
-      ids.length > 2 ||
+      ids.length > judges.length ||
       new Set(ids).size !== ids.length ||
       ids.some((id) => !judges.some((j) => j.id === id))
     ) {
@@ -1319,7 +1336,8 @@ export function analyzeTutorStubResistanceSemanticValidation({
         requestBinding.revision >= 2 &&
         rowJudge?.provider === 'claude-code';
       const safeClaudeResponseFreeTelemetryAllowed =
-        loaded.registration.version === 3 && requestBinding.revision === 4 && rowJudge?.provider === 'claude-code';
+        ((loaded.registration.version === 3 && requestBinding.revision === 4) || loaded.registration.version === 4) &&
+        rowJudge?.provider === 'claude-code';
       independentRunIds.push(row.independent_run_id);
       if (checkpoint.invocation_id_by_judge?.[row.judge_id] !== row.independent_run_id) {
         issues.push('judge invocation id does not match the checkpoint ledger');

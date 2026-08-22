@@ -3175,3 +3175,13 @@ and explicit human approval.
   with V1-V3. All 80 cases pass the exact schema/evidence audit and traverse
   all three frozen seats plus the hierarchical aggregate at zero calls. This
   establishes engineering closure only, not empirical semantic accuracy.
+
+- 2026-08-21 — Wired V4 into the existing create-once, per-judge checkpointed
+  validation runtime and one-shot analyzer. The deterministic scorer directly
+  implements the already-frozen primary, coverage, component, agreement, and
+  multi-rater-kappa gates. A full 80-case/240-seat zero-call runtime regression
+  passed, including one deliberately exhausted Sonnet response-free seat: the
+  missing seat abstained, GPT-5.5 still ran, the two preserved valid judges
+  formed the primary majority, and no judge, learner, case, or outcome was
+  repaired, rerun, replaced, or selected. The synthetic pass is wiring
+  evidence only; live heldout accuracy remains unobserved.

@@ -18,6 +18,7 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_HELDOUT_CORPUS_V4,
   validateTutorStubResistanceSemanticHeldoutCorpusV4,
 } from '../services/tutorStubResistanceSemanticHeldoutCorpusV4.js';
+import { scoreTutorStubResistanceSemanticCorpusV4 } from '../services/tutorStubResistanceSemanticScoringV4.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const registration = JSON.parse(
@@ -170,6 +171,33 @@ test('all 80 heldout cases traverse the frozen three-seat wrapper and hierarchic
       heldoutCase.case_id,
     );
   }
+});
+
+test('predeclared v4 scorer exercises every frozen gate with perfect zero-call fixtures', () => {
+  const responsePairs = Object.fromEntries(
+    TUTOR_STUB_RESISTANCE_SEMANTIC_HELDOUT_CORPUS_V4.cases.map((heldoutCase) => [
+      heldoutCase.case_id,
+      Object.fromEntries(
+        registration.measurement.judges.map((judge) => [
+          judge.id,
+          buildTutorStubResistanceSemanticZeroCallFixtureResponseV3({ corpusCase: heldoutCase, judge }),
+        ]),
+      ),
+    ]),
+  );
+  const score = scoreTutorStubResistanceSemanticCorpusV4({
+    corpus: TUTOR_STUB_RESISTANCE_SEMANTIC_HELDOUT_CORPUS_V4,
+    responsePairs,
+    registration,
+  });
+  assert.equal(score.status, 'passed');
+  assert.equal(score.cases, 80);
+  assert.equal(score.metrics.judgment_validity_rate, 1);
+  assert.equal(score.metrics.panels_with_two_eligible_voters, 1);
+  assert.equal(score.metrics.primary_exact_label_accuracy, 1);
+  assert.equal(score.metrics.aggregate_component_accuracy, 1);
+  assert.equal(score.metrics.mean_pairwise_label_agreement, 1);
+  assert.equal(score.metrics.multi_rater_kappa, 1);
 });
 
 test('two-of-three primary agreement remains determinate when one diagnostic component has no majority', () => {
