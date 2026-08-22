@@ -121,13 +121,38 @@ function registeredProfiles(registration) {
 const MOVE_TO_HOST_ACTION = Object.freeze({
   ask_discriminating_question: 'stage_next_step',
   test_bounded_distinction: 'clarify_distinction',
+  // Deliberately the same host action family as the discriminating question.
+  // A new family would need its own uptake contract, its own legacy register
+  // name and its own projection entry, so the two versions of the tutor would
+  // differ in four things at once and no result could be pinned on any one of
+  // them. Sharing the family holds the host machinery identical and leaves the
+  // instruction text as the single thing that varies. The family also already
+  // fits: it expects the learner to adopt or use staged evidence, or to ask one
+  // new bounded question, which is true of both moves.
+  simplify_to_one_workable_step: 'stage_next_step',
 });
 
+// The third move is here for the bored learner. A discriminating question asks
+// a learner to choose between live paths. The v4 and v5 dialogues showed that a
+// bored learner answers such a question with a report of having stopped, which
+// is what a learner who has given up has to give: the question asks them to do
+// the very thing they just said they stopped doing. This move removes the
+// choice instead of sharpening it, and leaves one small action standing.
+//
+// The instruction has to hold one line very firmly, because the whole value of
+// the comparison rests on it. Cutting the step down must not mean handing over
+// the finding. A tutor that says what the learner will see would let the
+// learner score by repeating the tutor, which is not recovery and would lift
+// the reading for a reason the design does not mean to measure. So the tutor
+// may name the step and may name the object the step touches, and may not say
+// what it shows or draw any inference from it.
 const MOVE_INSTRUCTIONS = Object.freeze({
   ask_discriminating_question:
     'Ask exactly one concrete question about the nearest already-public object or inference. Make its alternatives genuinely discriminating, so the answer changes which live public path should be tested next. Do not ask permission, ask what the learner wants to do, or supply the answer.',
   test_bounded_distinction:
     'Name one bounded distinction inside the disputed inquiry frame and offer one local public test that could count for or against it. Explicitly leave the learner free to reject the wider frame; do not convert disagreement into compliance.',
+  simplify_to_one_workable_step:
+    'Cut the next step down to one small action the learner can take now, and name that single step plainly. You may name the already-public object the step touches. You must not say what the learner will find in it, must not state or hint at any finding, inference or conclusion, and must not offer a choice between steps. Do not ask permission or ask what the learner wants to do. The looking and the saying belong to the learner.',
 });
 
 const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
@@ -135,6 +160,8 @@ const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
     'Ask exactly one concrete, genuinely discriminating question about the nearest already-public object; do not supply the answer.',
   test_bounded_distinction:
     'Name one bounded distinction and ask for one local public test; explicitly leave the wider frame open to rejection.',
+  simplify_to_one_workable_step:
+    'Name one small step the learner can take now, on a named public object; do not say what it shows, do not infer from it, and do not offer a choice.',
 });
 
 const CONTENT_BEARING_MOVES = new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']);
