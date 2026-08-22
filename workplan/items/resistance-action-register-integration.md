@@ -3185,3 +3185,15 @@ and explicit human approval.
   formed the primary majority, and no judge, learner, case, or outcome was
   repaired, rerun, replaced, or selected. The synthetic pass is wiring
   evidence only; live heldout accuracy remains unobserved.
+
+- 2026-08-21 — Prepared the fresh V4 digest-bound validation request
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v4.json`
+  at SHA-256
+  `72a04ac91dd2c9f152f9e3efd3f1c3e8e80b5c433c00c8950db4f36210a4ec92`.
+  It pins launch source `2b734c5042603ec7cc18a6d11d9735253d9f3631`
+  / tree `654038103babecc55059bbf72e9fb12c3c4e9c8e`, a 19-file
+  closure, three distinct non-Luna judges, 80 wholly fresh cases, 240 planned
+  calls, the 720-reservation validation safeguard, programme ledger
+  `894 -> 1,614 / 5,000`, no interim analysis, and no confirmation authority.
+  Its focused zero-call request validator and deterministic blinded-plan build
+  pass.
