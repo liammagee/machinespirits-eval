@@ -81,6 +81,21 @@ function sameIds(actual, expected) {
   );
 }
 
+// The caps used to be written here as 4 dialogues, 60 attempts a dialogue and
+// 240 a batch. The batch plan already carries all three, frozen when the batch
+// was planned, so a plan written under one registration can never be audited
+// against another registration's numbers. That mismatch is the fault that cost
+// v4 twenty-two of its thirty-three objective endpoints, and under v5 it would
+// have made this analyzer refuse every dialogue the study paid for.
+function planCaps(plan) {
+  const budget = plan?.budget || {};
+  return {
+    batchSize: budget.dialogues,
+    perDialogue: budget.maximum_model_attempt_reservations_per_dialogue,
+    perBatch: budget.maximum_model_attempt_reservations,
+  };
+}
+
 function exactTraceDirectory(resultRow, command, label) {
   if (!resultRow?.trace || !command?.trace_dir) throw new Error(`${label} lacks its registered trace path`);
   const tracePath = path.resolve(ROOT, resultRow.trace);
@@ -93,6 +108,7 @@ function exactTraceDirectory(resultRow, command, label) {
 }
 
 function auditRecovery({ absolute, plan, initial, result, seal, planPath, initialResultPath, resultPath }) {
+  const caps = planCaps(plan);
   const initialRows = Array.isArray(initial.results) ? initial.results : [];
   const initialById = new Map(initialRows.map((row) => [row.job_id, row]));
   const planIds = plan.jobs.map((job) => job.id);
@@ -129,7 +145,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     recoveryPlan.original_plan_sha256 !== sha256(fs.readFileSync(planPath)) ||
     recoveryPlan.original_result_sha256 !== sha256(fs.readFileSync(initialResultPath)) ||
     JSON.stringify(recoveryPlan.source) !== JSON.stringify(plan.source) ||
-    recoveryPlan.hard_ceiling !== 240 ||
+    recoveryPlan.hard_ceiling !== caps.perBatch ||
     !sameIds(recoveryPlan.valid_unit_ids_excluded || [], initialValidIds) ||
     !sameIds(recoveryIds, missingOrFailedIds) ||
     !sameIds(recoveryResultIds, missingOrFailedIds) ||
@@ -167,7 +183,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
         throw new Error(`${plan.batch_id} rewrote initially valid unit ${job.id}`);
       }
       reservationsByJob.set(job.id, initialReservations);
-      finalTraceBudgetByJob.set(job.id, 60);
+      finalTraceBudgetByJob.set(job.id, caps.perDialogue);
       continue;
     }
     const recoveryJob = recoveryJobs.get(job.id);
@@ -195,8 +211,8 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   }
   const total = [...reservationsByJob.values()].reduce((sum, value) => sum + value, 0);
   if (
-    [...reservationsByJob.values()].some((value) => value > 60) ||
-    total > 240 ||
+    [...reservationsByJob.values()].some((value) => value > caps.perDialogue) ||
+    total > caps.perBatch ||
     recoveryPlan.used_reservations_before_recovery !== usedReservationsBeforeRecovery ||
     result.observed_model_attempt_reservations !== total ||
     seal.observed_model_attempt_reservations !== total ||
@@ -223,6 +239,7 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
   const result = fs.existsSync(finalResultPath) ? readJson(finalResultPath) : initial;
   const resultPath = fs.existsSync(finalResultPath) ? finalResultPath : initialResultPath;
   const seal = readJson(sealPath);
+  const caps = planCaps(plan);
   const stoppedAudit = auditStoppedUnits(result);
   if (
     plan.schema !== 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-plan.v1' ||
@@ -239,7 +256,7 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     !['complete', 'incomplete'].includes(result.status) ||
     !SEAL_STATUSES.includes(seal.status) ||
     (result.status === 'complete') !== (seal.status === 'sealed_complete') ||
-    result.completed_dialogues + result.failed_or_missing_dialogues !== 4 ||
+    result.completed_dialogues + result.failed_or_missing_dialogues !== caps.batchSize ||
     result.completed_dialogues !== stoppedAudit.completed ||
     result.failed_or_missing_dialogues !== stoppedAudit.stopped.length ||
     !stoppedAudit.allRegistered ||
@@ -249,8 +266,8 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     seal.batch_id !== plan.batch_id ||
     seal.plan_sha256 !== sha256(fs.readFileSync(planPath)) ||
     seal.result_sha256 !== sha256(fs.readFileSync(resultPath)) ||
-    seal.dialogues !== 4 ||
-    seal.hard_ceiling !== 240 ||
+    seal.dialogues !== caps.batchSize ||
+    seal.hard_ceiling !== caps.perBatch ||
     seal.valid_unit_reruns !== false ||
     seal.outcome_selection !== false
   ) {
@@ -314,12 +331,12 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     const row = result.results.find((candidate) => candidate.job_id === job.id);
     exactTraceDirectory(row, job.command, `boredom proof-DAG unit ${job.id}`);
     const count = reservationCount(job.command.trace_dir);
-    if (count > 60) throw new Error(`${job.id} exceeds its 60-reservation cap`);
+    if (count > caps.perDialogue) throw new Error(`${job.id} exceeds its ${caps.perDialogue}-reservation cap`);
     reservationsByJob.set(job.id, count);
-    finalTraceBudgetByJob.set(job.id, 60);
+    finalTraceBudgetByJob.set(job.id, caps.perDialogue);
   }
-  if ([...reservationsByJob.values()].reduce((sum, value) => sum + value, 0) > 240) {
-    throw new Error(`${plan.batch_id} exceeds its 240-reservation cap`);
+  if ([...reservationsByJob.values()].reduce((sum, value) => sum + value, 0) > caps.perBatch) {
+    throw new Error(`${plan.batch_id} exceeds its ${caps.perBatch}-reservation cap`);
   }
   return {
     absolute,
@@ -338,7 +355,21 @@ function metric(model, field) {
   return Number.isFinite(Number(value)) ? Number(value) : null;
 }
 
-function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan, observationSemantics) {
+function assertAttemptEnvelope(
+  events,
+  job,
+  outcomeTurn,
+  finalTraceBudget,
+  plan,
+  observationSemantics,
+  { maximumTriggerTurn, postTriggerLearnerTurns },
+) {
+  // The dialogue length the run was told to use, and the turn the trigger
+  // actually landed on. Both come from the registration the batch was planned
+  // under. Written out here as v4's 4 turns and a by-turn-2 trigger, this
+  // function would have refused every dialogue v5 pays for.
+  const registeredTurns = maximumTriggerTurn + postTriggerLearnerTurns;
+  const triggerTurn = outcomeTurn - postTriggerLearnerTurns;
   const runStart = events.find((event) => event.type === 'run_start');
   const metadata = runStart?.metadata;
   const recipe = metadata?.sessionRecipe;
@@ -368,7 +399,9 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
     const turn = Number(event.turn);
     if (event.role === 'tutor_stub_opening') return turn === 0;
     if (event.role === 'tutor_stub_boredom_performance_adjudication') {
-      return observationSemantics === 'prospective_v9' && turn >= 1 && turn <= 2;
+      // Every pre-treatment turn up to and including the trigger is read, and
+      // nothing after it. Under v5 that can reach turn 4.
+      return observationSemantics === 'prospective_v9' && turn >= 1 && turn <= triggerTurn;
     }
     if (event.role === 'tutor_stub_auto_learner' || event.role === 'tutor_stub_learner_analysis') {
       return turn >= 1 && turn <= outcomeTurn;
@@ -389,9 +422,13 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
     ...Array.from({ length: outcomeTurn }, (_, index) => ['tutor_stub_learner_analysis', index + 1]),
     ...Array.from({ length: outcomeTurn - 1 }, (_, index) => ['tutor_stub_tutor', index + 1]),
   ].every(([role, turn]) => calls.some((event) => event.role === role && Number(event.turn) === turn));
+  // One adjudication call per turn the run read, the trigger turn included.
+  // This was written as `Math.min(2, outcomeTurn - 2)`, which is the trigger
+  // turn only while the outcome window is two turns wide; at five it demands
+  // two readings from a dialogue that triggered on turn 1 and made one.
   const semanticRequired =
     observationSemantics !== 'prospective_v9' ||
-    Array.from({ length: Math.min(2, outcomeTurn - 2) }, (_, index) => index + 1).every((turn) =>
+    Array.from({ length: triggerTurn }, (_, index) => index + 1).every((turn) =>
       calls.some(
         (event) => event.role === 'tutor_stub_boredom_performance_adjudication' && Number(event.turn) === turn,
       ),
@@ -420,13 +457,16 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
     [metadata?.experiment?.repeat !== job.assignment_index, 'assignment_index'],
     [metadata?.experiment?.jobId !== job.id, 'job_id'],
     [metadata?.autoLearner?.observationSemantics !== observationSemantics, 'observation_semantics'],
-    [metadata?.autoLearner?.maxTurns !== 4, 'max_turns'],
+    // The dialogue length the runner was told to use: every turn the tutor may
+    // act on, then every learner turn the endpoint watches. Written here as 4 it
+    // was v4's window, and it would have refused every v5 dialogue.
+    [metadata?.autoLearner?.maxTurns !== registeredTurns, 'max_turns'],
     [metadata?.autoLearner?.profileId !== 'bored', 'learner_profile_id'],
     [metadata?.autoLearner?.modelRef !== 'codex.gpt-5.6-luna', 'learner_model_ref'],
     [metadata?.lab?.admission?.modelCallBudget !== finalTraceBudget, 'model_call_budget_metadata'],
     [options?.['cli-effort'] !== 'low', 'cli_effort_option'],
     [options?.['run-seed'] !== String(job.seed), 'run_seed_option'],
-    [options?.['auto-turns'] !== '4', 'auto_turns_option'],
+    [options?.['auto-turns'] !== String(registeredTurns), 'auto_turns_option'],
     [options?.['model-call-budget'] !== String(finalTraceBudget), 'model_call_budget_option'],
     [options?.['dag-mode'] !== 'strict_dag', 'dag_mode_option'],
     [options?.['register-policy'] !== 'field', 'register_policy_option'],
@@ -508,8 +548,25 @@ function analyzeTrace(batch, resultRow, loaded) {
   }
   const triggerTurn = Number(interventions[0].turn);
   const outcomeTurn = Number(outcomes[0].turn);
-  if (![1, 2].includes(triggerTurn) || outcomeTurn !== triggerTurn + 2 || outcomes[0].tutorReplyGenerated !== false) {
-    throw new Error(`${job.id} violates the by-T2 trigger or two-turn outcome horizon`);
+  // This window used to be written out here as "turn 1 or 2, and an outcome two
+  // turns later". Those were v4's numbers. v5 lets the trigger show as late as
+  // turn 4 and watches five learner turns after it, so both bounds are read off
+  // the registration the batch was planned under. Written by hand, this gate
+  // would have thrown away every dialogue v5 pays for.
+  const maximumTriggerTurn = Number(loaded.registration.design.freshPrefixGeneration.maximumTriggerTurn);
+  const postTriggerLearnerTurns = Number(loaded.registration.design.treatment.postTriggerLearnerTurns);
+  if (!Number.isInteger(maximumTriggerTurn) || !Number.isInteger(postTriggerLearnerTurns)) {
+    throw new Error(`${job.id} has no registered trigger bound or post-trigger outcome window to be read against`);
+  }
+  if (
+    triggerTurn < 1 ||
+    triggerTurn > maximumTriggerTurn ||
+    outcomeTurn !== triggerTurn + postTriggerLearnerTurns ||
+    outcomes[0].tutorReplyGenerated !== false
+  ) {
+    throw new Error(
+      `${job.id} violates the by-T${maximumTriggerTurn} trigger or ${postTriggerLearnerTurns}-turn outcome horizon`,
+    );
   }
   const expectedCompletedTurns = Array.from({ length: outcomeTurn - 1 }, (_, index) => index + 1);
   if (JSON.stringify(completed.map((event) => Number(event.turn))) !== JSON.stringify(expectedCompletedTurns)) {
@@ -540,8 +597,42 @@ function analyzeTrace(batch, resultRow, loaded) {
     throw new Error(`${job.id} drifted from its blocked randomized assignment`);
   }
   const trigger = completed.find((event) => Number(event.turn) === triggerTurn)?.turnRecord;
-  const postOne = completed.find((event) => Number(event.turn) === triggerTurn + 1)?.turnRecord;
-  const postTwo = outcomes[0];
+  // Every learner turn the endpoints watch, in order. All but the last sit in
+  // the dialogue as ordinary completed turns; the last one is the outcome event,
+  // which holds the same three things under different field names. They are put
+  // into one shape here so no reader below has to know which kind it was handed.
+  // v4 held these as two named locals, which is why the two-turn window was
+  // impossible to widen without touching every reader.
+  const postTriggerTurns = Array.from({ length: postTriggerLearnerTurns }, (_, index) => {
+    const turn = triggerTurn + index + 1;
+    if (turn === outcomeTurn) {
+      return {
+        turn,
+        source: outcomes[0],
+        learnerText: outcomes[0].learnerText,
+        classification: outcomes[0].classification,
+        dagModel: outcomes[0].tutorLearnerDag?.model,
+        dagAssessment: outcomes[0].tutorLearnerDag?.assessment || outcomes[0].tutorLearnerDag?.model?.assessment,
+      };
+    }
+    const record = completed.find((event) => Number(event.turn) === turn)?.turnRecord;
+    if (!record) {
+      return null;
+    }
+    return {
+      turn,
+      source: record,
+      learnerText: record.learner,
+      classification: record.classification,
+      dagModel: record.tutorLearnerDagModel,
+      dagAssessment: record.tutorLearnerDagModel?.assessment,
+    };
+  });
+  const missingPostTriggerTurns = postTriggerTurns
+    .map((entry, index) => (entry ? null : triggerTurn + index + 1))
+    .filter((turn) => turn !== null);
+  // The endpoint is read on the last watched turn, which is the outcome turn.
+  const finalPost = postTriggerTurns[postTriggerTurns.length - 1];
   const triggerHash = sha256(String(trigger?.learner || ''));
   const triggerShadow = createTutorStubResistanceAxisShadow({
     learnerText: trigger?.learner,
@@ -615,6 +706,18 @@ function analyzeTrace(batch, resultRow, loaded) {
   const unreadablePassOvers = semanticEvents
     .filter((event) => unreadablePassOver(Number(event.turn), event.adjudication))
     .map((event) => Number(event.turn));
+  // The run marks each passed-over turn as it happens. Reading that mark back
+  // keeps a dropped or mis-set adjudication from being counted as a deliberate
+  // pass-over after the fact: a turn was passed over only if the run said so at
+  // the time, and the run said so about no other turn.
+  const passOverMarkerTurns = new Set(
+    events
+      .filter((event) => event.type === 'boredom_semantic_measurement_indeterminate_passed_over')
+      .map((event) => Number(event.turn)),
+  );
+  const passOverMarkersDisagree =
+    passOverMarkerTurns.size !== unreadablePassOvers.length ||
+    unreadablePassOvers.some((turn) => !passOverMarkerTurns.has(turn));
   const exactSemanticSequence =
     !semanticMode ||
     (semanticEvents.length === triggerTurn &&
@@ -664,8 +767,7 @@ function analyzeTrace(batch, resultRow, loaded) {
   // is missing, and the reasons carry no outcome.
   const provenanceFailures = [
     [!trigger, 'no_trigger_turn'],
-    [!postOne, 'no_first_post_trigger_turn'],
-    [!postTwo, 'no_second_post_trigger_turn'],
+    [missingPostTriggerTurns.length > 0, `missing_post_trigger_turns_${missingPostTriggerTurns.join('_')}`],
     [!semanticMode && triggerShadow.resistance_kind !== 'bored', 'shadow_resistance_kind_not_bored'],
     [!semanticMode && triggerShadow.warrant?.status !== 'licensed', 'shadow_warrant_not_licensed'],
     [triggerShadow.profile_identity_used !== false, 'profile_identity_used'],
@@ -677,11 +779,12 @@ function analyzeTrace(batch, resultRow, loaded) {
       'wrong_final_authority_for_the_observation_semantics',
     ],
     [!exactSemanticSequence, 'semantic_adjudication_sequence_not_exact'],
+    [passOverMarkersDisagree, 'unreadable_pass_overs_do_not_match_the_marks_the_run_left'],
     [Boolean(earlierEligible), 'an_earlier_turn_was_already_eligible'],
     [interventions[0]?.triggerTurn !== triggerTurn, 'intervention_trigger_turn_mismatch'],
     [interventions[0]?.triggerLearnerSha256 !== triggerHash, 'intervention_trigger_hash_mismatch'],
-    [postTwo?.triggerTurn !== triggerTurn, 'second_post_trigger_turn_mismatch'],
-    [postTwo?.triggerLearnerSha256 !== triggerHash, 'second_post_trigger_hash_mismatch'],
+    [finalPost?.source?.triggerTurn !== triggerTurn, 'final_post_trigger_turn_mismatch'],
+    [finalPost?.source?.triggerLearnerSha256 !== triggerHash, 'final_post_trigger_hash_mismatch'],
   ]
     .filter(([failed]) => failed)
     .map(([, reason]) => reason);
@@ -733,22 +836,45 @@ function analyzeTrace(batch, resultRow, loaded) {
     batch.finalTraceBudgetByJob.get(job.id),
     batch.plan,
     loaded.registration.design.observationSemantics,
+    { maximumTriggerTurn, postTriggerLearnerTurns },
   );
+  // The primary endpoint is read on the first post-trigger learner turn and no
+  // later, in v5 exactly as in v4. Widening the watched window must not widen
+  // this, so the scorer is handed only the turns the registration puts inside
+  // the primary deadline, and its own reported deadline is checked back against
+  // that number rather than assumed to match.
+  const primaryDeadline = Number(loaded.registration.measurement.primaryEndpoint.deadlinePostTriggerLearnerTurns);
+  if (!Number.isInteger(primaryDeadline) || primaryDeadline < 1 || primaryDeadline > postTriggerLearnerTurns) {
+    throw new Error(`${job.id} has no registered primary endpoint deadline inside its outcome window`);
+  }
   const recovery = scoreTutorStubResistanceRecovery({
     profile: 'bored',
     triggerLearnerText: trigger.learner,
-    postLearnerTurns: [
-      { learnerText: postOne.learner, classification: postOne.classification },
-      { learnerText: postTwo.learnerText, classification: postTwo.classification },
-    ],
+    postLearnerTurns: postTriggerTurns
+      .slice(0, primaryDeadline)
+      .map((entry) => ({ learnerText: entry.learnerText, classification: entry.classification })),
   });
+  if (Number(recovery.deadline_turns) !== primaryDeadline) {
+    throw new Error(
+      `${job.id} was scored on a ${recovery.deadline_turns}-turn primary deadline, not the registered ${primaryDeadline}`,
+    );
+  }
+  // The objective endpoint is read on the last watched turn. From v5 the
+  // registration states that deadline on the endpoint as well as in the
+  // treatment window; where it does, the two numbers must be the same one.
+  const secondaryDeadline = loaded.registration.measurement.keySecondaryEndpoint?.deadlinePostTriggerLearnerTurns;
+  if (secondaryDeadline !== undefined && Number(secondaryDeadline) !== postTriggerLearnerTurns) {
+    throw new Error(
+      `${job.id} registers a ${secondaryDeadline}-turn objective deadline inside a ${postTriggerLearnerTurns}-turn outcome window`,
+    );
+  }
   const initialGrounded = metric(trigger.tutorLearnerDagModel, 'groundedCount');
-  const finalGrounded = metric(postTwo.tutorLearnerDag?.model, 'groundedCount');
+  const finalGrounded = metric(finalPost.dagModel, 'groundedCount');
   const initialCoverage = metric(trigger.tutorLearnerDagModel, 'bestPathCoverage');
-  const finalCoverage = metric(postTwo.tutorLearnerDag?.model, 'bestPathCoverage');
+  const finalCoverage = metric(finalPost.dagModel, 'bestPathCoverage');
   const initialDebt = metric(trigger.tutorLearnerDagModel, 'missingPremiseCount');
-  const finalDebt = metric(postTwo.tutorLearnerDag?.model, 'missingPremiseCount');
-  const finalUnsupported = metric(postTwo.tutorLearnerDag?.model, 'unsupportedAssertionCount');
+  const finalDebt = metric(finalPost.dagModel, 'missingPremiseCount');
+  const finalUnsupported = metric(finalPost.dagModel, 'unsupportedAssertionCount');
   if (
     [initialGrounded, finalGrounded, initialCoverage, finalCoverage, initialDebt, finalDebt, finalUnsupported].some(
       (v) => v === null,
@@ -776,7 +902,7 @@ function analyzeTrace(batch, resultRow, loaded) {
   // the counts the endpoint is built from; the one beside it holds the path
   // detail, including which premises are still missing and when the world hands
   // each one out. The release schedule is only in the second.
-  const finalAssessment = postTwo.tutorLearnerDag?.assessment || postTwo.tutorLearnerDag?.model?.assessment;
+  const finalAssessment = finalPost.dagAssessment;
   if (!Array.isArray(finalAssessment?.missingPremises)) {
     throw new Error(`${job.id} lacks the premise release schedule its objective endpoint is read against`);
   }

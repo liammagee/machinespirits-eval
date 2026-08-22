@@ -37,6 +37,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
 const REGISTRATION_V3 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json';
 const REGISTRATION_V4 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json';
+const REGISTRATION_V5 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v5.json';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -142,9 +143,21 @@ function syntheticTrace({
   protectedPassOver = false,
   authoredWorldOpening = false,
   premiseWasAvailable = false,
+  // The dialogue shape is the registration's, not this file's. v2 to v4 read a
+  // trigger by turn 2 and two turns after it; v5 reads a trigger by turn 4 and
+  // five turns after it. Written here as literals, a v5 fixture would prove
+  // nothing about a v5 run.
+  maximumTriggerTurn = 2,
+  postTriggerLearnerTurns = 2,
+  perDialogueBudget = 60,
+  // Pre-trigger turns the adjudicator could not read. Under v5 each one is
+  // passed over and the next turn is read, which is what moves the trigger later.
+  unreadablePassOverTurns = [],
+  forcedTriggerTurn = null,
 }) {
-  const triggerTurn = job.assignment_index % 2 === 0 ? 2 : 1;
-  const outcomeTurn = triggerTurn + 2;
+  const maxTurns = maximumTriggerTurn + postTriggerLearnerTurns;
+  const triggerTurn = Number.isInteger(forcedTriggerTurn) ? forcedTriggerTurn : job.assignment_index % 2 === 0 ? 2 : 1;
+  const outcomeTurn = triggerTurn + postTriggerLearnerTurns;
   const triggerText = `Whatever. I will not work through this proof ${job.id}.`;
   const triggerSha = sha256(triggerText);
   // A pre-trigger turn the adjudicator reads as actionable boredom while a
@@ -199,7 +212,7 @@ function syntheticTrace({
       type: 'run_start',
       metadata: {
         provenance: { git: { sha: plan.source.commit, dirty: false } },
-        lab: { admission: { modelCallBudget: 60 } },
+        lab: { admission: { modelCallBudget: perDialogueBudget } },
         experiment: {
           runSeed: job.seed,
           profile: 'bored',
@@ -209,7 +222,7 @@ function syntheticTrace({
         },
         autoLearner: {
           observationSemantics,
-          maxTurns: 4,
+          maxTurns,
           profileId: 'bored',
           modelRef: 'codex.gpt-5.6-luna',
         },
@@ -223,8 +236,8 @@ function syntheticTrace({
             options: {
               'cli-effort': 'low',
               'run-seed': String(job.seed),
-              'auto-turns': '4',
-              'model-call-budget': '60',
+              'auto-turns': String(maxTurns),
+              'model-call-budget': String(perDialogueBudget),
               'dag-mode': 'strict_dag',
               'register-policy': 'field',
               'register-palette': 'plain,warm',
@@ -262,19 +275,40 @@ function syntheticTrace({
       ? Array.from({ length: triggerTurn }, (_, index) => {
           const turn = index + 1;
           const candidate = turn === triggerTurn ? triggerText : preTriggerText;
+          // A turn the adjudicator could not read. The run still writes the
+          // reading it attempted, so the turn's identity and route stay on the
+          // record; only the verdict is absent.
+          const unreadable = unreadablePassOverTurns.includes(turn) && turn < triggerTurn;
           return {
             type: 'boredom_semantic_adjudication',
             turn,
             adjudication: {
               candidate_sha256: sha256(candidate),
-              measurement_disposition:
-                turn === triggerTurn || protectedPassOver ? 'actionable_boredom' : 'productive_uptake',
+              measurement_disposition: unreadable
+                ? 'measurement_indeterminate'
+                : turn === triggerTurn || protectedPassOver
+                  ? 'actionable_boredom'
+                  : 'productive_uptake',
               independent_route: { required_model_ref: 'codex.gpt-5.6-sol', matches: true },
-              low_confidence: false,
-              parse_ok: true,
+              low_confidence: unreadable,
+              parse_ok: !unreadable,
             },
           };
         })
+      : []),
+    // The mark the run leaves each time it passes a turn over. Without it the
+    // analyzer treats the indeterminate reading as a dropped verdict, not a
+    // registered pass-over.
+    ...(observationSemantics === 'prospective_v9'
+      ? unreadablePassOverTurns
+          .filter((turn) => turn < triggerTurn)
+          .map((turn) => ({
+            type: 'boredom_semantic_measurement_indeterminate_passed_over',
+            turn,
+            code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE_TURN_INELIGIBLE',
+            disposition: 'measurement_indeterminate_turn_ineligible_read_next_turn',
+            maximumTriggerTurn,
+          }))
       : []),
     {
       type: 'resistance_action_register_intervention_applied',
@@ -326,8 +360,20 @@ function writeSyntheticBatch(
     stoppedJobIds = [],
     protectedPassOverJobIds = [],
     authoredWorldOpeningWorlds = [],
+    // Turns the adjudicator could not read, per dialogue, and the trigger turn
+    // each dialogue lands on once those turns are passed over.
+    unreadablePassOverTurnsByJobId = {},
+    forcedTriggerTurnByJobId = {},
+    maximumTriggerTurn = 2,
+    postTriggerLearnerTurns = 2,
   } = {},
 ) {
+  // The batch's own frozen numbers, never this file's. The analyzer audits the
+  // sealed batch against these same three, so writing a different set here
+  // would make the fixture prove the wrong thing.
+  const batchSize = plan.budget.dialogues;
+  const perDialogueBudget = plan.budget.maximum_model_attempt_reservations_per_dialogue;
+  const perBatchBudget = plan.budget.maximum_model_attempt_reservations;
   fs.mkdirSync(path.join(root, 'jobs'), { recursive: true });
   writeJson(path.join(root, 'batch-plan.json'), plan);
   const results = plan.jobs.map((job) => {
@@ -340,6 +386,11 @@ function writeSyntheticBatch(
       observationSemantics,
       protectedPassOver: protectedPassOverJobIds.includes(job.id),
       authoredWorldOpening: authoredWorldOpeningWorlds.includes(job.world),
+      maximumTriggerTurn,
+      postTriggerLearnerTurns,
+      perDialogueBudget,
+      unreadablePassOverTurns: unreadablePassOverTurnsByJobId[job.id] || [],
+      forcedTriggerTurn: forcedTriggerTurnByJobId[job.id] ?? null,
     })
       .map((event) => JSON.stringify(event))
       .join('\n')}\n`;
@@ -382,9 +433,9 @@ function writeSyntheticBatch(
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-result.v1',
     batch_id: plan.batch_id,
     status: stoppedJobIds.length ? 'incomplete' : 'complete',
-    completed_dialogues: 4 - stoppedJobIds.length,
+    completed_dialogues: batchSize - stoppedJobIds.length,
     failed_or_missing_dialogues: stoppedJobIds.length,
-    maximum_model_attempt_reservations: 240,
+    maximum_model_attempt_reservations: perBatchBudget,
     results,
   });
   if (stoppedJobIds.length) {
@@ -399,8 +450,8 @@ function writeSyntheticBatch(
     batch_id: plan.batch_id,
     plan_sha256: sha256(fs.readFileSync(path.join(root, 'batch-plan.json'))),
     result_sha256: sha256(fs.readFileSync(resultPath)),
-    dialogues: 4,
-    hard_ceiling: 240,
+    dialogues: batchSize,
+    hard_ceiling: perBatchBudget,
     valid_unit_reruns: false,
     outcome_selection: false,
   });
@@ -1355,4 +1406,102 @@ test('v4 source pin binds the frozen closure bytes rather than the checkout head
     /closure file is absent at [0-9a-f]{40}: services\/pinned-three\.js/u,
   );
   assert.equal(/^[0-9a-f]{40}$/u.test(laterOnlyCommit), true);
+});
+
+test('v5 reads a widened window and passes over a turn the instrument could not read', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-v5-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V5) });
+  // The two numbers this whole test exists to protect. v4 wrote them into the
+  // analyzer by hand; if either moves, every literal that used to shadow it has
+  // to be found again.
+  const maximumTriggerTurn = loaded.registration.design.freshPrefixGeneration.maximumTriggerTurn;
+  const postTriggerLearnerTurns = loaded.registration.design.treatment.postTriggerLearnerTurns;
+  assert.equal(maximumTriggerTurn, 4);
+  assert.equal(postTriggerLearnerTurns, 5);
+  assert.equal(
+    loaded.registration.design.freshPrefixGeneration.unreadableTurnDisposition,
+    'pass_over_this_turn_and_read_the_next_one',
+  );
+
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  const roots = [];
+  const passedOver = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION_V5,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    // One dialogue a batch loses turns 1 and 2 to an unreadable reading and
+    // triggers on turn 3 instead. Under v4 that dialogue was thrown away.
+    const lostTwoTurns = plan.jobs.slice(0, 1).map((job) => job.id);
+    passedOver.push(...lostTwoTurns);
+    writeSyntheticBatch(root, plan, outcomes, {
+      observationSemantics: 'prospective_v9',
+      maximumTriggerTurn,
+      postTriggerLearnerTurns,
+      unreadablePassOverTurnsByJobId: Object.fromEntries(lostTwoTurns.map((id) => [id, [1, 2]])),
+      forcedTriggerTurnByJobId: Object.fromEntries(lostTwoTurns.map((id) => [id, 3])),
+    });
+    roots.push(root);
+  }
+  assert.equal(passedOver.length, 9);
+
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION_V5,
+    expectedSourceCommit: head,
+  });
+  assert.equal(report.rows.length, 36);
+
+  // The nine dialogues v4 would have lost are read, disclosed by turn, and
+  // still carry an ordinary trigger.
+  const disclosed = report.treatment_fidelity.unreadable_pass_over_units;
+  assert.equal(disclosed.length, 9);
+  assert.deepEqual(disclosed.map((unit) => unit.case_id).sort(), [...passedOver].sort());
+  assert.ok(disclosed.every((unit) => unit.trigger_turn === 3));
+  assert.ok(disclosed.every((unit) => unit.passed_over.join(',') === '1,2'));
+  assert.ok(
+    report.rows
+      .filter((row) => passedOver.includes(row.case_id))
+      .every((row) => row.semantic_measurement.trigger_disposition === 'actionable_boredom'),
+  );
+  // Every other dialogue stays clean, so the disclosure is not a blanket pass.
+  assert.equal(report.rows.filter((row) => (row.trigger.unreadable_pass_overs || []).length === 0).length, 36 - 9);
+
+  // Every trigger sits inside the registered window, and no dialogue was read
+  // on v4's two-turn horizon.
+  assert.ok(report.rows.every((row) => row.trigger.observed_by_turn >= 1));
+  assert.ok(report.rows.every((row) => row.trigger.observed_by_turn <= maximumTriggerTurn));
+  assert.ok(report.rows.some((row) => row.trigger.observed_by_turn > 2));
+
+  // The objective endpoint carries the registered window in its own name, and
+  // it moved: a v4-shaped reader would have looked for the two-turn field.
+  const field = `proof_progress_by_${'five'}_turns`;
+  assert.ok(report.rows.every((row) => typeof row.outcome[field] === 'boolean'));
+  assert.ok(report.rows.every((row) => row.outcome.proof_progress_by_two_turns === undefined));
+  assert.ok(report.rows.every((row) => row.outcome.recovered === true));
+  assert.ok(report.rows.every((row) => row.outcome.deadline_turns === 1));
+
+  // A pass-over counts only where the run marked one at the time. Strip the
+  // mark and the same trace must be refused, so an adjudication that simply
+  // went missing can never be read back as a registered pass-over.
+  mutateTrace(roots[0], passedOver[0], (events) =>
+    events.filter(
+      (event) => !(event.type === 'boredom_semantic_measurement_indeterminate_passed_over' && Number(event.turn) === 2),
+    ),
+  );
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION_V5,
+        expectedSourceCommit: head,
+      }),
+    /unreadable_pass_overs_do_not_match_the_marks_the_run_left/u,
+  );
 });
