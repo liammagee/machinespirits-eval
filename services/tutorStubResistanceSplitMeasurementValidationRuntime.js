@@ -40,6 +40,17 @@ import {
   wrapTutorStubResistanceMeasurementModelOutputV6,
 } from './tutorStubResistanceRecoverySemanticAdjudicationV6.js';
 import {
+  TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V7,
+  TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V7,
+  adjudicateTutorStubResistanceFidelityPanelV7,
+  adjudicateTutorStubResistanceRecoveryPrimaryPanelV7,
+  buildTutorStubResistanceFidelityPromptV7,
+  buildTutorStubResistanceRecoveryPrimaryPromptV7,
+  scoreTutorStubResistanceMeasurementCorpusV7,
+  tutorStubResistanceMeasurementSha256 as tutorStubResistanceMeasurementSha256V7,
+  wrapTutorStubResistanceMeasurementModelOutputV7,
+} from './tutorStubResistanceRecoverySemanticAdjudicationV7.js';
+import {
   buildTutorStubResistanceRecoverySemanticBlindedValidationCases,
   loadTutorStubResistanceRecoverySemanticValidation,
   tutorStubResistanceRecoverySemanticOpaqueCaseId,
@@ -58,6 +69,11 @@ import {
   TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V6,
   loadTutorStubResistanceMeasurementValidationV6,
 } from './tutorStubResistanceRecoverySemanticValidationV6.js';
+import {
+  TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V7,
+  TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V7,
+  loadTutorStubResistanceMeasurementValidationV7,
+} from './tutorStubResistanceRecoverySemanticValidationV7.js';
 
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SYSTEM_PROMPT =
   'Independently judge only the supplied public dialogue packet under the frozen response schema. Do not use tools, hidden state, lexical heuristics, profile labels, assignments, gold labels, or another judge response. Return only schema-valid JSON.';
@@ -92,6 +108,14 @@ export function loadTutorStubResistanceRecoverySemanticValidationForRegistration
   ) {
     return loadTutorStubResistanceMeasurementValidationV6(validationRegistration);
   }
+  if (
+    [
+      TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V7,
+      TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V7,
+    ].includes(validationRegistration)
+  ) {
+    return loadTutorStubResistanceMeasurementValidationV7(validationRegistration);
+  }
   return loadTutorStubResistanceRecoverySemanticValidation();
 }
 
@@ -107,8 +131,12 @@ function splitV6(loaded) {
   return loaded?.instrument?.version === 6 && ['primary_recovery', 'intervention_fidelity'].includes(loaded?.stage);
 }
 
+function splitV7(loaded) {
+  return loaded?.instrument?.version === 7 && ['primary_recovery', 'intervention_fidelity'].includes(loaded?.stage);
+}
+
 function splitMeasurement(loaded) {
-  return splitV5(loaded) || splitV6(loaded);
+  return splitV5(loaded) || splitV6(loaded) || splitV7(loaded);
 }
 
 function panelMayContinueAfterTerminalSeat(loaded) {
@@ -116,6 +144,11 @@ function panelMayContinueAfterTerminalSeat(loaded) {
 }
 
 function adjudicateLoaded(loaded, options) {
+  if (splitV7(loaded)) {
+    return loaded.stage === 'primary_recovery'
+      ? adjudicateTutorStubResistanceRecoveryPrimaryPanelV7(options)
+      : adjudicateTutorStubResistanceFidelityPanelV7(options);
+  }
   if (splitV6(loaded)) {
     return loaded.stage === 'primary_recovery'
       ? adjudicateTutorStubResistanceRecoveryPrimaryPanelV6(options)
@@ -132,6 +165,7 @@ function adjudicateLoaded(loaded, options) {
 }
 
 function scoreLoaded(loaded, options) {
+  if (splitV7(loaded)) return scoreTutorStubResistanceMeasurementCorpusV7(options);
   if (splitV6(loaded)) return scoreTutorStubResistanceMeasurementCorpusV6(options);
   if (splitV5(loaded)) return scoreTutorStubResistanceMeasurementCorpusV5(options);
   return hierarchicalV3(loaded)
@@ -210,8 +244,8 @@ function validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, so
     goRequest?.measurementValidation?.fidelityLearnerOutcomeVisible !== false ||
     goRequest?.measurementValidation?.regexKeywordOrGeneratorAuthority !== 'none' ||
     goRequest?.measurementValidation?.mediumOrHighDeterminateVotesEligible !== true ||
-    (version === 6 && goRequest?.measurementValidation?.fieldLocalEligibility !== true) ||
-    (version === 6 && goRequest?.measurementValidation?.modelReturnsFinalRecovery !== false) ||
+    (version >= 6 && goRequest?.measurementValidation?.fieldLocalEligibility !== true) ||
+    (version >= 6 && goRequest?.measurementValidation?.modelReturnsFinalRecovery !== false) ||
     goRequest?.measurementValidation?.indeterminateRepairRerunReplacementOrSelection !== false ||
     goRequest?.measurementValidation?.analysisOnlyAfterBothStagesSeal !== true ||
     stage?.registration?.path !== loaded.registrationPath ||
@@ -222,8 +256,9 @@ function validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, so
     stage?.createOnce !== true ||
     goRequest?.budget?.plannedCalls !== 720 ||
     goRequest?.budget?.hardValidationReservations !== 2160 ||
-    goRequest?.budget?.programmeLedgerBefore !== 1510 ||
-    goRequest?.budget?.programmeMaximumAfterValidation !== 3670 ||
+    goRequest?.budget?.programmeLedgerBefore !==
+      loaded.instrument.budget[`programmeLedgerBeforeV${version}Validation`] ||
+    goRequest?.budget?.programmeMaximumAfterValidation !== loaded.instrument.budget.programmeMaximumAfterValidation ||
     goRequest?.budget?.programmeCeiling !== 10000 ||
     goRequest?.budget?.attemptCountsRole !== 'operational_safeguard_only_not_design_objective' ||
     goRequest?.authorization?.validationModelCallsAuthorized !== true ||
@@ -583,14 +618,20 @@ function promptsFor(loaded, row) {
       judge.id,
       splitMeasurement(loaded)
         ? loaded.stage === 'primary_recovery'
-          ? (splitV6(loaded)
-              ? buildTutorStubResistanceRecoveryPrimaryPromptV6
-              : buildTutorStubResistanceRecoveryPrimaryPromptV5)({
+          ? (splitV7(loaded)
+              ? buildTutorStubResistanceRecoveryPrimaryPromptV7
+              : splitV6(loaded)
+                ? buildTutorStubResistanceRecoveryPrimaryPromptV6
+                : buildTutorStubResistanceRecoveryPrimaryPromptV5)({
               caseId: row.case_id,
               publicPacket: packet(row),
               judge,
             })
-          : (splitV6(loaded) ? buildTutorStubResistanceFidelityPromptV6 : buildTutorStubResistanceFidelityPromptV5)({
+          : (splitV7(loaded)
+              ? buildTutorStubResistanceFidelityPromptV7
+              : splitV6(loaded)
+                ? buildTutorStubResistanceFidelityPromptV6
+                : buildTutorStubResistanceFidelityPromptV5)({
               caseId: row.case_id,
               intervention: row.intervention,
               judge,
@@ -601,6 +642,7 @@ function promptsFor(loaded, row) {
 }
 
 function promptSha256(loaded, prompt) {
+  if (splitV7(loaded)) return tutorStubResistanceMeasurementSha256V7(prompt);
   if (splitV6(loaded)) return tutorStubResistanceMeasurementSha256V6(prompt);
   if (splitV5(loaded)) return tutorStubResistanceMeasurementSha256(prompt);
   return tutorStubResistanceRecoverySemanticPromptSha256(prompt);
@@ -608,6 +650,11 @@ function promptSha256(loaded, prompt) {
 
 function outputSchemaFor(loaded) {
   if (!splitMeasurement(loaded)) return TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_OUTPUT_SCHEMA;
+  if (splitV7(loaded)) {
+    return loaded.stage === 'primary_recovery'
+      ? TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V7
+      : TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V7;
+  }
   if (splitV6(loaded)) {
     return loaded.stage === 'primary_recovery'
       ? TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V6
@@ -767,9 +814,11 @@ function observed(result) {
 
 function wrapRaw({ raw, prompt, judge, independentRunId, loaded }) {
   if (splitMeasurement(loaded)) {
-    const wrap = splitV6(loaded)
-      ? wrapTutorStubResistanceMeasurementModelOutputV6
-      : wrapTutorStubResistanceMeasurementModelOutputV5;
+    const wrap = splitV7(loaded)
+      ? wrapTutorStubResistanceMeasurementModelOutputV7
+      : splitV6(loaded)
+        ? wrapTutorStubResistanceMeasurementModelOutputV6
+        : wrapTutorStubResistanceMeasurementModelOutputV5;
     return wrap({
       instrument: loaded.stage,
       modelOutput: JSON.parse(String(raw.text || '').trim()),
