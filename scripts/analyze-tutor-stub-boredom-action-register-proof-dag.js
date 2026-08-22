@@ -572,25 +572,36 @@ function analyzeTrace(batch, resultRow, loaded) {
         semanticAdjudication: triggerSemanticAdjudication,
       })
     : null;
-  if (
-    !trigger ||
-    !postOne ||
-    !postTwo ||
-    (!semanticMode && triggerShadow.resistance_kind !== 'bored') ||
-    (!semanticMode && triggerShadow.warrant?.status !== 'licensed') ||
-    triggerShadow.profile_identity_used !== false ||
-    triggerEligibility?.eligible !== true ||
-    (semanticMode
-      ? triggerEligibility?.boredom_semantic_precedence?.final_authority !== 'independent_llm_semantic_adjudicator'
-      : triggerEligibility?.boredom_compositional_precedence?.generic_uptake_override_allowed !== false) ||
-    !exactSemanticSequence ||
-    earlierEligible ||
-    interventions[0].triggerTurn !== triggerTurn ||
-    interventions[0].triggerLearnerSha256 !== triggerHash ||
-    postTwo.triggerTurn !== triggerTurn ||
-    postTwo.triggerLearnerSha256 !== triggerHash
-  ) {
-    throw new Error(`${job.id} lacks its first eligible fresh public boredom trigger provenance`);
+  // Named one by one rather than as one boolean chain: when this gate fires
+  // there is no way to act on it without knowing which part of the provenance
+  // is missing, and the reasons carry no outcome.
+  const provenanceFailures = [
+    [!trigger, 'no_trigger_turn'],
+    [!postOne, 'no_first_post_trigger_turn'],
+    [!postTwo, 'no_second_post_trigger_turn'],
+    [!semanticMode && triggerShadow.resistance_kind !== 'bored', 'shadow_resistance_kind_not_bored'],
+    [!semanticMode && triggerShadow.warrant?.status !== 'licensed', 'shadow_warrant_not_licensed'],
+    [triggerShadow.profile_identity_used !== false, 'profile_identity_used'],
+    [triggerEligibility?.eligible !== true, 'trigger_not_eligible'],
+    [
+      semanticMode
+        ? triggerEligibility?.boredom_semantic_precedence?.final_authority !== 'independent_llm_semantic_adjudicator'
+        : triggerEligibility?.boredom_compositional_precedence?.generic_uptake_override_allowed !== false,
+      'wrong_final_authority_for_the_observation_semantics',
+    ],
+    [!exactSemanticSequence, 'semantic_adjudication_sequence_not_exact'],
+    [Boolean(earlierEligible), 'an_earlier_turn_was_already_eligible'],
+    [interventions[0]?.triggerTurn !== triggerTurn, 'intervention_trigger_turn_mismatch'],
+    [interventions[0]?.triggerLearnerSha256 !== triggerHash, 'intervention_trigger_hash_mismatch'],
+    [postTwo?.triggerTurn !== triggerTurn, 'second_post_trigger_turn_mismatch'],
+    [postTwo?.triggerLearnerSha256 !== triggerHash, 'second_post_trigger_hash_mismatch'],
+  ]
+    .filter(([failed]) => failed)
+    .map(([, reason]) => reason);
+  if (provenanceFailures.length) {
+    throw new Error(
+      `${job.id} lacks its first eligible fresh public boredom trigger provenance: ${provenanceFailures.join(', ')}`,
+    );
   }
   const prefixTurns = completed
     .filter((event) => Number(event.turn) <= triggerTurn)
