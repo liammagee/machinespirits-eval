@@ -1061,9 +1061,10 @@ async function executeJudge({
         result.invalid_reason = error.message;
         break;
       }
-      const retryDelayMs = splitV8(loaded) && isTutorStubRetryableClaudeResponseFreeError(error)
-        ? loaded.instrument.transport.responseFreeRetryDelaysMs[result.attempts.length - 1]
-        : retry.delay_ms;
+      const retryDelayMs =
+        splitV8(loaded) && isTutorStubRetryableClaudeResponseFreeError(error)
+          ? loaded.instrument.transport.responseFreeRetryDelaysMs[result.attempts.length - 1]
+          : retry.delay_ms;
       await waitForRetry(retryDelayMs);
     }
   }
