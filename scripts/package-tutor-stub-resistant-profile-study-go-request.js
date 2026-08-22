@@ -25,6 +25,7 @@ const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING =
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR = 'prospective_frame_refuser_warm_plain_confirmation_v4';
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7 =
   'prospective_frame_refuser_warm_plain_confirmation_v5';
+const SUPPORTED_ACTION_REGISTER_CONFIRMATION_SEMANTIC_V9 = 'prospective_frame_refuser_warm_plain_confirmation_v6';
 const SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION = 'prospective_resistance_semantic_adjudication_heldout_validation_v1';
 const SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION_V2 =
   'prospective_resistance_semantic_adjudication_heldout_validation_v2';
@@ -52,6 +53,7 @@ function isSupportedActionRegisterConfirmation(value) {
     SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING,
     SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR,
     SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7,
+    SUPPORTED_ACTION_REGISTER_CONFIRMATION_SEMANTIC_V9,
   ].includes(value);
 }
 
@@ -248,11 +250,18 @@ function requireHoldBoundary(template) {
       SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING,
       SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR,
       SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7,
+      SUPPORTED_ACTION_REGISTER_CONFIRMATION_SEMANTIC_V9,
     ].includes(template.actionRegisterConfirmation?.type) &&
     (template.authorization?.standingAuthorizationAttachmentSha256 !==
-      (template.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7
+      ([
+        SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7,
+        SUPPORTED_ACTION_REGISTER_CONFIRMATION_SEMANTIC_V9,
+      ].includes(template.actionRegisterConfirmation?.type)
         ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
         : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b') ||
+      (template.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION_SEMANTIC_V9 &&
+        template.authorization?.standingArchitecturalCorrectionSha256 !==
+          'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4') ||
       template.authorization?.programmeCeilingAmendmentAuthorized !== false)
   ) {
     throw new Error(
@@ -320,6 +329,7 @@ function assertMaterializedStructure({
   priorConfirmationRequest,
   priorConfirmationV3Request,
   priorConfirmationV4Request,
+  priorConfirmationV7Request,
   priorCeilingBoundRequest,
   priorBoredomRequest,
   priorBoredomPredecessorRequest,
@@ -430,6 +440,11 @@ function assertMaterializedStructure({
     const prior = request.actionRegisterConfirmation?.priorIncompleteConfirmationV4?.request;
     assertComputedValue(prior?.path, priorConfirmationV4Request.path, 'prior incomplete V4 request path');
     assertComputedValue(prior?.sha256, priorConfirmationV4Request.sha256, 'prior incomplete V4 request digest');
+  }
+  if (priorConfirmationV7Request) {
+    const prior = request.actionRegisterConfirmation?.priorIncompleteConfirmationV7?.request;
+    assertComputedValue(prior?.path, priorConfirmationV7Request.path, 'prior incomplete V7 request path');
+    assertComputedValue(prior?.sha256, priorConfirmationV7Request.sha256, 'prior incomplete V7 request digest');
   }
   if (priorCeilingBoundRequest) {
     const prior = request.actionRegisterConfirmation?.supersededCeilingBoundRequest?.request;
@@ -691,6 +706,24 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const priorConfirmationV7RequestPath =
+    template.actionRegisterConfirmation?.priorIncompleteConfirmationV7?.request?.path;
+  const priorConfirmationV7Request = priorConfirmationV7RequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: priorConfirmationV7RequestPath,
+        label: 'prior incomplete V7 confirmation request',
+        files,
+      })
+    : null;
+  if (priorConfirmationV7Request) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(priorConfirmationV7Request.path),
+      priorConfirmationV7Request.sha256,
+      replacements,
+    );
+  }
   const priorCeilingBoundRequestPath =
     template.actionRegisterConfirmation?.supersededCeilingBoundRequest?.request?.path;
   const priorCeilingBoundRequest = priorCeilingBoundRequestPath
@@ -864,6 +897,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     priorConfirmationRequest,
     priorConfirmationV3Request,
     priorConfirmationV4Request,
+    priorConfirmationV7Request,
     priorCeilingBoundRequest,
     priorBoredomRequest,
     priorBoredomPredecessorRequest,
