@@ -3317,3 +3317,17 @@ and explicit human approval.
   `0.9417` remained below the prospective `0.95` gate. The consumed corpus will
   not be reused to validate or tune V4; a genuinely fresh heldout corpus is
   required after the V4 instrument freeze.
+
+- 2026-08-22 — The field-local V4 outcome instrument is frozen at commit
+  `61bb4ffa4fb5ac6e93090522e015c08cb47eebc5`. Its implementation SHA-256 is
+  `b27cc3f230e84a22022e79b5fdda8a0d332c9af9a56c44851b1b6d3d9ef41a5b`;
+  registration
+  `config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v4.json`
+  is SHA-256
+  `23ba2a30854e90ecbe43bb40bb7ff39a99a8c981abdce99d3516caf526d0d686`.
+  The registration freezes the unchanged three-judge panel and scientific
+  gates before any new heldout is authored. It requires 120 wholly fresh cases
+  with the original recovery, action, register, and intervening-turn strata;
+  zero case/text reuse or pooling from V2/V3; no judge-model authorship; and a
+  new digest-bound request. Validation and confirmation calls remain
+  unauthorized at this stage.
