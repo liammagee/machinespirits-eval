@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "machinespirits.tutor-stub.resistance-intervention-fidelity-judge-response.v8",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "case_id", "judgment"],
+  "properties": {
+    "schema": { "const": "machinespirits.tutor-stub.resistance-intervention-fidelity-judge-response.v8" },
+    "case_id": { "type": "string", "minLength": 1 },
+    "judgment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["delivered_clarify_distinction", "delivered_register"],
+      "properties": {
+        "delivered_clarify_distinction": { "$ref": "#/$defs/actionField" },
+        "delivered_register": { "$ref": "#/$defs/registerField" }
+      }
+    }
+  },
+  "$defs": {
+    "actionField": {
+      "allOf": [
+        { "$ref": "#/$defs/baseField" },
+        { "properties": { "value": { "enum": ["yes", "no", "indeterminate"] } } }
+      ]
+    },
+    "registerField": {
+      "allOf": [
+        { "$ref": "#/$defs/baseField" },
+        { "properties": { "value": { "enum": ["warm", "plain", "neither", "indeterminate"] } } }
+      ]
+    },
+    "baseField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "evidence_quotes", "confidence", "indeterminacy_reason"],
+      "properties": {
+        "value": { "type": "string" },
+        "evidence_quotes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source_id", "text"],
+            "properties": {
+              "source_id": { "const": "intervention" },
+              "text": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "indeterminacy_reason": {
+          "enum": ["none", "semantic_ambiguity", "insufficient_public_context", "mixed_pragmatic_force", "other"]
+        }
+      }
+    }
+  }
+}
