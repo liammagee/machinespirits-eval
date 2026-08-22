@@ -11,11 +11,13 @@ import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPrag
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 } from './tutorStubResistanceSemanticAdjudicationV2.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResistanceSemanticAdjudicationV3.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from './tutorStubResistanceSemanticAdjudicationV4.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5 } from './tutorStubResistanceSemanticAdjudicationV5.js';
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5,
   isTutorStubResistanceSemanticObservation,
   loadTutorStubResistanceSemanticRegistration,
   tutorStubResistanceSemanticPublicContext,
@@ -24,7 +26,9 @@ import {
 
 function resistanceSemanticRegistrationBinding(observationSemantics) {
   const registrationPath =
-    observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
+    observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5
+      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
       ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4
       : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
         ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3

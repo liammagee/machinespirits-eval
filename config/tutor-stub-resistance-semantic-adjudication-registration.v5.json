@@ -1,0 +1,92 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-adjudication-registration.v5",
+  "version": 5,
+  "status": "exact_source_transport_frozen",
+  "frozenAt": "2026-08-22T00:00:00.000Z",
+  "observationSemantics": "prospective_frame_resistance_semantic_v5",
+  "supersession": {
+    "v1V2V3V4ArtifactsMutable": false,
+    "v9ConfirmationStatus": "incomplete_no_verdict_excluded",
+    "v9MeasurementFailure": "two_valid_semantic_vectors_rejected_because_a_paraphrased_evidence_quote_was_not_an_exact_source_span",
+    "v9OutputsEligibleForReuseRescoringOrPooling": false
+  },
+  "instrument": {
+    "seatImplementationPath": "services/tutorStubResistanceSemanticAdjudicationV5.js",
+    "ensembleImplementationPath": "services/tutorStubResistanceSemanticAdjudicationV4.js",
+    "recordWrapperPath": "services/tutorStubResistanceSemanticAdjudicationV3.js",
+    "modelResponseSchema": "machinespirits.tutor-stub.resistance-semantic-judge-response.v3",
+    "changeScope": "evidence_transport_only_dynamic_complete_source_enums",
+    "semanticJudgmentVocabularyChangedFromV4": false,
+    "semanticPromptConstructDefinitionsChangedFromV4": false,
+    "panelRuleChangedFromV4": false,
+    "evidenceTransport": "judge_selects_source_id_and_schema_constrains_quote_to_one_complete_supplied_source_text",
+    "deterministicAuthority": "schema_exact_source_span_provenance_safety_and_predeclared_vote_counting_only",
+    "semanticAuthorityRule": "no_regex_keyword_or_diagnostic_component_disagreement_may_override_or_veto_a_valid_llm_semantic_primary_label_vote"
+  },
+  "measurement": {
+    "judges": [
+      {
+        "id": "semantic_judge_a",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "modelFamily": "openai_gpt_5_6",
+        "effort": "low",
+        "independent": true
+      },
+      {
+        "id": "semantic_judge_b",
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "modelFamily": "anthropic_claude_5",
+        "effort": "low",
+        "independent": true
+      },
+      {
+        "id": "semantic_judge_c",
+        "modelRef": "codex.gpt-5.5",
+        "provider": "codex",
+        "model": "gpt-5.5",
+        "modelFamily": "openai_gpt_5_5",
+        "effort": "low",
+        "independent": true
+      }
+    ],
+    "hierarchicalConsensus": {
+      "primaryLabelRule": "two_of_three_valid_high_confidence_judge_labels",
+      "componentRule": "two_of_three_valid_high_confidence_field_values_independently",
+      "componentDisagreementMayVetoPrimaryLabel": false,
+      "invalidLowConfidenceOrMissingDisposition": "judge_abstention",
+      "noPrimaryMajorityDisposition": "measurement_indeterminate",
+      "judgeRerunAfterSemanticResponse": false,
+      "learnerRepairForMeasurementIndeterminate": false,
+      "unitReplacementOrOutcomeSelection": false
+    },
+    "validationGates": {
+      "minimumJudgmentValidityRate": 0.95,
+      "minimumPanelsWithTwoEligibleVoters": 0.95,
+      "minimumPrimarySensitivity": 0.95,
+      "minimumPrimarySpecificity": 0.95,
+      "minimumPrimaryExactLabelAccuracy": 0.95,
+      "minimumMeanPairwiseLabelAgreement": 0.85,
+      "minimumMultiRaterKappa": 0.75,
+      "maximumProhibitedToolEvents": 0
+    }
+  },
+  "engineeringValidation": {
+    "zeroCallRequired": true,
+    "frozenHistoricalMissesRequired": true,
+    "strongNegativesRequired": true,
+    "genuinelyUnseenHeldoutParaphrasesRequired": true,
+    "fullSourceQuoteValidityRequired": 1.0,
+    "semanticFieldsMayBeChangedDuringProjection": false
+  },
+  "claimBoundary": {
+    "transportRepairOnly": true,
+    "v9OutcomeReinterpreted": false,
+    "v9DialogueReused": false,
+    "warmPlainClaimSupported": false,
+    "freshConfirmationRequired": true
+  }
+}
