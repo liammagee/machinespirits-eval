@@ -7,8 +7,11 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-import { boredomProofProgressNames } from '../services/tutorStubBoredomActionRegisterProofDagPreflight.js';
-
+// This file must import nothing from the repository, only from node itself. The
+// packager proves each request by materialising that request's pinned file list
+// into an empty directory and running this checker there. A repository import
+// that the pinned list does not carry is an unproven dependency, and the replay
+// dies on it. Read the number out of the bound registration instead.
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_REQUEST = path.join(
   ROOT,
@@ -1541,7 +1544,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           contract.runner?.batch_contract?.outcome_selection === false &&
           [
             'profile_specific_resistance_recovery',
-            boredomProofProgressNames(endpointRegistration).endpoint,
+            endpointRegistration.measurement?.keySecondaryEndpoint?.id,
             'randomized_register_assembly',
             'action_register_fidelity_and_safety',
             ...(isBoredomActionRegisterProofDagV2 ? ['compositional_boredom_observer_timing'] : []),
@@ -2641,7 +2644,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.measurement.reportSchema ===
           'machinespirits.tutor-stub.boredom-action-register-proof-dag-confirmation-report.v1' &&
         request.measurement.primaryOutcome === 'profile_specific_resistance_recovery_first_post_trigger_turn' &&
-        request.measurement.keySecondaryOutcome === boredomProofProgressNames(registered).endpoint &&
+        request.measurement.keySecondaryOutcome === registered.measurement?.keySecondaryEndpoint?.id &&
         request.measurement.primaryTest === 'two_sided_exact_conditional_blocked_score_test' &&
         request.measurement.fixedSequencePrimaryThenKeySecondary === true &&
         request.measurement.oneCombinedThirtySixDialogueAnalysisRequired === true &&
