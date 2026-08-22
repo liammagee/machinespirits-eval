@@ -282,3 +282,48 @@ test('production readiness and the prepared request remain HOLD-only authorizati
   assert.equal(request.authorization.modelCallsAuthorized, false);
   assert.equal(request.authorization.liveRunAuthorized, false);
 });
+
+test('an endpoint contract is refused when it does not belong to the registration being read', () => {
+  // The v5 preflight read a v2 contract for as long as the contract path was a
+  // second fixed default beside the registration path. It did not pass wrongly;
+  // it asked all 36 dialogues for a two-turn field that a five-turn study never
+  // writes, and refused a design that was sound. Two things now tie the pair
+  // together: the contract states which registration it belongs to, and it names
+  // the objective endpoint after the outcome window.
+  const v5 = loadTutorStubBoredomProofDagRegistration({
+    root: ROOT,
+    registrationPath: 'config/tutor-stub-boredom-action-register-proof-dag-registration.v5.json',
+  });
+  const v2Contract = readJson('config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.json');
+  const v5Contract = readJson('config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v5.json');
+
+  assert.equal(boredomProofProgressNames(v5).endpoint, 'objective_proof_progress_by_five_turns');
+  assert.equal(v5Contract.registration.key_secondary_endpoint_id, 'objective_proof_progress_by_five_turns');
+
+  assert.throws(
+    () =>
+      runTutorStubBoredomProofDagEndpointPreflight({
+        contract: v2Contract,
+        registration: v5,
+        registrationPath: 'config/tutor-stub-boredom-action-register-proof-dag-registration.v5.json',
+      }),
+    /endpoint contract belongs to .*registration\.v2\.json/u,
+  );
+
+  // Without the path, the window name alone still has to give the pair away.
+  assert.throws(
+    () => runTutorStubBoredomProofDagEndpointPreflight({ contract: v2Contract, registration: v5 }),
+    /objective_proof_progress_by_two_turns where this outcome window reads objective_proof_progress_by_five_turns/u,
+  );
+
+  const passed = runTutorStubBoredomProofDagEndpointPreflight({
+    contract: v5Contract,
+    registration: v5,
+    registrationPath: 'config/tutor-stub-boredom-action-register-proof-dag-registration.v5.json',
+  });
+  assert.equal(passed.status, 'passed');
+  assert.equal(passed.assembly_audit.endpoint_status.objective_proof_progress_by_five_turns, 'complete');
+  assert.equal(passed.readiness.contract_binding.registration_bytes_match_contract, true);
+  assert.equal(passed.readiness.model_calls, 0);
+  assert.equal(passed.readiness.production_writes, 0);
+});

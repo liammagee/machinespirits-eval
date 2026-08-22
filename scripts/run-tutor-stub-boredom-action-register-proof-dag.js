@@ -15,7 +15,21 @@ import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtif
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
-const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.json';
+
+// The endpoint contract belongs to one registration and names that registration's
+// outcome window in its own field names. Written out here as a second fixed path,
+// it has to be kept level with the registration by hand, and nothing compares the
+// two: a v5 registration read against the v2 contract asks 36 dialogues for a
+// two-turn field that a five-turn study never writes. The version is taken from
+// the registration actually in use instead, and the preflight service refuses the
+// pair anyway if they still disagree.
+function endpointContractFor(registrationPath) {
+  const version = /\.(v\d+)\.json$/u.exec(registrationPath)?.[1];
+  if (!version) {
+    throw new Error(`cannot tell which endpoint contract belongs to ${registrationPath}`);
+  }
+  return `config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.${version}.json`;
+}
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -974,13 +988,15 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) return void console.log(usage());
   if (args.preflight) {
+    const registrationPath = args.registration || REGISTRATION;
     const loaded = loadTutorStubBoredomProofDagStudy({
-      registrationPath: repoPath(args.registration || REGISTRATION, 'registration'),
+      registrationPath: repoPath(registrationPath, 'registration'),
     });
-    const contract = readJson(repoPath(args['endpoint-contract'] || ENDPOINT, 'endpoint contract'));
+    const contractPath = args['endpoint-contract'] || endpointContractFor(registrationPath);
+    const contract = readJson(repoPath(contractPath, 'endpoint contract'));
     console.log(
       JSON.stringify(
-        runTutorStubBoredomProofDagEndpointPreflight({ contract, registration: loaded.registration }),
+        runTutorStubBoredomProofDagEndpointPreflight({ contract, registration: loaded.registration, registrationPath }),
         null,
         2,
       ),

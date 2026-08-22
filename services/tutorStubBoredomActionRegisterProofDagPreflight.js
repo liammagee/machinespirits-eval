@@ -1127,9 +1127,47 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
   };
 }
 
-export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registration }) {
+// The contract and the registration are two files that must describe one study.
+// The contract states which registration it belongs to, states that file's bytes,
+// and names the objective endpoint after the outcome window. Read against the
+// wrong registration it does not fail quietly: it asks every dialogue for a field
+// a different outcome window would have written. Nothing compared the pair until
+// here, which is how a v5 registration reached a v2 contract.
+function assertContractBelongsToRegistration({ contract, registration, registrationPath }) {
+  const stated = contract?.registration || {};
+  if (registrationPath && stated.registration_path && stated.registration_path !== registrationPath) {
+    throw new Error(`endpoint contract belongs to ${stated.registration_path}, not the ${registrationPath} being read`);
+  }
+  const expectedSecondary = boredomProofProgressNames(registration).endpoint;
+  if (expectedSecondary && stated.key_secondary_endpoint_id !== expectedSecondary) {
+    throw new Error(
+      `endpoint contract names ${stated.key_secondary_endpoint_id} where this outcome window reads ${expectedSecondary}`,
+    );
+  }
+  // The contract also states the registration bytes it was written against. That
+  // is reported, not enforced: a closed study's registration goes on being edited
+  // long after its contract is sealed, and v4's has moved five times. What holds
+  // a live run to its bytes is the launch authorization fingerprint, which is
+  // checked at launch. Failing here would only break the zero-cost check for
+  // studies that are already finished.
+  const contractRegistrationPath = stated.registration_path || registrationPath;
+  if (!stated.registration_sha256 || !contractRegistrationPath) return null;
+  const digest = crypto
+    .createHash('sha256')
+    .update(fs.readFileSync(path.join(ROOT, contractRegistrationPath)))
+    .digest('hex');
+  return {
+    contract_registration_path: contractRegistrationPath,
+    contract_pinned_registration_sha256: stated.registration_sha256,
+    observed_registration_sha256: digest,
+    registration_bytes_match_contract: digest === stated.registration_sha256,
+  };
+}
+
+export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registration, registrationPath }) {
   const validation = validateTutorStubBoredomProofDagRegistration(registration);
   if (!validation.ok) throw new Error(`registration invalid: ${validation.errors.join('; ')}`);
+  const contractBinding = assertContractBelongsToRegistration({ contract, registration, registrationPath });
   const preflight = runPaidStudyEndpointPreflight({
     contract,
     cases: buildTutorStubBoredomProofDagSyntheticCases(registration),
@@ -1159,6 +1197,7 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
           : registration.version === 3
             ? 'passed_zero_call_hold_empirical_semantic_validation_pending'
             : 'passed_zero_call_hold',
+      contract_binding: contractBinding,
       source_prefixes: execution.dialogue.dialogues,
       independent_dialogues: execution.dialogue.dialogues,
       execution_batches: execution.batches.executionBatches,
