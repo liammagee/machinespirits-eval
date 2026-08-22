@@ -736,6 +736,27 @@ function analyzeTrace(batch, resultRow, loaded) {
     unsupported_public_claims: finalUnsupported,
   };
   objectiveOutcome.proof_progress_by_two_turns = objectiveProofProgressByTwoTurns(objectiveOutcome);
+  // A zero on the objective endpoint has two causes that read the same in the
+  // count. Either the learner could have taken a premise on the path to the
+  // answer and did not, or the world had not handed out any such premise before
+  // the dialogue ended. The second is a property of the world's release
+  // schedule against the registered horizon, not a property of the tutor. The
+  // reader must be able to tell them apart, so each unit records whether a
+  // premise on the best path was ever available to take.
+  const finalAssessment = postTwo.tutorLearnerDag?.model?.assessment;
+  const onBestPath = new Set(finalAssessment?.missingOnBestPath || []);
+  const bestPathMissing = (finalAssessment?.missingPremises || []).filter((premise) =>
+    onBestPath.has(premise.premiseId),
+  );
+  const releasedNotHeld = bestPathMissing.filter((premise) => premise.bucket === 'released_but_not_held');
+  const releaseTurns = bestPathMissing.map((premise) => Number(premise.releaseTurn)).filter(Number.isFinite);
+  objectiveOutcome.objective_progress_reachable =
+    releasedNotHeld.length > 0 || objectiveOutcome.best_path_coverage_delta > 0;
+  objectiveOutcome.best_path_premises_available_to_take = releasedNotHeld.length;
+  objectiveOutcome.earliest_unreleased_best_path_premise_turn = releaseTurns.length ? Math.min(...releaseTurns) : null;
+  objectiveOutcome.final_turn = Number.isFinite(Number(finalAssessment?.finalTurn))
+    ? Number(finalAssessment.finalTurn)
+    : null;
   return {
     case_id: job.id,
     batch_id: job.batch_id,
@@ -1065,6 +1086,27 @@ export function analyzeTutorStubBoredomProofDag({
       register_visibility_minimum: fidelity.minimumRegisterVisibility,
       primary_analysis: 'intention_to_treat',
       valid_unit_rerun_authorized: false,
+      objective_endpoint_reachability: {
+        units: rows.length,
+        units_where_progress_was_reachable: rows.filter((row) => row.outcome.objective_progress_reachable).length,
+        units_where_no_best_path_premise_had_been_released: rows.filter(
+          (row) => !row.outcome.objective_progress_reachable,
+        ).length,
+        by_world: [...new Set(rows.map((row) => row.world))].sort().map((world) => {
+          const inWorld = rows.filter((row) => row.world === world);
+          return {
+            world,
+            units: inWorld.length,
+            reachable: inWorld.filter((row) => row.outcome.objective_progress_reachable).length,
+            final_turns: [...new Set(inWorld.map((row) => row.outcome.final_turn))].sort((a, b) => a - b),
+            earliest_release_turns: [
+              ...new Set(inWorld.map((row) => row.outcome.earliest_unreleased_best_path_premise_turn)),
+            ].sort((a, b) => a - b),
+          };
+        }),
+        reading:
+          'the objective endpoint needs the learner to take a premise that lies on the path to the answer. A world releases those premises on a schedule. Where no such premise had been released before the dialogue ended, the endpoint could not move whatever the tutor did, so a zero there measures the release schedule against the registered horizon and not the tutor. Read the objective null only over the units counted as reachable.',
+      },
     },
     interpretation_status: !fidelityPassed
       ? 'interpretability_gate_failed_no_rerun_or_confirmation_claim'

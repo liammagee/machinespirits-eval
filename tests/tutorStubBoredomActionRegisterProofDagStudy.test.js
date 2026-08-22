@@ -99,7 +99,7 @@ function engagedClassification() {
   };
 }
 
-function dagModel({ progressed }) {
+function dagModel({ progressed, premiseWasAvailable = false, finalTurn = 3 }) {
   return {
     metrics: {
       groundedCount: progressed ? 5 : 4,
@@ -108,6 +108,17 @@ function dagModel({ progressed }) {
     assessment: {
       bestPathCoverage: progressed ? 0.6 : 0.4,
       unsupportedAssertionCount: 0,
+      finalTurn,
+      missingOnBestPath: ['p_two', 'p_three'],
+      // A premise the world had already handed out and the learner did not take
+      // is a turn the objective endpoint could have moved on. A premise the
+      // world does not hand out until a later turn is one it could not.
+      missingPremises: [
+        premiseWasAvailable
+          ? { premiseId: 'p_two', bucket: 'released_but_not_held', releaseTurn: 2 }
+          : { premiseId: 'p_two', bucket: 'unreleased', releaseTurn: 9 },
+        { premiseId: 'p_three', bucket: 'unreleased', releaseTurn: 14 },
+      ],
     },
   };
 }
@@ -120,6 +131,7 @@ function syntheticTrace({
   observationSemantics = 'prospective_v8',
   protectedPassOver = false,
   authoredWorldOpening = false,
+  premiseWasAvailable = false,
 }) {
   const triggerTurn = job.assignment_index % 2 === 0 ? 2 : 1;
   const outcomeTurn = triggerTurn + 2;
@@ -286,7 +298,7 @@ function syntheticTrace({
       triggerLearnerSha256: triggerSha,
       learnerText: recovered ? recoveryText : nonRecoveryText,
       classification: recovered ? engagedClassification() : boredClassification(),
-      tutorLearnerDag: { model: dagModel({ progressed }) },
+      tutorLearnerDag: { model: dagModel({ progressed, premiseWasAvailable, finalTurn: outcomeTurn }) },
       tutorReplyGenerated: false,
     },
   ];
@@ -1049,6 +1061,61 @@ test('a world that carries its own opening line needs no opening model call', (t
       }),
     /the_dialogue_never_opened/u,
   );
+});
+
+test('the report separates an objective zero the tutor could have moved from one it could not', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-reach-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V4) });
+
+  // Two worlds hand out a premise on the path to the answer before the dialogue
+  // ends; four do not. Nothing progresses anywhere, so the objective endpoint is
+  // zero in all 36 units. The two zeros mean different things, and the report
+  // must say which is which instead of leaving one reading for both.
+  const reachableWorlds = loaded.registration.design.worlds.slice(0, 2);
+  const outcomes = new Map(
+    loaded.plan.jobs.map((job) => [
+      job.id,
+      { recovered: false, progressed: false, premiseWasAvailable: reachableWorlds.includes(job.world) },
+    ]),
+  );
+  const roots = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION_V4,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    writeSyntheticBatch(root, plan, outcomes, { observationSemantics: 'prospective_v9' });
+    roots.push(root);
+  }
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION_V4,
+    expectedSourceCommit: head,
+  });
+
+  // The endpoint itself is zero everywhere, exactly as before this diagnostic.
+  assert.equal(report.rows.length, 36);
+  assert.ok(report.rows.every((row) => row.outcome.proof_progress_by_two_turns === false));
+  assert.equal(report.key_secondary_analysis.plain.successes, 0);
+  assert.equal(report.key_secondary_analysis.warm.successes, 0);
+
+  const reach = report.treatment_fidelity.objective_endpoint_reachability;
+  assert.equal(reach.units, 36);
+  assert.equal(reach.units_where_progress_was_reachable, 12);
+  assert.equal(reach.units_where_no_best_path_premise_had_been_released, 24);
+  assert.deepEqual(
+    reach.by_world.filter((entry) => entry.reachable === entry.units).map((entry) => entry.world),
+    reachableWorlds,
+  );
+  // A world that never released a best-path premise still reports when it would
+  // have, so a reader can see the gap against the turn the dialogue ended on.
+  const unreachable = reach.by_world.find((entry) => entry.reachable === 0);
+  assert.ok(unreachable.earliest_release_turns.every((turn) => turn > Math.max(...unreachable.final_turns)));
 });
 
 test('v4 live execution demands an approval bound to the registered design, not to source bytes', async (t) => {
