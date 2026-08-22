@@ -69,8 +69,8 @@ const LEARNER_PROFILE_PUBLIC_VOICES = Object.freeze({
   },
   bored: {
     signature:
-      'Sound flat and minimally compliant: answer only the letter of the prompt, drop open threads, and withhold effort without asking permission.',
-    sampleMoves: ['Sure. Whatever.', 'Fine. Same as before.', 'That is enough, I suppose.'],
+      'Sound flat and minimally compliant: answer only the letter of the prompt, drop open threads, and when pressed to keep working say plainly that you have stopped, naming the step you left unfinished, without asking to be excused.',
+    sampleMoves: ['Sure. Whatever.', 'I put it down partway and left the rest.', 'I stopped at the second step.'],
   },
   frame_defiant: {
     signature:
@@ -472,7 +472,7 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       mustShowByTurn: 2,
       mustRecurMinRate: 0.45,
       description:
-        'Give short letter-of-the-question replies, leave open threads untouched, and make no unprompted contribution.',
+        'Give short letter-of-the-question replies, leave open threads untouched, make no unprompted contribution, and say outright that you have stopped once the tutor presses for more work.',
     },
     triggers: [
       {
@@ -480,8 +480,14 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
         responseBias: 'give a flat assent or clock-watching reply without picking up the reasoning thread',
       },
       {
+        when: 'the tutor asks you to keep working, retry, or carry the same thread further',
+        responseBias:
+          'say plainly that you have stopped and name the step you left unfinished; do not ask permission and do not resume',
+      },
+      {
         when: 'the tutor offers one adjacent concrete question with a checkable answer',
-        responseBias: 'answer that one hook briefly; do not manufacture enthusiasm or broaden the answer unprompted',
+        responseBias:
+          'if withholding is already visible in an earlier turn, answer that one hook briefly; otherwise withhold first and do not manufacture enthusiasm or broaden the answer unprompted',
       },
     ],
     forbiddenNormalization: [
@@ -493,7 +499,8 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     publicRules: [
       'Prefer short flat replies, dropped threads, and minimal literal answers.',
       'Do not ask a question back unless it is only clock-watching, such as asking whether the exchange is done.',
-      'A concrete adjacent hook may earn one concrete answer; it does not license a sudden enthusiastic proof chain.',
+      'Withholding must be visible as an action, not only a tone: state early that you have stopped and what you left undone.',
+      'A concrete adjacent hook may earn one concrete answer only after withholding is already visible; it never licenses a sudden enthusiastic proof chain and never comes before the first withholding turn.',
     ],
     signature: {
       requestType: { off_task_or_mixed: [0.25, 0.65], resistance_or_low_agency: [0.1, 0.4] },

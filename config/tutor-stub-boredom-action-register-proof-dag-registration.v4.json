@@ -112,7 +112,7 @@
       "prefixesPerWorld": 6,
       "requiredDistinctPrefixes": 36,
       "maximumTriggerTurn": 2,
-      "seedBase": 2026082500,
+      "seedBase": 2026082600,
       "uniqueSeedPerSource": true,
       "requireDistinctPublicPrefixHashes": true,
       "profileIdentityMayTrigger": false,
@@ -123,7 +123,7 @@
         "protected_affect"
       ],
       "substantiveMissingOrDuplicateTriggerDisposition": "stop_incomplete_no_replacement_no_analysis",
-      "restartNote": "Seed base moved from 2026082400 to 2026082500 on 2026-08-21. Live batch 1 under the previous seed base spent four dialogues and produced no outcome: three were voided by the auxiliary contradiction defect and one hit the registered missing-trigger stop. Those four are excluded and are not reused, pooled or rescored. Re-running them on the same seed would have resampled failed units, so the restart draws fresh prefixes."
+      "restartNote": "Seed base moved from 2026082400 to 2026082500 on 2026-08-21. Live batch 1 under the previous seed base spent four dialogues and produced no outcome: three were voided by the auxiliary contradiction defect and one hit the registered missing-trigger stop. Those four are excluded and are not reused, pooled or rescored. Re-running them on the same seed would have resampled failed units, so the restart draws fresh prefixes. Seed base moved again from 2026082500 to 2026082600 on 2026-08-21 after the second live batch 1 spent four more dialogues and again produced no outcome: all four hit the registered missing-trigger stop with the corrected instrument reporting clean, high-confidence verdicts. The cause was the bored learner brief, not the instrument. The brief required visible effort withholding but supplied no move for saying work had stopped, and its third public rule licensed answering an adjacent concrete question immediately, which is the registered tutor move for this study, so two of the four learners scored productive_uptake on turn 1. The brief now carries an explicit stopped-work move and sequences the concrete-hook licence after the first withholding turn. Those four dialogues are excluded and are not reused, pooled or rescored, and this restart again draws fresh prefixes."
     },
     "randomization": {
       "independentUnit": "fresh_distinct_bored_public_prefix_dialogue",
