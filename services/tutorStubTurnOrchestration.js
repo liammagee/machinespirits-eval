@@ -1710,11 +1710,11 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         const v9Study = state.resistanceActionRegisterStudy;
         const finalOutcomeSemanticsRequired =
           registeredFinalLearnerOnly === true &&
-          v9Study?.registration?.version === 9 &&
+          v9Study?.registration?.version >= 9 &&
           v9Study?.dynamic_confirmation === true &&
           v9Study?.final_learner_without_tutor_reply === true &&
           Number(turnNumber) === Number(v9Study.trigger_turn) + Number(v9Study.outcome_horizon_learner_turns);
-        if (v9Study?.registration?.version === 9 && !finalOutcomeSemanticsRequired) {
+        if (v9Study?.registration?.version >= 9 && !finalOutcomeSemanticsRequired) {
           throw new Error('V9 confirmation semantic panels are restricted to the exact registered final horizon');
         }
         const resistanceConfirmationSemanticOutcome = finalOutcomeSemanticsRequired

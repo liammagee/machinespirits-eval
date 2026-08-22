@@ -1,0 +1,53 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-v5-zero-call-validation.v1",
+  "status": "passed",
+  "instrumentFreezeCommit": "c7b2998ec0ad0b3a32a70b208b11fbfe0dd99ca0",
+  "instrumentRegistration": {
+    "path": "config/tutor-stub-resistance-semantic-adjudication-registration.v5.json",
+    "sha256": "30784fce3e7d24d0e72b741053c86aaea5b9cc45527ca733caa02baf1b2baed2"
+  },
+  "heldout": {
+    "path": "config/tutor-stub-resistance-semantic-exact-source-heldout.v5.json",
+    "sha256": "ca8dbf0caf1b1a4c656dc3950913abf7068fdc2ff586352d10b522e6f39e4d0f",
+    "authoredAfterInstrumentFreeze": true,
+    "cases": 12,
+    "frameRefuser": 4,
+    "productiveDispute": 4,
+    "strongNegatives": 4
+  },
+  "frozenHistoricalMisses": {
+    "cases": 1,
+    "independentJudgeEnvelopes": 2,
+    "oldExactQuoteWrapperRejected": 2,
+    "v5ExactSourceProjectionAccepted": 2,
+    "semanticFieldsChanged": 0,
+    "v9OutcomeReinterpreted": false
+  },
+  "predeclaredGates": {
+    "minimumJudgmentValidityRate": 0.95,
+    "minimumPrimarySensitivity": 0.95,
+    "minimumPrimarySpecificity": 0.95,
+    "minimumPrimaryExactLabelAccuracy": 0.95,
+    "minimumMeanPairwiseLabelAgreement": 0.85,
+    "minimumMultiRaterKappa": 0.75,
+    "fullSourceQuoteValidityRequired": 1
+  },
+  "observed": {
+    "judgmentValidityRate": 1,
+    "primarySensitivity": 1,
+    "primarySpecificity": 1,
+    "primaryExactLabelAccuracy": 1,
+    "meanPairwiseLabelAgreement": 1,
+    "multiRaterKappa": 1,
+    "fullSourceQuoteValidity": 1,
+    "modelCalls": 0
+  },
+  "test": {
+    "path": "tests/tutorStubResistanceSemanticAdjudicationV5.test.js",
+    "sha256": "3698245517eabfc4804290f9a02814e78b5b46c7ac7d193e460edf84cfbf8ebf",
+    "command": "node --test tests/tutorStubResistanceSemanticAdjudicationV5.test.js",
+    "testsPassed": 2,
+    "testsFailed": 0
+  },
+  "claimBoundary": "Engineering validity of exact-source evidence transport only. This does not validate or reinterpret V9 outcomes and does not itself establish warm-versus-plain efficacy."
+}

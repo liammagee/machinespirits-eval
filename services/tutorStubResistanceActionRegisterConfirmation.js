@@ -38,7 +38,7 @@ function clone(value) {
 }
 
 function assertConfirmationRegistration(registration) {
-  if (![3, 4, 5, 6, 7, 9].includes(registration?.version)) {
+  if (![3, 4, 5, 6, 7, 9, 10].includes(registration?.version)) {
     throw new Error('confirmation requires a supported registered action/register confirmation design');
   }
   return registration;
@@ -65,7 +65,9 @@ export function buildTutorStubResistanceActionRegisterConfirmationPlan({ registr
       const assignment = assignments[slot];
       const realization = assignment.realization;
       const confirmationRevision =
-        frozen.version >= 9
+        frozen.version >= 10
+          ? 'v6-'
+          : frozen.version >= 9
           ? 'v5-'
           : frozen.version >= 7
             ? 'v4-'
