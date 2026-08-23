@@ -1883,3 +1883,49 @@ test('v6 reads the move contrast end to end, blocks the manner, and discloses co
   assert.equal(withMiss.treatment_fidelity.move_nonadherent_units[0].case_id, shrinkJob.id);
   assert.equal(withMiss.treatment_fidelity.assigned_move_delivery_rate, 35 / 36);
 });
+
+const REGISTRATION_V7 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v7.json';
+
+test('the runner takes its batch ids from the registration, not from a written range', () => {
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const destination = path.join(os.tmpdir(), 'boredom-proof-dag-v7-batch-id-range');
+  // v7 deals twenty-one batches. The runner used to accept execution_batch_1
+  // through 9 and refuse the rest, and it refused them all with one message,
+  // so two runs of batch ten agreed byte for byte and read as stable.
+  const batchTen = buildTutorStubBoredomProofDagBatchPlan({
+    registrationPath: REGISTRATION_V7,
+    batchId: 'execution_batch_10',
+    destination,
+    expectedSourceCommit: head,
+  });
+  assert.equal(batchTen.batch_id, 'execution_batch_10');
+  assert.equal(batchTen.jobs.length, 4);
+
+  // Every id the registration deals must plan, and no id beyond them may.
+  const registration = JSON.parse(fs.readFileSync(path.join(ROOT, REGISTRATION_V7), 'utf8'));
+  const batches = registration.executionReadiness.batches.executionBatches;
+  const seen = new Set();
+  for (let index = 1; index <= batches; index += 1) {
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION_V7,
+      batchId: `execution_batch_${index}`,
+      destination,
+      expectedSourceCommit: head,
+    });
+    for (const job of plan.jobs) seen.add(job.id);
+  }
+  assert.equal(seen.size, registration.executionReadiness.dialogue.dialogues);
+  assert.throws(
+    () =>
+      buildTutorStubBoredomProofDagBatchPlan({
+        registrationPath: REGISTRATION_V7,
+        batchId: `execution_batch_${batches + 1}`,
+        destination,
+        expectedSourceCommit: head,
+      }),
+    /must be one of the 21 registered ids/u,
+  );
+  // v6 is not exercised here. Its request pins the runner's bytes, so building
+  // a v6 plan on an edited runner fails on closure drift before it reaches the
+  // batch id at all. That is the seal doing its job on a spent study.
+});

@@ -535,10 +535,19 @@ export function buildTutorStubBoredomProofDagBatchPlan({
   destination,
   expectedSourceCommit = null,
 } = {}) {
-  if (!/^execution_batch_[1-9]$/u.test(String(batchId || ''))) {
-    throw new Error('boredom proof-DAG batch must be execution_batch_1..execution_batch_9');
-  }
   const { loaded, plan } = registeredPlan(registrationPath);
+  // How many batches there are is a registered decision — nine from v2 to v6,
+  // twenty-one on v7 — so the ids come from the plan this registration deals
+  // rather than from a range written here. Written out as execution_batch_1
+  // through 9, this refused every v7 batch above the ninth, and refused them
+  // with the same message each time, so two runs of batch ten agreed on the
+  // byte and looked stable.
+  const batchIds = (plan.batches || []).map((batch) => batch.id);
+  if (batchIds.length === 0 || !batchIds.includes(String(batchId || ''))) {
+    throw new Error(
+      `boredom proof-DAG batch must be one of the ${batchIds.length} registered ids: ${batchIds.join(', ')}`,
+    );
+  }
   const caps = registrationCaps(loaded);
   const jobs = plan.jobs.filter((job) => job.batch_id === batchId);
   const composition = registeredBatchComposition(loaded, plan, batchId);
