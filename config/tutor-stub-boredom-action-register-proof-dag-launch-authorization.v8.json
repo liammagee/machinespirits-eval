@@ -1,0 +1,101 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v2",
+  "approvedBy": "Liam Magee",
+  "approvedOn": "2026-08-23",
+  "registrationPath": "config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json",
+  "designFingerprint": "aa96789865820b64bb97769b1453fcc3b66dace00edb94e64241df07ad7b09d6",
+  "modelCallsAuthorized": true,
+  "liveRunAuthorized": true,
+  "approvalStatement": "I approve config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v8.json at SHA-256 74f01ce44b0caab3a2ee4b01874d6b1374de3fddbc12fb32872a0be653d81e02 for one 72-dialogue Luna boredom proof-DAG run that contrasts making a boredom-directed move against making none, with 36 dialogues per side and the plain and warm manner balanced 18 and 18 inside each side as a block and not as the contrast. The move side asks the discriminating question. The reference side is a written instruction and not a gap: the tutor carries on with the proof, stages the next already-public piece of evidence, names what it does not yet settle, says nothing about the learner interest, effort, mood or pace, and asks no question. The two sides take different host action families on purpose, because the family and not the move instruction is what decides whether a closing question is allowed, and v7 gave both sides one family and delivered one behaviour twice. I understand the cost of that: the two sides now differ in the family, the first-draft contract line, the handoff mode and the part weighting as well as in the instruction, so this study can say that making a move mattered and cannot say that the question did the work. The run has a trigger that must show by turn 4, recovery read over the 5 post-trigger learner turns and a 5-turn proof-progress window, scoring by the carried-forward Sol V3 semantic instrument on which no fresh accuracy claim is made because the sealed 55-case held-out v4 corpus is spent, one predeclared TWO-SIDED exact conditional blocked analysis on the move contrast with fixed-sequence proof-progress testing in the same shape, the v5 one-turn endpoint reported for both sides as a descriptive comparison that is never tested, a per-side count of learner turns that only say back what the tutor just made public, a delivered-contrast fidelity floor of 0.9 read from question marks in the tutor's own delivered turn and checked pooled and again on each side, a floor of 0.8 for a reader being able to tell which manner a turn is in, and the two delivery gates pinned at 1 where they say only that no safety override replaced what was assigned and may never be reported as readings of the tutor, no interim analysis, and no reuse or pooling of prior dialogues or outcomes including the completed 33-unit v4 null, the completed 35-unit v5 null, the completed 36-unit v6 run that failed its readability gate, the completed 80-unit v7 null whose two arms were never delivered as two moves, and the stopped 71-reservation v2 cohort. It carries a study safeguard of 8,856 attempts and a cumulative programme safeguard of 15,000 attempts, with bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards. I understand two limits I am approving. The reference rate has never been measured by anything, so the power table is a scan and not a prediction: at 36 per side the study reaches 0.8 power only if carrying on recovers fewer than about one bored learner in six, and across the plausible middle it sits between 0.37 and 0.73. And this size is set by what the programme safeguard leaves, not by what the effect needs.",
+  "approvalStatementSource": {
+    "requestPath": "config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v8.json",
+    "requestSha256": "74f01ce44b0caab3a2ee4b01874d6b1374de3fddbc12fb32872a0be653d81e02",
+    "pastedByTheApprover": true,
+    "matchedTheGeneratedStatement": "word for word; the paste differs only in the glyph used for one apostrophe"
+  },
+  "binds": "study_design_not_source_bytes",
+  "note": "The approval covers the registered study: the question, the claim boundary, the design, the measurement rules, the power calculation and the spend safeguards. Correcting a defect in the code does not void it; changing the study does.",
+  "whatIsBeingContrasted": {
+    "contrast": "pedagogical_move",
+    "levels": ["carry_on", "ask_question"],
+    "moves": {
+      "carry_on": "stage_public_evidence_for_next_step",
+      "ask_question": "ask_discriminating_question"
+    },
+    "hostActionFamilyByLevel": {
+      "carry_on": "reanchor_public_evidence",
+      "ask_question": "stage_next_step"
+    },
+    "familiesDifferOnPurpose": "the host action family, not the free-text move instruction, is what the turn-progression contract reads to decide whether a turn may end on a question. v7 gave both arms stage_next_step and both arms asked a question in 0.976 of trigger turns.",
+    "claimBoundary": "v8 can say that making a boredom-directed move mattered. It cannot say that the question did the work: the two arms differ in the family, the first-draft contract line, the handoff mode and the part weighting as well as in the instruction, and the whole bundle is the manipulation."
+  },
+  "fidelityGatesAcknowledged": {
+    "decidingFloor": "minimumMoveContrastDelivery",
+    "minimumMoveContrastDelivery": 0.9,
+    "readFrom": "question marks in the tutor own delivered trigger turn",
+    "checkedPooledAndPerMove": true,
+    "minimumRegisterReadability": 0.8,
+    "echoedGates": {
+      "minimumAssignedMoveDelivery": 1,
+      "minimumAssignedRegisterDelivery": 1,
+      "whatTheyMean": "these two compare the study with its own copy of itself and can only fall below 1 when a safety override replaces what was assigned. They are echoes, not readings of the tutor, and may never be reported as readings of the tutor."
+    }
+  },
+  "powerCaveatAcknowledged": {
+    "acknowledgedInApprovalStatement": true,
+    "test": "two_sided_exact_conditional_blocked_score_test",
+    "reading": "at 36 dialogues per arm the two-sided test reaches 0.8 power only if carrying on recovers a bored learner in fewer than about one unit in six",
+    "targetPower": 0.8,
+    "targetPowerReached": false,
+    "referenceRateMeasured": false,
+    "whyTheTableIsAScan": "no run in this programme has ever put a tutor in front of a bored learner and told it to say nothing about the boredom. v4, v5, v6 and v7 all delivered a boredom-directed move in every unit. So the reference rate has no prior at all and cannot be pinned the way v6 pinned v5 and v7 pinned v6.",
+    "planningScenarioTwoSidedPower": 0.543,
+    "powerRangeAcrossScannedReferenceRates": [0.098, 0.973],
+    "sizeSetByTheProgrammeSafeguardNotByTheEffect": true,
+    "sizeCaveat": "72 is the largest size that fits the programme safeguard with enough spare to survive a failed launch, and the largest that divides evenly into six worlds and four arm-and-manner cells. 84, the size v7 ran, no longer fits at all: the ledger stands at 4684 and 84 dialogues would require 15016 against a 15000 safeguard.",
+    "twoSidedOnPurpose": "v7 registered one direction, measured -0.102 pointing the other way and could say nothing about it. The reference rate here has never been measured by anything, so there is no ground to name a direction."
+  },
+  "executionShape": {
+    "batchesRunTogether": 1,
+    "dialoguesPerBatch": 4,
+    "parallelismPerBatch": 4,
+    "executionBatches": 18,
+    "dialogues": 72,
+    "authority": "Liam Magee, 2026-08-23: pasted the exact approval statement for the v8 request",
+    "contrastSafety": "every batch carries two dialogues of each move and two of each manner, so any slowdown or provider limit inside a batch falls on both moves and both manners alike and cannot move the comparison",
+    "oneBatchAtATime": "v6's first launch started all nine batches together, which put 36 codex CLI sessions on one machine. Every dialogue failed on transport retry exhaustion, 382 attempt reservations were spent and no transcript was written. v8 runs one batch at a time from the start, so at most 4 sessions are open at once.",
+    "studyAttemptSafeguard": 8856,
+    "programmeSafeguard": 15000,
+    "programmeLedgerBefore": 4684,
+    "requiredProgrammeCeiling": 13540,
+    "designChanged": true,
+    "designChangeFromV7": "the measured question changed. v6 and v7 compared one boredom-directed move against another. v8 compares making a boredom-directed move against making none, the two arms take different host action families so that the reference arm cannot end on a question, the test became two-sided, the size fell from 84 to 72 because 84 no longer fits the programme safeguard, and the dead assigned-move delivery gate was replaced by a delivered-contrast floor counted from the tutor own turn."
+  },
+  "priorCompletedExecution": [
+    {
+      "study": "boredom action-before-register proof-DAG confirmation v4",
+      "result": "plain 0 of 18, warm 0 of 15, risk difference 0, exact conditional p = 1.",
+      "standing": "The v4 null stands as recorded, for v4 design and v4 window. v8 does not reopen or pool it.",
+      "reused": "nothing"
+    },
+    {
+      "study": "boredom action-before-register proof-DAG confirmation v5",
+      "result": "plain 1 of 18, warm 4 of 17, risk difference 0.180, p = 0.18, registered decision not confirmed.",
+      "standing": "a completed confirmation that did not confirm. v8 does not reopen or pool it.",
+      "reused": "nothing"
+    },
+    {
+      "study": "boredom action-before-register proof-DAG confirmation v6",
+      "result": "36 of 36 dialogues completed, none stopped. The manner-visibility floor missed by one unit in thirty-six and the run failed its own interpretability gate.",
+      "standing": "a completed run that failed its own interpretability gate. It is not rescored under any later floor and licenses no claim.",
+      "reused": "nothing"
+    },
+    {
+      "study": "boredom action-before-register proof-DAG confirmation v7",
+      "result": "84 dialogues planned, 80 scored, 4 lost. ask_discriminating_question recovered 21 of 41, simplify_to_one_workable_step 16 of 39. Risk difference -0.102, one-sided p = 0.874. Registered decision shrink_step_ask_question_recovery_not_confirmed.",
+      "standing": "a clean completed run and a registered null, whose observed difference points away from the direction it registered. The null stands as recorded, for v7 design and v7 window. v8 does not reopen it, rescore it, pool with it or re-run it.",
+      "whatItActuallyDelivered": "both arms asked a question in 0.976 of trigger turns. The shrink-step arm, whose instruction forbade offering a choice and forbade asking permission, produced turns like \"Shall we examine the jukebox itself or clarify a term first?\" and \"Which public object shall we examine first?\" This was found by auditing spent v7 transcripts after the run, which v7 standing permits as design diagnosis. It does not disturb the v7 null and it is not a rescore: an unmeasured delivery gate cannot manufacture a difference, and blurred arms move the two rates together, which is the direction v7 saw. It removes the claim that v7 compared two moves.",
+      "reused": "nothing as a result. v7's discriminating-question rate of 0.5122 is a sizing input for v8's power calculation only. v8 draws fresh prefixes and pools no prior dialogue or outcome."
+    }
+  ]
+}
