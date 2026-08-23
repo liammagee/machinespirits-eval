@@ -3410,3 +3410,39 @@ and explicit human approval.
   source commit `f31d8bc7`, artifacts archived at `a55cf1b7` under
   `artifacts/boredom-proof-dag-v6-live`. The spent v6 corpus is permanently
   excluded from every later outcome.
+- 2026-08-23 — The v7 confirmation ran and analysed. 84 dialogues planned, 80
+  scored, 21 batches, all sealed. Every treatment-fidelity gate passed, which is
+  what v6 could not do: the assigned move came out on `1.00`, the assigned
+  manner on `1.00` against a `0.90` floor, the manner was readable on `0.975`
+  against a `0.80` floor, and the host action was visible on `1.00`. Zero safety
+  overrides and zero move nonadherence. Splitting v6's single manner floor into
+  a delivery floor and a readability floor is what made the run readable.
+  **The primary endpoint is a null.** Asking a discriminating question recovered
+  `21/41` bored learners, shrinking the step recovered `16/39`; risk difference
+  `-0.102`, one-sided exact conditional blocked score test `p = 0.874` against
+  alpha `0.05`. Registered decision
+  `shrink_step_ask_question_recovery_not_confirmed`. The design is one-sided, so
+  the backwards direction may not be reported as a finding, and the registration
+  states the study is underpowered against a difference half the size v6
+  measured, so the null is not a verdict on the move. Four units were lost and
+  none replaced: one learner never showed a readable boredom trigger by turn 4,
+  and three repeated another dialogue's opening word for word. Attrition was
+  unbalanced, `1` on the question side against `3` on the shrink side, and the
+  report carries that caveat. No amendment was needed, because v7 registers
+  conditioning on realised counts.
+- 2026-08-23 — The arc's recurring defect turned up a fourth time, in a new
+  form: the registration asked for 84 distinct public openings, set
+  `requireDistinctPublicPrefixHashes`, and named the disposition for a repeat,
+  but nothing computed the duplicate half of that rule. The first thing to
+  notice a repeat was the combined analysis, after all 83 dialogues had been
+  paid for, and it refused the whole study. A live check was never cheap either,
+  because an opening exists only once its dialogue has reached the trigger turn
+  and batches run in separate processes. The rule is now applied in analysis on
+  the terms it would have had live: within a group sharing an opening, the one
+  that ran first is the original, ordered by batch number then unit name, and
+  the rule reads nothing about how any dialogue ended. That is a change to
+  analysis code made after the data was seen, and the frozen v7 request still
+  pins the pre-change bytes, so it shows as closure drift rather than
+  disappearing. The drift is left in place on purpose. Run archived to
+  `artifacts/boredom-proof-dag-v7-live/` in the private repo, 69MB packed from
+  518MB raw.
