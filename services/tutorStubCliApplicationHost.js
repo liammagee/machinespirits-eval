@@ -572,6 +572,7 @@ import { configureTutorStubResistanceManipulationValidationFromCli } from './tut
 import { configureTutorStubResistanceWarmNonwarmFromCli } from './tutorStubResistanceWarmNonwarmConfirmation.js';
 import { configureTutorStubBoredomProofDagFromCli } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { selectTutorStubBoredomSemanticAdjudicatorFactory } from './tutorStubBoredomActionRegisterProofDagStudy.js';
+import { configureTutorStubResistantLearnerCalibrationFromCli } from './tutorStubResistantLearnerCalibration.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -2348,16 +2349,21 @@ export async function runTutorStubCliApplicationHost({
       args['resistance-warm-nonwarm-confirmation-job'],
     ];
     const boredomProofDagArgs = [args['boredom-proof-dag-registration'], args['boredom-proof-dag-job']];
+    const resistantLearnerCalibrationArgs = [
+      args['resistant-learner-calibration-design'],
+      args['resistant-learner-calibration-job'],
+    ];
     const activeResistanceStudyModes = [
       resistanceActionRegisterArgs.some(Boolean),
       resistanceActionRegisterConfirmationArgs.some(Boolean),
       resistanceActionRegisterManipulationValidationArgs.some(Boolean),
       resistanceWarmNonwarmConfirmationArgs.some(Boolean),
       boredomProofDagArgs.some(Boolean),
+      resistantLearnerCalibrationArgs.some(Boolean),
     ].filter(Boolean).length;
     if (activeResistanceStudyModes > 1) {
       throw new Error(
-        'baseline replay, frame confirmation, manipulation validation, warm/nonwarm confirmation, and boredom proof-DAG execution modes are mutually exclusive',
+        'baseline replay, frame confirmation, manipulation validation, warm/nonwarm confirmation, boredom proof-DAG, and resistant-learner calibration modes are mutually exclusive',
       );
     }
     if (
@@ -2413,6 +2419,21 @@ export async function runTutorStubCliApplicationHost({
     }
     if (boredomProofDagArgs.every(Boolean)) {
       configureTutorStubBoredomProofDagFromCli({
+        args,
+        state,
+        root: ROOT,
+        autoLearnerEnabled,
+        autoLearnerProfileId: automatedLearnerProfileId(args['auto-learner-profile']),
+        autoTurns,
+        appendTraceEvent,
+        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
+      });
+    }
+    if (resistantLearnerCalibrationArgs.some(Boolean) && !resistantLearnerCalibrationArgs.every(Boolean)) {
+      throw new Error('resistant-learner calibration requires design and job together');
+    }
+    if (resistantLearnerCalibrationArgs.every(Boolean)) {
+      configureTutorStubResistantLearnerCalibrationFromCli({
         args,
         state,
         root: ROOT,

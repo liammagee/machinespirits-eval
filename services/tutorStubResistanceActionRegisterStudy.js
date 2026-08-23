@@ -257,6 +257,8 @@ const REALIZATION_CONTRAST_INSTRUCTIONS = Object.freeze({
     'Realize a neutral, non-affiliative reference stance. State the bounded distinction and local evidentiary test directly, without inviting shared movement or choice, presenting tutor and learner as acting together, or adding relational uptake. Preserve the learner’s right to reject the wider frame through a direct boundary rather than a collaborative invitation.',
   warm:
     'Realize a low-pressure collaborative stance. Add one genuine invitation to shared movement or shared choice, then return immediately to the same bounded distinction and local evidentiary test. Preserve the learner’s right to reject the wider frame; do not praise, flatter, or change the action.',
+  edged:
+    'Realize restrained work-directed irony or dry challenge aimed only at the stalled reasoning move. Never target the learner’s person, status, affect, or right to dispute the frame; do not insult, mock, threaten, coerce uptake, or treat local engagement as compliance.',
 });
 
 const CONTENT_BEARING_MOVES = new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']);
@@ -1159,6 +1161,22 @@ function assignedRegister(registration, move, realization) {
   return register;
 }
 
+export function compileTutorStubResistanceActionRegisterStudyAssignment(runtime) {
+  if (!runtime?.enabled) throw new Error('study assignment compilation requires an enabled runtime');
+  const move = assignedMove(runtime.registration, runtime.profile, runtime.action_fit);
+  const register = assignedRegister(runtime.registration, move, runtime.realization);
+  return {
+    pedagogical_move: move,
+    host_action_family: MOVE_TO_HOST_ACTION[move],
+    assigned_realization: runtime.realization,
+    delivered_register: register,
+    action_instruction: MOVE_INSTRUCTIONS[move],
+    compact_action_instruction: COMPACT_MOVE_INSTRUCTIONS[move],
+    realization_contrast_instruction: REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],
+    edged_safety_override_supported: ['sarcastic', 'ironic'].includes(register),
+  };
+}
+
 export function tutorStubResistanceActionRegisterTreatmentEligibility({
   runtime,
   learnerText,
@@ -1391,7 +1409,16 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
     turnNumber: decisionTurn(state, tutorLearnerDag),
     expectedPublicContext: semanticObservation ? tutorStubResistanceSemanticPublicContext(state) : null,
   });
-  if (!eligibility.eligible) {
+  const registeredEdgedSafetyReason =
+    runtime.resistant_learner_calibration === true &&
+    runtime.realization === 'edged' &&
+    eligibility.reasons.length > 0 &&
+    eligibility.reasons.every((reason) => ['comprehension_repair', 'protected_affect'].includes(reason))
+      ? eligibility.reasons.includes('comprehension_repair')
+        ? 'comprehension_repair'
+        : 'protected_affect'
+      : null;
+  if (!eligibility.eligible && !registeredEdgedSafetyReason) {
     runtime.history.push({
       turn: decisionTurn(state, tutorLearnerDag),
       status: 'not_applied',
@@ -1401,9 +1428,10 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
     return selection;
   }
 
-  const moveType = assignedMove(runtime.registration, runtime.profile, runtime.action_fit);
-  const hostAction = MOVE_TO_HOST_ACTION[moveType];
-  const register = assignedRegister(runtime.registration, moveType, runtime.realization);
+  const compiledAssignment = compileTutorStubResistanceActionRegisterStudyAssignment(runtime);
+  const moveType = compiledAssignment.pedagogical_move;
+  const hostAction = compiledAssignment.host_action_family;
+  const register = compiledAssignment.delivered_register;
   const palette = new Set(state?.register?.palette || []);
   if (!palette.has(register)) throw new Error(`study-assigned register ${register} is outside the active palette`);
   // A registration may state that one side of its contrast delivers a question
@@ -1451,9 +1479,9 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
       application_order: [...runtime.registration.design.intervention.applicationOrder],
     },
     ...(deliveredContrastRule ? { delivered_contrast_rule: deliveredContrastRule } : {}),
-    action_instruction: MOVE_INSTRUCTIONS[moveType],
-    compact_action_instruction: COMPACT_MOVE_INSTRUCTIONS[moveType],
-    realization_contrast_instruction: REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],
+    action_instruction: compiledAssignment.action_instruction,
+    compact_action_instruction: compiledAssignment.compact_action_instruction,
+    realization_contrast_instruction: compiledAssignment.realization_contrast_instruction,
     duration_tutor_turns: 1,
     reverts_after_this_turn: true,
     safety_override: { applied: false, assigned_register: register, delivered_register: register, reason: null },
@@ -1488,7 +1516,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
     { world: state?.world || null },
   );
 
-  const next = {
+  let next = {
     ...selection,
     engagement_stance: register,
     selected_register: register,
@@ -1499,13 +1527,16 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
     response_configuration: responseConfiguration,
     resistance_action_register_intervention: intervention,
   };
+  if (registeredEdgedSafetyReason) {
+    next = applyTutorStubResistanceActionRegisterSafetyOverride(next, { reason: registeredEdgedSafetyReason });
+  }
   runtime.consumed = true;
   if (runtime.dynamic_confirmation === true) {
     runtime.trigger_turn = turn;
     runtime.trigger_learner_text = String(learnerText || '');
     runtime.trigger_learner_sha256 = sha256(runtime.trigger_learner_text);
   }
-  runtime.history.push(clone(intervention));
+  runtime.history.push(clone(next.resistance_action_register_intervention));
   if (state?.register?.history?.at(-1) === selection) state.register.history[state.register.history.length - 1] = next;
   if (state?.register) state.register.current = next;
   return next;

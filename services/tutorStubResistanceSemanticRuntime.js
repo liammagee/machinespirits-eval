@@ -54,6 +54,7 @@ import {
   wrapTutorStubResistanceSemanticModelOutputV6,
 } from './tutorStubResistanceSemanticAdjudicationV6.js';
 import { createTutorStubResistanceConfirmationSemanticRuntime } from './tutorStubResistanceConfirmationSemanticRuntime.js';
+import { createTutorStubResistantLearnerSemanticRuntime } from './tutorStubResistantLearnerSemanticRuntime.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION =
@@ -629,10 +630,21 @@ export function createTutorStubResistanceSemanticAdjudicationComposition({
     { appendTraceEvent, callPromptModel, resolveModel },
     { observationSemantics },
   );
-  const {
-    adjudicateFinalHorizon: adjudicateTutorStubResistanceConfirmationOutcome,
-    adjudicateInterventionFidelity: adjudicateTutorStubResistanceInterventionFidelity,
-  } = createTutorStubResistanceConfirmationSemanticRuntime({ appendTraceEvent, callPromptModel, resolveModel });
+  const confirmation = createTutorStubResistanceConfirmationSemanticRuntime({
+    appendTraceEvent,
+    callPromptModel,
+    resolveModel,
+  });
+  const resistantLearner = createTutorStubResistantLearnerSemanticRuntime({
+    appendTraceEvent,
+    callPromptModel,
+    resolveModel,
+  });
+  const adjudicateTutorStubResistanceConfirmationOutcome = (values) =>
+    values?.state?.resistanceActionRegisterStudy?.resistant_learner_calibration === true
+      ? resistantLearner.adjudicateFinalHorizon(values)
+      : confirmation.adjudicateFinalHorizon(values);
+  const adjudicateTutorStubResistanceInterventionFidelity = confirmation.adjudicateInterventionFidelity;
   return {
     adjudicateResistanceSemanticCandidate,
     adjudicateTutorStubResistanceConfirmationOutcome,

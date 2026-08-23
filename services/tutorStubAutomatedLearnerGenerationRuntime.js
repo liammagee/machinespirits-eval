@@ -577,6 +577,37 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
     const frameOpportunityV4Profile =
       boundedFrameOpportunitySemantics && ['frame_refuser', 'frame_defiant'].includes(runtime?.profileId);
+    // The prospective R1 instrument fixes the frame-refuser voice at the
+    // trigger, then expressly permits three epistemic paths after the tutor's
+    // bounded test. Reapplying the legacy frame-refuser adherence gate after
+    // that intervention would pin every valid learner draw back to refusal and
+    // make the registered ladder structurally impossible.
+    if (
+      state.resistanceActionRegisterStudy?.resistant_learner_calibration === true &&
+      state.resistanceActionRegisterStudy?.resistant_learner_study === 'R1' &&
+      state.resistanceActionRegisterStudy?.consumed === true
+    ) {
+      const precomputedRaw =
+        precomputeFinalLearnerAnalysis && canPreclassify && generated.text
+          ? await extractCombinedLearnerAnalysis({
+              learnerText: generated.text,
+              state,
+              tutorTurn: turnNumber,
+              preflightSource: 'registered_final_learner_outcome',
+              signal,
+            })
+          : null;
+      if (precomputedRaw) assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_profile_adherence_released_after_registered_intervention',
+        turn: turnNumber,
+        profile: runtime?.profileId || 'frame_refuser',
+        personaContract: 'frame_refuser-r1-v1',
+        voiceConstraintsRemainInPrompt: true,
+        epistemicMovementReleased: true,
+      });
+      return { generated, precomputedRaw, repaired: false, passed: null };
+    }
     const semanticStudyCandidate = semanticAdherence.studyCandidate(
       state.resistanceActionRegisterStudy,
       runtime?.profileId,

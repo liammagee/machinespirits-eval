@@ -23,6 +23,11 @@
     "independentUnit": "fresh independent dialogue",
     "reuseOrPooling": false
   },
+  "randomization": {
+    "masterSeed": 2026082301,
+    "algorithm": "sha256-ranked balanced allocation within the registered calibration or powered blocks",
+    "calibrationAllocation": "one dialogue per world-by-register cell, with three of six worlds assigned to each action inside every register"
+  },
   "factors": {
     "action": {
       "primary": true,
@@ -58,6 +63,15 @@
           "definition": "Restrained work-directed irony or dry challenge aimed only at the stalled reasoning move, never at the learner's person, status, or affect."
         }
       ],
+      "runtimeMapping": {
+        "warm": "warm",
+        "plain": "plain",
+        "edgedByAction": {
+          "ask_discriminating_question": "sarcastic",
+          "stage_public_evidence_for_next_step": "ironic"
+        },
+        "interpretation": "Edged is the registered factor label. The existing tutor-stub runtime realizes it through its action-compatible arm-only register; fidelity readers judge the delivered prose against the study-level edged definition."
+      },
       "assignment": "balanced within world and action",
       "calibrationUse": "delivery-fidelity reading only; the 18-dialogue calibration produces no register effect estimate or claim",
       "interaction": "not estimated or claimed"
@@ -84,7 +98,7 @@
     },
     "fidelity": {
       "source": "the delivered tutor intervention text only, never assignment records",
-      "fields": ["delivered_action_family", "delivered_question_contrast", "delivered_register"],
+      "fields": ["delivered_action_family", "delivered_question_contrast", "delivered_register", "prohibited_delivery"],
       "questionContrastAudit": "count question marks in the delivered intervention after the semantic action-family judgment",
       "assignmentEchoesAreEvidence": false
     },
@@ -131,7 +145,8 @@
         "learner_authored_thread_pickup_within_five_turns",
         "delivered_action_family",
         "delivered_question_contrast",
-        "delivered_register"
+        "delivered_register",
+        "prohibited_delivery"
       ]
     },
     "killRule": "Stop B1 before the powered run if any channel-alive, action-contrast, register-fidelity, reader-agreement, or safety rule fails. Keep every calibration row and do not relax a threshold, repair a semantic return, replace a valid unit, or pool calibration with the powered run."

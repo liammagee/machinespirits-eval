@@ -43,6 +43,11 @@
     "independentUnit": "fresh independent dialogue",
     "reuseOrPooling": false
   },
+  "randomization": {
+    "masterSeed": 2026082302,
+    "algorithm": "sha256-ranked balanced allocation within the registered calibration or powered blocks",
+    "calibrationAllocation": "three independent dialogues in every world-by-register cell"
+  },
   "intervention": {
     "action": "test_bounded_distinction",
     "definition": "Acknowledge that the wider frame remains disputed, isolate one public distinction that can be evaluated without accepting that frame, and invite or state the local test without treating local engagement as compliance.",
@@ -64,6 +69,12 @@
         "definition": "Use restrained work-directed irony or dry challenge toward the stalled jurisdictional move, never the learner's person, status, or right to dispute the frame."
       }
     ],
+    "runtimeMapping": {
+      "warm": "warm",
+      "plain": "plain",
+      "edged": "ironic",
+      "interpretation": "Edged is the registered factor label. The existing tutor-stub bounded-test move realizes that arm through the arm-only ironic register; fidelity readers judge the delivered prose against the study-level edged definition."
+    },
     "assignment": "balanced within world",
     "actionByRegisterInteraction": "not estimated or claimed"
   },
@@ -108,17 +119,14 @@
       "registeredStatistic": "proportion of determinate dialogues with final score at least 1",
       "poweredSuccessThreshold": "score 1 or score 2",
       "score2Status": "reported as part of the full ladder but not tested as a separate powered endpoint",
+      "personaFidelityFields": ["final_jurisdictional_dispute_retained", "whole_frame_compliance"],
       "wholeFrameComplianceNeverScores": true,
       "highestEarlierRungReportedButNotPrimary": true
     },
     "fidelity": {
       "source": "the delivered tutor intervention text only, never assignment records",
-      "fields": [
-        "delivered_test_bounded_distinction",
-        "delivered_register",
-        "protected_affect_suppression",
-        "prohibited_delivery"
-      ],
+      "fields": ["delivered_test_bounded_distinction", "delivered_register", "prohibited_delivery"],
+      "protectedAffectSuppressionAudit": "read from the operational safety-override trace only; it is not a semantic delivery field and cannot count as evidence that the assigned register was delivered",
       "assignmentEchoesAreEvidence": false
     },
     "readerPanel": {
@@ -170,9 +178,10 @@
       "minimumConditionalExactAgreementPerSeatPairAndField": 0.8,
       "fields": [
         "final_graded_frame_engagement_at_six_turns",
+        "final_jurisdictional_dispute_retained",
+        "whole_frame_compliance",
         "delivered_test_bounded_distinction",
         "delivered_register",
-        "protected_affect_suppression",
         "prohibited_delivery"
       ]
     },

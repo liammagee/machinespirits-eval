@@ -71,3 +71,8 @@ tags:
 - 2026-08-23: Resolved the P1 world decision prospectively. R1 is equally
   stratified across Marrick and Rowan Flat, with its claim limited to those
   worlds and the persona-permitted elicitation boundary explicit.
+- 2026-08-23: Implemented the combined zero-call Gate 1 launcher, deterministic
+  balanced plans, independent three-seat primary and fidelity panels, exact R1
+  persona injection, and calibration gates. The 24-cell live assignment
+  compilation preflight and 36-dialogue dry run pass with zero model calls.
+  No calibration is authorized or active.

@@ -109,6 +109,8 @@ export function parseTutorStubCliArguments({
       'resistance-warm-nonwarm-confirmation-job': { type: 'string', default: '' },
       'boredom-proof-dag-registration': { type: 'string', default: '' },
       'boredom-proof-dag-job': { type: 'string', default: '' },
+      'resistant-learner-calibration-design': { type: 'string', default: '' },
+      'resistant-learner-calibration-job': { type: 'string', default: '' },
       'no-auto-stop-on-grounded': { type: 'boolean', default: false },
       'mixed-learner': { type: 'boolean', default: stub.mixedLearner },
       'mixed-tutor-prefetch-policy': { type: 'string', default: stub.mixedTutorPrefetchPolicy },
