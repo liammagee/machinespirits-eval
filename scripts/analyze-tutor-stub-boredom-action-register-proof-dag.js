@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  boredomContrastAxis,
   boredomProofProgressNames,
   exactBlockedScorePValue,
   objectiveProofProgress,
@@ -35,18 +36,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // scored silently against v2's window. Every caller passes the path, so
 // requiring it costs nothing and removes the silent-wrong-study case.
 const BATCH_IDS = Object.freeze(Array.from({ length: 9 }, (_, index) => `execution_batch_${index + 1}`));
-// Which axis the primary test contrasts, and which axis is only balanced. v5
-// contrasted the manner the tutor spoke in. v6 contrasts two pedagogical moves
-// and balances manner nine and nine inside each move. Written out here as the
-// manner, this would have tested v6 on v5's axis and reported a manner result
-// under a move heading.
-const BOREDOM_CONTRAST_ROW_FIELD = Object.freeze({
-  pedagogical_move: 'move_level',
-  realization_manner_plain_versus_warm: 'arm',
-});
-// A registration written before the contrast could vary names no contrast, and
-// its contrast is the manner.
-const LEGACY_CONTRAST = 'realization_manner_plain_versus_warm';
+// What this file calls the two axis fields on a report row. The reading of
+// which axis is contrasted lives in the preflight service, because the endpoint
+// preflight needs the same reading and names its own rows differently.
+const BOREDOM_REPORT_ROW_FIELDS = Object.freeze({ moveField: 'move_level', mannerField: 'arm' });
 // v5 and below hold one action fit for every unit and never write a level onto
 // the plan row.
 const LEGACY_SINGLE_ACTION_FIT_LEVEL = 'matched';
@@ -60,20 +53,8 @@ const LEGACY_SINGLE_ACTION_FIT_LEVEL = 'matched';
 const LEGACY_BOREDOM_CONFIRMATION_REPORT_SCHEMA =
   'machinespirits.tutor-stub.boredom-action-register-proof-dag-confirmation-report.v1';
 
-function boredomContrastAxis(registration) {
-  const contrast = registration.design.treatment.contrast || LEGACY_CONTRAST;
-  const rowField = BOREDOM_CONTRAST_ROW_FIELD[contrast];
-  if (!rowField) throw new Error(`boredom proof-DAG analysis has no reader for the ${contrast} contrast`);
-  const reference = registration.design.treatment.reference;
-  const treatment = registration.design.treatment.treatment;
-  if (!reference || !treatment || reference === treatment) {
-    throw new Error('boredom proof-DAG analysis requires a registered reference level and a distinct treatment level');
-  }
-  // The axis that is held balanced rather than tested. Under the manner
-  // contrast there is none, because manner is the contrast.
-  const blockField = contrast === LEGACY_CONTRAST ? null : 'arm';
-  const blockLevels = blockField ? [...registration.design.treatment.realizations] : [];
-  return { contrast, rowField, reference, treatment, blockField, blockLevels };
+function reportContrastAxis(registration) {
+  return boredomContrastAxis(registration, BOREDOM_REPORT_ROW_FIELDS);
 }
 
 // Words that carry no content of their own. Kept short on purpose: the test
@@ -1425,7 +1406,7 @@ export function analyzeTutorStubBoredomProofDag({
   // Which axis this registration contrasts, read once and passed everywhere
   // below. Every count, block, table and sentence that used to say plain and
   // warm now asks this object what the two sides are called.
-  const axis = boredomContrastAxis(loaded.registration);
+  const axis = reportContrastAxis(loaded.registration);
   const primaryDeadlineTurns = Number(loaded.registration.measurement.primaryEndpoint.deadlinePostTriggerLearnerTurns);
   const comparabilityEndpoint = loaded.registration.measurement.comparabilityEndpoint ?? null;
   const plannedUnits = batches.flatMap((batch) =>

@@ -276,6 +276,50 @@ export function boredomProofProgressNames(registration) {
   return { field: `proof_progress_by_${word}_turns`, endpoint: `objective_proof_progress_by_${word}_turns` };
 }
 
+/** A registration written before the contrast could vary contrasts the manner. */
+export const BOREDOM_MANNER_CONTRAST = 'realization_manner_plain_versus_warm';
+const BOREDOM_MOVE_CONTRAST = 'pedagogical_move';
+
+/**
+ * Which axis the primary test contrasts, and which axis is only held balanced.
+ *
+ * v1 to v5 contrasted the manner the tutor spoke in, so every reader could
+ * assume it. v6 contrasts two pedagogical moves and balances the manner nine
+ * and nine inside each move. A reader that still assumed the manner would test
+ * v6 on the balanced axis and file a move result under a manner heading.
+ *
+ * The preflight and the analyzer both need this, and they name their rows
+ * differently: a preflight case carries `pedagogical_move_level` while a report
+ * row carries `move_level`. So the reading lives here once and the caller says
+ * what its own two fields are called.
+ */
+export function boredomContrastAxis(registration, { moveField = 'pedagogical_move_level', mannerField = 'arm' } = {}) {
+  const treatment = registration?.design?.treatment || {};
+  const contrast = treatment.contrast || BOREDOM_MANNER_CONTRAST;
+  if (contrast !== BOREDOM_MANNER_CONTRAST && contrast !== BOREDOM_MOVE_CONTRAST) {
+    throw new Error(`boredom proof-DAG analysis has no reader for the ${contrast} contrast`);
+  }
+  const contrastIsMove = contrast === BOREDOM_MOVE_CONTRAST;
+  // Every registration from v1 names its two sides, so neither branch writes
+  // "plain" and "warm" out again.
+  const reference = treatment.reference;
+  const treatmentLevel = treatment.treatment;
+  if (!reference || !treatmentLevel || reference === treatmentLevel) {
+    throw new Error('boredom proof-DAG analysis requires a registered reference level and a distinct treatment level');
+  }
+  return {
+    contrast,
+    contrastIsMove,
+    reference,
+    treatment: treatmentLevel,
+    rowField: contrastIsMove ? moveField : mannerField,
+    // Under the manner contrast there is no balanced axis, because the manner
+    // is the contrast.
+    blockField: contrastIsMove ? mannerField : null,
+    blockLevels: contrastIsMove ? [...(treatment.realizations || [])] : [],
+  };
+}
+
 export function validateTutorStubBoredomProofDagRegistration(registration) {
   const errors = [];
   const worlds = registration?.design?.worlds || [];
@@ -961,10 +1005,22 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
   const plan = buildTutorStubBoredomProofDagPlan(registration);
   const semanticMeasurement = usesSemanticAdjudicator(registration.version);
   const progressField = boredomProofProgressNames(registration).field;
+  // These self-check cases put more successes on the treatment side than on the
+  // reference side, so the exact test has something to read. Which side is
+  // which follows the registered contrast: under v5 that is the warm manner,
+  // under v6 the shrink-step move. The job row names the move level, so the
+  // axis is read against the plan row rather than the report row.
+  // A plan row names its manner `realization`; only the case rows built below
+  // also carry it as `arm`.
+  const axis = boredomContrastAxis(registration, {
+    moveField: 'pedagogical_move_level',
+    mannerField: 'realization',
+  });
+  const primaryDeadlineTurns = Number(registration.measurement.primaryEndpoint.deadlinePostTriggerLearnerTurns);
   let plainSeen = 0;
   let warmSeen = 0;
   return plan.jobs.map((job) => {
-    const warm = job.realization === 'warm';
+    const warm = job[axis.rowField] === axis.treatment;
     const withinArm = warm ? warmSeen++ : plainSeen++;
     const recovered = warm ? withinArm < 12 : withinArm < 3;
     return {
@@ -975,6 +1031,7 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
       world: job.world,
       seed: job.seed,
       pedagogical_move: job.pedagogical_move,
+      ...(job.pedagogical_move_level ? { pedagogical_move_level: job.pedagogical_move_level } : {}),
       realization: job.realization,
       assignment_rank_sha256: job.assignment_rank_sha256,
       assignment_manifest_sha256: job.assignment_manifest_sha256,
@@ -995,7 +1052,7 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
         : {}),
       outcome: {
         recovered,
-        deadline_turns: 1,
+        deadline_turns: primaryDeadlineTurns,
         observed_turn: recovered ? 1 : null,
         [progressField]: recovered,
         new_supported_public_premises: recovered ? 1 : 0,
@@ -1238,11 +1295,21 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
   });
   const plan = buildTutorStubBoredomProofDagPlan(registration);
   const expectedById = new Map(plan.jobs.map((row) => [row.id, row]));
-  const plain = cases.filter((row) => row.arm === 'plain');
-  const warm = cases.filter((row) => row.arm === 'warm');
+  // v1 to v5 cut these two groups on the manner, because the manner was the
+  // contrast. v6 contrasts two moves, so the groups follow the registered
+  // contrast axis and the manner becomes the balanced block.
+  const axis = boredomContrastAxis(registration);
+  const plain = cases.filter((row) => row[axis.rowField] === axis.reference);
+  const warm = cases.filter((row) => row[axis.rowField] === axis.treatment);
   const plainSuccesses = plain.filter((row) => row.outcome.recovered).length;
   const warmSuccesses = warm.filter((row) => row.outcome.recovered).length;
   const distinctPrefixes = new Set(cases.map((row) => row.prefix_id)).size;
+  // The three registered numbers this assembler used to write out as 18, 18
+  // and 36.
+  const registeredDialogues = registration.design.randomization.dialogues;
+  const dialoguesPerContrastLevel = registeredDialogues / 2;
+  const primaryEndpointId = registration.measurement.primaryEndpoint.id;
+  const primaryDeadlineTurns = Number(registration.measurement.primaryEndpoint.deadlinePostTriggerLearnerTurns);
   const exactPlanFidelity =
     cases.length === plan.jobs.length &&
     new Set(cases.map((row) => row.case_id)).size === plan.jobs.length &&
@@ -1256,6 +1323,10 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
         row.seed === expected.seed &&
         row.batch_id === expected.batch_id &&
         row.pedagogical_move === expected.pedagogical_move &&
+        // A v6 case also has to carry the move level it was dealt. Matching the
+        // move alone would pass a case that named the right move under the
+        // wrong level, and the level is what the contrast is cut on.
+        row.pedagogical_move_level === expected.pedagogical_move_level &&
         row.assignment_rank_sha256 === expected.assignment_rank_sha256 &&
         row.assignment_manifest_sha256 === plan.assignment_manifest_sha256,
       );
@@ -1263,9 +1334,13 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
   const recovery = cases.every(
     (row) =>
       typeof row.outcome?.recovered === 'boolean' &&
-      row.outcome.deadline_turns === 1 &&
+      row.outcome.deadline_turns === primaryDeadlineTurns &&
       Object.hasOwn(row.outcome, 'observed_turn') &&
-      (row.outcome.recovered ? row.outcome.observed_turn === 1 : row.outcome.observed_turn === null),
+      (row.outcome.recovered
+        ? Number.isInteger(row.outcome.observed_turn) &&
+          row.outcome.observed_turn >= 1 &&
+          row.outcome.observed_turn <= primaryDeadlineTurns
+        : row.outcome.observed_turn === null),
   );
   const progress = boredomProofProgressNames(registration);
   const objective = cases.every(
@@ -1308,8 +1383,8 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
     );
   const blocks = registration.design.worlds.map((world) => {
     const rows = cases.filter((row) => row.world === world);
-    const worldPlain = rows.filter((row) => row.arm === 'plain');
-    const worldWarm = rows.filter((row) => row.arm === 'warm');
+    const worldPlain = rows.filter((row) => row[axis.rowField] === axis.reference);
+    const worldWarm = rows.filter((row) => row[axis.rowField] === axis.treatment);
     return {
       world,
       plainN: worldPlain.length,
@@ -1327,10 +1402,16 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
           independent_boredom_semantic_measurement: semantic?.pass && semanticCaseFidelity ? 'complete' : 'incomplete',
         }
       : {}),
-    profile_specific_resistance_recovery:
-      exactPlanFidelity && recovery && plain.length === 18 && warm.length === 18 ? 'complete' : 'incomplete',
+    [primaryEndpointId]:
+      exactPlanFidelity &&
+      recovery &&
+      plain.length === dialoguesPerContrastLevel &&
+      warm.length === dialoguesPerContrastLevel
+        ? 'complete'
+        : 'incomplete',
     [progress.endpoint]: exactPlanFidelity && objective ? 'complete' : 'incomplete',
-    randomized_register_assembly: exactPlanFidelity && distinctPrefixes === 36 ? 'complete' : 'incomplete',
+    randomized_register_assembly:
+      exactPlanFidelity && distinctPrefixes === registeredDialogues ? 'complete' : 'incomplete',
     action_register_fidelity_and_safety: exactPlanFidelity && fidelity ? 'complete' : 'incomplete',
   };
   return {
@@ -1351,7 +1432,7 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       exact_plan_fidelity: exactPlanFidelity,
       compositional_observer_timing: composition,
       independent_semantic_measurement: semantic,
-      deadline_turns: 1,
+      deadline_turns: primaryDeadlineTurns,
       rows: cases,
       contract_study_id: contract.study_id,
     },
@@ -1406,7 +1487,9 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
     assemble: assembleTutorStubBoredomProofDagPreflight,
   });
   const execution = registration.executionReadiness;
-  const carriedForward = registration.version === 5;
+  // Ask the registration which shape it holds instead of listing the versions
+  // that hold it, so a seventh version does not need this line edited.
+  const carriedForward = Boolean(execution.programmeCeiling);
   // v1-v4 reserved a second confirmation alongside this study and so carried two
   // ceilings. v5 carries one, because the frame-refusal reservation was settled
   // before it was written. Emit whichever the registration actually holds rather
