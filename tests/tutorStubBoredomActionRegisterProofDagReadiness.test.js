@@ -6,6 +6,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  boredomContrastAxis,
   buildTutorStubBoredomProofDagPlan,
   buildTutorStubBoredomProofDagSyntheticCases,
   assembleTutorStubBoredomProofDagPreflight,
@@ -18,7 +19,10 @@ import {
   runTutorStubBoredomProofDagEndpointPreflight,
   validateTutorStubBoredomProofDagRegistration,
 } from '../services/tutorStubBoredomActionRegisterProofDagPreflight.js';
-import { scoreTutorStubResistanceRecovery } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import {
+  scoreTutorStubResistanceRecovery,
+  scoreTutorStubResistanceRecoveryWithinHorizon,
+} from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
   hashPaidStudyEndpointValue,
   validatePaidStudyEndpointGoCertificate,
@@ -326,4 +330,287 @@ test('an endpoint contract is refused when it does not belong to the registratio
   assert.equal(passed.readiness.contract_binding.registration_bytes_match_contract, true);
   assert.equal(passed.readiness.model_calls, 0);
   assert.equal(passed.readiness.production_writes, 0);
+});
+
+const V6_REGISTRATION_PATH = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v6.json';
+const V6_CONTRACT_PATH = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v6.json';
+const V6_CERTIFICATE_PATH =
+  'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v6.endpoint-go.json';
+
+function loadV6() {
+  return loadTutorStubBoredomProofDagRegistration({ root: ROOT, registrationPath: V6_REGISTRATION_PATH });
+}
+
+test('v6 contrasts two moves and reads the manner as a balancing block, not as the contrast', () => {
+  const v6 = loadV6();
+  const v5 = loadTutorStubBoredomProofDagRegistration({
+    root: ROOT,
+    registrationPath: 'config/tutor-stub-boredom-action-register-proof-dag-registration.v5.json',
+  });
+  assert.equal(validateTutorStubBoredomProofDagRegistration(v6).ok, true);
+
+  // The axis is what stops a move result being filed under a manner heading.
+  const v6Axis = boredomContrastAxis(v6);
+  assert.equal(v6Axis.rowField, 'pedagogical_move_level');
+  assert.equal(v6Axis.reference, 'ask_question');
+  assert.equal(v6Axis.treatment, 'shrink_step');
+  assert.equal(v6Axis.blockField, 'arm');
+  assert.deepEqual(v6Axis.blockLevels, ['plain', 'warm']);
+
+  // v5 read the same two words the other way round, and had no balanced axis.
+  const v5Axis = boredomContrastAxis(v5);
+  assert.equal(v5Axis.rowField, 'arm');
+  assert.equal(v5Axis.reference, 'plain');
+  assert.equal(v5Axis.treatment, 'warm');
+  assert.equal(v5Axis.blockField, null);
+
+  // Both moves ask the same host machinery for the same thing, so the
+  // instruction text is the single thing that varies between the two arms.
+  assert.equal(v6.design.treatment.hostActionFamily, 'stage_next_step');
+  assert.equal(v6.design.treatment.hostActionFamilySharedByBothLevels, true);
+  const splitFamily = structuredClone(v6);
+  splitFamily.design.treatment.hostActionFamilySharedByBothLevels = false;
+  assert.equal(validateTutorStubBoredomProofDagRegistration(splitFamily).ok, false);
+});
+
+test('v6 plans 36 dialogues with 18 per move, 9 in each move-and-manner cell, and no v5 seed reused', () => {
+  const v6 = loadV6();
+  const plan = buildTutorStubBoredomProofDagPlan(v6);
+  assert.equal(plan.jobs.length, 36);
+  assert.equal(new Set(plan.jobs.map((row) => row.id)).size, 36);
+  assert.equal(new Set(plan.jobs.map((row) => row.seed)).size, 36);
+  assert.equal(plan.assignment_manifest_sha256, v6.design.randomization.assignmentManifestSha256);
+
+  const cell = (level, realization) =>
+    plan.jobs.filter((row) => row.pedagogical_move_level === level && row.realization === realization).length;
+  assert.equal(plan.jobs.filter((row) => row.pedagogical_move_level === 'ask_question').length, 18);
+  assert.equal(plan.jobs.filter((row) => row.pedagogical_move_level === 'shrink_step').length, 18);
+  assert.equal(plan.jobs.filter((row) => row.realization === 'plain').length, 18);
+  assert.equal(plan.jobs.filter((row) => row.realization === 'warm').length, 18);
+  assert.equal(cell('ask_question', 'plain'), 9);
+  assert.equal(cell('ask_question', 'warm'), 9);
+  assert.equal(cell('shrink_step', 'plain'), 9);
+  assert.equal(cell('shrink_step', 'warm'), 9);
+
+  // The move level and the instruction the tutor is given must not part company.
+  assert.ok(
+    plan.jobs.every((row) => row.pedagogical_move === v6.design.treatment.pedagogicalMoves[row.pedagogical_move_level]),
+  );
+
+  for (const world of v6.design.worlds) {
+    const rows = plan.jobs.filter((row) => row.world === world);
+    assert.equal(rows.length, 6);
+    assert.equal(rows.filter((row) => row.pedagogical_move_level === 'ask_question').length, 3);
+    assert.equal(rows.filter((row) => row.pedagogical_move_level === 'shrink_step').length, 3);
+  }
+
+  // Each batch holds one dialogue of each move-and-manner pair, so a batch that
+  // is lost cannot take a whole cell with it.
+  assert.equal(plan.batches.length, 9);
+  assert.ok(
+    plan.batches.every(
+      (batch) =>
+        batch.cases === 4 &&
+        batch.plain === 2 &&
+        batch.warm === 2 &&
+        batch.ask_question === 2 &&
+        batch.shrink_step === 2 &&
+        batch.ceiling === 492,
+    ),
+  );
+  assert.equal(plan.total_maximum_model_attempt_reservations, 4428);
+
+  // v5 seeded from 2026090100. A shared seed would make a v6 unit a rerun of a
+  // spent one, which this arc forbids outright.
+  const v5Plan = buildTutorStubBoredomProofDagPlan(
+    loadTutorStubBoredomProofDagRegistration({
+      root: ROOT,
+      registrationPath: 'config/tutor-stub-boredom-action-register-proof-dag-registration.v5.json',
+    }),
+  );
+  const v5Seeds = new Set(v5Plan.jobs.map((row) => row.seed));
+  assert.ok(plan.jobs.every((row) => !v5Seeds.has(row.seed)));
+});
+
+test('v6 recovery reads five post-trigger turns where the carried-forward comparability reads one', () => {
+  const dull = {
+    learnerText: 'I do not know.',
+    classification: { turn: { discourse_move: 'uncertainty', evidence_use: 'none' } },
+  };
+  const engaged = {
+    learnerText: 'The clipped edge supports the die-mark comparison.',
+    classification: { turn: { discourse_move: 'inference', evidence_use: 'links_evidence_to_rule' } },
+  };
+  const lateTurns = [dull, dull, dull, engaged, dull];
+
+  const primary = scoreTutorStubResistanceRecoveryWithinHorizon({
+    profile: 'bored',
+    postLearnerTurns: lateTurns,
+    deadlinePostTriggerLearnerTurns: 5,
+  });
+  assert.equal(primary.recovered, true);
+  assert.equal(primary.observed_turn, 4);
+  assert.equal(primary.deadline_turns, 5);
+
+  // The v5 primary, carried forward. It reads the same dialogue and finds
+  // nothing, which is exactly why the two may never be compared as one measure.
+  const comparability = scoreTutorStubResistanceRecovery({ profile: 'bored', postLearnerTurns: lateTurns });
+  assert.equal(comparability.recovered, false);
+  assert.equal(comparability.deadline_turns, 1);
+
+  // On a first-turn recovery the wide window and the frozen one-turn scorer
+  // have to agree, or the comparability reading would not be byte-comparable.
+  const early = [engaged, dull, dull, dull, dull];
+  assert.equal(
+    scoreTutorStubResistanceRecoveryWithinHorizon({
+      profile: 'bored',
+      postLearnerTurns: early.slice(0, 1),
+      deadlinePostTriggerLearnerTurns: 1,
+    }).recovered,
+    scoreTutorStubResistanceRecovery({ profile: 'bored', postLearnerTurns: early }).recovered,
+  );
+});
+
+test('v6 endpoint preflight completes the move contrast, the manner block, and content separation at zero calls', () => {
+  const v6 = loadV6();
+  const contract = readJson(V6_CONTRACT_PATH);
+  assert.equal(contract.registration.registration_sha256, fileSha256(V6_REGISTRATION_PATH));
+
+  const preflight = runTutorStubBoredomProofDagEndpointPreflight({
+    contract,
+    registration: v6,
+    registrationPath: V6_REGISTRATION_PATH,
+  });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(preflight.readiness.contract_binding.registration_bytes_match_contract, true);
+  assert.equal(preflight.readiness.hard_study_attempt_ceiling, 4428);
+  for (const endpoint of contract.endpoints) {
+    assert.equal(preflight.assembly_audit.endpoint_status[endpoint.id], 'complete', endpoint.id);
+  }
+
+  // The preflight keeps only the covered cases and the per-endpoint status, so
+  // the report body is read from the assembler the preflight itself calls.
+  const { report } = assembleTutorStubBoredomProofDagPreflight({
+    cases: buildTutorStubBoredomProofDagSyntheticCases(v6),
+    contract,
+  });
+  assert.equal(report.distinct_fresh_prefixes, 36);
+  assert.equal(report.manner_block.length, 4);
+  assert.ok(report.manner_block.every((cell) => cell.units === 9));
+  // The count is reported per move whatever it is, including zero.
+  assert.deepEqual(
+    report.restated_tutor_content_only.map((row) => row.contrast_level),
+    ['ask_question', 'shrink_step'],
+  );
+  assert.ok(report.restated_tutor_content_only.every((row) => row.restated_tutor_content_only === 0));
+
+  const certificate = readJson(V6_CERTIFICATE_PATH);
+  const certificateValidation = validatePaidStudyEndpointGoCertificate({ contract, preflight, certificate });
+  assert.equal(certificateValidation.ok, true, certificateValidation.errors.join('; '));
+  assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
+  assert.match(certificate.authorization_scope, /authorizes no confirmation-model call/u);
+});
+
+test('v6 fails closed on an undelivered move, a silent leakage count, and a drifted comparability reading', () => {
+  const v6 = loadV6();
+  const contract = readJson(V6_CONTRACT_PATH);
+  const cases = buildTutorStubBoredomProofDagSyntheticCases(v6);
+  const status = (rows) => assembleTutorStubBoredomProofDagPreflight({ cases: rows, contract }).endpoint_status;
+
+  // A unit whose delivered move is not its assigned move is nonadherent. It is
+  // analysed where it was assigned and never rerolled, so what has to fail is
+  // the interpretability gate, not the unit.
+  const undelivered = structuredClone(cases);
+  undelivered[0].fidelity.assigned_move_delivered = false;
+  assert.equal(status(undelivered).action_register_fidelity_and_safety, 'incomplete');
+
+  // Silence is not zero. A row that never states the count must not pass as a
+  // row that states no leakage.
+  const silent = structuredClone(cases);
+  delete silent[0].outcome.restated_tutor_content_only;
+  assert.equal(status(silent).pedagogical_move_balance_and_content_separation, 'incomplete');
+
+  // The comparability reading is derived again from the recovery and the turn
+  // it landed on, so a row cannot simply assert it.
+  const drifted = structuredClone(cases);
+  const recoveredRow = drifted.find((row) => row.outcome.recovered === true);
+  recoveredRow.outcome.recovered_at_first_post_trigger_turn = false;
+  assert.equal(status(drifted).profile_specific_resistance_recovery, 'incomplete');
+
+  // Breaking the nine-and-nine balance breaks the same gate the leakage count
+  // sits behind, because both say whether the move reading can be read at all.
+  const unbalanced = structuredClone(cases);
+  const plainAsk = unbalanced.find((row) => row.pedagogical_move_level === 'ask_question' && row.arm === 'plain');
+  plainAsk.arm = 'warm';
+  plainAsk.realization = 'warm';
+  assert.equal(status(unbalanced).pedagogical_move_balance_and_content_separation, 'incomplete');
+});
+
+test('v6 keeps the programme safeguard settled and refuses a contract from another registration', () => {
+  const v6 = loadV6();
+  const ceiling = v6.executionReadiness.programmeCeiling;
+  assert.equal(ceiling.ledgerBeforeV6, 1912);
+  assert.equal(ceiling.v6Maximum, 4428);
+  assert.equal(ceiling.ledgerBeforeV6 + ceiling.v6Maximum, ceiling.requiredCeiling);
+  assert.equal(ceiling.programmeSafeguard, 15000);
+  assert.equal(ceiling.programmeSafeguard - ceiling.requiredCeiling, ceiling.headroom);
+  assert.equal(ceiling.shortfall, 0);
+  assert.equal(v6.executionReadiness.hardStudyAttemptCeiling, ceiling.v6Maximum);
+
+  // v6 spends no operational headroom of its own, so the safeguard is read, not
+  // raised. A raised safeguard has to fail here rather than pass quietly.
+  const raised = structuredClone(v6);
+  raised.executionReadiness.programmeCeiling.programmeSafeguard = 16000;
+  assert.equal(validateTutorStubBoredomProofDagRegistration(raised).ok, false);
+
+  const v5Contract = readJson('config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v5.json');
+  assert.throws(
+    () =>
+      runTutorStubBoredomProofDagEndpointPreflight({
+        contract: v5Contract,
+        registration: v6,
+        registrationPath: V6_REGISTRATION_PATH,
+      }),
+    /endpoint contract belongs to .*registration\.v5\.json/u,
+  );
+});
+
+test('the per-move batch count is written twice, in two spellings, and the two agree', () => {
+  // The GO checker compares the per-move count in the contract with the same
+  // count in the registration. It built both keys by joining the level name to
+  // a suffix, and the two files do not spell a key the same way: a contract key
+  // is underscored, a registration key is camel-cased. So the checker asked the
+  // registration for ask_questionPerBatch, which no registration carries, and
+  // the comparison was between one absent value and another. It failed only
+  // because the same line also required an integer. This test holds both
+  // spellings still, so a rename on either side has to move them together.
+  const v6 = loadV6();
+  const contract = readJson(V6_CONTRACT_PATH);
+  const batches = v6.executionReadiness.batches;
+  const batchContract = contract.runner.batch_contract;
+  const levels = v6.design.treatment.pedagogicalMoveLevels;
+  assert.deepEqual(levels, ['ask_question', 'shrink_step']);
+  assert.deepEqual(
+    levels.map((level) => [`${level}_per_batch`, batchContract[`${level}_per_batch`]]),
+    [
+      ['ask_question_per_batch', 2],
+      ['shrink_step_per_batch', 2],
+    ],
+  );
+  assert.deepEqual(
+    [
+      ['askQuestionPerBatch', batches.askQuestionPerBatch],
+      ['shrinkStepPerBatch', batches.shrinkStepPerBatch],
+    ],
+    [
+      ['askQuestionPerBatch', 2],
+      ['shrinkStepPerBatch', 2],
+    ],
+  );
+  // Four dialogues a batch, one for each move-and-manner pair, nine batches.
+  assert.equal(batches.askQuestionPerBatch + batches.shrinkStepPerBatch, batches.dialoguesPerBatch);
+  assert.equal(batches.plainPerBatch + batches.warmPerBatch, batches.dialoguesPerBatch);
+  assert.equal(batches.dialoguesPerBatch * batches.executionBatches, 36);
 });

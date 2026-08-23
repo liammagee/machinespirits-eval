@@ -1589,10 +1589,18 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       // both. Under v1-v5 the registration names no per-move count and there is
       // nothing to compare.
       const registeredMoveLevels = endpointRegistration.design?.treatment?.pedagogicalMoveLevels || [];
+      // The two files spell the same count two ways. A contract key stays in the
+      // underscored style the rest of the contract uses; a registration key is
+      // camel-cased like every other registration field. Joining the level name
+      // to both suffixes without changing case asked the registration for
+      // ask_questionPerBatch, which no registration has ever carried. The
+      // integer guard below is the only reason that read failed loudly instead
+      // of comparing one absent value with another and passing.
+      const camelLevel = (level) => String(level).replace(/_([a-z])/gu, (unused, letter) => letter.toUpperCase());
       const movePerBatchBalanced = registeredMoveLevels.every(
         (level) =>
-          contract.runner?.batch_contract?.[`${level}_per_batch`] === registeredBatch[`${level}PerBatch`] &&
-          Number.isInteger(registeredBatch[`${level}PerBatch`]),
+          contract.runner?.batch_contract?.[`${level}_per_batch`] === registeredBatch[`${camelLevel(level)}PerBatch`] &&
+          Number.isInteger(registeredBatch[`${camelLevel(level)}PerBatch`]),
       );
       assertion(
         checks,
