@@ -1213,6 +1213,24 @@ test('combined confirmation analyzer accepts only all nine sealed fresh batches 
   const mixedSourceSeal = readJson(mixedSourceSealPath);
   mixedSourceSeal.plan_sha256 = sha256(fs.readFileSync(mixedSourcePlanPath));
   writeJson(mixedSourceSealPath, mixedSourceSeal);
+  const mixedSourceTraceRestores = mixedSourcePlan.jobs.map((job) =>
+    mutateSealedBatchTrace(mixedSourceRoot, job.id, (events) =>
+      events.map((event) =>
+        event.type === 'run_start'
+          ? {
+              ...event,
+              metadata: {
+                ...event.metadata,
+                provenance: {
+                  ...event.metadata.provenance,
+                  git: { ...event.metadata.provenance.git, sha: alternateSourceCommit },
+                },
+              },
+            }
+          : event,
+      ),
+    ),
+  );
   const mixedSourceReport = analyzeTutorStubResistanceActionRegisterConfirmation({
     batchRoots: roots,
     registrationPath: path.relative(ROOT, REGISTRATION),
@@ -1229,6 +1247,7 @@ test('combined confirmation analyzer accepts only all nine sealed fresh batches 
       }),
     /source, result, or seal contract/u,
   );
+  for (const restoreMixedSourceTrace of mixedSourceTraceRestores.reverse()) restoreMixedSourceTrace();
   fs.writeFileSync(mixedSourcePlanPath, originalMixedSourcePlan);
   fs.writeFileSync(mixedSourceSealPath, originalMixedSourceSeal);
 
