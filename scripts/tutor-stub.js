@@ -36,6 +36,7 @@ import { DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD } from '../services/tutor
 import { DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE } from '../services/tutorStubRegisterTemperature.js';
 import { DEFAULT_TUTOR_STUB_LIGHT_ADAPTATION_THRESHOLD } from '../services/tutorStubLightAdaptation.js';
 import { DEFAULT_TUTOR_STUB_RELEASE_SPEED } from '../services/tutorStubReleasePacing.js';
+import { writeTutorStubRegisteredStudyOutcome } from '../services/tutorStubRegisteredStudyOutcome.js';
 import { DEFAULT_TUTOR_STUB_VOICE_MODEL, DEFAULT_TUTOR_STUB_VOICE_NAME } from '../services/tutorStubVoiceBridge.js';
 
 const DEFAULT_TUTOR_MODEL_REF = 'codex.gpt-5.6-terra';
@@ -132,6 +133,11 @@ runTutorStubCliApplicationHost({
   entrypointPath: fileURLToPath(import.meta.url),
   learnerProfiles,
   onFatal(err, { colors }) {
+    writeTutorStubRegisteredStudyOutcome({
+      filePath: process.env.TUTOR_STUB_REGISTERED_STUDY_OUTCOME_FILE,
+      error: err,
+      jobId: args['eval-job-id'],
+    });
     console.error(`${colors.red}Fatal:${colors.reset} ${err.message}`);
     process.exit(1);
   },

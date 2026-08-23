@@ -400,7 +400,7 @@ test('consumed measurement recheck remains bound to its 18-dialogue launch sourc
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-scripts\/tutor-stub-learner-profile-contracts\.js/u);
+  assert.match(result.stderr, /source-closure-scripts\/tutor-stub\.js/u);
 });
 
 test('consumed technical recovery request remains frozen and fails closed after current source drift', () => {
@@ -441,7 +441,7 @@ test('consumed technical recovery request remains frozen and fails closed after 
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-scripts\/tutor-stub-learner-profile-contracts\.js/u);
+  assert.match(result.stderr, /source-closure-scripts\/tutor-stub\.js/u);
 });
 
 test('consumed axis heldout request remains frozen and fails closed after current source drift', () => {

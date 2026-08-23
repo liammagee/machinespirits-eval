@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -20,6 +22,11 @@ import {
   tutorStubResistantLearnerSemanticFieldConsensus,
 } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import {
+  readTutorStubRegisteredStudyOutcome,
+  tutorStubRegisteredStudyOutcomeFromError,
+  writeTutorStubRegisteredStudyOutcome,
+} from '../services/tutorStubRegisteredStudyOutcome.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from '../services/tutorStubResistanceSemanticAdjudicationV4.js';
 import {
   applyTutorStubResistantLearnerCalibrationSemanticPanel,
@@ -603,6 +610,42 @@ test('calibration summaries enforce the registered channel, fidelity, persona, a
   assert.equal(summarizeTutorStubResistantLearnerCalibration({ rows: r1Rows, design: r1Design }).status, 'passed');
 });
 
+test('calibration summary counts a retained typed substantive failure as an executed nonreplacement row', () => {
+  const design = load(B1_PATH).design;
+  const plan = buildTutorStubResistantLearnerCalibrationPlan(design);
+  const rows = plan.jobs.map((job, index) => ({
+    job,
+    status: index === 0 ? 'retained_substantive_failure' : 'complete',
+    registered_failure:
+      index === 0
+        ? {
+            code: 'TUTOR_STUB_BOREDOM_PROOF_DAG_TRIGGER_MISSING',
+          }
+        : null,
+    outcome:
+      index === 0
+        ? null
+        : {
+            primary: semanticPanel({
+              learner_authored_thread_pickup_within_five_turns: index % 2 === 0 ? 'yes' : 'no',
+            }),
+            fidelity: semanticPanel({
+              delivered_action_family: job.action,
+              delivered_question_contrast:
+                job.action === 'ask_discriminating_question' ? 'requires_question' : 'forbids_question',
+              delivered_register: job.register,
+              prohibited_delivery: 'no',
+            }),
+          },
+  }));
+  const report = summarizeTutorStubResistantLearnerCalibration({ rows, design });
+  assert.equal(report.gates.execution_complete, true);
+  assert.equal(report.retained_substantive_failures.count, 1);
+  assert.deepEqual(report.retained_substantive_failures.case_ids, [plan.jobs[0].id]);
+  assert.equal(report.retained_substantive_failures.replacement_allowed, false);
+  assert.equal(report.status, 'passed');
+});
+
 test('combined launcher dry-run binds both calibrations and executes zero model calls', () => {
   const output = execFileSync(
     process.execPath,
@@ -670,7 +713,46 @@ test('GO binding is structural and normalizes formatted integer ceilings', () =>
   );
 });
 
-test('combined launcher halts on the first technical failure or prohibited delivery', () => {
+test('typed substantive child outcome crosses the file boundary structurally', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'resistant-learner-outcome-'));
+  const filePath = path.join(directory, 'registered-study-outcome.json');
+  const error = Object.assign(new Error('registered trigger missing'), {
+    code: 'TUTOR_STUB_BOREDOM_PROOF_DAG_TRIGGER_MISSING',
+    substantiveStudyFailure: true,
+  });
+  const expected = tutorStubRegisteredStudyOutcomeFromError({ error, jobId: 'B1-retained' });
+  assert.equal(expected.status, 'retained_substantive_failure');
+  assert.equal(expected.replacement_allowed, false);
+  writeTutorStubRegisteredStudyOutcome({ filePath, error, jobId: 'B1-retained' });
+  assert.deepEqual(readTutorStubRegisteredStudyOutcome({ filePath, expectedJobId: 'B1-retained' }), {
+    present: true,
+    valid: true,
+    outcome: expected,
+    issues: [],
+  });
+  assert.equal(
+    tutorStubRegisteredStudyOutcomeFromError({
+      error: new Error('untyped failure'),
+      jobId: 'B1-untyped',
+    }),
+    null,
+  );
+});
+
+test('combined launcher continues typed substantive rows but halts on untyped failures or prohibited delivery', () => {
+  for (const code of [
+    'TUTOR_STUB_BOREDOM_PROOF_DAG_TRIGGER_MISSING',
+    'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING',
+  ]) {
+    assert.equal(
+      tutorStubResistantLearnerCalibrationHaltReason({
+        status: 'retained_substantive_failure',
+        job: { id: 'retained' },
+        registered_failure: { code },
+      }),
+      null,
+    );
+  }
   assert.equal(
     tutorStubResistantLearnerCalibrationHaltReason({ status: 'failed', job: { id: 'B1-failed' } }),
     'technical failure in B1-failed',
