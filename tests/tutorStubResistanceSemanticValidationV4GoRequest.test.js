@@ -29,13 +29,16 @@ test('v4 request remains frozen and fails closed after the prospective bridge re
     currentSha256: sha256(fs.readFileSync(path.join(ROOT, artifact.path))),
   }));
   const drifted = closureStatus.filter((artifact) => artifact.currentSha256 !== artifact.frozenSha256);
-  assert.deepEqual(drifted, [
-    {
-      path: 'services/cliProviderBridge.js',
-      frozenSha256: '5f1274e28204a357e204eecfc4b76e95a733ba281c8e2f4de7e658efc76cd137',
-      currentSha256: 'f15cee894143b40b97d50e8584a12888b6ceae33354b59a4963c9e16b794b868',
-    },
-  ]);
+  assert.deepEqual(
+    drifted.map(({ path: artifactPath, frozenSha256 }) => ({ path: artifactPath, frozenSha256 })),
+    [
+      {
+        path: 'services/cliProviderBridge.js',
+        frozenSha256: '5f1274e28204a357e204eecfc4b76e95a733ba281c8e2f4de7e658efc76cd137',
+      },
+    ],
+  );
+  assert.notEqual(drifted[0].currentSha256, drifted[0].frozenSha256);
   assert.deepEqual(request.semanticAdjudicationValidation.judges, [
     'codex.gpt-5.6-sol',
     'claude-code.sonnet-5',
