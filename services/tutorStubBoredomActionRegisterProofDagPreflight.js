@@ -287,15 +287,24 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   const prospectiveV3 = registration?.version === 3;
   const prospectiveV4 = registration?.version === 4;
   const prospectiveV5 = registration?.version === 5;
-  const semanticInstrumented = prospectiveV3 || prospectiveV4 || prospectiveV5;
+  const prospectiveV6 = registration?.version === 6;
+  const semanticInstrumented = prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6;
   const currentProgrammeLedger = prospectiveV2 || prospectiveV3;
+  // v5 and v6 both carry the v4 semantic instrument and its spent sealed
+  // corpus forward rather than earning the gates again, and both are checked on
+  // derived arithmetic. Named once so a seventh version is one edit, not six.
+  const carriesForwardV4Instrument = prospectiveV5 || prospectiveV6;
+  // A separate name for a separate idea, even though the two versions coincide
+  // today. One says which instrument a version runs; this one says how its
+  // attempt arithmetic is checked.
+  const derivedAttemptArithmetic = prospectiveV5 || prospectiveV6;
   // v5 widens the trigger window and the outcome horizon, so the numbers that
   // v1 to v4 assert as literals no longer describe it. Rather than add a fifth
   // set of literals, v5 is checked on the arithmetic: every attempt figure has
   // to derive from the turn budget it registers. That catches an inconsistent
   // edit the same way, and it survives the next change of turn budget. The
   // literals for v1 to v4 stay exactly as they are.
-  const sealedLiteralArithmetic = !prospectiveV5;
+  const sealedLiteralArithmetic = !derivedAttemptArithmetic;
   if (
     ![
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v1',
@@ -303,6 +312,7 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v3',
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v4',
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v5',
+      'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v6',
     ].includes(registration?.schema)
   ) {
     errors.push('unsupported boredom proof-DAG registration schema');
@@ -325,7 +335,44 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   ) {
     errors.push('design must bind 36 fresh distinct independently randomized dialogues');
   }
-  if (
+  // v1 to v5 held the tutor move fixed and contrasted the manner. v6 turns that
+  // around: the move is the contrast and the manner is a balancing block. Both
+  // shapes have to be checkable, so the two are separate branches rather than
+  // one loosened check that would pass either by accident.
+  if (prospectiveV6) {
+    const treatment = registration?.design?.treatment || {};
+    const moves = treatment.pedagogicalMoves || {};
+    if (
+      JSON.stringify(treatment.pedagogicalMoveLevels) !== JSON.stringify(['ask_question', 'shrink_step']) ||
+      moves.ask_question !== 'ask_discriminating_question' ||
+      moves.shrink_step !== 'simplify_to_one_workable_step' ||
+      treatment.reference !== 'ask_question' ||
+      treatment.treatment !== 'shrink_step' ||
+      treatment.hostActionFamily !== 'stage_next_step' ||
+      treatment.hostActionFamilySharedByBothLevels !== true ||
+      typeof treatment.hostActionFamilySharedReason !== 'string' ||
+      treatment.realizationRole !== 'balancing_block_not_the_contrast' ||
+      typeof treatment.treatmentMayNotSupplyTheFinding !== 'string' ||
+      treatment.contentLeakageDisclosureRequired !== true ||
+      treatment.assignedPedagogicalMoveTutorTurns !== 1 ||
+      JSON.stringify(treatment.realizations) !== JSON.stringify(['plain', 'warm'])
+    ) {
+      errors.push('design must isolate the two boredom-appropriate moves with manner balanced inside each');
+    }
+    const randomization = registration?.design?.randomization || {};
+    if (
+      randomization.askQuestionDialogues !== 18 ||
+      randomization.shrinkStepDialogues !== 18 ||
+      randomization.askQuestionPerWorld !== 3 ||
+      randomization.shrinkStepPerWorld !== 3 ||
+      randomization.askQuestionPlain !== 9 ||
+      randomization.askQuestionWarm !== 9 ||
+      randomization.shrinkStepPlain !== 9 ||
+      randomization.shrinkStepWarm !== 9
+    ) {
+      errors.push('registered move and manner margins do not balance to 18, 18 and 9 in each cell');
+    }
+  } else if (
     registration?.design?.treatment?.fixedPedagogicalMove !== 'ask_discriminating_question' ||
     JSON.stringify(registration?.design?.treatment?.realizations) !== JSON.stringify(['plain', 'warm'])
   ) {
@@ -336,7 +383,38 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   // deadline, which moves with the outcome horizon, so v5 carries a different
   // name for the same measure on a longer window.
   const secondaryEndpointId = boredomProofProgressNames(registration).endpoint;
-  if (
+  if (prospectiveV6) {
+    // v6 reads recovery across the whole outcome horizon rather than on the
+    // first turn alone, so its primary is a different measure and gets a
+    // different name. The one-turn measure does not disappear: it has to be
+    // carried as a named comparability endpoint, because without it the v6
+    // reference move could not be read against v5 at all. Requiring the pair
+    // here is what stops a version from widening its window and quietly
+    // dropping the only figure that ties it to the run before it.
+    const primary = registration?.measurement?.primaryEndpoint || {};
+    const comparability = registration?.measurement?.comparabilityEndpoint || {};
+    if (
+      primary.id !== 'bored_resistance_recovery_within_outcome_horizon' ||
+      primary.deadlinePostTriggerLearnerTurns !== registration?.design?.treatment?.postTriggerLearnerTurns ||
+      primary.analysis !== 'two_sided_exact_conditional_blocked_score_test' ||
+      primary.definitionChangedFromV5 !== true ||
+      primary.notComparableWithV4OrV5Primary !== true ||
+      primary.perTurnRuleUnchangedFromV5 !== true ||
+      primary.mannerReportedAsBlock !== true ||
+      primary.intentionToTreat !== true ||
+      primary.modelJudge !== false ||
+      comparability.id !== 'profile_specific_resistance_recovery' ||
+      comparability.deadlinePostTriggerLearnerTurns !== 1 ||
+      comparability.reportedAlways !== true ||
+      comparability.analysis !== 'descriptive_only_no_hypothesis_test' ||
+      registration?.measurement?.keySecondaryEndpoint?.id !== secondaryEndpointId
+    ) {
+      errors.push('registered recovery and objective proof-progress endpoints drifted');
+    }
+    if (typeof registration?.whyV6?.whyThisIsNotOutcomeFishing !== 'string') {
+      errors.push('a widened primary window must record why it is not outcome fishing');
+    }
+  } else if (
     registration?.measurement?.primaryEndpoint?.id !== 'profile_specific_resistance_recovery' ||
     registration?.measurement?.primaryEndpoint?.deadlinePostTriggerLearnerTurns !== 1 ||
     registration?.measurement?.primaryEndpoint?.analysis !== 'two_sided_exact_conditional_blocked_score_test' ||
@@ -345,7 +423,7 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     errors.push('registered recovery and objective proof-progress endpoints drifted');
   }
   if (
-    prospectiveV5 &&
+    derivedAttemptArithmetic &&
     registration?.measurement?.keySecondaryEndpoint?.deadlinePostTriggerLearnerTurns !==
       registration?.design?.treatment?.postTriggerLearnerTurns
   ) {
@@ -389,6 +467,41 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
       power.designChoiceAudit?.selectedIndependentBlockedHardAttemptCeiling !== 2160
     ) {
       errors.push('independent-versus-paired smallest-design audit drifted');
+    }
+  } else if (prospectiveV6) {
+    // v6 has two refuted alternatives behind it, not one, and it is the first
+    // version that admits in the registration that it is underpowered for what
+    // it is looking for. So the check asks for three things a copied-forward
+    // claim could not supply: both refutations written down, a stated power
+    // table with the reference rate it was computed from, and a plain statement
+    // that a null here settles almost nothing. The paired-design audit is
+    // required too, so that the question of pairing is answered once in the
+    // record rather than reopened every version.
+    const refuted = power.refutedAlternatives || {};
+    const position = power.positionForV6 || {};
+    const table = Array.isArray(power.powerTableAtEighteenPerMove) ? power.powerTableAtEighteenPerMove : [];
+    const audit = power.pairedDesignAudit || {};
+    if (
+      power.minimumPerArm !== 18 ||
+      typeof refuted.v4?.reading !== 'string' ||
+      typeof refuted.v5?.v5Observed !== 'string' ||
+      typeof refuted.v5?.reading !== 'string' ||
+      typeof power.measuredReferenceRate?.source !== 'string' ||
+      typeof power.measuredReferenceRate?.caution !== 'string' ||
+      table.length < 3 ||
+      table.some((row) => !(row?.power > 0 && row?.power < 1) || !(row?.treatmentRate > row?.referenceRate)) ||
+      typeof position.statedPlainly !== 'string' ||
+      typeof position.whatANullWouldMean !== 'string' ||
+      typeof position.whyRunItAtThisSizeAtAll !== 'string' ||
+      typeof position.whatThisDesignStillCannotSettle !== 'string' ||
+      audit.decision !== 'rejected. v6 keeps independent units, as v5 did.' ||
+      typeof audit.result !== 'string' ||
+      power.powerAt17PerArm !== undefined ||
+      power.powerAt18PerArm !== undefined ||
+      power.designChoiceAudit !== undefined ||
+      power.positionForV5 !== undefined
+    ) {
+      errors.push('power position does not record both refuted alternatives and the screening limit');
     }
   } else if (
     // v4 sized itself against plain 1 of 6 versus warm 4 of 6 and then observed
@@ -469,6 +582,15 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   ) {
     errors.push('predeclared batch partition drifted');
   }
+  // In v6 a batch that is balanced on manner alone is not balanced. Every batch
+  // has to hold one dialogue of each of the four move-and-manner pairs, so that
+  // stopping after any batch leaves the contrast even.
+  if (
+    prospectiveV6 &&
+    (batches.askQuestionPerBatch !== 2 || batches.shrinkStepPerBatch !== 2 || batches.executionBatches !== 9)
+  ) {
+    errors.push('predeclared batch partition does not balance the move under test');
+  }
   if (sealedLiteralArithmetic) {
     const expectedLedger = prospectiveV4 ? 446 : currentProgrammeLedger ? 293 : 219;
     const expectedStudyCeiling = prospectiveV4 ? 2606 : currentProgrammeLedger ? 2453 : 2379;
@@ -490,11 +612,16 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     // started from, this study's own ceiling is the one derived above, and the
     // headroom is what the safeguard leaves after both.
     const ceiling = execution.programmeCeiling || {};
+    // v6 has two finished runs behind it instead of one, so the chain runs
+    // through both spends. Everything after the ledger line is the same check.
+    const ledgerBefore = prospectiveV6 ? ceiling.ledgerBeforeV6 : ceiling.ledgerBeforeV5;
+    const spentBefore = prospectiveV6 ? ceiling.v4Spend + ceiling.v5Spend : ceiling.v4Spend;
+    const studyMaximum = prospectiveV6 ? ceiling.v6Maximum : ceiling.v5Maximum;
     if (
       ceiling.ledgerBeforeV4 !== 446 ||
-      ceiling.ledgerBeforeV5 !== ceiling.ledgerBeforeV4 + ceiling.v4Spend ||
-      ceiling.v5Maximum !== dialogue.maximumReservations ||
-      ceiling.requiredCeiling !== ceiling.ledgerBeforeV5 + ceiling.v5Maximum ||
+      ledgerBefore !== ceiling.ledgerBeforeV4 + spentBefore ||
+      studyMaximum !== dialogue.maximumReservations ||
+      ceiling.requiredCeiling !== ledgerBefore + studyMaximum ||
       ceiling.headroom !== ceiling.programmeSafeguard - ceiling.requiredCeiling ||
       !(ceiling.headroom >= 0) ||
       ceiling.shortfall !== 0 ||
@@ -527,7 +654,7 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   ) {
     errors.push('prospective-v9 independent semantic adjudicator boundary drifted');
   }
-  if (prospectiveV4 || prospectiveV5) {
+  if (prospectiveV4 || carriesForwardV4Instrument) {
     const adjudicator = registration.measurement?.semanticAdjudicator || {};
     const modulePath = path.join(ROOT, String(adjudicator.modulePath || ''));
     const moduleSource = fs.existsSync(modulePath) ? fs.readFileSync(modulePath) : null;
@@ -555,15 +682,20 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     // bytes have to be the same bytes and the one earlier move has to be written
     // down and argued. If a byte moves from here, revalidationRequired turns
     // true and a fresh sealed corpus is owed.
-    if (prospectiveV5) {
+    if (carriesForwardV4Instrument) {
       const provenance = adjudicator.instrumentProvenance || {};
       const sealedRecord = path.join(ROOT, String(provenance.sealedRecordOfTheValidatedTree || ''));
+      // v5 named this field after itself. v6 runs the same bytes, so the value
+      // is unchanged but the v5 name would read as a lie in a v6 file. Both
+      // names are accepted and the newer one is preferred, so v5 still
+      // revalidates byte-identically and v6 can say what it means.
+      const bytesThisVersionWillRun = provenance.bytesThisVersionWillRun ?? provenance.bytesV5WillRun;
       if (
         adjudicator.moduleUnchangedFromV4 !== true ||
         adjudicator.empiricalValidationCarriedForward !== true ||
         adjudicator.revalidationRequired !== false ||
         typeof adjudicator.revalidationRequiredReason !== 'string' ||
-        provenance.bytesV5WillRun !== adjudicator.moduleSha256 ||
+        bytesThisVersionWillRun !== adjudicator.moduleSha256 ||
         typeof provenance.validatedBytes !== 'string' ||
         provenance.validatedBytes.length !== 64 ||
         !Array.isArray(provenance.commitsBetween) ||
@@ -582,22 +714,22 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     // v5 has no held-out corpus of its own. It names the v4 one as carried
     // forward and marked spent, so the file check is the same and the claim is
     // not.
-    const heldout = prospectiveV5 ? adjudicator?.carriedForwardHeldoutCorpus : adjudicator?.heldoutCorpus;
+    const heldout = carriesForwardV4Instrument ? adjudicator?.carriedForwardHeldoutCorpus : adjudicator?.heldoutCorpus;
     const heldoutPath = path.join(ROOT, String(heldout?.path || ''));
     const heldoutSource = fs.existsSync(heldoutPath) ? fs.readFileSync(heldoutPath) : null;
     const heldoutSha = heldoutSource ? crypto.createHash('sha256').update(heldoutSource).digest('hex') : null;
     const expectedHeldoutPath =
-      prospectiveV4 || prospectiveV5
+      prospectiveV4 || carriesForwardV4Instrument
         ? 'config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json'
         : 'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json';
-    const expectedHeldoutCases = prospectiveV4 || prospectiveV5 ? 55 : 22;
+    const expectedHeldoutCases = prospectiveV4 || carriesForwardV4Instrument ? 55 : 22;
     if (
       heldout?.path !== expectedHeldoutPath ||
       heldout?.cases !== expectedHeldoutCases ||
       heldout?.embeddedInPrompt !== false ||
       heldout?.modelPredictionsPresent !== false ||
       heldoutSha !== heldout?.sha256 ||
-      (prospectiveV5 && heldout?.spentForValidation !== true)
+      (carriesForwardV4Instrument && heldout?.spentForValidation !== true)
     ) {
       errors.push('prospective-v9 held-out semantic corpus binding drifted');
     }
@@ -607,12 +739,21 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   // purpose: the point of the pin is that the assignment was fixed before any
   // dialogue was generated, so it must not be recomputed from whatever the
   // registration currently says.
-  const expectedAssignmentSeed = prospectiveV5 ? 20260901 : 20260820;
-  const expectedAssignmentManifestSha256 = prospectiveV5
-    ? '485f7442d2844dad9026c54ea47ed3214f5cf1e4c36bf372a2fb52dfb6304b28'
-    : '4e256dfa65054747a5d6d1ac82d1aecb42f7c98f158cb76e686f24c37d71ef94';
+  const expectedAssignmentSeed = prospectiveV6 ? 20260922 : prospectiveV5 ? 20260901 : 20260820;
+  const expectedAssignmentManifestSha256 = prospectiveV6
+    ? 'fb84030c40bf559e1f37bbf90ef088d501843307a187939b168ea5186c74259d'
+    : prospectiveV5
+      ? '485f7442d2844dad9026c54ea47ed3214f5cf1e4c36bf372a2fb52dfb6304b28'
+      : '4e256dfa65054747a5d6d1ac82d1aecb42f7c98f158cb76e686f24c37d71ef94';
+  // v6 assigns two things per dialogue instead of one, so it ranks the same way
+  // and then reads a per-world pattern. The algorithm name says so, and it is
+  // pinned like the seed and the digest, so a v6 file cannot claim the v5
+  // algorithm and still pass.
+  const expectedAssignmentAlgorithm = prospectiveV6
+    ? 'sha256_rank_within_world_with_seeded_world_pattern'
+    : 'sha256_rank_within_world';
   if (
-    registration?.design?.randomization?.algorithm !== 'sha256_rank_within_world' ||
+    registration?.design?.randomization?.algorithm !== expectedAssignmentAlgorithm ||
     registration?.design?.randomization?.assignmentSeed !== expectedAssignmentSeed ||
     registration?.design?.randomization?.assignmentManifestSha256 !== expectedAssignmentManifestSha256
   ) {
@@ -637,7 +778,75 @@ function assignmentManifestSha256(rows) {
   return crypto.createHash('sha256').update(JSON.stringify(rows)).digest('hex');
 }
 
+// Six dialogues in one world can hold three of each move and three of each
+// manner, but they cannot also split the four move-and-manner pairs evenly:
+// four does not divide six. So the pair is balanced across worlds instead.
+// Three worlds run one pattern and three run its mirror, the seed decides
+// which world gets which, and every pair total lands on nine.
+const BOREDOM_V6_WORLD_PATTERNS = Object.freeze({
+  a: Object.freeze([
+    'ask_question:plain',
+    'ask_question:plain',
+    'ask_question:warm',
+    'shrink_step:plain',
+    'shrink_step:warm',
+    'shrink_step:warm',
+  ]),
+  b: Object.freeze([
+    'ask_question:plain',
+    'ask_question:warm',
+    'ask_question:warm',
+    'shrink_step:plain',
+    'shrink_step:plain',
+    'shrink_step:warm',
+  ]),
+});
+
+function boredomV6PatternByWorld(registration) {
+  const assignmentSeed = registration.design.randomization.assignmentSeed;
+  const ranked = registration.design.worlds
+    .map((world) => ({
+      world,
+      rank: crypto.createHash('sha256').update(`${assignmentSeed}:pattern:${world}`).digest('hex'),
+    }))
+    .sort((left, right) => left.rank.localeCompare(right.rank));
+  return new Map(
+    ranked.map((row, index) => [row.world, index < 3 ? BOREDOM_V6_WORLD_PATTERNS.a : BOREDOM_V6_WORLD_PATTERNS.b]),
+  );
+}
+
+function buildBoredomV6AssignmentManifest(registration) {
+  const assignmentSeed = registration.design.randomization.assignmentSeed;
+  const patternByWorld = boredomV6PatternByWorld(registration);
+  return registration.design.worlds.flatMap((world) => {
+    const pattern = patternByWorld.get(world);
+    const ranked = Array.from({ length: 6 }, (_, dialogueIndex) => ({
+      world,
+      dialogue_index: dialogueIndex + 1,
+      assignment_rank_sha256: crypto
+        .createHash('sha256')
+        .update(`${assignmentSeed}:${world}:${dialogueIndex + 1}`)
+        .digest('hex'),
+    })).sort((left, right) => left.assignment_rank_sha256.localeCompare(right.assignment_rank_sha256));
+    const cellByDialogue = new Map(ranked.map((row, index) => [row.dialogue_index, pattern[index]]));
+    return ranked
+      .map((row) => {
+        const [move, realization] = cellByDialogue.get(row.dialogue_index).split(':');
+        return { ...row, pedagogical_move_level: move, realization };
+      })
+      .sort((left, right) => left.dialogue_index - right.dialogue_index);
+  });
+}
+
 export function buildTutorStubBoredomProofDagAssignments(registration) {
+  if (registration.version === 6) {
+    const manifest = buildBoredomV6AssignmentManifest(registration);
+    const digest = assignmentManifestSha256(manifest);
+    if (digest !== registration.design.randomization.assignmentManifestSha256) {
+      throw new Error('predeclared boredom move and register assignment manifest drifted');
+    }
+    return { digest, manifest };
+  }
   const assignmentSeed = registration.design.randomization.assignmentSeed;
   const manifest = registration.design.worlds.flatMap((world) => {
     const ranked = Array.from({ length: 6 }, (_, dialogueIndex) => ({
@@ -676,9 +885,19 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
   const perDialogueCeiling = registration.executionReadiness.dialogue.maximumReservationsPerDialogue;
   const perBatchCeiling = registration.executionReadiness.batches.maximumReservationsPerBatch;
   const studyCeiling = registration.executionReadiness.dialogue.maximumReservations;
+  // v1 to v5 wrote the move here as a literal, because there was only one. v6
+  // assigns it, so it is read from the manifest row through the registration's
+  // own level-to-move map. That is the twenty-second time this arc has had to
+  // remove a constant written twice with nothing comparing the copies.
+  const isV6 = registration.version === 6;
+  const moveByLevel = registration.design.treatment.pedagogicalMoves || {};
   const candidates = assignments.manifest.map((row) => {
     const worldIndex = registration.design.worlds.indexOf(row.world);
     const ordinal = worldIndex * 6 + row.dialogue_index - 1;
+    const pedagogicalMove = isV6
+      ? moveByLevel[row.pedagogical_move_level]
+      : registration.design.treatment.fixedPedagogicalMove;
+    if (!pedagogicalMove) throw new Error('registered pedagogical move is missing for an assigned dialogue');
     return {
       id: `bored-confirm-w${worldIndex + 1}-d${row.dialogue_index}`,
       type: 'fresh_bored_register_confirmation_dialogue',
@@ -686,20 +905,31 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
       world: row.world,
       seed: registration.design.freshPrefixGeneration.seedBase + ordinal + 1,
       maximum_trigger_turn: maximumTriggerTurn,
-      pedagogical_move: 'ask_discriminating_question',
+      pedagogical_move: pedagogicalMove,
+      ...(isV6 ? { pedagogical_move_level: row.pedagogical_move_level } : {}),
       realization: row.realization,
       assignment_rank_sha256: row.assignment_rank_sha256,
       assignment_manifest_sha256: assignments.digest,
       maximum_model_attempt_reservations: perDialogueCeiling,
     };
   });
+  // A v5 batch had to be even on manner alone. A v6 batch has to be even on
+  // both, so it takes one dialogue from each of the four move-and-manner cells.
+  const cell = (level, realization) =>
+    candidates.filter((row) => row.pedagogical_move_level === level && row.realization === realization);
   const plain = candidates.filter((row) => row.realization === 'plain');
   const warm = candidates.filter((row) => row.realization === 'warm');
+  const askPlain = isV6 ? cell('ask_question', 'plain') : [];
+  const askWarm = isV6 ? cell('ask_question', 'warm') : [];
+  const shrinkPlain = isV6 ? cell('shrink_step', 'plain') : [];
+  const shrinkWarm = isV6 ? cell('shrink_step', 'warm') : [];
   const jobs = Array.from({ length: 9 }, (_, batchIndex) => {
     const batchId = `execution_batch_${batchIndex + 1}`;
-    return [plain[batchIndex * 2], warm[batchIndex * 2], plain[batchIndex * 2 + 1], warm[batchIndex * 2 + 1]].map(
-      (row) => ({ ...row, batch_id: batchId }),
-    );
+    const rows = isV6
+      ? [askPlain[batchIndex], askWarm[batchIndex], shrinkPlain[batchIndex], shrinkWarm[batchIndex]]
+      : [plain[batchIndex * 2], warm[batchIndex * 2], plain[batchIndex * 2 + 1], warm[batchIndex * 2 + 1]];
+    if (rows.some((row) => !row)) throw new Error('predeclared batch partition could not be filled');
+    return rows.map((row) => ({ ...row, batch_id: batchId }));
   }).flat();
   return {
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-plan.v1',
@@ -710,6 +940,7 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
       cases: 4,
       plain: 2,
       warm: 2,
+      ...(isV6 ? { ask_question: 2, shrink_step: 2 } : {}),
       ceiling: perBatchCeiling,
     })),
     total_maximum_model_attempt_reservations: studyCeiling,
@@ -723,7 +954,7 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
  * Written once here so a sixth version is one edit rather than five.
  */
 function usesSemanticAdjudicator(version) {
-  return version === 3 || version === 4 || version === 5;
+  return version === 3 || version === 4 || version === 5 || version === 6;
 }
 
 export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
