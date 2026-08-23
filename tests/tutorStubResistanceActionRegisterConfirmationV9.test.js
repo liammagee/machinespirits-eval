@@ -141,6 +141,26 @@ function v8RuntimeFixture({ exhaustJudgeIds = [] } = {}) {
   return { corpusCase, events, job, loaded, prompts, runtime, state };
 }
 
+test('manipulation validation invokes only the blinded intervention-fidelity panel', async () => {
+  const fixture = v8RuntimeFixture();
+  fixture.state.resistanceActionRegisterStudy.manipulation_validation = true;
+  const result = await fixture.runtime.adjudicateInterventionFidelity({
+    state: fixture.state,
+    turnNumber: 1,
+    intervention: fixture.corpusCase.intervention,
+  });
+  assert.equal(result.fidelity.status, 'determinate');
+  assert.equal(fixture.prompts.length, 3);
+  assert.ok(fixture.prompts.every((prompt) => prompt.instrument === 'intervention_fidelity'));
+  assert.ok(fixture.prompts.every((prompt) => prompt.independence.treatment_assignment_label_visible === false));
+  assert.ok(fixture.prompts.every((prompt) => prompt.independence.learner_outcome_visible === false));
+  const event = fixture.events.find(
+    (candidate) => candidate.type === 'resistance_action_register_manipulation_validation_fidelity',
+  );
+  assert.equal(event.learner_outcome_generated_or_judged, false);
+  assert.equal(event.regex_keyword_or_generator_semantic_authority, 'none');
+});
+
 async function v4TriggerFixture() {
   const validation = loadTutorStubResistanceSemanticValidationV4();
   const binding = loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4);

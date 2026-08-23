@@ -3619,3 +3619,17 @@ and explicit human approval.
   protected-condition, V10 compatibility, and first-draft regressions pass
   zero-call. Full audit:
   `notes/2026-08-22-v10-plain-warm-contrast-zero-call-audit.md`.
+
+- 2026-08-22 — Registered a prospective manipulation-only validation before
+  any further recovery confirmation. The design uses 60 wholly fresh Luna
+  dialogues, 30 per arm in ten balanced blocks, and stops immediately after
+  the randomized intervention. The independently pinned V8 three-judge panel
+  sees only the intervention and remains blind to assignment and learner
+  outcome. At 30 per arm, requiring at least 28 correct deliveries has exact
+  one-sided alpha `0.04418` against unacceptable fidelity `0.80` and power
+  `0.81218` at acceptable fidelity `0.95`; separate coverage and action gates
+  also apply. Indeterminacy is retained, never repaired or replaced. The
+  registered 4,140-attempt ceiling is an operational safeguard derived from
+  23 maximum role calls per dialogue and three transport reservations per
+  call; it does not determine study size. The validation has not launched and
+  makes no recovery or treatment-effect claim.

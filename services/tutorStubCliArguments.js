@@ -103,6 +103,8 @@ export function parseTutorStubCliArguments({
       'resistance-action-register-job': { type: 'string', default: '' },
       'resistance-action-register-confirmation-registration': { type: 'string', default: '' },
       'resistance-action-register-confirmation-job': { type: 'string', default: '' },
+      'resistance-action-register-manipulation-validation-design': { type: 'string', default: '' },
+      'resistance-action-register-manipulation-validation-job': { type: 'string', default: '' },
       'boredom-proof-dag-registration': { type: 'string', default: '' },
       'boredom-proof-dag-job': { type: 'string', default: '' },
       'no-auto-stop-on-grounded': { type: 'boolean', default: false },

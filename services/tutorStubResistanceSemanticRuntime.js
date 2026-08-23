@@ -593,9 +593,15 @@ export function createTutorStubResistanceSemanticAdjudicationComposition({
     { appendTraceEvent, callPromptModel, resolveModel },
     { observationSemantics },
   );
-  const { adjudicateFinalHorizon: adjudicateTutorStubResistanceConfirmationOutcome } =
-    createTutorStubResistanceConfirmationSemanticRuntime({ appendTraceEvent, callPromptModel, resolveModel });
-  return { adjudicateResistanceSemanticCandidate, adjudicateTutorStubResistanceConfirmationOutcome };
+  const {
+    adjudicateFinalHorizon: adjudicateTutorStubResistanceConfirmationOutcome,
+    adjudicateInterventionFidelity: adjudicateTutorStubResistanceInterventionFidelity,
+  } = createTutorStubResistanceConfirmationSemanticRuntime({ appendTraceEvent, callPromptModel, resolveModel });
+  return {
+    adjudicateResistanceSemanticCandidate,
+    adjudicateTutorStubResistanceConfirmationOutcome,
+    adjudicateTutorStubResistanceInterventionFidelity,
+  };
 }
 
 export default { createTutorStubResistanceSemanticRuntime, loadTutorStubResistanceSemanticRegistration };

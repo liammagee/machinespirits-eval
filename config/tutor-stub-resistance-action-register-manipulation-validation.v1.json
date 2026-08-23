@@ -1,0 +1,94 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-action-register-manipulation-validation.v1",
+  "version": 1,
+  "studyId": "tutor-stub-resistance-action-register-plain-warm-manipulation-validation-v1",
+  "stage": "prospective_manipulation_validation_only",
+  "scientificDesign": {
+    "construct": "The intervention delivers the registered test_bounded_distinction action while its pragmatic register is the randomly assigned plain or warm stance.",
+    "unit": "wholly_fresh_independent_dialogue",
+    "arms": ["plain", "warm"],
+    "sampleSize": {
+      "total": 60,
+      "perArm": 30,
+      "balancedBlocks": 10,
+      "dialoguesPerBlock": 6,
+      "plainPerBlock": 3,
+      "warmPerBlock": 3
+    },
+    "powering": {
+      "design": "one_sample_exact_binomial_gate_applied_separately_to_each_arm",
+      "acceptableFidelity": 0.95,
+      "unacceptableFidelity": 0.8,
+      "oneSidedAlphaAtPassThreshold": 0.04417898515199705,
+      "powerAtAcceptableFidelity": 0.81217881314696,
+      "nPerArm": 30,
+      "passThresholdPerArm": 28
+    },
+    "randomization": {
+      "masterSeed": 20260828,
+      "algorithm": "sha256_ranked_balanced_block_permutation_v1",
+      "assignmentConcealedFromPreTriggerGeneratorAndFromJudges": true
+    },
+    "dialogue": {
+      "world": "world_005_marrick",
+      "dagMode": "strict_dag",
+      "learnerProfile": "frame_refuser",
+      "generatorModel": "codex.gpt-5.6-luna",
+      "generatorEffort": "low",
+      "trigger": "first_semantically_adjudicated_frame_jurisdiction_refusal_by_public_turn_2",
+      "action": "test_bounded_distinction",
+      "stop": "immediately_after_the_single_randomized_tutor_intervention_and_its_blinded_fidelity_panel"
+    }
+  },
+  "instrument": {
+    "registrationPath": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json",
+    "registrationSha256": "20da1d03c3a6d9f6b5ffae5fe290879e70c9c83a36cd90049bd5e2556f2dd8bf",
+    "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "codex.gpt-5.5"],
+    "panelRule": "two_of_three_component_majority_after_deterministic_schema_and_exact_quote_validation",
+    "blinding": ["assigned_arm", "learner_outcome", "other_judge_outputs", "hidden_state", "generator_analysis"],
+    "regexKeywordOrGeneratorSemanticAuthority": "none"
+  },
+  "gates": {
+    "registerFidelity": "each_arm_at_least_28_of_30_panel_determinate_and_equal_to_assignment",
+    "actionFidelity": "each_arm_at_least_28_of_30_panel_determinate_clarify_distinction_yes",
+    "measurementCoverage": "each_arm_at_least_29_of_30_panels_determinate_for_both_action_and_register",
+    "jointDecision": "all_three_gates_must_pass_in_both_arms",
+    "failureDisposition": "do_not_launch_confirmation; diagnose_without_reusing_replacing_selecting_or_rerunning_valid_validation_dialogues"
+  },
+  "dispositions": {
+    "judgeLowConfidenceOrDisagreement": "measurement_indeterminate_not_nonadherence",
+    "measurementIndeterminate": "retain_as_indeterminate_no_repair_rerun_replacement_or_selection",
+    "missingTrigger": "substantive_registered_failure_retain_no_replacement",
+    "responseFreeTechnicalFailure": "bounded_missing_or_failed_call_recovery_only_without_recalling_any_completed_or_ambiguously_dispatched_call",
+    "validOutput": "immutable_no_rerun"
+  },
+  "execution": {
+    "baseRegistrationPath": "config/tutor-stub-resistance-action-register-crossed-registration.v10.json",
+    "baseRegistrationSha256": "61d243e4731e243cd17218f8669de416f01bd7ee0773afb2b34692541cb89838",
+    "contrastRepairAuditPath": "notes/2026-08-22-v10-plain-warm-contrast-zero-call-audit.md",
+    "contrastRepairAuditSha256": "612d63fb195406aa6ff01570e0b5b60e510aeb945ed1533219a35537a7c183bd",
+    "plannedRoleCallDerivationPerDialogue": {
+      "opening": 1,
+      "maximumLearnerTurns": 2,
+      "maximumLearnerAnalyses": 2,
+      "maximumTutorTurns": 2,
+      "oneFullLearnerRepairGenerationAndAnalysis": 2,
+      "maximumTutorGuardRecoveryCalls": 4,
+      "maximumTriggerSemanticJudgeCalls": 9,
+      "fidelityJudgeCalls": 3,
+      "total": 23
+    },
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumModelAttemptsPerDialogue": 69,
+    "studyModelAttemptCeiling": 4140,
+    "programmeLedgerBefore": 4893,
+    "programmeModelAttemptCeiling": 10000,
+    "programmeLedgerAfterStudyMaximum": 9033,
+    "parallelism": 4,
+    "createOnceDestination": "artifacts/tutor-stub-live/resistance-action-register-manipulation-validation-v1",
+    "noResumeOfValidUnits": true,
+    "noInterimOutcomeAnalysis": true
+  },
+  "claimBoundary": "This study validates manipulation delivery only. It estimates neither learner recovery nor a warm-versus-plain treatment effect. Its 60 dialogues are excluded from every confirmation analysis and from reuse or pooling with calibration, V1-V10 confirmation, or future confirmation dialogues.",
+  "launchPolicy": "merged_design_clean_detached_commit_signed_go_note"
+}
