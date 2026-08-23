@@ -7,7 +7,11 @@ import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
 import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } from './resistantLearnerObservation.js';
 import { parseTutorStubBoredomSemanticAdjudication } from './tutorStubBoredomSemanticAdjudication.js';
 import { parseTutorStubBoredomSemanticAdjudication as parseTutorStubBoredomSemanticAdjudicationV3 } from './tutorStubBoredomSemanticAdjudicationV3.js';
-import { tutorStubResistanceActionRegisterTreatmentEligibility } from './tutorStubResistanceActionRegisterStudy.js';
+import {
+  tutorStubResistanceActionRegisterTreatmentEligibility,
+  tutorStubResistanceHostActionFamily,
+} from './tutorStubResistanceActionRegisterStudy.js';
+import { compileTutorStubTurnProgressionContract } from './tutorStubTurnProgressionContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const BOREDOM_PROOF_DAG_REGISTRATION_PATH =
@@ -491,19 +495,27 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   const prospectiveV5 = registration?.version === 5;
   const prospectiveV6 = registration?.version === 6;
   const prospectiveV7 = registration?.version === 7;
-  // v6 and v7 contrast two pedagogical moves and balance the manner inside each.
-  // Named once, because every move-contrast check below needs both.
-  const moveContrast = prospectiveV6 || prospectiveV7;
-  const semanticInstrumented = prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7;
+  const prospectiveV8 = registration?.version === 8;
+  // v6, v7 and v8 all contrast two pedagogical moves and balance the manner
+  // inside each. Named once, because every move-contrast check below needs them.
+  const moveContrast = prospectiveV6 || prospectiveV7 || prospectiveV8;
+  // v6 and v7 run both arms on one host action family. v8 does not, and the
+  // separation is the point of v8 rather than an oversight, so the two shapes
+  // get separate checks instead of one loosened check that would pass either.
+  const sharedHostFamilyContrast = prospectiveV6 || prospectiveV7;
+  const semanticInstrumented =
+    prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8;
   const currentProgrammeLedger = prospectiveV2 || prospectiveV3;
-  // v5, v6 and v7 all carry the v4 semantic instrument and its spent sealed
-  // corpus forward rather than earning the gates again, and all are checked on
-  // derived arithmetic. Named once so an eighth version is one edit, not six.
-  const carriesForwardV4Instrument = prospectiveV5 || prospectiveV6 || prospectiveV7;
-  // A separate name for a separate idea, even though the three versions coincide
+  // v5 onward all carry the v4 semantic instrument and its spent sealed corpus
+  // forward rather than earning the gates again, and all are checked on derived
+  // arithmetic. Named once so a further version is one edit, not six.
+  const carriesForwardV4Instrument = prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8;
+  // A separate name for a separate idea, even though the versions coincide
   // today. One says which instrument a version runs; this one says how its
   // attempt arithmetic is checked.
-  const derivedAttemptArithmetic = prospectiveV5 || prospectiveV6 || prospectiveV7;
+  const derivedAttemptArithmetic = prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8;
+  // v7 introduced registration-derived size checking. v8 keeps it.
+  const derivedSizeArithmetic = prospectiveV7 || prospectiveV8;
   // v5 widens the trigger window and the outcome horizon, so the numbers that
   // v1 to v4 assert as literals no longer describe it. Rather than add a fifth
   // set of literals, v5 is checked on the arithmetic: every attempt figure has
@@ -520,6 +532,7 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v5',
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v6',
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v7',
+      'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v8',
     ].includes(registration?.schema)
   ) {
     errors.push('unsupported boredom proof-DAG registration schema');
@@ -541,7 +554,7 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   // fails here. The literals for v1 to v6 stay exactly as they are, because
   // their preflight certificates are pinned to them.
   const sizes = boredomRegisteredSizes(registration);
-  if (prospectiveV7) {
+  if (derivedSizeArithmetic) {
     if (!sizes.ok) errors.push(`registered sizes do not agree with each other: ${sizes.errors.join(', ')}`);
   } else {
     if (new Set(worlds).size !== 6 || worlds.length !== 6) errors.push('design must bind six distinct worlds');
@@ -563,21 +576,107 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     const treatment = registration?.design?.treatment || {};
     const moves = treatment.pedagogicalMoves || {};
     if (
-      JSON.stringify(treatment.pedagogicalMoveLevels) !== JSON.stringify(['ask_question', 'shrink_step']) ||
-      moves.ask_question !== 'ask_discriminating_question' ||
-      moves.shrink_step !== 'simplify_to_one_workable_step' ||
-      treatment.reference !== 'ask_question' ||
-      treatment.treatment !== 'shrink_step' ||
-      treatment.hostActionFamily !== 'stage_next_step' ||
-      treatment.hostActionFamilySharedByBothLevels !== true ||
-      typeof treatment.hostActionFamilySharedReason !== 'string' ||
       treatment.realizationRole !== 'balancing_block_not_the_contrast' ||
       typeof treatment.treatmentMayNotSupplyTheFinding !== 'string' ||
       treatment.contentLeakageDisclosureRequired !== true ||
       treatment.assignedPedagogicalMoveTutorTurns !== 1 ||
       JSON.stringify(treatment.realizations) !== JSON.stringify(['plain', 'warm'])
     ) {
-      errors.push('design must isolate the two boredom-appropriate moves with manner balanced inside each');
+      errors.push('a move contrast must balance the manner inside each move and withhold the finding');
+    }
+    if (sharedHostFamilyContrast) {
+      if (
+        JSON.stringify(treatment.pedagogicalMoveLevels) !== JSON.stringify(['ask_question', 'shrink_step']) ||
+        moves.ask_question !== 'ask_discriminating_question' ||
+        moves.shrink_step !== 'simplify_to_one_workable_step' ||
+        treatment.reference !== 'ask_question' ||
+        treatment.treatment !== 'shrink_step' ||
+        treatment.hostActionFamily !== 'stage_next_step' ||
+        treatment.hostActionFamilySharedByBothLevels !== true ||
+        typeof treatment.hostActionFamilySharedReason !== 'string'
+      ) {
+        errors.push('design must isolate the two boredom-appropriate moves with manner balanced inside each');
+      }
+    }
+    // v8 contrasts making a boredom-directed move against making none, and it
+    // is the first version whose two arms do not share a host action family.
+    // That is the whole repair. v7 audited its own paid transcripts and found
+    // both arms asking a question in 0.976 of trigger turns, the arm that
+    // forbade one included, because the shared family decided the handoff and
+    // the instruction text never got a vote. So the checks here are not that the
+    // registration says the arms differ. They compile the contract the runtime
+    // compiles, from the family the study code actually returns, and require the
+    // question permission to come out different. A registration that names two
+    // arms the machinery would deliver identically cannot pass.
+    if (prospectiveV8) {
+      const referenceMove = moves[treatment.reference];
+      const treatmentMove = moves[treatment.treatment];
+      if (
+        JSON.stringify(treatment.pedagogicalMoveLevels) !== JSON.stringify(['carry_on', 'ask_question']) ||
+        moves.carry_on !== 'stage_public_evidence_for_next_step' ||
+        moves.ask_question !== 'ask_discriminating_question' ||
+        treatment.reference !== 'carry_on' ||
+        treatment.treatment !== 'ask_question' ||
+        treatment.hostActionFamily !== undefined ||
+        treatment.hostActionFamilySharedByBothLevels !== false ||
+        typeof treatment.hostActionFamilySeparatedReason !== 'string' ||
+        typeof treatment.whatTheSeparationCosts !== 'string' ||
+        treatment.actionFit !== 'one_matched_move_against_no_move' ||
+        typeof treatment.referenceIsNotAnAbsence !== 'string' ||
+        typeof registration?.whyV8?.whyTheSharedFamilyRuleIsReversed !== 'string' ||
+        typeof registration?.whyV8?.whatV7ActuallyDelivered !== 'string'
+      ) {
+        errors.push('a move-against-no-move contrast must name its two families and argue the separation');
+      }
+      const families = treatment.hostActionFamilyByLevel || {};
+      for (const [level, move] of [
+        [treatment.reference, referenceMove],
+        [treatment.treatment, treatmentMove],
+      ]) {
+        if (!move) continue;
+        let actual = null;
+        try {
+          actual = tutorStubResistanceHostActionFamily(move);
+        } catch {
+          actual = null;
+        }
+        if (actual === null || families[level] !== actual) {
+          errors.push(`registered host action family for ${level} does not match the family the study code returns`);
+        }
+      }
+      // The delivered contrast the analyzer reads is one question mark or none.
+      // This is where that becomes reachable rather than hoped for.
+      const permission = {};
+      for (const [level, move] of [
+        [treatment.reference, referenceMove],
+        [treatment.treatment, treatmentMove],
+      ]) {
+        if (!move || !families[level]) continue;
+        const contract = compileTutorStubTurnProgressionContract({
+          learnerText: 'I suppose so. It is all a bit much and I have rather lost the thread of it.',
+          publicQuestion: 'Which entry in the delivery ledger covers the third week?',
+          responseCompositionFrame: {
+            discourse_plane: { plane: 'inquiry' },
+            learner_move: { evidence_use: 'none' },
+            learner_dag: { bottleneck: null, final_secret_entailed: false, asserted_secret: false },
+          },
+          actionFamily: families[level],
+        });
+        permission[level] = contract?.handoff_contract?.question_allowed === true;
+      }
+      if (permission[treatment.treatment] !== true || permission[treatment.reference] !== false) {
+        errors.push(
+          'the two arms compile to the same question permission, so the registered contrast cannot be delivered',
+        );
+      }
+      const rules = registration?.measurement?.treatmentFidelity?.deliveredContrastByMove || {};
+      if (
+        rules[treatmentMove] !== 'requires_question' ||
+        rules[referenceMove] !== 'forbids_question' ||
+        Object.keys(rules).length !== 2
+      ) {
+        errors.push('the delivered-contrast rule must read one question mark or none, on both moves and only those');
+      }
     }
     // v6's margins are literals, because its preflight certificate is pinned to
     // them. v7's are checked against each other and against the patterns that
@@ -622,6 +721,12 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     // study can say and not a tuning knob. So the direction has to be named, the
     // rule that a result the other way cannot reject has to be written down, and
     // the claim boundary has to carry it too.
+    // v7 read one direction. v8 goes back to two, and not as a default: v7
+    // measured its difference at -0.102, pointing away from the direction it had
+    // registered, and its one-sided test left it unable to say anything about
+    // that at all. v8 has no measurement of its reference arm from any prior
+    // run, so it has no ground to name a direction from, and the result worth
+    // having may well be the reversed one.
     const expectedAnalysis = prospectiveV7
       ? 'one_sided_exact_conditional_blocked_score_test'
       : 'two_sided_exact_conditional_blocked_score_test';
@@ -686,6 +791,55 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
         !String(registration?.claimBoundary || '').includes('one-sided')
       ) {
         errors.push('a one-sided primary must name its direction, its rule, and what it gives up');
+      }
+    }
+    if (prospectiveV8) {
+      const secondary = registration?.measurement?.keySecondaryEndpoint || {};
+      const fidelity = registration?.measurement?.treatmentFidelity || {};
+      // v7's four fidelity gates all passed and two of them read nothing. The
+      // move gate compared the assigned move with itself through a field no code
+      // writes; the manner gate compared the study's own instruction with the
+      // copy of it the study had just made. v8 keeps both, because a gate that
+      // cannot fail still records what was intended, but it may no longer call
+      // them readings: each has to carry the word, and the floor that decides
+      // the run has to be the delivered-contrast one, which reads the tutor's
+      // own sentences.
+      //
+      // Both echoes are pinned at 1 rather than deleted, for two reasons. The
+      // analyzer refuses a registration that splits the manner floor into
+      // delivery and readability and then names only one half, so deleting the
+      // delivery half would make the report unreadable. And at 1 the echo does
+      // state a fact worth keeping: the only way a study's own copy of its own
+      // instruction can differ from the instruction is a safety override
+      // replacing what was assigned, so 1 means no override happened. At
+      // anything below 1 the same field would read like a measurement of the
+      // tutor, which is exactly the misreading v7 fell into.
+      if (
+        fidelity.minimumActionVisibility !== 0.9 ||
+        fidelity.minimumRegisterReadability > 0.9 ||
+        !(fidelity.minimumRegisterReadability > 0) ||
+        fidelity.minimumRegisterVisibility !== undefined ||
+        fidelity.bothRegisterRatesMustBeReported !== true ||
+        fidelity.failedFidelityDisposition !== 'fail_interpretability_gate_not_rerun' ||
+        typeof fidelity.echoedGatesMayNotBeReportedAsReadings !== 'string' ||
+        fidelity.minimumAssignedMoveDelivery !== 1 ||
+        fidelity.minimumAssignedRegisterDelivery !== 1 ||
+        !(fidelity.minimumMoveContrastDelivery > 0 && fidelity.minimumMoveContrastDelivery <= 1) ||
+        typeof fidelity.moveContrastFloorReason !== 'string' ||
+        typeof registration?.whyV8?.whyTheDeliveredContrastFloorReplacesTheMoveFloor !== 'string'
+      ) {
+        errors.push('a delivered-contrast floor must replace the move floor that read nothing');
+      }
+      if (
+        primary.direction !== 'either_direction' ||
+        typeof primary.directionRule !== 'string' ||
+        primary.definitionChangedFromV7 !== false ||
+        secondary.direction !== 'either_direction' ||
+        !String(secondary.analysis || '').startsWith('two_sided_exact_conditional_blocked_score_test') ||
+        typeof registration?.whyV8?.whyTwoSidedAgain !== 'string' ||
+        !String(registration?.claimBoundary || '').includes('two-sided')
+      ) {
+        errors.push('a two-sided primary must say so and must not carry a registered direction');
       }
     }
   } else if (
@@ -814,6 +968,75 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     if (typeof execution.programmeCeiling?.theSafeguardNowBindsTheDesign !== 'string') {
       errors.push('a design whose size is set by the attempt safeguard must say so');
     }
+  } else if (prospectiveV8) {
+    // v8 estimates its rejection rate the same way v7 did, and the same three
+    // demands apply: name the method, count the draws, and use the test function
+    // the analyzer calls. Two things are different and both need their own
+    // check.
+    //
+    // First, the test is two-sided, so the function named has to be the
+    // two-sided one. A registration that computed power one-sided and then ran a
+    // two-sided test would be reporting a number it will not get.
+    //
+    // Second, and this is the honest weakness of v8: the reference rate is not
+    // measured. Every prior version anchored both arms on a prior run. Nothing
+    // in this programme has ever run a tutor that ignores a bored learner, so
+    // the reference rate is scanned across a range rather than pinned, and the
+    // power table is a range of answers rather than one. The check makes that
+    // visible instead of letting one row stand in for a measurement: the table
+    // has to span at least four reference rates, it has to include a row the
+    // design is badly powered for, and the registration has to say what it will
+    // and will not have learned in that case.
+    const method = power.howPowerWasComputed || {};
+    const table = Array.isArray(power.powerTable) ? power.powerTable : [];
+    const position = power.positionForV8 || {};
+    const considered = Array.isArray(power.sizesConsidered) ? power.sizesConsidered : [];
+    const chosen = considered.filter((row) => row?.chosen === true);
+    const underpowered = table.filter((row) => row?.twoSidedPower < 0.5);
+    if (
+      power.test !== 'two_sided_exact_conditional_blocked_score_test' ||
+      power.alpha !== 0.05 ||
+      power.targetPower !== 0.8 ||
+      power.targetPowerReached !== false ||
+      typeof power.targetPowerReachedNote !== 'string' ||
+      method.method !== 'simulated_rejection_rate_of_the_registered_test' ||
+      typeof method.whyNotEnumerated !== 'string' ||
+      !String(method.testFunctionIsTheOneTheAnalyzerCalls || '').includes('exactBlockedScorePValue') ||
+      !(method.draws >= 1000) ||
+      method.modelCalls !== 0 ||
+      power.referenceRate?.measured !== false ||
+      typeof power.referenceRate?.whyItCannotBeMeasuredFromPriorRuns !== 'string' ||
+      typeof power.referenceRate?.scannedRange !== 'string' ||
+      typeof power.measuredTreatmentRate?.source !== 'string' ||
+      typeof power.measuredTreatmentRate?.winnersCurse !== 'string' ||
+      table.length < 4 ||
+      table.some(
+        (row) =>
+          !(row?.twoSidedPower > 0 && row?.twoSidedPower < 1) ||
+          !(row?.treatmentRate > row?.referenceRate) ||
+          row?.perArm !== power.minimumPerMove ||
+          row?.dialogues !== sizes.dialogues,
+      ) ||
+      underpowered.length < 1 ||
+      chosen.length !== 1 ||
+      chosen[0]?.dialogues !== sizes.dialogues ||
+      considered.filter((row) => row?.chosen !== true).some((row) => typeof row?.rejectedBecause !== 'string') ||
+      typeof position.statedPlainly !== 'string' ||
+      typeof position.whatANullWouldMean !== 'string' ||
+      typeof position.whatARejectionWouldMean !== 'string' ||
+      typeof position.whatAReversalWouldMean !== 'string' ||
+      typeof position.whyRunItAtThisSize !== 'string' ||
+      typeof power.blockingAudit?.decision !== 'string' ||
+      typeof power.pairedDesignAudit?.decision !== 'string' ||
+      power.minimumPerMove !== sizes.perMove ||
+      power.minimumPerArm !== undefined ||
+      power.positionForV7 !== undefined
+    ) {
+      errors.push('power position does not record a scanned reference rate and the unreached target');
+    }
+    if (typeof execution.programmeCeiling?.theSafeguardNowBindsTheDesign !== 'string') {
+      errors.push('a design whose size is set by the attempt safeguard must say so');
+    }
   } else if (prospectiveV6) {
     // v6 has two refuted alternatives behind it, not one, and it is the first
     // version that admits in the registration that it is underpowered for what
@@ -909,20 +1132,20 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
       dialogue.maximumIndependentSemanticAdjudicationCalls !== maximumTriggerTurn ||
       dialogue.plannedCallsPerDialogue !== plannedParts ||
       dialogue.maximumReservationsPerDialogue !== plannedParts * execution.maximumReservationsPerPlannedCall ||
-      // v5 and v6 both ran 36. v7 reads its own size from the registration, and
-      // the sizes check above has already made that number agree with the world
-      // list, the margins, the patterns and the batches.
-      dialogue.dialogues !== (prospectiveV7 ? sizes.dialogues : 36) ||
+      // v5 and v6 both ran 36. v7 and v8 read their own size from the
+      // registration, and the sizes check above has already made that number
+      // agree with the world list, the margins, the patterns and the batches.
+      dialogue.dialogues !== (derivedSizeArithmetic ? sizes.dialogues : 36) ||
       dialogue.maximumReservations !== dialogue.maximumReservationsPerDialogue * dialogue.dialogues ||
       execution.hardStudyAttemptCeiling !== dialogue.maximumReservations
     ) {
       errors.push('hard attempt arithmetic drifted');
     }
   }
-  // v1 to v6 all ran nine batches of four and wrote both numbers here. v7 reads
-  // them, and the sizes check has already tied them to the study total.
-  const expectedBatches = prospectiveV7 ? sizes.batches : 9;
-  const expectedPerBatch = prospectiveV7 ? sizes.perBatch : 4;
+  // v1 to v6 all ran nine batches of four and wrote both numbers here. v7 and v8
+  // read them, and the sizes check has already tied them to the study total.
+  const expectedBatches = derivedSizeArithmetic ? sizes.batches : 9;
+  const expectedPerBatch = derivedSizeArithmetic ? sizes.perBatch : 4;
   if (
     batches.executionBatches !== expectedBatches ||
     batches.dialoguesPerBatch !== expectedPerBatch ||
@@ -939,8 +1162,21 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   // balanced. Every batch has to hold one dialogue of each of the four
   // move-and-manner pairs, so that stopping after any batch leaves the contrast
   // even.
-  if (moveContrast && (batches.askQuestionPerBatch !== 2 || batches.shrinkStepPerBatch !== 2)) {
-    errors.push('predeclared batch partition does not balance the move under test');
+  //
+  // v6 and v7 named their two arms here, ask_question and shrink_step. v8's
+  // reference arm is called carry_on, so the names come from the registration's
+  // own level list instead: whatever the two arms are called, each has to take
+  // half the batch. Naming them here was a third copy of the level list, and
+  // this arc has now spent six versions removing copies like it.
+  if (moveContrast) {
+    const levels = registration?.design?.treatment?.pedagogicalMoveLevels || [];
+    const balanced =
+      levels.length === 2 &&
+      levels.every((level) => {
+        const field = `${level.replace(/_(.)/g, (_, letter) => letter.toUpperCase())}PerBatch`;
+        return batches[field] === expectedPerBatch / 2;
+      });
+    if (!balanced) errors.push('predeclared batch partition does not balance the move under test');
   }
   if (sealedLiteralArithmetic) {
     const expectedLedger = prospectiveV4 ? 446 : currentProgrammeLedger ? 293 : 219;
@@ -969,17 +1205,19 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     // zero units: a launch that produced nothing still spent against the
     // safeguard, and leaving it out would understate the ledger by more than the
     // headroom v7 has left.
-    const ledgerBefore = prospectiveV7
-      ? ceiling.ledgerBeforeV7
-      : prospectiveV6
-        ? ceiling.ledgerBeforeV6
-        : ceiling.ledgerBeforeV5;
-    const spentBefore = prospectiveV7
-      ? ceiling.v4Spend + ceiling.v5Spend + ceiling.v6Spend + ceiling.v6FailedLaunchSpend
-      : prospectiveV6
-        ? ceiling.v4Spend + ceiling.v5Spend
-        : ceiling.v4Spend;
-    const studyMaximum = prospectiveV7 ? ceiling.v7Maximum : prospectiveV6 ? ceiling.v6Maximum : ceiling.v5Maximum;
+    //
+    // v5, v6 and v7 each grew this into one more arm of a ternary that listed
+    // the prior spends by name, so adding a version meant editing a chain that
+    // three frozen registrations were already read by. The ledger is instead
+    // read off the field names: every key ending in Spend is a prior spend and
+    // all of them are added, so a version that forgets to carry one forward
+    // fails here rather than quietly understating the ledger. v5, v6 and v7 all
+    // sum to exactly what their ternary arm summed to.
+    const ledgerBefore = ceiling[`ledgerBeforeV${registration.version}`];
+    const spentBefore = Object.entries(ceiling)
+      .filter(([key, value]) => key.endsWith('Spend') && typeof value === 'number')
+      .reduce((total, [, value]) => total + value, 0);
+    const studyMaximum = ceiling[`v${registration.version}Maximum`];
     if (
       ceiling.ledgerBeforeV4 !== 446 ||
       ledgerBefore !== ceiling.ledgerBeforeV4 + spentBefore ||
@@ -1097,36 +1335,108 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
       errors.push('prospective-v9 held-out semantic corpus binding drifted');
     }
   }
+  // Every version since v5 has written down that its prefix seeds meet no prior
+  // version's, in a field named for the version before it, and no code has ever
+  // read one of those fields. This arc's recurring defect is a rule written in a
+  // registration that nothing enforces, so the claim is checked here against the
+  // registrations it names. A prefix seed decides the public prefix a dialogue
+  // is generated from, so a reused seed would silently regenerate a prefix a
+  // finished run already spent, and the two runs would share units nothing
+  // recorded as shared. The seeds run from seedBase + 1 to seedBase + dialogues,
+  // which is how the plan builder deals them.
+  //
+  // Only versions that actually spent attempts are checked. v1, v2 and v3 all
+  // sit on the same seed base and none of them ever made a call, so their ranges
+  // are free; a version that never ran spent no prefix. Which versions spent is
+  // not guessed and is not kept in a list here: the programme ledger in this
+  // same registration already names one vNSpend field per finished run, and that
+  // is what is read. So a version cannot charge a prior run against the
+  // safeguard without also being checked against that run's seeds.
+  {
+    const seedSpan = (candidate) => {
+      const base = candidate?.design?.freshPrefixGeneration?.seedBase;
+      const count = candidate?.design?.randomization?.dialogues;
+      if (!Number.isInteger(base) || !Number.isInteger(count)) return null;
+      return { from: base + 1, to: base + count };
+    };
+    const mine = seedSpan(registration);
+    if (!mine) {
+      errors.push('a registration must derive a prefix seed range from its own seed base and size');
+    } else {
+      const spentVersions = Object.keys(execution.programmeCeiling || {})
+        .map((key) => /^v([0-9]+)Spend$/.exec(key))
+        .filter(Boolean)
+        .map((match) => Number(match[1]))
+        .filter((version) => version < registration.version);
+      for (const priorVersion of [...new Set(spentVersions)].sort((left, right) => left - right)) {
+        const priorPath = path.join(
+          ROOT,
+          `config/tutor-stub-boredom-action-register-proof-dag-registration.v${priorVersion}.json`,
+        );
+        let prior = null;
+        try {
+          prior = JSON.parse(fs.readFileSync(priorPath, 'utf8'));
+        } catch {
+          errors.push(`spent boredom registration v${priorVersion} could not be read to check seed reuse`);
+          continue;
+        }
+        const theirs = seedSpan(prior);
+        if (!theirs) continue;
+        if (mine.from <= theirs.to && theirs.from <= mine.to) {
+          errors.push(
+            `prefix seeds ${mine.from}-${mine.to} meet spent v${priorVersion}'s ${theirs.from}-${theirs.to}, so a finished run's prefixes would be regenerated`,
+          );
+        }
+      }
+    }
+  }
   // v5 changes three of the six worlds and moves the seed, so it has its own
   // assignment manifest and its own pinned digest. Both pins are literals on
   // purpose: the point of the pin is that the assignment was fixed before any
   // dialogue was generated, so it must not be recomputed from whatever the
   // registration currently says.
-  const expectedAssignmentSeed = prospectiveV7
-    ? 20261022
-    : prospectiveV6
-      ? 20260922
-      : prospectiveV5
-        ? 20260901
-        : 20260820;
-  const expectedAssignmentManifestSha256 = prospectiveV7
-    ? 'a16c127908d8b05e0181b6235521c1274ff97e95e5a3cb0fdd09234f34d76016'
-    : prospectiveV6
-      ? 'fb84030c40bf559e1f37bbf90ef088d501843307a187939b168ea5186c74259d'
-      : prospectiveV5
-        ? '485f7442d2844dad9026c54ea47ed3214f5cf1e4c36bf372a2fb52dfb6304b28'
-        : '4e256dfa65054747a5d6d1ac82d1aecb42f7c98f158cb76e686f24c37d71ef94';
+  //
   // v6 assigns two things per dialogue instead of one, so it ranks the same way
   // and then reads a per-world pattern. The algorithm name says so, and it is
   // pinned like the seed and the digest, so a v6 file cannot claim the v5
-  // algorithm and still pass. v7 deals the same way and says so with a different
-  // name, because its patterns come from the registration rather than from a
-  // constant in this file.
-  const expectedAssignmentAlgorithm = prospectiveV7
-    ? 'sha256_rank_within_world_with_registered_world_pattern'
-    : prospectiveV6
-      ? 'sha256_rank_within_world_with_seeded_world_pattern'
-      : 'sha256_rank_within_world';
+  // algorithm and still pass. v7 and v8 deal the same way and say so with a
+  // different name, because their patterns come from the registration rather
+  // than from a constant in this file.
+  //
+  // The three pins used to be three nested ternaries that each grew an arm every
+  // version. They are one table now, one row per version, because a row is what
+  // they are: three frozen facts about one run. The literals are unchanged.
+  const REGISTERED_ASSIGNMENT_PINS = {
+    8: {
+      seed: 20261122,
+      sha256: '7bbd04336c5076b8fdc2a74c75fcea3e960c2e5bedee75a684e2e506789ce1ec',
+      algorithm: 'sha256_rank_within_world_with_registered_world_pattern',
+    },
+    7: {
+      seed: 20261022,
+      sha256: 'a16c127908d8b05e0181b6235521c1274ff97e95e5a3cb0fdd09234f34d76016',
+      algorithm: 'sha256_rank_within_world_with_registered_world_pattern',
+    },
+    6: {
+      seed: 20260922,
+      sha256: 'fb84030c40bf559e1f37bbf90ef088d501843307a187939b168ea5186c74259d',
+      algorithm: 'sha256_rank_within_world_with_seeded_world_pattern',
+    },
+    5: {
+      seed: 20260901,
+      sha256: '485f7442d2844dad9026c54ea47ed3214f5cf1e4c36bf372a2fb52dfb6304b28',
+      algorithm: 'sha256_rank_within_world',
+    },
+  };
+  const DEFAULT_ASSIGNMENT_PIN = {
+    seed: 20260820,
+    sha256: '4e256dfa65054747a5d6d1ac82d1aecb42f7c98f158cb76e686f24c37d71ef94',
+    algorithm: 'sha256_rank_within_world',
+  };
+  const pin = REGISTERED_ASSIGNMENT_PINS[registration?.version] || DEFAULT_ASSIGNMENT_PIN;
+  const expectedAssignmentSeed = pin.seed;
+  const expectedAssignmentManifestSha256 = pin.sha256;
+  const expectedAssignmentAlgorithm = pin.algorithm;
   if (
     registration?.design?.randomization?.algorithm !== expectedAssignmentAlgorithm ||
     registration?.design?.randomization?.assignmentSeed !== expectedAssignmentSeed ||
@@ -1242,7 +1552,18 @@ function buildBoredomMoveContrastAssignmentManifest(registration, perWorld) {
   });
 }
 
-export function buildTutorStubBoredomProofDagAssignments(registration) {
+/**
+ * Deal the manifest and say what its digest is, without checking the pin.
+ *
+ * This exists so that pinning a new version's digest and verifying an old one
+ * run the same code. v6 and v7 each had their digest computed by a throwaway
+ * script that re-dealt the manifest from a second copy of the rules, and a
+ * second copy of a rule with nothing comparing the copies is the defect this
+ * arc has now closed six times. Nothing but the pinning step may call this:
+ * every reader goes through buildTutorStubBoredomProofDagAssignments, which
+ * refuses a manifest that does not match what the registration froze.
+ */
+export function dealTutorStubBoredomProofDagAssignments(registration) {
   // v1 to v6 all dealt six dialogues a world and wrote that 6 here twice. It now
   // comes from the registration, which every version carries, so v1 to v6
   // rebuild byte-identical manifests and v7 deals fourteen.
@@ -1259,7 +1580,11 @@ export function buildTutorStubBoredomProofDagAssignments(registration) {
           .map((row) => ({ ...row, realization: realizationByDialogue.get(row.dialogue_index) }))
           .sort((left, right) => left.dialogue_index - right.dialogue_index);
       });
-  const digest = assignmentManifestSha256(manifest);
+  return { digest: assignmentManifestSha256(manifest), manifest, moveContrast };
+}
+
+export function buildTutorStubBoredomProofDagAssignments(registration) {
+  const { digest, manifest, moveContrast } = dealTutorStubBoredomProofDagAssignments(registration);
   if (digest !== registration.design.randomization.assignmentManifestSha256) {
     throw new Error(
       moveContrast
@@ -2027,6 +2352,7 @@ export default {
   assessTutorStubBoredomSemanticSyntheticCases,
   assembleTutorStubBoredomProofDagPreflight,
   buildTutorStubBoredomProofDagAssignments,
+  dealTutorStubBoredomProofDagAssignments,
   buildTutorStubBoredomProofDagPackets,
   buildTutorStubBoredomProofDagPlan,
   buildTutorStubBoredomProofDagSyntheticCases,

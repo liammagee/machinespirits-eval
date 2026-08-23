@@ -1112,8 +1112,41 @@ function analyzeTrace(batch, resultRow, loaded) {
   // was nothing to miss; v6 assigns it, so a miss is recorded as nonadherent,
   // kept in its assigned group under intention to treat, and counted against
   // the registered delivery floor, exactly as a register miss is.
+  // DEAD, and kept only so the closed studies read the same way they did.
+  // `delivered_pedagogical_move` is written by no code in this repository, so
+  // this falls through to the assigned move and compares it with itself: true
+  // in every unit that can exist. v7 reported it as a passed 1.00 fidelity gate
+  // and it measured nothing. Registrations from v8 must not put a floor on it;
+  // `moveContrastDelivered` below is the reading that replaces it.
   const deliveredMove = intervention?.delivered_pedagogical_move ?? assignment?.pedagogical_move;
   const moveDeliveredAsAssigned = deliveredMove === expectedMove;
+  // The real reading. Two arms are worth contrasting only if the turns they
+  // produced differ, and the one difference their instructions demand is
+  // countable in the delivered text: the question arm asks, the carry-on arm
+  // does not. This reads the tutor's own words at the trigger turn, so no part
+  // of it can be satisfied by the assignment agreeing with itself.
+  const deliveredTurnText = String(trigger?.tutor || '');
+  const deliveredQuestionCount = (deliveredTurnText.match(/\?/gu) || []).length;
+  const contrastRule = loaded.registration.measurement?.treatmentFidelity?.deliveredContrastByMove?.[expectedMove];
+  if (contrastRule !== undefined && !['requires_question', 'forbids_question'].includes(contrastRule)) {
+    throw new Error(`${job.id} carries an unregistered delivered-contrast rule ${JSON.stringify(contrastRule)}`);
+  }
+  // A registration that names the rule must also produce a turn to read it on.
+  // An empty tutor turn at the trigger is missing evidence, not a pass.
+  if (contrastRule !== undefined && !deliveredTurnText.trim()) {
+    throw new Error(`${job.id} has no delivered tutor turn at the trigger to read the move contrast on`);
+  }
+  const moveContrastDelivered =
+    contrastRule === undefined
+      ? null
+      : contrastRule === 'requires_question'
+        ? deliveredQuestionCount >= 1
+        : deliveredQuestionCount === 0;
+  // Descriptive only. The question arm's instruction says exactly one; a second
+  // question mark is a smaller fault than none at all, so the gate takes the
+  // first reading and this one is reported beside it.
+  const moveContrastDeliveredExactly =
+    contrastRule === undefined ? null : contrastRule === 'requires_question' ? deliveredQuestionCount === 1 : null;
   if (
     (!appliedAdherent && !safetyOverrideNonadherent) ||
     typeof responseAudit?.axes?.action_family?.visible !== 'boolean' ||
@@ -1342,6 +1375,16 @@ function analyzeTrace(batch, resultRow, loaded) {
             register_delivered_as_designed: registerDeliveredAsDesigned,
             designed_register: assignment?.register ?? null,
             register_readable: registerReadable,
+          }),
+      // Added only by a registration that names the contrast rule, for the same
+      // reason: a closed study keeps the row shape it was scored under.
+      ...(contrastRule === undefined
+        ? {}
+        : {
+            delivered_contrast_rule: contrastRule,
+            delivered_question_count: deliveredQuestionCount,
+            move_contrast_delivered: moveContrastDelivered,
+            move_contrast_delivered_exactly: moveContrastDeliveredExactly,
           }),
     },
     execution: {
@@ -1797,6 +1840,39 @@ export function analyzeTutorStubBoredomProofDag({
   // labels rather than two moves. v5 assigns one move to every unit and names no
   // floor, so there is nothing to hold it to.
   const moveDeliveryFloor = fidelity.minimumAssignedMoveDelivery ?? null;
+  // The reading that replaces it. A registration names the rule per move and a
+  // floor on the rate; naming one without the other is a registration fault,
+  // because a rule with no floor gates nothing and a floor with no rule has
+  // nothing to count.
+  const contrastRules = fidelity.deliveredContrastByMove ?? null;
+  const contrastDeliveryFloor = fidelity.minimumMoveContrastDelivery ?? null;
+  if ((contrastRules === null) !== (contrastDeliveryFloor === null)) {
+    throw new Error(
+      'a boredom proof-DAG registration must name deliveredContrastByMove and minimumMoveContrastDelivery together, or neither',
+    );
+  }
+  if (contrastRules && !rows.every((row) => typeof row.fidelity.move_contrast_delivered === 'boolean')) {
+    throw new Error('a registration that names a delivered contrast must produce a reading on every scored unit');
+  }
+  const contrastDelivery = contrastRules
+    ? rows.filter((row) => row.fidelity.move_contrast_delivered).length / rows.length
+    : null;
+  // Also reported per arm. A pooled rate can hide one arm failing completely
+  // while the other carries the average, and one arm failing completely is the
+  // fault that would make the contrast meaningless.
+  const contrastDeliveryByLevel = contrastRules
+    ? Object.fromEntries(
+        [axis.reference, axis.treatment].map((level) => {
+          const armRows = rows.filter((row) => row[axis.rowField] === level);
+          return [
+            level,
+            armRows.length
+              ? armRows.filter((row) => row.fidelity.move_contrast_delivered).length / armRows.length
+              : null,
+          ];
+        }),
+      )
+    : null;
   // v6 held the manner to one floor on one flag that merged two facts: the tutor
   // spoke the manner it was assigned, and a reader could tell which manner it
   // was. The run failed on three of the second and one of the first. From v7 the
@@ -1820,7 +1896,13 @@ export function analyzeTutorStubBoredomProofDag({
     (splitRegisterFloor
       ? registerDelivery >= registerDeliveryFloor && registerReadability >= registerReadabilityFloor
       : registerVisibility >= fidelity.minimumRegisterVisibility) &&
-    (moveDeliveryFloor === null || moveDelivery >= moveDeliveryFloor);
+    (moveDeliveryFloor === null || moveDelivery >= moveDeliveryFloor) &&
+    (contrastDeliveryFloor === null ||
+      (contrastDelivery >= contrastDeliveryFloor &&
+        // Every arm has to clear the floor on its own. A pooled rate that passes
+        // on one arm doing all the work leaves the other arm undelivered, and
+        // the contrast is between arms.
+        Object.values(contrastDeliveryByLevel).every((rate) => rate !== null && rate >= contrastDeliveryFloor)));
   return {
     schema: loaded.registration.measurement.reportSchema ?? LEGACY_BOREDOM_CONFIRMATION_REPORT_SCHEMA,
     status: fidelityPassed ? 'complete_registered_confirmation' : 'failed_interpretability_gate_not_rerun',
@@ -1981,13 +2063,45 @@ export function analyzeTutorStubBoredomProofDag({
               })),
           }
         : {}),
-      // How often the tutor turn carried the move it was assigned. Under a
-      // one-move registration this is the same move every time and the
-      // registration sets no floor, so the rate is reported and nothing is held
-      // to it. Under two moves it is the contrast: a run that drifted onto one
-      // move on both sides has tested nothing.
+      // DEAD. This was meant to say how often the tutor turn carried the move it
+      // was assigned. It compares the assigned move with itself, because the
+      // field it reads is written nowhere, so it is 1.00 in every run that can
+      // exist. v7 reported it against a 0.90 floor and it measured nothing.
+      // Registrations from v8 set no floor here and use the contrast reading
+      // below. It is still emitted so the closed studies read as they did.
       assigned_move_delivery_rate: moveDelivery,
       assigned_move_delivery_minimum: moveDeliveryFloor,
+      assigned_move_delivery_reading:
+        'dead field, kept for the closed studies. `delivered_pedagogical_move` is written by no code in the repository, so this compares the assigned move with itself and is always 1.00. Read move_contrast_delivery_rate instead.',
+      // The live reading. Counts a feature of the words the tutor produced, so
+      // nothing in it can be satisfied by the assignment agreeing with itself.
+      ...(contrastRules
+        ? {
+            move_contrast_delivery_rate: contrastDelivery,
+            move_contrast_delivery_rate_by_level: contrastDeliveryByLevel,
+            move_contrast_delivery_minimum: contrastDeliveryFloor,
+            move_contrast_rules: contrastRules,
+            move_contrast_exact_single_question_rate: (() => {
+              const asking = rows.filter((row) => row.fidelity.move_contrast_delivered_exactly !== null);
+              return asking.length
+                ? asking.filter((row) => row.fidelity.move_contrast_delivered_exactly).length / asking.length
+                : null;
+            })(),
+            move_contrast_undelivered_units: rows
+              .filter((row) => row.fidelity.move_contrast_delivered === false)
+              .map((row) => ({
+                case_id: row.case_id,
+                world: row.world,
+                arm: row.arm,
+                move_level: row.move_level,
+                assigned_pedagogical_move: row.fidelity.assigned_pedagogical_move,
+                delivered_contrast_rule: row.fidelity.delivered_contrast_rule,
+                delivered_question_count: row.fidelity.delivered_question_count,
+              })),
+            move_contrast_reading:
+              'the two arms are worth contrasting only if the turns they produced differ. The question arm is instructed to ask exactly one question and the carry-on arm to ask none, so a question mark in the delivered turn is the one difference a reader can count. The floor is applied to each arm on its own as well as to the pool. A miss in either direction pulls the arms together, so a confirmed result survives it and a null is weakened by it. The exact-single-question rate is descriptive: a second question mark in the question arm is a smaller fault than none at all and is not gated.',
+          }
+        : {}),
       move_nonadherent_units: rows
         .filter((row) => row.fidelity.move_delivered_as_assigned === false)
         .map((row) => ({

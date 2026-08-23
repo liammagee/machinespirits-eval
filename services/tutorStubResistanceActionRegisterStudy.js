@@ -130,6 +130,32 @@ const MOVE_TO_HOST_ACTION = Object.freeze({
   // fits: it expects the learner to adopt or use staged evidence, or to ask one
   // new bounded question, which is true of both moves.
   simplify_to_one_workable_step: 'stage_next_step',
+  // The v8 reference arm, and the one place where the shared-family rule above
+  // has to be broken. v7 audited its own paid transcripts after the fact and
+  // found both arms asking a question in 0.976 of trigger turns, including the
+  // arm whose instruction forbade one. The instruction was never what decided
+  // it. `chooseHandoffMode` in tutorStubTurnProgressionContract.js reads the
+  // host action family, and only a family listed in NO_QUESTION_ACTIONS earns
+  // the declarative handoff; `stage_next_step` is not listed, so both v7 arms
+  // were told a final question was allowed and both took it. Sharing the family
+  // is what made the two arms one arm.
+  //
+  // So the reference arm takes `reanchor_public_evidence`, which is listed. The
+  // choice is forced rather than picked: of the seven listed families, six exist
+  // to answer, receive, repair, reconnect, request a say-back or close, and all
+  // six respond to the learner, which this arm must never do. The seventh
+  // restages an already-public clue and names its present limit. That is what
+  // carrying on with the proof looks like.
+  //
+  // The cost is real and the registration must carry it. The two v8 arms now
+  // differ in the family, and with it the first-draft contract line, the handoff
+  // mode, the part weighting and the guard-recovery part. That is the four-way
+  // confound the comment above refuses. It is admissible here only because the
+  // v8 contrast is not which move works better: it is whether making a
+  // boredom-directed move at all beats carrying on. The whole bundle is the
+  // manipulation. v8 therefore cannot say the question did the work, only that
+  // the move did.
+  stage_public_evidence_for_next_step: 'reanchor_public_evidence',
 });
 
 // Readers outside this module need the same answer the runtime uses. The
@@ -162,6 +188,30 @@ const MOVE_INSTRUCTIONS = Object.freeze({
     'Name one bounded distinction inside the disputed inquiry frame and offer one local public test that could count for or against it. Explicitly leave the learner free to reject the wider frame; do not convert disagreement into compliance.',
   simplify_to_one_workable_step:
     'Cut the next step down to one small action the learner can take now, and name that single step plainly. You may name the already-public object the step touches. You must not say what the learner will find in it, must not state or hint at any finding, inference or conclusion, and must not offer a choice between steps. Do not ask permission or ask what the learner wants to do. The looking and the saying belong to the learner.',
+  // The fourth move is the v8 reference arm: the tutor carries on with the
+  // proof and does nothing about the disengagement. It is a real instruction,
+  // not an absence, and the registration says so. Two lines carry the whole
+  // arm. First, say nothing about the learner's state, because any
+  // acknowledgment is already a response to the boredom and would make this a
+  // second treatment. Second, ask no question, because one question is exactly
+  // what the other arm is for; that difference is also the one thing a reader
+  // can count in the delivered turn, which is what makes the delivery gate
+  // real. The content-withholding line is copied from the step move for the
+  // same reason it is there: a tutor who states the finding lets the learner
+  // score by repeating it.
+  //
+  // The last line grants one thing the other three moves do not: the tutor may
+  // say what the staged evidence has not yet settled. That is not a softening.
+  // It is what the host family this arm now carries already asks for — the
+  // first-draft contract line for `reanchor_public_evidence` reads "restage one
+  // already-public clue and its limit", and the handoff cue reads "end on the
+  // clue's current limit". Naming a limit is how a proof-carrying tutor says
+  // "and I am not telling you the answer" in words. Without the grant the
+  // instruction and the host contract would pull against each other on every
+  // turn, and the arm would fail its own adherence reading for obeying its own
+  // rule.
+  stage_public_evidence_for_next_step:
+    'Continue the inquiry as though the learner had said nothing about themselves. Stage the next already-public piece of evidence and name it plainly. Do not mention, acknowledge, or respond to the learner’s interest, effort, mood or pace, and do not comment on how the work is going. Ask no question of any kind. Do not simplify the task, re-motivate the learner, or offer a choice. You may name the public object and may say what it does not yet settle; you must not say what it shows, must not state or hint at any finding, inference or conclusion, and must not draw a conclusion from it.',
 });
 
 const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
@@ -171,6 +221,8 @@ const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
     'Name one bounded distinction and ask for one local public test; explicitly leave the wider frame open to rejection.',
   simplify_to_one_workable_step:
     'Name one small step the learner can take now, on a named public object; do not say what it shows, do not infer from it, and do not offer a choice.',
+  stage_public_evidence_for_next_step:
+    'Stage the next already-public piece of evidence, name it plainly, and say what it does not yet settle. Say nothing about the learner’s state, ask no question, and do not say what the evidence shows.',
 });
 
 const CONTENT_BEARING_MOVES = new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']);
