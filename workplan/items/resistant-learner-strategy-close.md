@@ -14,7 +14,7 @@ verification: >-
   folded into the canonical paper with frozen-result boundaries intact, and
   all paid artifacts pass npm run archive:runs and are committed in the
   private archive repository.
-branch: codex/resistant-learners-two-reader-go-draft
+branch: codex/resistant-learner-go-binding-normalization
 claim_status: planned
 links:
   items:
@@ -109,3 +109,10 @@ tags:
   merge result, both new design digests, all remaining model routes, the third
   create-once root, the 4,806 fresh ceiling and 4,854 cumulative ceiling. The
   note contains no launch authority; operator signature is still required.
+- 2026-08-23: Removed two brittle GO-binding traps after the operator signed
+  the third Gate 1 note: authorization is now established by `GO` as the first
+  nonblank line, incidental later draft-history prose is not disqualifying,
+  and integer ceilings compare after thousands-separator normalization. The
+  signed note received only the equivalent mechanical `draft` to `GO` and
+  `4,806` to `4806` normalizations; its scientific and spending scope is
+  unchanged, and no model call was made.

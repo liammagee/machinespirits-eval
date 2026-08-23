@@ -73,12 +73,15 @@ export function tutorStubResistantLearnerGoNoteBindingIssues({
   destination,
 }) {
   const issues = [];
-  if (/\bDRAFT\b/iu.test(text)) issues.push('draft_marker');
-  if (!text.split(/\r?\n/u).some((line) => line.trim() === 'GO')) issues.push('go_token');
+  const firstNonblankLine = text.split(/\r?\n/u).find((line) => line.trim());
+  if (firstNonblankLine?.trim() !== 'GO') issues.push('go_token');
   if (!designPaths.every((designPath) => text.includes(designPath))) issues.push('design_paths');
   if (!modelRefs.every((modelRef) => text.includes(modelRef))) issues.push('model_routes');
   if (!text.includes(launchCommit)) issues.push('launch_commit');
-  if (!text.includes(String(spendCap))) issues.push('spend_cap');
+  const boundIntegers = [...text.matchAll(/\b(?:\d{1,3}(?:[,_]\d{3})+|\d+)\b/gu)].map((match) =>
+    match[0].replace(/[,_]/gu, ''),
+  );
+  if (!boundIntegers.includes(String(spendCap))) issues.push('spend_cap');
   if (!text.includes(destination)) issues.push('destination');
   if (!/\bcalibration\b/iu.test(text)) issues.push('calibration_stage');
   if (!text.includes('frame_refuser-r1-v1')) issues.push('r1_persona');

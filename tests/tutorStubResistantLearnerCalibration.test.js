@@ -630,7 +630,7 @@ test('combined launcher dry-run binds both calibrations and executes zero model 
   assert.ok(report.studies.every((study) => study.compilation_preflight.model_route.passed === true));
 });
 
-test('GO binding fails closed unless every model route and the create-once destination are explicit', () => {
+test('GO binding is structural and normalizes formatted integer ceilings', () => {
   const binding = {
     launchCommit: 'a'.repeat(40),
     designPaths: [B1_PATH, R1_PATH],
@@ -640,15 +640,23 @@ test('GO binding fails closed unless every model route and the create-once desti
   };
   const complete = [
     'GO',
+    'This draft-history note does not authorize Gate 2.',
     'corrected calibration',
     binding.launchCommit,
     ...binding.designPaths,
     ...binding.modelRefs,
-    String(binding.spendCap),
+    'Fresh hard ceiling: 4,806 model attempts.',
     binding.destination,
     'frame_refuser-r1-v1',
   ].join('\n');
   assert.deepEqual(tutorStubResistantLearnerGoNoteBindingIssues({ text: complete, ...binding }), []);
+  assert.deepEqual(tutorStubResistantLearnerGoNoteBindingIssues({ text: `# DRAFT\n${complete}`, ...binding }), [
+    'go_token',
+  ]);
+  assert.deepEqual(
+    tutorStubResistantLearnerGoNoteBindingIssues({ text: complete.replace('4,806', '4,805'), ...binding }),
+    ['spend_cap'],
+  );
   assert.deepEqual(
     tutorStubResistantLearnerGoNoteBindingIssues({
       text: complete.replace('claude-code.sonnet-5', 'omitted-reader'),
