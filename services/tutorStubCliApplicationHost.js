@@ -563,16 +563,8 @@ import { runTutorStubLaunchPresentation } from './tutorStubLaunchPresentation.js
 import { createTutorStubSessionApplicationContext } from './tutorStubSessionApplicationContext.js';
 import { createTutorStubSessionApplicationRuntime } from './tutorStubSessionApplicationRuntime.js';
 import { createTutorStubScenarioController } from './tutorStubScenarioController.js';
-import {
-  configureTutorStubResistanceActionRegisterExecution,
-  loadTutorStubResistanceActionRegisterPrefixBundle,
-} from './tutorStubResistanceActionRegisterExecution.js';
-import { configureTutorStubResistanceActionRegisterConfirmationFromCli } from './tutorStubResistanceActionRegisterConfirmation.js';
-import { configureTutorStubResistanceManipulationValidationFromCli } from './tutorStubResistanceActionRegisterManipulationValidation.js';
-import { configureTutorStubResistanceWarmNonwarmFromCli } from './tutorStubResistanceWarmNonwarmConfirmation.js';
-import { configureTutorStubBoredomProofDagFromCli } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { selectTutorStubBoredomSemanticAdjudicatorFactory } from './tutorStubBoredomActionRegisterProofDagStudy.js';
-import { configureTutorStubResistantLearnerCalibrationFromCli } from './tutorStubResistantLearnerCalibration.js';
+import { configureTutorStubResistanceStudiesFromCli } from './tutorStubResistanceStudyCliRuntime.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -2294,156 +2286,18 @@ export async function runTutorStubCliApplicationHost({
       tutorStubCliPresentationSnapshot,
     });
 
-    const resistanceActionRegisterArgs = [
-      args['resistance-action-register-registration'],
-      args['resistance-action-register-prefix-bundle'],
-      args['resistance-action-register-job'],
-    ];
-    if (resistanceActionRegisterArgs.some(Boolean) && !resistanceActionRegisterArgs.every(Boolean)) {
-      throw new Error('resistance action/register execution requires registration, prefix bundle, and job together');
-    }
-    if (resistanceActionRegisterArgs.every(Boolean)) {
-      const resistanceActionRegisterProcessBudget = Number(args['model-call-budget']);
-      if (
-        !autoLearnerEnabled ||
-        Number(autoTurns) !== 3 ||
-        !Number.isInteger(resistanceActionRegisterProcessBudget) ||
-        resistanceActionRegisterProcessBudget < 1 ||
-        resistanceActionRegisterProcessBudget > 39 ||
-        args.model !== 'codex.gpt-5.6-luna' ||
-        args['classifier-model'] !== 'codex.gpt-5.6-luna' ||
-        args['learner-record-model'] !== 'codex.gpt-5.6-luna' ||
-        args['auto-learner-model'] !== 'codex.gpt-5.6-luna' ||
-        args['cli-effort'] !== 'low' ||
-        Number(args['run-seed']) !== 20260820 ||
-        args['acknowledge-research-use'] !== true ||
-        process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS !== 'prospective_v4'
-      ) {
-        throw new Error('resistance action/register execution launch pins or remaining 39-attempt ceiling drifted');
-      }
-      const loaded = loadTutorStubResistanceActionRegisterPrefixBundle({
-        registrationPath: path.resolve(ROOT, args['resistance-action-register-registration']),
-        bundlePath: path.resolve(ROOT, args['resistance-action-register-prefix-bundle']),
-      });
-      const configured = configureTutorStubResistanceActionRegisterExecution({
-        state,
-        loaded,
-        jobId: args['resistance-action-register-job'],
-        appendTraceEvent,
-        acknowledgeTutorStubOpeningRelease,
-      });
-      if (String(sessionApplicationContext.firstMessage || '').trim() !== configured.prefix.trigger_learner_text) {
-        throw new Error('resistance action/register first message must exactly equal the registered frozen trigger');
-      }
-    }
-    const resistanceActionRegisterConfirmationArgs = [
-      args['resistance-action-register-confirmation-registration'],
-      args['resistance-action-register-confirmation-job'],
-    ];
-    const resistanceActionRegisterManipulationValidationArgs = [
-      args['resistance-action-register-manipulation-validation-design'],
-      args['resistance-action-register-manipulation-validation-job'],
-    ];
-    const resistanceWarmNonwarmConfirmationArgs = [
-      args['resistance-warm-nonwarm-confirmation-design'],
-      args['resistance-warm-nonwarm-confirmation-job'],
-    ];
-    const boredomProofDagArgs = [args['boredom-proof-dag-registration'], args['boredom-proof-dag-job']];
-    const resistantLearnerCalibrationArgs = [
-      args['resistant-learner-calibration-design'],
-      args['resistant-learner-calibration-job'],
-    ];
-    const activeResistanceStudyModes = [
-      resistanceActionRegisterArgs.some(Boolean),
-      resistanceActionRegisterConfirmationArgs.some(Boolean),
-      resistanceActionRegisterManipulationValidationArgs.some(Boolean),
-      resistanceWarmNonwarmConfirmationArgs.some(Boolean),
-      boredomProofDagArgs.some(Boolean),
-      resistantLearnerCalibrationArgs.some(Boolean),
-    ].filter(Boolean).length;
-    if (activeResistanceStudyModes > 1) {
-      throw new Error(
-        'baseline replay, frame confirmation, manipulation validation, warm/nonwarm confirmation, boredom proof-DAG, and resistant-learner calibration modes are mutually exclusive',
-      );
-    }
-    if (
-      resistanceActionRegisterConfirmationArgs.some(Boolean) &&
-      !resistanceActionRegisterConfirmationArgs.every(Boolean)
-    ) {
-      throw new Error('fresh action/register confirmation requires registration and job together');
-    }
-    if (resistanceActionRegisterConfirmationArgs.every(Boolean)) {
-      configureTutorStubResistanceActionRegisterConfirmationFromCli({
-        args,
-        state,
-        root: ROOT,
-        autoLearnerEnabled,
-        autoTurns,
-        appendTraceEvent,
-        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
-      });
-    }
-    if (
-      resistanceActionRegisterManipulationValidationArgs.some(Boolean) &&
-      !resistanceActionRegisterManipulationValidationArgs.every(Boolean)
-    ) {
-      throw new Error('manipulation validation requires design and job together');
-    }
-    if (resistanceActionRegisterManipulationValidationArgs.every(Boolean)) {
-      configureTutorStubResistanceManipulationValidationFromCli({
-        args,
-        state,
-        root: ROOT,
-        autoLearnerEnabled,
-        autoTurns,
-        appendTraceEvent,
-        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
-      });
-    }
-    if (resistanceWarmNonwarmConfirmationArgs.some(Boolean) && !resistanceWarmNonwarmConfirmationArgs.every(Boolean)) {
-      throw new Error('warm/nonwarm confirmation requires design and job together');
-    }
-    if (resistanceWarmNonwarmConfirmationArgs.every(Boolean)) {
-      configureTutorStubResistanceWarmNonwarmFromCli({
-        args,
-        state,
-        root: ROOT,
-        autoLearnerEnabled,
-        autoTurns,
-        appendTraceEvent,
-        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
-      });
-    }
-    if (boredomProofDagArgs.some(Boolean) && !boredomProofDagArgs.every(Boolean)) {
-      throw new Error('boredom proof-DAG execution requires registration and job together');
-    }
-    if (boredomProofDagArgs.every(Boolean)) {
-      configureTutorStubBoredomProofDagFromCli({
-        args,
-        state,
-        root: ROOT,
-        autoLearnerEnabled,
-        autoLearnerProfileId: automatedLearnerProfileId(args['auto-learner-profile']),
-        autoTurns,
-        appendTraceEvent,
-        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
-      });
-    }
-    if (resistantLearnerCalibrationArgs.some(Boolean) && !resistantLearnerCalibrationArgs.every(Boolean)) {
-      throw new Error('resistant-learner calibration requires design and job together');
-    }
-    if (resistantLearnerCalibrationArgs.every(Boolean)) {
-      configureTutorStubResistantLearnerCalibrationFromCli({
-        args,
-        state,
-        root: ROOT,
-        autoLearnerEnabled,
-        autoLearnerProfileId: automatedLearnerProfileId(args['auto-learner-profile']),
-        autoTurns,
-        appendTraceEvent,
-        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
-      });
-    }
+    configureTutorStubResistanceStudiesFromCli({
+      args,
+      state,
+      root: ROOT,
+      autoLearnerEnabled,
+      autoLearnerProfileId: automatedLearnerProfileId(args['auto-learner-profile']),
+      autoTurns,
+      appendTraceEvent,
+      acknowledgeTutorStubOpeningRelease,
+      firstMessage: sessionApplicationContext.firstMessage,
+      observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
+    });
 
     const {
       forgetRememberedInteractiveSettings,
