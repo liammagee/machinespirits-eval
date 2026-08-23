@@ -15,8 +15,18 @@ import {
   tutorStubResistantLearnerRuntimeModelRoutes,
   validateTutorStubResistantLearnerDesign,
 } from '../services/tutorStubResistantLearnerCalibration.js';
-import { createTutorStubResistantLearnerSemanticRuntime } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
+import {
+  createTutorStubResistantLearnerSemanticRuntime,
+  tutorStubResistantLearnerSemanticFieldConsensus,
+} from '../services/tutorStubResistantLearnerSemanticRuntime.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from '../services/tutorStubResistanceSemanticAdjudicationV4.js';
+import {
+  applyTutorStubResistantLearnerCalibrationSemanticPanel,
+  createLazyTutorStubResistanceSemanticAdjudicator,
+  loadTutorStubResistanceSemanticRegistration,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
+} from '../services/tutorStubResistanceSemanticRuntime.js';
 import {
   tutorStubResistantLearnerCalibrationHaltReason,
   tutorStubResistantLearnerGoNoteBindingIssues,
@@ -75,7 +85,7 @@ function semanticPanel(values) {
   const fields = Object.fromEntries(
     Object.entries(values).map(([field, value]) => [field, { status: 'determinate', value }]),
   );
-  const seats = ['reader_a', 'reader_b', 'reader_c'].map((judge_id) => ({
+  const seats = ['reader_a', 'reader_b'].map((judge_id) => ({
     judge_id,
     validation: {
       fields: Object.fromEntries(Object.entries(values).map(([field, value]) => [field, { eligible: true, value }])),
@@ -134,8 +144,13 @@ test('designs declare every runtime model route and reject Luna-only or reader-r
     assert.deepEqual(design.models, tutorStubResistantLearnerRuntimeModelRoutes(design));
     assert.deepEqual(
       design.models.finalSemanticReaders.map((judge) => judge.modelRef),
-      ['codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'codex.gpt-5.5'],
+      ['codex.gpt-5.6-sol', 'claude-code.sonnet-5'],
     );
+    assert.equal(
+      design.measurement.readerPanel.fieldConsensus,
+      'both valid medium/high-confidence votes agree, else measurement_indeterminate',
+    );
+    assert.equal(design.measurement.readerPanel.judgeCException, undefined);
   }
   assert.deepEqual(
     b1.models.triggerObservation.judges.map((judge) => judge.modelRef),
@@ -143,7 +158,15 @@ test('designs declare every runtime model route and reject Luna-only or reader-r
   );
   assert.deepEqual(
     r1.models.triggerObservation.judges.map((judge) => judge.modelRef),
-    ['codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'codex.gpt-5.5'],
+    ['codex.gpt-5.6-sol', 'claude-code.sonnet-5'],
+  );
+  assert.deepEqual(
+    [b1, r1].map((design) => design.attemptCeilings.plannedCallsPerDialogue),
+    [41, 44],
+  );
+  assert.equal(
+    [b1, r1].reduce((sum, design) => sum + design.attemptCeilings.calibrationMaximumReservations, 0),
+    4806,
   );
 
   const lunaOnly = structuredClone(b1);
@@ -154,6 +177,54 @@ test('designs declare every runtime model route and reject Luna-only or reader-r
   const changedReader = structuredClone(r1);
   changedReader.models.finalSemanticReaders[1].modelRef = 'codex.gpt-5.6-luna';
   assert.ok(validateTutorStubResistantLearnerDesign(changedReader).issues.includes('model route closure drifted'));
+});
+
+test('R1 trigger composition applies the scoped two-seat override without mutating frozen v4', async () => {
+  const design = load(R1_PATH).design;
+  const base = loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4);
+  assert.equal(base.registration.measurement.judges.length, 3);
+  const runtimeState = {
+    resistant_learner_calibration: true,
+    resistant_learner_study: 'R1',
+    design,
+  };
+  const scoped = applyTutorStubResistantLearnerCalibrationSemanticPanel(base, runtimeState);
+  assert.deepEqual(
+    scoped.runtimePanelOverride.judges.map((judge) => judge.modelRef),
+    ['codex.gpt-5.6-sol', 'claude-code.sonnet-5'],
+  );
+  assert.equal(scoped.runtimePanelOverride.panelSize, 2);
+  assert.equal(scoped.registration.measurement.judges.length, 3);
+  assert.equal(base.registration.measurement.judges.length, 3);
+
+  let observedBinding = null;
+  const adjudicate = createLazyTutorStubResistanceSemanticAdjudicator(
+    {},
+    {
+      observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4,
+      loadRegistration: () => base,
+      createRuntime({ registrationBinding }) {
+        observedBinding = registrationBinding;
+        return {
+          async adjudicateCandidate() {
+            return { status: 'synthetic_zero_call' };
+          },
+        };
+      },
+    },
+  );
+  const result = await adjudicate({ state: { resistanceActionRegisterStudy: runtimeState } });
+  assert.equal(result.status, 'synthetic_zero_call');
+  assert.deepEqual(
+    observedBinding.runtimePanelOverride.judges.map((judge) => judge.modelRef),
+    ['codex.gpt-5.6-sol', 'claude-code.sonnet-5'],
+  );
+});
+
+test('two-seat final fields require Sol-Sonnet agreement', () => {
+  assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['yes', 'yes']).winner, 'yes');
+  assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['yes', 'no']).winner, null);
+  assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['yes']).winner, null);
 });
 
 test('R1 injects every persona contract instruction verbatim and no outcome target', () => {
@@ -368,11 +439,11 @@ test('the independent B1 semantic panel votes from public quotes and keeps fidel
     turnNumber: 7,
     learnerText: 'The clue leaves the source open but fixes the interval.',
   });
-  assert.equal(calls, 6);
+  assert.equal(calls, 4);
   assert.equal(result.primary.fields.learner_authored_thread_pickup_within_five_turns.value, 'yes');
   assert.equal(result.fidelity.fields.delivered_action_family.value, 'ask_discriminating_question');
   assert.equal(result.measurement_disposition, 'determinate');
-  assert.equal(trace.filter((event) => event.type === 'resistant_learner_semantic_reader_result').length, 6);
+  assert.equal(trace.filter((event) => event.type === 'resistant_learner_semantic_reader_result').length, 4);
 });
 
 test('a malformed semantic envelope makes every reader field ineligible', async () => {
@@ -548,7 +619,7 @@ test('combined launcher dry-run binds both calibrations and executes zero model 
   const report = JSON.parse(output);
   assert.equal(report.status, 'passed_zero_call');
   assert.equal(report.jobs, 36);
-  assert.equal(report.planned_role_calls, 1602);
+  assert.equal(report.planned_role_calls, 1530);
   assert.equal(report.hard_attempt_ceiling, 4806);
   assert.equal(report.model_calls_executed, 0);
   assert.deepEqual(
@@ -564,7 +635,7 @@ test('GO binding fails closed unless every model route and the create-once desti
     launchCommit: 'a'.repeat(40),
     designPaths: [B1_PATH, R1_PATH],
     spendCap: 4806,
-    modelRefs: ['codex.gpt-5.6-luna', 'codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'codex.gpt-5.5'],
+    modelRefs: ['codex.gpt-5.6-luna', 'codex.gpt-5.6-sol', 'claude-code.sonnet-5'],
     destination: '/private/artifacts/resistant-learner-gate1-route-corrected',
   };
   const complete = [

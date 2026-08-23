@@ -1,6 +1,6 @@
 {
   "schema": "machinespirits.tutor-stub.resistant-learner-study-design.v1",
-  "revision": 3,
+  "revision": 4,
   "studyId": "resistant-learner-b1-authored-pickup",
   "label": "B1 bored learner: discriminating question versus true no-question reference",
   "status": "prospective_zero_call_design_pending_gate_1_go",
@@ -15,7 +15,7 @@
     "priorArtifactRoot": "artifacts/tutor-stub-live/resistant-learner-calibration-gate1-corrected-2026-08-23",
     "priorDisposition": "void_technical_route_authorization_mismatch_no_calibration_unit_completed",
     "reason": "The prior corrected design and GO described tutor, learner and analysis as Luna-only, but the prospective-v9 instrument necessarily invoked its independently validated Sol boredom observer. Four partial B1 dialogues recorded 36 reservations: 28 completed Luna calls, four completed Sol observer calls and four interrupted reservations. Seven dialogue cycles completed, no dialogue reached its final horizon, no final primary or fidelity panel ran, R1 never started and no output is reused.",
-    "outcomeBlindCorrection": "Declare every already-frozen runtime route explicitly and fail the zero-call preflight and GO binding on any mismatch. The observer remains the validated Sol instrument and the final reader panel remains the registered Sol, Sonnet-5 and GPT-5.5 panel; no response text or outcome field informed this correction.",
+    "outcomeBlindCorrection": "Declare every already-frozen runtime route explicitly and fail the zero-call preflight and GO binding on any mismatch. At that correction, the observer remained the validated Sol instrument and the final reader panel remained the registered Sol, Sonnet-5 and GPT-5.5 panel; the later operator amendment below supersedes that panel size. No response text or outcome field informed either correction.",
     "reuse": false,
     "pool": false,
     "claimCredit": false,
@@ -26,6 +26,16 @@
       "priorDisposition": "void_technical_failure_no_calibration_unit_completed",
       "reason": "The first design named four worlds absent from its launch commit. Twelve reservations were recorded, eight Luna calls completed, four reservations were interrupted, no dialogue completed, R1 never started and no output is reused."
     }
+  },
+  "operatorAmendment": {
+    "date": "2026-08-23",
+    "priorDesignSha256": "8bd814ed97cc572f11b1b316432c8e2f52db36ca85ae152c668cf48e28260b75",
+    "priorSourceCommit": "a3bc25aec554d2cf75931bc5668ab5374648cac3",
+    "decision": "Use only codex.gpt-5.6-sol and claude-code.sonnet-5 as the final semantic reader seats; retain the Sol-only prospective-v9 trigger observer.",
+    "consensus": "Both valid medium/high-confidence votes must agree per field; otherwise measurement_indeterminate.",
+    "pairwiseAgreement": "The 0.8 conditional exact-agreement floor applies to the sole Sol-Sonnet pair per field.",
+    "outcomeBlind": true,
+    "evidenceBoundary": "No final primary or fidelity reader call ran in either stopped destination; the 12 first-attempt jobs and four second-attempt partial jobs all stopped before the final reader stage."
   },
   "population": {
     "profile": "bored",
@@ -126,8 +136,8 @@
     "readerPanel": {
       "protocolSource": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json",
       "preservedProtocol": [
-        "three independent seats",
-        "two-of-three eligible consensus",
+        "two independent seats under the 2026-08-23 operator amendment",
+        "both eligible votes agree per field",
         "medium-or-high confidence",
         "quoted public evidence",
         "judge blinding",
@@ -135,10 +145,10 @@
         "indeterminate means measurement_indeterminate"
       ],
       "studySpecificVocabulary": "prospective B1 authored-pickup, action-family, question/no-question, and warm/plain/edged labels; no claim that the old V8 label vocabulary validated these new constructs",
-      "callsPerDialogue": "one primary call and one fidelity call from each of the three independent seats",
-      "fieldConsensus": "derive each primary and fidelity field from two of three valid medium-or-high-confidence determinate votes; otherwise measurement_indeterminate",
-      "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "codex.gpt-5.5"],
-      "judgeCException": "The third seat stays codex.gpt-5.5 because it is part of the V8-validated three-family panel; replacing it would change the reader instrument.",
+      "callsPerDialogue": "one primary call and one fidelity call from each of the two independent seats",
+      "fieldConsensus": "both valid medium/high-confidence votes agree, else measurement_indeterminate",
+      "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
+      "pairwiseAgreementScope": "the sole codex.gpt-5.6-sol and claude-code.sonnet-5 seat pair, assessed separately for every registered field",
       "generatorExcludedFromVoting": "codex.gpt-5.6-luna"
     }
   },
@@ -162,6 +172,7 @@
       "minimumEligibleFidelityVotesPerSeat": "16 of 18",
       "minimumJointlyEligibleCasesPerSeatPairAndField": 14,
       "minimumConditionalExactAgreementPerSeatPairAndField": 0.8,
+      "seatPairScope": "one pair only: codex.gpt-5.6-sol and claude-code.sonnet-5",
       "fields": [
         "learner_authored_thread_pickup_within_five_turns",
         "delivered_action_family",
@@ -226,13 +237,6 @@
         "provider": "claude-code",
         "model": "claude-sonnet-5",
         "effort": "low"
-      },
-      {
-        "id": "reader_c",
-        "modelRef": "codex.gpt-5.5",
-        "provider": "codex",
-        "model": "gpt-5.5",
-        "effort": "low"
       }
     ]
   },
@@ -251,14 +255,17 @@
       "preTriggerTutorGuardRecoveryReserve": 4,
       "postTriggerBase": 15,
       "postTriggerTutorGuardRecoveryReserve": 6,
-      "primaryReaderSeats": 3,
-      "fidelityReaderSeats": 3
+      "primaryReaderSeats": 2,
+      "fidelityReaderSeats": 2
     },
-    "plannedCallsPerDialogue": 43,
+    "plannedCallsPerDialogue": 41,
+    "plannedCallReservationCeilingPerDialogue": 123,
     "maximumReservationsPerDialogue": 129,
+    "authorizationHeadroomReservationsPerDialogue": 6,
     "calibrationMaximumReservations": 2322,
     "poweredMaximumReservations": 23220,
     "combinedDesignMaximumReservations": 25542,
+    "authorizationCeilingReason": "Preserve the operator-set combined fresh ceiling of 4,806 after the two-seat amendment. The six-reservation per-dialogue headroom is not a planned call and cannot restore the removed seat.",
     "role": "fail-before-call operational safeguard, not a spending target or a sample-size objective"
   },
   "dispositions": {

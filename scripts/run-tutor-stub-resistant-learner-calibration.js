@@ -287,7 +287,9 @@ function studyDryRunReport({ loaded, plan, preflight }) {
     world_counts: worldCounts,
     planned_role_calls: jobs.length * loaded.design.attemptCeilings.plannedCallsPerDialogue,
     hard_attempt_ceiling: loaded.design.attemptCeilings.calibrationMaximumReservations,
-    semantic_reader_calls_per_dialogue: 6,
+    semantic_reader_calls_per_dialogue:
+      loaded.design.attemptCeilings.callPlanPerDialogue.primaryReaderSeats +
+      loaded.design.attemptCeilings.callPlanPerDialogue.fidelityReaderSeats,
     compilation_preflight: preflight,
     model_calls_executed: 0,
     plan_assignment_sha256: plan.assignment_sha256,

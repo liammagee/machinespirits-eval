@@ -28,7 +28,7 @@ const B1_ID = 'resistant-learner-b1-authored-pickup';
 const R1_ID = 'resistant-learner-r1-graded-engagement';
 const BOREDOM_TEMPLATE = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json';
 const REFUSER_TEMPLATE = 'config/tutor-stub-resistance-action-register-crossed-registration.v9.json';
-const JUDGES = Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'codex.gpt-5.5']);
+const JUDGES = Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5']);
 const REGISTERS = Object.freeze(['warm', 'plain', 'edged']);
 const B1_WORLDS = Object.freeze([
   'world_022_foxtrot_jukebox',
@@ -50,6 +50,10 @@ function routeFields({ id, modelRef, provider, model, effort }) {
 
 export function tutorStubResistantLearnerRuntimeModelRoutes(design) {
   const b1 = design?.studyId === B1_ID;
+  const resistanceV4Judges = b1
+    ? []
+    : loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4).registration
+        .measurement.judges;
   const triggerObservation = b1
     ? {
         semantics: 'prospective_v9',
@@ -65,9 +69,11 @@ export function tutorStubResistantLearnerRuntimeModelRoutes(design) {
       }
     : {
         semantics: 'prospective_frame_resistance_semantic_v4',
-        judges: loadTutorStubResistanceSemanticRegistration(
-          TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
-        ).registration.measurement.judges.map(routeFields),
+        judges: JUDGES.map((modelRef) => {
+          const judge = resistanceV4Judges.find((candidate) => candidate.modelRef === modelRef);
+          if (!judge) throw new Error(`registered R1 trigger route is missing ${modelRef}`);
+          return routeFields(judge);
+        }),
       };
   return {
     tutor: LUNA_MODEL_REF,
@@ -131,12 +137,16 @@ export function validateTutorStubResistantLearnerDesign(design) {
     0,
   );
   const planned = Number(design?.attemptCeilings?.plannedCallsPerDialogue);
+  const plannedReservationCeiling = Number(design?.attemptCeilings?.plannedCallReservationCeilingPerDialogue);
   const perDialogue = Number(design?.attemptCeilings?.maximumReservationsPerDialogue);
+  const authorizationHeadroom = Number(design?.attemptCeilings?.authorizationHeadroomReservationsPerDialogue);
   const perCall = Number(design?.attemptCeilings?.maximumReservationsPerPlannedCall);
   if (
     calls !== planned ||
     perCall !== 3 ||
-    perDialogue !== planned * perCall ||
+    plannedReservationCeiling !== planned * perCall ||
+    authorizationHeadroom !== 6 ||
+    perDialogue !== plannedReservationCeiling + authorizationHeadroom ||
     Number(design?.attemptCeilings?.calibrationMaximumReservations) !== perDialogue * 18
   ) {
     issues.push('attempt ceiling arithmetic drifted');
@@ -144,7 +154,10 @@ export function validateTutorStubResistantLearnerDesign(design) {
   if (studyId === B1_ID) {
     const actions = design?.factors?.action?.levels || [];
     if (
-      design?.revision !== 3 ||
+      design?.revision !== 4 ||
+      design?.operatorAmendment?.priorDesignSha256 !==
+        '8bd814ed97cc572f11b1b316432c8e2f52db36ca85ae152c668cf48e28260b75' ||
+      design?.operatorAmendment?.outcomeBlind !== true ||
       design?.supersedes?.priorDesignSha256 !== '03235175002fdab1a28492a809215df8744eba8f1eac25eb99126e786c37d1bb' ||
       design?.supersedes?.priorDisposition !==
         'void_technical_route_authorization_mismatch_no_calibration_unit_completed' ||
@@ -173,7 +186,10 @@ export function validateTutorStubResistantLearnerDesign(design) {
   }
   if (studyId === R1_ID) {
     if (
-      design?.revision !== 2 ||
+      design?.revision !== 3 ||
+      design?.operatorAmendment?.priorDesignSha256 !==
+        'b0d328594a2a0dc51543b44836e5a5d827955d404572c2b682d36a2d3e97c95e' ||
+      design?.operatorAmendment?.outcomeBlind !== true ||
       design?.supersedes?.priorDesignSha256 !== '28e961c68c8a7ce989f2b05d7182646f3fd9665a9954e1ebded5efe5239a0946' ||
       design?.supersedes?.priorDisposition !== 'void_technical_route_authorization_mismatch_r1_not_started' ||
       design?.supersedes?.reuse !== false ||
@@ -651,7 +667,7 @@ function agreementSummary(rows, design) {
           ],
           fidelity: ['delivered_test_bounded_distinction', 'delivered_register', 'prohibited_delivery'],
         };
-  const readerIds = ['reader_a', 'reader_b', 'reader_c'];
+  const readerIds = design.models.finalSemanticReaders.map((reader) => reader.id);
   const seatEligibility = Object.fromEntries(
     readerIds.map((readerId) => [
       readerId,

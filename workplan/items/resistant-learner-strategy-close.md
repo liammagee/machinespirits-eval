@@ -14,7 +14,7 @@ verification: >-
   folded into the canonical paper with frozen-result boundaries intact, and
   all paid artifacts pass npm run archive:runs and are committed in the
   private archive repository.
-branch: codex/resistant-learners-close
+branch: codex/resistant-learners-two-reader
 claim_status: planned
 links:
   items:
@@ -74,7 +74,7 @@ tags:
   stratified across Marrick and Rowan Flat, with its claim limited to those
   worlds and the persona-permitted elicitation boundary explicit.
 - 2026-08-23: Implemented the combined zero-call Gate 1 launcher, deterministic
-  balanced plans, independent three-seat primary and fidelity panels, exact R1
+  balanced plans, independent primary and fidelity panels, exact R1
   persona injection, and calibration gates. The 24-cell live assignment
   compilation preflight and 36-dialogue dry run pass with zero model calls.
   No calibration is authorized or active.
@@ -97,3 +97,9 @@ tags:
   four interrupted reservations and no R1 start or calibration credit. P2 now
   records an outcome-blind route-closure correction; another digest-bound GO
   is required before any fresh launch.
+- 2026-08-23: The operator prospectively reduced both final reader panels and
+  the R1 trigger panel to the Sol-Sonnet pair. The amendment requires both
+  valid medium/high-confidence votes to agree per field and applies the 0.8
+  agreement floor to that sole pair. It is outcome-blind: neither stopped
+  destination reached the final reader stage, R1 never started, and no launch
+  is authorized by this change.
