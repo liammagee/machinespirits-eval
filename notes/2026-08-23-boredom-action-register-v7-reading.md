@@ -28,20 +28,20 @@ Risk difference −0.102. One-sided exact conditional blocked score test,
 p = 0.874 against alpha 0.05. Registered decision
 `shrink_step_ask_question_recovery_not_confirmed`.
 
-Every treatment-fidelity gate passed. The host action was visible in every unit,
-the assigned move came out in every unit, the assigned manner came out in every
-unit, and a reader could name the manner in 78 of 80. Zero safety overrides,
-zero move nonadherence, zero content leakage in 37 scoring turns. This is the
-first run in the arc that is readable end to end.
+Every treatment-fidelity gate passed as reported. Two of the four measure
+nothing; see "The gates that were not gates" below. Zero safety overrides, zero
+move nonadherence, zero content leakage in 37 scoring turns.
 
 ## What the run licenses
 
-1. **The measurement works.** v4 and v5 tested a different contrast, warm
-   against plain, and are nulls; v4's objective window was mostly unreachable
-   and v5 fixed that. v6 was the first to test the two moves. It ran 36 of 36
-   with no stopped units and then failed its manner floor by one unit, so it
-   licenses nothing. v7 passed every gate. The instrument, the world set and the
-   trigger detection are sound enough to run a study on.
+1. **The endpoint measurement works.** v4 and v5 tested a different contrast,
+   warm against plain, and are nulls; v4's objective window was mostly
+   unreachable and v5 fixed that. v6 was the first to test the two moves. It ran
+   36 of 36 with no stopped units and then failed its manner floor by one unit,
+   so it licenses nothing. v7 ran 84 units end to end, triggered on 83, and
+   scored 80. The world set, the boredom trigger detection and the recovery
+   endpoint are sound enough to run a study on. The treatment-fidelity gates
+   are not — that is the next section.
 2. **The registered decision.** Shrinking the step is not confirmed to beat
    asking a question at recovering a bored learner, on this stack, on this
    simulated learner, in these six worlds.
@@ -64,6 +64,54 @@ first run in the arc that is readable end to end.
    warm 11/20, shrink plain 9/19 and warm 7/20.
 4. **Not poolable.** v4, v5, v6 and v7 may not be combined. Each spent corpus is
    permanently excluded from every later outcome.
+
+## The gates that were not gates
+
+Found 2026-08-23, after the run, while designing v8. The four treatment-fidelity
+gates do not do what their names say.
+
+| gate | reported | floor | what it reads |
+|---|---|---|---|
+| the host action was readable | 1.00 | 0.90 | the tutor's words, by pattern match |
+| the assigned move came out | 1.00 | 0.90 | **nothing** |
+| the assigned manner came out | 1.00 | 0.90 | **nothing, in this run** |
+| the manner was readable | 0.975 | 0.80 | the tutor's words, by pattern match |
+
+Every axis of the response audit carries two fields. `selected` is the
+instruction the study wrote a moment earlier; `visible` is a real reading of the
+tutor's sentences.
+
+The move gate reads `intervention.delivered_pedagogical_move`, and **no code
+anywhere in the repository ever writes that field.** The analyzer falls back to
+the assigned move and compares it with itself, so the answer is `true` in every
+unit that can exist. The 1.00 is arithmetic, not evidence.
+
+The manner gate compares the audit's `selected` register with the assigned
+register. Those are the same value, written by
+`tutorStubResistanceActionRegisterStudy.js:1198` and read back by the analyzer.
+The one path that could separate them is a safety override, and v7 had none. So
+that 1.00 is arithmetic too.
+
+The two `visible` gates are real readings, but both are regular expressions over
+the tutor's text, and the arc's own rule says a pattern match is auxiliary and
+never the final authority on manner. The pattern for `stage_next_step` matches
+any turn containing "ask", "compare", "check", "look" or "test", which is why it
+scored 1.00 across eighty units. No model ever read a tutor turn in this arc:
+the semantic adjudicator runs on the learner's turns up to the trigger and stops.
+
+Both v7 moves also share one host action family by design, so even a perfect
+family reading could not tell them apart.
+
+**What this changes.** Not the null: an unmeasured delivery gate cannot invent a
+difference, and a tutor that blurred the two moves would push the arms together,
+which is what was seen. What it removes is the claim that the arms were
+delivered as assigned. v7 shows two arms that both produced a legible
+next-step-ish turn in a nameable manner. Whether one arm asked a discriminating
+question and the other shrank the step is unverified.
+
+**What this changes for v8.** A control arm needs a purity reading — did the
+tutor refrain from making the move? — and that reading would sit on exactly this
+seam. Registering it without building it would repeat the defect a sixth time.
 
 ## The v6 gap did not survive
 
@@ -183,10 +231,11 @@ after the data was seen. The frozen v7 request still pins the bytes from before
 it, so the change shows as closure drift instead of disappearing, and the drift
 was left in place on purpose. Eval-repo commit `e101803b`.
 
-This is the fourth time in this arc that a rule written in a registration turned
-out to have no code reading it. The check that would catch the fifth is a test
-that every named rule in a registration resolves to a call site. Nobody has
-written it.
+This was the fourth time in this arc that a rule written in a registration
+turned out to have no code reading it. The fifth arrived the same day, in the
+move-delivery gate above. The check that would catch the sixth is a test that
+every named rule in a registration resolves to a call site, and that the call
+site reads something other than the assignment. Nobody has written it.
 
 ## Attrition
 
