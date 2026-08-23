@@ -275,7 +275,12 @@ function childCommand({ loaded, job, destination, modelCallBudget = null }) {
     ],
     cwd: ROOT,
     env: {
-      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: loaded.registration.design.trigger.observationSemantics,
+      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS:
+        process.env.TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE === '1'
+          ? 'prospective_frame_resistance_binary_semantic_v6'
+          : loaded.registration.design.trigger.observationSemantics,
+      TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE:
+        process.env.TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE === '1' ? '1' : '0',
       TUTOR_STUB_REMEMBER_SETTINGS: '0',
     },
     job_root: jobRoot,

@@ -7,6 +7,7 @@ import {
   loadTutorStubResistanceActionRegisterRegistration,
   scoreTutorStubResistanceRecovery,
 } from './tutorStubResistanceActionRegisterStudy.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6 } from './tutorStubResistanceSemanticAdjudicationV6.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
 
 export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_PLAN_SCHEMA =
@@ -160,21 +161,26 @@ export function configureTutorStubResistanceActionRegisterConfirmationExecution(
   loaded,
   jobId,
   appendTraceEvent,
+  binarySemanticSmoke = false,
 } = {}) {
   if (!state || state.turns?.length || state.history?.length) {
     throw new Error('confirmation execution requires a fresh empty dialogue state');
   }
   const job = resolveTutorStubResistanceActionRegisterConfirmationJob({ loaded, jobId });
+  const studyRuntime = createTutorStubResistanceActionRegisterStudyRuntime({
+    registration: loaded.registration,
+    registrationPath: path.relative(process.cwd(), loaded.path),
+    registrationSha256: loaded.sha256,
+    profile: job.treatment.profile,
+    actionFit: job.treatment.action_fit,
+    realization: job.treatment.realization,
+    repeat: job.block_id,
+  });
+  if (binarySemanticSmoke) {
+    studyRuntime.registration.design.trigger.observationSemantics = TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6;
+  }
   state.resistanceActionRegisterStudy = {
-    ...createTutorStubResistanceActionRegisterStudyRuntime({
-      registration: loaded.registration,
-      registrationPath: path.relative(process.cwd(), loaded.path),
-      registrationSha256: loaded.sha256,
-      profile: job.treatment.profile,
-      actionFit: job.treatment.action_fit,
-      realization: job.treatment.realization,
-      repeat: job.block_id,
-    }),
+    ...studyRuntime,
     dynamic_confirmation: true,
     job_id: job.id,
     batch_id: job.block_id,
@@ -185,6 +191,7 @@ export function configureTutorStubResistanceActionRegisterConfirmationExecution(
     maximum_trigger_turn: 2,
     outcome_horizon_learner_turns: 2,
     final_learner_without_tutor_reply: true,
+    engineering_smoke_excluded_from_confirmation: binarySemanticSmoke,
   };
   appendTraceEvent(state.trace, {
     type: 'resistance_action_register_confirmation_execution_start',
@@ -199,6 +206,7 @@ export function configureTutorStubResistanceActionRegisterConfirmationExecution(
     freshIndependentDialogue: true,
     calibrationDialogueReused: false,
     publicTranscriptChanged: false,
+    binarySemanticSmoke,
   });
   return job;
 }
@@ -222,7 +230,13 @@ export function configureTutorStubResistanceActionRegisterConfirmationFromCli({
     registrationPath: path.resolve(root, registrationPath),
   });
   const job = resolveTutorStubResistanceActionRegisterConfirmationJob({ loaded, jobId });
-  const requiredObservationSemantics = loaded.registration.design.trigger.observationSemantics;
+  const binarySemanticSmoke = process.env.TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE === '1';
+  if (binarySemanticSmoke && loaded.registration.version !== 8) {
+    throw new Error('binary semantic smoke is permitted only over the frozen V8 two-judge execution path');
+  }
+  const requiredObservationSemantics = binarySemanticSmoke
+    ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6
+    : loaded.registration.design.trigger.observationSemantics;
   const maximumDialogueBudget =
     loaded.registration.version >= 9 ? 123 : loaded.registration.version === 8 ? 96 : 60;
   if (
@@ -245,7 +259,13 @@ export function configureTutorStubResistanceActionRegisterConfirmationFromCli({
   ) {
     throw new Error('fresh action/register confirmation launch pins or remaining attempt ceiling drifted');
   }
-  configureTutorStubResistanceActionRegisterConfirmationExecution({ state, loaded, jobId, appendTraceEvent });
+  configureTutorStubResistanceActionRegisterConfirmationExecution({
+    state,
+    loaded,
+    jobId,
+    appendTraceEvent,
+    binarySemanticSmoke,
+  });
   return { loaded, job };
 }
 
