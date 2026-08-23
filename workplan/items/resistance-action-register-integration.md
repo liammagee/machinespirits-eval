@@ -9,9 +9,10 @@ source: manual
 created: 2026-08-18
 updated: 2026-08-22
 verification: >-
-  Two boredom action-before-register proof-DAG studies are collected and
-  analysed, both registered nulls, and a third is registered and packaged but
-  not launched.
+  Three boredom action-before-register proof-DAG studies are collected and
+  analysed. v4 and v5 are registered nulls. v6 ran to 36 of 36 dialogues with
+  zero stopped units but failed its registered interpretability gate, so it
+  licenses no claim at all.
 
   v4 (36 planned, 33 scored): plain 0/18, warm 0/15, risk difference 0, exact
   conditional p = 1, decision warm_plain_recovery_not_confirmed. Three units
@@ -41,8 +42,23 @@ verification: >-
   this size would mean very little and may not be reported as evidence that the
   move does not work.
 
+  v6 ran and the run itself was clean: 36 of 36 dialogues scored, zero stopped
+  units, balanced across both moves and all six worlds. Two of the three
+  registered floors passed at 1.00 — the host action was readable in every unit
+  and the assigned move came out in every unit — but manner visibility reached
+  0.889 against a 0.90 floor, one unit short in thirty-six. That is a hard
+  status flip, so the report carries
+  `failed_interpretability_gate_not_rerun` and licenses no confirmation claim.
+  The primary numbers exist and are recorded but may not be reported as a
+  finding: recovery within 5 post-trigger turns, ask 8/18 against simplify
+  14/18, risk difference +0.333, exact conditional p = 0.0858. The floor that
+  failed is on the manner, which v6 does not test; relaxing a registered floor
+  after seeing the data is refused, and any redesign of it belongs in a later
+  registration.
+
   No warm/plain efficacy claim is licensed by v4 or v5, and none is refuted
-  beyond each design's claim boundary. No paid v6 call is authorized.
+  beyond each design's claim boundary. No move claim is licensed by v6. No
+  further paid call in this line is authorized.
   The earlier frozen independent semantic-measurement programme remains closed
   without a scientific result under its standing success-or-systemic-failure
   boundary.
@@ -3352,3 +3368,45 @@ and explicit human approval.
   a name no registration carries; it compared one absent value with
   another and failed only because the same line also required an
   integer. All four are fixed and pinned by tests.
+- 2026-08-22 — **v6 approved, run, and closed on a failed interpretability
+  gate.** The approval was given for one 36-dialogue run at the registered
+  design, with the power caveat acknowledged in the approval text itself.
+  Authorization file
+  `config/tutor-stub-boredom-action-register-proof-dag-launch-authorization.v6.json`
+  under the existing v2 schema, which binds the study design and not the
+  source bytes, at design fingerprint `d945aced`. **The first launch failed
+  completely.** All nine batches were started together, which put 36 codex
+  CLI sessions on one machine. Every dialogue failed on
+  `TUTOR_STUB_BOREDOM_PROOF_DAG_CODEX_TRANSPORT_RETRY_EXHAUSTED`, no
+  transcript was written, and 382 attempt reservations were spent for zero
+  units. Failures fell across all four seats and both models, and a single
+  codex call straight afterwards returned normally, so the cause was load,
+  not provider health. Nothing from that attempt may enter any v6 outcome;
+  it is preserved with a written note. The re-run went one batch at a time
+  at parallelism 4 and all nine batches completed 4 of 4, 36 of 36
+  dialogues, zero stopped units, balanced across both moves and all six
+  worlds. **The registered interpretability gate then failed on manner
+  visibility, 32 of 36 = 0.889 against the 0.90 floor**, so the report
+  carries `failed_interpretability_gate_not_rerun` and
+  `interpretability_gate_failed_no_rerun_or_confirmation_claim`. The other
+  two floors passed at 1.00: the host action was readable in every unit and
+  the assigned move came out in every unit. Content leakage was 0 of 8 and
+  0 of 14 scoring turns. Three of the four missing units delivered their
+  assigned manner but not readably; one, `bored-confirm-w5-d1`, was assigned
+  warm and delivered plain. **No confirmation claim is licensed.** The
+  recorded and non-interpretable numbers are: recovery within 5 post-trigger
+  turns, ask a discriminating question 8/18 against simplify to one workable
+  step 14/18, risk difference +0.333, two-sided exact conditional blocked
+  score test p = 0.0858, decision
+  `shrink_step_ask_question_recovery_not_confirmed`; manner block, ask/plain
+  5/9, ask/warm 3/9, simplify/plain 6/9, simplify/warm 8/9; objective proof
+  progress not tested inferentially, ask 1/18, simplify 2/18; v5 one-turn
+  comparability, ask 3/18, simplify 2/18. Note what failed: the floor is on
+  the **manner**, which v6 explicitly does not test. Relaxing a registered
+  floor after seeing the data is the exact defect class this arc keeps
+  finding, so the floor stands and any redesign of it belongs in a later
+  registration, not a repair of v6. Combined report
+  `.tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v6-live-2026-08-22-combined.json`,
+  source commit `f31d8bc7`, artifacts archived at `a55cf1b7` under
+  `artifacts/boredom-proof-dag-v6-live`. The spent v6 corpus is permanently
+  excluded from every later outcome.
