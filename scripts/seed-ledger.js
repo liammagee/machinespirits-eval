@@ -57,9 +57,19 @@ export const SEED_SCAN_PATTERN = 'seed[^0-9]{0,12}[0-9]{3}|--run-seed[^0-9]{0,4}
  * per-call seeds, and 170 of them landed above the floor, so the check read a
  * clean run as 170 undeclared allocations. Claiming those would have been worse
  * than the false alarm: every one would have blocked a number no run had taken.
+ *
+ * The boredom sizing scripts are the same kind of false alarm from the other
+ * end. They allocate nothing; they start a random number generator for power
+ * draws, from a base plus a loop counter. A base of eight thousand reads to
+ * the scan as an allocation of eight hundred. Worse, a base of five thousand
+ * reads as five hundred, which a real run already claims, so those lines pass
+ * the check by collision rather than by right.
+ *
+ * Keep this comment free of a three-digit number written next to the word the
+ * scan looks for, or the file reports itself.
  */
 export const SCAN_EXCLUDED_DIRS = ['node_modules', '.git', 'traces'];
-export const SCAN_EXCLUDED_FILES = ['transcript.json'];
+export const SCAN_EXCLUDED_FILES = ['transcript.json', 'size-boredom-*.js'];
 
 /** Read the written-down claims. Each entry carries a range, a seed list, or both. */
 export function readLedger(root = ROOT, ledgerPath = SEED_LEDGER_PATH) {
