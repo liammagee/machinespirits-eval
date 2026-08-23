@@ -14,7 +14,7 @@ verification: >-
   folded into the canonical paper with frozen-result boundaries intact, and
   all paid artifacts pass npm run archive:runs and are committed in the
   private archive repository.
-branch: codex/resistant-learners-two-reader
+branch: codex/resistant-learners-two-reader-go-draft
 claim_status: planned
 links:
   items:
@@ -29,6 +29,7 @@ links:
     - notes/checkins/2026-08-23-P1.md
     - notes/checkins/2026-08-23-P2.md
     - notes/2026-08-23-resistant-learner-calibration-gate1-corrected-go.md
+    - notes/2026-08-23-resistant-learner-calibration-gate1-two-reader-draft.md
     - config/tutor-stub-resistant-learner-b1-design.v1.json
     - config/tutor-stub-resistant-learner-r1-design.v1.json
 tags:
@@ -103,3 +104,8 @@ tags:
   agreement floor to that sole pair. It is outcome-blind: neither stopped
   destination reached the final reader stage, R1 never started, and no launch
   is authorized by this change.
+- 2026-08-23: PR #796 merged the two-seat amendment at launch commit
+  `c87b459a`. Added a separate unsigned DRAFT authorization note binding that
+  merge result, both new design digests, all remaining model routes, the third
+  create-once root, the 4,806 fresh ceiling and 4,854 cumulative ceiling. The
+  note contains no launch authority; operator signature is still required.
