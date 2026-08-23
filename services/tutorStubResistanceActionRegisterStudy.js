@@ -8,6 +8,7 @@ import { beginTutorStubActionBeforeRegisterShadow } from './tutorStubActionBefor
 import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
 import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
+import { selectTutorStubActorialPerformance } from './tutorStubResponseConfiguration.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 } from './tutorStubResistanceSemanticAdjudicationV2.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResistanceSemanticAdjudicationV3.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from './tutorStubResistanceSemanticAdjudicationV4.js';
@@ -157,6 +158,13 @@ const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
     'Ask exactly one concrete, genuinely discriminating question about the nearest already-public object; do not supply the answer.',
   test_bounded_distinction:
     'Name one bounded distinction and ask for one local public test; explicitly leave the wider frame open to rejection.',
+});
+
+const REALIZATION_CONTRAST_INSTRUCTIONS = Object.freeze({
+  plain:
+    'Realize a neutral, non-affiliative reference stance. State the bounded distinction and local evidentiary test directly, without inviting shared movement or choice, presenting tutor and learner as acting together, or adding relational uptake. Preserve the learner’s right to reject the wider frame through a direct boundary rather than a collaborative invitation.',
+  warm:
+    'Realize a low-pressure collaborative stance. Add one genuine invitation to shared movement or shared choice, then return immediately to the same bounded distinction and local evidentiary test. Preserve the learner’s right to reject the wider frame; do not praise, flatter, or change the action.',
 });
 
 const CONTENT_BEARING_MOVES = new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']);
@@ -1246,6 +1254,13 @@ function assignedDistribution(register) {
   return [{ engagement_stance: register, register, weight: 1, probability: 1, sourceScore: 1 }];
 }
 
+function assignedActorialPerformance(configuration, register) {
+  return selectTutorStubActorialPerformance({
+    engagementStance: register,
+    actorialPart: configuration?.actorial_part || null,
+  });
+}
+
 export function applyTutorStubResistanceActionRegisterStudyIntervention({
   selection,
   state,
@@ -1313,6 +1328,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
     },
     action_instruction: MOVE_INSTRUCTIONS[moveType],
     compact_action_instruction: COMPACT_MOVE_INSTRUCTIONS[moveType],
+    realization_contrast_instruction: REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],
     duration_tutor_turns: 1,
     reverts_after_this_turn: true,
     safety_override: { applied: false, assigned_register: register, delivered_register: register, reason: null },
@@ -1323,6 +1339,13 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
       ...(selection.response_configuration || {}),
       engagement_stance: register,
       action_family: hostAction,
+      // The performance tactic is derived from engagement stance. Keeping the
+      // pre-intervention tactic creates a contradictory contract (for example,
+      // plain stance plus a warm shared-scene invitation) and collapses the
+      // experimental contrast. Preserve the independently selected host part,
+      // but rebind its stance-derived realization to the assigned treatment.
+      actorial_performance: assignedActorialPerformance(selection.response_configuration, register),
+      study_realization_contrast_instruction: REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],
       engagement_stance_distribution: assignedDistribution(register),
       selection_reasons: {
         ...(selection.response_configuration?.selection_reasons || {}),
@@ -1380,6 +1403,8 @@ export function applyTutorStubResistanceActionRegisterSafetyOverride(selection, 
   const responseConfiguration = normalizeTutorStubResponseConfiguration({
     ...selection.response_configuration,
     engagement_stance: 'plain',
+    actorial_performance: assignedActorialPerformance(selection.response_configuration, 'plain'),
+    study_realization_contrast_instruction: REALIZATION_CONTRAST_INSTRUCTIONS.plain,
     engagement_stance_distribution: assignedDistribution('plain'),
     resistance_action_register_intervention: nextIntervention,
   });

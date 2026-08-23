@@ -1193,6 +1193,64 @@ test('combined confirmation analyzer accepts only all nine sealed fresh batches 
   );
   restore();
 
+  const alternateSourceCommit = execFileSync('git', ['rev-parse', 'HEAD^'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
+  const alternateSourceTree = execFileSync('git', ['rev-parse', `${alternateSourceCommit}^{tree}`], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
+  const mixedSourceRoot = roots.at(-1);
+  const mixedSourcePlanPath = path.join(mixedSourceRoot, 'batch-plan.json');
+  const mixedSourceSealPath = path.join(mixedSourceRoot, 'batch-seal.json');
+  const originalMixedSourcePlan = fs.readFileSync(mixedSourcePlanPath);
+  const originalMixedSourceSeal = fs.readFileSync(mixedSourceSealPath);
+  const mixedSourcePlan = readJson(mixedSourcePlanPath);
+  mixedSourcePlan.source.commit = alternateSourceCommit;
+  mixedSourcePlan.source.tree = alternateSourceTree;
+  writeJson(mixedSourcePlanPath, mixedSourcePlan);
+  const mixedSourceSeal = readJson(mixedSourceSealPath);
+  mixedSourceSeal.plan_sha256 = sha256(fs.readFileSync(mixedSourcePlanPath));
+  writeJson(mixedSourceSealPath, mixedSourceSeal);
+  const mixedSourceTraceRestores = mixedSourcePlan.jobs.map((job) =>
+    mutateSealedBatchTrace(mixedSourceRoot, job.id, (events) =>
+      events.map((event) =>
+        event.type === 'run_start'
+          ? {
+              ...event,
+              metadata: {
+                ...event.metadata,
+                provenance: {
+                  ...event.metadata.provenance,
+                  git: { ...event.metadata.provenance.git, sha: alternateSourceCommit },
+                },
+              },
+            }
+          : event,
+      ),
+    ),
+  );
+  const mixedSourceReport = analyzeTutorStubResistanceActionRegisterConfirmation({
+    batchRoots: roots,
+    registrationPath: path.relative(ROOT, REGISTRATION),
+    expectedSourceCommit: head,
+    allowedBatchSourceCommits: [head, alternateSourceCommit],
+  });
+  assert.equal(mixedSourceReport.source.batch_commits.block_09, alternateSourceCommit);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterConfirmation({
+        batchRoots: roots,
+        registrationPath: path.relative(ROOT, REGISTRATION),
+        expectedSourceCommit: head,
+      }),
+    /source, result, or seal contract/u,
+  );
+  for (const restoreMixedSourceTrace of mixedSourceTraceRestores.reverse()) restoreMixedSourceTrace();
+  fs.writeFileSync(mixedSourcePlanPath, originalMixedSourcePlan);
+  fs.writeFileSync(mixedSourceSealPath, originalMixedSourceSeal);
+
   const firstTraceDir = path.join(roots[1], 'jobs', loaded.plan.jobs[4].id, 'traces');
   fs.writeFileSync(path.join(firstTraceDir, 'alternative.jsonl'), '{}\n');
   assert.throws(

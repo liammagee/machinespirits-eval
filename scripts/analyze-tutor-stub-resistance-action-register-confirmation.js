@@ -20,15 +20,16 @@ import {
   tutorStubResistanceMeasurementSha256,
 } from '../services/tutorStubResistanceRecoverySemanticAdjudicationV8.js';
 import { loadTutorStubResistanceConfirmationSemanticInstrument } from '../services/tutorStubResistanceConfirmationSemanticRuntime.js';
+import { deduplicateTutorStubResistanceSemanticOutputSchemaV5 } from '../services/tutorStubResistanceSemanticAdjudicationV5.js';
 import {
   loadTutorStubResistanceActionRegisterConfirmation,
   scoreTutorStubResistanceRecovery,
 } from '../services/tutorStubResistanceActionRegisterConfirmation.js';
 import { tutorStubResistanceActionRegisterTreatmentEligibility } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
-  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
   TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT,
   loadTutorStubResistanceSemanticRegistration,
+  tutorStubResistanceSemanticRegistrationPathForObservation,
   tutorStubResistanceSemanticRuntimeInstrument,
   validateTutorStubResistanceSemanticRuntimeResult,
 } from '../services/tutorStubResistanceSemanticRuntime.js';
@@ -102,13 +103,13 @@ function sameIds(actual, expected) {
 
 function exactTraceDirectory(resultRow, command, label) {
   if (!resultRow?.trace || !command?.trace_dir) throw new Error(`${label} lacks its registered trace path`);
-  const tracePath = path.resolve(ROOT, resultRow.trace);
+  const tracePath = path.resolve(command.cwd || ROOT, resultRow.trace);
   const traceDirectory = path.resolve(command.trace_dir);
   const files = traceFiles(traceDirectory);
   if (path.dirname(tracePath) !== traceDirectory || files.length !== 1 || path.resolve(files[0]) !== tracePath) {
     throw new Error(`${label} must contain exactly its one selected trace; alternatives are forbidden`);
   }
-  return traceDirectory;
+  return tracePath;
 }
 
 function auditRecovery({ absolute, plan, initial, result, seal, planPath, initialResultPath, resultPath }) {
@@ -171,6 +172,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   const finalRows = new Map(result.results.map((row) => [row.job_id, row]));
   const reservationsByJob = new Map();
   const finalTraceBudgetByJob = new Map();
+  const tracePathsByJob = new Map();
   let usedReservationsBeforeRecovery = 0;
   for (const job of plan.jobs) {
     const initialFiles = traceFiles(job.command?.trace_dir);
@@ -182,7 +184,10 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     const initialRow = initialById.get(job.id);
     const finalRow = finalRows.get(job.id);
     if (initialValidIds.includes(job.id)) {
-      exactTraceDirectory(initialRow, job.command, `initial valid confirmation unit ${job.id}`);
+      tracePathsByJob.set(
+        job.id,
+        exactTraceDirectory(initialRow, job.command, `initial valid confirmation unit ${job.id}`),
+      );
       if (
         finalRow?.origin !== 'initial_valid_unit' ||
         finalRow.trace !== initialRow.trace ||
@@ -205,7 +210,10 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     if (JSON.stringify(recoveryJob) !== JSON.stringify(expectedRecoveryJob)) {
       throw new Error(`confirmation batch ${plan.batch_id} recovery command drifted for ${job.id}`);
     }
-    exactTraceDirectory(recoveryRow, recoveryJob?.command, `recovered confirmation unit ${job.id}`);
+    tracePathsByJob.set(
+      job.id,
+      exactTraceDirectory(recoveryRow, recoveryJob?.command, `recovered confirmation unit ${job.id}`),
+    );
     const recoveryReservations = reservationCount(recoveryJob.command.trace_dir);
     if (
       finalRow?.origin !== 'bounded_technical_recovery_missing_or_failed_unit' ||
@@ -232,20 +240,220 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   ) {
     throw new Error(`confirmation batch ${plan.batch_id} recovery exceeded or misreported its unchanged caps`);
   }
-  return { recoveredIds: new Set(missingOrFailedIds), reservationsByJob, finalTraceBudgetByJob };
+  return { recoveredIds: new Set(missingOrFailedIds), reservationsByJob, finalTraceBudgetByJob, tracePathsByJob };
 }
 
-function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registrationPath) {
+function recursiveFiles(directory) {
+  if (!fs.existsSync(directory)) return [];
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const candidate = path.join(directory, entry.name);
+    return entry.isDirectory() ? recursiveFiles(candidate) : [candidate];
+  });
+}
+
+function matchingRecoveryArtifact(absolute, filename, digest) {
+  const matches = recursiveFiles(path.join(absolute, 'recoveries')).filter(
+    (candidate) => path.basename(candidate) === filename && sha256(fs.readFileSync(candidate)) === digest,
+  );
+  if (matches.length !== 1) throw new Error(`confirmation recovery requires one digest-bound ${filename}`);
+  return matches[0];
+}
+
+function recordedRecoveryTrace(resultRow, plan) {
+  const candidates = [path.resolve(ROOT, resultRow.trace)];
+  for (const job of plan.jobs) candidates.push(path.resolve(job.command.cwd || ROOT, resultRow.trace));
+  const matches = [...new Set(candidates)].filter(
+    (candidate) => fs.existsSync(candidate) && sha256(fs.readFileSync(candidate)) === resultRow.trace_sha256,
+  );
+  if (matches.length !== 1) throw new Error(`confirmation recovery trace ${resultRow.job_id} is not uniquely digest-bound`);
+  const files = traceFiles(path.dirname(matches[0]));
+  if (files.length !== 1 || path.resolve(files[0]) !== matches[0]) {
+    throw new Error(`confirmation recovery trace ${resultRow.job_id} has a competing final trace`);
+  }
+  return matches[0];
+}
+
+function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planPath, initialResultPath, resultPath }) {
+  const loaded = loadTutorStubResistanceActionRegisterConfirmation({
+    registrationPath: path.resolve(ROOT, plan.source.registration_path),
+  });
+  const caps = confirmationCaps(loaded);
+  const recoveryPlanPath = matchingRecoveryArtifact(absolute, 'recovery-plan.json', seal.recovery_plan_sha256);
+  const recoveryResultPath = matchingRecoveryArtifact(absolute, 'recovery-result.json', seal.recovery_result_sha256);
+  const recoveryPlan = readJson(recoveryPlanPath);
+  const recoveryResult = readJson(recoveryResultPath);
+  const planIds = plan.jobs.map((job) => job.id);
+  const resultIds = result.results?.map((row) => row.job_id) || [];
+  const acceptedPlanSchemas = new Set([
+    'machinespirits.tutor-stub.interrupted-confirmation-batch-recovery-plan.v1',
+    'machinespirits.tutor-stub.layered-interrupted-confirmation-recovery-plan.v1',
+  ]);
+  const acceptedResultSchemas = new Set([
+    'machinespirits.tutor-stub.interrupted-confirmation-batch-recovery-result.v1',
+    'machinespirits.tutor-stub.layered-interrupted-confirmation-recovery-result.v1',
+  ]);
+  if (
+    !acceptedPlanSchemas.has(recoveryPlan.schema) ||
+    !acceptedResultSchemas.has(recoveryResult.schema) ||
+    recoveryPlan.status !==
+      (recoveryPlan.schema.includes('layered-') ? 'planned_missing_judges_and_suffix_only' : 'planned_frozen_prefix_only') ||
+    recoveryResult.status !== 'complete' ||
+    recoveryPlan.batch_id !== plan.batch_id ||
+    recoveryResult.batch_id !== plan.batch_id ||
+    recoveryPlan.original_plan_sha256 !== sha256(fs.readFileSync(planPath)) ||
+    recoveryPlan.learner_or_tutor_regeneration_allowed !== false ||
+    recoveryPlan.completed_model_calls_replayed_without_reservation !== true ||
+    recoveryPlan.maximum_semantic_judge_recovery_attempts_per_missing_judge !== 3 ||
+    !sameIds(resultIds, planIds) ||
+    !sameIds(recoveryResult.results?.map((row) => row.job_id) || [], planIds) ||
+    result.results.some((row) => row.status !== 'complete') ||
+    JSON.stringify(recoveryResult.results) !== JSON.stringify(result.results) ||
+    result.technical_recovery_used !== true ||
+    seal.result_sha256 !== sha256(fs.readFileSync(resultPath))
+  ) {
+    throw new Error(`confirmation batch ${plan.batch_id} frozen-prefix recovery provenance drifted`);
+  }
+  if (recoveryPlan.schema.includes('layered-')) {
+    const recoveryDirectory = path.dirname(recoveryPlanPath);
+    const recordedPriorDirectories = [recoveryPlan.continuation_dir, ...(recoveryPlan.prior_recovery_dirs || [])].map(
+      (directory) => path.resolve(ROOT, directory),
+    );
+    const actualPriorDirectories = fs
+      .readdirSync(path.join(absolute, 'recoveries'), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(absolute, 'recoveries', entry.name))
+      .filter((directory) => directory !== recoveryDirectory);
+    if (
+      !sameIds(recordedPriorDirectories, actualPriorDirectories) ||
+      !planIds.includes(recoveryPlan.failed_job_id) ||
+      !sameIds(recoveryPlan.preserved_complete_job_ids || [], planIds.filter((id) => id !== recoveryPlan.failed_job_id)) ||
+      !sameIds(result.recovery_unit_ids || [], [recoveryPlan.failed_job_id])
+    ) {
+      throw new Error(`confirmation batch ${plan.batch_id} layered recovery lineage drifted`);
+    }
+  } else if (
+    !initial ||
+    recoveryPlan.original_result_sha256 !== sha256(fs.readFileSync(initialResultPath)) ||
+    !sameIds(result.recovery_unit_ids || [], planIds) ||
+    JSON.stringify(recoveryPlan.initial_model_attempt_reservations_by_job) !==
+      JSON.stringify(
+        Object.fromEntries(
+          plan.jobs.map((job) => [job.id, reservationCount(job.command.trace_dir)]),
+        ),
+      )
+  ) {
+    throw new Error(`confirmation batch ${plan.batch_id} interrupted recovery prefix drifted`);
+  }
+  const reservationsByJob = new Map();
+  const finalTraceBudgetByJob = new Map();
+  const tracePathsByJob = new Map();
+  const ledgerEventsByJob = new Map();
+  const recoveredIds = new Set();
+  for (const job of plan.jobs) {
+    const row = result.results.find((candidate) => candidate.job_id === job.id);
+    if (
+      ![
+        'interrupted_technical_recovery_with_frozen_prefix_replay',
+        'preserved_complete_operator_pause_continuation',
+        'layered_missing_judges_and_suffix_technical_recovery',
+      ].includes(row.origin)
+    ) {
+      throw new Error(`confirmation batch ${plan.batch_id} has an unrecognized frozen-prefix recovery origin`);
+    }
+    recoveredIds.add(job.id);
+    const tracePath = recordedRecoveryTrace(row, plan);
+    tracePathsByJob.set(job.id, tracePath);
+    const jobRoots = [
+      path.join(absolute, 'jobs', job.id),
+      ...fs
+        .readdirSync(path.join(absolute, 'recoveries'), { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => path.join(absolute, 'recoveries', entry.name, 'jobs', job.id)),
+    ];
+    let reservations = 0;
+    const ledgerEvents = [];
+    for (const file of [...new Set(jobRoots.flatMap(recursiveFiles).filter((candidate) => candidate.endsWith('.jsonl')))]) {
+      if (path.basename(file) === 'judge-attempts.jsonl') {
+        const attempts = readTrace(file);
+        const triggerJudges = loadTutorStubResistanceSemanticRegistration(
+          tutorStubResistanceSemanticRegistrationPathForObservation(
+            loaded.registration.design.trigger.observationSemantics,
+          ),
+        ).registration.measurement.judges;
+        if (
+          attempts.some((attempt) => {
+            const judge = triggerJudges.find((candidate) => candidate.id === attempt.judge_id);
+            return !judge ||
+              (attempt.status === 'success' &&
+                (attempt.provider !== judge.provider || attempt.model !== judge.model));
+          })
+        ) {
+          throw new Error(`confirmation batch ${plan.batch_id} has a judge-attempt route drift`);
+        }
+        reservations += attempts.length;
+      } else if (path.basename(path.dirname(file)) === 'traces') {
+        const events = readTrace(file);
+        reservations += events.filter((event) => event.type === 'model_call_budget_reserved').length;
+        ledgerEvents.push(...events);
+      }
+      else throw new Error(`confirmation batch ${plan.batch_id} has an unclassified model-attempt ledger`);
+    }
+    const finalTraceReservations = reservationCount(path.dirname(tracePath));
+    const replayComparable = (event) =>
+      JSON.stringify({
+        role: event.role,
+        turn: event.turn,
+        provider: event.provider,
+        model: event.model,
+        request: event.request,
+        response: event.response,
+      });
+    const replayedCalls = ledgerEvents.filter((event) => event.type === 'model_call' && event.startedAt === null);
+    const executedCallKeys = new Set(
+      ledgerEvents
+        .filter((event) => event.type === 'model_call' && event.startedAt !== null)
+        .map(replayComparable),
+    );
+    if (replayedCalls.some((event) => !executedCallKeys.has(replayComparable(event)))) {
+      throw new Error(`confirmation batch ${plan.batch_id} has an unbound zero-call replay`);
+    }
+    const finalTraceRunStart = readTrace(tracePath).find((event) => event.type === 'run_start');
+    const finalTraceBudget = finalTraceRunStart?.metadata?.lab?.admission?.modelCallBudget;
+    if (!Number.isInteger(finalTraceBudget) || finalTraceBudget < finalTraceReservations || finalTraceBudget > caps.perDialogue) {
+      throw new Error(`confirmation batch ${plan.batch_id} has an invalid recorded continuation budget`);
+    }
+    reservationsByJob.set(job.id, reservations);
+    finalTraceBudgetByJob.set(job.id, finalTraceBudget);
+    ledgerEventsByJob.set(job.id, ledgerEvents);
+  }
+  const observedByJob = Object.fromEntries(reservationsByJob);
+  const observedTotal = [...reservationsByJob.values()].reduce((sum, value) => sum + value, 0);
+  if (
+    [...reservationsByJob.values()].some((value) => value > caps.perDialogue) ||
+    observedTotal > caps.perBatch ||
+    observedTotal !== result.observed_model_attempt_reservations ||
+    observedTotal !== recoveryResult.observed_model_attempt_reservations ||
+    observedTotal !== seal.observed_model_attempt_reservations ||
+    JSON.stringify(observedByJob) !== JSON.stringify(result.observed_model_attempt_reservations_by_job) ||
+    JSON.stringify(observedByJob) !== JSON.stringify(recoveryResult.observed_model_attempt_reservations_by_job) ||
+    JSON.stringify(observedByJob) !== JSON.stringify(seal.observed_model_attempt_reservations_by_job)
+  ) {
+    throw new Error(`confirmation batch ${plan.batch_id} frozen-prefix attempt accounting drifted`);
+  }
+  return { recoveredIds, reservationsByJob, finalTraceBudgetByJob, tracePathsByJob, ledgerEventsByJob };
+}
+
+function exactBatch(batchRoot, allowedBatchSources, analysisSourceCommit, registrationPath) {
   const absolute = path.resolve(ROOT, batchRoot);
   const planPath = path.join(absolute, 'batch-plan.json');
   const initialResultPath = path.join(absolute, 'batch-result.json');
   const finalResultPath = path.join(absolute, 'batch-final-result.json');
   const sealPath = path.join(absolute, 'batch-seal.json');
-  if (![planPath, initialResultPath, sealPath].every(fs.existsSync)) {
+  if (![planPath, sealPath].every(fs.existsSync) || ![initialResultPath, finalResultPath].some(fs.existsSync)) {
     throw new Error(`confirmation batch ${batchRoot} is not sealed`);
   }
   const plan = readJson(planPath);
-  const initial = readJson(initialResultPath);
+  const initial = fs.existsSync(initialResultPath) ? readJson(initialResultPath) : null;
   const result = fs.existsSync(finalResultPath) ? readJson(finalResultPath) : initial;
   const resultPath = fs.existsSync(finalResultPath) ? finalResultPath : initialResultPath;
   const seal = readJson(sealPath);
@@ -253,12 +461,13 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     registrationPath: path.resolve(ROOT, registrationPath),
   });
   const caps = confirmationCaps(loaded);
+  const expectedSourceTree = allowedBatchSources.get(plan.source?.commit);
   if (
     plan.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-plan.v1' ||
-    initial.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-result.v1' ||
+    (initial && initial.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-result.v1') ||
     result.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-result.v1' ||
     seal.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-seal.v1' ||
-    plan.source?.commit !== expectedSourceCommit ||
+    !expectedSourceTree ||
     plan.source?.tree !== expectedSourceTree ||
     plan.source?.registration_path !== registrationPath ||
     result.status !== 'complete' ||
@@ -279,11 +488,21 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     registrationPath,
     batchId: plan.batch_id,
     destination: absolute,
-    expectedSourceCommit,
+    expectedSourceCommit: analysisSourceCommit,
   });
+  const comparableJobs = (jobs) =>
+    jobs.map((job) => {
+      const command = structuredClone(job.command);
+      for (const flag of ['--trace-dir', '--save']) {
+        const index = command.args.indexOf(flag);
+        if (index >= 0) command.args[index + 1] = path.resolve(command.cwd, command.args[index + 1]);
+      }
+      delete command.cwd;
+      return { ...job, command };
+    });
   if (
-    path.resolve(ROOT, plan.destination) !== absolute ||
-    JSON.stringify(plan.jobs) !== JSON.stringify(recomputed.jobs) ||
+    path.resolve(plan.jobs[0]?.command?.cwd || ROOT, plan.destination) !== absolute ||
+    JSON.stringify(comparableJobs(plan.jobs)) !== JSON.stringify(comparableJobs(recomputed.jobs)) ||
     JSON.stringify(plan.design) !== JSON.stringify(recomputed.design) ||
     JSON.stringify(plan.budget) !== JSON.stringify(recomputed.budget)
   ) {
@@ -301,7 +520,12 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
   }
   const technicalRecovery = fs.existsSync(finalResultPath);
   if (technicalRecovery) {
-    const audited = auditRecovery({
+    const recoveryPlanPath = matchingRecoveryArtifact(absolute, 'recovery-plan.json', seal.recovery_plan_sha256);
+    const recoveryPlanSchema = readJson(recoveryPlanPath).schema;
+    const audit = recoveryPlanSchema === 'machinespirits.tutor-stub.resistance-action-register-confirmation-recovery-plan.v1'
+      ? auditRecovery
+      : auditInterruptedRecovery;
+    const audited = audit({
       absolute,
       plan,
       initial,
@@ -325,9 +549,10 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
   }
   const reservationsByJob = new Map();
   const finalTraceBudgetByJob = new Map();
+  const tracePathsByJob = new Map();
   for (const job of plan.jobs) {
     const row = result.results.find((candidate) => candidate.job_id === job.id);
-    exactTraceDirectory(row, job.command, `confirmation unit ${job.id}`);
+    tracePathsByJob.set(job.id, exactTraceDirectory(row, job.command, `confirmation unit ${job.id}`));
     const count = reservationCount(job.command.trace_dir);
     if (count > caps.perDialogue) {
       throw new Error(`confirmation job ${job.id} exceeds its ${caps.perDialogue}-reservation cap`);
@@ -346,27 +571,41 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     recoveredIds: new Set(),
     reservationsByJob,
     finalTraceBudgetByJob,
+    tracePathsByJob,
   };
 }
 
-function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan, loaded) {
+function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, batch, loaded) {
+  const plan = batch.plan;
   const runStart = events.find((event) => event.type === 'run_start');
   const metadata = runStart?.metadata;
   const recipe = metadata?.sessionRecipe;
   const options = recipe?.config?.options;
   const models = recipe?.config?.identity?.models;
-  const attempts = events.filter((event) =>
-    ['model_call', 'model_call_error', 'model_call_aborted'].includes(event.type),
+  const attemptEnvelopeEvents = batch.ledgerEventsByJob?.get(job.id) || events;
+  const attempts = attemptEnvelopeEvents.filter(
+    (event) =>
+      ['model_call', 'model_call_error', 'model_call_aborted'].includes(event.type) &&
+      !(batch.ledgerEventsByJob && event.type === 'model_call' && event.startedAt === null),
   );
   const calls = attempts.filter((event) => event.type === 'model_call');
-  const reservations = events.filter((event) => event.type === 'model_call_budget_reserved');
+  const reservations = attemptEnvelopeEvents.filter((event) => event.type === 'model_call_budget_reserved');
   const routePinned = ['classifier', 'learner', 'reasoning', 'tutor'].every(
     (role) => models?.[role]?.provider === 'codex' && models?.[role]?.model === 'gpt-5.6-luna',
   );
+  const recordedGit = metadata?.provenance?.git;
+  const sourceProvenanceValid =
+    (recordedGit?.sha === plan.source.commit && recordedGit?.dirty === false) ||
+    (batch.recoveredIds.has(job.id) &&
+      batch.allowedRecoveryBaseCommits?.has(recordedGit?.sha) &&
+      typeof recordedGit?.dirty === 'boolean');
   const triggerJudges =
     loaded.registration.version >= 9
-      ? loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4).registration
-          .measurement.judges
+      ? loadTutorStubResistanceSemanticRegistration(
+          tutorStubResistanceSemanticRegistrationPathForObservation(
+            loaded.registration.design.trigger.observationSemantics,
+          ),
+        ).registration.measurement.judges
       : [];
   const outcomeJudges =
     loaded.registration.version >= 9
@@ -424,12 +663,14 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
     }, new Map());
   const reserved = countByRoleTurn(reservations);
   const attempted = countByRoleTurn(attempts);
-  const exactReservations =
-    reserved.size === attempted.size && [...reserved].every(([key, count]) => attempted.get(key) === count);
+  const exactReservations = batch.ledgerEventsByJob
+    ? [...attempted].every(([key, count]) => count <= (reserved.get(key) || 0)) &&
+      reservations.length - attempts.length >= 0 &&
+      reservations.length - attempts.length <= 1
+    : reserved.size === attempted.size && [...reserved].every(([key, count]) => attempted.get(key) === count);
   if (
     recipe?.schema !== 'machinespirits.tutor-stub.session-recipe.v1' ||
-    metadata?.provenance?.git?.sha !== plan.source.commit ||
-    metadata?.provenance?.git?.dirty !== false ||
+    !sourceProvenanceValid ||
     recipe?.config?.identity?.world?.id !== 'world_005_marrick' ||
     metadata?.experiment?.runSeed !== job.run_seed ||
     metadata?.experiment?.profile !== 'frame_refuser' ||
@@ -467,8 +708,15 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
 }
 
 function v9SemanticTriggerEligibility({ events, record, loaded }) {
-  const semanticAdjudication = record?.resistanceSemanticAdjudication || null;
-  const binding = loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4);
+  const semanticAdjudication =
+    record?.resistanceSemanticAdjudication ||
+    record?.learnerResponseProvenance?.automation?.resistanceSemanticAdjudication ||
+    null;
+  const binding = loadTutorStubResistanceSemanticRegistration(
+    tutorStubResistanceSemanticRegistrationPathForObservation(
+      loaded.registration.design?.trigger?.observationSemantics,
+    ),
+  );
   if (
     loaded.registration.design?.trigger?.observationSemantics !== binding.registration.observationSemantics ||
     loaded.registration.semanticAdjudication?.instrumentRegistrationSha256 !== binding.sha256
@@ -505,6 +753,13 @@ function v9SemanticTriggerEligibility({ events, record, loaded }) {
       throw new Error(`V9 trace has an invalid trigger prompt for ${judge.id}`);
     }
     prompts[judge.id] = prompt;
+    const expectedOutputSchema = instrument.buildOutputSchema
+      ? instrument.buildOutputSchema(prompt)
+      : instrument.outputSchema;
+    const observedOutputSchema =
+      binding.registration.version === 5
+        ? deduplicateTutorStubResistanceSemanticOutputSchemaV5(event?.outputSchema)
+        : event?.outputSchema;
     if (
       event?.role !== `tutor_stub_resistance_semantic_${judge.id}` ||
       event.expectedProvider !== judge.provider ||
@@ -518,7 +773,7 @@ function v9SemanticTriggerEligibility({ events, record, loaded }) {
       prompt.case_id !== semanticAdjudication?.caseId ||
       prompt.utterance?.text !== record?.learner ||
       JSON.stringify(prompt.public_context) !== JSON.stringify(semanticAdjudication?.publicContext) ||
-      JSON.stringify(event.outputSchema) !== JSON.stringify(instrument.outputSchema)
+      JSON.stringify(observedOutputSchema) !== JSON.stringify(expectedOutputSchema)
     ) {
       throw new Error(`V9 trace trigger judge envelope drifted for ${judge.id}`);
     }
@@ -669,7 +924,8 @@ function v9SemanticOutcome({ events, job, loaded, trigger, postOne, postTwo, out
 export function analyzeTutorStubResistanceActionRegisterConfirmationTrace(batch, resultRow, loaded) {
   const job = batch.planJobs.get(resultRow.job_id);
   if (!job) throw new Error(`confirmation result ${resultRow.job_id} is not planned`);
-  const tracePath = path.resolve(ROOT, resultRow.trace);
+  const tracePath = batch.tracePathsByJob?.get(job.id) || path.resolve(ROOT, resultRow.trace);
+  if (!tracePath) throw new Error(`confirmation trace ${job.id} lacks its uniquely validated path`);
   const source = fs.readFileSync(tracePath);
   if (sha256(source) !== resultRow.trace_sha256) throw new Error(`confirmation trace digest drift for ${job.id}`);
   const events = readTrace(tracePath);
@@ -805,7 +1061,7 @@ export function analyzeTutorStubResistanceActionRegisterConfirmationTrace(batch,
     job,
     outcomeTurn,
     batch.finalTraceBudgetByJob.get(job.id),
-    batch.plan,
+    batch,
     loaded,
   );
   const semanticOutcome = v9
@@ -884,6 +1140,8 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
   batchRoots,
   registrationPath = REGISTRATION,
   expectedSourceCommit,
+  allowedBatchSourceCommits = null,
+  allowedRecoveryBaseCommits = null,
 } = {}) {
   if (
     !Array.isArray(batchRoots) ||
@@ -905,7 +1163,35 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
     registrationPath: path.resolve(ROOT, registrationPath),
   });
   const caps = confirmationCaps(loaded);
-  const batches = batchRoots.map((root) => exactBatch(root, expectedSourceCommit, currentTree, registrationPath));
+  const allowedCommits = allowedBatchSourceCommits?.length
+    ? [...new Set(allowedBatchSourceCommits)]
+    : [expectedSourceCommit];
+  const allowedBatchSources = new Map(
+    allowedCommits.map((commit) => {
+      const tree = execFileSync('git', ['rev-parse', `${commit}^{tree}`], { cwd: ROOT, encoding: 'utf8' }).trim();
+      const registeredSource = execFileSync('git', ['show', `${commit}:${registrationPath}`], {
+        cwd: ROOT,
+        encoding: null,
+      });
+      if (sha256(registeredSource) !== loaded.sha256) {
+        throw new Error(`confirmation analysis batch source ${commit} does not contain the registered design`);
+      }
+      return [commit, tree];
+    }),
+  );
+  const recoveryBaseCommits = new Set(allowedRecoveryBaseCommits || []);
+  for (const commit of recoveryBaseCommits) {
+    execFileSync('git', ['rev-parse', '--verify', `${commit}^{commit}`], { cwd: ROOT, stdio: 'ignore' });
+    execFileSync('git', ['merge-base', '--is-ancestor', commit, current], { cwd: ROOT, stdio: 'ignore' });
+  }
+  const batches = batchRoots.map((root) =>
+    exactBatch(root, allowedBatchSources, expectedSourceCommit, registrationPath),
+  );
+  for (const batch of batches) batch.allowedRecoveryBaseCommits = recoveryBaseCommits;
+  const observedBatchSourceCommits = [...new Set(batches.map((batch) => batch.plan.source.commit))].sort();
+  if (JSON.stringify(observedBatchSourceCommits) !== JSON.stringify([...allowedBatchSources.keys()].sort())) {
+    throw new Error('confirmation analysis batch-source allowlist contains an unused or missing commit');
+  }
   if (JSON.stringify(batches.map((batch) => batch.plan.batch_id).sort()) !== JSON.stringify([...BATCH_IDS])) {
     throw new Error('confirmation analysis requires all nine registered blocks exactly once');
   }
@@ -967,7 +1253,14 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
         ? 'machinespirits.tutor-stub.resistance-action-register-confirmation-report.v2'
         : 'machinespirits.tutor-stub.resistance-action-register-confirmation-report.v1',
     status: reportStatus,
-    source: { commit: current, tree: currentTree },
+    source: {
+      analysis_commit: current,
+      analysis_tree: currentTree,
+      batch_commits: Object.fromEntries(
+        BATCH_IDS.map((id) => [id, batches.find((batch) => batch.plan.batch_id === id).plan.source.commit]),
+      ),
+      recovery_runtime_base_commits: [...recoveryBaseCommits].sort(),
+    },
     registration: { path: registrationPath, sha256: loaded.sha256 },
     assembly: {
       batches_complete: 9,
@@ -1042,17 +1335,34 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
 }
 
 function parseArgs(argv) {
-  const options = { batches: [], registration: REGISTRATION, json: false };
+  const options = {
+    batches: [],
+    allowedBatchSourceCommits: [],
+    allowedRecoveryBaseCommits: [],
+    registration: REGISTRATION,
+    json: false,
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (['--json', '--help'].includes(arg)) {
       options[arg.slice(2)] = true;
       continue;
     }
-    if (['--batch', '--registration', '--expected-source-commit', '--out'].includes(arg)) {
+    if (
+      [
+        '--batch',
+        '--registration',
+        '--expected-source-commit',
+        '--allowed-batch-source-commit',
+        '--allowed-recovery-base-commit',
+        '--out',
+      ].includes(arg)
+    ) {
       const value = argv[index + 1];
       if (!value || value.startsWith('--')) throw new Error(`${arg} requires a value`);
       if (arg === '--batch') options.batches.push(value);
+      else if (arg === '--allowed-batch-source-commit') options.allowedBatchSourceCommits.push(value);
+      else if (arg === '--allowed-recovery-base-commit') options.allowedRecoveryBaseCommits.push(value);
       else options[arg.slice(2)] = value;
       index += 1;
       continue;
@@ -1063,7 +1373,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return 'Usage: node scripts/analyze-tutor-stub-resistance-action-register-confirmation.js --batch <root> (repeat exactly 9 times) --expected-source-commit <sha> [--out <fresh.json>] [--json]';
+  return 'Usage: node scripts/analyze-tutor-stub-resistance-action-register-confirmation.js --batch <root> (repeat exactly 9 times) --expected-source-commit <clean-analysis-sha> [--allowed-batch-source-commit <sha> (repeat for each immutable batch source)] [--allowed-recovery-base-commit <sha> (repeat for recorded frozen-prefix runtimes)] [--out <fresh.json>] [--json]';
 }
 
 function main() {
@@ -1074,6 +1384,8 @@ function main() {
     batchRoots: args.batches,
     registrationPath: args.registration,
     expectedSourceCommit: args['expected-source-commit'],
+    allowedBatchSourceCommits: args.allowedBatchSourceCommits,
+    allowedRecoveryBaseCommits: args.allowedRecoveryBaseCommits,
   });
   if (args.out) fs.writeFileSync(path.resolve(ROOT, args.out), `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx' });
   if (args.json || !args.out) console.log(JSON.stringify(report, null, 2));

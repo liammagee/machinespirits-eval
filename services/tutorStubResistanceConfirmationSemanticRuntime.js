@@ -163,6 +163,62 @@ export function createTutorStubResistanceConfirmationSemanticRuntime({
     return record;
   }
 
+  async function adjudicateInterventionFidelity({ state, turnNumber, intervention, signal = null } = {}) {
+    const study = state?.resistanceActionRegisterStudy;
+    const caseId = study?.job_id;
+    if (!caseId || study?.dynamic_confirmation !== true || study?.registration?.version < 9) {
+      throw new Error('intervention fidelity requires one registered semantic-panel dialogue');
+    }
+    const loaded = loadTutorStubResistanceConfirmationSemanticInstrument(study.registration);
+    const text = String(intervention || '');
+    if (!text.trim()) throw new Error('intervention fidelity requires the exact public tutor intervention');
+    const fidelityPrompts = Object.fromEntries(
+      loaded.registration.measurement.judges.map((judge) => [
+        judge.id,
+        buildTutorStubResistanceFidelityPromptV8({ caseId, intervention: text, judge }),
+      ]),
+    );
+    const fidelityResponses = [];
+    for (const judge of loaded.registration.measurement.judges) {
+      const record = await callSeat({
+        state,
+        turnNumber,
+        caseId,
+        instrument: 'intervention_fidelity',
+        prompt: fidelityPrompts[judge.id],
+        judge,
+        signal,
+      });
+      if (record) fidelityResponses.push(record);
+    }
+    const fidelity = adjudicateTutorStubResistanceFidelityPanelV8({
+      caseId,
+      intervention: text,
+      responses: fidelityResponses,
+      registration: loaded.registration,
+      prompts: fidelityPrompts,
+    });
+    if (study.manipulation_validation === true) {
+      appendTraceEvent(state.trace, {
+        type: 'resistance_action_register_manipulation_validation_fidelity',
+        turn: turnNumber,
+        schema: 'machinespirits.tutor-stub.resistance-action-register-manipulation-validation-result.v1',
+        case_id: caseId,
+        instrument: { path: loaded.path, sha256: loaded.sha256 },
+        intervention_sha256: tutorStubResistanceMeasurementSha256(text),
+        fidelity,
+        measurement_disposition:
+          fidelity.status === 'determinate' ? 'determinate' : 'measurement_indeterminate',
+        assigned_treatment_hidden_from_judges: true,
+        learner_outcome_generated_or_judged: false,
+        regex_keyword_or_generator_semantic_authority: 'none',
+        repair_rerun_replacement_or_selection_allowed: false,
+        publicTranscriptChanged: false,
+      });
+    }
+    return { loaded, fidelity };
+  }
+
   async function adjudicateFinalHorizon({ state, turnNumber, learnerText, signal = null } = {}) {
     const study = state?.resistanceActionRegisterStudy;
     const caseId = study?.job_id;
@@ -198,32 +254,11 @@ export function createTutorStubResistanceConfirmationSemanticRuntime({
       prompts: primaryPrompts,
     });
 
-    const intervention = publicPacket.intervention;
-    const fidelityPrompts = Object.fromEntries(
-      loaded.registration.measurement.judges.map((judge) => [
-        judge.id,
-        buildTutorStubResistanceFidelityPromptV8({ caseId, intervention, judge }),
-      ]),
-    );
-    const fidelityResponses = [];
-    for (const judge of loaded.registration.measurement.judges) {
-      const record = await callSeat({
-        state,
-        turnNumber,
-        caseId,
-        instrument: 'intervention_fidelity',
-        prompt: fidelityPrompts[judge.id],
-        judge,
-        signal,
-      });
-      if (record) fidelityResponses.push(record);
-    }
-    const fidelity = adjudicateTutorStubResistanceFidelityPanelV8({
-      caseId,
-      intervention,
-      responses: fidelityResponses,
-      registration: loaded.registration,
-      prompts: fidelityPrompts,
+    const { fidelity } = await adjudicateInterventionFidelity({
+      state,
+      turnNumber,
+      intervention: publicPacket.intervention,
+      signal,
     });
     const result = {
       schema: 'machinespirits.tutor-stub.resistance-confirmation-semantic-outcome.v9',
@@ -249,7 +284,7 @@ export function createTutorStubResistanceConfirmationSemanticRuntime({
     return result;
   }
 
-  return { adjudicateFinalHorizon };
+  return { adjudicateFinalHorizon, adjudicateInterventionFidelity };
 }
 
 export default { createTutorStubResistanceConfirmationSemanticRuntime };

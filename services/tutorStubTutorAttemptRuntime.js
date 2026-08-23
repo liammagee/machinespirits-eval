@@ -1,3 +1,27 @@
+import fs from 'node:fs';
+
+function loadFrozenTutorAttemptReplay() {
+  const replayPath = String(process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH || '').trim();
+  if (!replayPath) return null;
+  const replay = JSON.parse(fs.readFileSync(replayPath, 'utf8'));
+  if (
+    replay?.schema !== 'machinespirits.tutor-stub.frozen-model-call-prefix-replay.v1' ||
+    !Array.isArray(replay.entries) ||
+    replay.entries.length === 0
+  ) {
+    throw new Error('frozen model-call replay file is invalid');
+  }
+  return {
+    path: replayPath,
+    entries: replay.entries.filter((entry) => /^tutor_stub_tutor(?:_|$)/u.test(String(entry?.role || ''))),
+    index: 0,
+  };
+}
+
+function sameJson(left, right) {
+  return JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+}
+
 /**
  * Owns one tutor model-call attempt: prompt/privilege auditing, duplicate-line
  * recovery, provider dispatch, streaming, budget reservations, and the traced
@@ -21,6 +45,7 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
     tutorStubCliPolicyRetryDecision,
     waitTutorStubCliPolicyRetryDelay,
   } = dependencies;
+  const frozenTutorReplay = loadFrozenTutorAttemptReplay();
 
   return function bindTutorStubTutorAttemptRuntime(context = {}) {
     const {
@@ -213,7 +238,37 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
       }
       let startedAt = null;
       let response;
-      if (isCliProvider(resolved.provider)) {
+      if (frozenTutorReplay && frozenTutorReplay.index < frozenTutorReplay.entries.length) {
+        const entry = frozenTutorReplay.entries[frozenTutorReplay.index];
+        const matches =
+          entry.role === role &&
+          entry.turn === tutorTurn &&
+          entry.provider === resolved.provider &&
+          entry.model === resolved.model &&
+          sameJson(entry.request, request);
+        if (!matches) {
+          throw new Error(
+            `frozen tutor-attempt replay drift at entry ${frozenTutorReplay.index + 1}: expected ${entry.role} turn ${entry.turn}, received ${role} turn ${tutorTurn}`,
+          );
+        }
+        frozenTutorReplay.index += 1;
+        response = {
+          ...entry.response,
+          provider: entry.provider,
+          model: entry.model,
+          reasoningEffort: entry.response?.effort || null,
+        };
+        appendTraceEvent(trace, {
+          type: 'model_call_replayed_from_frozen_prefix',
+          role,
+          turn: tutorTurn,
+          replayPath: frozenTutorReplay.path,
+          replayEntry: frozenTutorReplay.index,
+          provider: entry.provider,
+          model: entry.model,
+          publicTranscriptChanged: false,
+        });
+      } else if (isCliProvider(resolved.provider)) {
         async function dispatchCliTutorAttempt({ cliPolicyRetryCount = 0 } = {}) {
           startedAt = new Date().toISOString();
           reserveTutorAttemptBudget();

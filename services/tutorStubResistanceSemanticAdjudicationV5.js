@@ -23,16 +23,55 @@ export function buildTutorStubResistanceSemanticAdjudicationPromptV5(values) {
   };
 }
 
+function exactSourceTextPattern(values) {
+  const escape = (value) =>
+    [...String(value)].map((character) => {
+      if (character === '"') return '\\x22';
+      if (character === '\n') return '\\n';
+      if (character === '\r') return '\\r';
+      if (character === '\t') return '\\t';
+      if ('\\^$.*+?()[]{}|'.includes(character)) return `\\${character}`;
+      return character;
+    }).join('');
+  return `^(?:${values.map(escape).join('|')})$`;
+}
+
+export function deduplicateTutorStubResistanceSemanticOutputSchemaV5(inputSchema) {
+  const schema = structuredClone(inputSchema);
+  const evidenceProperties = schema?.properties?.judgment?.properties?.evidence_quotes?.properties;
+  const firstField = TUTOR_STUB_RESISTANCE_SEMANTIC_FIELDS_V3[0];
+  const sharedEvidence = evidenceProperties?.[firstField]?.oneOf?.[0];
+  if (
+    !sharedEvidence?.properties?.source_id?.enum ||
+    !sharedEvidence?.properties?.quote?.enum
+  ) {
+    return schema;
+  }
+  const exactSourceEvidence = structuredClone(sharedEvidence);
+  exactSourceEvidence.properties.quote = {
+    type: 'string',
+    pattern: exactSourceTextPattern(sharedEvidence.properties.quote.enum),
+  };
+  schema.$defs = { ...(schema.$defs || {}), v5_exact_source_evidence: exactSourceEvidence };
+  for (const field of TUTOR_STUB_RESISTANCE_SEMANTIC_FIELDS_V3) {
+    evidenceProperties[field] = {
+      anyOf: [{ $ref: '#/$defs/v5_exact_source_evidence' }, { type: 'null' }],
+    };
+  }
+  return schema;
+}
+
 export function buildTutorStubResistanceSemanticOutputSchemaV5(prompt) {
   const schema = structuredClone(TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3);
   const sourceIds = ['utterance', ...prompt.public_context.map((_, index) => `context:${index}`)];
   const sourceTexts = [prompt.utterance.text, ...prompt.public_context.map((row) => row.text)];
+  const evidenceProperties = schema.properties.judgment.properties.evidence_quotes.properties;
   for (const field of TUTOR_STUB_RESISTANCE_SEMANTIC_FIELDS_V3) {
-    const objectBranch = schema.properties.judgment.properties.evidence_quotes.properties[field].oneOf[0];
+    const objectBranch = evidenceProperties[field].oneOf[0];
     objectBranch.properties.source_id = { type: 'string', enum: sourceIds };
     objectBranch.properties.quote = { type: 'string', enum: sourceTexts };
   }
-  return schema;
+  return deduplicateTutorStubResistanceSemanticOutputSchemaV5(schema);
 }
 
 export function validateTutorStubResistanceSemanticRegistrationV5(registration) {
@@ -83,4 +122,3 @@ export function validateTutorStubResistanceSemanticRegistrationV5(registration) 
 
 export const wrapTutorStubResistanceSemanticModelOutputV5 = wrapTutorStubResistanceSemanticModelOutputV3;
 export const adjudicateTutorStubResistanceSemanticJudgesV5 = adjudicateTutorStubResistanceSemanticJudgesV4;
-

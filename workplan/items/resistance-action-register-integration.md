@@ -3596,3 +3596,40 @@ and explicit human approval.
   `docs/paid-study-authorization-policy.md`. The pending V9 confirmation may
   launch under either regime at the operator's choice; it does not restart
   merely to change transport.
+
+- 2026-08-22 — A zero-call audit of the immutable completed V10 block found
+  that the failed plain/warm manipulation came from a contradictory speaking
+  contract, not an ambiguous semantic judge. Of 18 plain assignments, the
+  independent panel judged 17 warm and one indeterminate; 16 carried the
+  stale warm-derived `shared_scene_invitation` tactic. All 18 warm assignments
+  were judged warm. The study overlay had changed `engagement_stance` after
+  ordinary configuration selection without recomputing the stance-derived
+  `actorial_performance`, explicitly prompting plain-arm tutors to use shared
+  movement and invitation. V10 remains immutable
+  `measurement_indeterminate_no_fisher_no_rerun` evidence.
+
+  The prospective study overlay now preserves the fixed
+  `test_bounded_distinction` action and independently selected host part while
+  rebinding only the stance-derived tactic: plain receives a neutral,
+  non-affiliative contrast contract plus `unadorned_report`; warm receives a
+  low-pressure collaborative contrast contract plus
+  `shared_scene_invitation`. The safety-override path performs the same
+  rebinding. These are compiler/prompt invariants, never a regex verdict; a
+  future independent semantic panel remains authoritative. Focused contrast,
+  protected-condition, V10 compatibility, and first-draft regressions pass
+  zero-call. Full audit:
+  `notes/2026-08-22-v10-plain-warm-contrast-zero-call-audit.md`.
+
+- 2026-08-22 — Registered a prospective manipulation-only validation before
+  any further recovery confirmation. The design uses 60 wholly fresh Luna
+  dialogues, 30 per arm in ten balanced blocks, and stops immediately after
+  the randomized intervention. The independently pinned V8 three-judge panel
+  sees only the intervention and remains blind to assignment and learner
+  outcome. At 30 per arm, requiring at least 28 correct deliveries has exact
+  one-sided alpha `0.04418` against unacceptable fidelity `0.80` and power
+  `0.81218` at acceptable fidelity `0.95`; separate coverage and action gates
+  also apply. Indeterminacy is retained, never repaired or replaced. The
+  registered 4,140-attempt ceiling is an operational safeguard derived from
+  23 maximum role calls per dialogue and three transport reservations per
+  call; it does not determine study size. The validation has not launched and
+  makes no recovery or treatment-effect claim.
