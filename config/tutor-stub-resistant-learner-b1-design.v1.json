@@ -1,5 +1,6 @@
 {
   "schema": "machinespirits.tutor-stub.resistant-learner-study-design.v1",
+  "revision": 2,
   "studyId": "resistant-learner-b1-authored-pickup",
   "label": "B1 bored learner: discriminating question versus true no-question reference",
   "status": "prospective_zero_call_design_pending_gate_1_go",
@@ -7,17 +8,29 @@
   "registeredQuestion": "After public boredom is established, does asking one discriminating question change learner-authored pickup of the open reasoning thread relative to a true no-question reference, and how does the same outcome vary across warm, plain, and edged delivery?",
   "whichNumberMoves": "The probability of learner-authored thread pickup within five post-trigger learner turns.",
   "claimBoundary": "B1 can identify the higher-performing of the two assigned strategies on learner-authored thread pickup and can estimate warm/plain/edged variation on the same simulated bored-learner runs. It cannot establish durable learning, human validity, a general rule for boredom, a proof-progress effect, an action-by-register interaction, or any claim from v4-v8. Calibration rows are excluded from powered analysis.",
+  "supersedes": {
+    "priorDesignSha256": "f007fb9ad6be419035a07f2ef8409a233f0b994ae2bf62e827d5c7770945c157",
+    "priorLaunchCommit": "c9dc04ba24b7396ea5ab2b0db000fd4186d11e27",
+    "priorArtifactRoot": "artifacts/tutor-stub-live/resistant-learner-calibration-gate1-2026-08-23",
+    "priorDisposition": "void_technical_failure_no_calibration_unit_completed",
+    "reason": "The prior design named four worlds absent from its launch commit. Twelve reservations were recorded, eight calls completed, four reservations were interrupted, no dialogue completed, R1 never started, and no prior output is reused.",
+    "outcomeBlindCorrection": "Replace the absent names with the exact six-world set registered prospectively for boredom v8 and used by the sealed channel audit; no generated outcome informed the replacement.",
+    "reuse": false,
+    "pool": false,
+    "claimCredit": false
+  },
   "population": {
     "profile": "bored",
     "personaContract": "existing machinespirits.tutor-stub.learner-profile-contract.v4 bored contract, unchanged",
     "worlds": [
       "world_022_foxtrot_jukebox",
       "world_026_skyway_bakery",
-      "world_031_orchard_clinic",
-      "world_035_harbor_scheduler",
-      "world_038_waterworks_mark",
-      "world_041_north_joint"
+      "world_028_larkspur_fridge",
+      "world_029_riverside_clinic",
+      "world_030_rowan_flat",
+      "world_031_tideway_makerspace"
     ],
+    "worldSelection": "Exact boredom-v8 six-world window: every world releases at least two shortest-proof-path premises by the earliest possible five-post-trigger-turn endpoint.",
     "trigger": "first determinate public boredom turn no later than learner turn 4",
     "outcomeHorizonPostTriggerLearnerTurns": 5,
     "independentUnit": "fresh independent dialogue",

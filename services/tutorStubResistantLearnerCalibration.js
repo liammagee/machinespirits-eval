@@ -10,6 +10,7 @@ import {
   loadTutorStubResistanceActionRegisterRegistration,
   tutorStubResistanceHostActionFamily,
 } from './tutorStubResistanceActionRegisterStudy.js';
+import { loadWorld } from './dramaticDerivation/world.js';
 import { compileTutorStubTurnProgressionContract } from './tutorStubTurnProgressionContract.js';
 
 const DESIGN_SCHEMA = 'machinespirits.tutor-stub.resistant-learner-study-design.v1';
@@ -19,6 +20,14 @@ const BOREDOM_TEMPLATE = 'config/tutor-stub-boredom-action-register-proof-dag-re
 const REFUSER_TEMPLATE = 'config/tutor-stub-resistance-action-register-crossed-registration.v9.json';
 const JUDGES = Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'codex.gpt-5.5']);
 const REGISTERS = Object.freeze(['warm', 'plain', 'edged']);
+const B1_WORLDS = Object.freeze([
+  'world_022_foxtrot_jukebox',
+  'world_026_skyway_bakery',
+  'world_028_larkspur_fridge',
+  'world_029_riverside_clinic',
+  'world_030_rowan_flat',
+  'world_031_tideway_makerspace',
+]);
 const B1_ACTION_LEVEL = Object.freeze({
   ask_discriminating_question: 'ask_question',
   stage_public_evidence_for_next_step: 'carry_on',
@@ -87,8 +96,13 @@ export function validateTutorStubResistantLearnerDesign(design) {
   if (studyId === B1_ID) {
     const actions = design?.factors?.action?.levels || [];
     if (
+      design?.revision !== 2 ||
+      design?.supersedes?.priorDesignSha256 !==
+        'f007fb9ad6be419035a07f2ef8409a233f0b994ae2bf62e827d5c7770945c157' ||
+      design?.supersedes?.priorDisposition !== 'void_technical_failure_no_calibration_unit_completed' ||
+      design?.supersedes?.reuse !== false ||
       design?.population?.profile !== 'bored' ||
-      design?.population?.worlds?.length !== 6 ||
+      !exactValues(design?.population?.worlds, B1_WORLDS) ||
       !exactValues(
         actions.map((row) => row.id),
         Object.keys(B1_ACTION_LEVEL),
@@ -436,9 +450,29 @@ function safetyOverrideProbe(compiled) {
   };
 }
 
+function auditRuntimeWorldRegistry(worlds, root) {
+  const worldDirectory = path.join(root, 'config', 'drama-derivation');
+  const productionWorldIds = new Set(
+    fs
+      .readdirSync(worldDirectory)
+      .filter((name) => /^world-.*\.yaml$/u.test(name))
+      .map((name) => loadWorld(path.join(worldDirectory, name)))
+      .filter((world) => world.eligibility?.status === 'production')
+      .map((world) => world.id),
+  );
+  const missing = worlds.filter((world) => !productionWorldIds.has(world));
+  return {
+    checked_worlds: [...worlds],
+    production_world_count: productionWorldIds.size,
+    missing_or_nonproduction_worlds: missing,
+    passed: missing.length === 0,
+  };
+}
+
 export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root = process.cwd() } = {}) {
   const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded?.design);
   const b1 = loaded.design.studyId === B1_ID;
+  const worldRegistry = auditRuntimeWorldRegistry(loaded.design.population.worlds, root);
   const selectedJobs = b1
     ? REGISTERS.flatMap((register) =>
         Object.keys(B1_ACTION_LEVEL).map((action) =>
@@ -517,8 +551,9 @@ export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root 
   return {
     schema: 'machinespirits.tutor-stub.resistant-learner-compilation-preflight.v1',
     study: b1 ? 'B1' : 'R1',
-    status: rows.every((row) => row.passed) ? 'passed_zero_call' : 'failed',
+    status: worldRegistry.passed && rows.every((row) => row.passed) ? 'passed_zero_call' : 'failed',
     expected_rows: 12,
+    world_registry: worldRegistry,
     rows,
     model_calls: 0,
     production_writes: 0,

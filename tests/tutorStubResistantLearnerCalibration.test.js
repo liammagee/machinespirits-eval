@@ -15,6 +15,7 @@ import {
 } from '../services/tutorStubResistantLearnerCalibration.js';
 import { createTutorStubResistantLearnerSemanticRuntime } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import { tutorStubResistantLearnerCalibrationHaltReason } from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const B1_PATH = 'config/tutor-stub-resistant-learner-b1-design.v1.json';
@@ -79,8 +80,17 @@ function semanticPanel(values) {
 }
 
 test('registered B1 and R1 calibration plans are deterministic and exactly balanced', () => {
-  const b1 = buildTutorStubResistantLearnerCalibrationPlan(load(B1_PATH).design);
-  const b1Again = buildTutorStubResistantLearnerCalibrationPlan(load(B1_PATH).design);
+  const b1Design = load(B1_PATH).design;
+  assert.deepEqual(b1Design.population.worlds, [
+    'world_022_foxtrot_jukebox',
+    'world_026_skyway_bakery',
+    'world_028_larkspur_fridge',
+    'world_029_riverside_clinic',
+    'world_030_rowan_flat',
+    'world_031_tideway_makerspace',
+  ]);
+  const b1 = buildTutorStubResistantLearnerCalibrationPlan(b1Design);
+  const b1Again = buildTutorStubResistantLearnerCalibrationPlan(b1Design);
   assert.deepEqual(b1, b1Again);
   assert.equal(b1.jobs.length, 18);
   assert.deepEqual(
@@ -217,6 +227,9 @@ test('B1 edged assignments compile through the actual move mapping and suppress 
 test('zero-call compilation preflight covers the registered action, register, world, and scene cross-products', () => {
   const b1 = runTutorStubResistantLearnerCompilationPreflight({ loaded: load(B1_PATH), root: ROOT });
   assert.equal(b1.status, 'passed_zero_call');
+  assert.equal(b1.world_registry.passed, true);
+  assert.deepEqual(b1.world_registry.missing_or_nonproduction_worlds, []);
+  assert.equal(b1.world_registry.checked_worlds.length, 6);
   assert.equal(b1.rows.length, 12);
   assert.equal(b1.rows.filter((row) => row.assigned_register === 'edged').length, 4);
   assert.ok(
@@ -230,6 +243,7 @@ test('zero-call compilation preflight covers the registered action, register, wo
 
   const r1 = runTutorStubResistantLearnerCompilationPreflight({ loaded: load(R1_PATH), root: ROOT });
   assert.equal(r1.status, 'passed_zero_call');
+  assert.equal(r1.world_registry.passed, true);
   assert.equal(r1.rows.length, 12);
   assert.equal(new Set(r1.rows.map((row) => row.world)).size, 2);
   assert.equal(new Set(r1.rows.map((row) => row.assigned_register)).size, 3);
@@ -504,4 +518,23 @@ test('combined launcher dry-run binds both calibrations and executes zero model 
     [18, 18],
   );
   assert.ok(report.studies.every((study) => study.compilation_preflight.status === 'passed_zero_call'));
+});
+
+test('combined launcher halts on the first technical failure or prohibited delivery', () => {
+  assert.equal(
+    tutorStubResistantLearnerCalibrationHaltReason({ status: 'failed', job: { id: 'B1-failed' } }),
+    'technical failure in B1-failed',
+  );
+  assert.equal(
+    tutorStubResistantLearnerCalibrationHaltReason({
+      status: 'complete',
+      job: { id: 'R1-prohibited' },
+      outcome: { fidelity: { fields: { prohibited_delivery: { value: 'yes' } } } },
+    }),
+    'confirmed prohibited delivery in R1-prohibited',
+  );
+  assert.equal(
+    tutorStubResistantLearnerCalibrationHaltReason({ status: 'complete', job: { id: 'B1-clean' } }),
+    null,
+  );
 });

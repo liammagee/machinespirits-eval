@@ -27,6 +27,7 @@ links:
     - docs/resistance-action-register-conservation-protocol.md
     - notes/checkins/2026-08-23-P0.md
     - notes/checkins/2026-08-23-P1.md
+    - notes/checkins/2026-08-23-P2.md
     - config/tutor-stub-resistant-learner-b1-design.v1.json
     - config/tutor-stub-resistant-learner-r1-design.v1.json
 tags:
@@ -76,3 +77,10 @@ tags:
   persona injection, and calibration gates. The 24-cell live assignment
   compilation preflight and 36-dialogue dry run pass with zero model calls.
   No calibration is authorized or active.
+- 2026-08-23: The first signed Gate 1 launch stopped on a technical design
+  defect: four registered B1 world IDs were absent from the launch commit. No
+  dialogue completed and R1 never started; 12 reservations were recorded, with
+  eight completed calls and four interrupted. The failed create-once artifact
+  is preserved and receives no calibration credit. P2 records an outcome-blind
+  correction to the exact boredom-v8 world set, a runtime registry preflight,
+  and fail-fast child handling. A corrected paid launch requires a fresh GO.

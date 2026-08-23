@@ -227,6 +227,14 @@ function destinationRoot(spec) {
   return path.dirname(path.dirname(spec.jobRoot));
 }
 
+export function tutorStubResistantLearnerCalibrationHaltReason(row) {
+  if (row.status === 'failed') return `technical failure in ${row.job.id}`;
+  if (row.outcome?.fidelity?.fields?.prohibited_delivery?.value === 'yes') {
+    return `confirmed prohibited delivery in ${row.job.id}`;
+  }
+  return null;
+}
+
 function studyDryRunReport({ loaded, plan, preflight }) {
   const jobs = plan.jobs;
   const actionCounts = Object.fromEntries(
@@ -398,9 +406,7 @@ async function main() {
         throw new Error('combined calibration attempt ceiling exceeded');
       }
       rows.push(row);
-      if (row.outcome?.fidelity?.fields?.prohibited_delivery?.value === 'yes') {
-        haltReason = `confirmed prohibited delivery in ${job.id}`;
-      }
+      haltReason ||= tutorStubResistantLearnerCalibrationHaltReason(row);
       appendLedger(ledgerPath, {
         type: 'unit_complete',
         job_id: job.id,
