@@ -7,18 +7,16 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-18
-updated: 2026-08-22
+updated: 2026-08-23
 verification: >-
-  The reopened measurement-redesign track has passed the prospective Claude
-  JSON result-envelope transport, the wholly fresh 80-case manipulation
-  validation, both wholly fresh 120-case split-V8 outcome/fidelity validation
-  stages, and the V9 zero-call confirmation integration gates while preserving
-  all earlier roots as immutable excluded evidence. Confirmation remains
-  blocked until the V9 runtime/analyzer, endpoint contract, blocking review,
-  merge, and a fresh digest-bound GO request are complete. Regex remains
-  nonauthoritative for semantic constructs, and no efficacy, null, learning,
-  transfer, human, cell, or profile claim is licensed before the relevant
-  predeclared gate passes.
+  The reopened measurement-redesign track has passed Claude JSON-envelope
+  transport, the fresh held-out split-V8 outcome/fidelity validation, V6
+  dual-judge trigger Smoke B, and the 19-test zero-call warm/non-warm execution
+  integration. The fixed confirmation uses 200 wholly fresh dialogues, Luna
+  generation, independent Sol-Sonnet semantic judgment, and one final
+  two-sided Fisher exact analysis. All historical runs remain immutable and
+  excluded. Launch requires only merge, a clean detached commit, the signed GO
+  note, and the runner's zero-call guards under the current paid-study policy.
 claim_status: methods
 links:
   items:
@@ -3660,11 +3658,35 @@ and explicit human approval.
   minimization as a design objective. The old 18-per-arm design has only about
   20% power for a 10% versus 30% recovery contrast. A two-sided Fisher exact
   test at alpha 0.05 needs 89 determinate dialogues per arm for 90% power.
-  With a required prelaunch semantic-instrument validation coverage of at
-  least 95%, 98 allocated dialogues per arm gives a 97.5% planning probability
-  of retaining at least 89 determinate outcomes per arm. The resulting fixed
-  design is 196 wholly fresh dialogues in 49 balanced four-dialogue blocks.
-  GPT-5.5 is removed from every prospective trigger, outcome, and fidelity
-  panel; Sol and Sonnet must agree or the measurement is indeterminate. No
-  confirmation launch is authorized or attempted. Design:
+  With observed Sol-Sonnet joint coverage of 113/120, 100 allocated dialogues
+  per arm gives a 98.63% probability of retaining at least 89 in each arm and,
+  under the planning independence assumption, a 97.28% probability that both
+  arms do. The fixed design is 200 wholly fresh dialogues in 50 balanced
+  four-dialogue blocks. GPT-5.5 is removed from every prospective trigger,
+  outcome, and fidelity panel; Sol and Sonnet must agree or the measurement is
+  indeterminate. Design:
   `config/tutor-stub-resistance-action-register-warm-nonwarm-confirmation.v1.json`.
+
+- 2026-08-23 — Two excluded four-dialogue technical smokes exercised the exact
+  prospective Luna/Sol/Sonnet surface without arm-outcome analysis. Smoke A
+  exposed an over-strict wrapper despite 8/8 binary trigger-label agreement.
+  V6 prospectively made exact Sol-Sonnet binary agreement authoritative while
+  retaining component disagreement as diagnostic and normalizing only an
+  evidence slot paired with the same judge's semantic `no`. Smoke B then
+  completed 4/4 dialogues with 60 reservations, zero failures, and no semantic
+  changes. Together the smokes used 100 reservations and are excluded from all
+  confirmation reuse or pooling. No repeated trigger smoke or semantic corpus
+  validation is permitted unless those exact instrument inputs change.
+
+- 2026-08-23 — The executable confirmation integration binds V6 trigger
+  semantics to a new V9 two-judge recovery/fidelity panel. The panel keeps the
+  validated V8 prompts, schemas, exact-quote validation, and blinding; its
+  prospective fidelity projection maps validated `plain` and `neither` to
+  `nonwarm`. The dedicated runner enforces clean detached source, committed GO
+  provenance, create-once output, a 20,400-reservation study ceiling, append-only
+  accounting, and at most three same-unit process attempts for technical
+  missing-output failures. It never reruns valid outputs or semantic
+  indeterminacy and performs the registered Fisher analysis only after all 200
+  units have terminal dispositions. Nineteen focused zero-call tests pass; the
+  programme ledger before launch is 5,594 and its exact safeguard ceiling is
+  25,994.

@@ -13,9 +13,15 @@ import {
   tutorStubResistanceMeasurementSha256,
   wrapTutorStubResistanceMeasurementModelOutputV8,
 } from './tutorStubResistanceRecoverySemanticAdjudicationV8.js';
+import {
+  adjudicateTutorStubResistanceFidelityPanelV9,
+  adjudicateTutorStubResistanceRecoveryPrimaryPanelV9,
+  validateTutorStubResistanceRecoverySemanticRegistrationV9,
+} from './tutorStubResistanceRecoverySemanticAdjudicationV9.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const INSTRUMENT_PATH = 'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json';
+const INSTRUMENT_PATH_V9 = 'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v9.json';
 const SYSTEM_PROMPT =
   'You are one independent semantic adjudicator. Use only the supplied public packet. Return the registered JSON object, use no tools, and do not infer treatment assignment, hidden state, or another judge output.';
 
@@ -57,14 +63,21 @@ function finalHorizonPacket(state, learnerText) {
 
 export function loadTutorStubResistanceConfirmationSemanticInstrument(registration) {
   const binding = registration?.outcomeSemanticAdjudication;
+  const instrumentPath = binding?.instrumentRegistrationPath;
   if (
     registration?.version < 9 ||
-    binding?.instrumentRegistrationPath !== INSTRUMENT_PATH ||
-    binding?.instrumentRegistrationSha256 !== sha256File(INSTRUMENT_PATH)
+    ![INSTRUMENT_PATH, INSTRUMENT_PATH_V9].includes(instrumentPath) ||
+    binding?.instrumentRegistrationSha256 !== sha256File(instrumentPath)
   ) {
     throw new Error('confirmation semantic outcome instrument binding drifted');
   }
-  const instrument = JSON.parse(fs.readFileSync(path.join(ROOT, INSTRUMENT_PATH), 'utf8'));
+  const instrument = JSON.parse(fs.readFileSync(path.join(ROOT, instrumentPath), 'utf8'));
+  if (instrument.version === 9) {
+    const validation = validateTutorStubResistanceRecoverySemanticRegistrationV9(instrument);
+    if (!validation.valid)
+      throw new Error(`confirmation semantic V9 instrument invalid: ${validation.issues.join('; ')}`);
+    return { path: instrumentPath, sha256: sha256File(instrumentPath), registration: instrument };
+  }
   if (
     instrument?.schema !== 'machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-registration.v8' ||
     instrument?.version !== 8 ||
@@ -75,7 +88,7 @@ export function loadTutorStubResistanceConfirmationSemanticInstrument(registrati
   ) {
     throw new Error('confirmation semantic outcome instrument contract drifted');
   }
-  return { path: INSTRUMENT_PATH, sha256: sha256File(INSTRUMENT_PATH), registration: instrument };
+  return { path: instrumentPath, sha256: sha256File(instrumentPath), registration: instrument };
 }
 
 export function createTutorStubResistanceConfirmationSemanticRuntime({
@@ -191,13 +204,22 @@ export function createTutorStubResistanceConfirmationSemanticRuntime({
       });
       if (record) fidelityResponses.push(record);
     }
-    const fidelity = adjudicateTutorStubResistanceFidelityPanelV8({
-      caseId,
-      intervention: text,
-      responses: fidelityResponses,
-      registration: loaded.registration,
-      prompts: fidelityPrompts,
-    });
+    const fidelity =
+      loaded.registration.version === 9
+        ? adjudicateTutorStubResistanceFidelityPanelV9({
+            caseId,
+            intervention: text,
+            responses: fidelityResponses,
+            registration: loaded.registration,
+            prompts: fidelityPrompts,
+          })
+        : adjudicateTutorStubResistanceFidelityPanelV8({
+            caseId,
+            intervention: text,
+            responses: fidelityResponses,
+            registration: loaded.registration,
+            prompts: fidelityPrompts,
+          });
     if (study.manipulation_validation === true) {
       appendTraceEvent(state.trace, {
         type: 'resistance_action_register_manipulation_validation_fidelity',
@@ -207,8 +229,7 @@ export function createTutorStubResistanceConfirmationSemanticRuntime({
         instrument: { path: loaded.path, sha256: loaded.sha256 },
         intervention_sha256: tutorStubResistanceMeasurementSha256(text),
         fidelity,
-        measurement_disposition:
-          fidelity.status === 'determinate' ? 'determinate' : 'measurement_indeterminate',
+        measurement_disposition: fidelity.status === 'determinate' ? 'determinate' : 'measurement_indeterminate',
         assigned_treatment_hidden_from_judges: true,
         learner_outcome_generated_or_judged: false,
         regex_keyword_or_generator_semantic_authority: 'none',
@@ -246,13 +267,22 @@ export function createTutorStubResistanceConfirmationSemanticRuntime({
       });
       if (record) primaryResponses.push(record);
     }
-    const primary = adjudicateTutorStubResistanceRecoveryPrimaryPanelV8({
-      caseId,
-      publicPacket,
-      responses: primaryResponses,
-      registration: loaded.registration,
-      prompts: primaryPrompts,
-    });
+    const primary =
+      loaded.registration.version === 9
+        ? adjudicateTutorStubResistanceRecoveryPrimaryPanelV9({
+            caseId,
+            publicPacket,
+            responses: primaryResponses,
+            registration: loaded.registration,
+            prompts: primaryPrompts,
+          })
+        : adjudicateTutorStubResistanceRecoveryPrimaryPanelV8({
+            caseId,
+            publicPacket,
+            responses: primaryResponses,
+            registration: loaded.registration,
+            prompts: primaryPrompts,
+          });
 
     const { fidelity } = await adjudicateInterventionFidelity({
       state,

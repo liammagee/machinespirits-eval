@@ -1,7 +1,7 @@
 {
   "schema": "machinespirits.tutor-stub.resistance-action-register-warm-nonwarm-confirmation-design.v1",
   "studyId": "tutor-stub-resistance-action-register-warm-nonwarm-confirmation-v1",
-  "status": "prospective_design_measurement_validation_pending_no_launch",
+  "status": "prospective_executable_smoke_passed_ready_for_merged_launch",
   "registeredQuestion": "Among wholly fresh independent frame-refuser dialogues, does one matched test_bounded_distinction tutor move realized as a warm shared invitation change two-post-trigger-turn semantic recovery relative to the same move realized as a non-warm reference?",
   "arms": [
     {
@@ -14,9 +14,9 @@
     }
   ],
   "sampleSize": {
-    "allocatedTotal": 196,
-    "allocatedPerArm": 98,
-    "balancedBlocks": 49,
+    "allocatedTotal": 200,
+    "allocatedPerArm": 100,
+    "balancedBlocks": 50,
     "dialoguesPerBlock": 4,
     "assignmentsPerArmPerBlock": 2,
     "minimumDeterminatePerArm": 89,
@@ -26,15 +26,15 @@
     "powerAtMinimumDeterminatePerArm": 0.9017447309143404,
     "planningRates": [0.1, 0.3],
     "smallestEffectOfInterestAbsoluteRiskDifference": 0.2,
-    "validatedInstrumentCoverageAssumption": 0.95,
-    "probabilityAtLeastMinimumDeterminatePerArm": 0.9750829003797589,
-    "probabilityBothArmsReachMinimumDeterminate": 0.9507866626130027,
+    "validatedInstrumentCoverageAssumption": 0.9416666666666667,
+    "probabilityAtLeastMinimumDeterminatePerArm": 0.9862998943618783,
+    "probabilityBothArmsReachMinimumDeterminate": 0.9727874816182522,
     "derivationNote": "notes/2026-08-23-resistance-action-register-warm-nonwarm-sample-size.md"
   },
   "randomization": {
     "masterSeed": 20260829,
     "unit": "wholly_fresh_independent_dialogue",
-    "blocking": "49 balanced four-dialogue blocks with two assignments per arm",
+    "blocking": "50 balanced four-dialogue blocks with two assignments per arm",
     "allocationConcealment": "assignment is unavailable to learner generation and outcome judges except where treatment realization necessarily enters the tutor prompt"
   },
   "models": {
@@ -69,11 +69,26 @@
       "outcomeJudgesToArm": true,
       "fidelityJudgesToLearnerOutcome": true,
       "judgesToEachOther": true
+    },
+    "triggerInstrument": {
+      "path": "config/tutor-stub-resistance-semantic-adjudication-registration.v6.json",
+      "sha256": "8b8c048a64a07135a899018af77c2c7a172e175df445944aa74926e1efe115d0",
+      "observationSemantics": "prospective_frame_resistance_binary_semantic_v6",
+      "rule": "exact_two_of_two_valid_high_confidence_binary_labels",
+      "componentDisagreementMayVetoBinaryLabel": false,
+      "outcomeBlindNoEvidenceProjection": true
+    },
+    "outcomeAndFidelityInstrument": {
+      "path": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v9.json",
+      "sha256": "32e74485d75f1b820ea943f0ae00edcd91ae2ea753055dda5c7efd34197f8de5",
+      "primaryRule": "exact_two_of_two_derived_binary_recovery_votes",
+      "fidelityActionRule": "exact_two_of_two_action_votes",
+      "fidelityRegisterRule": "exact_two_of_two_warm_vs_nonwarm_votes_after_plain_neither_projection"
     }
   },
   "prelaunchValidation": {
-    "required": true,
-    "status": "pending",
+    "required": false,
+    "status": "satisfied_by_existing_v8_fresh_heldout_and_passing_v6_smoke_b",
     "corpora": ["all_frozen_historical_misses", "strong_negatives", "genuinely_unseen_heldout_paraphrases"],
     "minimumCoverage": 0.95,
     "minimumCoveragePerTargetClass": 0.9,
@@ -82,7 +97,18 @@
     "minimumRawInterjudgeAgreement": 0.9,
     "minimumCohensKappa": 0.8,
     "referenceLabels": "frozen_blind_human_reference_labels_with_adjudicated_disagreements_excluded_before_model_scoring",
-    "launchIfFailed": false
+    "launchIfFailed": false,
+    "v8PrimaryReportStatus": "passed",
+    "v8FidelityReportStatus": "passed",
+    "v6SmokeB": {
+      "sourceCommit": "62d40ec6850ca3cb19203b09e772c5d18c28add2",
+      "completedDialogues": 4,
+      "failedDialogues": 0,
+      "reservations": 60,
+      "resultSha256": "4b1a1c6e2a4ca823b55f3c5b8f0ca2c8c9594605a40d3f63e7de91a20a725f7b",
+      "reusedOrPooled": false
+    },
+    "repeatValidationIfExactInstrumentInputsUnchanged": false
   },
   "analysis": {
     "primaryEstimand": "assigned_warm_minus_assigned_nonwarm_two_post_trigger_turn_recovery_risk_difference",
@@ -129,12 +155,33 @@
     "plannedRoleCallsPerDialogue": 34,
     "maximumReservationsPerPlannedCall": 3,
     "maximumReservationsPerDialogue": 102,
-    "confirmationMaximumModelAttemptReservations": 19992,
-    "recordedProgrammeLedgerBeforeNewValidationOrConfirmation": 5494,
-    "minimumProgrammeCeilingIfNoAdditionalValidationCallsOccur": 25486,
-    "programmeCeilingMustAlsoIncludeFutureValidationCalls": true
+    "confirmationMaximumModelAttemptReservations": 20400,
+    "recordedProgrammeLedgerBeforeConfirmation": 5594,
+    "programmeModelAttemptCeiling": 25994,
+    "programmeCeilingIncludesBothExcludedSmokes": true
   },
-  "claimBoundary": "Only the wholly fresh 196-dialogue frame-refuser matched-action warm-shared-invitation versus non-warm-reference recovery contrast is confirmatory. The study cannot establish a lexical plain effect, matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness. No prior calibration, confirmation, validation, or incomplete dialogue is reused or pooled.",
+  "execution": {
+    "runner": "scripts/run-tutor-stub-resistance-warm-nonwarm-confirmation.js",
+    "world": "world_005_marrick",
+    "dagMode": "strict_dag",
+    "autoLearnerProfile": "frame_refuser",
+    "autoTurns": 4,
+    "parallelism": 4,
+    "maximumReservationsPerDialogueAcrossInitialAndRecoveryAttempts": 102,
+    "createOnce": true,
+    "appendOnlyRunLedger": true,
+    "technicalRecovery": {
+      "automatic": true,
+      "maximumProcessAttemptsPerUnit": 3,
+      "eligible": ["response_free_transport_failure", "child_interruption", "missing_process_output"],
+      "sameUnitOnly": true,
+      "remainingPerDialogueAndStudyRoomRequired": true,
+      "validUnitRerun": false,
+      "semanticIndeterminacyRecovery": false,
+      "outcomeSelection": false
+    }
+  },
+  "claimBoundary": "Only the wholly fresh 200-dialogue frame-refuser matched-action warm-shared-invitation versus non-warm-reference recovery contrast is confirmatory. The study cannot establish a lexical plain effect, matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness. No prior calibration, confirmation, validation, smoke, or incomplete dialogue is reused or pooled.",
   "authorization": {
     "policy": "docs/paid-study-authorization-policy.md",
     "launchCommit": null,
