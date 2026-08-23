@@ -20,6 +20,7 @@ import {
   tutorStubResistanceMeasurementSha256,
 } from '../services/tutorStubResistanceRecoverySemanticAdjudicationV8.js';
 import { loadTutorStubResistanceConfirmationSemanticInstrument } from '../services/tutorStubResistanceConfirmationSemanticRuntime.js';
+import { deduplicateTutorStubResistanceSemanticOutputSchemaV5 } from '../services/tutorStubResistanceSemanticAdjudicationV5.js';
 import {
   loadTutorStubResistanceActionRegisterConfirmation,
   scoreTutorStubResistanceRecovery,
@@ -699,6 +700,13 @@ function v9SemanticTriggerEligibility({ events, record, loaded }) {
       throw new Error(`V9 trace has an invalid trigger prompt for ${judge.id}`);
     }
     prompts[judge.id] = prompt;
+    const expectedOutputSchema = instrument.buildOutputSchema
+      ? instrument.buildOutputSchema(prompt)
+      : instrument.outputSchema;
+    const observedOutputSchema =
+      binding.registration.version === 5
+        ? deduplicateTutorStubResistanceSemanticOutputSchemaV5(event?.outputSchema)
+        : event?.outputSchema;
     if (
       event?.role !== `tutor_stub_resistance_semantic_${judge.id}` ||
       event.expectedProvider !== judge.provider ||
@@ -712,7 +720,7 @@ function v9SemanticTriggerEligibility({ events, record, loaded }) {
       prompt.case_id !== semanticAdjudication?.caseId ||
       prompt.utterance?.text !== record?.learner ||
       JSON.stringify(prompt.public_context) !== JSON.stringify(semanticAdjudication?.publicContext) ||
-      JSON.stringify(event.outputSchema) !== JSON.stringify(instrument.outputSchema)
+      JSON.stringify(observedOutputSchema) !== JSON.stringify(expectedOutputSchema)
     ) {
       throw new Error(`V9 trace trigger judge envelope drifted for ${judge.id}`);
     }
