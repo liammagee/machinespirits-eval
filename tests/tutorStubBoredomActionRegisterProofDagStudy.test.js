@@ -160,11 +160,15 @@ function syntheticTrace({
   // had to say it. v6 reads five, and a recovery on a later turn is the case
   // that tells its primary apart from the one-turn reading it carries forward.
   recoveryPostTriggerTurn = 1,
+  // Every fixture dialogue opens on its own job id, so no two openings can
+  // repeat by accident. Pass one label to two jobs in one world to build the
+  // case the registration's duplicate-opening rule is written for.
+  sharedOpeningLabel = null,
 }) {
   const maxTurns = maximumTriggerTurn + postTriggerLearnerTurns;
   const triggerTurn = Number.isInteger(forcedTriggerTurn) ? forcedTriggerTurn : job.assignment_index % 2 === 0 ? 2 : 1;
   const outcomeTurn = triggerTurn + postTriggerLearnerTurns;
-  const triggerText = `Whatever. I will not work through this proof ${job.id}.`;
+  const triggerText = `Whatever. I will not work through this proof ${sharedOpeningLabel ?? job.id}.`;
   const triggerSha = sha256(triggerText);
   // A pre-trigger turn the adjudicator reads as actionable boredom while a
   // registered protected exclusion blocks the treatment there.
@@ -378,6 +382,7 @@ function writeSyntheticBatch(
     // each dialogue lands on once those turns are passed over.
     unreadablePassOverTurnsByJobId = {},
     forcedTriggerTurnByJobId = {},
+    sharedOpeningLabelByJobId = {},
     maximumTriggerTurn = 2,
     postTriggerLearnerTurns = 2,
     recoveryPostTriggerTurn = 1,
@@ -407,6 +412,7 @@ function writeSyntheticBatch(
       perDialogueBudget,
       unreadablePassOverTurns: unreadablePassOverTurnsByJobId[job.id] || [],
       forcedTriggerTurn: forcedTriggerTurnByJobId[job.id] ?? null,
+      sharedOpeningLabel: sharedOpeningLabelByJobId[job.id] ?? null,
     })
       .map((event) => JSON.stringify(event))
       .join('\n')}\n`;
@@ -913,6 +919,94 @@ test('amendment A1 lets the analyzer read a study short by registered indetermin
       }),
     /source, result, or seal contract/u,
   );
+});
+
+test('two dialogues that open alike leave one unit, and the one that ran later is the one dropped', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-duplicate-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION) });
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  // Two dialogues in one world, opening word for word alike. The opening digest
+  // is taken over the world and the turns up to the trigger, so a shared world
+  // and a shared trigger turn are the whole of what makes them repeat.
+  const world = loaded.plan.jobs[0].world;
+  const pair = loaded.plan.jobs.filter((job) => job.world === world).slice(0, 2);
+  assert.equal(pair.length, 2);
+  const batchNumber = (job) => Number(String(job.batch_id).replace(/^\D+/u, ''));
+  const [first, second] = [...pair].sort(
+    (left, right) => batchNumber(left) - batchNumber(right) || left.id.localeCompare(right.id),
+  );
+  const options = {
+    sharedOpeningLabelByJobId: Object.fromEntries(pair.map((job) => [job.id, 'shared-opening'])),
+    forcedTriggerTurnByJobId: Object.fromEntries(pair.map((job) => [job.id, 1])),
+  };
+  const roots = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+      expectedSourceCommit: head,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    writeSyntheticBatch(root, plan, outcomes, options);
+    roots.push(root);
+  }
+
+  // A repeat costs a unit, so the study comes up short and needs the same
+  // written amendment any other shortfall needs.
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION,
+        expectedSourceCommit: head,
+      }),
+    /requires a written amendment/u,
+  );
+  const amendmentPath = path.join(temp, 'amendment.json');
+  writeJson(amendmentPath, { id: 'A1_realised_block_allocation', amends: { registrationSha256: loaded.sha256 } });
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION,
+    amendmentPath: path.relative(ROOT, amendmentPath),
+    expectedSourceCommit: head,
+  });
+
+  assert.equal(report.assembly.dialogues_planned, 36);
+  assert.equal(report.assembly.dialogues_scored, 35);
+  assert.equal(report.attrition.stopped, 1);
+  assert.deepEqual(report.attrition.stop_reasons, {
+    measurement_indeterminate_stop_no_repair_no_replacement: 0,
+    duplicate_public_prefix_stop_no_replacement_no_analysis: 1,
+  });
+  // Both dialogues ran to the end and both batches sealed clean. Nothing at run
+  // time can see a repeat, because an opening exists only once its dialogue has
+  // reached the trigger turn and batches run in separate processes. The rule is
+  // therefore applied in analysis, and it drops the later of the two.
+  assert.equal(report.assembly.batches_sealed_with_registered_stops, 0);
+  assert.deepEqual(
+    report.attrition.duplicate_public_prefix_stops.map((stop) => ({
+      case_id: stop.case_id,
+      repeats_the_opening_of: stop.repeats_the_opening_of,
+    })),
+    [{ case_id: second.id, repeats_the_opening_of: first.id }],
+  );
+  assert.deepEqual(
+    report.attrition.stopped_units.map((unit) => ({ case_id: unit.case_id, stop_reason: unit.stop_reason })),
+    [{ case_id: second.id, stop_reason: 'duplicate_public_prefix_stop_no_replacement_no_analysis' }],
+  );
+  // The loss lands on the one world that repeated, and nowhere else. Which of
+  // the two is dropped is decided by run order alone, so it could be read off
+  // the plan before any outcome was.
+  const sum = (counts) => Object.values(counts).reduce((total, value) => total + value, 0);
+  for (const entry of report.attrition.per_world) {
+    const lost = entry.world === world ? 1 : 0;
+    assert.equal(sum(entry.scored_by_contrast_level), sum(entry.planned_by_contrast_level) - lost, entry.world);
+  }
+  assert.ok(report.interpretation_status.includes('unbalanced_attrition_caveat'));
 });
 
 test('prospective-v9 analyzer requires the independent semantic sequence and rejects indeterminacy', (t) => {
@@ -1889,45 +1983,46 @@ const REGISTRATION_V7 = 'config/tutor-stub-boredom-action-register-proof-dag-reg
 test('the runner takes its batch ids from the registration, not from a written range', () => {
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const destination = path.join(os.tmpdir(), 'boredom-proof-dag-v7-batch-id-range');
-  // v7 deals twenty-one batches. The runner used to accept execution_batch_1
-  // through 9 and refuse the rest, and it refused them all with one message,
-  // so two runs of batch ten agreed byte for byte and read as stable.
-  const batchTen = buildTutorStubBoredomProofDagBatchPlan({
-    registrationPath: REGISTRATION_V7,
-    batchId: 'execution_batch_10',
-    destination,
-    expectedSourceCommit: head,
-  });
-  assert.equal(batchTen.batch_id, 'execution_batch_10');
-  assert.equal(batchTen.jobs.length, 4);
-
-  // Every id the registration deals must plan, and no id beyond them may.
   const registration = JSON.parse(fs.readFileSync(path.join(ROOT, REGISTRATION_V7), 'utf8'));
   const batches = registration.executionReadiness.batches.executionBatches;
-  const seen = new Set();
-  for (let index = 1; index <= batches; index += 1) {
-    const plan = buildTutorStubBoredomProofDagBatchPlan({
+  const build = (batchId) =>
+    buildTutorStubBoredomProofDagBatchPlan({
       registrationPath: REGISTRATION_V7,
-      batchId: `execution_batch_${index}`,
+      batchId,
       destination,
       expectedSourceCommit: head,
     });
-    for (const job of plan.jobs) seen.add(job.id);
+  // v7 is spent, and its analysis was corrected afterwards to apply a rule the
+  // registration always carried, so its frozen request no longer matches the
+  // tree and no v7 plan can be built at all. That is the seal working, not a
+  // fault: the analyzer sits inside the frozen closure exactly so that changing
+  // the analysis after seeing the data cannot happen quietly, and so that the
+  // analysis cannot be edited between two batches of one live run.
+  //
+  // The batch id property outlives the seal, because ids are checked before the
+  // closure is. A registered id must get past the id check and fail later, on
+  // drift. An id past the registered range must fail on the id check itself.
+  // The runner used to accept execution_batch_1 through 9 and refuse the rest,
+  // and it refused them all with one message, so two runs of batch ten agreed
+  // byte for byte and read as stable.
+  for (let index = 1; index <= batches; index += 1) {
+    assert.throws(
+      () => build(`execution_batch_${index}`),
+      /closure drift against the frozen request/u,
+      `execution_batch_${index} must be a registered id`,
+    );
   }
-  assert.equal(seen.size, registration.executionReadiness.dialogue.dialogues);
-  assert.throws(
-    () =>
-      buildTutorStubBoredomProofDagBatchPlan({
-        registrationPath: REGISTRATION_V7,
-        batchId: `execution_batch_${batches + 1}`,
-        destination,
-        expectedSourceCommit: head,
-      }),
-    /must be one of the 21 registered ids/u,
-  );
-  // v6 is not exercised here. Its request pins the runner's bytes, so building
-  // a v6 plan on an edited runner fails on closure drift before it reaches the
-  // batch id at all. That is the seal doing its job on a spent study.
+  assert.throws(() => build(`execution_batch_${batches + 1}`), /must be one of the 21 registered ids/u);
+  // What each registered batch deals is read off the plan the registration
+  // derives offline, which the seal does not gate, rather than off a build it
+  // now refuses.
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V7) });
+  assert.equal(loaded.plan.batches.length, batches);
+  assert.equal(new Set(loaded.plan.jobs.map((job) => job.batch_id)).size, batches);
+  assert.equal(new Set(loaded.plan.jobs.map((job) => job.id)).size, registration.executionReadiness.dialogue.dialogues);
+  // v6 is not exercised here, for the reason v7 can no longer be built either.
+  // Its request pins the runner's bytes, so building a v6 plan on an edited
+  // runner fails on closure drift before it reaches the batch id at all.
 });
 
 test('every registered version builds a live runtime, not just a plan', () => {

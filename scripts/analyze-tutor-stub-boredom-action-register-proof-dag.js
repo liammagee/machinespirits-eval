@@ -1478,6 +1478,51 @@ function balancedBlockReport(rows, outcomeField, axis, shape) {
   };
 }
 
+// The registration requires every scored dialogue to open differently: it asks
+// for 84 distinct public prefixes and sets requireDistinctPublicPrefixHashes.
+// It also names what to do when one repeats. The rule is called "substantive
+// missing or duplicate trigger", and its disposition is to stop the unit,
+// replace nothing and analyse nothing.
+//
+// Only the missing half of that rule was ever built. The runner computes it per
+// dialogue and stops the unit there. The duplicate half was computed nowhere —
+// the distinctness flag was read by no code in this repository — so the first
+// thing to notice a repeat was this analysis, after all 83 dialogues had been
+// paid for. A live check was never cheap to build either: a prefix exists only
+// once its dialogue has grown to the trigger turn, and batches run in separate
+// processes that cannot see each other's openings.
+//
+// So the registered rule is applied here, on the terms it would have had live.
+// Inside a group of dialogues that share an opening, the one that ran first is
+// the original and every later one is the duplicate, which is what a live check
+// would have concluded. Order comes from the batch number and then the unit
+// name, so it does not depend on the order the caller listed the batches, and
+// it reads nothing about how any dialogue ended.
+function registeredDuplicatePublicPrefixStops(rows) {
+  const batchNumber = (row) => Number(String(row.batch_id).replace(/^\D+/, '')) || 0;
+  const ordered = [...rows].sort(
+    (left, right) =>
+      batchNumber(left) - batchNumber(right) || String(left.case_id).localeCompare(String(right.case_id)),
+  );
+  const firstByPrefix = new Map();
+  const stops = new Map();
+  for (const row of ordered) {
+    const prefix = row.public_prefix_sha256;
+    if (!firstByPrefix.has(prefix)) {
+      firstByPrefix.set(prefix, row);
+      continue;
+    }
+    stops.set(row.case_id, {
+      case_id: row.case_id,
+      batch_id: row.batch_id,
+      world: row.world,
+      public_prefix_sha256: prefix,
+      repeats_the_opening_of: firstByPrefix.get(prefix).case_id,
+    });
+  }
+  return stops;
+}
+
 export function analyzeTutorStubBoredomProofDag({
   batchRoots,
   registrationPath,
@@ -1558,7 +1603,24 @@ export function analyzeTutorStubBoredomProofDag({
       `boredom proof-DAG analysis requires all ${shape.dialogues} planned units to be present exactly once`,
     );
   }
-  const stoppedUnits = plannedUnits.filter((unit) => !unit.completed);
+  // Every dialogue that finished is read before anything is counted, because
+  // the registered duplicate-opening rule can be applied only once the openings
+  // exist. A unit that rule stops is not scored, in the same way a unit the
+  // runner stopped is not scored, and it is never repaired, rerun or replaced.
+  const scoredCandidateRows = batches.flatMap((batch) =>
+    batch.result.results.filter((row) => row.status === 'complete').map((row) => analyzeTrace(batch, row, loaded)),
+  );
+  const duplicatePrefixStops = registeredDuplicatePublicPrefixStops(scoredCandidateRows);
+  for (const unit of plannedUnits) {
+    unit.duplicate_public_prefix = duplicatePrefixStops.has(unit.case_id);
+    unit.scored = unit.completed && !unit.duplicate_public_prefix;
+    unit.stop_reason = unit.scored
+      ? null
+      : unit.duplicate_public_prefix
+        ? 'duplicate_public_prefix_stop_no_replacement_no_analysis'
+        : 'measurement_indeterminate_stop_no_repair_no_replacement';
+  }
+  const stoppedUnits = plannedUnits.filter((unit) => !unit.scored);
   // A short study needs a written rule for how an uneven block is conditioned
   // on. v4 had none, so amendment A1 had to supply it after collection ended.
   // v5 registers the realised-count conditioning from the start and says so in
@@ -1601,9 +1663,7 @@ export function analyzeTutorStubBoredomProofDag({
   const conditioningAuthority = amendment?.path
     ? `A written amendment (${amendment.id}) conditions`
     : 'The registration conditions';
-  const rows = batches.flatMap((batch) =>
-    batch.result.results.filter((row) => row.status === 'complete').map((row) => analyzeTrace(batch, row, loaded)),
-  );
+  const rows = scoredCandidateRows.filter((row) => !duplicatePrefixStops.has(row.case_id));
   if (
     rows.length !== shape.dialogues - stoppedUnits.length ||
     new Set(rows.map((row) => row.case_id)).size !== rows.length ||
@@ -1698,17 +1758,28 @@ export function analyzeTutorStubBoredomProofDag({
     contrast: { axis: axis.contrast, reference_level: axis.reference, treatment_level: axis.treatment },
     stopped_by_contrast_level: stoppedByLevel,
     balanced_across_contrast_levels: attritionBalanced,
-    stop_reason: 'measurement_indeterminate_stop_no_repair_no_replacement',
+    // Two rules can stop a unit, so the reason is carried per unit rather than
+    // once for the whole run. A reader who sees only a total cannot tell a
+    // learner who never showed boredom from a dialogue that repeated another
+    // dialogue's opening.
+    stop_reasons: {
+      measurement_indeterminate_stop_no_repair_no_replacement: stoppedUnits.filter(
+        (unit) => unit.stop_reason === 'measurement_indeterminate_stop_no_repair_no_replacement',
+      ).length,
+      duplicate_public_prefix_stop_no_replacement_no_analysis: duplicatePrefixStops.size,
+    },
+    duplicate_public_prefix_stops: [...duplicatePrefixStops.values()],
     stopped_units: stoppedUnits.map((unit) => ({
       case_id: unit.case_id,
       world: unit.world,
       arm: unit.arm,
       move_level: unit.move_level,
       contrast_level: unit[axis.rowField],
+      stop_reason: unit.stop_reason,
     })),
     per_world: loaded.registration.design.worlds.map((world) => {
       const planned = plannedUnits.filter((unit) => unit.world === world);
-      const scored = planned.filter((unit) => unit.completed);
+      const scored = planned.filter((unit) => unit.scored);
       const count = (group, level) => group.filter((unit) => unit[axis.rowField] === level).length;
       return {
         world,
