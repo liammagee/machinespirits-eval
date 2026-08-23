@@ -1,9 +1,5 @@
-# DRAFT — combined B1 and R1 Gate 1 two-reader calibration authorization
+GO
 
-Status: **DRAFT — NOT AUTHORIZED — OPERATOR SIGNATURE REQUIRED**
-
-This draft records the operator-selected two-seat reader panel. It does not
-authorize a launch, Gate 2, or either powered run.
 
 ## Launch source
 
@@ -71,6 +67,6 @@ interrupted reservations.
 
 This draft does not authorize Gate 2 or either powered run.
 
-Operator signature: ______________________________
+Operator signature: Liam Magee
 
 Date: 2026-08-23
