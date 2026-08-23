@@ -928,9 +928,24 @@ function assertDestinationAbsent(request, root = ROOT) {
     isSupportedActionRegisterConfirmation(request.actionRegisterConfirmation?.type) ||
     request.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
   ) {
+    // How many batches a study runs is a property of the study, not of this
+    // file. Every request in this family already says it twice, as its dialogue
+    // count and its dialogues-per-batch count, so the check compares the two
+    // copies instead of comparing one of them to a nine written here. Every
+    // request written before v7 divides to nine and is unaffected.
+    const dialogues = Number(request.design?.dialogues);
+    const perBatch = Number(request.budget?.dialoguesPerBatch);
+    if (!Number.isInteger(dialogues) || !Number.isInteger(perBatch) || perBatch < 1 || dialogues % perBatch !== 0) {
+      throw new Error('confirmation request must state a dialogue count that divides evenly into its batch size');
+    }
+    const expectedBatches = dialogues / perBatch;
     const destinations = request.destination?.batches?.map((entry) => entry?.artifactRoot) || [];
-    if (destinations.length !== 9 || new Set(destinations).size !== 9 || destinations.some((value) => !value)) {
-      throw new Error('confirmation request requires nine distinct batch destinations');
+    if (
+      destinations.length !== expectedBatches ||
+      new Set(destinations).size !== expectedBatches ||
+      destinations.some((value) => !value)
+    ) {
+      throw new Error(`confirmation request requires ${expectedBatches} distinct batch destinations`);
     }
     for (const artifactRoot of destinations) {
       const absolute = path.resolve(root, canonicalRepoPath(artifactRoot, 'confirmation batch destination'));

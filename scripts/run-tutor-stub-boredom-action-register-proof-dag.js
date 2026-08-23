@@ -1103,10 +1103,12 @@ function parseArgs(argv) {
 function usage() {
   return `Usage:
   node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --preflight [--json]
-  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --execution-preflight --batch <execution_batch_1..9> --destination <fresh-path>
-  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --live-batch --batch <execution_batch_1..9> --destination <fresh-path> [--parallelism 4]
+  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --execution-preflight --batch <execution_batch_N> --destination <fresh-path>
+  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --live-batch --batch <execution_batch_N> --destination <fresh-path> [--parallelism 4]
   node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --recover-batch --destination <incomplete-path> [--parallelism 4]
   node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --seal-registered-stops --destination <unsealed-path>
+
+How many batches there are is a property of the registration, not of this script: nine on v2 to v6, twenty-one on v7.
 
 Optional on any of the three: --registration <path>, --launch-authorization <path>, --expected-source-commit <sha>.
 

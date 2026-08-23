@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import {
   boredomContrastAxis,
   boredomProofProgressNames,
+  exactBlockedScoreOneSidedPValue,
   exactBlockedScorePValue,
   objectiveProofProgress,
 } from '../services/tutorStubBoredomActionRegisterProofDagPreflight.js';
@@ -35,7 +36,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // being read, so a v5 run analysed with the flag left off would have been
 // scored silently against v2's window. Every caller passes the path, so
 // requiring it costs nothing and removes the silent-wrong-study case.
-const BATCH_IDS = Object.freeze(Array.from({ length: 9 }, (_, index) => `execution_batch_${index + 1}`));
+// How many batches, dialogues and worlds a study runs is a property of the
+// registration, not of this file. Written out as nine and thirty-six it was the
+// same fault this arc keeps closing one layer down: a count kept in two places
+// with nothing comparing them. v7 runs 84 dialogues in 21 batches, so the counts
+// are now read from the registration and every check below asks it.
+function batchIds(count) {
+  return Array.from({ length: count }, (_, index) => `execution_batch_${index + 1}`);
+}
 // What this file calls the two axis fields on a report row. The reading of
 // which axis is contrasted lives in the preflight service, because the endpoint
 // preflight needs the same reading and names its own rows differently.
@@ -55,6 +63,78 @@ const LEGACY_BOREDOM_CONFIRMATION_REPORT_SCHEMA =
 
 function reportContrastAxis(registration) {
   return boredomContrastAxis(registration, BOREDOM_REPORT_ROW_FIELDS);
+}
+
+// Report prose spells small counts as words, because that is how v2 to v6 wrote
+// them and those reports are closed. Above twelve the digits read better anyway.
+const COUNT_WORDS = Object.freeze([
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+]);
+
+function countWord(count) {
+  return COUNT_WORDS[count] ?? String(count);
+}
+
+// Every count the report used to write out by hand, read once from the
+// registration the batches were planned under. A study that deals its units out
+// some other way is then checked against its own numbers instead of against the
+// numbers a shorter study happened to use.
+function boredomRegisteredReportShape(registration) {
+  const worlds = registration.design.worlds.length;
+  const dialogues = Number(
+    registration.design.randomization.dialogues ?? registration.executionReadiness.dialogue.dialogues,
+  );
+  const perWorld = Number(registration.design.randomization.dialoguesPerWorld ?? dialogues / worlds);
+  const batches = Number(
+    registration.executionReadiness.batches.executionBatches ?? registration.executionReadiness.batches.totalBatches,
+  );
+  if (
+    !Number.isInteger(worlds) ||
+    worlds < 1 ||
+    !Number.isInteger(dialogues) ||
+    !Number.isInteger(batches) ||
+    !Number.isInteger(perWorld) ||
+    worlds * perWorld !== dialogues ||
+    perWorld % 2 !== 0
+  ) {
+    throw new Error('boredom proof-DAG analysis requires a registration whose world, dialogue and batch counts agree');
+  }
+  return { worlds, dialogues, perWorld, batches, perArmPerWorld: perWorld / 2 };
+}
+
+// Which test the registration actually registered, so the p-value, the labels
+// and the decision key all follow one reading. A run registered one-sided that
+// reported a two-sided key would be a mismatch no reader could catch.
+function boredomRegisteredTest(endpoint, shape) {
+  const registeredAnalysis = String(endpoint.analysis ?? '');
+  // A secondary endpoint names the test and the order it is read in, in one
+  // string. The order is already a separate field of the report, so only the
+  // test name goes in the test field.
+  const analysis = registeredAnalysis.replace(/_only_after_primary_rejects_under_fixed_sequence$/, '');
+  const sided = analysis.startsWith('one_sided') ? 'one' : 'two';
+  if (sided === 'one' && !endpoint.direction) {
+    throw new Error('a one-sided boredom proof-DAG endpoint must register the direction it tests');
+  }
+  return {
+    analysis,
+    registeredAnalysis,
+    sided,
+    direction: endpoint.direction ?? null,
+    alpha: Number(endpoint.alpha ?? 0.05),
+    perArmPerWorld: shape.perArmPerWorld,
+  };
 }
 
 // Words that carry no content of their own. Kept short on purpose: the test
@@ -1002,6 +1082,20 @@ function analyzeTrace(batch, resultRow, loaded) {
   // the one outcome the registration says to record and carry.
   const registerDeliveredAsAssigned = deliveredRegister === expectedDeliveredRegister;
   const registerVisible = safetyOverrideNonadherent ? false : deliveredRegisterVisible && registerDeliveredAsAssigned;
+  // v6 held one flag for two different facts: the tutor spoke the manner it was
+  // assigned, and a reader could tell which manner the turn was in. A run failed
+  // the gate on three of the second and one of the first, which are different
+  // faults with different right answers, and the merged flag could not tell them
+  // apart even after the run had ended. From v7 the registration splits the
+  // floor, so the two facts are recorded separately from here on. The merged
+  // flag stays for the closed studies, which are never rescored.
+  //
+  // Obedience is measured against the manner the design assigned, so a safety
+  // override counts as a miss: the design said warm and a plain turn came out.
+  // Legibility is measured on whatever came out, because the question is only
+  // whether a reader can name the manner.
+  const registerDeliveredAsDesigned = deliveredRegister === assignment?.register;
+  const registerReadable = deliveredRegisterVisible === true;
   // Written out as one string, this named the host action family v5 ran and
   // nothing compared it with anything. The family now comes from the same move
   // catalogue the runtime built the turn from, so it follows the assigned move.
@@ -1239,6 +1333,16 @@ function analyzeTrace(batch, resultRow, loaded) {
       assigned_register: expectedDeliveredRegister,
       delivered_register: deliveredRegister,
       register_delivered_as_assigned: registerDeliveredAsAssigned,
+      // Only where the registration splits the floor. A closed study keeps the
+      // row shape it was scored under, so the two split readings are added by
+      // the registration that asks for them and by no other.
+      ...(loaded.registration.measurement.treatmentFidelity.minimumRegisterReadability === undefined
+        ? {}
+        : {
+            register_delivered_as_designed: registerDeliveredAsDesigned,
+            designed_register: assignment?.register ?? null,
+            register_readable: registerReadable,
+          }),
     },
     execution: {
       trace: resultRow.trace,
@@ -1292,25 +1396,38 @@ function engineBlocks(blocks) {
   }));
 }
 
-function blockedAnalysis(rows, outcomeField, axis) {
+function blockedAnalysis(rows, outcomeField, axis, registeredTest) {
   const blocks = blockedRows(rows, outcomeField, axis);
   const reference = rows.filter((row) => row[axis.rowField] === axis.reference);
   const treatment = rows.filter((row) => row[axis.rowField] === axis.treatment);
   const won = (group) => group.filter((row) => row.outcome[outcomeField] === true).length;
   const referenceSuccesses = won(reference);
   const treatmentSuccesses = won(treatment);
+  const perArm = registeredTest.perArmPerWorld;
+  const oneSided = registeredTest.sided === 'one';
   return {
-    test: 'two_sided_exact_conditional_blocked_score_test',
-    // Amendment A1. The predeclared allocation was three of each level in every
-    // world. Where a unit stopped as indeterminate, its world holds three
-    // against two. The test conditions on the allocation that was realised,
-    // which is what these block counts already are.
+    test: registeredTest.analysis,
+    // Amendment A1. The predeclared allocation was an even split of each level
+    // in every world. Where a unit stopped as indeterminate, its world holds one
+    // side short. The test conditions on the allocation that was realised, which
+    // is what these block counts already are.
     contrast: { axis: axis.contrast, reference_level: axis.reference, treatment_level: axis.treatment },
     conditioning: `world_success_totals_and_realised_per_world_${axis.reference}_${axis.treatment}_allocation`,
-    predeclared_allocation: `three_${axis.reference}_three_${axis.treatment}_per_world`,
-    allocation_realised_as_predeclared: blocks.every((block) => block.referenceN === 3 && block.treatmentN === 3),
-    two_sided_rule: 'sum_conditional_score_probabilities_no_greater_than_observed_score_probability',
-    alpha: 0.05,
+    predeclared_allocation: `${countWord(perArm)}_${axis.reference}_${countWord(perArm)}_${axis.treatment}_per_world`,
+    allocation_realised_as_predeclared: blocks.every(
+      (block) => block.referenceN === perArm && block.treatmentN === perArm,
+    ),
+    // A one-sided run must not report a two-sided key. The key itself follows
+    // the registration, so a reader sees which tail was registered without
+    // having to trust the number under it.
+    ...(oneSided
+      ? {
+          one_sided_rule:
+            'sum_conditional_score_probabilities_of_every_score_at_least_as_far_in_the_registered_direction_as_the_observed_score',
+          registered_direction: registeredTest.direction,
+        }
+      : { two_sided_rule: 'sum_conditional_score_probabilities_no_greater_than_observed_score_probability' }),
+    alpha: registeredTest.alpha,
     reference: {
       level: axis.reference,
       successes: referenceSuccesses,
@@ -1325,17 +1442,22 @@ function blockedAnalysis(rows, outcomeField, axis) {
     },
     treatment_minus_reference_risk_difference:
       treatmentSuccesses / treatment.length - referenceSuccesses / reference.length,
-    p_value: exactBlockedScorePValue(engineBlocks(blocks)),
+    p_value: oneSided
+      ? exactBlockedScoreOneSidedPValue(engineBlocks(blocks))
+      : exactBlockedScorePValue(engineBlocks(blocks)),
     blocks,
   };
 }
 
 // The axis the design balances instead of testing. v6 balances manner nine and
-// nine inside each move, and the registration requires the recovery counts
-// split that way so a reader can see the balance held. At nine per cell this is
-// a table, never a test.
-function balancedBlockReport(rows, outcomeField, axis) {
+// nine inside each move, v7 twenty-one and twenty-one, and the registration
+// requires the recovery counts split that way so a reader can see the balance
+// held. Either way this is a table, never a test: the design puts no power on
+// this axis, so the cell size is written from the registration rather than said
+// out loud as nine.
+function balancedBlockReport(rows, outcomeField, axis, shape) {
   if (!axis.blockField) return null;
+  const perCell = shape.dialogues / (2 * axis.blockLevels.length);
   const won = (group) => group.filter((row) => row.outcome[outcomeField] === true).length;
   return {
     axis: axis.blockField === 'arm' ? 'realization_manner' : axis.blockField,
@@ -1352,8 +1474,7 @@ function balancedBlockReport(rows, outcomeField, axis) {
         };
       }),
     ),
-    reading:
-      'the manner the tutor spoke in is balanced inside each move rather than tested. These counts are here so a reader can see the balance held and can see whether a move result rests on one manner. At nine per cell no test on this axis would have the power to say anything.',
+    reading: `the manner the tutor spoke in is balanced inside each move rather than tested. These counts are here so a reader can see the balance held and can see whether a move result rests on one manner. At ${countWord(perCell)} per cell no test on this axis would have the power to say anything.`,
   };
 }
 
@@ -1363,12 +1484,15 @@ export function analyzeTutorStubBoredomProofDag({
   expectedSourceCommit,
   amendmentPath,
 } = {}) {
+  // How many batches there should be is the registration's business, so the
+  // count is checked below once the registration is loaded. What can be checked
+  // without it is that the caller passed some roots and passed each one once.
   if (
     !Array.isArray(batchRoots) ||
-    batchRoots.length !== 9 ||
-    new Set(batchRoots.map((root) => path.resolve(ROOT, root))).size !== 9
+    batchRoots.length === 0 ||
+    new Set(batchRoots.map((root) => path.resolve(ROOT, root))).size !== batchRoots.length
   ) {
-    throw new Error('boredom proof-DAG analysis requires nine distinct predeclared batch roots');
+    throw new Error('boredom proof-DAG analysis requires distinct predeclared batch roots');
   }
   if (typeof registrationPath !== 'string' || registrationPath.length === 0) {
     throw new Error('boredom proof-DAG analysis requires the path of the registration these batches were run under');
@@ -1392,9 +1516,17 @@ export function analyzeTutorStubBoredomProofDag({
     throw new Error(`boredom proof-DAG batches were produced at ${pinnedCommit}, not ${expectedSourceCommit}`);
   }
   const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.resolve(ROOT, registrationPath) });
+  const shape = boredomRegisteredReportShape(loaded.registration);
+  if (batchRoots.length !== shape.batches) {
+    throw new Error(`boredom proof-DAG analysis requires ${shape.batches} distinct predeclared batch roots`);
+  }
   const batches = batchRoots.map((root) => exactBatch(root, pinnedCommit, pinnedTree, registrationPath));
-  if (JSON.stringify(batches.map((batch) => batch.plan.batch_id).sort()) !== JSON.stringify([...BATCH_IDS])) {
-    throw new Error('boredom proof-DAG analysis requires all nine registered batches exactly once');
+  // Sorted as a set of names, not as text. Past twelve batches the plain string
+  // order puts batch 10 before batch 2, so a text sort would have compared two
+  // differently ordered lists and passed a run that was missing a batch.
+  const seenBatchIds = [...new Set(batches.map((batch) => batch.plan.batch_id))].sort();
+  if (JSON.stringify(seenBatchIds) !== JSON.stringify(batchIds(shape.batches).sort())) {
+    throw new Error(`boredom proof-DAG analysis requires all ${shape.batches} registered batches exactly once`);
   }
   if (batches.some((batch) => batch.plan.source.registration_sha256 !== loaded.sha256)) {
     throw new Error('boredom proof-DAG registration digest drifted across batches');
@@ -1418,8 +1550,13 @@ export function analyzeTutorStubBoredomProofDag({
       completed: batch.result.results.find((row) => row.job_id === job.id)?.status === 'complete',
     })),
   );
-  if (plannedUnits.length !== 36 || new Set(plannedUnits.map((unit) => unit.case_id)).size !== 36) {
-    throw new Error('boredom proof-DAG analysis requires all 36 planned units to be present exactly once');
+  if (
+    plannedUnits.length !== shape.dialogues ||
+    new Set(plannedUnits.map((unit) => unit.case_id)).size !== shape.dialogues
+  ) {
+    throw new Error(
+      `boredom proof-DAG analysis requires all ${shape.dialogues} planned units to be present exactly once`,
+    );
   }
   const stoppedUnits = plannedUnits.filter((unit) => !unit.completed);
   // A short study needs a written rule for how an uneven block is conditioned
@@ -1434,7 +1571,7 @@ export function analyzeTutorStubBoredomProofDag({
   const amendmentRequired = stoppedUnits.length > 0 && conditioning !== realisedCountConditioning(axis);
   if (amendmentRequired && !amendmentPath) {
     throw new Error(
-      `boredom proof-DAG analysis of a short study requires a written amendment: ${stoppedUnits.length} of 36 units stopped`,
+      `boredom proof-DAG analysis of a short study requires a written amendment: ${stoppedUnits.length} of ${shape.dialogues} units stopped`,
     );
   }
   let amendment = null;
@@ -1468,7 +1605,7 @@ export function analyzeTutorStubBoredomProofDag({
     batch.result.results.filter((row) => row.status === 'complete').map((row) => analyzeTrace(batch, row, loaded)),
   );
   if (
-    rows.length !== 36 - stoppedUnits.length ||
+    rows.length !== shape.dialogues - stoppedUnits.length ||
     new Set(rows.map((row) => row.case_id)).size !== rows.length ||
     new Set(rows.map((row) => row.seed)).size !== rows.length ||
     new Set(rows.map((row) => row.public_prefix_sha256)).size !== rows.length ||
@@ -1481,21 +1618,22 @@ export function analyzeTutorStubBoredomProofDag({
     const worldRows = rows.filter((row) => row.world === world);
     const plannedOn = (field, level) => worldPlanned.filter((unit) => unit[field] === level).length;
     if (
-      worldPlanned.length !== 6 ||
-      plannedOn(axis.rowField, axis.reference) !== 3 ||
-      plannedOn(axis.rowField, axis.treatment) !== 3
+      worldPlanned.length !== shape.perWorld ||
+      plannedOn(axis.rowField, axis.reference) !== shape.perArmPerWorld ||
+      plannedOn(axis.rowField, axis.treatment) !== shape.perArmPerWorld
     ) {
       throw new Error(
-        `boredom proof-DAG world block ${world} was not planned as three ${axis.reference} and three ${axis.treatment}`,
+        `boredom proof-DAG world block ${world} was not planned as ${countWord(shape.perArmPerWorld)} ${axis.reference} and ${countWord(shape.perArmPerWorld)} ${axis.treatment}`,
       );
     }
     // The balanced axis is not tested, but it still has to have been dealt out
     // evenly. v6 balances the manner three and three inside each world so that
     // a move result cannot rest on one manner, and a world that lost that
     // balance in the plan would break the claim before a single unit ran.
-    if (axis.blockField && axis.blockLevels.some((level) => plannedOn(axis.blockField, level) !== 3)) {
+    const perBlockLevel = axis.blockField ? shape.perWorld / axis.blockLevels.length : null;
+    if (axis.blockField && axis.blockLevels.some((level) => plannedOn(axis.blockField, level) !== perBlockLevel)) {
       throw new Error(
-        `boredom proof-DAG world block ${world} was not planned as three ${axis.blockLevels.join(' and three ')}`,
+        `boredom proof-DAG world block ${world} was not planned as ${countWord(perBlockLevel)} ${axis.blockLevels.join(` and ${countWord(perBlockLevel)} `)}`,
       );
     }
     // The exact conditional test conditions on a block. A block with nothing on
@@ -1527,11 +1665,19 @@ export function analyzeTutorStubBoredomProofDag({
     throw new Error(`boredom proof-DAG analysis refuses a run above ${studyCeiling} reservations`);
   }
   const progressNames = boredomProofProgressNames(loaded.registration);
-  const primary = blockedAnalysis(rows, 'recovered', axis);
-  const keySecondary = blockedAnalysis(rows, progressNames.field, axis);
-  const primaryRejects = primary.p_value <= 0.05;
-  const keySecondaryRejects = primaryRejects && keySecondary.p_value <= 0.05;
-  // Over the dialogues that produced an outcome, not over the 36 planned. A
+  // Which test to run, and which tail, comes from the registration. Written out
+  // here as two-sided, a v7 run registered one-sided would have been scored by
+  // the wrong test and filed under a key that said so in the other direction.
+  const primaryTest = boredomRegisteredTest(loaded.registration.measurement.primaryEndpoint, shape);
+  const keySecondaryTest = boredomRegisteredTest(
+    loaded.registration.measurement.keySecondaryEndpoint ?? loaded.registration.measurement.primaryEndpoint,
+    shape,
+  );
+  const primary = blockedAnalysis(rows, 'recovered', axis, primaryTest);
+  const keySecondary = blockedAnalysis(rows, progressNames.field, axis, keySecondaryTest);
+  const primaryRejects = primary.p_value <= primaryTest.alpha;
+  const keySecondaryRejects = primaryRejects && keySecondary.p_value <= keySecondaryTest.alpha;
+  // Over the dialogues that produced an outcome, not over every planned unit. A
   // stopped unit has no fidelity reading to average in either direction.
   const actionVisibility = rows.filter((row) => row.fidelity.action_visible).length / rows.length;
   const registerVisibility = rows.filter((row) => row.fidelity.register_visible).length / rows.length;
@@ -1546,7 +1692,7 @@ export function analyzeTutorStubBoredomProofDag({
   for (const unit of stoppedUnits) stoppedByLevel[unit[axis.rowField]] += 1;
   const attritionBalanced = stoppedByLevel[axis.reference] === stoppedByLevel[axis.treatment];
   const attrition = {
-    planned: 36,
+    planned: shape.dialogues,
     scored: rows.length,
     stopped: stoppedUnits.length,
     contrast: { axis: axis.contrast, reference_level: axis.reference, treatment_level: axis.treatment },
@@ -1580,9 +1726,29 @@ export function analyzeTutorStubBoredomProofDag({
   // labels rather than two moves. v5 assigns one move to every unit and names no
   // floor, so there is nothing to hold it to.
   const moveDeliveryFloor = fidelity.minimumAssignedMoveDelivery ?? null;
+  // v6 held the manner to one floor on one flag that merged two facts: the tutor
+  // spoke the manner it was assigned, and a reader could tell which manner it
+  // was. The run failed on three of the second and one of the first. From v7 the
+  // registration splits them, so each fact is counted on its own and held to its
+  // own floor. A registration that names no readability floor keeps the merged
+  // reading exactly as it was scored.
+  const splitRegisterFloor = fidelity.minimumRegisterReadability !== undefined;
+  const registerDeliveryFloor = splitRegisterFloor ? fidelity.minimumAssignedRegisterDelivery : null;
+  const registerReadabilityFloor = splitRegisterFloor ? fidelity.minimumRegisterReadability : null;
+  const registerDelivery = splitRegisterFloor
+    ? rows.filter((row) => row.fidelity.register_delivered_as_designed).length / rows.length
+    : null;
+  const registerReadability = splitRegisterFloor
+    ? rows.filter((row) => row.fidelity.register_readable).length / rows.length
+    : null;
+  if (splitRegisterFloor && (registerDeliveryFloor === undefined || registerReadabilityFloor === undefined)) {
+    throw new Error('a boredom proof-DAG registration that splits the manner floor must name both halves');
+  }
   const fidelityPassed =
     actionVisibility >= fidelity.minimumActionVisibility &&
-    registerVisibility >= fidelity.minimumRegisterVisibility &&
+    (splitRegisterFloor
+      ? registerDelivery >= registerDeliveryFloor && registerReadability >= registerReadabilityFloor
+      : registerVisibility >= fidelity.minimumRegisterVisibility) &&
     (moveDeliveryFloor === null || moveDelivery >= moveDeliveryFloor);
   return {
     schema: loaded.registration.measurement.reportSchema ?? LEGACY_BOREDOM_CONFIRMATION_REPORT_SCHEMA,
@@ -1591,10 +1757,10 @@ export function analyzeTutorStubBoredomProofDag({
     registration: { path: registrationPath, sha256: loaded.sha256 },
     amendment,
     assembly: {
-      batches_run: 9,
+      batches_run: batches.length,
       batches_sealed_complete: batches.filter((batch) => batch.stoppedAudit.stopped.length === 0).length,
       batches_sealed_with_registered_stops: batches.filter((batch) => batch.stoppedAudit.stopped.length > 0).length,
-      dialogues_planned: 36,
+      dialogues_planned: shape.dialogues,
       dialogues_scored: rows.length,
       // Counted off the plan, never written out as eighteen and eighteen. The
       // planned split is a fact about the batch files, so a design that deals
@@ -1620,7 +1786,7 @@ export function analyzeTutorStubBoredomProofDag({
             axis.blockLevels.map((level) => [level, rows.filter((row) => row[axis.blockField] === level).length]),
           )
         : null,
-      worlds: 6,
+      worlds: shape.worlds,
       distinct_fresh_public_prefixes: rows.length,
       prior_dialogues_reused: 0,
       prior_outcomes_pooled: 0,
@@ -1639,8 +1805,11 @@ export function analyzeTutorStubBoredomProofDag({
       endpoint: loaded.registration.measurement.primaryEndpoint.id,
       deadline_post_trigger_learner_turns: primaryDeadlineTurns,
       ...primary,
-      balanced_block: balancedBlockReport(rows, 'recovered', axis),
-      significant_two_sided: primaryRejects,
+      balanced_block: balancedBlockReport(rows, 'recovered', axis, shape),
+      // Named after the tail the registration registered. A one-sided run that
+      // reported a two-sided key would tell a reader it had tested both
+      // directions when it had tested one.
+      [primaryTest.sided === 'one' ? 'significant_one_sided' : 'significant_two_sided']: primaryRejects,
       registered_decision: primaryRejects
         ? `${axis.treatment}_${axis.reference}_recovery_separation_confirmed`
         : `${axis.treatment}_${axis.reference}_recovery_not_confirmed`,
@@ -1694,9 +1863,11 @@ export function analyzeTutorStubBoredomProofDag({
     key_secondary_analysis: {
       endpoint: progressNames.endpoint,
       ...keySecondary,
-      balanced_block: balancedBlockReport(rows, progressNames.field, axis),
+      balanced_block: balancedBlockReport(rows, progressNames.field, axis, shape),
       fixed_sequence_gate_open: primaryRejects,
-      significant_two_sided_under_fixed_sequence: keySecondaryRejects,
+      [keySecondaryTest.sided === 'one'
+        ? 'significant_one_sided_under_fixed_sequence'
+        : 'significant_two_sided_under_fixed_sequence']: keySecondaryRejects,
       registered_decision: !primaryRejects
         ? 'not_tested_inferentially_primary_gate_closed'
         : keySecondaryRejects
@@ -1707,6 +1878,38 @@ export function analyzeTutorStubBoredomProofDag({
       status: fidelityPassed ? 'complete' : 'failed_interpretability_gate_not_rerun',
       action_visibility_rate: actionVisibility,
       register_visibility_rate: registerVisibility,
+      // The two facts the merged rate above ran together, each against its own
+      // registered floor, on a registration that asks for both. Both are
+      // reported whatever they come to, and both must clear their floor.
+      ...(splitRegisterFloor
+        ? {
+            assigned_register_delivery_rate: registerDelivery,
+            assigned_register_delivery_minimum: registerDeliveryFloor,
+            register_readability_rate: registerReadability,
+            register_readability_minimum: registerReadabilityFloor,
+            register_floor_split_reading:
+              'the manner is held to two floors rather than one. Delivery asks whether the tutor spoke in the manner the design assigned it, and a safety override counts as a miss there because the design said one manner and another came out. Readability asks only whether a reader can name the manner the turn came out in. The merged rate above stays so this run can be read against v6, which was scored on it and is never rescored.',
+            register_unreadable_units: rows
+              .filter((row) => row.fidelity.register_readable === false)
+              .map((row) => ({
+                case_id: row.case_id,
+                world: row.world,
+                arm: row.arm,
+                designed_register: row.fidelity.designed_register,
+                delivered_register: row.fidelity.delivered_register,
+              })),
+            register_undelivered_units: rows
+              .filter((row) => row.fidelity.register_delivered_as_designed === false)
+              .map((row) => ({
+                case_id: row.case_id,
+                world: row.world,
+                arm: row.arm,
+                designed_register: row.fidelity.designed_register,
+                delivered_register: row.fidelity.delivered_register,
+                safety_override: row.fidelity.safety_override,
+              })),
+          }
+        : {}),
       // How often the tutor turn carried the move it was assigned. Under a
       // one-move registration this is the same move every time and the
       // registration sets no floor, so the rate is reported and nothing is held
@@ -1807,7 +2010,9 @@ export function analyzeTutorStubBoredomProofDag({
       protected_pass_over_reading:
         'the adjudicator read these earlier turns as actionable boredom and a registered protected exclusion blocked the treatment there, so the trigger fell to a later turn still inside the registered by-turn-2 deadline. The judge label was never recoded.',
       action_visibility_minimum: fidelity.minimumActionVisibility,
-      register_visibility_minimum: fidelity.minimumRegisterVisibility,
+      // Null where the registration split the floor: there is no single manner
+      // minimum to report, and the two that replaced it are above.
+      register_visibility_minimum: fidelity.minimumRegisterVisibility ?? null,
       primary_analysis: 'intention_to_treat',
       valid_unit_rerun_authorized: false,
       objective_endpoint_reachability: {
@@ -1839,7 +2044,9 @@ export function analyzeTutorStubBoredomProofDag({
         : 'registered_confirmation_interpretable_within_claim_boundary_and_unbalanced_attrition_caveat',
     claim_boundary: `This report tests only the prospectively registered bored ${axis.treatment}-versus-${axis.reference} recovery primary, read within ${primaryDeadlineTurns} post-trigger learner turn${
       primaryDeadlineTurns === 1 ? '' : 's'
-    }, and the fixed-sequence objective proof-progress secondary, in fresh independent strict-DAG dialogues. 36 dialogues were planned and ${rows.length} produced an outcome; ${attrition.stopped} stopped as an indeterminate measurement and were not repaired, rerun or replaced.${
+    }${
+      primaryTest.sided === 'one' ? ', read one-sided in the registered direction' : ''
+    }, and the fixed-sequence objective proof-progress secondary, in fresh independent strict-DAG dialogues. ${shape.dialogues} dialogues were planned and ${rows.length} produced an outcome; ${attrition.stopped} stopped as an indeterminate measurement and were not repaired, rerun or replaced.${
       axis.blockField
         ? ` The ${axis.blockLevels.join(' and ')} manner the tutor spoke in is balanced inside each side, not tested, and no manner claim is licensed from it.`
         : ''
@@ -1873,7 +2080,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return `Usage: node scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js --batch <root> (repeat exactly 9 times) --expected-source-commit <sha> --registration <path> [--amendment <path>] [--out <fresh.json>] [--json]
+  return `Usage: node scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js --batch <root> (repeat once per registered batch: 9 on v2 to v6, 21 on v7) --expected-source-commit <sha> --registration <path> [--amendment <path>] [--out <fresh.json>] [--json]
 
 --registration has no default: the registration names the study version these batches were run under, and a default would silently score a run against another version's rules.
 
@@ -1883,7 +2090,9 @@ function usage() {
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) return void console.log(usage());
-  if (args.batches.length !== 9 || !args['expected-source-commit'] || !args.registration) throw new Error(usage());
+  // How many batches is the registration's business, and the analysis checks it
+  // against the registration it loads. Here only the flags are checked.
+  if (args.batches.length === 0 || !args['expected-source-commit'] || !args.registration) throw new Error(usage());
   const report = analyzeTutorStubBoredomProofDag({
     batchRoots: args.batches,
     registrationPath: args.registration,

@@ -7,9 +7,11 @@ import { fileURLToPath } from 'node:url';
 
 import {
   boredomContrastAxis,
+  boredomRegisteredSizes,
   buildTutorStubBoredomProofDagPlan,
   buildTutorStubBoredomProofDagSyntheticCases,
   assembleTutorStubBoredomProofDagPreflight,
+  exactBlockedScoreOneSidedPValue,
   exactBlockedScorePValue,
   exactBlockedScorePower,
   exactMcNemarPower,
@@ -613,4 +615,226 @@ test('the per-move batch count is written twice, in two spellings, and the two a
   assert.equal(batches.askQuestionPerBatch + batches.shrinkStepPerBatch, batches.dialoguesPerBatch);
   assert.equal(batches.plainPerBatch + batches.warmPerBatch, batches.dialoguesPerBatch);
   assert.equal(batches.dialoguesPerBatch * batches.executionBatches, 36);
+});
+
+const V7_REGISTRATION_PATH = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v7.json';
+const V7_CONTRACT_PATH = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v7.json';
+const V7_CERTIFICATE_PATH =
+  'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v7.endpoint-go.json';
+
+function loadV7() {
+  return loadTutorStubBoredomProofDagRegistration({ root: ROOT, registrationPath: V7_REGISTRATION_PATH });
+}
+
+test('v7 registers a one-sided test that cannot reject in the other direction', () => {
+  const v7 = loadV7();
+  const primary = v7.measurement.primaryEndpoint;
+  assert.equal(primary.analysis, 'one_sided_exact_conditional_blocked_score_test');
+  assert.equal(primary.direction, 'treatment_greater_than_reference');
+  assert.equal(primary.definitionChangedFromV6, false);
+  assert.equal(v7.measurement.keySecondaryEndpoint.direction, 'treatment_greater_than_reference');
+
+  // Six worlds, seven per move in each. The treatment side wins every world,
+  // which is the extreme of the registered direction, so the one-sided test
+  // must be far below alpha and the two-sided one must agree.
+  // The block fields keep the v1 spelling: plain is the reference side and warm
+  // is the treatment side. v6 moved what those two sides are without renaming
+  // the fields, so the names read oddly and the meaning is fixed by the
+  // function's own contract.
+  const allTreatment = Array.from({ length: 6 }, () => ({
+    plainN: 7,
+    warmN: 7,
+    plainSuccesses: 0,
+    warmSuccesses: 7,
+  }));
+  const oneSidedFor = exactBlockedScoreOneSidedPValue(allTreatment);
+  assert.ok(oneSidedFor < 0.0001, `expected a tiny p, got ${oneSidedFor}`);
+
+  // The same margin the other way. A two-sided test would reject it just as
+  // hard; the registered one-sided test must refuse to reject at all. This is
+  // the price the approval sentence has to state.
+  const allReference = allTreatment.map((block) => ({
+    ...block,
+    plainSuccesses: 7,
+    warmSuccesses: 0,
+  }));
+  // The upper tail then holds the whole distribution, so the p is 1 up to the
+  // rounding a sum of many probabilities carries.
+  assert.ok(exactBlockedScoreOneSidedPValue(allReference) > 0.9999);
+  assert.ok(exactBlockedScorePValue(allReference) < 0.0001);
+
+  // A dead heat sits well above alpha on both.
+  const evenBlocks = allTreatment.map((block) => ({
+    ...block,
+    plainSuccesses: 3,
+    warmSuccesses: 3,
+  }));
+  assert.ok(exactBlockedScoreOneSidedPValue(evenBlocks) > 0.05);
+
+  // The one-sided p is never above the two-sided one on a result that runs the
+  // registered way, which is the whole reason for the switch.
+  const v6Shaped = Array.from({ length: 6 }, () => ({
+    plainN: 7,
+    warmN: 7,
+    plainSuccesses: 3,
+    warmSuccesses: 5,
+  }));
+  assert.ok(exactBlockedScoreOneSidedPValue(v6Shaped) <= exactBlockedScorePValue(v6Shaped));
+});
+
+test('v7 splits the one manner floor into an obedience floor and a legibility floor', () => {
+  const v7 = loadV7();
+  const fidelity = v7.measurement.treatmentFidelity;
+  assert.equal(fidelity.minimumAssignedRegisterDelivery, 0.9);
+  assert.equal(fidelity.minimumRegisterReadability, 0.8);
+  assert.equal(fidelity.minimumRegisterVisibility, undefined);
+  assert.equal(fidelity.registerFloorSplitFromV6, true);
+  assert.equal(fidelity.bothRegisterRatesMustBeReported, true);
+  assert.equal(fidelity.failedFidelityDisposition, 'fail_interpretability_gate_not_rerun');
+  // The split must never read as a rescue of the run that failed the merged
+  // floor, so the registration has to say what v6 would have scored and that
+  // v6 stays closed either way.
+  assert.match(fidelity.registerFloorSplitAppliesToV7Only, /v6 is not rescored/u);
+  assert.match(fidelity.registerFloorSplitAppliesToV7Only, /at least 0\.889/u);
+  assert.match(fidelity.registerFloorSplitAppliesToV7Only, /0\.0858/u);
+  // v6 kept one floor for both facts.
+  const v6 = loadV6();
+  assert.equal(v6.measurement.treatmentFidelity.minimumRegisterVisibility, 0.9);
+  assert.equal(v6.measurement.treatmentFidelity.minimumRegisterReadability, undefined);
+});
+
+test('v7 rows must carry the two manner facts apart and the merged flag must be their conjunction', () => {
+  const v7 = loadV7();
+  const contract = readJson(V7_CONTRACT_PATH);
+  const cases = buildTutorStubBoredomProofDagSyntheticCases(v7);
+  const status = (rows) => assembleTutorStubBoredomProofDagPreflight({ cases: rows, contract }).endpoint_status;
+  assert.equal(status(cases).action_register_fidelity_and_safety, 'complete');
+
+  // A run that emits only the merged flag is the defect this split exists to
+  // catch. It must not pass.
+  const mergedOnly = cases.map((row, index) =>
+    index === 0
+      ? {
+          ...row,
+          fidelity: {
+            ...row.fidelity,
+            register_delivered_as_designed: undefined,
+            register_readable: undefined,
+          },
+        }
+      : row,
+  );
+  assert.notEqual(status(mergedOnly).action_register_fidelity_and_safety, 'complete');
+
+  // A merged flag that is not exactly the two together is a third opinion
+  // written beside them, so it fails too.
+  const inconsistent = cases.map((row, index) =>
+    index === 0 ? { ...row, fidelity: { ...row.fidelity, register_readable: false } } : row,
+  );
+  assert.notEqual(status(inconsistent).action_register_fidelity_and_safety, 'complete');
+});
+
+test('v7 plans 84 dialogues over 21 batches with every count read from the registration', () => {
+  const v7 = loadV7();
+  const sizes = boredomRegisteredSizes(v7);
+  const batches = v7.executionReadiness.batches;
+  const dialogue = v7.executionReadiness.dialogue;
+  assert.equal(dialogue.dialogues, 84);
+  assert.equal(batches.executionBatches, 21);
+  assert.equal(batches.dialoguesPerBatch, 4);
+  assert.equal(batches.dialoguesPerBatch * batches.executionBatches, dialogue.dialogues);
+  assert.equal(batches.askQuestionPerBatch + batches.shrinkStepPerBatch, batches.dialoguesPerBatch);
+  assert.equal(batches.plainPerBatch + batches.warmPerBatch, batches.dialoguesPerBatch);
+
+  const plan = buildTutorStubBoredomProofDagPlan(v7);
+  assert.equal(plan.jobs.length, dialogue.dialogues);
+  assert.equal(new Set(plan.jobs.map((job) => job.id)).size, dialogue.dialogues);
+  assert.equal(new Set(plan.jobs.map((job) => job.batch_id)).size, batches.executionBatches);
+  assert.equal(plan.assignment_manifest_sha256, v7.design.randomization.assignmentManifestSha256);
+
+  // 42 a move, 42 a manner, and 21 in each of the four move-and-manner cells.
+  const count = (field, value) => plan.jobs.filter((job) => job[field] === value).length;
+  assert.equal(count('pedagogical_move_level', 'ask_question'), sizes.perMove);
+  assert.equal(count('pedagogical_move_level', 'shrink_step'), sizes.perMove);
+  assert.equal(count('realization', 'plain'), sizes.perManner);
+  assert.equal(count('realization', 'warm'), sizes.perManner);
+  for (const move of ['ask_question', 'shrink_step']) {
+    for (const manner of ['plain', 'warm']) {
+      const cell = plan.jobs.filter((job) => job.pedagogical_move_level === move && job.realization === manner);
+      assert.equal(cell.length, dialogue.dialogues / 4, `${move}/${manner}`);
+      // Seven per world in each cell, so no world carries an unbalanced cell.
+      const perWorld = new Map();
+      for (const job of cell) perWorld.set(job.world, (perWorld.get(job.world) || 0) + 1);
+      assert.equal(perWorld.size, v7.design.worlds.length);
+    }
+  }
+
+  // No seed is reused from v6, so no v7 dialogue can replay a v6 one.
+  const v6Seed = loadV6().design.freshPrefixGeneration.seedBase;
+  assert.notEqual(v7.design.freshPrefixGeneration.seedBase, v6Seed);
+});
+
+test('v7 endpoint preflight, contract, and certificate agree at zero calls', () => {
+  const v7 = loadV7();
+  const contract = readJson(V7_CONTRACT_PATH);
+  assert.equal(contract.registration.registration_sha256, fileSha256(V7_REGISTRATION_PATH));
+  assert.equal(contract.runner.batch_contract.required_batches.length, v7.executionReadiness.batches.executionBatches);
+  assert.equal(contract.registration.required_distinct_prefixes, v7.executionReadiness.dialogue.dialogues);
+
+  const preflight = runTutorStubBoredomProofDagEndpointPreflight({
+    contract,
+    registration: v7,
+    registrationPath: V7_REGISTRATION_PATH,
+  });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(preflight.readiness.contract_binding.registration_bytes_match_contract, true);
+  assert.equal(preflight.readiness.hard_study_attempt_ceiling, v7.executionReadiness.dialogue.maximumReservations);
+  assert.equal(preflight.readiness.execution_batches, v7.executionReadiness.batches.executionBatches);
+  assert.equal(preflight.readiness.independent_dialogues, v7.executionReadiness.dialogue.dialogues);
+  for (const endpoint of contract.endpoints) {
+    assert.equal(preflight.assembly_audit.endpoint_status[endpoint.id], 'complete', endpoint.id);
+  }
+
+  const { report } = assembleTutorStubBoredomProofDagPreflight({
+    cases: buildTutorStubBoredomProofDagSyntheticCases(v7),
+    contract,
+  });
+  const sizes = boredomRegisteredSizes(v7);
+  assert.equal(report.distinct_fresh_prefixes, sizes.dialogues);
+  // Two moves by two manners, and every one of the four cells the same size.
+  assert.equal(report.manner_block.length, 4);
+  assert.ok(report.manner_block.every((cell) => cell.units === sizes.dialogues / 4));
+
+  const certificate = readJson(V7_CERTIFICATE_PATH);
+  const certificateValidation = validatePaidStudyEndpointGoCertificate({ contract, preflight, certificate });
+  assert.equal(certificateValidation.ok, true, certificateValidation.errors.join('; '));
+  assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
+  assert.match(certificate.authorization_scope, /authorizes no confirmation-model call/u);
+});
+
+test('v7 records that the safeguard, not the effect, set the sample size', () => {
+  const v7 = loadV7();
+  const ceiling = v7.executionReadiness.programmeCeiling;
+  assert.equal(ceiling.ledgerBeforeV7, 3008);
+  assert.equal(ceiling.v7Maximum, 10332);
+  assert.equal(ceiling.requiredCeiling, ceiling.ledgerBeforeV7 + ceiling.v7Maximum);
+  assert.ok(ceiling.requiredCeiling <= ceiling.programmeSafeguard);
+  assert.equal(ceiling.headroom, ceiling.programmeSafeguard - ceiling.requiredCeiling);
+  // The registration says attempt accounting is an operational safeguard and
+  // must not set the design. Here it did, and the registration has to say so
+  // rather than round it away.
+  assert.match(v7.executionReadiness.attemptAccountingRole, /operational/u);
+  assert.match(ceiling.theSafeguardNowBindsTheDesign, /setting the sample size/u);
+
+  // The planning scenario falls short of the stated target and the registration
+  // records both numbers.
+  assert.equal(v7.power.targetPower, 0.8);
+  assert.equal(v7.power.targetPowerReached, false);
+  const planning = v7.power.powerTable.find((row) => /planning scenario/u.test(row.scenario));
+  assert.ok(planning, 'the planning scenario must be named in the power table');
+  assert.equal(planning.perMove, 42);
+  assert.ok(planning.oneSidedPower > planning.twoSidedPower);
+  assert.ok(planning.oneSidedPower < v7.power.targetPower);
 });
