@@ -68,3 +68,6 @@ tags:
 - 2026-08-23: Resolved the P0 reviewer conditions before Gate 1: B1 calibration
   register is fidelity-only, R1 has one powered statistic, and both new reader
   instruments have explicit agreement floors.
+- 2026-08-23: Resolved the P1 world decision prospectively. R1 is equally
+  stratified across Marrick and Rowan Flat, with its claim limited to those
+  worlds and the persona-permitted elicitation boundary explicit.

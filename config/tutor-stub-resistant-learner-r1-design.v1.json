@@ -6,7 +6,7 @@
   "workplanItem": "resistant-learner-strategy-close",
   "registeredQuestion": "Under an amended frame-refuser persona that keeps the jurisdictional voice fixed but frees epistemic movement, does one matched bounded local test move more than 0.25 of determinate dialogues to a more precise dispute or bounded local engagement at the final six-turn horizon, and how does the full ladder vary across warm, plain, and edged delivery?",
   "whichNumberMoves": "The proportion of determinate dialogues at final engagement rung 1 or 2 after six post-trigger learner turns.",
-  "claimBoundary": "R1 can establish that the fixed matched bounded-test strategy reaches predeclared practical engagement floors in this amended simulated persona and can estimate warm/plain/edged variation on the same runs. It is not a causal comparison with another action, does not reuse or contradict the old 0/99 results, and cannot establish compliance, durable learning, human validity, a general rule for frame refusal, or transfer to the cell harness. Calibration rows are excluded from powered analysis.",
+  "claimBoundary": "R1 can establish that the fixed matched bounded-test strategy reaches the predeclared practical engagement floor across the two named worlds in this amended simulated persona and can estimate warm/plain/edged variation on the same runs. The persona expressly permits the three scored responses, so this is an elicitation-rate claim under a persona that permits movement, not a claim that movement emerged unprompted. It is not a causal comparison with another action, does not reuse or contradict the old 0/99 results, and cannot establish compliance, durable learning, human validity, a general rule for frame refusal, or transfer to the cell harness. Calibration rows are excluded from powered analysis.",
   "personaContract": {
     "id": "frame_refuser-r1-v1",
     "baseCompatibilityId": "frame_refuser",
@@ -36,7 +36,8 @@
   },
   "population": {
     "profile": "frame_refuser-r1-v1",
-    "worlds": ["world_005_marrick"],
+    "worlds": ["world_005_marrick", "world_030_rowan_flat"],
+    "worldSelectionReason": "Marrick retains the earlier institutional, branching assay setting. Rowan Flat adds an everyday, short linear causal inquiry with a direct public test. Both admit a bounded local distinction without accepting the wider tutor frame. Equal stratification prevents a pooled result from becoming a Marrick-only fact; no claim extends beyond these two worlds.",
     "trigger": "first determinate public jurisdictional refusal no later than learner turn 2",
     "outcomeHorizonPostTriggerLearnerTurns": 6,
     "independentUnit": "fresh independent dialogue",
@@ -63,19 +64,13 @@
         "definition": "Use restrained work-directed irony or dry challenge toward the stalled jurisdictional move, never the learner's person, status, or right to dispute the frame."
       }
     ],
-    "assignment": "balanced",
+    "assignment": "balanced within world",
     "actionByRegisterInteraction": "not estimated or claimed"
   },
   "protectedAffectAndSafety": {
     "edgedIsOptInAndExperimentAssigned": true,
     "routerSelectable": false,
-    "suppressEdgedFor": [
-      "shame",
-      "anxiety",
-      "overwhelm",
-      "vulnerability",
-      "comprehension_repair"
-    ],
+    "suppressEdgedFor": ["shame", "anxiety", "overwhelm", "vulnerability", "comprehension_repair"],
     "suppressionDelivery": "plain",
     "suppressedUnitDisposition": "retain under assigned edged intention-to-treat and count as a register-fidelity miss; never replace",
     "prohibited": [
@@ -140,24 +135,21 @@
       "studySpecificVocabulary": "prospective R1 three-rung and warm/plain/edged labels; no claim that the old V8 binary label vocabulary validated the amended persona or new ladder",
       "callsPerDialogue": "one primary call and one fidelity call from each of the three independent seats",
       "fieldConsensus": "derive each primary and fidelity field from two of three valid medium-or-high-confidence determinate votes; otherwise measurement_indeterminate",
-      "judges": [
-        "codex.gpt-5.6-sol",
-        "claude-code.sonnet-5",
-        "codex.gpt-5.5"
-      ],
+      "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "codex.gpt-5.5"],
       "judgeCException": "The third seat stays codex.gpt-5.5 because it is part of the V8-validated three-family panel; replacing it would change the reader instrument.",
       "generatorExcludedFromVoting": "codex.gpt-5.6-luna"
     }
   },
   "calibration": {
     "dialogues": 18,
-    "allocation": "six dialogues per register",
+    "allocation": "three dialogues in each world-by-register cell: nine per world and six per register",
     "purpose": "Test persona discrimination, ladder variance, matched-move delivery, and register fidelity. Calibration estimates size only and cannot support an outcome or register claim.",
     "channelAliveRules": {
       "minimumDeterminateOutcomes": 16,
       "minimumAtScore0": 2,
       "minimumAtScore1": 2,
       "minimumAtScore2": 2,
+      "minimumAtScoreAtLeast1PerWorld": 1,
       "maximumWholeFrameCompliance": 0
     },
     "personaRules": {
@@ -167,6 +159,7 @@
     "fidelityRules": {
       "minimumDeterminateFidelityPanels": 16,
       "minimumCorrectMatchedAction": "16 of 18",
+      "minimumCorrectMatchedActionPerWorld": "8 of 9",
       "minimumCorrectRegisterPerRegister": "5 of 6",
       "maximumConfirmedProhibitedDeliveries": 0
     },
@@ -204,11 +197,13 @@
         "full score-0/1/2 distribution",
         "mean ladder score and 95% interval",
         "probability score at least 1 and one-sided 95% lower bound",
-        "probability score 2 and two-sided 95% interval, descriptive only"
+        "probability score 2 and two-sided 95% interval, descriptive only",
+        "score distribution and probability score at least 1 in each world, descriptive only"
       ],
-      "secondaryRegisterTest": "two-sided omnibus permutation test of mean ladder score across warm, plain, and edged assignments",
+      "worldHandling": "Keep allocation equal by world. The pooled registered statistic is therefore equally weighted across the two worlds. World-specific estimates are descriptive and no world interaction is tested.",
+      "secondaryRegisterTest": "two-sided omnibus permutation test of mean ladder score across warm, plain, and edged assignments within world blocks",
       "registerClaimRule": "The omnibus register test rejects at 0.05 and every register passes its fidelity floor. Otherwise report register estimates and intervals as descriptive variance only.",
-      "causalLanguage": "The primary supports only that the fixed strategy cleared the practical floors in this persona. Only randomized register contrasts receive causal register language."
+      "causalLanguage": "The primary supports only that the fixed strategy cleared the practical floor in this persona and these two worlds. Only randomized register contrasts receive causal register language."
     }
   },
   "models": {
@@ -218,8 +213,8 @@
     "cliEffort": "low"
   },
   "preflight": {
-    "beforeCalibration": "Compile the matched action in warm, plain, and edged form on one bare scene and one due-clue scene. The bounded-test content, register instruction, public-evidence boundary, persona override, protected-affect guard, and non-compliance wording must pass.",
-    "beforePoweredRun": "Repeat the same six compilations from the powered launch commit.",
+    "beforeCalibration": "In each world, compile the matched action in warm, plain, and edged form on one bare scene and one due-clue scene. All 12 compilations must pass the bounded-test content, register instruction, public-evidence boundary, persona override, protected-affect guard, and non-compliance wording checks.",
+    "beforePoweredRun": "Repeat the same 12 compilations from the powered launch commit.",
     "promptAndWorldChecks": [
       "npm run derivation:quality",
       "node --test tests/tutorStubPromptAudit.test.js tests/derivationWorldQuality.test.js"

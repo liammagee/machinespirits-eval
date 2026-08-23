@@ -66,22 +66,10 @@
   "protectedAffectAndSafety": {
     "edgedIsOptInAndExperimentAssigned": true,
     "routerSelectable": false,
-    "suppressEdgedFor": [
-      "shame",
-      "anxiety",
-      "overwhelm",
-      "vulnerability",
-      "comprehension_repair"
-    ],
+    "suppressEdgedFor": ["shame", "anxiety", "overwhelm", "vulnerability", "comprehension_repair"],
     "suppressionDelivery": "plain",
     "suppressedUnitDisposition": "retain under assigned edged intention-to-treat and count as a register-fidelity miss; never replace",
-    "prohibited": [
-      "insult",
-      "mockery_of_person",
-      "face_threat",
-      "hostility",
-      "coerced_uptake"
-    ],
+    "prohibited": ["insult", "mockery_of_person", "face_threat", "hostility", "coerced_uptake"],
     "confirmedProhibitedDelivery": "kill current stage before another call"
   },
   "measurement": {
@@ -96,11 +84,7 @@
     },
     "fidelity": {
       "source": "the delivered tutor intervention text only, never assignment records",
-      "fields": [
-        "delivered_action_family",
-        "delivered_question_contrast",
-        "delivered_register"
-      ],
+      "fields": ["delivered_action_family", "delivered_question_contrast", "delivered_register"],
       "questionContrastAudit": "count question marks in the delivered intervention after the semantic action-family judgment",
       "assignmentEchoesAreEvidence": false
     },
@@ -118,11 +102,7 @@
       "studySpecificVocabulary": "prospective B1 authored-pickup, action-family, question/no-question, and warm/plain/edged labels; no claim that the old V8 label vocabulary validated these new constructs",
       "callsPerDialogue": "one primary call and one fidelity call from each of the three independent seats",
       "fieldConsensus": "derive each primary and fidelity field from two of three valid medium-or-high-confidence determinate votes; otherwise measurement_indeterminate",
-      "judges": [
-        "codex.gpt-5.6-sol",
-        "claude-code.sonnet-5",
-        "codex.gpt-5.5"
-      ],
+      "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "codex.gpt-5.5"],
       "judgeCException": "The third seat stays codex.gpt-5.5 because it is part of the V8-validated three-family panel; replacing it would change the reader instrument.",
       "generatorExcludedFromVoting": "codex.gpt-5.6-luna"
     }
