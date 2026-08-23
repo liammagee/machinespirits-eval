@@ -554,6 +554,75 @@ test('study-only intervention assigns the typed action before its compatible reg
   assert.equal(unchanged, later);
 });
 
+test('study assignment rebinds stance-derived performance without changing the action or host part', () => {
+  const staleWarmSelection = baseSelection('warm');
+  staleWarmSelection.response_configuration.actorial_part = 'advocate';
+  staleWarmSelection.response_configuration.actorial_part_label = 'advocate for the live case';
+  staleWarmSelection.response_configuration.actorial_performance = {
+    id: 'shared_scene_invitation',
+    label: 'shared-scene invitation',
+    contract: 'Make room beside a named public object and invite the learner\'s reading.',
+  };
+  const plainState = stateWith(runtime('frame_defiant', 'matched', 'plain'), staleWarmSelection);
+  const learnerText = 'I reject your frame and will not answer under it.';
+  const classification = {
+    turn: {
+      request_type: 'resistance_or_low_agency',
+      discourse_move: 'challenge',
+      evidence_use: 'none',
+      epistemic_stance: 'resistant',
+      agency: 'steering',
+    },
+  };
+  const plain = applyTutorStubResistanceActionRegisterStudyIntervention({
+    selection: staleWarmSelection,
+    state: plainState,
+    learnerText,
+    classification,
+    tutorLearnerDag: { model: { turn: 1 } },
+  });
+
+  const stalePlainSelection = baseSelection('plain');
+  stalePlainSelection.response_configuration.actorial_part = 'advocate';
+  stalePlainSelection.response_configuration.actorial_part_label = 'advocate for the live case';
+  const warmState = stateWith(runtime('frame_defiant', 'matched', 'warm'), stalePlainSelection);
+  const warm = applyTutorStubResistanceActionRegisterStudyIntervention({
+    selection: stalePlainSelection,
+    state: warmState,
+    learnerText,
+    classification,
+    tutorLearnerDag: { model: { turn: 1 } },
+  });
+
+  assert.equal(plain.action_family, 'clarify_distinction');
+  assert.equal(warm.action_family, 'clarify_distinction');
+  assert.equal(plain.response_configuration.actorial_part, 'advocate');
+  assert.equal(warm.response_configuration.actorial_part, 'advocate');
+  assert.equal(plain.response_configuration.actorial_performance.id, 'unadorned_report');
+  assert.equal(warm.response_configuration.actorial_performance.id, 'shared_scene_invitation');
+
+  const plainContract = buildTutorStubFirstDraftContract({
+    learnerText,
+    responseConfiguration: plain.response_configuration,
+  });
+  const warmContract = buildTutorStubFirstDraftContract({
+    learnerText,
+    responseConfiguration: warm.response_configuration,
+  });
+  assert.equal(plainContract.development.instruction, warmContract.development.instruction);
+  assert.equal(plainContract.performance.actorial_part, warmContract.performance.actorial_part);
+  assert.equal(plainContract.performance.tactic, 'unadorned_report');
+  assert.equal(warmContract.performance.tactic, 'shared_scene_invitation');
+  assert.match(plainContract.performance.stance_execution, /literal ordinary words and short sentences/u);
+  assert.match(warmContract.performance.stance_execution, /low-pressure invitation/u);
+  const plainPrompt = tutorStubFirstDraftContractPrompt(plainContract);
+  const warmPrompt = tutorStubFirstDraftContractPrompt(warmContract);
+  assert.match(plainPrompt, /neutral, non-affiliative reference stance/u);
+  assert.match(plainPrompt, /without inviting shared movement or choice/u);
+  assert.match(warmPrompt, /low-pressure collaborative stance/u);
+  assert.match(warmPrompt, /same bounded distinction and local evidentiary test/u);
+});
+
 test('mismatch swaps only the registered move and the edged register follows that move', () => {
   const selection = baseSelection();
   const state = stateWith(runtime('frame_defiant', 'mismatched', 'edged', 'B'), selection);
@@ -643,6 +712,8 @@ test('protected conditions suppress assignment and a post-assignment safety chan
     reason: 'protected_affect',
   });
   assert.equal(overridden.selected_register, 'plain');
+  assert.equal(overridden.response_configuration.actorial_performance.id, 'unadorned_report');
+  assert.match(overridden.response_configuration.study_realization_contrast_instruction, /neutral, non-affiliative/u);
   assert.equal(overridden.resistance_action_register_intervention.status, 'safety_override_nonadherent');
   assert.equal(overridden.resistance_action_register_intervention.safety_override.assigned_register, 'ironic');
   assert.equal(overridden.resistance_action_register_intervention.reroll_authorized, false);

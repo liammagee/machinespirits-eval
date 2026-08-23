@@ -419,7 +419,7 @@ function compactTacticInstruction(contract) {
   return [sourceBoundary, tactic, support, transition].filter(Boolean).join(' ');
 }
 
-function compactStanceInstruction(stance) {
+function compactStanceInstruction(stance, studyContrastInstruction = null) {
   const cues = {
     plain: 'Use literal words; no flourish.',
     precise: 'Say “X, not Y”; name correction.',
@@ -431,7 +431,9 @@ function compactStanceInstruction(stance) {
     sarcastic: 'Mock-praise the claim; reverse it; offer repair.',
     face_threat: 'Expose the move locally; leave minimal repair.',
   };
-  return cues[stance] || `Make it visibly ${oneLine(stance) || 'precise'}.`;
+  return [cues[stance] || `Make it visibly ${oneLine(stance) || 'precise'}.`, oneLine(studyContrastInstruction)]
+    .filter(Boolean)
+    .join(' ');
 }
 
 function compactProgressionHandoffInstruction(contract) {
@@ -462,7 +464,15 @@ function compactProgressionHandoffInstruction(contract) {
   } else {
     action = `${compactActionInstruction(contract)} HANDOFF owns the one final question.`;
   }
-  return [action, compactStanceInstruction(contract.performance?.engagement_stance), settled, bridge]
+  return [
+    action,
+    compactStanceInstruction(
+      contract.performance?.engagement_stance,
+      contract.performance?.study_realization_contrast_instruction,
+    ),
+    settled,
+    bridge,
+  ]
     .filter(Boolean)
     .join(' ');
 }
@@ -815,6 +825,7 @@ export function buildTutorStubFirstDraftContract({
     },
     performance: {
       engagement_stance: stance,
+      study_realization_contrast_instruction: oneLine(configuration.study_realization_contrast_instruction),
       engagement_operation_contract: engagementOperation,
       stance_instruction: [
         oneLine(getEngagementStanceDefinition(stance)?.stance_contract),
