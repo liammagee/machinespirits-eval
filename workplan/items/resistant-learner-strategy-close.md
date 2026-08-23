@@ -1,0 +1,59 @@
+---
+id: resistant-learner-strategy-close
+title: Establish one claimable strategy for bored and frame-refusing learners
+status: active
+type: research
+priority: P1
+owner: codex
+source: manual
+created: 2026-08-23
+updated: 2026-08-23
+verification: >-
+  B1 and R1 each pass their predeclared calibration and powered-run rules; the
+  resulting strategic-move and same-run warm/plain/edged register claims are
+  folded into the canonical paper with frozen-result boundaries intact, and
+  all paid artifacts pass npm run archive:runs and are committed in the
+  private archive repository.
+branch: codex/resistant-learners-close
+claim_status: planned
+links:
+  items:
+    - resistance-action-register-integration
+  notes:
+    - notes/2026-08-23-boredom-action-register-proof-dag-closeout.md
+    - notes/2026-08-23-boredom-action-register-v7-reading.md
+    - docs/adaptation-refinement/new-learner-profiles-bored-defiant.md
+    - docs/paid-study-authorization-policy.md
+    - docs/resistance-action-register-conservation-protocol.md
+tags:
+  - tutor-stub
+  - resistant-learners
+  - boredom
+  - frame-refusal
+  - register
+---
+
+## Critical path
+
+- P0: audit one live outcome channel per learner from sealed transcripts.
+- P1: merge one lightweight design file for B1 and one for R1.
+- Gate 1: after a signed GO note, calibrate each new channel and delivered
+  contrast with about 12-18 dialogues per learner.
+- Gate 2: after a second signed GO note, run the smallest powered blocks that
+  reach 80% power under the calibration estimates.
+- Closeout: seal the runs, update the paper under its claim discipline, and
+  archive all paid artifacts.
+
+## Guardrails
+
+- Bored leads every phase and never waits for unsettled refuser work.
+- Do not reopen, re-score, or rewrite any frozen study or result.
+- Use the lightweight paid-study policy. Do not add authorization machinery.
+- Read delivered moves and registers from tutor text, not assignments.
+- Split branches only if R1 needs shared measurement-code changes after B1's
+  design file has merged.
+
+## Log
+
+- 2026-08-23: Started from `origin/main` at `66ddf92d` on the required single
+  stream. No model call is authorized or active; Phase 0 is zero-call.
