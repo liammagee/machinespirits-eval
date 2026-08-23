@@ -12,10 +12,15 @@ import {
   runTutorStubResistantLearnerCompilationPreflight,
   summarizeTutorStubResistantLearnerCalibration,
   tutorStubFrameRefuserR1Prompt,
+  tutorStubResistantLearnerRuntimeModelRoutes,
+  validateTutorStubResistantLearnerDesign,
 } from '../services/tutorStubResistantLearnerCalibration.js';
 import { createTutorStubResistantLearnerSemanticRuntime } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
-import { tutorStubResistantLearnerCalibrationHaltReason } from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
+import {
+  tutorStubResistantLearnerCalibrationHaltReason,
+  tutorStubResistantLearnerGoNoteBindingIssues,
+} from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const B1_PATH = 'config/tutor-stub-resistant-learner-b1-design.v1.json';
@@ -120,6 +125,35 @@ test('registered B1 and R1 calibration plans are deterministic and exactly balan
       assert.equal(r1.jobs.filter((job) => job.world === world && job.register === register).length, 3);
     }
   }
+});
+
+test('designs declare every runtime model route and reject Luna-only or reader-route drift', () => {
+  const b1 = load(B1_PATH).design;
+  const r1 = load(R1_PATH).design;
+  for (const design of [b1, r1]) {
+    assert.deepEqual(design.models, tutorStubResistantLearnerRuntimeModelRoutes(design));
+    assert.deepEqual(
+      design.models.finalSemanticReaders.map((judge) => judge.modelRef),
+      ['codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'codex.gpt-5.5'],
+    );
+  }
+  assert.deepEqual(
+    b1.models.triggerObservation.judges.map((judge) => judge.modelRef),
+    ['codex.gpt-5.6-sol'],
+  );
+  assert.deepEqual(
+    r1.models.triggerObservation.judges.map((judge) => judge.modelRef),
+    ['codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'codex.gpt-5.5'],
+  );
+
+  const lunaOnly = structuredClone(b1);
+  delete lunaOnly.models.triggerObservation;
+  delete lunaOnly.models.finalSemanticReaders;
+  assert.ok(validateTutorStubResistantLearnerDesign(lunaOnly).issues.includes('model route closure drifted'));
+
+  const changedReader = structuredClone(r1);
+  changedReader.models.finalSemanticReaders[1].modelRef = 'codex.gpt-5.6-luna';
+  assert.ok(validateTutorStubResistantLearnerDesign(changedReader).issues.includes('model route closure drifted'));
 });
 
 test('R1 injects every persona contract instruction verbatim and no outcome target', () => {
@@ -230,6 +264,8 @@ test('zero-call compilation preflight covers the registered action, register, wo
   assert.equal(b1.world_registry.passed, true);
   assert.deepEqual(b1.world_registry.missing_or_nonproduction_worlds, []);
   assert.equal(b1.world_registry.checked_worlds.length, 6);
+  assert.equal(b1.model_route.passed, true);
+  assert.deepEqual(b1.model_route.runtime, b1.model_route.declared);
   assert.equal(b1.rows.length, 12);
   assert.equal(b1.rows.filter((row) => row.assigned_register === 'edged').length, 4);
   assert.ok(
@@ -244,6 +280,8 @@ test('zero-call compilation preflight covers the registered action, register, wo
   const r1 = runTutorStubResistantLearnerCompilationPreflight({ loaded: load(R1_PATH), root: ROOT });
   assert.equal(r1.status, 'passed_zero_call');
   assert.equal(r1.world_registry.passed, true);
+  assert.equal(r1.model_route.passed, true);
+  assert.deepEqual(r1.model_route.runtime, r1.model_route.declared);
   assert.equal(r1.rows.length, 12);
   assert.equal(new Set(r1.rows.map((row) => row.world)).size, 2);
   assert.equal(new Set(r1.rows.map((row) => row.assigned_register)).size, 3);
@@ -518,6 +556,39 @@ test('combined launcher dry-run binds both calibrations and executes zero model 
     [18, 18],
   );
   assert.ok(report.studies.every((study) => study.compilation_preflight.status === 'passed_zero_call'));
+  assert.ok(report.studies.every((study) => study.compilation_preflight.model_route.passed === true));
+});
+
+test('GO binding fails closed unless every model route and the create-once destination are explicit', () => {
+  const binding = {
+    launchCommit: 'a'.repeat(40),
+    designPaths: [B1_PATH, R1_PATH],
+    spendCap: 4806,
+    modelRefs: ['codex.gpt-5.6-luna', 'codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'codex.gpt-5.5'],
+    destination: '/private/artifacts/resistant-learner-gate1-route-corrected',
+  };
+  const complete = [
+    'GO',
+    'corrected calibration',
+    binding.launchCommit,
+    ...binding.designPaths,
+    ...binding.modelRefs,
+    String(binding.spendCap),
+    binding.destination,
+    'frame_refuser-r1-v1',
+  ].join('\n');
+  assert.deepEqual(tutorStubResistantLearnerGoNoteBindingIssues({ text: complete, ...binding }), []);
+  assert.deepEqual(
+    tutorStubResistantLearnerGoNoteBindingIssues({
+      text: complete.replace('claude-code.sonnet-5', 'omitted-reader'),
+      ...binding,
+    }),
+    ['model_routes'],
+  );
+  assert.deepEqual(
+    tutorStubResistantLearnerGoNoteBindingIssues({ text: complete.replace(binding.destination, 'other'), ...binding }),
+    ['destination'],
+  );
 });
 
 test('combined launcher halts on the first technical failure or prohibited delivery', () => {

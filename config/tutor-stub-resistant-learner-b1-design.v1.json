@@ -1,6 +1,6 @@
 {
   "schema": "machinespirits.tutor-stub.resistant-learner-study-design.v1",
-  "revision": 2,
+  "revision": 3,
   "studyId": "resistant-learner-b1-authored-pickup",
   "label": "B1 bored learner: discriminating question versus true no-question reference",
   "status": "prospective_zero_call_design_pending_gate_1_go",
@@ -9,15 +9,23 @@
   "whichNumberMoves": "The probability of learner-authored thread pickup within five post-trigger learner turns.",
   "claimBoundary": "B1 can identify the higher-performing of the two assigned strategies on learner-authored thread pickup and can estimate warm/plain/edged variation on the same simulated bored-learner runs. It cannot establish durable learning, human validity, a general rule for boredom, a proof-progress effect, an action-by-register interaction, or any claim from v4-v8. Calibration rows are excluded from powered analysis.",
   "supersedes": {
-    "priorDesignSha256": "f007fb9ad6be419035a07f2ef8409a233f0b994ae2bf62e827d5c7770945c157",
-    "priorLaunchCommit": "c9dc04ba24b7396ea5ab2b0db000fd4186d11e27",
-    "priorArtifactRoot": "artifacts/tutor-stub-live/resistant-learner-calibration-gate1-2026-08-23",
-    "priorDisposition": "void_technical_failure_no_calibration_unit_completed",
-    "reason": "The prior design named four worlds absent from its launch commit. Twelve reservations were recorded, eight calls completed, four reservations were interrupted, no dialogue completed, R1 never started, and no prior output is reused.",
-    "outcomeBlindCorrection": "Replace the absent names with the exact six-world set registered prospectively for boredom v8 and used by the sealed channel audit; no generated outcome informed the replacement.",
+    "priorDesignSha256": "03235175002fdab1a28492a809215df8744eba8f1eac25eb99126e786c37d1bb",
+    "priorLaunchCommit": "0786d35736bf5477a7dfee4571de2f26c33ff6ae",
+    "priorGoCommit": "66de44113629f814e2a55aa9bdf49c1c7d046b40",
+    "priorArtifactRoot": "artifacts/tutor-stub-live/resistant-learner-calibration-gate1-corrected-2026-08-23",
+    "priorDisposition": "void_technical_route_authorization_mismatch_no_calibration_unit_completed",
+    "reason": "The prior corrected design and GO described tutor, learner and analysis as Luna-only, but the prospective-v9 instrument necessarily invoked its independently validated Sol boredom observer. Four partial B1 dialogues recorded 36 reservations: 28 completed Luna calls, four completed Sol observer calls and four interrupted reservations. Seven dialogue cycles completed, no dialogue reached its final horizon, no final primary or fidelity panel ran, R1 never started and no output is reused.",
+    "outcomeBlindCorrection": "Declare every already-frozen runtime route explicitly and fail the zero-call preflight and GO binding on any mismatch. The observer remains the validated Sol instrument and the final reader panel remains the registered Sol, Sonnet-5 and GPT-5.5 panel; no response text or outcome field informed this correction.",
     "reuse": false,
     "pool": false,
-    "claimCredit": false
+    "claimCredit": false,
+    "earlierTechnicalStop": {
+      "priorDesignSha256": "f007fb9ad6be419035a07f2ef8409a233f0b994ae2bf62e827d5c7770945c157",
+      "priorLaunchCommit": "c9dc04ba24b7396ea5ab2b0db000fd4186d11e27",
+      "priorArtifactRoot": "artifacts/tutor-stub-live/resistant-learner-calibration-gate1-2026-08-23",
+      "priorDisposition": "void_technical_failure_no_calibration_unit_completed",
+      "reason": "The first design named four worlds absent from its launch commit. Twelve reservations were recorded, eight Luna calls completed, four reservations were interrupted, no dialogue completed, R1 never started and no output is reused."
+    }
   },
   "population": {
     "profile": "bored",
@@ -189,8 +197,44 @@
   "models": {
     "tutor": "codex.gpt-5.6-luna",
     "analysis": "codex.gpt-5.6-luna",
+    "analysisScope": "classifier_and_learner_record_support_only",
     "learner": "codex.gpt-5.6-luna",
-    "cliEffort": "low"
+    "cliEffort": "low",
+    "triggerObservation": {
+      "semantics": "prospective_v9",
+      "judges": [
+        {
+          "id": "boredom_observer",
+          "modelRef": "codex.gpt-5.6-sol",
+          "provider": "codex",
+          "model": "gpt-5.6-sol",
+          "effort": "low"
+        }
+      ]
+    },
+    "finalSemanticReaders": [
+      {
+        "id": "reader_a",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "effort": "low"
+      },
+      {
+        "id": "reader_b",
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "effort": "low"
+      },
+      {
+        "id": "reader_c",
+        "modelRef": "codex.gpt-5.5",
+        "provider": "codex",
+        "model": "gpt-5.5",
+        "effort": "low"
+      }
+    ]
   },
   "preflight": {
     "beforeCalibration": "Compile both action arms under every register on one bare scene and one due-clue scene. The action family, question permission, register instruction, public-evidence boundary, and protected-affect guard must pass.",

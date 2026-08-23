@@ -4,6 +4,11 @@ import path from 'node:path';
 
 import { configureTutorStubBoredomProofDagExecution } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import {
+  TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL,
+  TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL_REF,
+  TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_PROVIDER,
+} from './tutorStubBoredomSemanticAdjudicationV3.js';
+import {
   applyTutorStubResistanceActionRegisterSafetyOverride,
   compileTutorStubResistanceActionRegisterStudyAssignment,
   createTutorStubResistanceActionRegisterStudyRuntime,
@@ -11,6 +16,11 @@ import {
   tutorStubResistanceHostActionFamily,
 } from './tutorStubResistanceActionRegisterStudy.js';
 import { loadWorld } from './dramaticDerivation/world.js';
+import { tutorStubResistantLearnerSemanticJudgeRoutes } from './tutorStubResistantLearnerSemanticRuntime.js';
+import {
+  loadTutorStubResistanceSemanticRegistration,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
+} from './tutorStubResistanceSemanticRuntime.js';
 import { compileTutorStubTurnProgressionContract } from './tutorStubTurnProgressionContract.js';
 
 const DESIGN_SCHEMA = 'machinespirits.tutor-stub.resistant-learner-study-design.v1';
@@ -32,6 +42,43 @@ const B1_ACTION_LEVEL = Object.freeze({
   ask_discriminating_question: 'ask_question',
   stage_public_evidence_for_next_step: 'carry_on',
 });
+const LUNA_MODEL_REF = 'codex.gpt-5.6-luna';
+
+function routeFields({ id, modelRef, provider, model, effort }) {
+  return { id, modelRef, provider, model, effort };
+}
+
+export function tutorStubResistantLearnerRuntimeModelRoutes(design) {
+  const b1 = design?.studyId === B1_ID;
+  const triggerObservation = b1
+    ? {
+        semantics: 'prospective_v9',
+        judges: [
+          {
+            id: 'boredom_observer',
+            modelRef: TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL_REF,
+            provider: TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_PROVIDER,
+            model: TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL,
+            effort: 'low',
+          },
+        ],
+      }
+    : {
+        semantics: 'prospective_frame_resistance_semantic_v4',
+        judges: loadTutorStubResistanceSemanticRegistration(
+          TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
+        ).registration.measurement.judges.map(routeFields),
+      };
+  return {
+    tutor: LUNA_MODEL_REF,
+    analysis: LUNA_MODEL_REF,
+    analysisScope: 'classifier_and_learner_record_support_only',
+    learner: LUNA_MODEL_REF,
+    cliEffort: 'low',
+    triggerObservation,
+    finalSemanticReaders: tutorStubResistantLearnerSemanticJudgeRoutes(design),
+  };
+}
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -70,13 +117,14 @@ export function validateTutorStubResistantLearnerDesign(design) {
   if (design?.calibration?.dialogues !== 18) issues.push('calibration must contain 18 dialogues');
   if (!Number.isInteger(design?.randomization?.masterSeed)) issues.push('randomization master seed is missing');
   if (!exactValues(design?.measurement?.readerPanel?.judges, JUDGES)) issues.push('reader panel drifted');
-  if (
-    design?.models?.tutor !== 'codex.gpt-5.6-luna' ||
-    design?.models?.analysis !== 'codex.gpt-5.6-luna' ||
-    design?.models?.learner !== 'codex.gpt-5.6-luna' ||
-    design?.models?.cliEffort !== 'low'
-  ) {
-    issues.push('generator model route drifted');
+  if ([B1_ID, R1_ID].includes(studyId)) {
+    try {
+      if (!exactValues(design?.models, tutorStubResistantLearnerRuntimeModelRoutes(design))) {
+        issues.push('model route closure drifted');
+      }
+    } catch (error) {
+      issues.push(`model route closure failed: ${error.message}`);
+    }
   }
   const calls = Object.values(design?.attemptCeilings?.callPlanPerDialogue || {}).reduce(
     (sum, value) => sum + Number(value || 0),
@@ -96,9 +144,12 @@ export function validateTutorStubResistantLearnerDesign(design) {
   if (studyId === B1_ID) {
     const actions = design?.factors?.action?.levels || [];
     if (
-      design?.revision !== 2 ||
-      design?.supersedes?.priorDesignSha256 !== 'f007fb9ad6be419035a07f2ef8409a233f0b994ae2bf62e827d5c7770945c157' ||
-      design?.supersedes?.priorDisposition !== 'void_technical_failure_no_calibration_unit_completed' ||
+      design?.revision !== 3 ||
+      design?.supersedes?.priorDesignSha256 !== '03235175002fdab1a28492a809215df8744eba8f1eac25eb99126e786c37d1bb' ||
+      design?.supersedes?.priorDisposition !==
+        'void_technical_route_authorization_mismatch_no_calibration_unit_completed' ||
+      design?.supersedes?.earlierTechnicalStop?.priorDesignSha256 !==
+        'f007fb9ad6be419035a07f2ef8409a233f0b994ae2bf62e827d5c7770945c157' ||
       design?.supersedes?.reuse !== false ||
       design?.population?.profile !== 'bored' ||
       !exactValues(design?.population?.worlds, B1_WORLDS) ||
@@ -122,6 +173,10 @@ export function validateTutorStubResistantLearnerDesign(design) {
   }
   if (studyId === R1_ID) {
     if (
+      design?.revision !== 2 ||
+      design?.supersedes?.priorDesignSha256 !== '28e961c68c8a7ce989f2b05d7182646f3fd9665a9954e1ebded5efe5239a0946' ||
+      design?.supersedes?.priorDisposition !== 'void_technical_route_authorization_mismatch_r1_not_started' ||
+      design?.supersedes?.reuse !== false ||
       design?.personaContract?.id !== 'frame_refuser-r1-v1' ||
       !exactValues(design?.population?.worlds, ['world_005_marrick', 'world_030_rowan_flat']) ||
       !exactValues(
@@ -472,6 +527,12 @@ export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root 
   const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded?.design);
   const b1 = loaded.design.studyId === B1_ID;
   const worldRegistry = auditRuntimeWorldRegistry(loaded.design.population.worlds, root);
+  const runtimeModelRoutes = tutorStubResistantLearnerRuntimeModelRoutes(loaded.design);
+  const modelRoute = {
+    declared: loaded.design.models,
+    runtime: runtimeModelRoutes,
+    passed: exactValues(loaded.design.models, runtimeModelRoutes),
+  };
   const selectedJobs = b1
     ? REGISTERS.flatMap((register) =>
         Object.keys(B1_ACTION_LEVEL).map((action) =>
@@ -550,9 +611,11 @@ export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root 
   return {
     schema: 'machinespirits.tutor-stub.resistant-learner-compilation-preflight.v1',
     study: b1 ? 'B1' : 'R1',
-    status: worldRegistry.passed && rows.every((row) => row.passed) ? 'passed_zero_call' : 'failed',
+    status:
+      worldRegistry.passed && modelRoute.passed && rows.every((row) => row.passed) ? 'passed_zero_call' : 'failed',
     expected_rows: 12,
     world_registry: worldRegistry,
+    model_route: modelRoute,
     rows,
     model_calls: 0,
     production_writes: 0,

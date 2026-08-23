@@ -64,7 +64,28 @@ function assertLaunchSource({ expectedCommit, designPaths }) {
   return commit;
 }
 
-function assertGoNote({ goNoteCommit, goNotePath, launchCommit, designPaths, spendCap }) {
+export function tutorStubResistantLearnerGoNoteBindingIssues({
+  text,
+  launchCommit,
+  designPaths,
+  spendCap,
+  modelRefs,
+  destination,
+}) {
+  const issues = [];
+  if (/\bDRAFT\b/iu.test(text)) issues.push('draft_marker');
+  if (!text.split(/\r?\n/u).some((line) => line.trim() === 'GO')) issues.push('go_token');
+  if (!designPaths.every((designPath) => text.includes(designPath))) issues.push('design_paths');
+  if (!modelRefs.every((modelRef) => text.includes(modelRef))) issues.push('model_routes');
+  if (!text.includes(launchCommit)) issues.push('launch_commit');
+  if (!text.includes(String(spendCap))) issues.push('spend_cap');
+  if (!text.includes(destination)) issues.push('destination');
+  if (!/\bcalibration\b/iu.test(text)) issues.push('calibration_stage');
+  if (!text.includes('frame_refuser-r1-v1')) issues.push('r1_persona');
+  return issues;
+}
+
+function assertGoNote({ goNoteCommit, goNotePath, launchCommit, designPaths, spendCap, modelRefs, destination }) {
   if (!String(goNotePath || '').startsWith('notes/') || path.isAbsolute(goNotePath)) {
     throw new Error('GO note must be a repository-relative path under notes/');
   }
@@ -73,17 +94,17 @@ function assertGoNote({ goNoteCommit, goNotePath, launchCommit, designPaths, spe
     cwd: ROOT,
     encoding: 'utf8',
   });
-  if (/\bDRAFT\b/iu.test(text)) throw new Error('GO note still carries a draft marker');
-  if (
-    !text.split(/\r?\n/u).some((line) => line.trim() === 'GO') ||
-    !designPaths.every((designPath) => text.includes(designPath)) ||
-    !text.includes(launchCommit) ||
-    !text.includes(String(spendCap)) ||
-    !/\bcalibration\b/iu.test(text) ||
-    !text.includes('frame_refuser-r1-v1')
-  ) {
+  const issues = tutorStubResistantLearnerGoNoteBindingIssues({
+    text,
+    launchCommit,
+    designPaths,
+    spendCap,
+    modelRefs,
+    destination,
+  });
+  if (issues.length) {
     throw new Error(
-      'signed GO note does not bind GO, the calibration stage, both designs, launch commit, combined spend cap, and R1 persona',
+      `signed GO note does not bind GO, the calibration stage, both designs, launch commit, complete model routes, destination, combined spend cap, and R1 persona: ${issues.join(', ')}`,
     );
   }
   return { commit: goNoteCommit, path: goNotePath };
@@ -111,6 +132,7 @@ function childSpec({ loaded, job, destination }) {
   fs.mkdirSync(traceDir, { recursive: true });
   const designPath = path.relative(ROOT, loaded.path);
   const b1 = job.study === 'B1';
+  const models = loaded.design.models;
   const profile = b1 ? 'bored' : tutorStubFrameRefuserR1Prompt(loaded.design);
   return {
     jobRoot,
@@ -134,17 +156,17 @@ function childSpec({ loaded, job, destination }) {
       '--model-call-budget',
       String(loaded.design.attemptCeilings.maximumReservationsPerDialogue),
       '--all-models',
-      'codex.gpt-5.6-luna',
+      models.analysis,
       '--model',
-      'codex.gpt-5.6-luna',
+      models.tutor,
       '--classifier-model',
-      'codex.gpt-5.6-luna',
+      models.analysis,
       '--learner-record-model',
-      'codex.gpt-5.6-luna',
+      models.analysis,
       '--auto-learner-model',
-      'codex.gpt-5.6-luna',
+      models.learner,
       '--cli-effort',
-      'low',
+      models.cliEffort,
       '--world',
       job.world,
       '--dag',
@@ -344,14 +366,27 @@ async function main() {
     expectedCommit: values['expected-source-commit'],
     designPaths,
   });
+  const destination = path.resolve(values.destination);
+  const modelRefs = [
+    ...new Set(
+      entries.flatMap(({ loaded }) => [
+        loaded.design.models.tutor,
+        loaded.design.models.analysis,
+        loaded.design.models.learner,
+        ...loaded.design.models.triggerObservation.judges.map((judge) => judge.modelRef),
+        ...loaded.design.models.finalSemanticReaders.map((judge) => judge.modelRef),
+      ]),
+    ),
+  ];
   const goNote = assertGoNote({
     goNoteCommit: values['go-note-commit'],
     goNotePath: values['go-note-path'],
     launchCommit,
     designPaths,
     spendCap: combinedAttemptCeiling,
+    modelRefs,
+    destination,
   });
-  const destination = path.resolve(values.destination);
   if (fs.existsSync(destination)) throw new Error('resistant-learner calibration destination is create-once');
   const parallelism = Number(values.parallelism);
   if (!Number.isInteger(parallelism) || parallelism < 1 || parallelism > 4) {

@@ -90,3 +90,10 @@ tags:
   `frame_refuser-r1-v1`, 36 fresh calibration dialogues, the 4,806-attempt
   corrected-launch ceiling, and the create-once corrected destination. Gate 2
   and both powered runs remain unauthorized.
+- 2026-08-23: Stopped the corrected launch during its first B1 cohort after
+  trace provenance exposed an undeclared Sol trigger-observer route under the
+  Luna-only GO. The preserved attempt has 0/36 complete, four interrupted
+  partial B1 jobs, 36 reservations, 32 completed calls (28 Luna, four Sol),
+  four interrupted reservations and no R1 start or calibration credit. P2 now
+  records an outcome-blind route-closure correction; another digest-bound GO
+  is required before any fresh launch.

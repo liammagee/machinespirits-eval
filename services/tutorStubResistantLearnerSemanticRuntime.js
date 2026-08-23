@@ -44,6 +44,16 @@ function judges(design) {
   });
 }
 
+export function tutorStubResistantLearnerSemanticJudgeRoutes(design) {
+  return judges(design).map(({ id, modelRef, provider, model, effort }) => ({
+    id,
+    modelRef,
+    provider,
+    model,
+    effort,
+  }));
+}
+
 function fieldSchema(values, sources) {
   return {
     type: 'object',
