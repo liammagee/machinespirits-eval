@@ -7,12 +7,12 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-18
-updated: 2026-08-22
+updated: 2026-08-23
 verification: >-
-  Three boredom action-before-register proof-DAG studies are collected and
-  analysed. v4 and v5 are registered nulls. v6 ran to 36 of 36 dialogues with
-  zero stopped units but failed its registered interpretability gate, so it
-  licenses no claim at all.
+  Five boredom action-before-register proof-DAG studies are collected and
+  analysed. v4, v5 and v7 are registered nulls. v6 and v8 failed their
+  registered interpretability gates, so they license no claim at all. Nothing
+  in this line licenses a claim that any tutor move helps a bored learner.
 
   v4 (36 planned, 33 scored): plain 0/18, warm 0/15, risk difference 0, exact
   conditional p = 1, decision warm_plain_recovery_not_confirmed. Three units
@@ -56,9 +56,48 @@ verification: >-
   after seeing the data is refused, and any redesign of it belongs in a later
   registration.
 
+  v7 kept the v5 window and the v6 move contrast and raised the size to 84
+  dialogues, 42 a move. It ran to 80 scored units and returned a registered
+  null: ask 21/41 against simplify 25/39, risk difference -0.102, one-sided
+  exact conditional p = 0.81, decision not confirmed. Auditing its own paid
+  transcripts then showed why that null says nothing about the moves: both
+  arms carried the host action family `stage_next_step`, so both were allowed
+  to end on a question and both did, in 0.976 of trigger turns. v7 delivered
+  one behaviour twice, and its move-fidelity gate read 1.00 because it compared
+  the assigned move with its own copy. Cite v7 as a delivery failure, not as
+  evidence about either move.
+
+  v8 changes the question. It contrasts making a boredom-directed move against
+  making none: `ask_question` asks the discriminating question under
+  `stage_next_step`, and `carry_on` stages the next already-public piece of
+  evidence under `reanchor_public_evidence`, which forbids a closing question.
+  The two arms take different families on purpose, so v8 can say that making a
+  move mattered and cannot say the question did the work. 72 dialogues, 36 a
+  move, plain and warm balanced 18 and 18 inside each move as a block that is
+  never tested, two-sided.
+
+  v8 ran and failed its registered interpretability gate, so it licenses no
+  claim at all. 72 planned, 66 transcribed, 65 scored; 7 stopped and none was
+  replaced, split carry_on 3 and ask_question 4, so attrition is unbalanced and
+  must be reported beside any number. The deciding floor is the delivered
+  contrast, counted from question marks in the tutor's own trigger turn: pooled
+  0.877 against 0.90. The failure is one-sided — ask_question 0.969, carry_on
+  0.788 — so about one reference dialogue in five ended on a question the
+  reference instruction forbids. The manner floors passed at 0.969 against
+  0.80. The primary numbers are recorded but may not be reported as a finding:
+  carry_on 19/33 against ask_question 15/32, risk difference -0.107, two-sided
+  exact conditional p = 0.461, decision not confirmed. Objective proof progress
+  is near-empty on both sides, 1/33 against 0/32. Leakage is clean: none of the
+  34 scoring turns only said back what the tutor had just made public. Two
+  readings bind any successor: the gate failure points the same way as the
+  measured difference, so the true gap is wider than -0.107 rather than
+  narrower; and the realised reference rate of 0.576 sits far above the top of
+  the registered power scan, which reached 0.8 power only below about one in
+  six, so this size could not have detected the effect it was sized for.
+
   No warm/plain efficacy claim is licensed by v4 or v5, and none is refuted
-  beyond each design's claim boundary. No move claim is licensed by v6. No
-  further paid call in this line is authorized.
+  beyond each design's claim boundary. No move claim is licensed by v6, v7 or
+  v8. No further paid call in this line is authorized.
   The earlier frozen independent semantic-measurement programme remains closed
   without a scientific result under its standing success-or-systemic-failure
   boundary.
@@ -3531,3 +3570,55 @@ and explicit human approval.
   record already carries. Test coverage: 49 assertions across the two boredom
   files, including a new end-to-end case that fails the gate on a blurred pair
   of arms both pooled and per arm.
+- 2026-08-23 — The human pasted the exact approval statement for request
+  `74f01ce4`, and the launch authorization was committed as `abf2d6d5` before
+  any spend. It binds the study design fingerprint
+  `aa96789865820b64bb97769b1453fcc3b66dace00edb94e64241df07ad7b09d6` and not
+  source bytes, so a defect fix cannot void it. Every figure in it is derived
+  from the frozen registration by a build script, and its `approvalStatement`
+  is copied from the validator's generated text; the paste matched that text
+  word for word, differing only in the glyph used for one apostrophe.
+- 2026-08-23 — v8 ran to completion at launch commit `dfb8e4da`, one batch of
+  four at a time at parallelism 4 across 18 batches. All 18 batches sealed:
+  batches 1-9 and 15-18 clean, batches 10-14 sealed
+  `sealed_with_registered_stops`. 72 dialogues planned, 66 produced a
+  transcript, 65 scored. Seven stopped and none was repaired, rerun or
+  replaced: six as `measurement_indeterminate` where the learner never went
+  flat by turn 4, and one, `bored-confirm-w1-d6`, as a duplicate public prefix
+  repeating the opening of `bored-confirm-w1-d1`. The stops split `carry_on` 3
+  and `ask_question` 4, so attrition is unbalanced and every report of this
+  result must say so. Four of the six indeterminate stops fell in
+  `world_029_riverside_clinic`. The run's artifacts are archived at
+  `machinespirits-eval-private` commits `a8d232bc` and `fd01036b`.
+- 2026-08-23 — v8 fails its registered interpretability gate and licenses no
+  claim. The deciding floor is the delivered contrast, counted from question
+  marks in the tutor's own delivered trigger turn: pooled `0.877` against a
+  `0.90` minimum. The two sides are not alike. `ask_question` delivered
+  `31/32 = 0.969`; `carry_on` delivered only `26/33 = 0.788`, so about one
+  reference dialogue in five ended on a question the reference instruction
+  forbids. The manner floors passed — readability `0.969` against `0.80`, with
+  two unreadable units, both warm, both in `world_029_riverside_clinic` — and
+  the two echoed gates read `1` as they must, stating only that no safety
+  override replaced what was assigned. The report therefore carries
+  `failed_interpretability_gate_not_rerun`, and no rerun, rescore or resample
+  is authorized. The primary numbers exist and are recorded but may not be
+  reported as a finding: recovery within 5 post-trigger learner turns,
+  `carry_on` 19/33 against `ask_question` 15/32, risk difference `-0.107`,
+  two-sided exact conditional `p = 0.461`, decision
+  `ask_question_carry_on_recovery_not_confirmed`. The fixed-sequence objective
+  proof-progress secondary is near-empty on both sides, `1/33` against `0/32`,
+  `p = 1`. The descriptive v5 one-turn comparability reading is `carry_on` 2/33
+  and `ask_question` 4/32, tested by nothing. The leakage disclosure is clean:
+  across all 34 scoring turns, zero brought back only content the tutor had
+  just made public, so no recovery on either side was a say-back. Two readings
+  bound any successor. The gate failure is one-sided and points the same way as
+  the measured difference, so a reference dialogue that slipped in a question
+  looks like the treatment and pulls the two rates together; the true gap,
+  whatever its sign, is wider than `-0.107` rather than narrower. And the
+  measured reference rate of `0.576` sits far above the top of the registered
+  power scan, which reached `0.8` power only if carrying on recovered fewer
+  than about one bored learner in six, so at the realised rate this size could
+  not have detected the effect it was sized for. Relaxing a registered floor
+  after seeing the data is refused. A successor must fix the reference side's
+  question leak in the harness before it is sized, and belongs in a fresh
+  registration. No further paid call in this line is authorized.
