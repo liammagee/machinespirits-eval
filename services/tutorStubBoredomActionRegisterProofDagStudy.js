@@ -291,6 +291,37 @@ function clone(value) {
   return value === undefined ? undefined : structuredClone(value);
 }
 
+// The host study calls this axis "action fit" because the frame-refuser design
+// used it to contrast a fitting move with an unfitting one. v6 puts two fitting
+// moves on the same axis, so the level names are the move names. Nothing in the
+// host needs changing for that: it reads the level list out of the registration
+// and only refuses a level the registration never declared.
+function boredomActionFitFactor(registration) {
+  if (registration.version !== 6) {
+    return {
+      levels: ['matched'],
+      assignments: { bored: { matched: registration.design.treatment.fixedPedagogicalMove } },
+    };
+  }
+  const levels = registration.design.treatment.pedagogicalMoveLevels;
+  const moves = registration.design.treatment.pedagogicalMoves;
+  return {
+    levels: [...levels],
+    assignments: { bored: Object.fromEntries(levels.map((level) => [level, moves[level]])) },
+  };
+}
+
+// Which level this one dialogue was assigned. Read from the plan row, never
+// written here, so the runtime cannot disagree with the sealed manifest.
+function boredomActionFitLevel(registration, job) {
+  if (registration.version !== 6) return 'matched';
+  const level = job.pedagogical_move_level;
+  if (!registration.design.treatment.pedagogicalMoveLevels.includes(level)) {
+    throw new Error(`boredom proof-DAG job carries unregistered pedagogical move level ${JSON.stringify(level)}`);
+  }
+  return level;
+}
+
 function runtimeRegistrationAdapter(registration, world) {
   return {
     schema: 'machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1',
@@ -303,10 +334,7 @@ function runtimeRegistrationAdapter(registration, world) {
       trigger: { observationSemantics: registration.design.observationSemantics },
       profiles: ['bored'],
       factors: {
-        actionFit: {
-          levels: ['matched'],
-          assignments: { bored: { matched: registration.design.treatment.fixedPedagogicalMove } },
-        },
+        actionFit: boredomActionFitFactor(registration),
         realization: { levels: ['plain', 'warm'], plain: 'plain', warm: 'warm' },
         replicationBlock: {
           levels: [
@@ -357,12 +385,13 @@ export function configureTutorStubBoredomProofDagExecution({ state, loaded, jobI
     throw new Error('boredom proof-DAG execution requires a fresh empty dialogue state');
   }
   const job = resolveTutorStubBoredomProofDagJob({ loaded, jobId });
+  const actionFit = boredomActionFitLevel(loaded.registration, job);
   state.resistanceActionRegisterStudy = {
     schema: 'machinespirits.tutor-stub.resistance-action-register-study-runtime.v1',
     enabled: true,
     authority: 'explicit_study_only_opt_in',
     profile: 'bored',
-    action_fit: 'matched',
+    action_fit: actionFit,
     realization: job.realization,
     repeat: job.batch_id,
     registration_path: path.relative(process.cwd(), loaded.path),
@@ -404,7 +433,7 @@ export function configureTutorStubBoredomProofDagExecution({ state, loaded, jobI
     assignmentRankSha256: job.assignment_rank_sha256,
     treatment: {
       profile: 'bored',
-      action_fit: 'matched',
+      action_fit: actionFit,
       realization: job.realization,
       pedagogical_move: job.pedagogical_move,
       register: job.realization,
