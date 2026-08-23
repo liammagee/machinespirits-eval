@@ -860,7 +860,7 @@ function v9SemanticOutcome({ events, job, loaded, trigger, postOne, postTwo, out
 export function analyzeTutorStubResistanceActionRegisterConfirmationTrace(batch, resultRow, loaded) {
   const job = batch.planJobs.get(resultRow.job_id);
   if (!job) throw new Error(`confirmation result ${resultRow.job_id} is not planned`);
-  const tracePath = batch.tracePathsByJob.get(job.id);
+  const tracePath = batch.tracePathsByJob?.get(job.id) || path.resolve(ROOT, resultRow.trace);
   if (!tracePath) throw new Error(`confirmation trace ${job.id} lacks its uniquely validated path`);
   const source = fs.readFileSync(tracePath);
   if (sha256(source) !== resultRow.trace_sha256) throw new Error(`confirmation trace digest drift for ${job.id}`);
