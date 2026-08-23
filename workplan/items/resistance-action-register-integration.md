@@ -3447,3 +3447,64 @@ and explicit human approval.
   disappearing. The drift is left in place on purpose. Run archived to
   `artifacts/boredom-proof-dag-v7-live/` in the private repo, 69MB packed from
   518MB raw.
+- 2026-08-23 — Auditing v7's own paid transcripts found that its two arms were
+  never delivered as two moves. Both asked a question in `0.976` of trigger
+  turns, including the arm whose instruction forbade offering a choice: it
+  produced turns like "Shall we examine the jukebox itself or clarify a term
+  first?" The cause is that `chooseHandoffMode` reads the host action family,
+  not the move instruction, and v7 deliberately gave both arms the same family,
+  `stage_next_step`, which is not in `NO_QUESTION_ACTIONS`. So both tutors were
+  told a final question was allowed and both took it. This is the arc's
+  recurring defect a fifth time — a rule written in a registration that no code
+  reads — and it does not disturb the v7 null: an unmeasured delivery gate
+  cannot manufacture a difference, and blurred arms move the two rates together,
+  which is the direction v7 saw. It removes the claim that v7 compared two
+  moves. v7's move-delivery gate reported `1.00` against a floor of `0.90` and
+  read nothing at all, because it looked for a field no code in this repository
+  writes and fell back to comparing the assigned move with itself.
+- 2026-08-23 — v8 registered, prospective, zero calls made. It asks a different
+  question from v6 and v7: not which boredom move works better, but whether
+  making a boredom-directed move at all beats making none. The move arm asks the
+  discriminating question; the reference arm carries on with the proof and says
+  nothing about the learner, staging the next already-public piece of evidence
+  and naming what it does not yet settle. The reference arm is a written
+  instruction, not a gap, because a tutor given no instruction would improvise a
+  response to the boredom and the arm would collapse into a second treatment.
+  v7's rule that both arms share a host action family is reversed on purpose:
+  the reference arm takes `reanchor_public_evidence`, which is in
+  `NO_QUESTION_ACTIONS` and therefore compiles to a declarative handoff. The
+  choice is forced rather than picked — of the seven listed families, six exist
+  to answer, receive, repair, reconnect, request a say-back or close, and all
+  six respond to the learner. The cost is that the two arms now differ in the
+  family, the first-draft contract line, the handoff mode and the part
+  weighting as well as in the instruction, so v8 cannot say the question did the
+  work, only that the move did. That bundle is the manipulation on purpose.
+  72 dialogues, 36 per arm, 12 a world across the same six worlds, plain and
+  warm balanced 18 and 18 inside each arm, 18 batches of 4 holding one of each
+  arm-and-manner pair. Seeds `2026112201-2026112272`. The test is two-sided
+  again: v7 registered one direction, measured `-0.102` pointing the other way,
+  and could say nothing about it, and here the reference rate has never been
+  measured by anything, so there is no ground to name a direction. Power at 72
+  is `0.973` if carrying on recovers one in ten, `0.730` at one in five and
+  `0.374` at three in ten, so the target `0.8` is not reached across the
+  plausible middle and the registration says so rather than quoting its
+  friendliest row. The safeguard, not the effect, set the size: the ledger
+  stands at `4684`, the never-exceed figure is `123` a dialogue, and `84` — the
+  size v7 ran — would need `15016` against a `15000` safeguard. The
+  per-dialogue ceiling was not relaxed to fit a bigger run.
+- 2026-08-23 — Three checks added so that v8's registered rules are enforced by
+  running code rather than by prose. The preflight now compiles the real
+  turn-progression contract for each arm from the family the study code returns
+  and refuses a registration whose two arms come out with the same question
+  permission, which is the check v7 lacked. The analyzer's floor that decides
+  the run is now the delivered contrast — question marks counted in the tutor's
+  own delivered turn, the move arm required to ask one and the reference arm
+  none, checked pooled and again on each arm — and the two echoed gates that
+  compare the study with its own copy of itself are pinned at `1`, where they
+  state that no safety override happened, and are labelled as echoes that may
+  never be reported as readings. And the seed-disjointness rule that every
+  version since v5 has written down, and that no code has ever read, is now
+  checked against the registrations it names, tied to the `vNSpend` ledger keys
+  so a version cannot charge a prior run against the safeguard without also
+  being checked against that run's seeds. Four validator branches that assumed
+  v7 was the newest version were generalised rather than given another arm.
