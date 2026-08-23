@@ -807,6 +807,14 @@
       "removalSlice": "outcome-study artifact fixture decision"
     },
     {
+      "id": "adaptive-warrant-historical-source-pin-drift",
+      "suite": "root",
+      "reasonPattern": "^historical outcome (?:manifest correctly refuses|manifests correctly refuse) after the frozen first-draft source pin drifted$",
+      "owner": "adaptive-warrant-outcome-study",
+      "reason": "The consumed outcome manifests retain their original first-draft source digest. Tests whose later assertion is unreachable after that prospective source changed are explicitly accounted for instead of re-pinning historical study artifacts.",
+      "removalSlice": "extract a pure post-binding manifest validator if these historical assertions need to execute again"
+    },
+    {
       "id": "guarded-learner-smoke-c-private-archive",
       "suite": "root",
       "reasonPattern": "^smoke C run absent \\(.+\\); archived in the private repo$",
