@@ -11,10 +11,7 @@ import { loadTutorStubResistanceSemanticRegistration } from '../services/tutorSt
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN = 'config/tutor-stub-resistance-action-register-crossed-registration.v10.json';
 const sha256 = (relativePath) =>
-  crypto
-    .createHash('sha256')
-    .update(fs.readFileSync(path.join(ROOT, relativePath)))
-    .digest('hex');
+  crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, relativePath))).digest('hex');
 
 test('V10 expands its immutable V9 base into a wholly fresh balanced design', () => {
   const raw = JSON.parse(fs.readFileSync(path.join(ROOT, DESIGN), 'utf8'));
@@ -54,5 +51,8 @@ test('V10 pins the passing zero-call repair and excludes V9 from reuse or poolin
   assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum.reservedAttempts, 8387);
   assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum.remaining, 1613);
   assert.equal(loaded.registration.authorization.launchRequiresFreshDigestBoundGoRequest, false);
-  assert.equal(loaded.registration.authorization.launchPolicy, 'merged_design_clean_detached_commit_signed_go_note');
+  assert.equal(
+    loaded.registration.authorization.launchPolicy,
+    'merged_design_clean_detached_commit_signed_go_note',
+  );
 });

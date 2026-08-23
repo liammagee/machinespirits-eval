@@ -25,16 +25,14 @@ export function buildTutorStubResistanceSemanticAdjudicationPromptV5(values) {
 
 function exactSourceTextPattern(values) {
   const escape = (value) =>
-    [...String(value)]
-      .map((character) => {
-        if (character === '"') return '\\x22';
-        if (character === '\n') return '\\n';
-        if (character === '\r') return '\\r';
-        if (character === '\t') return '\\t';
-        if ('\\^$.*+?()[]{}|'.includes(character)) return `\\${character}`;
-        return character;
-      })
-      .join('');
+    [...String(value)].map((character) => {
+      if (character === '"') return '\\x22';
+      if (character === '\n') return '\\n';
+      if (character === '\r') return '\\r';
+      if (character === '\t') return '\\t';
+      if ('\\^$.*+?()[]{}|'.includes(character)) return `\\${character}`;
+      return character;
+    }).join('');
   return `^(?:${values.map(escape).join('|')})$`;
 }
 
@@ -43,7 +41,10 @@ export function deduplicateTutorStubResistanceSemanticOutputSchemaV5(inputSchema
   const evidenceProperties = schema?.properties?.judgment?.properties?.evidence_quotes?.properties;
   const firstField = TUTOR_STUB_RESISTANCE_SEMANTIC_FIELDS_V3[0];
   const sharedEvidence = evidenceProperties?.[firstField]?.oneOf?.[0];
-  if (!sharedEvidence?.properties?.source_id?.enum || !sharedEvidence?.properties?.quote?.enum) {
+  if (
+    !sharedEvidence?.properties?.source_id?.enum ||
+    !sharedEvidence?.properties?.quote?.enum
+  ) {
     return schema;
   }
   const exactSourceEvidence = structuredClone(sharedEvidence);

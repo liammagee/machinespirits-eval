@@ -8,7 +8,8 @@ import {
   buildTutorStubResistanceSemanticOutputSchemaV5,
 } from './tutorStubResistanceSemanticAdjudicationV5.js';
 
-export const TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6 = 'prospective_frame_resistance_binary_semantic_v6';
+export const TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6 =
+  'prospective_frame_resistance_binary_semantic_v6';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_ENSEMBLE_SCHEMA_V6 =
   'machinespirits.tutor-stub.resistance-semantic-binary-ensemble.v6';
 

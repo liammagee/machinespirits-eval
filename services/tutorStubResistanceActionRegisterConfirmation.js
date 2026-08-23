@@ -69,14 +69,14 @@ export function buildTutorStubResistanceActionRegisterConfirmationPlan({ registr
         frozen.version >= 10
           ? 'v6-'
           : frozen.version >= 9
-            ? 'v5-'
-            : frozen.version >= 7
-              ? 'v4-'
-              : frozen.version >= 6
-                ? 'v3-'
-                : frozen.version >= 4
-                  ? 'v2-'
-                  : '';
+          ? 'v5-'
+          : frozen.version >= 7
+            ? 'v4-'
+            : frozen.version >= 6
+              ? 'v3-'
+              : frozen.version >= 4
+                ? 'v2-'
+                : '';
       jobs.push({
         id: `frame_refuser-confirmation-${confirmationRevision}${block.id}-s${slot + 1}`,
         block_id: block.id,
@@ -237,7 +237,8 @@ export function configureTutorStubResistanceActionRegisterConfirmationFromCli({
   const requiredObservationSemantics = binarySemanticSmoke
     ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6
     : loaded.registration.design.trigger.observationSemantics;
-  const maximumDialogueBudget = loaded.registration.version >= 9 ? 123 : loaded.registration.version === 8 ? 96 : 60;
+  const maximumDialogueBudget =
+    loaded.registration.version >= 9 ? 123 : loaded.registration.version === 8 ? 96 : 60;
   if (
     !autoLearnerEnabled ||
     Number(autoTurns) !== 4 ||

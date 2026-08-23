@@ -36,7 +36,9 @@ function modelOutput(corpusCase) {
       evidence_quotes: Object.fromEntries(
         TUTOR_STUB_RESISTANCE_SEMANTIC_FIELDS_V3.map((field) => [
           field,
-          corpusCase.judgment[field] === 'no' ? null : { source_id: 'utterance', quote: sources.utterance },
+          corpusCase.judgment[field] === 'no'
+            ? null
+            : { source_id: 'utterance', quote: sources.utterance },
         ]),
       ),
       confidence: 'high',
@@ -95,7 +97,8 @@ test('post-freeze heldout and strong negatives pass the predeclared zero-call ga
       const evidenceProperties = schema.properties.judgment.properties.evidence_quotes.properties;
       assert.ok(
         Object.values(evidenceProperties).every(
-          (entry) => entry.anyOf[0].$ref === '#/$defs/v5_exact_source_evidence' && entry.anyOf[1].type === 'null',
+          (entry) =>
+            entry.anyOf[0].$ref === '#/$defs/v5_exact_source_evidence' && entry.anyOf[1].type === 'null',
         ),
       );
       responses.push(wrapped(corpusCase, judge));
@@ -202,7 +205,9 @@ test('the two frozen V9 quote misses are blocked in V4 and valid under exact-sou
     });
     assert.deepEqual(
       Object.fromEntries(Object.entries(record.judgment).filter(([key]) => key !== 'evidence_spans')),
-      Object.fromEntries(Object.entries(projected.judgment).filter(([key]) => !['evidence_quotes'].includes(key))),
+      Object.fromEntries(
+        Object.entries(projected.judgment).filter(([key]) => !['evidence_quotes'].includes(key)),
+      ),
     );
   }
 });

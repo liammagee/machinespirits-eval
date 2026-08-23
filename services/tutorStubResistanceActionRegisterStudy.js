@@ -32,14 +32,14 @@ function resistanceSemanticRegistrationBinding(observationSemantics) {
     observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6
       ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V6
       : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5
-        ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5
-        : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
-          ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4
-          : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
-            ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3
-            : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
-              ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2
-              : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION;
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5
+      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4
+      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
+        ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3
+        : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
+          ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2
+          : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION;
   return loadTutorStubResistanceSemanticRegistration(registrationPath);
 }
 
@@ -167,7 +167,8 @@ const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
 const REALIZATION_CONTRAST_INSTRUCTIONS = Object.freeze({
   plain:
     'Realize a neutral, non-affiliative reference stance. State the bounded distinction and local evidentiary test directly, without inviting shared movement or choice, presenting tutor and learner as acting together, or adding relational uptake. Preserve the learner’s right to reject the wider frame through a direct boundary rather than a collaborative invitation.',
-  warm: 'Realize a low-pressure collaborative stance. Add one genuine invitation to shared movement or shared choice, then return immediately to the same bounded distinction and local evidentiary test. Preserve the learner’s right to reject the wider frame; do not praise, flatter, or change the action.',
+  warm:
+    'Realize a low-pressure collaborative stance. Add one genuine invitation to shared movement or shared choice, then return immediately to the same bounded distinction and local evidentiary test. Preserve the learner’s right to reject the wider frame; do not praise, flatter, or change the action.',
 });
 
 const CONTENT_BEARING_MOVES = new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']);
@@ -489,11 +490,11 @@ function normalizeRegistration(registration) {
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !== 10000 ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== (v10 ? 6041 : 6246) ||
       registration.authorization?.launchRequiresFreshDigestBoundGoRequest !== (v10 ? false : true) ||
-      (v10 && registration.authorization?.launchPolicy !== 'merged_design_clean_detached_commit_signed_go_note')
+      (v10 &&
+        registration.authorization?.launchPolicy !==
+          'merged_design_clean_detached_commit_signed_go_note')
     ) {
-      throw new Error(
-        'v9/v10 semantic confirmation design, validation evidence, exclusions, or budget arithmetic drifted',
-      );
+      throw new Error('v9/v10 semantic confirmation design, validation evidence, exclusions, or budget arithmetic drifted');
     }
     if (
       readiness.batches.some(

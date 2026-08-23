@@ -144,7 +144,8 @@ async function recoverJudge({ events, tracePath, recoveryRoot, maximumAttempts }
         observedEffort: raw.effort || raw.reasoningEffort,
         independentRunId,
         structuredOutput: raw.structuredOutput,
-        prohibitedToolEvents: Number.isInteger(raw.prohibitedToolEventCount) ? raw.prohibitedToolEventCount : null,
+        prohibitedToolEvents:
+          Number.isInteger(raw.prohibitedToolEventCount) ? raw.prohibitedToolEventCount : null,
         modelAttestationBasis: raw.modelAttestationBasis,
         modelIndependentlyAttested: raw.modelIndependentlyAttested,
       });
@@ -196,7 +197,9 @@ async function recoverJudge({ events, tracePath, recoveryRoot, maximumAttempts }
   };
   const preservedJudgeEntries = ['semantic_judge_b', 'semantic_judge_c'].map((judgeId) => {
     const event = events.find(
-      (candidate) => candidate.type === 'model_call' && candidate.role === `tutor_stub_resistance_semantic_${judgeId}`,
+      (candidate) =>
+        candidate.type === 'model_call' &&
+        candidate.role === `tutor_stub_resistance_semantic_${judgeId}`,
     );
     if (!event) throw new Error(`frozen prefix is missing ${judgeId}`);
     return modelCallReplayEntry(event);
@@ -230,8 +233,7 @@ function runContinuation({ batchDir, plan, initial, recoveryRoot, replayPath, re
   if (!job) throw new Error('failed batch job is absent from the preserved plan');
   const sourceTrace = path.resolve(ROOT, failedRow.trace);
   const priorJobReservations = countReservations(sourceTrace);
-  const remaining =
-    plan.budget.maximum_model_attempt_reservations_per_dialogue - priorJobReservations - recoveryAttempts;
+  const remaining = plan.budget.maximum_model_attempt_reservations_per_dialogue - priorJobReservations - recoveryAttempts;
   if (remaining <= 0) throw new Error('judge-only recovery exhausted the dialogue attempt ceiling');
 
   const jobRoot = path.join(recoveryRoot, 'continued-job');
@@ -338,8 +340,7 @@ async function main() {
     throw new Error('judge-only recovery requires one unsealed incomplete batch');
   }
   const failed = initial.results.filter((row) => row.status === 'failed');
-  if (failed.length !== 1 || !failed[0].trace)
-    throw new Error('judge-only recovery requires one preserved failed trace');
+  if (failed.length !== 1 || !failed[0].trace) throw new Error('judge-only recovery requires one preserved failed trace');
   const tracePath = path.resolve(ROOT, failed[0].trace);
   fs.mkdirSync(recoveryRoot, { recursive: false });
   writeJson(path.join(recoveryRoot, 'recovery-plan.json'), {

@@ -6,7 +6,7 @@
   "designSummary": {
     "studyId": "tutor-stub-resistance-action-register-warm-plain-confirmation-v10",
     "arms": ["plain", "warm"],
-    "sampleSize": { "total": 36, "perArm": 18, "balancedBlocks": 9, "dialoguesPerBlock": 4 },
+    "sampleSize": {"total": 36, "perArm": 18, "balancedBlocks": 9, "dialoguesPerBlock": 4},
     "seed": 20260827,
     "generatorModel": "codex.gpt-5.6-luna",
     "semanticJudgeModels": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "codex.gpt-5.5"],
@@ -23,7 +23,7 @@
       "missingTrigger": "substantive_registered_failure_stop_no_replacement",
       "failedFidelity": "fail_interpretability_gate_not_rerun"
     },
-    "spendCeiling": { "programmeModelAttempts": 10000, "confirmationModelAttempts": 4428 },
+    "spendCeiling": {"programmeModelAttempts": 10000, "confirmationModelAttempts": 4428},
     "claimBoundary": "Only the wholly fresh V10 frame-refuser matched-action warm-versus-plain recovery contrast is confirmatory; no V9 or earlier dialogue, validation case, or calibration dialogue is reused or pooled."
   },
   "v10Bindings": {
@@ -35,47 +35,11 @@
     "claimBoundary": "Only the V10 frame-refuser matched-action warm-versus-plain recovery contrast in 36 wholly fresh Luna dialogues is confirmatory. V9 and all earlier confirmation blocks, the 12 calibration dialogues, and every measurement-validation case are excluded from reuse and pooling.",
     "preservation": {
       "excludedConfirmationBlocks": [
-        {
-          "id": "v1",
-          "requestSha256": "16f93e48f0b19fe23f0b91dabc9ac318f210ecbba6fbe954d76677d43fb78554",
-          "reservedAttempts": 34,
-          "reused": false,
-          "pooled": false,
-          "outcomeSelected": false
-        },
-        {
-          "id": "v3",
-          "requestSha256": "e3df720358cc597e686f0007bfc1ce1a5d0b4a11273a725ce87b484d20c3fec9",
-          "reservedAttempts": 36,
-          "reused": false,
-          "pooled": false,
-          "outcomeSelected": false
-        },
-        {
-          "id": "v4",
-          "requestSha256": "8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab",
-          "reservedAttempts": 38,
-          "reused": false,
-          "pooled": false,
-          "outcomeSelected": false
-        },
-        {
-          "id": "v7",
-          "requestSha256": "d209cd7d647f1a35c48d1920444e5648ba72aca5d8f46cb211a2c81ec9f197fb",
-          "reservedAttempts": 38,
-          "reused": false,
-          "pooled": false,
-          "outcomeSelected": false
-        },
-        {
-          "id": "v9",
-          "designSha256": "fd13339f7394fad6457c3b755b71047701bbc06bdbed1fe397c8e13f9e3fc21a",
-          "reservedAttempts": 205,
-          "status": "incomplete_no_verdict",
-          "reused": false,
-          "pooled": false,
-          "outcomeSelected": false
-        }
+        {"id":"v1","requestSha256":"16f93e48f0b19fe23f0b91dabc9ac318f210ecbba6fbe954d76677d43fb78554","reservedAttempts":34,"reused":false,"pooled":false,"outcomeSelected":false},
+        {"id":"v3","requestSha256":"e3df720358cc597e686f0007bfc1ce1a5d0b4a11273a725ce87b484d20c3fec9","reservedAttempts":36,"reused":false,"pooled":false,"outcomeSelected":false},
+        {"id":"v4","requestSha256":"8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab","reservedAttempts":38,"reused":false,"pooled":false,"outcomeSelected":false},
+        {"id":"v7","requestSha256":"d209cd7d647f1a35c48d1920444e5648ba72aca5d8f46cb211a2c81ec9f197fb","reservedAttempts":38,"reused":false,"pooled":false,"outcomeSelected":false},
+        {"id":"v9","designSha256":"fd13339f7394fad6457c3b755b71047701bbc06bdbed1fe397c8e13f9e3fc21a","reservedAttempts":205,"status":"incomplete_no_verdict","reused":false,"pooled":false,"outcomeSelected":false}
       ]
     },
     "semanticAdjudication": {

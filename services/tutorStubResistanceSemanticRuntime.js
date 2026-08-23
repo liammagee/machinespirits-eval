@@ -288,14 +288,14 @@ export function loadTutorStubResistanceSemanticRegistration(
     registration.version === 6
       ? validateTutorStubResistanceSemanticRegistrationV6(registration)
       : registration.version === 5
-        ? validateTutorStubResistanceSemanticRegistrationV5(registration)
-        : registration.version === 4
-          ? validateTutorStubResistanceSemanticRegistrationV4(registration)
-          : registration.version === 3
-            ? validateTutorStubResistanceSemanticRegistrationV3(registration)
-            : registration.version === 2
-              ? validateTutorStubResistanceSemanticRegistrationV2(registration)
-              : validateTutorStubResistanceSemanticRegistration(registration);
+      ? validateTutorStubResistanceSemanticRegistrationV5(registration)
+      : registration.version === 4
+      ? validateTutorStubResistanceSemanticRegistrationV4(registration)
+      : registration.version === 3
+        ? validateTutorStubResistanceSemanticRegistrationV3(registration)
+        : registration.version === 2
+          ? validateTutorStubResistanceSemanticRegistrationV2(registration)
+          : validateTutorStubResistanceSemanticRegistration(registration);
   if (!validation.valid) throw new Error(`semantic registration invalid: ${validation.issues.join('; ')}`);
   return { registration, path: registrationPath, sha256: tutorStubResistanceSemanticSha256(fs.readFileSync(absolute)) };
 }

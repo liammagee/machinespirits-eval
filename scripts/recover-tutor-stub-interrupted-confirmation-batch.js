@@ -24,11 +24,7 @@ function readJson(filePath) {
 }
 
 function readJsonLines(filePath) {
-  return fs
-    .readFileSync(filePath, 'utf8')
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => JSON.parse(line));
+  return fs.readFileSync(filePath, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line));
 }
 
 function writeJson(filePath, value) {
@@ -160,9 +156,7 @@ function assertRecoverableOperatorInterruptedPrefix(events, jobId) {
   const reservations = events.filter((event) => event.type === 'model_call_budget_reserved').length;
   const completed = events.filter((event) => event.type === 'model_call').length;
   if (completed < 1 || reservations <= completed) {
-    throw new Error(
-      `operator-interrupted recovery requires a completed prefix and an unfinished reserved call for ${jobId}`,
-    );
+    throw new Error(`operator-interrupted recovery requires a completed prefix and an unfinished reserved call for ${jobId}`);
   }
   const errors = events.filter((event) => event.type === 'model_call_error');
   if (
@@ -341,7 +335,9 @@ function replayEntryKey(entry) {
 
 async function buildLayeredJobReplay({ job, sourceTraces, jobRoot, maximumAttempts, abstainingJudgeIds }) {
   const latestEvents = readJsonLines(sourceTraces.at(-1));
-  const failedJudges = failedSemanticJudges(latestEvents).filter((event) => !abstainingJudgeIds.has(event.judgeId));
+  const failedJudges = failedSemanticJudges(latestEvents).filter(
+    (event) => !abstainingJudgeIds.has(event.judgeId),
+  );
   if (!failedJudges.length) throw new Error(`layered recovery found no response-free semantic judge for ${job.id}`);
   const attemptsPath = path.join(jobRoot, 'judge-attempts.jsonl');
   const replacements = new Map();
@@ -681,7 +677,9 @@ async function main() {
     const replay = await buildJobReplay({ ...source, jobRoot, maximumAttempts });
     prepared.push({ ...source, jobRoot, replay });
   }
-  const executions = await Promise.all(prepared.map((entry) => runJob({ ...entry, perDialogueCap })));
+  const executions = await Promise.all(
+    prepared.map((entry) => runJob({ ...entry, perDialogueCap })),
+  );
   const rows = [];
   const totals = {};
   for (let index = 0; index < prepared.length; index += 1) {
@@ -756,13 +754,7 @@ async function main() {
     valid_unit_reruns: false,
     outcome_selection: false,
   });
-  console.log(
-    JSON.stringify(
-      { status: 'complete', batch_id: plan.batch_id, observed_model_attempt_reservations: totalReservations },
-      null,
-      2,
-    ),
-  );
+  console.log(JSON.stringify({ status: 'complete', batch_id: plan.batch_id, observed_model_attempt_reservations: totalReservations }, null, 2));
 }
 
 main().catch((error) => {
