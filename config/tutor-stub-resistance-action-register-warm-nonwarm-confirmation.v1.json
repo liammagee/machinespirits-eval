@@ -1,0 +1,144 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-action-register-warm-nonwarm-confirmation-design.v1",
+  "studyId": "tutor-stub-resistance-action-register-warm-nonwarm-confirmation-v1",
+  "status": "prospective_design_measurement_validation_pending_no_launch",
+  "registeredQuestion": "Among wholly fresh independent frame-refuser dialogues, does one matched test_bounded_distinction tutor move realized as a warm shared invitation change two-post-trigger-turn semantic recovery relative to the same move realized as a non-warm reference?",
+  "arms": [
+    {
+      "id": "warm_shared_invitation",
+      "definition": "The tutor acknowledges the jurisdiction dispute, preserves genuine choice, and offers the bounded distinction as low-pressure shared inquiry using relational uptake or shared agency."
+    },
+    {
+      "id": "nonwarm_reference",
+      "definition": "The tutor performs the same bounded distinction without shared agency, relational invitation, or collaborative uptake. Ordinary first-person dramatic conduct is permitted; sarcasm, irony, mockery, face threat, and hostility are forbidden."
+    }
+  ],
+  "sampleSize": {
+    "allocatedTotal": 196,
+    "allocatedPerArm": 98,
+    "balancedBlocks": 49,
+    "dialoguesPerBlock": 4,
+    "assignmentsPerArmPerBlock": 2,
+    "minimumDeterminatePerArm": 89,
+    "powerMethod": "exact_enumeration_of_two_sided_fisher_rejection_region",
+    "alpha": 0.05,
+    "targetPower": 0.9,
+    "powerAtMinimumDeterminatePerArm": 0.9017447309143404,
+    "planningRates": [0.1, 0.3],
+    "smallestEffectOfInterestAbsoluteRiskDifference": 0.2,
+    "validatedInstrumentCoverageAssumption": 0.95,
+    "probabilityAtLeastMinimumDeterminatePerArm": 0.9750829003797589,
+    "probabilityBothArmsReachMinimumDeterminate": 0.9507866626130027,
+    "derivationNote": "notes/2026-08-23-resistance-action-register-warm-nonwarm-sample-size.md"
+  },
+  "randomization": {
+    "masterSeed": 20260829,
+    "unit": "wholly_fresh_independent_dialogue",
+    "blocking": "49 balanced four-dialogue blocks with two assignments per arm",
+    "allocationConcealment": "assignment is unavailable to learner generation and outcome judges except where treatment realization necessarily enters the tutor prompt"
+  },
+  "models": {
+    "generator": {
+      "modelRef": "codex.gpt-5.6-luna",
+      "roles": ["tutor", "analysis", "learner"]
+    },
+    "semanticJudges": [
+      {
+        "judgeId": "semantic_judge_sol",
+        "modelRef": "codex.gpt-5.6-sol",
+        "independentOfGenerator": true
+      },
+      {
+        "judgeId": "semantic_judge_sonnet",
+        "modelRef": "claude-code.sonnet-5",
+        "independentOfGenerator": true
+      }
+    ],
+    "agreementRule": "exact_eligible_agreement_required_otherwise_measurement_indeterminate",
+    "removedModels": ["codex.gpt-5.5"]
+  },
+  "measurement": {
+    "trigger": "first eligible public-turn-1-or-2 semantic jurisdiction dispute with participation withholding",
+    "primaryEndpoint": "profile_specific_resistance_recovery_within_two_post_trigger_learner_turns",
+    "primaryRecoveryDefinition": "The learner both engages the bounded test on its merits and states a grounded precise jurisdictional condition by the fixed final horizon.",
+    "treatmentFidelityLabels": ["warm_shared_invitation", "nonwarm_reference", "other", "measurement_indeterminate"],
+    "actionFidelity": "delivered_test_bounded_distinction",
+    "semanticAuthority": "independent_llm_panel_only",
+    "regexRole": "schema_span_provenance_and_auxiliary_disagreement_signal_only_never_semantic_authority_or_veto",
+    "blinding": {
+      "outcomeJudgesToArm": true,
+      "fidelityJudgesToLearnerOutcome": true,
+      "judgesToEachOther": true
+    }
+  },
+  "prelaunchValidation": {
+    "required": true,
+    "status": "pending",
+    "corpora": ["all_frozen_historical_misses", "strong_negatives", "genuinely_unseen_heldout_paraphrases"],
+    "minimumCoverage": 0.95,
+    "minimumCoveragePerTargetClass": 0.9,
+    "minimumSensitivity": 0.9,
+    "minimumSpecificity": 0.9,
+    "minimumRawInterjudgeAgreement": 0.9,
+    "minimumCohensKappa": 0.8,
+    "referenceLabels": "frozen_blind_human_reference_labels_with_adjudicated_disagreements_excluded_before_model_scoring",
+    "launchIfFailed": false
+  },
+  "analysis": {
+    "primaryEstimand": "assigned_warm_minus_assigned_nonwarm_two_post_trigger_turn_recovery_risk_difference",
+    "test": "two_sided_fisher_exact",
+    "alpha": 0.05,
+    "interimAnalysis": false,
+    "analysisCount": 1,
+    "population": "all assigned dialogues with determinate primary recovery measurement after the fixed horizon",
+    "minimumDeterminatePerArm": 89,
+    "minimumOutcomeCoveragePerArm": 0.9,
+    "maximumDifferentialOutcomeCoverage": 0.05,
+    "minimumActionFidelityPerArm": 0.9,
+    "minimumAssignedRegisterFidelityPerArm": 0.9,
+    "reportRegardless": [
+      "arm_denominators",
+      "measurement_coverage_by_arm",
+      "recovery_rates",
+      "risk_difference",
+      "odds_ratio",
+      "exact_p_value",
+      "worst_case_indeterminate_bounds",
+      "action_and_register_fidelity_by_assigned_arm"
+    ],
+    "claimGate": "No confirmatory treatment claim unless both arms retain at least 89 determinate outcomes and at least 90% outcome coverage, differential outcome coverage is at most 0.05, and both arms pass the 90% action and assigned-register fidelity gates."
+  },
+  "dispositions": {
+    "measurementIndeterminate": "retain_no_repair_rerun_replacement_selection_or_nonrecovery_recoding",
+    "judgeDisagreement": "measurement_indeterminate",
+    "lowConfidence": "measurement_indeterminate",
+    "failedTreatmentFidelity": "retain_and_fail_interpretability_gate_no_outcome_rerun",
+    "responseFreeTechnicalFailure": "bounded_missing_call_recovery_only_within_unchanged_design_and_spend_cap",
+    "validUnitRerun": false,
+    "outcomeSelection": false
+  },
+  "exclusions": {
+    "calibrationDialogues": 12,
+    "priorConfirmationBlocks": "all_V1_through_V10_complete_or_incomplete_units",
+    "manipulationValidationV1Dialogues": 60,
+    "reuse": false,
+    "pooling": false
+  },
+  "spendCeiling": {
+    "role": "operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective",
+    "plannedRoleCallsPerDialogue": 34,
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumReservationsPerDialogue": 102,
+    "confirmationMaximumModelAttemptReservations": 19992,
+    "recordedProgrammeLedgerBeforeNewValidationOrConfirmation": 5494,
+    "minimumProgrammeCeilingIfNoAdditionalValidationCallsOccur": 25486,
+    "programmeCeilingMustAlsoIncludeFutureValidationCalls": true
+  },
+  "claimBoundary": "Only the wholly fresh 196-dialogue frame-refuser matched-action warm-shared-invitation versus non-warm-reference recovery contrast is confirmatory. The study cannot establish a lexical plain effect, matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness. No prior calibration, confirmation, validation, or incomplete dialogue is reused or pooled.",
+  "authorization": {
+    "policy": "docs/paid-study-authorization-policy.md",
+    "launchCommit": null,
+    "signedGoNote": null,
+    "launchAuthorized": false
+  }
+}

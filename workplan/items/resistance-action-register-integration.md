@@ -3633,3 +3633,38 @@ and explicit human approval.
   23 maximum role calls per dialogue and three transport reservations per
   call; it does not determine study size. The validation has not launched and
   makes no recovery or treatment-effect claim.
+
+- 2026-08-22 — Manipulation validation V1 completed all 60 wholly fresh
+  dialogues from detached launch commit `77657073` with 601 reservations and
+  zero failed child processes. Execution, measurement coverage, and action
+  fidelity passed; register fidelity failed. Warm was 30/30 register-matched.
+  Plain was 2/30 register-matched, with 27 independent `neither` judgments and
+  one measurement-indeterminate case. No learner recovery or treatment effect
+  was generated or analyzed, all 60 cases remain excluded from every
+  confirmation, and confirmation launch remains blocked. Report SHA-256:
+  `ba00dc13688980095077eb3c5da36e7651e431fab8cc41e997bdf9edf0758d89`.
+  Plan SHA-256:
+  `8724c1d0cbd7c5950f2c9ab4247600cb2575835158cdaf07fa37aba80b990714`.
+
+  The zero-call construct audit found that the comparison arm consistently
+  removed warm/shared invitation but retained ordinary first-person dramatic
+  conduct. That supports a prospective warm-versus-non-warm contrast, not a
+  forced compiler rewrite to satisfy the narrower frozen `plain` category.
+  The abandoned direct-reference compiler patch was removed. Historical
+  labels and the failed plain gate remain unchanged; a new binary semantic
+  fidelity instrument must be validated before confirmation. Regex remains
+  descriptive only. Full audit:
+  `notes/2026-08-22-resistance-action-register-manipulation-validation-v1-result.md`.
+
+- 2026-08-23 — The prospective confirmation was repowered without using call
+  minimization as a design objective. The old 18-per-arm design has only about
+  20% power for a 10% versus 30% recovery contrast. A two-sided Fisher exact
+  test at alpha 0.05 needs 89 determinate dialogues per arm for 90% power.
+  With a required prelaunch semantic-instrument validation coverage of at
+  least 95%, 98 allocated dialogues per arm gives a 97.5% planning probability
+  of retaining at least 89 determinate outcomes per arm. The resulting fixed
+  design is 196 wholly fresh dialogues in 49 balanced four-dialogue blocks.
+  GPT-5.5 is removed from every prospective trigger, outcome, and fidelity
+  panel; Sol and Sonnet must agree or the measurement is indeterminate. No
+  confirmation launch is authorized or attempted. Design:
+  `config/tutor-stub-resistance-action-register-warm-nonwarm-confirmation.v1.json`.
