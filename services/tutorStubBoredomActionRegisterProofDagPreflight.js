@@ -1001,6 +1001,31 @@ function usesSemanticAdjudicator(version) {
   return version === 3 || version === 4 || version === 5 || version === 6;
 }
 
+/** What a case row calls the old one-turn recovery when a newer window is primary. */
+const BOREDOM_COMPARABILITY_OUTCOME_FIELD = 'recovered_at_first_post_trigger_turn';
+
+/**
+ * The three things v6 measures that no earlier version had a row for.
+ *
+ * Each one appears only when the registration asks for it, so a v1 to v5 case
+ * row keeps exactly the fields it had and its sealed preflight digest does not
+ * move. A case row's byte length is inside that digest, so an ungated field
+ * would break every earlier certificate.
+ *
+ * The case builder writes these and the assembler reads them back. That pairing
+ * is where this arc keeps going wrong, so the names are read here once instead
+ * of being typed on both sides.
+ */
+function boredomOutcomeExtensions(registration) {
+  const treatment = registration?.design?.treatment || {};
+  const measurement = registration?.measurement || {};
+  return {
+    comparability: measurement.comparabilityEndpoint || null,
+    contentLeakage: treatment.contentLeakageDisclosureRequired === true,
+    assignedMoveDelivery: Number.isFinite(Number(measurement.treatmentFidelity?.minimumAssignedMoveDelivery)),
+  };
+}
+
 export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
   const plan = buildTutorStubBoredomProofDagPlan(registration);
   const semanticMeasurement = usesSemanticAdjudicator(registration.version);
@@ -1017,12 +1042,17 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
     mannerField: 'realization',
   });
   const primaryDeadlineTurns = Number(registration.measurement.primaryEndpoint.deadlinePostTriggerLearnerTurns);
+  const extensions = boredomOutcomeExtensions(registration);
   let plainSeen = 0;
   let warmSeen = 0;
   return plan.jobs.map((job) => {
     const warm = job[axis.rowField] === axis.treatment;
     const withinArm = warm ? warmSeen++ : plainSeen++;
     const recovered = warm ? withinArm < 12 : withinArm < 3;
+    // Every synthetic recovery lands on the first turn, so the wider window and
+    // the old one-turn window agree here. The assembler derives the same value
+    // from the row and compares, rather than trusting what was written.
+    const observedTurn = recovered ? 1 : null;
     return {
       case_id: job.id,
       arm: job.realization,
@@ -1053,14 +1083,22 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
       outcome: {
         recovered,
         deadline_turns: primaryDeadlineTurns,
-        observed_turn: recovered ? 1 : null,
+        observed_turn: observedTurn,
+        ...(extensions.comparability ? { [BOREDOM_COMPARABILITY_OUTCOME_FIELD]: recovered && observedTurn === 1 } : {}),
+        ...(extensions.contentLeakage ? { restated_tutor_content_only: false } : {}),
         [progressField]: recovered,
         new_supported_public_premises: recovered ? 1 : 0,
         best_path_coverage_delta: recovered ? 0.1 : 0,
         proof_debt_delta: recovered ? -1 : 0,
         unsupported_public_claims: 0,
       },
-      fidelity: { action_visible: true, register_visible: true, safety_override: false, protected_condition: false },
+      fidelity: {
+        action_visible: true,
+        register_visible: true,
+        ...(extensions.assignedMoveDelivery ? { assigned_move_delivered: true } : {}),
+        safety_override: false,
+        protected_condition: false,
+      },
     };
   });
 }
@@ -1310,6 +1348,7 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
   const dialoguesPerContrastLevel = registeredDialogues / 2;
   const primaryEndpointId = registration.measurement.primaryEndpoint.id;
   const primaryDeadlineTurns = Number(registration.measurement.primaryEndpoint.deadlinePostTriggerLearnerTurns);
+  const extensions = boredomOutcomeExtensions(registration);
   const exactPlanFidelity =
     cases.length === plan.jobs.length &&
     new Set(cases.map((row) => row.case_id)).size === plan.jobs.length &&
@@ -1356,9 +1395,59 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
     (row) =>
       row.fidelity.action_visible === true &&
       row.fidelity.register_visible === true &&
+      // v1 to v5 held the move fixed, so there was nothing to deliver wrongly.
+      // v6 assigns it, and a unit whose delivered move is not its assigned move
+      // is nonadherent.
+      (!extensions.assignedMoveDelivery || row.fidelity.assigned_move_delivered === true) &&
       row.fidelity.safety_override === false &&
       row.fidelity.protected_condition === false,
   );
+  // The v5 primary, kept as a v6 comparability reading. The row states it and
+  // this derives it again from the recovery and the turn it landed on, so the
+  // two have to agree rather than one copying the other.
+  const comparability =
+    !extensions.comparability ||
+    cases.every(
+      (row) =>
+        typeof row.outcome?.[BOREDOM_COMPARABILITY_OUTCOME_FIELD] === 'boolean' &&
+        row.outcome[BOREDOM_COMPARABILITY_OUTCOME_FIELD] ===
+          (row.outcome.recovered === true && row.outcome.observed_turn === 1),
+    );
+  // Under the move contrast the manner is balanced inside each move rather than
+  // tested. These cells let a reader see the balance held. Under the manner
+  // contrast there is no balanced axis and the list is empty.
+  const contrastLevels = [axis.reference, axis.treatment];
+  const mannerBlock = axis.blockField
+    ? axis.blockLevels.flatMap((blockLevel) =>
+        contrastLevels.map((contrastLevel) => {
+          const rows = cases.filter(
+            (row) => row[axis.blockField] === blockLevel && row[axis.rowField] === contrastLevel,
+          );
+          return {
+            block: blockLevel,
+            contrast_level: contrastLevel,
+            units: rows.length,
+            successes: rows.filter((row) => row.outcome.recovered).length,
+          };
+        }),
+      )
+    : [];
+  const mannerBalance =
+    !axis.blockField ||
+    (mannerBlock.length === axis.blockLevels.length * contrastLevels.length &&
+      mannerBlock.every((cell) => cell.units === registeredDialogues / mannerBlock.length));
+  // A learner who only says back what the tutor just made public has not
+  // recovered. The count is reported per move whatever it is, including zero.
+  const restatedByContrastLevel = extensions.contentLeakage
+    ? contrastLevels.map((level) => ({
+        contrast_level: level,
+        restated_tutor_content_only: cases.filter(
+          (row) => row[axis.rowField] === level && row.outcome.restated_tutor_content_only === true,
+        ).length,
+      }))
+    : [];
+  const contentSeparation =
+    !extensions.contentLeakage || cases.every((row) => typeof row.outcome?.restated_tutor_content_only === 'boolean');
   const composition = assessTutorStubBoredomCompositionSyntheticCases();
   const semanticInstrumented = usesSemanticAdjudicator(registration.version);
   // v3 and v4 earned their gates on a corpus they held out. v5 cannot earn them
@@ -1409,6 +1498,15 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       warm.length === dialoguesPerContrastLevel
         ? 'complete'
         : 'incomplete',
+    ...(extensions.comparability
+      ? { [extensions.comparability.id]: exactPlanFidelity && comparability ? 'complete' : 'incomplete' }
+      : {}),
+    ...(axis.blockField || extensions.contentLeakage
+      ? {
+          pedagogical_move_balance_and_content_separation:
+            exactPlanFidelity && mannerBalance && contentSeparation ? 'complete' : 'incomplete',
+        }
+      : {}),
     [progress.endpoint]: exactPlanFidelity && objective ? 'complete' : 'incomplete',
     randomized_register_assembly:
       exactPlanFidelity && distinctPrefixes === registeredDialogues ? 'complete' : 'incomplete',
@@ -1430,6 +1528,8 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       exact_two_sided_conditional_blocked_score_p: exactBlockedScorePValue(blocks),
       blocks,
       exact_plan_fidelity: exactPlanFidelity,
+      manner_block: mannerBlock,
+      restated_tutor_content_only: restatedByContrastLevel,
       compositional_observer_timing: composition,
       independent_semantic_measurement: semantic,
       deadline_turns: primaryDeadlineTurns,
