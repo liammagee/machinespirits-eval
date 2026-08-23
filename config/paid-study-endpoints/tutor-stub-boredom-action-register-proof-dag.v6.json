@@ -3,7 +3,7 @@
   "study_id": "tutor-stub-boredom-action-register-proof-dag-v6",
   "registration": {
     "registration_path": "config/tutor-stub-boredom-action-register-proof-dag-registration.v6.json",
-    "registration_sha256": "adb90bfa5157bdbf3534b51f9b0bbe94623b1d847c7a0a932ef0d18b9cbadb9f",
+    "registration_sha256": "1f65c4c6931e04ff3d5723c3290b07448bcb7e9a58ee03c627915de545cae9f3",
     "primary_endpoint_ids": [
       "bored_resistance_recovery_within_outcome_horizon"
     ],

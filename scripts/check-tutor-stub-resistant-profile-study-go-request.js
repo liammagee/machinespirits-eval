@@ -1026,6 +1026,50 @@ const BOREDOM_PROOF_DAG_COMPLETED_V4_EXECUTION = Object.freeze({
   confirmationCreditPermitted: false,
 });
 
+// v5 also ran to the end and also returned a registered null, so v6 binds a
+// completed predecessor the same way v5 bound v4. Two things separate it from
+// v4 and a reader needs both. The window fix worked: all 35 scored units could
+// reach the objective endpoint, where v4 reached it on 11 of 33. And the primary
+// moved the registered direction without arriving — 1 of 18 plain against 4 of
+// 17 warm, p = 0.18 — which is why v6 changes what is contrasted rather than
+// running the same contrast again. v5 needed no amendment: its registration
+// conditioned the test on the realised allocation from the start.
+const BOREDOM_PROOF_DAG_COMPLETED_V5_EXECUTION = Object.freeze({
+  requestRevision: 7,
+  request: Object.freeze({
+    path: 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v5.json',
+    sha256: '87afa15350452a872c5160224b2eda6dec0eff5bcf62035e11abf7092c6c9d9c',
+  }),
+  registration: Object.freeze({
+    path: 'config/tutor-stub-boredom-action-register-proof-dag-registration.v5.json',
+    sha256: '8e5829b4b1aec82f97d182a3139b4d77a37807e390a7e0d18afd212e6d8f2f42',
+  }),
+  amendment: null,
+  disposition: 'completed_registered_null_spent_wholly_excluded',
+  sourceCommit: '631b040bfaca62927efd33ff457537dc4ba06924',
+  combinedReportSha256: 'bef7b8a114bcc49551fa8d561918f759094371e6b33ddaabc9959a3b208b3982',
+  privateArchiveCommit: '2ed626ac',
+  result: Object.freeze({
+    primaryEndpoint: 'profile_specific_resistance_recovery',
+    plainRecovered: 1,
+    plainUnits: 18,
+    warmRecovered: 4,
+    warmUnits: 17,
+    exactConditionalPValue: 0.18,
+    decision: 'warm_plain_recovery_not_confirmed',
+    stoppedIndeterminateUnits: 1,
+    stoppedUnitsAllOnWarm: true,
+    objectiveZerosReachable: 35,
+    objectiveZerosTotal: 35,
+  }),
+  reusePermitted: false,
+  poolingPermitted: false,
+  rescoringPermitted: false,
+  resamplingPermitted: false,
+  outcomeSelectionPermitted: false,
+  confirmationCreditPermitted: false,
+});
+
 function parseArgs(argv) {
   const args = { request: DEFAULT_REQUEST, json: false };
   for (let index = 0; index < argv.length; index += 1) {
@@ -1256,22 +1300,23 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     isBoredomActionRegisterProofDag && request.boredomActionRegisterProofDag?.requestRevision === 5;
   const isBoredomActionRegisterProofDagV5 =
     isBoredomActionRegisterProofDag && request.boredomActionRegisterProofDag?.requestRevision === 6;
+  const isBoredomActionRegisterProofDagV6 =
+    isBoredomActionRegisterProofDag && request.boredomActionRegisterProofDag?.requestRevision === 7;
   const isBoredomActionRegisterProofDagCurrent =
     isBoredomActionRegisterProofDagV2 ||
     isBoredomActionRegisterProofDagV3 ||
     isBoredomActionRegisterProofDagV4 ||
-    isBoredomActionRegisterProofDagV5;
-  // The registered version each request revision must bind. Reading it from one
-  // place keeps the request, the registration and the contract on one number.
-  const boredomProofDagRegisteredVersion = isBoredomActionRegisterProofDagV5
-    ? 5
-    : isBoredomActionRegisterProofDagV4
-      ? 4
-      : isBoredomActionRegisterProofDagV3
-        ? 3
-        : isBoredomActionRegisterProofDagV2
-          ? 2
-          : 1;
+    isBoredomActionRegisterProofDagV5 ||
+    isBoredomActionRegisterProofDagV6;
+  // The registered version each request revision must bind. This was a ladder
+  // that restated one subtraction five times, so the arms and the rule were two
+  // copies with nothing comparing them, and a sixth version needed a sixth arm.
+  // The revision leads the version by one and always has: revision 3 binds
+  // registration 2, revision 6 binds registration 5. The first request carried
+  // no revision at all, so an absent or pre-revision number still reads as 1.
+  const boredomProofDagRegisteredVersion = Number.isInteger(request.boredomActionRegisterProofDag?.requestRevision)
+    ? Math.max(1, request.boredomActionRegisterProofDag.requestRevision - 1)
+    : 1;
 
   assertion(
     checks,
@@ -1353,7 +1398,10 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
             ? RESISTANCE_SEMANTIC_VALIDATION_V2_CRITICAL_SOURCE_CLOSURE
             : RESISTANCE_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE
         : isBoredomActionRegisterProofDag
-          ? isBoredomActionRegisterProofDagV5
+          ? // v6 runs the v5 instrument on the v5 window, and its six worlds are
+            // the six v5 worlds, so the closure is the v5 closure with the world
+            // files put back from the registration's own list.
+            boredomProofDagRegisteredVersion >= 5
             ? [
                 ...BOREDOM_ACTION_REGISTER_PROOF_DAG_V5_CRITICAL_SOURCE_CLOSURE,
                 ...boredomWorldSourcePaths(closureRegistration),
@@ -1526,12 +1574,26 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       const registeredBatch = registeredExecution.batches || {};
       const registeredDialogue = registeredExecution.dialogue || {};
       // v1-v4 reserved a second confirmation beside this study and so recorded
-      // two programme numbers. v5 records one safeguard, already settled.
-      const registeredProgrammeCeiling = isBoredomActionRegisterProofDagV5
+      // two programme numbers. v5 onward records one safeguard, already settled.
+      const settledSafeguard = boredomProofDagRegisteredVersion >= 5;
+      const registeredProgrammeCeiling = settledSafeguard
         ? registeredExecution.programmeCeiling?.programmeSafeguard
         : isBoredomActionRegisterProofDagCurrent
           ? 5000
           : 4539;
+      // Each settled-safeguard registration names the ledger for its own version,
+      // so the key carries the version rather than being retyped per release.
+      const registeredLedgerBefore =
+        registeredExecution.programmeCeiling?.[`ledgerBeforeV${boredomProofDagRegisteredVersion}`];
+      // v6 deals two moves as well as two manners, so a batch must be even on
+      // both. Under v1-v5 the registration names no per-move count and there is
+      // nothing to compare.
+      const registeredMoveLevels = endpointRegistration.design?.treatment?.pedagogicalMoveLevels || [];
+      const movePerBatchBalanced = registeredMoveLevels.every(
+        (level) =>
+          contract.runner?.batch_contract?.[`${level}_per_batch`] === registeredBatch[`${level}PerBatch`] &&
+          Number.isInteger(registeredBatch[`${level}PerBatch`]),
+      );
       assertion(
         checks,
         'boredom-action-register-proof-dag-endpoint-readiness-binding',
@@ -1539,9 +1601,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           (!isBoredomActionRegisterProofDagV4 ||
             (contract.runner?.batch_contract?.programme_ledger_before === 446 &&
               contract.runner?.batch_contract?.combined_maximum_with_both_confirmations === 4766)) &&
-          (!isBoredomActionRegisterProofDagV5 ||
-            (contract.runner?.batch_contract?.programme_ledger_before ===
-              registeredExecution.programmeCeiling?.ledgerBeforeV5 &&
+          (!settledSafeguard ||
+            (Number.isInteger(registeredLedgerBefore) &&
+              contract.runner?.batch_contract?.programme_ledger_before === registeredLedgerBefore &&
               contract.runner?.batch_contract?.required_programme_ceiling ===
                 registeredExecution.programmeCeiling?.requiredCeiling)) &&
           contract.runner?.live_batch_executor ===
@@ -1554,6 +1616,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           contract.runner?.batch_contract?.dialogues_per_batch === registeredBatch.dialoguesPerBatch &&
           contract.runner?.batch_contract?.plain_per_batch === registeredBatch.plainPerBatch &&
           contract.runner?.batch_contract?.warm_per_batch === registeredBatch.warmPerBatch &&
+          movePerBatchBalanced &&
           contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_dialogue ===
             registeredDialogue.maximumReservationsPerDialogue &&
           contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_batch ===
@@ -1561,25 +1624,31 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           contract.runner?.batch_contract?.combined_maximum_model_attempt_reservations ===
             registeredDialogue.maximumReservations &&
           contract.runner?.batch_contract?.[
-            isBoredomActionRegisterProofDagV5
-              ? 'programme_safeguard'
-              : 'programme_ceiling_if_frame_refusal_confirmation_also_reserved'
+            settledSafeguard ? 'programme_safeguard' : 'programme_ceiling_if_frame_refusal_confirmation_also_reserved'
           ] === registeredProgrammeCeiling &&
           contract.runner?.batch_contract?.combined_analysis_only === true &&
           contract.runner?.batch_contract?.interim_analysis === false &&
           contract.runner?.batch_contract?.valid_unit_reruns === false &&
           contract.runner?.batch_contract?.outcome_selection === false &&
           [
-            'profile_specific_resistance_recovery',
+            // This was the literal 'profile_specific_resistance_recovery', which
+            // is what v1-v5 called their primary. v6 renames the primary and
+            // keeps the old name for a descriptive comparability reading, so the
+            // literal would have gone on passing while checking the wrong
+            // endpoint. Read both ids from the registration the contract binds.
+            endpointRegistration.measurement?.primaryEndpoint?.id,
+            ...(endpointRegistration.measurement?.comparabilityEndpoint?.id
+              ? [endpointRegistration.measurement.comparabilityEndpoint.id]
+              : []),
             endpointRegistration.measurement?.keySecondaryEndpoint?.id,
             'randomized_register_assembly',
             'action_register_fidelity_and_safety',
             ...(isBoredomActionRegisterProofDagV2 ? ['compositional_boredom_observer_timing'] : []),
-            ...(isBoredomActionRegisterProofDagV3 ||
-            isBoredomActionRegisterProofDagV4 ||
-            isBoredomActionRegisterProofDagV5
-              ? ['independent_boredom_semantic_measurement']
-              : []),
+            ...(boredomProofDagRegisteredVersion >= 3 ? ['independent_boredom_semantic_measurement'] : []),
+            // v6 is the first version whose manner is a balanced block rather
+            // than the contrast, so it is the first that has to show the balance
+            // held and count restated tutor content per move.
+            ...(boredomProofDagRegisteredVersion >= 6 ? ['pedagogical_move_balance_and_content_separation'] : []),
           ].every((id) => endpointIds.includes(id)),
         'the boredom 36-case endpoint binds fresh triggers, exact blocked analysis, recovery, proof progress, and all hard caps',
       );
@@ -2265,12 +2334,16 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         : isBoredomActionRegisterProofDagV2
           ? BOREDOM_PROOF_DAG_STOPPED_V2_REQUEST
           : BOREDOM_PROOF_DAG_STOPPED_V1_REQUEST;
-    // v1-v4 each followed a run that was stopped. v5 follows a run that finished,
-    // so it takes the other door. Only one of the two may ever be open at a time.
-    const isSuccessor = !isBoredomActionRegisterProofDagV5 && gate.requestRevision === stoppedBinding.requestRevision;
-    const isCompletedSuccessor =
-      isBoredomActionRegisterProofDagV5 &&
-      gate.requestRevision === BOREDOM_PROOF_DAG_COMPLETED_V4_EXECUTION.requestRevision;
+    // v1-v4 each followed a run that was stopped. v5 and v6 follow runs that
+    // finished, so they take the other door. Only one of the two may ever be
+    // open at a time.
+    const completedBinding = isBoredomActionRegisterProofDagV6
+      ? BOREDOM_PROOF_DAG_COMPLETED_V5_EXECUTION
+      : isBoredomActionRegisterProofDagV5
+        ? BOREDOM_PROOF_DAG_COMPLETED_V4_EXECUTION
+        : null;
+    const isSuccessor = !completedBinding && gate.requestRevision === stoppedBinding.requestRevision;
+    const isCompletedSuccessor = Boolean(completedBinding) && gate.requestRevision === completedBinding.requestRevision;
     const batchDestinations = request.destination.batches;
     const registeredWorlds = registered.design?.worlds || [];
     // The window, the caps and the ledger all live in the registration this request
@@ -2284,14 +2357,35 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     const registeredTreatment = registered.design?.treatment || {};
     const registeredPrefix = registered.design?.freshPrefixGeneration || {};
     const registeredPower = registered.power || {};
+    const registeredMeasurement = registered.measurement || {};
+    // From v5 on, the programme safeguard is a settled number the registration
+    // carries. Before v5 it was restated here, which is how a raise in one file
+    // could disagree with the same raise in the other.
+    const settledProgrammeSafeguard = boredomProofDagRegisteredVersion >= 5;
+    // v1-v5 fixed one tutor move and named it here. v6 makes the move the thing
+    // being contrasted, so it names two. Which shape the registration uses tells
+    // the request which field it must carry, and the request must carry only that
+    // one. Written out as a literal move name, this check went on passing while
+    // reading a field v6 does not have.
+    const registeredMoveLevels = registeredTreatment.pedagogicalMoveLevels;
+    const moveBinding = registeredTreatment.fixedPedagogicalMove
+      ? request.design.fixedPedagogicalMove === registeredTreatment.fixedPedagogicalMove &&
+        request.design.pedagogicalMoveLevels === undefined
+      : Array.isArray(registeredMoveLevels) &&
+        registeredMoveLevels.length === 2 &&
+        request.design.fixedPedagogicalMove === undefined &&
+        JSON.stringify(request.design.pedagogicalMoveLevels) === JSON.stringify(registeredMoveLevels) &&
+        JSON.stringify(canonicalJson(request.design.pedagogicalMoves)) ===
+          JSON.stringify(canonicalJson(registeredTreatment.pedagogicalMoves)) &&
+        request.design.hostActionFamily === registeredTreatment.hostActionFamily;
     assertion(
       checks,
       'boredom-proof-dag-design-binding',
       registered.version === boredomProofDagRegisteredVersion &&
         registered.design?.observationSemantics ===
-          (isBoredomActionRegisterProofDagV3 || isBoredomActionRegisterProofDagV4 || isBoredomActionRegisterProofDagV5
+          (boredomProofDagRegisteredVersion >= 3
             ? 'prospective_v9'
-            : isBoredomActionRegisterProofDagV2
+            : boredomProofDagRegisteredVersion === 2
               ? 'prospective_v8'
               : 'prospective_bored_effort_withholding') &&
         request.design.profiles.join(',') === 'bored' &&
@@ -2302,22 +2396,19 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         JSON.stringify(request.design.worlds) === JSON.stringify(registeredWorlds) &&
         request.design.freshIndependentDialogues === true &&
         request.design.triggerMustShowByTurn === registeredPrefix.maximumTriggerTurn &&
-        request.design.primaryRecoveryDeadlinePostTriggerLearnerTurns === 1 &&
+        request.design.primaryRecoveryDeadlinePostTriggerLearnerTurns ===
+          registeredMeasurement.primaryEndpoint?.deadlinePostTriggerLearnerTurns &&
+        Number.isInteger(registeredMeasurement.primaryEndpoint?.deadlinePostTriggerLearnerTurns) &&
         request.design.proofProgressHorizonPostTriggerLearnerTurns === registeredTreatment.postTriggerLearnerTurns &&
-        request.design.fixedPedagogicalMove === 'ask_discriminating_question' &&
+        moveBinding &&
         request.design.dagMode === 'strict_dag' &&
         request.design.assignmentManifestSha256 === registered.design.randomization.assignmentManifestSha256 &&
         request.design.models.tutor === 'codex.gpt-5.6-luna' &&
         request.design.models.analysis === 'codex.gpt-5.6-luna' &&
         request.design.models.learner === 'codex.gpt-5.6-luna' &&
-        (!(
-          isBoredomActionRegisterProofDagV3 ||
-          isBoredomActionRegisterProofDagV4 ||
-          isBoredomActionRegisterProofDagV5
-        ) ||
-          request.design.models.semanticAdjudicator === 'codex.gpt-5.6-sol') &&
+        (boredomProofDagRegisteredVersion < 3 || request.design.models.semanticAdjudicator === 'codex.gpt-5.6-sol') &&
         request.design.cliEffort === 'low',
-      'the boredom confirmation is 36 fresh blocked-randomized strict-DAG dialogues, 18 per arm, over six exact worlds, on the registered trigger and outcome window',
+      'the boredom confirmation is 36 fresh blocked-randomized strict-DAG dialogues, 18 per arm, over six exact worlds, on the registered trigger, move and outcome window',
     );
     assertion(
       checks,
@@ -2327,7 +2418,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         (isCompletedSuccessor &&
           gate.priorCompletedExecution !== undefined &&
           gate.priorStoppedExecution === undefined),
-      'the original request remains compatible; revisions 2 through 5 bind their exact stopped predecessors and revision 6 binds its exact completed one',
+      'the original request remains compatible; revisions 2 through 5 bind their exact stopped predecessors and revisions 6 and 7 bind their exact completed ones',
     );
     if (isSuccessor) {
       assertion(
@@ -2359,8 +2450,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
             requestRevision: gate.requestRevision,
             ...gate.priorCompletedExecution,
           }),
-        ) === JSON.stringify(canonicalJson(BOREDOM_PROOF_DAG_COMPLETED_V4_EXECUTION)),
-        'the finished v4 study, its exact null result, its three warm-side unreadable stops, and its total exclusion from v5 remain exact',
+        ) === JSON.stringify(canonicalJson(completedBinding)),
+        'the finished predecessor study, its exact null result, its unreadable stops, and its total exclusion from this revision remain exact',
       );
       validateFileBinding(checks, 'boredom-proof-dag-completed-request-binding', gate.priorCompletedExecution.request);
       validateFileBinding(
@@ -2368,11 +2459,16 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         'boredom-proof-dag-completed-registration-binding',
         gate.priorCompletedExecution.registration,
       );
-      validateFileBinding(
-        checks,
-        'boredom-proof-dag-completed-amendment-binding',
-        gate.priorCompletedExecution.amendment,
-      );
+      // v4 needed a written amendment; v5 did not, because its registration
+      // already conditioned the test on the counts that actually came back.
+      // A null amendment is a real state here, not a missing file.
+      if (gate.priorCompletedExecution.amendment !== null) {
+        validateFileBinding(
+          checks,
+          'boredom-proof-dag-completed-amendment-binding',
+          gate.priorCompletedExecution.amendment,
+        );
+      }
     }
     assertion(
       checks,
@@ -2522,7 +2618,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           gate.semanticValidation?.instrumentModule?.path === 'services/tutorStubBoredomSemanticAdjudicationV3.js' &&
           gate.semanticValidation?.instrumentModule?.sha256 ===
             registered.measurement?.semanticAdjudicator?.moduleSha256 &&
-          gate.semanticValidation?.instrumentModule?.sha256 === provenance.bytesV5WillRun &&
+          gate.semanticValidation?.instrumentModule?.sha256 ===
+            (provenance.bytesThisVersionWillRun ?? provenance.bytesV5WillRun) &&
           gate.semanticValidation?.validatedInstrumentSha256 === provenance.validatedBytes &&
           gate.semanticValidation?.instrumentBytesMovedSinceValidation === true &&
           gate.semanticValidation?.heldoutCorpus?.path ===
@@ -2561,19 +2658,36 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       'boredom-proof-dag-power-and-budget',
       request.power.test === registeredPower.test &&
         request.power.alpha === registeredPower.alpha &&
-        request.power.minimumNPerArmAtOrAbove80Percent === (registeredPower.minimumPerArm ?? 18) &&
+        // v1-v5 could claim 18 per arm reached 80 percent power. v6 cannot: its
+        // own registration says 18 per move is a screening size. So v6 states the
+        // size under a name that claims nothing, and the old name must be absent.
+        (boredomProofDagRegisteredVersion >= 6
+          ? request.power.dialoguesPerArm === (registeredPower.minimumPerArm ?? 18) &&
+            request.power.minimumNPerArmAtOrAbove80Percent === undefined
+          : request.power.minimumNPerArmAtOrAbove80Percent === (registeredPower.minimumPerArm ?? 18)) &&
         // v1-v4 sized against a calibration that v4's own result then refuted. v5 may
         // not quote that alternative again, so it states the refusal instead of a
-        // power number it does not have.
-        (isBoredomActionRegisterProofDagV5
-          ? request.power.priorAlternativeRefutedByCompletedV4 === true &&
+        // power number it does not have. v6 refuses both and prints the table it
+        // does have, read from the registration rather than restated here.
+        (boredomProofDagRegisteredVersion >= 6
+          ? request.power.screeningRunNotPoweredForASmallEffect === true &&
+            request.power.priorAlternativeRefutedByCompletedV4 === true &&
+            request.power.priorMannerEffectRefutedByCompletedV5 === true &&
             request.power.sizedAgainstADetectableSmallEffect === false &&
+            request.power.measuredReferenceRateOneTurn === registeredPower.measuredReferenceRate?.value &&
+            JSON.stringify(request.power.powerTableAtEighteenPerMove) ===
+              JSON.stringify(registeredPower.powerTableAtEighteenPerMove) &&
             request.power.calibrationPlainRate === undefined &&
             request.power.calibrationWarmRate === undefined
-          : request.power.calibrationPlainRate === 1 / 6 &&
-            request.power.calibrationWarmRate === 4 / 6 &&
-            Math.abs(request.power.powerAt17PerArm - 0.7947641958186097) < 1e-12 &&
-            Math.abs(request.power.powerAt18PerArm - 0.8164905471625752) < 1e-12) &&
+          : isBoredomActionRegisterProofDagV5
+            ? request.power.priorAlternativeRefutedByCompletedV4 === true &&
+              request.power.sizedAgainstADetectableSmallEffect === false &&
+              request.power.calibrationPlainRate === undefined &&
+              request.power.calibrationWarmRate === undefined
+            : request.power.calibrationPlainRate === 1 / 6 &&
+              request.power.calibrationWarmRate === 4 / 6 &&
+              Math.abs(request.power.powerAt17PerArm - 0.7947641958186097) < 1e-12 &&
+              Math.abs(request.power.powerAt18PerArm - 0.8164905471625752) < 1e-12) &&
         // Every cap below is read from the registration these batches will be planned
         // under, so a longer study can never be checked against a shorter study's
         // numbers. That mismatch is exactly what v4 shipped.
@@ -2584,26 +2698,39 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.budget.dialoguesPerBatch === registeredBatch.dialoguesPerBatch &&
         request.budget.maximumAttemptsPerBatch === registeredBatch.maximumReservationsPerBatch &&
         request.budget.maximumPlannedModelAttempts === registeredDialogue.maximumReservations &&
-        (isBoredomActionRegisterProofDagV5
-          ? request.budget.programmeLedgerBefore === registeredCeiling.ledgerBeforeV5 &&
-            request.budget.programmeCeilingBefore === registeredCeiling.previousProgrammeSafeguard &&
+        // v5 raised the safeguard. v6 raises nothing: the ledger it starts from is
+        // the sum v4 and v5 actually spent, and the same 15000 stands before and
+        // after. The ledger key is read as ledgerBeforeV<this version>, so the
+        // number can never be a predecessor's.
+        (boredomProofDagRegisteredVersion >= 6
+          ? request.budget.programmeLedgerBefore ===
+              registeredCeiling[`ledgerBeforeV${boredomProofDagRegisteredVersion}`] &&
+            Number.isInteger(registeredCeiling[`ledgerBeforeV${boredomProofDagRegisteredVersion}`]) &&
+            request.budget.programmeCeilingBefore === registeredCeiling.programmeSafeguard &&
             request.budget.programmeCeilingAfter === registeredCeiling.programmeSafeguard &&
             request.budget.programmeLedgerAfterBoredomMaximum === registeredCeiling.requiredCeiling &&
-            request.budget.programmeOperationalSafeguardIncrement === registeredCeiling.safeguardRaisedBy &&
+            request.budget.programmeOperationalSafeguardIncrement === 0 &&
             request.budget.frameRefusalConfirmationReservedAttempts === 0
-          : request.budget.programmeLedgerBefore ===
-              (isBoredomActionRegisterProofDagV4 ? 446 : isBoredomActionRegisterProofDagCurrent ? 293 : 219) &&
-            request.budget.programmeCeilingBefore === (isBoredomActionRegisterProofDagCurrent ? 5000 : 2379) &&
-            request.budget.frameRefusalConfirmationReservedAttempts === 2160 &&
-            request.budget.programmeOperationalSafeguardIncrement === 2160 &&
-            request.budget.programmeCeilingAfter === (isBoredomActionRegisterProofDagCurrent ? 5000 : 4539) &&
-            request.budget.programmeLedgerAfterBoredomMaximum ===
-              (isBoredomActionRegisterProofDagV4 ? 2606 : isBoredomActionRegisterProofDagCurrent ? 2453 : 2379) &&
-            request.budget.programmeReservedAfterBothMaximum ===
-              (isBoredomActionRegisterProofDagV4 ? 4766 : isBoredomActionRegisterProofDagCurrent ? 4613 : 4539)) &&
+          : isBoredomActionRegisterProofDagV5
+            ? request.budget.programmeLedgerBefore === registeredCeiling.ledgerBeforeV5 &&
+              request.budget.programmeCeilingBefore === registeredCeiling.previousProgrammeSafeguard &&
+              request.budget.programmeCeilingAfter === registeredCeiling.programmeSafeguard &&
+              request.budget.programmeLedgerAfterBoredomMaximum === registeredCeiling.requiredCeiling &&
+              request.budget.programmeOperationalSafeguardIncrement === registeredCeiling.safeguardRaisedBy &&
+              request.budget.frameRefusalConfirmationReservedAttempts === 0
+            : request.budget.programmeLedgerBefore ===
+                (isBoredomActionRegisterProofDagV4 ? 446 : isBoredomActionRegisterProofDagCurrent ? 293 : 219) &&
+              request.budget.programmeCeilingBefore === (isBoredomActionRegisterProofDagCurrent ? 5000 : 2379) &&
+              request.budget.frameRefusalConfirmationReservedAttempts === 2160 &&
+              request.budget.programmeOperationalSafeguardIncrement === 2160 &&
+              request.budget.programmeCeilingAfter === (isBoredomActionRegisterProofDagCurrent ? 5000 : 4539) &&
+              request.budget.programmeLedgerAfterBoredomMaximum ===
+                (isBoredomActionRegisterProofDagV4 ? 2606 : isBoredomActionRegisterProofDagCurrent ? 2453 : 2379) &&
+              request.budget.programmeReservedAfterBothMaximum ===
+                (isBoredomActionRegisterProofDagV4 ? 4766 : isBoredomActionRegisterProofDagCurrent ? 4613 : 4539)) &&
         request.budget.attemptAccountingRole === 'operational_execution_safeguard_only' &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
-      'the exact blocked test needs 18 per arm, and every attempt cap and ledger figure is read from the bound registration rather than restated here',
+      'the arm size, the power position and every attempt cap and ledger figure are read from the bound registration rather than restated here',
     );
     const recovery = gate.recoveryBoundary;
     assertion(
@@ -2619,7 +2746,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         recovery.maximumAttemptsPerBatchUnchanged === registeredBatch.maximumReservationsPerBatch &&
         recovery.maximumTotalStudyAttemptsUnchanged === registeredDialogue.maximumReservations &&
         recovery.programmeCeilingUnchanged ===
-          (isBoredomActionRegisterProofDagV5
+          (settledProgrammeSafeguard
             ? registeredCeiling.programmeSafeguard
             : isBoredomActionRegisterProofDagCurrent
               ? 5000
@@ -2671,6 +2798,14 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         boredomReportSchemaAccepted(request.measurement.reportSchema, registered) &&
         boredomPrimaryOutcomeAccepted(request.measurement.primaryOutcome, registered) &&
         request.measurement.keySecondaryOutcome === registered.measurement?.keySecondaryEndpoint?.id &&
+        // v6 adds three readings and none of them is a test. Saying so here is what
+        // stops a later reader treating the old one-turn endpoint as a second
+        // chance at a positive result.
+        (boredomProofDagRegisteredVersion < 6 ||
+          (request.measurement.comparabilityOutcome === registered.measurement?.comparabilityEndpoint?.id &&
+            request.measurement.comparabilityOutcomeTestedInferentially === false &&
+            request.measurement.mannerReportedAsBlockNotTested === true &&
+            request.measurement.contentSeparationReportedPerMove === true)) &&
         request.measurement.primaryTest === 'two_sided_exact_conditional_blocked_score_test' &&
         request.measurement.fixedSequencePrimaryThenKeySecondary === true &&
         request.measurement.oneCombinedThirtySixDialogueAnalysisRequired === true &&
@@ -3865,13 +4000,15 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   // approving, and the request already had to match the registration to get here.
   const groupedNumber = (value) => String(value).replace(/\B(?=(\d{3})+(?!\d))/gu, ',');
   const exactApprovalStatement = isBoredomActionRegisterProofDag
-    ? isBoredomActionRegisterProofDagV5
-      ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, a trigger that must show by turn ${request.design.triggerMustShowByTurn} and a ${request.design.proofProgressHorizonPostTriggerLearnerTurns}-turn post-trigger proof-progress window, scored by the carried-forward Sol V3 semantic instrument on which no fresh accuracy claim is made because the sealed 55-case held-out v4 corpus is spent, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes including the completed 33-unit v4 null and the stopped 71-reservation v2 cohort, a ${groupedNumber(request.budget.maximumPlannedModelAttempts)}-attempt study safeguard and ${groupedNumber(request.budget.programmeCeilingAfter)}-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
-      : isBoredomActionRegisterProofDagV4
-        ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, scored by the independently pinned Sol V3 semantic instrument that passed all five predeclared gates on the sealed 55-case held-out v4 corpus, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes including the stopped 71-reservation v2 cohort, a 2,160-attempt study safeguard and 5,000-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
-        : isBoredomActionRegisterProofDagV3
-          ? `No confirmation launch approval is available for ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256}: the independently pinned Sol semantic adjudicator must first pass its predeclared frozen-failure, strong-negative, held-out sensitivity, specificity, agreement, and indeterminacy gates without changing the request, prompt, wrapper, or protected inputs.`
-          : `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes, a 2,160-attempt study safeguard and ${isBoredomActionRegisterProofDagV2 ? '5,000' : '4,539'}-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
+    ? isBoredomActionRegisterProofDagV6
+      ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one ${request.design.dialogues}-dialogue Luna boredom proof-DAG screening run that contrasts two tutor moves under one host action family, ask a discriminating question against simplify to one workable step, with ${request.design.dialoguesPerArm} dialogues per move and the plain and warm manner balanced nine and nine inside each move as a block and not as the contrast, a trigger that must show by turn ${request.design.triggerMustShowByTurn}, recovery read over the ${request.design.primaryRecoveryDeadlinePostTriggerLearnerTurns} post-trigger learner turns and a ${request.design.proofProgressHorizonPostTriggerLearnerTurns}-turn proof-progress window, scored by the carried-forward Sol V3 semantic instrument on which no fresh accuracy claim is made because the sealed 55-case held-out v4 corpus is spent, one predeclared two-sided exact conditional blocked analysis on the move contrast with fixed-sequence proof-progress testing, the v5 one-turn endpoint reported for both moves as a descriptive comparison that is never tested, a per-move count of learner turns that only say back what the tutor just made public, no interim analysis, no reuse or pooling of prior dialogues or outcomes including the completed 33-unit v4 null, the completed 35-unit v5 null and the stopped 71-reservation v2 cohort, a ${groupedNumber(request.budget.maximumPlannedModelAttempts)}-attempt study safeguard and ${groupedNumber(request.budget.programmeCeilingAfter)}-attempt cumulative programme safeguard, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards. I understand that at this size a null result would mean very little and may not be reported as evidence that the move does not work.`
+      : isBoredomActionRegisterProofDagV5
+        ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, a trigger that must show by turn ${request.design.triggerMustShowByTurn} and a ${request.design.proofProgressHorizonPostTriggerLearnerTurns}-turn post-trigger proof-progress window, scored by the carried-forward Sol V3 semantic instrument on which no fresh accuracy claim is made because the sealed 55-case held-out v4 corpus is spent, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes including the completed 33-unit v4 null and the stopped 71-reservation v2 cohort, a ${groupedNumber(request.budget.maximumPlannedModelAttempts)}-attempt study safeguard and ${groupedNumber(request.budget.programmeCeilingAfter)}-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
+        : isBoredomActionRegisterProofDagV4
+          ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, scored by the independently pinned Sol V3 semantic instrument that passed all five predeclared gates on the sealed 55-case held-out v4 corpus, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes including the stopped 71-reservation v2 cohort, a 2,160-attempt study safeguard and 5,000-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
+          : isBoredomActionRegisterProofDagV3
+            ? `No confirmation launch approval is available for ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256}: the independently pinned Sol semantic adjudicator must first pass its predeclared frozen-failure, strong-negative, held-out sensitivity, specificity, agreement, and indeterminacy gates without changing the request, prompt, wrapper, or protected inputs.`
+            : `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes, a 2,160-attempt study safeguard and ${isBoredomActionRegisterProofDagV2 ? '5,000' : '4,539'}-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
     : isActionRegisterConfirmation
       ? isActionRegisterConfirmationV5
         ? `Standing programme authority attachment SHA-256 538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce applies to ${requestRepoPath} at SHA-256 ${requestSha256}: one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1, V3, or V4 confirmation blocks, and bounded technical recovery for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`

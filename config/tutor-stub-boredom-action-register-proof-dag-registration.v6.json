@@ -260,7 +260,7 @@
       "modulePath": "services/tutorStubBoredomSemanticAdjudicationV3.js",
       "moduleSha256": "001eba55ebda1e08238b79ea220490fb7c7af3cbda30808964b9a2b4778fbf5e",
       "moduleUnchangedFromV4": true,
-      "moduleUnchangedNote": "the adjudicator's bytes, its verdict derivation and its sealed held-out validation are carried forward untouched. v5 changes only what the runtime does with an unreadable pre-treatment turn, which is outside this module.",
+      "moduleUnchangedNote": "the adjudicator's bytes, its verdict derivation and its sealed held-out validation are carried forward untouched. v5 changed only what the runtime does with an unreadable pre-treatment turn, and v6 changes only which tutor move is delivered after the trigger. Both are outside this module.",
       "modelRef": "codex.gpt-5.6-sol",
       "role": "tutor_stub_boredom_performance_adjudication",
       "effort": "low",
@@ -277,7 +277,7 @@
       "empiricalValidationStatus": "passed_all_predeclared_gates_on_sealed_heldout_v4_corpus",
       "empiricalValidationCarriedForward": true,
       "revalidationRequired": false,
-      "revalidationRequiredReason": "the adjudicator's bytes moved once since the sealed corpus was spent, and that move is argued and tested below under instrumentProvenance. No byte moves between v4 and v5. If any byte moves from here, this field becomes true and a fresh sealed corpus is required, because the v4 corpus is spent.",
+      "revalidationRequiredReason": "the adjudicator's bytes moved once since the sealed corpus was spent, and that move is argued and tested below under instrumentProvenance. No byte moves between v4 and v6. If any byte moves from here, this field becomes true and a fresh sealed corpus is required, because the v4 corpus is spent.",
       "carriedForwardHeldoutCorpus": {
         "path": "config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json",
         "sha256": "5f65dd5dc3e193c9dc0368b4155a550bc9b5acd56de78e62704e35f750f50aa0",
@@ -285,13 +285,14 @@
         "embeddedInPrompt": false,
         "modelPredictionsPresent": false,
         "spentForValidation": true,
-        "whatCarryingItForwardMeans": "v5 replays these 55 cases through the parser with no model call, which shows the instrument still reads them the way it did. That is a check on the code, not a new measurement. No fresh claim about the instrument's accuracy is earned from this corpus, because it is spent.",
+        "whatCarryingItForwardMeans": "this study replays these 55 cases through the parser with no model call, which shows the instrument still reads them the way it did. That is a check on the code, not a new measurement. No fresh claim about the instrument's accuracy is earned from this corpus, because it is spent.",
         "ifAFreshClaimIsEverNeeded": "a new sealed corpus has to be written and held out. This one cannot serve twice."
       },
       "instrumentProvenance": {
-        "whyThisSectionExists": "The bytes that the sealed 55-case corpus measured are not the bytes v5 will run. A reader must be able to see that difference and judge the argument, rather than take a carried-forward validation on trust.",
+        "whyThisSectionExists": "The bytes that the sealed 55-case corpus measured are not the bytes this study will run. A reader must be able to see that difference and judge the argument, rather than take a carried-forward validation on trust.",
+        "fieldNameIsVersionNeutral": "v5 called the next field bytesV5WillRun. A field named for one revision has to be renamed by hand in every later one, and a hand-renamed field is the fault this arc keeps closing. The name now says which version rather than which number, and it is the name the preflight validator already prefers.",
         "validatedBytes": "ba4a692fd1310591072a52c600b91cdd796edfdc89f979e7843b41d7fa9ff191",
-        "bytesV5WillRun": "001eba55ebda1e08238b79ea220490fb7c7af3cbda30808964b9a2b4778fbf5e",
+        "bytesThisVersionWillRun": "001eba55ebda1e08238b79ea220490fb7c7af3cbda30808964b9a2b4778fbf5e",
         "sealedRecordOfTheValidatedTree": "config/tutor-stub-boredom-semantic-validation-request.v4.json",
         "sealedRecordIsNotEdited": "That request still records the validated digests, and it is left exactly as it is. Its own bytes are pinned by the approval record and by the frozen v4 registration, so editing it would rewrite an approval and a closed study. A spent record is meant to say what was true then, not what is true now.",
         "commitsBetween": [
