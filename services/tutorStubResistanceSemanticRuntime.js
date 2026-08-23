@@ -101,13 +101,31 @@ export function tutorStubResistanceSemanticRuntimeInstrument(registrationBinding
     };
   }
   if (registrationBinding?.registration?.version === 4) {
+    const panelOverride = registrationBinding?.runtimePanelOverride || null;
     return {
       observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4,
       responseSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_MODEL_SCHEMA_V3,
       outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
       buildPrompt: buildTutorStubResistanceSemanticAdjudicationPromptV3,
       wrapModelOutput: wrapTutorStubResistanceSemanticModelOutputV3,
-      adjudicate: adjudicateTutorStubResistanceSemanticJudgesV4,
+      adjudicate: panelOverride
+        ? (values) => {
+            const aggregate = adjudicateTutorStubResistanceSemanticJudgesV4(values);
+            const selectedIds = new Set(panelOverride.judges.map((judge) => judge.id));
+            return {
+              ...aggregate,
+              validation: aggregate.validation.filter((row) => selectedIds.has(row.judge_id)),
+              abstentions: aggregate.abstentions.filter((row) => selectedIds.has(row.judge_id)),
+              runtime_panel_override: {
+                scope: panelOverride.scope,
+                panel_size: panelOverride.panelSize,
+                rule: panelOverride.rule,
+                model_refs: panelOverride.modelRefs,
+                outcome_blind_operator_decision_date: panelOverride.outcomeBlindOperatorDecisionDate,
+              },
+            };
+          }
+        : adjudicateTutorStubResistanceSemanticJudgesV4,
     };
   }
   if (registrationBinding?.registration?.version === 3) {
@@ -301,6 +319,70 @@ export function loadTutorStubResistanceSemanticRegistration(
   return { registration, path: registrationPath, sha256: tutorStubResistanceSemanticSha256(fs.readFileSync(absolute)) };
 }
 
+export const TUTOR_STUB_RESISTANT_LEARNER_TWO_SEAT_PANEL_RULE =
+  'both_valid_high_confidence_sol_sonnet_votes_agree';
+
+export function applyTutorStubResistantLearnerCalibrationSemanticPanel(registrationBinding, runtime) {
+  if (
+    runtime?.resistant_learner_calibration !== true ||
+    runtime?.resistant_learner_study !== 'R1'
+  ) {
+    return registrationBinding;
+  }
+  const trigger = runtime?.design?.models?.triggerObservation;
+  if (
+    registrationBinding?.registration?.version !== 4 ||
+    trigger?.semantics !== TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
+  ) {
+    throw new Error('R1 calibration requires its scoped v4 two-seat trigger panel');
+  }
+  const modelRefs = trigger.judges?.map((judge) => judge.modelRef) || [];
+  if (JSON.stringify(modelRefs) !== JSON.stringify(['codex.gpt-5.6-sol', 'claude-code.sonnet-5'])) {
+    throw new Error('R1 calibration trigger panel must be the Sol-Sonnet pair');
+  }
+  const registeredJudges = registrationBinding.registration.measurement.judges;
+  const selectedJudges = trigger.judges.map((declared) => {
+    const registered = registeredJudges.find((judge) => judge.modelRef === declared.modelRef);
+    if (
+      !registered ||
+      registered.id !== declared.id ||
+      registered.provider !== declared.provider ||
+      registered.model !== declared.model ||
+      registered.effort !== declared.effort
+    ) {
+      throw new Error(`R1 calibration trigger route drift for ${declared.modelRef}`);
+    }
+    return structuredClone(registered);
+  });
+  const runtimePanelOverride = {
+    scope: 'resistant_learner_r1_gate1_calibration',
+    panelSize: 2,
+    rule: TUTOR_STUB_RESISTANT_LEARNER_TWO_SEAT_PANEL_RULE,
+    modelRefs,
+    judges: selectedJudges,
+    outcomeBlindOperatorDecisionDate: '2026-08-23',
+  };
+  const overrideSha256 = canonicalSha256({
+    baseRegistrationSha256: registrationBinding.sha256,
+    runtimePanelOverride: {
+      ...runtimePanelOverride,
+      judges: runtimePanelOverride.judges.map((judge) => ({
+        id: judge.id,
+        modelRef: judge.modelRef,
+        provider: judge.provider,
+        model: judge.model,
+        effort: judge.effort,
+      })),
+    },
+  });
+  return {
+    registration: registrationBinding.registration,
+    path: `${registrationBinding.path}#resistant-learner-r1-two-seat`,
+    sha256: overrideSha256,
+    runtimePanelOverride,
+  };
+}
+
 export function tutorStubResistanceSemanticRegistrationPathForObservation(observationSemantics = '') {
   const normalized = String(observationSemantics || '').trim();
   if (!normalized || normalized === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION) {
@@ -366,7 +448,9 @@ export function validateTutorStubResistanceSemanticRuntimeResult({
   if (requireDeterminate) {
     const aggregate = result?.aggregate || {};
     const hierarchicalV4 = registrationBinding?.registration?.version >= 4;
-    const expectedPanelSize = registrationBinding?.registration?.version === 6 ? 2 : hierarchicalV4 ? 3 : 2;
+    const expectedPanelSize =
+      registrationBinding?.runtimePanelOverride?.panelSize ||
+      (registrationBinding?.registration?.version === 6 ? 2 : hierarchicalV4 ? 3 : 2);
     const minimumEligibleJudges = 2;
     if (
       aggregate.repair_allowed !== false ||
@@ -434,6 +518,7 @@ export function createTutorStubResistanceSemanticRuntime({
   if (typeof resolveModel !== 'function') throw new Error('semantic runtime requires resolveModel');
   const { registration } = registrationBinding;
   const instrument = tutorStubResistanceSemanticRuntimeInstrument(registrationBinding);
+  const activeJudges = registrationBinding.runtimePanelOverride?.judges || registration.measurement.judges;
 
   async function adjudicateCandidate({
     state,
@@ -458,7 +543,7 @@ export function createTutorStubResistanceSemanticRuntime({
 
     const prompts = {};
     const records = [];
-    for (const judge of registration.measurement.judges) {
+    for (const judge of activeJudges) {
       const prompt = instrument.buildPrompt({
         caseId,
         source,
@@ -605,7 +690,11 @@ export function createLazyTutorStubResistanceSemanticAdjudicator(
   return async (values) => {
     if (!runtime) {
       const registrationPath = tutorStubResistanceSemanticRegistrationPathForObservation(observationSemantics);
-      const registrationBinding = loadRegistration(registrationPath);
+      const baseRegistrationBinding = loadRegistration(registrationPath);
+      const registrationBinding = applyTutorStubResistantLearnerCalibrationSemanticPanel(
+        baseRegistrationBinding,
+        values?.state?.resistanceActionRegisterStudy,
+      );
       const expectedObservationSemantics =
         String(observationSemantics || '').trim() || TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION;
       if (registrationBinding?.registration?.observationSemantics !== expectedObservationSemantics) {

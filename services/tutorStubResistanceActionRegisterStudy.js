@@ -21,13 +21,14 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V6,
+  applyTutorStubResistantLearnerCalibrationSemanticPanel,
   isTutorStubResistanceSemanticObservation,
   loadTutorStubResistanceSemanticRegistration,
   tutorStubResistanceSemanticPublicContext,
   validateTutorStubResistanceSemanticRuntimeResult,
 } from './tutorStubResistanceSemanticRuntime.js';
 
-function resistanceSemanticRegistrationBinding(observationSemantics) {
+function resistanceSemanticRegistrationBinding(observationSemantics, runtime = null) {
   const registrationPath =
     observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6
       ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V6
@@ -40,7 +41,10 @@ function resistanceSemanticRegistrationBinding(observationSemantics) {
         : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
           ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2
           : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION;
-  return loadTutorStubResistanceSemanticRegistration(registrationPath);
+  return applyTutorStubResistantLearnerCalibrationSemanticPanel(
+    loadTutorStubResistanceSemanticRegistration(registrationPath),
+    runtime,
+  );
 }
 
 export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_STUDY_SCHEMA =
@@ -1189,7 +1193,7 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
   const semantics = runtime.registration?.design?.trigger?.observationSemantics;
   if (isTutorStubResistanceSemanticObservation(semantics)) {
     const frameSemanticAdjudication = semanticAdjudication || runtime.current_semantic_adjudication || null;
-    const semanticBinding = resistanceSemanticRegistrationBinding(semantics);
+    const semanticBinding = resistanceSemanticRegistrationBinding(semantics, runtime);
     const semanticValidation = validateTutorStubResistanceSemanticRuntimeResult({
       result: frameSemanticAdjudication,
       learnerText,

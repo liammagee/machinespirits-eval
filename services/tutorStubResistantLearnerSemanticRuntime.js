@@ -275,7 +275,7 @@ function validateModelOutput({ output, prompt, definition, caseId }) {
   };
 }
 
-function vote(values) {
+export function tutorStubResistantLearnerSemanticFieldConsensus(values) {
   const counts = Object.fromEntries(
     [...new Set(values)].map((value) => [value, values.filter((row) => row === value).length]),
   );
@@ -287,7 +287,9 @@ function panel({ caseId, instrument, definition, records }) {
   const fields = Object.fromEntries(
     Object.keys(definition.fields).map((field) => {
       const eligible = records.filter((record) => record.validation.fields[field].eligible);
-      const result = vote(eligible.map((record) => record.validation.fields[field].value));
+      const result = tutorStubResistantLearnerSemanticFieldConsensus(
+        eligible.map((record) => record.validation.fields[field].value),
+      );
       return [
         field,
         {
