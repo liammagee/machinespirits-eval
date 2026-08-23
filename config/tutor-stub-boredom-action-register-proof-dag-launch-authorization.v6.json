@@ -1,0 +1,41 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v2",
+  "approvedBy": "Liam Magee",
+  "approvedOn": "2026-08-22",
+  "registrationPath": "config/tutor-stub-boredom-action-register-proof-dag-registration.v6.json",
+  "designFingerprint": "d945aced45afc6c99983c84da87e0fdf751f5fc4a0f2daed4c0bd01ca0ea9a20",
+  "modelCallsAuthorized": true,
+  "liveRunAuthorized": true,
+  "approvalStatement": "I approve config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v6.json at SHA-256 18fb5c99528bde124ebd1ed83d3ea5d03a13262d1f2e64e282a8cedbb056f74e for one 36-dialogue Luna boredom proof-DAG screening run that contrasts two tutor moves under one host action family, ask a discriminating question against simplify to one workable step, with 18 dialogues per move and the plain and warm manner balanced nine and nine inside each move as a block and not as the contrast, a trigger that must show by turn 4, recovery read over the 5 post-trigger learner turns and a 5-turn proof-progress window, scored by the carried-forward Sol V3 semantic instrument on which no fresh accuracy claim is made because the sealed 55-case held-out v4 corpus is spent, one predeclared two-sided exact conditional blocked analysis on the move contrast with fixed-sequence proof-progress testing, the v5 one-turn endpoint reported for both moves as a descriptive comparison that is never tested, a per-move count of learner turns that only say back what the tutor just made public, no interim analysis, no reuse or pooling of prior dialogues or outcomes including the completed 33-unit v4 null, the completed 35-unit v5 null and the stopped 71-reservation v2 cohort, a 4,428-attempt study safeguard and 15,000-attempt cumulative programme safeguard, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards. I understand that at this size a null result would mean very little and may not be reported as evidence that the move does not work.",
+  "binds": "study_design_not_source_bytes",
+  "note": "The approval covers the registered study: the question, the claim boundary, the design, the measurement rules, the power calculation and the spend safeguards. Correcting a defect in the code does not void it; changing the study does.",
+  "powerCaveatAcknowledged": {
+    "acknowledgedInApprovalStatement": true,
+    "reading": "at 18 dialogues per move a null result may not be reported as evidence that the move does not work",
+    "measuredReferenceRateOneTurn": 0.1429,
+    "powerRangeAcrossTreatmentRatesPointThreeToPointSix": [0.11, 0.75]
+  },
+  "executionShape": {
+    "batchesRunTogether": 9,
+    "dialoguesPerBatch": 4,
+    "parallelismPerBatch": 4,
+    "authority": "Liam Magee, 2026-08-22: can we integrate these findings into a new design, then run it - with same sample size and parallelism. if we get a result at this size we might look then at scaling",
+    "contrastSafety": "every batch carries one dialogue of each of the four move-and-manner pairs, so any slowdown or provider limit inside a batch falls on both moves and both manners alike and cannot move the comparison",
+    "designChanged": true,
+    "designChangeFromV5": "the tested contrast moved from the manner of delivery to the tutor move; the manner is now a balancing block that is reported and never tested"
+  },
+  "priorCompletedExecution": [
+    {
+      "study": "boredom action-before-register proof-DAG confirmation v4",
+      "result": "registered null: plain 0 of 18, warm 0 of 15, p = 1",
+      "stoppedUnits": 3,
+      "reused": "nothing"
+    },
+    {
+      "study": "boredom action-before-register proof-DAG confirmation v5",
+      "result": "registered null: plain 1 of 18, warm 4 of 17, p = 0.18, 35 of 35 units reachable",
+      "stoppedUnits": 1,
+      "reused": "nothing; v6 draws fresh prefixes and pools no prior dialogue or outcome"
+    }
+  ]
+}
