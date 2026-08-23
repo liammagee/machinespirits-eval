@@ -13,7 +13,11 @@ function loadFrozenModelCallReplay() {
   ) {
     throw new Error('frozen model-call replay file is invalid');
   }
-  return { path: replayPath, entries: replay.entries, index: 0 };
+  return {
+    path: replayPath,
+    entries: replay.entries.filter((entry) => !/^tutor_stub_tutor(?:_|$)/u.test(String(entry?.role || ''))),
+    index: 0,
+  };
 }
 
 function sameJson(left, right) {
@@ -212,6 +216,70 @@ export function createTutorStubPromptTransport(dependencies) {
         );
       }
       frozenReplay.index += 1;
+      if (entry.error) {
+        const replayError = Object.assign(new Error(entry.error.message), {
+          name: entry.error.name || 'Error',
+          code: entry.error.code || null,
+          provider: entry.provider,
+          audit: entry.error.audit || null,
+          classification: entry.error.classification || null,
+          responseFree: entry.error.responseFree === true,
+        });
+        const baseRetryDecision = tutorStubCliPolicyRetryDecision(replayError, {
+          retryCount: cliPolicyRetryCount,
+          allowClaudeResponseFreeError: semanticResistanceJudge,
+        });
+        const retryDecision =
+          baseRetryDecision.retry && semanticRetryDelays
+            ? { ...baseRetryDecision, delay_ms: semanticRetryDelays[cliPolicyRetryCount] }
+            : baseRetryDecision;
+        appendTraceEvent(trace, {
+          type: 'model_call_error',
+          role,
+          turn,
+          startedAt,
+          provider: entry.provider,
+          model: entry.model,
+          request: expectedRequest,
+          error: replayError.message,
+          cliPolicyViolation: retryDecision,
+          replayedFromFrozenPrefix: true,
+          publicTranscriptChanged: false,
+        });
+        if (retryDecision.retry) {
+          appendTraceEvent(trace, {
+            type: 'cli_policy_retry_decision',
+            role,
+            turn,
+            decision: retryDecision,
+            replayedFromFrozenPrefix: true,
+            publicTranscriptChanged: false,
+          });
+          await waitTutorStubCliPolicyRetryDelay(retryDecision.delay_ms, { signal });
+          return callPromptModel({
+            prompt: promptInput,
+            messageHistory,
+            resolved,
+            systemPrompt: systemPromptInput,
+            role,
+            maxTokens,
+            trace,
+            stream,
+            cliEffort,
+            effort,
+            outputSchema,
+            timeoutMs,
+            maxStdoutBytes,
+            maxStderrBytes,
+            turn,
+            signal,
+            historyTurns,
+            cliPolicyRetryCount: cliPolicyRetryCount + 1,
+            semanticRetryDelaysMs: semanticRetryDelays,
+          });
+        }
+        throw replayError;
+      }
       const response = {
         ...entry.response,
         provider: entry.provider,

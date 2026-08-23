@@ -111,7 +111,7 @@ export class CliProviderPolicyError extends Error {
 }
 
 export class CliProviderTurnError extends Error {
-  constructor(provider, audit) {
+  constructor(provider, audit, diagnostics = null) {
     super(`${provider} CLI turn failed before producing an accepted response`);
     this.name = 'CliProviderTurnError';
     this.code = 'CLI_PROVIDER_TURN_FAILED';
@@ -119,6 +119,7 @@ export class CliProviderTurnError extends Error {
     // Keep only protocol labels and counts. Provider error messages can echo
     // request material and therefore must not cross this boundary.
     this.audit = audit;
+    if (diagnostics) this.diagnostics = diagnostics;
   }
 }
 
@@ -623,6 +624,22 @@ const KNOWN_PROHIBITED_CODEX_TYPES = new Set([
   'tool_call',
   'web_search',
 ]);
+
+function codexFailureDiagnostics(events = []) {
+  return events
+    .filter(
+      (event) =>
+        CODEX_FAILURE_EVENT_TYPES.has(String(event?.type || '')) ||
+        CODEX_FAILURE_ITEM_TYPES.has(String(event?.item?.type || '')),
+    )
+    .map((event) => ({
+      type: String(event?.type || 'unknown'),
+      code: String(event?.code || event?.error?.code || event?.item?.code || event?.item?.error?.code || '') || null,
+      message: String(
+        event?.message || event?.error?.message || event?.item?.message || event?.item?.error?.message || '',
+      ).slice(0, 2048) || null,
+    }));
+}
 
 function safeCodexTypeLabel(value, allowed) {
   const label = String(value || 'unknown');
@@ -1209,7 +1226,11 @@ async function callCodexCli({
           return;
         }
         if (eventAudit.failure_event_count > 0) {
-          reject(new CliProviderTurnError('codex', eventAudit));
+          const diagnostics =
+            process.env.TUTOR_STUB_CAPTURE_CODEX_FAILURE_DIAGNOSTICS === '1'
+              ? codexFailureDiagnostics(parsedStream.events)
+              : null;
+          reject(new CliProviderTurnError('codex', eventAudit, diagnostics));
           return;
         }
         if (code !== 0) {

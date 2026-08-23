@@ -709,6 +709,40 @@ describe('cliProviderBridge', () => {
     );
   });
 
+  it('captures bounded Codex failure messages only under the explicit diagnostic switch', async () => {
+    const previous = process.env.TUTOR_STUB_CAPTURE_CODEX_FAILURE_DIAGNOSTICS;
+    process.env.TUTOR_STUB_CAPTURE_CODEX_FAILURE_DIAGNOSTICS = '1';
+    const spawnImpl = () =>
+      fakeChild({
+        stdoutText: [
+          JSON.stringify({ type: 'thread.started' }),
+          JSON.stringify({ type: 'turn.started' }),
+          JSON.stringify({ type: 'error', message: 'structured output schema rejected' }),
+          JSON.stringify({ type: 'turn.failed', error: { code: 'invalid_request', message: 'schema rejected' } }),
+        ].join('\n'),
+      });
+    try {
+      await assert.rejects(
+        () =>
+          callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'learner', {
+            effort: 'low',
+            timeoutMs: 1000,
+            spawnImpl,
+          }),
+        (error) => {
+          assert.deepEqual(error.diagnostics, [
+            { type: 'error', code: null, message: 'structured output schema rejected' },
+            { type: 'turn.failed', code: 'invalid_request', message: 'schema rejected' },
+          ]);
+          return true;
+        },
+      );
+    } finally {
+      if (previous === undefined) delete process.env.TUTOR_STUB_CAPTURE_CODEX_FAILURE_DIAGNOSTICS;
+      else process.env.TUTOR_STUB_CAPTURE_CODEX_FAILURE_DIAGNOSTICS = previous;
+    }
+  });
+
   it('treats invalid JSONL as a policy violation for unstructured Codex calls', async () => {
     const secretCanary = 'SECRET-INVALID-JSONL-CANARY';
     const spawnImpl = (_command, args) => {

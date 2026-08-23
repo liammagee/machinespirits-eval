@@ -90,10 +90,17 @@ test('post-freeze heldout and strong negatives pass the predeclared zero-call ga
       });
       prompts[judge.id] = prompt;
       const schema = buildTutorStubResistanceSemanticOutputSchemaV5(prompt);
-      const quoteEnum =
-        schema.properties.judgment.properties.evidence_quotes.properties.jurisdiction_dispute.oneOf[0].properties
-          .quote.enum;
-      assert.deepEqual(quoteEnum, [corpusCase.source, corpusCase.context]);
+      const quotePattern = schema.$defs.v5_exact_source_evidence.properties.quote.pattern;
+      assert.match(corpusCase.source, new RegExp(quotePattern, 'u'));
+      assert.match(corpusCase.context, new RegExp(quotePattern, 'u'));
+      assert.doesNotMatch(`${corpusCase.source} altered`, new RegExp(quotePattern, 'u'));
+      const evidenceProperties = schema.properties.judgment.properties.evidence_quotes.properties;
+      assert.ok(
+        Object.values(evidenceProperties).every(
+          (entry) =>
+            entry.anyOf[0].$ref === '#/$defs/v5_exact_source_evidence' && entry.anyOf[1].type === 'null',
+        ),
+      );
       responses.push(wrapped(corpusCase, judge));
     }
     const aggregate = instrument.adjudicate({
@@ -119,6 +126,21 @@ test('post-freeze heldout and strong negatives pass the predeclared zero-call ga
   assert.ok(refuserCorrect / refuserTrue >= 0.95);
   assert.ok(nonRefuserCorrect / nonRefuserTrue >= 0.95);
   assert.equal(1, 1, 'three projected seats agree on every label');
+});
+
+test('exact-source schema preserves quoted source text without a forbidden literal quote in the pattern', () => {
+  const source = 'I reject the question called "settled" and withhold my answer.';
+  const prompt = buildTutorStubResistanceSemanticAdjudicationPromptV5({
+    caseId: 'quoted-source-case',
+    source,
+    publicContext: [{ role: 'assistant', text: 'Inspect only the public record.' }],
+    judge: binding.registration.measurement.judges[0],
+  });
+  const schema = buildTutorStubResistanceSemanticOutputSchemaV5(prompt);
+  const pattern = schema.$defs.v5_exact_source_evidence.properties.quote.pattern;
+  assert.equal(pattern.includes('"'), false);
+  assert.match(source, new RegExp(pattern, 'u'));
+  assert.doesNotMatch(source.replace('settled', 'resolved'), new RegExp(pattern, 'u'));
 });
 
 test('the two frozen V9 quote misses are blocked in V4 and valid under exact-source transport without changing semantics', () => {
