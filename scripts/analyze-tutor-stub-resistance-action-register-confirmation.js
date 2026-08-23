@@ -399,6 +399,24 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
       else throw new Error(`confirmation batch ${plan.batch_id} has an unclassified model-attempt ledger`);
     }
     const finalTraceReservations = reservationCount(path.dirname(tracePath));
+    const replayComparable = (event) =>
+      JSON.stringify({
+        role: event.role,
+        turn: event.turn,
+        provider: event.provider,
+        model: event.model,
+        request: event.request,
+        response: event.response,
+      });
+    const replayedCalls = ledgerEvents.filter((event) => event.type === 'model_call' && event.startedAt === null);
+    const executedCallKeys = new Set(
+      ledgerEvents
+        .filter((event) => event.type === 'model_call' && event.startedAt !== null)
+        .map(replayComparable),
+    );
+    if (replayedCalls.some((event) => !executedCallKeys.has(replayComparable(event)))) {
+      throw new Error(`confirmation batch ${plan.batch_id} has an unbound zero-call replay`);
+    }
     const finalTraceRunStart = readTrace(tracePath).find((event) => event.type === 'run_start');
     const finalTraceBudget = finalTraceRunStart?.metadata?.lab?.admission?.modelCallBudget;
     if (!Number.isInteger(finalTraceBudget) || finalTraceBudget < finalTraceReservations || finalTraceBudget > caps.perDialogue) {
@@ -565,8 +583,10 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, batch
   const options = recipe?.config?.options;
   const models = recipe?.config?.identity?.models;
   const attemptEnvelopeEvents = batch.ledgerEventsByJob?.get(job.id) || events;
-  const attempts = attemptEnvelopeEvents.filter((event) =>
-    ['model_call', 'model_call_error', 'model_call_aborted'].includes(event.type),
+  const attempts = attemptEnvelopeEvents.filter(
+    (event) =>
+      ['model_call', 'model_call_error', 'model_call_aborted'].includes(event.type) &&
+      !(batch.ledgerEventsByJob && event.type === 'model_call' && event.startedAt === null),
   );
   const calls = attempts.filter((event) => event.type === 'model_call');
   const reservations = attemptEnvelopeEvents.filter((event) => event.type === 'model_call_budget_reserved');
