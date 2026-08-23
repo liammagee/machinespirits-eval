@@ -18,6 +18,8 @@ const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-regis
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.json';
 const LEGACY_PER_DIALOGUE_CAP = 60;
 const LEGACY_PER_BATCH_CAP = 240;
+const V8_PER_DIALOGUE_CAP = 96;
+const V8_PER_BATCH_CAP = 384;
 const V9_PER_DIALOGUE_CAP = 123;
 const V9_PER_BATCH_CAP = 492;
 const BATCH_SIZE = 4;
@@ -198,9 +200,13 @@ function reservationCountInDirectory(directory) {
 }
 
 function confirmationCaps(loaded) {
-  return loaded?.registration?.version >= 9
-    ? { perDialogue: V9_PER_DIALOGUE_CAP, perBatch: V9_PER_BATCH_CAP }
-    : { perDialogue: LEGACY_PER_DIALOGUE_CAP, perBatch: LEGACY_PER_BATCH_CAP };
+  if (loaded?.registration?.version >= 9) {
+    return { perDialogue: V9_PER_DIALOGUE_CAP, perBatch: V9_PER_BATCH_CAP };
+  }
+  if (loaded?.registration?.version === 8) {
+    return { perDialogue: V8_PER_DIALOGUE_CAP, perBatch: V8_PER_BATCH_CAP };
+  }
+  return { perDialogue: LEGACY_PER_DIALOGUE_CAP, perBatch: LEGACY_PER_BATCH_CAP };
 }
 
 function childCommand({ loaded, job, destination, modelCallBudget = null }) {
@@ -269,7 +275,12 @@ function childCommand({ loaded, job, destination, modelCallBudget = null }) {
     ],
     cwd: ROOT,
     env: {
-      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: loaded.registration.design.trigger.observationSemantics,
+      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS:
+        process.env.TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE === '1'
+          ? 'prospective_frame_resistance_binary_semantic_v6'
+          : loaded.registration.design.trigger.observationSemantics,
+      TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE:
+        process.env.TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE === '1' ? '1' : '0',
       TUTOR_STUB_REMEMBER_SETTINGS: '0',
     },
     job_root: jobRoot,

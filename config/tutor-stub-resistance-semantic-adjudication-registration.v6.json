@@ -1,0 +1,55 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-adjudication-registration.v6",
+  "version": 6,
+  "status": "prospective_binary_dual_judge_smoke",
+  "observationSemantics": "prospective_frame_resistance_binary_semantic_v6",
+  "instrument": {
+    "implementationPath": "services/tutorStubResistanceSemanticAdjudicationV6.js",
+    "promptAndExactSourceSchemaBasis": "prospective_frame_resistance_semantic_v5",
+    "semanticAuthority": "independent_llm_binary_label_consensus",
+    "regexOrKeywordAuthority": "none"
+  },
+  "measurement": {
+    "judges": [
+      {
+        "id": "semantic_judge_a",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "modelFamily": "openai_gpt_5_6",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      },
+      {
+        "id": "semantic_judge_b",
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "modelFamily": "anthropic_claude_5",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      }
+    ],
+    "binaryConsensus": {
+      "primaryLabelRule": "exact_two_of_two_valid_high_confidence_binary_labels",
+      "componentDisagreementMayVetoPrimaryLabel": false,
+      "binaryDisagreementDisposition": "measurement_indeterminate",
+      "judgeRerunAfterSemanticResponse": false,
+      "unitReplacementOrOutcomeSelection": false
+    },
+    "deterministicEvidenceProjection": {
+      "rule": "null_evidence_when_same_judge_semantic_field_is_no",
+      "semanticFieldsOrLabelsMayChange": false,
+      "outcomeBlind": true
+    }
+  },
+  "validationEvidence": {
+    "heldoutV8AlreadyPassed": true,
+    "smokeAReservations": 40,
+    "smokeABinaryPairAgreement": "8/8",
+    "smokeAReusedOrPooled": false
+  },
+  "claimBoundary": "Engineering smoke instrument only until a fresh balanced smoke passes; no Smoke A dialogue or outcome enters the confirmation."
+}

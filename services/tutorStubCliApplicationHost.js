@@ -569,6 +569,7 @@ import {
 } from './tutorStubResistanceActionRegisterExecution.js';
 import { configureTutorStubResistanceActionRegisterConfirmationFromCli } from './tutorStubResistanceActionRegisterConfirmation.js';
 import { configureTutorStubResistanceManipulationValidationFromCli } from './tutorStubResistanceActionRegisterManipulationValidation.js';
+import { configureTutorStubResistanceWarmNonwarmFromCli } from './tutorStubResistanceWarmNonwarmConfirmation.js';
 import { configureTutorStubBoredomProofDagFromCli } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { selectTutorStubBoredomSemanticAdjudicatorFactory } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
@@ -2342,16 +2343,21 @@ export async function runTutorStubCliApplicationHost({
       args['resistance-action-register-manipulation-validation-design'],
       args['resistance-action-register-manipulation-validation-job'],
     ];
+    const resistanceWarmNonwarmConfirmationArgs = [
+      args['resistance-warm-nonwarm-confirmation-design'],
+      args['resistance-warm-nonwarm-confirmation-job'],
+    ];
     const boredomProofDagArgs = [args['boredom-proof-dag-registration'], args['boredom-proof-dag-job']];
     const activeResistanceStudyModes = [
       resistanceActionRegisterArgs.some(Boolean),
       resistanceActionRegisterConfirmationArgs.some(Boolean),
       resistanceActionRegisterManipulationValidationArgs.some(Boolean),
+      resistanceWarmNonwarmConfirmationArgs.some(Boolean),
       boredomProofDagArgs.some(Boolean),
     ].filter(Boolean).length;
     if (activeResistanceStudyModes > 1) {
       throw new Error(
-        'baseline replay, frame confirmation, manipulation validation, and boredom proof-DAG execution modes are mutually exclusive',
+        'baseline replay, frame confirmation, manipulation validation, warm/nonwarm confirmation, and boredom proof-DAG execution modes are mutually exclusive',
       );
     }
     if (
@@ -2379,6 +2385,20 @@ export async function runTutorStubCliApplicationHost({
     }
     if (resistanceActionRegisterManipulationValidationArgs.every(Boolean)) {
       configureTutorStubResistanceManipulationValidationFromCli({
+        args,
+        state,
+        root: ROOT,
+        autoLearnerEnabled,
+        autoTurns,
+        appendTraceEvent,
+        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
+      });
+    }
+    if (resistanceWarmNonwarmConfirmationArgs.some(Boolean) && !resistanceWarmNonwarmConfirmationArgs.every(Boolean)) {
+      throw new Error('warm/nonwarm confirmation requires design and job together');
+    }
+    if (resistanceWarmNonwarmConfirmationArgs.every(Boolean)) {
+      configureTutorStubResistanceWarmNonwarmFromCli({
         args,
         state,
         root: ROOT,
