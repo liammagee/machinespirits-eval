@@ -1,0 +1,58 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v2",
+  "approvedBy": "Liam Magee",
+  "approvedOn": "2026-08-22",
+  "registrationPath": "config/tutor-stub-boredom-action-register-proof-dag-registration.v7.json",
+  "designFingerprint": "ccfabb6812851bf886aa05e870dd52bd05a30312b58d01dc515bc78ec531541b",
+  "modelCallsAuthorized": true,
+  "liveRunAuthorized": true,
+  "approvalStatement": "I approve config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v7.json at SHA-256 28dfe19cd16d77a686b66c9bdf90e1195a06772c5d8d0505dadb04cbf31a1780 for one 84-dialogue Luna boredom proof-DAG run that contrasts two tutor moves under one host action family, ask a discriminating question against simplify to one workable step, with 42 dialogues per move and the plain and warm manner balanced 21 and 21 inside each move as a block and not as the contrast, a trigger that must show by turn 4, recovery read over the 5 post-trigger learner turns and a 5-turn proof-progress window, scored by the carried-forward Sol V3 semantic instrument on which no fresh accuracy claim is made because the sealed 55-case held-out v4 corpus is spent, one predeclared ONE-SIDED exact conditional blocked analysis on the move contrast in the direction fixed before any v7 dialogue ran, simplify to one workable step above ask a discriminating question, with fixed-sequence proof-progress testing in the same direction, the v5 one-turn endpoint reported for both moves as a descriptive comparison that is never tested, a per-move count of learner turns that only say back what the tutor just made public, two separate manner floors reported separately, 0.9 for delivering the manner the tutor was assigned and 0.8 for a reader being able to tell which manner the turn is in, no interim analysis, no reuse or pooling of prior dialogues or outcomes including the completed 33-unit v4 null, the completed 35-unit v5 null, the completed 36-unit v6 run that failed its readability gate at p = 0.0858, and the stopped 71-reservation v2 cohort, a 10,332-attempt study safeguard and 15,000-attempt cumulative programme safeguard, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards. I understand two limits I am approving. A one-sided test buys its extra power by giving up the right to report a result in the other direction: if simplify to one workable step comes out worse than ask a discriminating question, however far worse, this study reports no finding. And this size is set by what the programme safeguard leaves, not by what the effect needs: at 42 per move the planning case reaches about 0.59 power, not 0.80, so a null here still means little.",
+  "binds": "study_design_not_source_bytes",
+  "note": "The approval covers the registered study: the question, the claim boundary, the design, the measurement rules, the power calculation and the spend safeguards. Correcting a defect in the code does not void it; changing the study does.",
+  "powerCaveatAcknowledged": {
+    "acknowledgedInApprovalStatement": true,
+    "reading": "at 42 dialogues per move the planning scenario reaches about 0.59 power against the 0.8 target, so a null still means little",
+    "targetPower": 0.8,
+    "targetPowerReached": false,
+    "measuredReferenceRateWithinPrimaryWindow": 0.4444,
+    "planningScenarioOneSidedPower": 0.588,
+    "powerRangeAcrossTreatmentRates": [
+      0.378,
+      0.92
+    ],
+    "sizeSetByTheProgrammeSafeguardNotByTheEffect": true,
+    "sizeCaveat": "the 15,000-attempt programme safeguard is what fixed 84 dialogues. 96 dialogues would reach about 0.65 power and leave 184 attempts spare, which is less than the 382 a single transport failure has already cost this arc. Reaching 0.8 in the planning scenario needs the programme safeguard raised.",
+    "oneSidedCaveat": "a one-sided test buys its extra power by giving up the other direction. If simplify to one workable step comes out worse than ask a discriminating question, however far worse, v7 reports no finding."
+  },
+  "executionShape": {
+    "batchesRunTogether": 1,
+    "dialoguesPerBatch": 4,
+    "parallelismPerBatch": 4,
+    "executionBatches": 21,
+    "authority": "Liam Magee, 2026-08-22: \"Do all of these, then run\" and, on the built design, \"Go ahead\"",
+    "contrastSafety": "every batch carries two dialogues of each move and two of each manner, so any slowdown or provider limit inside a batch falls on both moves and both manners alike and cannot move the comparison",
+    "oneBatchAtATime": "v6's first launch started all nine batches together, which put 36 codex CLI sessions on one machine. Every dialogue failed on transport retry exhaustion, 382 attempt reservations were spent and no transcript was written. v7 runs one batch at a time from the start, so at most 4 sessions are open at once.",
+    "designChanged": true,
+    "designChangeFromV6": "the measured question is unchanged. Three things about how it is tested changed: the size rose from 36 to 84 dialogues, the primary test became one-sided in the direction fixed before any v7 dialogue ran, and the single 0.9 manner floor split into 0.9 for delivering the assigned manner and 0.8 for a reader telling which manner the turn is in, both reported separately."
+  },
+  "priorCompletedExecution": [
+    {
+      "study": "boredom action-before-register proof-DAG confirmation v4",
+      "result": "registered null: plain 0 of 18, warm 0 of 15, p = 1",
+      "stoppedUnits": 3,
+      "reused": "nothing"
+    },
+    {
+      "study": "boredom action-before-register proof-DAG confirmation v5",
+      "result": "registered null: plain 1 of 18, warm 4 of 17, p = 0.18, 35 of 35 units reachable",
+      "stoppedUnits": 1,
+      "reused": "nothing"
+    },
+    {
+      "study": "boredom action-before-register proof-DAG confirmation v6",
+      "result": "not confirmed and closed at failed_interpretability_gate_not_rerun: ask a question 8 of 18, shrink the step 14 of 18, two-sided p = 0.0858, readability 0.889 against a 0.9 floor",
+      "stoppedUnits": 0,
+      "reused": "nothing as a result. v6's reference rate is a sizing input for v7's power calculation only, which v6's own registration named as its permitted use. v7 draws fresh prefixes and pools no prior dialogue or outcome."
+    }
+  ]
+}
