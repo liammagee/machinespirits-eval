@@ -3508,3 +3508,26 @@ and explicit human approval.
   so a version cannot charge a prior run against the safeguard without also
   being checked against that run's seeds. Four validator branches that assumed
   v7 was the newest version were generalised rather than given another arm.
+- 2026-08-23 — The v8 endpoint contract, its certificate and the frozen v8 GO
+  request are committed, and the request holds at
+  `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL` with `modelCallsAuthorized: false` and
+  `liveRunAuthorized: false`. All 85 validator checks pass; the packager's
+  isolated replay makes zero model calls and zero production writes. Request
+  SHA-256 `74f01ce44b0caab3a2ee4b01874d6b1374de3fddbc12fb32872a0be653d81e02`
+  at launch commit `dfb8e4da`. Every number in the contract is derived from the
+  v8 registration rather than typed, so a size change in one file cannot
+  disagree with the other — the fault that cost v4 its endpoints. Five further
+  reading checks were added to the request validator: a completed-v7 execution
+  record that carries the arm-blurring audit as data rather than as a note; a
+  delivered-contrast endpoint check that requires the two new fidelity fields
+  to be listed on the contract; a v8 power arm that forbids a measured
+  reference rate under any of the three names prior versions used for it and
+  requires v8 to state the rate as unmeasured; a design binding that compares
+  the per-arm host action family map, because comparing the old scalar read
+  `undefined` against `undefined` on a v8 registration and passed without
+  looking at anything; and a measurement binding for the contrast floor and its
+  per-move rules. Two per-release arm lists in the validator were removed
+  rather than extended, since both only ever tested the revision number the
+  record already carries. Test coverage: 49 assertions across the two boredom
+  files, including a new end-to-end case that fails the gate on a blurred pair
+  of arms both pooled and per arm.
