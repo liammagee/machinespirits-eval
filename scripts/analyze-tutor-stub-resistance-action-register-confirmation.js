@@ -347,6 +347,7 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
   const reservationsByJob = new Map();
   const finalTraceBudgetByJob = new Map();
   const tracePathsByJob = new Map();
+  const ledgerEventsByJob = new Map();
   const recoveredIds = new Set();
   for (const job of plan.jobs) {
     const row = result.results.find((candidate) => candidate.job_id === job.id);
@@ -370,14 +371,37 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
         .map((entry) => path.join(absolute, 'recoveries', entry.name, 'jobs', job.id)),
     ];
     let reservations = 0;
+    const ledgerEvents = [];
     for (const file of [...new Set(jobRoots.flatMap(recursiveFiles).filter((candidate) => candidate.endsWith('.jsonl')))]) {
-      if (path.basename(file) === 'judge-attempts.jsonl') reservations += readTrace(file).length;
-      else if (path.basename(path.dirname(file)) === 'traces') reservations += reservationCount(path.dirname(file));
+      if (path.basename(file) === 'judge-attempts.jsonl') {
+        const attempts = readTrace(file);
+        const triggerJudges = loadTutorStubResistanceSemanticRegistration(
+          tutorStubResistanceSemanticRegistrationPathForObservation(
+            loaded.registration.design.trigger.observationSemantics,
+          ),
+        ).registration.measurement.judges;
+        if (
+          attempts.some((attempt) => {
+            const judge = triggerJudges.find((candidate) => candidate.id === attempt.judge_id);
+            return !judge ||
+              (attempt.status === 'success' &&
+                (attempt.provider !== judge.provider || attempt.model !== judge.model));
+          })
+        ) {
+          throw new Error(`confirmation batch ${plan.batch_id} has a judge-attempt route drift`);
+        }
+        reservations += attempts.length;
+      } else if (path.basename(path.dirname(file)) === 'traces') {
+        const events = readTrace(file);
+        reservations += events.filter((event) => event.type === 'model_call_budget_reserved').length;
+        ledgerEvents.push(...events);
+      }
       else throw new Error(`confirmation batch ${plan.batch_id} has an unclassified model-attempt ledger`);
     }
     const finalTraceReservations = reservationCount(path.dirname(tracePath));
     reservationsByJob.set(job.id, reservations);
     finalTraceBudgetByJob.set(job.id, caps.perDialogue - (reservations - finalTraceReservations));
+    ledgerEventsByJob.set(job.id, ledgerEvents);
   }
   const observedByJob = Object.fromEntries(reservationsByJob);
   const observedTotal = [...reservationsByJob.values()].reduce((sum, value) => sum + value, 0);
@@ -393,7 +417,7 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
   ) {
     throw new Error(`confirmation batch ${plan.batch_id} frozen-prefix attempt accounting drifted`);
   }
-  return { recoveredIds, reservationsByJob, finalTraceBudgetByJob, tracePathsByJob };
+  return { recoveredIds, reservationsByJob, finalTraceBudgetByJob, tracePathsByJob, ledgerEventsByJob };
 }
 
 function exactBatch(batchRoot, allowedBatchSources, analysisSourceCommit, registrationPath) {
@@ -535,11 +559,12 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, batch
   const recipe = metadata?.sessionRecipe;
   const options = recipe?.config?.options;
   const models = recipe?.config?.identity?.models;
-  const attempts = events.filter((event) =>
+  const attemptEnvelopeEvents = batch.ledgerEventsByJob?.get(job.id) || events;
+  const attempts = attemptEnvelopeEvents.filter((event) =>
     ['model_call', 'model_call_error', 'model_call_aborted'].includes(event.type),
   );
   const calls = attempts.filter((event) => event.type === 'model_call');
-  const reservations = events.filter((event) => event.type === 'model_call_budget_reserved');
+  const reservations = attemptEnvelopeEvents.filter((event) => event.type === 'model_call_budget_reserved');
   const routePinned = ['classifier', 'learner', 'reasoning', 'tutor'].every(
     (role) => models?.[role]?.provider === 'codex' && models?.[role]?.model === 'gpt-5.6-luna',
   );
