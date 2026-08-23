@@ -635,9 +635,10 @@ function codexFailureDiagnostics(events = []) {
     .map((event) => ({
       type: String(event?.type || 'unknown'),
       code: String(event?.code || event?.error?.code || event?.item?.code || event?.item?.error?.code || '') || null,
-      message: String(
-        event?.message || event?.error?.message || event?.item?.message || event?.item?.error?.message || '',
-      ).slice(0, 2048) || null,
+      message:
+        String(
+          event?.message || event?.error?.message || event?.item?.message || event?.item?.error?.message || '',
+        ).slice(0, 2048) || null,
     }));
 }
 

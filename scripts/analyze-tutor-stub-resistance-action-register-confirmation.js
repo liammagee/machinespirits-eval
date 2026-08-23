@@ -265,7 +265,8 @@ function recordedRecoveryTrace(resultRow, plan) {
   const matches = [...new Set(candidates)].filter(
     (candidate) => fs.existsSync(candidate) && sha256(fs.readFileSync(candidate)) === resultRow.trace_sha256,
   );
-  if (matches.length !== 1) throw new Error(`confirmation recovery trace ${resultRow.job_id} is not uniquely digest-bound`);
+  if (matches.length !== 1)
+    throw new Error(`confirmation recovery trace ${resultRow.job_id} is not uniquely digest-bound`);
   const files = traceFiles(path.dirname(matches[0]));
   if (files.length !== 1 || path.resolve(files[0]) !== matches[0]) {
     throw new Error(`confirmation recovery trace ${resultRow.job_id} has a competing final trace`);
@@ -296,7 +297,9 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
     !acceptedPlanSchemas.has(recoveryPlan.schema) ||
     !acceptedResultSchemas.has(recoveryResult.schema) ||
     recoveryPlan.status !==
-      (recoveryPlan.schema.includes('layered-') ? 'planned_missing_judges_and_suffix_only' : 'planned_frozen_prefix_only') ||
+      (recoveryPlan.schema.includes('layered-')
+        ? 'planned_missing_judges_and_suffix_only'
+        : 'planned_frozen_prefix_only') ||
     recoveryResult.status !== 'complete' ||
     recoveryPlan.batch_id !== plan.batch_id ||
     recoveryResult.batch_id !== plan.batch_id ||
@@ -326,7 +329,10 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
     if (
       !sameIds(recordedPriorDirectories, actualPriorDirectories) ||
       !planIds.includes(recoveryPlan.failed_job_id) ||
-      !sameIds(recoveryPlan.preserved_complete_job_ids || [], planIds.filter((id) => id !== recoveryPlan.failed_job_id)) ||
+      !sameIds(
+        recoveryPlan.preserved_complete_job_ids || [],
+        planIds.filter((id) => id !== recoveryPlan.failed_job_id),
+      ) ||
       !sameIds(result.recovery_unit_ids || [], [recoveryPlan.failed_job_id])
     ) {
       throw new Error(`confirmation batch ${plan.batch_id} layered recovery lineage drifted`);
@@ -336,11 +342,7 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
     recoveryPlan.original_result_sha256 !== sha256(fs.readFileSync(initialResultPath)) ||
     !sameIds(result.recovery_unit_ids || [], planIds) ||
     JSON.stringify(recoveryPlan.initial_model_attempt_reservations_by_job) !==
-      JSON.stringify(
-        Object.fromEntries(
-          plan.jobs.map((job) => [job.id, reservationCount(job.command.trace_dir)]),
-        ),
-      )
+      JSON.stringify(Object.fromEntries(plan.jobs.map((job) => [job.id, reservationCount(job.command.trace_dir)])))
   ) {
     throw new Error(`confirmation batch ${plan.batch_id} interrupted recovery prefix drifted`);
   }
@@ -372,7 +374,9 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
     ];
     let reservations = 0;
     const ledgerEvents = [];
-    for (const file of [...new Set(jobRoots.flatMap(recursiveFiles).filter((candidate) => candidate.endsWith('.jsonl')))]) {
+    for (const file of [
+      ...new Set(jobRoots.flatMap(recursiveFiles).filter((candidate) => candidate.endsWith('.jsonl'))),
+    ]) {
       if (path.basename(file) === 'judge-attempts.jsonl') {
         const attempts = readTrace(file);
         const triggerJudges = loadTutorStubResistanceSemanticRegistration(
@@ -383,9 +387,10 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
         if (
           attempts.some((attempt) => {
             const judge = triggerJudges.find((candidate) => candidate.id === attempt.judge_id);
-            return !judge ||
-              (attempt.status === 'success' &&
-                (attempt.provider !== judge.provider || attempt.model !== judge.model));
+            return (
+              !judge ||
+              (attempt.status === 'success' && (attempt.provider !== judge.provider || attempt.model !== judge.model))
+            );
           })
         ) {
           throw new Error(`confirmation batch ${plan.batch_id} has a judge-attempt route drift`);
@@ -395,8 +400,7 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
         const events = readTrace(file);
         reservations += events.filter((event) => event.type === 'model_call_budget_reserved').length;
         ledgerEvents.push(...events);
-      }
-      else throw new Error(`confirmation batch ${plan.batch_id} has an unclassified model-attempt ledger`);
+      } else throw new Error(`confirmation batch ${plan.batch_id} has an unclassified model-attempt ledger`);
     }
     const finalTraceReservations = reservationCount(path.dirname(tracePath));
     const replayComparable = (event) =>
@@ -410,16 +414,18 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
       });
     const replayedCalls = ledgerEvents.filter((event) => event.type === 'model_call' && event.startedAt === null);
     const executedCallKeys = new Set(
-      ledgerEvents
-        .filter((event) => event.type === 'model_call' && event.startedAt !== null)
-        .map(replayComparable),
+      ledgerEvents.filter((event) => event.type === 'model_call' && event.startedAt !== null).map(replayComparable),
     );
     if (replayedCalls.some((event) => !executedCallKeys.has(replayComparable(event)))) {
       throw new Error(`confirmation batch ${plan.batch_id} has an unbound zero-call replay`);
     }
     const finalTraceRunStart = readTrace(tracePath).find((event) => event.type === 'run_start');
     const finalTraceBudget = finalTraceRunStart?.metadata?.lab?.admission?.modelCallBudget;
-    if (!Number.isInteger(finalTraceBudget) || finalTraceBudget < finalTraceReservations || finalTraceBudget > caps.perDialogue) {
+    if (
+      !Number.isInteger(finalTraceBudget) ||
+      finalTraceBudget < finalTraceReservations ||
+      finalTraceBudget > caps.perDialogue
+    ) {
       throw new Error(`confirmation batch ${plan.batch_id} has an invalid recorded continuation budget`);
     }
     reservationsByJob.set(job.id, reservations);
@@ -464,7 +470,8 @@ function exactBatch(batchRoot, allowedBatchSources, analysisSourceCommit, regist
   const expectedSourceTree = allowedBatchSources.get(plan.source?.commit);
   if (
     plan.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-plan.v1' ||
-    (initial && initial.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-result.v1') ||
+    (initial &&
+      initial.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-result.v1') ||
     result.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-result.v1' ||
     seal.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-seal.v1' ||
     !expectedSourceTree ||
@@ -522,9 +529,10 @@ function exactBatch(batchRoot, allowedBatchSources, analysisSourceCommit, regist
   if (technicalRecovery) {
     const recoveryPlanPath = matchingRecoveryArtifact(absolute, 'recovery-plan.json', seal.recovery_plan_sha256);
     const recoveryPlanSchema = readJson(recoveryPlanPath).schema;
-    const audit = recoveryPlanSchema === 'machinespirits.tutor-stub.resistance-action-register-confirmation-recovery-plan.v1'
-      ? auditRecovery
-      : auditInterruptedRecovery;
+    const audit =
+      recoveryPlanSchema === 'machinespirits.tutor-stub.resistance-action-register-confirmation-recovery-plan.v1'
+        ? auditRecovery
+        : auditInterruptedRecovery;
     const audited = audit({
       absolute,
       plan,

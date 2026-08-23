@@ -126,9 +126,7 @@ test('V6 component disagreement is diagnostic and cannot veto an agreed binary l
   assert.equal(result.status, 'determinate');
   assert.equal(result.final_label, 'frame_refuser');
   assert.equal(result.component_measurement.inquiry_or_question_frame_governance.status, 'measurement_indeterminate');
-  assert.deepEqual(result.component_vector_diagnostic.indeterminate_fields, [
-    'inquiry_or_question_frame_governance',
-  ]);
+  assert.deepEqual(result.component_vector_diagnostic.indeterminate_fields, ['inquiry_or_question_frame_governance']);
 });
 
 test('V6 genuine binary-label disagreement remains measurement indeterminate with no retry or replacement', () => {

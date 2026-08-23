@@ -561,7 +561,7 @@ test('study assignment rebinds stance-derived performance without changing the a
   staleWarmSelection.response_configuration.actorial_performance = {
     id: 'shared_scene_invitation',
     label: 'shared-scene invitation',
-    contract: 'Make room beside a named public object and invite the learner\'s reading.',
+    contract: "Make room beside a named public object and invite the learner's reading.",
   };
   const plainState = stateWith(runtime('frame_defiant', 'matched', 'plain'), staleWarmSelection);
   const learnerText = 'I reject your frame and will not answer under it.';
