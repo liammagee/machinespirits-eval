@@ -416,6 +416,42 @@ function registeredPlan(registrationPath) {
   return { loaded, plan: buildTutorStubBoredomProofDagPlan(loaded.registration) };
 }
 
+/**
+ * What a batch has to carry, read rather than written out again.
+ *
+ * This check used to say "exactly two plain and two warm jobs". The plan
+ * builder already states each batch's composition, and v1 to v5 only had to be
+ * even on the manner, so the two copies agreed by luck. v6 deals a batch from
+ * four move-and-manner cells, and a batch that lost its move balance would have
+ * passed the old check. That is the twenty-third time this arc has removed a
+ * constant written twice with nothing comparing the copies.
+ *
+ * The level names come from the registration and the counts from the registered
+ * batch row, so a version with one axis states two cells and a version with two
+ * axes states four, in the order the plan builder writes them.
+ */
+function registeredBatchComposition(loaded, plan, batchId) {
+  const row = plan.batches.find((batch) => batch.id === batchId);
+  if (!row) throw new Error(`${batchId} is not a registered batch`);
+  const treatment = loaded.registration.design.treatment || {};
+  const axes = [{ field: 'realization', levels: treatment.realizations || [] }];
+  if (Array.isArray(treatment.pedagogicalMoveLevels)) {
+    axes.push({ field: 'pedagogical_move_level', levels: treatment.pedagogicalMoveLevels });
+  }
+  const cells = [];
+  for (const axis of axes) {
+    for (const level of axis.levels) {
+      const count = row[level];
+      if (!Number.isInteger(count) || count < 1) {
+        throw new Error(`${batchId} does not state how many ${level} dialogues it carries`);
+      }
+      cells.push({ field: axis.field, level, count });
+    }
+  }
+  if (!cells.length) throw new Error(`${batchId} states no registered levels to balance`);
+  return { cases: row.cases, cells };
+}
+
 const LAUNCH_AUTHORIZATION_SCHEMA_V2 = 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v2';
 
 // v2 binds the approval to the study design, not to source bytes.
@@ -505,12 +541,15 @@ export function buildTutorStubBoredomProofDagBatchPlan({
   const { loaded, plan } = registeredPlan(registrationPath);
   const caps = registrationCaps(loaded);
   const jobs = plan.jobs.filter((job) => job.batch_id === batchId);
+  const composition = registeredBatchComposition(loaded, plan, batchId);
+  const dealt = (cell) => jobs.filter((job) => job[cell.field] === cell.level).length;
   if (
     jobs.length !== caps.batchSize ||
-    jobs.filter((job) => job.realization === 'plain').length !== 2 ||
-    jobs.filter((job) => job.realization === 'warm').length !== 2
+    jobs.length !== composition.cases ||
+    composition.cells.some((cell) => dealt(cell) !== cell.count)
   ) {
-    throw new Error(`${batchId} must contain exactly two plain and two warm jobs`);
+    const wanted = composition.cells.map((cell) => `${cell.count} ${cell.level}`).join(' and ');
+    throw new Error(`${batchId} must contain ${composition.cases} jobs: ${wanted}`);
   }
   const source = sourceSnapshot(expectedSourceCommit, frozenTutorStubBoredomProofDagSourceClosure({ loaded }), loaded);
   const absoluteDestination = path.resolve(destination);
@@ -527,8 +566,10 @@ export function buildTutorStubBoredomProofDagBatchPlan({
       fresh_independent_dialogues: true,
       prior_dialogues_reused: 0,
       prior_outcomes_pooled: 0,
-      plain: 2,
-      warm: 2,
+      // v1 to v5 wrote "plain: 2, warm: 2" here. The keys and counts now come
+      // from the registered batch row, so those versions rebuild the same two
+      // keys in the same order and v6 also records its move split.
+      ...Object.fromEntries(composition.cells.map((cell) => [cell.level, cell.count])),
       interim_analysis: false,
       assignment_manifest_sha256: plan.assignment_manifest_sha256,
     },
