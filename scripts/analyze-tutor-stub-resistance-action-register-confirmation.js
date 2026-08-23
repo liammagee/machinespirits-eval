@@ -235,7 +235,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   return { recoveredIds: new Set(missingOrFailedIds), reservationsByJob, finalTraceBudgetByJob };
 }
 
-function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registrationPath) {
+function exactBatch(batchRoot, allowedBatchSources, analysisSourceCommit, registrationPath) {
   const absolute = path.resolve(ROOT, batchRoot);
   const planPath = path.join(absolute, 'batch-plan.json');
   const initialResultPath = path.join(absolute, 'batch-result.json');
@@ -253,12 +253,13 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     registrationPath: path.resolve(ROOT, registrationPath),
   });
   const caps = confirmationCaps(loaded);
+  const expectedSourceTree = allowedBatchSources.get(plan.source?.commit);
   if (
     plan.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-plan.v1' ||
     initial.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-result.v1' ||
     result.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-result.v1' ||
     seal.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-seal.v1' ||
-    plan.source?.commit !== expectedSourceCommit ||
+    !expectedSourceTree ||
     plan.source?.tree !== expectedSourceTree ||
     plan.source?.registration_path !== registrationPath ||
     result.status !== 'complete' ||
@@ -279,7 +280,7 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     registrationPath,
     batchId: plan.batch_id,
     destination: absolute,
-    expectedSourceCommit,
+    expectedSourceCommit: analysisSourceCommit,
   });
   if (
     path.resolve(ROOT, plan.destination) !== absolute ||
@@ -884,6 +885,7 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
   batchRoots,
   registrationPath = REGISTRATION,
   expectedSourceCommit,
+  allowedBatchSourceCommits = null,
 } = {}) {
   if (
     !Array.isArray(batchRoots) ||
@@ -905,7 +907,29 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
     registrationPath: path.resolve(ROOT, registrationPath),
   });
   const caps = confirmationCaps(loaded);
-  const batches = batchRoots.map((root) => exactBatch(root, expectedSourceCommit, currentTree, registrationPath));
+  const allowedCommits = allowedBatchSourceCommits?.length
+    ? [...new Set(allowedBatchSourceCommits)]
+    : [expectedSourceCommit];
+  const allowedBatchSources = new Map(
+    allowedCommits.map((commit) => {
+      const tree = execFileSync('git', ['rev-parse', `${commit}^{tree}`], { cwd: ROOT, encoding: 'utf8' }).trim();
+      const registeredSource = execFileSync('git', ['show', `${commit}:${registrationPath}`], {
+        cwd: ROOT,
+        encoding: null,
+      });
+      if (sha256(registeredSource) !== loaded.sha256) {
+        throw new Error(`confirmation analysis batch source ${commit} does not contain the registered design`);
+      }
+      return [commit, tree];
+    }),
+  );
+  const batches = batchRoots.map((root) =>
+    exactBatch(root, allowedBatchSources, expectedSourceCommit, registrationPath),
+  );
+  const observedBatchSourceCommits = [...new Set(batches.map((batch) => batch.plan.source.commit))].sort();
+  if (JSON.stringify(observedBatchSourceCommits) !== JSON.stringify([...allowedBatchSources.keys()].sort())) {
+    throw new Error('confirmation analysis batch-source allowlist contains an unused or missing commit');
+  }
   if (JSON.stringify(batches.map((batch) => batch.plan.batch_id).sort()) !== JSON.stringify([...BATCH_IDS])) {
     throw new Error('confirmation analysis requires all nine registered blocks exactly once');
   }
@@ -967,7 +991,13 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
         ? 'machinespirits.tutor-stub.resistance-action-register-confirmation-report.v2'
         : 'machinespirits.tutor-stub.resistance-action-register-confirmation-report.v1',
     status: reportStatus,
-    source: { commit: current, tree: currentTree },
+    source: {
+      analysis_commit: current,
+      analysis_tree: currentTree,
+      batch_commits: Object.fromEntries(
+        BATCH_IDS.map((id) => [id, batches.find((batch) => batch.plan.batch_id === id).plan.source.commit]),
+      ),
+    },
     registration: { path: registrationPath, sha256: loaded.sha256 },
     assembly: {
       batches_complete: 9,
@@ -1042,17 +1072,20 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
 }
 
 function parseArgs(argv) {
-  const options = { batches: [], registration: REGISTRATION, json: false };
+  const options = { batches: [], allowedBatchSourceCommits: [], registration: REGISTRATION, json: false };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (['--json', '--help'].includes(arg)) {
       options[arg.slice(2)] = true;
       continue;
     }
-    if (['--batch', '--registration', '--expected-source-commit', '--out'].includes(arg)) {
+    if (
+      ['--batch', '--registration', '--expected-source-commit', '--allowed-batch-source-commit', '--out'].includes(arg)
+    ) {
       const value = argv[index + 1];
       if (!value || value.startsWith('--')) throw new Error(`${arg} requires a value`);
       if (arg === '--batch') options.batches.push(value);
+      else if (arg === '--allowed-batch-source-commit') options.allowedBatchSourceCommits.push(value);
       else options[arg.slice(2)] = value;
       index += 1;
       continue;
@@ -1063,7 +1096,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return 'Usage: node scripts/analyze-tutor-stub-resistance-action-register-confirmation.js --batch <root> (repeat exactly 9 times) --expected-source-commit <sha> [--out <fresh.json>] [--json]';
+  return 'Usage: node scripts/analyze-tutor-stub-resistance-action-register-confirmation.js --batch <root> (repeat exactly 9 times) --expected-source-commit <clean-analysis-sha> [--allowed-batch-source-commit <sha> (repeat for each immutable batch source)] [--out <fresh.json>] [--json]';
 }
 
 function main() {
@@ -1074,6 +1107,7 @@ function main() {
     batchRoots: args.batches,
     registrationPath: args.registration,
     expectedSourceCommit: args['expected-source-commit'],
+    allowedBatchSourceCommits: args.allowedBatchSourceCommits,
   });
   if (args.out) fs.writeFileSync(path.resolve(ROOT, args.out), `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx' });
   if (args.json || !args.out) console.log(JSON.stringify(report, null, 2));
