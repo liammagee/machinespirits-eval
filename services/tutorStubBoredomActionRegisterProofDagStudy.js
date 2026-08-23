@@ -106,6 +106,30 @@ export function throwTutorStubBoredomProofDagAdherenceExhaustion({ repairAttempt
   throw error;
 }
 
+export const TUTOR_STUB_BOREDOM_UNREADABLE_TURN_PASS_OVER_DISPOSITION = 'pass_over_this_turn_and_read_the_next_one';
+
+/**
+ * Does the frozen registration say that a pre-treatment turn the adjudicator
+ * cannot read is passed over rather than fatal to the whole dialogue?
+ *
+ * v4 and earlier registrations do not carry the field and keep the original
+ * stop-the-dialogue behaviour, so replaying a v4 plan today reproduces v4.
+ * v5 declares the pass-over disposition, which makes the boredom path match
+ * the resistance path: the turn becomes ineligible to trigger and the next
+ * turn is read. The unit still stops when no turn up to the registered
+ * `maximumTriggerTurn` is eligible.
+ *
+ * This lives beside the loader that writes `proof_dag_registration` rather
+ * than in the adjudication facade, whose bytes the spent v4 validation
+ * request pins.
+ */
+export function tutorStubBoredomUnreadableTurnIsPassedOver(runtime) {
+  // `proof_dag_registration` is the frozen boredom registration, and is the
+  // same field the prospective-v9 adjudication gate above reads.
+  const disposition = runtime?.proof_dag_registration?.design?.freshPrefixGeneration?.unreadableTurnDisposition;
+  return disposition === TUTOR_STUB_BOREDOM_UNREADABLE_TURN_PASS_OVER_DISPOSITION;
+}
+
 export function createTutorStubBoredomProofDagLearnerRuntime({
   appendTraceEvent,
   automatedLearnerDraftMatchesRuntime,
@@ -267,7 +291,55 @@ function clone(value) {
   return value === undefined ? undefined : structuredClone(value);
 }
 
-function runtimeRegistrationAdapter(registration, world) {
+// Does this registration vary the tutor move, or fix it?
+//
+// It is a property of the registration, not of its version number. v4 and v5
+// fixed the move and named it once. v6 and v7 vary it and name the levels.
+// Asking `version !== 6` answered the question for exactly one version and got
+// v7 wrong: v7 fell into the fixed-move branch, where the fixed move is absent,
+// so every v7 dialogue died on "unsupported pedagogical move undefined" after
+// the batch had already reserved its budget and opened its sessions.
+function registeredMoveLevels(registration) {
+  const levels = registration.design?.treatment?.pedagogicalMoveLevels;
+  return Array.isArray(levels) && levels.length ? levels : null;
+}
+
+// The host study calls this axis "action fit" because the frame-refuser design
+// used it to contrast a fitting move with an unfitting one. v6 and v7 put two
+// fitting moves on the same axis, so the level names are the move names.
+// Nothing in the host needs changing for that: it reads the level list out of
+// the registration and only refuses a level the registration never declared.
+function boredomActionFitFactor(registration) {
+  const levels = registeredMoveLevels(registration);
+  if (!levels) {
+    return {
+      levels: ['matched'],
+      assignments: { bored: { matched: registration.design.treatment.fixedPedagogicalMove } },
+    };
+  }
+  const moves = registration.design.treatment.pedagogicalMoves;
+  return {
+    levels: [...levels],
+    assignments: { bored: Object.fromEntries(levels.map((level) => [level, moves[level]])) },
+  };
+}
+
+// Which level this one dialogue was assigned. Read from the plan row, never
+// written here, so the runtime cannot disagree with the sealed manifest.
+function boredomActionFitLevel(registration, job) {
+  const levels = registeredMoveLevels(registration);
+  if (!levels) return 'matched';
+  const level = job.pedagogical_move_level;
+  if (!levels.includes(level)) {
+    throw new Error(`boredom proof-DAG job carries unregistered pedagogical move level ${JSON.stringify(level)}`);
+  }
+  return level;
+}
+
+function runtimeRegistrationAdapter(registration, world, batchIds) {
+  if (!Array.isArray(batchIds) || !batchIds.length) {
+    throw new Error('boredom proof-DAG runtime needs the plan batch ids to name the replication block');
+  }
   return {
     schema: 'machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1',
     version: 1,
@@ -279,24 +351,12 @@ function runtimeRegistrationAdapter(registration, world) {
       trigger: { observationSemantics: registration.design.observationSemantics },
       profiles: ['bored'],
       factors: {
-        actionFit: {
-          levels: ['matched'],
-          assignments: { bored: { matched: registration.design.treatment.fixedPedagogicalMove } },
-        },
+        actionFit: boredomActionFitFactor(registration),
         realization: { levels: ['plain', 'warm'], plain: 'plain', warm: 'warm' },
-        replicationBlock: {
-          levels: [
-            'execution_batch_1',
-            'execution_batch_2',
-            'execution_batch_3',
-            'execution_batch_4',
-            'execution_batch_5',
-            'execution_batch_6',
-            'execution_batch_7',
-            'execution_batch_8',
-            'execution_batch_9',
-          ],
-        },
+        // How many batches a study deals is a registered decision: nine from v2
+        // to v6, twenty-one on v7. Written out as a list of nine, this refused
+        // every v7 batch above the ninth.
+        replicationBlock: { levels: [...batchIds] },
       },
       intervention: {
         applicationOrder: [...registration.design.treatment.applicationOrder],
@@ -333,17 +393,22 @@ export function configureTutorStubBoredomProofDagExecution({ state, loaded, jobI
     throw new Error('boredom proof-DAG execution requires a fresh empty dialogue state');
   }
   const job = resolveTutorStubBoredomProofDagJob({ loaded, jobId });
+  const actionFit = boredomActionFitLevel(loaded.registration, job);
   state.resistanceActionRegisterStudy = {
     schema: 'machinespirits.tutor-stub.resistance-action-register-study-runtime.v1',
     enabled: true,
     authority: 'explicit_study_only_opt_in',
     profile: 'bored',
-    action_fit: 'matched',
+    action_fit: actionFit,
     realization: job.realization,
     repeat: job.batch_id,
     registration_path: path.relative(process.cwd(), loaded.path),
     registration_sha256: loaded.sha256,
-    registration: runtimeRegistrationAdapter(loaded.registration, job.world),
+    registration: runtimeRegistrationAdapter(
+      loaded.registration,
+      job.world,
+      (loaded.plan?.batches || []).map((batch) => batch.id),
+    ),
     proof_dag_registration: clone(loaded.registration),
     semantic_adjudicator:
       loaded.registration.design.observationSemantics === 'prospective_v9'
@@ -380,7 +445,7 @@ export function configureTutorStubBoredomProofDagExecution({ state, loaded, jobI
     assignmentRankSha256: job.assignment_rank_sha256,
     treatment: {
       profile: 'bored',
-      action_fit: 'matched',
+      action_fit: actionFit,
       realization: job.realization,
       pedagogical_move: job.pedagogical_move,
       register: job.realization,
@@ -412,12 +477,21 @@ export function configureTutorStubBoredomProofDagFromCli({
   const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.resolve(root, registrationPath) });
   const job = resolveTutorStubBoredomProofDagJob({ loaded, jobId });
   const budget = Number(args['model-call-budget']);
+  // A dialogue has to be long enough to hold the whole registered window: every
+  // turn on which the tutor may act, then every learner turn the endpoint
+  // watches. This used to read 4, and the per-dialogue ceiling used to read 60.
+  // Both were v4's numbers, written here and also in the registration, and never
+  // compared. v4 still comes out as 4 and 60, because 2 plus 2 is 4.
+  const expectedAutoTurns =
+    loaded.registration.design.freshPrefixGeneration.maximumTriggerTurn +
+    loaded.registration.design.treatment.postTriggerLearnerTurns;
+  const perDialogueCeiling = loaded.registration.executionReadiness.dialogue.maximumReservationsPerDialogue;
   if (
     !autoLearnerEnabled ||
-    Number(autoTurns) !== 4 ||
+    Number(autoTurns) !== expectedAutoTurns ||
     !Number.isInteger(budget) ||
     budget < 1 ||
-    budget > 60 ||
+    budget > perDialogueCeiling ||
     args.model !== 'codex.gpt-5.6-luna' ||
     args['classifier-model'] !== 'codex.gpt-5.6-luna' ||
     args['learner-record-model'] !== 'codex.gpt-5.6-luna' ||
@@ -435,7 +509,9 @@ export function configureTutorStubBoredomProofDagFromCli({
     args['register-palette'] !== 'plain,warm' ||
     observationSemantics !== loaded.registration.design.observationSemantics
   ) {
-    throw new Error('boredom proof-DAG launch pins or remaining 60-attempt ceiling drifted');
+    throw new Error(
+      `boredom proof-DAG launch pins, ${expectedAutoTurns}-turn window, or remaining ${perDialogueCeiling}-attempt ceiling drifted`,
+    );
   }
   configureTutorStubBoredomProofDagExecution({ state, loaded, jobId, appendTraceEvent });
   return { loaded, job };

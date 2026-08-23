@@ -1,0 +1,339 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "tutor-stub-boredom-action-register-proof-dag-v7",
+  "registration": {
+    "registration_path": "config/tutor-stub-boredom-action-register-proof-dag-registration.v7.json",
+    "registration_sha256": "b15cca3914ea0727378760449d6e9586f7b153966ef3119f5cb7e62e4853d4fd",
+    "primary_endpoint_ids": [
+      "bored_resistance_recovery_within_outcome_horizon"
+    ],
+    "key_secondary_endpoint_id": "objective_proof_progress_by_five_turns",
+    "comparability_endpoint_id": "profile_specific_resistance_recovery",
+    "required_profile": "bored",
+    "required_observation_semantics": "prospective_v9",
+    "required_worlds": 6,
+    "required_distinct_prefixes": 84,
+    "required_contrast": "pedagogical_move",
+    "required_pedagogical_move_levels": [
+      "ask_question",
+      "shrink_step"
+    ],
+    "required_actions": [
+      "ask_discriminating_question",
+      "simplify_to_one_workable_step"
+    ],
+    "required_host_action_family": "stage_next_step",
+    "required_realizations": [
+      "plain",
+      "warm"
+    ],
+    "realization_role": "balancing_block_not_the_contrast"
+  },
+  "registered_scale": {
+    "cases": 84,
+    "unit": "fresh_independent_blocked_randomized_dialogue",
+    "ask_question_dialogues": 42,
+    "shrink_step_dialogues": 42,
+    "plain_dialogues": 42,
+    "warm_dialogues": 42,
+    "ask_question_plain_dialogues": 21,
+    "ask_question_warm_dialogues": 21,
+    "shrink_step_plain_dialogues": 21,
+    "shrink_step_warm_dialogues": 21,
+    "fresh_source_prefixes": 84,
+    "execution_batches": 21,
+    "combined_analysis_required": true
+  },
+  "runner": {
+    "packet_builder": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#buildTutorStubBoredomProofDagPackets",
+    "result_assembler": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#assembleTutorStubBoredomProofDagPreflight",
+    "production_preflight": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#runTutorStubBoredomProofDagEndpointPreflight",
+    "live_batch_executor": "scripts/run-tutor-stub-boredom-action-register-proof-dag.js#runTutorStubBoredomProofDagBatch",
+    "live_batch_recovery_executor": "scripts/run-tutor-stub-boredom-action-register-proof-dag.js#recoverTutorStubBoredomProofDagBatch",
+    "combined_analyzer": "scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js#analyzeTutorStubBoredomProofDag",
+    "batch_contract": {
+      "required_batches": [
+        "execution_batch_1",
+        "execution_batch_2",
+        "execution_batch_3",
+        "execution_batch_4",
+        "execution_batch_5",
+        "execution_batch_6",
+        "execution_batch_7",
+        "execution_batch_8",
+        "execution_batch_9",
+        "execution_batch_10",
+        "execution_batch_11",
+        "execution_batch_12",
+        "execution_batch_13",
+        "execution_batch_14",
+        "execution_batch_15",
+        "execution_batch_16",
+        "execution_batch_17",
+        "execution_batch_18",
+        "execution_batch_19",
+        "execution_batch_20",
+        "execution_batch_21"
+      ],
+      "dialogues_per_batch": 4,
+      "ask_question_per_batch": 2,
+      "shrink_step_per_batch": 2,
+      "plain_per_batch": 2,
+      "warm_per_batch": 2,
+      "maximum_model_attempt_reservations_per_dialogue": 123,
+      "maximum_model_attempt_reservations_per_batch": 492,
+      "combined_maximum_model_attempt_reservations": 10332,
+      "programme_ledger_before": 3008,
+      "required_programme_ceiling": 13340,
+      "programme_safeguard": 15000,
+      "combined_analysis_only": true,
+      "interim_analysis": false,
+      "valid_unit_reruns": false,
+      "outcome_selection": false,
+      "bounded_technical_recovery": "missing_or_failed_units_only_within_unchanged_123_per_dialogue_492_per_batch_10332_study_and_15000_programme_caps"
+    },
+    "packet_cap_bytes": 100000,
+    "emitted_event_fields": [
+      "arm",
+      "assignment_manifest_sha256",
+      "assignment_rank_sha256",
+      "case_id",
+      "fidelity.action_visible",
+      "fidelity.assigned_move_delivered",
+      "fidelity.protected_condition",
+      "fidelity.register_delivered_as_designed",
+      "fidelity.register_readable",
+      "fidelity.register_visible",
+      "fidelity.safety_override",
+      "outcome.best_path_coverage_delta",
+      "outcome.deadline_turns",
+      "outcome.new_supported_public_premises",
+      "outcome.observed_turn",
+      "outcome.proof_debt_delta",
+      "outcome.proof_progress_by_five_turns",
+      "outcome.recovered",
+      "outcome.recovered_at_first_post_trigger_turn",
+      "outcome.restated_tutor_content_only",
+      "outcome.unsupported_public_claims",
+      "pedagogical_move",
+      "pedagogical_move_level",
+      "prefix_id",
+      "realization",
+      "seed",
+      "semantic_measurement.confidence",
+      "semantic_measurement.disposition",
+      "semantic_measurement.evidence_spans_valid",
+      "semantic_measurement.independent_route_matches",
+      "semantic_measurement.indeterminate",
+      "trigger.observed_by_turn",
+      "trigger.profile",
+      "trigger.profile_identity_used",
+      "world"
+    ]
+  },
+  "channels": {
+    "compositional_boredom_observer_timing": {
+      "enabled": true,
+      "implementation": "services/resistantLearnerObservation.js#classifyBoredomEffortWithholdingComposition(prospective_v9_auxiliary_only)"
+    },
+    "registered_recovery": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterStudy.js#scoreTutorStubResistanceRecoveryWithinHorizon"
+    },
+    "comparability_recovery": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterStudy.js#scoreTutorStubResistanceRecovery"
+    },
+    "objective_public_proof_dag": {
+      "enabled": true,
+      "implementation": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#assembleTutorStubBoredomProofDagPreflight"
+    },
+    "exact_analysis": {
+      "enabled": true,
+      "implementation": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#exactBlockedScoreOneSidedPValue"
+    },
+    "fresh_prefix_assembly": {
+      "enabled": true,
+      "implementation": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#buildTutorStubBoredomProofDagPlan"
+    },
+    "treatment_fidelity": {
+      "enabled": true,
+      "implementation": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#assembleTutorStubBoredomProofDagPreflight"
+    },
+    "frozen_registration": {
+      "enabled": true,
+      "implementation": "config/tutor-stub-boredom-action-register-proof-dag-registration.v7.json"
+    },
+    "independent_boredom_semantic_measurement": {
+      "enabled": true,
+      "implementation": "services/tutorStubBoredomSemanticAdjudicationV3.js#adjudicateTutorStubBoredomObservation+services/tutorStubResistanceActionRegisterStudy.js#tutorStubResistanceActionRegisterTreatmentEligibility(prospective_v9)"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "independent_boredom_semantic_measurement",
+      "role": "instrument_gate",
+      "enabled": true,
+      "required_channels": [
+        "independent_boredom_semantic_measurement",
+        "compositional_boredom_observer_timing",
+        "frozen_registration"
+      ],
+      "required_event_fields": [
+        "case_id",
+        "semantic_measurement.confidence",
+        "semantic_measurement.disposition",
+        "semantic_measurement.evidence_spans_valid",
+        "semantic_measurement.independent_route_matches",
+        "semantic_measurement.indeterminate",
+        "trigger.observed_by_turn",
+        "trigger.profile_identity_used"
+      ],
+      "denominator": {
+        "expected_cases": 84
+      }
+    },
+    {
+      "id": "bored_resistance_recovery_within_outcome_horizon",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "independent_boredom_semantic_measurement",
+        "registered_recovery",
+        "exact_analysis",
+        "fresh_prefix_assembly",
+        "frozen_registration"
+      ],
+      "required_event_fields": [
+        "arm",
+        "assignment_manifest_sha256",
+        "assignment_rank_sha256",
+        "case_id",
+        "outcome.deadline_turns",
+        "outcome.recovered",
+        "pedagogical_move",
+        "pedagogical_move_level",
+        "prefix_id",
+        "realization",
+        "seed",
+        "world"
+      ],
+      "denominator": {
+        "expected_cases": 84
+      }
+    },
+    {
+      "id": "profile_specific_resistance_recovery",
+      "role": "comparability_descriptive_no_test",
+      "enabled": true,
+      "required_channels": [
+        "comparability_recovery",
+        "fresh_prefix_assembly",
+        "frozen_registration"
+      ],
+      "required_event_fields": [
+        "case_id",
+        "outcome.recovered_at_first_post_trigger_turn",
+        "pedagogical_move_level"
+      ],
+      "denominator": {
+        "expected_cases": 84
+      }
+    },
+    {
+      "id": "pedagogical_move_balance_and_content_separation",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": [
+        "fresh_prefix_assembly",
+        "treatment_fidelity",
+        "frozen_registration"
+      ],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "outcome.restated_tutor_content_only",
+        "pedagogical_move_level",
+        "realization"
+      ],
+      "denominator": {
+        "expected_cases": 84
+      }
+    },
+    {
+      "id": "objective_proof_progress_by_five_turns",
+      "role": "key_secondary_fixed_sequence",
+      "enabled": true,
+      "required_channels": [
+        "objective_public_proof_dag",
+        "exact_analysis",
+        "fresh_prefix_assembly",
+        "frozen_registration"
+      ],
+      "required_event_fields": [
+        "arm",
+        "assignment_manifest_sha256",
+        "assignment_rank_sha256",
+        "case_id",
+        "outcome.best_path_coverage_delta",
+        "outcome.new_supported_public_premises",
+        "outcome.proof_debt_delta",
+        "outcome.proof_progress_by_five_turns",
+        "outcome.unsupported_public_claims",
+        "prefix_id",
+        "seed",
+        "world"
+      ],
+      "denominator": {
+        "expected_cases": 84
+      }
+    },
+    {
+      "id": "randomized_register_assembly",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": [
+        "fresh_prefix_assembly",
+        "frozen_registration"
+      ],
+      "required_event_fields": [
+        "arm",
+        "assignment_manifest_sha256",
+        "assignment_rank_sha256",
+        "case_id",
+        "prefix_id",
+        "realization",
+        "seed",
+        "trigger.observed_by_turn",
+        "trigger.profile",
+        "trigger.profile_identity_used",
+        "world"
+      ],
+      "denominator": {
+        "expected_cases": 84
+      }
+    },
+    {
+      "id": "action_register_fidelity_and_safety",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": [
+        "treatment_fidelity",
+        "frozen_registration"
+      ],
+      "required_event_fields": [
+        "case_id",
+        "fidelity.action_visible",
+        "fidelity.assigned_move_delivered",
+        "fidelity.protected_condition",
+        "fidelity.register_delivered_as_designed",
+        "fidelity.register_readable",
+        "fidelity.register_visible",
+        "fidelity.safety_override"
+      ],
+      "denominator": {
+        "expected_cases": 84
+      }
+    }
+  ]
+}

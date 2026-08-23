@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -118,6 +120,26 @@ test('the scan reads real seed syntax out of the repo', () => {
   assert.ok(found.has(557), 'the "seed":NNN form is read');
   assert.ok(found.has(653));
   assert.equal(found.has(654), false, 'and it does not invent neighbours');
+});
+
+test('a per-call seed inside a trace is not read as an allocation', (t) => {
+  // A ledger seed is one a study was allocated, and a study writes those in its
+  // plan. A trace records a different kind of seed: what one model call sampled
+  // on, derived per call and three digits wide, which a search cannot tell from
+  // an allocation. The v7 boredom run carried thousands of them and made a
+  // clean run read as 170 undeclared seeds.
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'seed-scan-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const job = path.join(temp, 'jobs', 'a-dialogue');
+  fs.mkdirSync(path.join(job, 'traces'), { recursive: true });
+  fs.writeFileSync(path.join(temp, 'batch-plan.json'), '{"jobs":[{"seed": 810}]}');
+  fs.writeFileSync(path.join(job, 'traces', 'run.jsonl'), '{"model":"x","seed":811}\n');
+  fs.writeFileSync(path.join(job, 'transcript.json'), '{"seed":890}');
+
+  const found = scanSeeds(temp, { dirs: ['.'] });
+  assert.equal(found.has(810), true, 'the plan says which seed the study was allocated');
+  assert.equal(found.has(811), false, 'a per-call seed in a trace is not an allocation');
+  assert.equal(found.has(890), false, 'and neither is one in a transcript');
 });
 
 test('every seed the files know about is written down', () => {

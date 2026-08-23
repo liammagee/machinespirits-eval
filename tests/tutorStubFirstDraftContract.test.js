@@ -856,3 +856,31 @@ test('mixed repair and unsupported proposal compile one declarative bounded hand
   assert.match(prompt, /ask no question/iu);
   assert.doesNotMatch(prompt, /HANDOFF may ask|HANDOFF alone asks/iu);
 });
+
+test('a study intervention rule on the response configuration reaches the compiled handoff', () => {
+  const due = 'The third-week ledger entry records two deliveries, not one.';
+  const frame = {
+    learner_move: { summary: 'The learner has lost the thread.', evidence_use: 'none' },
+    conversational_completion: { resolved: false },
+    due_evidence_surfaces: [due],
+  };
+  const build = (rule) =>
+    buildTutorStubFirstDraftContract({
+      learnerText: 'It is all a bit much and I have rather lost the thread of it.',
+      responseConfiguration: configuration({
+        action_family: 'reanchor_public_evidence',
+        ...(rule ? { resistance_action_register_intervention: { delivered_contrast_rule: rule } } : {}),
+      }),
+      responseCompositionFrame: frame,
+    });
+
+  // Without the rule the due clue wins and a question is permitted on the very
+  // side the v8 study registered as asking none.
+  const withoutRule = build(null).progression.handoff_contract;
+  assert.equal(withoutRule.question_allowed, true);
+  assert.equal(withoutRule.registered_question_rule, null);
+
+  const withRule = build('forbids_question').progression.handoff_contract;
+  assert.equal(withRule.question_allowed, false);
+  assert.equal(withRule.registered_question_rule, 'forbids_question');
+});

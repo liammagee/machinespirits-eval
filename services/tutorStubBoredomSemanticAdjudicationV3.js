@@ -170,6 +170,51 @@ function auxiliaryPolarity(auxiliaryObservation) {
   return 'neutral';
 }
 
+// What each non-neutral auxiliary polarity positively asserts about the same
+// fields the judge reports. The polarity names and the verdict names are two
+// different vocabularies over one field space, so comparing them as strings
+// mistakes agreement for disagreement: `productive_uptake` with no boredom cue
+// collapses to the verdict `no_boredom`, which is exactly what the auxiliary
+// meant. Compare the fields instead. See `resistantLearnerObservation.js` for
+// the precedence that makes these assertions exclusive.
+const AUXILIARY_FIELD_ASSERTIONS = {
+  // uptake seen, and reached only when actionable withdrawal was absent
+  productive_uptake: { productive_uptake: true, effort_withdrawal: false },
+  // cue plus withdrawal, reached only when uptake was absent
+  actionable_boredom: { boredom_cue: true, effort_withdrawal: true, productive_uptake: false },
+};
+
+// Which asserted fields the judge disagreed with, and how. `auxiliaryContradictsFields`
+// keeps its boolean answer and is derived from this, so behaviour is unchanged; the
+// detail exists because a bare `contradiction: true` cannot be diagnosed after the fact.
+export function auxiliaryFieldDisagreements(polarity, fields) {
+  if (polarity === 'indeterminate') return [{ field: null, auxiliary_asserts: null, judge_reports: null }];
+  const asserted = AUXILIARY_FIELD_ASSERTIONS[polarity];
+  if (!asserted) return [];
+  return Object.entries(asserted)
+    .filter(([field, value]) => Boolean(fields?.[field]) !== value)
+    .map(([field, value]) => ({ field, auxiliary_asserts: value, judge_reports: Boolean(fields?.[field]) }));
+}
+
+export function auxiliaryContradictsFields(polarity, fields) {
+  return auxiliaryFieldDisagreements(polarity, fields).length > 0;
+}
+
+// The composition mixes three independent signals and any one of them sets productive
+// uptake, so the polarity alone cannot say what fired. Only one of the three is a regex.
+function auxiliaryTriggeredSignals(observation) {
+  if (!observation) return null;
+  return {
+    uptake_from_regex: observation.productive_uptake_evidence || null,
+    uptake_from_classifier_content: observation.classifier_content_bearing === true,
+    uptake_from_supported_moves: Number(observation.supported_move_count ?? 0),
+    withdrawal_from_regex: observation.actionable_withdrawal_evidence || null,
+    cue_from_regex: observation.cue_evidence || null,
+    permission_seeking: observation.permission_seeking === true,
+    disposition: observation.disposition || null,
+  };
+}
+
 export function parseTutorStubBoredomSemanticAdjudication({
   raw = '',
   candidate = '',
@@ -197,14 +242,18 @@ export function parseTutorStubBoredomSemanticAdjudication({
     observedRoute?.model === TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL;
   if (observedRoute && !routeMatches) issues.push('independent_route_mismatch');
   const auxiliary = auxiliaryPolarity(auxiliaryObservation);
-  const auxiliaryContradiction =
-    auxiliary === 'indeterminate' || (auxiliary !== 'neutral' && auxiliary !== semanticVerdict);
+  const auxiliaryDisagreements = auxiliaryFieldDisagreements(auxiliary, fields);
+  const auxiliaryContradiction = auxiliaryDisagreements.length > 0;
   const lowConfidence = !Number.isFinite(confidence) || confidence < minimumConfidence;
   const parseOk = Boolean(parsed) && declaredVerdict !== 'invalid' && evidenceAudit.pass && issues.length === 0;
-  const measurementDisposition =
-    !parseOk || lowConfidence || auxiliaryContradiction || semanticVerdict === 'indeterminate'
-      ? 'measurement_indeterminate'
-      : semanticVerdict;
+  // Four separate causes all stop the run under the one word `measurement_indeterminate`.
+  // Name every cause that fired, so a stopped run can be diagnosed from the saved record.
+  const stopReasons = [];
+  if (!parseOk) stopReasons.push('judge_output_failed_parse_or_evidence_audit');
+  if (lowConfidence) stopReasons.push('judge_confidence_below_minimum');
+  if (auxiliaryContradiction) stopReasons.push('auxiliary_disagrees_with_judge_fields');
+  if (semanticVerdict === 'indeterminate') stopReasons.push('judge_fields_derive_to_indeterminate');
+  const measurementDisposition = stopReasons.length > 0 ? 'measurement_indeterminate' : semanticVerdict;
   return {
     schema: TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATION_SCHEMA,
     version: 3,
@@ -220,10 +269,13 @@ export function parseTutorStubBoredomSemanticAdjudication({
         .replace(/\s+/gu, ' ')
         .trim() || null,
     evidence_audit: evidenceAudit,
+    stop_reasons: stopReasons,
     auxiliary: {
       role: 'high_precision_signal_only_never_final_authority',
       polarity: auxiliary,
       contradiction: auxiliaryContradiction,
+      disagreements: auxiliaryDisagreements,
+      triggered_signals: auxiliaryTriggeredSignals(auxiliaryObservation),
       lexical_silence_can_veto_semantic_positive: false,
     },
     independent_route: {

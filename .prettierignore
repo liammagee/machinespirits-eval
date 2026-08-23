@@ -52,6 +52,25 @@ scripts/analyze-tutor-stub-resistance-action-register-confirmation.js
 scripts/recover-tutor-stub-interrupted-confirmation-batch.js
 scripts/recover-tutor-stub-resistance-semantic-judge.js
 services/cliProviderBridge.js
+
+# Hash-frozen boredom action-before-register proof-DAG study inputs. The human
+# approval statement for v8 quotes the go-request digest
+# 74f01ce4...d81e02, endpoint certificates bind the endpoint files, and each
+# launch authorization binds its registration. Reformatting any of them would
+# break an approval that a person already gave, so prettier must skip them.
+config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json
+config/tutor-stub-boredom-action-register-proof-dag-registration.v6.json
+config/tutor-stub-boredom-action-register-proof-dag-registration.v7.json
+config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json
+config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v5.json
+config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v6.json
+config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v7.json
+config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v8.json
+config/tutor-stub-boredom-action-register-proof-dag-launch-authorization.v7.json
+config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v5.json
+config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v6.json
+config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v7.json
+config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v8.json
 services/tutorStubResistanceActionRegisterConfirmation.js
 services/tutorStubResistanceActionRegisterStudy.js
 services/tutorStubResistanceSemanticAdjudicationV5.js

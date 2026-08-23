@@ -148,13 +148,97 @@ function registeredProfiles(registration) {
 const MOVE_TO_HOST_ACTION = Object.freeze({
   ask_discriminating_question: 'stage_next_step',
   test_bounded_distinction: 'clarify_distinction',
+  // Deliberately the same host action family as the discriminating question.
+  // A new family would need its own uptake contract, its own legacy register
+  // name and its own projection entry, so the two versions of the tutor would
+  // differ in four things at once and no result could be pinned on any one of
+  // them. Sharing the family holds the host machinery identical and leaves the
+  // instruction text as the single thing that varies. The family also already
+  // fits: it expects the learner to adopt or use staged evidence, or to ask one
+  // new bounded question, which is true of both moves.
+  simplify_to_one_workable_step: 'stage_next_step',
+  // The v8 reference arm, and the one place where the shared-family rule above
+  // has to be broken. v7 audited its own paid transcripts after the fact and
+  // found both arms asking a question in 0.976 of trigger turns, including the
+  // arm whose instruction forbade one. The instruction was never what decided
+  // it. `chooseHandoffMode` in tutorStubTurnProgressionContract.js reads the
+  // host action family, and only a family listed in NO_QUESTION_ACTIONS earns
+  // the declarative handoff; `stage_next_step` is not listed, so both v7 arms
+  // were told a final question was allowed and both took it. Sharing the family
+  // is what made the two arms one arm.
+  //
+  // So the reference arm takes `reanchor_public_evidence`, which is listed. The
+  // choice is forced rather than picked: of the seven listed families, six exist
+  // to answer, receive, repair, reconnect, request a say-back or close, and all
+  // six respond to the learner, which this arm must never do. The seventh
+  // restages an already-public clue and names its present limit. That is what
+  // carrying on with the proof looks like.
+  //
+  // The cost is real and the registration must carry it. The two v8 arms now
+  // differ in the family, and with it the first-draft contract line, the handoff
+  // mode, the part weighting and the guard-recovery part. That is the four-way
+  // confound the comment above refuses. It is admissible here only because the
+  // v8 contrast is not which move works better: it is whether making a
+  // boredom-directed move at all beats carrying on. The whole bundle is the
+  // manipulation. v8 therefore cannot say the question did the work, only that
+  // the move did.
+  stage_public_evidence_for_next_step: 'reanchor_public_evidence',
 });
 
+// Readers outside this module need the same answer the runtime uses. The
+// combined analyser used to write the family out as one string, which held only
+// while one move was in play.
+export function tutorStubResistanceHostActionFamily(move) {
+  const family = MOVE_TO_HOST_ACTION[move];
+  if (!family) throw new Error(`no host action family is registered for the pedagogical move ${JSON.stringify(move)}`);
+  return family;
+}
+
+// The third move is here for the bored learner. A discriminating question asks
+// a learner to choose between live paths. The v4 and v5 dialogues showed that a
+// bored learner answers such a question with a report of having stopped, which
+// is what a learner who has given up has to give: the question asks them to do
+// the very thing they just said they stopped doing. This move removes the
+// choice instead of sharpening it, and leaves one small action standing.
+//
+// The instruction has to hold one line very firmly, because the whole value of
+// the comparison rests on it. Cutting the step down must not mean handing over
+// the finding. A tutor that says what the learner will see would let the
+// learner score by repeating the tutor, which is not recovery and would lift
+// the reading for a reason the design does not mean to measure. So the tutor
+// may name the step and may name the object the step touches, and may not say
+// what it shows or draw any inference from it.
 const MOVE_INSTRUCTIONS = Object.freeze({
   ask_discriminating_question:
     'Ask exactly one concrete question about the nearest already-public object or inference. Make its alternatives genuinely discriminating, so the answer changes which live public path should be tested next. Do not ask permission, ask what the learner wants to do, or supply the answer.',
   test_bounded_distinction:
     'Name one bounded distinction inside the disputed inquiry frame and offer one local public test that could count for or against it. Explicitly leave the learner free to reject the wider frame; do not convert disagreement into compliance.',
+  simplify_to_one_workable_step:
+    'Cut the next step down to one small action the learner can take now, and name that single step plainly. You may name the already-public object the step touches. You must not say what the learner will find in it, must not state or hint at any finding, inference or conclusion, and must not offer a choice between steps. Do not ask permission or ask what the learner wants to do. The looking and the saying belong to the learner.',
+  // The fourth move is the v8 reference arm: the tutor carries on with the
+  // proof and does nothing about the disengagement. It is a real instruction,
+  // not an absence, and the registration says so. Two lines carry the whole
+  // arm. First, say nothing about the learner's state, because any
+  // acknowledgment is already a response to the boredom and would make this a
+  // second treatment. Second, ask no question, because one question is exactly
+  // what the other arm is for; that difference is also the one thing a reader
+  // can count in the delivered turn, which is what makes the delivery gate
+  // real. The content-withholding line is copied from the step move for the
+  // same reason it is there: a tutor who states the finding lets the learner
+  // score by repeating it.
+  //
+  // The last line grants one thing the other three moves do not: the tutor may
+  // say what the staged evidence has not yet settled. That is not a softening.
+  // It is what the host family this arm now carries already asks for — the
+  // first-draft contract line for `reanchor_public_evidence` reads "restage one
+  // already-public clue and its limit", and the handoff cue reads "end on the
+  // clue's current limit". Naming a limit is how a proof-carrying tutor says
+  // "and I am not telling you the answer" in words. Without the grant the
+  // instruction and the host contract would pull against each other on every
+  // turn, and the arm would fail its own adherence reading for obeying its own
+  // rule.
+  stage_public_evidence_for_next_step:
+    'Continue the inquiry as though the learner had said nothing about themselves. Stage the next already-public piece of evidence and name it plainly. Do not mention, acknowledge, or respond to the learner’s interest, effort, mood or pace, and do not comment on how the work is going. Ask no question of any kind. Do not simplify the task, re-motivate the learner, or offer a choice. You may name the public object and may say what it does not yet settle; you must not say what it shows, must not state or hint at any finding, inference or conclusion, and must not draw a conclusion from it.',
 });
 
 const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
@@ -162,6 +246,10 @@ const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
     'Ask exactly one concrete, genuinely discriminating question about the nearest already-public object; do not supply the answer.',
   test_bounded_distinction:
     'Name one bounded distinction and ask for one local public test; explicitly leave the wider frame open to rejection.',
+  simplify_to_one_workable_step:
+    'Name one small step the learner can take now, on a named public object; do not say what it shows, do not infer from it, and do not offer a choice.',
+  stage_public_evidence_for_next_step:
+    'Stage the next already-public piece of evidence, name it plainly, and say what it does not yet settle. Say nothing about the learner’s state, ask no question, and do not say what the evidence shows.',
 });
 
 const REALIZATION_CONTRAST_INSTRUCTIONS = Object.freeze({
@@ -173,6 +261,19 @@ const REALIZATION_CONTRAST_INSTRUCTIONS = Object.freeze({
 
 const CONTENT_BEARING_MOVES = new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']);
 const CONTENT_BEARING_EVIDENCE = new Set(['cites_public_evidence', 'links_evidence_to_rule', 'revises_from_evidence']);
+
+// The bored learner is scored on a narrower list, without reflection on one's own
+// work. Withholding is the one stance a learner can show only by describing it, so
+// with reflection in the list a turn like "I stopped at the first step and left the
+// evidence unexamined" scored as recovery: the plain statement of giving up counted
+// as the answer that giving up withholds. The plain tutor fails more often, so its
+// learners say that more often, and the old list paid the plain tutor for failing.
+// The three moves kept here all carry the inquiry forward, and the evidence-side
+// list is unchanged, so a reflection that cites public evidence still counts.
+// The defiant and refuser learners keep the wider list above. They show their
+// stance by saying something, not by stopping, and they are scored on a different
+// question over a two-turn deadline.
+const BORED_INQUIRY_ADVANCING_MOVES = new Set(['hypothesis', 'inference', 'evidence_adoption']);
 
 const PERMISSION_SEEKING = /\b(?:is it (?:okay|ok)|may i|am i allowed|do you want me to|should i)\b/iu;
 const MERE_ASSENT = /^\s*(?:yes|yeah|yep|okay|ok|sure|fine|right|whatever|if you say so)[.!]?\s*$/iu;
@@ -242,9 +343,12 @@ function usesSemanticBoredomAdjudication(runtime) {
   );
 }
 
+// Both callers of this are on the bored path: the recovery endpoint and the
+// confirmation observer's first-refusal test. Both need a turn that carries the
+// inquiry forward, so both use the narrower list.
 function contentBearing(classification) {
   const turn = classificationTurn(classification);
-  return CONTENT_BEARING_MOVES.has(turn.discourse_move) || CONTENT_BEARING_EVIDENCE.has(turn.evidence_use);
+  return BORED_INQUIRY_ADVANCING_MOVES.has(turn.discourse_move) || CONTENT_BEARING_EVIDENCE.has(turn.evidence_use);
 }
 
 function decisionTurn(state, tutorLearnerDag) {
@@ -1302,6 +1406,22 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
   const register = assignedRegister(runtime.registration, moveType, runtime.realization);
   const palette = new Set(state?.register?.palette || []);
   if (!palette.has(register)) throw new Error(`study-assigned register ${register} is outside the active palette`);
+  // A registration may state that one side of its contrast delivers a question
+  // and the other does not. Until now that rule was read only by the preflight
+  // and the analyser, so the generating path never saw it and the host action
+  // family had to carry it alone. The family loses to a due public clue, which
+  // is how the v8 run delivered questions on the side that forbade them and
+  // failed its own delivery gate. Carry the rule on the intervention so the
+  // draft contract can hold it. Registrations without the rule get `null` and
+  // an unchanged intervention shape.
+  // The runtime registration adapter strips `measurement` on purpose, so the
+  // rule is read off the study's own full copy where one is held. Only this one
+  // string is taken, and it describes the form of the tutor's own turn, which
+  // the runtime already carries in `pedagogical_move`. No outcome measure moves.
+  const deliveredContrastRule =
+    (runtime.proof_dag_registration || runtime.registration)?.measurement?.treatmentFidelity?.deliveredContrastByMove?.[
+      moveType
+    ] ?? null;
 
   const turn = decisionTurn(state, tutorLearnerDag);
   const intervention = {
@@ -1330,6 +1450,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
       register,
       application_order: [...runtime.registration.design.intervention.applicationOrder],
     },
+    ...(deliveredContrastRule ? { delivered_contrast_rule: deliveredContrastRule } : {}),
     action_instruction: MOVE_INSTRUCTIONS[moveType],
     compact_action_instruction: COMPACT_MOVE_INSTRUCTIONS[moveType],
     realization_contrast_instruction: REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],
@@ -1849,54 +1970,86 @@ function frameRefuserMeritsEngagement(turn, text) {
   );
 }
 
-export function scoreTutorStubResistanceRecovery({ profile, triggerLearnerText = '', postLearnerTurns = [] } = {}) {
+// The frozen deadlines the study has used since v1. They stay here so that the
+// one-turn scorer and the windowed scorer cannot drift apart: both read this
+// map, and the windowed scorer only replaces the number, never the per-turn
+// rule below it.
+const FROZEN_RECOVERY_DEADLINE_TURNS = Object.freeze({ bored: 1, frame: 2 });
+
+function frozenRecoveryDeadlineTurns(normalizedProfile) {
+  return normalizedProfile === 'bored' ? FROZEN_RECOVERY_DEADLINE_TURNS.bored : FROZEN_RECOVERY_DEADLINE_TURNS.frame;
+}
+
+function boredRecoveryOnTurn(row) {
+  const text = String(row.learnerText || row.text || '').trim();
+  const recovered = Boolean(
+    text && contentBearing(row.classification) && !PERMISSION_SEEKING.test(text) && !MERE_ASSENT.test(text),
+  );
+  return recovered ? { reason: 'content_bearing_answer_without_permission_or_mere_assent' } : null;
+}
+
+function frameRecoveryOnTurn(row, { triggerLearnerText, strictFrameRefuser }) {
+  const text = String(row.learnerText || row.text || '').trim();
+  const turn = classificationTurn(row.classification);
+  const axis = observeResistanceAxis({ learnerText: text, classification: row.classification });
+  const engagedMerits = strictFrameRefuser ? frameRefuserMeritsEngagement(turn, text) : meritsEngagement(turn);
+  const preciseDispute =
+    axis.resistance_kind === 'frame_defiant' &&
+    FRAME_ISSUE.test(text) &&
+    (!strictFrameRefuser ||
+      (BOUNDED_PUBLIC_MERITS.test(text) &&
+        (!EXPLICIT_CONTINUED_WITHHOLDING.test(text) || CONDITIONAL_PUBLIC_BOUNDARY.test(text)))) &&
+    text.split(/\s+/u).length > Math.max(6, String(triggerLearnerText).split(/\s+/u).length / 2);
+  if (!engagedMerits && !preciseDispute) return null;
+  return { reason: engagedMerits ? 'engaged_bounded_test_on_merits' : 'frame_dispute_became_more_precise' };
+}
+
+// One scorer for every window. The per-turn rule is the rule v1 to v5 used, and
+// `deadlinePostTriggerLearnerTurns` only says how many post-trigger learner
+// turns it is applied to. The earliest qualifying turn is the one recorded.
+export function scoreTutorStubResistanceRecoveryWithinHorizon(options = {}) {
+  const { profile, triggerLearnerText = '', postLearnerTurns = [] } = options;
   const normalizedProfile = exactLevel(profile, PREFIX_PROFILES, 'outcome profile');
-  const rows = Array.isArray(postLearnerTurns) ? postLearnerTurns : [];
-  if (normalizedProfile === 'bored') {
-    const first = rows[0] || {};
-    const text = String(first.learnerText || first.text || '').trim();
-    const recovered = Boolean(
-      text && contentBearing(first.classification) && !PERMISSION_SEEKING.test(text) && !MERE_ASSENT.test(text),
+  // Naming the key at all means the caller must supply a usable number. A study
+  // that reads its window out of a registration and finds the field missing
+  // hands us undefined, and that must stop the scorer rather than quietly become
+  // the one-turn window.
+  const asked = Object.hasOwn(options, 'deadlinePostTriggerLearnerTurns');
+  const deadline = asked ? options.deadlinePostTriggerLearnerTurns : frozenRecoveryDeadlineTurns(normalizedProfile);
+  if (!Number.isInteger(deadline) || deadline < 1) {
+    throw new Error(
+      `resistance recovery horizon must be a whole number of post-trigger learner turns of at least one, received ${JSON.stringify(
+        options.deadlinePostTriggerLearnerTurns ?? null,
+      )}`,
     );
-    return {
-      profile: normalizedProfile,
-      recovered,
-      deadline_turns: 1,
-      observed_turn: recovered ? 1 : null,
-      reason: recovered ? 'content_bearing_answer_without_permission_or_mere_assent' : 'bored_recovery_absent',
-    };
   }
-  for (let index = 0; index < Math.min(2, rows.length); index += 1) {
+  const rows = Array.isArray(postLearnerTurns) ? postLearnerTurns : [];
+  const bored = normalizedProfile === 'bored';
+  const strictFrameRefuser = normalizedProfile === 'frame_refuser';
+  for (let index = 0; index < Math.min(deadline, rows.length); index += 1) {
     const row = rows[index] || {};
-    const text = String(row.learnerText || row.text || '').trim();
-    const turn = classificationTurn(row.classification);
-    const axis = observeResistanceAxis({ learnerText: text, classification: row.classification });
-    const strictFrameRefuser = normalizedProfile === 'frame_refuser';
-    const engagedMerits = strictFrameRefuser ? frameRefuserMeritsEngagement(turn, text) : meritsEngagement(turn);
-    const preciseDispute =
-      axis.resistance_kind === 'frame_defiant' &&
-      FRAME_ISSUE.test(text) &&
-      (!strictFrameRefuser ||
-        (BOUNDED_PUBLIC_MERITS.test(text) &&
-          (!EXPLICIT_CONTINUED_WITHHOLDING.test(text) || CONDITIONAL_PUBLIC_BOUNDARY.test(text)))) &&
-      text.split(/\s+/u).length > Math.max(6, String(triggerLearnerText).split(/\s+/u).length / 2);
-    if (engagedMerits || preciseDispute) {
+    const hit = bored ? boredRecoveryOnTurn(row) : frameRecoveryOnTurn(row, { triggerLearnerText, strictFrameRefuser });
+    if (hit) {
       return {
         profile: normalizedProfile,
         recovered: true,
-        deadline_turns: 2,
+        deadline_turns: deadline,
         observed_turn: index + 1,
-        reason: engagedMerits ? 'engaged_bounded_test_on_merits' : 'frame_dispute_became_more_precise',
+        reason: hit.reason,
       };
     }
   }
   return {
     profile: normalizedProfile,
     recovered: false,
-    deadline_turns: 2,
+    deadline_turns: deadline,
     observed_turn: null,
-    reason: 'frame_recovery_absent',
+    reason: bored ? 'bored_recovery_absent' : 'frame_recovery_absent',
   };
+}
+
+export function scoreTutorStubResistanceRecovery({ profile, triggerLearnerText = '', postLearnerTurns = [] } = {}) {
+  return scoreTutorStubResistanceRecoveryWithinHorizon({ profile, triggerLearnerText, postLearnerTurns });
 }
 
 export default {

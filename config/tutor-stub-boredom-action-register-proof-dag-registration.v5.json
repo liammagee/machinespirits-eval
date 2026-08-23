@@ -1,0 +1,440 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v5",
+  "version": 5,
+  "status": "prospective_zero_call_readiness_hold",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": null,
+  "registeredQuestion": "After the independently pinned prospective-v9 semantic adjudicator has identified actionable bored effort withdrawal and selected the fixed boredom-appropriate discriminating-question action, and after the dialogue has been lengthened so that the public proof path is open long enough for either endpoint to move, does warm rather than plain realization improve the one-turn bored resistance-recovery endpoint, and does any improvement reach objective public proof-DAG progress?",
+  "claimBoundary": "This fresh blocked-randomized simulated-learner confirmation can establish only a warm-versus-plain register effect after the boredom-appropriate action has already been selected by independently validated prospective-v9 semantic measurement. It cannot reinterpret or pool the v4 confirmation or any stopped v4 dialogue, re-estimate historical boredom detection, estimate action fit, establish an interaction, general tutor efficacy, durable learning, human validity, or transfer. It also cannot claim that the v4 null was caused by the short window; it can only report what the endpoints do once the window is long enough for them to move.",
+
+  "supersedes": {
+    "registrationPath": "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+    "registrationSha256": "1db9fe34461f29f63d26fa456152b34c8d9e5fab957a49c8612ba462f97eddb3",
+    "amendmentPath": "config/tutor-stub-boredom-action-register-proof-dag-amendment-a1.json",
+    "amendmentSha256": "4d3c24c1ef86e7e07313dd4e084b6cfbbb57652fe534801d5eb9f331b4d000d3",
+    "reportSha256": "8e307fcfb57297b73d8c2e5a6cc638f4ac4b66b851dc0b7178d70942affe5d4f",
+    "privateArchiveCommit": "70867ea3",
+    "v4Result": "Primary: plain 0 of 18, warm 0 of 15, risk difference 0, exact conditional p = 1, decision warm_plain_recovery_not_confirmed. Key secondary: 0 and 0, not tested, fixed-sequence gate closed. Treatment fidelity complete, action and register visibility both 1.00. Attrition 3 dialogues, all warm.",
+    "v4Standing": "The v4 null stands as recorded, for v4's design and v4's window. v5 does not reinterpret it, replace it, or pool with it. No v4 dialogue, prefix, outcome or seed is reused.",
+    "reuse": false,
+    "resume": false,
+    "pool": false,
+    "analyze": false,
+    "confirmationCredit": false
+  },
+
+  "whyV5": {
+    "defectFound": "the registered turn budget was too short for either endpoint to move, in every world and not only in the worst ones",
+    "evidence": "Every world in config/drama-derivation authors a fixed release_schedule that names the turn on which each public premise becomes available. Across the whole 35-world library no world releases a premise lying on its shortest proof path before turn 3, and the earliest-opening worlds all share the rhythm turn 3, 5, 7 and sometimes 9. The v4 design allowed a trigger at turn 1 or 2 and then two post-trigger learner turns, so a v4 dialogue ended at turn 3 or turn 4. In 22 of the 33 completed v4 units no best-path premise had been released before the dialogue ended, so the objective endpoint could not move whatever the tutor did. In the remaining 11 units exactly one had been released, with one turn left in which to use it. Eight of those 11 were plain and three were warm.",
+    "defectClass": "cross_file_constant_mismatch",
+    "defectClassNote": "the release schedule and the turn budget live in different files, are written in the same units, and were authored for different purposes. Neither is wrong on its own. Their sum decides whether an endpoint can move, and nothing computed that sum. The world-selection rule below turns that sum into a stated, checkable condition.",
+    "whyThisIsNotOutcomeFishing": "the defect is read off the worlds' authored release schedules and the registered turn budget. It is visible without opening a single outcome column and would have been visible before the v4 run had anyone compared the two files. The three quantities that change here are each fixed by that comparison, not by which way any result fell.",
+    "whatV5CannotClaim": "v5 cannot show that the v4 null was caused by the short window. The 11 less-starved v4 units were also all zero, so a floor effect and a real absence of any register difference both remain live readings. v5 replaces a window in which neither endpoint could move with one in which both can, and then reports what happens.",
+    "primaryEndpointDefinitionUnchanged": true,
+    "primaryEndpointUnchangedReason": "the recovery endpoint keeps v4's definition and its one-turn deadline, so the v5 primary is a straight replication of the v4 primary on a window that permits a result. Widening the recovery deadline as well would have changed the endpoint and the window together, and neither reading could then be set beside v4."
+  },
+
+  "design": {
+    "stage": "boredom_matched_action_plain_warm_proof_dag_confirmation",
+    "form": "fresh_prefix_blocked_randomized_independent_dialogues",
+    "profile": "bored",
+    "observationSemantics": "prospective_v9",
+    "observationPrecedence": "independent_semantic_productive_uptake_defeats_cue; independent_semantic_actionable_withdrawal_without_productive_uptake_licenses; mixed_meaning_low_confidence_or_strong_auxiliary_contradiction_is_measurement_indeterminate",
+    "dagMode": "strict_dag",
+
+    "worlds": [
+      "world_022_foxtrot_jukebox",
+      "world_026_skyway_bakery",
+      "world_028_larkspur_fridge",
+      "world_029_riverside_clinic",
+      "world_030_rowan_flat",
+      "world_031_tideway_makerspace"
+    ],
+    "worldSelection": {
+      "rule": "every world in the set must release at least two shortest-proof-path premises strictly before the earliest turn on which this design can end a dialogue",
+      "ruleAppliedBeforeAnyGeneration": true,
+      "earliestPossibleEndTurn": 6,
+      "earliestPossibleEndTurnDerivation": "smallest trigger turn 1 plus 5 post-trigger learner turns",
+      "carriedForwardFromV4": [
+        "world_026_skyway_bakery",
+        "world_029_riverside_clinic",
+        "world_030_rowan_flat",
+        "world_031_tideway_makerspace"
+      ],
+      "added": ["world_022_foxtrot_jukebox", "world_028_larkspur_fridge"],
+      "dropped": ["world_005_marrick", "world_033_alder_row_redoubt"],
+      "whyDropped": "world 005 opens its shortest path at turn 4 and world 033 at turn 9. Under any turn budget this design can afford, neither can put two path premises in front of the learner. Both contributed nought reachable units in v4.",
+      "whyThisIsNotCherryPicking": "the two worlds are dropped on their authored release schedules, which are fixed properties of the world files written long before this study. No v4 outcome is consulted. The rule is stated as a threshold and every world in the library is measured against it, so anyone reading the world files can reproduce the set.",
+      "shortestPathPremiseCountPerWorld": {
+        "world_022_foxtrot_jukebox": 3,
+        "world_026_skyway_bakery": 4,
+        "world_028_larkspur_fridge": 3,
+        "world_029_riverside_clinic": 3,
+        "world_030_rowan_flat": 3,
+        "world_031_tideway_makerspace": 3
+      },
+      "onPathReleaseTurnsPerWorld": {
+        "world_022_foxtrot_jukebox": [3, 5, 7],
+        "world_026_skyway_bakery": [3, 5, 7, 9],
+        "world_028_larkspur_fridge": [3, 5, 7],
+        "world_029_riverside_clinic": [3, 5, 7],
+        "world_030_rowan_flat": [3, 5, 7],
+        "world_031_tideway_makerspace": [3, 5, 7]
+      },
+      "turnCapPerWorld": {
+        "world_022_foxtrot_jukebox": 12,
+        "world_026_skyway_bakery": 14,
+        "world_028_larkspur_fridge": 12,
+        "world_029_riverside_clinic": 12,
+        "world_030_rowan_flat": 12,
+        "world_031_tideway_makerspace": 12
+      },
+      "latestPossibleEndTurn": 9,
+      "everyWorldTurnCapClearsLatestPossibleEndTurn": true,
+      "onPathPremisesUsableAtEarliestEndTurn": 2,
+      "uniformAcrossAllSixWorlds": true,
+      "verificationScript": "scripts/verify-boredom-v5-world-window.js",
+      "verificationRequiredBeforeFreeze": true
+    },
+
+    "freshPrefixGeneration": {
+      "prefixesPerWorld": 6,
+      "requiredDistinctPrefixes": 36,
+      "maximumTriggerTurn": 4,
+      "maximumTriggerTurnChangedFromV4": true,
+      "maximumTriggerTurnV4Value": 2,
+      "maximumTriggerTurnChangeReason": "v4 allowed a trigger only at turn 1 or turn 2. When turn 2 could not be read there was no turn 3 to fall back on and the dialogue was thrown away. Allowing turns 1 to 4 gives the generator four chances to find a readable, eligible turn before the unit is lost.",
+      "seedBase": 2026090100,
+      "uniqueSeedPerSource": true,
+      "requireDistinctPublicPrefixHashes": true,
+      "profileIdentityMayTrigger": false,
+      "noV4SeedOrPrefixReused": true,
+      "protectedExclusions": [
+        "productive_uptake_precedes_cue",
+        "ambiguous_withdrawal_and_productive_uptake",
+        "comprehension_repair",
+        "protected_affect",
+        "semantic_measurement_indeterminate_on_this_turn"
+      ],
+      "unreadableTurnDisposition": "pass_over_this_turn_and_read_the_next_one",
+      "unreadableTurnDispositionChangedFromV4": true,
+      "unreadableTurnDispositionV4Value": "stop_the_whole_dialogue",
+      "unreadableTurnDispositionChangeReason": "In v4 an unreadable pre-treatment turn ended the whole dialogue. All three v4 losses happened this way, at the trigger, before the tutor had acted: two turns derived indeterminate because the learner both withdrew and took up, and one was lost when the word-matching cross-check disagreed with the judge. The adjudicator is not changed and its held-out validation is untouched. What changes is what the runtime does with a turn it cannot read: that turn becomes ineligible to trigger, exactly as the four protected conditions already are, and the runtime reads the next turn. The resistance study already behaves this way, with the pass-over reason semantic_measurement_indeterminate_missing_or_stale in services/tutorStubResistanceActionRegisterStudy.js. This change makes boredom match resistance.",
+      "unreadableTurnAppliesOnlyBeforeTreatment": true,
+      "unreadableTurnAppliesOnlyBeforeTreatmentNote": "the adjudicator runs only while the study intervention is unconsumed, so every reading it makes is pre-treatment. Nothing here touches how an outcome is scored, and no indeterminate reading may select, repair, rerun or replace an outcome.",
+      "unreadableTurnCountsMustBeReported": true,
+      "unreadableTurnCountsReportingRule": "the report must state, per version of the tutor and overall, how many turns were passed over as unreadable and at which turn number, so that a design which silently walked past many turns is visible rather than hidden.",
+      "substantiveMissingOrDuplicateTriggerDisposition": "stop_incomplete_no_replacement_no_analysis",
+      "noEligibleTurnByMaximumDisposition": "measurement_indeterminate_stop_no_repair_no_rerun_no_replacement"
+    },
+
+    "randomization": {
+      "independentUnit": "fresh_distinct_bored_public_prefix_dialogue",
+      "dialogues": 36,
+      "assignment": "predeclared_seeded_sha256_rank_blocked_by_world_before_generation_hidden_until_action_selection",
+      "algorithm": "sha256_rank_within_world",
+      "assignmentSeed": 20260901,
+      "assignmentManifestSha256": "485f7442d2844dad9026c54ea47ed3214f5cf1e4c36bf372a2fb52dfb6304b28",
+      "assignmentManifestNote": "36 rows, 18 plain and 18 warm, 3 and 3 in each of the six worlds. Computed from the seed and the world list before any dialogue exists, and pinned here so the assignment cannot follow a later edit.",
+      "tieBreak": "dialogue_index_ascending",
+      "assignmentHiddenUntilAfterActionSelection": true,
+      "plainDialogues": 18,
+      "warmDialogues": 18,
+      "plainPerWorld": 3,
+      "warmPerWorld": 3,
+      "continuationsPerPrefix": 1,
+      "validOutputsMayNotBeSelectedDiscardedOrRerolled": true
+    },
+
+    "treatment": {
+      "fixedPedagogicalMove": "ask_discriminating_question",
+      "actionFit": "matched",
+      "realizations": ["plain", "warm"],
+      "reference": "plain",
+      "treatment": "warm",
+      "edgedOrSarcasticAbsent": true,
+      "applicationOrder": [
+        "independent_llm_semantic_boredom_adjudication",
+        "deterministic_schema_span_route_and_auxiliary_check",
+        "action_selection",
+        "register_assignment_revealed"
+      ],
+      "assignedRegisterTutorTurns": 1,
+      "postTriggerLearnerTurns": 5,
+      "postTriggerLearnerTurnsChangedFromV4": true,
+      "postTriggerLearnerTurnsV4Value": 2,
+      "postTriggerLearnerTurnsChangeReason": "v4 allowed two. With a trigger at turn 1 or 2 the dialogue ended at turn 3 or 4, and the six chosen worlds do not release their second path premise until turn 5. Five post-trigger learner turns carry the dialogue to turn 6 at the earliest and turn 9 at the latest, so in every world and under every trigger turn two path premises are already public before the last turn, and the learner has more than a single turn in which to use one.",
+      "terminalTutorCall": false,
+      "safetyOverride": "record_as_nonadherent_in_intention_to_treat_never_reroll"
+    },
+
+    "noReuseOrPooling": {
+      "v4ConfirmationDialoguesReused": false,
+      "v4ConfirmationOutcomesPooled": false,
+      "priorHeldOutDialoguesReused": false,
+      "priorMatchedActionDialoguesReused": false,
+      "priorTwelveCalibrationDialoguesReused": false,
+      "stoppedConfirmationDialoguesReused": false,
+      "priorOutcomesPooled": false,
+      "freshSourcePrefixesRequired": true,
+      "interimAnalysis": false,
+      "singleCombinedAnalysisAfterAllNineBatchSeals": true
+    }
+  },
+
+  "measurement": {
+    "semanticAdjudicator": {
+      "schema": "machinespirits.tutor-stub.boredom-semantic-adjudication.v3",
+      "modulePath": "services/tutorStubBoredomSemanticAdjudicationV3.js",
+      "moduleSha256": "001eba55ebda1e08238b79ea220490fb7c7af3cbda30808964b9a2b4778fbf5e",
+      "moduleUnchangedFromV4": true,
+      "moduleUnchangedNote": "the adjudicator's bytes, its verdict derivation and its sealed held-out validation are carried forward untouched. v5 changes only what the runtime does with an unreadable pre-treatment turn, which is outside this module.",
+      "modelRef": "codex.gpt-5.6-sol",
+      "role": "tutor_stub_boredom_performance_adjudication",
+      "effort": "low",
+      "independentFromGeneratingModel": true,
+      "treatmentAndOutcomeBlind": true,
+      "generatorSelfJudgmentAllowed": false,
+      "minimumConfidence": 0.8,
+      "quotedEvidenceSpansRequired": true,
+      "deterministicAuthority": "schema_exact_utf16_spans_route_provenance_and_safety_only",
+      "regexRole": "auxiliary_high_precision_signal_and_disagreement_only_never_final_semantic_authority",
+      "lexicalSilenceMayVetoSemanticPositive": false,
+      "lowConfidenceOrDisagreementDisposition": "the turn is ineligible to trigger and the next turn is read; only when no turn up to maximumTriggerTurn is eligible does the unit stop as measurement_indeterminate_stop_no_repair_no_rerun_no_replacement",
+      "indeterminateMayNeverSelectRepairRerunOrReplaceAnOutcome": true,
+      "empiricalValidationStatus": "passed_all_predeclared_gates_on_sealed_heldout_v4_corpus",
+      "empiricalValidationCarriedForward": true,
+      "revalidationRequired": false,
+      "revalidationRequiredReason": "the adjudicator's bytes moved once since the sealed corpus was spent, and that move is argued and tested below under instrumentProvenance. No byte moves between v4 and v5. If any byte moves from here, this field becomes true and a fresh sealed corpus is required, because the v4 corpus is spent.",
+      "carriedForwardHeldoutCorpus": {
+        "path": "config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json",
+        "sha256": "5f65dd5dc3e193c9dc0368b4155a550bc9b5acd56de78e62704e35f750f50aa0",
+        "cases": 55,
+        "embeddedInPrompt": false,
+        "modelPredictionsPresent": false,
+        "spentForValidation": true,
+        "whatCarryingItForwardMeans": "v5 replays these 55 cases through the parser with no model call, which shows the instrument still reads them the way it did. That is a check on the code, not a new measurement. No fresh claim about the instrument's accuracy is earned from this corpus, because it is spent.",
+        "ifAFreshClaimIsEverNeeded": "a new sealed corpus has to be written and held out. This one cannot serve twice."
+      },
+
+      "instrumentProvenance": {
+        "whyThisSectionExists": "The bytes that the sealed 55-case corpus measured are not the bytes v5 will run. A reader must be able to see that difference and judge the argument, rather than take a carried-forward validation on trust.",
+        "validatedBytes": "ba4a692fd1310591072a52c600b91cdd796edfdc89f979e7843b41d7fa9ff191",
+        "bytesV5WillRun": "001eba55ebda1e08238b79ea220490fb7c7af3cbda30808964b9a2b4778fbf5e",
+        "sealedRecordOfTheValidatedTree": "config/tutor-stub-boredom-semantic-validation-request.v4.json",
+        "sealedRecordIsNotEdited": "That request still records the validated digests, and it is left exactly as it is. Its own bytes are pinned by the approval record and by the frozen v4 registration, so editing it would rewrite an approval and a closed study. A spent record is meant to say what was true then, not what is true now.",
+        "commitsBetween": [
+          {
+            "commit": "cb6c863e",
+            "date": "2026-08-22",
+            "subject": "Name the rule that stopped a boredom measurement",
+            "file": "services/tutorStubBoredomSemanticAdjudicationV3.js",
+            "whatItChanged": "Every stopped measurement now records which of the four causes stopped it, and what the cross-check saw. No verdict rule was touched.",
+            "noVerdictMoved": "tests/tutorStubBoredomSemanticV4InstrumentReadiness.test.js, test 'the diagnostics change no verdict anywhere in the decision space'. It walks all 128 points of the decision space, which is 16 masks of the four judge fields by 4 cross-check dispositions by confidence above and below the 0.8 minimum, against an independent restatement of the rules as they stood before the change."
+          },
+          {
+            "commit": "9562dd98",
+            "date": "2026-08-22",
+            "subject": "Stop reading a statement of giving up as taking up the work",
+            "file": "services/resistantLearnerObservation.js",
+            "whatItChanged": "The cross-check beside the judge no longer counts reflection on one's own work as proof that the learner took up the material. It did, and that read a plain statement of withholding as its opposite, stopping all four live batch-1 dialogues against a judge that was right each time.",
+            "noVerdictMoved": "This one changed behaviour on purpose, so the argument is different: the sealed validation never ran it. The request records scope.auxiliaryObservationPolicy as null_neutral_semantic_seat_only, and services/tutorStubBoredomSemanticValidation.js passes auxiliaryObservation: null for all 55 cases. A part that was fed nothing cannot have moved a verdict. Held by test 'a null auxiliary stays neutral, which is why the sealed gates never exercised the rule' in the same file, with the correction itself held by 'a plain statement of giving up is not read as taking up the work' and 'real forward moves still count as taking up the work'."
+          }
+        ],
+        "whatThisDoesNotClaim": "It does not claim the judge was re-validated. The 55-case corpus is spent and permanently excluded. It claims that neither byte change can move a verdict the corpus measured, and that each claim is held by a test that runs at zero cost.",
+        "checkBeforeLaunch": "node --test tests/tutorStubBoredomSemanticV4InstrumentReadiness.test.js tests/tutorStubBoredomSemanticValidation.test.js"
+      }
+    },
+
+    "primaryEndpoint": {
+      "id": "profile_specific_resistance_recovery",
+      "existingImplementation": "services/tutorStubResistanceActionRegisterStudy.js#scoreTutorStubResistanceRecovery",
+      "definition": "On the first post-trigger learner turn, the bored learner engages the fixed discriminating question on its merits with content-bearing evidence use.",
+      "definitionUnchangedFromV4": true,
+      "deadlinePostTriggerLearnerTurns": 1,
+      "deadlineUnchangedFromV4": true,
+      "unit": "fresh_independent_dialogue",
+      "estimand": "warm_minus_plain_recovery_probability_blocked_equally_over_six_worlds",
+      "analysis": "two_sided_exact_conditional_blocked_score_test",
+      "conditioning": "condition_on_each_world_success_total_and_that_world_realised_plain_and_warm_counts",
+      "conditioningNote": "v4 needed amendment A1 to move from the predeclared allocation to the realised one after three units were lost. v5 registers the realised-count conditioning from the start, so an uneven block needs no amendment.",
+      "alpha": 0.05,
+      "intentionToTreat": true,
+      "modelJudge": false
+    },
+
+    "keySecondaryEndpoint": {
+      "id": "objective_proof_progress_by_five_turns",
+      "definition": "By the fifth post-trigger learner turn, the deterministic public proof-DAG scorer records at least one new supported public premise, positive best-path coverage delta, negative proof-debt delta, and zero unsupported public claims.",
+      "deadlinePostTriggerLearnerTurns": 5,
+      "deadlineChangedFromV4": true,
+      "deadlineV4Value": 2,
+      "deadlineChangeReason": "v4 read this at two post-trigger turns, which in every world fell before or barely at the first path release. Five turns puts the reading after the second release in all six worlds.",
+      "partialProgressCounts": true,
+      "partialProgressCountsNote": "the endpoint asks for movement, not for a completed proof. Two available path premises is more than enough for it to move.",
+      "analysis": "two_sided_exact_conditional_blocked_score_test_only_after_primary_rejects_under_fixed_sequence",
+      "alpha": 0.05,
+      "familywiseErrorControl": "fixed_sequence_primary_then_key_secondary",
+      "modelJudge": false,
+      "powerClaim": "not_independently_powered",
+      "reachabilityReportingRequired": true,
+      "reachabilityReportingRule": "every report must state, per world and overall, how many units had at least one path premise released and unheld before the dialogue ended. A zero on a unit where none had been released measures the release schedule, not the tutor. The world-selection rule is designed to make this count equal the unit count, and the report must show whether it did."
+    },
+
+    "treatmentFidelity": {
+      "minimumActionVisibility": 0.9,
+      "minimumRegisterVisibility": 0.9,
+      "failedFidelityDisposition": "fail_interpretability_gate_not_rerun"
+    },
+
+    "mandatoryDisclosures": [
+      "attrition count and its split across the two versions of the tutor, stated even when it is zero",
+      "unreadable turns passed over, by turn number and by version of the tutor",
+      "reachable-unit count for the key secondary endpoint, per world and overall",
+      "that the v4 confirmation returned a null on a window in which neither endpoint could move"
+    ],
+
+    "claimSeparation": {
+      "calibrationUse": "sample_size_and_fixed_action_motivation_only",
+      "confirmationUse": "fresh_18_per_arm_primary_and_key_secondary_results_only",
+      "calibrationAndConfirmationMayNotBePooled": true,
+      "v4ConfirmationUse": "design_diagnosis_only_no_outcome_or_confirmation_credit",
+      "proofProgressSuperiorityClaimRequiresBothFixedSequenceTests": true
+    }
+  },
+
+  "power": {
+    "test": "two_sided_exact_conditional_blocked_score_test",
+    "alpha": 0.05,
+    "targetPower": 0.8,
+    "v4AlternativeRefuted": {
+      "v4Assumed": "plain 1 of 6, warm 4 of 6, risk difference 0.5, taken from a 12-dialogue calibration used for sizing only",
+      "v4Observed": "plain 0 of 18, warm 0 of 15",
+      "reading": "the alternative v4 was sized against did not hold. Both rates came in at the floor. Reusing that alternative to size v5 would state a power this design does not have."
+    },
+    "positionForV5": {
+      "statedPlainly": "36 dialogues cannot detect a small register difference. At 18 a side this design reaches about 80 percent power only against a risk difference near 0.5, which v4's own result makes unlikely. v5 is registered as a test of whether either endpoint can move at all once the window permits it, not as a powered test of a small effect.",
+      "whatARejectionWouldMean": "a difference large enough to clear this test would be a large one, and would need a further pre-registered replication before any claim is made.",
+      "whatANullWouldMean": "a second null, on a window long enough for the endpoints to move and with every unit reachable, would be a much stronger null than v4's. It would say that the register of a single discriminating question does not move a bored simulated learner, and it would close the warm-versus-plain question for this action.",
+      "whatThisDesignStillCannotSettle": "whether any tutor behaviour at all recovers a bored learner here. If v5 also returns zero on both sides, the next question is a ceiling check with an unconstrained helpful tutor, not another register contrast."
+    },
+    "minimumPerArm": 18,
+    "scope": "primary_recovery_endpoint_only"
+  },
+
+  "executionReadiness": {
+    "modelRoute": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna",
+      "semanticAdjudicator": "codex.gpt-5.6-sol",
+      "effort": "low"
+    },
+    "maximumReservationsPerPlannedCall": 3,
+    "dialogue": {
+      "preTriggerBasePlannedCalls": 12,
+      "preTriggerBasePlannedCallsNote": "v4 allowed 6 for a 2-turn trigger window, that is 3 per turn. maximumTriggerTurn moves from 2 to 4, so 12.",
+      "preTriggerTutorGuardRecoveryReserveCalls": 4,
+      "postTriggerBasePlannedCalls": 15,
+      "postTriggerBasePlannedCallsNote": "v4 allowed 6 for 2 post-trigger learner turns, that is 3 per turn. postTriggerLearnerTurns moves from 2 to 5, so 15.",
+      "postTriggerTutorGuardRecoveryReserveCalls": 6,
+      "oneCumulativeFullLearnerRepairCalls": 0,
+      "maximumIndependentSemanticAdjudicationCalls": 4,
+      "maximumIndependentSemanticAdjudicationCallsNote": "one per candidate trigger turn, so it rises with maximumTriggerTurn from 2 to 4.",
+      "measurementIndeterminateRepairCalls": 0,
+      "plannedCallsPerDialogue": 41,
+      "maximumReservationsPerDialogue": 123,
+      "dialogues": 36,
+      "maximumReservations": 4428
+    },
+    "batches": {
+      "executionBatches": 9,
+      "dialoguesPerBatch": 4,
+      "plainPerBatch": 2,
+      "warmPerBatch": 2,
+      "maximumReservationsPerBatch": 492,
+      "totalBatches": 9,
+      "noInterimAnalysis": true
+    },
+    "hardStudyAttemptCeiling": 4428,
+    "expectedActualSpend": {
+      "v4Actual": 339,
+      "v4PlannedTotal": 720,
+      "v4CeilingTotal": 2160,
+      "v4ActualOverPlanned": 0.47,
+      "v5PlannedTotal": 1476,
+      "v5Estimate": 700,
+      "basis": "v4 spent 339 attempts against 720 planned calls, a ratio of 0.47. v5 plans 1476, so the same ratio gives about 700. The ceiling of 4428 is a retry safeguard, not a forecast."
+    },
+    "programmeCeiling": {
+      "ledgerBeforeV4": 446,
+      "v4Spend": 339,
+      "ledgerBeforeV5": 785,
+      "v5Maximum": 4428,
+      "requiredCeiling": 5213,
+      "programmeSafeguard": 15000,
+      "previousProgrammeSafeguard": 5000,
+      "safeguardRaisedBy": 10000,
+      "safeguardRaisedOn": "2026-08-22",
+      "safeguardRaisedBecause": "the human owner raised it, so the design keeps its full retry headroom. The retry multiplier stays at 3.",
+      "headroom": 9787,
+      "shortfall": 0,
+      "status": "SETTLED",
+      "statedPlainly": "The safeguard is 15000 attempts. The ledger stands at 785 and this study's ceiling is 4428, which needs 5213. That leaves 9787 spare.",
+      "whyItGrew": "the dialogue is longer. Four candidate trigger turns instead of two and five post-trigger learner turns instead of two roughly double the planned calls per dialogue, and the safeguard multiplies planned calls by 3 for retries.",
+      "ceilingIsNotAForecast": "4428 is what this study may never exceed, not what it is expected to spend. v4 spent 339 against a ceiling of 2160. The same ratio puts v5 near 700.",
+      "mustBeSettledBeforeFreeze": false
+    },
+    "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint",
+    "boundedTechnicalRecovery": "missing_or_failed_units_only_within_unchanged_per_unit_batch_study_and_programme_caps",
+    "validUnitReruns": false,
+    "outcomeSelection": false,
+    "liveExecutorAvailable": true,
+    "combinedAnalyzerAvailable": true,
+    "requestValidatorAvailable": true
+  },
+
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "goRequestPrepared": false,
+    "requiredBeforeAnyModelCall": [
+      {
+        "step": "land the pass-over change in services/tutorStubTurnOrchestration.js with tests, so an unreadable pre-treatment turn makes that turn ineligible instead of ending the dialogue",
+        "status": "done",
+        "evidence": "tests/tutorStubTurnOrchestration.test.js, 12 of 12 pass. The switch is read from this registration, so replaying a v4 plan still stops the way v4 stopped."
+      },
+      {
+        "step": "land the turn-4 trigger maximum and the five post-trigger learner turns in the runner, with tests",
+        "status": "open"
+      },
+      {
+        "step": "add scripts/verify-boredom-v5-world-window.js and show it passing for all six worlds",
+        "status": "done",
+        "evidence": "tests/verifyBoredomV5WorldWindow.test.js, 3 of 3 pass. The same check fails the v4 registration on all six worlds, which is the defect this design exists to fix."
+      },
+      {
+        "step": "teach the analyser to read a v5 registration, including the five-turn secondary deadline, the passed-over-turn counts and the reachability report",
+        "status": "open"
+      },
+      {
+        "step": "settle the programme-ceiling shortfall recorded above",
+        "status": "done",
+        "evidence": "the human owner raised the programme safeguard to 15000 on 2026-08-22. The retry multiplier stays at 3 and the design is unchanged."
+      },
+      {
+        "step": "regenerate the nine batch plans from this registration and check each recomputes byte-identical",
+        "status": "open"
+      },
+      {
+        "step": "freeze this file and record its digest",
+        "status": "open"
+      },
+      {
+        "step": "obtain separate explicit human authorization for the paid run",
+        "status": "open"
+      }
+    ],
+    "note": "this file is a design document at zero calls. Freezing it does not authorize a run and no approval is implied by its existence."
+  }
+}

@@ -1533,3 +1533,139 @@ test('deterministic V1 recovery replaces interrogative uptake instead of strippi
   assert.match(uptake, /Your point about/iu);
   assert.doesNotMatch(uptake, /\?/u);
 });
+
+// The v8 boredom run registered its reference side as delivering no question
+// mark and its treatment side as delivering one. Nothing on the generating path
+// read that rule: the host action family carried it alone, and the family loses
+// to a due public clue. On 7 of the run's 33 reference turns a clue was due, the
+// contract permitted a question there, and the delivered-contrast gate failed at
+// 0.788 against a floor of 0.90. These four tests pin the repair.
+test('a registered question forbid outranks a due public clue', () => {
+  const frame = {
+    learner_move: { evidence_use: 'none' },
+    conversational_completion: { resolved: false },
+    due_evidence_surfaces: ['The third-week ledger entry records two deliveries, not one.'],
+  };
+  const withoutRule = compileTutorStubTurnProgressionContract({
+    learnerText: 'It is all a bit much and I have rather lost the thread of it.',
+    responseCompositionFrame: frame,
+    actionFamily: 'reanchor_public_evidence',
+  });
+  const withRule = compileTutorStubTurnProgressionContract({
+    learnerText: 'It is all a bit much and I have rather lost the thread of it.',
+    responseCompositionFrame: frame,
+    actionFamily: 'reanchor_public_evidence',
+    registeredQuestionRule: 'forbids_question',
+  });
+
+  // The defect, reproduced: a no-question action family still compiles a
+  // permitted and required question when a clue happens to be due.
+  assert.equal(withoutRule.handoff_contract.mode, 'question_on_due_source');
+  assert.equal(withoutRule.handoff_contract.question_allowed, true);
+  assert.equal(withoutRule.handoff_contract.registered_question_rule, null);
+
+  assert.equal(withRule.handoff_contract.mode, 'declarative_current_limit');
+  assert.equal(withRule.handoff_contract.question_allowed, false);
+  assert.equal(withRule.handoff_contract.question_required, false);
+  assert.equal(withRule.handoff_contract.registered_question_rule, 'forbids_question');
+  assert.match(withRule.handoff_contract.instruction, /do not end on a question mark of any kind/iu);
+});
+
+test('a registered question forbid yields to an active public-result obligation', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText: 'Just tell me which entry covers the third week.',
+    responseCompositionFrame: {
+      learner_move: { evidence_use: 'none' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'reanchor_public_evidence',
+    registeredQuestionRule: 'forbids_question',
+    publicObligationDirective: publicObligationDirective(),
+  });
+
+  // The obligation modes owe the learner an answer and permit no terminal
+  // question anyway, so letting them win costs the contrast nothing.
+  assert.equal(contract.handoff_contract.mode, 'answer_or_accountable_deferral');
+  assert.equal(contract.handoff_contract.question_allowed, false);
+  assert.equal(contract.handoff_contract.registered_question_rule, 'forbids_question');
+});
+
+test('both audits fault a delivered turn that breaks a registered question rule', () => {
+  const frame = {
+    learner_move: { evidence_use: 'none' },
+    conversational_completion: { resolved: false },
+    due_evidence_surfaces: ['The third-week ledger entry records two deliveries, not one.'],
+  };
+  const learnerText = 'It is all a bit much and I have rather lost the thread of it.';
+  const reference = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: frame,
+    actionFamily: 'reanchor_public_evidence',
+    registeredQuestionRule: 'forbids_question',
+  });
+  const treatment = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: frame,
+    actionFamily: 'stage_next_step',
+    registeredQuestionRule: 'requires_question',
+  });
+  const asks = composition({ handoff: 'Which entry covers the third week?' });
+  const declares = composition({ handoff: 'The third-week entry is still unsettled.' });
+  const types = (audit) => (audit.issues || []).map((issue) => issue.type);
+  const flat = (comp) =>
+    [comp.slots.uptake, comp.slots.performance.entry, comp.slots.performance.response, comp.slots.handoff].join(' ');
+
+  assert.ok(
+    types(auditTutorStubTurnProgression({ contract: reference, composition: asks })).includes(
+      'registered_question_rule_forbids_question',
+    ),
+  );
+  assert.ok(
+    !types(auditTutorStubTurnProgression({ contract: reference, composition: declares })).includes(
+      'registered_question_rule_forbids_question',
+    ),
+  );
+  assert.ok(
+    types(auditTutorStubTurnProgression({ contract: treatment, composition: declares })).includes(
+      'registered_question_rule_requires_question',
+    ),
+  );
+
+  assert.ok(
+    types(auditTutorStubLiveTurnProgressionV1({ contract: reference, text: flat(asks) })).includes(
+      'registered_question_rule_forbids_question',
+    ),
+  );
+  assert.ok(
+    !types(auditTutorStubLiveTurnProgressionV1({ contract: reference, text: flat(declares) })).includes(
+      'registered_question_rule_forbids_question',
+    ),
+  );
+  assert.ok(
+    types(auditTutorStubLiveTurnProgressionV1({ contract: treatment, text: flat(declares) })).includes(
+      'registered_question_rule_requires_question',
+    ),
+  );
+});
+
+test('an unregistered rule leaves the compiled contract unchanged', () => {
+  const frame = {
+    learner_move: { evidence_use: 'none' },
+    conversational_completion: { resolved: false },
+    due_evidence_surfaces: ['The third-week ledger entry records two deliveries, not one.'],
+  };
+  const scene = {
+    learnerText: 'It is all a bit much and I have rather lost the thread of it.',
+    responseCompositionFrame: frame,
+    actionFamily: 'reanchor_public_evidence',
+  };
+  const before = compileTutorStubTurnProgressionContract(scene);
+  const after = compileTutorStubTurnProgressionContract({ ...scene, registeredQuestionRule: null });
+
+  assert.deepEqual(after, before);
+  assert.throws(
+    () => compileTutorStubTurnProgressionContract({ ...scene, registeredQuestionRule: 'no_question' }),
+    /registeredQuestionRule must be null/u,
+  );
+});

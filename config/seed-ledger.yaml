@@ -86,3 +86,11 @@ claims:
       Registered by relay 117 §11 after 530-541 failed this check. Clean on both
       a seed-context search and report 098's run-seed metadata search, across the
       repo and the private archive.
+
+  - seeds: [500, 700]
+    claimed_by: boredom v7 design sizing, simulation only
+    source: scripts/size-boredom-v7-design.js, scripts/size-boredom-v7-blocked-power.js
+    note: >-
+      Seeds for the power simulations that sized the v7 study, not for any
+      dialogue. They stay claimed for the same reason the test-fixture seeds do:
+      a real run on either would collide with these scripts in a search.

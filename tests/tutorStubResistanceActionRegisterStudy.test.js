@@ -35,6 +35,7 @@ import {
   loadTutorStubResistanceActionRegisterRegistration,
   prepareTutorStubResistanceActionRegisterFrozenBranch,
   scoreTutorStubResistanceRecovery,
+  scoreTutorStubResistanceRecoveryWithinHorizon,
   TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA,
 } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
@@ -1027,6 +1028,179 @@ test('deterministic endpoint implements the two registered recovery horizons', (
   assert.equal(permission.recovered, false);
   assert.equal(frame.recovered, true);
   assert.equal(frame.observed_turn, 1);
+});
+
+test('the windowed endpoint widens the deadline and leaves the per-turn rule alone', () => {
+  const stalls = (text) => ({
+    learnerText: text,
+    classification: { turn: { discourse_move: 'assent', evidence_use: 'none', epistemic_stance: 'compliant' } },
+  });
+  const answers = {
+    learnerText: 'The second ledger line dates after the rule, so the first entry cannot be the source.',
+    classification: { turn: { discourse_move: 'inference', evidence_use: 'links_evidence_to_rule' } },
+  };
+  const asks = {
+    learnerText: 'Is it okay if I compare the two ledger lines first?',
+    classification: { turn: { discourse_move: 'inference', evidence_use: 'cites_public_evidence' } },
+  };
+  const late = [stalls('Okay.'), stalls('Fine.'), stalls('Whatever.'), answers, stalls('Sure.')];
+
+  // The frozen deadlines are the same numbers, reached through the same code, so
+  // the one-turn scorer and the windowed scorer cannot drift apart.
+  for (const profile of ['bored', 'frame_defiant', 'frame_refuser']) {
+    const args = { profile, triggerLearnerText: 'I reject your frame.', postLearnerTurns: late };
+    assert.deepEqual(
+      scoreTutorStubResistanceRecoveryWithinHorizon(args),
+      scoreTutorStubResistanceRecovery(args),
+      `${profile} default horizon must reproduce the frozen scorer`,
+    );
+  }
+
+  const atOne = scoreTutorStubResistanceRecoveryWithinHorizon({
+    profile: 'bored',
+    postLearnerTurns: late,
+    deadlinePostTriggerLearnerTurns: 1,
+  });
+  const atFive = scoreTutorStubResistanceRecoveryWithinHorizon({
+    profile: 'bored',
+    postLearnerTurns: late,
+    deadlinePostTriggerLearnerTurns: 5,
+  });
+  assert.equal(atOne.recovered, false);
+  assert.equal(atOne.deadline_turns, 1);
+  assert.equal(atFive.recovered, true);
+  assert.equal(atFive.observed_turn, 4, 'the earliest qualifying turn is the one recorded');
+  assert.equal(atFive.deadline_turns, 5);
+  assert.equal(atFive.reason, 'content_bearing_answer_without_permission_or_mere_assent');
+
+  // Widening the window must not widen what counts on a turn. Five turns of
+  // asking permission stay five turns of asking permission.
+  const permissionOnly = scoreTutorStubResistanceRecoveryWithinHorizon({
+    profile: 'bored',
+    postLearnerTurns: [asks, asks, asks, asks, asks],
+    deadlinePostTriggerLearnerTurns: 5,
+  });
+  assert.equal(permissionOnly.recovered, false);
+  assert.equal(permissionOnly.observed_turn, null);
+  assert.equal(permissionOnly.reason, 'bored_recovery_absent');
+
+  // Fewer turns than the deadline is not an error, and neither is an early hit.
+  const early = scoreTutorStubResistanceRecoveryWithinHorizon({
+    profile: 'bored',
+    postLearnerTurns: [answers],
+    deadlinePostTriggerLearnerTurns: 5,
+  });
+  assert.equal(early.observed_turn, 1);
+
+  // A caller that names the window must supply it. A registration read that
+  // comes back empty must stop the scorer, not fall back to one turn.
+  for (const bad of [0, -1, 2.5, 'five', null, undefined]) {
+    assert.throws(
+      () =>
+        scoreTutorStubResistanceRecoveryWithinHorizon({
+          profile: 'bored',
+          postLearnerTurns: late,
+          deadlinePostTriggerLearnerTurns: bad,
+        }),
+      /whole number of post-trigger learner turns/u,
+      `horizon ${JSON.stringify(bad)} must fail closed`,
+    );
+  }
+});
+
+test('bored recovery does not count a plain statement of giving up as the answer', () => {
+  // The four turn-1 replies from live batch 1, third attempt, with the exact
+  // discourse labels the analysis model gave them. Withholding is the one stance
+  // a learner can show only by describing it, so with reflection in the scored
+  // set the plain statement of giving up counted as the answer that giving up
+  // withholds. The plain tutor fails more often and so its learners say this more
+  // often, which paid the plain tutor for failing.
+  const withheld = [
+    {
+      job: 'bored-confirm-w1-d1',
+      text: 'I have stopped before choosing a public test; the trial-book has no finding yet.',
+      evidence_use: 'none',
+    },
+    {
+      job: 'bored-confirm-w1-d2',
+      text: 'I stopped at naming Verrell and left the evidence unexamined.',
+      evidence_use: 'none',
+    },
+    {
+      job: 'bored-confirm-w1-d4',
+      text: 'I stopped at the first step and left the evidence unexamined.',
+      evidence_use: 'none',
+    },
+    {
+      job: 'bored-confirm-w1-d5',
+      text: 'I stopped at naming Verrell, before any coin or testimony was examined.',
+      evidence_use: 'repeats_setup',
+    },
+  ];
+
+  for (const row of withheld) {
+    const scored = scoreTutorStubResistanceRecovery({
+      profile: 'bored',
+      postLearnerTurns: [
+        {
+          learnerText: row.text,
+          classification: { turn: { discourse_move: 'metacognitive_reflection', evidence_use: row.evidence_use } },
+        },
+      ],
+    });
+    assert.equal(scored.recovered, false, `${row.job}: giving up is not recovery`);
+    assert.equal(scored.observed_turn, null, `${row.job}: no recovery turn may be recorded`);
+    assert.equal(scored.reason, 'bored_recovery_absent', `${row.job}: the reason must name the absence`);
+  }
+});
+
+test('the narrower bored set keeps real uptake and leaves the frame profiles untouched', () => {
+  // Guards the correction above on both sides. The three moves that carry the
+  // inquiry forward still score, a reflection that cites public evidence still
+  // scores through the unchanged evidence-side list, and the frame learners keep
+  // the wider set they are scored on over a two-turn deadline.
+  const stillRecovers = [
+    { discourse_move: 'hypothesis', evidence_use: 'none' },
+    { discourse_move: 'inference', evidence_use: 'none' },
+    { discourse_move: 'evidence_adoption', evidence_use: 'none' },
+    { discourse_move: 'metacognitive_reflection', evidence_use: 'cites_public_evidence' },
+    { discourse_move: 'metacognitive_reflection', evidence_use: 'links_evidence_to_rule' },
+    { discourse_move: 'metacognitive_reflection', evidence_use: 'revises_from_evidence' },
+  ];
+  for (const turn of stillRecovers) {
+    const scored = scoreTutorStubResistanceRecovery({
+      profile: 'bored',
+      postLearnerTurns: [
+        {
+          learnerText: 'The clipped edge is the deciding mark, so Verrell cannot be the striker.',
+          classification: { turn },
+        },
+      ],
+    });
+    const label = `${turn.discourse_move}/${turn.evidence_use}`;
+    assert.equal(scored.recovered, true, `${label}: real uptake must still score`);
+    assert.equal(scored.observed_turn, 1, `${label}: recovery lands on the first post-trigger turn`);
+  }
+
+  const defiantReflection = scoreTutorStubResistanceRecovery({
+    profile: 'frame_defiant',
+    triggerLearnerText: 'I reject your frame.',
+    postLearnerTurns: [
+      {
+        learnerText: 'Looking back at how I answered, I took the mark as settled too early.',
+        classification: {
+          turn: {
+            discourse_move: 'metacognitive_reflection',
+            evidence_use: 'none',
+            epistemic_stance: 'reflective',
+          },
+        },
+      },
+    ],
+  });
+  assert.equal(defiantReflection.recovered, true);
+  assert.equal(defiantReflection.deadline_turns, 2);
+  assert.equal(defiantReflection.reason, 'engaged_bounded_test_on_merits');
 });
 
 test('full 24-case production endpoint preflight passes with zero calls and writes', () => {

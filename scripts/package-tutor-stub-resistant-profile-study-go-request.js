@@ -268,12 +268,20 @@ function requireHoldBoundary(template) {
       'successor confirmation template must bind the standing authority and keep its ceiling amendment unauthorized',
     );
   }
+  const requirements = template.source?.requirements ?? {};
+  const exactHeadPin = requirements.headMustEqualLaunchCommit === true;
+  const closurePin =
+    requirements.headMustEqualLaunchCommit === false &&
+    requirements.closureMustMatchLaunchCommit === true &&
+    requirements.launchAuthorizationMustBeCommittedAtHead === true;
   if (
-    template.source?.requirements?.headMustEqualLaunchCommit !== true ||
-    template.source?.requirements?.checkoutMustBeClean !== true ||
-    template.source?.requirements?.detachedLaunchWorktree !== true
+    (!exactHeadPin && !closurePin) ||
+    requirements.checkoutMustBeClean !== true ||
+    requirements.detachedLaunchWorktree !== true
   ) {
-    throw new Error('template must retain exact-HEAD, clean-checkout, and detached-launch execution requirements');
+    throw new Error(
+      'template must retain one source pin (exact HEAD, or launch-commit closure with a committed launch authorization) plus clean-checkout and detached-launch execution requirements',
+    );
   }
 }
 
@@ -333,6 +341,7 @@ function assertMaterializedStructure({
   priorCeilingBoundRequest,
   priorBoredomRequest,
   priorBoredomPredecessorRequest,
+  priorCompletedBoredomFiles,
   priorSemanticValidationRequest,
   priorSemanticValidationSuccessorRequest,
   priorSemanticValidationSecondSuccessorRequest,
@@ -460,6 +469,11 @@ function assertMaterializedStructure({
     const prior = request.boredomActionRegisterProofDag?.priorStoppedExecution?.predecessorRequest;
     assertComputedValue(prior?.path, priorBoredomPredecessorRequest.path, 'prior boredom predecessor request path');
     assertComputedValue(prior?.sha256, priorBoredomPredecessorRequest.sha256, 'prior boredom predecessor digest');
+  }
+  for (const [key, proof] of priorCompletedBoredomFiles || []) {
+    const prior = request.boredomActionRegisterProofDag?.priorCompletedExecution?.[key];
+    assertComputedValue(prior?.path, proof.path, `completed boredom predecessor ${key} path`);
+    assertComputedValue(prior?.sha256, proof.sha256, `completed boredom predecessor ${key} digest`);
   }
   if (priorSemanticValidationRequest) {
     const prior = request.semanticAdjudicationValidation?.stoppedV3Validation?.request;
@@ -777,6 +791,25 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  // v5 follows a study that finished rather than one that stopped. The three
+  // files that carry the finished result travel the same road as a stopped
+  // predecessor: materialised from the launch commit and digest-pinned, so the
+  // checker can read them inside the replay tree, where nothing else reaches.
+  const priorCompletedBoredomFiles = ['request', 'registration', 'amendment']
+    .map((key) => {
+      const repoPath = template.boredomActionRegisterProofDag?.priorCompletedExecution?.[key]?.path;
+      if (!repoPath) return null;
+      const proof = materializeRepoFile({
+        launchCommit,
+        repoPath,
+        label: `completed boredom predecessor ${key}`,
+        files,
+      });
+      requireMarker(templateText, goRequestFileSha256Marker(proof.path), proof.sha256, replacements);
+      return [key, proof];
+    })
+    .filter(Boolean);
+
   const supersededBoredomHoldRequestPath =
     template.boredomActionRegisterProofDag?.semanticValidation?.supersededHoldRequest?.path;
   const supersededBoredomHoldRequest = supersededBoredomHoldRequestPath
@@ -901,6 +934,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     priorCeilingBoundRequest,
     priorBoredomRequest,
     priorBoredomPredecessorRequest,
+    priorCompletedBoredomFiles,
     priorSemanticValidationRequest,
     priorSemanticValidationSuccessorRequest,
     priorSemanticValidationSecondSuccessorRequest,
@@ -961,9 +995,24 @@ function assertDestinationAbsent(request, root = ROOT) {
     isSupportedActionRegisterConfirmation(request.actionRegisterConfirmation?.type) ||
     request.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
   ) {
+    // How many batches a study runs is a property of the study, not of this
+    // file. Every request in this family already says it twice, as its dialogue
+    // count and its dialogues-per-batch count, so the check compares the two
+    // copies instead of comparing one of them to a nine written here. Every
+    // request written before v7 divides to nine and is unaffected.
+    const dialogues = Number(request.design?.dialogues);
+    const perBatch = Number(request.budget?.dialoguesPerBatch);
+    if (!Number.isInteger(dialogues) || !Number.isInteger(perBatch) || perBatch < 1 || dialogues % perBatch !== 0) {
+      throw new Error('confirmation request must state a dialogue count that divides evenly into its batch size');
+    }
+    const expectedBatches = dialogues / perBatch;
     const destinations = request.destination?.batches?.map((entry) => entry?.artifactRoot) || [];
-    if (destinations.length !== 9 || new Set(destinations).size !== 9 || destinations.some((value) => !value)) {
-      throw new Error('confirmation request requires nine distinct batch destinations');
+    if (
+      destinations.length !== expectedBatches ||
+      new Set(destinations).size !== expectedBatches ||
+      destinations.some((value) => !value)
+    ) {
+      throw new Error(`confirmation request requires ${expectedBatches} distinct batch destinations`);
     }
     for (const artifactRoot of destinations) {
       const absolute = path.resolve(root, canonicalRepoPath(artifactRoot, 'confirmation batch destination'));

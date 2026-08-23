@@ -8,6 +8,7 @@ import {
   TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV,
   createTutorStubAutomatedLearnerGenerationRuntime,
 } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
+import { tutorStubBoredomUnreadableTurnIsPassedOver } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
 import {
   completeTutorStubResistanceManipulationValidation,
   createTutorStubTurnOrchestration,
@@ -109,6 +110,182 @@ test('prospective-v9 orchestration stops measurement-indeterminate boredom befor
   assert.equal(tutorCalls, 0);
   assert.equal(events.filter((event) => event.type === 'boredom_semantic_adjudication').length, 1);
   assert.equal(events.filter((event) => event.type === 'boredom_semantic_measurement_indeterminate').length, 1);
+  assert.equal(
+    events.filter((event) => event.type === 'boredom_semantic_measurement_indeterminate_passed_over').length,
+    0,
+  );
+});
+
+test('a registration that declares the pass-over disposition reads the next turn instead of stopping', async () => {
+  const events = [];
+  let adjudications = 0;
+  let tutorCalls = 0;
+  const orchestration = createTutorStubTurnOrchestration({
+    adjudicateTutorStubBoredomObservation: async () => {
+      adjudications += 1;
+      return {
+        schema: 'machinespirits.tutor-stub.boredom-semantic-adjudication.v1',
+        measurement_disposition: 'measurement_indeterminate',
+        confidence: 0.62,
+      };
+    },
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    appendTutorStubTurnFailureTraceRecords() {},
+    assertTutorStubTurnAttemptCurrent() {},
+    callTutor: async () => {
+      tutorCalls += 1;
+      return { text: 'So which record settles it — the log or the receipt?', provider: 'test', model: 'test' };
+    },
+    createTutorStubLearnerResponseProvenance: () => ({ source: 'test' }),
+    jsonClone: (value) => (value == null ? value : JSON.parse(JSON.stringify(value))),
+    recordTutorStubTurnTiming: () => null,
+    turnDebugId: (_state, turn) => `t${turn}`,
+  });
+  const state = {
+    trace: null,
+    turns: [],
+    history: [],
+    resistanceActionRegisterStudy: {
+      enabled: true,
+      dynamic_boredom_proof_dag: true,
+      consumed: false,
+      job_id: 'semantic-pass-over-job',
+      maximum_trigger_turn: 4,
+      proof_dag_registration: {
+        design: {
+          observationSemantics: 'prospective_v9',
+          freshPrefixGeneration: {
+            maximumTriggerTurn: 4,
+            unreadableTurnDisposition: 'pass_over_this_turn_and_read_the_next_one',
+          },
+        },
+      },
+    },
+  };
+
+  // The turn carries on past the guard into the rest of the machinery, which
+  // this narrow stub does not supply. Only the guard is under test here, so
+  // catch whatever comes later and assert on the code it is not.
+  let raised = null;
+  try {
+    await orchestration.runOneTurn(
+      'Fine. I could inspect the gauge, but I want to stop this task.',
+      state,
+      { turn: { discourse_move: 'question', evidence_use: 'none' } },
+      { advance: { supportedMoveCount: 0 } },
+      {},
+    );
+  } catch (error) {
+    raised = error;
+  }
+
+  assert.equal(adjudications, 1);
+  assert.notEqual(
+    raised?.code,
+    'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
+    'an unreadable pre-treatment turn must no longer end the dialogue',
+  );
+  assert.equal(tutorCalls, 0, 'the guard is well before the tutor call, so nothing was spent proving this');
+  const passedOver = events.filter((event) => event.type === 'boredom_semantic_measurement_indeterminate_passed_over');
+  assert.equal(passedOver.length, 1);
+  assert.equal(passedOver[0].disposition, 'measurement_indeterminate_turn_ineligible_read_next_turn');
+  assert.equal(passedOver[0].code, 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE_TURN_INELIGIBLE');
+  assert.equal(passedOver[0].maximumTriggerTurn, 4, 'the report needs the window this turn was passed over inside');
+  assert.equal(
+    events.filter((event) => event.type === 'boredom_semantic_measurement_indeterminate').length,
+    0,
+    'the stop-the-dialogue event must not also fire',
+  );
+});
+
+test('the pass-over disposition never reaches an outcome turn, because adjudication stops once consumed', async () => {
+  const events = [];
+  let adjudications = 0;
+  const orchestration = createTutorStubTurnOrchestration({
+    adjudicateTutorStubBoredomObservation: async () => {
+      adjudications += 1;
+      return { measurement_disposition: 'measurement_indeterminate' };
+    },
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    appendTutorStubTurnFailureTraceRecords() {},
+    assertTutorStubTurnAttemptCurrent() {},
+    callTutor: async () => ({ text: 'Which record settles it?', provider: 'test', model: 'test' }),
+    createTutorStubLearnerResponseProvenance: () => ({ source: 'test' }),
+    jsonClone: (value) => (value == null ? value : JSON.parse(JSON.stringify(value))),
+    recordTutorStubTurnTiming: () => null,
+    turnDebugId: (_state, turn) => `t${turn}`,
+  });
+
+  await orchestration
+    .runOneTurn(
+      'I checked the log and the hose was dry, so the leak came later.',
+      {
+        trace: null,
+        turns: [],
+        history: [],
+        resistanceActionRegisterStudy: {
+          enabled: true,
+          dynamic_boredom_proof_dag: true,
+          consumed: true,
+          job_id: 'semantic-consumed-job',
+          maximum_trigger_turn: 4,
+          proof_dag_registration: {
+            design: {
+              observationSemantics: 'prospective_v9',
+              freshPrefixGeneration: {
+                maximumTriggerTurn: 4,
+                unreadableTurnDisposition: 'pass_over_this_turn_and_read_the_next_one',
+              },
+            },
+          },
+        },
+      },
+      { turn: { discourse_move: 'claim', evidence_use: 'cited' } },
+      { advance: { supportedMoveCount: 1 } },
+      {},
+    )
+    .catch(() => null);
+
+  assert.equal(adjudications, 0, 'a consumed study never re-reads a turn, so no outcome turn can be passed over');
+  assert.equal(
+    events.filter((event) => String(event.type || '').startsWith('boredom_semantic_measurement_indeterminate')).length,
+    0,
+  );
+});
+
+test('only a registration that declares the pass-over disposition gets it', () => {
+  const withDisposition = (unreadableTurnDisposition) => ({
+    proof_dag_registration: { design: { freshPrefixGeneration: { unreadableTurnDisposition } } },
+  });
+
+  assert.equal(
+    tutorStubBoredomUnreadableTurnIsPassedOver(withDisposition('pass_over_this_turn_and_read_the_next_one')),
+    true,
+  );
+  assert.equal(
+    tutorStubBoredomUnreadableTurnIsPassedOver({}),
+    false,
+    'a v4 registration carries no such field and keeps the original stop',
+  );
+  assert.equal(tutorStubBoredomUnreadableTurnIsPassedOver(null), false);
+  assert.equal(
+    tutorStubBoredomUnreadableTurnIsPassedOver(withDisposition('stop_the_whole_dialogue')),
+    false,
+    'any other declared value is not the pass-over disposition',
+  );
+  assert.equal(
+    tutorStubBoredomUnreadableTurnIsPassedOver({
+      registration: {
+        design: { freshPrefixGeneration: { unreadableTurnDisposition: 'pass_over_this_turn_and_read_the_next_one' } },
+      },
+    }),
+    false,
+    'the boredom study reads proof_dag_registration, not the resistance registration slot',
+  );
 });
 
 test('a completed turn stamps what the reply did, just before the turn closes', async () => {

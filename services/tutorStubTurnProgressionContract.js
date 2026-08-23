@@ -30,6 +30,12 @@ const NO_QUESTION_ACTIONS = new Set([
   'reanchor_public_evidence',
   'receive_vulnerability',
 ]);
+// A study may register, in its own protected inputs, that one side of its
+// contrast asks a question and the other does not. That is a claim about the
+// delivered turn, so the generating path has to carry it; a host action family
+// is not a substitute, because the family is one input to the handoff decision
+// among several and loses to a due clue.
+const REGISTERED_QUESTION_RULES = new Set(['forbids_question', 'requires_question']);
 const PUBLIC_OBLIGATION_OUTCOMES = new Set(['bounded_public_answer', 'named_unavailability_with_concrete_next_step']);
 const liveSentenceSegmenter = new Intl.Segmenter('en', { granularity: 'sentence' });
 const FOCUS_STOP_WORDS = new Set([
@@ -710,6 +716,7 @@ function chooseHandoffMode({
   integrationTarget = null,
   unsupportedCausalClaim = false,
   publicObligation = null,
+  registeredQuestionRule = null,
 } = {}) {
   if (discoursePlane?.plane === 'instructional_meta') return 'instructional_meta_repair';
   if (dialogueClosureFrame?.mandatory === true) return 'closure';
@@ -718,6 +725,22 @@ function chooseHandoffMode({
   // delivered exactly; it cannot stand in for the requested result.
   if (publicObligation?.complete === true) return 'answer_or_accountable_deferral';
   if (questionSupport?.responsiveRepairRequired === true) return 'direct_answer';
+  // A study that registers "this side of the contrast asks no question" is
+  // stating the one difference its two sides are read on. Until now nothing on
+  // the generating path read that rule: the host action family carried it, and
+  // the due-source branch below outranks the family. The v8 boredom run proved
+  // the gap. Its reference side took `reanchor_public_evidence`, which is in
+  // NO_QUESTION_ACTIONS, and 7 of its 33 trigger turns still compiled
+  // `question_on_due_source`, because a clue happened to be due in those turns.
+  // Five of the seven then asked a question with the contract's permission, and
+  // the delivered-contrast gate failed at 0.788 against a floor of 0.90.
+  //
+  // The rule sits here rather than at the top because the four branches above
+  // are not stylistic. Closure, a live public-result debt, an instructional
+  // repair and a responsive repair each owe the learner something, and none of
+  // them permits a terminal question anyway, so no contrast is lost by letting
+  // them win. Every branch below this line does permit one.
+  if (registeredQuestionRule === 'forbids_question') return 'declarative_current_limit';
   if (integrationTarget?.active === true) return 'missing_relation_recovery';
   // A learner may name the right concealed answer before the public record
   // supports it. Requiring the tutor's final sentence to repeat that exact
@@ -757,6 +780,18 @@ function handoffInstruction(contract) {
   if (handoff.mode === 'answer_or_accountable_deferral') {
     return 'The active public request owns this turn. Give its bounded public result, or name that exact result as unavailable and one concrete public condition for answering it. End declaratively; do not substitute SOURCE or ask a question.';
   }
+  // Below this line every remaining mode may permit a terminal question, so a
+  // registered forbid speaks here. It is read off the delivered turn by
+  // counting question marks, so the instruction names the mark and not only the
+  // speech act. Two of v8's seven misses were the tutor restaging the world's
+  // own public question inside quotation marks. That is in family for a
+  // reanchoring turn and the tutor asked nothing, but a reader counts a
+  // question mark all the same, and a gate a reader cannot defend from the turn
+  // alone is worth less than the behaviour it was meant to hold.
+  if (handoff.registered_question_rule === 'forbids_question') {
+    const settledSurface = handoff.prohibited_settled_surfaces.length ? ' Do not reopen the settled point.' : '';
+    return `End declaratively. Ask no question, and do not end on a question mark of any kind: not a quoted public question, not a restated one, not a rhetorical one. Name the standing public question only as a statement of what is still unsettled.${settledSurface}`;
+  }
   const target = focus.due_surfaces.length ? 'the due SOURCE' : 'TURN FOCUS';
   const settled = handoff.prohibited_settled_surfaces.length ? ' Do not reopen the settled point.' : '';
   const bridge = focus.sibling_relation_requires_explicit_bridge
@@ -780,7 +815,13 @@ export function compileTutorStubTurnProgressionContract({
   actionFamily = null,
   tactic = null,
   publicObligationDirective = null,
+  registeredQuestionRule = null,
 } = {}) {
+  if (registeredQuestionRule !== null && !REGISTERED_QUESTION_RULES.has(registeredQuestionRule)) {
+    throw new Error(
+      `registeredQuestionRule must be null, forbids_question or requires_question, not ${JSON.stringify(registeredQuestionRule)}`,
+    );
+  }
   const discoursePlane = responseCompositionFrame?.discourse_plane || null;
   const completion = responseCompositionFrame?.conversational_completion || null;
   const focus = focusSurface({ learnerText, responseCompositionFrame, discoursePlane });
@@ -823,6 +864,7 @@ export function compileTutorStubTurnProgressionContract({
     integrationTarget,
     unsupportedCausalClaim,
     publicObligation,
+    registeredQuestionRule,
   });
   const questionAllowed = [
     'new_unresolved_check',
@@ -926,10 +968,16 @@ export function compileTutorStubTurnProgressionContract({
     },
     handoff_contract: {
       mode: handoffMode,
+      registered_question_rule: registeredQuestionRule,
       question_allowed: questionAllowed,
+      // A registered `requires_question` never manufactures a question in a
+      // turn that owes the learner an answer, a closure or a repair: those
+      // modes leave `questionAllowed` false and this stays false with them. It
+      // only stops a permitted question from being treated as optional.
       question_required:
         questionAllowed &&
-        (handoffMode === 'assertion_gap_prompt' ||
+        (registeredQuestionRule === 'requires_question' ||
+          handoffMode === 'assertion_gap_prompt' ||
           handoffMode === 'missing_relation_recovery' ||
           tactic === 'shared_scene_invitation' ||
           due.length > 0),
@@ -1365,6 +1413,24 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
     questionCount: questionSlots.length,
   });
   const handoff = contract.handoff_contract;
+  // Mirrors the pair in the live audit below. The draft audit is what drives a
+  // redraft, so a registered contrast that only the live audit can see would be
+  // caught one stage too late to be repaired.
+  if (handoff.registered_question_rule === 'forbids_question' && questionSlots.length) {
+    issues.push({
+      type: 'registered_question_rule_forbids_question',
+      owner: questionSlots.map(([id]) => id),
+      reason: 'the study registered this side of its contrast as delivering no question mark',
+      question_count: questionSlots.length,
+    });
+  }
+  if (handoff.registered_question_rule === 'requires_question' && !questionSlots.length) {
+    issues.push({
+      type: 'registered_question_rule_requires_question',
+      owner: 'handoff',
+      reason: 'the study registered this side of its contrast as delivering one question mark',
+    });
+  }
   if (!handoff.question_allowed && questionSlots.length) {
     issues.push({
       type: 'question_forbidden_by_handoff_contract',
@@ -1552,6 +1618,27 @@ export function auditTutorStubLiveTurnProgressionV1({
   }
 
   const handoff = contract.handoff_contract;
+  // A registered rule gets its own issue type rather than sharing the general
+  // one below. The general progression family is advisory under the shadow
+  // boundary policy, which is what let v8 deliver two turns that its own audit
+  // had already marked as breaking the contract. A study's registered contrast
+  // is not a style preference, so it needs a type of its own that can be held
+  // hard without promoting the whole family back to blocking.
+  if (handoff.registered_question_rule === 'forbids_question' && questionCount > 0) {
+    issues.push({
+      type: 'registered_question_rule_forbids_question',
+      owner: 'whole_response',
+      reason: 'the study registered this side of its contrast as delivering no question mark',
+      question_count: questionCount,
+    });
+  }
+  if (handoff.registered_question_rule === 'requires_question' && questionCount === 0) {
+    issues.push({
+      type: 'registered_question_rule_requires_question',
+      owner: 'terminal_sentence',
+      reason: 'the study registered this side of its contrast as delivering one question mark',
+    });
+  }
   if (!handoff.question_allowed && questionCount > 0) {
     issues.push({
       type: 'question_forbidden_by_handoff_contract',
@@ -1687,6 +1774,7 @@ export function auditTutorStubLiveTurnProgressionV1({
     handoff: {
       owner: wholeResponseOwnsFocus ? 'whole_response' : 'terminal_sentence',
       mode: handoff.mode,
+      registered_question_rule: handoff.registered_question_rule ?? null,
       question_owner: handoff.question_owner,
       target_coverage: target,
     },

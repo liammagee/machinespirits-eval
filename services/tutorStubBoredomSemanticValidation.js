@@ -317,12 +317,19 @@ export async function executeTutorStubBoredomSemanticValidation({
   callModel,
   now = () => new Date().toISOString(),
   onCaseSealed = null,
+  // Checking the recorded source digests against the files on disk is a
+  // launch-time check: it answers "is the tree in front of me the tree that
+  // was measured?". It stays on by default, so the launch script gets it
+  // without asking. Tests that only exercise instrument behaviour turn it
+  // off, because otherwise any later commit to a listed file turns unrelated
+  // tests red for a reason that has nothing to do with the instrument.
+  verifySourceClosure = true,
 } = {}) {
   assert(
     typeof callModel === 'function',
     'boredom semantic validation requires an explicitly injected model caller; the service never dials the bridge by default',
   );
-  const validation = validateTutorStubBoredomSemanticValidationRequest(request, { root });
+  const validation = validateTutorStubBoredomSemanticValidationRequest(request, { root, verifySourceClosure });
   const resolved = { provider: validation.provider, model: validation.model };
   let totalCalls = 0;
   let pendingContractViolations = [];

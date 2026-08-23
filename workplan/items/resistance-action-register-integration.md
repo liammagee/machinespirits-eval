@@ -1,7 +1,7 @@
 ---
 id: resistance-action-register-integration
 title: Integrate resistance diagnosis, pedagogical action, and tonal register across tutor harnesses
-status: done
+status: active
 type: research
 priority: P1
 owner: codex
@@ -9,11 +9,125 @@ source: manual
 created: 2026-08-18
 updated: 2026-08-23
 verification: >-
-  The sealed 200-dialogue confirmation completed every unit on its initial
-  attempt with no technical recovery and exactly one final analysis. Recovery
-  was 0/99 in both arms, but non-warm action fidelity was 0.88 against the
-  predeclared 0.90 gate, so the causal claim is explicitly withheld and the
-  immutable result is closed as descriptive, scope-bound evidence.
+  The sealed 200-dialogue warm/non-warm confirmation completed every unit on
+  its initial attempt with no technical recovery and exactly one final
+  analysis. Recovery was 0/99 in both arms, but non-warm action fidelity was
+  0.88 against the predeclared 0.90 gate, so the causal claim is explicitly
+  withheld and the immutable result is closed as descriptive, scope-bound
+  evidence.
+
+  Five boredom action-before-register proof-DAG studies are collected and
+  analysed alongside it. v4, v5 and v7 are registered nulls. v6 and v8 failed
+  their registered interpretability gates, so they license no claim at all.
+  Nothing in this line licenses a claim that any tutor move helps a bored
+  learner.
+
+  v4 (36 planned, 33 scored): plain 0/18, warm 0/15, risk difference 0, exact
+  conditional p = 1, decision warm_plain_recovery_not_confirmed. Three units
+  stopped as measurement_indeterminate and all three fell on warm, so attrition
+  is unbalanced and every report of this result must say so. Only 11 of the 33
+  zeros on the objective endpoint were reachable at all; in the other 22 no
+  premise on the best path had been released before the dialogue ended.
+
+  v5 (36 planned, 35 scored) widened the window that made v4 unreadable: the
+  trigger may show by turn 4 and the objective endpoint is read over 5
+  post-trigger turns instead of 2. That worked — 35 of 35 scored units became
+  reachable, against 11 of 33. The manner result moved the right way and did
+  not reach the gate: plain 1/18, warm 4/17, exact conditional p = 0.18,
+  decision warm_plain_recovery_not_confirmed. One unit stopped as
+  measurement_indeterminate and again fell on warm. The v4 null is therefore
+  window-bound and must not be cited as evidence about the manner.
+
+  v6 changes what is contrasted, not what is measured. It keeps the v5 window
+  and contrasts two tutor moves under one host action family — ask a
+  discriminating question against simplify to one workable step — with 18
+  dialogues per move and the plain and warm manner balanced nine and nine
+  inside each move as a block that is reported and never tested. The v5 one-turn
+  reading is carried forward as a descriptive comparability endpoint, and
+  learner turns that only say back what the tutor just made public are counted
+  per move. At 18 per move the design has power 0.11 to 0.75 across treatment
+  rates of 0.3 to 0.6 against a measured reference rate of 0.1429, so a null at
+  this size would mean very little and may not be reported as evidence that the
+  move does not work.
+
+  v6 ran and the run itself was clean: 36 of 36 dialogues scored, zero stopped
+  units, balanced across both moves and all six worlds. Two of the three
+  registered floors passed at 1.00 — the host action was readable in every unit
+  and the assigned move came out in every unit — but manner visibility reached
+  0.889 against a 0.90 floor, one unit short in thirty-six. That is a hard
+  status flip, so the report carries
+  `failed_interpretability_gate_not_rerun` and licenses no confirmation claim.
+  The primary numbers exist and are recorded but may not be reported as a
+  finding: recovery within 5 post-trigger turns, ask 8/18 against simplify
+  14/18, risk difference +0.333, exact conditional p = 0.0858. The floor that
+  failed is on the manner, which v6 does not test; relaxing a registered floor
+  after seeing the data is refused, and any redesign of it belongs in a later
+  registration.
+
+  v7 kept the v5 window and the v6 move contrast and raised the size to 84
+  dialogues, 42 a move. It ran to 80 scored units and returned a registered
+  null: ask 21/41 against simplify 16/39, risk difference -0.102, one-sided
+  exact conditional p = 0.874, decision not confirmed. Auditing its own paid
+  transcripts then showed why that null says nothing about the moves: both
+  arms carried the host action family `stage_next_step`, so both were allowed
+  to end on a question and both did, in 0.976 of trigger turns. v7 delivered
+  one behaviour twice, and its move-fidelity gate read 1.00 because it compared
+  the assigned move with its own copy. Cite v7 as a delivery failure, not as
+  evidence about either move.
+
+  v8 changes the question. It contrasts making a boredom-directed move against
+  making none: `ask_question` asks the discriminating question under
+  `stage_next_step`, and `carry_on` stages the next already-public piece of
+  evidence under `reanchor_public_evidence`, which forbids a closing question.
+  The two arms take different families on purpose, so v8 can say that making a
+  move mattered and cannot say the question did the work. 72 dialogues, 36 a
+  move, plain and warm balanced 18 and 18 inside each move as a block that is
+  never tested, two-sided.
+
+  v8 ran and failed its registered interpretability gate, so it licenses no
+  claim at all. 72 planned, 66 transcribed, 65 scored; 7 stopped and none was
+  replaced, split carry_on 3 and ask_question 4, so attrition is unbalanced and
+  must be reported beside any number. Two registered floors failed, both on the
+  reference arm. Host action family visible in the delivered turn: 0.692 against
+  0.90, split ask_question 32 of 32 at 1.00 and carry_on 13 of 33 at 0.394.
+  Delivered contrast, counted from question marks in the tutor's own trigger
+  turn: pooled 0.877 against 0.90, split ask_question 0.969 and carry_on 0.788,
+  so about one reference dialogue in five ended on a question the reference
+  instruction forbids. The manner floors passed at 0.969 against
+  0.80. One cause explains both: the reference instruction was read by no code
+  on the generating path, and the host action family loses to a due public clue,
+  so the handoff asked about the due source instead of staging the assigned
+  evidence. Repaired on commit 5e3177bb, which carries the registered rule down
+  the generating path; the question-mark half is verified by test, the
+  action-visibility half is not established without a paid run.
+  The primary numbers are recorded but may not be reported as a finding:
+  carry_on 19/33 against ask_question 15/32, risk difference -0.107, two-sided
+  exact conditional p = 0.461, decision not confirmed. Objective proof progress
+  is near-empty on both sides, 1/33 against 0/32. Leakage is clean: none of the
+  34 scoring turns only said back what the tutor had just made public. Two
+  readings bind any successor: the gate failure points the same way as the
+  measured difference, so the true gap is wider than -0.107 rather than
+  narrower; and the realised reference rate of 0.576 sits far above the top of
+  the registered power scan, which reached 0.8 power only below about one in
+  six, so this size could not have detected the effect it was sized for.
+
+  No warm/plain efficacy claim is licensed by v4 or v5, and none is refuted
+  beyond each design's claim boundary. No move claim is licensed by v6, v7 or
+  v8. No further paid call in this line is authorized. The five studies are
+  closed as a registered null series in paper §6.27, with the closeout reading
+  in notes/2026-08-23-boredom-action-register-proof-dag-closeout.md.
+  The earlier frozen independent semantic-measurement programme remains closed
+  without a scientific result under its standing success-or-systemic-failure
+  boundary.
+  Manipulation validations V1 and V2 failed their registered gates; all three
+  V3 attempts stopped before gold join or analysis. The final V3 successor
+  repeated the same two Claude route failures after the exact pre-response
+  retry repair, but each failed attempt carried stdout and therefore could not
+  be recalled without risking duplicate semantic responses. Every partial root
+  is durably preserved and wholly excluded. No manipulation-validity,
+  warm/plain, null, efficacy, learning, transfer, human, cell, or learner-
+  profile claim is licensed. No further model call is authorized within this
+  programme; any restart requires a fresh human method and route decision.
 claim_status: scope-bound
 links:
   items:
@@ -25,6 +139,8 @@ links:
     - edged-register-outcome-study
     - edged-register-stub-dag-replication
   notes:
+    - notes/2026-08-23-boredom-action-register-proof-dag-closeout.md
+    - notes/2026-08-23-boredom-action-register-v7-reading.md
     - notes/2026-08-23-resistance-action-register-warm-nonwarm-confirmation-closeout.md
     - notes/2026-08-16-harness-reconciliation-survey.md
     - docs/harness-claim-transfer-rule.md
@@ -141,6 +257,17 @@ links:
     - config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json
     - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.json
     - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.endpoint-go.json
+    - services/tutorStubBoredomActionRegisterProofDagPreflight.js
+    - scripts/run-tutor-stub-boredom-action-register-proof-dag.js
+    - scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js
+    - config/tutor-stub-boredom-action-register-proof-dag-registration.v5.json
+    - config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v5.json
+    - config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v5.json
+    - config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v5.endpoint-go.json
+    - config/tutor-stub-boredom-action-register-proof-dag-registration.v6.json
+    - config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v6.json
+    - config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v6.json
+    - config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v6.endpoint-go.json
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v5.json
     - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v5.json
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v6.json
@@ -3700,3 +3827,448 @@ and explicit human approval.
   closes with a descriptive no-recovery observation and no confirmatory causal
   null claim. The sealed study is not rerun or resumed. Closeout:
   `notes/2026-08-23-resistance-action-register-warm-nonwarm-confirmation-closeout.md`.
+
+- 2026-08-21 — The approved v4 package was found to be UNLAUNCHABLE, at
+  zero cost, before any model call. Three of its own rules formed a loop
+  with no solution: the frozen request pins launch commit
+  `0542c290` and every live, recovery and analyze command must carry
+  `--expected-source-commit 0542c290`; the runner demanded
+  `HEAD === 0542c290` on a clean checkout; and the gate demanded the
+  launch-authorization file be committed in HEAD's tree. A file cannot be
+  added to a commit that already exists, and a freeze records the commit
+  it was built from, so the authorization can only ever land in a commit
+  *after* the pinned one. Re-freezing at a commit that already holds the
+  authorization is equally impossible, because the authorization must
+  carry the digest of the request that pins that commit. The user chose
+  the closure-identity repair: the source pin is now the 54 frozen
+  closure files, which must match both their frozen digests on disk and
+  their bytes at the pinned commit, so HEAD may be a later commit that
+  adds only the authorization. The flag name `--expected-source-commit`
+  is unchanged, so every command literal in the package still reads the
+  same and all checker assertions still hold. `checkoutMustBeClean` and
+  `detachedLaunchWorktree` are unchanged; `headMustEqualLaunchCommit`
+  becomes false and is replaced by `closureMustMatchLaunchCommit` and
+  `launchAuthorizationMustBeCommittedAtHead`, and the packager refuses
+  any template that relaxes the HEAD pin without asserting both. Tests
+  build a throwaway two-commit repository and prove the pinned commit
+  need not be HEAD, with fail-closed cases for a changed byte on disk,
+  bytes that match the frozen digest but not the pinned commit, an
+  absent file, and a file absent at the pinned commit. Because the
+  package changes, its digest changes: the approval quoted above is
+  spent and cannot launch anything. The fifth freeze is at launch commit
+  `a20d016a8b7469806f09d822d35e7d038c5c8a01`, request SHA-256
+  `d2e611c3fad203bd2beafb5e9c4d8b1a0a8f3ab2a86ac06e0a0e74a975caabda`,
+  same 54-file closure, same destinations, same budget, checker replay
+  valid with zero model calls and zero production writes, status
+  HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL. A fresh approval statement over
+  the new digest is required, and no model call has been made.
+
+- 2026-08-21 — **Live batch 1 launched and stopped at 4 of 36 dialogues; the
+  run is halted on an instrument defect, not on a result.** The fresh
+  approval over request SHA-256
+  `d2e611c3fad203bd2beafb5e9c4d8b1a0a8f3ab2a86ac06e0a0e74a975caabda` was
+  verified byte for byte, the launch authorization was committed at
+  `7353d57d86e25588e2347569fcd8cdd954ebc6bf`, the launch gate passed, and
+  both zero-cost preflights passed (54 of 54 closure files verified at the
+  pinned commit `a20d016a`, zero model calls, zero production writes).
+  Batch 1 ran 4 dialogues at parallelism 4 and returned
+  `status: incomplete`, 0 completed, 4 failed, 21 model calls spent
+  (programme ledger 446 to 467).
+  One dialogue (`w1-d1`) failed as designed:
+  `TUTOR_STUB_BOREDOM_PROOF_DAG_TRIGGER_MISSING` — the learner gave a
+  non-actionable boredom cue at turn 1 and no boredom at turn 2, so the
+  registered effort-withholding trigger never fired. Both of its
+  adjudications were clean, and the auxiliary was neutral.
+  The other three (`w1-d2`, `w1-d4`, `w1-d5`) all failed at turn 1 with
+  `TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE`, and this is a defect.
+  In each, the Sol adjudicator was fully healthy: `parse_ok` true,
+  confidence 0.99 against a 0.8 floor, `low_confidence` false, no issues,
+  evidence audit passed, route confirmed as `codex.gpt-5.6-sol`, and the
+  declared and semantic verdicts agreed on `no_boredom`. The auxiliary
+  also agreed — it reported `negative_productive_uptake_precedes_cue`,
+  which maps to polarity `productive_uptake`, and the judge likewise set
+  `productive_uptake: true`. The measurement was voided anyway, because
+  the contradiction predicate in
+  `services/tutorStubBoredomSemanticAdjudicationV3.js` compares the
+  auxiliary polarity against the verdict string:
+  `auxiliary !== 'neutral' && auxiliary !== semanticVerdict`. Those two
+  come from different vocabularies. By `expectedVerdictV3`, a true
+  `productive_uptake` field yields the verdict `productive_uptake` only
+  when a boredom cue is present too, and yields `no_boredom` when it is
+  not. So polarity `productive_uptake` is consistent with both verdicts,
+  but the predicate calls the second pairing a contradiction and forces
+  `measurement_indeterminate`. Agreement is being read as disagreement.
+  **The five predeclared gates could not have caught this.** The sealed
+  55-case held-out v4 corpus carries only `id`, `text`, `verdict`,
+  `fields` and `evidence` — it has no auxiliary column — and the gate
+  harness calls the adjudicator with `auxiliaryObservation: null`
+  (`services/tutorStubBoredomSemanticValidation.js:364`). A null
+  auxiliary maps to polarity `neutral`, which short-circuits the
+  predicate, so `auxiliaryContradiction` was false in all 55 cases. The
+  predicate ran for the first time in paid live execution.
+  Under the standing rules these three dialogues are spent and closed:
+  indeterminate outputs cannot trigger repair, rerun, replacement or
+  outcome selection, and failed runs are never rescored or resampled. The
+  defective file is inside the frozen 54-file closure, so correcting it
+  voids the current approval and needs a sixth freeze and a fresh
+  approval statement over the new digest. Batches 2 through 9 were not
+  started. No interim analysis was done and none is licensed. Artifacts
+  are preserved at
+  `machinespirits-eval-private/artifacts/boredom-proof-dag-v4-live/2026-08-21-execution_batch_1`
+  (copied, not committed).
+- 2026-08-22 — **The boredom action-before-register confirmation is
+  collected, analysed and closed. It is a clean registered null.** Nine
+  batches ran on Luna against the frozen v4 registration
+  (`1db9fe34461f29f63d26fa456152b34c8d9e5fab957a49c8612ba462f97eddb3`),
+  amendment A1
+  (`4d3c24c1ef86e7e07313dd4e084b6cfbbb57652fe534801d5eb9f331b4d000d3`)
+  and source-commit pin `1e0a6a0e25dffe0df204123922f1c3c489a521c2`.
+  Adjudicator `codex.gpt-5.6-sol` throughout; the learner never judged
+  itself; word matching stayed auxiliary and could only veto.
+  **Primary endpoint** `profile_specific_resistance_recovery`: plain
+  0/18, warm 0/15, risk difference 0, exact conditional p = 1,
+  `significant_two_sided: false`, decision
+  `warm_plain_recovery_not_confirmed`. **Secondary**
+  `objective_proof_progress_by_two_turns`: 0 and 0,
+  `fixed_sequence_gate_open: false`, decision
+  `not_tested_inferentially_primary_gate_closed`. **Fidelity gate
+  `complete`** — action visibility 1.0 and register visibility 1.0
+  against a 0.9 minimum, 0 protected conditions, 0 safety overrides,
+  18 of 18 plain turns delivered the plain register and 15 of 15 warm
+  turns the warm register, all on the same action `stage_next_step`.
+  `interpretation_status`:
+  `registered_confirmation_interpretable_within_claim_boundary_and_unbalanced_attrition_caveat`.
+  **Mandatory disclosure, per A1**: 3 of 36 units stopped as
+  `measurement_indeterminate` and all three fell on warm —
+  `bored-confirm-w2-d1` (world 026), `bored-confirm-w4-d6` (030),
+  `bored-confirm-w6-d4` (033). Plain lost none. Worlds 026, 030 and 033
+  each hold three plain against two warm. No report of this result may
+  omit that.
+- 2026-08-22 — **Why the null is a null and not a broken instrument.**
+  Seven candidate defects were each checked against the collected data
+  and each came back clean: the reader misreading the adjudicator's
+  label (fixed earlier; exactly 2 protected pass-overs, both expected);
+  the recovery scorer receiving empty learner text (no — `postOne.learner`
+  and `postTwo.learnerText` are each read under their own correct field
+  name); word matching acting as the scoring authority (no —
+  `contentBearing` in `services/tutorStubResistanceActionRegisterStudy.js:227`
+  reads the classifier's `discourse_move`/`evidence_use`); the scorer
+  being unable to fire at all (no — `tests/tutorStubResistanceActionRegisterStudy.test.js:955`
+  and `:1031` assert `recovered === true`); the two tutor versions being
+  identical (no — see the fidelity counts above); the analysis being
+  non-deterministic (no — two runs, identical digest); the endpoint
+  reading the wrong coverage number (no — the two agree in all 33 units).
+  The zero is behavioural. All 33 post-trigger learner replies are the
+  same two-part sentence, e.g. *"I have gone dull on this. I stopped
+  before checking either record."* Classifier tally: `affective_signal`
+  17, `metacognitive_reflection` 16; `evidence_use` `none` 25,
+  `repeats_setup` 8. None qualifies under `BORED_INQUIRY_ADVANCING_MOVES`,
+  and that list excludes reflection on one's own work for a recorded
+  reason — with reflection in the list, a plain statement of giving up
+  scored as recovery and paid the plain tutor for failing.
+- 2026-08-22 — **One real defect was found and fixed, in the reader, not
+  in the run.** An outcome turn carries two assessments with nearly the
+  same address: `tutorLearnerDag.model.assessment` holds counts only, and
+  the sibling `tutorLearnerDag.assessment` holds the path detail,
+  including the per-dialogue premise release schedule. The analyser read
+  the counts object, so the new reachability diagnostic returned empty
+  columns on live traces while its own test passed — **because the test
+  fixture put everything under `model` and so agreed with the defect.**
+  Fixed in `909890ba`: the analyser reads the sibling first, falls back,
+  and throws `lacks the premise release schedule its objective endpoint
+  is read against` when `missingPremises` is absent; the fixture was
+  split into `dagModel` + `dagPathAssessment` so it mirrors a real trace.
+  **What the diagnostic then showed: only 11 of the 33 zeros on the
+  objective endpoint are about the tutor.** The other 22 sat in
+  dialogues where no premise on the best path had been released before
+  the dialogue ended, so the endpoint could not have moved whatever the
+  tutor did. Per world — units / reachable / final turns / earliest
+  release turns: 005 marrick 6/0/3,4/4,5,6 · 026 skyway bakery
+  5/2/3,4/3,4,5 · 029 riverside clinic 6/4/3,4/3,4 · 030 rowan flat
+  5/1/3/3,4 · 031 tideway makerspace 6/4/3/3,4 · 033 alder row redoubt
+  5/0/3,4/9,12,15. Two of six blocks contribute nothing. **Read the
+  objective null only over the units counted as reachable.** Every
+  registered quantity is byte-identical before and after the diagnostic,
+  verified by stripping the added fields and comparing; the earlier
+  report is kept beside the corrected one as
+  `combined-confirmation-report.pre-reachability.json`.
+- 2026-08-22 — Artifacts committed to the private archive as `70867ea3`
+  (274 files): the nine sealed batches with traces and transcripts under
+  `artifacts/tutor-stub-live/.tutor-stub-auto-eval/boredom-proof-dag-v4-restart4/`,
+  the corrected `combined-confirmation-report.json`
+  (`8e307fcfb57297b73d8c2e5a6cc638f4ac4b66b851dc0b7178d70942affe5d4f`),
+  the pre-reachability report, the `2026-08-21-execution_batch_1` record
+  above, and the spent v1, v2, v4-batch-1 and restart-1/2/3 corpora. The
+  spent corpora stay permanently excluded from analysis. A stale
+  mid-run duplicate at `tutor-stub-traces/boredom-proof-dag-v4-restart4`
+  was removed after `diff -rq` proved every shared file byte-identical
+  and the artifacts copy a strict superset. The archive commit is not
+  yet pushed.
+- 2026-08-22 — **v5 collected and analysed: the v4 null was
+  window-bound.** v5 kept the v4 contrast and moved only the window: the
+  trigger may show by turn 4, and both the recovery and proof-progress
+  endpoints read 5 post-trigger learner turns instead of 2. The
+  diagnostic prediction held. Under v4, 11 of 33 scored units were
+  reachable on the objective endpoint; under v5, 35 of 35 were. The
+  manner result moved the right way and did not reach the gate: plain
+  1/18, warm 4/17, exact conditional p = 0.18, decision
+  `warm_plain_recovery_not_confirmed`. One unit stopped as
+  `measurement_indeterminate` and fell on warm, so attrition is again
+  unbalanced on the warm side and every report must say so. Combined
+  report `bef7b8a1`, source commit `631b040b`, artifacts archived as
+  `2ed626ac`. The spent v5 corpus is permanently excluded from every
+  later outcome. **Do not cite the v4 null as evidence about the
+  manner** — it was taken through a window that could not see the
+  outcome.
+- 2026-08-22 — **v6 registered, packaged, and held.** v5 answered a
+  measurement question and left the design one: warm and plain differ
+  only in how the tutor speaks, and the tutor move was held fixed at one
+  discriminating question throughout. A bored learner answers a
+  discriminating question by reporting that they have stopped, because
+  the question asks them to do the very thing they just said they
+  stopped doing. v6 therefore contrasts the **move**: ask a
+  discriminating question against simplify to one workable step, both
+  under the one host action family `stage_next_step`, 18 dialogues per
+  move, with plain and warm balanced nine and nine inside each move and
+  three and three inside each world. The manner becomes a reported block
+  and carries no test, so a move result cannot be a manner result under
+  another name. Three readings are added and none is a hypothesis test:
+  the v5 one-turn primary is retained as a descriptive comparability
+  endpoint; learner turns that only say back what the tutor just made
+  public are counted per move; and a unit whose delivered move is not
+  its assigned move is nonadherent under intention to treat, kept in its
+  assigned group, never rerolled. Registration `1f65c4c6`, contract
+  `dcd01425`, certificate `endpoint_runtime_go`, HOLD request
+  `18fb5c99` packaged at launch commit `f31d8bc7` — 84 checks, no model
+  calls, no production writes. Budget 4,428 attempts against a 15,000
+  programme safeguard, ledger 1,912 before, 6,340 required, 8,660
+  headroom. **Power is the standing caveat: 0.11 to 0.75 across
+  treatment rates of 0.3 to 0.6 against a measured reference rate of
+  0.1429, so a v6 null may not be reported as evidence that the move
+  does not work.** Awaiting explicit human approval; no paid call is
+  authorized.
+- 2026-08-22 — Four instances of one defect found while writing the v6
+  tests: a constant written by hand where a registered value belongs,
+  with nothing comparing the two. Three sat in the trace fixture — the
+  pedagogical move, the contrast level, and the post-trigger turn the
+  recovery lands on — and all three were right by accident while the
+  move was fixed and the window was one turn. The fourth sat in the GO
+  checker, which built a registration key by joining the level name to a
+  suffix without changing case and so asked for `ask_questionPerBatch`,
+  a name no registration carries; it compared one absent value with
+  another and failed only because the same line also required an
+  integer. All four are fixed and pinned by tests.
+- 2026-08-22 — **v6 approved, run, and closed on a failed interpretability
+  gate.** The approval was given for one 36-dialogue run at the registered
+  design, with the power caveat acknowledged in the approval text itself.
+  Authorization file
+  `config/tutor-stub-boredom-action-register-proof-dag-launch-authorization.v6.json`
+  under the existing v2 schema, which binds the study design and not the
+  source bytes, at design fingerprint `d945aced`. **The first launch failed
+  completely.** All nine batches were started together, which put 36 codex
+  CLI sessions on one machine. Every dialogue failed on
+  `TUTOR_STUB_BOREDOM_PROOF_DAG_CODEX_TRANSPORT_RETRY_EXHAUSTED`, no
+  transcript was written, and 382 attempt reservations were spent for zero
+  units. Failures fell across all four seats and both models, and a single
+  codex call straight afterwards returned normally, so the cause was load,
+  not provider health. Nothing from that attempt may enter any v6 outcome;
+  it is preserved with a written note. The re-run went one batch at a time
+  at parallelism 4 and all nine batches completed 4 of 4, 36 of 36
+  dialogues, zero stopped units, balanced across both moves and all six
+  worlds. **The registered interpretability gate then failed on manner
+  visibility, 32 of 36 = 0.889 against the 0.90 floor**, so the report
+  carries `failed_interpretability_gate_not_rerun` and
+  `interpretability_gate_failed_no_rerun_or_confirmation_claim`. The other
+  two floors passed at 1.00: the host action was readable in every unit and
+  the assigned move came out in every unit. Content leakage was 0 of 8 and
+  0 of 14 scoring turns. Three of the four missing units delivered their
+  assigned manner but not readably; one, `bored-confirm-w5-d1`, was assigned
+  warm and delivered plain. **No confirmation claim is licensed.** The
+  recorded and non-interpretable numbers are: recovery within 5 post-trigger
+  turns, ask a discriminating question 8/18 against simplify to one workable
+  step 14/18, risk difference +0.333, two-sided exact conditional blocked
+  score test p = 0.0858, decision
+  `shrink_step_ask_question_recovery_not_confirmed`; manner block, ask/plain
+  5/9, ask/warm 3/9, simplify/plain 6/9, simplify/warm 8/9; objective proof
+  progress not tested inferentially, ask 1/18, simplify 2/18; v5 one-turn
+  comparability, ask 3/18, simplify 2/18. Note what failed: the floor is on
+  the **manner**, which v6 explicitly does not test. Relaxing a registered
+  floor after seeing the data is the exact defect class this arc keeps
+  finding, so the floor stands and any redesign of it belongs in a later
+  registration, not a repair of v6. Combined report
+  `.tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v6-live-2026-08-22-combined.json`,
+  source commit `f31d8bc7`, artifacts archived at `a55cf1b7` under
+  `artifacts/boredom-proof-dag-v6-live`. The spent v6 corpus is permanently
+  excluded from every later outcome.
+- 2026-08-23 — The v7 confirmation ran and analysed. 84 dialogues planned, 80
+  scored, 21 batches, all sealed. Every treatment-fidelity gate passed, which is
+  what v6 could not do: the assigned move came out on `1.00`, the assigned
+  manner on `1.00` against a `0.90` floor, the manner was readable on `0.975`
+  against a `0.80` floor, and the host action was visible on `1.00`. Zero safety
+  overrides and zero move nonadherence. Splitting v6's single manner floor into
+  a delivery floor and a readability floor is what made the run readable.
+  **The primary endpoint is a null.** Asking a discriminating question recovered
+  `21/41` bored learners, shrinking the step recovered `16/39`; risk difference
+  `-0.102`, one-sided exact conditional blocked score test `p = 0.874` against
+  alpha `0.05`. Registered decision
+  `shrink_step_ask_question_recovery_not_confirmed`. The design is one-sided, so
+  the backwards direction may not be reported as a finding, and the registration
+  states the study is underpowered against a difference half the size v6
+  measured, so the null is not a verdict on the move. Four units were lost and
+  none replaced: one learner never showed a readable boredom trigger by turn 4,
+  and three repeated another dialogue's opening word for word. Attrition was
+  unbalanced, `1` on the question side against `3` on the shrink side, and the
+  report carries that caveat. No amendment was needed, because v7 registers
+  conditioning on realised counts.
+- 2026-08-23 — The arc's recurring defect turned up a fourth time, in a new
+  form: the registration asked for 84 distinct public openings, set
+  `requireDistinctPublicPrefixHashes`, and named the disposition for a repeat,
+  but nothing computed the duplicate half of that rule. The first thing to
+  notice a repeat was the combined analysis, after all 83 dialogues had been
+  paid for, and it refused the whole study. A live check was never cheap either,
+  because an opening exists only once its dialogue has reached the trigger turn
+  and batches run in separate processes. The rule is now applied in analysis on
+  the terms it would have had live: within a group sharing an opening, the one
+  that ran first is the original, ordered by batch number then unit name, and
+  the rule reads nothing about how any dialogue ended. That is a change to
+  analysis code made after the data was seen, and the frozen v7 request still
+  pins the pre-change bytes, so it shows as closure drift rather than
+  disappearing. The drift is left in place on purpose. Run archived to
+  `artifacts/boredom-proof-dag-v7-live/` in the private repo, 69MB packed from
+  518MB raw.
+- 2026-08-23 — Auditing v7's own paid transcripts found that its two arms were
+  never delivered as two moves. Both asked a question in `0.976` of trigger
+  turns, including the arm whose instruction forbade offering a choice: it
+  produced turns like "Shall we examine the jukebox itself or clarify a term
+  first?" The cause is that `chooseHandoffMode` reads the host action family,
+  not the move instruction, and v7 deliberately gave both arms the same family,
+  `stage_next_step`, which is not in `NO_QUESTION_ACTIONS`. So both tutors were
+  told a final question was allowed and both took it. This is the arc's
+  recurring defect a fifth time — a rule written in a registration that no code
+  reads — and it does not disturb the v7 null: an unmeasured delivery gate
+  cannot manufacture a difference, and blurred arms move the two rates together,
+  which is the direction v7 saw. It removes the claim that v7 compared two
+  moves. v7's move-delivery gate reported `1.00` against a floor of `0.90` and
+  read nothing at all, because it looked for a field no code in this repository
+  writes and fell back to comparing the assigned move with itself.
+- 2026-08-23 — v8 registered, prospective, zero calls made. It asks a different
+  question from v6 and v7: not which boredom move works better, but whether
+  making a boredom-directed move at all beats making none. The move arm asks the
+  discriminating question; the reference arm carries on with the proof and says
+  nothing about the learner, staging the next already-public piece of evidence
+  and naming what it does not yet settle. The reference arm is a written
+  instruction, not a gap, because a tutor given no instruction would improvise a
+  response to the boredom and the arm would collapse into a second treatment.
+  v7's rule that both arms share a host action family is reversed on purpose:
+  the reference arm takes `reanchor_public_evidence`, which is in
+  `NO_QUESTION_ACTIONS` and therefore compiles to a declarative handoff. The
+  choice is forced rather than picked — of the seven listed families, six exist
+  to answer, receive, repair, reconnect, request a say-back or close, and all
+  six respond to the learner. The cost is that the two arms now differ in the
+  family, the first-draft contract line, the handoff mode and the part
+  weighting as well as in the instruction, so v8 cannot say the question did the
+  work, only that the move did. That bundle is the manipulation on purpose.
+  72 dialogues, 36 per arm, 12 a world across the same six worlds, plain and
+  warm balanced 18 and 18 inside each arm, 18 batches of 4 holding one of each
+  arm-and-manner pair. Seeds `2026112201-2026112272`. The test is two-sided
+  again: v7 registered one direction, measured `-0.102` pointing the other way,
+  and could say nothing about it, and here the reference rate has never been
+  measured by anything, so there is no ground to name a direction. Power at 72
+  is `0.973` if carrying on recovers one in ten, `0.730` at one in five and
+  `0.374` at three in ten, so the target `0.8` is not reached across the
+  plausible middle and the registration says so rather than quoting its
+  friendliest row. The safeguard, not the effect, set the size: the ledger
+  stands at `4684`, the never-exceed figure is `123` a dialogue, and `84` — the
+  size v7 ran — would need `15016` against a `15000` safeguard. The
+  per-dialogue ceiling was not relaxed to fit a bigger run.
+- 2026-08-23 — Three checks added so that v8's registered rules are enforced by
+  running code rather than by prose. The preflight now compiles the real
+  turn-progression contract for each arm from the family the study code returns
+  and refuses a registration whose two arms come out with the same question
+  permission, which is the check v7 lacked. The analyzer's floor that decides
+  the run is now the delivered contrast — question marks counted in the tutor's
+  own delivered turn, the move arm required to ask one and the reference arm
+  none, checked pooled and again on each arm — and the two echoed gates that
+  compare the study with its own copy of itself are pinned at `1`, where they
+  state that no safety override happened, and are labelled as echoes that may
+  never be reported as readings. And the seed-disjointness rule that every
+  version since v5 has written down, and that no code has ever read, is now
+  checked against the registrations it names, tied to the `vNSpend` ledger keys
+  so a version cannot charge a prior run against the safeguard without also
+  being checked against that run's seeds. Four validator branches that assumed
+  v7 was the newest version were generalised rather than given another arm.
+- 2026-08-23 — The v8 endpoint contract, its certificate and the frozen v8 GO
+  request are committed, and the request holds at
+  `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL` with `modelCallsAuthorized: false` and
+  `liveRunAuthorized: false`. All 85 validator checks pass; the packager's
+  isolated replay makes zero model calls and zero production writes. Request
+  SHA-256 `74f01ce44b0caab3a2ee4b01874d6b1374de3fddbc12fb32872a0be653d81e02`
+  at launch commit `dfb8e4da`. Every number in the contract is derived from the
+  v8 registration rather than typed, so a size change in one file cannot
+  disagree with the other — the fault that cost v4 its endpoints. Five further
+  reading checks were added to the request validator: a completed-v7 execution
+  record that carries the arm-blurring audit as data rather than as a note; a
+  delivered-contrast endpoint check that requires the two new fidelity fields
+  to be listed on the contract; a v8 power arm that forbids a measured
+  reference rate under any of the three names prior versions used for it and
+  requires v8 to state the rate as unmeasured; a design binding that compares
+  the per-arm host action family map, because comparing the old scalar read
+  `undefined` against `undefined` on a v8 registration and passed without
+  looking at anything; and a measurement binding for the contrast floor and its
+  per-move rules. Two per-release arm lists in the validator were removed
+  rather than extended, since both only ever tested the revision number the
+  record already carries. Test coverage: 49 assertions across the two boredom
+  files, including a new end-to-end case that fails the gate on a blurred pair
+  of arms both pooled and per arm.
+- 2026-08-23 — The human pasted the exact approval statement for request
+  `74f01ce4`, and the launch authorization was committed as `abf2d6d5` before
+  any spend. It binds the study design fingerprint
+  `aa96789865820b64bb97769b1453fcc3b66dace00edb94e64241df07ad7b09d6` and not
+  source bytes, so a defect fix cannot void it. Every figure in it is derived
+  from the frozen registration by a build script, and its `approvalStatement`
+  is copied from the validator's generated text; the paste matched that text
+  word for word, differing only in the glyph used for one apostrophe.
+- 2026-08-23 — v8 ran to completion at launch commit `dfb8e4da`, one batch of
+  four at a time at parallelism 4 across 18 batches. All 18 batches sealed:
+  batches 1-9 and 15-18 clean, batches 10-14 sealed
+  `sealed_with_registered_stops`. 72 dialogues planned, 66 produced a
+  transcript, 65 scored. Seven stopped and none was repaired, rerun or
+  replaced: six as `measurement_indeterminate` where the learner never went
+  flat by turn 4, and one, `bored-confirm-w1-d6`, as a duplicate public prefix
+  repeating the opening of `bored-confirm-w1-d1`. The stops split `carry_on` 3
+  and `ask_question` 4, so attrition is unbalanced and every report of this
+  result must say so. Four of the six indeterminate stops fell in
+  `world_029_riverside_clinic`. The run's artifacts are archived at
+  `machinespirits-eval-private` commits `a8d232bc` and `fd01036b`.
+- 2026-08-23 — v8 fails its registered interpretability gate and licenses no
+  claim. The deciding floor is the delivered contrast, counted from question
+  marks in the tutor's own delivered trigger turn: pooled `0.877` against a
+  `0.90` minimum. The two sides are not alike. `ask_question` delivered
+  `31/32 = 0.969`; `carry_on` delivered only `26/33 = 0.788`, so about one
+  reference dialogue in five ended on a question the reference instruction
+  forbids. The manner floors passed — readability `0.969` against `0.80`, with
+  two unreadable units, both warm, both in `world_029_riverside_clinic` — and
+  the two echoed gates read `1` as they must, stating only that no safety
+  override replaced what was assigned. The report therefore carries
+  `failed_interpretability_gate_not_rerun`, and no rerun, rescore or resample
+  is authorized. The primary numbers exist and are recorded but may not be
+  reported as a finding: recovery within 5 post-trigger learner turns,
+  `carry_on` 19/33 against `ask_question` 15/32, risk difference `-0.107`,
+  two-sided exact conditional `p = 0.461`, decision
+  `ask_question_carry_on_recovery_not_confirmed`. The fixed-sequence objective
+  proof-progress secondary is near-empty on both sides, `1/33` against `0/32`,
+  `p = 1`. The descriptive v5 one-turn comparability reading is `carry_on` 2/33
+  and `ask_question` 4/32, tested by nothing. The leakage disclosure is clean:
+  across all 34 scoring turns, zero brought back only content the tutor had
+  just made public, so no recovery on either side was a say-back. Two readings
+  bound any successor. The gate failure is one-sided and points the same way as
+  the measured difference, so a reference dialogue that slipped in a question
+  looks like the treatment and pulls the two rates together; the true gap,
+  whatever its sign, is wider than `-0.107` rather than narrower. And the
+  measured reference rate of `0.576` sits far above the top of the registered
+  power scan, which reached `0.8` power only if carrying on recovered fewer
+  than about one bored learner in six, so at the realised rate this size could
+  not have detected the effect it was sized for. Relaxing a registered floor
+  after seeing the data is refused. A successor must fix the reference side's
+  question leak in the harness before it is sized, and belongs in a fresh
+  registration. No further paid call in this line is authorized.

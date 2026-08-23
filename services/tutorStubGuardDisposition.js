@@ -33,7 +33,11 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // adaptive-warrant tactic visibility is advisory because the harness owns the
 // fixed safety prose. Repetition is explicitly excluded from the older broad
 // conversational accommodation and remains blocking on the last resort.
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 10;
+// 11 (2026-08-23): two registered-contrast findings are hard in both columns.
+// They fire only when a study passes its own delivered-contrast rule in, so no
+// earlier trace can carry either row and version-10 readings stay comparable.
+// The broad live-progression family is unchanged and still advisory in shadow.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 11;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -91,6 +95,20 @@ const RULES = Object.freeze([
     type: 'public_obligation_replaced_by_question',
     category: 'public_obligation_integrity',
     rationale: 'A new tutor question cannot discharge or replace an active learner-directed public-result obligation.',
+  }),
+  rule({
+    guard: 'live_turn_progression_v1',
+    type: 'registered_question_rule_forbids_question',
+    category: 'registered_contrast_integrity',
+    rationale:
+      'A study that registers one side of its contrast as asking no question is naming the difference it is read on. ' +
+      'The broad progression family is advisory under shadow, which let the v8 boredom run ship two turns its own audit had already faulted.',
+  }),
+  rule({
+    guard: 'live_turn_progression_v1',
+    type: 'registered_question_rule_requires_question',
+    category: 'registered_contrast_integrity',
+    rationale: 'The other side of the same registered contrast must deliver the question the study says it delivers.',
   }),
   rule({
     guard: 'live_turn_progression_v1',

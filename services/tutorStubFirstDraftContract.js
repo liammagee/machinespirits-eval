@@ -675,6 +675,12 @@ export function buildTutorStubFirstDraftContract({
   const discoursePlane = responseCompositionFrame?.discourse_plane || configuration.discourse_plane || null;
   const stance = configuration.engagement_stance || 'precise';
   const actionFamily = configuration.action_family || 'clarify_distinction';
+  // A study that registers "this side of my contrast asks no question" states
+  // the one difference its two sides are read on. The action family alone does
+  // not carry that, because the family is one input to the handoff decision and
+  // loses to a due public clue. Read the registered rule off the intervention
+  // and hand it to the progression contract, which owns question permission.
+  const registeredQuestionRule = configuration.resistance_action_register_intervention?.delivered_contrast_rule || null;
   const learnerIntegrationTarget = configuration.learner_integration_target?.active
     ? configuration.learner_integration_target
     : null;
@@ -771,6 +777,7 @@ export function buildTutorStubFirstDraftContract({
     actionFamily,
     tactic,
     publicObligationDirective: effectivePublicObligationDirective,
+    registeredQuestionRule,
   });
   if (progression.public_obligation_contract?.complete && releaseCues.length) {
     compiledCompatibilityDecisions.push('public_obligation_precedes_due_source_handoff');
