@@ -2226,3 +2226,50 @@ test('every registered version builds a live runtime, not just a plan', () => {
     }
   }
 });
+
+test('a v8 intervention carries its registered delivered-contrast rule, and a v7 one carries none', () => {
+  // The rule reached only the preflight and the analyzer before this. Putting
+  // it on the intervention is what lets the draft contract hold it while the
+  // turn is still being written, instead of reading the miss afterwards.
+  const applyOnce = (registrationPath) => {
+    const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, registrationPath) });
+    const job = loaded.plan.jobs[0];
+    const state = {
+      trace: null,
+      turns: [],
+      history: [],
+      register: { palette: ['plain', 'warm'], history: [] },
+      world: {},
+    };
+    configureTutorStubBoredomProofDagExecution({
+      state,
+      loaded,
+      jobId: job.id,
+      appendTraceEvent() {},
+    });
+    const applied = applyTutorStubResistanceActionRegisterStudyIntervention({
+      selection: { response_configuration: {}, selected_register: 'plain' },
+      state,
+      learnerText: 'Whatever. I will not work through this proof.',
+      classification: boredClassification(),
+      tutorLearnerDag: { model: { turn: 2 } },
+      semanticAdjudication: { measurement_disposition: 'actionable_boredom' },
+    });
+    assert.equal(applied.source, 'resistance_action_register_study_intervention');
+    return { job, intervention: applied.resistance_action_register_intervention, applied };
+  };
+
+  const eight = applyOnce(REGISTRATION_V8);
+  const expected =
+    eight.job.pedagogical_move === 'ask_discriminating_question' ? 'requires_question' : 'forbids_question';
+  assert.equal(eight.intervention.delivered_contrast_rule, expected);
+  assert.equal(
+    eight.applied.response_configuration.resistance_action_register_intervention.delivered_contrast_rule,
+    expected,
+  );
+
+  // v7 registers no delivered-contrast rule, so its intervention keeps the
+  // shape every closed study was run under. The key is absent, not null.
+  const seven = applyOnce(REGISTRATION_V7);
+  assert.ok(!('delivered_contrast_rule' in seven.intervention));
+});

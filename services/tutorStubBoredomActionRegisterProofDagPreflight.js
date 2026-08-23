@@ -644,32 +644,53 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
           errors.push(`registered host action family for ${level} does not match the family the study code returns`);
         }
       }
+      const rules = registration?.measurement?.treatmentFidelity?.deliveredContrastByMove || {};
       // The delivered contrast the analyzer reads is one question mark or none.
       // This is where that becomes reachable rather than hoped for.
-      const permission = {};
+      //
+      // It is compiled twice, on the same scene with and without a due public
+      // clue. v8 proved why one scene is not enough. Its preflight tested only
+      // the bare scene, where the reference family does forbid a question, and
+      // certified the contrast; in the run a clue was due on 7 of its 33
+      // reference turns, the due-source branch outranked the family there, and
+      // the delivered-contrast gate failed at 0.788 against a floor of 0.90.
+      // Passing the registered rule is what now holds the forbid in both cases.
+      const permission = { bare: {}, due: {} };
       for (const [level, move] of [
         [treatment.reference, referenceMove],
         [treatment.treatment, treatmentMove],
       ]) {
         if (!move || !families[level]) continue;
-        const contract = compileTutorStubTurnProgressionContract({
+        const scene = {
           learnerText: 'I suppose so. It is all a bit much and I have rather lost the thread of it.',
           publicQuestion: 'Which entry in the delivery ledger covers the third week?',
-          responseCompositionFrame: {
-            discourse_plane: { plane: 'inquiry' },
-            learner_move: { evidence_use: 'none' },
-            learner_dag: { bottleneck: null, final_secret_entailed: false, asserted_secret: false },
-          },
           actionFamily: families[level],
-        });
-        permission[level] = contract?.handoff_contract?.question_allowed === true;
+          registeredQuestionRule: rules[move] || null,
+        };
+        const frame = {
+          discourse_plane: { plane: 'inquiry' },
+          learner_move: { evidence_use: 'none' },
+          learner_dag: { bottleneck: null, final_secret_entailed: false, asserted_secret: false },
+        };
+        permission.bare[level] =
+          compileTutorStubTurnProgressionContract({ ...scene, responseCompositionFrame: frame })?.handoff_contract
+            ?.question_allowed === true;
+        permission.due[level] =
+          compileTutorStubTurnProgressionContract({
+            ...scene,
+            responseCompositionFrame: {
+              ...frame,
+              due_evidence_surfaces: ['The third-week ledger entry records two deliveries, not one.'],
+            },
+          })?.handoff_contract?.question_allowed === true;
       }
-      if (permission[treatment.treatment] !== true || permission[treatment.reference] !== false) {
-        errors.push(
-          'the two arms compile to the same question permission, so the registered contrast cannot be delivered',
-        );
+      for (const [scene, reading] of Object.entries(permission)) {
+        if (reading[treatment.treatment] !== true || reading[treatment.reference] !== false) {
+          errors.push(
+            `the two arms compile to the same question permission with ${scene === 'due' ? 'a due public clue' : 'no due public clue'}, so the registered contrast cannot be delivered`,
+          );
+        }
       }
-      const rules = registration?.measurement?.treatmentFidelity?.deliveredContrastByMove || {};
       if (
         rules[treatmentMove] !== 'requires_question' ||
         rules[referenceMove] !== 'forbids_question' ||

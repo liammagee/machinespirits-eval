@@ -1406,6 +1406,22 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
   const register = assignedRegister(runtime.registration, moveType, runtime.realization);
   const palette = new Set(state?.register?.palette || []);
   if (!palette.has(register)) throw new Error(`study-assigned register ${register} is outside the active palette`);
+  // A registration may state that one side of its contrast delivers a question
+  // and the other does not. Until now that rule was read only by the preflight
+  // and the analyser, so the generating path never saw it and the host action
+  // family had to carry it alone. The family loses to a due public clue, which
+  // is how the v8 run delivered questions on the side that forbade them and
+  // failed its own delivery gate. Carry the rule on the intervention so the
+  // draft contract can hold it. Registrations without the rule get `null` and
+  // an unchanged intervention shape.
+  // The runtime registration adapter strips `measurement` on purpose, so the
+  // rule is read off the study's own full copy where one is held. Only this one
+  // string is taken, and it describes the form of the tutor's own turn, which
+  // the runtime already carries in `pedagogical_move`. No outcome measure moves.
+  const deliveredContrastRule =
+    (runtime.proof_dag_registration || runtime.registration)?.measurement?.treatmentFidelity?.deliveredContrastByMove?.[
+      moveType
+    ] ?? null;
 
   const turn = decisionTurn(state, tutorLearnerDag);
   const intervention = {
@@ -1434,6 +1450,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
       register,
       application_order: [...runtime.registration.design.intervention.applicationOrder],
     },
+    ...(deliveredContrastRule ? { delivered_contrast_rule: deliveredContrastRule } : {}),
     action_instruction: MOVE_INSTRUCTIONS[moveType],
     compact_action_instruction: COMPACT_MOVE_INSTRUCTIONS[moveType],
     realization_contrast_instruction: REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],

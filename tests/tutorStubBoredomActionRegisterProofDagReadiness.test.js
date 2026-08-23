@@ -1105,3 +1105,49 @@ test('v8 records that the safeguard, not the effect, set the sample size', () =>
   assert.match(v8.power.positionForV8.whatANullWouldMean, /not license/u);
   assert.match(v8.power.positionForV8.whatAReversalWouldMean, /reportable/u);
 });
+
+test('the delivered-contrast preflight now compiles both arms with a due public clue', () => {
+  const v8 = loadV8();
+  // v8's own preflight proved its contrast on one made-up scene with no due
+  // clue. On that scene the reference family does forbid a question, so the
+  // contrast certified. In the run a clue was due on 7 of 33 reference turns,
+  // the due-source branch outranked the family there, and the delivered-contrast
+  // gate failed at 0.788 against a floor of 0.90. The registration is unchanged;
+  // what changed is that the check now runs the harder scene too.
+  assert.equal(validateTutorStubBoredomProofDagRegistration(v8).ok, true);
+
+  const frame = {
+    discourse_plane: { plane: 'inquiry' },
+    learner_move: { evidence_use: 'none' },
+    learner_dag: { bottleneck: null, final_secret_entailed: false, asserted_secret: false },
+    due_evidence_surfaces: ['The third-week ledger entry records two deliveries, not one.'],
+  };
+  const scene = {
+    learnerText: 'I suppose so. It is all a bit much and I have rather lost the thread of it.',
+    publicQuestion: 'Which entry in the delivery ledger covers the third week?',
+    responseCompositionFrame: frame,
+  };
+  const families = v8.design.treatment.hostActionFamilyByLevel;
+  const rules = v8.measurement.treatmentFidelity.deliveredContrastByMove;
+  const moves = v8.design.treatment.pedagogicalMoves;
+
+  const permission = (level) =>
+    compileTutorStubTurnProgressionContract({
+      ...scene,
+      actionFamily: families[level],
+      registeredQuestionRule: rules[moves[level]],
+    }).handoff_contract.question_allowed;
+
+  assert.equal(permission(v8.design.treatment.treatment), true);
+  assert.equal(permission(v8.design.treatment.reference), false);
+
+  // Drop the rule and the reference arm asks a question on the same scene.
+  // That is the failure the preflight has to be able to see.
+  assert.equal(
+    compileTutorStubTurnProgressionContract({
+      ...scene,
+      actionFamily: families[v8.design.treatment.reference],
+    }).handoff_contract.question_allowed,
+    true,
+  );
+});
