@@ -70,3 +70,19 @@ This GO does not authorize Gate 2 or either powered run.
 Operator signature: Liam Magee
 
 Date: 2026-08-23
+
+## Repair-without-re-signature amendment
+
+Repair source commit F:
+
+`527e24a8e982c3c7d81db346653e794189ebc585`
+
+Fresh create-once repair destination:
+
+`/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-live/resistant-learner-calibration-gate1-two-reader-r2-2026-08-23`
+
+fresh cap stays 4,806
+
+cumulative worst case 4,938 (48 prior + 84 spent + 4,806)
+
+Operator authorization: the operator authorized repair-without-re-signature on 2026-08-23.
