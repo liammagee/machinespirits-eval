@@ -1,0 +1,57 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-development-evidence.v4",
+  "version": 4,
+  "role": "development_only_not_validation",
+  "frozen": true,
+  "source": {
+    "study": "tutor-stub-resistance-semantic-adjudication-heldout-validation-v3-successor-3",
+    "executionSourceCommit": "16caa37c236cb76c6ac524679e83ef279cefc788",
+    "executionSourceTree": "cd40ddc207fadc020c396abcc3938f72bc7a8869",
+    "reportSha256": "90954951239d7c3b3d368c63718855aab4e9f42ee0aa2cc7965ccbfc9fdabb44",
+    "cases": 80,
+    "judgeReservations": 166,
+    "returnedResponses": 158,
+    "responseFreeFailures": 8
+  },
+  "primaryLabelEvidence": {
+    "semantic_judge_a": {
+      "validOutputs": 80,
+      "exactLabels": 80,
+      "exactLabelAccuracy": 1.0
+    },
+    "semantic_judge_b": {
+      "recordedOutputs": 78,
+      "exactLabelsUnderRegisteredScoring": 74,
+      "exactLabelAccuracy": 0.925
+    },
+    "rawInterjudgeLabelAgreement": 0.925,
+    "cohenKappa": 0.88394584139265
+  },
+  "v3AggregateFailure": {
+    "measurementIndeterminateCases": 21,
+    "determinedCoverage": 0.7375,
+    "invalidJudgments": 6,
+    "dominantValidComponentDisagreements": {
+      "interlocutor_standing_or_right": 7,
+      "participation_withholding": 5
+    },
+    "diagnosis": "full_vector_unanimity_collapsed_component_disagreement_into_whole_case_indeterminacy_even_when_primary_labels_agreed"
+  },
+  "v4DesignInference": {
+    "seatPromptSchemaAndSpanWrapperChanged": false,
+    "primaryLabelAndDiagnosticComponentsSeparated": true,
+    "primaryLabelRule": "two_of_three_valid_high_confidence_judge_labels",
+    "componentRule": "two_of_three_valid_high_confidence_field_values_independently",
+    "componentDisagreementMayVetoPrimaryLabel": false,
+    "invalidLowConfidenceMissingOrResponseFreeDisposition": "judge_abstention",
+    "noMajorityDisposition": "measurement_indeterminate",
+    "regexOrKeywordAuthority": "none"
+  },
+  "claimBoundary": {
+    "v3EvidenceMayValidateV4": false,
+    "v3EvidenceMayEstimateV4Accuracy": false,
+    "v3CorpusMayBeReusedRescoredOrPooled": false,
+    "freshUnseenV4HeldoutRequired": true,
+    "warmPlainConfirmationClaimSupported": false
+  }
+}

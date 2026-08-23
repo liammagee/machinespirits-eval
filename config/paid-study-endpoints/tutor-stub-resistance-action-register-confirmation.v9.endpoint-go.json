@@ -1,0 +1,10 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-go.v1",
+  "status": "endpoint_runtime_go",
+  "study_id": "tutor-stub-resistance-action-register-frame-refuser-warm-plain-confirmation-v9",
+  "contract_path": "config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v9.json",
+  "contract_sha256": "a0c42e5bf2eb5c91a00f6004920f59eb3e4577d9f37d8a2fa6935a5d3e0cc3fc",
+  "preflight_sha256": "11a79c9271a98aafe024bb464b637609a12fd030fa97609d471d98be5852a557",
+  "authorization_scope": "Endpoint-runtime compatibility only; this certificate authorizes no model call, batch, analysis, programme-ceiling change, reuse or pooling of the 12 calibration dialogues, any incomplete confirmation block, or any measurement-validation case.",
+  "launch_gate": "A clean post-merge source and fresh digest-bound GO request must bind all 36 wholly fresh independent dialogues in nine balanced create-once batches, the passed V4 trigger and V8 recovery/fidelity validation evidence, three independent non-generator judges per panel, separate outcome-blind fidelity calls, the sole two-sided Fisher analysis after all batches seal, measurement-indeterminate as no-Fisher/no-rerun, complete exclusion of all calibration, incomplete-confirmation, and validation cases, and the 3754-to-at-most-8182/10000 operational ledger. Regex, keywords, the Luna learner classifier, generator analysis, and typed audits have no semantic endpoint or fidelity authority. Attempt accounting is an execution safeguard only, not a scientific endpoint or design objective."
+}

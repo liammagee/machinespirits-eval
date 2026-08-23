@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "machinespirits.tutor-stub.resistance-intervention-fidelity-judge-response.v5",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "case_id", "judgment"],
+  "properties": {
+    "schema": { "const": "machinespirits.tutor-stub.resistance-intervention-fidelity-judge-response.v5" },
+    "case_id": { "type": "string", "minLength": 1 },
+    "judgment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "delivered_clarify_distinction",
+        "delivered_register",
+        "evidence_quotes",
+        "confidence",
+        "indeterminacy_reason"
+      ],
+      "properties": {
+        "delivered_clarify_distinction": { "enum": ["yes", "no", "indeterminate"] },
+        "delivered_register": { "enum": ["warm", "plain", "neither", "indeterminate"] },
+        "evidence_quotes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "source_id", "text"],
+            "properties": {
+              "field": { "enum": ["delivered_clarify_distinction", "delivered_register"] },
+              "source_id": { "const": "intervention" },
+              "text": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "indeterminacy_reason": {
+          "enum": ["none", "semantic_ambiguity", "insufficient_public_context", "mixed_pragmatic_force", "other"]
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,28 @@
+import fs from 'node:fs';
+
 import { dispatchTutorStubCliBridgeRequest } from './tutorStubCliRequest.js';
+
+function loadFrozenModelCallReplay() {
+  const replayPath = String(process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH || '').trim();
+  if (!replayPath) return null;
+  const replay = JSON.parse(fs.readFileSync(replayPath, 'utf8'));
+  if (
+    replay?.schema !== 'machinespirits.tutor-stub.frozen-model-call-prefix-replay.v1' ||
+    !Array.isArray(replay.entries) ||
+    replay.entries.length === 0
+  ) {
+    throw new Error('frozen model-call replay file is invalid');
+  }
+  return {
+    path: replayPath,
+    entries: replay.entries.filter((entry) => !/^tutor_stub_tutor(?:_|$)/u.test(String(entry?.role || ''))),
+    index: 0,
+  };
+}
+
+function sameJson(left, right) {
+  return JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+}
 
 export function createTutorStubPromptTransport(dependencies) {
   const {
@@ -26,6 +50,7 @@ export function createTutorStubPromptTransport(dependencies) {
     waitTutorStubCliPolicyRetryDelay,
     write,
   } = dependencies;
+  const frozenReplay = loadFrozenModelCallReplay();
 
   async function callPromptModel({
     prompt: promptInput,
@@ -46,8 +71,16 @@ export function createTutorStubPromptTransport(dependencies) {
     signal = null,
     historyTurns = null,
     cliPolicyRetryCount = 0,
+    semanticRetryDelaysMs = null,
   }) {
     const semanticResistanceJudge = String(role || '').startsWith('tutor_stub_resistance_semantic_');
+    const semanticRetryDelays =
+      semanticResistanceJudge &&
+      Array.isArray(semanticRetryDelaysMs) &&
+      semanticRetryDelaysMs.length === 2 &&
+      semanticRetryDelaysMs.every((value) => Number.isInteger(value) && value >= 0)
+        ? semanticRetryDelaysMs
+        : null;
     let prompt = promptInput;
     let systemPrompt = systemPromptInput;
     const startedAt = new Date().toISOString();
@@ -162,6 +195,116 @@ export function createTutorStubPromptTransport(dependencies) {
       throw new Error(
         `Prompt audit failed for ${role}: ${promptAudit.violations.map((violation) => violation.code).join(', ')}`,
       );
+    }
+    if (frozenReplay && frozenReplay.index < frozenReplay.entries.length) {
+      const entry = frozenReplay.entries[frozenReplay.index];
+      const expectedRequest = entry.request || {};
+      const matches =
+        entry.role === role &&
+        entry.turn === turn &&
+        entry.provider === resolved.provider &&
+        entry.model === resolved.model &&
+        expectedRequest.maxTokens === maxTokens &&
+        (expectedRequest.cliEffort ?? null) === (cliEffort ?? null) &&
+        sameJson(expectedRequest.systemPrompt, systemPrompt) &&
+        sameJson(expectedRequest.prompt, prompt) &&
+        sameJson(expectedRequest.messageHistory || [], publicMessageHistory) &&
+        sameJson(expectedRequest.outputSchema, semanticResistanceJudge ? outputSchema : undefined);
+      if (!matches) {
+        throw new Error(
+          `frozen model-call replay drift at entry ${frozenReplay.index + 1}: expected ${entry.role} turn ${entry.turn}, received ${role} turn ${turn}`,
+        );
+      }
+      frozenReplay.index += 1;
+      if (entry.error) {
+        const replayError = Object.assign(new Error(entry.error.message), {
+          name: entry.error.name || 'Error',
+          code: entry.error.code || null,
+          provider: entry.provider,
+          audit: entry.error.audit || null,
+          classification: entry.error.classification || null,
+          responseFree: entry.error.responseFree === true,
+        });
+        const baseRetryDecision = tutorStubCliPolicyRetryDecision(replayError, {
+          retryCount: cliPolicyRetryCount,
+          allowClaudeResponseFreeError: semanticResistanceJudge,
+        });
+        const retryDecision =
+          baseRetryDecision.retry && semanticRetryDelays
+            ? { ...baseRetryDecision, delay_ms: semanticRetryDelays[cliPolicyRetryCount] }
+            : baseRetryDecision;
+        appendTraceEvent(trace, {
+          type: 'model_call_error',
+          role,
+          turn,
+          startedAt,
+          provider: entry.provider,
+          model: entry.model,
+          request: expectedRequest,
+          error: replayError.message,
+          cliPolicyViolation: retryDecision,
+          replayedFromFrozenPrefix: true,
+          publicTranscriptChanged: false,
+        });
+        if (retryDecision.retry) {
+          appendTraceEvent(trace, {
+            type: 'cli_policy_retry_decision',
+            role,
+            turn,
+            decision: retryDecision,
+            replayedFromFrozenPrefix: true,
+            publicTranscriptChanged: false,
+          });
+          await waitTutorStubCliPolicyRetryDelay(retryDecision.delay_ms, { signal });
+          return callPromptModel({
+            prompt: promptInput,
+            messageHistory,
+            resolved,
+            systemPrompt: systemPromptInput,
+            role,
+            maxTokens,
+            trace,
+            stream,
+            cliEffort,
+            effort,
+            outputSchema,
+            timeoutMs,
+            maxStdoutBytes,
+            maxStderrBytes,
+            turn,
+            signal,
+            historyTurns,
+            cliPolicyRetryCount: cliPolicyRetryCount + 1,
+            semanticRetryDelaysMs: semanticRetryDelays,
+          });
+        }
+        throw replayError;
+      }
+      const response = {
+        ...entry.response,
+        provider: entry.provider,
+        model: entry.model,
+        reasoningEffort: entry.response?.effort || null,
+        promptSnapshot: {
+          systemPrompt,
+          userPrompt: prompt,
+          messageHistory: publicMessageHistory,
+          role,
+          promptAudit,
+        },
+        promptAudit,
+      };
+      appendTraceEvent(trace, {
+        type: 'model_call_replayed_from_frozen_prefix',
+        role,
+        turn,
+        replayPath: frozenReplay.path,
+        replayEntry: frozenReplay.index,
+        provider: entry.provider,
+        model: entry.model,
+        publicTranscriptChanged: false,
+      });
+      return response;
     }
     reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });
     reserveTutorStubMeteredModelCall({ trace, role, turn });
@@ -336,7 +479,14 @@ export function createTutorStubPromptTransport(dependencies) {
       response.promptAudit = promptAudit;
       return response;
     } catch (err) {
-      const retryDecision = tutorStubCliPolicyRetryDecision(err, { retryCount: cliPolicyRetryCount });
+      const baseRetryDecision = tutorStubCliPolicyRetryDecision(err, {
+        retryCount: cliPolicyRetryCount,
+        allowClaudeResponseFreeError: semanticResistanceJudge,
+      });
+      const retryDecision =
+        baseRetryDecision.retry && semanticRetryDelays
+          ? { ...baseRetryDecision, delay_ms: semanticRetryDelays[cliPolicyRetryCount] }
+          : baseRetryDecision;
       appendTraceEvent(trace, {
         type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
         role,
@@ -355,8 +505,27 @@ export function createTutorStubPromptTransport(dependencies) {
           ...(semanticResistanceJudge ? { outputSchema } : {}),
         },
         error: err.message,
-        ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION' || err?.code === 'CLI_PROVIDER_TURN_FAILED'
+        ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION' ||
+        err?.code === 'CLI_PROVIDER_TURN_FAILED' ||
+        err?.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR'
           ? { cliPolicyViolation: retryDecision }
+          : {}),
+        ...(semanticResistanceJudge
+          ? {
+              transportDiagnostics: {
+                code: err?.code || null,
+                classification: err?.classification || null,
+                responseFree: err?.responseFree === true,
+                stdoutBytes: Number.isInteger(err?.stdoutBytes) ? err.stdoutBytes : null,
+                stderrBytes: Number.isInteger(err?.stderrBytes) ? err.stderrBytes : null,
+                stdoutSha256: err?.stdoutSha256 || null,
+                stderrSha256: err?.stderrSha256 || null,
+                stdoutText: typeof err?.stdoutText === 'string' ? err.stdoutText : null,
+                stderrText: typeof err?.stderrText === 'string' ? err.stderrText : null,
+                stdoutTextTruncated: err?.stdoutTextTruncated === true,
+                stderrTextTruncated: err?.stderrTextTruncated === true,
+              },
+            }
           : {}),
       });
       if (retryDecision.retry) {
@@ -387,6 +556,7 @@ export function createTutorStubPromptTransport(dependencies) {
           signal,
           historyTurns,
           cliPolicyRetryCount: cliPolicyRetryCount + 1,
+          semanticRetryDelaysMs: semanticRetryDelays,
         });
       }
       throw err;

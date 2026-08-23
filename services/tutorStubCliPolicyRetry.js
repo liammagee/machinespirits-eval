@@ -41,12 +41,30 @@ export function isTutorStubRetryableClaudeExitFailure(error) {
   return error?.code === 'CLI_PROVIDER_EXIT_FAILED' && error?.exitCode === 1 && error?.stdoutBytes === 0;
 }
 
+export function isTutorStubRetryableClaudeResponseFreeError(error) {
+  return (
+    error?.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR' &&
+    error?.provider === 'claude-code' &&
+    error?.classification === 'response_free_error' &&
+    error?.responseFree === true &&
+    Number.isInteger(error?.stdoutBytes) &&
+    error.stdoutBytes > 0 &&
+    Number.isInteger(error?.stderrBytes) &&
+    error.stderrBytes >= 0 &&
+    /^[a-f0-9]{64}$/u.test(String(error?.stdoutSha256 || '')) &&
+    /^[a-f0-9]{64}$/u.test(String(error?.stderrSha256 || ''))
+  );
+}
+
 /**
  * Permit two delayed re-dispatches only for Codex transport/schema failures.
  * Known tool events remain terminal. The caller must reserve metered/provider
  * budget again for the retry and keep the normal strict audit on that call.
  */
-export function tutorStubCliPolicyRetryDecision(error, { retryCount = 0, allowClaudeExitFailureCodeOne = false } = {}) {
+export function tutorStubCliPolicyRetryDecision(
+  error,
+  { retryCount = 0, allowClaudeExitFailureCodeOne = false, allowClaudeResponseFreeError = false } = {},
+) {
   const audit = safeAudit(error?.audit);
   const used = Number.isInteger(retryCount) && retryCount > 0 ? retryCount : 0;
   const knownToolEvent = audit.prohibited_events.some(
@@ -55,7 +73,9 @@ export function tutorStubCliPolicyRetryDecision(error, { retryCount = 0, allowCl
   const policyViolation = error?.code === 'CLI_PROVIDER_POLICY_VIOLATION' && error?.provider === 'codex';
   const failedTurn = error?.code === 'CLI_PROVIDER_TURN_FAILED' && error?.provider === 'codex';
   const claudeExitFailure = allowClaudeExitFailureCodeOne === true && isTutorStubRetryableClaudeExitFailure(error);
-  const retryableFailure = policyViolation || failedTurn || claudeExitFailure;
+  const claudeResponseFreeError =
+    allowClaudeResponseFreeError === true && isTutorStubRetryableClaudeResponseFreeError(error);
+  const retryableFailure = policyViolation || failedTurn || claudeExitFailure || claudeResponseFreeError;
   const retry = Boolean(retryableFailure && used < TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length && !knownToolEvent);
   return {
     schema: TUTOR_STUB_CLI_POLICY_RETRY_SCHEMA,

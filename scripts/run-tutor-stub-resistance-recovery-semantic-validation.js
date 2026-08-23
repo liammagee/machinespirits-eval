@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { resolveTutorStubArtifactArchiveDirectory } from '../services/tutorStubArtifactArchive.js';
 import {
   buildTutorStubResistanceRecoverySemanticValidationPlan,
+  loadTutorStubResistanceRecoverySemanticValidationForRegistration,
   runTutorStubResistanceRecoverySemanticValidation,
 } from '../services/tutorStubResistanceRecoverySemanticValidationRuntime.js';
 
@@ -46,7 +47,11 @@ function snapshot() {
 async function main() {
   const args = argsFrom(process.argv.slice(2));
   if (Boolean(args.live) === Boolean(args.preflight)) throw new Error('choose exactly one of --live or --preflight');
-  if (Number(args['maximum-reservations']) !== 720) throw new Error('registered hard ceiling is 720');
+  const loaded = loadTutorStubResistanceRecoverySemanticValidationForRegistration(args['validation-registration']);
+  const registeredMaximum = loaded.registration.executionReadiness.hardValidationReservations;
+  if (Number(args['maximum-reservations']) !== registeredMaximum) {
+    throw new Error(`registered hard ceiling is ${registeredMaximum}`);
+  }
   const destination = path.resolve(String(args.destination || ''));
   const request = repoPath(args['go-request']);
   const source = snapshot();
@@ -54,6 +59,7 @@ async function main() {
     throw new Error('outcome validation requires the exact clean source');
   }
   const goRequestSha256 = crypto.createHash('sha256').update(fs.readFileSync(request.absolute)).digest('hex');
+  const goRequest = JSON.parse(fs.readFileSync(request.absolute, 'utf8'));
   const archiveDir = resolveTutorStubArtifactArchiveDirectory(args['archive-dir'], { cwd: ROOT, repoRoot: ROOT });
   if (!archiveDir) throw new Error('outcome validation requires an available durable private archive');
   const plan = buildTutorStubResistanceRecoverySemanticValidationPlan({
@@ -62,6 +68,8 @@ async function main() {
     destination,
     goRequestPath: request.relative,
     goRequestSha256,
+    goRequest,
+    loaded,
   });
   if (args.preflight) {
     if (fs.existsSync(destination)) throw new Error('outcome validation destination must be fresh');
@@ -80,11 +88,13 @@ async function main() {
     sourceTree: source.tree,
     goRequestPath: request.relative,
     goRequestSha256,
+    goRequest,
     sourceDirty: false,
     archiveDir,
     resume: args.resume === true,
     callModel: callAIWithCliBridge,
     resolveModelRef: resolveModel,
+    validationRegistration: args['validation-registration'],
   });
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }

@@ -7,6 +7,7 @@ import {
   loadTutorStubResistanceActionRegisterRegistration,
   scoreTutorStubResistanceRecovery,
 } from './tutorStubResistanceActionRegisterStudy.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6 } from './tutorStubResistanceSemanticAdjudicationV6.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
 
 export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_PLAN_SCHEMA =
@@ -38,8 +39,8 @@ function clone(value) {
 }
 
 function assertConfirmationRegistration(registration) {
-  if (![3, 4, 5, 6, 7].includes(registration?.version)) {
-    throw new Error('confirmation requires a registered V3, V4, V5, V6, or V7 action/register confirmation design');
+  if (![3, 4, 5, 6, 7, 8, 9, 10].includes(registration?.version)) {
+    throw new Error('confirmation requires a supported registered action/register confirmation design');
   }
   return registration;
 }
@@ -65,7 +66,17 @@ export function buildTutorStubResistanceActionRegisterConfirmationPlan({ registr
       const assignment = assignments[slot];
       const realization = assignment.realization;
       const confirmationRevision =
-        frozen.version >= 7 ? 'v4-' : frozen.version >= 6 ? 'v3-' : frozen.version >= 4 ? 'v2-' : '';
+        frozen.version >= 10
+          ? 'v6-'
+          : frozen.version >= 9
+          ? 'v5-'
+          : frozen.version >= 7
+            ? 'v4-'
+            : frozen.version >= 6
+              ? 'v3-'
+              : frozen.version >= 4
+                ? 'v2-'
+                : '';
       jobs.push({
         id: `frame_refuser-confirmation-${confirmationRevision}${block.id}-s${slot + 1}`,
         block_id: block.id,
@@ -150,21 +161,26 @@ export function configureTutorStubResistanceActionRegisterConfirmationExecution(
   loaded,
   jobId,
   appendTraceEvent,
+  binarySemanticSmoke = false,
 } = {}) {
   if (!state || state.turns?.length || state.history?.length) {
     throw new Error('confirmation execution requires a fresh empty dialogue state');
   }
   const job = resolveTutorStubResistanceActionRegisterConfirmationJob({ loaded, jobId });
+  const studyRuntime = createTutorStubResistanceActionRegisterStudyRuntime({
+    registration: loaded.registration,
+    registrationPath: path.relative(process.cwd(), loaded.path),
+    registrationSha256: loaded.sha256,
+    profile: job.treatment.profile,
+    actionFit: job.treatment.action_fit,
+    realization: job.treatment.realization,
+    repeat: job.block_id,
+  });
+  if (binarySemanticSmoke) {
+    studyRuntime.registration.design.trigger.observationSemantics = TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6;
+  }
   state.resistanceActionRegisterStudy = {
-    ...createTutorStubResistanceActionRegisterStudyRuntime({
-      registration: loaded.registration,
-      registrationPath: path.relative(process.cwd(), loaded.path),
-      registrationSha256: loaded.sha256,
-      profile: job.treatment.profile,
-      actionFit: job.treatment.action_fit,
-      realization: job.treatment.realization,
-      repeat: job.block_id,
-    }),
+    ...studyRuntime,
     dynamic_confirmation: true,
     job_id: job.id,
     batch_id: job.block_id,
@@ -175,6 +191,7 @@ export function configureTutorStubResistanceActionRegisterConfirmationExecution(
     maximum_trigger_turn: 2,
     outcome_horizon_learner_turns: 2,
     final_learner_without_tutor_reply: true,
+    engineering_smoke_excluded_from_confirmation: binarySemanticSmoke,
   };
   appendTraceEvent(state.trace, {
     type: 'resistance_action_register_confirmation_execution_start',
@@ -189,6 +206,7 @@ export function configureTutorStubResistanceActionRegisterConfirmationExecution(
     freshIndependentDialogue: true,
     calibrationDialogueReused: false,
     publicTranscriptChanged: false,
+    binarySemanticSmoke,
   });
   return job;
 }
@@ -212,13 +230,21 @@ export function configureTutorStubResistanceActionRegisterConfirmationFromCli({
     registrationPath: path.resolve(root, registrationPath),
   });
   const job = resolveTutorStubResistanceActionRegisterConfirmationJob({ loaded, jobId });
-  const requiredObservationSemantics = loaded.registration.design.trigger.observationSemantics;
+  const binarySemanticSmoke = process.env.TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE === '1';
+  if (binarySemanticSmoke && loaded.registration.version !== 8) {
+    throw new Error('binary semantic smoke is permitted only over the frozen V8 two-judge execution path');
+  }
+  const requiredObservationSemantics = binarySemanticSmoke
+    ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6
+    : loaded.registration.design.trigger.observationSemantics;
+  const maximumDialogueBudget =
+    loaded.registration.version >= 9 ? 123 : loaded.registration.version === 8 ? 96 : 60;
   if (
     !autoLearnerEnabled ||
     Number(autoTurns) !== 4 ||
     !Number.isInteger(budget) ||
     budget < 1 ||
-    budget > 60 ||
+    budget > maximumDialogueBudget ||
     args.model !== 'codex.gpt-5.6-luna' ||
     args['classifier-model'] !== 'codex.gpt-5.6-luna' ||
     args['learner-record-model'] !== 'codex.gpt-5.6-luna' ||
@@ -231,9 +257,15 @@ export function configureTutorStubResistanceActionRegisterConfirmationFromCli({
     args['acknowledge-research-use'] !== true ||
     observationSemantics !== requiredObservationSemantics
   ) {
-    throw new Error('fresh action/register confirmation launch pins or remaining 60-attempt ceiling drifted');
+    throw new Error('fresh action/register confirmation launch pins or remaining attempt ceiling drifted');
   }
-  configureTutorStubResistanceActionRegisterConfirmationExecution({ state, loaded, jobId, appendTraceEvent });
+  configureTutorStubResistanceActionRegisterConfirmationExecution({
+    state,
+    loaded,
+    jobId,
+    appendTraceEvent,
+    binarySemanticSmoke,
+  });
   return { loaded, job };
 }
 
@@ -258,9 +290,25 @@ export function buildTutorStubResistanceActionRegisterConfirmationSyntheticCorpu
     fidelity: {
       action_visible: true,
       register_visible: true,
+      ...(registration.version >= 9
+        ? {
+            status: 'determinate',
+            authority: 'v8_three_judge_intervention_fidelity_panel',
+          }
+        : {}),
       safety_override: false,
       protected_condition: false,
     },
+    ...(registration.version >= 9
+      ? {
+          measurement_disposition: 'determinate',
+          outcome: {
+            ...syntheticOutcome(index, job.treatment.realization),
+            status: 'determinate',
+            authority: 'v8_three_judge_primary_recovery_panel',
+          },
+        }
+      : {}),
   }));
 }
 
@@ -330,6 +378,9 @@ export function runTutorStubResistanceActionRegisterConfirmationPreflight({ cont
   });
   const test = registration.measurement.confirmatoryTest;
   const readiness = registration.executionReadiness;
+  const perDialogueMaximum = registration.version >= 9 ? 123 : 60;
+  const perBatchMaximum = registration.version >= 9 ? 492 : 240;
+  const combinedMaximum = registration.version >= 9 ? 4428 : 2160;
   const powerAt17 = fisherExactPower(17, 1 / 6, 4 / 6, 0.05);
   const powerAt18 = fisherExactPower(18, 1 / 6, 4 / 6, 0.05);
   if (
@@ -341,10 +392,10 @@ export function runTutorStubResistanceActionRegisterConfirmationPreflight({ cont
     powerAt18 !== test.powering.powerAt18PerArm ||
     powerAt17 >= 0.8 ||
     powerAt18 < 0.8 ||
-    readiness.maximumModelAttemptReservationsPerDialogue !== 60 ||
+    readiness.maximumModelAttemptReservationsPerDialogue !== perDialogueMaximum ||
     readiness.batches.length !== 9 ||
-    readiness.batches.some((batch) => batch.maximumModelAttemptReservations !== 240) ||
-    readiness.combinedMaximumModelAttemptReservations !== 2160
+    readiness.batches.some((batch) => batch.maximumModelAttemptReservations !== perBatchMaximum) ||
+    readiness.combinedMaximumModelAttemptReservations !== combinedMaximum
   ) {
     throw new Error('confirmation preflight power, no-interim, or hard-attempt contract drifted');
   }
@@ -363,9 +414,9 @@ export function runTutorStubResistanceActionRegisterConfirmationPreflight({ cont
       power_at_17_per_arm: powerAt17,
       power_at_18_per_arm: powerAt18,
       minimum_n_per_arm: 18,
-      maximum_model_attempt_reservations_per_dialogue: 60,
-      maximum_model_attempt_reservations_per_batch: 240,
-      combined_maximum_model_attempt_reservations: 2160,
+      maximum_model_attempt_reservations_per_dialogue: perDialogueMaximum,
+      maximum_model_attempt_reservations_per_batch: perBatchMaximum,
+      combined_maximum_model_attempt_reservations: combinedMaximum,
       programme_ceiling_required: readiness.programmeLedgerAfterMaximum.ceiling,
       ...(registration.version >= 5
         ? {

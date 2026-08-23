@@ -1,0 +1,760 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1",
+  "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
+  "studyId": "tutor-stub-resistance-semantic-adjudication-heldout-validation-v3",
+  "authorization": {
+    "explicitHumanApproval": null,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "standingArchitecturalCorrectionSha256": "dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4",
+    "priorStandingAuthoritySha256": "538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce",
+    "freshTransportDecisionSha256": "638eb391a0dd44043388c13e2088feec614557e7f4edf5a3b59c0d6f2a2ae88d"
+  },
+  "source": {
+    "launchCommit": "16caa37c236cb76c6ac524679e83ef279cefc788",
+    "launchTree": "cd40ddc207fadc020c396abcc3938f72bc7a8869",
+    "requirements": {
+      "headMustEqualLaunchCommit": true,
+      "checkoutMustBeClean": true,
+      "detachedLaunchWorktree": true
+    },
+    "closure": [
+      {
+        "path": "scripts/run-tutor-stub-resistance-semantic-validation.js",
+        "sha256": "d49f48139a2d2f9303cfc469ec4956feadbcd48f40187ffae94c25d0c64b1637"
+      },
+      {
+        "path": "scripts/analyze-tutor-stub-resistance-semantic-validation.js",
+        "sha256": "d0d1c3124427c22dca89c92f02d9fd0ce77096c5be9e05a81c79869b477d7643"
+      },
+      {
+        "path": "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "d52f5e811aca30151866b659b719bcec7be1db50e7d1eacbb824e6b4b55ab172"
+      },
+      {
+        "path": "scripts/package-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "041065708e463e89cedc9c772714fc4002a0cdd05f944c1a5768d11c715545c2"
+      },
+      {
+        "path": "services/tutorStubResistanceSemanticValidationRuntime.js",
+        "sha256": "938948635f9b75b6797412d81572c2dcc7d4f893b6f2a648157d919cf57270fa"
+      },
+      {
+        "path": "services/tutorStubResistanceSemanticValidationV3.js",
+        "sha256": "e31cea02321e235c474f7adb9509037e288f64281883e79245c4536a7bcfb394"
+      },
+      {
+        "path": "services/tutorStubResistanceSemanticRuntime.js",
+        "sha256": "9393cca8cc739502881614cc4d79b2259621cce9f91b4912e170a7076005337e"
+      },
+      {
+        "path": "services/tutorStubResistanceSemanticAdjudicationV3.js",
+        "sha256": "a66a16c4ea80a831065234507be8308d8e3ac3cf9d6de4a0e49395c8164fa7ff"
+      },
+      {
+        "path": "services/tutorStubResistanceSemanticAdjudicationV2.js",
+        "sha256": "2b9faa679fedf1e98c25e6e5f3569da6c2ef83f3654642c08dc3c00e6fc15bfd"
+      },
+      {
+        "path": "services/tutorStubResistanceSemanticAdjudication.js",
+        "sha256": "4c1123b7272e33bdfc63205c85058d9b02753b7c89d3c05af2137b0f72783456"
+      },
+      {
+        "path": "services/tutorStubPromptTransport.js",
+        "sha256": "4b1c94376904024a8a955f05525a6ec071644f03ce103be0e8ed01a5c02430eb"
+      },
+      {
+        "path": "services/tutorStubCliPolicyRetry.js",
+        "sha256": "f651331cc7f0392d1f735525a69f61adf4fff9fc31d98889c289f1cdc8dbba11"
+      },
+      {
+        "path": "services/tutorStubArtifactArchive.js",
+        "sha256": "e17500f90ef9deb72deaa030b1a3cf034d6ce4502f40016163d8c623188c4281"
+      },
+      {
+        "path": "services/paidStudyEndpointPreflight.js",
+        "sha256": "6a099d3d43269288f3b0ab4565c10b4d286a6aa433796742f087681a1d7ad79a"
+      },
+      {
+        "path": "services/cliProviderBridge.js",
+        "sha256": "5f1274e28204a357e204eecfc4b76e95a733ba281c8e2f4de7e658efc76cd137"
+      },
+      {
+        "path": "services/evalConfigLoader.js",
+        "sha256": "f71a1b4c7155937f31bae57750f0a396348d2dcf751d425ddab89faf03ad28a1"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v3.json",
+        "sha256": "52db8e549d9f735f257f47f3e9d95060a3bcc5c86983abba9457d5b64311df90"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-registration.v3.json",
+        "sha256": "34fe9cf885293f14d037ac036c2c56f9d86f914707663afcc89f4acc938707e5"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-response.schema.v3.json",
+        "sha256": "4840ef6ebc5135d98aeb3d70d5a22416601a62fe1dc6bb3c225c05e606673033"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-development-evidence.v3.json",
+        "sha256": "4aa10fcb76779ae119a883670b8283d89123369a9079572a8a8d4a903c0610fe"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v3.json",
+        "sha256": "687f931f2bc0beb80283859dec48a9393e2ccf0d08ee34c6d8e68e5758dcd8c2"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v2.json",
+        "sha256": "502d8abe4400532f73bff466acbb5a239f316fcc98d153d4eb66d56cba5036b2"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-registration.v2.json",
+        "sha256": "4cf2b38f3424960d983e2dd5e1a9938e0397e5038fa5f4c8d96bb5d8a78306be"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json",
+        "sha256": "a52d10f60ceeeb9e1e92415c6add6d0dee4dbf69608053652ff9c23f08216535"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v2.json",
+        "sha256": "b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json",
+        "sha256": "d06952b563065a100ce4af92c18c7089a41b416c0ed3845d1d5e6d2c694856e8"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-registration.v1.json",
+        "sha256": "d479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json",
+        "sha256": "159fdafe39d67c200868f67a27ea5392366c614e4b2b73f186c3051cb734a5e9"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json",
+        "sha256": "9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json",
+        "sha256": "b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826"
+      },
+      {
+        "path": "config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.json",
+        "sha256": "c1d215407e782eee8bd619336b9ee43c32b6d0c0655e83509b145a0371f3584f"
+      },
+      {
+        "path": "config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.endpoint-go.json",
+        "sha256": "9b5b2c6c8fd01488d77b2944c29744a83722d05ce708623af7dac512daf20260"
+      },
+      {
+        "path": "config/providers.yaml",
+        "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+      },
+      {
+        "path": "package.json",
+        "sha256": "cc63281906982683d8628a6d6bc2273b0aeed49baf5d789a132efac7f98c0e15"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "74306cc482c33b3c8f0f4e0f67daf612287e386f5686d5ff9fa4c97683229117"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3.json",
+        "sha256": "940cd6582909ff2e193830f219b0dc1a7d36f279d3d8c2709ca108177aba5539"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor.json",
+        "sha256": "bb3571a2971e1d3fc3d7dad9fa0e41715b3e2282d495aef6f5880fd04fd4b5da"
+      },
+      {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-2.json",
+        "sha256": "234d68afc8576acca01620dd110a285aadd0adf2f5eb408b1d9e95956ed2da5d"
+      }
+    ]
+  },
+  "semanticAdjudicationValidation": {
+    "type": "prospective_resistance_semantic_adjudication_heldout_validation_v3",
+    "instrumentRegistration": {
+      "path": "config/tutor-stub-resistance-semantic-adjudication-registration.v3.json",
+      "sha256": "34fe9cf885293f14d037ac036c2c56f9d86f914707663afcc89f4acc938707e5"
+    },
+    "heldoutCorpus": {
+      "path": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v3.json",
+      "sha256": "687f931f2bc0beb80283859dec48a9393e2ccf0d08ee34c6d8e68e5758dcd8c2",
+      "cases": 80
+    },
+    "failedV1Validation": {
+      "request": {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json",
+        "sha256": "b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826"
+      },
+      "reportSha256": "008230526809a6aa2917b240c6a30af644f30184b89042825773b1b8040c5c74",
+      "privateArchive": {
+        "branch": "codex/resistance-semantic-validation-v1-failed-archive",
+        "commit": "cf92081bd566948f4ea26d0ac5e67f8132ebeef8"
+      },
+      "chargedReservations": 160,
+      "returnedFirstAttempts": 160,
+      "programmeLedgerAfter": 491,
+      "rescored": false,
+      "normalized": false,
+      "reused": false,
+      "pooled": false,
+      "outcomeSelected": false
+    },
+    "lifecycle": {
+      "preservedValidJudgeRecalled": false,
+      "neverPreparedPeerMayComplete": true,
+      "dispatchedWithoutResponseRecalled": false,
+      "invalidOrTransportTerminalPeerRequired": false,
+      "validCaseRerun": false,
+      "replacement": false,
+      "outcomeSelection": false,
+      "goldJoinedOnlyAfterSeal": true,
+      "durablePrivateArchiveRequired": true
+    },
+    "claimBoundary": "heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_three_stopped_v3_runs_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim",
+    "syntheticPreflightEstablishesAccuracy": false,
+    "validationOutcomesExcludedFromConfirmation": true,
+    "postHeldoutPromptSchemaConsensusThresholdTuning": false,
+    "failedV2Validation": {
+      "request": {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v2.json",
+        "sha256": "b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6"
+      },
+      "reportSha256": "11e868d18135e6df29230eab6f7912427917c0e0b55ea350f6cec4a2168fca11",
+      "privateArchive": {
+        "branch": "codex/resistance-semantic-validation-v2-failed-archive",
+        "commit": "a98b58732ae2f0b68180e3bbb8d0357cf2e4adfa"
+      },
+      "chargedReservations": 160,
+      "returnedFirstAttempts": 160,
+      "programmeLedgerAfter": 651,
+      "rescored": false,
+      "normalized": false,
+      "reused": false,
+      "pooled": false,
+      "outcomeSelected": false
+    },
+    "requestRevision": 4,
+    "stoppedV3Validation": {
+      "request": {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3.json",
+        "sha256": "940cd6582909ff2e193830f219b0dc1a7d36f279d3d8c2709ca108177aba5539"
+      },
+      "disposition": "consumed_stopped_wholly_excluded",
+      "source": {
+        "commit": "04bd7d5ebbd227b62e3f8cbede2ff15ec4a0e0c4",
+        "tree": "7da60b5a1c88373073d03a267654e402571bcd73"
+      },
+      "destination": ".tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-a",
+      "planSha256": "a4994193e2cb712551302a84a3015b42473ac66645ad432d7221694ac37eddde",
+      "localEvidence": {
+        "files": 4,
+        "bytes": 83931,
+        "inventorySha256": "c73158e8c4e4dc8c4ddab4e82e93fa6d8dbe7af721c3399f4efa135e0954745e",
+        "artifacts": [
+          {
+            "path": "plan.json",
+            "status": "plan",
+            "sha256": "0bbbbe137cba32253f5c2a6d2f0b585c37dcba491cad01f67e58b7dfb7c4e5e9"
+          },
+          {
+            "path": "cases/sv3-3e8cd42b67a4d67bd1bb0004cc0338f2/checkpoint.json",
+            "status": "sealed",
+            "sha256": "a9b77ab99335b951f04758d8e54ad717c810987940f071b6c09ccc5f4fa7acff"
+          },
+          {
+            "path": "cases/sv3-d34fc430c5374c7e30833d6b5df8d3eb/checkpoint.json",
+            "status": "sealed",
+            "sha256": "3d2d8deb253cce0cf535bf299eb11b1a8cf606c3db30fb1ef71fe501dc5db39f"
+          },
+          {
+            "path": "cases/sv3-ddf1d5cf7c4c04a94be25c73930d7f5e/checkpoint.json",
+            "status": "judge_in_flight",
+            "sha256": "ad550d590ad8deaf8957ca72d7e8223a441c72b204dde1f5f4eb5a5bebc915a8"
+          }
+        ]
+      },
+      "privateArchive": {
+        "branch": "codex/resistance-semantic-validation-v3-incomplete-archive",
+        "commit": "e18190e61e4630968bfb5c5d5c7c226b9ce3f98e",
+        "tree": "07db6db788b19e3ab03c17c700cd6814337402c2",
+        "artifactPath": "artifacts/tutor-stub-live/resistance-semantic-validation/940cd6582909ff2e-a4994193e2cb7125",
+        "files": 31,
+        "bytes": 183101,
+        "inventorySha256": "eed7dc7f295df934d48cabc8a78ae8ed4989be075c53561216ba65f499f18145",
+        "manifestSha256": "32cefbf50b69c066d79d1e9664331a3df55dfd9796437a41fb5ea6cc3356d7be",
+        "manifestedTransitions": 30,
+        "status": "running_stopped_before_seal"
+      },
+      "accounting": {
+        "chargedReservations": 10,
+        "returnedResponses": 1,
+        "terminalTransportFailures": 8,
+        "dispatchedAmbiguous": 1,
+        "sealedCases": 2,
+        "judgeInFlightCases": 1,
+        "programmeLedgerAfter": 661
+      },
+      "goldJoined": false,
+      "recoveryRan": false,
+      "analyzerRan": false,
+      "resultProduced": false,
+      "reportProduced": false,
+      "sealProduced": false,
+      "sameSourceResumePermitted": false,
+      "recoveryPermitted": false,
+      "reusePermitted": false,
+      "poolingPermitted": false,
+      "outcomeSelectionPermitted": false,
+      "confirmationCreditPermitted": false
+    },
+    "stoppedV3SuccessorValidation": {
+      "request": {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor.json",
+        "sha256": "bb3571a2971e1d3fc3d7dad9fa0e41715b3e2282d495aef6f5880fd04fd4b5da"
+      },
+      "disposition": "consumed_stopped_wholly_excluded",
+      "source": {
+        "commit": "b39e82d872a9b1320a20bd9e58ae23e33e000a13",
+        "tree": "584d89016a0010ecb83783c005bb0e5f919b0914"
+      },
+      "destination": ".tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-b",
+      "planSha256": "2f9ef9d889469da5ec6b4cbf3609d7a03b7855c9b4ff3b23be52cf7cd396b817",
+      "localEvidence": {
+        "files": 19,
+        "bytes": 420968,
+        "inventorySha256": "f0c0cc3a58f720128d634cc48c4674e5179adee4bc6ad1a84faa1646132d5bd9",
+        "artifacts": [
+          {
+            "path": "plan.json",
+            "status": "plan",
+            "sha256": "a8aeec3d7cdaae9c6cf3c06598f4aa831f639c7c49622f9132eaaaeb9769e74b"
+          },
+          {
+            "path": "cases/sv3-0846454abc11ce08d275b2f892bae842/checkpoint.json",
+            "status": "sealed",
+            "sha256": "d07339398b62722fbeeb5d06ea818dff673fbb7b7f4b651fc6fd9320323f1168"
+          },
+          {
+            "path": "cases/sv3-1856062e7c569f5436091bf773524990/checkpoint.json",
+            "status": "sealed",
+            "sha256": "0e82d1d8cc01f0dbfab4975cb2ecec9de1101a9c7fe5c647db96a326191e3292"
+          },
+          {
+            "path": "cases/sv3-33784137804c32208977669a6288f338/checkpoint.json",
+            "status": "sealed",
+            "sha256": "877e78f59065d700aa0098dfa9553fbd569517315b585d88ea31773ee8c1938f"
+          },
+          {
+            "path": "cases/sv3-342e7a6727b7549c908f19502a43ca30/checkpoint.json",
+            "status": "sealed",
+            "sha256": "ca19516de8c61e02a07ded8845f333e4ae184822c31e12e3396098a75daee1d4"
+          },
+          {
+            "path": "cases/sv3-3e8cd42b67a4d67bd1bb0004cc0338f2/checkpoint.json",
+            "status": "sealed",
+            "sha256": "2b435a8b3aaba8e01955a9578fbd76bb10690b527b08818e2e22422296d6aa3c"
+          },
+          {
+            "path": "cases/sv3-446ea7ff1b853d91609b942cd7361064/checkpoint.json",
+            "status": "sealed",
+            "sha256": "6bd545a94f616bef55b1f51ee085a7a1e80b4e2544ff6910ab808106aecb42e9"
+          },
+          {
+            "path": "cases/sv3-4873505e21825ee51b69481a071ed0d7/checkpoint.json",
+            "status": "sealed",
+            "sha256": "ce09ecf47aaf77545ec6c1bf976f54fbe9251b9949592db2026479f64742955e"
+          },
+          {
+            "path": "cases/sv3-4c2db32139b2fcb0a22ef3a967eeddc9/checkpoint.json",
+            "status": "sealed",
+            "sha256": "36b832e0f3a85976b72b57254d4652635a6c53a22dd6e23d6549ced143d47791"
+          },
+          {
+            "path": "cases/sv3-630037d2c2ac71afa73d1a7fe13ea1b1/checkpoint.json",
+            "status": "judge_in_flight",
+            "sha256": "b9722815d73bba30127142150eb75b4a8d380fb4bfd961c02bf56a4c73b7cb7a"
+          },
+          {
+            "path": "cases/sv3-86fb1748771f7743d76d07ffdd9f6533/checkpoint.json",
+            "status": "sealed",
+            "sha256": "31c39c760ece2f41d75b4a09152cc65520a4131fc6a2e66f7fef073029ec4d4c"
+          },
+          {
+            "path": "cases/sv3-9fad8e3a4f635f2c6c14f23216174712/checkpoint.json",
+            "status": "sealed",
+            "sha256": "cbd56b0f6c959deaae300ffa2c3b01abc2027ad807f66d8dd7bd80bcd823a7eb"
+          },
+          {
+            "path": "cases/sv3-a059314a64d8f58efc25097b50de5a23/checkpoint.json",
+            "status": "sealed",
+            "sha256": "ec5a662ef454a88fd610f61cc2f21611bdd45926407f586eb3cdbc0dac803bbd"
+          },
+          {
+            "path": "cases/sv3-b154dc89b6d7bb62d8e316a5b5dcc6a4/checkpoint.json",
+            "status": "sealed",
+            "sha256": "66c25787fd4b177e09b43e884835b453ff3a574c1e458fa0f9ee904437785255"
+          },
+          {
+            "path": "cases/sv3-b3ebe28ac0a34f02aec2a9d8819e78d6/checkpoint.json",
+            "status": "sealed",
+            "sha256": "c9ac9234dbb1bb8e83a8dec25ce2e57eff2e0c6d3644f2955ed8e4b94e3e1ce7"
+          },
+          {
+            "path": "cases/sv3-becd77dbbacd806515c0f612b74bd756/checkpoint.json",
+            "status": "sealed",
+            "sha256": "9f4ddea7358a1d63c50a376283cc81f8bf66fb67d823ef39aad1862419530402"
+          },
+          {
+            "path": "cases/sv3-c25051c69f0c4c7b8c66e2c45685ee0a/checkpoint.json",
+            "status": "sealed",
+            "sha256": "24b80a8b6b6f0b95e17686cf9fdb976940c851b1e798f200587ba9b8876f9a2a"
+          },
+          {
+            "path": "cases/sv3-d34fc430c5374c7e30833d6b5df8d3eb/checkpoint.json",
+            "status": "sealed",
+            "sha256": "4d0b421b0bd6769c585d0d6afbacc3d334d6bcec01236189cd8dbd0bef50dd88"
+          },
+          {
+            "path": "cases/sv3-ddf1d5cf7c4c04a94be25c73930d7f5e/checkpoint.json",
+            "status": "sealed",
+            "sha256": "3df49cc20bd129f2803cebd410abbb741105ab5d8f0088b2903f234e3f953c32"
+          }
+        ]
+      },
+      "privateArchive": {
+        "branch": "codex/resistance-semantic-validation-v3-successor-incomplete-archive",
+        "commit": "17365bcdb1c1a3c0baad585200ccacdcc0d5c1ff",
+        "tree": "2b556a59e05da040ba621bee3d94e925e0d080c5",
+        "baseCommit": "83450f09a69a8cf559fb4f17b2c4da6e769c430d",
+        "artifactPath": "artifacts/tutor-stub-live/resistance-semantic-validation/bb3571a2971e1d3f-2f9ef9d889469da5",
+        "files": 141,
+        "bytes": 1370698,
+        "inventorySha256": "ea84d3801bc10238dbfb80a1a3739f2a24814548f6687ff0bfcb941c864a1f84",
+        "manifestSha256": "81e8ce26d43ae6d218313e1b02d4ade684ed66001e44dd901eb450ae4185f507",
+        "manifestedTransitions": 140,
+        "status": "running_stopped_before_seal"
+      },
+      "accounting": {
+        "chargedReservations": 35,
+        "returnedResponses": 32,
+        "terminalTransportFailures": 2,
+        "dispatchedAmbiguous": 1,
+        "sealedCases": 17,
+        "judgeInFlightCases": 1,
+        "programmeLedgerAfter": 696
+      },
+      "failureEvidence": {
+        "judgeId": "semantic_judge_b",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "errorCode": "CLI_PROVIDER_EXIT_FAILED",
+        "exitCode": 1,
+        "cases": ["sv3-a059314a64d8f58efc25097b50de5a23", "sv3-d34fc430c5374c7e30833d6b5df8d3eb"]
+      },
+      "ambiguousCase": {
+        "caseId": "sv3-630037d2c2ac71afa73d1a7fe13ea1b1",
+        "judgeId": "semantic_judge_a",
+        "attempt": 1,
+        "status": "dispatched"
+      },
+      "goldJoined": false,
+      "recoveryRan": false,
+      "analyzerRan": false,
+      "resultProduced": false,
+      "reportProduced": false,
+      "sealProduced": false,
+      "sameSourceResumePermitted": false,
+      "recoveryPermitted": false,
+      "reusePermitted": false,
+      "poolingPermitted": false,
+      "outcomeSelectionPermitted": false,
+      "confirmationCreditPermitted": false
+    },
+    "stoppedV3SecondSuccessorValidation": {
+      "request": {
+        "path": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-2.json",
+        "sha256": "234d68afc8576acca01620dd110a285aadd0adf2f5eb408b1d9e95956ed2da5d"
+      },
+      "disposition": "consumed_stopped_wholly_excluded",
+      "source": {
+        "commit": "85010118c71c6b62dac6b7c741a2c4905ad19c06",
+        "tree": "37d8f63d299769552fc2563668306c5c1dc2b0ac"
+      },
+      "destination": ".tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-c",
+      "planSha256": "8175b1aa619dd5413525b9eb0dfb28f4a14427cee485dddddc01742db9e6e44d",
+      "localEvidence": {
+        "files": 17,
+        "bytes": 383860,
+        "inventorySha256": "cf3e40c7e795607691470b574b1d2530a3b8bb6a453f0e7415f3c694f26f6d7e",
+        "artifacts": [
+          {
+            "path": "plan.json",
+            "status": "plan",
+            "sha256": "cf1eebf5921aeaed092947861c6dc78c9cf4895173544df38bff1fa44c15cc1a"
+          },
+          {
+            "path": "cases/sv3-0846454abc11ce08d275b2f892bae842/checkpoint.json",
+            "status": "sealed",
+            "sha256": "d2c70c680ae0a7e61293785bbdc987db5af3a50a36d0f2a44c0c76b644c01a74"
+          },
+          {
+            "path": "cases/sv3-1856062e7c569f5436091bf773524990/checkpoint.json",
+            "status": "sealed",
+            "sha256": "92fec0db73608d5f7a1021524ab03264ac8227b43ff786639b12e8d53ca45f73"
+          },
+          {
+            "path": "cases/sv3-33784137804c32208977669a6288f338/checkpoint.json",
+            "status": "sealed",
+            "sha256": "7009b3311d411ca722fc07dee6ce0e4022a86403fe374ffa1204b14372db234b"
+          },
+          {
+            "path": "cases/sv3-342e7a6727b7549c908f19502a43ca30/checkpoint.json",
+            "status": "sealed",
+            "sha256": "d4e47a8a2c8e7f0bdaf76db083dc14146657b7595f83bf2c115412492c027c85"
+          },
+          {
+            "path": "cases/sv3-3e8cd42b67a4d67bd1bb0004cc0338f2/checkpoint.json",
+            "status": "sealed",
+            "sha256": "b2e823fcc3600394a8d950c58146aaf5167857f9aa926b125a6c7c2763285025"
+          },
+          {
+            "path": "cases/sv3-446ea7ff1b853d91609b942cd7361064/checkpoint.json",
+            "status": "sealed",
+            "sha256": "7fb6f6e3f30ca9217e14b26c227761c58623432f7a8ead4953ba264ca0d650a1"
+          },
+          {
+            "path": "cases/sv3-4873505e21825ee51b69481a071ed0d7/checkpoint.json",
+            "status": "sealed",
+            "sha256": "79dbcb1f84c9c0ac69d48521744693d6cdc9946f1f9dd81acbecf0cfa31aab81"
+          },
+          {
+            "path": "cases/sv3-4c2db32139b2fcb0a22ef3a967eeddc9/checkpoint.json",
+            "status": "sealed",
+            "sha256": "12c6300f0f5b8a4fe0f0856e1b9342421d3cadd0ad285f735db108bc3f0c477a"
+          },
+          {
+            "path": "cases/sv3-86fb1748771f7743d76d07ffdd9f6533/checkpoint.json",
+            "status": "sealed",
+            "sha256": "b861d6a4218aea1a524209bca7a5801901d62dbfc1d9740874b8ac7f7170ab01"
+          },
+          {
+            "path": "cases/sv3-a059314a64d8f58efc25097b50de5a23/checkpoint.json",
+            "status": "sealed",
+            "sha256": "b412231763e3cafb3389be18856b2cc6768bf052c8c2366b5a355b36204c7b54"
+          },
+          {
+            "path": "cases/sv3-b154dc89b6d7bb62d8e316a5b5dcc6a4/checkpoint.json",
+            "status": "sealed",
+            "sha256": "32852a7ba2e0266e10ea6e53cefc62c339a1cdfca0d504efc83de86f5e5f3d7e"
+          },
+          {
+            "path": "cases/sv3-b3ebe28ac0a34f02aec2a9d8819e78d6/checkpoint.json",
+            "status": "sealed",
+            "sha256": "5e2f1e19f9863e3e7077e648fc1e0fd3ca1145166efeacdce009fa38c6217014"
+          },
+          {
+            "path": "cases/sv3-becd77dbbacd806515c0f612b74bd756/checkpoint.json",
+            "status": "sealed",
+            "sha256": "1a86a6ac3567812a42e4f6a5ae268660e6ca6c0b570983ade7f2b5cb557fd19e"
+          },
+          {
+            "path": "cases/sv3-c25051c69f0c4c7b8c66e2c45685ee0a/checkpoint.json",
+            "status": "judge_in_flight",
+            "sha256": "7a345d24878d3456e42e6edfa86f108fed1dc4eb369b108a5f2c3c9ae35ee188"
+          },
+          {
+            "path": "cases/sv3-d34fc430c5374c7e30833d6b5df8d3eb/checkpoint.json",
+            "status": "sealed",
+            "sha256": "901a3b051bd393a8d1a56075445c3c58966b98e58f5f7bb4a3831bd276e74712"
+          },
+          {
+            "path": "cases/sv3-ddf1d5cf7c4c04a94be25c73930d7f5e/checkpoint.json",
+            "status": "sealed",
+            "sha256": "70560f14524703485861496ed3033019a19faf650d7f00cce47cb77da35f5c8c"
+          }
+        ]
+      },
+      "privateArchive": {
+        "branch": "codex/resistance-semantic-validation-v3-successor-2-incomplete-archive",
+        "commit": "0e2403626bbf54e596d4f8f8244cc24067cdea1f",
+        "tree": "405046957577b83a624e090a39945ff1f89398c4",
+        "artifactPath": "artifacts/tutor-stub-live/resistance-semantic-validation/234d68afc8576acc-8175b1aa619dd541",
+        "files": 128,
+        "bytes": 1248078,
+        "inventorySha256": "2f1b0db82031b73760a1f62a880bbaa443925fe616215607011e83559a5efcb9",
+        "manifestSha256": "e0971b83fa406a25239bd4223d51bd5d9bdb4d000cc17a61beae9ae916e720d5",
+        "manifestedTransitions": 127,
+        "status": "running_stopped_before_seal"
+      },
+      "accounting": {
+        "chargedReservations": 32,
+        "returnedResponses": 29,
+        "terminalTransportFailures": 2,
+        "dispatchedAmbiguous": 1,
+        "sealedCases": 15,
+        "judgeInFlightCases": 1,
+        "programmeLedgerAfter": 728
+      },
+      "failureEvidence": {
+        "judgeId": "semantic_judge_b",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "errorCode": "CLI_PROVIDER_EXIT_FAILED",
+        "exitCode": 1,
+        "cases": ["sv3-a059314a64d8f58efc25097b50de5a23", "sv3-d34fc430c5374c7e30833d6b5df8d3eb"]
+      },
+      "ambiguousCase": {
+        "caseId": "sv3-c25051c69f0c4c7b8c66e2c45685ee0a",
+        "judgeId": "semantic_judge_b",
+        "attempt": 1,
+        "status": "dispatched"
+      },
+      "goldJoined": false,
+      "recoveryRan": false,
+      "analyzerRan": false,
+      "resultProduced": false,
+      "reportProduced": false,
+      "sealProduced": false,
+      "sameSourceResumePermitted": false,
+      "recoveryPermitted": false,
+      "reusePermitted": false,
+      "poolingPermitted": false,
+      "outcomeSelectionPermitted": false,
+      "confirmationCreditPermitted": false
+    },
+    "prospectiveClaudeJsonTransport": {
+      "outputFormat": "json",
+      "resultSelector": "unique_type_result_event",
+      "successPredicate": "is_error_false_and_structured_output_present_then_local_schema_validation",
+      "responseFreeRetryPredicate": "is_error_true_and_structured_output_absent",
+      "subtypeAuthoritative": false,
+      "ambiguousOutputRetryable": false,
+      "rawOutputPersisted": false,
+      "capturedErrorEnvelopeSha256": "1af9718eb99d5f3876c759ae82527272131c7979e95aff905abb2382c1ec9d6a",
+      "capturedSuccessEnvelopeSha256": "f2cf37b47218d1d67bea884b6aba897dfc5e272ead37c4d6f0a88322e916385c",
+      "freshHumanDecisionSha256": "638eb391a0dd44043388c13e2088feec614557e7f4edf5a3b59c0d6f2a2ae88d"
+    }
+  },
+  "design": {
+    "cases": 80,
+    "judgesPerCase": 2,
+    "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
+    "effort": "low",
+    "goldVisibleToJudgePackets": false,
+    "originalCaseIdsVisibleToExecution": false,
+    "goldJoinedOnlyAfterAllCasesSealed": true
+  },
+  "budget": {
+    "plannedCases": 80,
+    "plannedModelCalls": 160,
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumPlannedModelAttempts": 480,
+    "programmeLedgerBefore": 728,
+    "programmeLedgerAfterMaximum": 1208,
+    "programmeCeiling": 5000,
+    "retryOrResumeAuthority": "bounded_technical_recovery"
+  },
+  "bindings": {
+    "registration": {
+      "path": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v3.json",
+      "sha256": "52db8e549d9f735f257f47f3e9d95060a3bcc5c86983abba9457d5b64311df90"
+    },
+    "endpoint": {
+      "contractPath": "config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.json",
+      "contractFileSha256": "c1d215407e782eee8bd619336b9ee43c32b6d0c0655e83509b145a0371f3584f",
+      "contractCanonicalSha256": "ed62463f39e6b40c90bdfaeb9383b5c98e46ec5f43891f626ffde8a04f1a4ce7",
+      "certificatePath": "config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.endpoint-go.json",
+      "certificateFileSha256": "9b5b2c6c8fd01488d77b2944c29744a83722d05ce708623af7dac512daf20260",
+      "preflightSha256": "55de7de84c0bdb51c8cf8c893aa62c97a1f97ad02b87834dacaada54724ac9c1"
+    },
+    "judgeRoutes": {
+      "providerConfigPath": "config/providers.yaml",
+      "providerConfigSha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326",
+      "judgeA": {
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "effort": "low"
+      },
+      "judgeB": {
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "effort": "low"
+      },
+      "crossProviderAndModelFamilyIndependent": true,
+      "learnerLunaExcludedFromVoting": true
+    },
+    "commands": {
+      "source": "commands",
+      "liveArraySha256": "db777ec47d97f90e0a6c4ee4683c6da9496b75579dfe60b4d3d2ef9677ad1b21",
+      "recoveryArraySha256": "eac86bc4588286d687d51216a80b8397b6792b43554aa9b3633b53933e683010",
+      "analyzeArraySha256": "5e9c2704b2eac0997a0ba4ddbd11ecab846a3af91304284b3c38b3bb0fd5cf0b"
+    }
+  },
+  "commands": {
+    "live": [
+      "node",
+      "scripts/run-tutor-stub-resistance-semantic-validation.js",
+      "--live",
+      "--destination",
+      ".tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-d",
+      "--source-commit",
+      "16caa37c236cb76c6ac524679e83ef279cefc788",
+      "--source-tree",
+      "cd40ddc207fadc020c396abcc3938f72bc7a8869",
+      "--go-request",
+      "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-3.json",
+      "--maximum-reservations",
+      "480",
+      "--validation-registration",
+      "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v3.json"
+    ],
+    "recovery": [
+      "node",
+      "scripts/run-tutor-stub-resistance-semantic-validation.js",
+      "--live",
+      "--destination",
+      ".tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-d",
+      "--source-commit",
+      "16caa37c236cb76c6ac524679e83ef279cefc788",
+      "--source-tree",
+      "cd40ddc207fadc020c396abcc3938f72bc7a8869",
+      "--go-request",
+      "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-3.json",
+      "--maximum-reservations",
+      "480",
+      "--validation-registration",
+      "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v3.json",
+      "--resume"
+    ],
+    "analyze": [
+      "node",
+      "scripts/analyze-tutor-stub-resistance-semantic-validation.js",
+      "--destination",
+      ".tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-d",
+      "--source-commit",
+      "16caa37c236cb76c6ac524679e83ef279cefc788",
+      "--source-tree",
+      "cd40ddc207fadc020c396abcc3938f72bc7a8869",
+      "--go-request",
+      "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-3.json",
+      "--validation-registration",
+      "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v3.json"
+    ]
+  },
+  "payload": {
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "destination": {
+    "artifactRoot": ".tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-d",
+    "createOnce": true,
+    "mustNotExistBeforeLaunch": true
+  }
+}

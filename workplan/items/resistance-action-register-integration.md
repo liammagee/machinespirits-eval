@@ -9,10 +9,18 @@ source: manual
 created: 2026-08-18
 updated: 2026-08-23
 verification: >-
+  The sealed 200-dialogue warm/non-warm confirmation completed every unit on
+  its initial attempt with no technical recovery and exactly one final
+  analysis. Recovery was 0/99 in both arms, but non-warm action fidelity was
+  0.88 against the predeclared 0.90 gate, so the causal claim is explicitly
+  withheld and the immutable result is closed as descriptive, scope-bound
+  evidence.
+
   Five boredom action-before-register proof-DAG studies are collected and
-  analysed. v4, v5 and v7 are registered nulls. v6 and v8 failed their
-  registered interpretability gates, so they license no claim at all. Nothing
-  in this line licenses a claim that any tutor move helps a bored learner.
+  analysed alongside it. v4, v5 and v7 are registered nulls. v6 and v8 failed
+  their registered interpretability gates, so they license no claim at all.
+  Nothing in this line licenses a claim that any tutor move helps a bored
+  learner.
 
   v4 (36 planned, 33 scored): plain 0/18, warm 0/15, risk difference 0, exact
   conditional p = 1, decision warm_plain_recovery_not_confirmed. Three units
@@ -110,7 +118,7 @@ verification: >-
   warm/plain, null, efficacy, learning, transfer, human, cell, or learner-
   profile claim is licensed. No further model call is authorized within this
   programme; any restart requires a fresh human method and route decision.
-claim_status: exploratory
+claim_status: scope-bound
 links:
   items:
     - tutor-stub-cell-reconciliation
@@ -122,8 +130,10 @@ links:
     - edged-register-stub-dag-replication
   notes:
     - notes/2026-08-23-boredom-action-register-v7-reading.md
+    - notes/2026-08-23-resistance-action-register-warm-nonwarm-confirmation-closeout.md
     - notes/2026-08-16-harness-reconciliation-survey.md
     - docs/harness-claim-transfer-rule.md
+    - docs/paid-study-authorization-policy.md
     - docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md
     - notes/2026-08-16-edged-register-calibration-draft.md
     - docs/resistance-action-register-conservation-protocol.md
@@ -220,7 +230,17 @@ links:
     - config/tutor-stub-resistance-recovery-semantic-validation-registration.v1.json
     - services/tutorStubResistanceRecoverySemanticValidation.js
     - services/tutorStubResistanceRecoverySemanticValidationRuntime.js
+    - scripts/analyze-tutor-stub-resistance-recovery-offset-cleaning.js
     - services/tutorStubResistanceRecoverySemanticAdjudicationV2.js
+    - services/tutorStubResistanceRecoverySemanticAdjudicationV5.js
+    - services/tutorStubResistanceRecoverySemanticValidationV5.js
+    - services/tutorStubResistanceMeasurementValidationV5Runtime.js
+    - services/tutorStubResistanceRecoverySemanticAdjudicationV6.js
+    - services/tutorStubResistanceRecoverySemanticValidationV6.js
+    - services/tutorStubResistanceMeasurementValidationV6Runtime.js
+    - services/tutorStubResistanceRecoverySemanticAdjudicationV7.js
+    - services/tutorStubResistanceRecoverySemanticValidationV7.js
+    - services/tutorStubResistanceMeasurementValidationV7Runtime.js
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json
     - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json
     - config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json
@@ -237,6 +257,12 @@ links:
     - config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v6.json
     - config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v6.json
     - config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v6.endpoint-go.json
+    - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v5.json
+    - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v5.json
+    - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v6.json
+    - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v6.json
+    - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v7.json
+    - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v7.json
 tags:
   - tutor-stub
   - cells
@@ -244,7 +270,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-action-register-semantic-adjudication-readiness
+branch: codex/resistance-measurement-v7-redesign
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -3178,6 +3204,619 @@ and explicit human approval.
   This request authorizes nothing. The confirmation launch still requires
   the exact approval statement supplied and committed separately by a
   human; no model call occurs before that.
+
+- 2026-08-21 — Reopened the frame-refusal measurement track after the user
+  supplied a fresh method and provider-route decision: test Claude's captured
+  JSON result-envelope method and, if it succeeds, repeat the validation from a
+  wholly fresh destination. The former terminal interpretation is superseded
+  prospectively, while every V1/V2 failure and all three incomplete V3 roots
+  remain immutable, excluded, and scientifically creditless.
+
+  Zero-call reproduction against Claude CLI 2.1.239's captured envelopes
+  confirmed that both error and success events report `subtype: success`, but
+  differ exactly on `is_error` and `structured_output`. Schema calls now use
+  `--output-format json`, select exactly one `type: result` event, accept only
+  `is_error: false` with structured output subject to the unchanged local V3
+  validator, and classify `is_error: true` without structured output as an
+  explicit response-free transport error. Invalid JSON, missing or duplicate
+  result events, contradictions, and exit-zero prose without structured output
+  are terminal indeterminate transport failures. Raw stdout/stderr is never
+  persisted; only byte counts and SHA-256 digests cross the error boundary.
+  Plain-text Claude calls are unchanged.
+
+  The response-free class is retryable only under prospective semantic-
+  validation request revision 4, in the pre-existing three-reservation envelope
+  at 5 and 15 seconds. The frozen V3 prompt, schema, semantic instrument,
+  heldout, judges, gates, and 80-case/two-judge design remain unchanged. The
+  runtime fixture proved two response-free failures followed by a valid third
+  response, a sealed 80-case run, safe telemetry, and analyzer acceptance.
+  Programme accounting remains `728 / 5000`; a fresh validation is 160 planned
+  calls, hard 480 reservations, for `728 -> 1208 / 5000`. No model call has
+  occurred in this repair or registration work.
+
+- 2026-08-21 — Packaged the wholly fresh revision-4 semantic-validation HOLD
+  request from repair source `16caa37c236cb76c6ac524679e83ef279cefc788`
+  / tree `cd40ddc207fadc020c396abcc3938f72bc7a8869`. The request is
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-3.json`
+  at SHA-256
+  `b20d55cc23483a1143b36a5d1dd620a53e453c6e0b13199a76daa1f3ea47d460`.
+  Its 38-file closure includes all three consumed V3 requests, and the checker
+  verifies every final artifact of the third partial root plus the tested JSON
+  envelope predicates and fresh human route-decision digest. The create-once
+  destination is
+  `.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-d`.
+  Isolated replay passed 77 checks with zero model calls and zero production
+  writes. The packet remains a literal HOLD artifact; live execution is covered
+  by the user's standing programme authority and current explicit instruction
+  to redo the run upon successful testing, not by fields inside the request.
+
+- 2026-08-21 — Post-merge CI correctly exposed source-closure drift in two
+  older boredom fixtures after the Claude bridge and shared GO-request checker
+  changed. The consumed semantic-validation request and frozen proof-DAG HOLD
+  remain byte-immutable and now have explicit fail-closed regression assertions.
+  Their behavioral tests use current-source, zero-call in-memory/temporary
+  fixtures instead of pretending the historical closures still describe HEAD.
+
+- 2026-08-21 — The fresh revision-4 validation sealed all 80 cases and 160
+  judge records at execution source `16caa37c` using 166 reservations (158
+  returned responses and eight explicit response-free Claude failures). The
+  predeclared analyzer then stopped before metrics because its provenance audit
+  still compared two exhausted revision-4 units with the predecessor exit-one
+  reason string. The preserved attempts already satisfy the new response-free
+  telemetry audit exactly. An analysis-only compatibility repair selects the
+  registered reason by attempt classification, adds an exhausted-unit
+  regression, and permits a clean repaired analyzer checkout to verify the
+  frozen execution commit/tree separately. No artifact, response, gold label,
+  judge record, or model-call history is changed.
+
+- 2026-08-21 — The repaired Claude JSON transport completed the wholly fresh
+  80-case V3 manipulation validation, but the predeclared semantic instrument
+  failed rather than the route. Sol produced 80/80 valid exact primary labels;
+  Sonnet produced 74/80 exact primary labels under registered scoring; raw
+  label agreement was 0.925 and Cohen's kappa 0.884. V3 nevertheless collapsed
+  21 cases to whole-case `measurement_indeterminate` because it required
+  agreement on the complete eight-field diagnostic vector. The dominant
+  component disagreements were interlocutor standing versus other governance
+  (7) and participation withholding (5). Six Sonnet seats were unavailable or
+  invalid, including two exhausted response-free units. The sealed V3 report
+  remains failed, immutable, excluded from reuse or pooling, and supports no
+  warm/plain claim.
+
+  The prospective V4 redesign freezes the unchanged quote-anchored V3 seat
+  prompt/schema behind a three-model hierarchical panel: Sol, Sonnet 5, and
+  GPT-5.5, all independent from the Luna generator. Two valid high-confidence
+  primary-label votes determine the primary label. Each diagnostic field is
+  aggregated separately by the same two-of-three rule; field disagreement is
+  indeterminate only for that field and cannot veto a primary-label majority.
+  Missing, response-free, invalid, low-confidence, or individually
+  indeterminate seats abstain; fewer than two eligible votes or no primary
+  majority yields `measurement_indeterminate`, with no repair, rerun,
+  replacement, lexical tiebreak, or outcome selection. The V3 evidence is
+  development-only. A wholly fresh 80-case V4 heldout corpus must be authored
+  after the instrument-freeze commit and pass the predeclared V4 gates before
+  any confirmation request. Programme accounting is now 894/5,000; V4 plans
+  240 calls with a 720-reservation hard safeguard, for a maximum 1,614 after
+  validation. Attempt counts remain operational safeguards, not design aims.
+
+- 2026-08-21 — Authored the V4 heldout only after instrument-freeze commit
+  `bc4edae0`, without changing any frozen instrument, prompt, model, ontology,
+  consensus rule, or gate. The 80 fresh cases preserve 40 frame refusers, 16
+  productive disputes, and 24 strong negatives; meet the predeclared
+  participation, conditional, nonjurisdictional, target-axis, multi-axis, and
+  other-governance strata; and have no case-id, utterance, or context collision
+  with V1-V3. All 80 cases pass the exact schema/evidence audit and traverse
+  all three frozen seats plus the hierarchical aggregate at zero calls. This
+  establishes engineering closure only, not empirical semantic accuracy.
+
+- 2026-08-21 — Wired V4 into the existing create-once, per-judge checkpointed
+  validation runtime and one-shot analyzer. The deterministic scorer directly
+  implements the already-frozen primary, coverage, component, agreement, and
+  multi-rater-kappa gates. A full 80-case/240-seat zero-call runtime regression
+  passed, including one deliberately exhausted Sonnet response-free seat: the
+  missing seat abstained, GPT-5.5 still ran, the two preserved valid judges
+  formed the primary majority, and no judge, learner, case, or outcome was
+  repaired, rerun, replaced, or selected. The synthetic pass is wiring
+  evidence only; live heldout accuracy remains unobserved.
+
+- 2026-08-21 — Prepared the fresh V4 digest-bound validation request
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v4.json`
+  at SHA-256
+  `72a04ac91dd2c9f152f9e3efd3f1c3e8e80b5c433c00c8950db4f36210a4ec92`.
+  It pins launch source `2b734c5042603ec7cc18a6d11d9735253d9f3631`
+  / tree `654038103babecc55059bbf72e9fb12c3c4e9c8e`, a 19-file
+  closure, three distinct non-Luna judges, 80 wholly fresh cases, 240 planned
+  calls, the 720-reservation validation safeguard, programme ledger
+  `894 -> 1,614 / 5,000`, no interim analysis, and no confirmation authority.
+  Its focused zero-call request validator and deterministic blinded-plan build
+  pass.
+
+- 2026-08-22 — The wholly fresh V4 manipulation semantic validation passed all
+  frozen gates. Execution used exact request SHA-256
+  `72a04ac91dd2c9f152f9e3efd3f1c3e8e80b5c433c00c8950db4f36210a4ec92`
+  from detached source `2b734c5042603ec7cc18a6d11d9735253d9f3631` /
+  tree `654038103babecc55059bbf72e9fb12c3c4e9c8e`. All 80 cases sealed with
+  240 judge records. The exact operational accounting is 242 reservations:
+  239 returned attempts plus three preserved Sonnet response-free transport
+  failures, with the exhausted seat recorded as an abstention and no recall,
+  rerun, repair, replacement, or outcome selection. The programme ledger is
+  therefore `894 -> 1136 / 5000`.
+
+  Primary sensitivity was `1.000`, specificity `0.950`, exact-label accuracy
+  `0.975`, productive-dispute recall `1.000`, determined coverage `0.9875`,
+  mean pairwise label agreement `0.9292`, and multi-rater kappa `0.8889`.
+  Aggregate component accuracy was `0.9219` at `0.9969` determined coverage;
+  every judge exceeded its `0.85` exact-label gate, judgment validity was
+  `0.9708`, every panel retained two eligible voters, and prohibited tool
+  events were zero. One strong negative was conservatively
+  `measurement_indeterminate` and one was a determinate false positive; both
+  remain in the frozen result and are included in the passing metrics.
+
+  The sealed report SHA-256 is
+  `ab9799d1d82f06e60398b505f1cccb6c0c593a781c8e8c0a59da4c2338023570`;
+  seal SHA-256 is
+  `29781dbe6784e05cf85cfb117611a2c0642cfb7b279a9798e64b83ec8fa86573`;
+  plan SHA-256 is
+  `22a653fe7052008eb6f00d42b8b19b923baa3bdbcdf08e093ddb528a0a78e0b1`.
+  The byte-digest mirror is preserved under the private archive namespace
+  `artifacts/tutor-stub-live/resistance-semantic-validation/72a04ac91dd2c9f1-22a653fe7052008e/`.
+  This licenses only the prospective manipulation semantic instrument. The
+  validation corpus remains excluded from confirmation outcomes, and outcome
+  validation plus a new executable confirmation registration/request remain
+  required before any warm-versus-plain inference.
+
+- 2026-08-22 — The post-pass blocking audit found that the unused V2 outcome
+  instrument still required two judges to agree on its complete five-field
+  vector. That is the same structurally fragile unanimity rule that caused the
+  manipulation V3 instrument to collapse valid shared primary judgments when
+  diagnostic components differed. No V2 outcome heldout case has ever been
+  sent to a judge and no V2 outcome response or result exists, so the audit
+  amended the panel before exposure rather than spending calls on a known
+  failure mode.
+
+  The additive V3 outcome instrument is frozen at commit
+  `4a58374052041d6ac7cb18ded0d6d009a5ee4060`. It preserves the V2 bounded
+  public horizon, prompt, schema, quote/span validation, constructs, and unused
+  independently authored 120-case heldout byte-for-byte. It changes only the
+  panel: Sol, Sonnet 5, and GPT-5.5 vote independently; two valid
+  high-confidence votes determine `final_recovery`, and every diagnostic field
+  aggregates separately by the same rule. Component disagreement cannot veto
+  primary recovery. Invalid, low-confidence, missing, response-free, or
+  individually indeterminate seats abstain; fewer than two eligible votes or
+  no majority is terminal `measurement_indeterminate`, with no semantic rerun,
+  learner repair, replacement, outcome selection, or Fisher authority.
+
+  The 120-case / 360-seat checkpointed runtime now continues to all remaining
+  never-dispatched judges after a terminal seat while preserving every failed
+  attempt. A full zero-call runtime regression passed with one Sonnet seat
+  exhausting three response-free attempts: GPT-5.5 still ran, the two valid
+  seats formed the registered majority, all 120 cases sealed, and the analyzer
+  accepted the immutable archive. V2 runtime regressions remain green. The V3
+  validation hard safeguard is 1,080 reservations, moving the observed
+  programme ledger from `1136` to at most `2216 / 5000`. This synthetic result
+  is wiring evidence only; live outcome accuracy remains unobserved and
+  confirmation remains unauthorized.
+
+- 2026-08-22 — The V3 outcome validation is bound for launch from source commit
+  `d6461e340122a5f0c2b5da0bfd6d027cc12f60cc` and tree
+  `a4a0f718edfff82110b0743f953d7ad195bc0549` by GO request
+  `config/tutor-stub-resistance-recovery-semantic-adjudication-validation-study-go-request.v3.json`
+  at SHA-256
+  `19876132b2593ff75b85fb4c5722a6af9bf6ecf3936cd6a421cddf7aa5762ee9`.
+  The request authorizes only the fresh 120-case, three-judge outcome-instrument
+  validation under the standing 5,000-attempt programme ceiling and the
+  1,080-reservation validation safeguard. It does not authorize confirmation;
+  the validation corpus cannot enter confirmation outcomes, and the registered
+  one-time analysis remains blocked until all judge records are sealed.
+
+- 2026-08-22 — The V3 outcome validation completed and failed; it did not
+  authorize confirmation. All 120 cases and 360 judge records sealed from 374
+  reservations (353 returned responses, 21 response-free transport failures,
+  and 7 preserved terminal seat abstentions), moving the observed programme
+  ledger to `1510 / 5000`. The immutable report is SHA-256
+  `77082904a625aceed35127ee2bbd49584d2c0ddb1eb6cad47f4b4a6221b946c4`;
+  its raw seal file is SHA-256
+  `fac58906ef96eac9a1b536592426b610fbac0b15278266b25c2e3bb8d0cbb4a3`,
+  and the durable private archive namespace is
+  `resistance-recovery-semantic-validation/19876132b2593ff7-c48296d485acc9bf`.
+
+  The registered metrics were judgment validity `0.4611`, panels with two
+  eligible voters `0.475`, primary sensitivity `0.55`, specificity `0.325`,
+  exact accuracy and determined coverage `0.475`, mean pairwise agreement
+  `0.3944`, and Fleiss kappa `-0.0343`. These are instrument-failure results,
+  not learner or treatment results; validation cases remain excluded from all
+  confirmation and efficacy claims.
+
+  The sealed-record diagnosis found a deterministic measurement defect. All
+  1,138 returned evidence quotes occur uniquely and exactly in their cited
+  public source, but model-supplied numeric UTF-16 offsets were frequently
+  wrong. The wrapper treated any offset or diagnostic evidence-placement defect
+  as invalidating the complete semantic response, and it excluded 31 correct
+  determinate Sonnet judgments solely because Sonnet reported `medium` rather
+  than `high` confidence. After quote re-anchoring, every otherwise valid Sol
+  judgment was correct (`117/117`), every otherwise valid Sonnet judgment was
+  correct (`86/86`), and every otherwise valid GPT-5.5 judgment was correct
+  (`117/117`).
+
+  The prospective V4 repair therefore derives numeric offsets from unique exact
+  quote text, validates primary recovery and every diagnostic field locally,
+  prevents diagnostic invalidity from vetoing recovery, accepts determinate
+  `medium` or `high` primary votes, and continues to treat `low` confidence as
+  measurement-indeterminate. A strict post-hoc application to the consumed V3
+  records is engineering evidence only: it produced primary seat validity
+  `0.9722`, full panel coverage, primary sensitivity/specificity/exact accuracy
+  `1.0`, mean agreement `0.9444`, and kappa `0.8825`, but register accuracy
+  `0.9417` remained below the prospective `0.95` gate. The consumed corpus will
+  not be reused to validate or tune V4; a genuinely fresh heldout corpus is
+  required after the V4 instrument freeze.
+
+- 2026-08-22 — The field-local V4 outcome instrument is frozen at commit
+  `61bb4ffa4fb5ac6e93090522e015c08cb47eebc5`. Its implementation SHA-256 is
+  `b27cc3f230e84a22022e79b5fdda8a0d332c9af9a56c44851b1b6d3d9ef41a5b`;
+  registration
+  `config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v4.json`
+  is SHA-256
+  `23ba2a30854e90ecbe43bb40bb7ff39a99a8c981abdce99d3516caf526d0d686`.
+  The registration freezes the unchanged three-judge panel and scientific
+  gates before any new heldout is authored. It requires 120 wholly fresh cases
+  with the original recovery, action, register, and intervening-turn strata;
+  zero case/text reuse or pooling from V2/V3; no judge-model authorship; and a
+  new digest-bound request. Validation and confirmation calls remain
+  unauthorized at this stage.
+
+- 2026-08-22 — Corrected the V3 numeric UTF-16 offsets as a zero-call,
+  non-overwriting data-cleaning derivative before considering any fresh run.
+  The raw plan, seal, report, checkpoints, response text, semantic labels,
+  cited sources, quote text, confidence, and provenance remain byte-for-byte
+  unchanged. Every one of the 1,138 quote texts matched exactly once in its
+  model-cited source; deterministic re-anchoring changed 466 numeric offset
+  pairs and left zero unresolved. The programme ledger remains `1510 / 5000`.
+  The audited derivative is preserved beside the raw run under private archive
+  suffix `offset-cleaned-v1-audited`: corrected records SHA-256
+  `793863f15969f6eb65f98d4e65e2dc8468a9961bca0288356af441720f3659f7`,
+  report SHA-256
+  `ebff73869063edad5db50a94efdd9e92ff04af37e18017f8781114b23318ccfc`,
+  and manifest SHA-256
+  `92ca6fe68c18046f45b3e2bf306eae1a22563371fce43c188497847ce5a33439`.
+
+  Scoring that derivative under the original frozen V3 rules improved primary
+  sensitivity to `0.9625`, specificity to `1.0`, exact accuracy and determined
+  coverage to `0.975`, and action accuracy to `0.9667`. V3 nevertheless still
+  fails for reasons not caused by numeric offsets: judgment validity is
+  `0.8889`, register accuracy is `0.9167`, aggregate component accuracy is
+  `0.8688`, mean pairwise recovery agreement is `0.6444`, and Fleiss kappa is
+  `0.4239`; Sonnet's registered per-judge score is `0.4583` because the frozen
+  rule abstains on valid determinate medium-confidence judgments and on records
+  with diagnostic evidence-placement defects. Therefore no rerun follows from
+  the offset defect itself. Any fresh validation must be justified separately
+  by a substantive scoring-rule amendment, not by the cleaned metadata.
+
+- 2026-08-22 — Superseded the unlaunched combined V4 validation design with a
+  split V5 measurement architecture before exposing any fresh case. Primary
+  recovery and intervention fidelity now use separate prompts, response
+  schemas, validators, panels, and reports. The three primary judges see the
+  complete public horizon; the three fidelity judges see only the intervention
+  and cannot see or recode learner outcomes. Both accept determinate medium or
+  high confidence votes, derive offsets deterministically from unique exact
+  quote text, and map low confidence, invalidity, missing returns, or panel
+  disagreement to `measurement_indeterminate` without learner repair, semantic
+  recall, replacement, or selection. Regex, keyword, classifiers, and the Luna
+  generator/analysis route have no vote, veto, or tie-breaking authority.
+
+  The user raised the programme operational safeguard from `5000` to `10000`
+  attempts without changing the scientific design. The fresh validation keeps
+  the independently selected 120-case structure and now uses 720 planned judge
+  calls across two sealed stages, capped at 2160 reservations. A future
+  confirmation requires 4428 reservations after adding the independent
+  three-seat recovery and fidelity panels, for a conservative staged maximum
+  of `8098 / 10000`; attempt counts remain execution safeguards only.
+
+  The V5 instrument froze at commit
+  `6d07cc33b75182f9229a01d81f27a26ad3fa7f67` before corpus authoring. A new
+  deterministic stratified paraphrase corpus then froze at commit
+  `b752b91178e38a5dca10fd44211cc9d9dc1624a6`: 120 new cases, recovery strata
+  `32/32/16/40`, register strata `40/40/40`, 80 action-present cases, 24
+  intervening-turn-dependent cases, and zero exact field or evidence-text
+  reuse from the consumed V2/V3 corpus. Ten zero-call instrument/corpus tests
+  pass. The split checkpoint runtime also passes complete synthetic stage
+  seals, one exhausted response-free Sonnet seat followed by the remaining
+  judge, post-seal combined analysis, and byte-identical durable archiving;
+  all selected V1-V3 runtime regressions remain green. No V5 model call has
+  launched, and no validation or confirmation claim is yet licensed.
+
+- 2026-08-22 — Blocking review of the unlaunched V5 design found one further
+  structural echo of the original defect: a bad action quote could make a
+  valid register judgment abstain, and an unsupported positive recovery
+  component could suppress a separately supported positive endpoint. No V5
+  case had been exposed. The V5 instrument and corpus remain immutable
+  zero-call engineering evidence and are superseded prospectively.
+
+  V6 gives each recovery, action, and register field its own semantic value,
+  evidence, confidence, indeterminacy reason, and eligibility. The model no
+  longer returns a redundant final-recovery label: the wrapper derives a
+  judge's primary vote as yes when any independently eligible component is
+  yes, no only when both are eligible no, and otherwise abstention. A field's
+  invalid evidence, low confidence, or semantic indeterminacy cannot veto its
+  peer. Dedicated regressions cover both failure shapes.
+
+  The V6 instrument froze at commit
+  `779941725c6c57b880aef49e0c5524c19c117903`, and its 16-item
+  failure-to-safeguard registration froze before heldout authoring. A new
+  120-case corpus then froze at commit
+  `1a2fae16701ab322eff98f552a4a7adc5be924a5`; it retains the predeclared
+  `32/32/16/40` recovery and `40/40/40` register strata, 80 action-present
+  cases, and 24 intervening-turn-dependent cases, while using new settings and
+  paraphrase families with zero exact field or evidence-text reuse from V2,
+  V3, or V5. The field-local instrument, registrations, corpus, two-stage
+  runtime, response-free Sonnet continuation, combined post-seal analysis,
+  and durable archive pass zero-call synthetic validation. No V6 call has yet
+  launched; confirmation remains blocked on live validation passage.
+
+  CI blocking review additionally caught that the first V6 wiring revision
+  had modified the launcher and runtime sealed into the consumed V3 request.
+  Before any call, the shared V3 files were restored byte-for-byte and the
+  prospective split V5/V6 lifecycle was moved to dedicated launcher/runtime
+  paths. The frozen V3 request digest test and the full V5/V6 synthetic
+  lifecycle regressions pass together; no historical request or artifact was
+  amended.
+
+- 2026-08-22 — The wholly fresh V6 split validation sealed 120 cases and 360
+  judge records in each stage from 763 reservations, moving the observed
+  programme ledger to `2273 / 10000`. Its combined report SHA-256 is
+  `b77f033d583e8b769c2bceceb56f5638cb7c120beabbab0446f5b12a4e41bc54`.
+  No confirmation claim was licensed. The primary panel was perfect at full
+  determined coverage, but Sonnet's individual conditional accuracy was
+  `0.9167`, below the frozen `0.95` per-judge gate. Fidelity failed with panel
+  action accuracy `0.775` and register accuracy `0.9833`.
+
+  A zero-call audit traced those failures to prospective measurement inputs,
+  not to a reason to repair or select outcomes: all action false negatives
+  came from a corpus branch whose gold said action-present although its ornate
+  text did not perform the registered bounded distinction; two warm labels
+  conflicted with the repository's warm stance contract; the register prompt
+  did not state the repository's warm/plain definitions or make determinate
+  ornate/mockery examples eligible as neither; and all nine Sonnet primary
+  false negatives used first-turn recovery followed by a non-retracting scope
+  closure. V6 remains immutable failed validation evidence and is excluded
+  from reuse or pooling.
+
+- 2026-08-22 — V7 prospectively integrates every V6 failure before another
+  call. The independently pinned three-judge instrument now states that
+  first-turn recovery persists unless explicitly retracted, uses the exact
+  warm and plain stance contracts from `config/engagement-registers.yaml`,
+  and treats hostile, mocking, ornate, or theatrical interventions as
+  determinately neither when their meaning is otherwise clear. The instrument
+  froze at commit `3cee32cdc2a2d786fae7dbda8ee137a5f6a46b87`; its registration
+  froze at `5e1c125907b3ff7adfb2ac2493d3397d8cffdbc7` before corpus
+  authorship. A wholly fresh 120-case corpus then froze at
+  `dd5f3aacc0dfc7cc8b26c2458cd82af3d61b1189`, preserving the registered
+  `32/32/16/40` recovery and `40/40/40` register strata, 80 action-present
+  cases, and 24 intervening-turn-dependent cases, with zero exact field or
+  evidence reuse from consumed V2/V3/V5/V6.
+
+  The V7 loader, separated primary/fidelity calls, field-local wrapper, sealed
+  stage lifecycle, proven response-free retry rule, remaining-judge
+  continuation, combined analysis, and durable archive all pass zero-call
+  tests; V5/V6 runtime regressions remain green. No V7 model call has launched.
+  The validation remains 720 planned calls with a 2160-reservation hard
+  safeguard; the conservative programme maximum through a later confirmation
+  is `8861 / 10000`. Attempt counts remain operational safeguards rather than
+  design objectives.
+
+- 2026-08-22 — The wholly fresh V7 split validation sealed both 120-case,
+  three-judge stages from 754 reservations, moving the observed programme
+  ledger to `3027 / 10000`. Its combined report SHA-256 is
+  `a0240a6be921befab79a248eae4ccbc372e60aae63af9b81c7efd81349eaebf2`.
+  No confirmation claim was licensed. Primary panel accuracy and coverage
+  were perfect, but Sonnet coverage was `0.8833`, below the frozen `0.90`
+  gate. Fidelity panel action accuracy and coverage were perfect and register
+  accuracy was `0.9917`, but GPT-5.5 register accuracy was `0.9333`, below its
+  `0.95` gate.
+
+  A zero-call audit found that 13 of 14 Sonnet abstentions were three-times
+  exhausted response-free transport failures; the remaining return had a
+  duplicate evidence quote. The bridge preserved only byte counts and hashes
+  in the stage attempt record, so the provider reason could not be recovered
+  there. All eight GPT register errors concerned action-present/plain
+  interventions split across an authority sentence and a separate bounded
+  action sentence; this recurring compositional form was semantically read as
+  performed stance. V7 remains immutable failed validation evidence and is
+  excluded from reuse or pooling. No outcome was repaired, replaced, selected,
+  or rerun.
+
+- 2026-08-22 — V8 prospectively integrates the V7 failures before another
+  call. The bridge/process-policy repair at commit
+  `75bf71208e1c84e8993388821b83043cade0c42e` retains capped stdout and stderr
+  text alongside full byte counts and hashes. The V8 stage runtime persists
+  those diagnostics in immutable response-free attempt records, uses frozen
+  `15000/45000` millisecond retry delays, and prevents fidelity launch until
+  the primary stage has sealed. These are operational transport safeguards,
+  not scientific endpoints.
+
+  The V8 semantic instrument froze at
+  `9cd37f0b6708ea9410930d97516aa707c762c632`; its fidelity codebook states
+  prospectively that a literal bounded authority distinction in the same
+  ordinary, checkable sentence remains plain. Its registration froze at
+  `932c20c70af6591d47782d8d23426c88d706d339` before heldout authoring. A
+  wholly fresh 120-case corpus then froze at
+  `e1c8f133d00be5730a65e1a769c13fc5174693c6`, preserving the registered
+  recovery, register, action, and intervening-turn strata while using new
+  settings, objects, measures, and paraphrases with zero exact reuse from V2,
+  V3, V5, V6, or V7. Action-present/plain cases use one literal, checkable
+  sentence. Sixteen focused zero-call tests pass, including sequential-stage
+  enforcement, exact checkpoint/archive reconstruction of the capped provider
+  reason, and full synthetic primary/fidelity seals. No V8 model call has
+  launched; the programme ledger remains `3027 / 10000`.
+
+- 2026-08-22 — The V8 validation then completed without interim outcome
+  inspection. The primary stage sealed 120 cases and 360 judge records from
+  366 reservations; its report SHA-256 is
+  `db21e34f8d0662ab3f75f97cb5be4375d75c8d461f2ef5d719df74f8ada3d6d6`
+  and seal SHA-256 is
+  `40ddef33779ef0d68209f9fd01fad7ae8fb9d981d7377d24efd312651462e5d2`.
+  Primary panel sensitivity, specificity, exact accuracy, and determined
+  coverage were all `1.0`; Sonnet coverage was `0.9417`, above its frozen
+  gate. The outcome-blind fidelity stage sealed 120 cases and 360 judge
+  records from 361 reservations; its report SHA-256 is
+  `874afce7baf5b3d580e4e522fb8ca039a8294a0a367222118ad287a9b8e1d860`
+  and seal SHA-256 is
+  `9a3a2ba77bab1d36283510d80fbcb5635cc7d2bf5162494259c6b7fcddf351ee`.
+  Action accuracy and coverage were `1.0`; register accuracy and coverage were
+  `0.9917`. The combined report passed at SHA-256
+  `7e0ad9aad8aeb584e3f7512118d729e417f1de56bc7e7d1223dcca1b73e00f13`.
+  V8 consumed 727 reservations, moving the observed programme ledger to
+  `3754 / 10000`. These are measurement-validation results only; all 240
+  validation cases remain excluded from confirmation.
+
+- 2026-08-22 — V9 integrates the passed V4 trigger and V8 endpoint/fidelity
+  instruments into the unchanged powered 36-dialogue design: 18 warm and 18
+  plain dialogues in nine balanced four-dialogue blocks. Exactly one
+  two-sided Fisher exact analysis may run, and only after all nine blocks have
+  sealed. Calibration, incomplete-confirmation, and validation cases are not
+  reused or pooled. Three independently pinned non-Luna judges remain
+  authoritative at the trigger; separate three-judge primary-recovery and
+  outcome-blind fidelity calls run only at the exact final horizon. Regex,
+  keywords, the Luna learner classifier, generator analysis, and the typed
+  response audit are advisory only and cannot veto a semantic positive.
+  Missing, invalid, low-confidence, or disagreeing semantic measurements
+  become `measurement_indeterminate`; the whole Fisher analysis is then
+  withheld without repair, rerun, replacement, or selection.
+
+  Zero-call tests cover the corrected three-judge V4 wrapper, separate V8
+  panels and blinding, exact final-horizon trace replay, nonauthoritative typed
+  audit, measurement-indeterminate Fisher withholding, Claude response-free
+  `15000/45000` retry delays with persisted diagnostics, balanced randomization,
+  and the endpoint contract. The operational envelope is 123 reservations per
+  dialogue, 492 per block, and 4428 for confirmation; the conservative maximum
+  is `8182 / 10000`. These ceilings remain execution safeguards, not design
+  objectives. No V9 model call has launched; merge, blocking review, and a
+  fresh digest-bound GO request remain required.
+
+- 2026-08-22 — Standing directive (operator): retire the digest-bound
+  authorization machinery for every study registered after this date. A new
+  paid study needs three things only: a design file merged to `main`, a
+  clean detached launch commit that contains it, and a signed GO note naming
+  the design file, the launch commit, and the spend cap. Ceilings,
+  create-once destinations, no-resume, the run ledger, and archiving move
+  into the shared runner as CI-tested code. Request JSONs with digest
+  closures, endpoint certificates, consumed-authorization records, HOLD
+  packets, and digest-bound validators are retired for new work; consumed
+  historical artifacts stay immutable. Tamper evidence is git: a run whose
+  launch commit does not contain the signed design file is void. The
+  scientific discipline — prospective registration, fail-closed
+  dispositions, no post-hoc threshold changes, prospective-only amendments —
+  is unchanged and lives in the design file. Full policy:
+  `docs/paid-study-authorization-policy.md`. The pending V9 confirmation may
+  launch under either regime at the operator's choice; it does not restart
+  merely to change transport.
+
+- 2026-08-22 — A zero-call audit of the immutable completed V10 block found
+  that the failed plain/warm manipulation came from a contradictory speaking
+  contract, not an ambiguous semantic judge. Of 18 plain assignments, the
+  independent panel judged 17 warm and one indeterminate; 16 carried the
+  stale warm-derived `shared_scene_invitation` tactic. All 18 warm assignments
+  were judged warm. The study overlay had changed `engagement_stance` after
+  ordinary configuration selection without recomputing the stance-derived
+  `actorial_performance`, explicitly prompting plain-arm tutors to use shared
+  movement and invitation. V10 remains immutable
+  `measurement_indeterminate_no_fisher_no_rerun` evidence.
+
+  The prospective study overlay now preserves the fixed
+  `test_bounded_distinction` action and independently selected host part while
+  rebinding only the stance-derived tactic: plain receives a neutral,
+  non-affiliative contrast contract plus `unadorned_report`; warm receives a
+  low-pressure collaborative contrast contract plus
+  `shared_scene_invitation`. The safety-override path performs the same
+  rebinding. These are compiler/prompt invariants, never a regex verdict; a
+  future independent semantic panel remains authoritative. Focused contrast,
+  protected-condition, V10 compatibility, and first-draft regressions pass
+  zero-call. Full audit:
+  `notes/2026-08-22-v10-plain-warm-contrast-zero-call-audit.md`.
+
+- 2026-08-22 — Registered a prospective manipulation-only validation before
+  any further recovery confirmation. The design uses 60 wholly fresh Luna
+  dialogues, 30 per arm in ten balanced blocks, and stops immediately after
+  the randomized intervention. The independently pinned V8 three-judge panel
+  sees only the intervention and remains blind to assignment and learner
+  outcome. At 30 per arm, requiring at least 28 correct deliveries has exact
+  one-sided alpha `0.04418` against unacceptable fidelity `0.80` and power
+  `0.81218` at acceptable fidelity `0.95`; separate coverage and action gates
+  also apply. Indeterminacy is retained, never repaired or replaced. The
+  registered 4,140-attempt ceiling is an operational safeguard derived from
+  23 maximum role calls per dialogue and three transport reservations per
+  call; it does not determine study size. The validation has not launched and
+  makes no recovery or treatment-effect claim.
+
+- 2026-08-22 — Manipulation validation V1 completed all 60 wholly fresh
+  dialogues from detached launch commit `77657073` with 601 reservations and
+  zero failed child processes. Execution, measurement coverage, and action
+  fidelity passed; register fidelity failed. Warm was 30/30 register-matched.
+  Plain was 2/30 register-matched, with 27 independent `neither` judgments and
+  one measurement-indeterminate case. No learner recovery or treatment effect
+  was generated or analyzed, all 60 cases remain excluded from every
+  confirmation, and confirmation launch remains blocked. Report SHA-256:
+  `ba00dc13688980095077eb3c5da36e7651e431fab8cc41e997bdf9edf0758d89`.
+  Plan SHA-256:
+  `8724c1d0cbd7c5950f2c9ab4247600cb2575835158cdaf07fa37aba80b990714`.
+
+  The zero-call construct audit found that the comparison arm consistently
+  removed warm/shared invitation but retained ordinary first-person dramatic
+  conduct. That supports a prospective warm-versus-non-warm contrast, not a
+  forced compiler rewrite to satisfy the narrower frozen `plain` category.
+  The abandoned direct-reference compiler patch was removed. Historical
+  labels and the failed plain gate remain unchanged; a new binary semantic
+  fidelity instrument must be validated before confirmation. Regex remains
+  descriptive only. Full audit:
+  `notes/2026-08-22-resistance-action-register-manipulation-validation-v1-result.md`.
+
+- 2026-08-23 — The prospective confirmation was repowered without using call
+  minimization as a design objective. The old 18-per-arm design has only about
+  20% power for a 10% versus 30% recovery contrast. A two-sided Fisher exact
+  test at alpha 0.05 needs 89 determinate dialogues per arm for 90% power.
+  With observed Sol-Sonnet joint coverage of 113/120, 100 allocated dialogues
+  per arm gives a 98.63% probability of retaining at least 89 in each arm and,
+  under the planning independence assumption, a 97.28% probability that both
+  arms do. The fixed design is 200 wholly fresh dialogues in 50 balanced
+  four-dialogue blocks. GPT-5.5 is removed from every prospective trigger,
+  outcome, and fidelity panel; Sol and Sonnet must agree or the measurement is
+  indeterminate. Design:
+  `config/tutor-stub-resistance-action-register-warm-nonwarm-confirmation.v1.json`.
+
+- 2026-08-23 — Two excluded four-dialogue technical smokes exercised the exact
+  prospective Luna/Sol/Sonnet surface without arm-outcome analysis. Smoke A
+  exposed an over-strict wrapper despite 8/8 binary trigger-label agreement.
+  V6 prospectively made exact Sol-Sonnet binary agreement authoritative while
+  retaining component disagreement as diagnostic and normalizing only an
+  evidence slot paired with the same judge's semantic `no`. Smoke B then
+  completed 4/4 dialogues with 60 reservations, zero failures, and no semantic
+  changes. Together the smokes used 100 reservations and are excluded from all
+  confirmation reuse or pooling. No repeated trigger smoke or semantic corpus
+  validation is permitted unless those exact instrument inputs change.
+
+- 2026-08-23 — The executable confirmation integration binds V6 trigger
+  semantics to a new V9 two-judge recovery/fidelity panel. The panel keeps the
+  validated V8 prompts, schemas, exact-quote validation, and blinding; its
+  prospective fidelity projection maps validated `plain` and `neither` to
+  `nonwarm`. The dedicated runner enforces clean detached source, committed GO
+  provenance, create-once output, a 20,400-reservation study ceiling, append-only
+  accounting, and at most three same-unit process attempts for technical
+  missing-output failures. It never reruns valid outputs or semantic
+  indeterminacy and performs the registered Fisher analysis only after all 200
+  units have terminal dispositions. Nineteen focused zero-call tests pass; the
+  programme ledger before launch is 5,594 and its exact safeguard ceiling is
+  25,994.
+
+- 2026-08-23 — Closed the programme on the sealed 200-dialogue confirmation.
+  All 200 units reached terminal semantic records on their first attempt from
+  clean detached launch commit `e257268e`; 3,818 reservations moved the
+  programme ledger to `9412 / 25994`, with no recovery or interim analysis.
+  Outcome coverage was 99/100 in both arms and recovery was 0/99 versus 0/99
+  (`p = 1`; risk difference 0). Warm action fidelity passed at 0.96, but
+  non-warm action fidelity was 0.88 and failed the registered 0.90 gate.
+  Assigned-register fidelity passed in both arms. The programme therefore
+  closes with a descriptive no-recovery observation and no confirmatory causal
+  null claim. The sealed study is not rerun or resumed. Closeout:
+  `notes/2026-08-23-resistance-action-register-warm-nonwarm-confirmation-closeout.md`.
+
 - 2026-08-21 — The approved v4 package was found to be UNLAUNCHABLE, at
   zero cost, before any model call. Three of its own rules formed a loop
   with no solution: the frozen request pins launch commit

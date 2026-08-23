@@ -152,6 +152,24 @@ const RESISTANCE_ACTION_REGISTER_CONFIRMATION_V1_CRITICAL_SOURCE_CLOSURE = Objec
   'package-lock.json',
 ]);
 
+const RESISTANCE_ACTION_REGISTER_CONFIRMATION_V9_CRITICAL_SOURCE_CLOSURE = Object.freeze([
+  ...RESISTANCE_ACTION_REGISTER_CONFIRMATION_V1_CRITICAL_SOURCE_CLOSURE,
+  'services/tutorStubResistanceSemanticRuntime.js',
+  'services/tutorStubResistanceSemanticAdjudication.js',
+  'services/tutorStubResistanceSemanticAdjudicationV2.js',
+  'services/tutorStubResistanceSemanticAdjudicationV3.js',
+  'services/tutorStubResistanceSemanticAdjudicationV4.js',
+  'services/tutorStubResistanceConfirmationSemanticRuntime.js',
+  'services/tutorStubResistanceRecoverySemanticAdjudicationV8.js',
+  'services/cliProviderBridge.js',
+  'services/modelCliProcessPolicy.js',
+  'config/tutor-stub-resistance-semantic-adjudication-registration.v4.json',
+  'config/tutor-stub-resistance-semantic-adjudication-response.schema.v3.json',
+  'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json',
+  'config/tutor-stub-resistance-recovery-primary-response.schema.v8.json',
+  'config/tutor-stub-resistance-intervention-fidelity-response.schema.v8.json',
+]);
+
 const RESISTANCE_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE = Object.freeze([
   'scripts/run-tutor-stub-resistance-semantic-validation.js',
   'scripts/analyze-tutor-stub-resistance-semantic-validation.js',
@@ -473,6 +491,160 @@ const RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST = Object.freez
   ambiguousCase: Object.freeze({
     caseId: 'sv3-630037d2c2ac71afa73d1a7fe13ea1b1',
     judgeId: 'semantic_judge_a',
+    attempt: 1,
+    status: 'dispatched',
+  }),
+  goldJoined: false,
+  recoveryRan: false,
+  analyzerRan: false,
+  resultProduced: false,
+  reportProduced: false,
+  sealProduced: false,
+  sameSourceResumePermitted: false,
+  recoveryPermitted: false,
+  reusePermitted: false,
+  poolingPermitted: false,
+  outcomeSelectionPermitted: false,
+  confirmationCreditPermitted: false,
+});
+
+const RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SECOND_SUCCESSOR_REQUEST = Object.freeze({
+  requestRevision: 4,
+  request: Object.freeze({
+    path: 'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-2.json',
+    sha256: '234d68afc8576acca01620dd110a285aadd0adf2f5eb408b1d9e95956ed2da5d',
+  }),
+  disposition: 'consumed_stopped_wholly_excluded',
+  source: Object.freeze({
+    commit: '85010118c71c6b62dac6b7c741a2c4905ad19c06',
+    tree: '37d8f63d299769552fc2563668306c5c1dc2b0ac',
+  }),
+  destination: '.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-c',
+  planSha256: '8175b1aa619dd5413525b9eb0dfb28f4a14427cee485dddddc01742db9e6e44d',
+  localEvidence: Object.freeze({
+    files: 17,
+    bytes: 383860,
+    inventorySha256: 'cf3e40c7e795607691470b574b1d2530a3b8bb6a453f0e7415f3c694f26f6d7e',
+    artifacts: Object.freeze([
+      Object.freeze({
+        path: 'plan.json',
+        status: 'plan',
+        sha256: 'cf1eebf5921aeaed092947861c6dc78c9cf4895173544df38bff1fa44c15cc1a',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-0846454abc11ce08d275b2f892bae842/checkpoint.json',
+        status: 'sealed',
+        sha256: 'd2c70c680ae0a7e61293785bbdc987db5af3a50a36d0f2a44c0c76b644c01a74',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-1856062e7c569f5436091bf773524990/checkpoint.json',
+        status: 'sealed',
+        sha256: '92fec0db73608d5f7a1021524ab03264ac8227b43ff786639b12e8d53ca45f73',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-33784137804c32208977669a6288f338/checkpoint.json',
+        status: 'sealed',
+        sha256: '7009b3311d411ca722fc07dee6ce0e4022a86403fe374ffa1204b14372db234b',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-342e7a6727b7549c908f19502a43ca30/checkpoint.json',
+        status: 'sealed',
+        sha256: 'd4e47a8a2c8e7f0bdaf76db083dc14146657b7595f83bf2c115412492c027c85',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-3e8cd42b67a4d67bd1bb0004cc0338f2/checkpoint.json',
+        status: 'sealed',
+        sha256: 'b2e823fcc3600394a8d950c58146aaf5167857f9aa926b125a6c7c2763285025',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-446ea7ff1b853d91609b942cd7361064/checkpoint.json',
+        status: 'sealed',
+        sha256: '7fb6f6e3f30ca9217e14b26c227761c58623432f7a8ead4953ba264ca0d650a1',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-4873505e21825ee51b69481a071ed0d7/checkpoint.json',
+        status: 'sealed',
+        sha256: '79dbcb1f84c9c0ac69d48521744693d6cdc9946f1f9dd81acbecf0cfa31aab81',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-4c2db32139b2fcb0a22ef3a967eeddc9/checkpoint.json',
+        status: 'sealed',
+        sha256: '12c6300f0f5b8a4fe0f0856e1b9342421d3cadd0ad285f735db108bc3f0c477a',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-86fb1748771f7743d76d07ffdd9f6533/checkpoint.json',
+        status: 'sealed',
+        sha256: 'b861d6a4218aea1a524209bca7a5801901d62dbfc1d9740874b8ac7f7170ab01',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-a059314a64d8f58efc25097b50de5a23/checkpoint.json',
+        status: 'sealed',
+        sha256: 'b412231763e3cafb3389be18856b2cc6768bf052c8c2366b5a355b36204c7b54',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-b154dc89b6d7bb62d8e316a5b5dcc6a4/checkpoint.json',
+        status: 'sealed',
+        sha256: '32852a7ba2e0266e10ea6e53cefc62c339a1cdfca0d504efc83de86f5e5f3d7e',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-b3ebe28ac0a34f02aec2a9d8819e78d6/checkpoint.json',
+        status: 'sealed',
+        sha256: '5e2f1e19f9863e3e7077e648fc1e0fd3ca1145166efeacdce009fa38c6217014',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-becd77dbbacd806515c0f612b74bd756/checkpoint.json',
+        status: 'sealed',
+        sha256: '1a86a6ac3567812a42e4f6a5ae268660e6ca6c0b570983ade7f2b5cb557fd19e',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-c25051c69f0c4c7b8c66e2c45685ee0a/checkpoint.json',
+        status: 'judge_in_flight',
+        sha256: '7a345d24878d3456e42e6edfa86f108fed1dc4eb369b108a5f2c3c9ae35ee188',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-d34fc430c5374c7e30833d6b5df8d3eb/checkpoint.json',
+        status: 'sealed',
+        sha256: '901a3b051bd393a8d1a56075445c3c58966b98e58f5f7bb4a3831bd276e74712',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-ddf1d5cf7c4c04a94be25c73930d7f5e/checkpoint.json',
+        status: 'sealed',
+        sha256: '70560f14524703485861496ed3033019a19faf650d7f00cce47cb77da35f5c8c',
+      }),
+    ]),
+  }),
+  privateArchive: Object.freeze({
+    branch: 'codex/resistance-semantic-validation-v3-successor-2-incomplete-archive',
+    commit: '0e2403626bbf54e596d4f8f8244cc24067cdea1f',
+    tree: '405046957577b83a624e090a39945ff1f89398c4',
+    artifactPath: 'artifacts/tutor-stub-live/resistance-semantic-validation/234d68afc8576acc-8175b1aa619dd541',
+    files: 128,
+    bytes: 1248078,
+    inventorySha256: '2f1b0db82031b73760a1f62a880bbaa443925fe616215607011e83559a5efcb9',
+    manifestSha256: 'e0971b83fa406a25239bd4223d51bd5d9bdb4d000cc17a61beae9ae916e720d5',
+    manifestedTransitions: 127,
+    status: 'running_stopped_before_seal',
+  }),
+  accounting: Object.freeze({
+    chargedReservations: 32,
+    returnedResponses: 29,
+    terminalTransportFailures: 2,
+    dispatchedAmbiguous: 1,
+    sealedCases: 15,
+    judgeInFlightCases: 1,
+    programmeLedgerAfter: 728,
+  }),
+  failureEvidence: Object.freeze({
+    judgeId: 'semantic_judge_b',
+    provider: 'claude-code',
+    model: 'claude-sonnet-5',
+    errorCode: 'CLI_PROVIDER_EXIT_FAILED',
+    exitCode: 1,
+    cases: Object.freeze(['sv3-a059314a64d8f58efc25097b50de5a23', 'sv3-d34fc430c5374c7e30833d6b5df8d3eb']),
+  }),
+  ambiguousCase: Object.freeze({
+    caseId: 'sv3-c25051c69f0c4c7b8c66e2c45685ee0a',
+    judgeId: 'semantic_judge_b',
     attempt: 1,
     status: 'dispatched',
   }),
@@ -1330,6 +1502,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     'prospective_frame_refuser_warm_plain_confirmation_v3',
     'prospective_frame_refuser_warm_plain_confirmation_v4',
     'prospective_frame_refuser_warm_plain_confirmation_v5',
+    'prospective_frame_refuser_warm_plain_confirmation_v6',
   ].includes(request.actionRegisterConfirmation?.type);
   const isActionRegisterConfirmationV2 =
     request.actionRegisterConfirmation?.type === 'prospective_frame_refuser_warm_plain_confirmation_v2';
@@ -1339,11 +1512,14 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     request.actionRegisterConfirmation?.type === 'prospective_frame_refuser_warm_plain_confirmation_v4';
   const isActionRegisterConfirmationV5 =
     request.actionRegisterConfirmation?.type === 'prospective_frame_refuser_warm_plain_confirmation_v5';
+  const isActionRegisterConfirmationV6 =
+    request.actionRegisterConfirmation?.type === 'prospective_frame_refuser_warm_plain_confirmation_v6';
   const isActionRegisterConfirmationSuccessor =
     isActionRegisterConfirmationV2 ||
     isActionRegisterConfirmationV3 ||
     isActionRegisterConfirmationV4 ||
-    isActionRegisterConfirmationV5;
+    isActionRegisterConfirmationV5 ||
+    isActionRegisterConfirmationV6;
   const isBoredomActionRegisterProofDag =
     request.boredomActionRegisterProofDag?.type ===
     'prospective_boredom_matched_action_warm_plain_proof_dag_confirmation_v1';
@@ -1365,29 +1541,38 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     [
       RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.requestRevision,
       RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.requestRevision,
+      RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SECOND_SUCCESSOR_REQUEST.requestRevision,
     ].includes(request.semanticAdjudicationValidation?.requestRevision);
   const isResistanceSemanticValidationV3SecondSuccessor =
     isResistanceSemanticValidationV3 &&
     request.semanticAdjudicationValidation?.requestRevision ===
       RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.requestRevision;
-  const resistanceSemanticValidationProgrammeLedgerBefore = isResistanceSemanticValidationV3SecondSuccessor
-    ? 696
-    : isResistanceSemanticValidationV3Successor
-      ? 661
-      : isResistanceSemanticValidationV3
-        ? 651
-        : isResistanceSemanticValidationV2
-          ? 491
-          : 331;
-  const resistanceSemanticValidationProgrammeLedgerAfterMaximum = isResistanceSemanticValidationV3SecondSuccessor
-    ? 1176
-    : isResistanceSemanticValidationV3Successor
-      ? 1141
-      : isResistanceSemanticValidationV3
-        ? 1131
-        : isResistanceSemanticValidationV2
-          ? 971
-          : 811;
+  const isResistanceSemanticValidationV3ThirdSuccessor =
+    isResistanceSemanticValidationV3 &&
+    request.semanticAdjudicationValidation?.requestRevision ===
+      RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SECOND_SUCCESSOR_REQUEST.requestRevision;
+  const resistanceSemanticValidationProgrammeLedgerBefore = isResistanceSemanticValidationV3ThirdSuccessor
+    ? 728
+    : isResistanceSemanticValidationV3SecondSuccessor
+      ? 696
+      : isResistanceSemanticValidationV3Successor
+        ? 661
+        : isResistanceSemanticValidationV3
+          ? 651
+          : isResistanceSemanticValidationV2
+            ? 491
+            : 331;
+  const resistanceSemanticValidationProgrammeLedgerAfterMaximum = isResistanceSemanticValidationV3ThirdSuccessor
+    ? 1208
+    : isResistanceSemanticValidationV3SecondSuccessor
+      ? 1176
+      : isResistanceSemanticValidationV3Successor
+        ? 1141
+        : isResistanceSemanticValidationV3
+          ? 1131
+          : isResistanceSemanticValidationV2
+            ? 971
+            : 811;
   const resistanceSemanticValidationVersion = isResistanceSemanticValidationV3
     ? 3
     : isResistanceSemanticValidationV2
@@ -1454,9 +1639,12 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       checks,
       'action-register-confirmation-successor-standing-authority-boundary',
       request.authorization.standingAuthorizationAttachmentSha256 ===
-        (isActionRegisterConfirmationV5
+        (isActionRegisterConfirmationV5 || isActionRegisterConfirmationV6
           ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
           : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b') &&
+        (!isActionRegisterConfirmationV6 ||
+          request.authorization.standingArchitecturalCorrectionSha256 ===
+            'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4') &&
         request.authorization.programmeCeilingAmendmentAuthorized === false,
       'the successor must bind the recorded standing authority and must not pre-authorize its ceiling amendment',
     );
@@ -1468,7 +1656,10 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       request.authorization.standingArchitecturalCorrectionSha256 ===
         'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4' &&
         request.authorization.priorStandingAuthoritySha256 ===
-          '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce',
+          '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce' &&
+        (!isResistanceSemanticValidationV3ThirdSuccessor ||
+          request.authorization.freshTransportDecisionSha256 ===
+            '638eb391a0dd44043388c13e2088feec614557e7f4edf5a3b59c0d6f2a2ae88d'),
       'the validation request binds both the architectural correction and prior standing programme authority',
     );
   }
@@ -1525,21 +1716,30 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
                   ? BOREDOM_ACTION_REGISTER_PROOF_DAG_V2_CRITICAL_SOURCE_CLOSURE
                   : BOREDOM_ACTION_REGISTER_PROOF_DAG_V1_CRITICAL_SOURCE_CLOSURE
           : isActionRegisterConfirmation
-            ? RESISTANCE_ACTION_REGISTER_CONFIRMATION_V1_CRITICAL_SOURCE_CLOSURE
+            ? isActionRegisterConfirmationV6
+              ? RESISTANCE_ACTION_REGISTER_CONFIRMATION_V9_CRITICAL_SOURCE_CLOSURE
+              : RESISTANCE_ACTION_REGISTER_CONFIRMATION_V1_CRITICAL_SOURCE_CLOSURE
             : isActionRegisterBaseline || isActionRegisterAnalysisOnly
               ? RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE
               : registrationVersion === 4
                 ? FRAME_REFUSER_OPPORTUNITY_V4_CRITICAL_SOURCE_CLOSURE
                 : FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE;
-    const requiredCriticalSourceClosure = isResistanceSemanticValidationV3SecondSuccessor
+    const requiredCriticalSourceClosure = isResistanceSemanticValidationV3ThirdSuccessor
       ? [
           ...baseRequiredCriticalSourceClosure,
           RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.request.path,
           RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.request.path,
+          RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SECOND_SUCCESSOR_REQUEST.request.path,
         ]
-      : isResistanceSemanticValidationV3Successor
-        ? [...baseRequiredCriticalSourceClosure, RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.request.path]
-        : baseRequiredCriticalSourceClosure;
+      : isResistanceSemanticValidationV3SecondSuccessor
+        ? [
+            ...baseRequiredCriticalSourceClosure,
+            RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.request.path,
+            RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.request.path,
+          ]
+        : isResistanceSemanticValidationV3Successor
+          ? [...baseRequiredCriticalSourceClosure, RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.request.path]
+          : baseRequiredCriticalSourceClosure;
     assertion(
       checks,
       'frame-refuser-opportunity-critical-source-closure',
@@ -1815,15 +2015,17 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         checks,
         'action-register-confirmation-endpoint-readiness-binding',
         endpointRegistration.version ===
-          (isActionRegisterConfirmationV5
-            ? 7
-            : isActionRegisterConfirmationV4
-              ? 6
-              : isActionRegisterConfirmationV3
-                ? 5
-                : isActionRegisterConfirmationV2
-                  ? 4
-                  : 3) &&
+          (isActionRegisterConfirmationV6
+            ? 9
+            : isActionRegisterConfirmationV5
+              ? 7
+              : isActionRegisterConfirmationV4
+                ? 6
+                : isActionRegisterConfirmationV3
+                  ? 5
+                  : isActionRegisterConfirmationV2
+                    ? 4
+                    : 3) &&
           contract.runner?.live_batch_executor ===
             'scripts/run-tutor-stub-resistance-action-register-confirmation.js#runTutorStubResistanceActionRegisterConfirmationBatch' &&
           contract.runner?.live_batch_recovery_executor ===
@@ -1832,19 +2034,43 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
             'scripts/analyze-tutor-stub-resistance-action-register-confirmation.js#analyzeTutorStubResistanceActionRegisterConfirmation' &&
           contract.runner?.batch_contract?.required_batches?.length === 9 &&
           contract.runner?.batch_contract?.dialogues_per_batch === 4 &&
-          contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_dialogue === 60 &&
-          contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_batch === 240 &&
-          contract.runner?.batch_contract?.combined_maximum_model_attempt_reservations === 2160 &&
+          contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_dialogue ===
+            (isActionRegisterConfirmationV6 ? 123 : 60) &&
+          contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_batch ===
+            (isActionRegisterConfirmationV6 ? 492 : 240) &&
+          contract.runner?.batch_contract?.combined_maximum_model_attempt_reservations ===
+            (isActionRegisterConfirmationV6 ? 4428 : 2160) &&
           contract.runner?.batch_contract?.combined_analysis_only === true &&
           contract.channels?.frozen_registration?.implementation === request.bindings.registration.path &&
           contract.runner?.batch_contract?.valid_unit_reruns === false &&
+          (!isActionRegisterConfirmationV6 ||
+            (contract.runner?.batch_contract?.measurement_indeterminate_reruns === false &&
+              contract.channels?.independent_trigger_semantic_panel?.enabled === true &&
+              contract.channels?.independent_recovery_semantic_panel?.enabled === true &&
+              contract.channels?.independent_outcome_blind_fidelity_panel?.enabled === true &&
+              contract.endpoints?.find((row) => row.id === 'fisher_exact_two_sided_confirmation')?.test
+                ?.measurement_indeterminate_disposition === 'withhold_whole_fisher_analysis_no_rerun')) &&
           contract.runner?.batch_contract?.outcome_selection === false &&
           contract.runner?.batch_contract?.bounded_technical_recovery ===
-            `missing_or_failed_units_only_within_unchanged_60_per_dialogue_240_per_batch_2160_confirmation_and_${isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5 ? 5000 : isActionRegisterConfirmationV2 ? 2379 : 2345}_programme_caps` &&
-          (!(isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5) ||
+            (isActionRegisterConfirmationV6
+              ? 'missing_or_failed_units_only_when_no_semantic_or_outcome_return_would_be_recalled_within_the_unchanged_123_per_dialogue_492_per_batch_4428_confirmation_and_10000_programme_caps'
+              : `missing_or_failed_units_only_within_unchanged_60_per_dialogue_240_per_batch_2160_confirmation_and_${isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5 ? 5000 : isActionRegisterConfirmationV2 ? 2379 : 2345}_programme_caps`) &&
+          (!(
+            isActionRegisterConfirmationV3 ||
+            isActionRegisterConfirmationV4 ||
+            isActionRegisterConfirmationV5 ||
+            isActionRegisterConfirmationV6
+          ) ||
             (contract.runner?.batch_contract?.programme_ledger_after_confirmation_maximum ===
-              (isActionRegisterConfirmationV5 ? 2453 : isActionRegisterConfirmationV4 ? 2415 : 2379) &&
-              contract.runner?.batch_contract?.programme_operational_ceiling === 5000 &&
+              (isActionRegisterConfirmationV6
+                ? 8182
+                : isActionRegisterConfirmationV5
+                  ? 2453
+                  : isActionRegisterConfirmationV4
+                    ? 2415
+                    : 2379) &&
+              contract.runner?.batch_contract?.programme_operational_ceiling ===
+                (isActionRegisterConfirmationV6 ? 10000 : 5000) &&
               contract.runner?.batch_contract?.attempt_accounting_role ===
                 'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective')) &&
           [
@@ -1853,7 +2079,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
             'action_register_fidelity_and_safety',
             'fresh_independent_assembly',
           ].every((id) => endpointIds.includes(id)),
-        'the 36-case endpoint binds fresh dynamic triggering, exact recovery, one Fisher analysis, and the 60/240/2160 ceilings',
+        isActionRegisterConfirmationV6
+          ? 'the 36-case endpoint binds independent semantic panels, exact recovery, one Fisher analysis, and the 123/492/4428 safeguards'
+          : 'the 36-case endpoint binds fresh dynamic triggering, exact recovery, one Fisher analysis, and the 60/240/2160 ceilings',
       );
     } else if (isActionRegisterBaseline || isActionRegisterAnalysisOnly) {
       const prefixBundle = request.bindings.prefixBundle;
@@ -2311,14 +2539,21 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         'resistance-semantic-validation-v3-request-revision',
         (gate.requestRevision === undefined &&
           gate.stoppedV3Validation === undefined &&
-          gate.stoppedV3SuccessorValidation === undefined) ||
+          gate.stoppedV3SuccessorValidation === undefined &&
+          gate.stoppedV3SecondSuccessorValidation === undefined) ||
           (gate.requestRevision === RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.requestRevision &&
             gate.stoppedV3Validation !== undefined &&
-            gate.stoppedV3SuccessorValidation === undefined) ||
+            gate.stoppedV3SuccessorValidation === undefined &&
+            gate.stoppedV3SecondSuccessorValidation === undefined) ||
           (isResistanceSemanticValidationV3SecondSuccessor &&
             gate.stoppedV3Validation !== undefined &&
-            gate.stoppedV3SuccessorValidation !== undefined),
-        'the historical V3 request remains valid while revisions 2 and 3 bind every consumed stopped V3 run exactly',
+            gate.stoppedV3SuccessorValidation !== undefined &&
+            gate.stoppedV3SecondSuccessorValidation === undefined) ||
+          (isResistanceSemanticValidationV3ThirdSuccessor &&
+            gate.stoppedV3Validation !== undefined &&
+            gate.stoppedV3SuccessorValidation !== undefined &&
+            gate.stoppedV3SecondSuccessorValidation !== undefined),
+        'the historical V3 request remains valid while revisions 2 through 4 bind every consumed stopped V3 run exactly',
       );
       if (isResistanceSemanticValidationV3Successor) {
         assertion(
@@ -2334,13 +2569,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         );
         validateFileBinding(checks, 'semantic-validation-stopped-v3-request-binding', gate.stoppedV3Validation.request);
       }
-      if (isResistanceSemanticValidationV3SecondSuccessor) {
+      if (isResistanceSemanticValidationV3SecondSuccessor || isResistanceSemanticValidationV3ThirdSuccessor) {
         assertion(
           checks,
           'resistance-semantic-validation-v3-stopped-successor-exclusion',
           JSON.stringify(
             canonicalJson({
-              requestRevision: gate.requestRevision,
+              requestRevision: RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.requestRevision,
               ...gate.stoppedV3SuccessorValidation,
             }),
           ) === JSON.stringify(canonicalJson(RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST)),
@@ -2350,6 +2585,44 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           checks,
           'semantic-validation-stopped-v3-successor-request-binding',
           gate.stoppedV3SuccessorValidation.request,
+        );
+      }
+      if (isResistanceSemanticValidationV3ThirdSuccessor) {
+        assertion(
+          checks,
+          'resistance-semantic-validation-v3-stopped-second-successor-exclusion',
+          JSON.stringify(
+            canonicalJson({
+              requestRevision: gate.requestRevision,
+              ...gate.stoppedV3SecondSuccessorValidation,
+            }),
+          ) === JSON.stringify(canonicalJson(RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SECOND_SUCCESSOR_REQUEST)),
+          'the consumed V3 second-successor request, source, 17 local artifacts, durable archive, accounting, failures, absences, and total exclusion remain exact',
+        );
+        validateFileBinding(
+          checks,
+          'semantic-validation-stopped-v3-second-successor-request-binding',
+          gate.stoppedV3SecondSuccessorValidation.request,
+        );
+        assertion(
+          checks,
+          'resistance-semantic-validation-v3-claude-json-transport-repair',
+          gate.prospectiveClaudeJsonTransport?.outputFormat === 'json' &&
+            gate.prospectiveClaudeJsonTransport?.resultSelector === 'unique_type_result_event' &&
+            gate.prospectiveClaudeJsonTransport?.successPredicate ===
+              'is_error_false_and_structured_output_present_then_local_schema_validation' &&
+            gate.prospectiveClaudeJsonTransport?.responseFreeRetryPredicate ===
+              'is_error_true_and_structured_output_absent' &&
+            gate.prospectiveClaudeJsonTransport?.subtypeAuthoritative === false &&
+            gate.prospectiveClaudeJsonTransport?.ambiguousOutputRetryable === false &&
+            gate.prospectiveClaudeJsonTransport?.rawOutputPersisted === false &&
+            gate.prospectiveClaudeJsonTransport?.capturedErrorEnvelopeSha256 ===
+              '1af9718eb99d5f3876c759ae82527272131c7979e95aff905abb2382c1ec9d6a' &&
+            gate.prospectiveClaudeJsonTransport?.capturedSuccessEnvelopeSha256 ===
+              'f2cf37b47218d1d67bea884b6aba897dfc5e272ead37c4d6f0a88322e916385c' &&
+            gate.prospectiveClaudeJsonTransport?.freshHumanDecisionSha256 ===
+              '638eb391a0dd44043388c13e2088feec614557e7f4edf5a3b59c0d6f2a2ae88d',
+          'revision 4 binds the tested Claude JSON result-envelope method and fresh human route decision without changing the semantic instrument',
         );
       }
       for (const [version, expected] of [
@@ -2431,11 +2704,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       'resistance-semantic-validation-claim-boundary',
       gate.claimBoundary ===
         (isResistanceSemanticValidationV3
-          ? isResistanceSemanticValidationV3SecondSuccessor
-            ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_two_stopped_v3_runs_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
-            : isResistanceSemanticValidationV3Successor
-              ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_stopped_v3_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
-              : 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
+          ? isResistanceSemanticValidationV3ThirdSuccessor
+            ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_three_stopped_v3_runs_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
+            : isResistanceSemanticValidationV3SecondSuccessor
+              ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_two_stopped_v3_runs_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
+              : isResistanceSemanticValidationV3Successor
+                ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_stopped_v3_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
+                : 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
           : isResistanceSemanticValidationV2
             ? 'heldout_semantic_instrument_v2_validation_only_failed_v1_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
             : 'heldout_semantic_instrument_validation_only_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim') &&
@@ -3087,23 +3362,27 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       checks,
       'action-register-confirmation-design-binding',
       registered.version ===
-        (isActionRegisterConfirmationV5
-          ? 7
-          : isActionRegisterConfirmationV4
-            ? 6
-            : isActionRegisterConfirmationV3
-              ? 5
-              : isActionRegisterConfirmationV2
-                ? 4
-                : 3) &&
-        registered.design?.trigger?.observationSemantics ===
-          (isActionRegisterConfirmationV5
-            ? 'prospective_v7'
+        (isActionRegisterConfirmationV6
+          ? 9
+          : isActionRegisterConfirmationV5
+            ? 7
             : isActionRegisterConfirmationV4
-              ? 'prospective_v6'
-              : isActionRegisterConfirmationSuccessor
-                ? 'prospective_v5'
-                : 'prospective_v4') &&
+              ? 6
+              : isActionRegisterConfirmationV3
+                ? 5
+                : isActionRegisterConfirmationV2
+                  ? 4
+                  : 3) &&
+        registered.design?.trigger?.observationSemantics ===
+          (isActionRegisterConfirmationV6
+            ? 'prospective_frame_resistance_semantic_v4'
+            : isActionRegisterConfirmationV5
+              ? 'prospective_v7'
+              : isActionRegisterConfirmationV4
+                ? 'prospective_v6'
+                : isActionRegisterConfirmationSuccessor
+                  ? 'prospective_v5'
+                  : 'prospective_v4') &&
         (!isActionRegisterConfirmationSuccessor || registered.design?.trigger?.observerFirstEligibility === true) &&
         request.design.profiles.join(',') === 'frame_refuser' &&
         request.design.dialogues === 36 &&
@@ -3145,6 +3424,40 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         gate.outcomeSelectionPermitted === false,
       'the 12 calibration dialogues are frozen sizing evidence only and cannot enter the confirmation analysis',
     );
+    if (isActionRegisterConfirmationV6) {
+      assertion(
+        checks,
+        'action-register-confirmation-v9-semantic-authority',
+        registered.authorization?.standingArchitecturalCorrectionSha256 ===
+          'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4' &&
+          registered.semanticAdjudication?.instrumentRegistrationPath ===
+            'config/tutor-stub-resistance-semantic-adjudication-registration.v4.json' &&
+          registered.semanticAdjudication?.instrumentRegistrationSha256 ===
+            'ced640b19fbecfd447c2fbd36cace29765e3cc6b7673a4b13932ec7d8790e135' &&
+          registered.semanticAdjudication?.validationReportSha256 ===
+            'ab9799d1d82f06e60398b505f1cccb6c0c593a781c8e8c0a59da4c2338023570' &&
+          registered.semanticAdjudication?.validationStatus === 'passed' &&
+          registered.semanticAdjudication?.judgesPerCandidate === 3 &&
+          registered.semanticAdjudication?.lexicalAndGeneratorSignals ===
+            'advisory_only_never_vote_tiebreak_veto_or_override' &&
+          registered.outcomeSemanticAdjudication?.instrumentRegistrationPath ===
+            'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json' &&
+          registered.outcomeSemanticAdjudication?.instrumentRegistrationSha256 ===
+            '20da1d03c3a6d9f6b5ffae5fe290879e70c9c83a36cd90049bd5e2556f2dd8bf' &&
+          registered.outcomeSemanticAdjudication?.validationCombinedStatus === 'passed' &&
+          registered.outcomeSemanticAdjudication?.validationCombinedReportSha256 ===
+            '7e0ad9aad8aeb584e3f7512118d729e417f1de56bc7e7d1223dcca1b73e00f13' &&
+          registered.outcomeSemanticAdjudication?.judgesPerPanel === 3 &&
+          registered.outcomeSemanticAdjudication?.primaryAndFidelityCallsSeparate === true &&
+          registered.outcomeSemanticAdjudication?.fidelityPacketContainsLearnerOutcome === false &&
+          registered.outcomeSemanticAdjudication?.authority === 'independent_llm_semantic_panels_only' &&
+          registered.outcomeSemanticAdjudication?.regexKeywordLearnerClassifierGeneratorAndTypedAuditAuthority ===
+            'none' &&
+          registered.outcomeSemanticAdjudication?.measurementIndeterminateDisposition ===
+            'terminal_whole_fisher_analysis_withheld_no_repair_rerun_replacement_or_selection',
+        'the V9 request binds independently validated trigger, recovery, and outcome-blind fidelity panels with no lexical veto',
+      );
+    }
     validateFileBinding(
       checks,
       'action-register-confirmation-calibration-request-binding',
@@ -3176,7 +3489,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       );
       validateFileBinding(checks, 'action-register-confirmation-prior-request-binding', stopped.request);
     }
-    if (isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5) {
+    if (isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5 || isActionRegisterConfirmationV6) {
       const stopped = gate.priorIncompleteConfirmationV3;
       assertion(
         checks,
@@ -3211,7 +3524,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       );
       validateFileBinding(checks, 'action-register-confirmation-prior-v3-request-binding', stopped.request);
     }
-    if (isActionRegisterConfirmationV5) {
+    if (isActionRegisterConfirmationV5 || isActionRegisterConfirmationV6) {
       const stopped = gate.priorIncompleteConfirmationV4;
       assertion(
         checks,
@@ -3269,7 +3582,59 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       );
       validateFileBinding(checks, 'action-register-confirmation-prior-v4-request-binding', stopped.request);
     }
-    if (isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5) {
+    if (isActionRegisterConfirmationV6) {
+      const stopped = gate.priorIncompleteConfirmationV7;
+      assertion(
+        checks,
+        'action-register-confirmation-prior-v7-incomplete-exclusion',
+        stopped?.request?.path ===
+          'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v5.json' &&
+          stopped?.request?.sha256 === 'd209cd7d647f1a35c48d1920444e5648ba72aca5d8f46cb211a2c81ec9f197fb' &&
+          stopped?.sourceCommit === '02560d4fbef7a0e75da89e3c4e9a6b02fbcc0238' &&
+          stopped?.sourceTree === 'e5e570772b29b368eacc571e17bb702cc8bf3631' &&
+          stopped?.batchPlanSha256 === '18ec637a52f5ef6432ccc03084bdcecf8f432d0577bba6bb2f8e584994517fd4' &&
+          stopped?.batchResultSha256 === '566f9c0b0617095bd5acac9803c388d2ab6207c812d9f7e2b3da3ad1b9cb869b' &&
+          stopped?.privateArchiveBranch === 'codex/resistance-action-register-confirmation-v7-incomplete-archive' &&
+          stopped?.privateArchiveCommit === 'a00c4870a7dab506bbe7522f6868c7278aaa81de' &&
+          stopped?.privateArchiveTree === '51c3c2015dec77eccb8966b5110aa8dace42d09d' &&
+          stopped?.localInventoryFiles === 20 &&
+          stopped?.localInventoryBytes === 9_197_030 &&
+          stopped?.localInventorySha256 === 'ac3c74ffb86193ab7ba3deb88268102dcb636f71cea1affd8769dd1a0a4966b7' &&
+          stopped?.liveMirrorInventoryFiles === 8 &&
+          stopped?.liveMirrorInventoryBytes === 947_784 &&
+          stopped?.liveMirrorInventorySha256 === '1a21846b88ec71d11cfca106339960e24a39b0d3d3e9abfac6c1b5edfb810933' &&
+          stopped?.dialoguesPlanned === 36 &&
+          stopped?.dialoguesStarted === 4 &&
+          stopped?.dialoguesComplete === 3 &&
+          stopped?.dialoguesSubstantiveFailure === 1 &&
+          stopped?.reservations === 38 &&
+          stopped?.completedCalls === 38 &&
+          stopped?.providerFailures === 0 &&
+          stopped?.abortedCalls === 0 &&
+          stopped?.traceSha256?.s1 === 'a4ca3897e16dc1cb20028a4269b53265132e4724adfca9b0b3b928447159b52a' &&
+          stopped?.traceSha256?.s2 === '8f968f9f9bf159bb6717b8d5747da87fad85f4c75f6411e808edc298cbd9b74c' &&
+          stopped?.traceSha256?.s3 === '7140a9b11d39afd885107dc00adb598028d66138b15eefa7fd6fc84b232321f1' &&
+          stopped?.traceSha256?.s4 === '82fe867c8fe592987463198a594d940d637a329a83550cf5080e6d01531bf70a' &&
+          stopped?.blocksAfterFirstLaunched === false &&
+          stopped?.recoveryRun === false &&
+          stopped?.analyzerRun === false &&
+          stopped?.reportWritten === false &&
+          stopped?.resultProduced === false &&
+          stopped?.sealProduced === false &&
+          stopped?.reused === false &&
+          stopped?.pooled === false &&
+          stopped?.outcomeSelected === false &&
+          stopped?.excludedFromSuccessor === true,
+        'the incomplete V7 block and semantic measurement failure are hash-bound diagnostic evidence only and wholly excluded',
+      );
+      validateFileBinding(checks, 'action-register-confirmation-prior-v7-request-binding', stopped.request);
+    }
+    if (
+      isActionRegisterConfirmationV3 ||
+      isActionRegisterConfirmationV4 ||
+      isActionRegisterConfirmationV5 ||
+      isActionRegisterConfirmationV6
+    ) {
       const superseded = gate.supersededCeilingBoundRequest;
       assertion(
         checks,
@@ -3286,45 +3651,53 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       );
       validateFileBinding(checks, 'action-register-confirmation-superseded-request-binding', superseded.request);
     }
-    const expectedProgrammeBudget = isActionRegisterConfirmationV5
+    const expectedProgrammeBudget = isActionRegisterConfirmationV6
       ? {
-          ledgerBefore: 293,
-          ceilingBefore: 5000,
+          ledgerBefore: 3754,
+          ceilingBefore: 10000,
           amendment: 0,
-          ceilingAfter: 5000,
-          ledgerAfterMaximum: 2453,
+          ceilingAfter: 10000,
+          ledgerAfterMaximum: 8182,
         }
-      : isActionRegisterConfirmationV4
+      : isActionRegisterConfirmationV5
         ? {
-            ledgerBefore: 255,
+            ledgerBefore: 293,
             ceilingBefore: 5000,
             amendment: 0,
             ceilingAfter: 5000,
-            ledgerAfterMaximum: 2415,
+            ledgerAfterMaximum: 2453,
           }
-        : isActionRegisterConfirmationV3
+        : isActionRegisterConfirmationV4
           ? {
-              ledgerBefore: 219,
-              ceilingBefore: 2345,
-              amendment: 2655,
+              ledgerBefore: 255,
+              ceilingBefore: 5000,
+              amendment: 0,
               ceilingAfter: 5000,
-              ledgerAfterMaximum: 2379,
+              ledgerAfterMaximum: 2415,
             }
-          : isActionRegisterConfirmationV2
+          : isActionRegisterConfirmationV3
             ? {
                 ledgerBefore: 219,
                 ceilingBefore: 2345,
-                amendment: 34,
-                ceilingAfter: 2379,
+                amendment: 2655,
+                ceilingAfter: 5000,
                 ledgerAfterMaximum: 2379,
               }
-            : {
-                ledgerBefore: 185,
-                ceilingBefore: 1200,
-                amendment: 1145,
-                ceilingAfter: 2345,
-                ledgerAfterMaximum: 2345,
-              };
+            : isActionRegisterConfirmationV2
+              ? {
+                  ledgerBefore: 219,
+                  ceilingBefore: 2345,
+                  amendment: 34,
+                  ceilingAfter: 2379,
+                  ledgerAfterMaximum: 2379,
+                }
+              : {
+                  ledgerBefore: 185,
+                  ceilingBefore: 1200,
+                  amendment: 1145,
+                  ceilingAfter: 2345,
+                  ledgerAfterMaximum: 2345,
+                };
     assertion(
       checks,
       'action-register-confirmation-power-and-budget',
@@ -3336,22 +3709,27 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.power.powerAt18PerArm === 0.8388687257645503 &&
         request.power.minimumNPerArmAtOrAbove80Percent === 18 &&
         request.budget.dialogues === 36 &&
-        request.budget.plannedRoleCallsPerDialogue === 20 &&
+        request.budget.plannedRoleCallsPerDialogue === (isActionRegisterConfirmationV6 ? 41 : 20) &&
         request.budget.maximumReservationsPerPlannedCall === 3 &&
-        request.budget.maximumAttemptsPerDialogue === 60 &&
+        request.budget.maximumAttemptsPerDialogue === (isActionRegisterConfirmationV6 ? 123 : 60) &&
         request.budget.dialoguesPerBatch === 4 &&
-        request.budget.maximumAttemptsPerBatch === 240 &&
-        request.budget.maximumPlannedModelAttempts === 2160 &&
+        request.budget.maximumAttemptsPerBatch === (isActionRegisterConfirmationV6 ? 492 : 240) &&
+        request.budget.maximumPlannedModelAttempts === (isActionRegisterConfirmationV6 ? 4428 : 2160) &&
         request.budget.programmeLedgerBefore === expectedProgrammeBudget.ledgerBefore &&
         request.budget.programmeCeilingBefore === expectedProgrammeBudget.ceilingBefore &&
         request.budget.programmeCeilingAmendment === expectedProgrammeBudget.amendment &&
         request.budget.programmeCeilingAfter === expectedProgrammeBudget.ceilingAfter &&
         request.budget.programmeLedgerAfterMaximum === expectedProgrammeBudget.ledgerAfterMaximum &&
-        (!(isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5) ||
+        (!(
+          isActionRegisterConfirmationV3 ||
+          isActionRegisterConfirmationV4 ||
+          isActionRegisterConfirmationV5 ||
+          isActionRegisterConfirmationV6
+        ) ||
           request.budget.attemptAccountingRole ===
             'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective') &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
-      `20 planned calls times three charged attempts gives 60 per dialogue and 2160 total; programme accounting remains an operational safeguard from ${expectedProgrammeBudget.ledgerBefore} to at most ${expectedProgrammeBudget.ledgerAfterMaximum} within ${expectedProgrammeBudget.ceilingAfter}`,
+      `${isActionRegisterConfirmationV6 ? '41 planned calls times three charged attempts gives 123 per dialogue and 4428 total' : '20 planned calls times three charged attempts gives 60 per dialogue and 2160 total'}; programme accounting remains an operational safeguard from ${expectedProgrammeBudget.ledgerBefore} to at most ${expectedProgrammeBudget.ledgerAfterMaximum} within ${expectedProgrammeBudget.ceilingAfter}`,
     );
     const recovery = gate.recoveryBoundary;
     assertion(
@@ -3363,9 +3741,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         recovery.freshNonOverwritingRecoveryCheckpoint === true &&
         recovery.rerunValidOutputs === false &&
         recovery.selectAmongOutcomes === false &&
-        recovery.maximumAttemptsPerDialogueUnchanged === 60 &&
-        recovery.maximumAttemptsPerBatchUnchanged === 240 &&
-        recovery.maximumTotalStudyAttemptsUnchanged === 2160 &&
+        recovery.maximumAttemptsPerDialogueUnchanged === (isActionRegisterConfirmationV6 ? 123 : 60) &&
+        recovery.maximumAttemptsPerBatchUnchanged === (isActionRegisterConfirmationV6 ? 492 : 240) &&
+        recovery.maximumTotalStudyAttemptsUnchanged === (isActionRegisterConfirmationV6 ? 4428 : 2160) &&
         recovery.programmeCeilingUnchanged === expectedProgrammeBudget.ceilingAfter,
       'bounded recovery may fill only missing or failed units under every unchanged confirmation cap',
     );
@@ -4287,15 +4665,17 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
                 ? `No confirmation launch approval is available for ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256}: the independently pinned Sol semantic adjudicator must first pass its predeclared frozen-failure, strong-negative, held-out sensitivity, specificity, agreement, and indeterminacy gates without changing the request, prompt, wrapper, or protected inputs.`
                 : `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes, a 2,160-attempt study safeguard and ${isBoredomActionRegisterProofDagV2 ? '5,000' : '4,539'}-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
     : isActionRegisterConfirmation
-      ? isActionRegisterConfirmationV5
-        ? `Standing programme authority attachment SHA-256 538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce applies to ${requestRepoPath} at SHA-256 ${requestSha256}: one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1, V3, or V4 confirmation blocks, and bounded technical recovery for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
-        : isActionRegisterConfirmationV4
-          ? `I approve ${requestRepoPath} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 and V3 confirmation blocks, and bounded technical recovery authority for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
-          : isActionRegisterConfirmationV3
-            ? `I amend the resistance-action-register programme ceiling from 2,345 to 5,000 model attempts and approve ${requestRepoPath} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 confirmation block, and bounded technical recovery authority for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
-            : isActionRegisterConfirmationSuccessor
-              ? `I amend the resistance-action-register programme ceiling from 2,345 to 2,379 model attempts and approve ${requestRepoPath} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 confirmation block, and bounded technical recovery authority for missing or failed units only within the unchanged 2,379-attempt programme ceiling.`
-              : `I amend the resistance-action-register programme ceiling from 1,200 to 2,345 model attempts and approve ${requestRepoPath} at SHA-256 ${requestSha256} for one 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues, and bounded technical recovery authority for missing or failed units only within the unchanged 2,345-attempt programme ceiling.`
+      ? isActionRegisterConfirmationV6
+        ? `Standing programme authority attachment SHA-256 538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce and standing architectural correction SHA-256 dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4 apply to ${requestRepoPath} at SHA-256 ${requestSha256}: one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, independently pinned three-judge trigger, recovery, and outcome-blind fidelity semantic panels, a 4,428-attempt study safeguard, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues, measurement-validation cases, or incomplete V1, V3, V4, or V7 confirmation blocks, whole-analysis withholding on semantic indeterminacy, and bounded technical recovery for missing or failed units only when no semantic or outcome return would be recalled, within the unchanged 10,000-attempt programme safeguard.`
+        : isActionRegisterConfirmationV5
+          ? `Standing programme authority attachment SHA-256 538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce applies to ${requestRepoPath} at SHA-256 ${requestSha256}: one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1, V3, or V4 confirmation blocks, and bounded technical recovery for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
+          : isActionRegisterConfirmationV4
+            ? `I approve ${requestRepoPath} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 and V3 confirmation blocks, and bounded technical recovery authority for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
+            : isActionRegisterConfirmationV3
+              ? `I amend the resistance-action-register programme ceiling from 2,345 to 5,000 model attempts and approve ${requestRepoPath} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 confirmation block, and bounded technical recovery authority for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
+              : isActionRegisterConfirmationSuccessor
+                ? `I amend the resistance-action-register programme ceiling from 2,345 to 2,379 model attempts and approve ${requestRepoPath} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 confirmation block, and bounded technical recovery authority for missing or failed units only within the unchanged 2,379-attempt programme ceiling.`
+                : `I amend the resistance-action-register programme ceiling from 1,200 to 2,345 model attempts and approve ${requestRepoPath} at SHA-256 ${requestSha256} for one 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues, and bounded technical recovery authority for missing or failed units only within the unchanged 2,345-attempt programme ceiling.`
       : isResistanceRecoverySemanticValidation
         ? `Standing architectural correction SHA-256 dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4 applies to ${requestRepoPath} at SHA-256 ${requestSha256}: one frozen blinded 120-case ${isResistanceRecoverySemanticValidationV2 ? 'corrected-v2 complete-public-horizon ' : ''}recovery-and-treatment-fidelity semantic-instrument validation with exactly two independent judges per case, a hard ceiling of 720 model-attempt reservations, no gold in execution packets, no recall of a completed or ambiguously dispatched judge, no replacement or selection, and no confirmation or efficacy claim.`
         : isResistanceSemanticValidation

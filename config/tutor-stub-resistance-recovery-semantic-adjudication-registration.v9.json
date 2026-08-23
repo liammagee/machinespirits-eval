@@ -1,0 +1,54 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-registration.v9",
+  "version": 9,
+  "status": "prospective_dual_binary_confirmation",
+  "instrument": {
+    "implementationPath": "services/tutorStubResistanceRecoverySemanticAdjudicationV9.js",
+    "promptSchemaEvidenceAndWrapperBasis": "tutor-stub-resistance-recovery-semantic-adjudication-registration.v8",
+    "primaryAndFidelityPromptCallsSeparate": true,
+    "fidelityPacketContainsLearnerOutcome": false,
+    "semanticAuthority": "independent_llm_binary_consensus",
+    "regexKeywordLexicalOrGeneratorSemanticAuthority": "none"
+  },
+  "measurement": {
+    "judges": [
+      {
+        "id": "recovery_semantic_judge_a",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "modelFamily": "openai_gpt_5_6",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      },
+      {
+        "id": "recovery_semantic_judge_b",
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "modelFamily": "anthropic_claude_5",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      }
+    ],
+    "consensus": {
+      "primaryRule": "exact_two_of_two_derived_binary_recovery_votes",
+      "fidelityActionRule": "exact_two_of_two_action_votes",
+      "fidelityRegisterRule": "exact_two_of_two_warm_vs_nonwarm_votes_after_plain_neither_projection",
+      "componentDisagreementMayVetoPrimary": false,
+      "binaryDisagreementOrMissingDisposition": "measurement_indeterminate",
+      "judgeRerunAfterAnyReturnedResponse": false,
+      "unitReplacementOrOutcomeSelection": false
+    }
+  },
+  "validationEvidence": {
+    "v8FreshHeldoutPrimaryPassed": true,
+    "v8FreshHeldoutFidelityPassed": true,
+    "solSonnetPrimaryConditionalAgreement": 1.0,
+    "solSonnetFidelityConditionalAgreement": 0.9655172413793104,
+    "coarserWarmVsNonwarmProjection": true
+  },
+  "claimBoundary": "Prospective dual-judge binary projection only; no V8 validation or prior confirmation dialogue is reused or pooled as an outcome."
+}

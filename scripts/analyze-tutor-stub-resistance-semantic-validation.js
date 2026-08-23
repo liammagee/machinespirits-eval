@@ -16,6 +16,10 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3,
   loadTutorStubResistanceSemanticValidationV3,
 } from '../services/tutorStubResistanceSemanticValidationV3.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V4,
+  loadTutorStubResistanceSemanticValidationV4,
+} from '../services/tutorStubResistanceSemanticValidationV4.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -68,26 +72,34 @@ function main() {
     ![
       TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V2,
       TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3,
+      TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V4,
     ].includes(validationRegistration)
   ) {
     throw new Error('--validation-registration is not a supported additive semantic validation registration');
   }
   const loaded =
-    validationRegistration === TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3
-      ? loadTutorStubResistanceSemanticValidationV3()
-      : validationRegistration
-        ? loadTutorStubResistanceSemanticValidationV2()
-        : undefined;
+    validationRegistration === TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V4
+      ? loadTutorStubResistanceSemanticValidationV4()
+      : validationRegistration === TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3
+        ? loadTutorStubResistanceSemanticValidationV3()
+        : validationRegistration
+          ? loadTutorStubResistanceSemanticValidationV2()
+          : undefined;
   const snapshot = sourceSnapshot();
   if (snapshot.commit !== args['source-commit'] || snapshot.tree !== args['source-tree']) {
     throw new Error('semantic validation analysis source commit/tree does not match the command pin');
+  }
+  const executionSourceCommit = args['execution-source-commit'] || snapshot.commit;
+  const executionSourceTree = args['execution-source-tree'] || snapshot.tree;
+  if (Boolean(args['execution-source-commit']) !== Boolean(args['execution-source-tree'])) {
+    throw new Error('--execution-source-commit and --execution-source-tree must be supplied together');
   }
   const archiveDir = resolveTutorStubArtifactArchiveDirectory(args['archive-dir'], { cwd: ROOT, repoRoot: ROOT });
   if (!archiveDir) throw new Error('semantic validation analysis requires the stable private artifact archive');
   const report = writeTutorStubResistanceSemanticValidationReport({
     destination,
-    expectedSourceCommit: snapshot.commit,
-    expectedSourceTree: snapshot.tree,
+    expectedSourceCommit: executionSourceCommit,
+    expectedSourceTree: executionSourceTree,
     expectedGoRequestPath: request.relative,
     expectedGoRequestSha256: sha256(request.absolute),
     expectedGoRequest: goRequest,

@@ -36,8 +36,10 @@ function main() {
     expectedSourceTree: tree,
     expectedGoRequestPath: request.relative,
     expectedGoRequestSha256: crypto.createHash('sha256').update(fs.readFileSync(request.absolute)).digest('hex'),
+    expectedGoRequest: JSON.parse(fs.readFileSync(request.absolute, 'utf8')),
     sourceDirty: dirty,
     archiveDir: resolveTutorStubArtifactArchiveDirectory(args['archive-dir'], { cwd: ROOT, repoRoot: ROOT }),
+    validationRegistration: args['validation-registration'],
   });
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 }

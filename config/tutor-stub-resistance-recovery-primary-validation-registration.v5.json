@@ -1,0 +1,50 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-measurement-validation-registration.v5",
+  "version": 5,
+  "stage": "primary_recovery",
+  "status": "fresh_heldout_frozen_pending_digest_bound_go",
+  "studyId": "tutor-stub-resistance-recovery-primary-heldout-validation-v5",
+  "instrument": {
+    "path": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v5.json",
+    "sha256": "2a3ab523131c1156b85b744045337bec11880e4938f879be7fbc688e13145ea2"
+  },
+  "heldout": {
+    "corpusPath": "config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v5.json",
+    "corpusSha256": "e69a6672d1e9311ea55319d63a78fe46713af6d021848c3fe6cb15de04b00630",
+    "corpusFreezeCommit": "b752b91178e38a5dca10fd44211cc9d9dc1624a6",
+    "cases": 120,
+    "goldVisibleDuringExecution": false,
+    "consumedCasesReusedOrPooled": false
+  },
+  "executionReadiness": {
+    "plannedCases": 120,
+    "judgesPerCase": 3,
+    "plannedModelCalls": 360,
+    "maximumReservationsPerPlannedCall": 3,
+    "hardStageReservations": 1080,
+    "programmeLedgerBeforeProspectiveMaximum": 1510,
+    "programmeMaximumAfterStage": 2590,
+    "combinedValidationMaximumAfterBothStages": 3670,
+    "programmeCeiling": 10000,
+    "attemptCountsAreOperationalSafeguardsNotDesignObjectives": true
+  },
+  "lifecycle": {
+    "retryOnlyProvenResponseFreeError": true,
+    "noRecallAfterSemanticOrAmbiguousReturn": true,
+    "noRepairRerunReplacementOrSelection": true,
+    "allAttemptsPreserved": true,
+    "freshCreateOnceDestination": true,
+    "durablePrivateArchiveRequired": true
+  },
+  "analysis": {
+    "combinedOnlyAfterBothStagesSealed": true,
+    "interimStageOutcomeAnalysis": false,
+    "primaryAndFidelityVerdictsSeparate": true,
+    "fidelityMayVetoOrRecodePrimary": false
+  },
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "freshDigestBoundGoRequestRequired": true
+  }
+}

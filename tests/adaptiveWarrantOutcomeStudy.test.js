@@ -190,10 +190,11 @@ test(
   },
 );
 
-test('standing-permission byte guard passes the complete generated menu', () => {
+test('standing-permission byte guard refuses the generated menu after frozen source drift', () => {
   const menu = buildOutcomeStandingPermissionMenu();
   const result = guardOutcomeStandingPermissionMenu(menu);
-  assert.equal(result.status, 'passed');
+  assert.equal(result.status, 'failed');
+  assert.equal(result.source_checks['services/tutorStubFirstDraftContract.js'].pass, false);
   assert.equal(menu.entries.length, 63);
   assert.equal(menu.enumeration_rule.per_string_classification.length, 87);
   assert.equal(menu.enumeration_rule.per_string_classification.filter((row) => row.verdict === 'IN').length, 63);

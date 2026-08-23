@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { describe, it } from 'node:test';
 
 import { tutorStubCliPolicyRetryDecision } from '../tutorStubCliPolicyRetry.js';
@@ -197,5 +200,142 @@ describe('tutor-stub prompt transport', () => {
       trace.filter((event) => event.type === 'model_call_error').map((event) => event.cliPolicyViolation.retry),
       [true, true, false],
     );
+  });
+
+  it('replays a recorded three-error abstention without provider calls or reservations', async () => {
+    const sourceCounters = { calls: 0, provider: 0, metered: 0, delays: [] };
+    const sourceTrace = [];
+    const source = transportWith(
+      async () => {
+        sourceCounters.calls += 1;
+        throw failedTurnError();
+      },
+      sourceCounters,
+      sourceTrace,
+    );
+    await assert.rejects(
+      source.callPromptModel({
+        prompt: 'public prompt',
+        resolved: { provider: 'codex', model: 'gpt-test' },
+        systemPrompt: 'public system',
+        role: 'tutor_stub_resistance_semantic_semantic_judge_a',
+        outputSchema: { type: 'object' },
+        semanticRetryDelaysMs: [0, 0],
+        trace: sourceTrace,
+        turn: 2,
+      }),
+      (error) => error.code === 'CLI_PROVIDER_TURN_FAILED',
+    );
+    const replayEntries = sourceTrace
+      .filter((event) => event.type === 'model_call_error')
+      .map((event) => ({
+        role: event.role,
+        turn: event.turn,
+        provider: event.provider,
+        model: event.model,
+        request: event.request,
+        error: {
+          name: 'CliProviderTurnError',
+          message: event.error,
+          code: 'CLI_PROVIDER_TURN_FAILED',
+          audit: event.cliPolicyViolation.audit,
+        },
+      }));
+    const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-error-replay-'));
+    const replayPath = path.join(temporaryDirectory, 'replay.json');
+    fs.writeFileSync(
+      replayPath,
+      `${JSON.stringify({
+        schema: 'machinespirits.tutor-stub.frozen-model-call-prefix-replay.v1',
+        entries: replayEntries,
+      })}\n`,
+    );
+    const previousReplayPath = process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH;
+    process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH = replayPath;
+    try {
+      const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
+      const trace = [];
+      const replay = transportWith(
+        async () => {
+          counters.calls += 1;
+          throw new Error('recorded abstention must not call the provider');
+        },
+        counters,
+        trace,
+      );
+      await assert.rejects(
+        replay.callPromptModel({
+          prompt: 'public prompt',
+          resolved: { provider: 'codex', model: 'gpt-test' },
+          systemPrompt: 'public system',
+          role: 'tutor_stub_resistance_semantic_semantic_judge_a',
+          outputSchema: { type: 'object' },
+          semanticRetryDelaysMs: [0, 0],
+          trace,
+          turn: 2,
+        }),
+        (error) => error.code === 'CLI_PROVIDER_TURN_FAILED',
+      );
+      assert.deepEqual(counters, { calls: 0, provider: 0, metered: 0, delays: [0, 0] });
+      assert.equal(trace.filter((event) => event.replayedFromFrozenPrefix === true).length, 5);
+    } finally {
+      if (previousReplayPath === undefined) delete process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH;
+      else process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH = previousReplayPath;
+      fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+    }
+  });
+
+  it('uses the registered semantic delays for exact Claude response-free errors and preserves diagnostics', async () => {
+    const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
+    const trace = [];
+    const stdoutText = '[{"type":"result","is_error":true,"result":"overloaded"}]';
+    const transport = transportWith(
+      async () => {
+        counters.calls += 1;
+        if (counters.calls < 3) {
+          throw Object.assign(new Error('response free'), {
+            code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
+            provider: 'claude-code',
+            classification: 'response_free_error',
+            responseFree: true,
+            exitCode: 1,
+            stdoutBytes: Buffer.byteLength(stdoutText),
+            stderrBytes: 0,
+            stdoutSha256: 'a'.repeat(64),
+            stderrSha256: 'b'.repeat(64),
+            stdoutText,
+            stderrText: '',
+            stdoutTextTruncated: false,
+            stderrTextTruncated: false,
+          });
+        }
+        return {
+          text: '{}',
+          provider: 'claude-code',
+          model: 'claude-sonnet-5',
+          effort: 'low',
+          structuredOutput: true,
+          prohibitedToolEventCount: 0,
+          prohibitedToolEventCountObserved: true,
+        };
+      },
+      counters,
+      trace,
+    );
+    await transport.callPromptModel({
+      prompt: 'public prompt',
+      resolved: { provider: 'claude-code', model: 'claude-sonnet-5' },
+      systemPrompt: 'public system',
+      role: 'tutor_stub_resistance_semantic_semantic_judge_b',
+      outputSchema: { type: 'object' },
+      semanticRetryDelaysMs: [15000, 45000],
+      trace,
+      turn: 1,
+    });
+    assert.deepEqual(counters, { calls: 3, provider: 3, metered: 3, delays: [15000, 45000] });
+    const errors = trace.filter((event) => event.type === 'model_call_error');
+    assert.equal(errors.length, 2);
+    assert.ok(errors.every((event) => event.transportDiagnostics.stdoutText === stdoutText));
+    assert.ok(errors.every((event) => event.transportDiagnostics.responseFree === true));
   });
 });

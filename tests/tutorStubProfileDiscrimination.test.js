@@ -29,6 +29,7 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2,
   buildTutorStubResistanceSemanticZeroCallFixtureResponseV2,
 } from '../services/tutorStubResistanceSemanticAdjudicationV2.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from '../services/tutorStubResistanceSemanticAdjudicationV4.js';
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT,
   TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE,
@@ -74,6 +75,9 @@ test('prospective v4 through v9 carry their analyzer-required semantics stamp th
   const createRuntime = (semantics) =>
     createTutorStubAutomatedLearnerGenerationRuntime({
       appendTraceEvent() {},
+      adjudicateResistanceSemanticCandidate() {
+        throw new Error('zero-call trace metadata test');
+      },
       callPromptModel() {
         throw new Error('zero-call trace metadata test');
       },
@@ -111,6 +115,9 @@ test('prospective v4 through v9 carry their analyzer-required semantics stamp th
   assert.deepEqual(createRuntime('prospective_v9').automatedLearnerTraceMetadata, {
     observationSemantics: 'prospective_v9',
   });
+  assert.deepEqual(createRuntime(TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4).automatedLearnerTraceMetadata, {
+    observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4,
+  });
 
   const hostSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCliApplicationHost.js'), 'utf8');
   const traceContextSource = fs.readFileSync(
@@ -121,11 +128,16 @@ test('prospective v4 through v9 carry their analyzer-required semantics stamp th
   assert.match(traceContextSource, /\.\.\.automatedLearnerTraceMetadata/u);
 });
 
-test('CLI-host lazy composition selects semantic v2 for automated-learner records and treatment eligibility', async () => {
+test('learner-facade lazy composition selects semantic v2 for automated-learner records and treatment eligibility', async () => {
   const hostSource = readTutorStubApplicationSource();
+  const learnerRuntimeSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubAutomatedLearnerGenerationRuntime.js'),
+    'utf8',
+  );
+  assert.match(hostSource, /createTutorStubAutomatedLearnerGenerationRuntime\([\s\S]+resolveModel/u);
   assert.match(
-    hostSource,
-    /createLazyTutorStubResistanceSemanticAdjudicator\([\s\S]+observationSemantics:\s*process\.env\.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS/u,
+    learnerRuntimeSource,
+    /createTutorStubResistanceSemanticAdjudicationComposition\([\s\S]+observationSemantics:\s*requestedObservationSemantics/u,
   );
 
   const bindingV2 = loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2);

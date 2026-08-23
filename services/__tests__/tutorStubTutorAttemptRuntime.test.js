@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 
 import { tutorStubCliPolicyRetryDecision } from '../tutorStubCliPolicyRetry.js';
@@ -149,4 +152,63 @@ test('a tutor-recovery retry is bounded to two delayed redispatches', async () =
   assert.equal(trace.filter((event) => event.type === 'model_call_error').length, 3);
   assert.equal(trace.filter((event) => event.type === 'cli_policy_retry_decision').length, 2);
   assert.equal(trace.at(-1).cliPolicyViolation.reason, 'call_retry_limit_reached');
+});
+
+test('a frozen tutor attempt replays without a provider call or reservation', async (t) => {
+  const sourceTrace = [];
+  const sourceReservations = { provider: 0, metered: 0, delays: [] };
+  const source = bindRuntime({
+    trace: sourceTrace,
+    reservations: sourceReservations,
+    async callAIWithCliBridge() {
+      return {
+        text: 'The preserved tutor response.',
+        provider: 'codex',
+        model: 'gpt-5.6-luna',
+        latencyMs: 12,
+        inputTokens: 40,
+        outputTokens: 9,
+        tokenUsageAvailable: true,
+      };
+    },
+  });
+  await source.invokeTutorAttempt({
+    attemptUserPrompt: 'Continue from the preserved prefix.',
+    role: 'tutor_stub_tutor',
+  });
+  const sourceCall = sourceTrace.find((event) => event.type === 'model_call');
+  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-tutor-replay-'));
+  const replayPath = path.join(temporaryDirectory, 'replay.json');
+  fs.writeFileSync(
+    replayPath,
+    `${JSON.stringify({
+      schema: 'machinespirits.tutor-stub.frozen-model-call-prefix-replay.v1',
+      entries: [sourceCall],
+    })}\n`,
+  );
+  const previousReplayPath = process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH;
+  process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH = replayPath;
+  t.after(() => {
+    if (previousReplayPath === undefined) delete process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH;
+    else process.env.TUTOR_STUB_FROZEN_MODEL_CALL_REPLAY_PATH = previousReplayPath;
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+  });
+
+  const replayTrace = [];
+  const replayReservations = { provider: 0, metered: 0, delays: [] };
+  const replay = bindRuntime({
+    trace: replayTrace,
+    reservations: replayReservations,
+    async callAIWithCliBridge() {
+      throw new Error('frozen tutor attempt must not call the provider');
+    },
+  });
+  const response = await replay.invokeTutorAttempt({
+    attemptUserPrompt: 'Continue from the preserved prefix.',
+    role: 'tutor_stub_tutor',
+  });
+
+  assert.equal(response.text, 'The preserved tutor response.');
+  assert.deepEqual(replayReservations, { provider: 0, metered: 0, delays: [] });
+  assert.equal(replayTrace.filter((event) => event.type === 'model_call_replayed_from_frozen_prefix').length, 1);
 });

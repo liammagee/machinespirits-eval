@@ -295,7 +295,6 @@ import { createTutorStubPublicPresentationRuntime } from './tutorStubPublicPrese
 import { createTutorStubDebugReportRuntime } from './tutorStubDebugReportRuntime.js';
 import { createTutorStubLaunchSummaryPresentation } from './tutorStubLaunchSummaryPresentation.js';
 import { createTutorStubAutomatedLearnerGenerationRuntime } from './tutorStubAutomatedLearnerGenerationRuntime.js';
-import { createLazyTutorStubResistanceSemanticAdjudicator } from './tutorStubResistanceSemanticRuntime.js';
 import { createTutorStubTypedActionPlanningRuntime } from './tutorStubTypedActionPlanningRuntime.js';
 import { createTutorStubClarificationTranslationRuntime } from './tutorStubClarificationTranslationRuntime.js';
 import { createTutorStubOpeningRuntime } from './tutorStubOpeningRuntime.js';
@@ -569,6 +568,8 @@ import {
   loadTutorStubResistanceActionRegisterPrefixBundle,
 } from './tutorStubResistanceActionRegisterExecution.js';
 import { configureTutorStubResistanceActionRegisterConfirmationFromCli } from './tutorStubResistanceActionRegisterConfirmation.js';
+import { configureTutorStubResistanceManipulationValidationFromCli } from './tutorStubResistanceActionRegisterManipulationValidation.js';
+import { configureTutorStubResistanceWarmNonwarmFromCli } from './tutorStubResistanceWarmNonwarmConfirmation.js';
 import { configureTutorStubBoredomProofDagFromCli } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { selectTutorStubBoredomSemanticAdjudicatorFactory } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
@@ -1160,11 +1161,9 @@ export async function runTutorStubCliApplicationHost({
     publicWorldSummary,
     tutorStubComprehensionPrompt,
   });
-  const adjudicateResistanceSemanticCandidate = createLazyTutorStubResistanceSemanticAdjudicator(
-    { appendTraceEvent, callPromptModel, resolveModel },
-    { observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS },
-  );
   const {
+    adjudicateTutorStubResistanceConfirmationOutcome,
+    adjudicateTutorStubResistanceInterventionFidelity,
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
     automatedLearnerTraceMetadata,
@@ -1178,7 +1177,6 @@ export async function runTutorStubCliApplicationHost({
     resolveAutomatedLearnerProfile,
   } = createTutorStubAutomatedLearnerGenerationRuntime({
     appendTraceEvent,
-    adjudicateResistanceSemanticCandidate,
     callPromptModel,
     classificationFromCombinedAnalysis: (...values) => classificationFromCombinedAnalysis(...values),
     extractCombinedLearnerAnalysis: (...values) => extractCombinedLearnerAnalysis(...values),
@@ -1186,6 +1184,7 @@ export async function runTutorStubCliApplicationHost({
     learnerProfileIds,
     learnerProfilePrompt,
     negativeFloorRegisters: NEGATIVE_FLOOR_REGISTERS,
+    resolveModel,
   });
   const {
     evaluatePendingRegisterEfficacy,
@@ -1827,6 +1826,8 @@ export async function runTutorStubCliApplicationHost({
     acknowledgeTutorStubOpeningRelease,
     advanceTutorStubDialogueClosure,
     adjudicateTutorStubBoredomObservation: boredomAdjudicatorFactory(callPromptModel, resolveModel),
+    adjudicateTutorStubResistanceConfirmationOutcome,
+    adjudicateTutorStubResistanceInterventionFidelity,
     analyzeLearnerTurn,
     appendTraceEvent,
     appendTutorStubTurnFailureTraceRecords,
@@ -2338,15 +2339,25 @@ export async function runTutorStubCliApplicationHost({
       args['resistance-action-register-confirmation-registration'],
       args['resistance-action-register-confirmation-job'],
     ];
+    const resistanceActionRegisterManipulationValidationArgs = [
+      args['resistance-action-register-manipulation-validation-design'],
+      args['resistance-action-register-manipulation-validation-job'],
+    ];
+    const resistanceWarmNonwarmConfirmationArgs = [
+      args['resistance-warm-nonwarm-confirmation-design'],
+      args['resistance-warm-nonwarm-confirmation-job'],
+    ];
     const boredomProofDagArgs = [args['boredom-proof-dag-registration'], args['boredom-proof-dag-job']];
     const activeResistanceStudyModes = [
       resistanceActionRegisterArgs.some(Boolean),
       resistanceActionRegisterConfirmationArgs.some(Boolean),
+      resistanceActionRegisterManipulationValidationArgs.some(Boolean),
+      resistanceWarmNonwarmConfirmationArgs.some(Boolean),
       boredomProofDagArgs.some(Boolean),
     ].filter(Boolean).length;
     if (activeResistanceStudyModes > 1) {
       throw new Error(
-        'baseline replay, frame confirmation, and boredom proof-DAG execution modes are mutually exclusive',
+        'baseline replay, frame confirmation, manipulation validation, warm/nonwarm confirmation, and boredom proof-DAG execution modes are mutually exclusive',
       );
     }
     if (
@@ -2357,6 +2368,37 @@ export async function runTutorStubCliApplicationHost({
     }
     if (resistanceActionRegisterConfirmationArgs.every(Boolean)) {
       configureTutorStubResistanceActionRegisterConfirmationFromCli({
+        args,
+        state,
+        root: ROOT,
+        autoLearnerEnabled,
+        autoTurns,
+        appendTraceEvent,
+        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
+      });
+    }
+    if (
+      resistanceActionRegisterManipulationValidationArgs.some(Boolean) &&
+      !resistanceActionRegisterManipulationValidationArgs.every(Boolean)
+    ) {
+      throw new Error('manipulation validation requires design and job together');
+    }
+    if (resistanceActionRegisterManipulationValidationArgs.every(Boolean)) {
+      configureTutorStubResistanceManipulationValidationFromCli({
+        args,
+        state,
+        root: ROOT,
+        autoLearnerEnabled,
+        autoTurns,
+        appendTraceEvent,
+        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
+      });
+    }
+    if (resistanceWarmNonwarmConfirmationArgs.some(Boolean) && !resistanceWarmNonwarmConfirmationArgs.every(Boolean)) {
+      throw new Error('warm/nonwarm confirmation requires design and job together');
+    }
+    if (resistanceWarmNonwarmConfirmationArgs.every(Boolean)) {
+      configureTutorStubResistanceWarmNonwarmFromCli({
         args,
         state,
         root: ROOT,

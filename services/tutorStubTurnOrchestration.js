@@ -17,6 +17,50 @@ import {
 import { throwTutorStubBoredomMeasurementIndeterminate } from './tutorStubBoredomSemanticAdjudication.js';
 import { tutorStubBoredomUnreadableTurnIsPassedOver } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 
+export async function completeTutorStubResistanceManipulationValidation({
+  state,
+  turnNumber,
+  adjudicateTutorStubResistanceInterventionFidelity,
+  appendTraceEvent,
+  assertTutorStubTurnAttemptCurrent = () => {},
+  jsonClone = structuredClone,
+  signal = null,
+  isCurrent = null,
+} = {}) {
+  const study = state?.resistanceActionRegisterStudy;
+  if (study?.manipulation_validation !== true) return { active: false, complete: false };
+  if (study.consumed !== true && turnNumber >= Number(study.maximum_trigger_turn)) {
+    appendTraceEvent(state.trace, {
+      type: 'resistance_action_register_manipulation_validation_substantive_failure',
+      turn: turnNumber,
+      code: 'TUTOR_STUB_RESISTANCE_MANIPULATION_VALIDATION_TRIGGER_MISSING',
+      disposition: 'substantive_registered_failure_retain_no_replacement',
+      publicTranscriptChanged: false,
+    });
+    const error = new Error(
+      'fresh manipulation-validation dialogue did not produce its registered jurisdictional trigger by turn 2',
+    );
+    error.code = 'TUTOR_STUB_RESISTANCE_MANIPULATION_VALIDATION_TRIGGER_MISSING';
+    error.substantiveStudyFailure = true;
+    throw error;
+  }
+  if (study.consumed !== true) return { active: true, complete: false };
+  if (typeof adjudicateTutorStubResistanceInterventionFidelity !== 'function') {
+    throw new Error('manipulation validation requires the independent fidelity panel');
+  }
+  const interventionTurn = Number(study.trigger_turn);
+  const intervention = state.turns.find((row) => Number(row.turn) === interventionTurn)?.tutor;
+  const result = await adjudicateTutorStubResistanceInterventionFidelity({
+    state,
+    turnNumber: interventionTurn,
+    intervention,
+    signal,
+  });
+  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+  study.fidelity = jsonClone(result.fidelity);
+  return { active: true, complete: true, fidelity: study.fidelity };
+}
+
 export function reconcileTutorStubTypedActionWithWarrant({
   state,
   typedAction,
@@ -100,6 +144,8 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     acknowledgeTutorStubOpeningRelease,
     advanceTutorStubDialogueClosure,
     adjudicateTutorStubBoredomObservation,
+    adjudicateTutorStubResistanceConfirmationOutcome,
+    adjudicateTutorStubResistanceInterventionFidelity,
     analyzeLearnerTurn,
     appendTraceEvent,
     appendTutorStubTurnFailureTraceRecords,
@@ -1730,6 +1776,25 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         });
         assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
         state.history.push({ role: 'user', content: nextLearnerText });
+        const v9Study = state.resistanceActionRegisterStudy;
+        const finalOutcomeSemanticsRequired =
+          registeredFinalLearnerOnly === true &&
+          v9Study?.registration?.version >= 9 &&
+          v9Study?.dynamic_confirmation === true &&
+          v9Study?.final_learner_without_tutor_reply === true &&
+          Number(turnNumber) === Number(v9Study.trigger_turn) + Number(v9Study.outcome_horizon_learner_turns);
+        if (v9Study?.registration?.version >= 9 && !finalOutcomeSemanticsRequired) {
+          throw new Error('V9 confirmation semantic panels are restricted to the exact registered final horizon');
+        }
+        const resistanceConfirmationSemanticOutcome = finalOutcomeSemanticsRequired
+          ? await adjudicateTutorStubResistanceConfirmationOutcome({
+              state,
+              turnNumber,
+              learnerText: nextLearnerText,
+              signal,
+            })
+          : null;
+        assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
         appendTraceEvent(state.trace, {
           type: 'resistance_action_register_outcome_learner_turn',
           turn: turnNumber,
@@ -1754,6 +1819,9 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
                   learnerResponseProvenance.automation.resistanceSemanticAdjudication,
                 ),
               }
+            : {}),
+          ...(resistanceConfirmationSemanticOutcome
+            ? { resistanceConfirmationSemanticOutcome: jsonClone(resistanceConfirmationSemanticOutcome) }
             : {}),
           tutorReplyGenerated: false,
         });
@@ -1780,6 +1848,17 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           isCurrent,
           learnerInput,
         });
+        const manipulationValidation = await completeTutorStubResistanceManipulationValidation({
+          state,
+          turnNumber,
+          adjudicateTutorStubResistanceInterventionFidelity,
+          appendTraceEvent,
+          assertTutorStubTurnAttemptCurrent,
+          jsonClone,
+          signal,
+          isCurrent,
+        });
+        if (manipulationValidation.complete) reason = 'registered_manipulation_validation_complete';
         if (diagnosticCollection) {
           appendTraceEvent(state.trace, {
             type: 'diagnostic_turn_transaction_committed',
@@ -1816,6 +1895,8 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       }
       assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
       nextLearnerText = '';
+
+      if (reason === 'registered_manipulation_validation_complete') break;
 
       if (autoStopOnGrounded && learnerDagReachedGroundedClosure(state)) {
         reason = 'auto_grounded_closure';

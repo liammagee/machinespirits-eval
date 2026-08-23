@@ -23,6 +23,7 @@ import {
   isProviderConfigured,
   normalizeCodexProviderOutputSchema,
   normalizeCliEffort,
+  parseClaudeJsonResultEnvelope,
   resolveCliEffort,
 } from '../cliProviderBridge.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3 } from '../tutorStubResistanceSemanticAdjudicationV3.js';
@@ -50,6 +51,10 @@ function fakeChild({ stdoutText = '', stderrText = '', onWrite = null, onEnd = n
     },
   };
   return child;
+}
+
+function claudeJsonEnvelope(resultEvent, precedingEvents = []) {
+  return JSON.stringify([...precedingEvents, { type: 'result', subtype: 'success', ...resultEvent }]);
 }
 
 async function withSecretCanaries(fn) {
@@ -450,7 +455,9 @@ describe('cliProviderBridge', () => {
       timeoutMs: 1000,
       spawnImpl: (_command, args) => {
         claudeSchema = JSON.parse(args[args.indexOf('--json-schema') + 1]);
-        return fakeChild({ stdoutText: '{}\n' });
+        return fakeChild({
+          stdoutText: claudeJsonEnvelope({ is_error: false, structured_output: {} }),
+        });
       },
     });
     assert.deepEqual(claudeSchema, TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3);
@@ -702,6 +709,40 @@ describe('cliProviderBridge', () => {
     );
   });
 
+  it('captures bounded Codex failure messages only under the explicit diagnostic switch', async () => {
+    const previous = process.env.TUTOR_STUB_CAPTURE_CODEX_FAILURE_DIAGNOSTICS;
+    process.env.TUTOR_STUB_CAPTURE_CODEX_FAILURE_DIAGNOSTICS = '1';
+    const spawnImpl = () =>
+      fakeChild({
+        stdoutText: [
+          JSON.stringify({ type: 'thread.started' }),
+          JSON.stringify({ type: 'turn.started' }),
+          JSON.stringify({ type: 'error', message: 'structured output schema rejected' }),
+          JSON.stringify({ type: 'turn.failed', error: { code: 'invalid_request', message: 'schema rejected' } }),
+        ].join('\n'),
+      });
+    try {
+      await assert.rejects(
+        () =>
+          callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'learner', {
+            effort: 'low',
+            timeoutMs: 1000,
+            spawnImpl,
+          }),
+        (error) => {
+          assert.deepEqual(error.diagnostics, [
+            { type: 'error', code: null, message: 'structured output schema rejected' },
+            { type: 'turn.failed', code: 'invalid_request', message: 'schema rejected' },
+          ]);
+          return true;
+        },
+      );
+    } finally {
+      if (previous === undefined) delete process.env.TUTOR_STUB_CAPTURE_CODEX_FAILURE_DIAGNOSTICS;
+      else process.env.TUTOR_STUB_CAPTURE_CODEX_FAILURE_DIAGNOSTICS = previous;
+    }
+  });
+
   it('treats invalid JSONL as a policy violation for unstructured Codex calls', async () => {
     const secretCanary = 'SECRET-INVALID-JSONL-CANARY';
     const spawnImpl = (_command, args) => {
@@ -731,7 +772,13 @@ describe('cliProviderBridge', () => {
     const outputSchema = { type: 'object', properties: {}, additionalProperties: false };
     const spawnImpl = (command, args, options) => {
       calls.push({ command, args, options });
-      return fakeChild({ stdoutText: '{}\n' });
+      return fakeChild({
+        stdoutText: claudeJsonEnvelope({
+          is_error: false,
+          result: 'prose that must not become the accepted response',
+          structured_output: {},
+        }),
+      });
     };
 
     const result = await callAIWithCliBridge(
@@ -745,6 +792,7 @@ describe('cliProviderBridge', () => {
     assert.equal(calls.length, 1);
     assert.equal(calls[0].command, 'claude');
     assert.ok(calls[0].args.includes('--json-schema'));
+    assert.equal(calls[0].args[calls[0].args.indexOf('--output-format') + 1], 'json');
     assert.ok(calls[0].args.includes('--no-session-persistence'));
     assert.ok(calls[0].args.includes('--safe-mode'));
     assert.ok(calls[0].args.includes('--tools'));
@@ -760,6 +808,108 @@ describe('cliProviderBridge', () => {
     assert.equal(result.outputTokens, null);
     assert.equal(result.reasoningOutputTokens, null);
     assert.equal(result.totalTokens, null);
+    assert.equal(result.text, '{}');
+    assert.equal(result.structuredEventAudit.classification, 'structured_success');
+  });
+
+  it('classifies Claude JSON result envelopes on is_error rather than subtype', () => {
+    const success = parseClaudeJsonResultEnvelope(
+      claudeJsonEnvelope({ is_error: false, structured_output: { n: 3 } }, [{ type: 'system' }, { type: 'assistant' }]),
+    );
+    assert.equal(success.classification, 'structured_success');
+    assert.deepEqual(success.structured_output, { n: 3 });
+
+    const responseFree = parseClaudeJsonResultEnvelope(
+      claudeJsonEnvelope({ is_error: true, result: 'API Error: unknown model' }, [{ type: 'system' }]),
+    );
+    assert.equal(responseFree.classification, 'response_free_error');
+    assert.equal(responseFree.reason, 'result_error_without_structured_output');
+
+    const proseSuccess = parseClaudeJsonResultEnvelope(
+      claudeJsonEnvelope({ is_error: false, result: 'I could not satisfy that schema.' }),
+    );
+    assert.equal(proseSuccess.classification, 'indeterminate');
+    assert.equal(proseSuccess.reason, 'success_without_structured_output');
+  });
+
+  it('attaches capped diagnostics at the bridge boundary for response-free Claude errors', async () => {
+    const secretCanary = 'SECRET-CLAUDE-ERROR-CANARY';
+    await assert.rejects(
+      () =>
+        callAIWithCliBridge({ provider: 'claude-code', model: 'claude-test' }, 'system', 'user', 'semantic-judge', {
+          outputSchema: { type: 'object' },
+          timeoutMs: 1000,
+          spawnImpl: () =>
+            fakeChild({
+              stdoutText: claudeJsonEnvelope({ is_error: true, result: secretCanary }),
+              stderrText: 'stderr-private-canary',
+              exitCode: 1,
+            }),
+        }),
+      (error) => {
+        assert.equal(error?.code, 'CLI_PROVIDER_RESPONSE_FREE_ERROR');
+        assert.equal(error?.classification, 'response_free_error');
+        assert.equal(error?.responseFree, true);
+        assert.equal(error?.exitCode, 1);
+        assert.ok(error?.stdoutBytes > 0);
+        assert.equal(error?.stderrBytes, Buffer.byteLength('stderr-private-canary'));
+        assert.match(error?.stdoutSha256, /^[a-f0-9]{64}$/u);
+        assert.match(error?.stderrSha256, /^[a-f0-9]{64}$/u);
+        assert.match(error?.stdoutText, new RegExp(secretCanary, 'u'));
+        assert.match(error?.stderrText, /stderr-private-canary/u);
+        assert.equal(error?.stdoutTextTruncated, false);
+        assert.equal(error?.stderrTextTruncated, false);
+        assert.ok(Buffer.byteLength(error?.stdoutText) <= 4096);
+        assert.ok(Buffer.byteLength(error?.stderrText) <= 4096);
+        return true;
+      },
+    );
+  });
+
+  it('caps Claude failure diagnostics', async () => {
+    const longText = 'x'.repeat(5000);
+    await assert.rejects(
+      () =>
+        callAIWithCliBridge({ provider: 'claude-code', model: 'claude-test' }, 'system', 'user', 'semantic-judge', {
+          outputSchema: { type: 'object' },
+          timeoutMs: 1000,
+          spawnImpl: () =>
+            fakeChild({
+              stdoutText: claudeJsonEnvelope({ is_error: true, result: longText }),
+              stderrText: longText,
+              exitCode: 1,
+            }),
+        }),
+      (error) => {
+        assert.equal(Buffer.byteLength(error?.stdoutText), 4096);
+        assert.equal(Buffer.byteLength(error?.stderrText), 4096);
+        assert.equal(error?.stdoutTextTruncated, true);
+        assert.equal(error?.stderrTextTruncated, true);
+        return true;
+      },
+    );
+  });
+
+  it('fails closed when Claude exits zero with prose but no structured output', async () => {
+    await assert.rejects(
+      () =>
+        callAIWithCliBridge({ provider: 'claude-code', model: 'claude-test' }, 'system', 'user', 'semantic-judge', {
+          outputSchema: { type: 'object' },
+          timeoutMs: 1000,
+          spawnImpl: () =>
+            fakeChild({
+              stdoutText: claudeJsonEnvelope({ is_error: false, result: 'unstructured prose' }),
+              exitCode: 0,
+            }),
+        }),
+      (error) => {
+        assert.equal(error?.code, 'CLI_PROVIDER_AMBIGUOUS_OUTPUT');
+        assert.equal(error?.classification, 'indeterminate');
+        assert.equal(error?.reason, 'success_without_structured_output');
+        assert.equal(error?.responseFree, false);
+        return true;
+      },
+    );
   });
 
   it('isolates ambient context on plain-text (non-schema) Claude calls', async () => {

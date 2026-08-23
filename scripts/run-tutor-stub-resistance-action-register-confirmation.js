@@ -16,8 +16,12 @@ import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtif
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v3.json';
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.json';
-const PER_DIALOGUE_CAP = 60;
-const PER_BATCH_CAP = 240;
+const LEGACY_PER_DIALOGUE_CAP = 60;
+const LEGACY_PER_BATCH_CAP = 240;
+const V8_PER_DIALOGUE_CAP = 96;
+const V8_PER_BATCH_CAP = 384;
+const V9_PER_DIALOGUE_CAP = 123;
+const V9_PER_BATCH_CAP = 492;
 const BATCH_SIZE = 4;
 
 function sha256(value) {
@@ -93,7 +97,9 @@ export function classifyTutorStubResistanceActionRegisterConfirmationChildFailur
   const semanticRun = events.some(
     (event) =>
       event.type === 'run_start' &&
-      event.metadata?.autoLearner?.observationSemantics === 'prospective_frame_resistance_semantic_v1',
+      String(event.metadata?.autoLearner?.observationSemantics || '').startsWith(
+        'prospective_frame_resistance_semantic_v',
+      ),
   );
   const semanticJudgeRows = events.filter((event) => event.type === 'resistance_semantic_judge_result');
   const semanticAggregateRows = events.filter((event) => event.type === 'resistance_semantic_adjudication');
@@ -193,7 +199,18 @@ function reservationCountInDirectory(directory) {
     .filter((event) => event.type === 'model_call_budget_reserved').length;
 }
 
-function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE_CAP }) {
+function confirmationCaps(loaded) {
+  if (loaded?.registration?.version >= 9) {
+    return { perDialogue: V9_PER_DIALOGUE_CAP, perBatch: V9_PER_BATCH_CAP };
+  }
+  if (loaded?.registration?.version === 8) {
+    return { perDialogue: V8_PER_DIALOGUE_CAP, perBatch: V8_PER_BATCH_CAP };
+  }
+  return { perDialogue: LEGACY_PER_DIALOGUE_CAP, perBatch: LEGACY_PER_BATCH_CAP };
+}
+
+function childCommand({ loaded, job, destination, modelCallBudget = null }) {
+  const budget = modelCallBudget ?? confirmationCaps(loaded).perDialogue;
   const jobRoot = path.join(destination, 'jobs', job.id);
   const traceDir = path.join(jobRoot, 'traces');
   const transcript = path.join(jobRoot, 'transcript.json');
@@ -206,7 +223,7 @@ function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE
       '--acknowledge-research-use',
       ...requiredTutorStubArtifactArchiveArgs(),
       '--model-call-budget',
-      String(modelCallBudget),
+      String(budget),
       '--all-models',
       'codex.gpt-5.6-luna',
       '--model',
@@ -258,7 +275,12 @@ function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE
     ],
     cwd: ROOT,
     env: {
-      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: loaded.registration.design.trigger.observationSemantics,
+      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS:
+        process.env.TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE === '1'
+          ? 'prospective_frame_resistance_binary_semantic_v6'
+          : loaded.registration.design.trigger.observationSemantics,
+      TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE:
+        process.env.TUTOR_STUB_RESISTANCE_BINARY_SEMANTIC_SMOKE === '1' ? '1' : '0',
       TUTOR_STUB_REMEMBER_SETTINGS: '0',
     },
     job_root: jobRoot,
@@ -274,7 +296,7 @@ export function buildTutorStubResistanceActionRegisterConfirmationRecoveryJob({
   priorModelAttemptReservations,
 } = {}) {
   const prior = Number(priorModelAttemptReservations);
-  const remaining = PER_DIALOGUE_CAP - prior;
+  const remaining = confirmationCaps(loaded).perDialogue - prior;
   if (
     !loaded?.registration ||
     !job?.id ||
@@ -322,6 +344,7 @@ export function buildTutorStubResistanceActionRegisterConfirmationBatchPlan({
     throw new Error(`confirmation ${batchId} must contain exactly two plain and two warm jobs`);
   }
   const source = sourceSnapshot(expectedSourceCommit);
+  const caps = confirmationCaps(loaded);
   const absoluteDestination = path.resolve(destination);
   return {
     schema: 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-plan.v1',
@@ -341,8 +364,8 @@ export function buildTutorStubResistanceActionRegisterConfirmationBatchPlan({
     },
     budget: {
       dialogues: BATCH_SIZE,
-      maximum_model_attempt_reservations_per_dialogue: PER_DIALOGUE_CAP,
-      maximum_model_attempt_reservations: PER_BATCH_CAP,
+      maximum_model_attempt_reservations_per_dialogue: caps.perDialogue,
+      maximum_model_attempt_reservations: caps.perBatch,
       enlarges_ceiling: false,
     },
     destination: path.relative(ROOT, absoluteDestination),
@@ -453,7 +476,7 @@ function sealBatch(destination, plan, result, recovery = {}) {
     result_sha256: sha256(fs.readFileSync(path.join(destination, recovery.resultFile || 'batch-result.json'))),
     ...recovery.hashes,
     dialogues: BATCH_SIZE,
-    hard_ceiling: PER_BATCH_CAP,
+    hard_ceiling: plan.budget.maximum_model_attempt_reservations,
     valid_unit_reruns: false,
     outcome_selection: false,
   };
@@ -489,7 +512,7 @@ export async function runTutorStubResistanceActionRegisterConfirmationBatch({
     status: completed === BATCH_SIZE ? 'complete' : 'incomplete',
     completed_dialogues: completed,
     failed_or_missing_dialogues: BATCH_SIZE - completed,
-    maximum_model_attempt_reservations: PER_BATCH_CAP,
+    maximum_model_attempt_reservations: plan.budget.maximum_model_attempt_reservations,
     results,
   };
   writeJson(path.join(absoluteDestination, 'batch-result.json'), result);
@@ -521,7 +544,7 @@ export async function recoverTutorStubResistanceActionRegisterConfirmationBatch(
     plan.source?.commit !== expectedSourceCommit ||
     plan.source?.tree !== currentSource.tree ||
     initial.status !== 'incomplete' ||
-    plan.budget?.maximum_model_attempt_reservations !== PER_BATCH_CAP
+    ![LEGACY_PER_BATCH_CAP, V9_PER_BATCH_CAP].includes(plan.budget?.maximum_model_attempt_reservations)
   ) {
     throw new Error('confirmation recovery source, status, or ceiling drifted');
   }
@@ -534,10 +557,20 @@ export async function recoverTutorStubResistanceActionRegisterConfirmationBatch(
     plan.jobs.map((job) => [job.id, reservationCountInDirectory(job.command.trace_dir)]),
   );
   const usedBefore = Object.values(initialReservations).reduce((sum, value) => sum + value, 0);
-  if (usedBefore >= PER_BATCH_CAP || Object.values(initialReservations).some((value) => value >= PER_DIALOGUE_CAP)) {
+  const perDialogueCap = plan.budget.maximum_model_attempt_reservations_per_dialogue;
+  const perBatchCap = plan.budget.maximum_model_attempt_reservations;
+  if (
+    ![LEGACY_PER_DIALOGUE_CAP, V9_PER_DIALOGUE_CAP].includes(perDialogueCap) ||
+    usedBefore >= perBatchCap ||
+    Object.values(initialReservations).some((value) => value >= perDialogueCap)
+  ) {
     throw new Error('confirmation recovery has no room under the unchanged caps');
   }
   const { loaded, plan: registered } = registeredPlan(plan.source.registration_path);
+  const registeredCaps = confirmationCaps(loaded);
+  if (perDialogueCap !== registeredCaps.perDialogue || perBatchCap !== registeredCaps.perBatch) {
+    throw new Error('confirmation recovery caps drifted from the frozen registration version');
+  }
   if (loaded.sha256 !== plan.source.registration_sha256) throw new Error('confirmation recovery registration drifted');
   const registeredById = new Map(registered.jobs.map((job) => [job.id, job]));
   const recoveryRoot = path.join(absoluteDestination, 'recoveries', 'recovery-001');
@@ -563,7 +596,7 @@ export async function recoverTutorStubResistanceActionRegisterConfirmationBatch(
     original_plan_sha256: sha256(fs.readFileSync(planPath)),
     original_result_sha256: sha256(fs.readFileSync(resultPath)),
     used_reservations_before_recovery: usedBefore,
-    hard_ceiling: PER_BATCH_CAP,
+    hard_ceiling: perBatchCap,
     valid_unit_ids_excluded: [...valid.keys()].sort(),
     jobs: recoveryJobs,
   };
@@ -595,7 +628,7 @@ export async function recoverTutorStubResistanceActionRegisterConfirmationBatch(
     }),
   );
   const totalReservations = Object.values(totals).reduce((sum, value) => sum + value, 0);
-  if (totalReservations > PER_BATCH_CAP || Object.values(totals).some((value) => value > PER_DIALOGUE_CAP)) {
+  if (totalReservations > perBatchCap || Object.values(totals).some((value) => value > perDialogueCap)) {
     throw new Error('confirmation recovery exceeded an unchanged cap');
   }
   const finalResultPath = path.join(absoluteDestination, 'batch-final-result.json');
@@ -605,7 +638,7 @@ export async function recoverTutorStubResistanceActionRegisterConfirmationBatch(
     status: 'complete',
     completed_dialogues: BATCH_SIZE,
     failed_or_missing_dialogues: 0,
-    maximum_model_attempt_reservations: PER_BATCH_CAP,
+    maximum_model_attempt_reservations: perBatchCap,
     observed_model_attempt_reservations: totalReservations,
     observed_model_attempt_reservations_by_job: totals,
     technical_recovery_used: true,

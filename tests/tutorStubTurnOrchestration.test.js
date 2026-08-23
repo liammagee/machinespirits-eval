@@ -9,7 +9,10 @@ import {
   createTutorStubAutomatedLearnerGenerationRuntime,
 } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
 import { tutorStubBoredomUnreadableTurnIsPassedOver } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
-import { createTutorStubTurnOrchestration } from '../services/tutorStubTurnOrchestration.js';
+import {
+  completeTutorStubResistanceManipulationValidation,
+  createTutorStubTurnOrchestration,
+} from '../services/tutorStubTurnOrchestration.js';
 import {
   learnerProfileContract,
   learnerProfileIds,
@@ -828,4 +831,79 @@ test('fresh confirmation fails substantively before a third learner call when no
       },
     ],
   );
+});
+
+test('manipulation validation judges the intervention once and stops without a learner outcome', async () => {
+  const events = [];
+  const state = {
+    trace: null,
+    turns: [{ turn: 1, learner: 'I reject that test.', tutor: 'Use only this bounded distinction.' }],
+    resistanceActionRegisterStudy: {
+      manipulation_validation: true,
+      consumed: true,
+      trigger_turn: 1,
+      maximum_trigger_turn: 2,
+    },
+  };
+  let calls = 0;
+  const result = await completeTutorStubResistanceManipulationValidation({
+    state,
+    turnNumber: 1,
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    async adjudicateTutorStubResistanceInterventionFidelity(values) {
+      calls += 1;
+      assert.equal(values.intervention, 'Use only this bounded distinction.');
+      return { fidelity: { status: 'determinate' } };
+    },
+  });
+  assert.equal(result.complete, true);
+  assert.equal(calls, 1);
+  assert.deepEqual(state.resistanceActionRegisterStudy.fidelity, { status: 'determinate' });
+  assert.equal(events.length, 0);
+});
+
+test('manipulation validation retains a missing trigger as substantive rather than replacing it', async () => {
+  const events = [];
+  const state = {
+    trace: null,
+    turns: [{ turn: 2, learner: 'I can inspect the mark.', tutor: 'Inspect it.' }],
+    resistanceActionRegisterStudy: {
+      manipulation_validation: true,
+      consumed: false,
+      maximum_trigger_turn: 2,
+    },
+  };
+  await assert.rejects(
+    completeTutorStubResistanceManipulationValidation({
+      state,
+      turnNumber: 2,
+      appendTraceEvent(_trace, event) {
+        events.push(event);
+      },
+    }),
+    (error) =>
+      error.code === 'TUTOR_STUB_RESISTANCE_MANIPULATION_VALIDATION_TRIGGER_MISSING' &&
+      error.substantiveStudyFailure === true,
+  );
+  assert.equal(events[0].disposition, 'substantive_registered_failure_retain_no_replacement');
+});
+
+test('manipulation validation continues after a non-trigger first turn', async () => {
+  const state = {
+    trace: null,
+    turns: [{ turn: 1, learner: 'I can inspect the mark.', tutor: 'Inspect it.' }],
+    resistanceActionRegisterStudy: {
+      manipulation_validation: true,
+      consumed: false,
+      maximum_trigger_turn: 2,
+    },
+  };
+  const result = await completeTutorStubResistanceManipulationValidation({
+    state,
+    turnNumber: 1,
+    appendTraceEvent() {},
+  });
+  assert.deepEqual(result, { active: true, complete: false });
 });
