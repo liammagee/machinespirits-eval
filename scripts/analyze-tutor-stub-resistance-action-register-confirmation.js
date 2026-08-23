@@ -293,7 +293,7 @@ function exactBatch(batchRoot, allowedBatchSources, analysisSourceCommit, regist
       return { ...job, command };
     });
   if (
-    path.resolve(ROOT, plan.destination) !== absolute ||
+    path.resolve(plan.jobs[0]?.command?.cwd || ROOT, plan.destination) !== absolute ||
     JSON.stringify(comparableJobs(plan.jobs)) !== JSON.stringify(comparableJobs(recomputed.jobs)) ||
     JSON.stringify(plan.design) !== JSON.stringify(recomputed.design) ||
     JSON.stringify(plan.budget) !== JSON.stringify(recomputed.budget)
