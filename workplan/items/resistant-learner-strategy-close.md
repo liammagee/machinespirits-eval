@@ -28,6 +28,7 @@ links:
     - notes/checkins/2026-08-23-P0.md
     - notes/checkins/2026-08-23-P1.md
     - notes/checkins/2026-08-23-P2.md
+    - notes/2026-08-23-resistant-learner-calibration-gate1-corrected-go.md
     - config/tutor-stub-resistant-learner-b1-design.v1.json
     - config/tutor-stub-resistant-learner-r1-design.v1.json
 tags:
@@ -84,3 +85,8 @@ tags:
   is preserved and receives no calibration credit. P2 records an outcome-blind
   correction to the exact boredom-v8 world set, a runtime registry preflight,
   and fail-fast child handling. A corrected paid launch requires a fresh GO.
+- 2026-08-23: Received the fresh operator-signed corrected Gate 1 GO, binding
+  launch commit `0786d357`, both design digests, the Luna low-effort route,
+  `frame_refuser-r1-v1`, 36 fresh calibration dialogues, the 4,806-attempt
+  corrected-launch ceiling, and the create-once corrected destination. Gate 2
+  and both powered runs remain unauthorized.
