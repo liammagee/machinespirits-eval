@@ -282,9 +282,19 @@ function exactBatch(batchRoot, allowedBatchSources, analysisSourceCommit, regist
     destination: absolute,
     expectedSourceCommit: analysisSourceCommit,
   });
+  const comparableJobs = (jobs) =>
+    jobs.map((job) => {
+      const command = structuredClone(job.command);
+      for (const flag of ['--trace-dir', '--save']) {
+        const index = command.args.indexOf(flag);
+        if (index >= 0) command.args[index + 1] = path.resolve(command.cwd, command.args[index + 1]);
+      }
+      delete command.cwd;
+      return { ...job, command };
+    });
   if (
     path.resolve(ROOT, plan.destination) !== absolute ||
-    JSON.stringify(plan.jobs) !== JSON.stringify(recomputed.jobs) ||
+    JSON.stringify(comparableJobs(plan.jobs)) !== JSON.stringify(comparableJobs(recomputed.jobs)) ||
     JSON.stringify(plan.design) !== JSON.stringify(recomputed.design) ||
     JSON.stringify(plan.budget) !== JSON.stringify(recomputed.budget)
   ) {
