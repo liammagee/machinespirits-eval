@@ -38,6 +38,7 @@ const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-regist
 const REGISTRATION_V3 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json';
 const REGISTRATION_V4 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json';
 const REGISTRATION_V5 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v5.json';
+const REGISTRATION_V6 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v6.json';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -154,6 +155,11 @@ function syntheticTrace({
   // passed over and the next turn is read, which is what moves the trigger later.
   unreadablePassOverTurns = [],
   forcedTriggerTurn = null,
+  // Which post-trigger learner turn the recovery lands on. v1 to v5 read the
+  // first turn and no other, so one was the only answer and the fixture never
+  // had to say it. v6 reads five, and a recovery on a later turn is the case
+  // that tells its primary apart from the one-turn reading it carries forward.
+  recoveryPostTriggerTurn = 1,
 }) {
   const maxTurns = maximumTriggerTurn + postTriggerLearnerTurns;
   const triggerTurn = Number.isInteger(forcedTriggerTurn) ? forcedTriggerTurn : job.assignment_index % 2 === 0 ? 2 : 1;
@@ -181,7 +187,7 @@ function syntheticTrace({
   const completed = Array.from({ length: outcomeTurn - 1 }, (_, index) => {
     const turn = index + 1;
     const isTrigger = turn === triggerTurn;
-    const isPost = turn === triggerTurn + 1;
+    const isPost = turn === triggerTurn + recoveryPostTriggerTurn;
     return {
       type: 'turn_complete',
       turn,
@@ -318,8 +324,16 @@ function syntheticTrace({
       intervention: {
         status: 'applied',
         assignment: {
-          action_fit: 'matched',
-          pedagogical_move: 'ask_discriminating_question',
+          // The level the contrast is read on. Under a registration that holds
+          // the move fixed there is one level for every unit and the analyzer
+          // calls it "matched"; under v6 the level is the assigned move, and a
+          // literal here would refuse all thirty-six dialogues.
+          action_fit: job.pedagogical_move_level ?? 'matched',
+          // The move the plan assigned this dialogue, never a name typed here.
+          // v1 to v5 assigned one move to every unit, so a literal was right by
+          // accident; under v6 half the units are assigned the other move and a
+          // literal would make every one of them read as undelivered.
+          pedagogical_move: job.pedagogical_move,
           realization: job.realization,
           register: job.realization,
           repeat: job.batch_id,
@@ -366,6 +380,7 @@ function writeSyntheticBatch(
     forcedTriggerTurnByJobId = {},
     maximumTriggerTurn = 2,
     postTriggerLearnerTurns = 2,
+    recoveryPostTriggerTurn = 1,
   } = {},
 ) {
   // The batch's own frozen numbers, never this file's. The analyzer audits the
@@ -388,6 +403,7 @@ function writeSyntheticBatch(
       authoredWorldOpening: authoredWorldOpeningWorlds.includes(job.world),
       maximumTriggerTurn,
       postTriggerLearnerTurns,
+      recoveryPostTriggerTurn,
       perDialogueBudget,
       unreadablePassOverTurns: unreadablePassOverTurnsByJobId[job.id] || [],
       forcedTriggerTurn: forcedTriggerTurnByJobId[job.id] ?? null,
@@ -864,8 +880,14 @@ test('amendment A1 lets the analyzer read a study short by registered indetermin
   assert.equal(report.primary_analysis.allocation_realised_as_predeclared, false);
   // The three touched worlds carry three plain against two warm, and the test
   // conditions on exactly those counts.
-  assert.equal(report.primary_analysis.blocks.filter((block) => block.referenceN === 3 && block.treatmentN === 2).length, 3);
-  assert.equal(report.primary_analysis.blocks.filter((block) => block.referenceN === 3 && block.treatmentN === 3).length, 3);
+  assert.equal(
+    report.primary_analysis.blocks.filter((block) => block.referenceN === 3 && block.treatmentN === 2).length,
+    3,
+  );
+  assert.equal(
+    report.primary_analysis.blocks.filter((block) => block.referenceN === 3 && block.treatmentN === 3).length,
+    3,
+  );
   assert.ok(report.interpretation_status.includes('unbalanced_attrition_caveat'));
   assert.match(report.claim_boundary, /Attrition was unbalanced/u);
   // Every unit still spent its model calls, stopped or not, so the reservation
@@ -1122,7 +1144,9 @@ test('a world that carries its own opening line needs no opening model call', (t
   const byWorld = report.treatment_fidelity.opening_source_by_world;
   assert.equal(byWorld.length, 6);
   assert.ok(byWorld.every((entry) => entry.sources.length === 1));
-  assert.ok(byWorld.every((entry) => entry.units_by_contrast_level.plain === 3 && entry.units_by_contrast_level.warm === 3));
+  assert.ok(
+    byWorld.every((entry) => entry.units_by_contrast_level.plain === 3 && entry.units_by_contrast_level.warm === 3),
+  );
   assert.deepEqual(
     byWorld.filter((entry) => entry.sources[0] === 'authored_world_opening').map((entry) => entry.world),
     authoredWorlds,
@@ -1690,4 +1714,172 @@ test('a warm unit that came out plain is recorded nonadherent, not refused', (t)
       }),
     /lacks adherent typed action\/register visibility evidence/u,
   );
+});
+
+test('v6 reads the move contrast end to end, blocks the manner, and discloses content separation', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-v6-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V6) });
+  const treatment = loaded.registration.design.treatment;
+  const measurement = loaded.registration.measurement;
+  // What v6 moved. The contrast is the tutor move; the manner is a block that
+  // is balanced and reported, never tested. The window did not move, so a v6
+  // row can be read beside a v5 one.
+  assert.equal(treatment.contrast, 'pedagogical_move');
+  assert.deepEqual(treatment.pedagogicalMoveLevels, ['ask_question', 'shrink_step']);
+  assert.equal(treatment.realizationRole, 'balancing_block_not_the_contrast');
+  assert.equal(measurement.primaryEndpoint.deadlinePostTriggerLearnerTurns, 5);
+  assert.equal(measurement.comparabilityEndpoint.deadlinePostTriggerLearnerTurns, 1);
+  const maximumTriggerTurn = loaded.registration.design.freshPrefixGeneration.maximumTriggerTurn;
+  const postTriggerLearnerTurns = treatment.postTriggerLearnerTurns;
+
+  // Every unit recovers, and every one of them recovers on the fourth
+  // post-trigger turn. That is the reading the two endpoints have to disagree
+  // about: the five-turn primary finds it, the carried-forward one-turn
+  // comparability cannot.
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  const roots = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION_V6,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    writeSyntheticBatch(root, plan, outcomes, {
+      observationSemantics: 'prospective_v9',
+      maximumTriggerTurn,
+      postTriggerLearnerTurns,
+      recoveryPostTriggerTurn: 4,
+    });
+    roots.push(root);
+  }
+
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION_V6,
+    expectedSourceCommit: head,
+  });
+  assert.equal(report.rows.length, 36);
+
+  // The contrast is read on the move, eighteen a side, and the move a row was
+  // assigned is the move the catalogue names for its level.
+  const byMove = (level) => report.rows.filter((row) => row.move_level === level);
+  assert.equal(byMove('ask_question').length, 18);
+  assert.equal(byMove('shrink_step').length, 18);
+  assert.ok(byMove('ask_question').every((row) => row.pedagogical_move === treatment.pedagogicalMoves.ask_question));
+  assert.ok(byMove('shrink_step').every((row) => row.pedagogical_move === treatment.pedagogicalMoves.shrink_step));
+  // The manner is balanced inside each move, nine and nine, so a move result
+  // cannot be a manner result under another name.
+  for (const level of treatment.pedagogicalMoveLevels) {
+    assert.equal(byMove(level).filter((row) => row.arm === 'plain').length, 9);
+    assert.equal(byMove(level).filter((row) => row.arm === 'warm').length, 9);
+  }
+
+  // The two windows part company on the same thirty-six dialogues.
+  assert.ok(report.rows.every((row) => row.outcome.recovered === true));
+  assert.ok(report.rows.every((row) => row.outcome.deadline_turns === 5));
+  assert.ok(report.rows.every((row) => row.outcome.first_recovery_turn === 4));
+  assert.ok(report.rows.every((row) => row.outcome.comparability_recovered === false));
+  assert.ok(report.rows.every((row) => row.outcome.comparability_deadline_turns === 1));
+
+  // The primary reads the move, reports the manner as a block, and says which
+  // decision it reached. Both moves recover thirty-six of thirty-six here, so
+  // the registered decision is that no separation was confirmed.
+  const primary = report.primary_analysis;
+  assert.equal(primary.endpoint, 'bored_resistance_recovery_within_outcome_horizon');
+  assert.equal(primary.deadline_post_trigger_learner_turns, 5);
+  assert.equal(primary.balanced_block.axis, 'realization_manner');
+  assert.equal(primary.balanced_block.role, 'balancing_block_not_the_contrast');
+  assert.equal(primary.balanced_block.analysis, 'descriptive_only_no_hypothesis_test');
+  // Four cells, nine dialogues each: the balance a reader has to be able to see.
+  assert.deepEqual(
+    primary.balanced_block.cells.map((cell) => [cell.contrast_level, cell.block_level, cell.scored, cell.successes]),
+    [
+      ['ask_question', 'plain', 9, 9],
+      ['ask_question', 'warm', 9, 9],
+      ['shrink_step', 'plain', 9, 9],
+      ['shrink_step', 'warm', 9, 9],
+    ],
+  );
+  assert.equal(primary.significant_two_sided, false);
+  assert.equal(primary.registered_decision, 'shrink_step_ask_question_recovery_not_confirmed');
+  // The key secondary stays shut behind it. That is the fixed sequence.
+  assert.equal(report.key_secondary_analysis.fixed_sequence_gate_open, false);
+
+  // The carried-forward v5 reading travels with the result and carries no test.
+  const comparability = report.comparability_analysis;
+  assert.equal(comparability.endpoint, 'profile_specific_resistance_recovery');
+  assert.equal(comparability.analysis, 'descriptive_only_no_hypothesis_test');
+  assert.equal(comparability.scored, 36);
+  assert.deepEqual(
+    comparability.by_contrast_level.map((level) => [level.contrast_level, level.scored, level.recovered]),
+    [
+      ['ask_question', 18, 0],
+      ['shrink_step', 18, 0],
+    ],
+  );
+
+  // Content separation is reported per move whatever it comes to. Here the
+  // learner brings back words the tutor never made public, so it is zero — and
+  // zero has to be written down, not left out.
+  const leakage = report.content_leakage_disclosure;
+  assert.deepEqual(
+    leakage.by_contrast_level.map((level) => [
+      level.contrast_level,
+      level.scoring_turns,
+      level.scoring_turns_that_only_restate_the_tutor,
+    ]),
+    [
+      ['ask_question', 18, 0],
+      ['shrink_step', 18, 0],
+    ],
+  );
+
+  // Every unit delivered the move it was assigned, so the fidelity floor is met
+  // and no unit is nonadherent on the move.
+  assert.ok(report.rows.every((row) => row.fidelity.move_delivered_as_assigned === true));
+  assert.equal(report.treatment_fidelity.assigned_move_delivery_rate, 1);
+  assert.equal(report.treatment_fidelity.move_nonadherent_units.length, 0);
+  assert.equal(
+    report.treatment_fidelity.assigned_move_delivery_minimum,
+    measurement.treatmentFidelity.minimumAssignedMoveDelivery,
+  );
+
+  // And a unit that came out under the other move is recorded nonadherent in
+  // its assigned group, never rerolled into the group it happened to deliver.
+  // The assignment record is left alone on purpose: change that and the run has
+  // drifted from the sealed manifest, which is a refusal, not a nonadherence.
+  // What moves is the record of what came out.
+  const firstPlan = JSON.parse(fs.readFileSync(path.join(roots[0], 'batch-plan.json'), 'utf8'));
+  const shrinkJob = firstPlan.jobs.find((job) => job.pedagogical_move_level === 'shrink_step');
+  mutateTrace(roots[0], shrinkJob.id, (events) =>
+    events.map((event) =>
+      event.type === 'resistance_action_register_intervention_applied'
+        ? {
+            ...event,
+            intervention: {
+              ...event.intervention,
+              delivered_pedagogical_move: treatment.pedagogicalMoves.ask_question,
+            },
+          }
+        : event,
+    ),
+  );
+  const withMiss = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION_V6,
+    expectedSourceCommit: head,
+  });
+  const kept = withMiss.rows.find((row) => row.case_id === shrinkJob.id);
+  assert.equal(kept.move_level, 'shrink_step');
+  assert.equal(kept.fidelity.assigned_pedagogical_move, treatment.pedagogicalMoves.shrink_step);
+  assert.equal(kept.fidelity.delivered_pedagogical_move, treatment.pedagogicalMoves.ask_question);
+  assert.equal(kept.fidelity.move_delivered_as_assigned, false);
+  assert.equal(withMiss.rows.filter((row) => row.move_level === 'shrink_step').length, 18);
+  assert.equal(withMiss.treatment_fidelity.move_nonadherent_units.length, 1);
+  assert.equal(withMiss.treatment_fidelity.move_nonadherent_units[0].case_id, shrinkJob.id);
+  assert.equal(withMiss.treatment_fidelity.assigned_move_delivery_rate, 35 / 36);
 });
