@@ -1929,3 +1929,59 @@ test('the runner takes its batch ids from the registration, not from a written r
   // a v6 plan on an edited runner fails on closure drift before it reaches the
   // batch id at all. That is the seal doing its job on a spent study.
 });
+
+test('every registered version builds a live runtime, not just a plan', () => {
+  // The plan and the runtime are two different things, and until now only the
+  // plan was tested. A plan row carries the move level as text; the runtime has
+  // to turn that text into an assigned move the tutor can deliver. v7 built a
+  // correct plan and then failed in the runtime, because the adapter asked
+  // `version !== 6` to decide whether the study varies the move. v7 is not 6,
+  // so it took the fixed-move path, found no fixed move, and killed four live
+  // dialogues after they had opened sessions and spent budget.
+  //
+  // Every version this file can reach is exercised, so the next version cannot
+  // pass the plan tests and die on first contact with a paid session.
+  const versions = [
+    { path: REGISTRATION_V7, movesVary: true },
+    { path: REGISTRATION_V5, movesVary: false },
+    { path: REGISTRATION_V4, movesVary: false },
+    { path: REGISTRATION_V3, movesVary: false },
+    { path: REGISTRATION, movesVary: false },
+  ];
+  for (const version of versions) {
+    const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, version.path) });
+    // One job from the first batch and one from the last, so a version whose
+    // batch list is written out too short fails here rather than in a live run.
+    const lastBatch = loaded.plan.batches[loaded.plan.batches.length - 1].id;
+    const probes = [loaded.plan.jobs[0], loaded.plan.jobs.find((job) => job.batch_id === lastBatch)];
+    for (const job of probes) {
+      const state = {
+        trace: null,
+        turns: [],
+        history: [],
+        register: { palette: ['plain', 'warm'], history: [] },
+        world: {},
+      };
+      configureTutorStubBoredomProofDagExecution({ state, loaded, jobId: job.id, appendTraceEvent() {} });
+      const runtime = state.resistanceActionRegisterStudy;
+      const assignments = runtime.registration.design.factors.actionFit.assignments.bored;
+      // The move the runtime will deliver must be a real named move, and it
+      // must be the one the sealed plan row assigned.
+      const move = assignments[runtime.action_fit];
+      assert.equal(typeof move, 'string', `${version.path} ${job.id} resolves no assigned move`);
+      assert.ok(move.trim(), `${version.path} ${job.id} resolves an empty assigned move`);
+      if (version.movesVary) {
+        assert.equal(runtime.action_fit, job.pedagogical_move_level);
+        assert.equal(move, job.pedagogical_move);
+      } else {
+        assert.equal(runtime.action_fit, 'matched');
+      }
+      // The batch this job belongs to must be a level the runtime accepts.
+      assert.ok(
+        runtime.registration.design.factors.replicationBlock.levels.includes(job.batch_id),
+        `${version.path} runtime does not accept batch ${job.batch_id}`,
+      );
+      assert.equal(runtime.repeat, job.batch_id);
+    }
+  }
+});

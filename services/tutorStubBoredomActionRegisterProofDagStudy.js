@@ -291,19 +291,32 @@ function clone(value) {
   return value === undefined ? undefined : structuredClone(value);
 }
 
+// Does this registration vary the tutor move, or fix it?
+//
+// It is a property of the registration, not of its version number. v4 and v5
+// fixed the move and named it once. v6 and v7 vary it and name the levels.
+// Asking `version !== 6` answered the question for exactly one version and got
+// v7 wrong: v7 fell into the fixed-move branch, where the fixed move is absent,
+// so every v7 dialogue died on "unsupported pedagogical move undefined" after
+// the batch had already reserved its budget and opened its sessions.
+function registeredMoveLevels(registration) {
+  const levels = registration.design?.treatment?.pedagogicalMoveLevels;
+  return Array.isArray(levels) && levels.length ? levels : null;
+}
+
 // The host study calls this axis "action fit" because the frame-refuser design
-// used it to contrast a fitting move with an unfitting one. v6 puts two fitting
-// moves on the same axis, so the level names are the move names. Nothing in the
-// host needs changing for that: it reads the level list out of the registration
-// and only refuses a level the registration never declared.
+// used it to contrast a fitting move with an unfitting one. v6 and v7 put two
+// fitting moves on the same axis, so the level names are the move names.
+// Nothing in the host needs changing for that: it reads the level list out of
+// the registration and only refuses a level the registration never declared.
 function boredomActionFitFactor(registration) {
-  if (registration.version !== 6) {
+  const levels = registeredMoveLevels(registration);
+  if (!levels) {
     return {
       levels: ['matched'],
       assignments: { bored: { matched: registration.design.treatment.fixedPedagogicalMove } },
     };
   }
-  const levels = registration.design.treatment.pedagogicalMoveLevels;
   const moves = registration.design.treatment.pedagogicalMoves;
   return {
     levels: [...levels],
@@ -314,15 +327,19 @@ function boredomActionFitFactor(registration) {
 // Which level this one dialogue was assigned. Read from the plan row, never
 // written here, so the runtime cannot disagree with the sealed manifest.
 function boredomActionFitLevel(registration, job) {
-  if (registration.version !== 6) return 'matched';
+  const levels = registeredMoveLevels(registration);
+  if (!levels) return 'matched';
   const level = job.pedagogical_move_level;
-  if (!registration.design.treatment.pedagogicalMoveLevels.includes(level)) {
+  if (!levels.includes(level)) {
     throw new Error(`boredom proof-DAG job carries unregistered pedagogical move level ${JSON.stringify(level)}`);
   }
   return level;
 }
 
-function runtimeRegistrationAdapter(registration, world) {
+function runtimeRegistrationAdapter(registration, world, batchIds) {
+  if (!Array.isArray(batchIds) || !batchIds.length) {
+    throw new Error('boredom proof-DAG runtime needs the plan batch ids to name the replication block');
+  }
   return {
     schema: 'machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1',
     version: 1,
@@ -336,19 +353,10 @@ function runtimeRegistrationAdapter(registration, world) {
       factors: {
         actionFit: boredomActionFitFactor(registration),
         realization: { levels: ['plain', 'warm'], plain: 'plain', warm: 'warm' },
-        replicationBlock: {
-          levels: [
-            'execution_batch_1',
-            'execution_batch_2',
-            'execution_batch_3',
-            'execution_batch_4',
-            'execution_batch_5',
-            'execution_batch_6',
-            'execution_batch_7',
-            'execution_batch_8',
-            'execution_batch_9',
-          ],
-        },
+        // How many batches a study deals is a registered decision: nine from v2
+        // to v6, twenty-one on v7. Written out as a list of nine, this refused
+        // every v7 batch above the ninth.
+        replicationBlock: { levels: [...batchIds] },
       },
       intervention: {
         applicationOrder: [...registration.design.treatment.applicationOrder],
@@ -396,7 +404,11 @@ export function configureTutorStubBoredomProofDagExecution({ state, loaded, jobI
     repeat: job.batch_id,
     registration_path: path.relative(process.cwd(), loaded.path),
     registration_sha256: loaded.sha256,
-    registration: runtimeRegistrationAdapter(loaded.registration, job.world),
+    registration: runtimeRegistrationAdapter(
+      loaded.registration,
+      job.world,
+      (loaded.plan?.batches || []).map((batch) => batch.id),
+    ),
     proof_dag_registration: clone(loaded.registration),
     semantic_adjudicator:
       loaded.registration.design.observationSemantics === 'prospective_v9'
