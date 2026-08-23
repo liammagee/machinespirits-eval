@@ -399,8 +399,13 @@ function auditInterruptedRecovery({ absolute, plan, initial, result, seal, planP
       else throw new Error(`confirmation batch ${plan.batch_id} has an unclassified model-attempt ledger`);
     }
     const finalTraceReservations = reservationCount(path.dirname(tracePath));
+    const finalTraceRunStart = readTrace(tracePath).find((event) => event.type === 'run_start');
+    const finalTraceBudget = finalTraceRunStart?.metadata?.lab?.admission?.modelCallBudget;
+    if (!Number.isInteger(finalTraceBudget) || finalTraceBudget < finalTraceReservations || finalTraceBudget > caps.perDialogue) {
+      throw new Error(`confirmation batch ${plan.batch_id} has an invalid recorded continuation budget`);
+    }
     reservationsByJob.set(job.id, reservations);
-    finalTraceBudgetByJob.set(job.id, caps.perDialogue - (reservations - finalTraceReservations));
+    finalTraceBudgetByJob.set(job.id, finalTraceBudget);
     ledgerEventsByJob.set(job.id, ledgerEvents);
   }
   const observedByJob = Object.fromEntries(reservationsByJob);
