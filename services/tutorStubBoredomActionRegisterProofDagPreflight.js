@@ -1724,6 +1724,13 @@ function boredomOutcomeExtensions(registration) {
     // one merged flag is the defect this arc keeps finding, so the split is
     // read off the registration and the rows are then required to show it.
     splitRegisterFloor: Number.isFinite(Number(measurement.treatmentFidelity?.minimumRegisterReadability)),
+    // From v8 the fidelity reading that decides the run counts question marks in
+    // the tutor's own trigger turn. A row has to carry it, or the endpoint gate
+    // can only ask for `assigned_move_delivered`, which compares the assignment
+    // with itself and is true in every row that can exist.
+    moveContrastDelivery:
+      Number.isFinite(Number(measurement.treatmentFidelity?.minimumMoveContrastDelivery)) &&
+      !!measurement.treatmentFidelity?.deliveredContrastByMove,
   };
 }
 
@@ -1798,6 +1805,19 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
         register_visible: true,
         ...(extensions.splitRegisterFloor ? { register_delivered_as_designed: true, register_readable: true } : {}),
         ...(extensions.assignedMoveDelivery ? { assigned_move_delivered: true } : {}),
+        // The synthetic row states the delivered contrast and the count it was
+        // read from, so a run whose rows carry neither cannot pass the endpoint
+        // gate by carrying the echo alone.
+        ...(extensions.moveContrastDelivery
+          ? {
+              move_contrast_delivered: true,
+              delivered_question_count:
+                registration.measurement.treatmentFidelity.deliveredContrastByMove[job.pedagogical_move] ===
+                'requires_question'
+                  ? 1
+                  : 0,
+            }
+          : {}),
         safety_override: false,
         protected_condition: false,
       },
@@ -2111,6 +2131,17 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       // v6 assigns it, and a unit whose delivered move is not its assigned move
       // is nonadherent.
       (!extensions.assignedMoveDelivery || row.fidelity.assigned_move_delivered === true) &&
+      // From v8 the row also has to carry the reading that decides the run, and
+      // the flag has to follow the count rather than sit beside it: the question
+      // arm shows at least one question mark, the reference arm shows none.
+      (!extensions.moveContrastDelivery ||
+        (row.fidelity.move_contrast_delivered === true &&
+          Number.isInteger(row.fidelity.delivered_question_count) &&
+          row.fidelity.move_contrast_delivered ===
+            (registration.measurement.treatmentFidelity.deliveredContrastByMove[row.pedagogical_move] ===
+            'requires_question'
+              ? row.fidelity.delivered_question_count >= 1
+              : row.fidelity.delivered_question_count === 0))) &&
       row.fidelity.safety_override === false &&
       row.fidelity.protected_condition === false,
   );

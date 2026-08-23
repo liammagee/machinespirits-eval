@@ -24,7 +24,9 @@ import {
 import {
   scoreTutorStubResistanceRecovery,
   scoreTutorStubResistanceRecoveryWithinHorizon,
+  tutorStubResistanceHostActionFamily,
 } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import { compileTutorStubTurnProgressionContract } from '../services/tutorStubTurnProgressionContract.js';
 import {
   hashPaidStudyEndpointValue,
   validatePaidStudyEndpointGoCertificate,
@@ -837,4 +839,269 @@ test('v7 records that the safeguard, not the effect, set the sample size', () =>
   assert.equal(planning.perMove, 42);
   assert.ok(planning.oneSidedPower > planning.twoSidedPower);
   assert.ok(planning.oneSidedPower < v7.power.targetPower);
+});
+
+const V8_REGISTRATION_PATH = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json';
+
+function loadV8() {
+  return loadTutorStubBoredomProofDagRegistration({ root: ROOT, registrationPath: V8_REGISTRATION_PATH });
+}
+
+test('v8 gives its two arms different host families, so they compile to different question permissions', () => {
+  const v8 = loadV8();
+  const treatment = v8.design.treatment;
+  assert.deepEqual(treatment.pedagogicalMoveLevels, ['carry_on', 'ask_question']);
+  assert.equal(treatment.reference, 'carry_on');
+  assert.equal(treatment.treatment, 'ask_question');
+  // v6 and v7 named one family for both arms. v8 must not, and must not leave
+  // the field lying around either.
+  assert.equal(treatment.hostActionFamily, undefined);
+  assert.equal(treatment.hostActionFamilySharedByBothLevels, false);
+
+  // The families the registration declares must be the ones the study code
+  // actually returns. This is the pair of copies v7 never compared.
+  for (const level of treatment.pedagogicalMoveLevels) {
+    const move = treatment.pedagogicalMoves[level];
+    assert.equal(treatment.hostActionFamilyByLevel[level], tutorStubResistanceHostActionFamily(move), level);
+  }
+
+  // And the separation has to produce the behaviour it was made for. Compile
+  // the real turn-progression contract for each arm and read the permission.
+  const base = {
+    learnerText: 'I suppose so. It is all a bit much and I have rather lost the thread of it.',
+    publicQuestion: 'Which entry in the delivery ledger covers the third week?',
+    responseCompositionFrame: {
+      discourse_plane: { plane: 'inquiry' },
+      learner_move: { evidence_use: 'none' },
+      learner_dag: { bottleneck: null, final_secret_entailed: false, asserted_secret: false },
+    },
+    questionSupport: null,
+  };
+  const permissionFor = (level) =>
+    compileTutorStubTurnProgressionContract({
+      ...base,
+      actionFamily: treatment.hostActionFamilyByLevel[level],
+    }).handoff_contract?.question_allowed;
+  assert.equal(permissionFor('ask_question'), true);
+  assert.equal(permissionFor('carry_on'), false);
+
+  // v7's own pair, for contrast: one family, so one permission, so one arm.
+  const v7 = loadV7();
+  const v7Families = v7.design.treatment.pedagogicalMoveLevels.map((level) =>
+    tutorStubResistanceHostActionFamily(v7.design.treatment.pedagogicalMoves[level]),
+  );
+  assert.equal(new Set(v7Families).size, 1);
+});
+
+test('a v8 registration whose arms compile alike is refused', () => {
+  const v8 = loadV8();
+  assert.equal(validateTutorStubBoredomProofDagRegistration(v8).ok, true);
+
+  // Put the reference arm back on v7's family. Nothing else changes, and the
+  // registration still reads as a two-arm move contrast, but the two arms now
+  // earn the same handoff. That is the state v7 shipped in and the preflight
+  // must refuse it.
+  const blurred = structuredClone(v8);
+  blurred.design.treatment.pedagogicalMoves.carry_on = 'ask_discriminating_question';
+  blurred.design.treatment.hostActionFamilyByLevel.carry_on = 'stage_next_step';
+  const refused = validateTutorStubBoredomProofDagRegistration(blurred);
+  assert.equal(refused.ok, false);
+  assert.ok(
+    refused.errors.some((error) => /compile to the same question permission/u.test(error)),
+    `expected the arms-alike refusal, got ${refused.errors.join('; ')}`,
+  );
+
+  // A declared family that disagrees with what the study code returns is
+  // refused too, whichever way round the disagreement runs.
+  const mislabelled = structuredClone(v8);
+  mislabelled.design.treatment.hostActionFamilyByLevel.carry_on = 'stage_next_step';
+  assert.equal(validateTutorStubBoredomProofDagRegistration(mislabelled).ok, false);
+});
+
+test('v8 makes the delivered contrast the floor and labels the two echoed gates as echoes', () => {
+  const v8 = loadV8();
+  const fidelity = v8.measurement.treatmentFidelity;
+  assert.equal(fidelity.minimumMoveContrastDelivery, 0.9);
+  assert.deepEqual(fidelity.deliveredContrastByMove, {
+    ask_discriminating_question: 'requires_question',
+    stage_public_evidence_for_next_step: 'forbids_question',
+  });
+  // Every move the design assigns must have a contrast rule, or a unit could
+  // pass a floor that never looked at it.
+  for (const move of Object.values(v8.design.treatment.pedagogicalMoves)) {
+    assert.ok(fidelity.deliveredContrastByMove[move], move);
+  }
+
+  // The two echoes are kept, pinned at 1, and named as echoes. At 1 they say
+  // no safety override replaced what was assigned; below 1 they would read like
+  // a measurement of the tutor, which is how v7 misread its own 1.00.
+  assert.equal(fidelity.minimumAssignedMoveDelivery, 1);
+  assert.equal(fidelity.minimumAssignedRegisterDelivery, 1);
+  assert.match(fidelity.echoedGatesMayNotBeReportedAsReadings, /echoes, not readings/u);
+  assert.ok(
+    v8.measurement.mandatoryDisclosures.some((line) => /echoes of the study own instruction/u.test(line)),
+    'the report must have to say that the echoed gates read nothing',
+  );
+
+  // A v8 that drops the delivered-contrast floor, or that lowers an echo so it
+  // looks like a reading, is refused.
+  for (const damage of [
+    (draft) => delete draft.measurement.treatmentFidelity.minimumMoveContrastDelivery,
+    (draft) => delete draft.measurement.treatmentFidelity.deliveredContrastByMove,
+    (draft) => {
+      draft.measurement.treatmentFidelity.minimumAssignedMoveDelivery = 0.9;
+    },
+  ]) {
+    const draft = structuredClone(v8);
+    damage(draft);
+    assert.equal(validateTutorStubBoredomProofDagRegistration(draft).ok, false);
+  }
+});
+
+test('v8 reads both directions, so the reference arm winning is a finding', () => {
+  const v8 = loadV8();
+  const primary = v8.measurement.primaryEndpoint;
+  assert.equal(primary.analysis, 'two_sided_exact_conditional_blocked_score_test');
+  assert.equal(primary.direction, 'either_direction');
+  assert.equal(primary.analysisChangedFromV7, true);
+  assert.equal(primary.analysisV7Value, 'one_sided_exact_conditional_blocked_score_test');
+  assert.match(v8.claimBoundary, /two-sided/u);
+  assert.match(primary.directionRule, /not written down as a null/u);
+
+  // The margin v7's one-sided test had to ignore. Six worlds, six per arm, the
+  // reference arm winning every world: v7 would have returned a p near 1 and
+  // reported nothing; v8's test rejects.
+  const allReference = Array.from({ length: 6 }, () => ({
+    plainN: 6,
+    warmN: 6,
+    plainSuccesses: 6,
+    warmSuccesses: 0,
+  }));
+  assert.ok(exactBlockedScoreOneSidedPValue(allReference) > 0.9999);
+  assert.ok(exactBlockedScorePValue(allReference) < 0.0001);
+
+  // A registration that keeps a direction while claiming two sides is refused.
+  const directed = structuredClone(v8);
+  directed.measurement.primaryEndpoint.direction = 'treatment_greater_than_reference';
+  assert.equal(validateTutorStubBoredomProofDagRegistration(directed).ok, false);
+});
+
+test('v8 plans 72 dialogues over 18 batches, balanced in every arm-and-manner cell', () => {
+  const v8 = loadV8();
+  const sizes = boredomRegisteredSizes(v8);
+  const batches = v8.executionReadiness.batches;
+  const dialogue = v8.executionReadiness.dialogue;
+  assert.equal(dialogue.dialogues, 72);
+  assert.equal(batches.executionBatches, 18);
+  assert.equal(batches.dialoguesPerBatch, 4);
+  assert.equal(batches.carryOnPerBatch + batches.askQuestionPerBatch, batches.dialoguesPerBatch);
+  assert.equal(batches.plainPerBatch + batches.warmPerBatch, batches.dialoguesPerBatch);
+
+  const plan = buildTutorStubBoredomProofDagPlan(v8);
+  assert.equal(plan.jobs.length, 72);
+  assert.equal(new Set(plan.jobs.map((job) => job.id)).size, 72);
+  assert.equal(new Set(plan.jobs.map((job) => job.seed)).size, 72);
+  assert.equal(plan.assignment_manifest_sha256, v8.design.randomization.assignmentManifestSha256);
+  assert.equal(plan.total_maximum_model_attempt_reservations, v8.executionReadiness.hardStudyAttemptCeiling);
+
+  // 36 an arm, 36 a manner, 18 in each of the four cells, three of each cell in
+  // every world. Twelve a world divides by four, which is why v8 needs only one
+  // pattern where v7 needed a mirrored pair.
+  const count = (field, value) => plan.jobs.filter((job) => job[field] === value).length;
+  assert.equal(count('pedagogical_move_level', 'carry_on'), sizes.perMove);
+  assert.equal(count('pedagogical_move_level', 'ask_question'), sizes.perMove);
+  assert.equal(count('realization', 'plain'), sizes.perManner);
+  assert.equal(count('realization', 'warm'), sizes.perManner);
+  assert.equal(Object.keys(v8.design.randomization.worldPatterns).length, 1);
+  for (const level of ['carry_on', 'ask_question']) {
+    for (const manner of ['plain', 'warm']) {
+      const cell = plan.jobs.filter((job) => job.pedagogical_move_level === level && job.realization === manner);
+      assert.equal(cell.length, 18, `${level}/${manner}`);
+      const perWorld = new Map();
+      for (const job of cell) perWorld.set(job.world, (perWorld.get(job.world) || 0) + 1);
+      assert.equal(perWorld.size, v8.design.worlds.length);
+      for (const [world, held] of perWorld) assert.equal(held, 3, `${level}/${manner} in ${world}`);
+    }
+  }
+
+  // Every batch holds one of each cell, so stopping after any batch leaves both
+  // the contrast and the manner balance even.
+  for (const batch of plan.batches) {
+    assert.equal(batch.cases, 4);
+    assert.equal(batch.carry_on, 2);
+    assert.equal(batch.ask_question, 2);
+    assert.equal(batch.plain, 2);
+    assert.equal(batch.warm, 2);
+  }
+});
+
+test('a prefix seed range that meets a spent version is refused', () => {
+  const v8 = loadV8();
+  const base = v8.design.freshPrefixGeneration.seedBase;
+  assert.equal(base, 2026112200);
+
+  // Every version since v5 has written down that its seeds meet no prior
+  // version's, and until v8 nothing read those fields. Move v8 onto v7's base
+  // and the check must fire: v7 is charged against the safeguard as v7Spend, so
+  // its prefixes are spent and may not be regenerated.
+  const collided = structuredClone(v8);
+  collided.design.freshPrefixGeneration.seedBase = loadV7().design.freshPrefixGeneration.seedBase;
+  const refused = validateTutorStubBoredomProofDagRegistration(collided);
+  assert.equal(refused.ok, false);
+  assert.ok(
+    refused.errors.some((error) => /meet spent v7's/u.test(error)),
+    `expected the spent-seed refusal, got ${refused.errors.join('; ')}`,
+  );
+
+  // v6 and v5 are charged too, so their ranges are guarded on the same terms.
+  for (const spent of [5, 6]) {
+    const draft = structuredClone(v8);
+    draft.design.freshPrefixGeneration.seedBase = loadTutorStubBoredomProofDagRegistration({
+      root: ROOT,
+      registrationPath: `config/tutor-stub-boredom-action-register-proof-dag-registration.v${spent}.json`,
+    }).design.freshPrefixGeneration.seedBase;
+    const result = validateTutorStubBoredomProofDagRegistration(draft);
+    assert.ok(
+      result.errors.some((error) => new RegExp(`meet spent v${spent}'s`, 'u').test(error)),
+      `v${spent} range must be guarded`,
+    );
+  }
+
+  // The check is tied to the ledger, not to a list kept here: drop v7's spend
+  // and v7's seeds stop being guarded, which is the coupling that stops the two
+  // rules drifting apart.
+  const unledgered = structuredClone(collided);
+  delete unledgered.executionReadiness.programmeCeiling.v7Spend;
+  const loosened = validateTutorStubBoredomProofDagRegistration(unledgered);
+  assert.ok(!loosened.errors.some((error) => /meet spent v7's/u.test(error)));
+});
+
+test('v8 records that the safeguard, not the effect, set the sample size', () => {
+  const v8 = loadV8();
+  const ceiling = v8.executionReadiness.programmeCeiling;
+  assert.equal(ceiling.ledgerBeforeV8, 4684);
+  assert.equal(ceiling.v8Maximum, 8856);
+  assert.equal(ceiling.requiredCeiling, ceiling.ledgerBeforeV8 + ceiling.v8Maximum);
+  assert.equal(ceiling.headroom, ceiling.programmeSafeguard - ceiling.requiredCeiling);
+  assert.ok(ceiling.requiredCeiling <= ceiling.programmeSafeguard);
+
+  // The size v7 ran no longer fits, and the registration must say so rather
+  // than quietly lowering the per-dialogue ceiling to make it fit.
+  const v7Size = v8.power.sizesConsidered.find((row) => row.dialogues === 84);
+  assert.ok(v7Size, '84 must be considered and rejected on the record');
+  assert.ok(v7Size.ledgerPlusCeiling > ceiling.programmeSafeguard);
+  assert.equal(v7Size.chosen, undefined);
+  assert.match(v8.power.positionForV8.whyRunItAtThisSize, /15016/u);
+  assert.match(ceiling.theSafeguardNowBindsTheDesign, /refused/u);
+
+  // The reference rate has no prior at all, so the table carries the whole scan
+  // and at least one row falls short of the target. Reporting only the friendly
+  // rows would be the misreading the position field exists to stop.
+  assert.equal(v8.power.referenceRate.measured, false);
+  assert.equal(v8.power.targetPowerReached, false);
+  assert.ok(v8.power.powerTable.length >= 4);
+  assert.ok(v8.power.powerTable.some((row) => row.twoSidedPower < 0.5));
+  assert.ok(v8.power.powerTable.every((row) => row.perArm === 36 && row.dialogues === 72));
+  assert.match(v8.power.positionForV8.whatANullWouldMean, /not license/u);
+  assert.match(v8.power.positionForV8.whatAReversalWouldMean, /reportable/u);
 });

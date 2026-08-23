@@ -26,7 +26,10 @@ import {
   loadTutorStubBoredomProofDagStudy,
 } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
 import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
-import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import {
+  applyTutorStubResistanceActionRegisterStudyIntervention,
+  tutorStubResistanceHostActionFamily,
+} from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
   learnerProfileContract,
   learnerProfileIds,
@@ -164,6 +167,17 @@ function syntheticTrace({
   // repeat by accident. Pass one label to two jobs in one world to build the
   // case the registration's duplicate-opening rule is written for.
   sharedOpeningLabel = null,
+  // What the tutor actually said at the trigger turn. v1 to v7 never needed
+  // this: no gate read the tutor's words, which is how v7 shipped two arms that
+  // both asked a question. v8's deciding floor counts question marks in this
+  // text, so a fixture that cannot set it cannot test the floor.
+  triggerTutorText = null,
+  // The host action family the response audit recorded. v1 to v7 all ran on
+  // stage_next_step, so the fixture wrote it once. v8's two arms take different
+  // families, and the family is what earns the declarative handoff, so the
+  // default now follows the job's own assigned move. Pass a literal to build the
+  // case where the audit names a family the assigned move does not host.
+  triggerActionFamily = null,
 }) {
   const maxTurns = maximumTriggerTurn + postTriggerLearnerTurns;
   const triggerTurn = Number.isInteger(forcedTriggerTurn) ? forcedTriggerTurn : job.assignment_index % 2 === 0 ? 2 : 1;
@@ -197,7 +211,7 @@ function syntheticTrace({
       turn,
       turnRecord: {
         learner: isTrigger ? triggerText : isPost ? (recovered ? recoveryText : nonRecoveryText) : preTriggerText,
-        tutor: `Tutor turn ${turn}.`,
+        tutor: isTrigger && triggerTutorText ? triggerTutorText : `Tutor turn ${turn}.`,
         classification: isTrigger
           ? boredClassification()
           : isPost && recovered
@@ -208,7 +222,14 @@ function syntheticTrace({
               tutorLearnerDagModel: dagModel({ progressed: false }),
               responseConfigurationAudit: {
                 axes: {
-                  action_family: { selected: 'stage_next_step', visible: true },
+                  action_family: {
+                    selected:
+                      triggerActionFamily ??
+                      (job.pedagogical_move
+                        ? tutorStubResistanceHostActionFamily(job.pedagogical_move)
+                        : 'stage_next_step'),
+                    visible: true,
+                  },
                   engagement_stance: { selected: job.realization, visible: true },
                 },
               },
@@ -383,6 +404,15 @@ function writeSyntheticBatch(
     unreadablePassOverTurnsByJobId = {},
     forcedTriggerTurnByJobId = {},
     sharedOpeningLabelByJobId = {},
+    // What each arm's tutor said at the trigger turn, keyed by the assigned
+    // move. A whole v8 batch differs arm by arm, not dialogue by dialogue, so
+    // the move is the key that matches how the run is built.
+    triggerTutorTextByMove = {},
+    // One dialogue's tutor turn, whatever its arm. This wins over the arm's
+    // text, so a single unit can be made to break a floor the rest of its arm
+    // clears.
+    triggerTutorTextByJobId = {},
+    triggerActionFamilyByJobId = {},
     maximumTriggerTurn = 2,
     postTriggerLearnerTurns = 2,
     recoveryPostTriggerTurn = 1,
@@ -413,6 +443,8 @@ function writeSyntheticBatch(
       unreadablePassOverTurns: unreadablePassOverTurnsByJobId[job.id] || [],
       forcedTriggerTurn: forcedTriggerTurnByJobId[job.id] ?? null,
       sharedOpeningLabel: sharedOpeningLabelByJobId[job.id] ?? null,
+      triggerTutorText: triggerTutorTextByJobId[job.id] ?? triggerTutorTextByMove[job.pedagogical_move] ?? null,
+      triggerActionFamily: triggerActionFamilyByJobId[job.id] ?? null,
     })
       .map((event) => JSON.stringify(event))
       .join('\n')}\n`;
@@ -1979,6 +2011,119 @@ test('v6 reads the move contrast end to end, blocks the manner, and discloses co
 });
 
 const REGISTRATION_V7 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v7.json';
+const REGISTRATION_V8 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json';
+
+test('v8 decides the run on the tutor own words, and a blurred pair of arms fails the gate', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-v8-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V8) });
+  const treatment = loaded.registration.design.treatment;
+  const moves = treatment.pedagogicalMoves;
+  const maximumTriggerTurn = loaded.registration.design.freshPrefixGeneration.maximumTriggerTurn;
+  const postTriggerLearnerTurns = treatment.postTriggerLearnerTurns;
+
+  // The one behaviour the two arms are built to differ on, written out as the
+  // words a tutor would say. The question arm asks once. The carry-on arm names
+  // the public object and stops, so it holds no question mark at all. Every
+  // later assertion in this test is a count of these two sentences.
+  const asks = 'Which entry in the delivery ledger covers the third week?';
+  const carriesOn = 'The delivery ledger is on the table, and its third week entry is the part it does not settle yet.';
+  const arms = { [moves.ask_question]: asks, [moves.carry_on]: carriesOn };
+
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  const build = (options = {}) => {
+    const root = path.join(temp, options.label ?? 'clean');
+    fs.rmSync(root, { recursive: true, force: true });
+    const roots = [];
+    for (let index = 1; index <= 18; index += 1) {
+      const batchRoot = path.join(root, `batch-${index}`);
+      const plan = buildTutorStubBoredomProofDagBatchPlan({
+        registrationPath: REGISTRATION_V8,
+        batchId: `execution_batch_${index}`,
+        destination: batchRoot,
+      });
+      fs.mkdirSync(batchRoot, { recursive: true });
+      writeSyntheticBatch(batchRoot, plan, outcomes, {
+        observationSemantics: 'prospective_v9',
+        maximumTriggerTurn,
+        postTriggerLearnerTurns,
+        recoveryPostTriggerTurn: 1,
+        triggerTutorTextByMove: arms,
+        triggerTutorTextByJobId: options.overrides ? options.overrides(plan, index) : {},
+      });
+      roots.push(batchRoot);
+    }
+    return analyzeTutorStubBoredomProofDag({
+      batchRoots: roots,
+      registrationPath: REGISTRATION_V8,
+      expectedSourceCommit: head,
+    });
+  };
+
+  const report = build();
+  assert.equal(report.rows.length, 72);
+  assert.equal(report.rows.filter((row) => row.move_level === 'ask_question').length, 36);
+  assert.equal(report.rows.filter((row) => row.move_level === 'carry_on').length, 36);
+
+  // The question count is read per unit and it comes off the tutor turn, not
+  // off the assignment. One in every question-arm unit, none in any carry-on
+  // unit.
+  const byLevel = (level) => report.rows.filter((row) => row.move_level === level);
+  assert.ok(byLevel('ask_question').every((row) => row.fidelity.delivered_question_count === 1));
+  assert.ok(byLevel('carry_on').every((row) => row.fidelity.delivered_question_count === 0));
+  assert.ok(report.rows.every((row) => row.fidelity.move_contrast_delivered === true));
+
+  const fidelity = report.treatment_fidelity;
+  assert.equal(fidelity.move_contrast_delivery_rate, 1);
+  assert.deepEqual(fidelity.move_contrast_delivery_rate_by_level, { carry_on: 1, ask_question: 1 });
+  assert.equal(fidelity.move_contrast_delivery_minimum, 0.9);
+  assert.equal(fidelity.move_contrast_undelivered_units.length, 0);
+  assert.equal(report.status, 'complete_registered_confirmation');
+  // The two echoed gates read 1.00 beside it, and the report says in its own
+  // words that they are echoes rather than readings of the tutor.
+  assert.equal(fidelity.assigned_move_delivery_rate, 1);
+  assert.match(fidelity.assigned_move_delivery_reading, /dead field/u);
+
+  // v7's fault, replayed. Both arms ask, which is what v7 shipped and what its
+  // move gate could not see. Here the carry-on arm reads zero and the run is
+  // refused rather than analysed.
+  const blurred = build({
+    label: 'blurred',
+    overrides: (plan) =>
+      Object.fromEntries(
+        plan.jobs.filter((job) => job.pedagogical_move_level === 'carry_on').map((job) => [job.id, asks]),
+      ),
+  });
+  assert.equal(blurred.treatment_fidelity.move_contrast_delivery_rate, 0.5);
+  assert.deepEqual(blurred.treatment_fidelity.move_contrast_delivery_rate_by_level, { carry_on: 0, ask_question: 1 });
+  assert.equal(blurred.treatment_fidelity.move_contrast_undelivered_units.length, 36);
+  assert.equal(blurred.status, 'failed_interpretability_gate_not_rerun');
+
+  // And the case the pooled rate alone would wave through. Five carry-on units
+  // ask a question: pooled is 67 of 72, above the floor, while the carry-on arm
+  // is 31 of 36, below it. Only the per-arm check refuses this one.
+  const lopsided = build({
+    label: 'lopsided',
+    // One spoiled dialogue in each of the first five batches, and none after.
+    // Spoiling one per batch across all eighteen would put the pooled rate
+    // under the floor too, and then the test could not tell which of the two
+    // checks refused the run.
+    overrides: (plan, index) =>
+      index > 5
+        ? {}
+        : Object.fromEntries(
+            plan.jobs
+              .filter((job) => job.pedagogical_move_level === 'carry_on')
+              .slice(0, 1)
+              .map((job) => [job.id, asks]),
+          ),
+  });
+  assert.equal(lopsided.treatment_fidelity.move_contrast_delivery_rate, 67 / 72);
+  assert.ok(lopsided.treatment_fidelity.move_contrast_delivery_rate >= 0.9);
+  assert.equal(lopsided.treatment_fidelity.move_contrast_delivery_rate_by_level.carry_on, 31 / 36);
+  assert.equal(lopsided.status, 'failed_interpretability_gate_not_rerun');
+});
 
 test('the runner takes its batch ids from the registration, not from a written range', () => {
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
@@ -2037,6 +2182,7 @@ test('every registered version builds a live runtime, not just a plan', () => {
   // Every version this file can reach is exercised, so the next version cannot
   // pass the plan tests and die on first contact with a paid session.
   const versions = [
+    { path: REGISTRATION_V8, movesVary: true },
     { path: REGISTRATION_V7, movesVary: true },
     { path: REGISTRATION_V5, movesVary: false },
     { path: REGISTRATION_V4, movesVary: false },
