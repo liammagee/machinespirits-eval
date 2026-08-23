@@ -23,6 +23,8 @@ Scope:
 36 calibration dialogues; 1,602 planned role calls; hard fail-before-call
 ceiling of 4,806 model attempts.
 
+Machine-readable hard ceiling: `4806` model attempts.
+
 This does not authorize Gate 2 or either powered run.
 
 Signed: Liam Magee  
