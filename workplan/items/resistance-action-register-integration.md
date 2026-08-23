@@ -66,8 +66,8 @@ verification: >-
 
   v7 kept the v5 window and the v6 move contrast and raised the size to 84
   dialogues, 42 a move. It ran to 80 scored units and returned a registered
-  null: ask 21/41 against simplify 25/39, risk difference -0.102, one-sided
-  exact conditional p = 0.81, decision not confirmed. Auditing its own paid
+  null: ask 21/41 against simplify 16/39, risk difference -0.102, one-sided
+  exact conditional p = 0.874, decision not confirmed. Auditing its own paid
   transcripts then showed why that null says nothing about the moves: both
   arms carried the host action family `stage_next_step`, so both were allowed
   to end on a question and both did, in 0.976 of trigger turns. v7 delivered
@@ -87,12 +87,20 @@ verification: >-
   v8 ran and failed its registered interpretability gate, so it licenses no
   claim at all. 72 planned, 66 transcribed, 65 scored; 7 stopped and none was
   replaced, split carry_on 3 and ask_question 4, so attrition is unbalanced and
-  must be reported beside any number. The deciding floor is the delivered
-  contrast, counted from question marks in the tutor's own trigger turn: pooled
-  0.877 against 0.90. The failure is one-sided — ask_question 0.969, carry_on
-  0.788 — so about one reference dialogue in five ended on a question the
-  reference instruction forbids. The manner floors passed at 0.969 against
-  0.80. The primary numbers are recorded but may not be reported as a finding:
+  must be reported beside any number. Two registered floors failed, both on the
+  reference arm. Host action family visible in the delivered turn: 0.692 against
+  0.90, split ask_question 32 of 32 at 1.00 and carry_on 13 of 33 at 0.394.
+  Delivered contrast, counted from question marks in the tutor's own trigger
+  turn: pooled 0.877 against 0.90, split ask_question 0.969 and carry_on 0.788,
+  so about one reference dialogue in five ended on a question the reference
+  instruction forbids. The manner floors passed at 0.969 against
+  0.80. One cause explains both: the reference instruction was read by no code
+  on the generating path, and the host action family loses to a due public clue,
+  so the handoff asked about the due source instead of staging the assigned
+  evidence. Repaired on commit 5e3177bb, which carries the registered rule down
+  the generating path; the question-mark half is verified by test, the
+  action-visibility half is not established without a paid run.
+  The primary numbers are recorded but may not be reported as a finding:
   carry_on 19/33 against ask_question 15/32, risk difference -0.107, two-sided
   exact conditional p = 0.461, decision not confirmed. Objective proof progress
   is near-empty on both sides, 1/33 against 0/32. Leakage is clean: none of the
@@ -105,7 +113,9 @@ verification: >-
 
   No warm/plain efficacy claim is licensed by v4 or v5, and none is refuted
   beyond each design's claim boundary. No move claim is licensed by v6, v7 or
-  v8. No further paid call in this line is authorized.
+  v8. No further paid call in this line is authorized. The five studies are
+  closed as a registered null series in paper §6.27, with the closeout reading
+  in notes/2026-08-23-boredom-action-register-proof-dag-closeout.md.
   The earlier frozen independent semantic-measurement programme remains closed
   without a scientific result under its standing success-or-systemic-failure
   boundary.
@@ -129,6 +139,7 @@ links:
     - edged-register-outcome-study
     - edged-register-stub-dag-replication
   notes:
+    - notes/2026-08-23-boredom-action-register-proof-dag-closeout.md
     - notes/2026-08-23-boredom-action-register-v7-reading.md
     - notes/2026-08-23-resistance-action-register-warm-nonwarm-confirmation-closeout.md
     - notes/2026-08-16-harness-reconciliation-survey.md
