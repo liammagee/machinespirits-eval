@@ -38,7 +38,7 @@ function clone(value) {
 }
 
 function assertConfirmationRegistration(registration) {
-  if (![3, 4, 5, 6, 7, 9, 10].includes(registration?.version)) {
+  if (![3, 4, 5, 6, 7, 8, 9, 10].includes(registration?.version)) {
     throw new Error('confirmation requires a supported registered action/register confirmation design');
   }
   return registration;
@@ -223,7 +223,8 @@ export function configureTutorStubResistanceActionRegisterConfirmationFromCli({
   });
   const job = resolveTutorStubResistanceActionRegisterConfirmationJob({ loaded, jobId });
   const requiredObservationSemantics = loaded.registration.design.trigger.observationSemantics;
-  const maximumDialogueBudget = loaded.registration.version >= 9 ? 123 : 60;
+  const maximumDialogueBudget =
+    loaded.registration.version >= 9 ? 123 : loaded.registration.version === 8 ? 96 : 60;
   if (
     !autoLearnerEnabled ||
     Number(autoTurns) !== 4 ||
