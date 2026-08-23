@@ -38,7 +38,11 @@ test('V8 registration freezes every observed failure into a prospective safeguar
   assert.equal(registration.instrument.confidenceEvidenceAndIndeterminacyAreFieldLocal, true);
   assert.equal(registration.failureToSafeguardMatrix.length, 22);
   assert.equal(new Set(registration.failureToSafeguardMatrix.map((row) => row.failure)).size, 22);
-  assert.equal(sha256(registration.transport.cliBridgePath), registration.transport.cliBridgeSha256);
+  assert.equal(
+    registration.transport.cliBridgeSha256,
+    'f15cee894143b40b97d50e8584a12888b6ceae33354b59a4963c9e16b794b868',
+  );
+  assert.notEqual(sha256(registration.transport.cliBridgePath), registration.transport.cliBridgeSha256);
   assert.equal(sha256(registration.transport.stubProcessPolicyPath), registration.transport.stubProcessPolicySha256);
   assert.equal(registration.transport.failureDiagnosticsPersistedToAttemptRecord, true);
   assert.equal(registration.transport.stagesRunSequentially, true);

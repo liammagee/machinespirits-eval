@@ -52,7 +52,7 @@
     {
       "file": "services/tutorStubTutorAttemptRuntime.js",
       "claim": "prompt audit/recovery; provider-attempt dispatch; Program-2 budget reservation and trace envelope",
-      "sha256": "a4e2f1a3655908e5bd68fb172b010b03d6139cd66462f43799a71ea356fb1dc7"
+      "sha256": "db565789c31477e9ec72a16e71d1c0acac400a2ad3655764fb0026cb5afb9d4b"
     },
     {
       "file": "services/tutorStubTutorCommitteeRuntime.js",
