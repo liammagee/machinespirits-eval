@@ -82,6 +82,7 @@ links:
     - edged-register-outcome-study
     - edged-register-stub-dag-replication
   notes:
+    - notes/2026-08-23-boredom-action-register-v7-reading.md
     - notes/2026-08-16-harness-reconciliation-survey.md
     - docs/harness-claim-transfer-rule.md
     - docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md
