@@ -70,6 +70,29 @@ Before another smoke or the confirmation:
 7. skip a completed check when its exact recorded input/evidence closure is
    unchanged.
 
-The next paid action is one fresh balanced four-dialogue technical smoke under
-the prospective binary wrapper. Only after it passes should the wholly fresh
-200-dialogue confirmation launch.
+## Technical smoke B
+
+- Prospective wrapper commit:
+  `62d40ec6850ca3cb19203b09e772c5d18c28add2`.
+- Shape: four fresh block-02 dialogues, two warm and two non-warm/plain
+  realizations, excluded from confirmation and all treatment claims.
+- Destination:
+  `.tutor-stub-auto-eval/warm-nonwarm-technical-smoke-2026-08-23-b`.
+- Result: passed; 4/4 dialogues completed, 0 failed or missing, 60/384
+  reservations completed, 0 model-call errors, and no repair or recovery.
+- Observed trigger judges: `codex.gpt-5.6-sol` and
+  `claude-code.sonnet-5`; GPT-5.5 was absent.
+- All 12 trigger/adherence aggregates were determinate. The outcome-blind
+  projection ran on all 24 judge records and changed one evidence slot to
+  `null`; it changed no semantic field or label.
+- Plan SHA-256:
+  `00aa7a742fa7843466f579229b79d04235a72585c06c29e1ad64567569e22a98`.
+- Result SHA-256:
+  `4b1a1c6e2a4ca823b55f3c5b8f0ca2c8c9594605a40d3f63e7de91a20a725f7b`.
+- No arm outcome comparison or interim treatment analysis was performed.
+
+Smoke B clears the prospective binary trigger/adherence runtime. The next
+step is to bind that passed wrapper and the already-validated binary outcome
+instrument into the 200-dialogue design and launch machinery; another semantic
+corpus validation or trigger smoke is not required unless those exact runtime
+inputs change.
