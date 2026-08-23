@@ -22,7 +22,21 @@
     "authority": "Liam Magee, 2026-08-22: can we integrate these findings into a new design, then run it - with same sample size and parallelism. if we get a result at this size we might look then at scaling",
     "contrastSafety": "every batch carries one dialogue of each of the four move-and-manner pairs, so any slowdown or provider limit inside a batch falls on both moves and both manners alike and cannot move the comparison",
     "designChanged": true,
-    "designChangeFromV5": "the tested contrast moved from the manner of delivery to the tutor move; the manner is now a balancing block that is reported and never tested"
+    "designChangeFromV5": "the tested contrast moved from the manner of delivery to the tutor move; the manner is now a balancing block that is reported and never tested",
+    "executedAs": {
+      "batchesRunTogether": 1,
+      "dialoguesPerBatch": 4,
+      "parallelismPerBatch": 4,
+      "why": "the first launch started all nine batches together, which put 36 codex CLI sessions on one machine. Every dialogue failed on transport retry exhaustion and no transcript was written. The re-run went one batch at a time, so at most 4 sessions were open at once, and all nine batches then completed 4 of 4.",
+      "studyUnchanged": "same registration, same assignment manifest, same design fingerprint, same approval. Only the number of batches open at once changed.",
+      "failedFirstLaunch": {
+        "dialoguesStarted": 36,
+        "dialoguesCompleted": 0,
+        "attemptReservationsSpent": 382,
+        "usableForAnyV6Outcome": false,
+        "record": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-v6-transport-failure-2026-08-23/WHAT-HAPPENED.md"
+      }
+    }
   },
   "priorCompletedExecution": [
     {
