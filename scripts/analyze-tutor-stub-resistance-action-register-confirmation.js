@@ -26,9 +26,9 @@ import {
 } from '../services/tutorStubResistanceActionRegisterConfirmation.js';
 import { tutorStubResistanceActionRegisterTreatmentEligibility } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
-  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
   TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT,
   loadTutorStubResistanceSemanticRegistration,
+  tutorStubResistanceSemanticRegistrationPathForObservation,
   tutorStubResistanceSemanticRuntimeInstrument,
   validateTutorStubResistanceSemanticRuntimeResult,
 } from '../services/tutorStubResistanceSemanticRuntime.js';
@@ -550,8 +550,11 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, batch
       typeof recordedGit?.dirty === 'boolean');
   const triggerJudges =
     loaded.registration.version >= 9
-      ? loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4).registration
-          .measurement.judges
+      ? loadTutorStubResistanceSemanticRegistration(
+          tutorStubResistanceSemanticRegistrationPathForObservation(
+            loaded.registration.design.trigger.observationSemantics,
+          ),
+        ).registration.measurement.judges
       : [];
   const outcomeJudges =
     loaded.registration.version >= 9
@@ -652,7 +655,11 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, batch
 
 function v9SemanticTriggerEligibility({ events, record, loaded }) {
   const semanticAdjudication = record?.resistanceSemanticAdjudication || null;
-  const binding = loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4);
+  const binding = loadTutorStubResistanceSemanticRegistration(
+    tutorStubResistanceSemanticRegistrationPathForObservation(
+      loaded.registration.design?.trigger?.observationSemantics,
+    ),
+  );
   if (
     loaded.registration.design?.trigger?.observationSemantics !== binding.registration.observationSemantics ||
     loaded.registration.semanticAdjudication?.instrumentRegistrationSha256 !== binding.sha256
