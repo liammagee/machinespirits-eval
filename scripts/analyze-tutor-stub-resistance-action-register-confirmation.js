@@ -663,8 +663,11 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, batch
     }, new Map());
   const reserved = countByRoleTurn(reservations);
   const attempted = countByRoleTurn(attempts);
-  const exactReservations =
-    reserved.size === attempted.size && [...reserved].every(([key, count]) => attempted.get(key) === count);
+  const exactReservations = batch.ledgerEventsByJob
+    ? [...attempted].every(([key, count]) => count <= (reserved.get(key) || 0)) &&
+      reservations.length - attempts.length >= 0 &&
+      reservations.length - attempts.length <= 1
+    : reserved.size === attempted.size && [...reserved].every(([key, count]) => attempted.get(key) === count);
   if (
     recipe?.schema !== 'machinespirits.tutor-stub.session-recipe.v1' ||
     !sourceProvenanceValid ||
