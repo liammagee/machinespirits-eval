@@ -49,7 +49,7 @@ replacement, repair, pooling, or calibration credit.
 - 36 fresh calibration dialogues.
 - 1,530 planned role calls after reducing each final reader panel from three
   seats to two.
-- Fresh hard fail-before-call ceiling: 4,806 model attempts.
+- Fresh hard fail-before-call ceiling: 4806 model attempts.
 - Cumulative worst-case exposure across the two stopped attempts and this
   proposed launch: 4,854 model attempts.
 
@@ -65,7 +65,7 @@ fidelity reader call and no calibration credit.
 Cumulative prior exposure: 48 reservations, 40 completed calls, and eight
 interrupted reservations.
 
-This draft does not authorize Gate 2 or either powered run.
+This GO does not authorize Gate 2 or either powered run.
 
 Operator signature: Liam Magee
 

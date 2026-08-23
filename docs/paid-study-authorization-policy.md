@@ -33,9 +33,13 @@ Three things, and only these:
    that commit in the run ledger and refuses a dirty tree or a mismatched
    design path.
 3. **A signed GO note.** A note in `notes/` naming the design file path,
-   the launch commit, and the spend cap. `GO` sits on a line of its own;
-   a draft banner fails the gate (the rule from the edged-register arc).
-   One signed note licenses one launch. Nothing else licenses anything.
+   the launch commit, and the spend cap. Its first nonblank line is exactly
+   `GO`; that structural declaration is authoritative, so incidental prose
+   elsewhere in the note cannot revoke it. Integer ceilings are compared
+   numerically, ignoring common thousands separators. The commit recording
+   the signed note may descend from the frozen launch commit, but it is not a
+   new launch commit and the note never names its own commit. One signed note
+   licenses one launch. Nothing else licenses anything.
 
 ## What the shared runner enforces
 
@@ -59,7 +63,9 @@ new instances of any of these.
 
 Git. A design file changed after signing is a new commit; a run whose
 recorded launch commit does not contain the signed design file as signed
-is void. Reviewers check diffs, not digests.
+is void. Committing the signed note records authorization without changing the
+launch commit it names; there is no self-reference or re-signing loop.
+Reviewers check diffs, not digests.
 
 ## What does not change
 
