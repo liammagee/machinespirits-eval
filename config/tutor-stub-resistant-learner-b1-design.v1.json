@@ -59,6 +59,7 @@
         }
       ],
       "assignment": "balanced within world and action",
+      "calibrationUse": "delivery-fidelity reading only; the 18-dialogue calibration produces no register effect estimate or claim",
       "interaction": "not estimated or claimed"
     }
   },
@@ -129,7 +130,7 @@
   "calibration": {
     "dialogues": 18,
     "allocation": "three dialogues in each action-by-register cell, spread across all six worlds",
-    "purpose": "Test whether the new outcome has variance and whether the delivered action, question contrast, and register are clean. Calibration estimates size only and cannot support an outcome or register claim.",
+    "purpose": "Test whether the new outcome has variance and whether the delivered action, question contrast, and register are clean. Register is read for delivery fidelity only. Calibration estimates size only and cannot support an outcome, action, or register effect estimate or claim.",
     "channelAliveRules": {
       "minimumDeterminateOutcomes": 16,
       "minimumYes": 3,
@@ -141,7 +142,19 @@
       "minimumCorrectRegisterPerRegister": "5 of 6",
       "maximumConfirmedProhibitedDeliveries": 0
     },
-    "killRule": "Stop B1 before the powered run if any channel-alive, action-contrast, register-fidelity, or safety rule fails. Keep every calibration row and do not relax a threshold, repair a semantic return, replace a valid unit, or pool calibration with the powered run."
+    "readerAgreementRules": {
+      "minimumEligiblePrimaryVotesPerSeat": "16 of 18",
+      "minimumEligibleFidelityVotesPerSeat": "16 of 18",
+      "minimumJointlyEligibleCasesPerSeatPairAndField": 14,
+      "minimumConditionalExactAgreementPerSeatPairAndField": 0.8,
+      "fields": [
+        "learner_authored_thread_pickup_within_five_turns",
+        "delivered_action_family",
+        "delivered_question_contrast",
+        "delivered_register"
+      ]
+    },
+    "killRule": "Stop B1 before the powered run if any channel-alive, action-contrast, register-fidelity, reader-agreement, or safety rule fails. Keep every calibration row and do not relax a threshold, repair a semantic return, replace a valid unit, or pool calibration with the powered run."
   },
   "poweredRun": {
     "minimumDialogues": 36,
@@ -149,7 +162,7 @@
     "allowedTotals": [36, 72, 108, 144, 180],
     "powerTarget": 0.8,
     "alpha": 0.05,
-    "sizeRule": "Use Jeffreys-smoothed calibration rates for the two action levels. Search allowed totals in ascending order with the registered blocked randomization simulation and choose the first total with at least 0.80 power for the action test at two-sided alpha 0.025, the conservative Holm boundary. Kill B1 if no allowed total qualifies.",
+    "sizeRule": "Use Jeffreys-smoothed calibration yes, no, and measurement-indeterminate rates for the two action levels. Search allowed totals in ascending order with the registered blocked randomization simulation, preserve indeterminate outcomes outside the determinate denominator, and choose the first total with at least 0.80 power for the action test at two-sided alpha 0.025, the conservative Holm boundary. Kill B1 if no allowed total qualifies.",
     "analysis": {
       "count": 1,
       "method": "one frozen randomization analysis after sealing all rows",

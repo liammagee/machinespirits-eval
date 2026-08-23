@@ -4,8 +4,8 @@
   "label": "R1 frame-refusing learner: bounded local test with graded engagement",
   "status": "prospective_zero_call_design_pending_gate_1_go",
   "workplanItem": "resistant-learner-strategy-close",
-  "registeredQuestion": "Under an amended frame-refuser persona that keeps the jurisdictional voice fixed but frees epistemic movement, does one matched bounded local test produce a practically useful graded engagement distribution, and how does that distribution vary across warm, plain, and edged delivery?",
-  "whichNumberMoves": "The final six-post-trigger-turn engagement-ladder distribution: refusal, more precise dispute, or bounded local test engaged on its merits.",
+  "registeredQuestion": "Under an amended frame-refuser persona that keeps the jurisdictional voice fixed but frees epistemic movement, does one matched bounded local test move more than 0.25 of determinate dialogues to a more precise dispute or bounded local engagement at the final six-turn horizon, and how does the full ladder vary across warm, plain, and edged delivery?",
+  "whichNumberMoves": "The proportion of determinate dialogues at final engagement rung 1 or 2 after six post-trigger learner turns.",
   "claimBoundary": "R1 can establish that the fixed matched bounded-test strategy reaches predeclared practical engagement floors in this amended simulated persona and can estimate warm/plain/edged variation on the same runs. It is not a causal comparison with another action, does not reuse or contradict the old 0/99 results, and cannot establish compliance, durable learning, human validity, a general rule for frame refusal, or transfer to the cell harness. Calibration rows are excluded from powered analysis.",
   "personaContract": {
     "id": "frame_refuser-r1-v1",
@@ -110,6 +110,9 @@
           "definition": "The learner evaluates the bounded local test using public evidence while explicitly reserving the wider jurisdictional objection."
         }
       ],
+      "registeredStatistic": "proportion of determinate dialogues with final score at least 1",
+      "poweredSuccessThreshold": "score 1 or score 2",
+      "score2Status": "reported as part of the full ladder but not tested as a separate powered endpoint",
       "wholeFrameComplianceNeverScores": true,
       "highestEarlierRungReportedButNotPrimary": true
     },
@@ -167,7 +170,20 @@
       "minimumCorrectRegisterPerRegister": "5 of 6",
       "maximumConfirmedProhibitedDeliveries": 0
     },
-    "killRule": "Stop R1 before the powered run if any ladder-variance, persona, matched-action, register-fidelity, or safety rule fails. Keep every calibration row and do not relax a threshold, repair a semantic return, replace a valid unit, or pool calibration with the powered run."
+    "readerAgreementRules": {
+      "minimumEligiblePrimaryVotesPerSeat": "16 of 18",
+      "minimumEligibleFidelityVotesPerSeat": "16 of 18",
+      "minimumJointlyEligibleCasesPerSeatPairAndField": 14,
+      "minimumConditionalExactAgreementPerSeatPairAndField": 0.8,
+      "fields": [
+        "final_graded_frame_engagement_at_six_turns",
+        "delivered_test_bounded_distinction",
+        "delivered_register",
+        "protected_affect_suppression",
+        "prohibited_delivery"
+      ]
+    },
+    "killRule": "Stop R1 before the powered run if any ladder-variance, persona, matched-action, register-fidelity, reader-agreement, or safety rule fails. Keep every calibration row and do not relax a threshold, repair a semantic return, replace a valid unit, or pool calibration with the powered run."
   },
   "poweredRun": {
     "minimumDialogues": 36,
@@ -175,21 +191,20 @@
     "allowedTotals": [36, 54, 72, 90, 108, 126, 144, 162, 180],
     "powerTarget": 0.8,
     "alpha": 0.05,
-    "practicalFloors": {
+    "practicalFloor": {
       "probabilityScoreAtLeast1": 0.25,
-      "probabilityScore2": 0.1,
-      "reason": "A useful bounded-test strategy must do more than create one exceptional dialogue: it must narrow the dispute in more than one quarter of determinate units and produce local on-merits engagement in more than one tenth."
+      "reason": "A useful bounded-test strategy must do more than create one exceptional dialogue: it must narrow the dispute or produce local on-merits engagement in more than one quarter of determinate units."
     },
-    "sizeRule": "Use a Jeffreys-smoothed multinomial distribution from calibration. Search allowed totals in ascending order and choose the first total for which simulation gives at least 0.80 probability that both one-sided 95% Wilson lower bounds clear their practical floors. Kill R1 if no allowed total qualifies.",
+    "sizeRule": "Use a Jeffreys-smoothed multinomial distribution over calibration scores 0, 1, 2, and measurement-indeterminate. Search allowed totals in ascending order, preserve indeterminate outcomes outside the determinate denominator, and choose the first total for which simulation gives at least 0.80 probability that the one-sided 95% Wilson lower bound for score at least 1 clears 0.25. Kill R1 if no allowed total qualifies.",
     "analysis": {
       "count": 1,
       "method": "one frozen analysis after sealing all rows",
-      "primaryDecision": "Both one-sided 95% Wilson lower bounds clear the two registered practical floors. This intersection-union rule requires both and adds no second chance to pass.",
+      "primaryDecision": "The one-sided 95% Wilson lower bound for the proportion of determinate dialogues at score 1 or 2 clears 0.25.",
       "primaryReporting": [
         "full score-0/1/2 distribution",
         "mean ladder score and 95% interval",
         "probability score at least 1 and one-sided 95% lower bound",
-        "probability score 2 and one-sided 95% lower bound"
+        "probability score 2 and two-sided 95% interval, descriptive only"
       ],
       "secondaryRegisterTest": "two-sided omnibus permutation test of mean ladder score across warm, plain, and edged assignments",
       "registerClaimRule": "The omnibus register test rejects at 0.05 and every register passes its fidelity floor. Otherwise report register estimates and intervals as descriptive variance only.",

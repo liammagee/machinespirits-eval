@@ -65,3 +65,6 @@ tags:
   graded engagement ladder plus prospective persona amendment for R1.
 - 2026-08-23: P1 froze both zero-call designs. Gate 1 would cover 36 fresh
   calibration dialogues under a combined hard ceiling of 4,806 attempts.
+- 2026-08-23: Resolved the P0 reviewer conditions before Gate 1: B1 calibration
+  register is fidelity-only, R1 has one powered statistic, and both new reader
+  instruments have explicit agreement floors.
