@@ -347,3 +347,15 @@ npm test
 ## Desktop app (Electron)
 
 An Electron desktop app mirrors the web UX and stays in sync by construction — it embeds the unchanged Express stack and loads the web UI over loopback (ONE UI codebase). It lives in `desktop/` on `main`; active dev is the `../ms-electron` worktree (branch `desktop-dev`, Electron ABI), launched with `npm run desktop:dev`. **To change the UX, edit the web stack** (`public/**`, the route renderers in `scripts/browse-poetics-scripts.js`, `routes/**`, `services/**`) — never fork UI into `desktop/`. New writable stores must get an env override + be relocated in `desktop/paths.js`. See `desktop/ARCHITECTURE.md` (rules + file map) and `desktop/README.md` (run/build). Verify with `npm run desktop:test`.
+## Self-heal rule for mechanical failures (all agents, 2026-08-23)
+
+When a check fails for a mechanical reason, fix it and rerun without asking.
+Mechanical means: formatting, lint, a missing dependency install, a stale
+lockfile, or a test that fails only because the working tree is dirty. Three
+conditions: the fix is deterministic and reversible; it touches no design
+file, no GO/approval note, no registered rule, and no paid call; the tests
+pass after. Report the self-heal in one line when done.
+
+Stop and ask only when the failure touches study substance (designs, spend
+caps, authorization, kill rules), when you cannot explain the cause, or when
+the same fix fails twice.

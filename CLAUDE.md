@@ -37,6 +37,19 @@ hours and caught nothing. When you feel the urge to add a gate, ask whether it
 would have caught a real defect. The answer is almost always a regression test,
 not a signature.
 
+## Self-heal on mechanical failures (all agents, 2026-08-23)
+
+When a check fails for a mechanical reason, fix it and rerun without asking.
+Mechanical means: formatting, lint, a missing dependency install, a stale
+lockfile, or a test that fails only because the working tree is dirty. Three
+conditions: the fix is deterministic and reversible; it touches no design
+file, no GO/approval note, no registered rule, and no paid call; the tests
+pass after. Report the self-heal in one line when done.
+
+Stop and ask only when the failure touches study substance (designs, spend
+caps, authorization, kill rules), when you cannot explain the cause, or when
+the same fix fails twice.
+
 ## How to write here
 
 Plain words, short sentences, answer what was asked and stop. The full rule is `.claude/style-rule.md`, which a `UserPromptSubmit` hook injects on every turn — edit that file to change how replies read. It applies to chat, commits, comments and notes alike. Paper prose keeps its own register.
