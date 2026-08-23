@@ -1,7 +1,7 @@
 ---
 id: resistance-action-register-integration
 title: Integrate resistance diagnosis, pedagogical action, and tonal register across tutor harnesses
-status: done
+status: active
 type: research
 priority: P1
 owner: codex
@@ -9,17 +9,40 @@ source: manual
 created: 2026-08-18
 updated: 2026-08-22
 verification: >-
-  The boredom action-before-register proof-DAG confirmation is collected and
-  analysed: a clean registered null. Plain 0/18, warm 0/15, risk difference 0,
-  exact conditional p = 1, decision warm_plain_recovery_not_confirmed; the
-  secondary objective endpoint was not tested because the fixed-sequence gate
-  stayed closed. Treatment fidelity was complete (action and register
-  visibility both 1.0). Three of 36 units stopped as measurement_indeterminate
-  and all three fell on warm, so attrition is unbalanced and every report of
-  this result must say so. Only 11 of the 33 zeros on the objective endpoint
-  were reachable at all; in the other 22 no premise on the best path had been
-  released before the dialogue ended. No warm/plain efficacy claim is
-  licensed, and none is refuted beyond this design's claim boundary.
+  Two boredom action-before-register proof-DAG studies are collected and
+  analysed, both registered nulls, and a third is registered and packaged but
+  not launched.
+
+  v4 (36 planned, 33 scored): plain 0/18, warm 0/15, risk difference 0, exact
+  conditional p = 1, decision warm_plain_recovery_not_confirmed. Three units
+  stopped as measurement_indeterminate and all three fell on warm, so attrition
+  is unbalanced and every report of this result must say so. Only 11 of the 33
+  zeros on the objective endpoint were reachable at all; in the other 22 no
+  premise on the best path had been released before the dialogue ended.
+
+  v5 (36 planned, 35 scored) widened the window that made v4 unreadable: the
+  trigger may show by turn 4 and the objective endpoint is read over 5
+  post-trigger turns instead of 2. That worked — 35 of 35 scored units became
+  reachable, against 11 of 33. The manner result moved the right way and did
+  not reach the gate: plain 1/18, warm 4/17, exact conditional p = 0.18,
+  decision warm_plain_recovery_not_confirmed. One unit stopped as
+  measurement_indeterminate and again fell on warm. The v4 null is therefore
+  window-bound and must not be cited as evidence about the manner.
+
+  v6 changes what is contrasted, not what is measured. It keeps the v5 window
+  and contrasts two tutor moves under one host action family — ask a
+  discriminating question against simplify to one workable step — with 18
+  dialogues per move and the plain and warm manner balanced nine and nine
+  inside each move as a block that is reported and never tested. The v5 one-turn
+  reading is carried forward as a descriptive comparability endpoint, and
+  learner turns that only say back what the tutor just made public are counted
+  per move. At 18 per move the design has power 0.11 to 0.75 across treatment
+  rates of 0.3 to 0.6 against a measured reference rate of 0.1429, so a null at
+  this size would mean very little and may not be reported as evidence that the
+  move does not work.
+
+  No warm/plain efficacy claim is licensed by v4 or v5, and none is refuted
+  beyond each design's claim boundary. No paid v6 call is authorized.
   The earlier frozen independent semantic-measurement programme remains closed
   without a scientific result under its standing success-or-systemic-failure
   boundary.
@@ -32,7 +55,7 @@ verification: >-
   warm/plain, null, efficacy, learning, transfer, human, cell, or learner-
   profile claim is licensed. No further model call is authorized within this
   programme; any restart requires a fresh human method and route decision.
-claim_status: killed
+claim_status: exploratory
 links:
   items:
     - tutor-stub-cell-reconciliation
@@ -147,6 +170,17 @@ links:
     - config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json
     - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.json
     - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.endpoint-go.json
+    - services/tutorStubBoredomActionRegisterProofDagPreflight.js
+    - scripts/run-tutor-stub-boredom-action-register-proof-dag.js
+    - scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js
+    - config/tutor-stub-boredom-action-register-proof-dag-registration.v5.json
+    - config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v5.json
+    - config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v5.json
+    - config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v5.endpoint-go.json
+    - config/tutor-stub-boredom-action-register-proof-dag-registration.v6.json
+    - config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v6.json
+    - config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v6.json
+    - config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v6.endpoint-go.json
 tags:
   - tutor-stub
   - cells
@@ -3264,3 +3298,57 @@ and explicit human approval.
   was removed after `diff -rq` proved every shared file byte-identical
   and the artifacts copy a strict superset. The archive commit is not
   yet pushed.
+- 2026-08-22 — **v5 collected and analysed: the v4 null was
+  window-bound.** v5 kept the v4 contrast and moved only the window: the
+  trigger may show by turn 4, and both the recovery and proof-progress
+  endpoints read 5 post-trigger learner turns instead of 2. The
+  diagnostic prediction held. Under v4, 11 of 33 scored units were
+  reachable on the objective endpoint; under v5, 35 of 35 were. The
+  manner result moved the right way and did not reach the gate: plain
+  1/18, warm 4/17, exact conditional p = 0.18, decision
+  `warm_plain_recovery_not_confirmed`. One unit stopped as
+  `measurement_indeterminate` and fell on warm, so attrition is again
+  unbalanced on the warm side and every report must say so. Combined
+  report `bef7b8a1`, source commit `631b040b`, artifacts archived as
+  `2ed626ac`. The spent v5 corpus is permanently excluded from every
+  later outcome. **Do not cite the v4 null as evidence about the
+  manner** — it was taken through a window that could not see the
+  outcome.
+- 2026-08-22 — **v6 registered, packaged, and held.** v5 answered a
+  measurement question and left the design one: warm and plain differ
+  only in how the tutor speaks, and the tutor move was held fixed at one
+  discriminating question throughout. A bored learner answers a
+  discriminating question by reporting that they have stopped, because
+  the question asks them to do the very thing they just said they
+  stopped doing. v6 therefore contrasts the **move**: ask a
+  discriminating question against simplify to one workable step, both
+  under the one host action family `stage_next_step`, 18 dialogues per
+  move, with plain and warm balanced nine and nine inside each move and
+  three and three inside each world. The manner becomes a reported block
+  and carries no test, so a move result cannot be a manner result under
+  another name. Three readings are added and none is a hypothesis test:
+  the v5 one-turn primary is retained as a descriptive comparability
+  endpoint; learner turns that only say back what the tutor just made
+  public are counted per move; and a unit whose delivered move is not
+  its assigned move is nonadherent under intention to treat, kept in its
+  assigned group, never rerolled. Registration `1f65c4c6`, contract
+  `dcd01425`, certificate `endpoint_runtime_go`, HOLD request
+  `18fb5c99` packaged at launch commit `f31d8bc7` — 84 checks, no model
+  calls, no production writes. Budget 4,428 attempts against a 15,000
+  programme safeguard, ledger 1,912 before, 6,340 required, 8,660
+  headroom. **Power is the standing caveat: 0.11 to 0.75 across
+  treatment rates of 0.3 to 0.6 against a measured reference rate of
+  0.1429, so a v6 null may not be reported as evidence that the move
+  does not work.** Awaiting explicit human approval; no paid call is
+  authorized.
+- 2026-08-22 — Four instances of one defect found while writing the v6
+  tests: a constant written by hand where a registered value belongs,
+  with nothing comparing the two. Three sat in the trace fixture — the
+  pedagogical move, the contrast level, and the post-trigger turn the
+  recovery lands on — and all three were right by accident while the
+  move was fixed and the window was one turn. The fourth sat in the GO
+  checker, which built a registration key by joining the level name to a
+  suffix without changing case and so asked for `ask_questionPerBatch`,
+  a name no registration carries; it compared one absent value with
+  another and failed only because the same line also required an
+  integer. All four are fixed and pinned by tests.
