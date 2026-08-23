@@ -35,6 +35,7 @@ import {
   loadTutorStubResistanceActionRegisterRegistration,
   prepareTutorStubResistanceActionRegisterFrozenBranch,
   scoreTutorStubResistanceRecovery,
+  scoreTutorStubResistanceRecoveryWithinHorizon,
   TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA,
 } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
@@ -956,6 +957,84 @@ test('deterministic endpoint implements the two registered recovery horizons', (
   assert.equal(permission.recovered, false);
   assert.equal(frame.recovered, true);
   assert.equal(frame.observed_turn, 1);
+});
+
+test('the windowed endpoint widens the deadline and leaves the per-turn rule alone', () => {
+  const stalls = (text) => ({
+    learnerText: text,
+    classification: { turn: { discourse_move: 'assent', evidence_use: 'none', epistemic_stance: 'compliant' } },
+  });
+  const answers = {
+    learnerText: 'The second ledger line dates after the rule, so the first entry cannot be the source.',
+    classification: { turn: { discourse_move: 'inference', evidence_use: 'links_evidence_to_rule' } },
+  };
+  const asks = {
+    learnerText: 'Is it okay if I compare the two ledger lines first?',
+    classification: { turn: { discourse_move: 'inference', evidence_use: 'cites_public_evidence' } },
+  };
+  const late = [stalls('Okay.'), stalls('Fine.'), stalls('Whatever.'), answers, stalls('Sure.')];
+
+  // The frozen deadlines are the same numbers, reached through the same code, so
+  // the one-turn scorer and the windowed scorer cannot drift apart.
+  for (const profile of ['bored', 'frame_defiant', 'frame_refuser']) {
+    const args = { profile, triggerLearnerText: 'I reject your frame.', postLearnerTurns: late };
+    assert.deepEqual(
+      scoreTutorStubResistanceRecoveryWithinHorizon(args),
+      scoreTutorStubResistanceRecovery(args),
+      `${profile} default horizon must reproduce the frozen scorer`,
+    );
+  }
+
+  const atOne = scoreTutorStubResistanceRecoveryWithinHorizon({
+    profile: 'bored',
+    postLearnerTurns: late,
+    deadlinePostTriggerLearnerTurns: 1,
+  });
+  const atFive = scoreTutorStubResistanceRecoveryWithinHorizon({
+    profile: 'bored',
+    postLearnerTurns: late,
+    deadlinePostTriggerLearnerTurns: 5,
+  });
+  assert.equal(atOne.recovered, false);
+  assert.equal(atOne.deadline_turns, 1);
+  assert.equal(atFive.recovered, true);
+  assert.equal(atFive.observed_turn, 4, 'the earliest qualifying turn is the one recorded');
+  assert.equal(atFive.deadline_turns, 5);
+  assert.equal(atFive.reason, 'content_bearing_answer_without_permission_or_mere_assent');
+
+  // Widening the window must not widen what counts on a turn. Five turns of
+  // asking permission stay five turns of asking permission.
+  const permissionOnly = scoreTutorStubResistanceRecoveryWithinHorizon({
+    profile: 'bored',
+    postLearnerTurns: [asks, asks, asks, asks, asks],
+    deadlinePostTriggerLearnerTurns: 5,
+  });
+  assert.equal(permissionOnly.recovered, false);
+  assert.equal(permissionOnly.observed_turn, null);
+  assert.equal(permissionOnly.reason, 'bored_recovery_absent');
+
+  // Fewer turns than the deadline is not an error, and neither is an early hit.
+  const early = scoreTutorStubResistanceRecoveryWithinHorizon({
+    profile: 'bored',
+    postLearnerTurns: [answers],
+    deadlinePostTriggerLearnerTurns: 5,
+  });
+  assert.equal(early.observed_turn, 1);
+
+  // A caller that names the window must supply it. A registration read that
+  // comes back empty must stop the scorer, not fall back to one turn.
+  for (const bad of [0, -1, 2.5, 'five', null, undefined]) {
+    assert.throws(
+      () =>
+        scoreTutorStubResistanceRecoveryWithinHorizon({
+          profile: 'bored',
+          postLearnerTurns: late,
+          deadlinePostTriggerLearnerTurns: bad,
+        }),
+      /whole number of post-trigger learner turns/u,
+      `horizon ${JSON.stringify(bad)} must fail closed`,
+    );
+  }
 });
 
 test('bored recovery does not count a plain statement of giving up as the answer', () => {

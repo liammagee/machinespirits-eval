@@ -1685,54 +1685,86 @@ function frameRefuserMeritsEngagement(turn, text) {
   );
 }
 
-export function scoreTutorStubResistanceRecovery({ profile, triggerLearnerText = '', postLearnerTurns = [] } = {}) {
+// The frozen deadlines the study has used since v1. They stay here so that the
+// one-turn scorer and the windowed scorer cannot drift apart: both read this
+// map, and the windowed scorer only replaces the number, never the per-turn
+// rule below it.
+const FROZEN_RECOVERY_DEADLINE_TURNS = Object.freeze({ bored: 1, frame: 2 });
+
+function frozenRecoveryDeadlineTurns(normalizedProfile) {
+  return normalizedProfile === 'bored' ? FROZEN_RECOVERY_DEADLINE_TURNS.bored : FROZEN_RECOVERY_DEADLINE_TURNS.frame;
+}
+
+function boredRecoveryOnTurn(row) {
+  const text = String(row.learnerText || row.text || '').trim();
+  const recovered = Boolean(
+    text && contentBearing(row.classification) && !PERMISSION_SEEKING.test(text) && !MERE_ASSENT.test(text),
+  );
+  return recovered ? { reason: 'content_bearing_answer_without_permission_or_mere_assent' } : null;
+}
+
+function frameRecoveryOnTurn(row, { triggerLearnerText, strictFrameRefuser }) {
+  const text = String(row.learnerText || row.text || '').trim();
+  const turn = classificationTurn(row.classification);
+  const axis = observeResistanceAxis({ learnerText: text, classification: row.classification });
+  const engagedMerits = strictFrameRefuser ? frameRefuserMeritsEngagement(turn, text) : meritsEngagement(turn);
+  const preciseDispute =
+    axis.resistance_kind === 'frame_defiant' &&
+    FRAME_ISSUE.test(text) &&
+    (!strictFrameRefuser ||
+      (BOUNDED_PUBLIC_MERITS.test(text) &&
+        (!EXPLICIT_CONTINUED_WITHHOLDING.test(text) || CONDITIONAL_PUBLIC_BOUNDARY.test(text)))) &&
+    text.split(/\s+/u).length > Math.max(6, String(triggerLearnerText).split(/\s+/u).length / 2);
+  if (!engagedMerits && !preciseDispute) return null;
+  return { reason: engagedMerits ? 'engaged_bounded_test_on_merits' : 'frame_dispute_became_more_precise' };
+}
+
+// One scorer for every window. The per-turn rule is the rule v1 to v5 used, and
+// `deadlinePostTriggerLearnerTurns` only says how many post-trigger learner
+// turns it is applied to. The earliest qualifying turn is the one recorded.
+export function scoreTutorStubResistanceRecoveryWithinHorizon(options = {}) {
+  const { profile, triggerLearnerText = '', postLearnerTurns = [] } = options;
   const normalizedProfile = exactLevel(profile, PREFIX_PROFILES, 'outcome profile');
-  const rows = Array.isArray(postLearnerTurns) ? postLearnerTurns : [];
-  if (normalizedProfile === 'bored') {
-    const first = rows[0] || {};
-    const text = String(first.learnerText || first.text || '').trim();
-    const recovered = Boolean(
-      text && contentBearing(first.classification) && !PERMISSION_SEEKING.test(text) && !MERE_ASSENT.test(text),
+  // Naming the key at all means the caller must supply a usable number. A study
+  // that reads its window out of a registration and finds the field missing
+  // hands us undefined, and that must stop the scorer rather than quietly become
+  // the one-turn window.
+  const asked = Object.hasOwn(options, 'deadlinePostTriggerLearnerTurns');
+  const deadline = asked ? options.deadlinePostTriggerLearnerTurns : frozenRecoveryDeadlineTurns(normalizedProfile);
+  if (!Number.isInteger(deadline) || deadline < 1) {
+    throw new Error(
+      `resistance recovery horizon must be a whole number of post-trigger learner turns of at least one, received ${JSON.stringify(
+        options.deadlinePostTriggerLearnerTurns ?? null,
+      )}`,
     );
-    return {
-      profile: normalizedProfile,
-      recovered,
-      deadline_turns: 1,
-      observed_turn: recovered ? 1 : null,
-      reason: recovered ? 'content_bearing_answer_without_permission_or_mere_assent' : 'bored_recovery_absent',
-    };
   }
-  for (let index = 0; index < Math.min(2, rows.length); index += 1) {
+  const rows = Array.isArray(postLearnerTurns) ? postLearnerTurns : [];
+  const bored = normalizedProfile === 'bored';
+  const strictFrameRefuser = normalizedProfile === 'frame_refuser';
+  for (let index = 0; index < Math.min(deadline, rows.length); index += 1) {
     const row = rows[index] || {};
-    const text = String(row.learnerText || row.text || '').trim();
-    const turn = classificationTurn(row.classification);
-    const axis = observeResistanceAxis({ learnerText: text, classification: row.classification });
-    const strictFrameRefuser = normalizedProfile === 'frame_refuser';
-    const engagedMerits = strictFrameRefuser ? frameRefuserMeritsEngagement(turn, text) : meritsEngagement(turn);
-    const preciseDispute =
-      axis.resistance_kind === 'frame_defiant' &&
-      FRAME_ISSUE.test(text) &&
-      (!strictFrameRefuser ||
-        (BOUNDED_PUBLIC_MERITS.test(text) &&
-          (!EXPLICIT_CONTINUED_WITHHOLDING.test(text) || CONDITIONAL_PUBLIC_BOUNDARY.test(text)))) &&
-      text.split(/\s+/u).length > Math.max(6, String(triggerLearnerText).split(/\s+/u).length / 2);
-    if (engagedMerits || preciseDispute) {
+    const hit = bored ? boredRecoveryOnTurn(row) : frameRecoveryOnTurn(row, { triggerLearnerText, strictFrameRefuser });
+    if (hit) {
       return {
         profile: normalizedProfile,
         recovered: true,
-        deadline_turns: 2,
+        deadline_turns: deadline,
         observed_turn: index + 1,
-        reason: engagedMerits ? 'engaged_bounded_test_on_merits' : 'frame_dispute_became_more_precise',
+        reason: hit.reason,
       };
     }
   }
   return {
     profile: normalizedProfile,
     recovered: false,
-    deadline_turns: 2,
+    deadline_turns: deadline,
     observed_turn: null,
-    reason: 'frame_recovery_absent',
+    reason: bored ? 'bored_recovery_absent' : 'frame_recovery_absent',
   };
+}
+
+export function scoreTutorStubResistanceRecovery({ profile, triggerLearnerText = '', postLearnerTurns = [] } = {}) {
+  return scoreTutorStubResistanceRecoveryWithinHorizon({ profile, triggerLearnerText, postLearnerTurns });
 }
 
 export default {
