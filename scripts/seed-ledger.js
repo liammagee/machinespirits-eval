@@ -46,6 +46,21 @@ export const SCAN_DIRS = ['docs', 'config', 'scripts', 'services', 'tests', '.tu
  */
 export const SEED_SCAN_PATTERN = 'seed[^0-9]{0,12}[0-9]{3}|--run-seed[^0-9]{0,4}[0-9]{3}|\\bs[0-9]{3}\\b';
 
+/**
+ * What the scan must not read. A ledger seed is one a study was allocated, and
+ * a study records those in its plan. A per-call trace records a different kind
+ * of seed: the number a single model call sampled on, derived per call and
+ * three digits wide, which looks exactly like an allocation to a search.
+ *
+ * The v7 boredom run made the difference plain. Its 84 dialogue seeds are ten
+ * digits and sit in the batch plans. Its traces carry thousands of three-digit
+ * per-call seeds, and 170 of them landed above the floor, so the check read a
+ * clean run as 170 undeclared allocations. Claiming those would have been worse
+ * than the false alarm: every one would have blocked a number no run had taken.
+ */
+export const SCAN_EXCLUDED_DIRS = ['node_modules', '.git', 'traces'];
+export const SCAN_EXCLUDED_FILES = ['transcript.json'];
+
 /** Read the written-down claims. Each entry carries a range, a seed list, or both. */
 export function readLedger(root = ROOT, ledgerPath = SEED_LEDGER_PATH) {
   const file = path.resolve(root, ledgerPath);
@@ -92,7 +107,13 @@ export function scanSeeds(root = ROOT, { dirs = SCAN_DIRS, extraRoots = [] } = {
   try {
     out = execFileSync(
       'grep',
-      ['-rhoIE', '--exclude-dir=node_modules', '--exclude-dir=.git', SEED_SCAN_PATTERN, ...targets],
+      [
+        '-rhoIE',
+        ...SCAN_EXCLUDED_DIRS.map((dir) => `--exclude-dir=${dir}`),
+        ...SCAN_EXCLUDED_FILES.map((file) => `--exclude=${file}`),
+        SEED_SCAN_PATTERN,
+        ...targets,
+      ],
       { encoding: 'utf8', maxBuffer: 1 << 28 },
     );
   } catch (error) {
