@@ -253,6 +253,8 @@
     }
   },
   "measurement": {
+    "reportSchema": "machinespirits.tutor-stub.boredom-action-register-proof-dag-confirmation-report.v2",
+    "reportSchemaNote": "the analyzer writes this name into the report and the GO-request checker requires the request to carry it. Both read it here, because a name written out in each of them separately is the fault this arc keeps closing. The name moves to v2 because the report no longer assumes the contrast is the manner the tutor speaks in: the attrition and assembly counts are keyed by the registered contrast levels, the primary endpoint is named from this document, and the balanced manner block, the comparability endpoint and the content-leakage count are added.",
     "semanticAdjudicator": {
       "schema": "machinespirits.tutor-stub.boredom-semantic-adjudication.v3",
       "modulePath": "services/tutorStubBoredomSemanticAdjudicationV3.js",

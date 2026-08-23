@@ -132,6 +132,15 @@ const MOVE_TO_HOST_ACTION = Object.freeze({
   simplify_to_one_workable_step: 'stage_next_step',
 });
 
+// Readers outside this module need the same answer the runtime uses. The
+// combined analyser used to write the family out as one string, which held only
+// while one move was in play.
+export function tutorStubResistanceHostActionFamily(move) {
+  const family = MOVE_TO_HOST_ACTION[move];
+  if (!family) throw new Error(`no host action family is registered for the pedagogical move ${JSON.stringify(move)}`);
+  return family;
+}
+
 // The third move is here for the bored learner. A discriminating question asks
 // a learner to choose between live paths. The v4 and v5 dialogues showed that a
 // bored learner answers such a question with a report of having stopped, which

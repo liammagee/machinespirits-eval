@@ -19,6 +19,33 @@ const DEFAULT_REQUEST = path.join(
   'tutor-stub-resistant-profile-discrimination-study-go-request.v1.json',
 );
 
+// The report name and the primary endpoint name used to be written out here by
+// hand, and the analyzer wrote its own copy, with nothing comparing the two. A
+// study that changed either one would have passed this gate under the older
+// study's names. Both now come out of the bound registration. The two legacy
+// spellings below are the frozen v5-and-below names, kept because those
+// requests are finished documents that are read and never rewritten.
+const LEGACY_BOREDOM_REPORT_SCHEMA =
+  'machinespirits.tutor-stub.boredom-action-register-proof-dag-confirmation-report.v1';
+const LEGACY_FIRST_TURN_OUTCOME_SUFFIX = '_first_post_trigger_turn';
+
+function boredomReportSchemaAccepted(named, registered) {
+  return named === (registered.measurement?.reportSchema ?? LEGACY_BOREDOM_REPORT_SCHEMA);
+}
+
+function boredomPrimaryOutcomeAccepted(named, registered) {
+  const endpoint = registered.measurement?.primaryEndpoint;
+  if (!endpoint?.id) return false;
+  if (named === endpoint.id) return true;
+  // The old spelling put the window on the end of the name. It is accepted only
+  // where the registration really does read the endpoint on the first
+  // post-trigger learner turn, so a wider window can never inherit it.
+  return (
+    named === `${endpoint.id}${LEGACY_FIRST_TURN_OUTCOME_SUFFIX}` &&
+    Number(endpoint.deadlinePostTriggerLearnerTurns) === 1
+  );
+}
+
 const FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE = Object.freeze([
   'scripts/run-tutor-stub-qa-matrix.js',
   'scripts/run-tutor-stub-auto-eval.js',
@@ -2641,9 +2668,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         commandArg(analyzeCommand, '--expected-source-commit') === request.source.launchCommit &&
         commandArg(analyzeCommand, '--out') === request.destination.combinedReport &&
         analyzeCommand.includes('--json') &&
-        request.measurement.reportSchema ===
-          'machinespirits.tutor-stub.boredom-action-register-proof-dag-confirmation-report.v1' &&
-        request.measurement.primaryOutcome === 'profile_specific_resistance_recovery_first_post_trigger_turn' &&
+        boredomReportSchemaAccepted(request.measurement.reportSchema, registered) &&
+        boredomPrimaryOutcomeAccepted(request.measurement.primaryOutcome, registered) &&
         request.measurement.keySecondaryOutcome === registered.measurement?.keySecondaryEndpoint?.id &&
         request.measurement.primaryTest === 'two_sided_exact_conditional_blocked_score_test' &&
         request.measurement.fixedSequencePrimaryThenKeySecondary === true &&

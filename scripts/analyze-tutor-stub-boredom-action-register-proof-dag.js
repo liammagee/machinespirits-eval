@@ -18,7 +18,9 @@ import {
 import { createTutorStubResistanceAxisShadow } from '../services/tutorStubActionBeforeRegisterShadow.js';
 import {
   scoreTutorStubResistanceRecovery,
+  scoreTutorStubResistanceRecoveryWithinHorizon,
   tutorStubResistanceActionRegisterTreatmentEligibility,
+  tutorStubResistanceHostActionFamily,
 } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
   buildTutorStubBoredomProofDagBatchPlan,
@@ -33,12 +35,141 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // scored silently against v2's window. Every caller passes the path, so
 // requiring it costs nothing and removes the silent-wrong-study case.
 const BATCH_IDS = Object.freeze(Array.from({ length: 9 }, (_, index) => `execution_batch_${index + 1}`));
+// Which axis the primary test contrasts, and which axis is only balanced. v5
+// contrasted the manner the tutor spoke in. v6 contrasts two pedagogical moves
+// and balances manner nine and nine inside each move. Written out here as the
+// manner, this would have tested v6 on v5's axis and reported a manner result
+// under a move heading.
+const BOREDOM_CONTRAST_ROW_FIELD = Object.freeze({
+  pedagogical_move: 'move_level',
+  realization_manner_plain_versus_warm: 'arm',
+});
+// A registration written before the contrast could vary names no contrast, and
+// its contrast is the manner.
+const LEGACY_CONTRAST = 'realization_manner_plain_versus_warm';
+// v5 and below hold one action fit for every unit and never write a level onto
+// the plan row.
+const LEGACY_SINGLE_ACTION_FIT_LEVEL = 'matched';
+// The analyzer writes this name into every report, and the GO-request checker
+// requires the request to carry the same name. Written out by hand in both
+// places, with nothing comparing them, it is the fault this arc keeps closing.
+// The checker may import nothing from the repository, so the shared copy cannot
+// live in either script: the live name is a field of the registration and both
+// sides read it there. Only the frozen v5-and-below spelling stays written out,
+// because those registrations predate the field and are never rewritten.
+const LEGACY_BOREDOM_CONFIRMATION_REPORT_SCHEMA =
+  'machinespirits.tutor-stub.boredom-action-register-proof-dag-confirmation-report.v1';
+
+function boredomContrastAxis(registration) {
+  const contrast = registration.design.treatment.contrast || LEGACY_CONTRAST;
+  const rowField = BOREDOM_CONTRAST_ROW_FIELD[contrast];
+  if (!rowField) throw new Error(`boredom proof-DAG analysis has no reader for the ${contrast} contrast`);
+  const reference = registration.design.treatment.reference;
+  const treatment = registration.design.treatment.treatment;
+  if (!reference || !treatment || reference === treatment) {
+    throw new Error('boredom proof-DAG analysis requires a registered reference level and a distinct treatment level');
+  }
+  // The axis that is held balanced rather than tested. Under the manner
+  // contrast there is none, because manner is the contrast.
+  const blockField = contrast === LEGACY_CONTRAST ? null : 'arm';
+  const blockLevels = blockField ? [...registration.design.treatment.realizations] : [];
+  return { contrast, rowField, reference, treatment, blockField, blockLevels };
+}
+
+// Words that carry no content of their own. Kept short on purpose: the test
+// below asks whether the learner brought anything the tutor had not just said,
+// so a long list would start deciding the answer.
+const FUNCTION_WORDS = new Set([
+  'about',
+  'after',
+  'again',
+  'because',
+  'been',
+  'before',
+  'being',
+  'below',
+  'between',
+  'both',
+  'cannot',
+  'could',
+  'does',
+  'each',
+  'from',
+  'have',
+  'having',
+  'here',
+  'into',
+  'just',
+  'like',
+  'more',
+  'most',
+  'much',
+  'only',
+  'other',
+  'over',
+  'said',
+  'same',
+  'should',
+  'since',
+  'some',
+  'such',
+  'than',
+  'that',
+  'them',
+  'then',
+  'there',
+  'these',
+  'they',
+  'this',
+  'those',
+  'through',
+  'under',
+  'until',
+  'very',
+  'well',
+  'were',
+  'what',
+  'when',
+  'where',
+  'which',
+  'while',
+  'will',
+  'with',
+  'would',
+  'your',
+]);
+
+function contentWords(text) {
+  return new Set(
+    String(text || '')
+      .toLowerCase()
+      .split(/[^a-z]+/u)
+      .filter((word) => word.length >= 4 && !FUNCTION_WORDS.has(word)),
+  );
+}
+
+// True when the learner turn brought back no content word the tutor had not
+// just used. The move under test cuts the next step down to one small action,
+// and the registration forbids the tutor from supplying the finding, because a
+// learner who scores by repeating the tutor has not recovered. This is the
+// deterministic reading of that rule: it counts, it never stops a unit, and it
+// is disclosed per move whatever it comes to.
+function onlyRestates(learnerText, tutorText) {
+  const learner = contentWords(learnerText);
+  if (learner.size === 0) return true;
+  const tutor = contentWords(tutorText);
+  return [...learner].every((word) => tutor.has(word));
+}
+
 // The conditioning a registration must already carry for an uneven block to
 // need no written amendment. A registration that instead conditions on the
-// predeclared three-plain-three-warm allocation has no rule for a block that
-// lost a unit, so a short study under it still needs one in writing.
-const REALISED_COUNT_CONDITIONING =
-  'condition_on_each_world_success_total_and_that_world_realised_plain_and_warm_counts';
+// predeclared three-and-three allocation has no rule for a block that lost a
+// unit, so a short study under it still needs one in writing. The string names
+// the two levels of whichever axis the study contrasts, so it is built from
+// that axis rather than pinned to v5's two manner names.
+function realisedCountConditioning(axis) {
+  return `condition_on_each_world_success_total_and_that_world_realised_${axis.reference}_and_${axis.treatment}_counts`;
+}
 // Amendment A1. A batch is sealed complete when all four units finished, and
 // sealed with registered stops when the only shortfall is an indeterminate
 // measurement that may not be repaired, rerun or replaced. Both seals are the
@@ -619,6 +750,24 @@ function analyzeTrace(batch, resultRow, loaded) {
   const start = starts[0];
   const intervention = interventions[0].intervention;
   const assignment = intervention?.assignment;
+  // Both of these used to be written out here as v5's two fixed strings. v6
+  // assigns the move per unit, so a fixed string would have passed every
+  // shrink-the-step dialogue only if it happened to be the string v5 used, and
+  // in fact would have refused all eighteen of them. The expectation now comes
+  // from the plan row, which the preflight built from the sealed assignment
+  // manifest, so the trace is checked against a different document than the one
+  // that wrote it.
+  const registeredMoveLevels = loaded.registration.design.treatment.pedagogicalMoveLevels;
+  const expectedActionFit = Array.isArray(registeredMoveLevels)
+    ? job.pedagogical_move_level
+    : LEGACY_SINGLE_ACTION_FIT_LEVEL;
+  const expectedMove = job.pedagogical_move;
+  if (Array.isArray(registeredMoveLevels) && !registeredMoveLevels.includes(expectedActionFit)) {
+    throw new Error(`${job.id} is planned under an unregistered pedagogical move level`);
+  }
+  if (typeof expectedMove !== 'string' || expectedMove.length === 0) {
+    throw new Error(`${job.id} is planned without the pedagogical move its trace must be checked against`);
+  }
   if (
     start.jobId !== job.id ||
     start.batchId !== job.batch_id ||
@@ -631,8 +780,8 @@ function analyzeTrace(batch, resultRow, loaded) {
     start.freshIndependentDialogue !== true ||
     start.priorDialogueReused !== false ||
     start.priorOutcomePooled !== false ||
-    assignment?.action_fit !== 'matched' ||
-    assignment?.pedagogical_move !== 'ask_discriminating_question' ||
+    assignment?.action_fit !== expectedActionFit ||
+    assignment?.pedagogical_move !== expectedMove ||
     assignment?.realization !== job.realization ||
     assignment?.register !== job.realization ||
     assignment?.repeat !== job.batch_id ||
@@ -872,12 +1021,30 @@ function analyzeTrace(batch, resultRow, loaded) {
   // the one outcome the registration says to record and carry.
   const registerDeliveredAsAssigned = deliveredRegister === expectedDeliveredRegister;
   const registerVisible = safetyOverrideNonadherent ? false : deliveredRegisterVisible && registerDeliveredAsAssigned;
+  // Written out as one string, this named the host action family v5 ran and
+  // nothing compared it with anything. The family now comes from the same move
+  // catalogue the runtime built the turn from, so it follows the assigned move.
+  // Where the registration also names a family, the two must agree; v6 names
+  // one and says both its moves share it on purpose.
+  const hostActionFamily = tutorStubResistanceHostActionFamily(expectedMove);
+  const registeredHostActionFamily = loaded.registration.design.treatment.hostActionFamily;
+  if (registeredHostActionFamily !== undefined && registeredHostActionFamily !== hostActionFamily) {
+    throw new Error(
+      `${job.id} runs a move whose host action family is ${hostActionFamily}, not the registered ${registeredHostActionFamily}`,
+    );
+  }
+  // Which move the tutor actually delivered. v5 held the move fixed, so there
+  // was nothing to miss; v6 assigns it, so a miss is recorded as nonadherent,
+  // kept in its assigned group under intention to treat, and counted against
+  // the registered delivery floor, exactly as a register miss is.
+  const deliveredMove = intervention?.delivered_pedagogical_move ?? assignment?.pedagogical_move;
+  const moveDeliveredAsAssigned = deliveredMove === expectedMove;
   if (
     (!appliedAdherent && !safetyOverrideNonadherent) ||
     typeof responseAudit?.axes?.action_family?.visible !== 'boolean' ||
     typeof deliveredRegisterVisible !== 'boolean' ||
     typeof safety?.applied !== 'boolean' ||
-    responseAudit?.axes?.action_family?.selected !== 'stage_next_step' ||
+    responseAudit?.axes?.action_family?.selected !== hostActionFamily ||
     // The audit must still name a register the design knows. Which one came out
     // is a measured result; a register outside the palette is missing evidence.
     !loaded.registration.design.treatment.realizations.includes(deliveredRegister) ||
@@ -903,18 +1070,66 @@ function analyzeTrace(batch, resultRow, loaded) {
   if (!Number.isInteger(primaryDeadline) || primaryDeadline < 1 || primaryDeadline > postTriggerLearnerTurns) {
     throw new Error(`${job.id} has no registered primary endpoint deadline inside its outcome window`);
   }
-  const recovery = scoreTutorStubResistanceRecovery({
+  const scoredTurns = postTriggerTurns.map((entry) => ({
+    learnerText: entry?.learnerText,
+    classification: entry?.classification,
+  }));
+  const recovery = scoreTutorStubResistanceRecoveryWithinHorizon({
     profile: 'bored',
     triggerLearnerText: trigger.learner,
-    postLearnerTurns: postTriggerTurns
-      .slice(0, primaryDeadline)
-      .map((entry) => ({ learnerText: entry.learnerText, classification: entry.classification })),
+    postLearnerTurns: scoredTurns.slice(0, primaryDeadline),
+    deadlinePostTriggerLearnerTurns: primaryDeadline,
   });
   if (Number(recovery.deadline_turns) !== primaryDeadline) {
     throw new Error(
       `${job.id} was scored on a ${recovery.deadline_turns}-turn primary deadline, not the registered ${primaryDeadline}`,
     );
   }
+  // v6 widens the primary window, so the v5 primary is carried alongside as a
+  // descriptive comparability reading and never tested. Without it the v6
+  // reference group could not be read against v5 at all. Where a registration
+  // does not name one, this stays null and nothing is reported.
+  const comparability = loaded.registration.measurement.comparabilityEndpoint;
+  let comparabilityRecovery = null;
+  if (comparability) {
+    const comparabilityDeadline = Number(comparability.deadlinePostTriggerLearnerTurns);
+    if (
+      !Number.isInteger(comparabilityDeadline) ||
+      comparabilityDeadline < 1 ||
+      comparabilityDeadline > primaryDeadline
+    ) {
+      throw new Error(`${job.id} has no registered comparability deadline inside its primary window`);
+    }
+    comparabilityRecovery = scoreTutorStubResistanceRecoveryWithinHorizon({
+      profile: 'bored',
+      triggerLearnerText: trigger.learner,
+      postLearnerTurns: scoredTurns.slice(0, comparabilityDeadline),
+      deadlinePostTriggerLearnerTurns: comparabilityDeadline,
+    });
+    // The comparability endpoint is the v5 primary and must stay byte-comparable
+    // with it, so it is also read through the frozen one-turn scorer and the two
+    // must agree.
+    if (comparabilityDeadline === 1) {
+      const frozen = scoreTutorStubResistanceRecovery({
+        profile: 'bored',
+        triggerLearnerText: trigger.learner,
+        postLearnerTurns: scoredTurns.slice(0, 1),
+      });
+      if (JSON.stringify(frozen) !== JSON.stringify(comparabilityRecovery)) {
+        throw new Error(`${job.id} comparability reading drifted from the frozen one-turn scorer`);
+      }
+    }
+  }
+  // The turn the primary was read from, and the tutor turn it answered. A
+  // learner who only gives back the words the tutor had just made public has
+  // not recovered on the merits, whatever the labels say, so the restatement is
+  // counted and disclosed per move. The registration requires the count
+  // whatever it is, including zero.
+  const scoringTurn = recovery.recovered ? triggerTurn + Number(recovery.observed_turn) : null;
+  const precedingTutorText =
+    scoringTurn === null ? null : completed.find((event) => Number(event.turn) === scoringTurn - 1)?.turnRecord?.tutor;
+  const scoringTurnText = scoringTurn === null ? null : postTriggerTurns[recovery.observed_turn - 1]?.learnerText;
+  const scoringTurnRestatesTutor = scoringTurn === null ? null : onlyRestates(scoringTurnText, precedingTutorText);
   // The objective endpoint is read on the last watched turn. From v5 the
   // registration states that deadline on the endpoint as well as in the
   // treatment window; where it does, the two numbers must be the same one.
@@ -986,6 +1201,10 @@ function analyzeTrace(batch, resultRow, loaded) {
     arm: job.realization,
     profile: 'bored',
     pedagogical_move: job.pedagogical_move,
+    // The level name the contrast is read on. Under a registration that holds
+    // the move fixed there is one level for every unit, and the contrast is the
+    // manner instead.
+    move_level: expectedActionFit,
     realization: job.realization,
     prefix_id: `${job.id}:${prefixSha256}`,
     public_prefix_sha256: prefixSha256,
@@ -1008,12 +1227,31 @@ function analyzeTrace(batch, resultRow, loaded) {
           },
         }
       : {}),
-    outcome: { ...recovery, ...objectiveOutcome },
+    outcome: {
+      ...recovery,
+      // Which post-trigger learner turn the primary was read from. Under the
+      // widened window this is the fact a reader needs in order to see whether
+      // recovery came at once or late.
+      first_recovery_turn: recovery.observed_turn,
+      scoring_turn: scoringTurn,
+      scoring_turn_only_restates_tutor: scoringTurnRestatesTutor,
+      ...(comparabilityRecovery
+        ? {
+            comparability_recovered: comparabilityRecovery.recovered,
+            comparability_deadline_turns: comparabilityRecovery.deadline_turns,
+          }
+        : {}),
+      ...objectiveOutcome,
+    },
     fidelity: {
       action_visible: responseAudit.axes.action_family.visible,
       register_visible: registerVisible,
       safety_override: safety.applied === true,
       protected_condition: protectedCondition,
+      host_action_family: hostActionFamily,
+      assigned_pedagogical_move: expectedMove,
+      delivered_pedagogical_move: deliveredMove,
+      move_delivered_as_assigned: moveDeliveredAsAssigned,
       // Under intention to treat the unit keeps its assigned register whatever
       // came out, so both are reported and the miss is named rather than hidden
       // inside the visibility count.
@@ -1042,43 +1280,99 @@ function analyzeTrace(batch, resultRow, loaded) {
   };
 }
 
-function blockedRows(rows, outcomeField) {
+// The exact conditional test takes a block as a reference side and a treatment
+// side. Its own parameter names still say plain and warm, because the engine
+// was written when the manner was the only contrast; the mapping is made here,
+// once, so the report never calls a move a manner.
+function blockedRows(rows, outcomeField, axis) {
   return [...new Set(rows.map((row) => row.world))].sort().map((world) => {
     const worldRows = rows.filter((row) => row.world === world);
-    const plain = worldRows.filter((row) => row.arm === 'plain');
-    const warm = worldRows.filter((row) => row.arm === 'warm');
+    const reference = worldRows.filter((row) => row[axis.rowField] === axis.reference);
+    const treatment = worldRows.filter((row) => row[axis.rowField] === axis.treatment);
+    const won = (group) => group.filter((row) => row.outcome[outcomeField] === true).length;
     return {
       world,
-      plainN: plain.length,
-      warmN: warm.length,
-      plainSuccesses: plain.filter((row) => row.outcome[outcomeField] === true).length,
-      warmSuccesses: warm.filter((row) => row.outcome[outcomeField] === true).length,
+      referenceLevel: axis.reference,
+      treatmentLevel: axis.treatment,
+      referenceN: reference.length,
+      treatmentN: treatment.length,
+      referenceSuccesses: won(reference),
+      treatmentSuccesses: won(treatment),
     };
   });
 }
 
-function blockedAnalysis(rows, outcomeField) {
-  const blocks = blockedRows(rows, outcomeField);
-  const plain = rows.filter((row) => row.arm === 'plain');
-  const warm = rows.filter((row) => row.arm === 'warm');
-  const plainSuccesses = plain.filter((row) => row.outcome[outcomeField] === true).length;
-  const warmSuccesses = warm.filter((row) => row.outcome[outcomeField] === true).length;
+function engineBlocks(blocks) {
+  return blocks.map((block) => ({
+    plainN: block.referenceN,
+    warmN: block.treatmentN,
+    plainSuccesses: block.referenceSuccesses,
+    warmSuccesses: block.treatmentSuccesses,
+  }));
+}
+
+function blockedAnalysis(rows, outcomeField, axis) {
+  const blocks = blockedRows(rows, outcomeField, axis);
+  const reference = rows.filter((row) => row[axis.rowField] === axis.reference);
+  const treatment = rows.filter((row) => row[axis.rowField] === axis.treatment);
+  const won = (group) => group.filter((row) => row.outcome[outcomeField] === true).length;
+  const referenceSuccesses = won(reference);
+  const treatmentSuccesses = won(treatment);
   return {
     test: 'two_sided_exact_conditional_blocked_score_test',
-    // Amendment A1. The predeclared allocation was three plain and three warm
-    // in every world. Three units stopped as indeterminate, so three worlds
-    // hold three plain against two warm. The test conditions on the allocation
-    // that was realised, which is what these block counts already are.
-    conditioning: 'world_success_totals_and_realised_per_world_plain_warm_allocation',
-    predeclared_allocation: 'three_plain_three_warm_per_world',
-    allocation_realised_as_predeclared: blocks.every((block) => block.plainN === 3 && block.warmN === 3),
+    // Amendment A1. The predeclared allocation was three of each level in every
+    // world. Where a unit stopped as indeterminate, its world holds three
+    // against two. The test conditions on the allocation that was realised,
+    // which is what these block counts already are.
+    contrast: { axis: axis.contrast, reference_level: axis.reference, treatment_level: axis.treatment },
+    conditioning: `world_success_totals_and_realised_per_world_${axis.reference}_${axis.treatment}_allocation`,
+    predeclared_allocation: `three_${axis.reference}_three_${axis.treatment}_per_world`,
+    allocation_realised_as_predeclared: blocks.every((block) => block.referenceN === 3 && block.treatmentN === 3),
     two_sided_rule: 'sum_conditional_score_probabilities_no_greater_than_observed_score_probability',
     alpha: 0.05,
-    plain: { successes: plainSuccesses, total: plain.length, rate: plainSuccesses / plain.length },
-    warm: { successes: warmSuccesses, total: warm.length, rate: warmSuccesses / warm.length },
-    warm_minus_plain_risk_difference: warmSuccesses / warm.length - plainSuccesses / plain.length,
-    p_value: exactBlockedScorePValue(blocks),
+    reference: {
+      level: axis.reference,
+      successes: referenceSuccesses,
+      total: reference.length,
+      rate: referenceSuccesses / reference.length,
+    },
+    treatment: {
+      level: axis.treatment,
+      successes: treatmentSuccesses,
+      total: treatment.length,
+      rate: treatmentSuccesses / treatment.length,
+    },
+    treatment_minus_reference_risk_difference:
+      treatmentSuccesses / treatment.length - referenceSuccesses / reference.length,
+    p_value: exactBlockedScorePValue(engineBlocks(blocks)),
     blocks,
+  };
+}
+
+// The axis the design balances instead of testing. v6 balances manner nine and
+// nine inside each move, and the registration requires the recovery counts
+// split that way so a reader can see the balance held. At nine per cell this is
+// a table, never a test.
+function balancedBlockReport(rows, outcomeField, axis) {
+  if (!axis.blockField) return null;
+  const won = (group) => group.filter((row) => row.outcome[outcomeField] === true).length;
+  return {
+    axis: axis.blockField === 'arm' ? 'realization_manner' : axis.blockField,
+    role: 'balancing_block_not_the_contrast',
+    analysis: 'descriptive_only_no_hypothesis_test',
+    cells: [axis.reference, axis.treatment].flatMap((level) =>
+      axis.blockLevels.map((blockLevel) => {
+        const cell = rows.filter((row) => row[axis.rowField] === level && row[axis.blockField] === blockLevel);
+        return {
+          contrast_level: level,
+          block_level: blockLevel,
+          scored: cell.length,
+          successes: won(cell),
+        };
+      }),
+    ),
+    reading:
+      'the manner the tutor spoke in is balanced inside each move rather than tested. These counts are here so a reader can see the balance held and can see whether a move result rests on one manner. At nine per cell no test on this axis would have the power to say anything.',
   };
 }
 
@@ -1128,11 +1422,18 @@ export function analyzeTutorStubBoredomProofDag({
   // now differ is how many of them carry an outcome: a unit that stopped as a
   // registered indeterminate measurement is excluded, never repaired, rerun or
   // replaced. Rows are built from completed units only.
+  // Which axis this registration contrasts, read once and passed everywhere
+  // below. Every count, block, table and sentence that used to say plain and
+  // warm now asks this object what the two sides are called.
+  const axis = boredomContrastAxis(loaded.registration);
+  const primaryDeadlineTurns = Number(loaded.registration.measurement.primaryEndpoint.deadlinePostTriggerLearnerTurns);
+  const comparabilityEndpoint = loaded.registration.measurement.comparabilityEndpoint ?? null;
   const plannedUnits = batches.flatMap((batch) =>
     batch.plan.jobs.map((job) => ({
       case_id: job.id,
       world: job.world,
       arm: job.realization,
+      move_level: job.pedagogical_move_level ?? LEGACY_SINGLE_ACTION_FIT_LEVEL,
       completed: batch.result.results.find((row) => row.job_id === job.id)?.status === 'complete',
     })),
   );
@@ -1149,7 +1450,7 @@ export function analyzeTutorStubBoredomProofDag({
   // registration. A registration that still conditions on the predeclared
   // allocation demands an amendment exactly as before.
   const conditioning = loaded.registration.measurement?.primaryEndpoint?.conditioning;
-  const amendmentRequired = stoppedUnits.length > 0 && conditioning !== REALISED_COUNT_CONDITIONING;
+  const amendmentRequired = stoppedUnits.length > 0 && conditioning !== realisedCountConditioning(axis);
   if (amendmentRequired && !amendmentPath) {
     throw new Error(
       `boredom proof-DAG analysis of a short study requires a written amendment: ${stoppedUnits.length} of 36 units stopped`,
@@ -1169,7 +1470,7 @@ export function analyzeTutorStubBoredomProofDag({
       path: null,
       id: null,
       sha256: null,
-      not_required_because: 'the registration conditions on realised per-world plain and warm counts',
+      not_required_because: `the registration conditions on realised per-world ${axis.reference} and ${axis.treatment} counts`,
       registered_conditioning: conditioning,
     };
   }
@@ -1197,20 +1498,32 @@ export function analyzeTutorStubBoredomProofDag({
   for (const world of loaded.registration.design.worlds) {
     const worldPlanned = plannedUnits.filter((unit) => unit.world === world);
     const worldRows = rows.filter((row) => row.world === world);
+    const plannedOn = (field, level) => worldPlanned.filter((unit) => unit[field] === level).length;
     if (
       worldPlanned.length !== 6 ||
-      worldPlanned.filter((unit) => unit.arm === 'plain').length !== 3 ||
-      worldPlanned.filter((unit) => unit.arm === 'warm').length !== 3
+      plannedOn(axis.rowField, axis.reference) !== 3 ||
+      plannedOn(axis.rowField, axis.treatment) !== 3
     ) {
-      throw new Error(`boredom proof-DAG world block ${world} was not planned as three plain and three warm`);
+      throw new Error(
+        `boredom proof-DAG world block ${world} was not planned as three ${axis.reference} and three ${axis.treatment}`,
+      );
+    }
+    // The balanced axis is not tested, but it still has to have been dealt out
+    // evenly. v6 balances the manner three and three inside each world so that
+    // a move result cannot rest on one manner, and a world that lost that
+    // balance in the plan would break the claim before a single unit ran.
+    if (axis.blockField && axis.blockLevels.some((level) => plannedOn(axis.blockField, level) !== 3)) {
+      throw new Error(
+        `boredom proof-DAG world block ${world} was not planned as three ${axis.blockLevels.join(' and three ')}`,
+      );
     }
     // The exact conditional test conditions on a block. A block with nothing on
     // one side is not a block, so it cannot be conditioned on at all.
     if (
-      worldRows.filter((row) => row.arm === 'plain').length < 1 ||
-      worldRows.filter((row) => row.arm === 'warm').length < 1
+      worldRows.filter((row) => row[axis.rowField] === axis.reference).length < 1 ||
+      worldRows.filter((row) => row[axis.rowField] === axis.treatment).length < 1
     ) {
-      throw new Error(`boredom proof-DAG world block ${world} lost a whole arm and cannot be conditioned on`);
+      throw new Error(`boredom proof-DAG world block ${world} lost a whole side and cannot be conditioned on`);
     }
   }
   // Counted off the batches, not off the scored rows. A unit that stopped as
@@ -1233,48 +1546,65 @@ export function analyzeTutorStubBoredomProofDag({
     throw new Error(`boredom proof-DAG analysis refuses a run above ${studyCeiling} reservations`);
   }
   const progressNames = boredomProofProgressNames(loaded.registration);
-  const primary = blockedAnalysis(rows, 'recovered');
-  const keySecondary = blockedAnalysis(rows, progressNames.field);
+  const primary = blockedAnalysis(rows, 'recovered', axis);
+  const keySecondary = blockedAnalysis(rows, progressNames.field, axis);
   const primaryRejects = primary.p_value <= 0.05;
   const keySecondaryRejects = primaryRejects && keySecondary.p_value <= 0.05;
   // Over the dialogues that produced an outcome, not over the 36 planned. A
   // stopped unit has no fidelity reading to average in either direction.
   const actionVisibility = rows.filter((row) => row.fidelity.action_visible).length / rows.length;
   const registerVisibility = rows.filter((row) => row.fidelity.register_visible).length / rows.length;
+  const moveDelivery = rows.filter((row) => row.fidelity.move_delivered_as_assigned).length / rows.length;
   // Amendment A1 makes this table travel with the result. It is the part a
   // reader needs in order to see what the test could not fix: which units were
-  // lost, from which side, and why.
-  const stoppedByArm = { plain: 0, warm: 0 };
-  for (const unit of stoppedUnits) stoppedByArm[unit.arm] += 1;
+  // lost, from which side, and why. The two sides are the levels the
+  // registration contrasts, so on v5 they are the two manners and on v6 the two
+  // moves.
+  const contrastLevels = [axis.reference, axis.treatment];
+  const stoppedByLevel = Object.fromEntries(contrastLevels.map((level) => [level, 0]));
+  for (const unit of stoppedUnits) stoppedByLevel[unit[axis.rowField]] += 1;
+  const attritionBalanced = stoppedByLevel[axis.reference] === stoppedByLevel[axis.treatment];
   const attrition = {
     planned: 36,
     scored: rows.length,
     stopped: stoppedUnits.length,
-    stopped_by_arm: stoppedByArm,
-    balanced_across_arms: stoppedByArm.plain === stoppedByArm.warm,
+    contrast: { axis: axis.contrast, reference_level: axis.reference, treatment_level: axis.treatment },
+    stopped_by_contrast_level: stoppedByLevel,
+    balanced_across_contrast_levels: attritionBalanced,
     stop_reason: 'measurement_indeterminate_stop_no_repair_no_replacement',
-    stopped_units: stoppedUnits.map((unit) => ({ case_id: unit.case_id, world: unit.world, arm: unit.arm })),
+    stopped_units: stoppedUnits.map((unit) => ({
+      case_id: unit.case_id,
+      world: unit.world,
+      arm: unit.arm,
+      move_level: unit.move_level,
+      contrast_level: unit[axis.rowField],
+    })),
     per_world: loaded.registration.design.worlds.map((world) => {
       const planned = plannedUnits.filter((unit) => unit.world === world);
       const scored = planned.filter((unit) => unit.completed);
+      const count = (group, level) => group.filter((unit) => unit[axis.rowField] === level).length;
       return {
         world,
-        plain_planned: planned.filter((unit) => unit.arm === 'plain').length,
-        warm_planned: planned.filter((unit) => unit.arm === 'warm').length,
-        plain_scored: scored.filter((unit) => unit.arm === 'plain').length,
-        warm_scored: scored.filter((unit) => unit.arm === 'warm').length,
+        planned_by_contrast_level: Object.fromEntries(contrastLevels.map((level) => [level, count(planned, level)])),
+        scored_by_contrast_level: Object.fromEntries(contrastLevels.map((level) => [level, count(scored, level)])),
       };
     }),
-    reading:
-      stoppedByArm.plain === stoppedByArm.warm
-        ? 'Units were lost evenly across the two versions of the tutor.'
-        : 'Units were lost unevenly across the two versions of the tutor. The kept sample on the side that lost units is conditional on not stopping as indeterminate, while the other side is not. The exact conditional test is valid for the units that exist, and it does not repair this. Report it beside any result.',
+    reading: attritionBalanced
+      ? 'Units were lost evenly across the two sides the study contrasts.'
+      : 'Units were lost unevenly across the two sides the study contrasts. The kept sample on the side that lost units is conditional on not stopping as indeterminate, while the other side is not. The exact conditional test is valid for the units that exist, and it does not repair this. Report it beside any result.',
   };
   const fidelity = loaded.registration.measurement.treatmentFidelity;
+  // A registration that assigns more than one move has to say how often the
+  // assigned move must actually be delivered, or the contrast is between two
+  // labels rather than two moves. v5 assigns one move to every unit and names no
+  // floor, so there is nothing to hold it to.
+  const moveDeliveryFloor = fidelity.minimumAssignedMoveDelivery ?? null;
   const fidelityPassed =
-    actionVisibility >= fidelity.minimumActionVisibility && registerVisibility >= fidelity.minimumRegisterVisibility;
+    actionVisibility >= fidelity.minimumActionVisibility &&
+    registerVisibility >= fidelity.minimumRegisterVisibility &&
+    (moveDeliveryFloor === null || moveDelivery >= moveDeliveryFloor);
   return {
-    schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-confirmation-report.v1',
+    schema: loaded.registration.measurement.reportSchema ?? LEGACY_BOREDOM_CONFIRMATION_REPORT_SCHEMA,
     status: fidelityPassed ? 'complete_registered_confirmation' : 'failed_interpretability_gate_not_rerun',
     source: { commit: pinnedCommit, tree: pinnedTree },
     registration: { path: registrationPath, sha256: loaded.sha256 },
@@ -1285,10 +1615,30 @@ export function analyzeTutorStubBoredomProofDag({
       batches_sealed_with_registered_stops: batches.filter((batch) => batch.stoppedAudit.stopped.length > 0).length,
       dialogues_planned: 36,
       dialogues_scored: rows.length,
-      plain_planned: 18,
-      warm_planned: 18,
-      plain_scored: rows.filter((row) => row.arm === 'plain').length,
-      warm_scored: rows.filter((row) => row.arm === 'warm').length,
+      // Counted off the plan, never written out as eighteen and eighteen. The
+      // planned split is a fact about the batch files, so a design that deals
+      // the units out some other way is reported as it ran instead of being
+      // reported as the number this line used to carry.
+      contrast: { axis: axis.contrast, reference_level: axis.reference, treatment_level: axis.treatment },
+      planned_by_contrast_level: Object.fromEntries(
+        contrastLevels.map((level) => [level, plannedUnits.filter((unit) => unit[axis.rowField] === level).length]),
+      ),
+      scored_by_contrast_level: Object.fromEntries(
+        contrastLevels.map((level) => [level, rows.filter((row) => row[axis.rowField] === level).length]),
+      ),
+      planned_by_balanced_block_level: axis.blockField
+        ? Object.fromEntries(
+            axis.blockLevels.map((level) => [
+              level,
+              plannedUnits.filter((unit) => unit[axis.blockField] === level).length,
+            ]),
+          )
+        : null,
+      scored_by_balanced_block_level: axis.blockField
+        ? Object.fromEntries(
+            axis.blockLevels.map((level) => [level, rows.filter((row) => row[axis.blockField] === level).length]),
+          )
+        : null,
       worlds: 6,
       distinct_fresh_public_prefixes: rows.length,
       prior_dialogues_reused: 0,
@@ -1302,28 +1652,99 @@ export function analyzeTutorStubBoredomProofDag({
     attrition,
     rows,
     primary_analysis: {
-      endpoint: 'profile_specific_resistance_recovery',
+      // Named from the registration. Written out here, a v6 run would have been
+      // filed under v5's endpoint name and a reader comparing the two would have
+      // taken a five-turn window for a one-turn window.
+      endpoint: loaded.registration.measurement.primaryEndpoint.id,
+      deadline_post_trigger_learner_turns: primaryDeadlineTurns,
       ...primary,
+      balanced_block: balancedBlockReport(rows, 'recovered', axis),
       significant_two_sided: primaryRejects,
       registered_decision: primaryRejects
-        ? 'warm_plain_recovery_separation_confirmed'
-        : 'warm_plain_recovery_not_confirmed',
+        ? `${axis.treatment}_${axis.reference}_recovery_separation_confirmed`
+        : `${axis.treatment}_${axis.reference}_recovery_not_confirmed`,
+    },
+    // The v5 primary, unchanged, so the v6 reference side can be read against
+    // what v5 reported. Counts only: the registration gives it no test, and a
+    // second test would be a second chance at a positive result.
+    comparability_analysis: comparabilityEndpoint
+      ? {
+          endpoint: comparabilityEndpoint.id,
+          deadline_post_trigger_learner_turns: comparabilityEndpoint.deadlinePostTriggerLearnerTurns,
+          analysis: 'descriptive_only_no_hypothesis_test',
+          scored: rows.length,
+          by_contrast_level: contrastLevels.map((level) => {
+            const group = rows.filter((row) => row[axis.rowField] === level);
+            return {
+              contrast_level: level,
+              scored: group.length,
+              recovered: group.filter((row) => row.outcome.comparability_recovered === true).length,
+            };
+          }),
+          v5_reference_value: comparabilityEndpoint.v5ReferenceValue ?? null,
+          reading:
+            'the same one-turn reading v5 reported, on the same frozen scorer. It is here so the reference side of this study can be compared with the earlier one, and it carries no test of its own.',
+        }
+      : null,
+    // Required by the registration whatever it comes to, including zero. A
+    // learner who scores by giving the tutor's own words back has not recovered,
+    // and the move under test hands the learner one small step, so the count of
+    // scoring turns that only restate the tutor has to travel with the result.
+    content_leakage_disclosure: {
+      rule: 'count_scoring_learner_turns_that_only_restate_the_tutor_report_whatever_it_comes_to',
+      by_contrast_level: contrastLevels.map((level) => {
+        const group = rows.filter((row) => row[axis.rowField] === level);
+        const scoring = group.filter((row) => row.outcome.scoring_turn !== null);
+        return {
+          contrast_level: level,
+          scored: group.length,
+          scoring_turns: scoring.length,
+          scoring_turns_that_only_restate_the_tutor: scoring.filter(
+            (row) => row.outcome.scoring_turn_only_restates_tutor === true,
+          ).length,
+          units: scoring
+            .filter((row) => row.outcome.scoring_turn_only_restates_tutor === true)
+            .map((row) => ({ case_id: row.case_id, world: row.world, scoring_turn: row.outcome.scoring_turn })),
+        };
+      }),
+      reading:
+        'a scoring turn counted here brought back no content word the tutor had not just made public. The unit is still counted as it was scored: this is a disclosure, not a rule that removes units. Read a positive result against it, because a move that recovers only by handing the learner the words has not moved the learner.',
     },
     key_secondary_analysis: {
       endpoint: progressNames.endpoint,
       ...keySecondary,
+      balanced_block: balancedBlockReport(rows, progressNames.field, axis),
       fixed_sequence_gate_open: primaryRejects,
       significant_two_sided_under_fixed_sequence: keySecondaryRejects,
       registered_decision: !primaryRejects
         ? 'not_tested_inferentially_primary_gate_closed'
         : keySecondaryRejects
-          ? 'warm_plain_objective_proof_progress_separation_confirmed'
+          ? `${axis.treatment}_${axis.reference}_objective_proof_progress_separation_confirmed`
           : 'objective_proof_progress_separation_not_confirmed',
     },
     treatment_fidelity: {
       status: fidelityPassed ? 'complete' : 'failed_interpretability_gate_not_rerun',
       action_visibility_rate: actionVisibility,
       register_visibility_rate: registerVisibility,
+      // How often the tutor turn carried the move it was assigned. Under a
+      // one-move registration this is the same move every time and the
+      // registration sets no floor, so the rate is reported and nothing is held
+      // to it. Under two moves it is the contrast: a run that drifted onto one
+      // move on both sides has tested nothing.
+      assigned_move_delivery_rate: moveDelivery,
+      assigned_move_delivery_minimum: moveDeliveryFloor,
+      move_nonadherent_units: rows
+        .filter((row) => row.fidelity.move_delivered_as_assigned === false)
+        .map((row) => ({
+          case_id: row.case_id,
+          world: row.world,
+          arm: row.arm,
+          move_level: row.move_level,
+          assigned_pedagogical_move: row.fidelity.assigned_pedagogical_move,
+          delivered_pedagogical_move: row.fidelity.delivered_pedagogical_move,
+        })),
+      move_nonadherent_reading:
+        'the move the tutor was assigned did not come out in the turn. The registration records nonadherence in intention to treat and never rerolls it, so the unit stays in its assigned group and the miss is counted against the registered delivery floor. A unit that drifted onto the other side’s move can only pull the two sides together, so a positive result survives it and a null is weakened by it.',
       protected_condition_count: rows.filter((row) => row.fidelity.protected_condition).length,
       safety_override_count: rows.filter((row) => row.fidelity.safety_override).length,
       protected_pass_over_units: rows
@@ -1395,12 +1816,13 @@ export function analyzeTutorStubBoredomProofDag({
         return {
           world,
           sources: [...new Set(inWorld.map((row) => row.execution.opening_source))].sort(),
-          plain: inWorld.filter((row) => row.arm === 'plain').length,
-          warm: inWorld.filter((row) => row.arm === 'warm').length,
+          units_by_contrast_level: Object.fromEntries(
+            contrastLevels.map((level) => [level, inWorld.filter((row) => row[axis.rowField] === level).length]),
+          ),
         };
       }),
       opening_source_reading:
-        'a world whose file carries its own opening line needs no model call to speak it. The source is fixed per world, so it is the same for that world’s plain and warm units and the blocked design absorbs it.',
+        'a world whose file carries its own opening line needs no model call to speak it. The source is fixed per world, so it is the same for both sides of that world’s block and the blocked design absorbs it.',
       protected_pass_over_reading:
         'the adjudicator read these earlier turns as actionable boredom and a registered protected exclusion blocked the treatment there, so the trigger fell to a later turn still inside the registered by-turn-2 deadline. The judge label was never recoded.',
       action_visibility_minimum: fidelity.minimumActionVisibility,
@@ -1431,13 +1853,19 @@ export function analyzeTutorStubBoredomProofDag({
     },
     interpretation_status: !fidelityPassed
       ? 'interpretability_gate_failed_no_rerun_or_confirmation_claim'
-      : attrition.balanced_across_arms
+      : attritionBalanced
         ? 'registered_confirmation_interpretable_within_claim_boundary'
         : 'registered_confirmation_interpretable_within_claim_boundary_and_unbalanced_attrition_caveat',
-    claim_boundary: `This report tests only the prospectively registered bored matched-action warm-versus-plain recovery primary and fixed-sequence objective proof-progress secondary in fresh independent strict-DAG dialogues. 36 dialogues were planned and ${rows.length} produced an outcome; ${attrition.stopped} stopped as an indeterminate measurement and were not repaired, rerun or replaced. Prior held-out detection, historical action-fit, and 12-dialogue calibration outcomes are neither reused nor pooled. No action-fit, interaction, edged-register, general tutor-efficacy, durable-learning, human-validity, or cell-harness claim is licensed.${
-      attrition.balanced_across_arms
+    claim_boundary: `This report tests only the prospectively registered bored ${axis.treatment}-versus-${axis.reference} recovery primary, read within ${primaryDeadlineTurns} post-trigger learner turn${
+      primaryDeadlineTurns === 1 ? '' : 's'
+    }, and the fixed-sequence objective proof-progress secondary, in fresh independent strict-DAG dialogues. 36 dialogues were planned and ${rows.length} produced an outcome; ${attrition.stopped} stopped as an indeterminate measurement and were not repaired, rerun or replaced.${
+      axis.blockField
+        ? ` The ${axis.blockLevels.join(' and ')} manner the tutor spoke in is balanced inside each side, not tested, and no manner claim is licensed from it.`
+        : ''
+    } Prior held-out detection, historical action-fit, and 12-dialogue calibration outcomes are neither reused nor pooled. No action-fit, interaction, edged-register, general tutor-efficacy, durable-learning, human-validity, or cell-harness claim is licensed.${
+      attritionBalanced
         ? ''
-        : ` Attrition was unbalanced across the two versions of the tutor (plain ${stoppedByArm.plain}, warm ${stoppedByArm.warm}), so the two kept samples are conditioned differently. ${conditioningAuthority} the test on the realised per-world allocation; that does not repair this, and the attrition table must be reported beside any result.`
+        : ` Attrition was unbalanced across the two sides (${axis.reference} ${stoppedByLevel[axis.reference]}, ${axis.treatment} ${stoppedByLevel[axis.treatment]}), so the two kept samples are conditioned differently. ${conditioningAuthority} the test on the realised per-world allocation; that does not repair this, and the attrition table must be reported beside any result.`
     }`,
   };
 }

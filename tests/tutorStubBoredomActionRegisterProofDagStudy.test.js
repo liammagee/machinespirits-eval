@@ -752,15 +752,15 @@ test('combined boredom proof-DAG analyzer accepts nine sealed batches and fails 
   assert.equal(report.assembly.batches_sealed_complete, 9);
   assert.equal(report.assembly.batches_sealed_with_registered_stops, 0);
   assert.equal(report.attrition.stopped, 0);
-  assert.equal(report.attrition.balanced_across_arms, true);
+  assert.equal(report.attrition.balanced_across_contrast_levels, true);
   assert.equal(report.amendment, null);
   assert.equal(report.primary_analysis.allocation_realised_as_predeclared, true);
   assert.equal(
     report.primary_analysis.conditioning,
     'world_success_totals_and_realised_per_world_plain_warm_allocation',
   );
-  assert.deepEqual(report.primary_analysis.plain, { successes: 4, total: 18, rate: 4 / 18 });
-  assert.deepEqual(report.primary_analysis.warm, { successes: 13, total: 18, rate: 13 / 18 });
+  assert.deepEqual(report.primary_analysis.reference, { level: 'plain', successes: 4, total: 18, rate: 4 / 18 });
+  assert.deepEqual(report.primary_analysis.treatment, { level: 'warm', successes: 13, total: 18, rate: 13 / 18 });
   assert.equal(report.primary_analysis.test, 'two_sided_exact_conditional_blocked_score_test');
   assert.equal(report.key_secondary_analysis.fixed_sequence_gate_open, report.primary_analysis.significant_two_sided);
   assert.equal(report.treatment_fidelity.status, 'complete');
@@ -854,18 +854,18 @@ test('amendment A1 lets the analyzer read a study short by registered indetermin
   });
   assert.equal(report.assembly.dialogues_planned, 36);
   assert.equal(report.assembly.dialogues_scored, 33);
-  assert.equal(report.assembly.plain_scored, 18);
-  assert.equal(report.assembly.warm_scored, 15);
+  assert.equal(report.assembly.scored_by_contrast_level.plain, 18);
+  assert.equal(report.assembly.scored_by_contrast_level.warm, 15);
   assert.equal(report.assembly.batches_sealed_with_registered_stops, 3);
   assert.equal(report.amendment.id, 'A1_realised_block_allocation');
   assert.equal(report.attrition.stopped, 3);
-  assert.deepEqual(report.attrition.stopped_by_arm, { plain: 0, warm: 3 });
-  assert.equal(report.attrition.balanced_across_arms, false);
+  assert.deepEqual(report.attrition.stopped_by_contrast_level, { plain: 0, warm: 3 });
+  assert.equal(report.attrition.balanced_across_contrast_levels, false);
   assert.equal(report.primary_analysis.allocation_realised_as_predeclared, false);
   // The three touched worlds carry three plain against two warm, and the test
   // conditions on exactly those counts.
-  assert.equal(report.primary_analysis.blocks.filter((block) => block.plainN === 3 && block.warmN === 2).length, 3);
-  assert.equal(report.primary_analysis.blocks.filter((block) => block.plainN === 3 && block.warmN === 3).length, 3);
+  assert.equal(report.primary_analysis.blocks.filter((block) => block.referenceN === 3 && block.treatmentN === 2).length, 3);
+  assert.equal(report.primary_analysis.blocks.filter((block) => block.referenceN === 3 && block.treatmentN === 3).length, 3);
   assert.ok(report.interpretation_status.includes('unbalanced_attrition_caveat'));
   assert.match(report.claim_boundary, /Attrition was unbalanced/u);
   // Every unit still spent its model calls, stopped or not, so the reservation
@@ -1122,7 +1122,7 @@ test('a world that carries its own opening line needs no opening model call', (t
   const byWorld = report.treatment_fidelity.opening_source_by_world;
   assert.equal(byWorld.length, 6);
   assert.ok(byWorld.every((entry) => entry.sources.length === 1));
-  assert.ok(byWorld.every((entry) => entry.plain === 3 && entry.warm === 3));
+  assert.ok(byWorld.every((entry) => entry.units_by_contrast_level.plain === 3 && entry.units_by_contrast_level.warm === 3));
   assert.deepEqual(
     byWorld.filter((entry) => entry.sources[0] === 'authored_world_opening').map((entry) => entry.world),
     authoredWorlds,
@@ -1188,8 +1188,8 @@ test('the report separates an objective zero the tutor could have moved from one
   // The endpoint itself is zero everywhere, exactly as before this diagnostic.
   assert.equal(report.rows.length, 36);
   assert.ok(report.rows.every((row) => row.outcome.proof_progress_by_two_turns === false));
-  assert.equal(report.key_secondary_analysis.plain.successes, 0);
-  assert.equal(report.key_secondary_analysis.warm.successes, 0);
+  assert.equal(report.key_secondary_analysis.reference.successes, 0);
+  assert.equal(report.key_secondary_analysis.treatment.successes, 0);
 
   const reach = report.treatment_fidelity.objective_endpoint_reachability;
   assert.equal(reach.units, 36);
