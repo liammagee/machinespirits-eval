@@ -8,6 +8,10 @@ import { fileURLToPath } from 'node:url';
 
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import {
+  readTutorStubRegisteredStudyOutcome,
+  TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_STATUS,
+} from '../services/tutorStubRegisteredStudyOutcome.js';
+import {
   buildTutorStubResistantLearnerCalibrationPlan,
   loadTutorStubResistantLearnerDesign,
   runTutorStubResistantLearnerCompilationPreflight,
@@ -132,6 +136,7 @@ function readTrace(filePath) {
 function childSpec({ loaded, job, destination }) {
   const jobRoot = path.join(destination, 'jobs', job.id);
   const traceDir = path.join(jobRoot, 'traces');
+  const registeredStudyOutcome = path.join(jobRoot, 'registered-study-outcome.json');
   fs.mkdirSync(traceDir, { recursive: true });
   const designPath = path.relative(ROOT, loaded.path);
   const b1 = job.study === 'B1';
@@ -141,6 +146,7 @@ function childSpec({ loaded, job, destination }) {
     jobRoot,
     traceDir,
     transcript: path.join(jobRoot, 'transcript.json'),
+    registeredStudyOutcome,
     stdout: path.join(jobRoot, 'stdout.log'),
     stderr: path.join(jobRoot, 'stderr.log'),
     env: {
@@ -149,6 +155,7 @@ function childSpec({ loaded, job, destination }) {
         ? 'prospective_v9'
         : 'prospective_frame_resistance_semantic_v4',
       TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      TUTOR_STUB_REGISTERED_STUDY_OUTCOME_FILE: registeredStudyOutcome,
     },
     args: [
       'scripts/tutor-stub.js',
@@ -237,14 +244,28 @@ function extractRow({ job, spec, exit }) {
     (event) => event.type === 'resistant_learner_calibration_semantic_adjudication' && event.case_id === job.id,
   );
   const complete = exit.code === 0 && trace && outcomes.length === 1 && fs.existsSync(spec.transcript);
+  const registeredStudyOutcome = readTutorStubRegisteredStudyOutcome({
+    filePath: spec.registeredStudyOutcome,
+    expectedJobId: job.id,
+  });
+  const retainedSubstantiveFailure = exit.code !== 0 && registeredStudyOutcome.present && registeredStudyOutcome.valid;
   return {
     job,
-    status: complete ? 'complete' : 'failed',
+    status: complete
+      ? 'complete'
+      : retainedSubstantiveFailure
+        ? TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_STATUS
+        : 'failed',
     exit,
     attempts,
     trace: trace ? path.relative(destinationRoot(spec), trace) : null,
     transcript: fs.existsSync(spec.transcript) ? path.relative(destinationRoot(spec), spec.transcript) : null,
     outcome: outcomes.length === 1 ? { primary: outcomes[0].primary, fidelity: outcomes[0].fidelity } : null,
+    registered_failure: retainedSubstantiveFailure ? registeredStudyOutcome.outcome : null,
+    registered_failure_artifact: registeredStudyOutcome.present
+      ? path.relative(destinationRoot(spec), spec.registeredStudyOutcome)
+      : null,
+    registered_failure_artifact_issues: registeredStudyOutcome.present ? registeredStudyOutcome.issues : [],
   };
 }
 
@@ -451,6 +472,7 @@ async function main() {
         type: 'unit_complete',
         job_id: job.id,
         status: row.status,
+        ...(row.registered_failure?.code ? { registered_failure_code: row.registered_failure.code } : {}),
         attempts: row.attempts,
         cumulative_attempts: attempts,
         ...(haltReason ? { halt_reason: haltReason } : {}),
@@ -478,6 +500,8 @@ async function main() {
     execution: {
       source_commit: launchCommit,
       completed_units: rows.filter((row) => row.status === 'complete').length,
+      retained_substantive_units: rows.filter((row) => row.status === TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_STATUS)
+        .length,
       failed_units: rows.filter((row) => row.status === 'failed').length,
       missing_units: queued.length - rows.length,
       model_attempts: attempts,
@@ -489,6 +513,7 @@ async function main() {
     type: 'seal',
     status: report.status,
     completed_units: report.execution.completed_units,
+    retained_substantive_units: report.execution.retained_substantive_units,
     failed_units: report.execution.failed_units,
     attempts,
   });

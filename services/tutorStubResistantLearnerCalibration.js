@@ -723,6 +723,8 @@ function countBy(rows, key, values) {
 export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) {
   const study = design.studyId === B1_ID ? 'B1' : 'R1';
   const completed = rows.filter((row) => row.status === 'complete');
+  const retainedSubstantiveFailures = rows.filter((row) => row.status === 'retained_substantive_failure');
+  const executed = completed.length + retainedSubstantiveFailures.length;
   const agreement = agreementSummary(completed, design);
   const prohibited = completed.filter((row) => panelField(row, 'fidelity', 'prohibited_delivery')?.value === 'yes');
   let statistics;
@@ -758,7 +760,7 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) 
       }),
     );
     gates = {
-      execution_complete: completed.length === 18,
+      execution_complete: executed === 18,
       channel_alive: determinate.length >= 16 && yes.length >= 3 && no.length >= 3,
       action_and_question_fidelity: Object.values(actionFidelity).every((value) => value.correct >= 8),
       register_fidelity: Object.values(registerFidelity).every((value) => value.correct >= 5),
@@ -813,7 +815,7 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) 
       }),
     );
     gates = {
-      execution_complete: completed.length === 18,
+      execution_complete: executed === 18,
       channel_alive:
         determinate.length >= 16 &&
         scores['0'] >= 2 &&
@@ -847,6 +849,12 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) 
     rows,
     statistics,
     reader_agreement: agreement,
+    retained_substantive_failures: {
+      count: retainedSubstantiveFailures.length,
+      case_ids: retainedSubstantiveFailures.map((row) => row.job.id),
+      codes: retainedSubstantiveFailures.map((row) => row.registered_failure?.code || null),
+      replacement_allowed: false,
+    },
     prohibited_case_ids: prohibited.map((row) => row.job.id),
     gates,
     calibration_only: true,
