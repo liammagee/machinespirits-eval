@@ -75,6 +75,9 @@ test('prospective v4 through v9 carry their analyzer-required semantics stamp th
   const createRuntime = (semantics) =>
     createTutorStubAutomatedLearnerGenerationRuntime({
       appendTraceEvent() {},
+      adjudicateResistanceSemanticCandidate() {
+        throw new Error('zero-call trace metadata test');
+      },
       callPromptModel() {
         throw new Error('zero-call trace metadata test');
       },

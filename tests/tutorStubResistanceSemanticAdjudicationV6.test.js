@@ -38,7 +38,7 @@ function vector(overrides = {}) {
   };
 }
 
-function output(judgment, extraNoEvidenceField = null) {
+function output(judgment) {
   return {
     schema: 'machinespirits.tutor-stub.resistance-semantic-judge-response.v3',
     case_id: caseId,

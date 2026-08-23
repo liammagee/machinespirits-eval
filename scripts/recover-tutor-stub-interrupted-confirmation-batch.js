@@ -396,10 +396,6 @@ async function buildLayeredJobReplay({ job, sourceTraces, jobRoot, maximumAttemp
   return { replayPath, recoveryAttempts, replayEntries: entries.length };
 }
 
-function traceForRecoveryJob(recoveryDir, jobId) {
-  return onlyTrace(path.join(recoveryDir, 'jobs', jobId, 'traces'));
-}
-
 function reservationCountForRecoveryJob(recoveryDir, jobId) {
   const traceDir = path.join(recoveryDir, 'jobs', jobId, 'traces');
   const traceReservations = fs.existsSync(traceDir) ? countReservations(onlyTrace(traceDir)) : 0;

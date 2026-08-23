@@ -680,12 +680,14 @@
         "tests/tutorStubResistanceSemanticAdjudicationV3.test.js",
         "tests/tutorStubResistanceSemanticAdjudicationV4.test.js",
         "tests/tutorStubResistanceSemanticAdjudicationV5.test.js",
+        "tests/tutorStubResistanceSemanticAdjudicationV6.test.js",
         "tests/tutorStubResistanceSemanticRuntime.test.js",
         "tests/tutorStubResistanceSemanticValidation.test.js",
         "tests/tutorStubResistanceSemanticValidationGoRequest.test.js",
         "tests/tutorStubResistanceSemanticValidationRuntime.test.js",
         "tests/tutorStubResistanceSemanticValidationV4GoRequest.test.js",
         "tests/tutorStubResistanceSemanticValidationV4Runtime.test.js",
+        "tests/tutorStubResistanceWarmNonwarmConfirmation.test.js",
         "tests/tutorStubResistantProfileDiscriminationRegistration.test.js",
         "tests/tutorStubResistantProfileLiveReadiness.test.js",
         "tests/tutorStubResistantProfileRouteCanary.test.js",
@@ -803,6 +805,14 @@
       "owner": "adaptive-warrant-outcome-study",
       "reason": "Most registered burned corpora live under the system temp directory, which a housekeeping job empties after about four days (defect ledger 21). With any of them gone the fresh-launch guard must refuse, so tests that drive the fresh path cannot run. The restart path stands in from the launch record and its tests never carry this skip.",
       "removalSlice": "outcome-study artifact fixture decision"
+    },
+    {
+      "id": "adaptive-warrant-historical-source-pin-drift",
+      "suite": "root",
+      "reasonPattern": "^historical outcome (?:manifest correctly refuses|manifests correctly refuse) after the frozen first-draft source pin drifted$",
+      "owner": "adaptive-warrant-outcome-study",
+      "reason": "The consumed outcome manifests retain their original first-draft source digest. Tests whose later assertion is unreachable after that prospective source changed are explicitly accounted for instead of re-pinning historical study artifacts.",
+      "removalSlice": "extract a pure post-binding manifest validator if these historical assertions need to execute again"
     },
     {
       "id": "guarded-learner-smoke-c-private-archive",

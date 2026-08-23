@@ -1,7 +1,7 @@
 ---
 id: resistance-action-register-integration
 title: Integrate resistance diagnosis, pedagogical action, and tonal register across tutor harnesses
-status: active
+status: done
 type: research
 priority: P1
 owner: codex
@@ -9,15 +9,12 @@ source: manual
 created: 2026-08-18
 updated: 2026-08-23
 verification: >-
-  The reopened measurement-redesign track has passed Claude JSON-envelope
-  transport, the fresh held-out split-V8 outcome/fidelity validation, V6
-  dual-judge trigger Smoke B, and the 19-test zero-call warm/non-warm execution
-  integration. The fixed confirmation uses 200 wholly fresh dialogues, Luna
-  generation, independent Sol-Sonnet semantic judgment, and one final
-  two-sided Fisher exact analysis. All historical runs remain immutable and
-  excluded. Launch requires only merge, a clean detached commit, the signed GO
-  note, and the runner's zero-call guards under the current paid-study policy.
-claim_status: methods
+  The sealed 200-dialogue confirmation completed every unit on its initial
+  attempt with no technical recovery and exactly one final analysis. Recovery
+  was 0/99 in both arms, but non-warm action fidelity was 0.88 against the
+  predeclared 0.90 gate, so the causal claim is explicitly withheld and the
+  immutable result is closed as descriptive, scope-bound evidence.
+claim_status: scope-bound
 links:
   items:
     - tutor-stub-cell-reconciliation
@@ -28,6 +25,7 @@ links:
     - edged-register-outcome-study
     - edged-register-stub-dag-replication
   notes:
+    - notes/2026-08-23-resistance-action-register-warm-nonwarm-confirmation-closeout.md
     - notes/2026-08-16-harness-reconciliation-survey.md
     - docs/harness-claim-transfer-rule.md
     - docs/paid-study-authorization-policy.md
@@ -3690,3 +3688,15 @@ and explicit human approval.
   units have terminal dispositions. Nineteen focused zero-call tests pass; the
   programme ledger before launch is 5,594 and its exact safeguard ceiling is
   25,994.
+
+- 2026-08-23 — Closed the programme on the sealed 200-dialogue confirmation.
+  All 200 units reached terminal semantic records on their first attempt from
+  clean detached launch commit `e257268e`; 3,818 reservations moved the
+  programme ledger to `9412 / 25994`, with no recovery or interim analysis.
+  Outcome coverage was 99/100 in both arms and recovery was 0/99 versus 0/99
+  (`p = 1`; risk difference 0). Warm action fidelity passed at 0.96, but
+  non-warm action fidelity was 0.88 and failed the registered 0.90 gate.
+  Assigned-register fidelity passed in both arms. The programme therefore
+  closes with a descriptive no-recovery observation and no confirmatory causal
+  null claim. The sealed study is not rerun or resumed. Closeout:
+  `notes/2026-08-23-resistance-action-register-warm-nonwarm-confirmation-closeout.md`.

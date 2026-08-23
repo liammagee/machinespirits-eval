@@ -5,7 +5,6 @@ import {
 } from './tutorStubResistanceRecoverySemanticAdjudicationV8.js';
 
 const PRIMARY_FIELDS = ['bounded_test_merits_engagement', 'grounded_precise_jurisdictional_condition'];
-const FIDELITY_FIELDS = ['delivered_clarify_distinction', 'delivered_register'];
 
 function integrityIssues(judges, responses, instrument) {
   const supplied = Array.isArray(responses) ? responses : [];

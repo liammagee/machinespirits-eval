@@ -313,7 +313,7 @@ test('v3 validation endpoint certifies only zero-call fixed-slot wiring with liv
   }
 });
 
-test('V8 confirmation readiness is loadable but cannot become an executable confirmation before sealed validation', () => {
+test('V8 confirmation readiness permits only a zero-call engineering-smoke plan before sealed validation', () => {
   const loaded = loadTutorStubResistanceActionRegisterRegistration(
     path.join(ROOT, 'config/tutor-stub-resistance-action-register-crossed-registration.v8.json'),
   );
@@ -330,10 +330,10 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
   assert.equal(loaded.registration.authorization.requiredCeilingAmendment.increase, 307);
   assert.equal(loaded.registration.semanticAdjudication.failedV1Validation.reused, false);
   assert.equal(loaded.registration.semanticAdjudication.failedV2Validation.reused, false);
-  assert.throws(
-    () => buildTutorStubResistanceActionRegisterConfirmationPlan({ registration: loaded.registration }),
-    /requires a supported registered action\/register confirmation design/u,
-  );
+  const smokePlan = buildTutorStubResistanceActionRegisterConfirmationPlan({ registration: loaded.registration });
+  assert.equal(smokePlan.status, 'planned_zero_call');
+  assert.equal(smokePlan.model_calls_authorized, false);
+  assert.equal(smokePlan.jobs.length, 36);
   const registration = JSON.parse(
     fs.readFileSync(
       path.join(ROOT, 'config/tutor-stub-resistance-action-register-crossed-registration.v8.json'),

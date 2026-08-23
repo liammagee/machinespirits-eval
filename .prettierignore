@@ -42,3 +42,22 @@ config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json
 config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json
 config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json
 config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json
+
+# Hash-frozen resistance action/register study inputs, runtimes, and contract
+# tests. Historical registrations and validators bind these exact bytes; keep
+# them immutable instead of re-pinning consumed studies to satisfy Prettier.
+config/tutor-stub-resistance-action-register-crossed-registration.v10.json
+config/tutor-stub-resistance-semantic-exact-source-heldout.v5.json
+scripts/analyze-tutor-stub-resistance-action-register-confirmation.js
+scripts/recover-tutor-stub-interrupted-confirmation-batch.js
+scripts/recover-tutor-stub-resistance-semantic-judge.js
+services/cliProviderBridge.js
+services/tutorStubResistanceActionRegisterConfirmation.js
+services/tutorStubResistanceActionRegisterStudy.js
+services/tutorStubResistanceSemanticAdjudicationV5.js
+services/tutorStubResistanceSemanticAdjudicationV6.js
+services/tutorStubResistanceSemanticRuntime.js
+tests/tutorStubResistanceActionRegisterConfirmationV10.test.js
+tests/tutorStubResistanceActionRegisterStudy.test.js
+tests/tutorStubResistanceSemanticAdjudicationV5.test.js
+tests/tutorStubResistanceSemanticAdjudicationV6.test.js
