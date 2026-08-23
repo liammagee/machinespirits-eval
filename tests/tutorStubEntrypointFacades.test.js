@@ -262,6 +262,7 @@ test('thin entrypoint delegates to an import-safe application host that binds bo
     'services/tutorStubPromptTransport.js',
     'services/tutorStubPublicPresentationRuntime.js',
     'services/tutorStubRecoveryAccountingRuntime.js',
+    'services/tutorStubResistanceStudyCliRuntime.js',
     'services/tutorStubScenarioController.js',
     'services/tutorStubSessionApplicationContext.js',
     'services/tutorStubSessionApplicationRuntime.js',

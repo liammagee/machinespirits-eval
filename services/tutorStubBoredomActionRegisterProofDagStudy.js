@@ -352,7 +352,24 @@ function runtimeRegistrationAdapter(registration, world, batchIds) {
       profiles: ['bored'],
       factors: {
         actionFit: boredomActionFitFactor(registration),
-        realization: { levels: ['plain', 'warm'], plain: 'plain', warm: 'warm' },
+        realization: {
+          ...Object.fromEntries([
+            ['levels', [...(registration.design.treatment.realizations || ['plain', 'warm'])]],
+            ...(registration.design.treatment.realizations || ['plain', 'warm'])
+              .filter((level) => level !== 'edged')
+              .map((level) => [level, level]),
+          ]),
+          ...((registration.design.treatment.realizations || []).includes('edged')
+            ? {
+                edgedByAssignedMove: {
+                  ask_discriminating_question: 'sarcastic',
+                  stage_public_evidence_for_next_step: 'ironic',
+                },
+                edgeFollowsAssignedMoveNotLearnerProfile: true,
+                faceThreatExcluded: true,
+              }
+            : {}),
+        },
         // How many batches a study deals is a registered decision: nine from v2
         // to v6, twenty-one on v7. Written out as a list of nine, this refused
         // every v7 batch above the ninth.

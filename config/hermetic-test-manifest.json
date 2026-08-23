@@ -688,6 +688,7 @@
         "tests/tutorStubResistanceSemanticValidationV4GoRequest.test.js",
         "tests/tutorStubResistanceSemanticValidationV4Runtime.test.js",
         "tests/tutorStubResistanceWarmNonwarmConfirmation.test.js",
+        "tests/tutorStubResistantLearnerCalibration.test.js",
         "tests/tutorStubResistantProfileDiscriminationRegistration.test.js",
         "tests/tutorStubResistantProfileLiveReadiness.test.js",
         "tests/tutorStubResistantProfileRouteCanary.test.js",
