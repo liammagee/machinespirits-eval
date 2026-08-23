@@ -102,13 +102,13 @@ function sameIds(actual, expected) {
 
 function exactTraceDirectory(resultRow, command, label) {
   if (!resultRow?.trace || !command?.trace_dir) throw new Error(`${label} lacks its registered trace path`);
-  const tracePath = path.resolve(ROOT, resultRow.trace);
+  const tracePath = path.resolve(command.cwd || ROOT, resultRow.trace);
   const traceDirectory = path.resolve(command.trace_dir);
   const files = traceFiles(traceDirectory);
   if (path.dirname(tracePath) !== traceDirectory || files.length !== 1 || path.resolve(files[0]) !== tracePath) {
     throw new Error(`${label} must contain exactly its one selected trace; alternatives are forbidden`);
   }
-  return traceDirectory;
+  return tracePath;
 }
 
 function auditRecovery({ absolute, plan, initial, result, seal, planPath, initialResultPath, resultPath }) {
@@ -171,6 +171,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   const finalRows = new Map(result.results.map((row) => [row.job_id, row]));
   const reservationsByJob = new Map();
   const finalTraceBudgetByJob = new Map();
+  const tracePathsByJob = new Map();
   let usedReservationsBeforeRecovery = 0;
   for (const job of plan.jobs) {
     const initialFiles = traceFiles(job.command?.trace_dir);
@@ -182,7 +183,10 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     const initialRow = initialById.get(job.id);
     const finalRow = finalRows.get(job.id);
     if (initialValidIds.includes(job.id)) {
-      exactTraceDirectory(initialRow, job.command, `initial valid confirmation unit ${job.id}`);
+      tracePathsByJob.set(
+        job.id,
+        exactTraceDirectory(initialRow, job.command, `initial valid confirmation unit ${job.id}`),
+      );
       if (
         finalRow?.origin !== 'initial_valid_unit' ||
         finalRow.trace !== initialRow.trace ||
@@ -205,7 +209,10 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     if (JSON.stringify(recoveryJob) !== JSON.stringify(expectedRecoveryJob)) {
       throw new Error(`confirmation batch ${plan.batch_id} recovery command drifted for ${job.id}`);
     }
-    exactTraceDirectory(recoveryRow, recoveryJob?.command, `recovered confirmation unit ${job.id}`);
+    tracePathsByJob.set(
+      job.id,
+      exactTraceDirectory(recoveryRow, recoveryJob?.command, `recovered confirmation unit ${job.id}`),
+    );
     const recoveryReservations = reservationCount(recoveryJob.command.trace_dir);
     if (
       finalRow?.origin !== 'bounded_technical_recovery_missing_or_failed_unit' ||
@@ -232,7 +239,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   ) {
     throw new Error(`confirmation batch ${plan.batch_id} recovery exceeded or misreported its unchanged caps`);
   }
-  return { recoveredIds: new Set(missingOrFailedIds), reservationsByJob, finalTraceBudgetByJob };
+  return { recoveredIds: new Set(missingOrFailedIds), reservationsByJob, finalTraceBudgetByJob, tracePathsByJob };
 }
 
 function exactBatch(batchRoot, allowedBatchSources, analysisSourceCommit, registrationPath) {
@@ -336,9 +343,10 @@ function exactBatch(batchRoot, allowedBatchSources, analysisSourceCommit, regist
   }
   const reservationsByJob = new Map();
   const finalTraceBudgetByJob = new Map();
+  const tracePathsByJob = new Map();
   for (const job of plan.jobs) {
     const row = result.results.find((candidate) => candidate.job_id === job.id);
-    exactTraceDirectory(row, job.command, `confirmation unit ${job.id}`);
+    tracePathsByJob.set(job.id, exactTraceDirectory(row, job.command, `confirmation unit ${job.id}`));
     const count = reservationCount(job.command.trace_dir);
     if (count > caps.perDialogue) {
       throw new Error(`confirmation job ${job.id} exceeds its ${caps.perDialogue}-reservation cap`);
@@ -357,6 +365,7 @@ function exactBatch(batchRoot, allowedBatchSources, analysisSourceCommit, regist
     recoveredIds: new Set(),
     reservationsByJob,
     finalTraceBudgetByJob,
+    tracePathsByJob,
   };
 }
 
@@ -680,7 +689,8 @@ function v9SemanticOutcome({ events, job, loaded, trigger, postOne, postTwo, out
 export function analyzeTutorStubResistanceActionRegisterConfirmationTrace(batch, resultRow, loaded) {
   const job = batch.planJobs.get(resultRow.job_id);
   if (!job) throw new Error(`confirmation result ${resultRow.job_id} is not planned`);
-  const tracePath = path.resolve(ROOT, resultRow.trace);
+  const tracePath = batch.tracePathsByJob.get(job.id);
+  if (!tracePath) throw new Error(`confirmation trace ${job.id} lacks its uniquely validated path`);
   const source = fs.readFileSync(tracePath);
   if (sha256(source) !== resultRow.trace_sha256) throw new Error(`confirmation trace digest drift for ${job.id}`);
   const events = readTrace(tracePath);
