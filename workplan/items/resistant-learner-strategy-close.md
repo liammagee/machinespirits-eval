@@ -25,6 +25,10 @@ links:
     - docs/adaptation-refinement/new-learner-profiles-bored-defiant.md
     - docs/paid-study-authorization-policy.md
     - docs/resistance-action-register-conservation-protocol.md
+    - notes/checkins/2026-08-23-P0.md
+    - notes/checkins/2026-08-23-P1.md
+    - config/tutor-stub-resistant-learner-b1-design.v1.json
+    - config/tutor-stub-resistant-learner-r1-design.v1.json
 tags:
   - tutor-stub
   - resistant-learners
@@ -57,3 +61,7 @@ tags:
 
 - 2026-08-23: Started from `origin/main` at `66ddf92d` on the required single
   stream. No model call is authorized or active; Phase 0 is zero-call.
+- 2026-08-23: P0 selected learner-authored thread pickup for B1 and a new
+  graded engagement ladder plus prospective persona amendment for R1.
+- 2026-08-23: P1 froze both zero-call designs. Gate 1 would cover 36 fresh
+  calibration dialogues under a combined hard ceiling of 4,806 attempts.

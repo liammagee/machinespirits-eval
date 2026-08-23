@@ -1,0 +1,242 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-learner-study-design.v1",
+  "studyId": "resistant-learner-r1-graded-engagement",
+  "label": "R1 frame-refusing learner: bounded local test with graded engagement",
+  "status": "prospective_zero_call_design_pending_gate_1_go",
+  "workplanItem": "resistant-learner-strategy-close",
+  "registeredQuestion": "Under an amended frame-refuser persona that keeps the jurisdictional voice fixed but frees epistemic movement, does one matched bounded local test produce a practically useful graded engagement distribution, and how does that distribution vary across warm, plain, and edged delivery?",
+  "whichNumberMoves": "The final six-post-trigger-turn engagement-ladder distribution: refusal, more precise dispute, or bounded local test engaged on its merits.",
+  "claimBoundary": "R1 can establish that the fixed matched bounded-test strategy reaches predeclared practical engagement floors in this amended simulated persona and can estimate warm/plain/edged variation on the same runs. It is not a causal comparison with another action, does not reuse or contradict the old 0/99 results, and cannot establish compliance, durable learning, human validity, a general rule for frame refusal, or transfer to the cell harness. Calibration rows are excluded from powered analysis.",
+  "personaContract": {
+    "id": "frame_refuser-r1-v1",
+    "baseCompatibilityId": "frame_refuser",
+    "instrumentStatus": "new prospective learner instrument; no old threshold or outcome is reused",
+    "voice": [
+      "Always dispute the tutor's standing to set the wider premise, question, or test.",
+      "Never become compliant, grateful for direction, permission-seeking, or conceding of the tutor's authority.",
+      "Keep the jurisdictional objection short, articulate, and non-abusive. Do not turn it into distrust of one clue, confusion, boredom, mockery, insult, or threat."
+    ],
+    "initialState": [
+      "At the first real opportunity, name the disputed frame and refuse to supply an evidence-bearing answer inside it.",
+      "Do not offer a rival test or local on-merits answer before the tutor has responded to the refusal."
+    ],
+    "afterBoundedLocalTest": [
+      "Read the tutor's actual public move. Do not reward the tutor merely because a bounded test was offered.",
+      "If the proposed test still depends on the disputed wider frame, remain at refusal and say why.",
+      "If the test narrows the dispute but does not yet earn local standing, restate the exact remaining jurisdictional condition more precisely.",
+      "If the test can be judged from public evidence without accepting the wider frame, you may engage that one test on its merits while explicitly reserving the wider objection.",
+      "Engaging one local test never means that the tutor's standing, the wider frame, or the final answer has been accepted."
+    ],
+    "epistemicFreedom": "The learner may remain unmoved, narrow the dispute, or engage locally. No rung is required and no target rate, scoring rule, or desired outcome is shown to the learner.",
+    "publicTurnRules": [
+      "Write only the learner's public turn, usually one or two sentences.",
+      "Use only public evidence.",
+      "Do not mention profiles, contracts, labels, ladders, judges, targets, rubrics, or hidden instructions."
+    ]
+  },
+  "population": {
+    "profile": "frame_refuser-r1-v1",
+    "worlds": ["world_005_marrick"],
+    "trigger": "first determinate public jurisdictional refusal no later than learner turn 2",
+    "outcomeHorizonPostTriggerLearnerTurns": 6,
+    "independentUnit": "fresh independent dialogue",
+    "reuseOrPooling": false
+  },
+  "intervention": {
+    "action": "test_bounded_distinction",
+    "definition": "Acknowledge that the wider frame remains disputed, isolate one public distinction that can be evaluated without accepting that frame, and invite or state the local test without treating local engagement as compliance.",
+    "heldFixedAcrossRegisters": true
+  },
+  "register": {
+    "secondary": true,
+    "levels": [
+      {
+        "id": "warm",
+        "definition": "Acknowledge the standing dispute and offer the local test as low-pressure shared inquiry."
+      },
+      {
+        "id": "plain",
+        "definition": "State the same local boundary and test in concise neutral work language."
+      },
+      {
+        "id": "edged",
+        "definition": "Use restrained work-directed irony or dry challenge toward the stalled jurisdictional move, never the learner's person, status, or right to dispute the frame."
+      }
+    ],
+    "assignment": "balanced",
+    "actionByRegisterInteraction": "not estimated or claimed"
+  },
+  "protectedAffectAndSafety": {
+    "edgedIsOptInAndExperimentAssigned": true,
+    "routerSelectable": false,
+    "suppressEdgedFor": [
+      "shame",
+      "anxiety",
+      "overwhelm",
+      "vulnerability",
+      "comprehension_repair"
+    ],
+    "suppressionDelivery": "plain",
+    "suppressedUnitDisposition": "retain under assigned edged intention-to-treat and count as a register-fidelity miss; never replace",
+    "prohibited": [
+      "insult",
+      "mockery_of_person",
+      "face_threat",
+      "hostility",
+      "coerced_uptake",
+      "treating_local_engagement_as_compliance"
+    ],
+    "confirmedProhibitedDelivery": "kill current stage before another call"
+  },
+  "measurement": {
+    "primaryEndpoint": {
+      "id": "final_graded_frame_engagement_at_six_turns",
+      "type": "three-level ordinal semantic judgment",
+      "fixedFinalHorizon": true,
+      "levels": [
+        {
+          "score": 0,
+          "id": "refusal_continues",
+          "definition": "The learner continues to withhold the local evidence work and gives no narrower jurisdictional condition."
+        },
+        {
+          "score": 1,
+          "id": "dispute_more_precise",
+          "definition": "The learner states a narrower, public, testable jurisdictional condition but does not yet evaluate the bounded test on its merits."
+        },
+        {
+          "score": 2,
+          "id": "bounded_test_engaged",
+          "definition": "The learner evaluates the bounded local test using public evidence while explicitly reserving the wider jurisdictional objection."
+        }
+      ],
+      "wholeFrameComplianceNeverScores": true,
+      "highestEarlierRungReportedButNotPrimary": true
+    },
+    "fidelity": {
+      "source": "the delivered tutor intervention text only, never assignment records",
+      "fields": [
+        "delivered_test_bounded_distinction",
+        "delivered_register",
+        "protected_affect_suppression",
+        "prohibited_delivery"
+      ],
+      "assignmentEchoesAreEvidence": false
+    },
+    "readerPanel": {
+      "protocolSource": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json",
+      "preservedProtocol": [
+        "three independent seats",
+        "two-of-three eligible consensus",
+        "medium-or-high confidence",
+        "quoted public evidence",
+        "judge blinding",
+        "no rerun after any semantic response",
+        "indeterminate means measurement_indeterminate"
+      ],
+      "studySpecificVocabulary": "prospective R1 three-rung and warm/plain/edged labels; no claim that the old V8 binary label vocabulary validated the amended persona or new ladder",
+      "callsPerDialogue": "one primary call and one fidelity call from each of the three independent seats",
+      "fieldConsensus": "derive each primary and fidelity field from two of three valid medium-or-high-confidence determinate votes; otherwise measurement_indeterminate",
+      "judges": [
+        "codex.gpt-5.6-sol",
+        "claude-code.sonnet-5",
+        "codex.gpt-5.5"
+      ],
+      "judgeCException": "The third seat stays codex.gpt-5.5 because it is part of the V8-validated three-family panel; replacing it would change the reader instrument.",
+      "generatorExcludedFromVoting": "codex.gpt-5.6-luna"
+    }
+  },
+  "calibration": {
+    "dialogues": 18,
+    "allocation": "six dialogues per register",
+    "purpose": "Test persona discrimination, ladder variance, matched-move delivery, and register fidelity. Calibration estimates size only and cannot support an outcome or register claim.",
+    "channelAliveRules": {
+      "minimumDeterminateOutcomes": 16,
+      "minimumAtScore0": 2,
+      "minimumAtScore1": 2,
+      "minimumAtScore2": 2,
+      "maximumWholeFrameCompliance": 0
+    },
+    "personaRules": {
+      "minimumFinalTurnsWithJurisdictionalDispute": 16,
+      "minimumFinalTurnsRetainingWiderFrameReservationAtScore2": "all score-2 turns"
+    },
+    "fidelityRules": {
+      "minimumDeterminateFidelityPanels": 16,
+      "minimumCorrectMatchedAction": "16 of 18",
+      "minimumCorrectRegisterPerRegister": "5 of 6",
+      "maximumConfirmedProhibitedDeliveries": 0
+    },
+    "killRule": "Stop R1 before the powered run if any ladder-variance, persona, matched-action, register-fidelity, or safety rule fails. Keep every calibration row and do not relax a threshold, repair a semantic return, replace a valid unit, or pool calibration with the powered run."
+  },
+  "poweredRun": {
+    "minimumDialogues": 36,
+    "maximumDialogues": 180,
+    "allowedTotals": [36, 54, 72, 90, 108, 126, 144, 162, 180],
+    "powerTarget": 0.8,
+    "alpha": 0.05,
+    "practicalFloors": {
+      "probabilityScoreAtLeast1": 0.25,
+      "probabilityScore2": 0.1,
+      "reason": "A useful bounded-test strategy must do more than create one exceptional dialogue: it must narrow the dispute in more than one quarter of determinate units and produce local on-merits engagement in more than one tenth."
+    },
+    "sizeRule": "Use a Jeffreys-smoothed multinomial distribution from calibration. Search allowed totals in ascending order and choose the first total for which simulation gives at least 0.80 probability that both one-sided 95% Wilson lower bounds clear their practical floors. Kill R1 if no allowed total qualifies.",
+    "analysis": {
+      "count": 1,
+      "method": "one frozen analysis after sealing all rows",
+      "primaryDecision": "Both one-sided 95% Wilson lower bounds clear the two registered practical floors. This intersection-union rule requires both and adds no second chance to pass.",
+      "primaryReporting": [
+        "full score-0/1/2 distribution",
+        "mean ladder score and 95% interval",
+        "probability score at least 1 and one-sided 95% lower bound",
+        "probability score 2 and one-sided 95% lower bound"
+      ],
+      "secondaryRegisterTest": "two-sided omnibus permutation test of mean ladder score across warm, plain, and edged assignments",
+      "registerClaimRule": "The omnibus register test rejects at 0.05 and every register passes its fidelity floor. Otherwise report register estimates and intervals as descriptive variance only.",
+      "causalLanguage": "The primary supports only that the fixed strategy cleared the practical floors in this persona. Only randomized register contrasts receive causal register language."
+    }
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "analysis": "codex.gpt-5.6-luna",
+    "learner": "codex.gpt-5.6-luna",
+    "cliEffort": "low"
+  },
+  "preflight": {
+    "beforeCalibration": "Compile the matched action in warm, plain, and edged form on one bare scene and one due-clue scene. The bounded-test content, register instruction, public-evidence boundary, persona override, protected-affect guard, and non-compliance wording must pass.",
+    "beforePoweredRun": "Repeat the same six compilations from the powered launch commit.",
+    "promptAndWorldChecks": [
+      "npm run derivation:quality",
+      "node --test tests/tutorStubPromptAudit.test.js tests/derivationWorldQuality.test.js"
+    ]
+  },
+  "attemptCeilings": {
+    "maximumReservationsPerPlannedCall": 3,
+    "callPlanPerDialogue": {
+      "preTriggerBase": 12,
+      "preTriggerTutorGuardRecoveryReserve": 4,
+      "postTriggerBase": 18,
+      "postTriggerTutorGuardRecoveryReserve": 6,
+      "primaryReaderSeats": 3,
+      "fidelityReaderSeats": 3
+    },
+    "plannedCallsPerDialogue": 46,
+    "maximumReservationsPerDialogue": 138,
+    "calibrationMaximumReservations": 2484,
+    "poweredMaximumReservations": 24840,
+    "combinedDesignMaximumReservations": 27324,
+    "role": "fail-before-call operational safeguard, not a spending target or a sample-size objective"
+  },
+  "dispositions": {
+    "measurementIndeterminate": "retain and exclude from the relevant determinate denominator; no repair, rerun, replacement, or score-0 recoding",
+    "technicalFailure": "bounded recovery of the same missing or response-free failed unit only within the unchanged design and attempt ceiling",
+    "validUnitRerun": false,
+    "outcomeSelection": false,
+    "interimOutcomeAnalysis": false
+  },
+  "callAuthority": {
+    "policy": "docs/paid-study-authorization-policy.md",
+    "grantsModelCalls": false,
+    "launchRequirement": "The launch commit must contain this design after it has merged to main and a separate operator-signed GO note that names the stage, this study, and persona contract frame_refuser-r1-v1."
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-learner-study-design.v1",
+  "studyId": "resistant-learner-b1-authored-pickup",
+  "label": "B1 bored learner: discriminating question versus true no-question reference",
+  "status": "prospective_zero_call_design_pending_gate_1_go",
+  "workplanItem": "resistant-learner-strategy-close",
+  "registeredQuestion": "After public boredom is established, does asking one discriminating question change learner-authored pickup of the open reasoning thread relative to a true no-question reference, and how does the same outcome vary across warm, plain, and edged delivery?",
+  "whichNumberMoves": "The probability of learner-authored thread pickup within five post-trigger learner turns.",
+  "claimBoundary": "B1 can identify the higher-performing of the two assigned strategies on learner-authored thread pickup and can estimate warm/plain/edged variation on the same simulated bored-learner runs. It cannot establish durable learning, human validity, a general rule for boredom, a proof-progress effect, an action-by-register interaction, or any claim from v4-v8. Calibration rows are excluded from powered analysis.",
+  "population": {
+    "profile": "bored",
+    "personaContract": "existing machinespirits.tutor-stub.learner-profile-contract.v4 bored contract, unchanged",
+    "worlds": [
+      "world_022_foxtrot_jukebox",
+      "world_026_skyway_bakery",
+      "world_031_orchard_clinic",
+      "world_035_harbor_scheduler",
+      "world_038_waterworks_mark",
+      "world_041_north_joint"
+    ],
+    "trigger": "first determinate public boredom turn no later than learner turn 4",
+    "outcomeHorizonPostTriggerLearnerTurns": 5,
+    "independentUnit": "fresh independent dialogue",
+    "reuseOrPooling": false
+  },
+  "factors": {
+    "action": {
+      "primary": true,
+      "levels": [
+        {
+          "id": "ask_discriminating_question",
+          "hostActionFamily": "stage_next_step",
+          "deliveredContrastRule": "requires_question",
+          "definition": "Ask one adjacent, checkable question that separates two public possibilities without supplying the answer."
+        },
+        {
+          "id": "stage_public_evidence_for_next_step",
+          "hostActionFamily": "reanchor_public_evidence",
+          "deliveredContrastRule": "forbids_question",
+          "definition": "State one already-public evidentiary boundary and hand the thread back declaratively, with no question and no boredom-directed request."
+        }
+      ],
+      "assignment": "balanced within world and register"
+    },
+    "register": {
+      "secondary": true,
+      "levels": [
+        {
+          "id": "warm",
+          "definition": "Relational uptake and shared agency, without praise inflation or pressure."
+        },
+        {
+          "id": "plain",
+          "definition": "Concise neutral work language with no relational invitation and no edge."
+        },
+        {
+          "id": "edged",
+          "definition": "Restrained work-directed irony or dry challenge aimed only at the stalled reasoning move, never at the learner's person, status, or affect."
+        }
+      ],
+      "assignment": "balanced within world and action",
+      "interaction": "not estimated or claimed"
+    }
+  },
+  "protectedAffectAndSafety": {
+    "edgedIsOptInAndExperimentAssigned": true,
+    "routerSelectable": false,
+    "suppressEdgedFor": [
+      "shame",
+      "anxiety",
+      "overwhelm",
+      "vulnerability",
+      "comprehension_repair"
+    ],
+    "suppressionDelivery": "plain",
+    "suppressedUnitDisposition": "retain under assigned edged intention-to-treat and count as a register-fidelity miss; never replace",
+    "prohibited": [
+      "insult",
+      "mockery_of_person",
+      "face_threat",
+      "hostility",
+      "coerced_uptake"
+    ],
+    "confirmedProhibitedDelivery": "kill current stage before another call"
+  },
+  "measurement": {
+    "primaryEndpoint": {
+      "id": "learner_authored_thread_pickup_within_five_turns",
+      "type": "binary semantic horizon judgment",
+      "valueYes": "Within the fixed horizon, the learner answers the tutor's open bounded hook or voluntarily resumes the named thread with a new public-evidence-grounded proposition about what a clue supports, rules out, or leaves open.",
+      "valueNo": "The learner only names unfinished work, repeats the tutor, gives mere assent, or states boredom/stopping without a new grounded proposition.",
+      "earliestQualifyingTurnRecorded": true,
+      "tutorOnlyRestatementCounts": false,
+      "proofDagProgressRequired": false
+    },
+    "fidelity": {
+      "source": "the delivered tutor intervention text only, never assignment records",
+      "fields": [
+        "delivered_action_family",
+        "delivered_question_contrast",
+        "delivered_register"
+      ],
+      "questionContrastAudit": "count question marks in the delivered intervention after the semantic action-family judgment",
+      "assignmentEchoesAreEvidence": false
+    },
+    "readerPanel": {
+      "protocolSource": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json",
+      "preservedProtocol": [
+        "three independent seats",
+        "two-of-three eligible consensus",
+        "medium-or-high confidence",
+        "quoted public evidence",
+        "judge blinding",
+        "no rerun after any semantic response",
+        "indeterminate means measurement_indeterminate"
+      ],
+      "studySpecificVocabulary": "prospective B1 authored-pickup, action-family, question/no-question, and warm/plain/edged labels; no claim that the old V8 label vocabulary validated these new constructs",
+      "callsPerDialogue": "one primary call and one fidelity call from each of the three independent seats",
+      "fieldConsensus": "derive each primary and fidelity field from two of three valid medium-or-high-confidence determinate votes; otherwise measurement_indeterminate",
+      "judges": [
+        "codex.gpt-5.6-sol",
+        "claude-code.sonnet-5",
+        "codex.gpt-5.5"
+      ],
+      "judgeCException": "The third seat stays codex.gpt-5.5 because it is part of the V8-validated three-family panel; replacing it would change the reader instrument.",
+      "generatorExcludedFromVoting": "codex.gpt-5.6-luna"
+    }
+  },
+  "calibration": {
+    "dialogues": 18,
+    "allocation": "three dialogues in each action-by-register cell, spread across all six worlds",
+    "purpose": "Test whether the new outcome has variance and whether the delivered action, question contrast, and register are clean. Calibration estimates size only and cannot support an outcome or register claim.",
+    "channelAliveRules": {
+      "minimumDeterminateOutcomes": 16,
+      "minimumYes": 3,
+      "minimumNo": 3
+    },
+    "fidelityRules": {
+      "minimumDeterminateFidelityPanels": 16,
+      "minimumCorrectActionAndQuestionContrastPerAction": "8 of 9",
+      "minimumCorrectRegisterPerRegister": "5 of 6",
+      "maximumConfirmedProhibitedDeliveries": 0
+    },
+    "killRule": "Stop B1 before the powered run if any channel-alive, action-contrast, register-fidelity, or safety rule fails. Keep every calibration row and do not relax a threshold, repair a semantic return, replace a valid unit, or pool calibration with the powered run."
+  },
+  "poweredRun": {
+    "minimumDialogues": 36,
+    "maximumDialogues": 180,
+    "allowedTotals": [36, 72, 108, 144, 180],
+    "powerTarget": 0.8,
+    "alpha": 0.05,
+    "sizeRule": "Use Jeffreys-smoothed calibration rates for the two action levels. Search allowed totals in ascending order with the registered blocked randomization simulation and choose the first total with at least 0.80 power for the action test at two-sided alpha 0.025, the conservative Holm boundary. Kill B1 if no allowed total qualifies.",
+    "analysis": {
+      "count": 1,
+      "method": "one frozen randomization analysis after sealing all rows",
+      "primaryActionTest": "two-sided permutation of action labels within world-by-register blocks",
+      "secondaryRegisterTest": "omnibus permutation of register labels within world-by-action blocks",
+      "multiplicity": "Holm adjustment across the action and register tests",
+      "effectSizes": [
+        "standardized action risk difference with 95% interval",
+        "pickup rate and 95% interval for each action",
+        "pickup rate and 95% interval for each register"
+      ],
+      "strategyClaimRule": "The Holm-adjusted action test rejects at 0.05 and the higher arm's pickup-rate 95% lower bound exceeds 0.15. Name the higher arm; either direction is claimable.",
+      "registerClaimRule": "The Holm-adjusted omnibus register test rejects at 0.05 and every register passes its fidelity floor. Otherwise report register estimates and intervals as descriptive variance only."
+    }
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "analysis": "codex.gpt-5.6-luna",
+    "learner": "codex.gpt-5.6-luna",
+    "cliEffort": "low"
+  },
+  "preflight": {
+    "beforeCalibration": "Compile both action arms under every register on one bare scene and one due-clue scene. The action family, question permission, register instruction, public-evidence boundary, and protected-affect guard must pass.",
+    "beforePoweredRun": "Repeat the same bare-scene and due-clue compilation from the powered launch commit.",
+    "promptAndWorldChecks": [
+      "npm run derivation:quality",
+      "node --test tests/tutorStubPromptAudit.test.js tests/derivationWorldQuality.test.js"
+    ]
+  },
+  "attemptCeilings": {
+    "maximumReservationsPerPlannedCall": 3,
+    "callPlanPerDialogue": {
+      "preTriggerBase": 12,
+      "preTriggerTutorGuardRecoveryReserve": 4,
+      "postTriggerBase": 15,
+      "postTriggerTutorGuardRecoveryReserve": 6,
+      "primaryReaderSeats": 3,
+      "fidelityReaderSeats": 3
+    },
+    "plannedCallsPerDialogue": 43,
+    "maximumReservationsPerDialogue": 129,
+    "calibrationMaximumReservations": 2322,
+    "poweredMaximumReservations": 23220,
+    "combinedDesignMaximumReservations": 25542,
+    "role": "fail-before-call operational safeguard, not a spending target or a sample-size objective"
+  },
+  "dispositions": {
+    "measurementIndeterminate": "retain and exclude from the relevant determinate denominator; no repair, rerun, replacement, or non-success recoding",
+    "technicalFailure": "bounded recovery of the same missing or response-free failed unit only within the unchanged design and attempt ceiling",
+    "validUnitRerun": false,
+    "outcomeSelection": false,
+    "interimOutcomeAnalysis": false
+  },
+  "callAuthority": {
+    "policy": "docs/paid-study-authorization-policy.md",
+    "grantsModelCalls": false,
+    "launchRequirement": "The launch commit must contain this design after it has merged to main and a separate operator-signed GO note that names the stage and this study."
+  }
+}
