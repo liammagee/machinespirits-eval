@@ -654,7 +654,10 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, batch
 }
 
 function v9SemanticTriggerEligibility({ events, record, loaded }) {
-  const semanticAdjudication = record?.resistanceSemanticAdjudication || null;
+  const semanticAdjudication =
+    record?.resistanceSemanticAdjudication ||
+    record?.learnerResponseProvenance?.automation?.resistanceSemanticAdjudication ||
+    null;
   const binding = loadTutorStubResistanceSemanticRegistration(
     tutorStubResistanceSemanticRegistrationPathForObservation(
       loaded.registration.design?.trigger?.observationSemantics,

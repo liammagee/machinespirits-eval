@@ -390,7 +390,9 @@ test('V9 trace analysis accepts semantic positives even when the advisory typed 
     tutor: outcomeFixture.corpusCase.intervention,
     classification: { turn: { request_type: 'authority_refusal_or_status_challenge' } },
     tutorLearnerDagModel: { turn: 1, metrics: { missingPremiseCount: 6, groundedCount: 4 } },
-    resistanceSemanticAdjudication: triggerFixture.result,
+    learnerResponseProvenance: {
+      automation: { resistanceSemanticAdjudication: triggerFixture.result },
+    },
     responseConfigurationAudit: {
       axes: {
         action_family: { selected: 'clarify_distinction', visible: false },
