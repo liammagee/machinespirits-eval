@@ -533,8 +533,5 @@ test('combined launcher halts on the first technical failure or prohibited deliv
     }),
     'confirmed prohibited delivery in R1-prohibited',
   );
-  assert.equal(
-    tutorStubResistantLearnerCalibrationHaltReason({ status: 'complete', job: { id: 'B1-clean' } }),
-    null,
-  );
+  assert.equal(tutorStubResistantLearnerCalibrationHaltReason({ status: 'complete', job: { id: 'B1-clean' } }), null);
 });

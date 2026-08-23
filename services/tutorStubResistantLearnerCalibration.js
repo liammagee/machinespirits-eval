@@ -97,8 +97,7 @@ export function validateTutorStubResistantLearnerDesign(design) {
     const actions = design?.factors?.action?.levels || [];
     if (
       design?.revision !== 2 ||
-      design?.supersedes?.priorDesignSha256 !==
-        'f007fb9ad6be419035a07f2ef8409a233f0b994ae2bf62e827d5c7770945c157' ||
+      design?.supersedes?.priorDesignSha256 !== 'f007fb9ad6be419035a07f2ef8409a233f0b994ae2bf62e827d5c7770945c157' ||
       design?.supersedes?.priorDisposition !== 'void_technical_failure_no_calibration_unit_completed' ||
       design?.supersedes?.reuse !== false ||
       design?.population?.profile !== 'bored' ||
