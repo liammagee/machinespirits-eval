@@ -20,8 +20,10 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE,
   createLazyTutorStubResistanceSemanticAdjudicator,
   createTutorStubResistanceSemanticRuntime,
+  enforceTutorStubResistanceSemanticCandidate,
   loadTutorStubResistanceSemanticRegistration,
   validateTutorStubResistanceSemanticRuntimeResult,
 } from '../services/tutorStubResistanceSemanticRuntime.js';
@@ -571,6 +573,32 @@ test('one invalid returned model envelope yields terminal measurement indetermin
   assert.equal(result.aggregate.judge_rerun_allowed, false);
   assert.equal(result.aggregate.unit_rerun_allowed, false);
   assert.equal(result.judgeRecordCount, 1);
+});
+
+test('measurement-indeterminate enforcement throws a typed retained substantive outcome', async () => {
+  const events = [];
+  await assert.rejects(
+    enforceTutorStubResistanceSemanticCandidate({
+      adjudicateCandidate: async () => ({ aggregate: { status: 'measurement_indeterminate' } }),
+      appendTraceEvent: (_trace, event) => events.push(event),
+      state: { trace: [] },
+      learnerText: 'I refuse the wider frame.',
+      turnNumber: 1,
+      profileId: 'frame_refuser',
+      candidateKind: 'auto_learner_profile',
+      lexicalAdherence: null,
+    }),
+    (error) => {
+      assert.equal(error.code, TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE);
+      assert.equal(error.substantiveStudyFailure, true);
+      assert.equal(error.measurementIndeterminate, true);
+      assert.equal(error.recoverable, false);
+      return true;
+    },
+  );
+  assert.equal(events.length, 1);
+  assert.equal(events[0].type, 'auto_learner_profile_measurement_indeterminate');
+  assert.equal(events[0].disposition, 'terminal_nonrecoverable_no_rerun_replacement_or_selection');
 });
 
 test('one exhausted judge transport is persisted and terminally indeterminate without recalling completed judges', async () => {

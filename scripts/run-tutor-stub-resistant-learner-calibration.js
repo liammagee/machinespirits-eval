@@ -334,6 +334,15 @@ function dryRunReport(entries) {
   };
 }
 
+export function tutorStubResistantLearnerCalibrationExecutionQueue(entries) {
+  const r1 = entries.find((entry) => entry.loaded.design.studyId === 'resistant-learner-r1-graded-engagement');
+  const b1 = entries.find((entry) => entry.loaded.design.studyId === 'resistant-learner-b1-authored-pickup');
+  if (!r1 || !b1 || entries.length !== 2) {
+    throw new Error('combined resistant-learner execution queue requires exactly the registered R1 and B1 studies');
+  }
+  return [r1, b1].flatMap((entry) => entry.plan.jobs.map((job) => ({ ...entry, job })));
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -447,7 +456,7 @@ async function main() {
   });
 
   const rows = [];
-  const queued = entries.flatMap((entry) => entry.plan.jobs.map((job) => ({ ...entry, job })));
+  const queued = tutorStubResistantLearnerCalibrationExecutionQueue(entries);
   let cursor = 0;
   let attempts = 0;
   let haltReason = null;
