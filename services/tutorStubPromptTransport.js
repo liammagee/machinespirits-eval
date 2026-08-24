@@ -73,7 +73,9 @@ export function createTutorStubPromptTransport(dependencies) {
     cliPolicyRetryCount = 0,
     semanticRetryDelaysMs = null,
   }) {
-    const semanticResistanceJudge = String(role || '').startsWith('tutor_stub_resistance_semantic_');
+    const semanticResistanceJudge =
+      String(role || '').startsWith('tutor_stub_resistance_semantic_') ||
+      String(role || '').startsWith('tutor_stub_resistant_learner_');
     const semanticRetryDelays =
       semanticResistanceJudge &&
       Array.isArray(semanticRetryDelaysMs) &&
@@ -374,7 +376,7 @@ export function createTutorStubPromptTransport(dependencies) {
           streamItemTypeCounts: result.streamItemTypeCounts || {},
           structuredEventAudit: result.structuredEventAudit || null,
           prohibitedToolEventCount: Number(result.prohibitedToolEventCount || 0),
-          ...(String(role || '').startsWith('tutor_stub_resistance_semantic_')
+          ...(semanticResistanceJudge
             ? {
                 prohibitedToolEventCountObserved:
                   Object.hasOwn(result, 'prohibitedToolEventCount') &&
