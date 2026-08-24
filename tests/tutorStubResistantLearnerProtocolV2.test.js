@@ -13,6 +13,10 @@ import {
   runTutorStubResistantLearnerCompilationPreflight,
   summarizeTutorStubResistantLearnerCalibration,
 } from '../services/tutorStubResistantLearnerCalibration.js';
+import {
+  buildTutorStubFirstDraftContract,
+  tutorStubFirstDraftContractPrompt,
+} from '../services/tutorStubFirstDraftContract.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
   createTutorStubAutomatedLearnerGenerationRuntime,
@@ -79,6 +83,46 @@ function load(relativePath) {
     ...loadTutorStubResistantLearnerDesign({ designPath: relativePath, root: ROOT }),
     relativePath,
   };
+}
+
+function configureB1V3CalibrationState({ loaded, job }) {
+  const state = {
+    trace: [],
+    turns: [],
+    history: [],
+    register: { palette: ['warm', 'plain', 'ironic', 'sarcastic'], history: [], policy: 'field' },
+    world: {},
+  };
+  configureTutorStubResistantLearnerCalibrationFromCli({
+    args: {
+      'model-call-budget': String(loaded.design.attemptCeilings.maximumReservationsPerDialogue),
+      model: 'codex.gpt-5.6-luna',
+      'classifier-model': 'codex.gpt-5.6-luna',
+      'learner-record-model': 'codex.gpt-5.6-luna',
+      'auto-learner-model': 'codex.gpt-5.6-luna',
+      'cli-effort': 'low',
+      world: job.world,
+      'run-seed': String(job.run_seed),
+      'eval-repeat': String(job.assignment_index),
+      'eval-job-id': job.id,
+      'acknowledge-research-use': true,
+      'dag-mode': 'strict_dag',
+      'register-policy': 'field',
+      'register-palette': 'warm,plain,ironic,sarcastic',
+      'resistant-learner-calibration-design': B1_V3_PATH,
+      'resistant-learner-calibration-job': job.id,
+    },
+    state,
+    root: ROOT,
+    autoLearnerEnabled: true,
+    autoLearnerProfileId: 'bored',
+    autoTurns: 9,
+    appendTraceEvent(target, event) {
+      target.push(event);
+    },
+    observationSemantics: loaded.design.models.triggerObservation.semantics,
+  });
+  return state;
 }
 
 function captureThrownError(callback) {
@@ -232,56 +276,17 @@ test('B1 v3 rival work triggers and a stock boredom loop does not', () => {
 
   const loaded = load(B1_V3_PATH);
   const job = buildTutorStubResistantLearnerCalibrationPlan(loaded.design).jobs[0];
-  const configure = () => {
-    const state = {
-      trace: [],
-      turns: [],
-      history: [],
-      register: { palette: ['warm', 'plain', 'ironic', 'sarcastic'], history: [], policy: 'field' },
-      world: {},
-    };
-    configureTutorStubResistantLearnerCalibrationFromCli({
-      args: {
-        'model-call-budget': String(loaded.design.attemptCeilings.maximumReservationsPerDialogue),
-        model: 'codex.gpt-5.6-luna',
-        'classifier-model': 'codex.gpt-5.6-luna',
-        'learner-record-model': 'codex.gpt-5.6-luna',
-        'auto-learner-model': 'codex.gpt-5.6-luna',
-        'cli-effort': 'low',
-        world: job.world,
-        'run-seed': String(job.run_seed),
-        'eval-repeat': String(job.assignment_index),
-        'eval-job-id': job.id,
-        'acknowledge-research-use': true,
-        'dag-mode': 'strict_dag',
-        'register-policy': 'field',
-        'register-palette': 'warm,plain,ironic,sarcastic',
-        'resistant-learner-calibration-design': B1_V3_PATH,
-        'resistant-learner-calibration-job': job.id,
-      },
-      state,
-      root: ROOT,
-      autoLearnerEnabled: true,
-      autoLearnerProfileId: 'bored',
-      autoTurns: 9,
-      appendTraceEvent(target, event) {
-        target.push(event);
-      },
-      observationSemantics: loaded.design.models.triggerObservation.semantics,
-    });
-    return state;
-  };
   const selection = { response_configuration: {}, selected_register: 'plain' };
   const applied = applyTutorStubResistanceActionRegisterStudyIntervention({
     selection,
-    state: configure(),
+    state: configureB1V3CalibrationState({ loaded, job }),
     learnerText: rivalWork,
     classification: { turn: { discourse_move: 'counterexample', evidence_use: 'cites_public_evidence' } },
     tutorLearnerDag: { model: { turn: 1 } },
     semanticAdjudication: fired,
   });
   assert.equal(applied.resistance_action_register_intervention.status, 'applied');
-  const notAppliedState = configure();
+  const notAppliedState = configureB1V3CalibrationState({ loaded, job });
   const notApplied = applyTutorStubResistanceActionRegisterStudyIntervention({
     selection,
     state: notAppliedState,
@@ -294,6 +299,57 @@ test('B1 v3 rival work triggers and a stock boredom loop does not', () => {
   assert.ok(
     notAppliedState.resistanceActionRegisterStudy.history.at(-1).reasons.includes('no_single_axis_public_warrant'),
   );
+});
+
+test('B1 v3 ships the assigned discriminating-question and concrete register directives in the tutor prompt', () => {
+  const loaded = load(B1_V3_PATH);
+  const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded.design);
+  const rivalWork = 'The invoice timing still leaves two live delivery accounts open, so I am comparing the dates.';
+  const fired = parseTutorStubRivalAttentionAdjudicationV3({
+    raw: {
+      schema: 'machinespirits.tutor-stub.rival-attention-judge-response.v3',
+      case_id: 'B1-v3-shipped-prompt',
+      objective_advanced: 'rival_objective',
+      work_status: 'new_evidence_bearing_work',
+      evidence_quote: 'comparing the dates',
+      confidence: 'high',
+      reason: 'The learner advances a rival timing question.',
+    },
+    caseId: 'B1-v3-shipped-prompt',
+    learnerText: rivalWork,
+    observedRoute: { provider: 'codex', model: 'gpt-5.6-sol' },
+  });
+  const registerMarkers = {
+    warm: /Make the warm register audible with exactly one shared-inquiry marker/u,
+    plain: /Make the plain register audible through short neutral work language/u,
+    edged: /Make the edged register audible with exactly one restrained dry work challenge/u,
+  };
+
+  for (const register of Object.keys(registerMarkers)) {
+    const job = plan.jobs.find(
+      (candidate) => candidate.action === 'ask_discriminating_question' && candidate.register === register,
+    );
+    assert.ok(job, `expected a B1 v3 discriminating-question job for ${register}`);
+    const applied = applyTutorStubResistanceActionRegisterStudyIntervention({
+      selection: { response_configuration: {}, selected_register: 'plain' },
+      state: configureB1V3CalibrationState({ loaded, job }),
+      learnerText: rivalWork,
+      classification: { turn: { discourse_move: 'counterexample', evidence_use: 'cites_public_evidence' } },
+      tutorLearnerDag: { model: { turn: 1 } },
+      semanticAdjudication: fired,
+    });
+    const contract = buildTutorStubFirstDraftContract({
+      learnerText: rivalWork,
+      publicQuestion: 'Which public account fits the delivery timing?',
+      responseConfiguration: applied.response_configuration,
+    });
+    const shippedPrompt = tutorStubFirstDraftContractPrompt(contract);
+    assert.match(shippedPrompt, /End the turn with exactly one question/u);
+    assert.match(shippedPrompt, /name two live already-public possibilities/u);
+    assert.match(shippedPrompt, /the already-public observation that separates them/u);
+    assert.match(shippedPrompt, /Put the only question mark at the end of the turn/u);
+    assert.match(shippedPrompt, registerMarkers[register]);
+  }
 });
 
 test('R1 v3 makes an agreeing medium-confidence pair determinate and enforces exact-substring evidence', () => {
@@ -460,6 +516,20 @@ test('the typed concession predicate, not learner roleplay, decides whether a tu
     ],
   });
   assert.equal(generic.eligible, false);
+  const notMetDirective = tutorStubRivalDagTurnDirective({
+    state: {
+      privateRivalLearnerDag: dag,
+      history: [
+        { role: 'user', content: learner },
+        { role: 'assistant', content: genericTutor },
+      ],
+    },
+  });
+  assert.match(
+    notMetDirective,
+    /Typed concession condition: NOT MET\. Continue the next open rival node; do not engage the tutor-world request merely as roleplay\./u,
+  );
+  assert.match(notMetDirective, /Never mention this private state publicly\./u);
   const bearing = evaluateTutorStubRivalDagConcession({
     dag,
     history: [
@@ -478,8 +548,12 @@ test('the typed concession predicate, not learner roleplay, decides whether a tu
       ],
     },
   });
-  assert.match(directive, /Typed concession condition: MET/u);
+  assert.match(directive, new RegExp(`Typed concession condition: MET for ${node.id}`, 'u'));
+  assert.match(directive, /Take one bridge step: connect this overlap to a public tutor-world item in your own words/u);
+  assert.match(directive, /Keep at least one rival node open/u);
+  assert.doesNotMatch(directive, /Engage only that bounded overlap/u);
   assert.match(directive, /computed by the registered public-token rule/u);
+  assert.match(directive, /Never mention this private state publicly\./u);
   const turnRecord = buildTutorStubRivalLearnerDagTurnRecord({
     dag,
     history: [
@@ -504,6 +578,8 @@ test('the automated learner carries the rival-DAG audit into its turn output', a
     .match(/[a-z0-9]+/gu)
     .filter((token) => token.length >= 5)
     .slice(0, 2);
+  const learner = `My other inquiry still needs ${nodeWords.join(' and ')}.`;
+  const bearingTutor = `Which evidence would test ${nodeWords.join(' against ')}?`;
   const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
     appendTraceEvent() {},
     async callPromptModel() {
@@ -520,7 +596,10 @@ test('the automated learner carries the rival-DAG audit into its turn output', a
   });
   const generated = await runtime.generateAutomatedLearnerTurn({
     state: {
-      history: [],
+      history: [
+        { role: 'user', content: learner },
+        { role: 'assistant', content: bearingTutor },
+      ],
       turns: [],
       trace: [],
       world: null,
@@ -528,8 +607,13 @@ test('the automated learner carries the rival-DAG audit into its turn output', a
     },
     resolved: { provider: 'stub', model: 'stub' },
     profile: tutorStubRivalLearnerDagPrompt({ design: loaded.design, job, root: ROOT }),
-    turnNumber: 1,
+    turnNumber: 2,
   });
+  assert.match(
+    generated.promptSnapshot.userPrompt,
+    /Take one bridge step: connect this overlap to a public tutor-world item in your own words/u,
+  );
+  assert.doesNotMatch(generated.promptSnapshot.userPrompt, /Engage only that bounded overlap/u);
   assert.equal(generated.rivalLearnerDagTurn.rivalDagSha256, dag.sha256);
   assert.ok(generated.rivalLearnerDagTurn.publicLearnerWork.some((row) => row.workedThisTurn));
 });

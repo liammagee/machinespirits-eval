@@ -720,7 +720,7 @@ test('protected conditions suppress assignment and a post-assignment safety chan
   assert.equal(overridden.resistance_action_register_intervention.reroll_authorized, false);
 });
 
-test('the byte-pinned legacy contract builder ignores study metadata outside the frozen overlay', () => {
+test('the shared contract builder carries study action delivery into the shipped speaking prompt', () => {
   const selection = baseSelection();
   const state = stateWith(runtime('bored', 'matched', 'warm'), selection);
   const applied = applyTutorStubResistanceActionRegisterStudyIntervention({
@@ -743,7 +743,11 @@ test('the byte-pinned legacy contract builder ignores study metadata outside the
   });
 
   assert.equal(contract.development.pedagogical_move, undefined);
-  assert.doesNotMatch(contract.development.instruction, /genuinely discriminating/u);
+  assert.match(contract.development.instruction, /genuinely discriminating/u);
+  assert.match(contract.development.instruction, /End the turn with exactly one question/u);
+  const shippedPrompt = tutorStubFirstDraftContractPrompt(contract);
+  assert.match(shippedPrompt, /name two live already-public possibilities/u);
+  assert.match(shippedPrompt, /the already-public observation that separates them/u);
   assert.equal(contract.performance.engagement_stance, 'warm');
 });
 

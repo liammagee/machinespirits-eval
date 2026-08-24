@@ -342,7 +342,7 @@ export function tutorStubRivalDagTurnDirective({ state } = {}) {
     '',
     `Next open node: ${nextNode?.id || 'none'}${nextNode ? ` — ${nextNode.task}` : ''}`,
     evaluation.eligible
-      ? `Typed concession condition: MET for ${evaluation.qualifyingNodeId}. Engage only that bounded overlap, and keep the wider rival objective open.`
+      ? `Typed concession condition: MET for ${evaluation.qualifyingNodeId}. Take one bridge step: connect this overlap to a public tutor-world item in your own words. Keep at least one rival node open.`
       : 'Typed concession condition: NOT MET. Continue the next open rival node; do not engage the tutor-world request merely as roleplay.',
     'This decision was computed by the registered public-token rule. Do not reinterpret or override it.',
     'Never mention this private state publicly.',

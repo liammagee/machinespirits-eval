@@ -262,6 +262,11 @@ const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
     'Stage the next already-public piece of evidence, name it plainly, and say what it does not yet settle. Say nothing about the learner’s state, ask no question, and do not say what the evidence shows.',
 });
 
+const SHIPPED_MOVE_DELIVERY_DIRECTIVES = Object.freeze({
+  ask_discriminating_question:
+    'End the turn with exactly one question. In that question, name two live already-public possibilities and the already-public observation that separates them. Put the only question mark at the end of the turn.',
+});
+
 const REALIZATION_CONTRAST_INSTRUCTIONS = Object.freeze({
   plain:
     'Realize a neutral, non-affiliative reference stance. State the bounded distinction and local evidentiary test directly, without inviting shared movement or choice, presenting tutor and learner as acting together, or adding relational uptake. Preserve the learner’s right to reject the wider frame through a direct boundary rather than a collaborative invitation.',
@@ -270,6 +275,19 @@ const REALIZATION_CONTRAST_INSTRUCTIONS = Object.freeze({
   edged:
     'Realize restrained work-directed irony or dry challenge aimed only at the stalled reasoning move. Never target the learner’s person, status, affect, or right to dispute the frame; do not insult, mock, threaten, coerce uptake, or treat local engagement as compliance.',
 });
+
+const SHIPPED_REALIZATION_DELIVERY_DIRECTIVES = Object.freeze({
+  warm:
+    'Make the warm register audible with exactly one shared-inquiry marker such as “let’s test”, “we can compare”, or “together”; do not praise or pressure.',
+  plain:
+    'Make the plain register audible through short neutral work language: use no “we”, “let’s”, “together”, praise, invitation, irony, or challenge.',
+  edged:
+    'Make the edged register audible with exactly one restrained dry work challenge such as “that leaves one awkward test” or “the record is less obliging”; target only the reasoning move.',
+});
+
+function appendInstruction(...instructions) {
+  return instructions.map((instruction) => String(instruction || '').trim()).filter(Boolean).join(' ');
+}
 
 const CONTENT_BEARING_MOVES = new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']);
 const CONTENT_BEARING_EVIDENCE = new Set(['cites_public_evidence', 'links_evidence_to_rule', 'revises_from_evidence']);
@@ -1180,16 +1198,30 @@ export function compileTutorStubResistanceActionRegisterStudyAssignment(runtime)
   const actionInstruction = overrides?.actionInstructions?.[move];
   const compactActionInstruction = overrides?.compactActionInstructions?.[move];
   const realizationInstruction = overrides?.registerInstructions?.[runtime.realization];
+  const action = appendInstruction(
+    actionInstruction || MOVE_INSTRUCTIONS[move],
+    SHIPPED_MOVE_DELIVERY_DIRECTIVES[move],
+  );
+  const compactAction = appendInstruction(
+    compactActionInstruction || COMPACT_MOVE_INSTRUCTIONS[move],
+    SHIPPED_MOVE_DELIVERY_DIRECTIVES[move],
+  );
+  const realization = appendInstruction(
+    realizationInstruction || REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],
+    SHIPPED_REALIZATION_DELIVERY_DIRECTIVES[runtime.realization],
+  );
   return {
     pedagogical_move: move,
     host_action_family: MOVE_TO_HOST_ACTION[move],
     assigned_realization: runtime.realization,
     delivered_register: register,
-    action_instruction: actionInstruction || MOVE_INSTRUCTIONS[move],
-    compact_action_instruction: compactActionInstruction || COMPACT_MOVE_INSTRUCTIONS[move],
-    realization_contrast_instruction: realizationInstruction || REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],
-    safety_plain_realization_contrast_instruction:
+    action_instruction: action,
+    compact_action_instruction: compactAction,
+    realization_contrast_instruction: realization,
+    safety_plain_realization_contrast_instruction: appendInstruction(
       overrides?.registerInstructions?.plain || REALIZATION_CONTRAST_INSTRUCTIONS.plain,
+      SHIPPED_REALIZATION_DELIVERY_DIRECTIVES.plain,
+    ),
     instruction_source: overrides ? 'study_design_override' : 'host_default',
     edged_safety_override_supported: ['sarcastic', 'ironic'].includes(register),
   };
@@ -1830,7 +1862,10 @@ export function applyTutorStubResistanceActionRegisterContractOverlay({ bundle, 
     pedagogical_move: intervention.assignment.pedagogical_move,
     resistance_action_register_intervention: clone(intervention),
   };
-  handoff.instruction = `${intervention.compact_action_instruction} ${handoff.instruction}`.trim();
+  const compactActionInstruction = String(intervention.compact_action_instruction || '').trim();
+  if (compactActionInstruction && !String(handoff.instruction).includes(compactActionInstruction)) {
+    handoff.instruction = `${compactActionInstruction} ${handoff.instruction}`.trim();
+  }
 
   const messages = next.request?.messages || [];
   const latestRequest = messages.at(-1);
