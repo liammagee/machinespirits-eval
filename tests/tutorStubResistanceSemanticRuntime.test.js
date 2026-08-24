@@ -23,6 +23,7 @@ import {
   createLazyTutorStubResistanceSemanticAdjudicator,
   createTutorStubResistanceSemanticRuntime,
   loadTutorStubResistanceSemanticRegistration,
+  validateTutorStubResistanceSemanticRuntimeResult,
 } from '../services/tutorStubResistanceSemanticRuntime.js';
 import { auditTutorStubResistanceSemanticTrace } from '../services/tutorStubResistanceSemanticTraceAudit.js';
 import {
@@ -80,6 +81,13 @@ const canonicalSha256 = (value) =>
     .createHash('sha256')
     .update(JSON.stringify(canonical(value)))
     .digest('hex');
+
+test('semantic runtime validation returns a typed missing-result issue without throwing', () => {
+  assert.deepEqual(validateTutorStubResistanceSemanticRuntimeResult({ result: null }), {
+    valid: false,
+    issues: ['semantic runtime result missing'],
+  });
+});
 
 test('legacy host composition can hold the semantic adjudicator without loading its registration', async () => {
   let constructions = 0;

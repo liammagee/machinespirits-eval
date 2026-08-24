@@ -286,6 +286,50 @@ test('CLI configuration resolves edged B1 and R1 jobs through the live study ada
   }
 });
 
+test('R1 post-consumption turn treats a missing semantic result as not applied without throwing', () => {
+  const loaded = load(R1_PATH);
+  const job = buildTutorStubResistantLearnerCalibrationPlan(loaded.design).jobs.find(
+    (candidate) => candidate.register === 'edged',
+  );
+  const state = configuredState();
+  configureTutorStubResistantLearnerCalibrationFromCli({
+    args: {
+      ...baseArgs(loaded, job),
+      'resistant-learner-calibration-design': R1_PATH,
+      'resistant-learner-calibration-job': job.id,
+    },
+    state,
+    root: ROOT,
+    autoLearnerEnabled: true,
+    autoLearnerProfileId: 'frame_refuser',
+    autoTurns: job.maximum_trigger_turn + job.outcome_horizon_learner_turns,
+    appendTraceEvent(target, event) {
+      target.push(event);
+    },
+    observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4,
+  });
+  state.history = [
+    { role: 'assistant', content: 'Which public distinction should we test first?' },
+    { role: 'user', content: 'I still dispute your standing to impose that test.' },
+  ];
+  state.resistanceActionRegisterStudy.consumed = true;
+  state.resistanceActionRegisterStudy.current_semantic_adjudication = null;
+  const selection = { response_configuration: {}, selected_register: 'plain' };
+
+  const unchanged = applyTutorStubResistanceActionRegisterStudyIntervention({
+    selection,
+    state,
+    learnerText: 'I still dispute your standing to impose that test.',
+    classification: { turn: { epistemic_stance: 'resistant' } },
+    tutorLearnerDag: { model: { turn: 2 } },
+    semanticAdjudication: null,
+  });
+
+  assert.equal(unchanged, selection);
+  assert.equal(state.resistanceActionRegisterStudy.history.at(-1).status, 'not_applied');
+  assert.ok(state.resistanceActionRegisterStudy.history.at(-1).reasons.includes('study_intervention_already_consumed'));
+});
+
 test('B1 edged assignments compile through the actual move mapping and suppress to plain under protected affect', () => {
   const loaded = load(B1_PATH);
   const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded.design);
