@@ -118,6 +118,10 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     throw new Error(`unsupported automated-learner observation semantics: ${requestedObservationSemantics}`);
   }
   const observationSemantics = requestedObservationSemantics || RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2;
+  const markerObservationSemantics =
+    observationSemantics === TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3
+      ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9
+      : observationSemantics;
   const semanticAdjudicators =
     typeof resolveModel === 'function'
       ? createTutorStubResistanceSemanticAdjudicationComposition({
@@ -198,7 +202,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       learnerText: turn?.learner,
       classification: turn?.classification,
       tutorText,
-      semantics: observationSemantics,
+      semantics: markerObservationSemantics,
     });
     const fields = {
       requestType: classifier.request_type,
