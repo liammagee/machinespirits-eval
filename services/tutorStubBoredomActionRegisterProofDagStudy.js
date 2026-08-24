@@ -118,6 +118,7 @@ export function throwTutorStubBoredomProofDagAdherenceExhaustion({ repairAttempt
   error.profile = 'bored';
   error.repairAttempts = repairAttempts;
   error.disposition = 'substantive_boredom_trigger_nonadherence_stop_no_replacement';
+  error.substantiveStudyFailure = true;
   error.publishPublicCandidate = false;
   throw error;
 }
