@@ -62,6 +62,7 @@ import {
   classifyFrameRefuserAdherenceExhaustion,
   resistantLearnerObservationMarkers,
 } from './resistantLearnerObservation.js';
+import { buildTutorStubRivalLearnerDagTurnRecord, tutorStubRivalDagTurnDirective } from './tutorStubRivalLearnerDag.js';
 export {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
   FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
@@ -388,6 +389,8 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     return [
       automatedLearnerProfileRuntime({ state, profile, turnNumber }),
       '',
+      tutorStubRivalDagTurnDirective({ state }),
+      state.privateRivalLearnerDag ? '' : null,
       guarded ? guardedLearnerMoveDirective(guarded.move) : null,
       guarded ? '' : null,
       '# Public scene',
@@ -443,9 +446,20 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         historyTurns: state.historyTurns,
       });
     const raw = await call();
+    const text = applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(raw.text));
     return {
       ...raw,
-      text: applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(raw.text)),
+      text,
+      ...(state.privateRivalLearnerDag
+        ? {
+            rivalLearnerDagTurn: buildTutorStubRivalLearnerDagTurnRecord({
+              dag: state.privateRivalLearnerDag,
+              history: state.history,
+              learnerText: text,
+              turn: turnNumber,
+            }),
+          }
+        : {}),
       promptSnapshot: {
         systemPrompt,
         userPrompt: prompt,
@@ -577,11 +591,11 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
     const frameOpportunityV4Profile =
       boundedFrameOpportunitySemantics && ['frame_refuser', 'frame_defiant'].includes(runtime?.profileId);
-    // The prospective R1 instrument fixes the frame-refuser voice at the
-    // trigger, then expressly permits three epistemic paths after the tutor's
-    // bounded test. Reapplying the legacy frame-refuser adherence gate after
-    // that intervention would pin every valid learner draw back to refusal and
-    // make the registered ladder structurally impossible.
+    // The registered R1 instruments fix the frame-refuser voice at the trigger,
+    // then expressly permit their registered epistemic paths after the tutor's
+    // bounded test. Reapplying the legacy adherence gate after that intervention
+    // would pin every valid learner draw back to refusal and make either ladder
+    // structurally impossible.
     if (
       state.resistanceActionRegisterStudy?.resistant_learner_calibration === true &&
       state.resistanceActionRegisterStudy?.resistant_learner_study === 'R1' &&
@@ -602,7 +616,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         type: 'auto_learner_profile_adherence_released_after_registered_intervention',
         turn: turnNumber,
         profile: runtime?.profileId || 'frame_refuser',
-        personaContract: 'frame_refuser-r1-v1',
+        personaContract: state.resistanceActionRegisterStudy?.design?.population?.profile || 'frame_refuser-r1-v1',
         voiceConstraintsRemainInPrompt: true,
         epistemicMovementReleased: true,
       });

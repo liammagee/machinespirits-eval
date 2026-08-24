@@ -1169,14 +1169,21 @@ export function compileTutorStubResistanceActionRegisterStudyAssignment(runtime)
   if (!runtime?.enabled) throw new Error('study assignment compilation requires an enabled runtime');
   const move = assignedMove(runtime.registration, runtime.profile, runtime.action_fit);
   const register = assignedRegister(runtime.registration, move, runtime.realization);
+  const overrides = runtime.study_assignment_instruction_overrides || null;
+  const actionInstruction = overrides?.actionInstructions?.[move];
+  const compactActionInstruction = overrides?.compactActionInstructions?.[move];
+  const realizationInstruction = overrides?.registerInstructions?.[runtime.realization];
   return {
     pedagogical_move: move,
     host_action_family: MOVE_TO_HOST_ACTION[move],
     assigned_realization: runtime.realization,
     delivered_register: register,
-    action_instruction: MOVE_INSTRUCTIONS[move],
-    compact_action_instruction: COMPACT_MOVE_INSTRUCTIONS[move],
-    realization_contrast_instruction: REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],
+    action_instruction: actionInstruction || MOVE_INSTRUCTIONS[move],
+    compact_action_instruction: compactActionInstruction || COMPACT_MOVE_INSTRUCTIONS[move],
+    realization_contrast_instruction: realizationInstruction || REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],
+    safety_plain_realization_contrast_instruction:
+      overrides?.registerInstructions?.plain || REALIZATION_CONTRAST_INSTRUCTIONS.plain,
+    instruction_source: overrides ? 'study_design_override' : 'host_default',
     edged_safety_override_supported: ['sarcastic', 'ironic'].includes(register),
   };
 }
@@ -1486,6 +1493,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
     action_instruction: compiledAssignment.action_instruction,
     compact_action_instruction: compiledAssignment.compact_action_instruction,
     realization_contrast_instruction: compiledAssignment.realization_contrast_instruction,
+    safety_plain_realization_contrast_instruction: compiledAssignment.safety_plain_realization_contrast_instruction,
     duration_tutor_turns: 1,
     reverts_after_this_turn: true,
     safety_override: { applied: false, assigned_register: register, delivered_register: register, reason: null },
@@ -1502,7 +1510,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
       // experimental contrast. Preserve the independently selected host part,
       // but rebind its stance-derived realization to the assigned treatment.
       actorial_performance: assignedActorialPerformance(selection.response_configuration, register),
-      study_realization_contrast_instruction: REALIZATION_CONTRAST_INSTRUCTIONS[runtime.realization],
+      study_realization_contrast_instruction: compiledAssignment.realization_contrast_instruction,
       engagement_stance_distribution: assignedDistribution(register),
       selection_reasons: {
         ...(selection.response_configuration?.selection_reasons || {}),
@@ -1564,7 +1572,8 @@ export function applyTutorStubResistanceActionRegisterSafetyOverride(selection, 
     ...selection.response_configuration,
     engagement_stance: 'plain',
     actorial_performance: assignedActorialPerformance(selection.response_configuration, 'plain'),
-    study_realization_contrast_instruction: REALIZATION_CONTRAST_INSTRUCTIONS.plain,
+    study_realization_contrast_instruction:
+      intervention.safety_plain_realization_contrast_instruction || REALIZATION_CONTRAST_INSTRUCTIONS.plain,
     engagement_stance_distribution: assignedDistribution('plain'),
     resistance_action_register_intervention: nextIntervention,
   });

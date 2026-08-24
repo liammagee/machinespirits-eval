@@ -1712,6 +1712,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
             ...(enforced.semanticAdjudication
               ? { resistanceSemanticAdjudication: jsonClone(enforced.semanticAdjudication) }
               : {}),
+            ...(generated.rivalLearnerDagTurn ? { rivalLearnerDagTurn: jsonClone(generated.rivalLearnerDagTurn) } : {}),
           },
         });
         if (state.resistanceActionRegisterStudy?.enabled) {
