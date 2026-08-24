@@ -32,10 +32,10 @@ This proposal does not create the root. A future launch remains one attended pro
 
 ## Review packet
 
-- Implementation commit: `ed9d98afa9bea7f27aab8dc001ddd2b1678f1143`
+- Implementation commit: `c479d8128fc055e91665e0da9595e5d9898725fc`
 - B1 v3 design: `config/tutor-stub-resistant-learner-b1-design.v3.json` — SHA-256 `d80e7e7e26e41a72e175364c17c268e75168de13a41c9adc32882a13ac917502`
 - R1 v3 design: `config/tutor-stub-resistant-learner-r1-design.v3.json` — SHA-256 `6fc375f210998a00fd86a2f247918b7b7222c58eba91269e833a79b6901b986a`
-- B1 trigger registration: `config/tutor-stub-resistant-learner-b1-trigger-registration.v3.json` — SHA-256 `223e8bc5e832a29cec284bafbac3351e626962a7436cc1f4068df55ce8ca4905`
+- B1 trigger registration: `config/tutor-stub-resistant-learner-b1-trigger-registration.v3.json` — SHA-256 `4bdc12a07d6af075d2a5e2ab46c24feee8fc44ad4adab5fdf73b5b449a867c4f`
 - R1 turn-gate registration: `config/tutor-stub-resistant-learner-r1-turn-gate-registration.v3.json` — SHA-256 `39645a785128c2a2142a1002d196ddd008fba5b73189406203f2158e270ce194`
 - Carried-forward endpoint reader registration: `config/tutor-stub-resistant-learner-semantic-registration.v2.json` — SHA-256 `1d0ac9e887ae9e22b4b9976f9721070154a479480971180e316a9a29eb0f30dc`
 
