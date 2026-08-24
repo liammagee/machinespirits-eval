@@ -118,3 +118,19 @@ fresh cap stays 4,806
 cumulative worst case 5,814 (48 prior + 84 two-reader spent + 440 R2 spent + 436 R3 spent + 4,806 fresh)
 
 Operator standing decision: this retained measurement-outcome repair and R4 relaunch remain authorized under the existing signed GO without re-signature.
+
+## R5 reader-envelope transport repair amendment
+
+Repair source commit F5:
+
+`31994d0b11056688b7f4e5819211674f8a9f7cdb`
+
+Fresh create-once R5 destination:
+
+`/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-live/resistant-learner-calibration-gate1-two-reader-r5-2026-08-23`
+
+fresh cap stays 4,806
+
+cumulative worst case 6,636 (48 prior + 84 two-reader spent + 440 R2 spent + 436 R3 spent + 822 R4 spent + 4,806 fresh)
+
+Operator standing decision: this reader-envelope transport repair and R5 relaunch remain authorized under the existing signed GO without re-signature.
