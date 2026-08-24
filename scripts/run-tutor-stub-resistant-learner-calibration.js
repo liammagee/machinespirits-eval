@@ -18,6 +18,7 @@ import {
   summarizeTutorStubResistantLearnerCalibration,
   tutorStubFrameRefuserR1Prompt,
 } from '../services/tutorStubResistantLearnerCalibration.js';
+import { mintTutorStubRivalLearnerDag, tutorStubRivalLearnerDagPrompt } from '../services/tutorStubRivalLearnerDag.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -133,7 +134,7 @@ function readTrace(filePath) {
     .map((line) => JSON.parse(line));
 }
 
-function childSpec({ loaded, job, destination }) {
+export function tutorStubResistantLearnerCalibrationChildSpec({ loaded, job, destination }) {
   const jobRoot = path.join(destination, 'jobs', job.id);
   const traceDir = path.join(jobRoot, 'traces');
   const registeredStudyOutcome = path.join(jobRoot, 'registered-study-outcome.json');
@@ -141,7 +142,14 @@ function childSpec({ loaded, job, destination }) {
   const designPath = path.relative(ROOT, loaded.path);
   const b1 = job.study === 'B1';
   const models = loaded.design.models;
-  const profile = b1 ? 'bored' : tutorStubFrameRefuserR1Prompt(loaded.design);
+  const v2 = loaded.design.schema === 'machinespirits.tutor-stub.resistant-learner-study-design.v2';
+  const rivalDag = v2 ? mintTutorStubRivalLearnerDag({ design: loaded.design, job, root: ROOT }) : null;
+  if (rivalDag) writeOnce(path.join(jobRoot, 'rival-learner-dag.json'), rivalDag);
+  const profile = v2
+    ? tutorStubRivalLearnerDagPrompt({ design: loaded.design, job, root: ROOT })
+    : b1
+      ? 'bored'
+      : tutorStubFrameRefuserR1Prompt(loaded.design);
   return {
     jobRoot,
     traceDir,
@@ -217,7 +225,7 @@ function childSpec({ loaded, job, destination }) {
   };
 }
 
-function runChild(spec) {
+export function runTutorStubResistantLearnerCalibrationChild(spec) {
   return new Promise((resolve) => {
     const stdout = fs.openSync(spec.stdout, 'wx');
     const stderr = fs.openSync(spec.stderr, 'wx');
@@ -235,7 +243,7 @@ function runChild(spec) {
   });
 }
 
-function extractRow({ job, spec, exit }) {
+export function extractTutorStubResistantLearnerCalibrationRow({ job, spec, exit }) {
   const traces = traceFiles(spec.traceDir);
   const trace = traces.length === 1 ? traces[0] : null;
   const events = trace ? readTrace(trace) : [];
@@ -281,7 +289,7 @@ export function tutorStubResistantLearnerCalibrationHaltReason(row) {
   return null;
 }
 
-function studyDryRunReport({ loaded, plan, preflight }) {
+export function tutorStubResistantLearnerStudyDryRunReport({ loaded, plan, preflight }) {
   const jobs = plan.jobs;
   const actionCounts = Object.fromEntries(
     [...new Set(jobs.map((job) => job.action))].map((action) => [
@@ -320,8 +328,8 @@ function studyDryRunReport({ loaded, plan, preflight }) {
   };
 }
 
-function dryRunReport(entries) {
-  const studies = entries.map(studyDryRunReport);
+export function tutorStubResistantLearnerDryRunReport(entries) {
+  const studies = entries.map(tutorStubResistantLearnerStudyDryRunReport);
   return {
     schema: 'machinespirits.tutor-stub.resistant-learner-combined-calibration-dry-run.v1',
     status: 'passed_zero_call',
@@ -370,6 +378,13 @@ async function main() {
     };
   });
   if (
+    entries.some(({ loaded }) => loaded.design.schema === 'machinespirits.tutor-stub.resistant-learner-study-design.v2')
+  ) {
+    throw new Error(
+      'v2 resistant-learner designs require scripts/run-tutor-stub-resistant-learner-calibration-v2.js; the legacy GO-note launcher is v1-only',
+    );
+  }
+  if (
     entries[0].loaded.design.studyId !== 'resistant-learner-b1-authored-pickup' ||
     entries[1].loaded.design.studyId !== 'resistant-learner-r1-graded-engagement'
   ) {
@@ -383,7 +398,7 @@ async function main() {
     0,
   );
   if (values['dry-run']) {
-    process.stdout.write(`${JSON.stringify(dryRunReport(entries), null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify(tutorStubResistantLearnerDryRunReport(entries), null, 2)}\n`);
     return;
   }
   if (
@@ -465,9 +480,9 @@ async function main() {
       const index = cursor;
       cursor += 1;
       const { loaded, job } = queued[index];
-      const spec = childSpec({ loaded, job, destination });
-      const exit = await runChild(spec);
-      const row = extractRow({ job, spec, exit });
+      const spec = tutorStubResistantLearnerCalibrationChildSpec({ loaded, job, destination });
+      const exit = await runTutorStubResistantLearnerCalibrationChild(spec);
+      const row = extractTutorStubResistantLearnerCalibrationRow({ job, spec, exit });
       attempts += row.attempts;
       if (row.attempts > loaded.design.attemptCeilings.maximumReservationsPerDialogue) {
         throw new Error(`job ${job.id} exceeded its per-dialogue attempt ceiling`);

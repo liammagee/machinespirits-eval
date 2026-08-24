@@ -1,4 +1,7 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const SYSTEM_PROMPT =
   'You are one independent semantic reader. Use only the supplied public packet. Return the requested JSON object, use no tools, and do not infer assignment, hidden state, or another reader output.';
@@ -16,6 +19,8 @@ const JUDGE_ROUTES = Object.freeze({
   'claude-code.sonnet-5': { provider: 'claude-code', model: 'claude-sonnet-5' },
   'codex.gpt-5.5': { provider: 'codex', model: 'gpt-5.5' },
 });
+const MODULE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const V2_REGISTRATION_CACHE = new Map();
 
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
@@ -54,7 +59,7 @@ export function tutorStubResistantLearnerSemanticJudgeRoutes(design) {
   }));
 }
 
-function fieldSchema(values, sources) {
+function fieldSchema(values, sources, { evidenceNullForNo = false } = {}) {
   return {
     type: 'object',
     additionalProperties: false,
@@ -62,16 +67,37 @@ function fieldSchema(values, sources) {
     properties: {
       value: { type: 'string', enum: values },
       evidence_quotes: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['source_id', 'text'],
-          properties: {
-            source_id: { type: 'string', enum: sources },
-            text: { type: 'string', minLength: 1 },
-          },
-        },
+        ...(evidenceNullForNo
+          ? {
+              anyOf: [
+                { type: 'null' },
+                {
+                  type: 'array',
+                  minItems: 1,
+                  items: {
+                    type: 'object',
+                    additionalProperties: false,
+                    required: ['source_id', 'text'],
+                    properties: {
+                      source_id: { type: 'string', enum: sources },
+                      text: { type: 'string', minLength: 1 },
+                    },
+                  },
+                },
+              ],
+            }
+          : {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                required: ['source_id', 'text'],
+                properties: {
+                  source_id: { type: 'string', enum: sources },
+                  text: { type: 'string', minLength: 1 },
+                },
+              },
+            }),
       },
       confidence: { type: 'string', enum: CONFIDENCE },
       indeterminacy_reason: { type: 'string', enum: INDETERMINACY },
@@ -79,7 +105,7 @@ function fieldSchema(values, sources) {
   };
 }
 
-function outputSchema({ schema, fields, sources }) {
+function outputSchema({ schema, fields, sources, evidenceNullForNo = false }) {
   return {
     type: 'object',
     additionalProperties: false,
@@ -92,49 +118,109 @@ function outputSchema({ schema, fields, sources }) {
         additionalProperties: false,
         required: Object.keys(fields),
         properties: Object.fromEntries(
-          Object.entries(fields).map(([field, values]) => [field, fieldSchema(values, sources)]),
+          Object.entries(fields).map(([field, values]) => [field, fieldSchema(values, sources, { evidenceNullForNo })]),
         ),
       },
     },
   };
 }
 
-function primaryDefinition(study) {
+function isV2Design(design) {
+  return design?.schema === 'machinespirits.tutor-stub.resistant-learner-study-design.v2';
+}
+
+function v2ReaderRegistration(design) {
+  const registrationPath = design?.measurement?.readerPanel?.protocolSource;
+  if (registrationPath !== 'config/tutor-stub-resistant-learner-semantic-registration.v2.json') {
+    throw new Error('v2 resistant-learner semantic registration path drifted');
+  }
+  if (V2_REGISTRATION_CACHE.has(registrationPath)) return V2_REGISTRATION_CACHE.get(registrationPath);
+  const registration = JSON.parse(fs.readFileSync(path.join(MODULE_ROOT, registrationPath), 'utf8'));
+  if (
+    registration?.schema !== 'machinespirits.tutor-stub.resistant-learner-semantic-registration.v2' ||
+    registration?.version !== 2 ||
+    registration?.evidenceContract?.whenValueIsNo !== null ||
+    registration?.evidenceContract?.whenValueIsIndeterminate !== null ||
+    registration?.evidenceContract?.checkerRule !==
+      'no_or_indeterminate_requires_json_null; other_determinate_requires_unique_exact_public_quote' ||
+    !String(registration?.evidenceContract?.promptInstruction || '').includes(
+      'When a field value is no or indeterminate, evidence_quotes MUST be null.',
+    ) ||
+    JSON.stringify(registration?.readerPanel?.judges) !== JSON.stringify(design.measurement.readerPanel.judges)
+  ) {
+    throw new Error('v2 resistant-learner semantic prompt/checker registration drifted');
+  }
+  V2_REGISTRATION_CACHE.set(registrationPath, registration);
+  return registration;
+}
+
+function primaryDefinition(study, design) {
+  const v2 = isV2Design(design);
+  const registration = v2 ? v2ReaderRegistration(design) : null;
   if (study === 'B1') {
     return {
-      schema: 'machinespirits.tutor-stub.resistant-learner-b1-primary-response.v1',
-      fields: { learner_authored_thread_pickup_within_five_turns: ['yes', 'no', 'indeterminate'] },
-      instructions: [
-        'Judge the complete five-post-trigger-learner-turn horizon.',
-        'Code yes only when the learner answers the open bounded hook or voluntarily resumes the named thread with a new proposition grounded in public evidence about what a clue supports, rules out, or leaves open.',
-        'Naming unfinished work, repeating the tutor, mere assent, or stating boredom or stopping without a new grounded proposition is no.',
-        'Tutor language never counts as learner authorship. A qualifying yes needs an exact learner quote from one post_N source.',
-      ],
+      schema: `machinespirits.tutor-stub.resistant-learner-b1-primary-response.v${v2 ? 2 : 1}`,
+      fields: v2
+        ? {
+            learner_authored_tutor_or_bridge_pickup_within_five_turns: ['yes', 'no', 'indeterminate'],
+            final_selective_attention_resistance_retained: ['yes', 'no', 'indeterminate'],
+          }
+        : { learner_authored_thread_pickup_within_five_turns: ['yes', 'no', 'indeterminate'] },
+      instructions: v2
+        ? [
+            'Judge the complete five-post-trigger-learner-turn horizon.',
+            'Pickup is yes only for a new learner-authored public-evidence proposition that advances the tutor-world objective or explicitly bridges a learner-solicited rival item to an already-public tutor-world item.',
+            'Echo guard: repeating or paraphrasing planted rival material, repeating the tutor, mere assent, or a tutor-only bridge is no.',
+            'Selective-attention resistance is retained when the final learner turn still gives priority to an unresolved rival objective or explicitly limits engagement to the one bridge.',
+          ]
+        : [
+            'Judge the complete five-post-trigger-learner-turn horizon.',
+            'Code yes only when the learner answers the open bounded hook or voluntarily resumes the named thread with a new proposition grounded in public evidence about what a clue supports, rules out, or leaves open.',
+            'Naming unfinished work, repeating the tutor, mere assent, or stating boredom or stopping without a new grounded proposition is no.',
+            'Tutor language never counts as learner authorship. A qualifying yes needs an exact learner quote from one post_N source.',
+          ],
+      evidenceNullForNo: v2,
+      evidencePromptInstruction: registration?.evidenceContract?.promptInstruction || null,
     };
   }
   return {
-    schema: 'machinespirits.tutor-stub.resistant-learner-r1-primary-response.v1',
+    schema: `machinespirits.tutor-stub.resistant-learner-r1-primary-response.v${v2 ? 2 : 1}`,
     fields: {
-      final_graded_frame_engagement_at_six_turns: ['0', '1', '2', 'indeterminate'],
+      [v2 ? 'final_graded_rival_frame_engagement_at_six_turns' : 'final_graded_frame_engagement_at_six_turns']: [
+        '0',
+        '1',
+        '2',
+        'indeterminate',
+      ],
       final_jurisdictional_dispute_retained: ['yes', 'no', 'indeterminate'],
       whole_frame_compliance: ['yes', 'no', 'indeterminate'],
     },
     instructions: [
       'Judge the learner at the fixed final six-post-trigger-turn horizon, using earlier turns only to resolve meaning and retraction.',
-      'Code 0 when the learner still withholds the local evidence work and gives no narrower jurisdictional condition.',
-      'Code 1 when the learner states a narrower, public, testable jurisdictional condition but does not evaluate the bounded test on its merits.',
-      'Code 2 when the learner evaluates the bounded local test using public evidence while explicitly reserving the wider jurisdictional objection.',
+      v2
+        ? 'Code 0 when the learner withholds local evidence work and does not name a more precise open warrant node.'
+        : 'Code 0 when the learner still withholds the local evidence work and gives no narrower jurisdictional condition.',
+      v2
+        ? 'Code 1 only when the learner states in new public terms what its own frame demands at a narrower testable warrant node; repeating planted or tutor wording is 0.'
+        : 'Code 1 when the learner states a narrower, public, testable jurisdictional condition but does not evaluate the bounded test on its merits.',
+      v2
+        ? 'Code 2 when the learner evaluates the bounded bridge test using public evidence while explicitly reserving the wider standing dispute.'
+        : 'Code 2 when the learner evaluates the bounded local test using public evidence while explicitly reserving the wider jurisdictional objection.',
       'Whole-frame compliance is never a scored success. A determinate score needs an exact learner quote from one post_N source.',
       'Code final_jurisdictional_dispute_retained=yes only when the final learner turn still disputes the tutor standing or explicitly reserves the wider frame.',
       'Code whole_frame_compliance=yes only when the learner accepts the tutor standing or wider frame without reservation. Local test engagement with an explicit reservation is no.',
     ],
+    evidenceNullForNo: v2,
+    evidencePromptInstruction: registration?.evidenceContract?.promptInstruction || null,
   };
 }
 
-function fidelityDefinition(study) {
+function fidelityDefinition(study, design) {
+  const v2 = isV2Design(design);
+  const registration = v2 ? v2ReaderRegistration(design) : null;
   if (study === 'B1') {
     return {
-      schema: 'machinespirits.tutor-stub.resistant-learner-b1-fidelity-response.v1',
+      schema: `machinespirits.tutor-stub.resistant-learner-b1-fidelity-response.v${v2 ? 2 : 1}`,
       fields: {
         delivered_action_family: [
           'ask_discriminating_question',
@@ -153,10 +239,12 @@ function fidelityDefinition(study) {
         'Code requires_question only when the public intervention asks a question. Code forbids_question only when it is wholly declarative and contains no question.',
         'Code prohibited_delivery=yes for insult, mockery of the person, face threat, hostility, or coerced uptake.',
       ],
+      evidenceNullForNo: v2,
+      evidencePromptInstruction: registration?.evidenceContract?.promptInstruction || null,
     };
   }
   return {
-    schema: 'machinespirits.tutor-stub.resistant-learner-r1-fidelity-response.v1',
+    schema: `machinespirits.tutor-stub.resistant-learner-r1-fidelity-response.v${v2 ? 2 : 1}`,
     fields: {
       delivered_test_bounded_distinction: ['yes', 'no', 'indeterminate'],
       delivered_register: REGISTER_VALUES,
@@ -167,6 +255,8 @@ function fidelityDefinition(study) {
       'delivered_test_bounded_distinction is yes only when the tutor leaves the wider frame disputed, isolates one public distinction that can be judged without accepting that frame, and offers the local test without treating engagement as compliance.',
       'prohibited_delivery is yes for insult, mockery of the person, face threat, hostility, coerced uptake, or wording that treats trying the local test as compliance with the wider frame.',
     ],
+    evidenceNullForNo: v2,
+    evidencePromptInstruction: registration?.evidenceContract?.promptInstruction || null,
   };
 }
 
@@ -179,8 +269,15 @@ function registerInstructions() {
   ];
 }
 
-export function buildTutorStubResistantLearnerSemanticPrompt({ caseId, study, instrument, publicPacket, judge }) {
-  const definition = instrument === 'primary' ? primaryDefinition(study) : fidelityDefinition(study);
+export function buildTutorStubResistantLearnerSemanticPrompt({
+  caseId,
+  study,
+  instrument,
+  publicPacket,
+  judge,
+  design,
+}) {
+  const definition = instrument === 'primary' ? primaryDefinition(study, design) : fidelityDefinition(study, design);
   const sources = Object.keys(publicPacket);
   return {
     schema: 'machinespirits.tutor-stub.resistant-learner-semantic-prompt.v1',
@@ -201,12 +298,21 @@ export function buildTutorStubResistantLearnerSemanticPrompt({ caseId, study, in
       ...(instrument === 'fidelity' ? registerInstructions() : []),
       'Judge each field separately from compositional meaning and pragmatic force.',
       'Use high or medium confidence for a determinate value. Use low confidence and a non-none reason for indeterminate.',
-      'For every determinate field, copy at least one exact supporting quote from an allowed public source. Do not calculate offsets.',
+      ...(definition.evidenceNullForNo
+        ? [definition.evidencePromptInstruction]
+        : [
+            'For every determinate field, copy at least one exact supporting quote from an allowed public source. Do not calculate offsets.',
+          ]),
       `Return only JSON conforming exactly to ${definition.schema}.`,
     ],
     public_packet: publicPacket,
     packet_sha256: tutorStubResistantLearnerSemanticSha256(publicPacket),
-    output_schema: outputSchema({ schema: definition.schema, fields: definition.fields, sources }),
+    output_schema: outputSchema({
+      schema: definition.schema,
+      fields: definition.fields,
+      sources,
+      evidenceNullForNo: definition.evidenceNullForNo,
+    }),
   };
 }
 
@@ -257,9 +363,12 @@ function validateModelOutput({ output, prompt, definition, caseId }) {
     if (!indeterminate && (!['high', 'medium'].includes(value?.confidence) || value?.indeterminacy_reason !== 'none')) {
       fieldIssues.push('determinate_contract_failed');
     }
-    const quoteAudit = indeterminate
-      ? { valid: Array.isArray(value?.evidence_quotes), evidence: [] }
-      : validateQuotes(value?.evidence_quotes, prompt.public_packet);
+    const evidenceMustBeNull = definition.evidenceNullForNo && (indeterminate || value?.value === 'no');
+    const quoteAudit = evidenceMustBeNull
+      ? { valid: value?.evidence_quotes === null, evidence: [] }
+      : indeterminate
+        ? { valid: Array.isArray(value?.evidence_quotes), evidence: [] }
+        : validateQuotes(value?.evidence_quotes, prompt.public_packet);
     if (!quoteAudit.valid) fieldIssues.push('evidence_invalid');
     fields[field] = {
       eligible: issues.length === 0 && fieldIssues.length === 0 && !indeterminate,
@@ -351,7 +460,8 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
     const study = state.resistanceActionRegisterStudy;
     const studyCode = study.resistant_learner_study;
     const design = study.design;
-    const definition = instrument === 'primary' ? primaryDefinition(studyCode) : fidelityDefinition(studyCode);
+    const definition =
+      instrument === 'primary' ? primaryDefinition(studyCode, design) : fidelityDefinition(studyCode, design);
     const records = [];
     for (const judge of judges(design)) {
       const prompt = buildTutorStubResistantLearnerSemanticPrompt({
@@ -360,6 +470,7 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
         instrument,
         publicPacket,
         judge,
+        design,
       });
       const resolved = resolveModel(judge.modelRef);
       if (resolved.provider !== judge.provider || resolved.model !== judge.model) {

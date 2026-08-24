@@ -22,8 +22,10 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
 } from './tutorStubResistanceSemanticRuntime.js';
 import { compileTutorStubTurnProgressionContract } from './tutorStubTurnProgressionContract.js';
+import { mintTutorStubRivalLearnerDag, tutorStubRivalLearnerDagPrompt } from './tutorStubRivalLearnerDag.js';
 
-const DESIGN_SCHEMA = 'machinespirits.tutor-stub.resistant-learner-study-design.v1';
+const DESIGN_SCHEMA_V1 = 'machinespirits.tutor-stub.resistant-learner-study-design.v1';
+const DESIGN_SCHEMA_V2 = 'machinespirits.tutor-stub.resistant-learner-study-design.v2';
 const B1_ID = 'resistant-learner-b1-authored-pickup';
 const R1_ID = 'resistant-learner-r1-graded-engagement';
 const BOREDOM_TEMPLATE = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json';
@@ -113,10 +115,15 @@ function exactValues(actual, expected) {
 export function validateTutorStubResistantLearnerDesign(design) {
   const issues = [];
   const studyId = design?.studyId;
-  if (design?.schema !== DESIGN_SCHEMA || ![B1_ID, R1_ID].includes(studyId)) {
+  const v1 = design?.schema === DESIGN_SCHEMA_V1;
+  const v2 = design?.schema === DESIGN_SCHEMA_V2;
+  if ((!v1 && !v2) || ![B1_ID, R1_ID].includes(studyId)) {
     issues.push('design identity is unsupported');
   }
-  if (design?.status !== 'prospective_zero_call_design_pending_gate_1_go') {
+  const expectedStatus = v2
+    ? 'prospective_zero_call_design_pending_typed_approval'
+    : 'prospective_zero_call_design_pending_gate_1_go';
+  if (design?.status !== expectedStatus) {
     issues.push('design status drifted');
   }
   if (design?.callAuthority?.grantsModelCalls !== false) issues.push('design must not grant model calls');
@@ -154,57 +161,108 @@ export function validateTutorStubResistantLearnerDesign(design) {
   if (studyId === B1_ID) {
     const actions = design?.factors?.action?.levels || [];
     if (
-      design?.revision !== 4 ||
-      design?.operatorAmendment?.priorDesignSha256 !==
-        '8bd814ed97cc572f11b1b316432c8e2f52db36ca85ae152c668cf48e28260b75' ||
-      design?.operatorAmendment?.outcomeBlind !== true ||
-      design?.supersedes?.priorDesignSha256 !== '03235175002fdab1a28492a809215df8744eba8f1eac25eb99126e786c37d1bb' ||
-      design?.supersedes?.priorDisposition !==
-        'void_technical_route_authorization_mismatch_no_calibration_unit_completed' ||
-      design?.supersedes?.earlierTechnicalStop?.priorDesignSha256 !==
-        'f007fb9ad6be419035a07f2ef8409a233f0b994ae2bf62e827d5c7770945c157' ||
-      design?.supersedes?.reuse !== false ||
-      design?.population?.profile !== 'bored' ||
-      !exactValues(design?.population?.worlds, B1_WORLDS) ||
-      !exactValues(
-        actions.map((row) => row.id),
-        Object.keys(B1_ACTION_LEVEL),
-      ) ||
-      !exactValues(
-        design?.factors?.register?.levels?.map((row) => row.id),
-        REGISTERS,
-      ) ||
-      !exactValues(design?.factors?.register?.runtimeMapping?.edgedByAction, {
-        ask_discriminating_question: 'sarcastic',
-        stage_public_evidence_for_next_step: 'ironic',
-      }) ||
-      design?.population?.outcomeHorizonPostTriggerLearnerTurns !== 5 ||
-      design?.randomization?.masterSeed !== 2026082301
+      v1 &&
+      (design?.revision !== 4 ||
+        design?.operatorAmendment?.priorDesignSha256 !==
+          '8bd814ed97cc572f11b1b316432c8e2f52db36ca85ae152c668cf48e28260b75' ||
+        design?.operatorAmendment?.outcomeBlind !== true ||
+        design?.supersedes?.priorDesignSha256 !== '03235175002fdab1a28492a809215df8744eba8f1eac25eb99126e786c37d1bb' ||
+        design?.supersedes?.priorDisposition !==
+          'void_technical_route_authorization_mismatch_no_calibration_unit_completed' ||
+        design?.supersedes?.earlierTechnicalStop?.priorDesignSha256 !==
+          'f007fb9ad6be419035a07f2ef8409a233f0b994ae2bf62e827d5c7770945c157' ||
+        design?.supersedes?.reuse !== false ||
+        design?.population?.profile !== 'bored' ||
+        !exactValues(design?.population?.worlds, B1_WORLDS) ||
+        !exactValues(
+          actions.map((row) => row.id),
+          Object.keys(B1_ACTION_LEVEL),
+        ) ||
+        !exactValues(
+          design?.factors?.register?.levels?.map((row) => row.id),
+          REGISTERS,
+        ) ||
+        !exactValues(design?.factors?.register?.runtimeMapping?.edgedByAction, {
+          ask_discriminating_question: 'sarcastic',
+          stage_public_evidence_for_next_step: 'ironic',
+        }) ||
+        design?.population?.outcomeHorizonPostTriggerLearnerTurns !== 5 ||
+        design?.randomization?.masterSeed !== 2026082301)
     ) {
       issues.push('B1 population, factors, horizon, or seed drifted');
+    }
+    if (
+      v2 &&
+      (design?.revision !== 1 ||
+        design?.supersedesDesign !== 'config/tutor-stub-resistant-learner-b1-design.v1.json' ||
+        design?.population?.profile !== 'bored-rival-dag-v2' ||
+        design?.population?.baseCompatibilityId !== 'bored' ||
+        !exactValues(design?.population?.worlds, B1_WORLDS) ||
+        !exactValues(
+          actions.map((row) => row.id),
+          Object.keys(B1_ACTION_LEVEL),
+        ) ||
+        !exactValues(
+          design?.factors?.register?.levels?.map((row) => row.id),
+          REGISTERS,
+        ) ||
+        design?.rivalDagPersona?.mechanism !== 'content_rivalry' ||
+        design?.rivalDagPersona?.concessionCondition?.kind !== 'public_tutor_move_bears_on_open_rival_node' ||
+        design?.rivalDagPersona?.concessionCondition?.matchingAlgorithm?.id !== 'normalized_public_token_overlap_v1' ||
+        design?.measurement?.primaryEndpoint?.id !== 'learner_authored_tutor_or_bridge_pickup_within_five_turns' ||
+        design?.measurement?.readerPanel?.protocolSource !==
+          'config/tutor-stub-resistant-learner-semantic-registration.v2.json' ||
+        design?.population?.outcomeHorizonPostTriggerLearnerTurns !== 5 ||
+        design?.randomization?.masterSeed !== 2026082301)
+    ) {
+      issues.push('B1 v2 rival-DAG design drifted');
     }
   }
   if (studyId === R1_ID) {
     if (
-      design?.revision !== 3 ||
-      design?.operatorAmendment?.priorDesignSha256 !==
-        'b0d328594a2a0dc51543b44836e5a5d827955d404572c2b682d36a2d3e97c95e' ||
-      design?.operatorAmendment?.outcomeBlind !== true ||
-      design?.supersedes?.priorDesignSha256 !== '28e961c68c8a7ce989f2b05d7182646f3fd9665a9954e1ebded5efe5239a0946' ||
-      design?.supersedes?.priorDisposition !== 'void_technical_route_authorization_mismatch_r1_not_started' ||
-      design?.supersedes?.reuse !== false ||
-      design?.personaContract?.id !== 'frame_refuser-r1-v1' ||
-      !exactValues(design?.population?.worlds, ['world_005_marrick', 'world_030_rowan_flat']) ||
-      !exactValues(
-        design?.register?.levels?.map((row) => row.id),
-        REGISTERS,
-      ) ||
-      design?.register?.runtimeMapping?.edged !== 'ironic' ||
-      design?.intervention?.action !== 'test_bounded_distinction' ||
-      design?.population?.outcomeHorizonPostTriggerLearnerTurns !== 6 ||
-      design?.randomization?.masterSeed !== 2026082302
+      v1 &&
+      (design?.revision !== 3 ||
+        design?.operatorAmendment?.priorDesignSha256 !==
+          'b0d328594a2a0dc51543b44836e5a5d827955d404572c2b682d36a2d3e97c95e' ||
+        design?.operatorAmendment?.outcomeBlind !== true ||
+        design?.supersedes?.priorDesignSha256 !== '28e961c68c8a7ce989f2b05d7182646f3fd9665a9954e1ebded5efe5239a0946' ||
+        design?.supersedes?.priorDisposition !== 'void_technical_route_authorization_mismatch_r1_not_started' ||
+        design?.supersedes?.reuse !== false ||
+        design?.personaContract?.id !== 'frame_refuser-r1-v1' ||
+        !exactValues(design?.population?.worlds, ['world_005_marrick', 'world_030_rowan_flat']) ||
+        !exactValues(
+          design?.register?.levels?.map((row) => row.id),
+          REGISTERS,
+        ) ||
+        design?.register?.runtimeMapping?.edged !== 'ironic' ||
+        design?.intervention?.action !== 'test_bounded_distinction' ||
+        design?.population?.outcomeHorizonPostTriggerLearnerTurns !== 6 ||
+        design?.randomization?.masterSeed !== 2026082302)
     ) {
       issues.push('R1 persona, worlds, intervention, horizon, or seed drifted');
+    }
+    if (
+      v2 &&
+      (design?.revision !== 1 ||
+        design?.supersedesDesign !== 'config/tutor-stub-resistant-learner-r1-design.v1.json' ||
+        design?.population?.profile !== 'frame_refuser-r1-rival-dag-v2' ||
+        design?.population?.baseCompatibilityId !== 'frame_refuser' ||
+        !exactValues(design?.population?.worlds, ['world_005_marrick', 'world_030_rowan_flat']) ||
+        !exactValues(
+          design?.register?.levels?.map((row) => row.id),
+          REGISTERS,
+        ) ||
+        design?.rivalDagPersona?.mechanism !== 'standing_rivalry' ||
+        design?.rivalDagPersona?.concessionCondition?.kind !== 'public_tutor_move_bears_on_open_rival_node' ||
+        design?.rivalDagPersona?.concessionCondition?.matchingAlgorithm?.id !== 'normalized_public_token_overlap_v1' ||
+        design?.intervention?.action !== 'test_bounded_distinction' ||
+        design?.measurement?.primaryEndpoint?.id !== 'final_graded_rival_frame_engagement_at_six_turns' ||
+        design?.measurement?.readerPanel?.protocolSource !==
+          'config/tutor-stub-resistant-learner-semantic-registration.v2.json' ||
+        design?.population?.outcomeHorizonPostTriggerLearnerTurns !== 6 ||
+        design?.randomization?.masterSeed !== 2026082302)
+    ) {
+      issues.push('R1 v2 rival-DAG design drifted');
     }
   }
   return { valid: issues.length === 0, issues };
@@ -357,6 +415,12 @@ function configureB1({ state, root, loaded, plan, job, appendTraceEvent }) {
     design_sha256: loaded.sha256,
     assignment_index: job.assignment_index,
   });
+  if (loaded.design.schema === DESIGN_SCHEMA_V2) {
+    state.resistanceActionRegisterStudy.study_assignment_instruction_overrides = structuredClone(
+      loaded.design.tutorDeliveryContract,
+    );
+    state.privateRivalLearnerDag = mintTutorStubRivalLearnerDag({ design: loaded.design, job, root });
+  }
 }
 
 function configureR1({ state, root, loaded, job, appendTraceEvent }) {
@@ -400,7 +464,13 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     maximum_trigger_turn: 2,
     outcome_horizon_learner_turns: 6,
     final_learner_without_tutor_reply: true,
+    ...(loaded.design.schema === DESIGN_SCHEMA_V2
+      ? { study_assignment_instruction_overrides: structuredClone(loaded.design.tutorDeliveryContract) }
+      : {}),
   };
+  if (loaded.design.schema === DESIGN_SCHEMA_V2) {
+    state.privateRivalLearnerDag = mintTutorStubRivalLearnerDag({ design: loaded.design, job, root });
+  }
   appendTraceEvent(state.trace, {
     type: 'resistant_learner_calibration_execution_start',
     study: 'R1',
@@ -412,7 +482,7 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     designPath: path.relative(root, loaded.path),
     designSha256: loaded.sha256,
     treatment: {
-      profile: 'frame_refuser-r1-v1',
+      profile: loaded.design.schema === DESIGN_SCHEMA_V2 ? loaded.design.population.profile : 'frame_refuser-r1-v1',
       action: job.action,
       host_action_family: job.host_action_family,
       register: job.register,
@@ -542,6 +612,7 @@ function auditRuntimeWorldRegistry(worlds, root) {
 export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root = process.cwd() } = {}) {
   const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded?.design);
   const b1 = loaded.design.studyId === B1_ID;
+  const v2 = loaded.design.schema === DESIGN_SCHEMA_V2;
   const worldRegistry = auditRuntimeWorldRegistry(loaded.design.population.worlds, root);
   const runtimeModelRoutes = tutorStubResistantLearnerRuntimeModelRoutes(loaded.design);
   const modelRoute = {
@@ -550,27 +621,48 @@ export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root 
     passed: exactValues(loaded.design.models, runtimeModelRoutes),
   };
   const selectedJobs = b1
-    ? REGISTERS.flatMap((register) =>
-        Object.keys(B1_ACTION_LEVEL).map((action) =>
-          plan.jobs.find((job) => job.register === register && job.action === action),
-        ),
-      )
+    ? v2
+      ? loaded.design.population.worlds.flatMap((world) =>
+          REGISTERS.flatMap((register) =>
+            Object.keys(B1_ACTION_LEVEL).map((action) => {
+              const configurationJob = plan.jobs.find((job) => job.register === register && job.action === action);
+              return {
+                configurationJob,
+                auditJob: {
+                  ...configurationJob,
+                  id: `B1-compile-${world}-${register}-${action}`,
+                  world,
+                },
+              };
+            }),
+          ),
+        )
+      : REGISTERS.flatMap((register) =>
+          Object.keys(B1_ACTION_LEVEL).map((action) => {
+            const job = plan.jobs.find((candidate) => candidate.register === register && candidate.action === action);
+            return { configurationJob: job, auditJob: job };
+          }),
+        )
     : loaded.design.population.worlds.flatMap((world) =>
-        REGISTERS.map((register) => plan.jobs.find((job) => job.world === world && job.register === register)),
+        REGISTERS.map((register) => {
+          const job = plan.jobs.find((candidate) => candidate.world === world && candidate.register === register);
+          return { configurationJob: job, auditJob: job };
+        }),
       );
-  const personaPrompt = b1 ? null : tutorStubFrameRefuserR1Prompt(loaded.design);
-  const personaLines = b1
-    ? []
-    : [
-        ...loaded.design.personaContract.voice,
-        ...loaded.design.personaContract.initialState,
-        ...loaded.design.personaContract.afterBoundedLocalTest,
-        loaded.design.personaContract.epistemicFreedom,
-        ...loaded.design.personaContract.publicTurnRules,
-      ];
+  const personaLines =
+    b1 || v2
+      ? []
+      : [
+          ...loaded.design.personaContract.voice,
+          ...loaded.design.personaContract.initialState,
+          ...loaded.design.personaContract.afterBoundedLocalTest,
+          loaded.design.personaContract.epistemicFreedom,
+          ...loaded.design.personaContract.publicTurnRules,
+        ];
   const rows = [];
-  for (const job of selectedJobs) {
+  for (const { configurationJob, auditJob } of selectedJobs) {
     for (const scene of ['bare', 'due_clue']) {
+      const job = configurationJob;
       const state = {
         trace: [],
         turns: [],
@@ -591,6 +683,12 @@ export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root 
         ? action.deliveredContrastRule === 'requires_question'
         : progression.handoff_contract.question_allowed;
       const safety = safetyOverrideProbe(compiled);
+      const rivalDag = v2 ? mintTutorStubRivalLearnerDag({ design: loaded.design, job: auditJob, root }) : null;
+      const personaPrompt = v2
+        ? tutorStubRivalLearnerDagPrompt({ design: loaded.design, job: auditJob, root })
+        : b1
+          ? null
+          : tutorStubFrameRefuserR1Prompt(loaded.design);
       const issues = [];
       if (compiled.pedagogical_move !== job.action) issues.push('pedagogical_move_drift');
       if (compiled.assigned_realization !== job.register) issues.push('assigned_realization_drift');
@@ -603,15 +701,38 @@ export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root 
         issues.push('question_permission_drift');
       }
       if (!b1 && !/reject the wider frame/iu.test(compiled.action_instruction)) {
-        issues.push('non_compliance_wording_missing');
+        if (!v2 || !/wider frame disputed|wider frame/iu.test(compiled.action_instruction)) {
+          issues.push('non_compliance_wording_missing');
+        }
       }
       if (!safety.passed) issues.push('protected_affect_guard_failed');
-      if (!b1 && !personaLines.every((line) => personaPrompt.includes(line))) {
+      if (!b1 && !v2 && !personaLines.every((line) => personaPrompt.includes(line))) {
         issues.push('persona_prompt_line_missing');
+      }
+      if (v2 && compiled.instruction_source !== 'study_design_override') {
+        issues.push('v2_delivery_contract_not_compiled');
+      }
+      if (v2 && b1 && job.action === 'ask_discriminating_question') {
+        if (!/exactly one/iu.test(compiled.action_instruction) || !/whether/iu.test(compiled.action_instruction)) {
+          issues.push('discriminating_question_contract_incomplete');
+        }
+      }
+      if (v2 && b1 && job.action === 'stage_public_evidence_for_next_step') {
+        if (!/declarative/iu.test(compiled.action_instruction) || !/no question/iu.test(compiled.action_instruction)) {
+          issues.push('no_question_contract_incomplete');
+        }
+      }
+      if (v2 && job.register === 'plain') {
+        if (!/concise neutral/iu.test(compiled.realization_contrast_instruction)) {
+          issues.push('plain_register_contract_incomplete');
+        }
+      }
+      if (v2 && (!rivalDag || !personaPrompt.includes(rivalDag.sha256))) {
+        issues.push('rival_dag_prompt_binding_failed');
       }
       rows.push({
         study: b1 ? 'B1' : 'R1',
-        world: job.world,
+        world: auditJob.world,
         action: job.action,
         assigned_register: job.register,
         scene,
@@ -619,6 +740,7 @@ export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root 
         question_allowed: progression.handoff_contract.question_allowed,
         safety,
         persona_prompt_sha256: personaPrompt ? sha256(personaPrompt) : null,
+        rival_dag_sha256: rivalDag?.sha256 || null,
         issues,
         passed: issues.length === 0,
       });
@@ -629,7 +751,7 @@ export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root 
     study: b1 ? 'B1' : 'R1',
     status:
       worldRegistry.passed && modelRoute.passed && rows.every((row) => row.passed) ? 'passed_zero_call' : 'failed',
-    expected_rows: 12,
+    expected_rows: b1 && v2 ? 72 : 12,
     world_registry: worldRegistry,
     model_route: modelRoute,
     rows,
@@ -648,10 +770,14 @@ function readerField(row, instrument, readerId, field) {
 
 function agreementSummary(rows, design) {
   const study = design.studyId === B1_ID ? 'B1' : 'R1';
+  const v2 = design.schema === DESIGN_SCHEMA_V2;
+  const primaryEndpoint = design.measurement.primaryEndpoint.id;
   const definitions =
     study === 'B1'
       ? {
-          primary: ['learner_authored_thread_pickup_within_five_turns'],
+          primary: v2
+            ? [primaryEndpoint, 'final_selective_attention_resistance_retained']
+            : ['learner_authored_thread_pickup_within_five_turns'],
           fidelity: [
             'delivered_action_family',
             'delivered_question_contrast',
@@ -660,11 +786,7 @@ function agreementSummary(rows, design) {
           ],
         }
       : {
-          primary: [
-            'final_graded_frame_engagement_at_six_turns',
-            'final_jurisdictional_dispute_retained',
-            'whole_frame_compliance',
-          ],
+          primary: [primaryEndpoint, 'final_jurisdictional_dispute_retained', 'whole_frame_compliance'],
           fidelity: ['delivered_test_bounded_distinction', 'delivered_register', 'prohibited_delivery'],
         };
   const readerIds = design.models.finalSemanticReaders.map((reader) => reader.id);
@@ -706,22 +828,47 @@ function agreementSummary(rows, design) {
     }
   }
   const rules = design.calibration.readerAgreementRules;
+  const seatMinimum = v2
+    ? Math.max(
+        Number(rules.minimumEligibleVotesFloor),
+        Math.ceil(rows.length * Number(rules.minimumEligibleVoteRatePerSeatAndInstrument)),
+      )
+    : 16;
+  const jointMinimum = v2
+    ? Math.max(
+        Number(rules.minimumJointlyEligibleCasesFloor),
+        Math.ceil(rows.length * Number(rules.minimumJointlyEligibleRatePerField)),
+      )
+    : Number(rules.minimumJointlyEligibleCasesPerSeatPairAndField);
   const passed =
-    Object.values(seatEligibility).every((seat) => seat.primary >= 16 && seat.fidelity >= 16) &&
+    Object.values(seatEligibility).every((seat) => seat.primary >= seatMinimum && seat.fidelity >= seatMinimum) &&
     pairs.every(
       (pair) =>
-        pair.jointly_eligible >= rules.minimumJointlyEligibleCasesPerSeatPairAndField &&
+        pair.jointly_eligible >= jointMinimum &&
         pair.conditional_exact_agreement >= rules.minimumConditionalExactAgreementPerSeatPairAndField,
     );
-  return { seat_eligibility: seatEligibility, pairs, passed };
+  return {
+    denominator: v2 ? 'completed_rows' : 'registered_18_rows',
+    completed_rows: rows.length,
+    minimum_eligible_votes_per_seat_and_instrument: seatMinimum,
+    minimum_jointly_eligible_cases_per_field: jointMinimum,
+    seat_eligibility: seatEligibility,
+    pairs,
+    passed,
+  };
 }
 
 function countBy(rows, key, values) {
   return Object.fromEntries(values.map((value) => [value, rows.filter((row) => row?.job?.[key] === value).length]));
 }
 
+function rateFloorCount(total, rate, floor = 0) {
+  return Math.max(Number(floor || 0), Math.ceil(total * Number(rate || 0)));
+}
+
 export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) {
   const study = design.studyId === B1_ID ? 'B1' : 'R1';
+  const v2 = design.schema === DESIGN_SCHEMA_V2;
   const completed = rows.filter((row) => row.status === 'complete');
   const retainedSubstantiveFailures = rows.filter((row) => row.status === 'retained_substantive_failure');
   const executed = completed.length + retainedSubstantiveFailures.length;
@@ -730,7 +877,7 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) 
   let statistics;
   let gates;
   if (study === 'B1') {
-    const outcomeField = 'learner_authored_thread_pickup_within_five_turns';
+    const outcomeField = design.measurement.primaryEndpoint.id;
     const determinate = completed.filter((row) => panelField(row, 'primary', outcomeField)?.status === 'determinate');
     const yes = determinate.filter((row) => panelField(row, 'primary', outcomeField).value === 'yes');
     const no = determinate.filter((row) => panelField(row, 'primary', outcomeField).value === 'no');
@@ -759,11 +906,46 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) 
         ];
       }),
     );
+    const determinateFidelity = completed.filter((row) => row.outcome?.fidelity?.status === 'determinate');
+    const resistanceRetained = v2
+      ? completed.filter(
+          (row) => panelField(row, 'primary', 'final_selective_attention_resistance_retained')?.value === 'yes',
+        ).length
+      : null;
+    const v2Rules = design.calibration;
+    const determinateMinimum = v2
+      ? rateFloorCount(
+          completed.length,
+          v2Rules.channelAliveRules.minimumDeterminateOutcomeRate,
+          v2Rules.channelAliveRules.minimumDeterminateOutcomeFloor,
+        )
+      : 16;
+    const fidelityMinimum = v2
+      ? rateFloorCount(completed.length, v2Rules.fidelityRules.minimumDeterminatePanelRateOnCompletedRows)
+      : 16;
+    const resistanceMinimum = v2
+      ? rateFloorCount(
+          completed.length,
+          v2Rules.personaRules.minimumResistanceRetainedRateOnCompletedRows,
+          v2Rules.personaRules.minimumResistanceRetainedFloor,
+        )
+      : null;
     gates = {
       execution_complete: executed === 18,
-      channel_alive: determinate.length >= 16 && yes.length >= 3 && no.length >= 3,
-      action_and_question_fidelity: Object.values(actionFidelity).every((value) => value.correct >= 8),
-      register_fidelity: Object.values(registerFidelity).every((value) => value.correct >= 5),
+      channel_alive: determinate.length >= determinateMinimum && yes.length >= 3 && no.length >= 3,
+      ...(v2 ? { persona_fidelity: resistanceRetained >= resistanceMinimum } : {}),
+      action_and_question_fidelity: Object.values(actionFidelity).every((value) =>
+        v2
+          ? value.correct >=
+            rateFloorCount(value.assigned, v2Rules.fidelityRules.minimumCorrectActionAndQuestionContrastRatePerAction)
+          : value.correct >= 8,
+      ),
+      register_fidelity: Object.values(registerFidelity).every((value) =>
+        v2
+          ? value.correct >= rateFloorCount(value.assigned, v2Rules.fidelityRules.minimumCorrectRegisterRatePerRegister)
+          : value.correct >= 5,
+      ),
+      ...(v2 ? { fidelity_panels: determinateFidelity.length >= fidelityMinimum } : {}),
       reader_agreement: agreement.passed,
       safety: prohibited.length === 0,
     };
@@ -771,11 +953,19 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) 
       determinate: determinate.length,
       pickup_yes: yes.length,
       pickup_no: no.length,
+      ...(v2
+        ? {
+            selective_attention_resistance_retained: resistanceRetained,
+            completed_rows_denominator: completed.length,
+            determinate_minimum: determinateMinimum,
+            resistance_minimum: resistanceMinimum,
+          }
+        : {}),
       action_fidelity: actionFidelity,
       register_fidelity: registerFidelity,
     };
   } else {
-    const outcomeField = 'final_graded_frame_engagement_at_six_turns';
+    const outcomeField = design.measurement.primaryEndpoint.id;
     const determinate = completed.filter((row) => panelField(row, 'primary', outcomeField)?.status === 'determinate');
     const scores = Object.fromEntries(
       ['0', '1', '2'].map((score) => [
@@ -814,18 +1004,57 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) 
         ];
       }),
     );
+    const determinateFidelity = completed.filter((row) => row.outcome?.fidelity?.status === 'determinate');
+    const v2Rules = design.calibration;
+    const determinateMinimum = v2
+      ? rateFloorCount(
+          completed.length,
+          v2Rules.channelAliveRules.minimumDeterminateOutcomeRate,
+          v2Rules.channelAliveRules.minimumDeterminateOutcomeFloor,
+        )
+      : 16;
+    const jurisdictionMinimum = v2
+      ? rateFloorCount(
+          completed.length,
+          v2Rules.personaRules.minimumJurisdictionRetainedRateOnCompletedRows,
+          v2Rules.personaRules.minimumJurisdictionRetainedFloor,
+        )
+      : 16;
+    const fidelityMinimum = v2
+      ? rateFloorCount(completed.length, v2Rules.fidelityRules.minimumDeterminatePanelRateOnCompletedRows)
+      : 16;
+    const score2Rows = determinate.filter((row) => panelField(row, 'primary', outcomeField).value === '2');
+    const everyScore2Retains = score2Rows.every(
+      (row) => panelField(row, 'primary', 'final_jurisdictional_dispute_retained')?.value === 'yes',
+    );
     gates = {
       execution_complete: executed === 18,
       channel_alive:
-        determinate.length >= 16 &&
+        determinate.length >= determinateMinimum &&
         scores['0'] >= 2 &&
         scores['1'] >= 2 &&
         scores['2'] >= 2 &&
         Object.values(successByWorld).every((count) => count >= 1),
-      persona_fidelity: jurisdictionRetained >= 16 && wholeFrameCompliance === 0,
+      persona_fidelity:
+        jurisdictionRetained >= jurisdictionMinimum && wholeFrameCompliance === 0 && (!v2 || everyScore2Retains),
       action_fidelity:
-        actionCorrect.length >= 16 && design.population.worlds.every((world) => actionByWorld[world] >= 8),
-      register_fidelity: Object.values(registerFidelity).every((value) => value.correct >= 5),
+        (v2
+          ? actionCorrect.length >=
+            rateFloorCount(completed.length, v2Rules.fidelityRules.minimumCorrectMatchedActionRate)
+          : actionCorrect.length >= 16) &&
+        design.population.worlds.every((world) => {
+          const assigned = completed.filter((row) => row.job.world === world).length;
+          return v2
+            ? actionByWorld[world] >=
+                rateFloorCount(assigned, v2Rules.fidelityRules.minimumCorrectMatchedActionRatePerWorld)
+            : actionByWorld[world] >= 8;
+        }),
+      register_fidelity: Object.values(registerFidelity).every((value) =>
+        v2
+          ? value.correct >= rateFloorCount(value.assigned, v2Rules.fidelityRules.minimumCorrectRegisterRatePerRegister)
+          : value.correct >= 5,
+      ),
+      ...(v2 ? { fidelity_panels: determinateFidelity.length >= fidelityMinimum } : {}),
       reader_agreement: agreement.passed,
       safety: prohibited.length === 0,
     };
@@ -839,6 +1068,14 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) 
       action_correct: actionCorrect.length,
       action_correct_by_world: actionByWorld,
       register_fidelity: registerFidelity,
+      ...(v2
+        ? {
+            completed_rows_denominator: completed.length,
+            determinate_minimum: determinateMinimum,
+            jurisdiction_minimum: jurisdictionMinimum,
+            every_score_2_retains_wider_frame: everyScore2Retains,
+          }
+        : {}),
     };
   }
   return {

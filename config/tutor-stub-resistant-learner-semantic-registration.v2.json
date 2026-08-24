@@ -1,0 +1,29 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-learner-semantic-registration.v2",
+  "version": 2,
+  "status": "prospective_zero_call_registration",
+  "workplanItem": "resistant-learner-strategy-close",
+  "appliesToDesignSchemas": ["machinespirits.tutor-stub.resistant-learner-study-design.v2"],
+  "readerPanel": {
+    "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
+    "effort": "low",
+    "consensus": "both valid medium/high-confidence votes agree per field; otherwise measurement_indeterminate",
+    "repairRerunReplacementOrSelectionAllowed": false,
+    "generatorExcluded": "codex.gpt-5.6-luna"
+  },
+  "evidenceContract": {
+    "fieldProperty": "evidence_quotes",
+    "whenValueIsNo": null,
+    "whenValueIsIndeterminate": null,
+    "whenOtherDeterminate": "non-empty array of exact quotes from allowed public sources",
+    "promptInstruction": "When a field value is no or indeterminate, evidence_quotes MUST be null. For every other determinate value, copy at least one exact supporting public quote. Do not calculate offsets.",
+    "checkerRule": "no_or_indeterminate_requires_json_null; other_determinate_requires_unique_exact_public_quote"
+  },
+  "visibility": {
+    "publicTranscriptOnly": true,
+    "assignmentVisible": false,
+    "rivalDagVisible": false,
+    "generatorAnalysisVisible": false,
+    "otherReaderOutputVisible": false
+  }
+}
