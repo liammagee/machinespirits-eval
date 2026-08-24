@@ -775,10 +775,7 @@ test('Gate 1c observation names keep their v3 adjudicator routes instead of fall
   const standingRegistration = loadTutorStubResistanceSemanticRegistration(
     TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3,
   );
-  assert.equal(
-    standingRegistration.registration.observationSemantics,
-    TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
-  );
+  assert.equal(standingRegistration.registration.observationSemantics, TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3);
 
   const factory = selectTutorStubBoredomSemanticAdjudicatorFactory({
     args: { 'resistant-learner-calibration-design': B1_V3_PATH },
