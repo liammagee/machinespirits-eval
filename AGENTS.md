@@ -471,6 +471,9 @@ cd docs/research && ./build.sh paper2
 # Run tests
 npm test
 
+# Lint - the CI lint lane (eslint + import cycles + prettier); run before any push
+npm run lint:all
+
 # Hermetic test run (isolated tmp DB + logs)
 npm run test:hermetic
 

@@ -418,6 +418,7 @@ npm run test:hermetic
 # Lint
 npm run lint        # check
 npm run lint:fix    # auto-fix
+npm run lint:all    # the CI lint lane (eslint + import cycles + prettier) - run before any push
 
 # Adaptive cell smoke (no paid API calls)
 ADAPTIVE_TUTOR_LLM=mock node scripts/run-adaptive-cell-smoke.js
