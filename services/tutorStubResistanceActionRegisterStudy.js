@@ -1356,7 +1356,11 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
     semanticDisposition &&
     ![licensedSemanticDisposition, 'measurement_indeterminate'].includes(semanticDisposition)
   ) {
-    reasons.push(`semantic_trigger_not_observed:${semanticDisposition}`);
+    reasons.push(
+      rivalAttention
+        ? `semantic_trigger_not_observed:${semanticDisposition}`
+        : `semantic_no_actionable_boredom:${semanticDisposition}`,
+    );
   }
   if (shadow.warrant.status !== 'licensed') reasons.push('no_single_axis_public_warrant');
   if (shadow.resistance_kind && shadow.resistance_kind !== runtime.profile) {
