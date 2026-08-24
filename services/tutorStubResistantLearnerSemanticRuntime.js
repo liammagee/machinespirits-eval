@@ -431,7 +431,7 @@ function panel({ caseId, instrument, definition, records }) {
   };
 }
 
-function finalHorizonPacket(state, learnerText) {
+export function buildTutorStubResistantLearnerFinalHorizonPacket(state, learnerText) {
   const study = state.resistanceActionRegisterStudy;
   const triggerTurn = Number(study.trigger_turn);
   const horizon = Number(study.outcome_horizon_learner_turns);
@@ -460,7 +460,7 @@ function parseOutput(text) {
 }
 
 export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEvent, callPromptModel, resolveModel }) {
-  async function callPanel({ state, turnNumber, instrument, publicPacket, signal }) {
+  async function callPanel({ state, turnNumber, instrument, publicPacket, signal, throwOnReaderError = false }) {
     const study = state.resistanceActionRegisterStudy;
     const studyCode = study.resistant_learner_study;
     const design = study.design;
@@ -483,6 +483,7 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
       let raw = null;
       let record = null;
       let invalidReason = null;
+      let readerError = null;
       const independentRunId = crypto.randomUUID();
       try {
         raw = await callPromptModel({
@@ -534,6 +535,7 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
       } catch (error) {
         if (signal?.aborted || error?.name === 'AbortError') throw error;
         invalidReason = error.message;
+        readerError = error;
       }
       appendTraceEvent(state.trace, {
         type: 'resistant_learner_semantic_reader_result',
@@ -550,15 +552,35 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
         record,
         publicTranscriptChanged: false,
       });
+      if (readerError && throwOnReaderError) throw readerError;
     }
     return panel({ caseId: study.job_id, instrument, definition, records });
+  }
+
+  async function adjudicatePrimaryPanel({
+    state,
+    turnNumber,
+    publicPacket,
+    signal = null,
+    throwOnReaderError = false,
+  }) {
+    const study = state?.resistanceActionRegisterStudy;
+    if (study?.resistant_learner_calibration !== true) return null;
+    return callPanel({
+      state,
+      turnNumber,
+      instrument: 'primary',
+      publicPacket,
+      signal,
+      throwOnReaderError,
+    });
   }
 
   async function adjudicateFinalHorizon({ state, turnNumber, learnerText, signal = null }) {
     const study = state?.resistanceActionRegisterStudy;
     if (study?.resistant_learner_calibration !== true) return null;
-    const publicPacket = finalHorizonPacket(state, learnerText);
-    const primary = await callPanel({ state, turnNumber, instrument: 'primary', publicPacket, signal });
+    const publicPacket = buildTutorStubResistantLearnerFinalHorizonPacket(state, learnerText);
+    const primary = await adjudicatePrimaryPanel({ state, turnNumber, publicPacket, signal });
     const fidelity = await callPanel({
       state,
       turnNumber,
@@ -590,7 +612,11 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
     return result;
   }
 
-  return { adjudicateFinalHorizon };
+  return { adjudicateFinalHorizon, adjudicatePrimaryPanel };
 }
 
-export default { buildTutorStubResistantLearnerSemanticPrompt, createTutorStubResistantLearnerSemanticRuntime };
+export default {
+  buildTutorStubResistantLearnerFinalHorizonPacket,
+  buildTutorStubResistantLearnerSemanticPrompt,
+  createTutorStubResistantLearnerSemanticRuntime,
+};
