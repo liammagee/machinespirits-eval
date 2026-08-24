@@ -29,8 +29,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const TUTOR_STUB_RESISTANT_LEARNER_PROTOCOL_V2_USAGE = `Usage:
   node scripts/run-tutor-stub-resistant-learner-calibration-v2.js \\
-    --b1-design config/tutor-stub-resistant-learner-b1-design.v2.json \\
-    --r1-design config/tutor-stub-resistant-learner-r1-design.v2.json \\
+    --b1-design config/tutor-stub-resistant-learner-b1-design.v3.json \\
+    --r1-design config/tutor-stub-resistant-learner-r1-design.v3.json \\
     --destination /absolute/create-once/run-root \\
     [--parallelism 4] [--dry-run] [--signed-by "Operator Name"]
 
@@ -210,7 +210,7 @@ export async function main(argv = process.argv.slice(2)) {
   }
   if (!values['b1-design'] || !values['r1-design'] || !values.destination) {
     throw new Error(
-      `${TUTOR_STUB_RESISTANT_LEARNER_PROTOCOL_V2_USAGE}\n\nBoth v2 designs and an absolute destination are required.`,
+      `${TUTOR_STUB_RESISTANT_LEARNER_PROTOCOL_V2_USAGE}\n\nBoth supported v2 or v3 designs and an absolute destination are required.`,
     );
   }
   if (!path.isAbsolute(values.destination)) throw new Error('destination must be absolute');
@@ -223,7 +223,7 @@ export async function main(argv = process.argv.slice(2)) {
     loaded[0].design.studyId !== 'resistant-learner-b1-authored-pickup' ||
     loaded[1].design.studyId !== 'resistant-learner-r1-graded-engagement'
   ) {
-    throw new Error('--b1-design and --r1-design must name B1 v2 and R1 v2, in that order');
+    throw new Error('--b1-design and --r1-design must name supported B1 and R1 designs, in that order');
   }
   const entries = buildTutorStubResistantLearnerProtocolV2Entries(loaded);
   const destination = path.resolve(values.destination);

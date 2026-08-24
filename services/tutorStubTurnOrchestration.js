@@ -16,6 +16,7 @@ import {
 } from './tutorStubActionBeforeRegisterShadow.js';
 import { throwTutorStubBoredomMeasurementIndeterminate } from './tutorStubBoredomSemanticAdjudication.js';
 import { tutorStubBoredomUnreadableTurnIsPassedOver } from './tutorStubBoredomActionRegisterProofDagStudy.js';
+import { TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 } from './tutorStubRivalAttentionSemanticAdjudicationV3.js';
 
 export async function completeTutorStubResistanceManipulationValidation({
   state,
@@ -441,7 +442,9 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     if (
       state.resistanceActionRegisterStudy?.dynamic_boredom_proof_dag === true &&
       state.resistanceActionRegisterStudy?.consumed !== true &&
-      state.resistanceActionRegisterStudy?.proof_dag_registration?.design?.observationSemantics === 'prospective_v9'
+      ['prospective_v9', TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3].includes(
+        state.resistanceActionRegisterStudy?.proof_dag_registration?.design?.observationSemantics,
+      )
     ) {
       if (typeof adjudicateTutorStubBoredomObservation !== 'function') {
         throw new Error('prospective_v9 boredom timing requires the independent semantic adjudicator');
@@ -1602,7 +1605,10 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         const maximumTriggerTurn = Number(state.resistanceActionRegisterStudy?.maximum_trigger_turn);
         const error = new Error(
           boredomProofDag
-            ? `fresh boredom proof-DAG confirmation did not produce its registered effort-withholding trigger by turn ${maximumTriggerTurn}`
+            ? state.resistanceActionRegisterStudy?.proof_dag_registration?.design?.observationSemantics ===
+              TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3
+              ? `fresh rival-DAG calibration did not produce its registered rival-attention trigger by turn ${maximumTriggerTurn}`
+              : `fresh boredom proof-DAG confirmation did not produce its registered effort-withholding trigger by turn ${maximumTriggerTurn}`
             : `fresh frame_refuser confirmation did not produce its registered jurisdictional trigger by turn ${maximumTriggerTurn}`,
         );
         error.code = code;

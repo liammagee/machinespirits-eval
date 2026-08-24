@@ -6,10 +6,12 @@ import { fileURLToPath } from 'node:url';
 
 import {
   buildTutorStubResistantLearnerCalibrationPlan,
+  configureTutorStubResistantLearnerCalibrationFromCli,
   loadTutorStubResistantLearnerDesign,
   runTutorStubResistantLearnerCompilationPreflight,
   summarizeTutorStubResistantLearnerCalibration,
 } from '../services/tutorStubResistantLearnerCalibration.js';
+import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
 import {
   buildTutorStubResistantLearnerProtocolV2Entries,
@@ -27,10 +29,23 @@ import {
   tutorStubRivalDagTurnDirective,
   tutorStubRivalLearnerDagPrompt,
 } from '../services/tutorStubRivalLearnerDag.js';
+import { parseTutorStubRivalAttentionAdjudicationV3 } from '../services/tutorStubRivalAttentionSemanticAdjudicationV3.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_FIELDS_V3 } from '../services/tutorStubResistanceSemanticAdjudicationV3.js';
+import {
+  adjudicateTutorStubStandingRivalryJudgesV3,
+  buildTutorStubStandingRivalryPromptV3,
+  wrapTutorStubStandingRivalryModelOutputV3,
+} from '../services/tutorStubStandingRivalrySemanticAdjudicationV3.js';
+import {
+  loadTutorStubResistanceSemanticRegistration,
+  tutorStubResistanceSemanticLabelAdheres,
+} from '../services/tutorStubResistanceSemanticRuntime.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const B1_PATH = 'config/tutor-stub-resistant-learner-b1-design.v2.json';
 const R1_PATH = 'config/tutor-stub-resistant-learner-r1-design.v2.json';
+const B1_V3_PATH = 'config/tutor-stub-resistant-learner-b1-design.v3.json';
+const R1_V3_PATH = 'config/tutor-stub-resistant-learner-r1-design.v3.json';
 
 function load(relativePath) {
   return {
@@ -84,6 +99,250 @@ test('v2 designs preserve the two reader seats, zero call authority, and combine
     4806,
   );
   assert.match(designs[1].claimBoundary, /elicitation rates under a persona that permits the scored responses/iu);
+});
+
+test('v3 re-registers only the B1 trigger and R1 turn gate while carrying the v2 endpoint contract forward', () => {
+  const [b1, r1] = [load(B1_V3_PATH).design, load(R1_V3_PATH).design];
+  for (const design of [b1, r1]) {
+    assert.equal(design.schema, 'machinespirits.tutor-stub.resistant-learner-study-design.v3');
+    assert.equal(design.callAuthority.grantsModelCalls, false);
+    assert.equal(
+      design.measurement.readerPanel.protocolSource,
+      'config/tutor-stub-resistant-learner-semantic-registration.v2.json',
+    );
+    assert.deepEqual(design.measurement.readerPanel.judges, ['codex.gpt-5.6-sol', 'claude-code.sonnet-5']);
+    assert.equal(design.calibration.readerAgreementRules.eligibilityDenominator, 'completed_rows');
+  }
+  assert.equal(
+    b1.population.triggerRegistration,
+    'config/tutor-stub-resistant-learner-b1-trigger-registration.v3.json',
+  );
+  assert.equal(b1.models.triggerObservation.semantics, 'prospective_rival_attention_semantic_v3');
+  assert.equal(
+    r1.population.triggerRegistration,
+    'config/tutor-stub-resistant-learner-r1-turn-gate-registration.v3.json',
+  );
+  assert.equal(r1.models.triggerObservation.semantics, 'prospective_standing_rivalry_semantic_v3');
+  assert.equal(
+    b1.attemptCeilings.calibrationMaximumReservations + r1.attemptCeilings.calibrationMaximumReservations,
+    4806,
+  );
+  assert.match(r1.claimBoundary, /elicitation rates under a persona that permits the scored responses/iu);
+});
+
+test('B1 v3 rival work triggers and a stock boredom loop does not', () => {
+  const caseId = 'B1-v3-authored-fixture';
+  const rivalWork = 'The invoice timing still leaves the weekend-delivery node open, so I am comparing those dates.';
+  const fired = parseTutorStubRivalAttentionAdjudicationV3({
+    raw: {
+      schema: 'machinespirits.tutor-stub.rival-attention-judge-response.v3',
+      case_id: caseId,
+      objective_advanced: 'rival_objective',
+      work_status: 'new_evidence_bearing_work',
+      evidence_quote: 'comparing those dates',
+      confidence: 'medium',
+      reason: 'The learner advances a rival timing question.',
+    },
+    caseId,
+    learnerText: rivalWork,
+    observedRoute: { provider: 'codex', model: 'gpt-5.6-sol' },
+  });
+  assert.equal(fired.measurement_disposition, 'rival_attention_trigger');
+  assert.equal(fired.trigger_fires, true);
+
+  const stock = parseTutorStubRivalAttentionAdjudicationV3({
+    raw: {
+      schema: 'machinespirits.tutor-stub.rival-attention-judge-response.v3',
+      case_id: caseId,
+      objective_advanced: 'neither',
+      work_status: 'stock_affect_only',
+      evidence_quote: null,
+      confidence: 'high',
+      reason: 'This reports boredom without advancing any objective.',
+    },
+    caseId,
+    learnerText: 'I am bored. This is pointless. I am still bored.',
+    observedRoute: { provider: 'codex', model: 'gpt-5.6-sol' },
+  });
+  assert.equal(stock.measurement_disposition, 'no_rival_attention_trigger');
+  assert.equal(stock.trigger_fires, false);
+
+  const loaded = load(B1_V3_PATH);
+  const job = buildTutorStubResistantLearnerCalibrationPlan(loaded.design).jobs[0];
+  const configure = () => {
+    const state = {
+      trace: [],
+      turns: [],
+      history: [],
+      register: { palette: ['warm', 'plain', 'ironic', 'sarcastic'], history: [], policy: 'field' },
+      world: {},
+    };
+    configureTutorStubResistantLearnerCalibrationFromCli({
+      args: {
+        'model-call-budget': String(loaded.design.attemptCeilings.maximumReservationsPerDialogue),
+        model: 'codex.gpt-5.6-luna',
+        'classifier-model': 'codex.gpt-5.6-luna',
+        'learner-record-model': 'codex.gpt-5.6-luna',
+        'auto-learner-model': 'codex.gpt-5.6-luna',
+        'cli-effort': 'low',
+        world: job.world,
+        'run-seed': String(job.run_seed),
+        'eval-repeat': String(job.assignment_index),
+        'eval-job-id': job.id,
+        'acknowledge-research-use': true,
+        'dag-mode': 'strict_dag',
+        'register-policy': 'field',
+        'register-palette': 'warm,plain,ironic,sarcastic',
+        'resistant-learner-calibration-design': B1_V3_PATH,
+        'resistant-learner-calibration-job': job.id,
+      },
+      state,
+      root: ROOT,
+      autoLearnerEnabled: true,
+      autoLearnerProfileId: 'bored',
+      autoTurns: 9,
+      appendTraceEvent(target, event) {
+        target.push(event);
+      },
+      observationSemantics: loaded.design.models.triggerObservation.semantics,
+    });
+    return state;
+  };
+  const selection = { response_configuration: {}, selected_register: 'plain' };
+  const applied = applyTutorStubResistanceActionRegisterStudyIntervention({
+    selection,
+    state: configure(),
+    learnerText: rivalWork,
+    classification: { turn: { discourse_move: 'counterexample', evidence_use: 'cites_public_evidence' } },
+    tutorLearnerDag: { model: { turn: 1 } },
+    semanticAdjudication: fired,
+  });
+  assert.equal(applied.resistance_action_register_intervention.status, 'applied');
+  const notAppliedState = configure();
+  const notApplied = applyTutorStubResistanceActionRegisterStudyIntervention({
+    selection,
+    state: notAppliedState,
+    learnerText: 'I am bored. This is pointless. I am still bored.',
+    classification: { turn: { discourse_move: 'off_task', evidence_use: 'none' } },
+    tutorLearnerDag: { model: { turn: 1 } },
+    semanticAdjudication: stock,
+  });
+  assert.equal(notApplied, selection);
+  assert.ok(
+    notAppliedState.resistanceActionRegisterStudy.history.at(-1).reasons.includes('no_single_axis_public_warrant'),
+  );
+});
+
+test('R1 v3 makes an agreeing medium-confidence pair determinate and enforces exact-substring evidence', () => {
+  const binding = loadTutorStubResistanceSemanticRegistration(
+    'config/tutor-stub-resistant-learner-r1-turn-gate-registration.v3.json',
+  );
+  const registration = binding.registration;
+  const caseId = 'R1-v3-authored-fixture';
+  const source =
+    'Your answer frame still lacks standing; I will compare the public timing test while reserving that wider dispute.';
+  const publicContext = [
+    { role: 'assistant', text: 'We can test the public timing distinction without settling the wider frame.' },
+  ];
+  const vector = {
+    jurisdiction_dispute: 'yes',
+    interlocutor_standing_or_right: 'yes',
+    inquiry_or_question_frame_governance: 'yes',
+    test_or_criterion_governance: 'no',
+    other_jurisdictional_governance: 'no',
+    licensed_participation: 'yes',
+    participation_withholding: 'yes',
+    productive_counterframing: 'yes',
+    final_label: 'frame_defiant_or_productive_dispute',
+  };
+  const rows = registration.measurement.judges.map((judge, index) => {
+    const prompt = buildTutorStubStandingRivalryPromptV3({ caseId, source, publicContext, judge });
+    assert.ok(prompt.instructions.some((line) => line.includes('exact substring')));
+    const modelOutput = {
+      schema: 'machinespirits.tutor-stub.resistance-semantic-judge-response.v3',
+      case_id: caseId,
+      judgment: {
+        ...vector,
+        evidence_quotes: Object.fromEntries(
+          TUTOR_STUB_RESISTANCE_SEMANTIC_FIELDS_V3.map((field) => [
+            field,
+            vector[field] === 'no' ? null : { source_id: 'utterance', quote: source },
+          ]),
+        ),
+        confidence: index === 0 ? 'high' : 'medium',
+        indeterminacy_reason: 'none',
+      },
+    };
+    const response = wrapTutorStubStandingRivalryModelOutputV3({
+      modelOutput,
+      prompt,
+      judge,
+      observedProvider: judge.provider,
+      observedModel: judge.model,
+      observedEffort: judge.effort,
+      independentRunId: `${caseId}-${judge.id}`,
+      structuredOutput: true,
+      prohibitedToolEvents: 0,
+      modelAttestationBasis: judge.modelAttestationBasis,
+      modelIndependentlyAttested: false,
+    });
+    return { prompt, response };
+  });
+  const result = adjudicateTutorStubStandingRivalryJudgesV3({
+    source,
+    publicContext,
+    caseId,
+    responses: rows.map((row) => row.response),
+    registration,
+    prompts: Object.fromEntries(rows.map((row) => [row.response.provenance.judge_id, row.prompt])),
+  });
+  assert.equal(result.status, 'determinate');
+  assert.equal(result.final_label, 'frame_defiant_or_productive_dispute');
+  assert.equal(result.standing_rivalry_adherent_for_gate, true);
+  assert.deepEqual(result.primary_label_measurement.eligible_confidence, ['high', 'medium']);
+  assert.equal(
+    tutorStubResistanceSemanticLabelAdheres({
+      profileId: 'frame_refuser',
+      label: result.final_label,
+      observationSemantics: 'prospective_standing_rivalry_semantic_v3',
+    }),
+    true,
+  );
+
+  const bad = structuredClone(rows[0]);
+  const judge = registration.measurement.judges[0];
+  const badOutput = {
+    schema: 'machinespirits.tutor-stub.resistance-semantic-judge-response.v3',
+    case_id: caseId,
+    judgment: {
+      ...vector,
+      evidence_quotes: Object.fromEntries(
+        TUTOR_STUB_RESISTANCE_SEMANTIC_FIELDS_V3.map((field) => [
+          field,
+          vector[field] === 'no' ? null : { source_id: 'utterance', quote: 'a paraphrase not in the packet' },
+        ]),
+      ),
+      confidence: 'high',
+      indeterminacy_reason: 'none',
+    },
+  };
+  assert.throws(
+    () =>
+      wrapTutorStubStandingRivalryModelOutputV3({
+        modelOutput: badOutput,
+        prompt: bad.prompt,
+        judge,
+        observedProvider: judge.provider,
+        observedModel: judge.model,
+        observedEffort: judge.effort,
+        independentRunId: `${caseId}-bad`,
+        structuredOutput: true,
+        prohibitedToolEvents: 0,
+        modelAttestationBasis: judge.modelAttestationBasis,
+        modelIndependentlyAttested: false,
+      }),
+    /absent from declared source/iu,
+  );
 });
 
 test('rival DAGs are deterministic derivation-pipeline products concealed from tutor and readers', () => {
@@ -417,19 +676,45 @@ test('protocol v2 runs the same zero-call preflight, one stub smoke per role, an
   assert.equal(blocked.checks.destination_absent, false);
 });
 
-test('the legacy GO-note launcher refuses v2 designs before any model call', () => {
-  const result = spawnSync(
-    process.execPath,
-    [
-      'scripts/run-tutor-stub-resistant-learner-calibration.js',
-      '--b1-design',
-      B1_PATH,
-      '--r1-design',
-      R1_PATH,
-      '--dry-run',
-    ],
-    { cwd: ROOT, encoding: 'utf8' },
+test('protocol-v2 launcher accepts v3 designs with the full zero-call plan', async () => {
+  const entries = buildTutorStubResistantLearnerProtocolV2Entries([load(B1_V3_PATH), load(R1_V3_PATH)]);
+  const preflight = await runTutorStubResistantLearnerProtocolV2Preflight({
+    entries,
+    root: ROOT,
+    destination: '/private/tmp/resistant-learner-v3-absent-test-root',
+    destinationExists: () => false,
+    probeRoute: (route) => ({ ...route, status: 'passed_zero_call', version: 'test', model_calls: 0 }),
+  });
+  assert.equal(preflight.status, 'passed_zero_call');
+  assert.equal(preflight.checks.designs_are_v2_or_v3, true);
+  assert.equal(preflight.jobs, 36);
+  assert.equal(preflight.planned_role_calls, 1530);
+  assert.equal(preflight.hard_attempt_ceiling, 4806);
+  assert.equal(preflight.model_calls_executed, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.ok(
+    preflight.route_table.some((row) => row.transportRole === 'tutor_stub_resistant_learner_rival_attention_judge'),
   );
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /legacy GO-note launcher is v1-only/iu);
+});
+
+test('the legacy GO-note launcher refuses v2 and v3 designs before any model call', () => {
+  for (const [b1Path, r1Path] of [
+    [B1_PATH, R1_PATH],
+    [B1_V3_PATH, R1_V3_PATH],
+  ]) {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-resistant-learner-calibration.js',
+        '--b1-design',
+        b1Path,
+        '--r1-design',
+        r1Path,
+        '--dry-run',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /legacy GO-note launcher is v1-only/iu);
+  }
 });

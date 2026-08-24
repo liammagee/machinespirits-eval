@@ -14,6 +14,8 @@ import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResist
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from './tutorStubResistanceSemanticAdjudicationV4.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5 } from './tutorStubResistanceSemanticAdjudicationV5.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6 } from './tutorStubResistanceSemanticAdjudicationV6.js';
+import { TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 } from './tutorStubStandingRivalrySemanticAdjudicationV3.js';
+import { TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 } from './tutorStubRivalAttentionSemanticAdjudicationV3.js';
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
@@ -21,16 +23,20 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V6,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3,
   applyTutorStubResistantLearnerCalibrationSemanticPanel,
   isTutorStubResistanceSemanticObservation,
   loadTutorStubResistanceSemanticRegistration,
   tutorStubResistanceSemanticPublicContext,
+  tutorStubResistanceSemanticLabelAdheres,
   validateTutorStubResistanceSemanticRuntimeResult,
 } from './tutorStubResistanceSemanticRuntime.js';
 
 function resistanceSemanticRegistrationBinding(observationSemantics, runtime = null) {
   const registrationPath =
-    observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6
+    observationSemantics === TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3
+      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6
       ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V6
       : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5
       ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5
@@ -344,8 +350,9 @@ function usesCompositionalBoredomObservation(runtime) {
 function usesSemanticBoredomAdjudication(runtime) {
   return (
     runtime?.dynamic_boredom_proof_dag === true &&
-    runtime?.proof_dag_registration?.design?.observationSemantics ===
-      RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9
+    [RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9, TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3].includes(
+      runtime?.proof_dag_registration?.design?.observationSemantics,
+    )
   );
 }
 
@@ -1209,15 +1216,22 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
       expectedPublicContext,
     });
     const aggregate = frameSemanticAdjudication?.aggregate || null;
+    const semanticLabel = aggregate?.status === 'determinate' ? aggregate.final_label : null;
+    const matchesRegisteredCohort = tutorStubResistanceSemanticLabelAdheres({
+      profileId: runtime.profile,
+      label: semanticLabel,
+      observationSemantics: semantics,
+    });
     const observedProfile =
-      aggregate?.status === 'determinate'
+      matchesRegisteredCohort
+        ? runtime.profile
+        : aggregate?.status === 'determinate'
         ? aggregate.final_label === 'frame_refuser'
           ? 'frame_refuser'
           : aggregate.final_label === 'frame_defiant_or_productive_dispute'
             ? 'frame_defiant'
             : null
         : null;
-    const matchesRegisteredCohort = observedProfile === runtime.profile;
     const timingObservation = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag });
     const reasons = [];
     if (runtime.consumed) reasons.push('study_intervention_already_consumed');
@@ -1262,6 +1276,8 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
   }
   const compositionalBoredom = usesCompositionalBoredomObservation(runtime);
   const semanticBoredom = usesSemanticBoredomAdjudication(runtime);
+  const rivalAttention =
+    runtime?.proof_dag_registration?.design?.observationSemantics === TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3;
   const v4Observation = usesProspectiveV4Observation(runtime.registration)
     ? observeResistantLearnerTurn({ learnerText, classification, semantics })
     : null;
@@ -1279,20 +1295,26 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
       }).resistance_axis_shadow
     : null;
   const semanticDisposition = semanticAdjudication?.measurement_disposition || null;
+  const licensedSemanticDisposition = rivalAttention ? 'rival_attention_trigger' : 'actionable_boredom';
   const semanticShadow = semanticBoredom
     ? {
-        resistance_kind: semanticDisposition === 'actionable_boredom' ? 'bored' : null,
+        resistance_kind: semanticDisposition === licensedSemanticDisposition ? 'bored' : null,
         observation: {
-          schema: 'machinespirits.tutor-stub.boredom-semantic-trigger-observation.v1',
+          schema: rivalAttention
+            ? 'machinespirits.tutor-stub.rival-attention-trigger-observation.v3'
+            : 'machinespirits.tutor-stub.boredom-semantic-trigger-observation.v1',
           semantic_adjudication: clone(semanticAdjudication),
           auxiliary_observation: clone(compositionalBoredomShadow?.observation || null),
         },
         warrant: {
-          status: semanticDisposition === 'actionable_boredom' ? 'licensed' : 'not_licensed',
-          required_observation_type: 'independent_semantic_actionable_boredom',
+          status: semanticDisposition === licensedSemanticDisposition ? 'licensed' : 'not_licensed',
+          required_observation_type: rivalAttention
+            ? 'independent_semantic_rival_objective_work'
+            : 'independent_semantic_actionable_boredom',
           basis: clone(semanticAdjudication),
           ambiguity_blocks_license: semanticDisposition === 'measurement_indeterminate',
-          primary_move_type: semanticDisposition === 'actionable_boredom' ? 'ask_discriminating_question' : null,
+          primary_move_type:
+            semanticDisposition === licensedSemanticDisposition ? 'ask_discriminating_question' : null,
         },
       }
     : null;
@@ -1332,9 +1354,13 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
   if (
     semanticBoredom &&
     semanticDisposition &&
-    !['actionable_boredom', 'measurement_indeterminate'].includes(semanticDisposition)
+    ![licensedSemanticDisposition, 'measurement_indeterminate'].includes(semanticDisposition)
   ) {
-    reasons.push(`semantic_no_actionable_boredom:${semanticDisposition}`);
+    reasons.push(
+      rivalAttention
+        ? `semantic_trigger_not_observed:${semanticDisposition}`
+        : `semantic_no_actionable_boredom:${semanticDisposition}`,
+    );
   }
   if (shadow.warrant.status !== 'licensed') reasons.push('no_single_axis_public_warrant');
   if (shadow.resistance_kind && shadow.resistance_kind !== runtime.profile) {
@@ -1376,6 +1402,7 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
             final_authority: 'independent_llm_semantic_adjudicator',
             regex_role: 'auxiliary_high_precision_signal_only',
             generic_uptake_override_allowed: false,
+            construct: rivalAttention ? 'rival_objective_work' : 'actionable_boredom',
             disposition: semanticDisposition || 'measurement_indeterminate',
             indeterminate: semanticDisposition === 'measurement_indeterminate',
           },

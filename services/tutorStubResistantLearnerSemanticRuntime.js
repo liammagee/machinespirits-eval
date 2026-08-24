@@ -126,7 +126,10 @@ function outputSchema({ schema, fields, sources, evidenceNullForNo = false }) {
 }
 
 function isV2Design(design) {
-  return design?.schema === 'machinespirits.tutor-stub.resistant-learner-study-design.v2';
+  return [
+    'machinespirits.tutor-stub.resistant-learner-study-design.v2',
+    'machinespirits.tutor-stub.resistant-learner-study-design.v3',
+  ].includes(design?.schema);
 }
 
 function v2ReaderRegistration(design) {
@@ -139,6 +142,7 @@ function v2ReaderRegistration(design) {
   if (
     registration?.schema !== 'machinespirits.tutor-stub.resistant-learner-semantic-registration.v2' ||
     registration?.version !== 2 ||
+    !registration?.appliesToDesignSchemas?.includes(design?.schema) ||
     registration?.evidenceContract?.whenValueIsNo !== null ||
     registration?.evidenceContract?.whenValueIsIndeterminate !== null ||
     registration?.evidenceContract?.checkerRule !==

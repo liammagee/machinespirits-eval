@@ -62,7 +62,11 @@ export function tutorStubResistantLearnerProtocolV2RouteTable(entries) {
           study,
           role: `trigger.${judge.id}`,
           transportRole:
-            study === 'B1' ? `tutor_stub_boredom_semantic_${judge.id}` : `tutor_stub_resistance_semantic_${judge.id}`,
+            study === 'B1' && design.schema === 'machinespirits.tutor-stub.resistant-learner-study-design.v3'
+              ? 'tutor_stub_resistant_learner_rival_attention_judge'
+              : study === 'B1'
+                ? `tutor_stub_boredom_semantic_${judge.id}`
+                : `tutor_stub_resistance_semantic_${judge.id}`,
           route: judge,
         }),
       );
@@ -249,8 +253,11 @@ export async function runTutorStubResistantLearnerProtocolV2Preflight({
   const plannedRoleCalls = studies.reduce((sum, study) => sum + study.planned_role_calls, 0);
   const hardAttemptCeiling = studies.reduce((sum, study) => sum + study.hard_attempt_ceiling, 0);
   const checks = {
-    designs_are_v2: entries.every(
-      ({ loaded }) => loaded.design.schema === 'machinespirits.tutor-stub.resistant-learner-study-design.v2',
+    designs_are_v2_or_v3: entries.every(({ loaded }) =>
+      [
+        'machinespirits.tutor-stub.resistant-learner-study-design.v2',
+        'machinespirits.tutor-stub.resistant-learner-study-design.v3',
+      ].includes(loaded.design.schema),
     ),
     compilation_passed: studies.every((study) => study.compilation.status === 'passed_zero_call'),
     route_probes_passed: routeProbes.every((probe) => probe.status === 'passed_zero_call'),
@@ -292,7 +299,7 @@ export function buildTutorStubResistantLearnerTypedApproval({
     approved_by: String(signedBy).trim(),
     approved_at: approvedAt,
     typed_phrase: approvalPhrase,
-    scope: 'combined B1 and R1 Gate 1b calibration only',
+    scope: 'combined B1 and R1 resistant-learner calibration only',
     source: { commit: sourceCommit, tree: sourceTree, dirty: Boolean(dirty), enforcement: 'recorded_not_pinned' },
     designs: preflight.studies.map((study) => ({
       study_id: study.study_id,
