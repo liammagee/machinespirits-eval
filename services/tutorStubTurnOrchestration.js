@@ -18,6 +18,21 @@ import { throwTutorStubBoredomMeasurementIndeterminate } from './tutorStubBoredo
 import { tutorStubBoredomUnreadableTurnIsPassedOver } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 } from './tutorStubRivalAttentionSemanticAdjudicationV3.js';
 
+export function tutorStubResistantLearnerFinalSemanticReadersRequired({
+  study,
+  registeredFinalLearnerOnly,
+  turnNumber,
+} = {}) {
+  const bridgeSmokeSkipsReaders =
+    study?.unregistered_bridge_smoke === true && study?.skip_final_semantic_readers === true;
+  return (
+    registeredFinalLearnerOnly === true &&
+    study?.resistant_learner_calibration === true &&
+    !bridgeSmokeSkipsReaders &&
+    Number(turnNumber) === Number(study.trigger_turn) + Number(study.outcome_horizon_learner_turns)
+  );
+}
+
 export async function completeTutorStubResistanceManipulationValidation({
   state,
   turnNumber,
@@ -1784,10 +1799,11 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
         state.history.push({ role: 'user', content: nextLearnerText });
         const v9Study = state.resistanceActionRegisterStudy;
-        const resistantLearnerSemanticsRequired =
-          registeredFinalLearnerOnly === true &&
-          v9Study?.resistant_learner_calibration === true &&
-          Number(turnNumber) === Number(v9Study.trigger_turn) + Number(v9Study.outcome_horizon_learner_turns);
+        const resistantLearnerSemanticsRequired = tutorStubResistantLearnerFinalSemanticReadersRequired({
+          study: v9Study,
+          registeredFinalLearnerOnly,
+          turnNumber,
+        });
         const finalOutcomeSemanticsRequired =
           registeredFinalLearnerOnly === true &&
           v9Study?.resistant_learner_calibration !== true &&
@@ -1812,6 +1828,19 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
               })
             : null;
         assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+        if (
+          v9Study?.unregistered_bridge_smoke === true &&
+          v9Study?.skip_final_semantic_readers === true &&
+          Number(turnNumber) === Number(v9Study.trigger_turn) + Number(v9Study.outcome_horizon_learner_turns)
+        ) {
+          appendTraceEvent(state.trace, {
+            type: 'resistant_learner_bridge_smoke_final_readers_skipped',
+            turn: turnNumber,
+            jobId: v9Study.job_id,
+            skippedInstruments: ['primary', 'fidelity'],
+            publicTranscriptChanged: false,
+          });
+        }
         appendTraceEvent(state.trace, {
           type: 'resistance_action_register_outcome_learner_turn',
           turn: turnNumber,

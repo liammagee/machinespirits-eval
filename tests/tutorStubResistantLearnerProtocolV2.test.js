@@ -71,6 +71,13 @@ import {
   tutorStubResistantLearnerCalibrationChildSpec,
   tutorStubResistantLearnerCalibrationHaltReason,
 } from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
+import {
+  TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_SMOKE_ATTEMPT_CEILING,
+  TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_SMOKE_USAGE,
+  buildTutorStubResistantLearnerBridgeSmokePlan,
+  executeTutorStubResistantLearnerBridgeSmoke,
+} from '../scripts/run-resistant-learner-bridge-smoke.js';
+import { tutorStubResistantLearnerFinalSemanticReadersRequired } from '../services/tutorStubTurnOrchestration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const B1_PATH = 'config/tutor-stub-resistant-learner-b1-design.v2.json';
@@ -85,7 +92,7 @@ function load(relativePath) {
   };
 }
 
-function configureB1V3CalibrationState({ loaded, job }) {
+function configureB1V3CalibrationState({ loaded, job, bridgeSmokeSkipFinalReaders = false }) {
   const state = {
     trace: [],
     turns: [],
@@ -111,6 +118,7 @@ function configureB1V3CalibrationState({ loaded, job }) {
       'register-palette': 'warm,plain,ironic,sarcastic',
       'resistant-learner-calibration-design': B1_V3_PATH,
       'resistant-learner-calibration-job': job.id,
+      'resistant-learner-bridge-smoke-skip-final-readers': bridgeSmokeSkipFinalReaders,
     },
     state,
     root: ROOT,
@@ -1108,4 +1116,179 @@ test('the legacy GO-note launcher refuses v2 and v3 designs before any model cal
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /legacy GO-note launcher is v1-only/iu);
   }
+});
+
+test('bridge smoke selects the approved six jobs without a world override', () => {
+  const { plan } = buildTutorStubResistantLearnerBridgeSmokePlan({ root: ROOT });
+  assert.equal(plan.jobs.length, 6);
+  assert.deepEqual(
+    plan.jobs.filter((job) => job.study === 'B1').map(({ register, action }) => ({ register, action })),
+    [
+      { register: 'warm', action: 'ask_discriminating_question' },
+      { register: 'plain', action: 'ask_discriminating_question' },
+      { register: 'edged', action: 'ask_discriminating_question' },
+    ],
+  );
+  assert.deepEqual(
+    plan.jobs.filter((job) => job.study === 'R1').map(({ register, world }) => ({ register, world })),
+    [
+      { register: 'warm', world: 'world_005_marrick' },
+      { register: 'plain', world: 'world_030_rowan_flat' },
+      { register: 'edged', world: 'world_005_marrick' },
+    ],
+  );
+  assert.equal(plan.hard_attempt_ceiling, 800);
+  assert.deepEqual(plan.excluded_model_roles, ['final_semantic_reader', 'fidelity_panel']);
+  assert.match(
+    TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_SMOKE_USAGE,
+    /node scripts\/run-resistant-learner-bridge-smoke\.js --launch/u,
+  );
+});
+
+test('the registered child request stays byte-identical unless the smoke flag is explicitly set', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'resistant-learner-bridge-child-spec-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const loaded = load(B1_V3_PATH);
+  const job = buildTutorStubResistantLearnerCalibrationPlan(loaded.design).jobs[0];
+  const baseline = tutorStubResistantLearnerCalibrationChildSpec({ loaded, job, destination: directory });
+  const baselineBytes = Buffer.from(JSON.stringify(baseline.args));
+  fs.rmSync(path.join(directory, 'jobs'), { recursive: true, force: true });
+  const explicitDefault = tutorStubResistantLearnerCalibrationChildSpec({
+    loaded,
+    job,
+    destination: directory,
+    bridgeSmokeSkipFinalReaders: false,
+    modelCallBudget: null,
+  });
+  assert.ok(baselineBytes.equals(Buffer.from(JSON.stringify(explicitDefault.args))));
+  assert.equal(
+    baseline.args[baseline.args.indexOf('--model-call-budget') + 1],
+    String(loaded.design.attemptCeilings.maximumReservationsPerDialogue),
+  );
+  assert.equal(baseline.args.includes('--resistant-learner-bridge-smoke-skip-final-readers'), false);
+
+  fs.rmSync(path.join(directory, 'jobs'), { recursive: true, force: true });
+  const smoke = tutorStubResistantLearnerCalibrationChildSpec({
+    loaded,
+    job,
+    destination: directory,
+    bridgeSmokeSkipFinalReaders: true,
+    modelCallBudget: 100,
+  });
+  assert.equal(smoke.args.filter((arg) => arg === '--resistant-learner-bridge-smoke-skip-final-readers').length, 1);
+  assert.equal(smoke.args[smoke.args.indexOf('--model-call-budget') + 1], '100');
+
+  const registeredLauncher = fs.readFileSync(
+    path.join(ROOT, 'scripts/run-tutor-stub-resistant-learner-calibration-v2.js'),
+    'utf8',
+  );
+  assert.match(registeredLauncher, /tutorStubResistantLearnerCalibrationChildSpec\(\{ loaded, job, destination \}\)/u);
+  assert.doesNotMatch(registeredLauncher, /bridgeSmokeSkipFinalReaders/u);
+});
+
+test('the bridge-smoke state suppresses only resistant-learner final readers at the exact horizon', () => {
+  const study = {
+    resistant_learner_calibration: true,
+    trigger_turn: 2,
+    outcome_horizon_learner_turns: 5,
+  };
+  assert.equal(
+    tutorStubResistantLearnerFinalSemanticReadersRequired({
+      study,
+      registeredFinalLearnerOnly: true,
+      turnNumber: 7,
+    }),
+    true,
+  );
+  assert.equal(
+    tutorStubResistantLearnerFinalSemanticReadersRequired({
+      study: {
+        ...study,
+        unregistered_bridge_smoke: true,
+        skip_final_semantic_readers: true,
+      },
+      registeredFinalLearnerOnly: true,
+      turnNumber: 7,
+    }),
+    false,
+  );
+  assert.equal(
+    tutorStubResistantLearnerFinalSemanticReadersRequired({
+      study: { ...study, unregistered_bridge_smoke: true },
+      registeredFinalLearnerOnly: true,
+      turnNumber: 7,
+    }),
+    true,
+  );
+  assert.equal(
+    tutorStubResistantLearnerFinalSemanticReadersRequired({
+      study,
+      registeredFinalLearnerOnly: true,
+      turnNumber: 6,
+    }),
+    false,
+  );
+  const loaded = load(B1_V3_PATH);
+  const job = buildTutorStubResistantLearnerCalibrationPlan(loaded.design).jobs[0];
+  const configured = configureB1V3CalibrationState({
+    loaded,
+    job,
+    bridgeSmokeSkipFinalReaders: true,
+  });
+  assert.equal(configured.resistanceActionRegisterStudy.unregistered_bridge_smoke, true);
+  assert.equal(configured.resistanceActionRegisterStudy.skip_final_semantic_readers, true);
+  assert.ok(configured.trace.some((event) => event.type === 'resistant_learner_bridge_smoke_configuration'));
+});
+
+test('the bridge smoke executes six zero-call mock children and writes only descriptive MET excerpts', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resistant-learner-bridge-smoke-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const destination = path.join(temporary, 'smoke-root');
+  const { selected } = buildTutorStubResistantLearnerBridgeSmokePlan({ root: ROOT });
+  const observedBudgets = [];
+  const report = await executeTutorStubResistantLearnerBridgeSmoke({
+    destination,
+    selected,
+    provenance: { commit: 'a'.repeat(40), tree: 'b'.repeat(40), dirty: false },
+    async runChild(spec) {
+      observedBudgets.push(Number(spec.args[spec.args.indexOf('--model-call-budget') + 1]));
+      fs.writeFileSync(spec.stdout, 'mock child stdout\n', { flag: 'wx' });
+      fs.writeFileSync(spec.stderr, '', { flag: 'wx' });
+      fs.writeFileSync(spec.transcript, `${JSON.stringify({ turns: 2 })}\n`, { flag: 'wx' });
+      const trace = [
+        { type: 'model_call_budget_reserved', role: 'tutor_stub_auto_learner', turn: 2 },
+        {
+          type: 'auto_learner_turn',
+          turn: 2,
+          text: 'I can connect that overlap to the public delivery timestamp while keeping the source dispute open.',
+          learnerResponseProvenance: {
+            automation: { rivalLearnerDagTurn: { typedConcession: { eligible: true } } },
+          },
+        },
+        {
+          type: 'resistant_learner_bridge_smoke_final_readers_skipped',
+          turn: 2,
+          skippedInstruments: ['primary', 'fidelity'],
+        },
+      ];
+      fs.writeFileSync(
+        path.join(spec.traceDir, 'trace.jsonl'),
+        `${trace.map((event) => JSON.stringify(event)).join('\n')}\n`,
+        { flag: 'wx' },
+      );
+      return { code: 0, signal: null, spawn_error: null };
+    },
+  });
+
+  assert.equal(report.dialogues_recorded, 6);
+  assert.equal(report.model_attempts, 6);
+  assert.equal(report.hard_attempt_ceiling, TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_SMOKE_ATTEMPT_CEILING);
+  assert.equal(report.execution_halt, null);
+  assert.ok(observedBudgets.every((budget) => budget <= TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_SMOKE_ATTEMPT_CEILING));
+  assert.ok(report.dialogues.every((row) => row.turn_count === 1 && row.met_directive_count === 1));
+  assert.ok(report.dialogues.every((row) => row.met_turns[0].learner_next_public_turn.length <= 400));
+  assert.doesNotMatch(JSON.stringify(report), /"(?:verdict|pass|fail)"\s*:/iu);
+  assert.equal(fs.existsSync(path.join(destination, 'approval.json')), false);
+  assert.ok(fs.existsSync(path.join(destination, 'smoke-report.json')));
+  await assert.rejects(executeTutorStubResistantLearnerBridgeSmoke({ destination, selected }), /create-once/iu);
 });
