@@ -27,6 +27,8 @@ import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResist
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from './tutorStubResistanceSemanticAdjudicationV4.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5 } from './tutorStubResistanceSemanticAdjudicationV5.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6 } from './tutorStubResistanceSemanticAdjudicationV6.js';
+import { TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 } from './tutorStubRivalAttentionSemanticAdjudicationV3.js';
+import { TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 } from './tutorStubStandingRivalrySemanticAdjudicationV3.js';
 import {
   createTutorStubResistanceSemanticAdherenceBridge,
   createTutorStubResistanceSemanticAdjudicationComposition,
@@ -109,6 +111,8 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4,
       TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5,
       TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6,
+      TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3,
+      TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
     ].includes(requestedObservationSemantics)
   ) {
     throw new Error(`unsupported automated-learner observation semantics: ${requestedObservationSemantics}`);

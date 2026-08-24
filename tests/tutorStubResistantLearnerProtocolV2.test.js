@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +15,7 @@ import {
 } from '../services/tutorStubResistantLearnerCalibration.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
+import { selectTutorStubBoredomSemanticAdjudicatorFactory } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
 import {
   buildTutorStubResistantLearnerProtocolV2Entries,
   buildTutorStubResistantLearnerTypedApproval,
@@ -29,17 +32,27 @@ import {
   tutorStubRivalDagTurnDirective,
   tutorStubRivalLearnerDagPrompt,
 } from '../services/tutorStubRivalLearnerDag.js';
-import { parseTutorStubRivalAttentionAdjudicationV3 } from '../services/tutorStubRivalAttentionSemanticAdjudicationV3.js';
+import {
+  TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3,
+  parseTutorStubRivalAttentionAdjudicationV3,
+} from '../services/tutorStubRivalAttentionSemanticAdjudicationV3.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_FIELDS_V3 } from '../services/tutorStubResistanceSemanticAdjudicationV3.js';
 import {
+  TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
   adjudicateTutorStubStandingRivalryJudgesV3,
   buildTutorStubStandingRivalryPromptV3,
   wrapTutorStubStandingRivalryModelOutputV3,
 } from '../services/tutorStubStandingRivalrySemanticAdjudicationV3.js';
 import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3,
   loadTutorStubResistanceSemanticRegistration,
   tutorStubResistanceSemanticLabelAdheres,
+  tutorStubResistanceSemanticRegistrationPathForObservation,
 } from '../services/tutorStubResistanceSemanticRuntime.js';
+import {
+  runTutorStubResistantLearnerCalibrationChild,
+  tutorStubResistantLearnerCalibrationChildSpec,
+} from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const B1_PATH = 'config/tutor-stub-resistant-learner-b1-design.v2.json';
@@ -52,6 +65,31 @@ function load(relativePath) {
     ...loadTutorStubResistantLearnerDesign({ designPath: relativePath, root: ROOT }),
     relativePath,
   };
+}
+
+function installZeroCallCodexStub(binDir) {
+  const executable = path.join(binDir, 'codex');
+  fs.writeFileSync(
+    executable,
+    `#!/usr/bin/env node
+const fs = require('node:fs');
+const args = process.argv.slice(2);
+if (args.includes('--version')) {
+  process.stdout.write('codex-cli gate1c-zero-call-stub\\n');
+  process.exit(0);
+}
+let input = '';
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', (chunk) => { input += chunk; });
+process.stdin.on('end', () => {
+  fs.appendFileSync(process.env.FAKE_CODEX_LOG, JSON.stringify({ args, inputBytes: input.length }) + '\\n');
+  process.stderr.write('gate1c zero-call stub transport reached\\n');
+  process.exit(42);
+});
+`,
+    'utf8',
+  );
+  fs.chmodSync(executable, 0o755);
 }
 
 function semanticPanel(values) {
@@ -695,6 +733,127 @@ test('protocol-v2 launcher accepts v3 designs with the full zero-call plan', asy
   assert.ok(
     preflight.route_table.some((row) => row.transportRole === 'tutor_stub_resistant_learner_rival_attention_judge'),
   );
+});
+
+test('Gate 1c observation names keep their v3 adjudicator routes instead of falling back to v2', async () => {
+  const runtimeDependencies = {
+    appendTraceEvent() {},
+    async callPromptModel() {
+      throw new Error('model transport is not part of this zero-call routing test');
+    },
+    classificationFromCombinedAnalysis() {},
+    extractCombinedLearnerAnalysis() {},
+    learnerProfileContract() {
+      return null;
+    },
+    learnerProfileIds: () => ['bored', 'frame_refuser'],
+    learnerProfilePrompt: () => 'test profile',
+    negativeFloorRegisters: [],
+  };
+  assert.doesNotThrow(() =>
+    createTutorStubAutomatedLearnerGenerationRuntime({
+      ...runtimeDependencies,
+      env: { TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 },
+    }),
+  );
+  const standingRuntime = createTutorStubAutomatedLearnerGenerationRuntime({
+    ...runtimeDependencies,
+    adjudicateResistanceSemanticCandidate: async () => ({
+      observationSemantics: TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
+      aggregate: { status: 'determinate', final_label: 'frame_refuser' },
+    }),
+    env: { TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 },
+  });
+  assert.equal(
+    standingRuntime.automatedLearnerTraceMetadata.observationSemantics,
+    TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
+  );
+  assert.equal(
+    tutorStubResistanceSemanticRegistrationPathForObservation(TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3),
+    TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3,
+  );
+  const standingRegistration = loadTutorStubResistanceSemanticRegistration(
+    TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3,
+  );
+  assert.equal(standingRegistration.registration.observationSemantics, TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3);
+
+  const factory = selectTutorStubBoredomSemanticAdjudicatorFactory({
+    args: { 'resistant-learner-calibration-design': B1_V3_PATH },
+    root: ROOT,
+  });
+  let observedRole = null;
+  const adjudicate = factory(
+    async ({ role, resolved }) => {
+      observedRole = role;
+      return {
+        text: JSON.stringify({
+          schema: 'machinespirits.tutor-stub.rival-attention-judge-response.v3',
+          case_id: 'B1-routing:turn:1',
+          objective_advanced: 'rival_objective',
+          work_status: 'new_evidence_bearing_work',
+          evidence_quote: 'compare the dates',
+          confidence: 'high',
+          reason: 'The learner performs new work on the rival timing objective.',
+        }),
+        provider: resolved.provider,
+        model: resolved.model,
+      };
+    },
+    () => ({ provider: 'codex', model: 'gpt-5.6-sol' }),
+  );
+  const routed = await adjudicate({
+    learnerText: 'I will compare the dates before returning to your accusation.',
+    state: { history: [], trace: [], resistanceActionRegisterStudy: { job_id: 'B1-routing' } },
+    turn: 1,
+  });
+  assert.equal(observedRole, 'tutor_stub_resistant_learner_rival_attention_judge');
+  assert.equal(routed.measurement_disposition, 'rival_attention_trigger');
+  assert.equal(routed.version, 3);
+});
+
+test('the launcher child path boots one B1 and one R1 v3 job through a zero-call stub transport', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'gate1c-child-boot-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const binDir = path.join(temporary, 'bin');
+  const archiveDir = path.join(temporary, 'archive');
+  fs.mkdirSync(binDir, { recursive: true });
+  fs.mkdirSync(archiveDir, { recursive: true });
+  installZeroCallCodexStub(binDir);
+
+  for (const [designPath, expectedSemantics] of [
+    [B1_V3_PATH, TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3],
+    [R1_V3_PATH, TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3],
+  ]) {
+    const loaded = load(designPath);
+    const job = buildTutorStubResistantLearnerCalibrationPlan(loaded.design).jobs[0];
+    const destination = path.join(temporary, job.study.toLowerCase());
+    const stubLog = path.join(temporary, `${job.study.toLowerCase()}-stub.jsonl`);
+    const spec = tutorStubResistantLearnerCalibrationChildSpec({ loaded, job, destination });
+    assert.equal(spec.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS, expectedSemantics);
+    assert.ok(spec.args.includes('scripts/tutor-stub.js'));
+    assert.ok(spec.args.includes('--resistant-learner-calibration-design'));
+    spec.env = {
+      ...spec.env,
+      PATH: `${binDir}${path.delimiter}${spec.env.PATH || ''}`,
+      EVAL_ARCHIVE_DIR: archiveDir,
+      FAKE_CODEX_LOG: stubLog,
+      CLI_PROVIDER_CODEX_TIMEOUT_MS: '2000',
+      CLI_PROVIDER_VERSION_TIMEOUT_MS: '2000',
+      OPENAI_API_KEY: '',
+      OPENROUTER_API_KEY: '',
+      ANTHROPIC_API_KEY: '',
+    };
+    const exit = await runTutorStubResistantLearnerCalibrationChild(spec);
+    assert.equal(exit.spawn_error, null);
+    const stderr = fs.readFileSync(spec.stderr, 'utf8');
+    assert.ok(
+      fs.existsSync(stubLog),
+      `${job.study} child must reach the local Codex stub after boot; child stderr: ${stderr}`,
+    );
+    assert.ok(fs.readFileSync(stubLog, 'utf8').trim().length > 0);
+    assert.doesNotMatch(stderr, /unsupported automated-learner observation semantics/iu);
+    assert.match(stderr, /codex CLI exited with code 42/iu);
+  }
 });
 
 test('the legacy GO-note launcher refuses v2 and v3 designs before any model call', () => {
