@@ -86,3 +86,19 @@ fresh cap stays 4,806
 cumulative worst case 4,938 (48 prior + 84 spent + 4,806)
 
 Operator authorization: the operator authorized repair-without-re-signature on 2026-08-23.
+
+## Run-4 technical repair amendment
+
+Repair source commit F3:
+
+`f3352ba19b497f28ec371b9205247f59697080f9`
+
+Fresh create-once R3 destination:
+
+`/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-live/resistant-learner-calibration-gate1-two-reader-r3-2026-08-23`
+
+fresh cap stays 4,806
+
+cumulative worst case 5,378 (48 prior + 84 Run-3 spent + 440 Run-4 spent + 4,806 fresh)
+
+Operator standing decision: this technical repair and R3 relaunch remain authorized under the existing signed GO without re-signature.
