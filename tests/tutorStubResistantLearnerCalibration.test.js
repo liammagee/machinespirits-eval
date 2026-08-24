@@ -35,6 +35,7 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
 } from '../services/tutorStubResistanceSemanticRuntime.js';
 import {
+  tutorStubResistantLearnerCalibrationExecutionQueue,
   tutorStubResistantLearnerCalibrationHaltReason,
   tutorStubResistantLearnerGoNoteBindingIssues,
 } from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
@@ -783,10 +784,53 @@ test('typed substantive child outcome crosses the file boundary structurally', (
   );
 });
 
+test('semantic measurement indeterminate crosses the typed outcome boundary and remains retained', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'resistant-learner-semantic-outcome-'));
+  const filePath = path.join(directory, 'registered-study-outcome.json');
+  const error = Object.assign(new Error('independent semantic adjudication was indeterminate'), {
+    code: 'TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE',
+    substantiveStudyFailure: true,
+  });
+  const expected = tutorStubRegisteredStudyOutcomeFromError({ error, jobId: 'R1-indeterminate' });
+  writeTutorStubRegisteredStudyOutcome({ filePath, error, jobId: 'R1-indeterminate' });
+  assert.deepEqual(readTutorStubRegisteredStudyOutcome({ filePath, expectedJobId: 'R1-indeterminate' }), {
+    present: true,
+    valid: true,
+    outcome: expected,
+    issues: [],
+  });
+  assert.equal(
+    tutorStubResistantLearnerCalibrationHaltReason({
+      status: 'retained_substantive_failure',
+      job: { id: 'R1-indeterminate' },
+      registered_failure: expected,
+    }),
+    null,
+  );
+});
+
+test('combined launcher queues every R1 calibration job before B1', () => {
+  const entries = [B1_PATH, R1_PATH].map((designPath) => {
+    const loaded = loadTutorStubResistantLearnerDesign({ designPath });
+    return { loaded, plan: buildTutorStubResistantLearnerCalibrationPlan(loaded.design) };
+  });
+  const queued = tutorStubResistantLearnerCalibrationExecutionQueue(entries);
+  assert.equal(queued.length, 36);
+  assert.deepEqual(
+    queued.slice(0, 18).map(({ job }) => job.study),
+    Array(18).fill('R1'),
+  );
+  assert.deepEqual(
+    queued.slice(18).map(({ job }) => job.study),
+    Array(18).fill('B1'),
+  );
+});
+
 test('combined launcher continues typed substantive rows but halts on untyped failures or prohibited delivery', () => {
   for (const code of [
     'TUTOR_STUB_BOREDOM_PROOF_DAG_TRIGGER_MISSING',
     'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING',
+    'TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE',
   ]) {
     assert.equal(
       tutorStubResistantLearnerCalibrationHaltReason({

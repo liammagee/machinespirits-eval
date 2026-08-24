@@ -216,6 +216,7 @@ export async function enforceTutorStubResistanceSemanticCandidate({
     });
     const error = new Error('independent semantic adjudication was indeterminate');
     error.code = TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE;
+    error.substantiveStudyFailure = true;
     error.measurementIndeterminate = true;
     error.recoverable = false;
     error.semanticAdjudication = semanticAdjudication;
