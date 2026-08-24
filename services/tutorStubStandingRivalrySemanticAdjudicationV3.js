@@ -7,12 +7,10 @@ import {
   wrapTutorStubResistanceSemanticModelOutputV3,
 } from './tutorStubResistanceSemanticAdjudicationV3.js';
 
-export const TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 =
-  'prospective_standing_rivalry_semantic_v3';
+export const TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 = 'prospective_standing_rivalry_semantic_v3';
 export const TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_V3 =
   'config/tutor-stub-resistant-learner-r1-turn-gate-registration.v3.json';
-export const TUTOR_STUB_STANDING_RIVALRY_ENSEMBLE_SCHEMA_V3 =
-  'machinespirits.tutor-stub.standing-rivalry-ensemble.v3';
+export const TUTOR_STUB_STANDING_RIVALRY_ENSEMBLE_SCHEMA_V3 = 'machinespirits.tutor-stub.standing-rivalry-ensemble.v3';
 export const TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3 =
   'machinespirits.tutor-stub.standing-rivalry-turn-gate-registration.v3';
 

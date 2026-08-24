@@ -378,7 +378,9 @@ async function main() {
       preflight: runTutorStubResistantLearnerCompilationPreflight({ loaded, root: ROOT }),
     };
   });
-  if (entries.some(({ loaded }) => loaded.design.schema !== 'machinespirits.tutor-stub.resistant-learner-study-design.v1')) {
+  if (
+    entries.some(({ loaded }) => loaded.design.schema !== 'machinespirits.tutor-stub.resistant-learner-study-design.v1')
+  ) {
     throw new Error(
       'v2 and v3 resistant-learner designs require scripts/run-tutor-stub-resistant-learner-calibration-v2.js; the legacy GO-note launcher is v1-only',
     );

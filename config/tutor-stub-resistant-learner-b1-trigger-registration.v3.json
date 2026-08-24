@@ -21,13 +21,7 @@
       "effort": "low",
       "independent": true
     },
-    "objectiveValues": [
-      "rival_objective",
-      "tutor_world_thread",
-      "authored_bridge",
-      "neither",
-      "indeterminate"
-    ],
+    "objectiveValues": ["rival_objective", "tutor_world_thread", "authored_bridge", "neither", "indeterminate"],
     "workValues": [
       "new_evidence_bearing_work",
       "echo_or_restatement",

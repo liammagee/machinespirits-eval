@@ -106,13 +106,22 @@ test('v3 re-registers only the B1 trigger and R1 turn gate while carrying the v2
   for (const design of [b1, r1]) {
     assert.equal(design.schema, 'machinespirits.tutor-stub.resistant-learner-study-design.v3');
     assert.equal(design.callAuthority.grantsModelCalls, false);
-    assert.equal(design.measurement.readerPanel.protocolSource, 'config/tutor-stub-resistant-learner-semantic-registration.v2.json');
+    assert.equal(
+      design.measurement.readerPanel.protocolSource,
+      'config/tutor-stub-resistant-learner-semantic-registration.v2.json',
+    );
     assert.deepEqual(design.measurement.readerPanel.judges, ['codex.gpt-5.6-sol', 'claude-code.sonnet-5']);
     assert.equal(design.calibration.readerAgreementRules.eligibilityDenominator, 'completed_rows');
   }
-  assert.equal(b1.population.triggerRegistration, 'config/tutor-stub-resistant-learner-b1-trigger-registration.v3.json');
+  assert.equal(
+    b1.population.triggerRegistration,
+    'config/tutor-stub-resistant-learner-b1-trigger-registration.v3.json',
+  );
   assert.equal(b1.models.triggerObservation.semantics, 'prospective_rival_attention_semantic_v3');
-  assert.equal(r1.population.triggerRegistration, 'config/tutor-stub-resistant-learner-r1-turn-gate-registration.v3.json');
+  assert.equal(
+    r1.population.triggerRegistration,
+    'config/tutor-stub-resistant-learner-r1-turn-gate-registration.v3.json',
+  );
   assert.equal(r1.models.triggerObservation.semantics, 'prospective_standing_rivalry_semantic_v3');
   assert.equal(
     b1.attemptCeilings.calibrationMaximumReservations + r1.attemptCeilings.calibrationMaximumReservations,
@@ -219,7 +228,9 @@ test('B1 v3 rival work triggers and a stock boredom loop does not', () => {
     semanticAdjudication: stock,
   });
   assert.equal(notApplied, selection);
-  assert.ok(notAppliedState.resistanceActionRegisterStudy.history.at(-1).reasons.includes('no_single_axis_public_warrant'));
+  assert.ok(
+    notAppliedState.resistanceActionRegisterStudy.history.at(-1).reasons.includes('no_single_axis_public_warrant'),
+  );
 });
 
 test('R1 v3 makes an agreeing medium-confidence pair determinate and enforces exact-substring evidence', () => {
@@ -230,7 +241,9 @@ test('R1 v3 makes an agreeing medium-confidence pair determinate and enforces ex
   const caseId = 'R1-v3-authored-fixture';
   const source =
     'Your answer frame still lacks standing; I will compare the public timing test while reserving that wider dispute.';
-  const publicContext = [{ role: 'assistant', text: 'We can test the public timing distinction without settling the wider frame.' }];
+  const publicContext = [
+    { role: 'assistant', text: 'We can test the public timing distinction without settling the wider frame.' },
+  ];
   const vector = {
     jurisdiction_dispute: 'yes',
     interlocutor_standing_or_right: 'yes',
@@ -680,9 +693,7 @@ test('protocol-v2 launcher accepts v3 designs with the full zero-call plan', asy
   assert.equal(preflight.model_calls_executed, 0);
   assert.equal(preflight.production_writes, 0);
   assert.ok(
-    preflight.route_table.some(
-      (row) => row.transportRole === 'tutor_stub_resistant_learner_rival_attention_judge',
-    ),
+    preflight.route_table.some((row) => row.transportRole === 'tutor_stub_resistant_learner_rival_attention_judge'),
   );
 });
 

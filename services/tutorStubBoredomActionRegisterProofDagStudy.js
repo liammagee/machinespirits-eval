@@ -443,17 +443,16 @@ export function configureTutorStubBoredomProofDagExecution({ state, loaded, jobI
       (loaded.plan?.batches || []).map((batch) => batch.id),
     ),
     proof_dag_registration: clone(loaded.registration),
-    semantic_adjudicator:
-      ['prospective_v9', TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3].includes(
-        loaded.registration.design.observationSemantics,
-      )
-        ? {
-            required: true,
-            model_ref: loaded.registration.measurement?.semanticAdjudicator?.modelRef || null,
-            role: loaded.registration.measurement?.semanticAdjudicator?.role || null,
-            generator_self_judgment_allowed: false,
-          }
-        : null,
+    semantic_adjudicator: ['prospective_v9', TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3].includes(
+      loaded.registration.design.observationSemantics,
+    )
+      ? {
+          required: true,
+          model_ref: loaded.registration.measurement?.semanticAdjudicator?.modelRef || null,
+          role: loaded.registration.measurement?.semanticAdjudicator?.role || null,
+          generator_self_judgment_allowed: false,
+        }
+      : null,
     consumed: false,
     history: [],
     dynamic_confirmation: true,

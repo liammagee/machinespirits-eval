@@ -3,12 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 =
-  'prospective_rival_attention_semantic_v3';
+export const TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 = 'prospective_rival_attention_semantic_v3';
 export const TUTOR_STUB_RIVAL_ATTENTION_REGISTRATION_V3 =
   'config/tutor-stub-resistant-learner-b1-trigger-registration.v3.json';
-export const TUTOR_STUB_RIVAL_ATTENTION_MODEL_SCHEMA_V3 =
-  'machinespirits.tutor-stub.rival-attention-judge-response.v3';
+export const TUTOR_STUB_RIVAL_ATTENTION_MODEL_SCHEMA_V3 = 'machinespirits.tutor-stub.rival-attention-judge-response.v3';
 export const TUTOR_STUB_RIVAL_ATTENTION_ADJUDICATION_SCHEMA_V3 =
   'machinespirits.tutor-stub.rival-attention-adjudication.v3';
 export const TUTOR_STUB_RIVAL_ATTENTION_ROLE_V3 = 'tutor_stub_resistant_learner_rival_attention_judge';
@@ -163,7 +161,15 @@ export function parseTutorStubRivalAttentionAdjudicationV3({
 } = {}) {
   const parsed = jsonObject(raw);
   const issues = [];
-  const expectedKeys = ['schema', 'case_id', 'objective_advanced', 'work_status', 'evidence_quote', 'confidence', 'reason'];
+  const expectedKeys = [
+    'schema',
+    'case_id',
+    'objective_advanced',
+    'work_status',
+    'evidence_quote',
+    'confidence',
+    'reason',
+  ];
   if (!exactKeys(parsed, expectedKeys)) issues.push('judge response keys are not exact');
   if (parsed?.schema !== TUTOR_STUB_RIVAL_ATTENTION_MODEL_SCHEMA_V3) issues.push('judge response schema mismatch');
   if (parsed?.case_id !== caseId) issues.push('judge case id mismatch');
@@ -173,14 +179,12 @@ export function parseTutorStubRivalAttentionAdjudicationV3({
   const evidence = parsed?.evidence_quote;
   const needsEvidence = parsed?.objective_advanced && !['neither', 'indeterminate'].includes(parsed.objective_advanced);
   if (needsEvidence && !String(evidence || '')) issues.push('determinate objective requires evidence_quote');
-  if (!needsEvidence && evidence !== null) issues.push('neither or indeterminate objective requires null evidence_quote');
+  if (!needsEvidence && evidence !== null)
+    issues.push('neither or indeterminate objective requires null evidence_quote');
   if (String(evidence || '') && !String(learnerText || '').includes(evidence)) {
     issues.push('evidence_quote is not an exact substring of current learner turn');
   }
-  if (
-    observedRoute &&
-    (observedRoute.provider !== 'codex' || observedRoute.model !== 'gpt-5.6-sol')
-  ) {
+  if (observedRoute && (observedRoute.provider !== 'codex' || observedRoute.model !== 'gpt-5.6-sol')) {
     issues.push('independent route mismatch');
   }
   const determinate =

@@ -253,12 +253,11 @@ export async function runTutorStubResistantLearnerProtocolV2Preflight({
   const plannedRoleCalls = studies.reduce((sum, study) => sum + study.planned_role_calls, 0);
   const hardAttemptCeiling = studies.reduce((sum, study) => sum + study.hard_attempt_ceiling, 0);
   const checks = {
-    designs_are_v2_or_v3: entries.every(
-      ({ loaded }) =>
-        [
-          'machinespirits.tutor-stub.resistant-learner-study-design.v2',
-          'machinespirits.tutor-stub.resistant-learner-study-design.v3',
-        ].includes(loaded.design.schema),
+    designs_are_v2_or_v3: entries.every(({ loaded }) =>
+      [
+        'machinespirits.tutor-stub.resistant-learner-study-design.v2',
+        'machinespirits.tutor-stub.resistant-learner-study-design.v3',
+      ].includes(loaded.design.schema),
     ),
     compilation_passed: studies.every((study) => study.compilation.status === 'passed_zero_call'),
     route_probes_passed: routeProbes.every((probe) => probe.status === 'passed_zero_call'),

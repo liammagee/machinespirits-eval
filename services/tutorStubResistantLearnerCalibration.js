@@ -71,34 +71,35 @@ export function tutorStubResistantLearnerRuntimeModelRoutes(design) {
           ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3
           : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
       ).registration.measurement.judges;
-  const triggerObservation = b1 && v3
-    ? (() => {
-        const judge = loadTutorStubRivalAttentionRegistrationV3({
-          registrationPath: design?.population?.triggerRegistration,
-        }).registration.measurement.judge;
-        return { semantics: TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3, judges: [routeFields(judge)] };
-      })()
-    : b1
-    ? {
-        semantics: 'prospective_v9',
-        judges: [
-          {
-            id: 'boredom_observer',
-            modelRef: TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL_REF,
-            provider: TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_PROVIDER,
-            model: TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL,
-            effort: 'low',
-          },
-        ],
-      }
-    : {
-        semantics: v3 ? TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 : 'prospective_frame_resistance_semantic_v4',
-        judges: JUDGES.map((modelRef) => {
-          const judge = resistanceJudges.find((candidate) => candidate.modelRef === modelRef);
-          if (!judge) throw new Error(`registered R1 trigger route is missing ${modelRef}`);
-          return routeFields(judge);
-        }),
-      };
+  const triggerObservation =
+    b1 && v3
+      ? (() => {
+          const judge = loadTutorStubRivalAttentionRegistrationV3({
+            registrationPath: design?.population?.triggerRegistration,
+          }).registration.measurement.judge;
+          return { semantics: TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3, judges: [routeFields(judge)] };
+        })()
+      : b1
+        ? {
+            semantics: 'prospective_v9',
+            judges: [
+              {
+                id: 'boredom_observer',
+                modelRef: TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL_REF,
+                provider: TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_PROVIDER,
+                model: TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL,
+                effort: 'low',
+              },
+            ],
+          }
+        : {
+            semantics: v3 ? TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 : 'prospective_frame_resistance_semantic_v4',
+            judges: JUDGES.map((modelRef) => {
+              const judge = resistanceJudges.find((candidate) => candidate.modelRef === modelRef);
+              if (!judge) throw new Error(`registered R1 trigger route is missing ${modelRef}`);
+              return routeFields(judge);
+            }),
+          };
   return {
     tutor: LUNA_MODEL_REF,
     analysis: LUNA_MODEL_REF,
@@ -143,9 +144,8 @@ export function validateTutorStubResistantLearnerDesign(design) {
   if ((!v1 && !v2 && !v3) || ![B1_ID, R1_ID].includes(studyId)) {
     issues.push('design identity is unsupported');
   }
-  const expectedStatus = v2 || v3
-    ? 'prospective_zero_call_design_pending_typed_approval'
-    : 'prospective_zero_call_design_pending_gate_1_go';
+  const expectedStatus =
+    v2 || v3 ? 'prospective_zero_call_design_pending_typed_approval' : 'prospective_zero_call_design_pending_gate_1_go';
   if (design?.status !== expectedStatus) {
     issues.push('design status drifted');
   }
