@@ -811,6 +811,76 @@ test('Gate 1c observation names keep their v3 adjudicator routes instead of fall
   assert.equal(routed.version, 3);
 });
 
+test('Gate 1c v3 observation names pass the completed-turn marker path without changing rival-attention v9 clauses', async () => {
+  const boredContract = {
+    intent: { failureOperator: 'withhold effort from the tutor-world thread' },
+    observabilityContract: {
+      eligiblePolicies: ['*'],
+      eligibility: 'all_turns',
+      markerClauses: [[{ field: 'boredWithholding', values: [true] }]],
+      mustShowByTurn: 2,
+      minEligibleRate: 0.5,
+    },
+  };
+  const state = {
+    history: [{ role: 'assistant', content: 'Which account should we test next?' }],
+    turns: [
+      {
+        learner: 'Fine. Is this trial nearly done?',
+        tutor: 'Which account should we test next?',
+        classification: {
+          turn: {
+            request_type: 'off_task_or_mixed',
+            discourse_move: 'off_task',
+            evidence_use: 'none',
+            epistemic_stance: 'resistant',
+            agency: 'complying',
+          },
+        },
+        registerSelection: null,
+      },
+    ],
+    trace: [],
+    register: { policy: 'field' },
+    world: null,
+    historyTurns: 4,
+  };
+
+  for (const observationSemantics of [
+    TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3,
+    TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
+  ]) {
+    const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+      appendTraceEvent() {},
+      adjudicateResistanceSemanticCandidate: async () => ({
+        observationSemantics,
+        aggregate: { status: 'determinate', final_label: 'frame_refuser' },
+      }),
+      async callPromptModel() {
+        return { text: 'Stub learner reply.', provider: 'stub', model: 'stub' };
+      },
+      classificationFromCombinedAnalysis() {},
+      env: { TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: observationSemantics },
+      extractCombinedLearnerAnalysis() {},
+      learnerProfileContract: () => boredContract,
+      learnerProfileIds: () => ['bored'],
+      learnerProfilePrompt: () => 'test bored profile',
+      negativeFloorRegisters: [],
+    });
+    const generated = await runtime.generateAutomatedLearnerTurn({
+      state,
+      resolved: { provider: 'stub', model: 'stub' },
+      profile: 'bored',
+      turnNumber: 2,
+    });
+    assert.equal(generated.text, 'Stub learner reply.');
+    assert.match(generated.promptSnapshot.userPrompt, /# Private behavior cue/iu);
+    if (observationSemantics === TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3) {
+      assert.match(generated.promptSnapshot.userPrompt, /This turn may repair or progress/iu);
+    }
+  }
+});
+
 test('the launcher child path boots one B1 and one R1 v3 job through a zero-call stub transport', async (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'gate1c-child-boot-'));
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
