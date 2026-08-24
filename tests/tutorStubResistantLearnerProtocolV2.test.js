@@ -14,8 +14,20 @@ import {
   summarizeTutorStubResistantLearnerCalibration,
 } from '../services/tutorStubResistantLearnerCalibration.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
-import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
-import { selectTutorStubBoredomSemanticAdjudicatorFactory } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
+import {
+  createTutorStubAutomatedLearnerGenerationRuntime,
+  throwFrameRefuserAdherenceExhaustion,
+} from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
+import {
+  BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE,
+  selectTutorStubBoredomSemanticAdjudicatorFactory,
+  throwTutorStubBoredomProofDagAdherenceExhaustion,
+} from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
+import {
+  readTutorStubRegisteredStudyOutcome,
+  tutorStubRegisteredStudyOutcomeFromError,
+  writeTutorStubRegisteredStudyOutcome,
+} from '../services/tutorStubRegisteredStudyOutcome.js';
 import {
   buildTutorStubResistantLearnerProtocolV2Entries,
   buildTutorStubResistantLearnerTypedApproval,
@@ -50,8 +62,10 @@ import {
   tutorStubResistanceSemanticRegistrationPathForObservation,
 } from '../services/tutorStubResistanceSemanticRuntime.js';
 import {
+  extractTutorStubResistantLearnerCalibrationRow,
   runTutorStubResistantLearnerCalibrationChild,
   tutorStubResistantLearnerCalibrationChildSpec,
+  tutorStubResistantLearnerCalibrationHaltReason,
 } from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -65,6 +79,17 @@ function load(relativePath) {
     ...loadTutorStubResistantLearnerDesign({ designPath: relativePath, root: ROOT }),
     relativePath,
   };
+}
+
+function captureThrownError(callback) {
+  let caught = null;
+  try {
+    callback();
+  } catch (error) {
+    caught = error;
+  }
+  assert.ok(caught instanceof Error, 'expected callback to throw an Error');
+  return caught;
 }
 
 function installZeroCallCodexStub(binDir) {
@@ -879,6 +904,59 @@ test('Gate 1c v3 observation names pass the completed-turn marker path without c
       assert.match(generated.promptSnapshot.userPrompt, /This turn may repair or progress/iu);
     }
   }
+});
+
+test('bored proof-DAG adherence exhaustion round-trips as a retained substantive outcome', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'gate1c-bored-adherence-outcome-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const filePath = path.join(directory, 'registered-study-outcome.json');
+  const error = captureThrownError(() => throwTutorStubBoredomProofDagAdherenceExhaustion({ repairAttempts: 2 }));
+  const outcome = tutorStubRegisteredStudyOutcomeFromError({ error, jobId: 'B1-bored-adherence' });
+
+  assert.equal(outcome.code, BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE);
+  assert.equal(outcome.replacement_allowed, false);
+  assert.deepEqual(writeTutorStubRegisteredStudyOutcome({ filePath, error, jobId: 'B1-bored-adherence' }), outcome);
+  assert.deepEqual(readTutorStubRegisteredStudyOutcome({ filePath, expectedJobId: 'B1-bored-adherence' }), {
+    present: true,
+    valid: true,
+    outcome,
+    issues: [],
+  });
+});
+
+test('a failed child with a valid boredom adherence outcome is retained and does not halt the flight', (t) => {
+  const destination = fs.mkdtempSync(path.join(os.tmpdir(), 'gate1c-bored-adherence-row-'));
+  t.after(() => fs.rmSync(destination, { recursive: true, force: true }));
+  const job = { id: 'B1-bored-adherence-row' };
+  const jobRoot = path.join(destination, 'jobs', job.id);
+  const traceDir = path.join(jobRoot, 'traces');
+  fs.mkdirSync(traceDir, { recursive: true });
+  const spec = {
+    jobRoot,
+    traceDir,
+    transcript: path.join(jobRoot, 'transcript.json'),
+    registeredStudyOutcome: path.join(jobRoot, 'registered-study-outcome.json'),
+  };
+  const error = captureThrownError(() => throwTutorStubBoredomProofDagAdherenceExhaustion({ repairAttempts: 2 }));
+  writeTutorStubRegisteredStudyOutcome({ filePath: spec.registeredStudyOutcome, error, jobId: job.id });
+
+  const row = extractTutorStubResistantLearnerCalibrationRow({
+    job,
+    spec,
+    exit: { code: 1, signal: null, spawn_error: null },
+  });
+  assert.equal(row.status, 'retained_substantive_failure');
+  assert.equal(row.registered_failure.code, BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE);
+  assert.equal(tutorStubResistantLearnerCalibrationHaltReason(row), null);
+});
+
+test('frame-refuser adherence exhaustion remains an unregistered technical failure', () => {
+  const error = captureThrownError(() =>
+    throwFrameRefuserAdherenceExhaustion({ profile: 'frame_refuser', repairAttempts: 1 }),
+  );
+  assert.equal(error.code, 'TUTOR_STUB_FRAME_REFUSER_ADHERENCE_EXHAUSTED');
+  assert.equal(error.disposition, 'technical_failure_no_public_candidate');
+  assert.equal(tutorStubRegisteredStudyOutcomeFromError({ error, jobId: 'R1-frame-refuser' }), null);
 });
 
 test('the launcher child path boots one B1 and one R1 v3 job through a zero-call stub transport', async (t) => {
