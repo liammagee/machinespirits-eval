@@ -466,6 +466,7 @@ function compactProgressionHandoffInstruction(contract) {
   }
   return [
     action,
+    oneLine(contract.development?.study_compact_action_instruction),
     compactStanceInstruction(
       contract.performance?.engagement_stance,
       contract.performance?.study_realization_contrast_instruction,
@@ -670,6 +671,7 @@ export function buildTutorStubFirstDraftContract({
   sourceAccessibilityOwner = 'performance_response',
 } = {}) {
   const configuration = responseConfiguration || {};
+  const studyIntervention = configuration.resistance_action_register_intervention || null;
   const effectivePublicObligationDirective =
     publicObligationDirective || configuration.public_obligation_directive || null;
   const discoursePlane = responseCompositionFrame?.discourse_plane || configuration.discourse_plane || null;
@@ -763,10 +765,14 @@ export function buildTutorStubFirstDraftContract({
     : directionOnlyWithoutNewEvidence && actionFamily === 'stage_next_step'
       ? 'No new evidence is available in this reply. Restage one already-public clue and state what it supports. Then name the next public check with a concrete verb such as test, check, compare, or trace. Do not ask the learner to invent unseen evidence.'
       : ACTION_CUES[actionFamily] || ACTION_CUES.clarify_distinction;
-  const actionInstruction =
+  const actionInstruction = [
     part === 'advocate' && actionFamily === 'stage_next_step'
       ? `${baseActionInstruction} Put that concrete operation in the final handoff after the separate PERFORMANCE entry sentence. Do not turn the handoff into a request for the learner to name unspecified evidence.`
-      : baseActionInstruction;
+      : baseActionInstruction,
+    oneLine(studyIntervention?.action_instruction),
+  ]
+    .filter(Boolean)
+    .join(' ');
   const progression = compileTutorStubTurnProgressionContract({
     learnerText,
     publicQuestion,
@@ -819,6 +825,9 @@ export function buildTutorStubFirstDraftContract({
     development: {
       action_family: actionFamily,
       instruction: [acceleratedLearnerInstruction, actionInstruction].filter(Boolean).join(' '),
+      ...(studyIntervention?.compact_action_instruction
+        ? { study_compact_action_instruction: oneLine(studyIntervention.compact_action_instruction) }
+        : {}),
       learner_acceleration_instruction: acceleratedLearnerInstruction,
       support_level: Number.isFinite(Number(configuration.support_level)) ? Number(configuration.support_level) : null,
       support_instruction:
