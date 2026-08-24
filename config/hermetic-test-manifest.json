@@ -370,6 +370,7 @@
         "tests/legacyChatAssistProposal.test.js",
         "tests/legacyChatEngineBoundary.test.js",
         "tests/lemmaLayer.test.js",
+        "tests/lintPrePushHook.test.js",
         "tests/liveCompose.test.js",
         "tests/localCiRunner.test.js",
         "tests/m0TwoJudgeQualityReport.test.js",
