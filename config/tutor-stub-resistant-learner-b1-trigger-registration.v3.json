@@ -1,0 +1,63 @@
+{
+  "schema": "machinespirits.tutor-stub.rival-attention-trigger-registration.v3",
+  "version": 3,
+  "status": "prospective_gate_1c_zero_call_registration",
+  "workplanItem": "resistant-learner-strategy-close",
+  "observationSemantics": "prospective_rival_attention_semantic_v3",
+  "construct": "public objective advancement rather than boredom affect",
+  "instrument": {
+    "implementationPath": "services/tutorStubRivalAttentionSemanticAdjudicationV3.js",
+    "responseSchema": "machinespirits.tutor-stub.rival-attention-judge-response.v3",
+    "publicInputs": ["bounded public transcript", "current public learner turn"],
+    "privateRivalDagVisible": false,
+    "regexKeywordOrAffectAuthority": "none"
+  },
+  "measurement": {
+    "judge": {
+      "id": "rival_attention_observer",
+      "modelRef": "codex.gpt-5.6-sol",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "effort": "low",
+      "independent": true
+    },
+    "objectiveValues": [
+      "rival_objective",
+      "tutor_world_thread",
+      "authored_bridge",
+      "neither",
+      "indeterminate"
+    ],
+    "workValues": [
+      "new_evidence_bearing_work",
+      "echo_or_restatement",
+      "stock_affect_only",
+      "no_objective_work",
+      "indeterminate"
+    ],
+    "triggerRule": {
+      "objective": "rival_objective",
+      "workStatus": "new_evidence_bearing_work",
+      "maximumLearnerTurn": 4,
+      "echoOrRestatementCounts": false,
+      "stockBoredomAffectCounts": false,
+      "authoredBridgeCounts": false,
+      "eligibleConfidence": ["high", "medium"],
+      "indeterminateDisposition": "turn_ineligible_read_next_turn"
+    },
+    "evidenceContract": {
+      "determinateObjectiveRequiresQuote": true,
+      "quoteRule": "exact_substring_of_current_public_learner_turn",
+      "paraphraseAllowed": false
+    }
+  },
+  "dispositions": {
+    "noTriggerByTurn4": "retain typed trigger-missing row; no rerun, repair, replacement, or recoding",
+    "measurementIndeterminateBeforeTurn4": "pass over this turn and read the next turn",
+    "measurementIndeterminateAtTurn4": "retain typed trigger-missing row; no rerun, repair, replacement, or recoding"
+  },
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "launchAuthorized": false
+  }
+}

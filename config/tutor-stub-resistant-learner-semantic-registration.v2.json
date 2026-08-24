@@ -3,7 +3,10 @@
   "version": 2,
   "status": "prospective_zero_call_registration",
   "workplanItem": "resistant-learner-strategy-close",
-  "appliesToDesignSchemas": ["machinespirits.tutor-stub.resistant-learner-study-design.v2"],
+  "appliesToDesignSchemas": [
+    "machinespirits.tutor-stub.resistant-learner-study-design.v2",
+    "machinespirits.tutor-stub.resistant-learner-study-design.v3"
+  ],
   "readerPanel": {
     "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
     "effort": "low",

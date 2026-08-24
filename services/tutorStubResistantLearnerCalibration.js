@@ -20,12 +20,19 @@ import { tutorStubResistantLearnerSemanticJudgeRoutes } from './tutorStubResista
 import {
   loadTutorStubResistanceSemanticRegistration,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3,
 } from './tutorStubResistanceSemanticRuntime.js';
+import {
+  TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3,
+  loadTutorStubRivalAttentionRegistrationV3,
+} from './tutorStubRivalAttentionSemanticAdjudicationV3.js';
+import { TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 } from './tutorStubStandingRivalrySemanticAdjudicationV3.js';
 import { compileTutorStubTurnProgressionContract } from './tutorStubTurnProgressionContract.js';
 import { mintTutorStubRivalLearnerDag, tutorStubRivalLearnerDagPrompt } from './tutorStubRivalLearnerDag.js';
 
 const DESIGN_SCHEMA_V1 = 'machinespirits.tutor-stub.resistant-learner-study-design.v1';
 const DESIGN_SCHEMA_V2 = 'machinespirits.tutor-stub.resistant-learner-study-design.v2';
+const DESIGN_SCHEMA_V3 = 'machinespirits.tutor-stub.resistant-learner-study-design.v3';
 const B1_ID = 'resistant-learner-b1-authored-pickup';
 const R1_ID = 'resistant-learner-r1-graded-engagement';
 const BOREDOM_TEMPLATE = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json';
@@ -46,17 +53,32 @@ const B1_ACTION_LEVEL = Object.freeze({
 });
 const LUNA_MODEL_REF = 'codex.gpt-5.6-luna';
 
+function isRivalDagDesign(design) {
+  return [DESIGN_SCHEMA_V2, DESIGN_SCHEMA_V3].includes(design?.schema);
+}
+
 function routeFields({ id, modelRef, provider, model, effort }) {
   return { id, modelRef, provider, model, effort };
 }
 
 export function tutorStubResistantLearnerRuntimeModelRoutes(design) {
   const b1 = design?.studyId === B1_ID;
-  const resistanceV4Judges = b1
+  const v3 = design?.schema === DESIGN_SCHEMA_V3;
+  const resistanceJudges = b1
     ? []
-    : loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4).registration
-        .measurement.judges;
-  const triggerObservation = b1
+    : loadTutorStubResistanceSemanticRegistration(
+        v3
+          ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3
+          : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
+      ).registration.measurement.judges;
+  const triggerObservation = b1 && v3
+    ? (() => {
+        const judge = loadTutorStubRivalAttentionRegistrationV3({
+          registrationPath: design?.population?.triggerRegistration,
+        }).registration.measurement.judge;
+        return { semantics: TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3, judges: [routeFields(judge)] };
+      })()
+    : b1
     ? {
         semantics: 'prospective_v9',
         judges: [
@@ -70,9 +92,9 @@ export function tutorStubResistantLearnerRuntimeModelRoutes(design) {
         ],
       }
     : {
-        semantics: 'prospective_frame_resistance_semantic_v4',
+        semantics: v3 ? TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 : 'prospective_frame_resistance_semantic_v4',
         judges: JUDGES.map((modelRef) => {
-          const judge = resistanceV4Judges.find((candidate) => candidate.modelRef === modelRef);
+          const judge = resistanceJudges.find((candidate) => candidate.modelRef === modelRef);
           if (!judge) throw new Error(`registered R1 trigger route is missing ${modelRef}`);
           return routeFields(judge);
         }),
@@ -117,10 +139,11 @@ export function validateTutorStubResistantLearnerDesign(design) {
   const studyId = design?.studyId;
   const v1 = design?.schema === DESIGN_SCHEMA_V1;
   const v2 = design?.schema === DESIGN_SCHEMA_V2;
-  if ((!v1 && !v2) || ![B1_ID, R1_ID].includes(studyId)) {
+  const v3 = design?.schema === DESIGN_SCHEMA_V3;
+  if ((!v1 && !v2 && !v3) || ![B1_ID, R1_ID].includes(studyId)) {
     issues.push('design identity is unsupported');
   }
-  const expectedStatus = v2
+  const expectedStatus = v2 || v3
     ? 'prospective_zero_call_design_pending_typed_approval'
     : 'prospective_zero_call_design_pending_gate_1_go';
   if (design?.status !== expectedStatus) {
@@ -217,6 +240,33 @@ export function validateTutorStubResistantLearnerDesign(design) {
     ) {
       issues.push('B1 v2 rival-DAG design drifted');
     }
+    if (
+      v3 &&
+      (design?.revision !== 1 ||
+        design?.supersedesDesign !== 'config/tutor-stub-resistant-learner-b1-design.v2.json' ||
+        design?.population?.profile !== 'bored-rival-dag-v3' ||
+        design?.population?.baseCompatibilityId !== 'bored' ||
+        design?.population?.triggerRegistration !==
+          'config/tutor-stub-resistant-learner-b1-trigger-registration.v3.json' ||
+        design?.population?.trigger !==
+          'first determinate public turn that performs new evidence-bearing work on the rival objective rather than the tutor-world thread, no later than learner turn 4' ||
+        !exactValues(design?.population?.worlds, B1_WORLDS) ||
+        !exactValues(
+          actions.map((row) => row.id),
+          Object.keys(B1_ACTION_LEVEL),
+        ) ||
+        design?.rivalDagPersona?.mechanism !== 'content_rivalry' ||
+        design?.rivalDagPersona?.concessionCondition?.kind !== 'public_tutor_move_bears_on_open_rival_node' ||
+        design?.rivalDagPersona?.concessionCondition?.matchingAlgorithm?.id !== 'normalized_public_token_overlap_v1' ||
+        design?.measurement?.primaryEndpoint?.id !== 'learner_authored_tutor_or_bridge_pickup_within_five_turns' ||
+        design?.measurement?.readerPanel?.protocolSource !==
+          'config/tutor-stub-resistant-learner-semantic-registration.v2.json' ||
+        design?.models?.triggerObservation?.semantics !== TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 ||
+        design?.population?.outcomeHorizonPostTriggerLearnerTurns !== 5 ||
+        design?.randomization?.masterSeed !== 2026082301)
+    ) {
+      issues.push('B1 v3 rival-attention design drifted');
+    }
   }
   if (studyId === R1_ID) {
     if (
@@ -263,6 +313,28 @@ export function validateTutorStubResistantLearnerDesign(design) {
         design?.randomization?.masterSeed !== 2026082302)
     ) {
       issues.push('R1 v2 rival-DAG design drifted');
+    }
+    if (
+      v3 &&
+      (design?.revision !== 1 ||
+        design?.supersedesDesign !== 'config/tutor-stub-resistant-learner-r1-design.v2.json' ||
+        design?.population?.profile !== 'frame_refuser-r1-rival-dag-v3' ||
+        design?.population?.baseCompatibilityId !== 'frame_refuser' ||
+        design?.population?.triggerRegistration !==
+          'config/tutor-stub-resistant-learner-r1-turn-gate-registration.v3.json' ||
+        !exactValues(design?.population?.worlds, ['world_005_marrick', 'world_030_rowan_flat']) ||
+        design?.rivalDagPersona?.mechanism !== 'standing_rivalry' ||
+        design?.rivalDagPersona?.concessionCondition?.kind !== 'public_tutor_move_bears_on_open_rival_node' ||
+        design?.rivalDagPersona?.concessionCondition?.matchingAlgorithm?.id !== 'normalized_public_token_overlap_v1' ||
+        design?.intervention?.action !== 'test_bounded_distinction' ||
+        design?.measurement?.primaryEndpoint?.id !== 'final_graded_rival_frame_engagement_at_six_turns' ||
+        design?.measurement?.readerPanel?.protocolSource !==
+          'config/tutor-stub-resistant-learner-semantic-registration.v2.json' ||
+        design?.models?.triggerObservation?.semantics !== TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 ||
+        design?.population?.outcomeHorizonPostTriggerLearnerTurns !== 6 ||
+        design?.randomization?.masterSeed !== 2026082302)
+    ) {
+      issues.push('R1 v3 standing-rivalry design drifted');
     }
   }
   return { valid: issues.length === 0, issues };
@@ -398,6 +470,15 @@ export function tutorStubFrameRefuserR1Prompt(design) {
 function configureB1({ state, root, loaded, plan, job, appendTraceEvent }) {
   const template = JSON.parse(fs.readFileSync(path.join(root, BOREDOM_TEMPLATE), 'utf8'));
   template.design.treatment.realizations = [...REGISTERS];
+  if (loaded.design.schema === DESIGN_SCHEMA_V3) {
+    template.design.observationSemantics = loaded.design.models.triggerObservation.semantics;
+    template.measurement.semanticAdjudicator = {
+      schema: 'machinespirits.tutor-stub.rival-attention-adjudication.v3',
+      modelRef: 'codex.gpt-5.6-sol',
+      role: 'tutor_stub_resistant_learner_rival_attention_judge',
+      registrationPath: loaded.design.population.triggerRegistration,
+    };
+  }
   const runtimeLoaded = {
     ...loaded,
     registration: template,
@@ -415,7 +496,7 @@ function configureB1({ state, root, loaded, plan, job, appendTraceEvent }) {
     design_sha256: loaded.sha256,
     assignment_index: job.assignment_index,
   });
-  if (loaded.design.schema === DESIGN_SCHEMA_V2) {
+  if (isRivalDagDesign(loaded.design)) {
     state.resistanceActionRegisterStudy.study_assignment_instruction_overrides = structuredClone(
       loaded.design.tutorDeliveryContract,
     );
@@ -435,6 +516,9 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     repeat: 'block_01',
   });
   runtime.registration.design.world = job.world;
+  if (loaded.design.schema === DESIGN_SCHEMA_V3) {
+    runtime.registration.design.trigger.observationSemantics = loaded.design.models.triggerObservation.semantics;
+  }
   runtime.registration.design.factors.realization = Object.fromEntries([
     ['levels', [...REGISTERS]],
     ['plain', 'plain'],
@@ -464,11 +548,11 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     maximum_trigger_turn: 2,
     outcome_horizon_learner_turns: 6,
     final_learner_without_tutor_reply: true,
-    ...(loaded.design.schema === DESIGN_SCHEMA_V2
+    ...(isRivalDagDesign(loaded.design)
       ? { study_assignment_instruction_overrides: structuredClone(loaded.design.tutorDeliveryContract) }
       : {}),
   };
-  if (loaded.design.schema === DESIGN_SCHEMA_V2) {
+  if (isRivalDagDesign(loaded.design)) {
     state.privateRivalLearnerDag = mintTutorStubRivalLearnerDag({ design: loaded.design, job, root });
   }
   appendTraceEvent(state.trace, {
@@ -482,7 +566,7 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     designPath: path.relative(root, loaded.path),
     designSha256: loaded.sha256,
     treatment: {
-      profile: loaded.design.schema === DESIGN_SCHEMA_V2 ? loaded.design.population.profile : 'frame_refuser-r1-v1',
+      profile: isRivalDagDesign(loaded.design) ? loaded.design.population.profile : 'frame_refuser-r1-v1',
       action: job.action,
       host_action_family: job.host_action_family,
       register: job.register,
@@ -513,7 +597,7 @@ export function configureTutorStubResistantLearnerCalibrationFromCli({
   if (!job) throw new Error(`resistant-learner calibration job ${JSON.stringify(jobId)} is not registered`);
   const b1 = loaded.design.studyId === B1_ID;
   const expectedTurns = job.maximum_trigger_turn + job.outcome_horizon_learner_turns;
-  const expectedObservation = b1 ? 'prospective_v9' : 'prospective_frame_resistance_semantic_v4';
+  const expectedObservation = loaded.design.models.triggerObservation.semantics;
   const budget = Number(args['model-call-budget']);
   if (
     !state ||
@@ -612,7 +696,7 @@ function auditRuntimeWorldRegistry(worlds, root) {
 export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root = process.cwd() } = {}) {
   const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded?.design);
   const b1 = loaded.design.studyId === B1_ID;
-  const v2 = loaded.design.schema === DESIGN_SCHEMA_V2;
+  const v2 = isRivalDagDesign(loaded.design);
   const worldRegistry = auditRuntimeWorldRegistry(loaded.design.population.worlds, root);
   const runtimeModelRoutes = tutorStubResistantLearnerRuntimeModelRoutes(loaded.design);
   const modelRoute = {
@@ -770,7 +854,7 @@ function readerField(row, instrument, readerId, field) {
 
 function agreementSummary(rows, design) {
   const study = design.studyId === B1_ID ? 'B1' : 'R1';
-  const v2 = design.schema === DESIGN_SCHEMA_V2;
+  const v2 = isRivalDagDesign(design);
   const primaryEndpoint = design.measurement.primaryEndpoint.id;
   const definitions =
     study === 'B1'
@@ -868,7 +952,7 @@ function rateFloorCount(total, rate, floor = 0) {
 
 export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) {
   const study = design.studyId === B1_ID ? 'B1' : 'R1';
-  const v2 = design.schema === DESIGN_SCHEMA_V2;
+  const v2 = isRivalDagDesign(design);
   const completed = rows.filter((row) => row.status === 'complete');
   const retainedSubstantiveFailures = rows.filter((row) => row.status === 'retained_substantive_failure');
   const executed = completed.length + retainedSubstantiveFailures.length;

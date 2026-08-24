@@ -142,10 +142,13 @@ export function tutorStubResistantLearnerCalibrationChildSpec({ loaded, job, des
   const designPath = path.relative(ROOT, loaded.path);
   const b1 = job.study === 'B1';
   const models = loaded.design.models;
-  const v2 = loaded.design.schema === 'machinespirits.tutor-stub.resistant-learner-study-design.v2';
-  const rivalDag = v2 ? mintTutorStubRivalLearnerDag({ design: loaded.design, job, root: ROOT }) : null;
+  const rivalDagDesign = [
+    'machinespirits.tutor-stub.resistant-learner-study-design.v2',
+    'machinespirits.tutor-stub.resistant-learner-study-design.v3',
+  ].includes(loaded.design.schema);
+  const rivalDag = rivalDagDesign ? mintTutorStubRivalLearnerDag({ design: loaded.design, job, root: ROOT }) : null;
   if (rivalDag) writeOnce(path.join(jobRoot, 'rival-learner-dag.json'), rivalDag);
-  const profile = v2
+  const profile = rivalDagDesign
     ? tutorStubRivalLearnerDagPrompt({ design: loaded.design, job, root: ROOT })
     : b1
       ? 'bored'
@@ -159,9 +162,7 @@ export function tutorStubResistantLearnerCalibrationChildSpec({ loaded, job, des
     stderr: path.join(jobRoot, 'stderr.log'),
     env: {
       ...process.env,
-      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: b1
-        ? 'prospective_v9'
-        : 'prospective_frame_resistance_semantic_v4',
+      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: models.triggerObservation.semantics,
       TUTOR_STUB_REMEMBER_SETTINGS: '0',
       TUTOR_STUB_REGISTERED_STUDY_OUTCOME_FILE: registeredStudyOutcome,
     },
@@ -377,11 +378,9 @@ async function main() {
       preflight: runTutorStubResistantLearnerCompilationPreflight({ loaded, root: ROOT }),
     };
   });
-  if (
-    entries.some(({ loaded }) => loaded.design.schema === 'machinespirits.tutor-stub.resistant-learner-study-design.v2')
-  ) {
+  if (entries.some(({ loaded }) => loaded.design.schema !== 'machinespirits.tutor-stub.resistant-learner-study-design.v1')) {
     throw new Error(
-      'v2 resistant-learner designs require scripts/run-tutor-stub-resistant-learner-calibration-v2.js; the legacy GO-note launcher is v1-only',
+      'v2 and v3 resistant-learner designs require scripts/run-tutor-stub-resistant-learner-calibration-v2.js; the legacy GO-note launcher is v1-only',
     );
   }
   if (

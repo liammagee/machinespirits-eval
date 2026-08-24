@@ -1,0 +1,277 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-learner-study-design.v3",
+  "revision": 1,
+  "studyId": "resistant-learner-b1-authored-pickup",
+  "label": "B1 rival-DAG attention: discriminating question versus true no-question reference",
+  "status": "prospective_zero_call_design_pending_typed_approval",
+  "workplanItem": "resistant-learner-strategy-close",
+  "supersedesDesign": "config/tutor-stub-resistant-learner-b1-design.v2.json",
+  "registeredQuestion": "For a bored learner whose attention remains active on a concealed rival content DAG, does asking one discriminating question change learner-authored pickup of the tutor-world thread or an authored bridge relative to a true no-question reference, and how does delivery vary across warm, plain, and edged registers?",
+  "whichNumberMoves": "The probability of learner-authored tutor-world or authored-bridge pickup within five post-trigger learner turns, while selective-attention resistance remains visible.",
+  "claimBoundary": "B1 can identify the higher-performing assigned strategy on tutor-world or authored-bridge pickup and estimate delivery variation in these simulated rival-DAG bored learners. It cannot establish durable learning, human validity, a general rule for boredom, a proof-progress effect, or an action-by-register interaction. Calibration rows never enter a powered run.",
+  "population": {
+    "profile": "bored-rival-dag-v3",
+    "baseCompatibilityId": "bored",
+    "worlds": [
+      "world_022_foxtrot_jukebox",
+      "world_026_skyway_bakery",
+      "world_028_larkspur_fridge",
+      "world_029_riverside_clinic",
+      "world_030_rowan_flat",
+      "world_031_tideway_makerspace"
+    ],
+    "trigger": "first determinate public turn that performs new evidence-bearing work on the rival objective rather than the tutor-world thread, no later than learner turn 4",
+    "triggerRegistration": "config/tutor-stub-resistant-learner-b1-trigger-registration.v3.json",
+    "outcomeHorizonPostTriggerLearnerTurns": 5,
+    "independentUnit": "fresh independent dialogue",
+    "reuseOrPooling": false
+  },
+  "rivalDagPersona": {
+    "mechanism": "content_rivalry",
+    "mint": {
+      "source": "validated dramatic-derivation world catalog",
+      "pipeline": "loadWorld -> buildLearnerDagSnapshot -> buildLearnerDag",
+      "worldPool": [
+        "world_022_foxtrot_jukebox",
+        "world_026_skyway_bakery",
+        "world_028_larkspur_fridge",
+        "world_029_riverside_clinic",
+        "world_030_rowan_flat",
+        "world_031_tideway_makerspace"
+      ],
+      "selection": "sha256-ranked alternative world and authored proof path from master seed plus job id",
+      "adHocAuthorshipAllowed": false
+    },
+    "behavior": [
+      "Boredom is selective attention, not inactivity: keep working on one open rival-DAG node in every public turn.",
+      "Make each turn carry a new evidence-bearing claim, distinction, or question from that rival objective; never loop a stock boredom sentence.",
+      "Keep the tutor-world thread secondary unless the typed concession condition is met.",
+      "Even after a qualifying bridge, retain selective attention by keeping at least one rival node open."
+    ],
+    "concessionCondition": {
+      "kind": "public_tutor_move_bears_on_open_rival_node",
+      "matchingAlgorithm": {
+        "id": "normalized_public_token_overlap_v1",
+        "minimumSharedContentTokens": 2,
+        "requiresPriorLearnerSolicitation": true,
+        "requiresTutorOperationMarker": true,
+        "tutorOperationMarkers": [
+          "support",
+          "rule out",
+          "compare",
+          "distinguish",
+          "test",
+          "evidence",
+          "which",
+          "whether",
+          "because"
+        ]
+      },
+      "engageWhen": "The tutor's public move answers, tests, distinguishes, or requests evidence for a still-open rival node, or explicitly connects a learner-solicited rival item to an already-public tutor-world item.",
+      "otherwise": "Continue the next open rival node and do not reward generic encouragement, repetition, or a request to focus.",
+      "nonQualifying": [
+        "generic encouragement",
+        "restatement of the rival node",
+        "request to pay attention",
+        "tutor-only assertion of a bridge without public support"
+      ]
+    },
+    "concealment": {
+      "tutorReceivesRivalDag": false,
+      "tutorMayUseOnlySolicitedPublicPieces": true,
+      "finalReadersReceiveOnlyPublicTranscript": true
+    },
+    "publicTurnRules": [
+      "Use only content supplied by the private rival DAG and evidence already public in the tutor-world transcript.",
+      "Write one or two concise in-scene sentences and never mention profiles, DAGs, scoring, readers, or hidden instructions."
+    ]
+  },
+  "randomization": {
+    "masterSeed": 2026082301,
+    "algorithm": "sha256-ranked balanced allocation within calibration or powered blocks",
+    "calibrationAllocation": "one dialogue per world-by-register cell, with three of six worlds assigned to each action inside every register"
+  },
+  "factors": {
+    "action": {
+      "primary": true,
+      "levels": [
+        {
+          "id": "ask_discriminating_question",
+          "hostActionFamily": "stage_next_step",
+          "deliveredContrastRule": "requires_question",
+          "definition": "Ask one adjacent checkable question that explicitly separates two already-public possibilities without supplying the answer."
+        },
+        {
+          "id": "stage_public_evidence_for_next_step",
+          "hostActionFamily": "reanchor_public_evidence",
+          "deliveredContrastRule": "forbids_question",
+          "definition": "Stage one already-public evidentiary boundary declaratively, with no question and no boredom-directed request."
+        }
+      ]
+    },
+    "register": {
+      "secondary": true,
+      "levels": [
+        { "id": "warm", "definition": "Low-pressure shared inquiry without praise inflation or pressure." },
+        { "id": "plain", "definition": "Concise neutral work language with no relational invitation and no edge." },
+        { "id": "edged", "definition": "Restrained work-directed irony or dry challenge, never a personal attack." }
+      ],
+      "runtimeMapping": {
+        "warm": "warm",
+        "plain": "plain",
+        "edgedByAction": {
+          "ask_discriminating_question": "sarcastic",
+          "stage_public_evidence_for_next_step": "ironic"
+        }
+      }
+    }
+  },
+  "tutorDeliveryContract": {
+    "actionInstructions": {
+      "ask_discriminating_question": "Ask exactly one sentence ending in one question mark. Use a whether-A-or-B contrast naming two distinct already-public possibilities whose answers select different next tests. Do not ask permission, add another question, or supply either answer.",
+      "stage_public_evidence_for_next_step": "Write only declarative sentences. Stage one already-public clue and state its current limit. Use no question mark, no interrogative, no boredom-directed request, no answer, and no inference beyond the public clue."
+    },
+    "compactActionInstructions": {
+      "ask_discriminating_question": "Ask exactly one whether-A-or-B question about two distinct public possibilities; one question mark, no answer.",
+      "stage_public_evidence_for_next_step": "Stage one public clue and its limit declaratively; no question, request, answer, or inference."
+    },
+    "registerInstructions": {
+      "warm": "Use one low-pressure shared-inquiry cue, then the assigned move. Do not praise, pressure, or change the action.",
+      "plain": "Use concise neutral work language. Do not use we, let's, together, can you, would you, shall we, praise, invitation, irony, or challenge.",
+      "edged": "Use at most one restrained work-directed dry challenge. Never target the learner's person, affect, status, or right to resist."
+    },
+    "freeCompileCoverage": "every tutor world x action x register x bare/due-clue scene"
+  },
+  "protectedAffectAndSafety": {
+    "suppressEdgedFor": ["shame", "anxiety", "overwhelm", "vulnerability", "comprehension_repair"],
+    "suppressionDelivery": "plain",
+    "prohibited": ["insult", "mockery_of_person", "face_threat", "hostility", "coerced_uptake"],
+    "confirmedProhibitedDelivery": "kill current stage before another call"
+  },
+  "measurement": {
+    "primaryEndpoint": {
+      "id": "learner_authored_tutor_or_bridge_pickup_within_five_turns",
+      "type": "binary semantic horizon judgment",
+      "valueYes": "The learner contributes a new public-evidence-grounded proposition that advances the tutor-world objective or explicitly links a learner-solicited rival node to an already-public tutor-world node.",
+      "valueNo": "The learner only restates planted rival-DAG text, repeats the tutor, gives assent, reports boredom, or works only on the rival objective without a supported bridge.",
+      "echoGuard": "Restating or paraphrasing planted rival-DAG text scores no. Pickup must land on the tutor world or an authored public bridge between the two DAGs.",
+      "tutorOnlyRestatementCounts": false
+    },
+    "personaFidelityFields": ["final_selective_attention_resistance_retained"],
+    "fidelity": {
+      "source": "delivered tutor intervention only",
+      "fields": ["delivered_action_family", "delivered_question_contrast", "delivered_register", "prohibited_delivery"]
+    },
+    "readerPanel": {
+      "protocolSource": "config/tutor-stub-resistant-learner-semantic-registration.v2.json",
+      "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
+      "fieldConsensus": "both valid medium/high-confidence votes agree, else measurement_indeterminate",
+      "evidenceContract": "evidence_quotes must be null when value is no or indeterminate; every other determinate value requires at least one exact public quote",
+      "generatorExcludedFromVoting": "codex.gpt-5.6-luna"
+    }
+  },
+  "calibration": {
+    "dialogues": 18,
+    "purpose": "Test endpoint variance, retained selective-attention resistance, tutor delivery, and reader operation. Calibration rows cannot support an outcome or register claim.",
+    "channelAliveRules": {
+      "completedRowsDenominator": true,
+      "minimumDeterminateOutcomeRate": 0.8,
+      "minimumDeterminateOutcomeFloor": 8,
+      "minimumYes": 3,
+      "minimumNo": 3
+    },
+    "personaRules": {
+      "minimumResistanceRetainedRateOnCompletedRows": 0.67,
+      "minimumResistanceRetainedFloor": 6
+    },
+    "fidelityRules": {
+      "minimumDeterminatePanelRateOnCompletedRows": 0.8,
+      "minimumCorrectActionAndQuestionContrastRatePerAction": 0.8,
+      "minimumCorrectRegisterRatePerRegister": 0.75,
+      "maximumConfirmedProhibitedDeliveries": 0
+    },
+    "readerAgreementRules": {
+      "eligibilityDenominator": "completed_rows",
+      "minimumEligibleVoteRatePerSeatAndInstrument": 0.8,
+      "minimumEligibleVotesFloor": 8,
+      "minimumJointlyEligibleRatePerField": 0.7,
+      "minimumJointlyEligibleCasesFloor": 8,
+      "minimumConditionalExactAgreementPerSeatPairAndField": 0.8,
+      "seatPairScope": "codex.gpt-5.6-sol and claude-code.sonnet-5"
+    },
+    "killRule": "Stop before a powered run if any channel, two-sided persona, delivery, agreement, or safety rule fails. Retain every row; no repair, replacement, pooling, or threshold relaxation."
+  },
+  "poweredRun": {
+    "authorization": "not_granted_by_this_design_or_calibration",
+    "calibrationRowsExcluded": true,
+    "minimumDialogues": 36,
+    "maximumDialogues": 180
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "analysis": "codex.gpt-5.6-luna",
+    "analysisScope": "classifier_and_learner_record_support_only",
+    "learner": "codex.gpt-5.6-luna",
+    "cliEffort": "low",
+    "triggerObservation": {
+      "semantics": "prospective_rival_attention_semantic_v3",
+      "judges": [
+        {
+          "id": "rival_attention_observer",
+          "modelRef": "codex.gpt-5.6-sol",
+          "provider": "codex",
+          "model": "gpt-5.6-sol",
+          "effort": "low"
+        }
+      ]
+    },
+    "finalSemanticReaders": [
+      {
+        "id": "reader_a",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "effort": "low"
+      },
+      {
+        "id": "reader_b",
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "effort": "low"
+      }
+    ]
+  },
+  "preflight": {
+    "beforeCalibration": "Mint and validate every rival DAG, compile every tutor world x action x register on bare and due-clue scenes, verify protocol-v2 routes locally, and execute one zero-call stub-transport smoke per role.",
+    "modelCalls": 0
+  },
+  "attemptCeilings": {
+    "maximumReservationsPerPlannedCall": 3,
+    "callPlanPerDialogue": {
+      "preTriggerBase": 12,
+      "preTriggerTutorGuardRecoveryReserve": 4,
+      "postTriggerBase": 15,
+      "postTriggerTutorGuardRecoveryReserve": 6,
+      "primaryReaderSeats": 2,
+      "fidelityReaderSeats": 2
+    },
+    "plannedCallsPerDialogue": 41,
+    "plannedCallReservationCeilingPerDialogue": 123,
+    "maximumReservationsPerDialogue": 129,
+    "authorizationHeadroomReservationsPerDialogue": 6,
+    "calibrationMaximumReservations": 2322,
+    "role": "fail-before-call ceiling, not a target"
+  },
+  "dispositions": {
+    "measurementIndeterminate": "retain; no repair, rerun, replacement, or recoding",
+    "validUnitRerun": false,
+    "outcomeSelection": false,
+    "interimOutcomeAnalysis": false
+  },
+  "callAuthority": {
+    "policy": "notes/2026-08-23-launch-protocol-v2.md",
+    "grantsModelCalls": false,
+    "launchRequirement": "One attended protocol-v2 invocation with typed operator approval recorded in approval.json."
+  }
+}

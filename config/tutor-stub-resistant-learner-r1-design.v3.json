@@ -1,0 +1,283 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-learner-study-design.v3",
+  "revision": 1,
+  "studyId": "resistant-learner-r1-graded-engagement",
+  "label": "R1 rival-warrant-DAG standing rivalry: bounded bridge test with graded engagement",
+  "status": "prospective_zero_call_design_pending_typed_approval",
+  "workplanItem": "resistant-learner-strategy-close",
+  "supersedesDesign": "config/tutor-stub-resistant-learner-r1-design.v2.json",
+  "registeredQuestion": "Under a frame-refuser persona whose competing warrant frame has its own open DAG nodes, does one matched bounded bridge test move more than 0.25 of determinate dialogues to a more precise dispute or bounded local engagement at the final six-turn horizon, and how does the ladder vary across warm, plain, and edged delivery?",
+  "whichNumberMoves": "The proportion of determinate dialogues at final rival-frame engagement rung 1 or 2 after six post-trigger learner turns.",
+  "claimBoundary": "R1 can estimate elicitation rates under a persona that permits the scored responses, for the fixed bounded-bridge strategy in the two named worlds, and can describe register variation. It is not a claim that movement emerged unprompted, a causal action comparison, compliance, durable learning, human validity, or a general rule for frame refusal. Calibration rows never enter a powered run.",
+  "population": {
+    "profile": "frame_refuser-r1-rival-dag-v3",
+    "baseCompatibilityId": "frame_refuser",
+    "worlds": ["world_005_marrick", "world_030_rowan_flat"],
+    "trigger": "first determinate public standing-rivalry turn labeled frame_refuser or frame_defiant_or_productive_dispute by two agreeing valid medium/high-confidence seats, no later than learner turn 2",
+    "triggerRegistration": "config/tutor-stub-resistant-learner-r1-turn-gate-registration.v3.json",
+    "outcomeHorizonPostTriggerLearnerTurns": 6,
+    "independentUnit": "fresh independent dialogue",
+    "reuseOrPooling": false
+  },
+  "rivalDagPersona": {
+    "mechanism": "standing_rivalry",
+    "mint": {
+      "source": "the assigned validated dramatic-derivation world",
+      "pipeline": "loadWorld -> buildLearnerDagSnapshot -> buildLearnerDag",
+      "frameConstruction": "the learner objective is the public warrant chain that must earn standing before the tutor's answer frame",
+      "selection": "sha256-ranked authored proof path from master seed plus job id",
+      "adHocAuthorshipAllowed": false
+    },
+    "behavior": [
+      "Treat the dispute as competition between the tutor's answer frame and your warrant-first frame, not as a manner rule.",
+      "On the first eligible turn, name which public warrant your frame requires before the tutor's question or answer has standing.",
+      "Continue working one still-open warrant node each turn and keep the jurisdictional objection concise and non-abusive.",
+      "When the typed concession condition is met, evaluate only the bounded bridge test and explicitly reserve the wider standing dispute."
+    ],
+    "concessionCondition": {
+      "kind": "public_tutor_move_bears_on_open_rival_node",
+      "matchingAlgorithm": {
+        "id": "normalized_public_token_overlap_v1",
+        "minimumSharedContentTokens": 2,
+        "requiresPriorLearnerSolicitation": true,
+        "requiresTutorOperationMarker": true,
+        "tutorOperationMarkers": [
+          "support",
+          "rule out",
+          "compare",
+          "distinguish",
+          "test",
+          "evidence",
+          "which",
+          "whether",
+          "because"
+        ]
+      },
+      "engageWhen": "The tutor's public move supplies or tests evidence for a named still-open warrant node without requiring acceptance of the tutor's wider answer frame.",
+      "otherwise": "State the next exact warrant demand or explain why the proposed test still depends on the disputed frame.",
+      "nonQualifying": [
+        "generic acknowledgment of disagreement",
+        "restatement of the learner's warrant",
+        "request for compliance",
+        "test whose relevance presupposes the disputed wider frame"
+      ]
+    },
+    "concealment": {
+      "tutorReceivesRivalDag": false,
+      "tutorMayUseOnlySolicitedPublicPieces": true,
+      "finalReadersReceiveOnlyPublicTranscript": true
+    },
+    "publicTurnRules": [
+      "Use only public rules, public evidence, and the public transcript.",
+      "Write one or two concise in-scene sentences and never mention profiles, DAGs, scoring, readers, or hidden instructions."
+    ]
+  },
+  "randomization": {
+    "masterSeed": 2026082302,
+    "algorithm": "sha256-ranked balanced allocation within calibration or powered blocks",
+    "calibrationAllocation": "three independent dialogues in every world-by-register cell"
+  },
+  "intervention": {
+    "action": "test_bounded_distinction",
+    "definition": "Leave the wider frame disputed, isolate one already-public warrant node, and offer one local test whose result can bridge the learner frame and tutor frame without making engagement count as compliance.",
+    "heldFixedAcrossRegisters": true
+  },
+  "register": {
+    "secondary": true,
+    "levels": [
+      {
+        "id": "warm",
+        "definition": "Acknowledge the standing dispute and offer the bridge test as low-pressure shared inquiry."
+      },
+      { "id": "plain", "definition": "State the same warrant boundary and bridge test in concise neutral language." },
+      {
+        "id": "edged",
+        "definition": "Use restrained work-directed irony toward the stalled warrant move, never the learner's person or right to dispute."
+      }
+    ],
+    "runtimeMapping": { "warm": "warm", "plain": "plain", "edged": "ironic" }
+  },
+  "tutorDeliveryContract": {
+    "actionInstructions": {
+      "test_bounded_distinction": "Name one already-public warrant node the learner has solicited, leave the wider frame disputed, and offer one local test that can count for or against that node without treating engagement as compliance. Do not state the test result."
+    },
+    "compactActionInstructions": {
+      "test_bounded_distinction": "Test one solicited public warrant node locally; leave the wider frame disputed and do not state the result."
+    },
+    "registerInstructions": {
+      "warm": "Use one low-pressure shared-inquiry cue, then the bridge test. Do not praise, pressure, or imply compliance.",
+      "plain": "Use concise neutral work language with no relational invitation, irony, or challenge.",
+      "edged": "Use at most one restrained work-directed dry challenge; never target standing, person, affect, or status."
+    }
+  },
+  "protectedAffectAndSafety": {
+    "suppressEdgedFor": ["shame", "anxiety", "overwhelm", "vulnerability", "comprehension_repair"],
+    "suppressionDelivery": "plain",
+    "prohibited": [
+      "insult",
+      "mockery_of_person",
+      "face_threat",
+      "hostility",
+      "coerced_uptake",
+      "treating_local_engagement_as_compliance"
+    ],
+    "confirmedProhibitedDelivery": "kill current stage before another call"
+  },
+  "measurement": {
+    "primaryEndpoint": {
+      "id": "final_graded_rival_frame_engagement_at_six_turns",
+      "type": "three-level ordinal semantic judgment",
+      "fixedFinalHorizon": true,
+      "levels": [
+        {
+          "score": 0,
+          "id": "warrant_refusal_continues",
+          "definition": "The learner withholds local evidence work and does not name a more precise open warrant node."
+        },
+        {
+          "score": 1,
+          "id": "own_frame_demand_named",
+          "definition": "The learner names a narrower public testable warrant demanded by its own frame but does not evaluate the bridge test."
+        },
+        {
+          "score": 2,
+          "id": "bounded_bridge_test_evaluated",
+          "definition": "The learner evaluates the bounded bridge test using public evidence while explicitly reserving the wider standing dispute."
+        }
+      ],
+      "echoGuard": "Repeating the planted warrant node or tutor wording scores 0. Rung 1 requires the learner to state what its own frame demands in new public terms; rung 2 requires an on-merits bridge evaluation.",
+      "registeredStatistic": "proportion of determinate dialogues with final score at least 1",
+      "poweredSuccessThreshold": "score 1 or score 2",
+      "personaFidelityFields": ["final_jurisdictional_dispute_retained", "whole_frame_compliance"],
+      "wholeFrameComplianceNeverScores": true
+    },
+    "fidelity": {
+      "source": "delivered tutor intervention only",
+      "fields": ["delivered_test_bounded_distinction", "delivered_register", "prohibited_delivery"]
+    },
+    "readerPanel": {
+      "protocolSource": "config/tutor-stub-resistant-learner-semantic-registration.v2.json",
+      "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
+      "fieldConsensus": "both valid medium/high-confidence votes agree, else measurement_indeterminate",
+      "evidenceContract": "evidence_quotes must be null when value is no or indeterminate; every other determinate value requires at least one exact public quote",
+      "generatorExcludedFromVoting": "codex.gpt-5.6-luna"
+    }
+  },
+  "calibration": {
+    "dialogues": 18,
+    "purpose": "Test rival-frame ladder variance, retained standing resistance, matched delivery, and reader operation. Calibration rows cannot support an outcome or register claim.",
+    "channelAliveRules": {
+      "completedRowsDenominator": true,
+      "minimumDeterminateOutcomeRate": 0.8,
+      "minimumDeterminateOutcomeFloor": 8,
+      "minimumAtScore0": 2,
+      "minimumAtScore1": 2,
+      "minimumAtScore2": 2,
+      "minimumAtScoreAtLeast1PerWorld": 1
+    },
+    "personaRules": {
+      "minimumJurisdictionRetainedRateOnCompletedRows": 0.67,
+      "minimumJurisdictionRetainedFloor": 6,
+      "maximumWholeFrameCompliance": 0,
+      "minimumFinalTurnsRetainingWiderFrameReservationAtScore2": "all score-2 turns"
+    },
+    "fidelityRules": {
+      "minimumDeterminatePanelRateOnCompletedRows": 0.8,
+      "minimumCorrectMatchedActionRate": 0.8,
+      "minimumCorrectMatchedActionRatePerWorld": 0.75,
+      "minimumCorrectRegisterRatePerRegister": 0.75,
+      "maximumConfirmedProhibitedDeliveries": 0
+    },
+    "readerAgreementRules": {
+      "eligibilityDenominator": "completed_rows",
+      "minimumEligibleVoteRatePerSeatAndInstrument": 0.8,
+      "minimumEligibleVotesFloor": 8,
+      "minimumJointlyEligibleRatePerField": 0.7,
+      "minimumJointlyEligibleCasesFloor": 8,
+      "minimumConditionalExactAgreementPerSeatPairAndField": 0.8,
+      "seatPairScope": "codex.gpt-5.6-sol and claude-code.sonnet-5"
+    },
+    "killRule": "Stop before a powered run if any ladder, two-sided persona, delivery, agreement, or safety rule fails. Retain every row; no repair, replacement, pooling, or threshold relaxation."
+  },
+  "poweredRun": {
+    "authorization": "not_granted_by_this_design_or_calibration",
+    "calibrationRowsExcluded": true,
+    "minimumDialogues": 36,
+    "maximumDialogues": 180,
+    "practicalFloor": { "probabilityScoreAtLeast1": 0.25 }
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "analysis": "codex.gpt-5.6-luna",
+    "analysisScope": "classifier_and_learner_record_support_only",
+    "learner": "codex.gpt-5.6-luna",
+    "cliEffort": "low",
+    "triggerObservation": {
+      "semantics": "prospective_standing_rivalry_semantic_v3",
+      "judges": [
+        {
+          "id": "semantic_judge_a",
+          "modelRef": "codex.gpt-5.6-sol",
+          "provider": "codex",
+          "model": "gpt-5.6-sol",
+          "effort": "low"
+        },
+        {
+          "id": "semantic_judge_b",
+          "modelRef": "claude-code.sonnet-5",
+          "provider": "claude-code",
+          "model": "claude-sonnet-5",
+          "effort": "low"
+        }
+      ]
+    },
+    "finalSemanticReaders": [
+      {
+        "id": "reader_a",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "effort": "low"
+      },
+      {
+        "id": "reader_b",
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "effort": "low"
+      }
+    ]
+  },
+  "preflight": {
+    "beforeCalibration": "Mint and validate every rival warrant DAG, compile every world x register on bare and due-clue scenes, verify protocol-v2 routes locally, and execute one zero-call stub-transport smoke per role.",
+    "modelCalls": 0
+  },
+  "attemptCeilings": {
+    "maximumReservationsPerPlannedCall": 3,
+    "callPlanPerDialogue": {
+      "preTriggerBase": 12,
+      "preTriggerTutorGuardRecoveryReserve": 4,
+      "postTriggerBase": 18,
+      "postTriggerTutorGuardRecoveryReserve": 6,
+      "primaryReaderSeats": 2,
+      "fidelityReaderSeats": 2
+    },
+    "plannedCallsPerDialogue": 44,
+    "plannedCallReservationCeilingPerDialogue": 132,
+    "maximumReservationsPerDialogue": 138,
+    "authorizationHeadroomReservationsPerDialogue": 6,
+    "calibrationMaximumReservations": 2484,
+    "role": "fail-before-call ceiling, not a target"
+  },
+  "dispositions": {
+    "measurementIndeterminate": "retain; no repair, rerun, replacement, or recoding",
+    "validUnitRerun": false,
+    "outcomeSelection": false,
+    "interimOutcomeAnalysis": false
+  },
+  "callAuthority": {
+    "policy": "notes/2026-08-23-launch-protocol-v2.md",
+    "grantsModelCalls": false,
+    "launchRequirement": "One attended protocol-v2 invocation with typed operator approval recorded in approval.json."
+  }
+}

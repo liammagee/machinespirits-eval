@@ -8,6 +8,10 @@ import {
 } from './tutorStubBoredomActionRegisterProofDagPreflight.js';
 import { createTutorStubBoredomSemanticAdjudicator } from './tutorStubBoredomSemanticAdjudication.js';
 import { createTutorStubBoredomSemanticAdjudicator as createTutorStubBoredomSemanticAdjudicatorV3 } from './tutorStubBoredomSemanticAdjudicationV3.js';
+import {
+  TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3,
+  createTutorStubRivalAttentionAdjudicatorV3,
+} from './tutorStubRivalAttentionSemanticAdjudicationV3.js';
 import { TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS } from './tutorStubCliPolicyRetry.js';
 import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
 
@@ -20,6 +24,18 @@ const BOREDOM_PROOF_DAG_MODEL_CALL_BUDGET = 60;
 const MAX_RESERVATIONS_PER_PLANNED_CALL = 1 + TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length;
 
 export function selectTutorStubBoredomSemanticAdjudicatorFactory({ args, root }) {
+  const resistantLearnerDesignPath = args?.['resistant-learner-calibration-design'];
+  if (resistantLearnerDesignPath) {
+    const design = JSON.parse(fs.readFileSync(path.resolve(root, resistantLearnerDesignPath), 'utf8'));
+    if (
+      design?.schema === 'machinespirits.tutor-stub.resistant-learner-study-design.v3' &&
+      design?.studyId === 'resistant-learner-b1-authored-pickup'
+    ) {
+      const registrationPath = design?.population?.triggerRegistration;
+      return (callModel, resolveModel) =>
+        createTutorStubRivalAttentionAdjudicatorV3(callModel, resolveModel, { registrationPath, root });
+    }
+  }
   const registrationPath = args?.['boredom-proof-dag-registration'];
   if (!registrationPath) return createTutorStubBoredomSemanticAdjudicator;
   const registration = JSON.parse(fs.readFileSync(path.resolve(root, registrationPath), 'utf8'));
@@ -428,7 +444,9 @@ export function configureTutorStubBoredomProofDagExecution({ state, loaded, jobI
     ),
     proof_dag_registration: clone(loaded.registration),
     semantic_adjudicator:
-      loaded.registration.design.observationSemantics === 'prospective_v9'
+      ['prospective_v9', TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3].includes(
+        loaded.registration.design.observationSemantics,
+      )
         ? {
             required: true,
             model_ref: loaded.registration.measurement?.semanticAdjudicator?.modelRef || null,

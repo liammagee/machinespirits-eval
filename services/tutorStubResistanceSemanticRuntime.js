@@ -53,6 +53,16 @@ import {
   validateTutorStubResistanceSemanticRegistrationV6,
   wrapTutorStubResistanceSemanticModelOutputV6,
 } from './tutorStubResistanceSemanticAdjudicationV6.js';
+import {
+  TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
+  TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3,
+  TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_V3,
+  adjudicateTutorStubStandingRivalryJudgesV3,
+  buildTutorStubStandingRivalryOutputSchemaV3,
+  buildTutorStubStandingRivalryPromptV3,
+  validateTutorStubStandingRivalryRegistrationV3,
+  wrapTutorStubStandingRivalryModelOutputV3,
+} from './tutorStubStandingRivalrySemanticAdjudicationV3.js';
 import { createTutorStubResistanceConfirmationSemanticRuntime } from './tutorStubResistanceConfirmationSemanticRuntime.js';
 import { createTutorStubResistantLearnerSemanticRuntime } from './tutorStubResistantLearnerSemanticRuntime.js';
 
@@ -69,6 +79,8 @@ export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5 =
   'config/tutor-stub-resistance-semantic-adjudication-registration.v5.json';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V6 =
   'config/tutor-stub-resistance-semantic-adjudication-registration.v6.json';
+export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3 =
+  TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_V3;
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT = 'resistance_semantic_judge_result';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT = 'resistance_semantic_adjudication';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE =
@@ -77,6 +89,17 @@ export const TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT =
   'You are one independent semantic adjudicator. Use only the supplied public packet. Return the registered JSON object, use no tools, and do not infer hidden experimental state.';
 
 export function tutorStubResistanceSemanticRuntimeInstrument(registrationBinding) {
+  if (registrationBinding?.registration?.schema === TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3) {
+    return {
+      observationSemantics: TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
+      responseSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_MODEL_SCHEMA_V3,
+      outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
+      buildOutputSchema: buildTutorStubStandingRivalryOutputSchemaV3,
+      buildPrompt: buildTutorStubStandingRivalryPromptV3,
+      wrapModelOutput: wrapTutorStubStandingRivalryModelOutputV3,
+      adjudicate: adjudicateTutorStubStandingRivalryJudgesV3,
+    };
+  }
   if (registrationBinding?.registration?.version === 6) {
     return {
       observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6,
@@ -166,6 +189,7 @@ export function isTutorStubResistanceSemanticObservation(observationSemantics) {
     TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4,
     TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5,
     TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6,
+    TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
   ].includes(observationSemantics);
 }
 
@@ -175,13 +199,28 @@ export function tutorStubResistanceSemanticExpectedLabel(profileId) {
   return null;
 }
 
-export function countTutorStubResistanceSemanticProfileObservations(turns, profileId) {
+export function tutorStubResistanceSemanticLabelAdheres({ profileId, label, observationSemantics } = {}) {
+  if (
+    profileId === 'frame_refuser' &&
+    observationSemantics === TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3
+  ) {
+    return ['frame_refuser', 'frame_defiant_or_productive_dispute'].includes(label);
+  }
+  return label === tutorStubResistanceSemanticExpectedLabel(profileId);
+}
+
+export function countTutorStubResistanceSemanticProfileObservations(turns, profileId, observationSemantics = null) {
   const expected = tutorStubResistanceSemanticExpectedLabel(profileId);
   if (!expected) return 0;
   return (turns || []).filter(
     (turn) =>
       turn?.resistanceSemanticAdjudication?.aggregate?.status === 'determinate' &&
-      turn.resistanceSemanticAdjudication.aggregate.final_label === expected,
+      tutorStubResistanceSemanticLabelAdheres({
+        profileId,
+        label: turn.resistanceSemanticAdjudication.aggregate.final_label,
+        observationSemantics:
+          observationSemantics || turn.resistanceSemanticAdjudication?.observationSemantics || null,
+      }),
   ).length;
 }
 
@@ -224,7 +263,11 @@ export async function enforceTutorStubResistanceSemanticCandidate({
   }
   return {
     semanticAdjudication,
-    passed: semanticAdjudication.aggregate.final_label === tutorStubResistanceSemanticExpectedLabel(profileId),
+    passed: tutorStubResistanceSemanticLabelAdheres({
+      profileId,
+      label: semanticAdjudication.aggregate.final_label,
+      observationSemantics: semanticAdjudication.observationSemantics,
+    }),
   };
 }
 
@@ -242,7 +285,9 @@ export function createTutorStubResistanceSemanticAdherenceBridge({
   return {
     enabled,
     countObserved(turns, profileId, legacyCount) {
-      return enabled ? countTutorStubResistanceSemanticProfileObservations(turns, profileId) : legacyCount;
+      return enabled
+        ? countTutorStubResistanceSemanticProfileObservations(turns, profileId, observationSemantics)
+        : legacyCount;
     },
     studyCandidate,
     shouldEvaluate(state, runtime) {
@@ -305,7 +350,9 @@ export function loadTutorStubResistanceSemanticRegistration(
   const absolute = path.resolve(ROOT, registrationPath);
   const registration = JSON.parse(fs.readFileSync(absolute, 'utf8'));
   const validation =
-    registration.version === 6
+    registration.schema === TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3
+      ? validateTutorStubStandingRivalryRegistrationV3(registration)
+      : registration.version === 6
       ? validateTutorStubResistanceSemanticRegistrationV6(registration)
       : registration.version === 5
       ? validateTutorStubResistanceSemanticRegistrationV5(registration)
@@ -331,6 +378,12 @@ export function applyTutorStubResistantLearnerCalibrationSemanticPanel(registrat
     return registrationBinding;
   }
   const trigger = runtime?.design?.models?.triggerObservation;
+  if (
+    registrationBinding?.registration?.schema === TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3 &&
+    trigger?.semantics === TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3
+  ) {
+    return registrationBinding;
+  }
   if (
     registrationBinding?.registration?.version !== 4 ||
     trigger?.semantics !== TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
@@ -404,6 +457,9 @@ export function tutorStubResistanceSemanticRegistrationPathForObservation(observ
   if (normalized === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6) {
     return TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V6;
   }
+  if (normalized === TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3) {
+    return TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3;
+  }
   throw new Error(`unsupported resistance semantic observation semantics: ${normalized}`);
 }
 
@@ -451,10 +507,12 @@ export function validateTutorStubResistanceSemanticRuntimeResult({
     issues.push('semantic aggregate is not determinate');
   if (requireDeterminate) {
     const aggregate = result?.aggregate || {};
-    const hierarchicalV4 = registrationBinding?.registration?.version >= 4;
+    const standingRivalryV3 =
+      registrationBinding?.registration?.schema === TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3;
+    const hierarchicalV4 = registrationBinding?.registration?.version >= 4 || standingRivalryV3;
     const expectedPanelSize =
       registrationBinding?.runtimePanelOverride?.panelSize ||
-      (registrationBinding?.registration?.version === 6 ? 2 : hierarchicalV4 ? 3 : 2);
+      (registrationBinding?.registration?.version === 6 || standingRivalryV3 ? 2 : hierarchicalV4 ? 3 : 2);
     const minimumEligibleJudges = 2;
     if (
       aggregate.repair_allowed !== false ||
@@ -473,7 +531,9 @@ export function validateTutorStubResistanceSemanticRuntimeResult({
       !Array.isArray(aggregate.judge_evidence) ||
       aggregate.judge_evidence.length < minimumEligibleJudges ||
       aggregate.judge_evidence.length > expectedPanelSize ||
-      aggregate.judge_evidence.some((row) => row.confidence !== 'high') ||
+      aggregate.judge_evidence.some((row) =>
+        standingRivalryV3 ? !['high', 'medium'].includes(row.confidence) : row.confidence !== 'high',
+      ) ||
       (hierarchicalV4
         ? !Number.isInteger(result?.judgeRecordCount) ||
           result.judgeRecordCount < minimumEligibleJudges ||
