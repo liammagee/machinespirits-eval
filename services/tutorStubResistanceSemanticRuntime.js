@@ -414,6 +414,9 @@ export function validateTutorStubResistanceSemanticRuntimeResult({
   expectedPublicContext,
   requireDeterminate = true,
 }) {
+  if (!result || typeof result !== 'object' || Array.isArray(result)) {
+    return { valid: false, issues: ['semantic runtime result missing'] };
+  }
   const issues = [];
   const source = String(learnerText || '');
   const publicContext = Array.isArray(result?.publicContext) ? result.publicContext : [];
