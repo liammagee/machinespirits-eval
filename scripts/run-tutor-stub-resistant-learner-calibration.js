@@ -134,7 +134,13 @@ function readTrace(filePath) {
     .map((line) => JSON.parse(line));
 }
 
-export function tutorStubResistantLearnerCalibrationChildSpec({ loaded, job, destination }) {
+export function tutorStubResistantLearnerCalibrationChildSpec({
+  loaded,
+  job,
+  destination,
+  bridgeSmokeSkipFinalReaders = false,
+  modelCallBudget = null,
+}) {
   const jobRoot = path.join(destination, 'jobs', job.id);
   const traceDir = path.join(jobRoot, 'traces');
   const registeredStudyOutcome = path.join(jobRoot, 'registered-study-outcome.json');
@@ -153,6 +159,15 @@ export function tutorStubResistantLearnerCalibrationChildSpec({ loaded, job, des
     : b1
       ? 'bored'
       : tutorStubFrameRefuserR1Prompt(loaded.design);
+  const maximumReservationsPerDialogue = loaded.design.attemptCeilings.maximumReservationsPerDialogue;
+  const selectedModelCallBudget = modelCallBudget === null ? maximumReservationsPerDialogue : Number(modelCallBudget);
+  if (
+    !Number.isInteger(selectedModelCallBudget) ||
+    selectedModelCallBudget < 1 ||
+    selectedModelCallBudget > maximumReservationsPerDialogue
+  ) {
+    throw new Error(`model call budget must be an integer from 1 to ${maximumReservationsPerDialogue}`);
+  }
   return {
     jobRoot,
     traceDir,
@@ -173,7 +188,7 @@ export function tutorStubResistantLearnerCalibrationChildSpec({ loaded, job, des
       '--acknowledge-research-use',
       ...requiredTutorStubArtifactArchiveArgs(),
       '--model-call-budget',
-      String(loaded.design.attemptCeilings.maximumReservationsPerDialogue),
+      String(selectedModelCallBudget),
       '--all-models',
       models.analysis,
       '--model',
@@ -218,6 +233,7 @@ export function tutorStubResistantLearnerCalibrationChildSpec({ loaded, job, des
       designPath,
       '--resistant-learner-calibration-job',
       job.id,
+      ...(bridgeSmokeSkipFinalReaders ? ['--resistant-learner-bridge-smoke-skip-final-readers'] : []),
       '--trace-dir',
       path.relative(ROOT, traceDir),
       '--save',

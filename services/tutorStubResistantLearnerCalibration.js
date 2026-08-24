@@ -628,6 +628,20 @@ export function configureTutorStubResistantLearnerCalibrationFromCli({
   }
   if (b1) configureB1({ state, root, loaded, plan, job, appendTraceEvent });
   else configureR1({ state, root, loaded, job, appendTraceEvent });
+  if (args['resistant-learner-bridge-smoke-skip-final-readers'] === true) {
+    if (loaded.design.schema !== 'machinespirits.tutor-stub.resistant-learner-study-design.v3') {
+      throw new Error('the unregistered rival-DAG bridge smoke requires a v3 resistant-learner design');
+    }
+    state.resistanceActionRegisterStudy.unregistered_bridge_smoke = true;
+    state.resistanceActionRegisterStudy.skip_final_semantic_readers = true;
+    appendTraceEvent(state.trace, {
+      type: 'resistant_learner_bridge_smoke_configuration',
+      jobId: job.id,
+      finalReadersSkipped: true,
+      finalReaderCallsPlanned: 0,
+      publicTranscriptChanged: false,
+    });
+  }
   return { loaded, plan, job };
 }
 
