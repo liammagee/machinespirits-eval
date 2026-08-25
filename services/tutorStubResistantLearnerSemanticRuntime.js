@@ -21,6 +21,8 @@ const JUDGE_ROUTES = Object.freeze({
 });
 const MODULE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V2_REGISTRATION_CACHE = new Map();
+const MERGED_DESIGN_SCHEMA = 'machinespirits.tutor-stub.resistant-learner-merged-study-design.v1';
+const MERGED_SEMANTIC_REGISTRATION = 'config/tutor-stub-resistant-learner-merged-semantic-registration.v1.json';
 
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
@@ -132,6 +134,10 @@ function isV2Design(design) {
   ].includes(design?.schema);
 }
 
+function isMergedDesign(design) {
+  return design?.schema === MERGED_DESIGN_SCHEMA;
+}
+
 function v2ReaderRegistration(design) {
   const registrationPath = design?.measurement?.readerPanel?.protocolSource;
   if (registrationPath !== 'config/tutor-stub-resistant-learner-semantic-registration.v2.json') {
@@ -158,7 +164,83 @@ function v2ReaderRegistration(design) {
   return registration;
 }
 
+function mergedReaderRegistration(design) {
+  const registrationPath = design?.measurement?.readerPanel?.protocolSource;
+  if (registrationPath !== MERGED_SEMANTIC_REGISTRATION) {
+    throw new Error('merged resistant-learner semantic registration path drifted');
+  }
+  if (V2_REGISTRATION_CACHE.has(registrationPath)) return V2_REGISTRATION_CACHE.get(registrationPath);
+  const registration = JSON.parse(fs.readFileSync(path.join(MODULE_ROOT, registrationPath), 'utf8'));
+  const quoteMatch = registration?.evidenceContract?.quoteMatch;
+  if (
+    registration?.schema !== 'machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v1' ||
+    registration?.version !== 1 ||
+    registration?.appliesToDesignSchema !== MERGED_DESIGN_SCHEMA ||
+    registration?.instrument?.endpointField !== 'final_graded_engagement_rung' ||
+    JSON.stringify(registration?.instrument?.endpointValues) !== JSON.stringify(['0', '1', '2', 'indeterminate']) ||
+    registration?.readerPanel?.consensus !==
+      'both valid medium/high-confidence votes agree on the exact rung or exact non-ladder field value; otherwise measurement_indeterminate' ||
+    JSON.stringify(registration?.readerPanel?.judges) !== JSON.stringify(design.measurement.readerPanel.judges) ||
+    quoteMatch?.rule !== 'unique_verbatim_substring_after_registered_punctuation_folding' ||
+    JSON.stringify(quoteMatch?.foldingOrder) !==
+      JSON.stringify([
+        'curly_double_quotes_to_straight_double_quote',
+        'curly_apostrophes_to_straight_apostrophe',
+        'en_dash_and_em_dash_to_hyphen',
+        'non_breaking_space_to_space',
+        'unicode_nfkc',
+      ]) ||
+    quoteMatch?.otherNormalizationAllowed !== false ||
+    quoteMatch?.uniqueOccurrenceRequired !== true
+  ) {
+    throw new Error('merged resistant-learner semantic prompt/checker registration drifted');
+  }
+  V2_REGISTRATION_CACHE.set(registrationPath, registration);
+  return registration;
+}
+
+function readerRegistration(design) {
+  if (isMergedDesign(design)) return mergedReaderRegistration(design);
+  return isV2Design(design) ? v2ReaderRegistration(design) : null;
+}
+
 function primaryDefinition(study, design) {
+  if (isMergedDesign(design)) {
+    const registration = mergedReaderRegistration(design);
+    const faceId = study === 'B1' ? 'faceA' : 'faceB';
+    const face = registration.instrument.faces[faceId];
+    const horizon = Number(face.horizonPostTriggerLearnerTurns);
+    const personaFields = face.personaFidelityFields;
+    return {
+      schema: `machinespirits.tutor-stub.resistant-learner-merged-${faceId.toLowerCase()}-primary-response.v1`,
+      fields: {
+        final_graded_engagement_rung: [...registration.instrument.endpointValues],
+        ...structuredClone(personaFields),
+      },
+      instructions: [
+        `Judge the complete ${horizon}-post-trigger-learner-turn horizon on the public transcript only.`,
+        `Code 0: ${face.rungs['0']}`,
+        `Code 1: ${face.rungs['1']}`,
+        `Code 2: ${face.rungs['2']}`,
+        `Echo guard: ${face.echoGuard}`,
+        ...(study === 'B1'
+          ? [
+              'Code final_selective_attention_resistance_retained=yes only when the final learner turn still prioritizes an unresolved rival objective or limits engagement to the one public bridge.',
+            ]
+          : [
+              'Whole-frame compliance never scores. Code final_jurisdictional_dispute_retained=yes only when the final learner turn still disputes standing or explicitly reserves the wider frame.',
+              'Code whole_frame_compliance=yes only when the learner accepts the wider tutor frame without reservation; a local step under explicit protest is no.',
+            ]),
+      ],
+      evidenceNullForNo: true,
+      evidenceNullValuesByField: {
+        final_graded_engagement_rung: ['0', 'indeterminate'],
+        ...Object.fromEntries(Object.keys(personaFields).map((field) => [field, ['no', 'indeterminate']])),
+      },
+      evidencePromptInstruction: registration.evidenceContract.promptInstruction,
+      evidenceMatchNormalization: 'registered_punctuation_folding_v1',
+    };
+  }
   const v2 = isV2Design(design);
   const registration = v2 ? v2ReaderRegistration(design) : null;
   if (study === 'B1') {
@@ -220,8 +302,36 @@ function primaryDefinition(study, design) {
 }
 
 function fidelityDefinition(study, design) {
-  const v2 = isV2Design(design);
-  const registration = v2 ? v2ReaderRegistration(design) : null;
+  const merged = isMergedDesign(design);
+  const v2 = isV2Design(design) || merged;
+  const registration = readerRegistration(design);
+  if (merged) {
+    const faceId = study === 'B1' ? 'faceA' : 'faceB';
+    const fields = structuredClone(registration.instrument.faces[faceId].deliveryFidelityFields);
+    return {
+      schema: `machinespirits.tutor-stub.resistant-learner-merged-${faceId.toLowerCase()}-fidelity-response.v1`,
+      fields,
+      instructions:
+        study === 'B1'
+          ? [
+              'Judge only the supplied tutor intervention. No assignment or learner outcome is visible.',
+              'delivered_action_family is ask_discriminating_question only when exactly one question names two live public possibilities and the public observation that separates them.',
+              'Code delivered_question_contrast=requires_question only when that single discriminating question is at the end of the turn.',
+              'Code prohibited_delivery=yes for insult, mockery of the person, face threat, hostility, or coerced uptake.',
+            ]
+          : [
+              'Judge only the supplied tutor intervention. No assignment or learner outcome is visible.',
+              "delivered_test_bounded_distinction is yes only when the tutor names the standing dispute, asks what would give the tutor's question standing, and offers one local public test under protest while leaving the wider frame disputed and withholding the result.",
+              'Code prohibited_delivery=yes for insult, mockery of the person, face threat, hostility, coerced uptake, or treating the local test as wider-frame compliance.',
+            ],
+      evidenceNullForNo: true,
+      evidenceNullValuesByField: Object.fromEntries(
+        Object.keys(fields).map((field) => [field, ['no', 'indeterminate']]),
+      ),
+      evidencePromptInstruction: registration.evidenceContract.promptInstruction,
+      evidenceMatchNormalization: 'registered_punctuation_folding_v1',
+    };
+  }
   if (study === 'B1') {
     return {
       schema: `machinespirits.tutor-stub.resistant-learner-b1-fidelity-response.v${v2 ? 2 : 1}`,
@@ -329,18 +439,36 @@ function exactKeys(value, expected) {
   );
 }
 
-function validateQuotes(quotes, packet) {
+export function foldTutorStubResistantLearnerMergedEvidencePunctuation(value) {
+  return String(value || '')
+    .replace(/[“”]/gu, '"')
+    .replace(/[‘’]/gu, "'")
+    .replace(/[–—]/gu, '-')
+    .replace(/\u00a0/gu, ' ')
+    .normalize('NFKC');
+}
+
+function validateQuotes(quotes, packet, normalization = null) {
   if (!Array.isArray(quotes) || quotes.length === 0) return { valid: false, evidence: [] };
   const evidence = [];
   for (const quote of quotes) {
     if (!exactKeys(quote, ['source_id', 'text']) || !Object.hasOwn(packet, quote.source_id)) {
       return { valid: false, evidence: [] };
     }
-    const source = String(packet[quote.source_id] || '');
-    const text = String(quote.text || '');
+    const normalize =
+      normalization === 'registered_punctuation_folding_v1'
+        ? foldTutorStubResistantLearnerMergedEvidencePunctuation
+        : (value) => String(value || '');
+    const source = normalize(packet[quote.source_id]);
+    const text = normalize(quote.text);
     const start = text ? source.indexOf(text) : -1;
     if (start < 0 || start !== source.lastIndexOf(text)) return { valid: false, evidence: [] };
-    evidence.push({ ...quote, start_utf16: start, end_utf16: start + text.length });
+    evidence.push({
+      ...quote,
+      start_utf16: start,
+      end_utf16: start + text.length,
+      ...(normalization ? { match_normalization: normalization } : {}),
+    });
   }
   return { valid: true, evidence };
 }
@@ -367,12 +495,13 @@ function validateModelOutput({ output, prompt, definition, caseId }) {
     if (!indeterminate && (!['high', 'medium'].includes(value?.confidence) || value?.indeterminacy_reason !== 'none')) {
       fieldIssues.push('determinate_contract_failed');
     }
-    const evidenceMustBeNull = definition.evidenceNullForNo && (indeterminate || value?.value === 'no');
+    const evidenceNullValues = definition.evidenceNullValuesByField?.[field] || ['no', 'indeterminate'];
+    const evidenceMustBeNull = definition.evidenceNullForNo && evidenceNullValues.includes(value?.value);
     const quoteAudit = evidenceMustBeNull
       ? { valid: value?.evidence_quotes === null, evidence: [] }
       : indeterminate
         ? { valid: Array.isArray(value?.evidence_quotes), evidence: [] }
-        : validateQuotes(value?.evidence_quotes, prompt.public_packet);
+        : validateQuotes(value?.evidence_quotes, prompt.public_packet, definition.evidenceMatchNormalization);
     if (!quoteAudit.valid) fieldIssues.push('evidence_invalid');
     fields[field] = {
       eligible: issues.length === 0 && fieldIssues.length === 0 && !indeterminate,

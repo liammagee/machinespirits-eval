@@ -16,7 +16,9 @@ import {
   loadTutorStubResistantLearnerDesign,
   runTutorStubResistantLearnerCompilationPreflight,
   summarizeTutorStubResistantLearnerCalibration,
+  TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1,
   tutorStubFrameRefuserR1Prompt,
+  tutorStubResistantLearnerMergedFaceDesign,
 } from '../services/tutorStubResistantLearnerCalibration.js';
 import { mintTutorStubRivalLearnerDag, tutorStubRivalLearnerDagPrompt } from '../services/tutorStubRivalLearnerDag.js';
 
@@ -147,19 +149,24 @@ export function tutorStubResistantLearnerCalibrationChildSpec({
   fs.mkdirSync(traceDir, { recursive: true });
   const designPath = path.relative(ROOT, loaded.path);
   const b1 = job.study === 'B1';
-  const models = loaded.design.models;
+  const executionDesign =
+    loaded.design.schema === TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1
+      ? tutorStubResistantLearnerMergedFaceDesign(loaded.design, job.face_id)
+      : loaded.design;
+  const models = executionDesign.models;
   const rivalDagDesign = [
     'machinespirits.tutor-stub.resistant-learner-study-design.v2',
     'machinespirits.tutor-stub.resistant-learner-study-design.v3',
+    TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1,
   ].includes(loaded.design.schema);
-  const rivalDag = rivalDagDesign ? mintTutorStubRivalLearnerDag({ design: loaded.design, job, root: ROOT }) : null;
+  const rivalDag = rivalDagDesign ? mintTutorStubRivalLearnerDag({ design: executionDesign, job, root: ROOT }) : null;
   if (rivalDag) writeOnce(path.join(jobRoot, 'rival-learner-dag.json'), rivalDag);
   const profile = rivalDagDesign
-    ? tutorStubRivalLearnerDagPrompt({ design: loaded.design, job, root: ROOT })
+    ? tutorStubRivalLearnerDagPrompt({ design: executionDesign, job, root: ROOT })
     : b1
       ? 'bored'
       : tutorStubFrameRefuserR1Prompt(loaded.design);
-  const maximumReservationsPerDialogue = loaded.design.attemptCeilings.maximumReservationsPerDialogue;
+  const maximumReservationsPerDialogue = executionDesign.attemptCeilings.maximumReservationsPerDialogue;
   const selectedModelCallBudget = modelCallBudget === null ? maximumReservationsPerDialogue : Number(modelCallBudget);
   if (
     !Number.isInteger(selectedModelCallBudget) ||

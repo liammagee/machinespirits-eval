@@ -1,0 +1,121 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-learner-merged-turn-gate-registration.v1",
+  "version": 1,
+  "status": "prospective_zero_call_registration",
+  "workplanItem": "resistant-learner-strategy-close",
+  "appliesToDesignSchema": "machinespirits.tutor-stub.resistant-learner-merged-study-design.v1",
+  "faces": {
+    "faceA": {
+      "id": "content_rivalry",
+      "observationSemantics": "prospective_rival_attention_semantic_v3",
+      "construct": "public objective advancement rather than boredom affect",
+      "instrument": {
+        "implementationPath": "services/tutorStubRivalAttentionSemanticAdjudicationV3.js",
+        "responseSchema": "machinespirits.tutor-stub.rival-attention-judge-response.v3",
+        "publicInputs": ["bounded public transcript", "current public learner turn"],
+        "privateRivalDagVisible": false,
+        "regexKeywordOrAffectAuthority": "none"
+      },
+      "measurement": {
+        "judge": {
+          "id": "rival_attention_observer",
+          "modelRef": "codex.gpt-5.6-sol",
+          "provider": "codex",
+          "model": "gpt-5.6-sol",
+          "effort": "low",
+          "independent": true
+        },
+        "objectiveValues": ["rival_objective", "tutor_world_thread", "authored_bridge", "neither", "indeterminate"],
+        "workValues": [
+          "new_evidence_bearing_work",
+          "echo_or_restatement",
+          "stock_affect_only",
+          "no_objective_work",
+          "indeterminate"
+        ],
+        "triggerRule": {
+          "objective": "rival_objective",
+          "workStatus": "new_evidence_bearing_work",
+          "maximumLearnerTurn": 4,
+          "echoOrRestatementCounts": false,
+          "stockBoredomAffectCounts": false,
+          "authoredBridgeCounts": false,
+          "eligibleConfidence": ["high", "medium"],
+          "indeterminateDisposition": "turn_ineligible_read_next_turn"
+        },
+        "evidenceContract": {
+          "determinateObjectiveRequiresQuote": true,
+          "quoteRule": "exact_substring_of_current_public_learner_turn",
+          "paraphraseAllowed": false
+        }
+      },
+      "dispositions": {
+        "noTriggerByTurn4": "retain typed trigger-missing row; no rerun, repair, replacement, or recoding",
+        "measurementIndeterminateBeforeTurn4": "pass over this turn and read the next turn",
+        "measurementIndeterminateAtTurn4": "retain typed trigger-missing row; no rerun, repair, replacement, or recoding"
+      }
+    },
+    "faceB": {
+      "id": "standing_rivalry",
+      "observationSemantics": "prospective_merged_standing_rivalry_adherence_class_semantic_v1",
+      "construct": "public standing rivalry between the learner warrant frame and the tutor answer frame",
+      "instrument": {
+        "implementationPath": "services/tutorStubStandingRivalrySemanticAdjudicationV3.js",
+        "seatSchemaBasis": "machinespirits.tutor-stub.resistance-semantic-judge-response.v3",
+        "semanticAuthority": "independent two-seat semantic adherence-class agreement",
+        "regexKeywordOrClassifierAuthority": "none"
+      },
+      "measurement": {
+        "judges": [
+          {
+            "id": "semantic_judge_a",
+            "modelRef": "codex.gpt-5.6-sol",
+            "provider": "codex",
+            "model": "gpt-5.6-sol",
+            "modelFamily": "openai_gpt_5_6",
+            "effort": "low",
+            "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+            "independent": true
+          },
+          {
+            "id": "semantic_judge_b",
+            "modelRef": "claude-code.sonnet-5",
+            "provider": "claude-code",
+            "model": "claude-sonnet-5",
+            "modelFamily": "anthropic_claude_5",
+            "effort": "low",
+            "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+            "independent": true
+          }
+        ],
+        "turnGate": {
+          "adherentLabels": ["frame_refuser", "frame_defiant_or_productive_dispute"],
+          "nonAdherentLabels": ["neither"],
+          "consensus": "both_valid_votes_agree_on_adherence_class",
+          "eligibleConfidence": ["high", "medium"],
+          "bothSeatsRequired": true,
+          "differentAdherentLabelsCountAsAdherent": true,
+          "componentDisagreementMayVetoAdherenceClass": false,
+          "classDisagreementDisposition": "measurement_indeterminate",
+          "indeterminateDisposition": "stop_unit_no_rerun_replacement_or_repair"
+        }
+      },
+      "evidenceContract": {
+        "nonNullQuoteRule": "exact_substring_of_declared_public_packet_source",
+        "paraphraseAllowed": false,
+        "promptInstruction": "Every non-null evidence quote must be copied verbatim as an exact substring of its declared public packet source; never paraphrase, normalize, shorten, or reconstruct it. A paraphrase is a malformed seat and fails loudly before panel aggregation; semantic indeterminate is only for unresolved public meaning, not an excuse for an inexact quote.",
+        "checkerImplementation": "services/tutorStubResistanceSemanticAdjudicationV3.js#validateTutorStubResistanceSemanticResponseV3"
+      },
+      "dispositions": {
+        "measurementIndeterminate": "retain typed measurement-indeterminate row; no rerun, repair, replacement, or recoding",
+        "nonAdherentDeterminate": "continue reading until turn 2, then retain typed trigger-missing row if no adherent turn occurs",
+        "validUnitRerun": false,
+        "outcomeSelection": false
+      }
+    }
+  },
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "launchAuthorized": false
+  }
+}
