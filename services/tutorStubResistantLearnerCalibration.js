@@ -270,19 +270,71 @@ function exactValues(actual, expected) {
   return JSON.stringify(actual) === JSON.stringify(expected);
 }
 
+// One row per sealed merged-design revision. Revision 2 supersedes revision 1
+// after the failed 2026-08-25 calibration gates; the v1 file stays sealed and
+// still validates so the sealed run root remains readable.
+const MERGED_DESIGN_REVISION_PINS = Object.freeze({
+  1: Object.freeze({
+    registrationSource: 'notes/2026-08-24-resistant-learner-merged-registration-draft.md',
+    supersedesPriorDesign: null,
+    faceBHorizon: 6,
+    faceBActionInstruction:
+      "Name the disputed standing plainly. Ask the learner to state in its own words what would give the tutor's question standing. Offer one local public test the learner can take under protest, leave the wider frame disputed, and do not state the result.",
+    semanticRegistration: 'config/tutor-stub-resistant-learner-merged-semantic-registration.v1.json',
+    plannedCallsPerDialogue: 44,
+    plannedCallsCalibration: 1584,
+    plannedCallReservationCeilingPerDialogue: 132,
+    maximumReservationsPerDialogue: 138,
+    calibrationMaximumReservations: 4968,
+  }),
+  2: Object.freeze({
+    registrationSource: 'notes/2026-08-25-resistant-learner-merged-registration-v2.md',
+    supersedesPriorDesign: Object.freeze({
+      priorDesign: 'config/tutor-stub-resistant-learner-merged-design.v1.json',
+      priorDesignSha256: '9c5a6415758bfb154e11cf168b6d60c3376cd62ab9665f4ac5311fd1f71db903',
+      priorDisposition: 'superseded_after_2026-08-25_calibration_gate_failure_no_powered_run',
+    }),
+    faceBHorizon: 8,
+    faceBActionInstruction:
+      "Name the disputed standing plainly. Ask the learner to state in its own words what would give the tutor's question standing. Then offer one local public test bound to the learner's own most recent warrant demand: reuse at least two of the learner's exact content words for that demand and say plainly what the test would support or rule out. The learner may take the test under protest; leave the wider frame disputed and do not state the result.",
+    semanticRegistration: 'config/tutor-stub-resistant-learner-merged-semantic-registration.v2.json',
+    plannedCallsPerDialogue: 56,
+    plannedCallsCalibration: 2016,
+    plannedCallReservationCeilingPerDialogue: 168,
+    maximumReservationsPerDialogue: 174,
+    calibrationMaximumReservations: 6264,
+  }),
+});
+
 function validateTutorStubResistantLearnerMergedDesignV1(design) {
   const issues = [];
   const faceA = design?.populationStrata?.faceA;
   const faceB = design?.populationStrata?.faceB;
+  const pins = MERGED_DESIGN_REVISION_PINS[design?.revision] || null;
+  if (!pins) {
+    issues.push('merged design revision is not registered');
+    return { valid: false, issues };
+  }
   if (
     design?.schema !== TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1 ||
-    design?.revision !== 1 ||
     design?.studyId !== MERGED_ID ||
     design?.status !== 'prospective_zero_call_design_pending_typed_approval' ||
     design?.workplanItem !== 'resistant-learner-strategy-close' ||
-    design?.registrationSource !== 'notes/2026-08-24-resistant-learner-merged-registration-draft.md'
+    design?.registrationSource !== pins.registrationSource
   ) {
     issues.push('merged design identity drifted');
+  }
+  if (pins.supersedesPriorDesign) {
+    if (
+      design?.supersedes?.priorDesign !== pins.supersedesPriorDesign.priorDesign ||
+      design?.supersedes?.priorDesignSha256 !== pins.supersedesPriorDesign.priorDesignSha256 ||
+      design?.supersedes?.priorDisposition !== pins.supersedesPriorDesign.priorDisposition ||
+      design?.supersedes?.reuse !== false
+    ) {
+      issues.push('merged supersession record drifted');
+    }
+  } else if (design?.supersedes !== undefined) {
+    issues.push('merged revision 1 must not carry a supersession record');
   }
   if (
     !exactValues(design?.supersedesStudyDesigns, [
@@ -324,14 +376,13 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
     faceB?.population?.triggerRegistration !==
       'config/tutor-stub-resistant-learner-merged-turn-gate-registration.v1.json' ||
     faceB?.population?.maximumTriggerLearnerTurn !== 2 ||
-    faceB?.population?.outcomeHorizonPostTriggerLearnerTurns !== 6 ||
+    faceB?.population?.outcomeHorizonPostTriggerLearnerTurns !== pins.faceBHorizon ||
     faceB?.population?.reuseOrPooling !== false ||
     faceB?.rivalDagPersona?.mechanism !== 'standing_rivalry' ||
     faceB?.rivalDagPersona?.concessionCondition?.kind !== 'public_tutor_move_bears_on_open_rival_node' ||
     faceB?.tutorMove?.id !== 'standing_conditions_bridge' ||
     faceB?.tutorMove?.runtimePedagogicalMove !== 'test_bounded_distinction' ||
-    faceB?.tutorDeliveryContract?.actionInstructions?.test_bounded_distinction !==
-      "Name the disputed standing plainly. Ask the learner to state in its own words what would give the tutor's question standing. Offer one local public test the learner can take under protest, leave the wider frame disputed, and do not state the result." ||
+    faceB?.tutorDeliveryContract?.actionInstructions?.test_bounded_distinction !== pins.faceBActionInstruction ||
     faceB?.measurement?.endpointField !== 'final_graded_engagement_rung' ||
     !exactValues(
       faceB?.measurement?.rungs?.map((rung) => rung.score),
@@ -361,10 +412,8 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
     issues.push('merged register, seed, calibration, powered-run, or authority rule drifted');
   }
   if (
-    design?.measurement?.semanticRegistration !==
-      'config/tutor-stub-resistant-learner-merged-semantic-registration.v1.json' ||
-    design?.measurement?.readerPanel?.protocolSource !==
-      'config/tutor-stub-resistant-learner-merged-semantic-registration.v1.json' ||
+    design?.measurement?.semanticRegistration !== pins.semanticRegistration ||
+    design?.measurement?.readerPanel?.protocolSource !== pins.semanticRegistration ||
     !exactValues(design?.measurement?.readerPanel?.judges, JUDGES)
   ) {
     issues.push('merged semantic registration or reader panel drifted');
@@ -375,14 +424,14 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
   );
   const ceilings = design?.attemptCeilings || {};
   if (
-    calls !== 44 ||
-    ceilings.plannedCallsPerDialogue !== 44 ||
-    ceilings.plannedCallsCalibration !== 1584 ||
+    calls !== pins.plannedCallsPerDialogue ||
+    ceilings.plannedCallsPerDialogue !== pins.plannedCallsPerDialogue ||
+    ceilings.plannedCallsCalibration !== pins.plannedCallsCalibration ||
     ceilings.maximumReservationsPerPlannedCall !== 3 ||
-    ceilings.plannedCallReservationCeilingPerDialogue !== 132 ||
+    ceilings.plannedCallReservationCeilingPerDialogue !== pins.plannedCallReservationCeilingPerDialogue ||
     ceilings.authorizationHeadroomReservationsPerDialogue !== 6 ||
-    ceilings.maximumReservationsPerDialogue !== 138 ||
-    ceilings.calibrationMaximumReservations !== 4968
+    ceilings.maximumReservationsPerDialogue !== pins.maximumReservationsPerDialogue ||
+    ceilings.calibrationMaximumReservations !== pins.calibrationMaximumReservations
   ) {
     issues.push('merged attempt ceiling arithmetic drifted');
   }

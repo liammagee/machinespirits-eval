@@ -29,14 +29,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const TUTOR_STUB_RESISTANT_LEARNER_MERGED_USAGE = `Usage:
   node scripts/run-tutor-stub-resistant-learner-merged-calibration.js \
-    --design config/tutor-stub-resistant-learner-merged-design.v1.json \
+    --design config/tutor-stub-resistant-learner-merged-design.v2.json \
     --destination /absolute/create-once/run-root \
     --dry-run
 
   node scripts/run-tutor-stub-resistant-learner-merged-calibration.js \
-    --design config/tutor-stub-resistant-learner-merged-design.v1.json \
+    --design config/tutor-stub-resistant-learner-merged-design.v2.json \
     --destination /absolute/create-once/run-root \
-    --launch [--parallelism 1]
+    --launch [--parallelism 4]
 
 --dry-run executes the complete zero-call preflight and writes nothing.
 --launch requires an attended TTY and records typed operator approval in approval.json.
