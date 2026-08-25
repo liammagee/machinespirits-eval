@@ -35,6 +35,18 @@ export function selectTutorStubBoredomSemanticAdjudicatorFactory({ args, root })
       return (callModel, resolveModel) =>
         createTutorStubRivalAttentionAdjudicatorV3(callModel, resolveModel, { registrationPath, root });
     }
+    if (
+      design?.schema === 'machinespirits.tutor-stub.resistant-learner-merged-study-design.v1' &&
+      design?.studyId === 'resistant-learner-merged-graded-engagement'
+    ) {
+      // The merged design's faceA keeps the B1 rival-attention trigger. Without
+      // this branch the factory fell back to the boredom v1 adjudicator and the
+      // first merged calibration run burned three faceA units on the wrong
+      // instrument.
+      const registrationPath = design?.populationStrata?.faceA?.population?.triggerRegistration;
+      return (callModel, resolveModel) =>
+        createTutorStubRivalAttentionAdjudicatorV3(callModel, resolveModel, { registrationPath, root });
+    }
   }
   const registrationPath = args?.['boredom-proof-dag-registration'];
   if (!registrationPath) return createTutorStubBoredomSemanticAdjudicator;

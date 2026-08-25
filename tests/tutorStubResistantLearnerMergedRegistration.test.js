@@ -22,6 +22,8 @@ import {
   foldTutorStubResistantLearnerMergedEvidencePunctuation,
 } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_FIELDS_V3 } from '../services/tutorStubResistanceSemanticAdjudicationV3.js';
+import { selectTutorStubBoredomSemanticAdjudicatorFactory } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
+import { tutorStubResistanceActionRegisterTreatmentEligibility } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
   TUTOR_STUB_MERGED_STANDING_RIVALRY_OBSERVATION_V1,
   adjudicateTutorStubStandingRivalryJudgesV3,
@@ -433,4 +435,64 @@ test('merged approval is unversioned and execution refuses an existing destinati
 test('the agreed draft note is committed without byte changes', () => {
   const source = fs.readFileSync(path.join(ROOT, 'notes/2026-08-24-resistant-learner-merged-registration-draft.md'));
   assert.equal(sha256(source), '533b97b6f97639287358e2a10adc811d0f990f17ea5ebdf9e857d96417a1efbc');
+});
+
+test('the merged design routes the faceA trigger seat to the rival-attention v3 adjudicator', async () => {
+  const factory = selectTutorStubBoredomSemanticAdjudicatorFactory({
+    args: { 'resistant-learner-calibration-design': DESIGN_PATH },
+    root: ROOT,
+  });
+  let observedRole = null;
+  const adjudicate = factory(
+    async ({ role, resolved }) => {
+      observedRole = role;
+      return {
+        text: JSON.stringify({
+          schema: 'machinespirits.tutor-stub.rival-attention-judge-response.v3',
+          case_id: 'merged-routing:turn:1',
+          objective_advanced: 'rival_objective',
+          work_status: 'new_evidence_bearing_work',
+          evidence_quote: 'compare the booking records',
+          confidence: 'high',
+          reason: 'The learner performs new work on the rival objective.',
+        }),
+        provider: resolved.provider,
+        model: resolved.model,
+      };
+    },
+    () => ({ provider: 'codex', model: 'gpt-5.6-sol' }),
+  );
+  const routed = await adjudicate({
+    learnerText: 'I will compare the booking records before returning to your question.',
+    state: { history: [], trace: [], resistanceActionRegisterStudy: { job_id: 'merged-routing' } },
+    turn: 1,
+  });
+  assert.equal(observedRole, 'tutor_stub_resistant_learner_rival_attention_judge');
+  assert.equal(routed.measurement_disposition, 'rival_attention_trigger');
+  assert.equal(routed.version, 3);
+});
+
+test('merged faceB treatment eligibility binds the merged registration instead of throwing the v4 panel guard', () => {
+  const loaded = load();
+  const faceB = tutorStubResistantLearnerMergedFaceDesign(loaded.design, 'faceB');
+  const runtime = {
+    consumed: false,
+    profile: 'frame_refuser',
+    resistant_learner_calibration: true,
+    resistant_learner_study: 'R1',
+    design: faceB,
+    registration: {
+      design: { trigger: { observationSemantics: TUTOR_STUB_MERGED_STANDING_RIVALRY_OBSERVATION_V1 } },
+    },
+  };
+  const eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
+    runtime,
+    learnerText: 'Before your question can stand, we need evidence that a fitting opened under raised pressure.',
+    classification: null,
+    tutorLearnerDag: { advance: { supportedMoveCount: 0 } },
+    turnNumber: 1,
+    semanticAdjudication: null,
+  });
+  assert.equal(eligibility.eligible, false);
+  assert.ok(eligibility.reasons.includes('semantic_measurement_indeterminate_missing_or_stale'));
 });

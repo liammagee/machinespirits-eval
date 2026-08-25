@@ -9,44 +9,25 @@ import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
 import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
 import { selectTutorStubActorialPerformance } from './tutorStubResponseConfiguration.js';
-import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 } from './tutorStubResistanceSemanticAdjudicationV2.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResistanceSemanticAdjudicationV3.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from './tutorStubResistanceSemanticAdjudicationV4.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5 } from './tutorStubResistanceSemanticAdjudicationV5.js';
-import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6 } from './tutorStubResistanceSemanticAdjudicationV6.js';
-import { TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3 } from './tutorStubStandingRivalrySemanticAdjudicationV3.js';
 import { TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 } from './tutorStubRivalAttentionSemanticAdjudicationV3.js';
 import {
-  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
-  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
-  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3,
-  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
-  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5,
-  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V6,
-  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3,
   applyTutorStubResistantLearnerCalibrationSemanticPanel,
   isTutorStubResistanceSemanticObservation,
   loadTutorStubResistanceSemanticRegistration,
   tutorStubResistanceSemanticPublicContext,
   tutorStubResistanceSemanticLabelAdheres,
+  tutorStubResistanceSemanticRegistrationPathForObservation,
   validateTutorStubResistanceSemanticRuntimeResult,
 } from './tutorStubResistanceSemanticRuntime.js';
 
 function resistanceSemanticRegistrationBinding(observationSemantics, runtime = null) {
-  const registrationPath =
-    observationSemantics === TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3
-      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3
-      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6
-      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V6
-      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5
-      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V5
-      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4
-      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4
-      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
-        ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3
-        : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
-          ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2
-          : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION;
+  // One map for observation -> registration path. A second hand-rolled map here
+  // silently fell back to the v1 registration for the merged observation and
+  // crashed the first merged calibration run at treatment eligibility.
+  const registrationPath = tutorStubResistanceSemanticRegistrationPathForObservation(observationSemantics);
   return applyTutorStubResistantLearnerCalibrationSemanticPanel(
     loadTutorStubResistanceSemanticRegistration(registrationPath),
     runtime,
