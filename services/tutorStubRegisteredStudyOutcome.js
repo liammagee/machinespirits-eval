@@ -8,6 +8,12 @@ export const TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES = Object.freeze([
   'TUTOR_STUB_BOREDOM_PROOF_DAG_TRIGGER_MISSING',
   'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING',
   'TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE',
+  // Merged-design revision-3 typed failures. The lowercase codes match the
+  // registered dispositions: the learner refused the bounded bridge step
+  // after the one allowed repair, or the bridge-step adjudicator returned no
+  // verifiable registered verdict.
+  'tutor_stub_learner_noncompliance',
+  'tutor_stub_rival_dag_bridge_step_adjudication_indeterminate',
 ]);
 
 const RETAINED_SUBSTANTIVE_FAILURE_CODE_SET = new Set(TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES);

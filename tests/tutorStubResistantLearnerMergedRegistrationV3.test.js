@@ -15,7 +15,12 @@ import {
 import {
   buildTutorStubResistantLearnerSemanticPrompt,
   createTutorStubResistantLearnerSemanticRuntime,
+  tutorStubResistantLearnerMergedSemanticRegistrationIssues,
 } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
+import {
+  TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES,
+  tutorStubRegisteredStudyOutcomeFromError,
+} from '../services/tutorStubRegisteredStudyOutcome.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V2_DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v2.json';
@@ -500,4 +505,123 @@ test('the adjudicator refuses a drifted route and an unregistered design', async
       }),
     /bridge-step enforcement is not registered/,
   );
+});
+
+test('both revision-3 typed failure codes cross the child-process boundary as registered outcomes', () => {
+  for (const code of [
+    'tutor_stub_learner_noncompliance',
+    'tutor_stub_rival_dag_bridge_step_adjudication_indeterminate',
+  ]) {
+    assert.ok(TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES.includes(code));
+    const error = new Error('typed failure');
+    error.code = code;
+    error.substantiveStudyFailure = true;
+    const outcome = tutorStubRegisteredStudyOutcomeFromError({ error, jobId: 'faceB-bridge-fixture' });
+    assert.equal(outcome?.status, 'retained_substantive_failure');
+    assert.equal(outcome?.code, code);
+    assert.equal(outcome?.recoverable, false);
+    assert.equal(outcome?.replacement_allowed, false);
+  }
+});
+
+test('a taken verdict without a verbatim learner-draft quote is indeterminate, never a pass', async () => {
+  const faceB = tutorStubResistantLearnerMergedFaceDesign(load(V3_DESIGN_PATH).design, 'faceB');
+  const draft = 'The ledger seal does match the harbor registry entry; my frame objection stands.';
+  for (const quote of [null, 'a fabricated quote that is not in the draft', '   ']) {
+    const { runtime, state } = bridgeAdjudicatorRuntime({
+      design: faceB,
+      respond: () => ({ label: 'bridge_step_taken', quote }),
+    });
+    await assert.rejects(
+      () =>
+        runtime.adjudicateRivalDagBridgeStep({
+          state,
+          learnerText: draft,
+          turnNumber: 8,
+          nodeText: MET_NODE_TASK,
+          latestTutorText: MET_HISTORY[1].content,
+        }),
+      (error) => {
+        assert.equal(error.code, 'tutor_stub_rival_dag_bridge_step_adjudication_indeterminate');
+        assert.equal(error.measurementIndeterminate, true);
+        return true;
+      },
+    );
+    const traceEvent = state.trace.find((event) => event.type === 'rival_dag_bridge_step_adjudication');
+    assert.equal(traceEvent.quoteVerified, false);
+    assert.equal(traceEvent.quote, null);
+  }
+});
+
+test('tampered enforcement contracts fail the design validator', () => {
+  const pristine = load(V3_DESIGN_PATH).design;
+  const enforcementOf = (design) => design.populationStrata.faceB.rivalDagPersona.concessionEnforcement;
+
+  const tampers = [
+    (enforcement) => {
+      enforcement.check.adjudicatorSeat.model = 'gpt-5.6-luna';
+    },
+    (enforcement) => {
+      enforcement.check.adjudicatorSeat.effort = 'high';
+    },
+    (enforcement) => {
+      enforcement.check.labels = ['bridge_step_taken', 'bridge_step_not_taken', 'unsure'];
+    },
+    (enforcement) => {
+      enforcement.check.question = 'Did the learner comply?';
+    },
+    (enforcement) => {
+      enforcement.repairInstruction = 'Please try again.';
+    },
+    (enforcement) => {
+      enforcement.check.rejectedMechanicalChecks.measurements.met_turns_narrowed_markers_min3 = 5;
+    },
+  ];
+  for (const tamper of tampers) {
+    const design = structuredClone(pristine);
+    tamper(enforcementOf(design));
+    assert.equal(validateTutorStubResistantLearnerDesign(design).valid, false);
+  }
+});
+
+test('the v3 semantic registration validates exactly and tampered copies fail closed', () => {
+  const pristine = registrationV3();
+  const judges = load(V3_DESIGN_PATH).design.measurement.readerPanel.judges;
+  const check = (registration) =>
+    tutorStubResistantLearnerMergedSemanticRegistrationIssues({
+      registrationPath: V3_REGISTRATION_PATH,
+      registration,
+      judges,
+    });
+  assert.deepEqual(check(pristine), []);
+
+  const tampers = [
+    (registration) => {
+      registration.instrument.endpointDefinition =
+        'final_graded_engagement_rung is the highest rung of the final turn.';
+    },
+    (registration) => {
+      registration.appliesToDesignRevision = 4;
+    },
+    (registration) => {
+      registration.supersedesRegistration.sha256 = registration.supersedesRegistration.sha256.replace(/^./, '0');
+    },
+    (registration) => {
+      registration.visibility.rivalDagVisible = true;
+    },
+    (registration) => {
+      delete registration.dispositions.learner_noncompliance;
+    },
+    (registration) => {
+      registration.instrument.faces.faceB.rungAnchors['2'] = 'Any engagement scores 2.';
+    },
+    (registration) => {
+      registration.instrument.faces.faceA.workedExamples.pop();
+    },
+  ];
+  for (const tamper of tampers) {
+    const registration = structuredClone(pristine);
+    tamper(registration);
+    assert.equal(check(registration).length > 0, true);
+  }
 });

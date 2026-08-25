@@ -321,9 +321,30 @@ const MERGED_DESIGN_REVISION_PINS = Object.freeze({
     // on the sealed v2 run-3 transcripts failed open (111-112 of 114 refusal
     // turns passed), so the check is a registered adjudicator seat.
     faceBBridgeEnforcement: Object.freeze({
+      schema: 'machinespirits.tutor-stub.rival-dag-concession-enforcement.v2',
+      appliesWhen: 'first_post_trigger_learner_turn_with_met_typed_concession_condition',
       scope: 'first_met_episode_per_dialogue',
+      position: 'after_registered_intervention_release_in_generation_runtime',
       checkKind: 'semantic_bridge_step_adjudication',
+      adjudicatorSeat: Object.freeze({
+        id: 'bridge_step_adjudicator',
+        modelRef: 'codex.gpt-5.6-sol',
+        provider: 'codex',
+        model: 'gpt-5.6-sol',
+        effort: 'low',
+      }),
+      question:
+        'Does the learner draft take the bounded bridge step: does it connect the named open rival warrant item to a public tutor-world item in the learner’s own words, stating what the tutor-world item shows, supports, or rules out for that warrant item, while keeping a reservation about the wider frame? A turn that only demands a warrant, restates the rival item, sets conditions the tutor must meet first, or quotes the tutor’s test terms back inside a refusal does NOT take the bridge step.',
+      labels: Object.freeze(['bridge_step_taken', 'bridge_step_not_taken']),
+      mechanicalMeasurements: Object.freeze({
+        met_turns_v1_rule: 114,
+        met_turns_narrowed_markers_min3: 105,
+        refusal_turns_passing_node_and_tutor_overlap_check: 112,
+        refusal_turns_passing_fresh_tutor_token_check: 111,
+      }),
       repairsAllowedPerEpisode: 1,
+      repairInstruction:
+        'Your draft did not take the required bounded bridge step. Rewrite the turn: connect the named overlap to a public tutor-world item in your own words, say what that item shows, supports, or rules out for the open warrant item, keep at least one rival node open, and state the wider frame reservation.',
       exhaustionDisposition: 'typed_learner_noncompliance_failure',
     }),
     plannedCallsPerDialogue: 59,
@@ -424,9 +445,20 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
   const bridgeEnforcement = faceB?.rivalDagPersona?.concessionEnforcement;
   if (pins.faceBBridgeEnforcement) {
     if (
+      bridgeEnforcement?.schema !== pins.faceBBridgeEnforcement.schema ||
+      bridgeEnforcement?.appliesWhen !== pins.faceBBridgeEnforcement.appliesWhen ||
       bridgeEnforcement?.scope !== pins.faceBBridgeEnforcement.scope ||
+      bridgeEnforcement?.position !== pins.faceBBridgeEnforcement.position ||
       bridgeEnforcement?.check?.kind !== pins.faceBBridgeEnforcement.checkKind ||
+      !exactValues(bridgeEnforcement?.check?.adjudicatorSeat, pins.faceBBridgeEnforcement.adjudicatorSeat) ||
+      bridgeEnforcement?.check?.question !== pins.faceBBridgeEnforcement.question ||
+      !exactValues(bridgeEnforcement?.check?.labels, pins.faceBBridgeEnforcement.labels) ||
+      !exactValues(
+        bridgeEnforcement?.check?.rejectedMechanicalChecks?.measurements,
+        pins.faceBBridgeEnforcement.mechanicalMeasurements,
+      ) ||
       bridgeEnforcement?.repairsAllowedPerEpisode !== pins.faceBBridgeEnforcement.repairsAllowedPerEpisode ||
+      bridgeEnforcement?.repairInstruction !== pins.faceBBridgeEnforcement.repairInstruction ||
       bridgeEnforcement?.exhaustionDisposition !== pins.faceBBridgeEnforcement.exhaustionDisposition ||
       bridgeEnforcement?.exhaustionNeverScoredAsRung0 !== true ||
       bridgeEnforcement?.typedFailureIsNotDeterminate !== true

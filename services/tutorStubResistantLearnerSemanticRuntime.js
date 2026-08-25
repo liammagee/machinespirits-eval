@@ -44,7 +44,22 @@ const MERGED_SEMANTIC_REGISTRATIONS = Object.freeze({
     schema: 'machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v3',
     version: 3,
     echoSlipTolerance: true,
-    endpointDefinition: true,
+    // The exact registered endpoint text, not a keyword probe.
+    endpointDefinition:
+      'final_graded_engagement_rung is the highest rung the learner reaches on any learner turn inside the post-trigger horizon, graded from the public transcript. It is not the final-turn state. A learner that takes the bridge step once and then returns to its reservation scores the rung of that bridge step.',
+    appliesToDesignRevision: 3,
+    supersedesRegistration: Object.freeze({
+      path: 'config/tutor-stub-resistant-learner-merged-semantic-registration.v2.json',
+      sha256: '43fc5b1e69dd9e4c48c186c4b36fcdd3d6542e2800b598bc74c84ef3852b634d',
+    }),
+    // Canonical-JSON sha over the whole instrument block: faces, rungs, rung
+    // anchors, worked examples, persona and delivery fields, endpoint values.
+    instrumentSha256: 'f74e596fa48a5c3d414716cb6212832ca4655ea7713880e57f93cea44a1c696f',
+    visibilityContract: true,
+    dispositions: Object.freeze({
+      learner_noncompliance:
+        'If the generation runtime records a typed learner_noncompliance failure (the learner draft failed the registered semantic bridge-step adjudication on a MET turn and failed it again after the one allowed repair), the dialogue is not scored and the run reports simulator non-compliance separately from rung outcomes. Such dialogues never count as rung 0 and never count as determinate for the determinate floor.',
+    }),
   }),
 });
 
@@ -188,14 +203,12 @@ function v2ReaderRegistration(design) {
   return registration;
 }
 
-function mergedReaderRegistration(design) {
-  const registrationPath = design?.measurement?.readerPanel?.protocolSource;
+// Pure fail-closed check of a merged semantic-registration document against
+// its frozen expected row. Exported so tests can probe tampered copies
+// without touching the sealed files on disk.
+export function tutorStubResistantLearnerMergedSemanticRegistrationIssues({ registrationPath, registration, judges }) {
   const expected = MERGED_SEMANTIC_REGISTRATIONS[registrationPath];
-  if (!expected) {
-    throw new Error('merged resistant-learner semantic registration path drifted');
-  }
-  if (V2_REGISTRATION_CACHE.has(registrationPath)) return V2_REGISTRATION_CACHE.get(registrationPath);
-  const registration = JSON.parse(fs.readFileSync(path.join(MODULE_ROOT, registrationPath), 'utf8'));
+  if (!expected) return ['merged resistant-learner semantic registration path drifted'];
   const quoteMatch = registration?.evidenceContract?.quoteMatch;
   const echoSlip = registration?.readerPanel?.echoSlipTolerance;
   const echoSlipValid = expected.echoSlipTolerance
@@ -205,20 +218,42 @@ function mergedReaderRegistration(design) {
       echoSlip?.secondFailureDisposition === 'seat_remains_invalid'
     : echoSlip === undefined;
   const endpointDefinitionValid = expected.endpointDefinition
-    ? typeof registration?.instrument?.endpointDefinition === 'string' &&
-      registration.instrument.endpointDefinition.includes('highest rung')
+    ? registration?.instrument?.endpointDefinition === expected.endpointDefinition
     : registration?.instrument?.endpointDefinition === undefined;
+  const revisionPinValid = expected.appliesToDesignRevision
+    ? registration?.appliesToDesignRevision === expected.appliesToDesignRevision &&
+      registration?.supersedesRegistration?.path === expected.supersedesRegistration.path &&
+      registration?.supersedesRegistration?.sha256 === expected.supersedesRegistration.sha256 &&
+      registration?.supersedesRegistration?.reuse === false
+    : true;
+  const instrumentShaValid = expected.instrumentSha256
+    ? tutorStubResistantLearnerSemanticSha256(registration?.instrument) === expected.instrumentSha256
+    : true;
+  const visibilityValid = expected.visibilityContract
+    ? registration?.visibility?.publicTranscriptOnly === true &&
+      registration?.visibility?.rivalDagVisible === false &&
+      registration?.visibility?.assignmentVisible === false &&
+      registration?.visibility?.otherReaderOutputVisible === false &&
+      registration?.visibility?.generatorAnalysisVisible === false
+    : true;
+  const dispositionsValid = expected.dispositions
+    ? registration?.dispositions?.learner_noncompliance === expected.dispositions.learner_noncompliance
+    : true;
   if (
     registration?.schema !== expected.schema ||
     registration?.version !== expected.version ||
     !echoSlipValid ||
     !endpointDefinitionValid ||
+    !revisionPinValid ||
+    !instrumentShaValid ||
+    !visibilityValid ||
+    !dispositionsValid ||
     registration?.appliesToDesignSchema !== MERGED_DESIGN_SCHEMA ||
     registration?.instrument?.endpointField !== 'final_graded_engagement_rung' ||
     JSON.stringify(registration?.instrument?.endpointValues) !== JSON.stringify(['0', '1', '2', 'indeterminate']) ||
     registration?.readerPanel?.consensus !==
       'both valid medium/high-confidence votes agree on the exact rung or exact non-ladder field value; otherwise measurement_indeterminate' ||
-    JSON.stringify(registration?.readerPanel?.judges) !== JSON.stringify(design.measurement.readerPanel.judges) ||
+    JSON.stringify(registration?.readerPanel?.judges) !== JSON.stringify(judges) ||
     quoteMatch?.rule !== 'unique_verbatim_substring_after_registered_punctuation_folding' ||
     JSON.stringify(quoteMatch?.foldingOrder) !==
       JSON.stringify([
@@ -231,8 +266,24 @@ function mergedReaderRegistration(design) {
     quoteMatch?.otherNormalizationAllowed !== false ||
     quoteMatch?.uniqueOccurrenceRequired !== true
   ) {
-    throw new Error('merged resistant-learner semantic prompt/checker registration drifted');
+    return ['merged resistant-learner semantic prompt/checker registration drifted'];
   }
+  return [];
+}
+
+function mergedReaderRegistration(design) {
+  const registrationPath = design?.measurement?.readerPanel?.protocolSource;
+  if (!MERGED_SEMANTIC_REGISTRATIONS[registrationPath]) {
+    throw new Error('merged resistant-learner semantic registration path drifted');
+  }
+  if (V2_REGISTRATION_CACHE.has(registrationPath)) return V2_REGISTRATION_CACHE.get(registrationPath);
+  const registration = JSON.parse(fs.readFileSync(path.join(MODULE_ROOT, registrationPath), 'utf8'));
+  const issues = tutorStubResistantLearnerMergedSemanticRegistrationIssues({
+    registrationPath,
+    registration,
+    judges: design.measurement.readerPanel.judges,
+  });
+  if (issues.length > 0) throw new Error(issues[0]);
   V2_REGISTRATION_CACHE.set(registrationPath, registration);
   return registration;
 }
@@ -879,6 +930,11 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
     const label = output?.label;
     const taken = label === labels[0];
     const validLabel = labels.includes(label);
+    // A taken verdict is evidence-bound: the quote must be a non-empty
+    // verbatim substring of the learner draft, or the verdict is unverifiable
+    // and the measurement stops as indeterminate. Fail closed, never open.
+    const quote = typeof output?.quote === 'string' ? output.quote : null;
+    const quoteVerified = taken ? Boolean(quote && quote.trim() && learnerText.includes(quote)) : null;
     appendTraceEvent(state.trace, {
       type: 'rival_dag_bridge_step_adjudication',
       turn: turnNumber,
@@ -886,20 +942,25 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
       modelRef: seat.modelRef,
       candidateKind,
       label: validLabel ? label : null,
-      quote: taken && typeof output?.quote === 'string' ? output.quote : null,
+      quote: taken && quoteVerified ? quote : null,
       validLabel,
+      quoteVerified,
       learnerText,
       publicTranscriptChanged: false,
     });
-    if (!validLabel) {
-      const error = new Error('bridge-step adjudication returned no registered label');
+    if (!validLabel || (taken && !quoteVerified)) {
+      const error = new Error(
+        validLabel
+          ? 'bridge-step adjudication claimed the step without a verbatim learner-draft quote'
+          : 'bridge-step adjudication returned no registered label',
+      );
       error.code = 'tutor_stub_rival_dag_bridge_step_adjudication_indeterminate';
       error.substantiveStudyFailure = true;
       error.measurementIndeterminate = true;
       error.recoverable = false;
       throw error;
     }
-    return { label, taken, quote: taken ? output?.quote || null : null };
+    return { label, taken, quote: taken ? quote : null };
   }
 
   return { adjudicateFinalHorizon, adjudicatePrimaryPanel, adjudicateRivalDagBridgeStep };
