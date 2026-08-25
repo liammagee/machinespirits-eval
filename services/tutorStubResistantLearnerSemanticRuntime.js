@@ -36,6 +36,16 @@ const MERGED_SEMANTIC_REGISTRATIONS = Object.freeze({
     version: 2,
     echoSlipTolerance: true,
   }),
+  // Version 3 redefines the endpoint as the window maximum (highest rung on
+  // any post-trigger learner turn), adds the face-A analogy ruling, and
+  // registers the typed learner_noncompliance disposition. Versions 1-2 stay
+  // sealed so the 2026-08-25 run roots remain replayable.
+  'config/tutor-stub-resistant-learner-merged-semantic-registration.v3.json': Object.freeze({
+    schema: 'machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v3',
+    version: 3,
+    echoSlipTolerance: true,
+    endpointDefinition: true,
+  }),
 });
 
 function canonical(value) {
@@ -194,10 +204,15 @@ function mergedReaderRegistration(design) {
       echoSlip?.promptChange === 'none' &&
       echoSlip?.secondFailureDisposition === 'seat_remains_invalid'
     : echoSlip === undefined;
+  const endpointDefinitionValid = expected.endpointDefinition
+    ? typeof registration?.instrument?.endpointDefinition === 'string' &&
+      registration.instrument.endpointDefinition.includes('highest rung')
+    : registration?.instrument?.endpointDefinition === undefined;
   if (
     registration?.schema !== expected.schema ||
     registration?.version !== expected.version ||
     !echoSlipValid ||
+    !endpointDefinitionValid ||
     registration?.appliesToDesignSchema !== MERGED_DESIGN_SCHEMA ||
     registration?.instrument?.endpointField !== 'final_graded_engagement_rung' ||
     JSON.stringify(registration?.instrument?.endpointValues) !== JSON.stringify(['0', '1', '2', 'indeterminate']) ||
@@ -242,6 +257,9 @@ function primaryDefinition(study, design) {
       },
       instructions: [
         `Judge the complete ${horizon}-post-trigger-learner-turn horizon on the public transcript only.`,
+        ...(registration.instrument.endpointDefinition
+          ? [`Endpoint definition: ${registration.instrument.endpointDefinition}`]
+          : []),
         `Code 0: ${face.rungs['0']}`,
         `Code 1: ${face.rungs['1']}`,
         `Code 2: ${face.rungs['2']}`,
@@ -798,7 +816,93 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
     return result;
   }
 
-  return { adjudicateFinalHorizon, adjudicatePrimaryPanel };
+  // Registered face-B bridge-step enforcement (merged design revision 3+).
+  // One adjudicator seat, one call per check. Mechanical token checks were
+  // measured fail-open on the sealed v2 run-3 transcripts, so the check is
+  // semantic by registration. Any non-label output is a typed indeterminate
+  // stop, never a silent pass.
+  async function adjudicateRivalDagBridgeStep({
+    state,
+    learnerText,
+    turnNumber,
+    nodeText,
+    latestTutorText,
+    candidateKind = 'initial',
+    signal = null,
+  }) {
+    const enforcement = state?.resistanceActionRegisterStudy?.design?.rivalDagPersona?.concessionEnforcement;
+    const seat = enforcement?.check?.adjudicatorSeat;
+    const labels = enforcement?.check?.labels;
+    if (
+      enforcement?.check?.kind !== 'semantic_bridge_step_adjudication' ||
+      !seat ||
+      !Array.isArray(labels) ||
+      labels.length !== 2
+    ) {
+      throw new Error('bridge-step enforcement is not registered on this design');
+    }
+    const resolved = resolveModel(seat.modelRef);
+    if (resolved.provider !== seat.provider || resolved.model !== seat.model) {
+      throw new Error(`bridge-step adjudicator route drift for ${seat.id}`);
+    }
+    const prompt = JSON.stringify({
+      schema: 'machinespirits.tutor-stub.rival-dag-bridge-step-adjudication.v1',
+      question: enforcement.check.question,
+      named_open_rival_item: nodeText,
+      latest_tutor_turn: latestTutorText,
+      learner_draft: learnerText,
+      labels,
+      output_contract:
+        'Return one JSON object only: {"label": one of labels, "quote": a verbatim substring of learner_draft that takes the bridge step, or null when the label is the not-taken label}.',
+    });
+    const raw = await callPromptModel({
+      prompt,
+      messageHistory: [],
+      resolved,
+      systemPrompt:
+        'You are a registered single-question adjudicator inside a sealed evaluation harness. Judge only from the material in the prompt. Return JSON only.',
+      role: `tutor_stub_rival_dag_bridge_step_${seat.id}`,
+      maxTokens: 400,
+      trace: state.trace,
+      stream: { enabled: false, interim: state.interim },
+      cliEffort: seat.effort,
+      effort: seat.effort,
+      turn: turnNumber,
+      signal,
+    });
+    let output = null;
+    try {
+      output = parseOutput(raw.text);
+    } catch {
+      output = null;
+    }
+    const label = output?.label;
+    const taken = label === labels[0];
+    const validLabel = labels.includes(label);
+    appendTraceEvent(state.trace, {
+      type: 'rival_dag_bridge_step_adjudication',
+      turn: turnNumber,
+      seatId: seat.id,
+      modelRef: seat.modelRef,
+      candidateKind,
+      label: validLabel ? label : null,
+      quote: taken && typeof output?.quote === 'string' ? output.quote : null,
+      validLabel,
+      learnerText,
+      publicTranscriptChanged: false,
+    });
+    if (!validLabel) {
+      const error = new Error('bridge-step adjudication returned no registered label');
+      error.code = 'tutor_stub_rival_dag_bridge_step_adjudication_indeterminate';
+      error.substantiveStudyFailure = true;
+      error.measurementIndeterminate = true;
+      error.recoverable = false;
+      throw error;
+    }
+    return { label, taken, quote: taken ? output?.quote || null : null };
+  }
+
+  return { adjudicateFinalHorizon, adjudicatePrimaryPanel, adjudicateRivalDagBridgeStep };
 }
 
 export default {

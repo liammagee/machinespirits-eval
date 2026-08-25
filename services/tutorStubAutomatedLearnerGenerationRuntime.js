@@ -68,6 +68,7 @@ import {
   resistantLearnerObservationMarkers,
 } from './resistantLearnerObservation.js';
 import { buildTutorStubRivalLearnerDagTurnRecord, tutorStubRivalDagTurnDirective } from './tutorStubRivalLearnerDag.js';
+import { applyTutorStubR1PostInterventionRelease } from './tutorStubR1PostInterventionRelease.js';
 export {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
   FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
@@ -91,6 +92,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   adjudicateResistanceSemanticCandidate: injectedResistanceSemanticCandidate = null,
   adjudicateTutorStubResistanceConfirmationOutcome: injectedResistanceConfirmationOutcome = null,
   adjudicateTutorStubResistanceInterventionFidelity: injectedResistanceInterventionFidelity = null,
+  adjudicateRivalDagBridgeStep: injectedRivalDagBridgeStep = null,
   callPromptModel,
   classificationFromCombinedAnalysis,
   env = process.env,
@@ -145,6 +147,8 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     injectedResistanceInterventionFidelity ||
     semanticAdjudicators.adjudicateTutorStubResistanceInterventionFidelity ||
     null;
+  const adjudicateRivalDagBridgeStep =
+    injectedRivalDagBridgeStep || semanticAdjudicators.adjudicateRivalDagBridgeStep || null;
   const semanticAdherence = createTutorStubResistanceSemanticAdherenceBridge({
     observationSemantics,
     adjudicateCandidate: adjudicateResistanceSemanticCandidate,
@@ -603,36 +607,30 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
     const frameOpportunityV4Profile =
       boundedFrameOpportunitySemantics && ['frame_refuser', 'frame_defiant'].includes(runtime?.profileId);
-    // The registered R1 instruments fix the frame-refuser voice at the trigger,
-    // then expressly permit their registered epistemic paths after the tutor's
-    // bounded test. Reapplying the legacy adherence gate after that intervention
-    // would pin every valid learner draw back to refusal and make either ladder
-    // structurally impossible.
     if (
       state.resistanceActionRegisterStudy?.resistant_learner_calibration === true &&
       state.resistanceActionRegisterStudy?.resistant_learner_study === 'R1' &&
       state.resistanceActionRegisterStudy?.consumed === true
     ) {
-      const precomputedRaw =
-        precomputeFinalLearnerAnalysis && canPreclassify && generated.text
-          ? await extractCombinedLearnerAnalysis({
-              learnerText: generated.text,
-              state,
-              tutorTurn: turnNumber,
-              preflightSource: 'registered_final_learner_outcome',
-              signal,
-            })
-          : null;
-      if (precomputedRaw) assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
-      appendTraceEvent(state.trace, {
-        type: 'auto_learner_profile_adherence_released_after_registered_intervention',
-        turn: turnNumber,
-        profile: runtime?.profileId || 'frame_refuser',
-        personaContract: state.resistanceActionRegisterStudy?.design?.population?.profile || 'frame_refuser-r1-v1',
-        voiceConstraintsRemainInPrompt: true,
-        epistemicMovementReleased: true,
+      // Post-intervention release + registered bridge-step enforcement (merged
+      // design revision 3+) live in tutorStubR1PostInterventionRelease.js.
+      return applyTutorStubR1PostInterventionRelease({
+        state,
+        resolved,
+        profile,
+        profileId: runtime?.profileId || 'frame_refuser',
+        turnNumber,
+        generated,
+        precomputeFinalLearnerAnalysis,
+        canPreclassify,
+        adjudicateRivalDagBridgeStep,
+        appendTraceEvent,
+        generateAutomatedLearnerTurn,
+        extractCombinedLearnerAnalysis,
+        cliEffort,
+        signal,
+        isCurrent,
       });
-      return { generated, precomputedRaw, repaired: false, passed: null };
     }
     const semanticStudyCandidate = semanticAdherence.studyCandidate(
       state.resistanceActionRegisterStudy,

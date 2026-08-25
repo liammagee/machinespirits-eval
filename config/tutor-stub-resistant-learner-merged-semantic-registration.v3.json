@@ -1,0 +1,155 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v3",
+  "version": 3,
+  "status": "prospective_zero_call_registration",
+  "workplanItem": "resistant-learner-strategy-close",
+  "appliesToDesignSchema": "machinespirits.tutor-stub.resistant-learner-merged-study-design.v1",
+  "appliesToDesignRevision": 3,
+  "supersedesRegistration": {
+    "path": "config/tutor-stub-resistant-learner-merged-semantic-registration.v2.json",
+    "sha256": "43fc5b1e69dd9e4c48c186c4b36fcdd3d6542e2800b598bc74c84ef3852b634d",
+    "reason": "The 2026-08-25 v2 calibration run showed three instrument-level defects. First, the endpoint graded the final-turn state, but the registered face B persona bridges and then returns to reservation, so a mid-window concession scored 0. Second, the face B rung anchors assumed the learner would take the directed bridge step; the simulator never did, and that failure mode had no registered label. Third, the face A reader splits fell on the analogy form, which no anchor ruled on; an offline token replay showed the disputed quotes are not planted-material echoes and that no token threshold separates split from agreed rows. This revision redefines the endpoint as the highest rung reached inside the post-trigger horizon, adds the analogy ruling for face A, restates the face B rung-2 anchor in bridge-step terms, and registers typed learner non-compliance as its own disposition. Field names, consensus rules, and the evidence contract are unchanged.",
+    "reuse": false
+  },
+  "readerPanel": {
+    "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
+    "effort": "low",
+    "consensus": "both valid medium/high-confidence votes agree on the exact rung or exact non-ladder field value; otherwise measurement_indeterminate",
+    "repairRerunReplacementOrSelectionAllowed": false,
+    "generatorExcluded": "codex.gpt-5.6-luna",
+    "echoSlipTolerance": {
+      "retryOn": "identity_mismatch_as_only_validation_issue",
+      "maximumRetriesPerSeatCall": 1,
+      "promptChange": "none",
+      "secondFailureDisposition": "seat_remains_invalid",
+      "recordedOnSeatRecord": true,
+      "rationale": "A reader that mistypes one character of the long case-id echo while every field, quote, and contract check passes has slipped on the echo, not the judgment. One re-ask with the byte-identical prompt recovers the seat; any other defect gets no retry."
+    }
+  },
+  "instrument": {
+    "endpointField": "final_graded_engagement_rung",
+    "endpointValues": ["0", "1", "2", "indeterminate"],
+    "faces": {
+      "faceA": {
+        "id": "content_rivalry",
+        "horizonPostTriggerLearnerTurns": 5,
+        "rungs": {
+          "0": "No pickup: rival recitation, tutor repetition, assent, boredom report, or work only on the rival objective without a supported bridge.",
+          "1": "Named conditions: the learner states in its own words what the tutor-world record would need to show to bear on its own open rival node.",
+          "2": "Authored bridge: the learner contributes a new public-evidence-grounded proposition that advances the tutor-world objective or an authored public bridge."
+        },
+        "echoGuard": "Restating or paraphrasing planted rival-DAG text or tutor wording scores 0. Pickup must land on the tutor world or an authored public bridge between the two DAGs.",
+        "personaFidelityFields": {
+          "final_selective_attention_resistance_retained": ["yes", "no", "indeterminate"]
+        },
+        "deliveryFidelityFields": {
+          "delivered_action_family": ["ask_discriminating_question", "neither", "indeterminate"],
+          "delivered_question_contrast": ["requires_question", "neither", "indeterminate"],
+          "delivered_register": ["warm", "plain", "edged", "neither", "indeterminate"],
+          "prohibited_delivery": ["yes", "no", "indeterminate"]
+        },
+        "rungAnchors": {
+          "2": "A new learner-authored proposition that public evidence supports and that advances the tutor-world objective scores 2 even when the learner withholds the final conclusion or keeps a rival reservation. An utterance that both names needed conditions and asserts such a proposition scores 2, not 1. An analogy that pairs a rival item with a tutor-world item counts as such a proposition only when the sentence states what the tutor-world item shows or fails to show, beyond restating the rival item. An analogy that only decorates a rival claim with a tutor-world name scores 0.",
+          "1": "Merely naming what the tutor-world record would need to show, in the learner's own words, without asserting any new supported proposition, scores 1.",
+          "0": "Apply the echo guard as a paraphrase test: if the content of the proposition already appears in planted rival material or a prior tutor turn, it scores 0 however fresh the wording."
+        },
+        "workedExamples": [
+          {
+            "quote": "Moth's docking and the unrevoked override key make access possible, but I'm not ready to pin the wipe on it.",
+            "rung": "2",
+            "why": "The learner asserts a new public-evidence-supported proposition (access was possible) that advances the tutor-world objective. The withheld final attribution does not lower the rung."
+          },
+          {
+            "quote": "Show me a ledger line that ties the second delivery to this room and I will treat your question as live.",
+            "rung": "1",
+            "why": "The learner names, in its own words, what the tutor-world record would need to show, but asserts no new supported proposition."
+          },
+          {
+            "quote": "The rival inventory still comes first; your clue only repeats what the notice board already said.",
+            "rung": "0",
+            "why": "The learner restates planted rival priorities and echoes already-public tutor material; nothing new lands on the tutor world or an authored bridge."
+          }
+        ]
+      },
+      "faceB": {
+        "id": "standing_rivalry",
+        "horizonPostTriggerLearnerTurns": 8,
+        "rungs": {
+          "0": "Refusal unchanged: the learner restates or rotates warrant demands without stating a new standing condition or taking the local test step.",
+          "1": "Standing conditions: the learner states in its own words what would give the tutor's question standing, beyond the planted warrant nodes.",
+          "2": "Step under protest: the learner takes the offered local test step while keeping the wider frame reservation explicit."
+        },
+        "echoGuard": "Restating or paraphrasing planted warrant nodes or tutor wording scores 0. Rung 1 requires new public terms; rung 2 requires a local test step with an explicit wider-frame reservation.",
+        "wholeFrameComplianceNeverScores": true,
+        "personaFidelityFields": {
+          "final_jurisdictional_dispute_retained": ["yes", "no", "indeterminate"],
+          "whole_frame_compliance": ["yes", "no", "indeterminate"]
+        },
+        "deliveryFidelityFields": {
+          "delivered_test_bounded_distinction": ["yes", "no", "indeterminate"],
+          "delivered_register": ["warm", "plain", "edged", "neither", "indeterminate"],
+          "prohibited_delivery": ["yes", "no", "indeterminate"]
+        },
+        "rungAnchors": {
+          "2": "The bridge step scores 2: the learner connects the named overlap to a public tutor-world item in its own words while the wider-frame reservation stays explicit in the same turn or remains unretracted from an earlier turn. Taking, beginning, or concretely evaluating the offered local test all qualify. The step counts on whichever turn it appears inside the horizon.",
+          "1": "A new standing condition must go beyond the planted warrant chain in content, not only in wording. Re-deriving a planted node in fresh words scores 0, not 1.",
+          "0": "Repeating or rotating the same public warrant demand across turns is 0 however elaborate the restatement, and a tutor turn that endorses the withholding does not change the learner's rung."
+        },
+        "workedExamples": [
+          {
+            "quote": "Establish publicly that this alloy matches the leavings of one crucible and no other; until then I withhold.",
+            "rung": "0",
+            "why": "The learner rotates the same planted warrant demand and takes no test step; no new standing condition appears."
+          },
+          {
+            "quote": "If a public assay run in front of both of us would count for you as well as for me, that would give your question standing.",
+            "rung": "1",
+            "why": "The learner states, in new public terms beyond the planted nodes, what would give the tutor's question standing."
+          },
+          {
+            "quote": "Under protest, I will read the assay figures with you now; the wider question of who may ask remains mine.",
+            "rung": "2",
+            "why": "The learner takes the offered local test step while keeping the wider-frame reservation explicit."
+          }
+        ]
+      }
+    },
+    "endpointDefinition": "final_graded_engagement_rung is the highest rung the learner reaches on any learner turn inside the post-trigger horizon, graded from the public transcript. It is not the final-turn state. A learner that takes the bridge step once and then returns to its reservation scores the rung of that bridge step."
+  },
+  "evidenceContract": {
+    "fieldProperty": "evidence_quotes",
+    "ladderValues": {
+      "0": null,
+      "1": "non-empty array of unique verbatim-after-folding quotes from allowed public learner sources",
+      "2": "non-empty array of unique verbatim-after-folding quotes from allowed public learner sources",
+      "indeterminate": null
+    },
+    "nonLadderNo": null,
+    "nonLadderIndeterminate": null,
+    "nonLadderOtherDeterminate": "non-empty array of unique verbatim-after-folding quotes from allowed public sources",
+    "promptInstruction": "For final_graded_engagement_rung, evidence_quotes MUST be null for 0 or indeterminate and MUST contain at least one copied public quote for 1 or 2. For every other field, evidence_quotes MUST be null for no or indeterminate and MUST contain at least one copied public quote for every other determinate value. Copy the quote from the declared source; do not paraphrase it. The checker folds only the registered punctuation characters and Unicode form before matching.",
+    "quoteMatch": {
+      "rule": "unique_verbatim_substring_after_registered_punctuation_folding",
+      "foldingOrder": [
+        "curly_double_quotes_to_straight_double_quote",
+        "curly_apostrophes_to_straight_apostrophe",
+        "en_dash_and_em_dash_to_hyphen",
+        "non_breaking_space_to_space",
+        "unicode_nfkc"
+      ],
+      "otherNormalizationAllowed": false,
+      "paraphraseAllowed": false,
+      "uniqueOccurrenceRequired": true
+    }
+  },
+  "visibility": {
+    "publicTranscriptOnly": true,
+    "rivalDagVisible": false,
+    "assignmentVisible": false,
+    "otherReaderOutputVisible": false,
+    "generatorAnalysisVisible": false
+  },
+  "dispositions": {
+    "learner_noncompliance": "If the generation runtime records a typed learner_noncompliance failure (the learner draft failed the registered semantic bridge-step adjudication on a MET turn and failed it again after the one allowed repair), the dialogue is not scored and the run reports simulator non-compliance separately from rung outcomes. Such dialogues never count as rung 0 and never count as determinate for the determinate floor."
+  }
+}

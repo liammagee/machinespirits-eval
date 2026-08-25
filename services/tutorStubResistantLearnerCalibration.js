@@ -304,6 +304,34 @@ const MERGED_DESIGN_REVISION_PINS = Object.freeze({
     maximumReservationsPerDialogue: 174,
     calibrationMaximumReservations: 6264,
   }),
+  3: Object.freeze({
+    registrationSource: 'notes/2026-08-25-resistant-learner-merged-v2-calibration-outcome.md',
+    supersedesPriorDesign: Object.freeze({
+      priorDesign: 'config/tutor-stub-resistant-learner-merged-design.v2.json',
+      priorDesignSha256: 'eb1991fd301d12865983b4f6b8333ee77e7e869506c023858dc5faec08090744',
+      priorDisposition: 'superseded_after_2026-08-25_v2_calibration_gate_failure_no_powered_run',
+    }),
+    faceBHorizon: 8,
+    faceBActionInstruction:
+      "Name the disputed standing plainly. Ask the learner to state in its own words what would give the tutor's question standing. Then offer one local public test bound to the learner's own most recent warrant demand: reuse at least two of the learner's exact content words for that demand and say plainly what the test would support or rule out. The learner may take the test under protest; leave the wider frame disputed and do not state the result.",
+    semanticRegistration: 'config/tutor-stub-resistant-learner-merged-semantic-registration.v3.json',
+    // Revision 3 adds one enforced bridge-step episode per face-B dialogue:
+    // one semantic adjudication, at most one repair generation, one
+    // re-adjudication (3 planned calls). Every mechanical bridge check tested
+    // on the sealed v2 run-3 transcripts failed open (111-112 of 114 refusal
+    // turns passed), so the check is a registered adjudicator seat.
+    faceBBridgeEnforcement: Object.freeze({
+      scope: 'first_met_episode_per_dialogue',
+      checkKind: 'semantic_bridge_step_adjudication',
+      repairsAllowedPerEpisode: 1,
+      exhaustionDisposition: 'typed_learner_noncompliance_failure',
+    }),
+    plannedCallsPerDialogue: 59,
+    plannedCallsCalibration: 2124,
+    plannedCallReservationCeilingPerDialogue: 177,
+    maximumReservationsPerDialogue: 183,
+    calibrationMaximumReservations: 6588,
+  }),
 });
 
 function validateTutorStubResistantLearnerMergedDesignV1(design) {
@@ -392,6 +420,21 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
     faceB?.calibrationRules?.dialogues !== 18
   ) {
     issues.push('merged face-B population, move, ladder, or calibration drifted');
+  }
+  const bridgeEnforcement = faceB?.rivalDagPersona?.concessionEnforcement;
+  if (pins.faceBBridgeEnforcement) {
+    if (
+      bridgeEnforcement?.scope !== pins.faceBBridgeEnforcement.scope ||
+      bridgeEnforcement?.check?.kind !== pins.faceBBridgeEnforcement.checkKind ||
+      bridgeEnforcement?.repairsAllowedPerEpisode !== pins.faceBBridgeEnforcement.repairsAllowedPerEpisode ||
+      bridgeEnforcement?.exhaustionDisposition !== pins.faceBBridgeEnforcement.exhaustionDisposition ||
+      bridgeEnforcement?.exhaustionNeverScoredAsRung0 !== true ||
+      bridgeEnforcement?.typedFailureIsNotDeterminate !== true
+    ) {
+      issues.push('merged face-B bridge-step enforcement drifted');
+    }
+  } else if (bridgeEnforcement !== undefined) {
+    issues.push('merged revision must not carry unregistered bridge-step enforcement');
   }
   if (
     !exactValues(
