@@ -693,6 +693,7 @@
         "tests/tutorStubResistantLearnerBridgePickupProbe.test.js",
         "tests/tutorStubResistantLearnerCalibration.test.js",
         "tests/tutorStubResistantLearnerMergedRegistration.test.js",
+        "tests/tutorStubResistantLearnerMergedRegistrationV2.test.js",
         "tests/tutorStubResistantLearnerProtocolV2.test.js",
         "tests/tutorStubResistantProfileDiscriminationRegistration.test.js",
         "tests/tutorStubResistantProfileLiveReadiness.test.js",
