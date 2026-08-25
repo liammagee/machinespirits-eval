@@ -1157,6 +1157,7 @@ export async function runTutorStubCliApplicationHost({
   const {
     adjudicateTutorStubResistanceConfirmationOutcome,
     adjudicateTutorStubResistanceInterventionFidelity,
+    adjudicateTutorStubTutorDelivery,
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
     automatedLearnerTraceMetadata,
@@ -1821,6 +1822,7 @@ export async function runTutorStubCliApplicationHost({
     adjudicateTutorStubBoredomObservation: boredomAdjudicatorFactory(callPromptModel, resolveModel),
     adjudicateTutorStubResistanceConfirmationOutcome,
     adjudicateTutorStubResistanceInterventionFidelity,
+    adjudicateTutorStubTutorDelivery,
     analyzeLearnerTurn,
     appendTraceEvent,
     appendTutorStubTurnFailureTraceRecords,

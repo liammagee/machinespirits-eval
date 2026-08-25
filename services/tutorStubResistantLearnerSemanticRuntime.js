@@ -61,6 +61,29 @@ const MERGED_SEMANTIC_REGISTRATIONS = Object.freeze({
         'If the generation runtime records a typed learner_noncompliance failure (the learner draft failed the registered semantic bridge-step adjudication on a MET turn and failed it again after the one allowed repair), the dialogue is not scored and the run reports simulator non-compliance separately from rung outcomes. Such dialogues never count as rung 0 and never count as determinate for the determinate floor.',
     }),
   }),
+  // Version 4 keeps the ladder instrument byte-identical to version 3 and
+  // registers the pre-learner tutor-delivery disposition. Versions 1-3 stay
+  // sealed and continue to validate against their original frozen rows.
+  'config/tutor-stub-resistant-learner-merged-semantic-registration.v4.json': Object.freeze({
+    schema: 'machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v4',
+    version: 4,
+    echoSlipTolerance: true,
+    endpointDefinition:
+      'final_graded_engagement_rung is the highest rung the learner reaches on any learner turn inside the post-trigger horizon, graded from the public transcript. It is not the final-turn state. A learner that takes the bridge step once and then returns to its reservation scores the rung of that bridge step.',
+    appliesToDesignRevision: 4,
+    supersedesRegistration: Object.freeze({
+      path: 'config/tutor-stub-resistant-learner-merged-semantic-registration.v3.json',
+      sha256: '10842ae31b797a5dc705af95595d3c5a25754aa8feb48ff43ea855d98aabef14',
+    }),
+    instrumentSha256: 'f74e596fa48a5c3d414716cb6212832ca4655ea7713880e57f93cea44a1c696f',
+    visibilityContract: true,
+    dispositions: Object.freeze({
+      learner_noncompliance:
+        'If the generation runtime records a typed learner_noncompliance failure (the learner draft failed the registered semantic bridge-step adjudication on a MET turn and failed it again after the one allowed repair), the dialogue is not scored and the run reports simulator non-compliance separately from rung outcomes. Such dialogues never count as rung 0 and never count as determinate for the determinate floor.',
+      tutor_non_delivery:
+        'If the turn runtime records a typed tutor_bounded_test_non_delivery failure (the tutor candidate failed the registered semantic delivery adjudication and failed it again after the one allowed tutor repair), the dialogue is not scored and the run reports tutor non-delivery separately from learner outcomes. Such dialogues never count as rung 0, never count as determinate, and never become learner noncompliance.',
+    }),
+  }),
 });
 
 function canonical(value) {
@@ -237,7 +260,7 @@ export function tutorStubResistantLearnerMergedSemanticRegistrationIssues({ regi
       registration?.visibility?.generatorAnalysisVisible === false
     : true;
   const dispositionsValid = expected.dispositions
-    ? registration?.dispositions?.learner_noncompliance === expected.dispositions.learner_noncompliance
+    ? JSON.stringify(registration?.dispositions) === JSON.stringify(expected.dispositions)
     : true;
   if (
     registration?.schema !== expected.schema ||
@@ -963,7 +986,94 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
     return { label, taken, quote: taken ? quote : null };
   }
 
-  return { adjudicateFinalHorizon, adjudicatePrimaryPanel, adjudicateRivalDagBridgeStep };
+  // Registered face-B tutor-delivery gate (merged design revision 4+). The
+  // candidate is private until this single-seat decision accepts it. A
+  // delivered label is evidence-bound to a verbatim tutor-draft quote; every
+  // malformed return stops as a typed indeterminate rather than passing open.
+  async function adjudicateTutorDelivery({
+    state,
+    tutorText,
+    learnerText,
+    turnNumber,
+    candidateKind = 'initial',
+    signal = null,
+  }) {
+    const enforcement = state?.resistanceActionRegisterStudy?.design?.tutorDeliveryContract?.enforcement;
+    const seat = enforcement?.check?.adjudicatorSeat;
+    const labels = enforcement?.check?.labels;
+    if (
+      enforcement?.check?.kind !== 'semantic_tutor_delivery_adjudication' ||
+      !seat ||
+      !Array.isArray(labels) ||
+      labels.length !== 2
+    ) {
+      throw new Error('tutor-delivery enforcement is not registered on this design');
+    }
+    const resolved = resolveModel(seat.modelRef);
+    if (resolved.provider !== seat.provider || resolved.model !== seat.model) {
+      throw new Error(`tutor-delivery adjudicator route drift for ${seat.id}`);
+    }
+    const prompt = JSON.stringify({
+      schema: 'machinespirits.tutor-stub.tutor-delivery-adjudication.v1',
+      question: enforcement.check.question,
+      latest_learner_turn: learnerText,
+      tutor_candidate: tutorText,
+      labels,
+      output_contract:
+        'Return one JSON object only: {"label": one of labels, "quote": a verbatim substring of tutor_candidate that demonstrates delivery, or null for the not-delivered label}.',
+    });
+    const raw = await callPromptModel({
+      prompt,
+      messageHistory: [],
+      resolved,
+      systemPrompt:
+        'You are a registered single-question adjudicator inside a sealed evaluation harness. Judge only from the material in the prompt. Return JSON only.',
+      role: `tutor_stub_tutor_delivery_${seat.id}`,
+      maxTokens: 400,
+      trace: state.trace,
+      stream: { enabled: false, interim: state.interim },
+      cliEffort: seat.effort,
+      effort: seat.effort,
+      turn: turnNumber,
+      signal,
+    });
+    let output = null;
+    try {
+      output = parseOutput(raw.text);
+    } catch {
+      output = null;
+    }
+    const label = output?.label;
+    const delivered = label === labels[0];
+    const validLabel = labels.includes(label);
+    const quote = typeof output?.quote === 'string' ? output.quote : null;
+    const quoteVerified = delivered ? Boolean(quote && quote.trim() && tutorText.includes(quote)) : quote === null;
+    appendTraceEvent(state.trace, {
+      type: 'tutor_delivery_adjudication',
+      turn: turnNumber,
+      seatId: seat.id,
+      modelRef: seat.modelRef,
+      candidateKind,
+      label: validLabel ? label : null,
+      quote: delivered && quoteVerified ? quote : null,
+      validLabel,
+      quoteVerified,
+      tutorText,
+      publicTranscriptChanged: false,
+    });
+    if (!validLabel || !quoteVerified) {
+      const error = new Error('tutor-delivery adjudication returned no verifiable registered verdict');
+      error.code = 'tutor_stub_tutor_delivery_adjudication_indeterminate';
+      error.substantiveStudyFailure = true;
+      error.measurementIndeterminate = true;
+      error.recoverable = false;
+      error.neverScored = true;
+      throw error;
+    }
+    return { label, delivered, quote: delivered ? quote : null };
+  }
+
+  return { adjudicateFinalHorizon, adjudicatePrimaryPanel, adjudicateRivalDagBridgeStep, adjudicateTutorDelivery };
 }
 
 export default {

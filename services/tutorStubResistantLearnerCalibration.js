@@ -353,6 +353,73 @@ const MERGED_DESIGN_REVISION_PINS = Object.freeze({
     maximumReservationsPerDialogue: 183,
     calibrationMaximumReservations: 6588,
   }),
+  4: Object.freeze({
+    registrationSource: 'notes/2026-08-25-resistant-learner-tutor-delivery-gate.md',
+    supersedesPriorDesign: Object.freeze({
+      priorDesign: 'config/tutor-stub-resistant-learner-merged-design.v3.json',
+      priorDesignSha256: '4f9f2ce116ef2abef8ed9f8871035d23a8f023def7aec56c53da9590b1c19e0a',
+      priorDisposition: 'superseded_before_launch_after_confirmed_tutor_delivery_gate_defect_no_paid_calls',
+    }),
+    faceBHorizon: 8,
+    faceBActionInstruction:
+      "Name the disputed standing plainly. Ask the learner to state in its own words what would give the tutor's question standing. Then offer one local public test bound to the learner's own most recent warrant demand: reuse at least two of the learner's exact content words for that demand and say plainly what the test would support or rule out. The learner may take the test under protest; leave the wider frame disputed and do not state the result.",
+    semanticRegistration: 'config/tutor-stub-resistant-learner-merged-semantic-registration.v4.json',
+    faceBBridgeEnforcement: Object.freeze({
+      schema: 'machinespirits.tutor-stub.rival-dag-concession-enforcement.v2',
+      appliesWhen: 'first_post_trigger_learner_turn_with_met_typed_concession_condition',
+      scope: 'first_met_episode_per_dialogue',
+      position: 'after_registered_intervention_release_in_generation_runtime',
+      checkKind: 'semantic_bridge_step_adjudication',
+      adjudicatorSeat: Object.freeze({
+        id: 'bridge_step_adjudicator',
+        modelRef: 'codex.gpt-5.6-sol',
+        provider: 'codex',
+        model: 'gpt-5.6-sol',
+        effort: 'low',
+      }),
+      question:
+        'Does the learner draft take the bounded bridge step: does it connect the named open rival warrant item to a public tutor-world item in the learner’s own words, stating what the tutor-world item shows, supports, or rules out for that warrant item, while keeping a reservation about the wider frame? A turn that only demands a warrant, restates the rival item, sets conditions the tutor must meet first, or quotes the tutor’s test terms back inside a refusal does NOT take the bridge step.',
+      labels: Object.freeze(['bridge_step_taken', 'bridge_step_not_taken']),
+      mechanicalMeasurements: Object.freeze({
+        met_turns_v1_rule: 114,
+        met_turns_narrowed_markers_min3: 105,
+        refusal_turns_passing_node_and_tutor_overlap_check: 112,
+        refusal_turns_passing_fresh_tutor_token_check: 111,
+      }),
+      repairsAllowedPerEpisode: 1,
+      repairInstruction:
+        'Your draft did not take the required bounded bridge step. Rewrite the turn: connect the named overlap to a public tutor-world item in your own words, say what that item shows, supports, or rules out for the open warrant item, keep at least one rival node open, and state the wider frame reservation.',
+      exhaustionDisposition: 'typed_learner_noncompliance_failure',
+    }),
+    faceBTutorDeliveryEnforcement: Object.freeze({
+      schema: 'machinespirits.tutor-stub.tutor-delivery-enforcement.v1',
+      appliesWhen: 'registered_face_b_intervention_tutor_candidate_before_next_learner_call',
+      scope: 'first_registered_intervention_tutor_turn_per_dialogue',
+      position: 'after_existing_tutor_guard_delivery_before_public_turn_commit_and_next_learner_call',
+      checkKind: 'semantic_tutor_delivery_adjudication',
+      adjudicatorSeat: Object.freeze({
+        id: 'tutor_delivery_adjudicator',
+        modelRef: 'codex.gpt-5.6-sol',
+        provider: 'codex',
+        model: 'gpt-5.6-sol',
+        effort: 'low',
+      }),
+      question:
+        "Does the tutor candidate deliver the registered face-B standing-conditions bridge: name the standing dispute, ask what would give the tutor's question standing, and offer one local public test bound to the learner's most recent warrant words that states what the test would support or rule out, while leaving the wider frame disputed and not stating the result? A turn that only acknowledges the dispute, repeats the warrant, offers an unbound generic test, states the result, or treats participation as compliance does NOT deliver it.",
+      labels: Object.freeze(['tutor_delivery_passed', 'tutor_delivery_not_delivered']),
+      evidenceContract:
+        'For tutor_delivery_passed, quote must be a non-empty verbatim substring of tutor_candidate demonstrating delivery. For tutor_delivery_not_delivered, quote must be null.',
+      repairsAllowedPerEpisode: 1,
+      repairInstruction:
+        "Your candidate did not deliver the registered standing-conditions bridge. Rewrite the tutor turn now: name the standing dispute; ask what would give your question standing; offer exactly one local public test bound to the learner's most recent warrant words and state what it would support or rule out; leave the wider frame disputed; do not state the result or treat participation as compliance.",
+      exhaustionDisposition: 'typed_tutor_non_delivery_failure',
+    }),
+    plannedCallsPerDialogue: 62,
+    plannedCallsCalibration: 2232,
+    plannedCallReservationCeilingPerDialogue: 186,
+    maximumReservationsPerDialogue: 192,
+    calibrationMaximumReservations: 6912,
+  }),
 });
 
 function validateTutorStubResistantLearnerMergedDesignV1(design) {
@@ -467,6 +534,33 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
     }
   } else if (bridgeEnforcement !== undefined) {
     issues.push('merged revision must not carry unregistered bridge-step enforcement');
+  }
+  const tutorDeliveryEnforcement = faceB?.tutorDeliveryContract?.enforcement;
+  if (pins.faceBTutorDeliveryEnforcement) {
+    if (
+      tutorDeliveryEnforcement?.schema !== pins.faceBTutorDeliveryEnforcement.schema ||
+      tutorDeliveryEnforcement?.appliesWhen !== pins.faceBTutorDeliveryEnforcement.appliesWhen ||
+      tutorDeliveryEnforcement?.scope !== pins.faceBTutorDeliveryEnforcement.scope ||
+      tutorDeliveryEnforcement?.position !== pins.faceBTutorDeliveryEnforcement.position ||
+      tutorDeliveryEnforcement?.check?.kind !== pins.faceBTutorDeliveryEnforcement.checkKind ||
+      !exactValues(
+        tutorDeliveryEnforcement?.check?.adjudicatorSeat,
+        pins.faceBTutorDeliveryEnforcement.adjudicatorSeat,
+      ) ||
+      tutorDeliveryEnforcement?.check?.question !== pins.faceBTutorDeliveryEnforcement.question ||
+      !exactValues(tutorDeliveryEnforcement?.check?.labels, pins.faceBTutorDeliveryEnforcement.labels) ||
+      tutorDeliveryEnforcement?.check?.evidenceContract !== pins.faceBTutorDeliveryEnforcement.evidenceContract ||
+      tutorDeliveryEnforcement?.repairsAllowedPerEpisode !==
+        pins.faceBTutorDeliveryEnforcement.repairsAllowedPerEpisode ||
+      tutorDeliveryEnforcement?.repairInstruction !== pins.faceBTutorDeliveryEnforcement.repairInstruction ||
+      tutorDeliveryEnforcement?.exhaustionDisposition !== pins.faceBTutorDeliveryEnforcement.exhaustionDisposition ||
+      tutorDeliveryEnforcement?.exhaustionNeverScored !== true ||
+      tutorDeliveryEnforcement?.typedFailureIsNotDeterminate !== true
+    ) {
+      issues.push('merged face-B tutor-delivery enforcement drifted');
+    }
+  } else if (tutorDeliveryEnforcement !== undefined) {
+    issues.push('merged revision must not carry unregistered tutor-delivery enforcement');
   }
   if (
     !exactValues(

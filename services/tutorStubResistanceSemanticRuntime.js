@@ -851,6 +851,7 @@ export function createTutorStubResistanceSemanticAdjudicationComposition({
     adjudicateTutorStubResistanceConfirmationOutcome,
     adjudicateTutorStubResistanceInterventionFidelity,
     adjudicateRivalDagBridgeStep: resistantLearner.adjudicateRivalDagBridgeStep,
+    adjudicateTutorStubTutorDelivery: resistantLearner.adjudicateTutorDelivery,
   };
 }
 
