@@ -10,6 +10,8 @@ export const TUTOR_STUB_RIVAL_ATTENTION_MODEL_SCHEMA_V3 = 'machinespirits.tutor-
 export const TUTOR_STUB_RIVAL_ATTENTION_ADJUDICATION_SCHEMA_V3 =
   'machinespirits.tutor-stub.rival-attention-adjudication.v3';
 export const TUTOR_STUB_RIVAL_ATTENTION_ROLE_V3 = 'tutor_stub_resistant_learner_rival_attention_judge';
+export const TUTOR_STUB_MERGED_TURN_GATE_REGISTRATION_V1 =
+  'config/tutor-stub-resistant-learner-merged-turn-gate-registration.v1.json';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OBJECTIVES = Object.freeze([
@@ -112,7 +114,26 @@ export function loadTutorStubRivalAttentionRegistrationV3({
 } = {}) {
   const absolute = path.resolve(root, registrationPath);
   const source = fs.readFileSync(absolute);
-  const registration = JSON.parse(source);
+  const parsed = JSON.parse(source);
+  const merged = parsed?.schema === 'machinespirits.tutor-stub.resistant-learner-merged-turn-gate-registration.v1';
+  if (merged && (parsed?.version !== 1 || parsed?.status !== 'prospective_zero_call_registration')) {
+    throw new Error('merged rival-attention registration identity drifted');
+  }
+  const registration = merged
+    ? {
+        schema: 'machinespirits.tutor-stub.rival-attention-trigger-registration.v3',
+        version: 3,
+        status: 'prospective_gate_1c_zero_call_registration',
+        workplanItem: parsed.workplanItem,
+        observationSemantics: parsed.faces?.faceA?.observationSemantics,
+        construct: parsed.faces?.faceA?.construct,
+        instrument: parsed.faces?.faceA?.instrument,
+        measurement: parsed.faces?.faceA?.measurement,
+        dispositions: parsed.faces?.faceA?.dispositions,
+        authorization: parsed.authorization,
+        sourceRegistrationPath: registrationPath,
+      }
+    : parsed;
   const validation = validateTutorStubRivalAttentionRegistrationV3(registration);
   if (!validation.valid) throw new Error(`rival-attention registration invalid: ${validation.issues.join('; ')}`);
   return { path: registrationPath, sha256: sha256(source), registration };
@@ -146,7 +167,7 @@ export function buildTutorStubRivalAttentionPromptV3({ caseId, learnerText, stat
     current_learner_turn: String(learnerText || ''),
     output_schema: TUTOR_STUB_RIVAL_ATTENTION_OUTPUT_SCHEMA_V3,
     registration: {
-      path: TUTOR_STUB_RIVAL_ATTENTION_REGISTRATION_V3,
+      path: registration.sourceRegistrationPath || TUTOR_STUB_RIVAL_ATTENTION_REGISTRATION_V3,
       version: registration.version,
     },
   };

@@ -54,12 +54,17 @@ import {
   wrapTutorStubResistanceSemanticModelOutputV6,
 } from './tutorStubResistanceSemanticAdjudicationV6.js';
 import {
+  TUTOR_STUB_MERGED_STANDING_RIVALRY_OBSERVATION_V1,
+  TUTOR_STUB_MERGED_TURN_GATE_REGISTRATION_SCHEMA_V1,
+  TUTOR_STUB_MERGED_TURN_GATE_REGISTRATION_V1,
   TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
   TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3,
   TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_V3,
   adjudicateTutorStubStandingRivalryJudgesV3,
   buildTutorStubStandingRivalryOutputSchemaV3,
   buildTutorStubStandingRivalryPromptV3,
+  tutorStubMergedStandingRivalryRegistrationV1,
+  validateTutorStubMergedTurnGateRegistrationV1,
   validateTutorStubStandingRivalryRegistrationV3,
   wrapTutorStubStandingRivalryModelOutputV3,
 } from './tutorStubStandingRivalrySemanticAdjudicationV3.js';
@@ -81,6 +86,8 @@ export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V6 =
   'config/tutor-stub-resistance-semantic-adjudication-registration.v6.json';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3 =
   TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_V3;
+export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_MERGED_STANDING_RIVALRY_V1 =
+  TUTOR_STUB_MERGED_TURN_GATE_REGISTRATION_V1;
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT = 'resistance_semantic_judge_result';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT = 'resistance_semantic_adjudication';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE =
@@ -89,6 +96,17 @@ export const TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT =
   'You are one independent semantic adjudicator. Use only the supplied public packet. Return the registered JSON object, use no tools, and do not infer hidden experimental state.';
 
 export function tutorStubResistanceSemanticRuntimeInstrument(registrationBinding) {
+  if (registrationBinding?.registration?.schema === TUTOR_STUB_MERGED_TURN_GATE_REGISTRATION_SCHEMA_V1) {
+    return {
+      observationSemantics: TUTOR_STUB_MERGED_STANDING_RIVALRY_OBSERVATION_V1,
+      responseSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_MODEL_SCHEMA_V3,
+      outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
+      buildOutputSchema: buildTutorStubStandingRivalryOutputSchemaV3,
+      buildPrompt: buildTutorStubStandingRivalryPromptV3,
+      wrapModelOutput: wrapTutorStubStandingRivalryModelOutputV3,
+      adjudicate: adjudicateTutorStubStandingRivalryJudgesV3,
+    };
+  }
   if (registrationBinding?.registration?.schema === TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3) {
     return {
       observationSemantics: TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
@@ -190,6 +208,7 @@ export function isTutorStubResistanceSemanticObservation(observationSemantics) {
     TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V5,
     TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V6,
     TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3,
+    TUTOR_STUB_MERGED_STANDING_RIVALRY_OBSERVATION_V1,
   ].includes(observationSemantics);
 }
 
@@ -202,9 +221,11 @@ export function tutorStubResistanceSemanticExpectedLabel(profileId) {
 export function tutorStubResistanceSemanticLabelAdheres({ profileId, label, observationSemantics } = {}) {
   if (
     profileId === 'frame_refuser' &&
-    observationSemantics === TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3
+    [TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3, TUTOR_STUB_MERGED_STANDING_RIVALRY_OBSERVATION_V1].includes(
+      observationSemantics,
+    )
   ) {
-    return ['frame_refuser', 'frame_defiant_or_productive_dispute'].includes(label);
+    return ['frame_refuser', 'frame_defiant_or_productive_dispute', 'adherent_label_set'].includes(label);
   }
   return label === tutorStubResistanceSemanticExpectedLabel(profileId);
 }
@@ -348,9 +369,16 @@ export function loadTutorStubResistanceSemanticRegistration(
   registrationPath = TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
 ) {
   const absolute = path.resolve(ROOT, registrationPath);
-  const registration = JSON.parse(fs.readFileSync(absolute, 'utf8'));
+  const source = fs.readFileSync(absolute);
+  const parsed = JSON.parse(source);
+  const registration =
+    parsed.schema === TUTOR_STUB_MERGED_TURN_GATE_REGISTRATION_SCHEMA_V1
+      ? tutorStubMergedStandingRivalryRegistrationV1(parsed)
+      : parsed;
   const validation =
-    registration.schema === TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3
+    registration.schema === TUTOR_STUB_MERGED_TURN_GATE_REGISTRATION_SCHEMA_V1
+      ? validateTutorStubMergedTurnGateRegistrationV1(parsed)
+      : registration.schema === TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3
       ? validateTutorStubStandingRivalryRegistrationV3(registration)
       : registration.version === 6
       ? validateTutorStubResistanceSemanticRegistrationV6(registration)
@@ -364,7 +392,7 @@ export function loadTutorStubResistanceSemanticRegistration(
           ? validateTutorStubResistanceSemanticRegistrationV2(registration)
           : validateTutorStubResistanceSemanticRegistration(registration);
   if (!validation.valid) throw new Error(`semantic registration invalid: ${validation.issues.join('; ')}`);
-  return { registration, path: registrationPath, sha256: tutorStubResistanceSemanticSha256(fs.readFileSync(absolute)) };
+  return { registration, path: registrationPath, sha256: tutorStubResistanceSemanticSha256(source) };
 }
 
 export const TUTOR_STUB_RESISTANT_LEARNER_TWO_SEAT_PANEL_RULE =
@@ -378,6 +406,12 @@ export function applyTutorStubResistantLearnerCalibrationSemanticPanel(registrat
     return registrationBinding;
   }
   const trigger = runtime?.design?.models?.triggerObservation;
+  if (
+    registrationBinding?.registration?.schema === TUTOR_STUB_MERGED_TURN_GATE_REGISTRATION_SCHEMA_V1 &&
+    trigger?.semantics === TUTOR_STUB_MERGED_STANDING_RIVALRY_OBSERVATION_V1
+  ) {
+    return registrationBinding;
+  }
   if (
     registrationBinding?.registration?.schema === TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3 &&
     trigger?.semantics === TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3
@@ -460,6 +494,9 @@ export function tutorStubResistanceSemanticRegistrationPathForObservation(observ
   if (normalized === TUTOR_STUB_STANDING_RIVALRY_OBSERVATION_V3) {
     return TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_STANDING_RIVALRY_V3;
   }
+  if (normalized === TUTOR_STUB_MERGED_STANDING_RIVALRY_OBSERVATION_V1) {
+    return TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_MERGED_STANDING_RIVALRY_V1;
+  }
   throw new Error(`unsupported resistance semantic observation semantics: ${normalized}`);
 }
 
@@ -509,10 +546,13 @@ export function validateTutorStubResistanceSemanticRuntimeResult({
     const aggregate = result?.aggregate || {};
     const standingRivalryV3 =
       registrationBinding?.registration?.schema === TUTOR_STUB_STANDING_RIVALRY_REGISTRATION_SCHEMA_V3;
-    const hierarchicalV4 = registrationBinding?.registration?.version >= 4 || standingRivalryV3;
+    const mergedStandingRivalryV1 =
+      registrationBinding?.registration?.schema === TUTOR_STUB_MERGED_TURN_GATE_REGISTRATION_SCHEMA_V1;
+    const standingRivalry = standingRivalryV3 || mergedStandingRivalryV1;
+    const hierarchicalV4 = registrationBinding?.registration?.version >= 4 || standingRivalry;
     const expectedPanelSize =
       registrationBinding?.runtimePanelOverride?.panelSize ||
-      (registrationBinding?.registration?.version === 6 || standingRivalryV3 ? 2 : hierarchicalV4 ? 3 : 2);
+      (registrationBinding?.registration?.version === 6 || standingRivalry ? 2 : hierarchicalV4 ? 3 : 2);
     const minimumEligibleJudges = 2;
     if (
       aggregate.repair_allowed !== false ||
@@ -524,7 +564,12 @@ export function validateTutorStubResistanceSemanticRuntimeResult({
       aggregate.outcome_selection_allowed !== false ||
       !Array.isArray(aggregate.reasons) ||
       aggregate.reasons.length !== 0 ||
-      !['frame_refuser', 'frame_defiant_or_productive_dispute', 'neither'].includes(aggregate.final_label) ||
+      ![
+        'frame_refuser',
+        'frame_defiant_or_productive_dispute',
+        'neither',
+        ...(mergedStandingRivalryV1 ? ['adherent_label_set'] : []),
+      ].includes(aggregate.final_label) ||
       aggregate.judgment?.final_label !== aggregate.final_label ||
       !Array.isArray(aggregate.validation) ||
       aggregate.validation.length !== expectedPanelSize ||
@@ -532,14 +577,17 @@ export function validateTutorStubResistanceSemanticRuntimeResult({
       aggregate.judge_evidence.length < minimumEligibleJudges ||
       aggregate.judge_evidence.length > expectedPanelSize ||
       aggregate.judge_evidence.some((row) =>
-        standingRivalryV3 ? !['high', 'medium'].includes(row.confidence) : row.confidence !== 'high',
+        standingRivalry ? !['high', 'medium'].includes(row.confidence) : row.confidence !== 'high',
       ) ||
       (hierarchicalV4
         ? !Number.isInteger(result?.judgeRecordCount) ||
           result.judgeRecordCount < minimumEligibleJudges ||
           result.judgeRecordCount > expectedPanelSize ||
-          aggregate.primary_label_measurement?.status !== 'determinate' ||
-          aggregate.primary_label_measurement?.value !== aggregate.final_label ||
+          (mergedStandingRivalryV1
+            ? aggregate.adherence_class_measurement?.status !== 'determinate' ||
+              !['adherent', 'non_adherent'].includes(aggregate.adherence_class_measurement?.value)
+            : aggregate.primary_label_measurement?.status !== 'determinate' ||
+              aggregate.primary_label_measurement?.value !== aggregate.final_label) ||
           !Array.isArray(aggregate.eligible_judges) ||
           aggregate.eligible_judges.length < minimumEligibleJudges
         : aggregate.validation.some((row) => row.valid !== true) || result?.judgeRecordCount !== expectedPanelSize)
