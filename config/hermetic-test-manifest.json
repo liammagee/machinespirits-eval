@@ -376,6 +376,7 @@
         "tests/m0TwoJudgeQualityReport.test.js",
         "tests/machineSpiritsHouseStyle.test.js",
         "tests/memoryArchitectureSeam.test.js",
+        "tests/mergedCalibrationTriggerWindowClip.test.js",
         "tests/messageChainAudit.test.js",
         "tests/messageChainAuditCli.test.js",
         "tests/messageChainAuditCore.test.js",
