@@ -22,7 +22,21 @@ const JUDGE_ROUTES = Object.freeze({
 const MODULE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V2_REGISTRATION_CACHE = new Map();
 const MERGED_DESIGN_SCHEMA = 'machinespirits.tutor-stub.resistant-learner-merged-study-design.v1';
-const MERGED_SEMANTIC_REGISTRATION = 'config/tutor-stub-resistant-learner-merged-semantic-registration.v1.json';
+// One row per sealed merged semantic-registration file. Version 2 adds rung
+// anchors, worked examples, and the echo-slip retry; version 1 stays sealed
+// without them so the 2026-08-25 run root remains replayable.
+const MERGED_SEMANTIC_REGISTRATIONS = Object.freeze({
+  'config/tutor-stub-resistant-learner-merged-semantic-registration.v1.json': Object.freeze({
+    schema: 'machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v1',
+    version: 1,
+    echoSlipTolerance: false,
+  }),
+  'config/tutor-stub-resistant-learner-merged-semantic-registration.v2.json': Object.freeze({
+    schema: 'machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v2',
+    version: 2,
+    echoSlipTolerance: true,
+  }),
+});
 
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
@@ -166,15 +180,24 @@ function v2ReaderRegistration(design) {
 
 function mergedReaderRegistration(design) {
   const registrationPath = design?.measurement?.readerPanel?.protocolSource;
-  if (registrationPath !== MERGED_SEMANTIC_REGISTRATION) {
+  const expected = MERGED_SEMANTIC_REGISTRATIONS[registrationPath];
+  if (!expected) {
     throw new Error('merged resistant-learner semantic registration path drifted');
   }
   if (V2_REGISTRATION_CACHE.has(registrationPath)) return V2_REGISTRATION_CACHE.get(registrationPath);
   const registration = JSON.parse(fs.readFileSync(path.join(MODULE_ROOT, registrationPath), 'utf8'));
   const quoteMatch = registration?.evidenceContract?.quoteMatch;
+  const echoSlip = registration?.readerPanel?.echoSlipTolerance;
+  const echoSlipValid = expected.echoSlipTolerance
+    ? echoSlip?.retryOn === 'identity_mismatch_as_only_validation_issue' &&
+      echoSlip?.maximumRetriesPerSeatCall === 1 &&
+      echoSlip?.promptChange === 'none' &&
+      echoSlip?.secondFailureDisposition === 'seat_remains_invalid'
+    : echoSlip === undefined;
   if (
-    registration?.schema !== 'machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v1' ||
-    registration?.version !== 1 ||
+    registration?.schema !== expected.schema ||
+    registration?.version !== expected.version ||
+    !echoSlipValid ||
     registration?.appliesToDesignSchema !== MERGED_DESIGN_SCHEMA ||
     registration?.instrument?.endpointField !== 'final_graded_engagement_rung' ||
     JSON.stringify(registration?.instrument?.endpointValues) !== JSON.stringify(['0', '1', '2', 'indeterminate']) ||
@@ -223,6 +246,16 @@ function primaryDefinition(study, design) {
         `Code 1: ${face.rungs['1']}`,
         `Code 2: ${face.rungs['2']}`,
         `Echo guard: ${face.echoGuard}`,
+        ...(face.rungAnchors
+          ? ['2', '1', '0']
+              .filter((rung) => face.rungAnchors[rung])
+              .map((rung) => `Rung ${rung} anchor: ${face.rungAnchors[rung]}`)
+          : []),
+        ...(Array.isArray(face.workedExamples)
+          ? face.workedExamples.map(
+              (example) => `Worked example (rung ${example.rung}): "${example.quote}" ${example.why}`,
+            )
+          : []),
         ...(study === 'B1'
           ? [
               'Code final_selective_attention_resistance_retained=yes only when the final learner turn still prioritizes an unresolved rival objective or limits engagement to the one public bridge.',
@@ -553,6 +586,7 @@ function panel({ caseId, instrument, definition, records }) {
     seats: records.map((record) => ({
       judge_id: record.judge_id,
       model_ref: record.model_ref,
+      ...('echo_slip_retry_used' in record ? { echo_slip_retry_used: record.echo_slip_retry_used } : {}),
       validation: record.validation,
     })),
     minimum_eligible_votes: 2,
@@ -595,6 +629,10 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
     const design = study.design;
     const definition =
       instrument === 'primary' ? primaryDefinition(studyCode, design) : fidelityDefinition(studyCode, design);
+    const echoSlip = isMergedDesign(design)
+      ? mergedReaderRegistration(design).readerPanel?.echoSlipTolerance || null
+      : null;
+    const maximumSeatAttempts = 1 + (Number(echoSlip?.maximumRetriesPerSeatCall) || 0);
     const records = [];
     for (const judge of judges(design)) {
       const prompt = buildTutorStubResistantLearnerSemanticPrompt({
@@ -609,79 +647,98 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
       if (resolved.provider !== judge.provider || resolved.model !== judge.model) {
         throw new Error(`resistant-learner reader route drift for ${judge.id}`);
       }
-      let raw = null;
-      let record = null;
-      let invalidReason = null;
-      let readerError = null;
-      const independentRunId = crypto.randomUUID();
-      try {
-        raw = await callPromptModel({
-          prompt: JSON.stringify(prompt),
-          messageHistory: [],
-          resolved,
-          systemPrompt: SYSTEM_PROMPT,
-          role: `tutor_stub_resistant_learner_${studyCode}_${instrument}_${judge.id}`,
-          maxTokens: 1600,
-          trace: state.trace,
-          stream: { enabled: false, interim: state.interim },
-          cliEffort: judge.effort,
-          effort: judge.effort,
-          outputSchema: prompt.output_schema,
-          semanticRetryDelaysMs: [15000, 45000],
+      let echoSlipRetryUsed = false;
+      for (let seatAttempt = 1; seatAttempt <= maximumSeatAttempts; seatAttempt += 1) {
+        let raw = null;
+        let record = null;
+        let invalidReason = null;
+        let readerError = null;
+        const independentRunId = crypto.randomUUID();
+        try {
+          raw = await callPromptModel({
+            prompt: JSON.stringify(prompt),
+            messageHistory: [],
+            resolved,
+            systemPrompt: SYSTEM_PROMPT,
+            role: `tutor_stub_resistant_learner_${studyCode}_${instrument}_${judge.id}`,
+            maxTokens: 1600,
+            trace: state.trace,
+            stream: { enabled: false, interim: state.interim },
+            cliEffort: judge.effort,
+            effort: judge.effort,
+            outputSchema: prompt.output_schema,
+            semanticRetryDelaysMs: [15000, 45000],
+            turn: turnNumber,
+            signal,
+          });
+          const output = parseOutput(raw.text);
+          const validation = validateModelOutput({ output, prompt, definition, caseId: study.job_id });
+          const envelopeValid =
+            raw.provider === judge.provider &&
+            raw.model === judge.model &&
+            (raw.effort || raw.reasoningEffort) === judge.effort &&
+            raw.structuredOutput === true &&
+            raw.prohibitedToolEventCountObserved === true &&
+            raw.prohibitedToolEventCount === 0;
+          record = {
+            judge_id: judge.id,
+            model_ref: judge.modelRef,
+            independent_run_id: independentRunId,
+            prompt_sha256: tutorStubResistantLearnerSemanticSha256(prompt),
+            packet_sha256: prompt.packet_sha256,
+            output,
+            ...(echoSlip ? { echo_slip_retry_used: echoSlipRetryUsed } : {}),
+            validation: envelopeValid
+              ? validation
+              : {
+                  ...validation,
+                  valid: false,
+                  fields: Object.fromEntries(
+                    Object.entries(validation.fields).map(([field, value]) => [
+                      field,
+                      { ...value, eligible: false, issues: [...value.issues, 'model_envelope_invalid'] },
+                    ]),
+                  ),
+                },
+          };
+        } catch (error) {
+          if (signal?.aborted || error?.name === 'AbortError') throw error;
+          invalidReason = error.message;
+          readerError = error;
+        }
+        // Registered echo-slip tolerance: one byte-identical re-ask when the
+        // sole defect is the case-id/schema echo, every field otherwise clean.
+        const identitySlipOnly =
+          record !== null &&
+          record.validation.valid === false &&
+          record.validation.issues.length === 1 &&
+          record.validation.issues[0] === 'identity_mismatch' &&
+          Object.values(record.validation.fields).every((field) => field.issues.length === 0);
+        const echoSlipRetryScheduled = identitySlipOnly && seatAttempt < maximumSeatAttempts;
+        appendTraceEvent(state.trace, {
+          type: 'resistant_learner_semantic_reader_result',
           turn: turnNumber,
-          signal,
+          caseId: study.job_id,
+          study: studyCode,
+          instrument,
+          judgeId: judge.id,
+          modelRef: judge.modelRef,
+          independentRunId,
+          transportCompleted: raw !== null,
+          validModelEnvelope: record?.validation?.valid === true,
+          invalidReason,
+          record,
+          ...(echoSlip ? { echoSlipSeatAttempt: seatAttempt, echoSlipRetryScheduled } : {}),
+          publicTranscriptChanged: false,
         });
-        const output = parseOutput(raw.text);
-        const validation = validateModelOutput({ output, prompt, definition, caseId: study.job_id });
-        const envelopeValid =
-          raw.provider === judge.provider &&
-          raw.model === judge.model &&
-          (raw.effort || raw.reasoningEffort) === judge.effort &&
-          raw.structuredOutput === true &&
-          raw.prohibitedToolEventCountObserved === true &&
-          raw.prohibitedToolEventCount === 0;
-        record = {
-          judge_id: judge.id,
-          model_ref: judge.modelRef,
-          independent_run_id: independentRunId,
-          prompt_sha256: tutorStubResistantLearnerSemanticSha256(prompt),
-          packet_sha256: prompt.packet_sha256,
-          output,
-          validation: envelopeValid
-            ? validation
-            : {
-                ...validation,
-                valid: false,
-                fields: Object.fromEntries(
-                  Object.entries(validation.fields).map(([field, value]) => [
-                    field,
-                    { ...value, eligible: false, issues: [...value.issues, 'model_envelope_invalid'] },
-                  ]),
-                ),
-              },
-        };
-        records.push(record);
-      } catch (error) {
-        if (signal?.aborted || error?.name === 'AbortError') throw error;
-        invalidReason = error.message;
-        readerError = error;
+        if (readerError && throwOnReaderError) throw readerError;
+        if (echoSlipRetryScheduled) {
+          echoSlipRetryUsed = true;
+          continue;
+        }
+        if (record) records.push(record);
+        break;
       }
-      appendTraceEvent(state.trace, {
-        type: 'resistant_learner_semantic_reader_result',
-        turn: turnNumber,
-        caseId: study.job_id,
-        study: studyCode,
-        instrument,
-        judgeId: judge.id,
-        modelRef: judge.modelRef,
-        independentRunId,
-        transportCompleted: raw !== null,
-        validModelEnvelope: record?.validation?.valid === true,
-        invalidReason,
-        record,
-        publicTranscriptChanged: false,
-      });
-      if (readerError && throwOnReaderError) throw readerError;
     }
     return panel({ caseId: study.job_id, instrument, definition, records });
   }
