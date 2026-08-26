@@ -111,6 +111,7 @@ export function parseTutorStubCliArguments({
       'boredom-proof-dag-job': { type: 'string', default: '' },
       'resistant-learner-calibration-design': { type: 'string', default: '' },
       'resistant-learner-calibration-job': { type: 'string', default: '' },
+      'resistant-learner-powered-dialogues-per-face': { type: 'string', default: '' },
       'resistant-learner-bridge-smoke-skip-final-readers': { type: 'boolean', default: false },
       'no-auto-stop-on-grounded': { type: 'boolean', default: false },
       'mixed-learner': { type: 'boolean', default: stub.mixedLearner },

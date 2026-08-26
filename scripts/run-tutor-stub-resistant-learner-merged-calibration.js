@@ -155,7 +155,12 @@ export async function executeTutorStubResistantLearnerMergedCalibration({
       const index = cursor;
       cursor += 1;
       const { job } = queue[index];
-      const spec = childSpec({ loaded, job, destination });
+      const spec = childSpec({
+        loaded,
+        job,
+        destination,
+        ...(preflight.phase === 'powered' ? { poweredDialoguesPerFace: preflight.dialogues_per_face } : {}),
+      });
       const exit = await runChild(spec);
       const row = extractRow({ job, spec, exit });
       attempts += row.attempts;

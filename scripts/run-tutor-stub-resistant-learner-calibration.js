@@ -142,6 +142,7 @@ export function tutorStubResistantLearnerCalibrationChildSpec({
   destination,
   bridgeSmokeSkipFinalReaders = false,
   modelCallBudget = null,
+  poweredDialoguesPerFace = null,
 }) {
   const jobRoot = path.join(destination, 'jobs', job.id);
   const traceDir = path.join(jobRoot, 'traces');
@@ -240,6 +241,9 @@ export function tutorStubResistantLearnerCalibrationChildSpec({
       designPath,
       '--resistant-learner-calibration-job',
       job.id,
+      ...(poweredDialoguesPerFace === null
+        ? []
+        : ['--resistant-learner-powered-dialogues-per-face', String(poweredDialoguesPerFace)]),
       ...(bridgeSmokeSkipFinalReaders ? ['--resistant-learner-bridge-smoke-skip-final-readers'] : []),
       '--trace-dir',
       path.relative(ROOT, traceDir),

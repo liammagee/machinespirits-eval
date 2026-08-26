@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -7,10 +8,12 @@ import { fileURLToPath } from 'node:url';
 import {
   buildTutorStubResistantLearnerCalibrationPlan,
   buildTutorStubResistantLearnerPoweredPlan,
+  configureTutorStubResistantLearnerCalibrationFromCli,
   loadTutorStubResistantLearnerDesign,
   summarizeTutorStubResistantLearnerMergedPoweredRun,
   tutorStubResistantLearnerMergedFaceDesign,
 } from '../services/tutorStubResistantLearnerCalibration.js';
+import { tutorStubResistantLearnerCalibrationChildSpec } from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
 import {
   buildTutorStubResistantLearnerMergedApproval,
   runTutorStubResistantLearnerMergedPreflight,
@@ -339,4 +342,80 @@ test('powered summary halts the claim on prohibited delivery and goes indetermin
   assert.equal(splitReport.faces[0].gates.endpoint_validity_backstop, false);
   assert.equal(splitReport.faces[0].status, 'measurement_indeterminate');
   assert.equal(splitReport.status, 'measurement_indeterminate');
+});
+
+test('the child CLI seam accepts powered jobs when the powered size is passed', () => {
+  const loaded = loadV5();
+  const plan = buildTutorStubResistantLearnerPoweredPlan(loaded.design, { dialoguesPerFace: 108 });
+  const configure = (job, { powered }) => {
+    const faceDesign = tutorStubResistantLearnerMergedFaceDesign(loaded.design, job.face_id);
+    const state = {
+      trace: [],
+      turns: [],
+      history: [],
+      register: { palette: ['warm', 'plain', 'ironic', 'sarcastic'], history: [], policy: 'field' },
+      world: {},
+    };
+    configureTutorStubResistantLearnerCalibrationFromCli({
+      args: {
+        'model-call-budget': String(loaded.design.attemptCeilings.maximumReservationsPerDialogue),
+        model: 'codex.gpt-5.6-luna',
+        'classifier-model': 'codex.gpt-5.6-luna',
+        'learner-record-model': 'codex.gpt-5.6-luna',
+        'auto-learner-model': 'codex.gpt-5.6-luna',
+        'cli-effort': 'low',
+        world: job.world,
+        'run-seed': String(job.run_seed),
+        'eval-repeat': String(job.assignment_index),
+        'eval-job-id': job.id,
+        'acknowledge-research-use': true,
+        'dag-mode': 'strict_dag',
+        'register-policy': 'field',
+        'register-palette': 'warm,plain,ironic,sarcastic',
+        'resistant-learner-calibration-design': DESIGN_V5_PATH,
+        'resistant-learner-calibration-job': job.id,
+        ...(powered ? { 'resistant-learner-powered-dialogues-per-face': '108' } : {}),
+      },
+      state,
+      root: ROOT,
+      autoLearnerEnabled: true,
+      autoLearnerProfileId: job.study === 'B1' ? 'bored' : 'frame_refuser',
+      autoTurns: job.maximum_trigger_turn + job.outcome_horizon_learner_turns,
+      appendTraceEvent(target, event) {
+        target.push(event);
+      },
+      observationSemantics: faceDesign.models.triggerObservation.semantics,
+    });
+    return state;
+  };
+  const faceAJob = plan.jobs.find((job) => job.face_id === 'faceA');
+  const faceBJob = plan.jobs.find((job) => job.face_id === 'faceB');
+  for (const job of [faceAJob, faceBJob]) {
+    assert.throws(() => configure(job, { powered: false }), /is not registered/);
+    const state = configure(job, { powered: true });
+    assert.ok(state.resistanceActionRegisterStudy);
+  }
+});
+
+test('the launcher child spec forwards the powered size to the child', () => {
+  const loaded = loadV5();
+  const plan = buildTutorStubResistantLearnerPoweredPlan(loaded.design, { dialoguesPerFace: 108 });
+  const job = plan.jobs.find((candidate) => candidate.face_id === 'faceB');
+  const destination = fs.mkdtempSync(path.join(os.tmpdir(), 'powered-child-spec-'));
+  const spec = tutorStubResistantLearnerCalibrationChildSpec({
+    loaded,
+    job,
+    destination,
+    poweredDialoguesPerFace: 108,
+  });
+  const flagIndex = spec.args.indexOf('--resistant-learner-powered-dialogues-per-face');
+  assert.ok(flagIndex > 0);
+  assert.equal(spec.args[flagIndex + 1], '108');
+  const calibrationSpec = tutorStubResistantLearnerCalibrationChildSpec({
+    loaded,
+    job: buildTutorStubResistantLearnerCalibrationPlan(loaded.design).jobs[0],
+    destination,
+  });
+  assert.equal(calibrationSpec.args.includes('--resistant-learner-powered-dialogues-per-face'), false);
+  fs.rmSync(destination, { recursive: true, force: true });
 });

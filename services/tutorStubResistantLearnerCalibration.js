@@ -1374,8 +1374,13 @@ export function configureTutorStubResistantLearnerCalibrationFromCli({
 } = {}) {
   const designPath = args?.['resistant-learner-calibration-design'];
   const jobId = args?.['resistant-learner-calibration-job'];
+  const poweredDialoguesPerFace = String(args?.['resistant-learner-powered-dialogues-per-face'] || '').trim();
   const loaded = loadTutorStubResistantLearnerDesign({ designPath, root });
-  const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded.design);
+  const plan = poweredDialoguesPerFace
+    ? buildTutorStubResistantLearnerPoweredPlan(loaded.design, {
+        dialoguesPerFace: Number(poweredDialoguesPerFace),
+      })
+    : buildTutorStubResistantLearnerCalibrationPlan(loaded.design);
   const job = plan.jobs.find((candidate) => candidate.id === jobId);
   if (!job) throw new Error(`resistant-learner calibration job ${JSON.stringify(jobId)} is not registered`);
   const b1 = job.study === 'B1';
