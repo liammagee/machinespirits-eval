@@ -123,4 +123,17 @@ Each synthetic turn below was read against the revised anchors before any regist
 
 ### Registered-pair rehearsal
 
-Pending the zero-call preflight and the two-repetition reader rehearsal. No model rehearsal had run when the anchor review above was completed.
+The fresh create-once rehearsal root is `/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v5-registered-pair-rehearsal-2026-08-26`. It contains 128 completed reader records over the same 32 burned revision-4 transcripts: `codex.gpt-5.6-sol` and `claude-code.sonnet-5`, both at low effort, two repetitions, fresh context per record, no shared notes, no tie auditor, and no tutor or learner generation. One Sonnet CLI response-free transport failure recovered on the one allowed outcome-blind retry. The sealed ledger reports 129 attempts, 128 completed calls, one failed transport attempt, and a 256 hard ceiling.
+
+| Face | Repetition | Determinate | Floor | Jointly eligible | Floor | Conditional exact agreement | Floor | Result |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| A | 1 | 14/18 | 15 | 18/18 | 13 | 14/18 = 0.778 | 0.8 | Missed determinacy and agreement |
+| A | 2 | 12/18 | 15 | 18/18 | 13 | 12/18 = 0.667 | 0.8 | Missed determinacy and agreement |
+| B | 1 | 11/14 | 12 | 14/14 | 10 | 11/14 = 0.786 | 0.8 | Missed determinacy and agreement |
+| B | 2 | 12/14 | 12 | 14/14 | 10 | 12/14 = 0.857 | 0.8 | Cleared all floors |
+
+All seats were eligible, so the remaining miss is semantic disagreement rather than malformed output or evidence eligibility. Face A still leaks chiefly at rung 1 versus 2: Sol often treats a negative evidential limitation, conditional connection, or cross-world analogy as a present discrimination, while Sonnet keeps it at rung 1. A smaller Face-A rung-0/rung-1 leak remains over whether the learner’s wording adds a new relation or repeats one already public. Face B still leaks at both sides of rung 1: the 0/1 edge over whether conditional pressure-test language adds a new relation, and the 1/2 edge where Sol treats the synthesis of separate public timing and hose exhibits as application of the completed exact offered test while Sonnet does not.
+
+The decision rule therefore stops the programme here. V5 is not ready for launch on this directional rehearsal: at least one floor missed on both faces and Face A missed in both repetitions. No floor was lowered, no anchor was relaxed after seeing these results, and no calibration or study was launched. The operator decides whether to redesign or stop.
+
+not registered, not launched — operator decision pending
