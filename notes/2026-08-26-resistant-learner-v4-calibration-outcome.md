@@ -76,9 +76,9 @@ The panel did not treat this replay as validation. It reuses burned transcripts,
 
 ## V5 proposal package
 
-- Design: `config/tutor-stub-resistant-learner-merged-design.v5.json`  
+- Design: `config/tutor-stub-resistant-learner-merged-design.v5.json`
   SHA-256: `4954843895da40ca5f0742fbc75de3826db59c6836b4a15afd3d882c9c6bf2cf`
-- Semantic registration: `config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json`  
+- Semantic registration: `config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json`
   SHA-256: `39fa234f9a398a3ab514e860ae5a2d6ede27c17f531ce866f74d5214af9299d5`
 
 The existing V4 call plan already reserved three tutor-delivery calls per dialogue. Applying that reserve symmetrically does not increase the ceiling: 62 planned calls per dialogue, 2,232 planned calls for 36 dialogues, 192 maximum reservations per dialogue including headroom, and a 6,912 calibration maximum. No V4 row, replay judgment, tie audit, or private plant is eligible for V5 scoring or pooling.
@@ -135,5 +135,47 @@ The fresh create-once rehearsal root is `/Users/lmagee/Dev/machinespirits/machin
 All seats were eligible, so the remaining miss is semantic disagreement rather than malformed output or evidence eligibility. Face A still leaks chiefly at rung 1 versus 2: Sol often treats a negative evidential limitation, conditional connection, or cross-world analogy as a present discrimination, while Sonnet keeps it at rung 1. A smaller Face-A rung-0/rung-1 leak remains over whether the learner’s wording adds a new relation or repeats one already public. Face B still leaks at both sides of rung 1: the 0/1 edge over whether conditional pressure-test language adds a new relation, and the 1/2 edge where Sol treats the synthesis of separate public timing and hose exhibits as application of the completed exact offered test while Sonnet does not.
 
 The decision rule therefore stops the programme here. V5 is not ready for launch on this directional rehearsal: at least one floor missed on both faces and Face A missed in both repetitions. No floor was lowered, no anchor was relaxed after seeing these results, and no calibration or study was launched. The operator decides whether to redesign or stop.
+
+not registered, not launched — operator decision pending
+
+## 2026-08-26 addendum: three-reader modal endpoint amendment
+
+The operator treated the registered-pair miss as a statistical mechanism problem, not another anchor problem. At 17 jointly eligible cases, the former 0.8 exact-agreement gate admits three disagreements (14/17 = 0.824) but not four (13/17 = 0.765). If the underlying pair agreement is near 0.8, its binomial standard error at 17 cases is `sqrt(0.8 * 0.2 / 17) = 0.097`. The same burned Face-A transcripts and fixed anchors produced 0.778 and 0.667 in the two prior repetitions. A threshold this close to ordinary sampling movement was therefore unstable at the registered rehearsal size.
+
+V5 is amended in place because it remains unregistered and unconsumed. Its endpoint now uses three blind seats: `codex.gpt-5.6-sol`, `claude-code.sonnet-5`, and `claude-code.opus`, all at low effort. A bounded pre-amendment route probe confirmed that the CLI bridge served `claude-code.opus` as `claude-opus-4-8` at low effort with structured output and the observed prohibited-tool mark. Each endpoint seat receives fresh context and only the public transcript plus the same registered anchors; no seat sees another output or vote count. `codex.gpt-5.6-luna` remains excluded from reading because it authors the generation-side text. Sonnet and Opus share a model family, so all three pairwise agreements are reported explicitly to expose correlated movement between those seats rather than treating the three votes as independent evidence.
+
+The code-computed modal rung is determinate only when at least two eligible votes share one rung. Fewer than two eligible votes, a two-eligible split, or a 1-1-1 split is indeterminate. The determinacy floors remain 15 cases for Face A and 12 for Face B. The eligibility floors are restated as at least 13 Face-A cases and 10 Face-B cases with two or more eligible endpoint votes. The former 0.8 pair-agreement gate is removed. All three pairwise exact agreements, vote distributions, and 3-0 versus 2-1 margins are report-only. The registered validity backstop is the mean of all three pairwise exact agreements on each face: below 0.5 makes that face `measurement_indeterminate` and stops the calibration. This is a coarse broken-instrument screen, not a reliability certificate.
+
+No anchor, tutor-delivery gate, safety rule, persona-fidelity rule, prohibited-delivery rule, typed-failure disposition, evidence-source restriction, or indeterminate-means-stop rule changed. The unchanged canonical hashes are `fac8e760d2d4bfa10f07488f8d02049bca924482747fd229172b601067b47256` for the Face-A measurement, `66315a011df45ab7c07cadc79147706ab350a3db303c6d933836f2626d60dc7a` for the Face-B measurement, and `02972d555d0e0f94a56cbbbfdb3b0ff0e92bc5aab16d08779685d5f1ce6c0ea7` for the semantic instrument. Sealed revisions 1–4 and all sealed run roots remain byte-untouched.
+
+### Ceiling arithmetic
+
+The former 62 planned calls per dialogue were `12 pre-trigger base + 4 pre-trigger tutor-guard reserve + 24 post-trigger base + 8 post-trigger tutor-guard reserve + 2 primary readers + 2 fidelity readers + 4 reader echo-slip reserves + 3 bridge-step enforcement + 3 tutor-delivery enforcement`. Adding the third primary reader also raises the one-per-reader echo-slip reserve from four to five, so the new plan is `12 + 4 + 24 + 8 + 3 + 2 + 5 + 3 + 3 = 64` planned calls per dialogue and `64 * 36 = 2,304` planned calls per calibration. At three fail-before-call reservations per planned call, this is `64 * 3 = 192` reservations per dialogue; adding six headroom reservations gives 198 per dialogue and `198 * 36 = 7,128` for the calibration. These are ceilings, not targets.
+
+### Directional three-reader rehearsal
+
+The fresh create-once rehearsal root is `/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v5-three-reader-panel-rehearsal-2026-08-26`. It read the same 32 burned revision-4 public transcripts without modifying their root, used two fresh-context repetitions and the three registered low-effort reader routes, generated no tutor or learner dialogue, ran no tie auditor, and launched no calibration or study. The sealed ledger reports 192/192 completed reader calls, zero failed calls, 192 attempts, and a hard ceiling of 384.
+
+Pair order in the table is Sol–Sonnet / Sol–Opus / Sonnet–Opus.
+
+| Face | Repetition | Determinate (floor) | Cases with at least two eligible votes (floor) | Pairwise exact agreement | Mean (backstop) | 3-0 / 2-1 / other indeterminate | Result |
+| --- | ---: | ---: | ---: | --- | ---: | --- | --- |
+| A | 1 | 18/18 (15) | 18/18 (13) | 0.722 / 0.667 / 0.833 | 0.741 (0.5) | 11 / 7 / 0 | All floors clear |
+| A | 2 | 18/18 (15) | 18/18 (13) | 0.778 / 0.833 / 0.833 | 0.815 (0.5) | 13 / 5 / 0 | All floors clear |
+| B | 1 | 13/14 (12) | 14/14 (10) | 0.571 / 0.769 / 0.846 | 0.729 (0.5) | 8 / 5 / 1 two-eligible split | All floors clear |
+| B | 2 | 14/14 (12) | 14/14 (10) | 0.857 / 0.857 / 1.000 | 0.905 (0.5) | 12 / 2 / 0 | All floors clear |
+
+The Face-B repetition-1 indeterminate row had exactly two eligible discordant votes. Its stored seat validity, vote values, determinacy, eligibility-floor count, and backstop arithmetic are correct, but the sealed replay report's report-only margin bucket used the label `fewer_than_two_eligible`. The follow-up code correction labels this shape `two_eligible_split`; it did not alter, select, rerun, replace, or recode any row and the rehearsal was not repeated.
+
+All registered rehearsal floors cleared on both faces in both repetitions. Under the prospective decision rule this package is ready for operator consideration, but the evidence remains directional: it uses burned revision-4 transcripts observed during instrument development, and no replay row is eligible for V5 scoring or pooling.
+
+### Amended V5 artifacts
+
+- Design: `config/tutor-stub-resistant-learner-merged-design.v5.json`
+  SHA-256: `8fe0ed42b9c8a14f2c618e0c32d06c70cc5500dd20ddae05f16382d02a5d3807`
+- Semantic registration: `config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json`
+  SHA-256: `f5a3843135fbfeb9be3d33296cca507aa26b155fd057f8ffc201e2582337af64`
+- Directional rehearsal report (sealed, read-only): `replay-report.json`
+  SHA-256: `a2d32948c8a0916fd6e30094ef74b8a401c11bc4de12a082839cfa9c0f2e554d`
 
 not registered, not launched — operator decision pending
