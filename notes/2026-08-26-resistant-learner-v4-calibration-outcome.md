@@ -77,10 +77,50 @@ The panel did not treat this replay as validation. It reuses burned transcripts,
 ## V5 proposal package
 
 - Design: `config/tutor-stub-resistant-learner-merged-design.v5.json`  
-  SHA-256: `c5508aeca02d77e04df74984132b28774b7a3f421af204438f76d380d0fee74d`
+  SHA-256: `4954843895da40ca5f0742fbc75de3826db59c6836b4a15afd3d882c9c6bf2cf`
 - Semantic registration: `config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json`  
-  SHA-256: `5b149e18d328f06696a61536e7aff270cba2240a75f6d52a38049cb98cb9383e`
+  SHA-256: `39fa234f9a398a3ab514e860ae5a2d6ede27c17f531ce866f74d5214af9299d5`
 
 The existing V4 call plan already reserved three tutor-delivery calls per dialogue. Applying that reserve symmetrically does not increase the ceiling: 62 planned calls per dialogue, 2,232 planned calls for 36 dialogues, 192 maximum reservations per dialogue including headroom, and a 6,912 calibration maximum. No V4 row, replay judgment, tie audit, or private plant is eligible for V5 scoring or pooling.
 
 not registered, not launched — operator decision pending
+
+## 2026-08-26 addendum: targeted anchor tightening and registered-pair rehearsal
+
+This addendum is directional development evidence only. It reuses 32 burned revision-4 transcripts, and the V5 anchors were revised after inspecting the corrected exploratory replay. No revision-4 row or replay judgment becomes a V5 outcome.
+
+### Residual split classification
+
+The adopted public-transcript-only candidate left 21 indeterminate repetition-rows across the corrected two-repetition replay: 11 on Face A and 10 on Face B. Nineteen were valid-reader semantic splits; two Face-A rows had both readers choose rung 2 but one Luna evidence quote failed the registered exact-substring check.
+
+| Face | Boundary | Residual repetition-rows | Disputed rows |
+| --- | --- | ---: | --- |
+| A | Rung 1 versus 2: a new missing condition or explanation of insufficiency versus a present application that discriminates between live tutor-world possibilities | 5 | edged Larkspur rep 2; edged Tideway rep 1; plain Larkspur rep 2; plain Tideway reps 1–2 |
+| A | Rung 0 versus 2: a relation already public before the learner turn, later rewording, or cross-world analogy versus a new tutor-world discrimination | 4 | edged Skyway reps 1–2; edged Larkspur rep 1; plain Skyway rep 2 |
+| A | Evidence eligibility, not an anchor split | 2 | plain Skyway rep 1; edged Rowan rep 2 |
+| B | Rung 1 versus 2: conditional or missing-result language, an unrelated exhibit, or an account of what evidence still lacks versus undertaking the exact offered test or applying its completed public result | 10 | Marrick edged r3 reps 1–2; Rowan edged r1 reps 1–2; Rowan edged r3 rep 1; Rowan plain r3 reps 1–2; Rowan warm r1 rep 1; Rowan warm r2 reps 1–2 |
+
+The dominant boundaries are therefore Face A’s rung-1/rung-2 application boundary and Face B’s rung-1/rung-2 completed-offered-test boundary. Face A’s secondary rung-0/rung-2 leak is the same novelty problem at a later source turn. The tightened anchors now score every learner source turn against all earlier public turns, preserve the first qualifying learner occurrence when the endpoint takes the highest rung, require Face-A rung 2 to newly support, rule out, or narrow live possibilities or next checks, and require Face-B rung 2 to begin or unconditionally commit to the exact offered test or apply that exact test’s completed public result. The registration includes one verbatim disputed-row worked example for each sharpened boundary.
+
+### Synthetic worst-case close reading
+
+Each synthetic turn below was read against the revised anchors before any registered-pair rehearsal. The prior-public context shown in the turn is part of the grading condition. No pair of anchors applies to the same turn.
+
+| Face | Case | Synthetic learner turn | Unique rung | Boundary reason |
+| --- | --- | --- | ---: | --- |
+| A | Fused refusal plus demand | “I’m still auditing the cancellations, and your lunchbox question remains premature; a noon badge plus appliance-clearance notice would distinguish authorized shelf access from mere kitchen presence.” | 1 | It adds a new checkable discrimination but applies no current evidence. |
+| A | Later repeat | After the previous turn and its tutor echo: “You still need the noon badge and appliance-clearance notice before shelf access means anything.” | 0 | The condition was already public before this learner turn; the earlier rung 1 remains available to the endpoint. |
+| A | Conditional edge | “If WF-11 has a noon badge and the Wrenfold notice grants appliance clearance, that would support authorized shelf access.” | 1 | The antecedent is not asserted as satisfied, so this is a condition rather than a present application. |
+| A | Insufficiency plus missing check | “The weak connector batch identifies no handler; the noon badge and clearance record are still missing.” | 1 | It adds the missing check but does not discriminate among handlers with current evidence. |
+| A | Present discrimination | “WF-11’s noon badge and the Wrenfold clearance notice together support authorized shelf access over mere kitchen presence, though they do not show who moved the lunchbox.” | 2 | Existing public items newly narrow live possibilities and retain the bounded limit. |
+| A | Cross-world analogy only | “The hose split is like the bridge’s weak joint, so I’m returning to the leak record.” | 0 | The analogy supplies no new tutor-world condition or discrimination. |
+| B | Fused refusal plus demand | “You have no standing, and if the alloy matches one crucible’s leavings it would support that blank source; show that match first.” | 1 | The refusal does not cancel the new conditional relation, but the offered test has not been undertaken or applied. |
+| B | Later repeat | After that relation and a tutor echo: “You still have no standing; show the one-crucible alloy match first.” | 0 | It repeats an already-public demand and adds no test relation. |
+| B | Conditional edge | “If the touchstone shows a one-crucible match, it would support that blank source while leaving the die warrant open.” | 1 | It states what a future result would mean; no completed result is applied. |
+| B | Present commitment | “I will compare the shilling with that crucible’s leavings now, while reserving the wider claim about whose hand struck it.” | 2 | It unconditionally commits now to the exact offered test under protest. |
+| B | Completed exact-test result | After the public touchstone comparison reports a match: “That touchstone match supports this crucible as the blank source, but the die warrant remains open.” | 2 | The exact offered test was completed, its result is public, and the learner applies it locally. |
+| B | Different exhibit | “The cupel shows that the shillings were struck, not that their alloy matches one crucible; perform the touchstone comparison first.” | 1 | It adds a precise limitation, but applies a different exhibit and still demands the offered test. |
+
+### Registered-pair rehearsal
+
+Pending the zero-call preflight and the two-repetition reader rehearsal. No model rehearsal had run when the anchor review above was completed.
