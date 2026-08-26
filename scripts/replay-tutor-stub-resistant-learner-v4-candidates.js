@@ -17,7 +17,7 @@ const DEFAULT_RUN_ROOT =
 const DEFAULT_OUT =
   '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v4-v5-candidate-replay-2026-08-26';
 const DEFAULT_V5_OUT =
-  '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v5-three-reader-panel-rehearsal-2026-08-26';
+  '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v5-three-reader-opus5-panel-rehearsal-2026-08-26';
 const DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v4.json';
 const V5_DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v5.json';
 const V5_REGISTRATION_PATH = 'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json';
@@ -29,7 +29,7 @@ const TIE_AUDITOR = Object.freeze({ id: 'tie_auditor', modelRef: 'codex.gpt-5.6-
 export const V5_REGISTERED_READER_SEATS = Object.freeze([
   Object.freeze({ id: 'reader_a', modelRef: 'codex.gpt-5.6-sol', effort: 'low' }),
   Object.freeze({ id: 'reader_b', modelRef: 'claude-code.sonnet-5', effort: 'low' }),
-  Object.freeze({ id: 'reader_c', modelRef: 'claude-code.opus', effort: 'low' }),
+  Object.freeze({ id: 'reader_c', modelRef: 'claude-code.opus-5', effort: 'low' }),
 ]);
 export const V5_REHEARSAL_CANDIDATE = Object.freeze({
   id: 'revised_v5_transcript_only',
@@ -85,7 +85,7 @@ export const RESISTANT_LEARNER_V5_REHEARSAL_USAGE = `Registered-pair V5 rehearsa
     --repetitions 2 --parallelism 8
 
 This mode reads the same 32 sealed V4 public transcripts, uses the unchanged V5 public anchors and
-registered low-effort seats (codex.gpt-5.6-sol, claude-code.sonnet-5, and claude-code.opus), generates
+registered low-effort seats (codex.gpt-5.6-sol, claude-code.sonnet-5, and claude-code.opus-5), generates
 no dialogue, and launches no calibration or study. It plans 192 reader records with one outcome-blind transport retry
 available per record, for a hard ceiling of ${RESISTANT_LEARNER_V5_REHEARSAL_ATTEMPT_CEILING} attempts.`;
 

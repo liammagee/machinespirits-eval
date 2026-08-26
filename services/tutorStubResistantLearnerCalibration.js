@@ -45,7 +45,7 @@ const MERGED_ID = 'resistant-learner-merged-graded-engagement';
 const BOREDOM_TEMPLATE = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json';
 const REFUSER_TEMPLATE = 'config/tutor-stub-resistance-action-register-crossed-registration.v9.json';
 const JUDGES = Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5']);
-const V5_ENDPOINT_JUDGES = Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'claude-code.opus']);
+const V5_ENDPOINT_JUDGES = Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'claude-code.opus-5']);
 const REGISTERS = Object.freeze(['warm', 'plain', 'edged']);
 const B1_WORLDS = Object.freeze([
   'world_022_foxtrot_jukebox',
@@ -530,7 +530,7 @@ const MERGED_DESIGN_REVISION_PINS = Object.freeze({
     }),
     faceAMeasurementSha256: 'fac8e760d2d4bfa10f07488f8d02049bca924482747fd229172b601067b47256',
     faceBMeasurementSha256: '66315a011df45ab7c07cadc79147706ab350a3db303c6d933836f2626d60dc7a',
-    readerPanelSha256: '22f512d15e17c22422a6e6db861105647e4e4614d5558f99e7f3f71b794ed0eb',
+    readerPanelSha256: '4a0d6dad35bf04aeef4f3c5d824ad48796ec46fc58b78e9d3905ba5e58ca6f64',
     commonChannelAliveRulesSha256: 'f653cbd87dea35c8746aa183338bdd08ec7d1c004fc660a389e9fdf7cf809f11',
     calibrationDecisionPolicySha256: '83c9d6d145d1c97b1e83c02f776c0847bdbeaf0b1270c281563be78de2d84ee2',
     claimBoundary:

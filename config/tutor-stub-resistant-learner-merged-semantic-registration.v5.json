@@ -12,7 +12,7 @@
     "reuse": false
   },
   "readerPanel": {
-    "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "claude-code.opus"],
+    "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "claude-code.opus-5"],
     "fidelityJudges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
     "effort": "low",
     "consensus": "For final_graded_engagement_rung, code takes the modal value of eligible medium/high-confidence votes: at least two eligible votes sharing one rung is determinate; fewer than two eligible votes or a 1-1-1 split is measurement_indeterminate.",

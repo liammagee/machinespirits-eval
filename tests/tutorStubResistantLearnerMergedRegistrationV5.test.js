@@ -17,6 +17,7 @@ import {
   buildTutorStubResistantLearnerSemanticPrompt,
   createTutorStubResistantLearnerSemanticRuntime,
   tutorStubResistantLearnerSemanticFieldConsensus,
+  tutorStubResistantLearnerSemanticJudgeRoutes,
   tutorStubResistantLearnerMergedSemanticRegistrationIssues,
 } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
 import {
@@ -84,6 +85,26 @@ test('revision 5 preserves sealed v1-v4 bytes and recomputes the three-seat ceil
   assert.equal(loaded.design.attemptCeilings.maximumReservationsPerDialogue, 198);
   assert.equal(loaded.design.attemptCeilings.calibrationMaximumReservations, 7128);
   assert.equal(loaded.design.callAuthority.grantsModelCalls, false);
+  assert.deepEqual(loaded.design.measurement.readerPanel.judges, [
+    'codex.gpt-5.6-sol',
+    'claude-code.sonnet-5',
+    'claude-code.opus-5',
+  ]);
+  assert.deepEqual(loaded.design.models.finalSemanticReaders[2], {
+    id: 'reader_c',
+    modelRef: 'claude-code.opus-5',
+    provider: 'claude-code',
+    model: 'claude-opus-5',
+    effort: 'low',
+  });
+  assert.deepEqual(registrationV5().readerPanel.judges, loaded.design.measurement.readerPanel.judges);
+  assert.deepEqual(tutorStubResistantLearnerSemanticJudgeRoutes(loaded.design)[2], {
+    id: 'reader_c',
+    modelRef: 'claude-code.opus-5',
+    provider: 'claude-code',
+    model: 'claude-opus-5',
+    effort: 'low',
+  });
 });
 
 test('revision-5 design pin fails closed across both delivery contracts, measurement, policy, and claim', () => {
@@ -97,7 +118,7 @@ test('revision-5 design pin fails closed across both delivery contracts, measure
     (value) => (value.populationStrata.faceA.measurement.rungs[1].definition = 'Any condition.'),
     (value) => (value.populationStrata.faceB.measurement.echoGuard = 'No echo guard.'),
     (value) => value.models.finalSemanticReaders.pop(),
-    (value) => (value.measurement.readerPanel.fidelityJudges = ['claude-code.opus']),
+    (value) => (value.measurement.readerPanel.fidelityJudges = ['claude-code.opus-5']),
     (value) => (value.calibration.commonChannelAliveRules.minimumMeanPairwiseExactAgreementBackstop = 0.49),
     (value) => (value.calibration.decisionPolicy.primaryReaderAgreementScope = ['delivered_register']),
     (value) =>
@@ -180,7 +201,7 @@ test('revision-5 semantic pin fails closed and restricts primary evidence to pub
           ? { provider: 'codex', model: 'gpt-5.6-sol' }
           : modelRef === 'claude-code.sonnet-5'
             ? { provider: 'claude-code', model: 'claude-sonnet-5' }
-            : { provider: 'claude-code', model: 'claude-opus-4-8' };
+            : { provider: 'claude-code', model: 'claude-opus-5' };
       },
       async callPromptModel({ prompt, resolved }) {
         const parsed = JSON.parse(prompt);
@@ -237,7 +258,7 @@ test('revision-5 rehearsal uses the registered three-seat panel and unchanged pu
     [
       { modelRef: 'codex.gpt-5.6-sol', effort: 'low' },
       { modelRef: 'claude-code.sonnet-5', effort: 'low' },
-      { modelRef: 'claude-code.opus', effort: 'low' },
+      { modelRef: 'claude-code.opus-5', effort: 'low' },
     ],
   );
   assert.equal(RESISTANT_LEARNER_V5_REHEARSAL_ATTEMPT_CEILING, 384);

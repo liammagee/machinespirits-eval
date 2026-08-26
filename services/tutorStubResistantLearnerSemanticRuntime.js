@@ -17,7 +17,7 @@ const REGISTER_VALUES = Object.freeze(['warm', 'plain', 'edged', 'neither', 'ind
 const JUDGE_ROUTES = Object.freeze({
   'codex.gpt-5.6-sol': { provider: 'codex', model: 'gpt-5.6-sol' },
   'claude-code.sonnet-5': { provider: 'claude-code', model: 'claude-sonnet-5' },
-  'claude-code.opus': { provider: 'claude-code', model: 'claude-opus-4-8' },
+  'claude-code.opus-5': { provider: 'claude-code', model: 'claude-opus-5' },
   'codex.gpt-5.5': { provider: 'codex', model: 'gpt-5.5' },
 });
 const MODULE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -103,7 +103,7 @@ const MERGED_SEMANTIC_REGISTRATIONS = Object.freeze({
     instrumentSha256: '02972d555d0e0f94a56cbbbfdb3b0ff0e92bc5aab16d08779685d5f1ce6c0ea7',
     calibrationDecisionPolicySha256: '0952fb5ad6714853e985e8d7ef73556997ca68433034382a2ea1dfa4da61bccb',
     panelMechanism: 'three_seat_endpoint_modal_v1',
-    readerPanelSha256: 'ef8923143d8bd8af5d94599a95107a7d21babcdcc99ee58f9364786c63a65998',
+    readerPanelSha256: 'd123c178aa4ba42aec84c1ded6a276e32b2df6d67973ea7ae12fd7bcd4455fb3',
     fidelityJudges: Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5']),
     visibilityContract: true,
     dispositions: Object.freeze({
