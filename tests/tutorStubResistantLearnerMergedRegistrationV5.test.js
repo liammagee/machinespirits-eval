@@ -259,6 +259,7 @@ test('revision-5 endpoint consensus is code-computed modal voting', () => {
   assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['1', '1', '2']).winner, '1');
   assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['2', '2', '2']).winner, '2');
   assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['0', '1', '2']).winner, null);
+  assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['0', '1']).winner, null);
   assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['1', '1']).winner, '1');
 });
 

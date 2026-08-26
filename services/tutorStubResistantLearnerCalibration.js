@@ -1865,18 +1865,19 @@ function mergedAgreementSummary(rows, faceDesign) {
     );
     const winner = Object.entries(counts).find(([, count]) => count >= 2) || null;
     const signature = `0:${counts['0']}|1:${counts['1']}|2:${counts['2']}|eligible:${votes.length}`;
-    const majorityMargin =
-      !winner || votes.length < 2
-        ? votes.length === 3
-          ? '1-1-1'
+    const majorityMargin = !winner
+      ? votes.length === 3
+        ? '1-1-1'
+        : votes.length === 2
+          ? 'two_eligible_split'
           : 'fewer_than_two_eligible'
-        : votes.length === 3 && winner[1] === 3
-          ? '3-0'
-          : votes.length === 3 && winner[1] === 2
-            ? '2-1'
-            : votes.length === 2 && winner[1] === 2
-              ? '2-0_one_ineligible'
-              : 'other';
+      : votes.length === 3 && winner[1] === 3
+        ? '3-0'
+        : votes.length === 3 && winner[1] === 2
+          ? '2-1'
+          : votes.length === 2 && winner[1] === 2
+            ? '2-0_one_ineligible'
+            : 'other';
     return { votes, counts, signature, majority_margin: majorityMargin };
   });
   const casesWithAtLeastTwoEligibleEndpointVotes = endpointCases.filter((row) => row.votes.length >= 2).length;
@@ -1886,10 +1887,9 @@ function mergedAgreementSummary(rows, faceDesign) {
       .map((signature) => [signature, endpointCases.filter((row) => row.signature === signature).length]),
   );
   const majorityMargins = Object.fromEntries(
-    ['3-0', '2-1', '2-0_one_ineligible', '1-1-1', 'fewer_than_two_eligible', 'other'].map((margin) => [
-      margin,
-      endpointCases.filter((row) => row.majority_margin === margin).length,
-    ]),
+    ['3-0', '2-1', '2-0_one_ineligible', 'two_eligible_split', '1-1-1', 'fewer_than_two_eligible', 'other'].map(
+      (margin) => [margin, endpointCases.filter((row) => row.majority_margin === margin).length],
+    ),
   );
   const endpointPairs = pairs.filter((pair) => pair.instrument === 'primary' && pair.field === endpoint);
   const pairwiseValues = endpointPairs.map((pair) => pair.conditional_exact_agreement);

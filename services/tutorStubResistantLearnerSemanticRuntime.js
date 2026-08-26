@@ -750,7 +750,11 @@ function panel({ caseId, instrument, definition, records }) {
           majority_vote_count: result.winnerCount,
           majority_margin:
             result.winner === null
-              ? 'indeterminate'
+              ? eligible.length === 3
+                ? '1-1-1'
+                : eligible.length === 2
+                  ? 'two_eligible_split'
+                  : 'fewer_than_two_eligible'
               : eligible.length === 3 && result.winnerCount === 3
                 ? '3-0'
                 : eligible.length === 3 && result.winnerCount === 2

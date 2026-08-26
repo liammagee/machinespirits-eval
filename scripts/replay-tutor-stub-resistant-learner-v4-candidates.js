@@ -624,18 +624,19 @@ function summarizeRecords(records, { candidateId, repetition, faceId, readerSeat
     const modal = floors !== null;
     const determinate = modal ? winner !== null : exact;
     const value = determinate ? (modal ? winner[0] : seatRecords[0].derived_rung) : 'indeterminate';
-    const majorityMargin =
-      !winner || eligible.length < 2
-        ? eligible.length === 3
-          ? '1-1-1'
+    const majorityMargin = !winner
+      ? eligible.length === 3
+        ? '1-1-1'
+        : eligible.length === 2
+          ? 'two_eligible_split'
           : 'fewer_than_two_eligible'
-        : eligible.length === 3 && winner[1] === 3
-          ? '3-0'
-          : eligible.length === 3 && winner[1] === 2
-            ? '2-1'
-            : eligible.length === 2 && winner[1] === 2
-              ? '2-0_one_ineligible'
-              : 'other';
+      : eligible.length === 3 && winner[1] === 3
+        ? '3-0'
+        : eligible.length === 3 && winner[1] === 2
+          ? '2-1'
+          : eligible.length === 2 && winner[1] === 2
+            ? '2-0_one_ineligible'
+            : 'other';
     return {
       case_id: caseId,
       jointly_eligible: jointlyEligible,
@@ -712,10 +713,9 @@ function summarizeRecords(records, { candidateId, repetition, faceId, readerSeat
           .map((signature) => [signature, rows.filter((row) => JSON.stringify(row.vote_counts) === signature).length]),
       ),
       majority_margins: Object.fromEntries(
-        ['3-0', '2-1', '2-0_one_ineligible', '1-1-1', 'fewer_than_two_eligible', 'other'].map((margin) => [
-          margin,
-          rows.filter((row) => row.majority_margin === margin).length,
-        ]),
+        ['3-0', '2-1', '2-0_one_ineligible', 'two_eligible_split', '1-1-1', 'fewer_than_two_eligible', 'other'].map(
+          (margin) => [margin, rows.filter((row) => row.majority_margin === margin).length],
+        ),
       ),
       floors: {
         two_eligible_vote_cases: casesWithAtLeastTwoEligibleVotes >= floors.twoEligible,
