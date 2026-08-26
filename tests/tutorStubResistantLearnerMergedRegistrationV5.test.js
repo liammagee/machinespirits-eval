@@ -16,6 +16,8 @@ import {
 import {
   buildTutorStubResistantLearnerSemanticPrompt,
   createTutorStubResistantLearnerSemanticRuntime,
+  tutorStubResistantLearnerSemanticFieldConsensus,
+  tutorStubResistantLearnerSemanticJudgeRoutes,
   tutorStubResistantLearnerMergedSemanticRegistrationIssues,
 } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
 import {
@@ -66,7 +68,7 @@ function registrationV5() {
   return JSON.parse(fs.readFileSync(path.join(ROOT, REGISTRATION_PATH), 'utf8'));
 }
 
-test('revision 5 preserves sealed v1-v4 bytes and keeps the revision-4 ceiling', () => {
+test('revision 5 preserves sealed v1-v4 bytes and recomputes the three-seat ceiling', () => {
   for (const [relativePath, expected] of Object.entries(SEALED)) {
     const bytes = fs.readFileSync(path.join(ROOT, relativePath));
     assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), expected, relativePath);
@@ -74,9 +76,35 @@ test('revision 5 preserves sealed v1-v4 bytes and keeps the revision-4 ceiling',
   const loaded = loadDesign();
   assert.equal(validateTutorStubResistantLearnerDesign(loaded.design).valid, true);
   assert.equal(buildTutorStubResistantLearnerCalibrationPlan(loaded.design).jobs.length, 36);
-  assert.equal(loaded.design.attemptCeilings.plannedCallsPerDialogue, 62);
-  assert.equal(loaded.design.attemptCeilings.calibrationMaximumReservations, 6912);
+  assert.equal(loaded.design.attemptCeilings.callPlanPerDialogue.primaryReaderSeats, 3);
+  assert.equal(loaded.design.attemptCeilings.callPlanPerDialogue.fidelityReaderSeats, 2);
+  assert.equal(loaded.design.attemptCeilings.callPlanPerDialogue.echoSlipRetryReserve, 5);
+  assert.equal(loaded.design.attemptCeilings.plannedCallsPerDialogue, 64);
+  assert.equal(loaded.design.attemptCeilings.plannedCallsCalibration, 2304);
+  assert.equal(loaded.design.attemptCeilings.plannedCallReservationCeilingPerDialogue, 192);
+  assert.equal(loaded.design.attemptCeilings.maximumReservationsPerDialogue, 198);
+  assert.equal(loaded.design.attemptCeilings.calibrationMaximumReservations, 7128);
   assert.equal(loaded.design.callAuthority.grantsModelCalls, false);
+  assert.deepEqual(loaded.design.measurement.readerPanel.judges, [
+    'codex.gpt-5.6-sol',
+    'claude-code.sonnet-5',
+    'claude-code.opus-5',
+  ]);
+  assert.deepEqual(loaded.design.models.finalSemanticReaders[2], {
+    id: 'reader_c',
+    modelRef: 'claude-code.opus-5',
+    provider: 'claude-code',
+    model: 'claude-opus-5',
+    effort: 'low',
+  });
+  assert.deepEqual(registrationV5().readerPanel.judges, loaded.design.measurement.readerPanel.judges);
+  assert.deepEqual(tutorStubResistantLearnerSemanticJudgeRoutes(loaded.design)[2], {
+    id: 'reader_c',
+    modelRef: 'claude-code.opus-5',
+    provider: 'claude-code',
+    model: 'claude-opus-5',
+    effort: 'low',
+  });
 });
 
 test('revision-5 design pin fails closed across both delivery contracts, measurement, policy, and claim', () => {
@@ -89,6 +117,9 @@ test('revision-5 design pin fails closed across both delivery contracts, measure
     (value) => (value.populationStrata.faceB.rivalDagPersona.concessionEnforcement.check.question = 'Any pickup?'),
     (value) => (value.populationStrata.faceA.measurement.rungs[1].definition = 'Any condition.'),
     (value) => (value.populationStrata.faceB.measurement.echoGuard = 'No echo guard.'),
+    (value) => value.models.finalSemanticReaders.pop(),
+    (value) => (value.measurement.readerPanel.fidelityJudges = ['claude-code.opus-5']),
+    (value) => (value.calibration.commonChannelAliveRules.minimumMeanPairwiseExactAgreementBackstop = 0.49),
     (value) => (value.calibration.decisionPolicy.primaryReaderAgreementScope = ['delivered_register']),
     (value) =>
       (value.calibration.decisionPolicy.reportOnlyDiagnostics.mayAffectVerdictEligibilityScoringOrRowSelection = true),
@@ -117,6 +148,8 @@ test('revision-5 semantic pin fails closed and restricts primary evidence to pub
     (value) => (value.calibrationDecisionPolicy.primaryReaderAgreementScope = ['delivered_register']),
     (value) => delete value.dispositions.tutor_discriminating_question_non_delivery,
     (value) => (value.visibility.rivalDagVisible = true),
+    (value) => (value.readerPanel.consensus = 'Any plurality wins.'),
+    (value) => (value.readerPanel.validityBackstop.minimum = 0.49),
   ]) {
     const candidate = structuredClone(registration);
     mutate(candidate);
@@ -166,7 +199,9 @@ test('revision-5 semantic pin fails closed and restricts primary evidence to pub
       resolveModel(modelRef) {
         return modelRef === 'codex.gpt-5.6-sol'
           ? { provider: 'codex', model: 'gpt-5.6-sol' }
-          : { provider: 'claude-code', model: 'claude-sonnet-5' };
+          : modelRef === 'claude-code.sonnet-5'
+            ? { provider: 'claude-code', model: 'claude-sonnet-5' }
+            : { provider: 'claude-code', model: 'claude-opus-5' };
       },
       async callPromptModel({ prompt, resolved }) {
         const parsed = JSON.parse(prompt);
@@ -216,16 +251,17 @@ test('revision-5 semantic pin fails closed and restricts primary evidence to pub
   assert.equal((await run(faceV4)).fields.final_graded_engagement_rung.status, 'determinate');
 });
 
-test('revision-5 rehearsal uses the registered pair and amended public-only anchors', () => {
+test('revision-5 rehearsal uses the registered three-seat panel and unchanged public-only anchors', () => {
   const registration = registrationV5();
   assert.deepEqual(
     V5_REGISTERED_READER_SEATS.map(({ modelRef, effort }) => ({ modelRef, effort })),
     [
       { modelRef: 'codex.gpt-5.6-sol', effort: 'low' },
       { modelRef: 'claude-code.sonnet-5', effort: 'low' },
+      { modelRef: 'claude-code.opus-5', effort: 'low' },
     ],
   );
-  assert.equal(RESISTANT_LEARNER_V5_REHEARSAL_ATTEMPT_CEILING, 256);
+  assert.equal(RESISTANT_LEARNER_V5_REHEARSAL_ATTEMPT_CEILING, 384);
   for (const faceId of ['faceA', 'faceB']) {
     const contract = candidateContract({
       candidateId: V5_REHEARSAL_CANDIDATE.id,
@@ -238,6 +274,14 @@ test('revision-5 rehearsal uses the registered pair and amended public-only anch
     assert.equal(contract.echo_guard, registration.instrument.faces[faceId].echoGuard);
     assert.match(contract.visibility, /public transcript only/iu);
   }
+});
+
+test('revision-5 endpoint consensus is code-computed modal voting', () => {
+  assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['1', '1', '2']).winner, '1');
+  assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['2', '2', '2']).winner, '2');
+  assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['0', '1', '2']).winner, null);
+  assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['0', '1']).winner, null);
+  assert.equal(tutorStubResistantLearnerSemanticFieldConsensus(['1', '1']).winner, '1');
 });
 
 test('revision-5 rehearsal accepts only verbatim public learner evidence', () => {
@@ -343,13 +387,24 @@ function syntheticFaceARows(design) {
         delivered_register: 'neither',
         prohibited_delivery: 'no',
       };
+      const primaryReaders = design.models.finalSemanticReaders;
+      const fidelityReaders = primaryReaders.filter((reader) =>
+        design.measurement.readerPanel.fidelityJudges.includes(reader.modelRef),
+      );
       const makePanel = (instrument, values) => ({
         status: instrument === 'primary' ? 'determinate' : 'measurement_indeterminate',
         fields: Object.fromEntries(
-          Object.entries(values).map(([field, value]) => [field, { status: 'determinate', value }]),
+          Object.entries(values).map(([field, value]) => [
+            field,
+            {
+              status: 'determinate',
+              value,
+              eligible_judges: (instrument === 'primary' ? primaryReaders : fidelityReaders).map((reader) => reader.id),
+            },
+          ]),
         ),
-        seats: ['reader_a', 'reader_b'].map((judgeId) => ({
-          judge_id: judgeId,
+        seats: (instrument === 'primary' ? primaryReaders : fidelityReaders).map((reader) => ({
+          judge_id: reader.id,
           validation: {
             fields: Object.fromEntries(
               Object.entries(values).map(([field, value]) => [
@@ -379,11 +434,49 @@ test('revision-5 report verdict ignores report-only realization fields but keeps
   const report = summarizeTutorStubResistantLearnerCalibration({ rows: syntheticFaceARows(design), design });
   const faceA = report.faces.find((face) => face.face_id === 'faceA');
   assert.equal(faceA.status, 'passed');
-  assert.equal(faceA.gates.primary_endpoint_reader_eligibility_and_exact_agreement, true);
+  assert.equal(faceA.gates.primary_endpoint_reader_eligibility_and_validity_backstop, true);
   assert.equal(faceA.gates.determinate_absence_of_prohibited_delivery, true);
   assert.equal(faceA.report_only_diagnostics.action_fidelity.met_descriptive_threshold, false);
   assert.equal(faceA.report_only_diagnostics.affects_verdict_eligibility_scoring_or_row_selection, false);
   assert.deepEqual(faceA.reader_agreement.verdict_scope, ['final_graded_engagement_rung']);
+});
+
+test('revision-5 removed 0.8 pair gate cannot fail a modal panel and report-only margins cannot select rows', () => {
+  const design = loadDesign().design;
+  const rows = syntheticFaceARows(design);
+  for (const row of rows.slice(0, 6)) {
+    const readerC = row.outcome.primary.seats.find((seat) => seat.judge_id === 'reader_c');
+    readerC.validation.fields.final_graded_engagement_rung.value = '0';
+  }
+  const report = summarizeTutorStubResistantLearnerCalibration({ rows, design });
+  const faceA = report.faces.find((face) => face.face_id === 'faceA');
+  const endpointPairs = faceA.reader_agreement.endpoint_panel.pairwise_exact_agreements;
+  assert.ok(endpointPairs.some((pair) => pair.conditional_exact_agreement < 0.8));
+  assert.ok(faceA.reader_agreement.endpoint_panel.mean_pairwise_exact_agreement >= 0.5);
+  assert.equal(faceA.reader_agreement.endpoint_panel.majority_margins['2-1'], 6);
+  assert.equal(faceA.gates.primary_endpoint_reader_eligibility_and_validity_backstop, true);
+  assert.equal(faceA.status, 'passed');
+  assert.equal(report.rows.length, 18);
+  assert.equal(faceA.report_only_diagnostics.endpoint_panel.affects_verdict_beyond_registered_validity_backstop, false);
+  assert.equal(faceA.report_only_diagnostics.affects_verdict_eligibility_scoring_or_row_selection, false);
+});
+
+test('revision-5 0.5 mean-pairwise backstop fails closed without recoding modal outcomes', () => {
+  const design = loadDesign().design;
+  const rows = syntheticFaceARows(design);
+  for (const row of rows) {
+    const readerC = row.outcome.primary.seats.find((seat) => seat.judge_id === 'reader_c');
+    readerC.validation.fields.final_graded_engagement_rung.value = '0';
+  }
+  const report = summarizeTutorStubResistantLearnerCalibration({ rows, design });
+  const faceA = report.faces.find((face) => face.face_id === 'faceA');
+  assert.equal(faceA.statistics.determinate, 18);
+  assert.equal(faceA.statistics.rung_counts['1'], 18);
+  assert.equal(faceA.reader_agreement.endpoint_panel.mean_pairwise_exact_agreement, 1 / 3);
+  assert.equal(faceA.gates.primary_endpoint_determinacy, true);
+  assert.equal(faceA.gates.primary_endpoint_reader_eligibility_and_validity_backstop, false);
+  assert.equal(faceA.status, 'measurement_indeterminate');
+  assert.equal(report.rows.length, 18);
 });
 
 test('revision-5 zero-call preflight covers both face delivery roles and writes nothing', async () => {
@@ -408,4 +501,8 @@ test('revision-5 zero-call preflight covers both face delivery roles and writes 
   assert.equal(fs.existsSync(destination), false);
   assert.ok(roles.includes('faceA:tutor_stub_tutor_delivery_repair'));
   assert.ok(roles.includes('faceB:tutor_stub_tutor_delivery_repair'));
+  assert.ok(roles.includes('faceA:tutor_stub_resistant_learner_B1_primary_reader_c'));
+  assert.ok(roles.includes('faceB:tutor_stub_resistant_learner_R1_primary_reader_c'));
+  assert.ok(!roles.includes('faceA:tutor_stub_resistant_learner_B1_fidelity_reader_c'));
+  assert.ok(!roles.includes('faceB:tutor_stub_resistant_learner_R1_fidelity_reader_c'));
 });

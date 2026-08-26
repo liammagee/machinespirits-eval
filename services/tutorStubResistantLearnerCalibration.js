@@ -45,6 +45,7 @@ const MERGED_ID = 'resistant-learner-merged-graded-engagement';
 const BOREDOM_TEMPLATE = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json';
 const REFUSER_TEMPLATE = 'config/tutor-stub-resistance-action-register-crossed-registration.v9.json';
 const JUDGES = Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5']);
+const V5_ENDPOINT_JUDGES = Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5', 'claude-code.opus-5']);
 const REGISTERS = Object.freeze(['warm', 'plain', 'edged']);
 const B1_WORLDS = Object.freeze([
   'world_022_foxtrot_jukebox',
@@ -529,14 +530,16 @@ const MERGED_DESIGN_REVISION_PINS = Object.freeze({
     }),
     faceAMeasurementSha256: 'fac8e760d2d4bfa10f07488f8d02049bca924482747fd229172b601067b47256',
     faceBMeasurementSha256: '66315a011df45ab7c07cadc79147706ab350a3db303c6d933836f2626d60dc7a',
-    calibrationDecisionPolicySha256: '3df4b61af1b5f31b3f0672d7ec357f7a2bff0e6f199f52d65a0a09624ffcef2d',
+    readerPanelSha256: '4a0d6dad35bf04aeef4f3c5d824ad48796ec46fc58b78e9d3905ba5e58ca6f64',
+    commonChannelAliveRulesSha256: 'f653cbd87dea35c8746aa183338bdd08ec7d1c004fc660a389e9fdf7cf809f11',
+    calibrationDecisionPolicySha256: '83c9d6d145d1c97b1e83c02f776c0847bdbeaf0b1270c281563be78de2d84ee2',
     claimBoundary:
       'Revision 5 estimates, separately by face, the proportion of determinate completed simulated dialogues reaching at least rung 1 on a public-transcript-defined engagement ladder after the registered tutor move has passed an independent pre-learner delivery check, under the fixed revision-5 personas, worlds, horizons, allocation, and codex.gpt-5.6-luna generator stack. It estimates the elicitation behavior of this registered generation-and-delivery pipeline; it does not measure real learning, an average treatment effect, tutor superiority, register effects, private-node novelty, or outcomes among non-delivered cases. Cross-face pooling is prohibited. Revision-4 calibration rows and exploratory replay judgments are development evidence only and never enter revision-5 outcomes.',
-    plannedCallsPerDialogue: 62,
-    plannedCallsCalibration: 2232,
-    plannedCallReservationCeilingPerDialogue: 186,
-    maximumReservationsPerDialogue: 192,
-    calibrationMaximumReservations: 6912,
+    plannedCallsPerDialogue: 64,
+    plannedCallsCalibration: 2304,
+    plannedCallReservationCeilingPerDialogue: 192,
+    maximumReservationsPerDialogue: 198,
+    calibrationMaximumReservations: 7128,
   }),
 });
 
@@ -691,6 +694,9 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
     pins.faceAMeasurementSha256 &&
     (canonicalSha256(faceA?.measurement) !== pins.faceAMeasurementSha256 ||
       canonicalSha256(faceB?.measurement) !== pins.faceBMeasurementSha256 ||
+      (pins.readerPanelSha256 && canonicalSha256(design?.measurement?.readerPanel) !== pins.readerPanelSha256) ||
+      (pins.commonChannelAliveRulesSha256 &&
+        canonicalSha256(design?.calibration?.commonChannelAliveRules) !== pins.commonChannelAliveRulesSha256) ||
       canonicalSha256(design?.calibration?.decisionPolicy) !== pins.calibrationDecisionPolicySha256 ||
       design?.claimBoundary !== pins.claimBoundary)
   ) {
@@ -699,7 +705,7 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
   if (
     design?.measurement?.semanticRegistration !== pins.semanticRegistration ||
     design?.measurement?.readerPanel?.protocolSource !== pins.semanticRegistration ||
-    !exactValues(design?.measurement?.readerPanel?.judges, JUDGES)
+    !exactValues(design?.measurement?.readerPanel?.judges, Number(design?.revision) >= 5 ? V5_ENDPOINT_JUDGES : JUDGES)
   ) {
     issues.push('merged semantic registration or reader panel drifted');
   }
@@ -1767,6 +1773,13 @@ function mergedAgreementSummary(rows, faceDesign) {
   const fidelityFields = [...faceDesign.measurement.fidelityFields];
   const definitions = { primary: primaryFields, fidelity: fidelityFields };
   const readerIds = faceDesign.models.finalSemanticReaders.map((reader) => reader.id);
+  const fidelityModelRefs =
+    faceDesign.measurement.readerPanel.fidelityJudges ||
+    faceDesign.models.finalSemanticReaders.map((reader) => reader.modelRef);
+  const fidelityReaderIds = faceDesign.models.finalSemanticReaders
+    .filter((reader) => fidelityModelRefs.includes(reader.modelRef))
+    .map((reader) => reader.id);
+  const instrumentReaderIds = { primary: readerIds, fidelity: fidelityReaderIds };
   const fieldEligibility = Object.fromEntries(
     readerIds.map((readerId) => [
       readerId,
@@ -1788,18 +1801,21 @@ function mergedAgreementSummary(rows, faceDesign) {
       readerId,
       {
         primary: fieldEligibility[readerId].primary[faceDesign.measurement.endpointField],
-        fidelity: rows.filter((row) =>
-          fidelityFields.every((field) => readerField(row, 'fidelity', readerId, field)?.eligible),
-        ).length,
+        fidelity: fidelityReaderIds.includes(readerId)
+          ? rows.filter((row) =>
+              fidelityFields.every((field) => readerField(row, 'fidelity', readerId, field)?.eligible),
+            ).length
+          : null,
       },
     ]),
   );
   const pairs = [];
-  for (let leftIndex = 0; leftIndex < readerIds.length; leftIndex += 1) {
-    for (let rightIndex = leftIndex + 1; rightIndex < readerIds.length; rightIndex += 1) {
-      const left = readerIds[leftIndex];
-      const right = readerIds[rightIndex];
-      for (const [instrument, fields] of Object.entries(definitions)) {
+  for (const [instrument, fields] of Object.entries(definitions)) {
+    const ids = instrumentReaderIds[instrument];
+    for (let leftIndex = 0; leftIndex < ids.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < ids.length; rightIndex += 1) {
+        const left = ids[leftIndex];
+        const right = ids[rightIndex];
         for (const field of fields) {
           const joint = rows
             .map((row) => ({
@@ -1838,6 +1854,74 @@ function mergedAgreementSummary(rows, faceDesign) {
   const gatingPairs = agreementScope
     ? pairs.filter((pair) => pair.instrument === 'primary' && agreementScope.includes(pair.field))
     : pairs;
+  const endpoint = faceDesign.measurement.endpointField;
+  const endpointCases = rows.map((row) => {
+    const votes = readerIds
+      .map((readerId) => ({ reader_id: readerId, field: readerField(row, 'primary', readerId, endpoint) }))
+      .filter((entry) => entry.field?.eligible)
+      .map((entry) => ({ reader_id: entry.reader_id, value: entry.field.value }));
+    const counts = Object.fromEntries(
+      ['0', '1', '2'].map((value) => [value, votes.filter((vote) => vote.value === value).length]),
+    );
+    const winner = Object.entries(counts).find(([, count]) => count >= 2) || null;
+    const signature = `0:${counts['0']}|1:${counts['1']}|2:${counts['2']}|eligible:${votes.length}`;
+    const majorityMargin = !winner
+      ? votes.length === 3
+        ? '1-1-1'
+        : votes.length === 2
+          ? 'two_eligible_split'
+          : 'fewer_than_two_eligible'
+      : votes.length === 3 && winner[1] === 3
+        ? '3-0'
+        : votes.length === 3 && winner[1] === 2
+          ? '2-1'
+          : votes.length === 2 && winner[1] === 2
+            ? '2-0_one_ineligible'
+            : 'other';
+    return { votes, counts, signature, majority_margin: majorityMargin };
+  });
+  const casesWithAtLeastTwoEligibleEndpointVotes = endpointCases.filter((row) => row.votes.length >= 2).length;
+  const voteDistributions = Object.fromEntries(
+    [...new Set(endpointCases.map((row) => row.signature))]
+      .sort()
+      .map((signature) => [signature, endpointCases.filter((row) => row.signature === signature).length]),
+  );
+  const majorityMargins = Object.fromEntries(
+    ['3-0', '2-1', '2-0_one_ineligible', 'two_eligible_split', '1-1-1', 'fewer_than_two_eligible', 'other'].map(
+      (margin) => [margin, endpointCases.filter((row) => row.majority_margin === margin).length],
+    ),
+  );
+  const endpointPairs = pairs.filter((pair) => pair.instrument === 'primary' && pair.field === endpoint);
+  const pairwiseValues = endpointPairs.map((pair) => pair.conditional_exact_agreement);
+  const meanPairwiseExactAgreement =
+    endpointPairs.length === 3 && pairwiseValues.every((value) => Number.isFinite(value))
+      ? pairwiseValues.reduce((sum, value) => sum + value, 0) / pairwiseValues.length
+      : null;
+  const endpointModalMechanism = Number(faceDesign.revision) >= 5 && readerIds.length === 3;
+  const endpointEligibilityMinimum = endpointModalMechanism
+    ? rateFloorCount(
+        rows.length,
+        rules.minimumCasesWithAtLeastTwoEligibleEndpointVotesRate,
+        rules.minimumCasesWithAtLeastTwoEligibleEndpointVotesFloor,
+      )
+    : jointMinimum;
+  const legacyPassed =
+    Object.values(gatingFields).every((fields) =>
+      agreementScope
+        ? agreementScope.every((field) => fields[field] >= seatMinimum)
+        : Object.values(fields).every((instrumentFields) =>
+            Object.values(instrumentFields).every((count) => count >= seatMinimum),
+          ),
+    ) &&
+    gatingPairs.every(
+      (pair) =>
+        pair.jointly_eligible >= jointMinimum &&
+        pair.conditional_exact_agreement >= rules.minimumConditionalExactAgreementPerSeatPairAndField,
+    );
+  const modalPassed =
+    casesWithAtLeastTwoEligibleEndpointVotes >= endpointEligibilityMinimum &&
+    meanPairwiseExactAgreement !== null &&
+    meanPairwiseExactAgreement >= Number(rules.minimumMeanPairwiseExactAgreementBackstop);
   return {
     denominator: 'completed_rows',
     completed_rows: rows.length,
@@ -1847,19 +1931,18 @@ function mergedAgreementSummary(rows, faceDesign) {
     field_eligibility: fieldEligibility,
     pairs,
     verdict_scope: agreementScope || 'all_registered_fields',
-    passed:
-      Object.values(gatingFields).every((fields) =>
-        agreementScope
-          ? agreementScope.every((field) => fields[field] >= seatMinimum)
-          : Object.values(fields).every((instrumentFields) =>
-              Object.values(instrumentFields).every((count) => count >= seatMinimum),
-            ),
-      ) &&
-      gatingPairs.every(
-        (pair) =>
-          pair.jointly_eligible >= jointMinimum &&
-          pair.conditional_exact_agreement >= rules.minimumConditionalExactAgreementPerSeatPairAndField,
-      ),
+    endpoint_panel: {
+      cases_with_at_least_two_eligible_votes: casesWithAtLeastTwoEligibleEndpointVotes,
+      minimum_cases_with_at_least_two_eligible_votes: endpointEligibilityMinimum,
+      pairwise_exact_agreements: endpointPairs,
+      mean_pairwise_exact_agreement: meanPairwiseExactAgreement,
+      minimum_mean_pairwise_exact_agreement_backstop: Number(rules.minimumMeanPairwiseExactAgreementBackstop),
+      validity_backstop_interpretation: 'coarse broken-instrument screen, not a reliability certificate',
+      vote_distributions: voteDistributions,
+      majority_margins: majorityMargins,
+      report_only_beyond_validity_backstop: true,
+    },
+    passed: endpointModalMechanism ? modalPassed : legacyPassed,
   };
 }
 
@@ -2039,7 +2122,7 @@ function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
         determinate_absence_of_prohibited_delivery:
           prohibited.length === 0 && prohibitedDeterminateNo >= fieldDeterminateMinimum,
         primary_endpoint_determinacy: determinate.length >= determinateMinimum,
-        primary_endpoint_reader_eligibility_and_exact_agreement: agreement.passed,
+        primary_endpoint_reader_eligibility_and_validity_backstop: agreement.passed,
       }
     : {
         ...commonGates,
@@ -2065,14 +2148,26 @@ function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
           met_descriptive_threshold: actionFidelity,
           ...actionStatistics,
         },
+        endpoint_panel: {
+          pairwise_exact_agreements: agreement.endpoint_panel.pairwise_exact_agreements,
+          vote_distributions: agreement.endpoint_panel.vote_distributions,
+          majority_margins: agreement.endpoint_panel.majority_margins,
+          affects_verdict_beyond_registered_validity_backstop: false,
+        },
         affects_verdict_eligibility_scoring_or_row_selection: false,
       }
     : null;
+  const gatesPassed = Object.values(gates).every(Boolean);
+  const validityBackstopFailed =
+    revision5 &&
+    (agreement.endpoint_panel.mean_pairwise_exact_agreement === null ||
+      agreement.endpoint_panel.mean_pairwise_exact_agreement <
+        agreement.endpoint_panel.minimum_mean_pairwise_exact_agreement_backstop);
   return {
     face_id: faceDesign.mergedFaceId,
     face: faceDesign.mergedFace,
     study: faceDesign.studyId === B1_ID ? 'B1' : 'R1',
-    status: Object.values(gates).every(Boolean) ? 'passed' : 'failed',
+    status: gatesPassed ? 'passed' : validityBackstopFailed ? 'measurement_indeterminate' : 'failed',
     statistics: {
       completed_rows: completed.length,
       determinate: determinate.length,

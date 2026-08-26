@@ -420,10 +420,11 @@
     "secondaryStatistics": ["rung_2_rate_per_face"],
     "readerPanel": {
       "protocolSource": "config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json",
-      "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
-      "fieldConsensus": "both valid medium/high-confidence votes agree on the exact rung or exact field value; otherwise measurement_indeterminate",
+      "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "claude-code.opus-5"],
+      "fidelityJudges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
+      "fieldConsensus": "For the endpoint rung, code takes the modal value of eligible votes: at least two eligible votes on one rung is determinate; fewer than two eligible votes or a 1-1-1 split is measurement_indeterminate. Non-endpoint fields retain their registered panel consensus.",
       "generatorExcludedFromVoting": "codex.gpt-5.6-luna",
-      "visibility": "public transcript only; rival DAG, assignment, enforcement verdicts, and generator analysis concealed"
+      "visibility": "Each endpoint seat receives fresh context and the public transcript only; rival DAG, assignment, enforcement verdicts, generator analysis, other seat outputs, and vote counts are concealed."
     },
     "reportOnlyDiagnostics": [
       "rung_support_counts_per_face",
@@ -431,7 +432,10 @@
       "post_hoc_action_and_register_fidelity",
       "fidelity_panel_eligibility_and_agreement_beyond_prohibited_delivery",
       "bridge_enforcement_verdict_and_repair_count",
-      "tutor_delivery_repair_count_and_typed_non_delivery"
+      "tutor_delivery_repair_count_and_typed_non_delivery",
+      "endpoint_pairwise_exact_agreement_all_three_pairs",
+      "endpoint_vote_distributions",
+      "endpoint_majority_margin_3_0_vs_2_1"
     ]
   },
   "randomization": {
@@ -451,7 +455,9 @@
       "minimumEligibleVotesFloor": 8,
       "minimumJointlyEligibleRatePerField": 0.7,
       "minimumJointlyEligibleCasesFloor": 8,
-      "minimumConditionalExactAgreementPerSeatPairAndField": 0.8,
+      "minimumCasesWithAtLeastTwoEligibleEndpointVotesRate": 0.7,
+      "minimumCasesWithAtLeastTwoEligibleEndpointVotesFloor": 8,
+      "minimumMeanPairwiseExactAgreementBackstop": 0.5,
       "maximumConfirmedProhibitedDeliveries": 0
     },
     "decisionPolicy": {
@@ -462,7 +468,7 @@
         "persona_fidelity",
         "determinate_absence_of_prohibited_delivery",
         "primary_endpoint_determinacy",
-        "primary_endpoint_reader_eligibility_and_exact_agreement"
+        "primary_endpoint_reader_eligibility_and_validity_backstop"
       ],
       "primaryReaderAgreementScope": ["final_graded_engagement_rung"],
       "reportOnlyDiagnostics": {
@@ -478,7 +484,7 @@
       }
     },
     "rescopeReason": "Revision 5 prospectively separates endpoint validity from secondary delivery-style diagnostics. Revision 4 showed that conjoining post-hoc action and register fidelity with endpoint usability caused calibration failure on fields that are not needed to determine the public-transcript engagement endpoint. Revision 5 retains safety, determinate prohibited-delivery absence, persona fidelity, primary outcome coverage, and primary reader agreement as validity gates. Registered action delivery is instead checked before the intervention becomes public, with one repair and a typed retained non-delivery disposition on both faces. Post-hoc action and register fidelity remain fully reported but do not determine endpoint measurability. This re-scope does not recode, rescue, or pool any revision-4 row.",
-    "killRule": "Stop before a powered run if execution accounting, pre-public tutor delivery, runtime safety, persona fidelity, determinate prohibited-delivery absence, primary-endpoint determinacy, or primary endpoint-reader eligibility and exact agreement fails on either face. Retain every row. Report-only diagnostics never filter, recode, repair, rerun, replace, or select outcomes. Indeterminate means stop the unit and retain it."
+    "killRule": "Stop before a powered run if execution accounting, pre-public tutor delivery, runtime safety, persona fidelity, determinate prohibited-delivery absence, primary-endpoint determinacy, the floor for cases with at least two eligible endpoint votes, or the 0.5 mean-pairwise validity backstop fails on either face. Retain every row. Pairwise exact agreements, vote distributions, and 3-0 versus 2-1 majority margins are report-only beyond that coarse backstop and never filter, recode, repair, rerun, replace, or select outcomes. Indeterminate means stop the unit and retain it."
   },
   "poweredRun": {
     "authorization": "not_granted_by_this_design_or_calibration",
@@ -545,6 +551,13 @@
         "provider": "claude-code",
         "model": "claude-sonnet-5",
         "effort": "low"
+      },
+      {
+        "id": "reader_c",
+        "modelRef": "claude-code.opus-5",
+        "provider": "claude-code",
+        "model": "claude-opus-5",
+        "effort": "low"
       }
     ]
   },
@@ -559,18 +572,18 @@
       "preTriggerTutorGuardRecoveryReserve": 4,
       "postTriggerBase": 24,
       "postTriggerTutorGuardRecoveryReserve": 8,
-      "primaryReaderSeats": 2,
+      "primaryReaderSeats": 3,
       "fidelityReaderSeats": 2,
-      "echoSlipRetryReserve": 4,
+      "echoSlipRetryReserve": 5,
       "bridgeStepEnforcement": 3,
       "tutorDeliveryEnforcement": 3
     },
-    "plannedCallsPerDialogue": 62,
-    "plannedCallsCalibration": 2232,
-    "plannedCallReservationCeilingPerDialogue": 186,
+    "plannedCallsPerDialogue": 64,
+    "plannedCallsCalibration": 2304,
+    "plannedCallReservationCeilingPerDialogue": 192,
     "authorizationHeadroomReservationsPerDialogue": 6,
-    "maximumReservationsPerDialogue": 192,
-    "calibrationMaximumReservations": 6912,
+    "maximumReservationsPerDialogue": 198,
+    "calibrationMaximumReservations": 7128,
     "role": "fail-before-call ceiling, not a target"
   },
   "dispositions": {

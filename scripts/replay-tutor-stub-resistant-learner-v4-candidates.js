@@ -17,7 +17,7 @@ const DEFAULT_RUN_ROOT =
 const DEFAULT_OUT =
   '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v4-v5-candidate-replay-2026-08-26';
 const DEFAULT_V5_OUT =
-  '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v5-registered-pair-rehearsal-2026-08-26';
+  '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v5-three-reader-opus5-panel-rehearsal-2026-08-26';
 const DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v4.json';
 const V5_DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v5.json';
 const V5_REGISTRATION_PATH = 'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json';
@@ -29,14 +29,15 @@ const TIE_AUDITOR = Object.freeze({ id: 'tie_auditor', modelRef: 'codex.gpt-5.6-
 export const V5_REGISTERED_READER_SEATS = Object.freeze([
   Object.freeze({ id: 'reader_a', modelRef: 'codex.gpt-5.6-sol', effort: 'low' }),
   Object.freeze({ id: 'reader_b', modelRef: 'claude-code.sonnet-5', effort: 'low' }),
+  Object.freeze({ id: 'reader_c', modelRef: 'claude-code.opus-5', effort: 'low' }),
 ]);
 export const V5_REHEARSAL_CANDIDATE = Object.freeze({
   id: 'revised_v5_transcript_only',
   label: 'Revised V5 public-transcript-only ladder',
 });
 const V5_REGISTERED_FLOORS = Object.freeze({
-  faceA: Object.freeze({ determinate: 15, jointlyEligible: 13, agreement: 0.8 }),
-  faceB: Object.freeze({ determinate: 12, jointlyEligible: 10, agreement: 0.8 }),
+  faceA: Object.freeze({ determinate: 15, twoEligible: 13, meanPairwiseBackstop: 0.5 }),
+  faceB: Object.freeze({ determinate: 12, twoEligible: 10, meanPairwiseBackstop: 0.5 }),
 });
 const MAX_REPETITIONS = 2;
 const COMPLETED_DIALOGUES = 32;
@@ -83,9 +84,9 @@ export const RESISTANT_LEARNER_V5_REHEARSAL_USAGE = `Registered-pair V5 rehearsa
     --out ${DEFAULT_V5_OUT} \\
     --repetitions 2 --parallelism 8
 
-This mode reads the same 32 sealed V4 public transcripts, uses the amended V5 public anchors and
-registered low-effort seats (codex.gpt-5.6-sol and claude-code.sonnet-5), generates no dialogue, and
-launches no calibration or study. It plans 128 reader records with one outcome-blind transport retry
+This mode reads the same 32 sealed V4 public transcripts, uses the unchanged V5 public anchors and
+registered low-effort seats (codex.gpt-5.6-sol, claude-code.sonnet-5, and claude-code.opus-5), generates
+no dialogue, and launches no calibration or study. It plans 192 reader records with one outcome-blind transport retry
 available per record, for a hard ceiling of ${RESISTANT_LEARNER_V5_REHEARSAL_ATTEMPT_CEILING} attempts.`;
 
 function sha256(value) {
@@ -577,7 +578,16 @@ async function callFresh({ prompt, outputSchema, seat, role, budget, callBridge 
     };
   } catch (error) {
     budget.fail();
-    return { attempt, error: error.message };
+    return {
+      attempt,
+      error: error.message,
+      errorDetail: {
+        code: error.code || null,
+        classification: error.classification || null,
+        stdoutText: error.stdoutText || null,
+        stderrText: error.stderrText || null,
+      },
+    };
   }
 }
 
@@ -613,14 +623,38 @@ function summarizeRecords(records, { candidateId, repetition, faceId, readerSeat
   const byCase = groupBy(selected, (record) => record.case_id);
   const rows = [...byCase.entries()].map(([caseId, caseRecords]) => {
     const seatRecords = readerSeats.map((seat) => caseRecords.find((record) => record.reader_id === seat.id));
+    const eligible = seatRecords.filter((record) => record?.valid === true);
+    const counts = Object.fromEntries(
+      ['0', '1', '2'].map((value) => [value, eligible.filter((record) => record.derived_rung === value).length]),
+    );
+    const winner = Object.entries(counts).find(([, count]) => count >= 2) || null;
     const jointlyEligible = seatRecords.every((record) => record?.valid === true);
     const exact = jointlyEligible && new Set(seatRecords.map((record) => record.derived_rung)).size === 1;
+    const modal = floors !== null;
+    const determinate = modal ? winner !== null : exact;
+    const value = determinate ? (modal ? winner[0] : seatRecords[0].derived_rung) : 'indeterminate';
+    const majorityMargin = !winner
+      ? eligible.length === 3
+        ? '1-1-1'
+        : eligible.length === 2
+          ? 'two_eligible_split'
+          : 'fewer_than_two_eligible'
+      : eligible.length === 3 && winner[1] === 3
+        ? '3-0'
+        : eligible.length === 3 && winner[1] === 2
+          ? '2-1'
+          : eligible.length === 2 && winner[1] === 2
+            ? '2-0_one_ineligible'
+            : 'other';
     return {
       case_id: caseId,
       jointly_eligible: jointlyEligible,
+      eligible_vote_count: eligible.length,
+      vote_counts: counts,
+      majority_margin: majorityMargin,
       exact,
-      determinate: exact,
-      value: exact ? seatRecords[0].derived_rung : 'indeterminate',
+      determinate,
+      value,
       reader_values: Object.fromEntries(
         readerSeats.map((seat, index) => [seat.id, seatRecords[index]?.derived_rung || 'missing']),
       ),
@@ -635,6 +669,72 @@ function summarizeRecords(records, { candidateId, repetition, faceId, readerSeat
       selected.filter((record) => record.reader_id === seat.id && record.valid).length,
     ]),
   );
+  if (floors) {
+    const casesWithAtLeastTwoEligibleVotes = rows.filter((row) => row.eligible_vote_count >= 2).length;
+    const pairs = [];
+    for (let leftIndex = 0; leftIndex < readerSeats.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < readerSeats.length; rightIndex += 1) {
+        const left = readerSeats[leftIndex].id;
+        const right = readerSeats[rightIndex].id;
+        const joint = selected
+          .filter((record) => record.reader_id === left && record.valid)
+          .map((leftRecord) => ({
+            left: leftRecord,
+            right: selected.find(
+              (record) => record.case_id === leftRecord.case_id && record.reader_id === right && record.valid,
+            ),
+          }))
+          .filter((entry) => entry.right);
+        const exactAgreements = joint.filter((entry) => entry.left.derived_rung === entry.right.derived_rung).length;
+        pairs.push({
+          readers: [left, right],
+          jointly_eligible: joint.length,
+          exact_agreements: exactAgreements,
+          conditional_exact_agreement: joint.length ? exactAgreements / joint.length : null,
+        });
+      }
+    }
+    const pairwiseValues = pairs.map((pair) => pair.conditional_exact_agreement);
+    const meanPairwiseExactAgreement = pairwiseValues.every((value) => Number.isFinite(value))
+      ? pairwiseValues.reduce((sum, value) => sum + value, 0) / pairwiseValues.length
+      : null;
+    const determinate = rows.filter((row) => row.determinate).length;
+    return {
+      candidate_id: candidateId,
+      repetition,
+      face_id: faceId,
+      completed_rows: completed,
+      reader_eligibility: { ...eligibleBySeat, gate: 'report_only_per_seat' },
+      cases_with_at_least_two_eligible_votes: casesWithAtLeastTwoEligibleVotes,
+      cases_with_at_least_two_eligible_votes_required: floors.twoEligible,
+      pairwise_exact_agreements: pairs,
+      mean_pairwise_exact_agreement: meanPairwiseExactAgreement,
+      mean_pairwise_exact_agreement_backstop: floors.meanPairwiseBackstop,
+      determinate,
+      determinate_required: floors.determinate,
+      determinate_rate: determinate / completed,
+      rung_counts: Object.fromEntries(
+        ['0', '1', '2'].map((rung) => [rung, rows.filter((row) => row.value === rung).length]),
+      ),
+      vote_distributions: Object.fromEntries(
+        [...new Set(rows.map((row) => JSON.stringify(row.vote_counts)))]
+          .sort()
+          .map((signature) => [signature, rows.filter((row) => JSON.stringify(row.vote_counts) === signature).length]),
+      ),
+      majority_margins: Object.fromEntries(
+        ['3-0', '2-1', '2-0_one_ineligible', 'two_eligible_split', '1-1-1', 'fewer_than_two_eligible', 'other'].map(
+          (margin) => [margin, rows.filter((row) => row.majority_margin === margin).length],
+        ),
+      ),
+      floors: {
+        two_eligible_vote_cases: casesWithAtLeastTwoEligibleVotes >= floors.twoEligible,
+        mean_pairwise_validity_backstop:
+          meanPairwiseExactAgreement !== null && meanPairwiseExactAgreement >= floors.meanPairwiseBackstop,
+        determinacy: determinate >= floors.determinate,
+      },
+      rows,
+    };
+  }
   const jointlyEligible = rows.filter((row) => row.jointly_eligible).length;
   const exact = rows.filter((row) => row.exact).length;
   const determinate = rows.filter((row) => row.determinate).length;
@@ -786,7 +886,11 @@ export async function executeReplay({ built, parallelism = 8, callBridge = callA
       model_ref: task.seat.modelRef,
       effort: task.seat.effort,
       attempt: call.attempt,
-      call_attempts: call.calls.map((entry) => ({ attempt: entry.attempt, error: entry.error || null })),
+      call_attempts: call.calls.map((entry) => ({
+        attempt: entry.attempt,
+        error: entry.error || null,
+        error_detail: entry.errorDetail || null,
+      })),
       packet_sha256: task.replayCase.packetSha256,
       prompt_sha256: canonicalSha256(task.prompt),
       output,
@@ -888,7 +992,11 @@ export async function executeReplay({ built, parallelism = 8, callBridge = callA
       model_ref: TIE_AUDITOR.modelRef,
       effort: TIE_AUDITOR.effort,
       attempt: call.attempt,
-      call_attempts: call.calls.map((entry) => ({ attempt: entry.attempt, error: entry.error || null })),
+      call_attempts: call.calls.map((entry) => ({
+        attempt: entry.attempt,
+        error: entry.error || null,
+        error_detail: entry.errorDetail || null,
+      })),
       reader_values: { reader_sol: sol.derived_rung, reader_luna: luna.derived_rung },
       output,
       error,
@@ -918,9 +1026,8 @@ export async function executeReplay({ built, parallelism = 8, callBridge = callA
     built.plan.mode === 'v5_registered_pair'
       ? metrics.every(
           (metric) =>
-            metric.floors.reader_eligibility &&
-            metric.floors.jointly_eligible &&
-            metric.floors.exact_agreement &&
+            metric.floors.two_eligible_vote_cases &&
+            metric.floors.mean_pairwise_validity_backstop &&
             metric.floors.determinacy,
         )
       : null;

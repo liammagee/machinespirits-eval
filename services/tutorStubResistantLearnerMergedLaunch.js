@@ -73,7 +73,10 @@ export function tutorStubResistantLearnerMergedRouteTable(design) {
       );
     }
     for (const judge of faceDesign.models.finalSemanticReaders) {
-      for (const instrument of ['primary', 'fidelity']) {
+      const instruments = faceDesign.measurement.readerPanel.fidelityJudges?.includes(judge.modelRef)
+        ? ['primary', 'fidelity']
+        : ['primary'];
+      for (const instrument of instruments) {
         rows.push(
           routeRow({
             faceId,
