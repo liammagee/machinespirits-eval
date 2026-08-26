@@ -578,7 +578,16 @@ async function callFresh({ prompt, outputSchema, seat, role, budget, callBridge 
     };
   } catch (error) {
     budget.fail();
-    return { attempt, error: error.message };
+    return {
+      attempt,
+      error: error.message,
+      errorDetail: {
+        code: error.code || null,
+        classification: error.classification || null,
+        stdoutText: error.stdoutText || null,
+        stderrText: error.stderrText || null,
+      },
+    };
   }
 }
 
@@ -877,7 +886,7 @@ export async function executeReplay({ built, parallelism = 8, callBridge = callA
       model_ref: task.seat.modelRef,
       effort: task.seat.effort,
       attempt: call.attempt,
-      call_attempts: call.calls.map((entry) => ({ attempt: entry.attempt, error: entry.error || null })),
+      call_attempts: call.calls.map((entry) => ({ attempt: entry.attempt, error: entry.error || null, error_detail: entry.errorDetail || null })),
       packet_sha256: task.replayCase.packetSha256,
       prompt_sha256: canonicalSha256(task.prompt),
       output,
@@ -979,7 +988,7 @@ export async function executeReplay({ built, parallelism = 8, callBridge = callA
       model_ref: TIE_AUDITOR.modelRef,
       effort: TIE_AUDITOR.effort,
       attempt: call.attempt,
-      call_attempts: call.calls.map((entry) => ({ attempt: entry.attempt, error: entry.error || null })),
+      call_attempts: call.calls.map((entry) => ({ attempt: entry.attempt, error: entry.error || null, error_detail: entry.errorDetail || null })),
       reader_values: { reader_sol: sol.derived_rung, reader_luna: luna.derived_rung },
       output,
       error,
