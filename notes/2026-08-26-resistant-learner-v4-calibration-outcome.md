@@ -179,3 +179,41 @@ All registered rehearsal floors cleared on both faces in both repetitions. Under
   SHA-256: `a2d32948c8a0916fd6e30094ef74b8a401c11bc4de12a082839cfa9c0f2e554d`
 
 not registered, not launched — operator decision pending
+
+## 2026-08-26 addendum: Opus-5 endpoint seat and stopped rehearsal
+
+The operator directed that grading seats must not run on a superseded model version when the current CLI-served version is available. V5 therefore replaces the third endpoint seat in place with the explicit route `claude-code.opus-5` / `claude-opus-5`, effort low. The two-seat fidelity panel, all anchors and floors, the 0.5 mean-pairwise backstop, modal consensus, tutor-delivery gates, safety rules, dispositions, Luna exclusion, and the 2,304 planned / 7,128 maximum calibration ceilings are unchanged.
+
+The prior failed probe's recovered result text was verbatim: `Not logged in · Please run /login`. A fresh bounded route probe then passed on its first attempt through `callAIWithCliBridge` with the real Face-A primary-reader schema. It recorded Claude CLI `2.1.246 (Claude Code)`, model `claude-opus-5`, effort low, structured output true, and an observed prohibited-tool count of zero. The create-once route-probe log is `/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v5-opus5-route-probe-2026-08-26.json`, SHA-256 `76d2b40350d631f203ac88a9a26f5ce52448f791c6e987e258bfe2d8364363c8`.
+
+The earlier Opus-4.8 rehearsal root remains sealed development history. Its votes, records, and numbers are superseded by the operator's seat decision and are never citable as evidence for V5. No Sol, Sonnet, or Opus-4.8 vote was copied into the rehearsal below.
+
+### Fresh Opus-5 rehearsal
+
+The fresh create-once root is `/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v5-three-reader-opus5-panel-rehearsal-2026-08-26`. It reread the same 32 burned revision-4 public transcripts without modifying their root, used two fresh-context repetitions and all three amended low-effort endpoint routes, generated no tutor or learner dialogue, ran no tie auditor, and launched no calibration or study. The source amendment commit was `d62f306662a89f175eeb12fbe076e2edd7ab5f05`.
+
+The rehearsal finalized 192/192 reader records with 256/384 attempts: 128 completed calls and 128 failed calls. Sol and Sonnet completed all 128 of their fresh records. All 64 Opus-5 records exhausted their single outcome-blind transport retry with `response_free_error (result_error_without_structured_output)`, leaving reader C eligible on 0/64 records. The successful one-record route probe therefore did not establish sustained seat availability for the rehearsal workload.
+
+Pair order below is Sol–Sonnet / Sol–Opus-5 / Sonnet–Opus-5. `n/a` means the pair had zero jointly eligible cases; the mean backstop is consequently undefined and failed closed.
+
+| Face | Repetition | Determinate (floor) | Cases with at least two eligible votes (floor) | Pairwise conditional exact agreement | Mean (backstop) | Result |
+| --- | ---: | ---: | ---: | --- | ---: | --- |
+| A | 1 | 14/18 (15) | 18/18 (13) | 14/18 = 0.778 / n/a / n/a | n/a (0.5) | Missed determinacy and backstop |
+| A | 2 | 12/18 (15) | 18/18 (13) | 12/18 = 0.667 / n/a / n/a | n/a (0.5) | Missed determinacy and backstop |
+| B | 1 | 10/14 (12) | 14/14 (10) | 10/14 = 0.714 / n/a / n/a | n/a (0.5) | Missed determinacy and backstop |
+| B | 2 | 8/14 (12) | 13/14 (10) | 8/13 = 0.615 / n/a / n/a | n/a (0.5) | Missed determinacy and backstop |
+
+The primary leak is operational: the Opus-5 seat produced no eligible rehearsal vote, so two of three registered pairwise terms could not be computed. The surviving Sol–Sonnet records also show that the semantic boundary remains leaky rather than rescued by the unavailable seat. Every Face-A semantic split was rung 1 versus rung 2: four rows in repetition 1 and six in repetition 2. Face B had two rung-1/rung-2 and two rung-0/rung-1 splits in repetition 1; repetition 2 had four rung-1/rung-2 splits, one rung-0/rung-1 split, and one agreeing rung-1 pair with a Sonnet evidence quote invalidated by the exact-substring checker.
+
+The decision rule applies unchanged: if any floor is missed in either repetition, report which boundary leaks and STOP — do not lower a floor, do not relax an anchor, do not launch. No floor or anchor was changed after this result, and no further reader call was made.
+
+### Amended V5 artifacts and sealed rehearsal report
+
+- Design: `config/tutor-stub-resistant-learner-merged-design.v5.json`
+  SHA-256: `a60d9501672df7f6ad21a070382f22c103c59af72b6ea9900d978382232b4c1b`
+- Semantic registration: `config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json`
+  SHA-256: `07f6bedec541ee9b25317eeff0197334a53e22f7ef5f8b0d904f503834b4e10b`
+- Fresh Opus-5 rehearsal report (sealed, read-only): `replay-report.json`
+  SHA-256: `513f258ec4737a887a544cb7802b6613e7e50364e7392d522b0853ea4c2a0dfd`
+
+not registered, not launched — operator decision pending
