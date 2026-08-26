@@ -8,9 +8,9 @@ import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 import {
-  buildTutorStubResistantLearnerCalibrationPlan,
   loadTutorStubResistantLearnerDesign,
   summarizeTutorStubResistantLearnerCalibration,
+  summarizeTutorStubResistantLearnerMergedPoweredRun,
   TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1,
 } from '../services/tutorStubResistantLearnerCalibration.js';
 import {
@@ -38,8 +38,16 @@ export const TUTOR_STUB_RESISTANT_LEARNER_MERGED_USAGE = `Usage:
     --destination /absolute/create-once/run-root \
     --launch [--parallelism 4]
 
+  node scripts/run-tutor-stub-resistant-learner-merged-calibration.js \
+    --design config/tutor-stub-resistant-learner-merged-design.v5.json \
+    --destination /absolute/create-once/run-root \
+    --powered --dialogues-per-face 108 \
+    --dry-run | --launch [--parallelism 4]
+
 --dry-run executes the complete zero-call preflight and writes nothing.
 --launch requires an attended TTY and records typed operator approval in approval.json.
+--powered runs the powered study on fresh blocks (a multiple of 18 dialogues per face,
+inside the design's registered 36-180 bounds); calibration rows are never reused.
 No GO note, commit binding, source-file byte pin, approval schema version, or re-signature cycle is used.`;
 
 function writeOnce(filePath, value) {
@@ -79,7 +87,10 @@ function repositoryRelative(value) {
 }
 
 async function attendedApproval({ preflight, input = process.stdin, output = process.stdout }) {
-  const phrase = `APPROVE CALIBRATION ${preflight.hard_attempt_ceiling}`;
+  const phrase =
+    preflight.phase === 'powered'
+      ? `APPROVE POWERED RUN ${preflight.hard_attempt_ceiling}`
+      : `APPROVE CALIBRATION ${preflight.hard_attempt_ceiling}`;
   const terminal = createInterface({ input, output });
   try {
     const signedBy = (await terminal.question('Operator name: ')).trim();
@@ -106,11 +117,12 @@ export async function executeTutorStubResistantLearnerMergedCalibration({
   fs.mkdirSync(destination, { recursive: false });
   fs.mkdirSync(path.join(destination, 'jobs'));
   writeOnce(path.join(destination, 'approval.json'), approval);
-  const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded.design);
+  const plan = preflight.plan;
   const ledgerPath = path.join(destination, 'run-ledger.jsonl');
   writeOnce(path.join(destination, 'plan.json'), {
     schema: 'machinespirits.tutor-stub.resistant-learner-merged-attended-plan.v1',
     status: 'typed_approval_recorded_attended_launch',
+    ...(preflight.phase === 'powered' ? { phase: 'powered', dialogues_per_face: preflight.dialogues_per_face } : {}),
     approval_path: 'approval.json',
     source: provenance,
     design: {
@@ -118,7 +130,7 @@ export async function executeTutorStubResistantLearnerMergedCalibration({
       sha256: loaded.sha256,
       enforcement: 'recorded_not_pinned',
     },
-    model_attempt_ceiling: loaded.design.attemptCeilings.calibrationMaximumReservations,
+    model_attempt_ceiling: preflight.hard_attempt_ceiling,
     preflight,
     plan,
   });
@@ -170,10 +182,17 @@ export async function executeTutorStubResistantLearnerMergedCalibration({
   }
   await Promise.all(Array.from({ length: parallelism }, () => worker()));
   rows.sort((left, right) => left.job.id.localeCompare(right.job.id));
-  const summary = summarizeTutorStubResistantLearnerCalibration({ rows, design: loaded.design });
+  const summary =
+    preflight.phase === 'powered'
+      ? summarizeTutorStubResistantLearnerMergedPoweredRun({
+          rows,
+          design: loaded.design,
+          dialoguesPerFace: preflight.dialogues_per_face,
+        })
+      : summarizeTutorStubResistantLearnerCalibration({ rows, design: loaded.design });
   const report = {
     ...summary,
-    status: !haltReason && summary.status === 'passed' ? 'passed' : 'failed',
+    status: haltReason ? 'failed' : summary.status,
     halt_reason: haltReason,
     execution: {
       source_commit: provenance.commit,
@@ -208,6 +227,8 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
       design: { type: 'string' },
       destination: { type: 'string' },
       parallelism: { type: 'string', default: '1' },
+      powered: { type: 'boolean', default: false },
+      'dialogues-per-face': { type: 'string' },
       'dry-run': { type: 'boolean', default: false },
       launch: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
@@ -232,11 +253,21 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     throw new Error('the merged launcher accepts only the merged v1 design');
   }
   const destination = path.resolve(values.destination);
+  let dialoguesPerFace = null;
+  if (values.powered) {
+    dialoguesPerFace = Number(values['dialogues-per-face']);
+    if (!Number.isInteger(dialoguesPerFace) || dialoguesPerFace < 1) {
+      throw new Error('--powered requires --dialogues-per-face as a positive integer');
+    }
+  } else if (values['dialogues-per-face'] !== undefined) {
+    throw new Error('--dialogues-per-face is only valid with --powered');
+  }
   const preflight = await (overrides.runPreflight || runTutorStubResistantLearnerMergedPreflight)({
     loaded,
     root: ROOT,
     destination,
     destinationExists: overrides.destinationExists || fs.existsSync,
+    ...(values.powered ? { powered: true, dialoguesPerFace } : {}),
     ...(overrides.probeRoute ? { probeRoute: overrides.probeRoute } : {}),
     ...(overrides.smokeRole ? { smokeRole: overrides.smokeRole } : {}),
   });

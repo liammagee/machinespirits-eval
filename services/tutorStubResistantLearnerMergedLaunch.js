@@ -1,5 +1,6 @@
 import {
   buildTutorStubResistantLearnerCalibrationPlan,
+  buildTutorStubResistantLearnerPoweredPlan,
   runTutorStubResistantLearnerCompilationPreflight,
   tutorStubResistantLearnerMergedFaceDesign,
 } from './tutorStubResistantLearnerCalibration.js';
@@ -118,23 +119,44 @@ export async function runTutorStubResistantLearnerMergedPreflight({
   destinationExists,
   probeRoute = probeTutorStubResistantLearnerCliRoute,
   smokeRole = smokeTutorStubResistantLearnerProtocolV2Role,
+  powered = false,
+  dialoguesPerFace = null,
 } = {}) {
   if (loaded?.design?.schema !== MERGED_SCHEMA) throw new Error('merged preflight requires the merged v1 design');
-  const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded.design);
+  const plan = powered
+    ? buildTutorStubResistantLearnerPoweredPlan(loaded.design, { dialoguesPerFace })
+    : buildTutorStubResistantLearnerCalibrationPlan(loaded.design);
   const compilation = runTutorStubResistantLearnerCompilationPreflight({ loaded, root });
   const routeTable = tutorStubResistantLearnerMergedRouteTable(loaded.design);
   const uniqueRoutes = [...new Map(routeTable.map((route) => [`${route.modelRef}:${route.effort}`, route])).values()];
   const routeProbes = uniqueRoutes.map((route) => probeRoute(route));
   const roleSmokes = [];
   for (const route of routeTable) roleSmokes.push(await smokeRole(route));
-  const plannedRoleCalls = loaded.design.attemptCeilings.plannedCallsCalibration;
-  const hardAttemptCeiling = loaded.design.attemptCeilings.calibrationMaximumReservations;
+  const plannedRoleCalls = powered
+    ? plan.jobs.length * loaded.design.attemptCeilings.plannedCallsPerDialogue
+    : loaded.design.attemptCeilings.plannedCallsCalibration;
+  const hardAttemptCeiling = powered
+    ? plan.jobs.length * loaded.design.attemptCeilings.maximumReservationsPerDialogue
+    : loaded.design.attemptCeilings.calibrationMaximumReservations;
+  const planShapeChecks = powered
+    ? {
+        powered_dialogues_within_registered_bounds:
+          dialoguesPerFace >= loaded.design.poweredRun.minimumDialoguesPerFace &&
+          dialoguesPerFace <= loaded.design.poweredRun.maximumDialoguesPerFace,
+        powered_plan_job_count: plan.jobs.length === dialoguesPerFace * 2,
+        both_faces_balanced:
+          plan.jobs.filter((job) => job.face_id === 'faceA').length === dialoguesPerFace &&
+          plan.jobs.filter((job) => job.face_id === 'faceB').length === dialoguesPerFace,
+      }
+    : {
+        full_plan_36_jobs: plan.jobs.length === 36,
+        both_faces_18_jobs:
+          plan.jobs.filter((job) => job.face_id === 'faceA').length === 18 &&
+          plan.jobs.filter((job) => job.face_id === 'faceB').length === 18,
+      };
   const checks = {
     merged_design_v1: loaded.design.schema === MERGED_SCHEMA,
-    full_plan_36_jobs: plan.jobs.length === 36,
-    both_faces_18_jobs:
-      plan.jobs.filter((job) => job.face_id === 'faceA').length === 18 &&
-      plan.jobs.filter((job) => job.face_id === 'faceB').length === 18,
+    ...planShapeChecks,
     compilation_passed: compilation.status === 'passed_zero_call',
     all_36_rival_dags_minted: compilation.rival_dag_count === 36,
     all_48_world_register_scenes_compiled: compilation.rows?.length === 48,
@@ -146,8 +168,12 @@ export async function runTutorStubResistantLearnerMergedPreflight({
     planned_calls_within_ceiling: plannedRoleCalls <= hardAttemptCeiling,
   };
   return {
-    schema: 'machinespirits.tutor-stub.resistant-learner-merged-launch-preflight.v1',
+    schema: powered
+      ? 'machinespirits.tutor-stub.resistant-learner-merged-powered-launch-preflight.v1'
+      : 'machinespirits.tutor-stub.resistant-learner-merged-launch-preflight.v1',
     status: Object.values(checks).every(Boolean) ? 'passed_zero_call' : 'failed',
+    phase: powered ? 'powered' : 'calibration',
+    ...(powered ? { dialogues_per_face: dialoguesPerFace } : {}),
     study_id: loaded.design.studyId,
     destination,
     design: { path: loaded.relativePath, sha256: loaded.sha256 },
@@ -171,23 +197,30 @@ export function buildTutorStubResistantLearnerMergedApproval({
   preflight,
   approvedAt = new Date().toISOString(),
 } = {}) {
-  const expectedPhrase = `APPROVE CALIBRATION ${preflight.hard_attempt_ceiling}`;
+  const powered = preflight.phase === 'powered';
+  const expectedPhrase = powered
+    ? `APPROVE POWERED RUN ${preflight.hard_attempt_ceiling}`
+    : `APPROVE CALIBRATION ${preflight.hard_attempt_ceiling}`;
   if (!String(signedBy || '').trim()) throw new Error('typed approval requires the operator name');
   if (approvalPhrase !== expectedPhrase) throw new Error(`typed approval must be exactly: ${expectedPhrase}`);
   return {
     approved_by: String(signedBy).trim(),
     approved_at: approvedAt,
     typed_phrase: approvalPhrase,
-    scope: 'resistant-learner merged graded-engagement calibration only',
+    scope: powered
+      ? 'resistant-learner merged graded-engagement powered run'
+      : 'resistant-learner merged graded-engagement calibration only',
     study_id: preflight.study_id,
     destination: preflight.destination,
     jobs: preflight.jobs,
+    ...(powered ? { dialogues_per_face: preflight.dialogues_per_face } : {}),
     planned_role_calls: preflight.planned_role_calls,
     hard_attempt_ceiling: preflight.hard_attempt_ceiling,
     create_once: true,
     attended: true,
-    calibration_only: true,
-    powered_run_authorized: false,
+    calibration_only: !powered,
+    powered_run_authorized: powered,
+    ...(powered ? { powered_run_authorization: 'typed_operator_approval_attended_tty' } : {}),
   };
 }
 

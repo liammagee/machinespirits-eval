@@ -1096,6 +1096,119 @@ function buildMergedJobs(design) {
   }));
 }
 
+function buildMergedPoweredJobs(design, blocksPerFace) {
+  const seed = design.randomization.masterSeed;
+  const faceA = mergedFace(design, 'faceA');
+  const faceB = mergedFace(design, 'faceB');
+  const jobs = [];
+  for (let block = 1; block <= blocksPerFace; block += 1) {
+    const blockId = `b${String(block).padStart(2, '0')}`;
+    for (const register of REGISTERS) {
+      for (const rankedWorld of ranked(faceA.population.worlds, seed, `faceA:powered-${blockId}:${register}`)) {
+        const world = rankedWorld.value;
+        jobs.push({
+          id: `merged-faceA-pow-${blockId}-${register}-${world}`,
+          study: 'B1',
+          face_id: 'faceA',
+          face: faceA.id,
+          block: blockId,
+          world,
+          register,
+          action: 'ask_discriminating_question',
+          registered_move_id: faceA.tutorMove.id,
+          pedagogical_move: 'ask_discriminating_question',
+          pedagogical_move_level: 'ask_question',
+          host_action_family: tutorStubResistanceHostActionFamily('ask_discriminating_question'),
+          maximum_trigger_turn: faceA.population.maximumTriggerLearnerTurn,
+          outcome_horizon_learner_turns: faceA.population.outcomeHorizonPostTriggerLearnerTurns,
+          allocation_rank_sha256: rankedWorld.rank_sha256,
+        });
+      }
+    }
+    for (const world of faceB.population.worlds) {
+      for (const register of REGISTERS) {
+        for (let repeat = 1; repeat <= 3; repeat += 1) {
+          jobs.push({
+            id: `merged-faceB-pow-${blockId}-${world}-${register}-r${repeat}`,
+            study: 'R1',
+            face_id: 'faceB',
+            face: faceB.id,
+            block: blockId,
+            world,
+            register,
+            action: faceB.tutorMove.runtimePedagogicalMove,
+            registered_move_id: faceB.tutorMove.id,
+            pedagogical_move: faceB.tutorMove.runtimePedagogicalMove,
+            host_action_family: tutorStubResistanceHostActionFamily(faceB.tutorMove.runtimePedagogicalMove),
+            maximum_trigger_turn: faceB.population.maximumTriggerLearnerTurn,
+            outcome_horizon_learner_turns: faceB.population.outcomeHorizonPostTriggerLearnerTurns,
+            repeat,
+          });
+        }
+      }
+    }
+  }
+  return jobs
+    .map((job) => ({ ...job, order_sha256: sha256(`${seed}:powered-job-order:${job.id}`) }))
+    .sort((left, right) => left.order_sha256.localeCompare(right.order_sha256))
+    .map((job, index) => ({ ...job, assignment_index: index + 1, run_seed: seed * 1000 + index + 1 }))
+    .map((job, index) => ({
+      ...job,
+      batch_id: `batch_${String(Math.floor(index / 6) + 1).padStart(2, '0')}`,
+      seed: job.run_seed,
+      realization: job.register,
+      assignment_manifest_sha256: canonicalSha256({
+        id: job.id,
+        face: job.face_id,
+        world: job.world,
+        register: job.register,
+        action: job.action,
+        seed: job.run_seed,
+      }),
+      assignment_rank_sha256: job.order_sha256,
+    }));
+}
+
+export function buildTutorStubResistantLearnerPoweredPlan(design, { dialoguesPerFace } = {}) {
+  const validation = validateTutorStubResistantLearnerDesign(design);
+  if (!validation.valid) throw new Error(`resistant-learner design invalid: ${validation.issues.join('; ')}`);
+  if (!isMergedDesign(design)) throw new Error('the powered plan requires the merged v1 design');
+  const faceA = mergedFace(design, 'faceA');
+  const faceB = mergedFace(design, 'faceB');
+  const faceABlock = faceA.population.worlds.length * REGISTERS.length;
+  const faceBBlock = faceB.population.worlds.length * REGISTERS.length * 3;
+  if (faceABlock !== faceBBlock) throw new Error('merged powered blocks require equal face block sizes');
+  const bounds = design.poweredRun || {};
+  if (
+    !Number.isInteger(dialoguesPerFace) ||
+    dialoguesPerFace % faceABlock !== 0 ||
+    dialoguesPerFace < bounds.minimumDialoguesPerFace ||
+    dialoguesPerFace > bounds.maximumDialoguesPerFace
+  ) {
+    throw new Error(
+      `powered dialogues per face must be a multiple of ${faceABlock} between ${bounds.minimumDialoguesPerFace} and ${bounds.maximumDialoguesPerFace}`,
+    );
+  }
+  const blocksPerFace = dialoguesPerFace / faceABlock;
+  const jobs = buildMergedPoweredJobs(design, blocksPerFace);
+  const expectedJobs = dialoguesPerFace * 2;
+  if (jobs.length !== expectedJobs || new Set(jobs.map((job) => job.id)).size !== expectedJobs) {
+    throw new Error(`resistant-learner powered plan requires ${expectedJobs} unique jobs`);
+  }
+  const plan = {
+    schema: 'machinespirits.tutor-stub.resistant-learner-merged-powered-plan.v1',
+    status: 'planned_zero_call',
+    phase: 'powered',
+    study_id: design.studyId,
+    master_seed: design.randomization.masterSeed,
+    dialogues_per_face: dialoguesPerFace,
+    blocks_per_face: blocksPerFace,
+    jobs,
+  };
+  plan.assignment_sha256 = canonicalSha256(jobs);
+  return plan;
+}
+
 export function buildTutorStubResistantLearnerCalibrationPlan(design) {
   const validation = validateTutorStubResistantLearnerDesign(design);
   if (!validation.valid) throw new Error(`resistant-learner design invalid: ${validation.issues.join('; ')}`);
@@ -2192,6 +2305,102 @@ function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
   };
 }
 
+function wilson95Interval(successes, n) {
+  if (!Number.isInteger(successes) || !Number.isInteger(n) || n < 1) return null;
+  const z = 1.959963984540054;
+  const p = successes / n;
+  const z2 = z * z;
+  const denominator = 1 + z2 / n;
+  const center = (p + z2 / (2 * n)) / denominator;
+  const margin = (z * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n))) / denominator;
+  return { lower: Math.max(0, center - margin), upper: Math.min(1, center + margin) };
+}
+
+export function summarizeTutorStubResistantLearnerMergedPoweredRun({ rows, design, dialoguesPerFace }) {
+  if (!isMergedDesign(design)) throw new Error('the powered summary requires the merged v1 design');
+  const floor = design.poweredRun?.practicalFloor?.probabilityRungAtLeast1PerFace ?? null;
+  const faces = ['faceA', 'faceB'].map((faceId) => {
+    const faceDesign = tutorStubResistantLearnerMergedFaceDesign(design, faceId);
+    const faceRows = rows.filter((row) => row.job.face_id === faceId);
+    const completed = faceRows.filter((row) => row.status === 'complete');
+    const retained = faceRows.filter((row) => row.status === 'retained_substantive_failure');
+    const endpoint = faceDesign.measurement.endpointField;
+    const determinate = completed.filter((row) => panelField(row, 'primary', endpoint)?.status === 'determinate');
+    const rungCounts = Object.fromEntries(
+      ['0', '1', '2'].map((rung) => [
+        rung,
+        determinate.filter((row) => panelField(row, 'primary', endpoint)?.value === rung).length,
+      ]),
+    );
+    const rungAtLeast1 = rungCounts['1'] + rungCounts['2'];
+    const agreement = mergedAgreementSummary(completed, faceDesign);
+    const prohibited = completed.filter((row) => panelField(row, 'fidelity', 'prohibited_delivery')?.value === 'yes');
+    const mean = agreement.endpoint_panel.mean_pairwise_exact_agreement;
+    const backstopMinimum = agreement.endpoint_panel.minimum_mean_pairwise_exact_agreement_backstop;
+    const backstopOk = mean !== null && mean >= backstopMinimum;
+    const proportion = determinate.length ? rungAtLeast1 / determinate.length : null;
+    const typedFailureAccounting = retained.every((row) => Boolean(row.registered_failure?.code));
+    const gates = {
+      execution_and_typed_failure_accounting:
+        completed.length + retained.length === dialoguesPerFace && typedFailureAccounting,
+      runtime_safety_no_prohibited_delivery: prohibited.length === 0,
+      endpoint_validity_backstop: backstopOk,
+    };
+    const gatesPassed = Object.values(gates).every(Boolean);
+    return {
+      face_id: faceDesign.mergedFaceId,
+      face: faceDesign.mergedFace,
+      study: faceDesign.studyId === B1_ID ? 'B1' : 'R1',
+      status: gatesPassed ? 'passed' : backstopOk ? 'failed' : 'measurement_indeterminate',
+      statistics: {
+        planned_rows: dialoguesPerFace,
+        completed_rows: completed.length,
+        determinate: determinate.length,
+        rung_counts: rungCounts,
+        rung_at_least_1: rungAtLeast1,
+        rung_2: rungCounts['2'],
+        registered_statistic: {
+          id: 'proportion_rung_at_least_1_among_determinate_completed',
+          numerator: rungAtLeast1,
+          denominator: determinate.length,
+          proportion,
+          wilson_95_interval: wilson95Interval(rungAtLeast1, determinate.length),
+          practical_floor: floor,
+          practical_floor_met: proportion !== null && floor !== null && proportion >= floor,
+        },
+        rung_2_rate: determinate.length ? rungCounts['2'] / determinate.length : null,
+      },
+      reader_agreement: agreement,
+      retained_substantive_failures: {
+        count: retained.length,
+        case_ids: retained.map((row) => row.job.id),
+        codes: retained.map((row) => row.registered_failure?.code || null),
+        replacement_allowed: false,
+      },
+      prohibited_case_ids: prohibited.map((row) => row.job.id),
+      gates,
+    };
+  });
+  const anyIndeterminate = faces.some((face) => face.status === 'measurement_indeterminate');
+  return {
+    schema: 'machinespirits.tutor-stub.resistant-learner-merged-powered-report.v1',
+    study_id: design.studyId,
+    phase: 'powered',
+    status: faces.every((face) => face.status === 'passed')
+      ? 'passed'
+      : anyIndeterminate
+        ? 'measurement_indeterminate'
+        : 'failed',
+    faces,
+    rows,
+    calibration_only: false,
+    powered_run_authorization: 'typed_operator_approval_attended_tty',
+    calibration_rows_included: false,
+    cross_face_pooling_allowed: false,
+    claim_boundary: design.claimBoundary,
+  };
+}
+
 export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) {
   if (isMergedDesign(design)) {
     const faces = ['faceA', 'faceB'].map((faceId) => {
@@ -2450,10 +2659,12 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) 
 
 export default {
   buildTutorStubResistantLearnerCalibrationPlan,
+  buildTutorStubResistantLearnerPoweredPlan,
   configureTutorStubResistantLearnerCalibrationFromCli,
   loadTutorStubResistantLearnerDesign,
   runTutorStubResistantLearnerCompilationPreflight,
   summarizeTutorStubResistantLearnerCalibration,
+  summarizeTutorStubResistantLearnerMergedPoweredRun,
   tutorStubFrameRefuserR1Prompt,
   validateTutorStubResistantLearnerDesign,
 };
