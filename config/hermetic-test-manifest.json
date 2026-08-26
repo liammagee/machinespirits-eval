@@ -696,6 +696,7 @@
         "tests/tutorStubResistantLearnerMergedRegistrationV2.test.js",
         "tests/tutorStubResistantLearnerMergedRegistrationV3.test.js",
         "tests/tutorStubResistantLearnerMergedRegistrationV4.test.js",
+        "tests/tutorStubResistantLearnerMergedRegistrationV5.test.js",
         "tests/tutorStubResistantLearnerProtocolV2.test.js",
         "tests/tutorStubResistantProfileDiscriminationRegistration.test.js",
         "tests/tutorStubResistantProfileLiveReadiness.test.js",

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import {
   buildTutorStubResistantLearnerCalibrationPlan,
   loadTutorStubResistantLearnerDesign,
+  summarizeTutorStubResistantLearnerCalibration,
   tutorStubResistantLearnerMergedFaceDesign,
   validateTutorStubResistantLearnerDesign,
 } from '../services/tutorStubResistantLearnerCalibration.js';
@@ -74,6 +75,62 @@ test('revision 4 preserves every sealed v1-v3 file and registers the recomputed 
   assert.equal(loaded.design.attemptCeilings.plannedCallReservationCeilingPerDialogue, 186);
   assert.equal(loaded.design.attemptCeilings.maximumReservationsPerDialogue, 192);
   assert.equal(loaded.design.attemptCeilings.calibrationMaximumReservations, 6912);
+});
+
+test('merged reader accounting reports endpoint eligibility without hiding an invalid companion field', () => {
+  const design = loadDesign().design;
+  const jobs = buildTutorStubResistantLearnerCalibrationPlan(design).jobs.filter((job) => job.face_id === 'faceA');
+  const rows = jobs.map((job) => {
+    const primaryValues = {
+      final_graded_engagement_rung: '0',
+      final_selective_attention_resistance_retained: 'yes',
+    };
+    const fidelityValues = {
+      delivered_action_family: 'ask_discriminating_question',
+      delivered_question_contrast: 'requires_question',
+      delivered_register: job.register,
+      prohibited_delivery: 'no',
+    };
+    const panel = (instrument, values) => ({
+      status: 'determinate',
+      fields: Object.fromEntries(
+        Object.entries(values).map(([field, value]) => [field, { status: 'determinate', value }]),
+      ),
+      seats: ['reader_a', 'reader_b'].map((judgeId) => ({
+        judge_id: judgeId,
+        validation: {
+          fields: Object.fromEntries(
+            Object.entries(values).map(([field, value]) => [
+              field,
+              {
+                eligible: !(
+                  instrument === 'primary' &&
+                  judgeId === 'reader_b' &&
+                  field === 'final_selective_attention_resistance_retained'
+                ),
+                value,
+              },
+            ]),
+          ),
+        },
+      })),
+    });
+    return {
+      job,
+      status: 'complete',
+      outcome: {
+        primary: panel('primary', primaryValues),
+        fidelity: panel('fidelity', fidelityValues),
+      },
+    };
+  });
+  const face = summarizeTutorStubResistantLearnerCalibration({ rows, design }).faces[0];
+  assert.equal(face.reader_agreement.seat_eligibility.reader_b.primary, 18);
+  assert.equal(
+    face.reader_agreement.field_eligibility.reader_b.primary.final_selective_attention_resistance_retained,
+    0,
+  );
+  assert.equal(face.reader_agreement.passed, false);
 });
 
 test('the full tutor-delivery contract and ceiling fail closed under every material tamper', () => {
