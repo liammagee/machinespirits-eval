@@ -27,6 +27,14 @@ import {
   applyTutorStubR1TutorDeliveryGate,
 } from '../services/tutorStubR1TutorDeliveryGate.js';
 import { runTutorStubResistantLearnerMergedPreflight } from '../services/tutorStubResistantLearnerMergedLaunch.js';
+import {
+  buildReplayTask,
+  candidateContract,
+  RESISTANT_LEARNER_V5_REHEARSAL_ATTEMPT_CEILING,
+  V5_REGISTERED_READER_SEATS,
+  V5_REHEARSAL_CANDIDATE,
+  validateReplayOutput,
+} from '../scripts/replay-tutor-stub-resistant-learner-v4-candidates.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v5.json';
@@ -206,6 +214,77 @@ test('revision-5 semantic pin fails closed and restricts primary evidence to pub
   };
   assert.equal((await run(faceV5)).fields.final_graded_engagement_rung.status, 'measurement_indeterminate');
   assert.equal((await run(faceV4)).fields.final_graded_engagement_rung.status, 'determinate');
+});
+
+test('revision-5 rehearsal uses the registered pair and amended public-only anchors', () => {
+  const registration = registrationV5();
+  assert.deepEqual(
+    V5_REGISTERED_READER_SEATS.map(({ modelRef, effort }) => ({ modelRef, effort })),
+    [
+      { modelRef: 'codex.gpt-5.6-sol', effort: 'low' },
+      { modelRef: 'claude-code.sonnet-5', effort: 'low' },
+    ],
+  );
+  assert.equal(RESISTANT_LEARNER_V5_REHEARSAL_ATTEMPT_CEILING, 256);
+  for (const faceId of ['faceA', 'faceB']) {
+    const contract = candidateContract({
+      candidateId: V5_REHEARSAL_CANDIDATE.id,
+      faceId,
+      openNodes: [],
+      publicPacket: {},
+      bridgeAccepted: false,
+    });
+    assert.deepEqual(contract.anchors, registration.instrument.faces[faceId].rungAnchors);
+    assert.equal(contract.echo_guard, registration.instrument.faces[faceId].echoGuard);
+    assert.match(contract.visibility, /public transcript only/iu);
+  }
+});
+
+test('revision-5 rehearsal accepts only verbatim public learner evidence', () => {
+  const publicPacket = {
+    trigger: 'I reserve the wider frame.',
+    intervention: 'Would comparing A or B settle the local test?',
+    post_1: 'The public record would distinguish A from B.',
+    tutor_1: 'That record distinguishes A from B.',
+  };
+  const task = buildReplayTask({
+    candidate: V5_REHEARSAL_CANDIDATE,
+    replayCase: {
+      caseId: 'synthetic-v5-rehearsal',
+      faceId: 'faceA',
+      publicPacket,
+      openNodes: [],
+      bridgeAccepted: false,
+      packetSha256: 'fixture',
+    },
+    repetition: 1,
+    seat: V5_REGISTERED_READER_SEATS[0],
+  });
+  const base = {
+    case_id: 'synthetic-v5-rehearsal',
+    candidate_id: V5_REHEARSAL_CANDIDATE.id,
+    repetition: 1,
+    face_id: 'faceA',
+    value: '1',
+    confidence: 'medium',
+  };
+  assert.deepEqual(
+    validateReplayOutput(task, {
+      ...base,
+      evidence_quotes: [{ source_id: 'post_1', text: publicPacket.post_1 }],
+    }),
+    { valid: true, issues: [] },
+  );
+  assert.deepEqual(
+    validateReplayOutput(task, {
+      ...base,
+      evidence_quotes: [{ source_id: 'tutor_1', text: publicPacket.tutor_1 }],
+    }),
+    {
+      valid: false,
+      issues: ['endpoint_evidence_source_not_public_learner_turn'],
+    },
+  );
 });
 
 test('face-A delivery gate repairs once and crosses the child boundary as tutor non-delivery', async () => {

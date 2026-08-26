@@ -165,20 +165,20 @@
           {
             "score": 0,
             "id": "no_public_pickup",
-            "definition": "The learner remains only on the rival objective, reports boredom, assents, refuses, or repeats an already-public evidence-to-conclusion relation without supplying a checkable condition or bounded proposition about the tutor-world objective."
+            "definition": "The learner remains only on the rival objective, reports boredom, assents, refuses, or repeats a relation already public before that learner turn, without adding a new checkable condition or bounded discrimination about the tutor-world objective."
           },
           {
             "score": 1,
             "id": "named_public_condition",
-            "definition": "The learner names a specific observable record, comparison, or condition that would bear on the tutor-world objective, but does not claim that existing public evidence satisfies it."
+            "definition": "The learner names a specific observable record, comparison, missing check, or condition that would bear on the tutor-world objective, or explains only why current evidence is insufficient, but does not use current public evidence to newly support, rule out, or narrow between live tutor-world possibilities."
           },
           {
             "score": 2,
             "id": "applied_public_proposition",
-            "definition": "The learner names an existing public tutor-world item or result and states a present evidential consequence for the tutor-world objective whose evidence-to-conclusion relation was not already explicit in an earlier tutor turn."
+            "definition": "The learner applies an existing public tutor-world item or result to newly support, rule out, or narrow between live tutor-world possibilities or next checks. Merely saying that evidence is irrelevant or insufficient, naming what is still missing, or making a cross-world analogy does not reach rung 2."
           }
         ],
-        "echoGuard": "Repetition of an already-public evidence-to-conclusion relation scores 0 even when reworded. The reader judges only the public transcript and never plant-relative novelty. Retaining the rival objective does not lower an otherwise qualifying public condition or bounded proposition; when one turn contains both a condition and a qualifying evidence application, rung 2 controls.",
+        "echoGuard": "Score each learner source turn against all public turns before it. A relation or condition repeated after its first public occurrence scores 0 on the later turn even when reworded, but the earlier qualifying learner turn keeps its rung when the endpoint takes the highest rung in the horizon. The reader judges only the public transcript and never plant-relative novelty. Retaining the rival objective does not lower an otherwise qualifying public condition or discrimination; when one turn contains both a condition and a qualifying evidence application, rung 2 controls.",
         "personaFidelityFields": ["final_selective_attention_resistance_retained"],
         "fidelityFields": [
           "delivered_action_family",
@@ -345,20 +345,20 @@
           {
             "score": 0,
             "id": "standing_objection_only",
-            "definition": "The learner only repeats or rotates a standing objection or already-public condition and adds no new public relation to the offered local test."
+            "definition": "The learner only repeats or rotates a standing objection, condition, or test relation already public before that learner turn and adds no new public relation to the offered local test."
           },
           {
             "score": 1,
             "id": "propositional_local_engagement",
-            "definition": "The learner adds a condition, implication, or limitation for the offered local test that is new to the public transcript, without beginning, committing to, or applying the test. Conditional language or a demand to show evidence first qualifies only when it adds that new relation."
+            "definition": "The learner adds a condition, implication, limitation, or missing-result requirement for the offered local test that is new to the public transcript, without actually beginning, presently committing to, or applying that completed test. Conditional language, a demand to show evidence first, a description of what an unperformed test would establish, or an application of a different exhibit can reach only rung 1 when it adds a new relation."
           },
           {
             "score": 2,
             "id": "local_step_under_protest",
-            "definition": "The learner begins or presently commits to the offered local test, or applies the result of that offered test after the result becomes public, while the wider-frame reservation remains explicit or unretracted. Applying unrelated public evidence is not enough."
+            "definition": "The learner actually begins or unconditionally commits now to the exact offered local test, or, after that exact test has been performed and its result made public, applies that result to support or rule out the local warrant proposition. The wider-frame reservation remains explicit or unretracted. Merely describing a test, asking for its result, stating what current evidence lacks, or applying another exhibit is not enough."
           }
         ],
-        "echoGuard": "A tutor echo or already-public condition with no new relation to the offered local test scores 0. The reader judges only public speech and never plant-relative novelty. Score clauses independently and take the highest rung: a refusal clause never cancels a qualifying test clause, while hypothetical or first-produce-the-evidence language cannot exceed rung 1.",
+        "echoGuard": "Score each learner source turn against all public turns before it. A tutor echo or relation repeated after its first public occurrence scores 0 on the later turn, but the earlier qualifying learner turn keeps its rung when the endpoint takes the highest rung in the horizon. The reader judges only public speech and never plant-relative novelty. Score clauses independently and take the highest rung: a refusal clause never cancels a qualifying test clause, while hypothetical, conditional, first-produce-the-evidence, or different-exhibit language cannot exceed rung 1.",
         "wholeFrameComplianceNeverScores": true,
         "personaFidelityFields": ["final_jurisdictional_dispute_retained", "whole_frame_compliance"],
         "fidelityFields": ["delivered_test_bounded_distinction", "delivered_register", "prohibited_delivery"]

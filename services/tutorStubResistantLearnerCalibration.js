@@ -527,8 +527,8 @@ const MERGED_DESIGN_REVISION_PINS = Object.freeze({
       exhaustionDisposition: 'typed_tutor_non_delivery_failure',
       exhaustionCode: undefined,
     }),
-    faceAMeasurementSha256: '83dcb1ea27583fa74f5608985caa022fdb004c2d947b373d95d21834b91f9b33',
-    faceBMeasurementSha256: 'fbb042ae6b11f4ecf5ab928cc811a42296e6cb3c05831af1fa53e1654c79895a',
+    faceAMeasurementSha256: 'fac8e760d2d4bfa10f07488f8d02049bca924482747fd229172b601067b47256',
+    faceBMeasurementSha256: '66315a011df45ab7c07cadc79147706ab350a3db303c6d933836f2626d60dc7a',
     calibrationDecisionPolicySha256: '3df4b61af1b5f31b3f0672d7ec357f7a2bff0e6f199f52d65a0a09624ffcef2d',
     claimBoundary:
       'Revision 5 estimates, separately by face, the proportion of determinate completed simulated dialogues reaching at least rung 1 on a public-transcript-defined engagement ladder after the registered tutor move has passed an independent pre-learner delivery check, under the fixed revision-5 personas, worlds, horizons, allocation, and codex.gpt-5.6-luna generator stack. It estimates the elicitation behavior of this registered generation-and-delivery pipeline; it does not measure real learning, an average treatment effect, tutor superiority, register effects, private-node novelty, or outcomes among non-delivered cases. Cross-face pooling is prohibited. Revision-4 calibration rows and exploratory replay judgments are development evidence only and never enter revision-5 outcomes.',

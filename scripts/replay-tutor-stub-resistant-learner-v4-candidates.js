@@ -16,12 +16,28 @@ const DEFAULT_RUN_ROOT =
   '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-live/resistant-learner-merged-calibration-v4-2026-08-25';
 const DEFAULT_OUT =
   '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v4-v5-candidate-replay-2026-08-26';
+const DEFAULT_V5_OUT =
+  '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v5-registered-pair-rehearsal-2026-08-26';
 const DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v4.json';
+const V5_DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v5.json';
+const V5_REGISTRATION_PATH = 'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json';
 const READER_SEATS = Object.freeze([
   Object.freeze({ id: 'reader_sol', modelRef: 'codex.gpt-5.6-sol', effort: 'low' }),
   Object.freeze({ id: 'reader_luna', modelRef: 'codex.gpt-5.6-luna', effort: 'low' }),
 ]);
 const TIE_AUDITOR = Object.freeze({ id: 'tie_auditor', modelRef: 'codex.gpt-5.6-sol', effort: 'high' });
+export const V5_REGISTERED_READER_SEATS = Object.freeze([
+  Object.freeze({ id: 'reader_a', modelRef: 'codex.gpt-5.6-sol', effort: 'low' }),
+  Object.freeze({ id: 'reader_b', modelRef: 'claude-code.sonnet-5', effort: 'low' }),
+]);
+export const V5_REHEARSAL_CANDIDATE = Object.freeze({
+  id: 'revised_v5_transcript_only',
+  label: 'Revised V5 public-transcript-only ladder',
+});
+const V5_REGISTERED_FLOORS = Object.freeze({
+  faceA: Object.freeze({ determinate: 15, jointlyEligible: 13, agreement: 0.8 }),
+  faceB: Object.freeze({ determinate: 12, jointlyEligible: 10, agreement: 0.8 }),
+});
 const MAX_REPETITIONS = 2;
 const COMPLETED_DIALOGUES = 32;
 const CANDIDATES = Object.freeze([
@@ -33,6 +49,8 @@ const CANDIDATES = Object.freeze([
 
 export const RESISTANT_LEARNER_V4_REPLAY_ATTEMPT_CEILING =
   CANDIDATES.length * COMPLETED_DIALOGUES * MAX_REPETITIONS * (READER_SEATS.length * 2 + 1);
+export const RESISTANT_LEARNER_V5_REHEARSAL_ATTEMPT_CEILING =
+  COMPLETED_DIALOGUES * MAX_REPETITIONS * V5_REGISTERED_READER_SEATS.length * 2;
 
 const SYSTEM_PROMPT =
   'You are an independent exploratory semantic reader. Judge only the supplied material. Use no tools, infer no hidden assignment, and return only the requested JSON object.';
@@ -54,6 +72,21 @@ launches no calibration or study, and makes only fresh-context semantic-reader c
 public transcripts. Two repetitions plan 512 low-effort reader records and at most 256 high-effort
 tie-audit records. One outcome-blind retry is allowed only when a transport call produces no accepted
 response, for a hard ceiling of ${RESISTANT_LEARNER_V4_REPLAY_ATTEMPT_CEILING} attempts. Results are directional and stack-bounded.`;
+
+export const RESISTANT_LEARNER_V5_REHEARSAL_USAGE = `Registered-pair V5 rehearsal (burned transcripts; directional only):
+  node scripts/replay-tutor-stub-resistant-learner-v4-candidates.js --dry-run --v5-registered-pair \\
+    --run-root ${DEFAULT_RUN_ROOT} \\
+    --out ${DEFAULT_V5_OUT}
+
+  node scripts/replay-tutor-stub-resistant-learner-v4-candidates.js --launch --v5-registered-pair \\
+    --run-root ${DEFAULT_RUN_ROOT} \\
+    --out ${DEFAULT_V5_OUT} \\
+    --repetitions 2 --parallelism 8
+
+This mode reads the same 32 sealed V4 public transcripts, uses the amended V5 public anchors and
+registered low-effort seats (codex.gpt-5.6-sol and claude-code.sonnet-5), generates no dialogue, and
+launches no calibration or study. It plans 128 reader records with one outcome-blind transport retry
+available per record, for a hard ceiling of ${RESISTANT_LEARNER_V5_REHEARSAL_ATTEMPT_CEILING} attempts.`;
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -232,7 +265,28 @@ function mechanicalOriginScreen(publicPacket, openNodes) {
   );
 }
 
-function candidateContract({ candidateId, faceId, openNodes, publicPacket, bridgeAccepted }) {
+export function candidateContract({ candidateId, faceId, openNodes, publicPacket, bridgeAccepted }) {
+  if (candidateId === V5_REHEARSAL_CANDIDATE.id) {
+    const registration = readJsonReadonly(path.join(ROOT, V5_REGISTRATION_PATH));
+    const face = registration?.instrument?.faces?.[faceId];
+    if (!face?.rungAnchors || !face?.echoGuard) {
+      throw new Error(`revision-5 semantic registration lacks ${faceId} public anchors`);
+    }
+    return {
+      mode: 'exact_rung',
+      registration: V5_REGISTRATION_PATH,
+      registration_version: registration.version,
+      visibility: 'public transcript only; learner sources only for endpoint evidence',
+      endpoint_definition: registration.instrument.endpointDefinition,
+      anchors: face.rungAnchors,
+      echo_guard: face.echoGuard,
+      worked_examples: face.workedExamples,
+      jurisdiction_rule:
+        faceId === 'faceB'
+          ? 'A standing refusal in the same turn is separate from engagement and does not lower a qualifying local-test clause.'
+          : 'Retained selective attention is separate from engagement and does not lower a qualifying tutor-world clause.',
+    };
+  }
   if (candidateId === 'bridge_verdict_reuse' && faceId === 'faceB') {
     return {
       mode: 'rung2_only',
@@ -365,7 +419,7 @@ function loadReplayCases(runRoot) {
   return { report, design, cases };
 }
 
-function buildReplayTask({ candidate, replayCase, repetition, seat }) {
+export function buildReplayTask({ candidate, replayCase, repetition, seat }) {
   const contract = candidateContract({
     candidateId: candidate.id,
     faceId: replayCase.faceId,
@@ -428,7 +482,7 @@ function parseStructuredText(text) {
   return value;
 }
 
-function validateReplayOutput(task, output) {
+export function validateReplayOutput(task, output) {
   const expectedKeys = ['candidate_id', 'case_id', 'confidence', 'evidence_quotes', 'face_id', 'repetition', 'value'];
   const issues = [];
   if (JSON.stringify(Object.keys(output).sort()) !== JSON.stringify(expectedKeys)) issues.push('keys_not_exact');
@@ -451,6 +505,13 @@ function validateReplayOutput(task, output) {
     if (!Array.isArray(output.evidence_quotes) || output.evidence_quotes.length === 0) issues.push('evidence_missing');
     else if (!output.evidence_quotes.every((quote) => exactPublicQuote(task.replayCase.publicPacket, quote))) {
       issues.push('evidence_invalid');
+    } else if (
+      task.candidate.id === V5_REHEARSAL_CANDIDATE.id &&
+      output.evidence_quotes.some(
+        (quote) => quote.source_id !== 'trigger' && !String(quote.source_id || '').startsWith('post_'),
+      )
+    ) {
+      issues.push('endpoint_evidence_source_not_public_learner_turn');
     }
   } else if (output.evidence_quotes !== null) {
     issues.push('evidence_must_be_null');
@@ -545,47 +606,52 @@ async function mapConcurrent(items, parallelism, fn) {
   return results;
 }
 
-function summarizeRecords(records, { candidateId, repetition, faceId }) {
+function summarizeRecords(records, { candidateId, repetition, faceId, readerSeats = READER_SEATS, floors = null }) {
   const selected = records.filter(
     (record) => record.candidate_id === candidateId && record.repetition === repetition && record.face_id === faceId,
   );
   const byCase = groupBy(selected, (record) => record.case_id);
   const rows = [...byCase.entries()].map(([caseId, caseRecords]) => {
-    const sol = caseRecords.find((record) => record.reader_id === 'reader_sol');
-    const luna = caseRecords.find((record) => record.reader_id === 'reader_luna');
-    const jointlyEligible = sol?.valid === true && luna?.valid === true;
-    const exact = jointlyEligible && sol.derived_rung === luna.derived_rung;
+    const seatRecords = readerSeats.map((seat) => caseRecords.find((record) => record.reader_id === seat.id));
+    const jointlyEligible = seatRecords.every((record) => record?.valid === true);
+    const exact = jointlyEligible && new Set(seatRecords.map((record) => record.derived_rung)).size === 1;
     return {
       case_id: caseId,
       jointly_eligible: jointlyEligible,
       exact,
       determinate: exact,
-      value: exact ? sol.derived_rung : 'indeterminate',
-      reader_sol: sol?.derived_rung || 'missing',
-      reader_luna: luna?.derived_rung || 'missing',
+      value: exact ? seatRecords[0].derived_rung : 'indeterminate',
+      reader_values: Object.fromEntries(
+        readerSeats.map((seat, index) => [seat.id, seatRecords[index]?.derived_rung || 'missing']),
+      ),
     };
   });
   const completed = faceId === 'faceA' ? 18 : 14;
-  const seatMinimum = Math.max(8, Math.ceil(completed * 0.8));
-  const jointMinimum = Math.max(8, Math.ceil(completed * 0.7));
-  const eligibleSol = selected.filter((record) => record.reader_id === 'reader_sol' && record.valid).length;
-  const eligibleLuna = selected.filter((record) => record.reader_id === 'reader_luna' && record.valid).length;
+  const seatMinimum = floors ? floors.jointlyEligible : Math.max(8, Math.ceil(completed * 0.8));
+  const jointMinimum = floors ? floors.jointlyEligible : Math.max(8, Math.ceil(completed * 0.7));
+  const eligibleBySeat = Object.fromEntries(
+    readerSeats.map((seat) => [
+      seat.id,
+      selected.filter((record) => record.reader_id === seat.id && record.valid).length,
+    ]),
+  );
   const jointlyEligible = rows.filter((row) => row.jointly_eligible).length;
   const exact = rows.filter((row) => row.exact).length;
   const determinate = rows.filter((row) => row.determinate).length;
   const agreement = jointlyEligible ? exact / jointlyEligible : null;
-  const determinateMinimum = Math.max(8, Math.ceil(completed * 0.8));
+  const determinateMinimum = floors ? floors.determinate : Math.max(8, Math.ceil(completed * 0.8));
+  const agreementMinimum = floors ? floors.agreement : 0.8;
   return {
     candidate_id: candidateId,
     repetition,
     face_id: faceId,
     completed_rows: completed,
-    reader_eligibility: { reader_sol: eligibleSol, reader_luna: eligibleLuna, required_per_seat: seatMinimum },
+    reader_eligibility: { ...eligibleBySeat, required_per_seat: seatMinimum },
     jointly_eligible: jointlyEligible,
     jointly_eligible_required: jointMinimum,
     exact_agreements: exact,
     conditional_exact_agreement: agreement,
-    conditional_exact_agreement_required: 0.8,
+    conditional_exact_agreement_required: agreementMinimum,
     determinate,
     determinate_required: determinateMinimum,
     determinate_rate: determinate / completed,
@@ -593,35 +659,44 @@ function summarizeRecords(records, { candidateId, repetition, faceId }) {
       ['0', '1', '2'].map((rung) => [rung, rows.filter((row) => row.value === rung).length]),
     ),
     floors: {
-      reader_eligibility: eligibleSol >= seatMinimum && eligibleLuna >= seatMinimum,
+      reader_eligibility: Object.values(eligibleBySeat).every((count) => count >= seatMinimum),
       jointly_eligible: jointlyEligible >= jointMinimum,
-      exact_agreement: agreement !== null && agreement >= 0.8,
+      exact_agreement: agreement !== null && agreement >= agreementMinimum,
       determinacy: determinate >= determinateMinimum,
     },
     rows,
   };
 }
 
-export function buildReplayPlan({ runRoot = DEFAULT_RUN_ROOT, out = DEFAULT_OUT, repetitions = 2 } = {}) {
+export function buildReplayPlan({
+  runRoot = DEFAULT_RUN_ROOT,
+  out = DEFAULT_OUT,
+  repetitions = 2,
+  mode = 'legacy',
+} = {}) {
   if (!path.isAbsolute(runRoot) || !path.isAbsolute(out)) throw new Error('run root and out must be absolute paths');
   if (!Number.isInteger(repetitions) || repetitions < 1 || repetitions > MAX_REPETITIONS) {
     throw new Error(`repetitions must be 1..${MAX_REPETITIONS}`);
   }
+  if (!['legacy', 'v5_registered_pair'].includes(mode)) throw new Error(`unsupported replay mode ${mode}`);
   const loaded = loadReplayCases(runRoot);
+  const candidates = mode === 'v5_registered_pair' ? [V5_REHEARSAL_CANDIDATE] : CANDIDATES;
+  const readerSeats = mode === 'v5_registered_pair' ? V5_REGISTERED_READER_SEATS : READER_SEATS;
   const tasks = [];
   for (let repetition = 1; repetition <= repetitions; repetition += 1) {
-    for (const candidate of CANDIDATES) {
+    for (const candidate of candidates) {
       for (const replayCase of loaded.cases) {
-        for (const seat of READER_SEATS) tasks.push(buildReplayTask({ candidate, replayCase, repetition, seat }));
+        for (const seat of readerSeats) tasks.push(buildReplayTask({ candidate, replayCase, repetition, seat }));
       }
     }
   }
-  const maximumTieAudits = CANDIDATES.length * loaded.cases.length * repetitions;
+  const maximumTieAudits = mode === 'legacy' ? candidates.length * loaded.cases.length * repetitions : 0;
   return {
     loaded,
     tasks,
     plan: {
       schema: 'machinespirits.tutor-stub.resistant-learner-v4-candidate-replay-plan.v1',
+      mode,
       status: 'planned_existing_text_adjudication_only',
       registered: false,
       study_or_calibration_launch: false,
@@ -631,17 +706,26 @@ export function buildReplayPlan({ runRoot = DEFAULT_RUN_ROOT, out = DEFAULT_OUT,
       out,
       out_create_once: true,
       repetitions,
-      candidates: CANDIDATES,
+      candidates,
       completed_dialogues: loaded.cases.length,
       completed_by_face: { faceA: 18, faceB: 14 },
-      reader_seats: READER_SEATS,
-      tie_auditor: TIE_AUDITOR,
+      reader_seats: readerSeats,
+      tie_auditor: mode === 'legacy' ? TIE_AUDITOR : null,
       planned_reader_calls: tasks.length,
       maximum_reader_transport_retries: tasks.length,
       maximum_tie_audits: maximumTieAudits,
       hard_attempt_ceiling: tasks.length * 2 + maximumTieAudits,
       source_report_sha256: sha256(readFileReadonly(path.join(runRoot, 'report.json'))),
       sealed_design_sha256: sha256(readFileReadonly(path.join(ROOT, DESIGN_PATH))),
+      revised_v5_design_sha256:
+        mode === 'v5_registered_pair' ? sha256(readFileReadonly(path.join(ROOT, V5_DESIGN_PATH))) : null,
+      revised_v5_semantic_registration_sha256:
+        mode === 'v5_registered_pair' ? sha256(readFileReadonly(path.join(ROOT, V5_REGISTRATION_PATH))) : null,
+      registered_floors: mode === 'v5_registered_pair' ? V5_REGISTERED_FLOORS : null,
+      directional_limit:
+        mode === 'v5_registered_pair'
+          ? 'burned revision-4 transcripts; anchors revised after observing the source outcomes; rehearsal only'
+          : 'burned revision-4 transcripts; candidate anchors drafted after observing the source outcomes',
       packets: loaded.cases.map((row) => ({ case_id: row.caseId, packet_sha256: row.packetSha256 })),
       model_calls_executed: 0,
     },
@@ -717,17 +801,20 @@ export async function executeReplay({ built, parallelism = 8, callBridge = callA
   });
 
   const grouped = groupBy(records, (record) => `${record.candidate_id}\0${record.repetition}\0${record.case_id}`);
-  const disagreements = [...grouped.values()].filter((caseRecords) => {
-    const sol = caseRecords.find((record) => record.reader_id === 'reader_sol');
-    const luna = caseRecords.find((record) => record.reader_id === 'reader_luna');
-    return sol?.valid && luna?.valid && sol.derived_rung !== luna.derived_rung;
-  });
+  const disagreements =
+    built.plan.mode === 'legacy'
+      ? [...grouped.values()].filter((caseRecords) => {
+          const sol = caseRecords.find((record) => record.reader_id === 'reader_sol');
+          const luna = caseRecords.find((record) => record.reader_id === 'reader_luna');
+          return sol?.valid && luna?.valid && sol.derived_rung !== luna.derived_rung;
+        })
+      : [];
   let tieProgress = 0;
   const tieAudits = await mapConcurrent(disagreements, parallelism, async (caseRecords) => {
     const sol = caseRecords.find((record) => record.reader_id === 'reader_sol');
     const luna = caseRecords.find((record) => record.reader_id === 'reader_luna');
     const replayCase = built.loaded.cases.find((row) => row.caseId === sol.case_id);
-    const candidate = CANDIDATES.find((row) => row.id === sol.candidate_id);
+    const candidate = built.plan.candidates.find((row) => row.id === sol.candidate_id);
     const contract = candidateContract({
       candidateId: candidate.id,
       faceId: replayCase.faceId,
@@ -813,12 +900,30 @@ export async function executeReplay({ built, parallelism = 8, callBridge = callA
 
   const metrics = [];
   for (let repetition = 1; repetition <= built.plan.repetitions; repetition += 1) {
-    for (const candidate of CANDIDATES) {
+    for (const candidate of built.plan.candidates) {
       for (const faceId of ['faceA', 'faceB']) {
-        metrics.push(summarizeRecords(records, { candidateId: candidate.id, repetition, faceId }));
+        metrics.push(
+          summarizeRecords(records, {
+            candidateId: candidate.id,
+            repetition,
+            faceId,
+            readerSeats: built.plan.reader_seats,
+            floors: built.plan.mode === 'v5_registered_pair' ? built.plan.registered_floors[faceId] : null,
+          }),
+        );
       }
     }
   }
+  const allRegisteredFloorsClear =
+    built.plan.mode === 'v5_registered_pair'
+      ? metrics.every(
+          (metric) =>
+            metric.floors.reader_eligibility &&
+            metric.floors.jointly_eligible &&
+            metric.floors.exact_agreement &&
+            metric.floors.determinacy,
+        )
+      : null;
   const report = {
     schema: 'machinespirits.tutor-stub.resistant-learner-v4-candidate-replay-report.v1',
     exploratory: true,
@@ -829,13 +934,17 @@ export async function executeReplay({ built, parallelism = 8, callBridge = callA
     source_access: 'read_only',
     study_or_calibration_launched: false,
     dialogue_generated: false,
-    models: { readers: READER_SEATS, tie_auditor: TIE_AUDITOR },
+    mode: built.plan.mode,
+    models: { readers: built.plan.reader_seats, tie_auditor: built.plan.tie_auditor },
     repetitions: built.plan.repetitions,
     baseline: {
       faceA: { exact_agreement: 12 / 18, determinate: 12, determinate_floor: 15 },
       faceB: { exact_agreement: 5 / 11, determinate: 5, determinate_floor: 12 },
     },
     call_budget: budget.status(),
+    registered_floors: built.plan.registered_floors,
+    all_registered_floors_clear: allRegisteredFloorsClear,
+    directional_limit: built.plan.directional_limit,
     reader_records: records,
     tie_audits: tieAudits,
     metrics,
@@ -857,14 +966,18 @@ export async function main(argv = process.argv.slice(2)) {
     options: {
       launch: { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
+      'v5-registered-pair': { type: 'boolean', default: false },
       'run-root': { type: 'string', default: DEFAULT_RUN_ROOT },
-      out: { type: 'string', default: DEFAULT_OUT },
+      out: { type: 'string' },
       repetitions: { type: 'string', default: '2' },
       parallelism: { type: 'string', default: '8' },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
-  process.stdout.write(`${RESISTANT_LEARNER_V4_REPLAY_USAGE}\n`);
+  const mode = values['v5-registered-pair'] ? 'v5_registered_pair' : 'legacy';
+  process.stdout.write(
+    `${mode === 'v5_registered_pair' ? RESISTANT_LEARNER_V5_REHEARSAL_USAGE : RESISTANT_LEARNER_V4_REPLAY_USAGE}\n`,
+  );
   if (values.help || (!values.launch && !values['dry-run'])) return;
   if (values.launch && values['dry-run']) throw new Error('choose exactly one of --launch or --dry-run');
   const repetitions = Number(values.repetitions);
@@ -872,7 +985,12 @@ export async function main(argv = process.argv.slice(2)) {
   if (!Number.isInteger(parallelism) || parallelism < 1 || parallelism > 16) {
     throw new Error('parallelism must be 1..16');
   }
-  const built = buildReplayPlan({ runRoot: values['run-root'], out: values.out, repetitions });
+  const built = buildReplayPlan({
+    runRoot: values['run-root'],
+    out: values.out || (mode === 'v5_registered_pair' ? DEFAULT_V5_OUT : DEFAULT_OUT),
+    repetitions,
+    mode,
+  });
   if (fs.existsSync(built.plan.out)) throw new Error('candidate replay destination is create-once');
   if (values['dry-run']) {
     process.stdout.write(`${JSON.stringify(built.plan, null, 2)}\n`);

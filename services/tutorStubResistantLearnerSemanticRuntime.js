@@ -99,7 +99,7 @@ const MERGED_SEMANTIC_REGISTRATIONS = Object.freeze({
       path: 'config/tutor-stub-resistant-learner-merged-semantic-registration.v4.json',
       sha256: '03133a7a7c74180cd07cbdbd776f61933d9cfd9f5b77b56e2a2e947408f323d4',
     }),
-    instrumentSha256: 'eb5bc316093e178310dce14cd2f6712e35896092cea600a3084bfa59327c57d1',
+    instrumentSha256: '02972d555d0e0f94a56cbbbfdb3b0ff0e92bc5aab16d08779685d5f1ce6c0ea7',
     calibrationDecisionPolicySha256: '0fba1eaf9d41c09d2c870059f5a13c321d172da256407fefc11868d308f0ecd9',
     visibilityContract: true,
     dispositions: Object.freeze({
