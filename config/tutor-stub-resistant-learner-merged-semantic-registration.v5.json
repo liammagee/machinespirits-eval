@@ -12,9 +12,24 @@
     "reuse": false
   },
   "readerPanel": {
-    "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
+    "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "claude-code.opus"],
+    "fidelityJudges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
     "effort": "low",
-    "consensus": "both valid medium/high-confidence votes agree on the exact rung or exact non-ladder field value; otherwise measurement_indeterminate",
+    "consensus": "For final_graded_engagement_rung, code takes the modal value of eligible medium/high-confidence votes: at least two eligible votes sharing one rung is determinate; fewer than two eligible votes or a 1-1-1 split is measurement_indeterminate.",
+    "fidelityConsensus": "Both valid medium/high-confidence votes agree on the exact non-endpoint field value; otherwise measurement_indeterminate.",
+    "independence": "Each endpoint seat receives fresh context, the public transcript and registered anchors only, with no other seat output, vote count, shared note, rival DAG, assignment, enforcement verdict, or generator analysis.",
+    "validityBackstop": {
+      "field": "final_graded_engagement_rung",
+      "statistic": "mean_pairwise_conditional_exact_agreement_across_all_three_endpoint_seat_pairs_per_face",
+      "minimum": 0.5,
+      "failureDisposition": "face_calibration_measurement_indeterminate_stop",
+      "interpretation": "coarse broken-instrument screen, not a reliability certificate"
+    },
+    "reportOnly": [
+      "all_three_endpoint_pairwise_exact_agreements",
+      "endpoint_vote_distributions",
+      "endpoint_majority_margin_3_0_vs_2_1"
+    ],
     "repairRerunReplacementOrSelectionAllowed": false,
     "generatorExcluded": "codex.gpt-5.6-luna",
     "echoSlipTolerance": {
@@ -175,7 +190,8 @@
       "persona_fidelity",
       "prohibited_delivery",
       "final_graded_engagement_rung_determinacy",
-      "final_graded_engagement_rung_reader_eligibility_and_exact_agreement"
+      "final_graded_engagement_rung_two_eligible_vote_case_floor",
+      "final_graded_engagement_rung_mean_pairwise_validity_backstop"
     ],
     "primaryReaderAgreementScope": ["final_graded_engagement_rung"],
     "reportOnlyFields": [
@@ -184,7 +200,10 @@
       "delivered_test_bounded_distinction",
       "delivered_register",
       "bridge_enforcement_verdict",
-      "delivery_repair_count"
+      "delivery_repair_count",
+      "all_three_endpoint_pairwise_exact_agreements",
+      "endpoint_vote_distributions",
+      "endpoint_majority_margin_3_0_vs_2_1"
     ],
     "reportOnlyFieldsMayAffectVerdictEligibilityScoringOrRowSelection": false
   }

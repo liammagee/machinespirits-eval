@@ -17,6 +17,7 @@ const REGISTER_VALUES = Object.freeze(['warm', 'plain', 'edged', 'neither', 'ind
 const JUDGE_ROUTES = Object.freeze({
   'codex.gpt-5.6-sol': { provider: 'codex', model: 'gpt-5.6-sol' },
   'claude-code.sonnet-5': { provider: 'claude-code', model: 'claude-sonnet-5' },
+  'claude-code.opus': { provider: 'claude-code', model: 'claude-opus-4-8' },
   'codex.gpt-5.5': { provider: 'codex', model: 'gpt-5.5' },
 });
 const MODULE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -100,7 +101,10 @@ const MERGED_SEMANTIC_REGISTRATIONS = Object.freeze({
       sha256: '03133a7a7c74180cd07cbdbd776f61933d9cfd9f5b77b56e2a2e947408f323d4',
     }),
     instrumentSha256: '02972d555d0e0f94a56cbbbfdb3b0ff0e92bc5aab16d08779685d5f1ce6c0ea7',
-    calibrationDecisionPolicySha256: '0fba1eaf9d41c09d2c870059f5a13c321d172da256407fefc11868d308f0ecd9',
+    calibrationDecisionPolicySha256: '0952fb5ad6714853e985e8d7ef73556997ca68433034382a2ea1dfa4da61bccb',
+    panelMechanism: 'three_seat_endpoint_modal_v1',
+    readerPanelSha256: 'ef8923143d8bd8af5d94599a95107a7d21babcdcc99ee58f9364786c63a65998',
+    fidelityJudges: Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5']),
     visibilityContract: true,
     dispositions: Object.freeze({
       learner_noncompliance:
@@ -132,16 +136,20 @@ export function tutorStubResistantLearnerSemanticSha256(value) {
     .digest('hex');
 }
 
-function judges(design) {
-  return design.measurement.readerPanel.judges.map((modelRef, index) => {
+function judges(design, instrument = 'primary') {
+  const panel = design.measurement.readerPanel;
+  const modelRefs =
+    instrument === 'fidelity' && Array.isArray(panel.fidelityJudges) ? panel.fidelityJudges : panel.judges;
+  return modelRefs.map((modelRef) => {
     const route = JUDGE_ROUTES[modelRef];
     if (!route) throw new Error(`unsupported resistant-learner semantic reader ${modelRef}`);
+    const index = panel.judges.indexOf(modelRef);
     return { id: `reader_${String.fromCharCode(97 + index)}`, modelRef, ...route, effort: 'low' };
   });
 }
 
-export function tutorStubResistantLearnerSemanticJudgeRoutes(design) {
-  return judges(design).map(({ id, modelRef, provider, model, effort }) => ({
+export function tutorStubResistantLearnerSemanticJudgeRoutes(design, { instrument = 'primary' } = {}) {
+  return judges(design, instrument).map(({ id, modelRef, provider, model, effort }) => ({
     id,
     modelRef,
     provider,
@@ -293,6 +301,23 @@ export function tutorStubResistantLearnerMergedSemanticRegistrationIssues({ regi
   const dispositionsValid = expected.dispositions
     ? JSON.stringify(registration?.dispositions) === JSON.stringify(expected.dispositions)
     : true;
+  const endpointModalConsensusValid =
+    expected.panelMechanism === 'three_seat_endpoint_modal_v1'
+      ? registration?.readerPanel?.consensus ===
+          'For final_graded_engagement_rung, code takes the modal value of eligible medium/high-confidence votes: at least two eligible votes sharing one rung is determinate; fewer than two eligible votes or a 1-1-1 split is measurement_indeterminate.' &&
+        registration?.readerPanel?.fidelityConsensus ===
+          'Both valid medium/high-confidence votes agree on the exact non-endpoint field value; otherwise measurement_indeterminate.' &&
+        JSON.stringify(registration?.readerPanel?.fidelityJudges) === JSON.stringify(expected.fidelityJudges) &&
+        registration?.readerPanel?.validityBackstop?.field === 'final_graded_engagement_rung' &&
+        registration?.readerPanel?.validityBackstop?.minimum === 0.5 &&
+        registration?.readerPanel?.validityBackstop?.failureDisposition ===
+          'face_calibration_measurement_indeterminate_stop' &&
+        registration?.readerPanel?.repairRerunReplacementOrSelectionAllowed === false
+      : registration?.readerPanel?.consensus ===
+        'both valid medium/high-confidence votes agree on the exact rung or exact non-ladder field value; otherwise measurement_indeterminate';
+  const readerPanelShaValid = expected.readerPanelSha256
+    ? tutorStubResistantLearnerSemanticSha256(registration?.readerPanel) === expected.readerPanelSha256
+    : true;
   if (
     registration?.schema !== expected.schema ||
     registration?.version !== expected.version ||
@@ -306,8 +331,8 @@ export function tutorStubResistantLearnerMergedSemanticRegistrationIssues({ regi
     registration?.appliesToDesignSchema !== MERGED_DESIGN_SCHEMA ||
     registration?.instrument?.endpointField !== 'final_graded_engagement_rung' ||
     JSON.stringify(registration?.instrument?.endpointValues) !== JSON.stringify(['0', '1', '2', 'indeterminate']) ||
-    registration?.readerPanel?.consensus !==
-      'both valid medium/high-confidence votes agree on the exact rung or exact non-ladder field value; otherwise measurement_indeterminate' ||
+    !endpointModalConsensusValid ||
+    !readerPanelShaValid ||
     JSON.stringify(registration?.readerPanel?.judges) !== JSON.stringify(judges) ||
     quoteMatch?.rule !== 'unique_verbatim_substring_after_registered_punctuation_folding' ||
     JSON.stringify(quoteMatch?.foldingOrder) !==
@@ -703,8 +728,8 @@ export function tutorStubResistantLearnerSemanticFieldConsensus(values) {
   const counts = Object.fromEntries(
     [...new Set(values)].map((value) => [value, values.filter((row) => row === value).length]),
   );
-  const winner = Object.entries(counts).find(([, count]) => count >= 2)?.[0] || null;
-  return { counts, winner };
+  const winnerEntry = Object.entries(counts).find(([, count]) => count >= 2) || null;
+  return { counts, winner: winnerEntry?.[0] || null, winnerCount: winnerEntry?.[1] || 0 };
 }
 
 function panel({ caseId, instrument, definition, records }) {
@@ -721,6 +746,18 @@ function panel({ caseId, instrument, definition, records }) {
           value: result.winner || 'indeterminate',
           vote_counts: result.counts,
           eligible_judges: eligible.map((record) => record.judge_id),
+          eligible_vote_count: eligible.length,
+          majority_vote_count: result.winnerCount,
+          majority_margin:
+            result.winner === null
+              ? 'indeterminate'
+              : eligible.length === 3 && result.winnerCount === 3
+                ? '3-0'
+                : eligible.length === 3 && result.winnerCount === 2
+                  ? '2-1'
+                  : eligible.length === 2 && result.winnerCount === 2
+                    ? '2-0_one_ineligible'
+                    : 'other',
         },
       ];
     }),
@@ -783,7 +820,7 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
       : null;
     const maximumSeatAttempts = 1 + (Number(echoSlip?.maximumRetriesPerSeatCall) || 0);
     const records = [];
-    for (const judge of judges(design)) {
+    for (const judge of judges(design, instrument)) {
       const prompt = buildTutorStubResistantLearnerSemanticPrompt({
         caseId: study.job_id,
         study: studyCode,
