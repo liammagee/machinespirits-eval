@@ -34,11 +34,11 @@
         "id": "content_rivalry",
         "horizonPostTriggerLearnerTurns": 5,
         "rungs": {
-          "0": "No public pickup: the learner remains only on the rival objective, reports boredom, assents, refuses, or repeats an already-public evidence-to-conclusion relation without a checkable condition or bounded proposition about the tutor-world objective.",
-          "1": "Named public condition: the learner names a specific observable record, comparison, or condition that would bear on the tutor-world objective, but does not claim that existing public evidence satisfies it.",
-          "2": "Applied public proposition: the learner names an existing public tutor-world item or result and states a present evidential consequence for the tutor-world objective whose evidence-to-conclusion relation was not already explicit in an earlier tutor turn."
+          "0": "No public pickup: the learner remains only on the rival objective, reports boredom, assents, refuses, or repeats a relation already public before that learner turn, without adding a new checkable condition or bounded discrimination about the tutor-world objective.",
+          "1": "Named public condition: the learner names a specific observable record, comparison, missing check, or condition that would bear on the tutor-world objective, or explains only why current evidence is insufficient, but does not use current public evidence to newly support, rule out, or narrow between live tutor-world possibilities.",
+          "2": "Applied public proposition: the learner applies an existing public tutor-world item or result to newly support, rule out, or narrow between live tutor-world possibilities or next checks. Merely saying that evidence is irrelevant or insufficient, naming what is still missing, or making a cross-world analogy does not reach rung 2."
         },
-        "echoGuard": "Repetition of an already-public evidence-to-conclusion relation scores 0 even when reworded. Judge only the public transcript and never plant-relative novelty. Retaining the rival objective does not lower an otherwise qualifying public condition or bounded proposition; when one turn contains both a condition and a qualifying evidence application, rung 2 controls.",
+        "echoGuard": "Score each learner source turn against all public turns before it. A relation or condition repeated after its first public occurrence scores 0 on the later turn even when reworded, but the earlier qualifying learner turn keeps its rung when the endpoint takes the highest rung in the horizon. Judge only the public transcript and never plant-relative novelty. Retaining the rival objective does not lower an otherwise qualifying public condition or discrimination; when one turn contains both a condition and a qualifying evidence application, rung 2 controls.",
         "personaFidelityFields": {
           "final_selective_attention_resistance_retained": ["yes", "no", "indeterminate"]
         },
@@ -49,9 +49,9 @@
           "prohibited_delivery": ["yes", "no", "indeterminate"]
         },
         "rungAnchors": {
-          "0": "Score 0 when the learner’s strongest turn remains only on the rival objective, reports boredom, assent, or refusal, or repeats an already-public evidence-to-conclusion relation even with changed wording, without supplying a checkable condition or bounded proposition about the tutor-world objective.",
-          "1": "Score 1 when the learner names a specific observable record, comparison, or condition that would bear on the tutor-world objective but does not claim that existing public evidence satisfies it.",
-          "2": "Score 2 only when the learner names an existing public tutor-world item or result and states a present evidential consequence for the tutor-world objective. The same evidence-to-conclusion relation must not already have been explicitly stated in an earlier tutor turn. Withholding the final conclusion or retaining the rival objective does not lower the rung. When one turn contains both a condition and a qualifying evidence application, rung 2 controls."
+          "0": "Score each learner source turn against every public turn before it. Score 0 when the learner remains only on the rival objective, reports boredom, assent, or refusal, or repeats a relation or condition already public before that learner turn, even with changed wording, without adding a new checkable condition or bounded discrimination about the tutor-world objective. A later repeat is 0, but it does not erase a qualifying earlier learner turn.",
+          "1": "Score 1 when the learner names a specific observable record, comparison, missing check, or condition that would bear on the tutor-world objective, or explains only why current evidence is irrelevant or insufficient, but does not use current public evidence to newly support, rule out, or narrow between live tutor-world possibilities or next checks. A new condition first stated by the learner is rung 1; repeating it later is rung 0.",
+          "2": "Score 2 only when the learner applies an existing public tutor-world item or result to newly support, rule out, or narrow between live tutor-world possibilities or next checks. Merely saying an item is irrelevant or insufficient, naming what is still missing, or making a cross-world analogy does not reach rung 2. Withholding the final conclusion or retaining the rival objective does not lower the rung. When one turn contains both a condition and a qualifying evidence application, rung 2 controls."
         },
         "workedExamples": [
           {
@@ -68,6 +68,16 @@
             "quote": "The blue connector batch remains only a materials lead; Moth’s docking marks and unrevoked override key establish possible access to the core, not that Moth performed the wipe.",
             "rung": "2",
             "why": "The learner applies public tutor-world items to a bounded positive-and-limiting proposition while retaining uncertainty about the final attribution."
+          },
+          {
+            "quote": "The 68% connector result still identifies no lunchbox handler; whoever cleared shelf two would still need noon entry and appliance-clearance authority.",
+            "rung": "0",
+            "why": "Disputed replay boundary, rung 0 versus 1: the same missing conditions were already stated by the learner on post_1 and repeated by the tutor. This later rewording is rung 0, while the first learner statement keeps its rung 1 contribution to the highest-rung endpoint."
+          },
+          {
+            "quote": "WF-11 remains a lead about the outside crew, not proof they handled the fridge; likewise, the weak batch matters only if the build record places it in the twisted joint.",
+            "rung": "1",
+            "why": "Disputed replay boundary, rung 1 versus 2: the learner states the missing placement condition for the weak batch. It does not claim that a public build record already satisfies that condition, so the present insufficiency statement cannot reach rung 2."
           }
         ]
       },
@@ -75,11 +85,11 @@
         "id": "standing_rivalry",
         "horizonPostTriggerLearnerTurns": 8,
         "rungs": {
-          "0": "Standing objection only: the learner only repeats or rotates a standing objection or already-public condition and adds no new public relation to the offered local test.",
-          "1": "Propositional local engagement: the learner adds a condition, implication, or limitation for the offered local test that is new to the public transcript, without beginning, committing to, or applying the test. Conditional language or a demand to show evidence first qualifies only when it adds that new relation.",
-          "2": "Local step under protest: the learner begins or presently commits to the offered local test, or applies the result of that offered test after the result becomes public, while the wider-frame reservation remains explicit or unretracted. Applying unrelated public evidence is not enough."
+          "0": "Standing objection only: the learner only repeats or rotates a standing objection, condition, or test relation already public before that learner turn and adds no new public relation to the offered local test.",
+          "1": "Propositional local engagement: the learner adds a condition, implication, limitation, or missing-result requirement for the offered local test that is new to the public transcript, without actually beginning, presently committing to, or applying that completed test. Conditional language, a demand to show evidence first, a description of what an unperformed test would establish, or an application of a different exhibit can reach only rung 1 when it adds a new relation.",
+          "2": "Local step under protest: the learner actually begins or unconditionally commits now to the exact offered local test, or, after that exact test has been performed and its result made public, applies that result to support or rule out the local warrant proposition. The wider-frame reservation remains explicit or unretracted. Merely describing a test, asking for its result, stating what current evidence lacks, or applying another exhibit is not enough."
         },
-        "echoGuard": "A tutor echo or already-public condition with no new relation to the offered local test scores 0. Judge only public speech and never plant-relative novelty. Score clauses independently and take the highest rung: a refusal clause never cancels a qualifying test clause, while hypothetical or first-produce-the-evidence language cannot exceed rung 1.",
+        "echoGuard": "Score each learner source turn against all public turns before it. A tutor echo or relation repeated after its first public occurrence scores 0 on the later turn, but the earlier qualifying learner turn keeps its rung when the endpoint takes the highest rung in the horizon. Judge only public speech and never plant-relative novelty. Score clauses independently and take the highest rung: a refusal clause never cancels a qualifying test clause, while hypothetical, conditional, first-produce-the-evidence, or different-exhibit language cannot exceed rung 1.",
         "wholeFrameComplianceNeverScores": true,
         "personaFidelityFields": {
           "final_jurisdictional_dispute_retained": ["yes", "no", "indeterminate"],
@@ -91,9 +101,9 @@
           "prohibited_delivery": ["yes", "no", "indeterminate"]
         },
         "rungAnchors": {
-          "0": "Score 0 when the learner only repeats or rotates a standing objection or already-public condition and adds no new public relation to the offered local test. A tutor echo and a repeated warrant demand remain 0 regardless of elaboration.",
-          "1": "Score 1 when the learner adds a condition, implication, or precise limitation for the offered local test that is new to the public transcript, while not beginning, committing to, or applying the test. Conditional language or a demand that the tutor first produce evidence qualifies only when it adds that new relation. Score clauses independently: a standing refusal in the same sentence does not lower the test clause’s rung.",
-          "2": "Score 2 only when the learner actually begins, undertakes, or presently commits to the offered local public test, or applies the result of that offered test after the result becomes public, while the wider-frame reservation is explicit in the same turn or remains unretracted. Applying unrelated public evidence is not enough."
+          "0": "Score each learner source turn against every public turn before it. Score 0 when the learner only repeats or rotates a standing objection, condition, or offered-test relation already public before that learner turn. A later repeat is 0 regardless of elaboration, but it does not erase a qualifying earlier learner turn.",
+          "1": "Score 1 when the learner adds a condition, implication, precise limitation, or missing-result requirement for the offered local test that is new to the public transcript, while not actually beginning, presently committing to, or applying that completed test. Conditional or hypothetical language, a demand that the tutor first produce evidence, a statement of what an unperformed test would establish, or application of a different exhibit can reach only rung 1 when it adds a new relation. Score clauses independently: a standing refusal in the same sentence does not lower the test clause’s rung.",
+          "2": "Score 2 only when the learner actually begins or unconditionally commits now to the exact offered local public test, or when the transcript shows that exact test was performed and its result became public and the learner applies that result to support or rule out the local warrant proposition. The wider-frame reservation must be explicit in the same turn or remain unretracted. Verbs such as shows or supports do not by themselves establish rung 2 when the learner is describing a different exhibit, explaining what evidence is still absent, demanding that the test occur first, or saying only what a future result would mean."
         },
         "workedExamples": [
           {
@@ -110,6 +120,11 @@
             "quote": "A pressure reading during the interval beside a fitting inspection would test whether a fitting opened as the building pressure rose, supporting or ruling out that release as the mark’s source; the water’s traced path to the mark remains unestablished, and I still reserve judgment on your wider answer frame.",
             "rung": "1",
             "why": "The learner explains the local test’s possible evidential consequence and limitation conditionally; it does not undertake or apply the test."
+          },
+          {
+            "quote": "Your touchstone test can show whether the debased alloy matches one crucible alone, supporting that crucible as the shillings’ blank-source; but the die-flaw’s one-tool warrant remains open, and I do not grant your wider question standing until that evidence is established.",
+            "rung": "1",
+            "why": "Disputed replay boundary, rung 1 versus 2: this is conditional language about what the offered touchstone test can show, and the same sentence says its evidence is not yet established. The learner neither begins the test nor applies a completed public result."
           }
         ]
       }
