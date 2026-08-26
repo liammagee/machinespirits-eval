@@ -22,10 +22,12 @@ function readRequest() {
 
 function readCurrentSourceFixture() {
   const request = readRequest();
-  const bridge = request.sourceClosure.find((entry) => entry.path === 'services/cliProviderBridge.js');
-  bridge.sha256 = createHash('sha256')
-    .update(fs.readFileSync(path.join(ROOT, bridge.path)))
-    .digest('hex');
+  for (const sourcePath of ['services/cliProviderBridge.js', 'config/providers.yaml']) {
+    const entry = request.sourceClosure.find((candidate) => candidate.path === sourcePath);
+    entry.sha256 = createHash('sha256')
+      .update(fs.readFileSync(path.join(ROOT, entry.path)))
+      .digest('hex');
+  }
   return request;
 }
 
