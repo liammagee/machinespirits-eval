@@ -42,7 +42,7 @@ export function renderPoweredRunReport(report) {
     lines.push('');
     lines.push(`${face.face_id} (${face.study}): ${face.status}`);
     lines.push(
-      `  gates: execution ${statistics.completed_rows + face.retained_substantive_failures.count}/${statistics.planned_rows} accounted (${face.gates.execution_and_typed_failure_accounting ? 'pass' : 'FAIL'}), ` +
+      `  gates: execution ${statistics.completed_rows + face.retained_substantive_failures.count + (face.technical_losses?.count || 0)}/${statistics.planned_rows} accounted (${face.gates.execution_and_typed_failure_accounting ? 'pass' : 'FAIL'}), ` +
         `no prohibited delivery ${face.gates.runtime_safety_no_prohibited_delivery ? 'pass' : 'FAIL'}, ` +
         `panel backstop ${face.gates.endpoint_validity_backstop ? 'pass' : 'FAIL'}`,
     );
@@ -70,6 +70,12 @@ export function renderPoweredRunReport(report) {
       retainedRows.map((row) => `${row.job.world || 'unknown-world'} / ${row.job.register || 'unknown-register'}`),
     );
     for (const [key, count] of byWorldRegister) lines.push(`    ${count}x at ${key}`);
+    if (face.technical_losses?.count) {
+      lines.push(
+        `  technical losses (disclosed, never rerun, not in any denominator): ${face.technical_losses.count} — ` +
+          face.technical_losses.case_ids.join(', '),
+      );
+    }
     if (face.prohibited_case_ids.length) {
       lines.push(`  prohibited delivery cases: ${face.prohibited_case_ids.join(', ')}`);
     }

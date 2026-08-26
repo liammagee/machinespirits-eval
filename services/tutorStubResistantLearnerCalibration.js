@@ -2329,6 +2329,10 @@ export function summarizeTutorStubResistantLearnerMergedPoweredRun({ rows, desig
     const faceRows = rows.filter((row) => row.job.face_id === faceId);
     const completed = faceRows.filter((row) => row.status === 'complete');
     const retained = faceRows.filter((row) => row.status === 'retained_substantive_failure');
+    // A technical loss is a unit whose child died without a typed outcome. The
+    // sealed dispositions forbid any rerun, so the unit is disclosed here and
+    // excluded from every denominator; it is accounted, not evidence.
+    const technicalLosses = faceRows.filter((row) => row.status === 'failed');
     const endpoint = faceDesign.measurement.endpointField;
     const determinate = completed.filter((row) => panelField(row, 'primary', endpoint)?.status === 'determinate');
     const rungCounts = Object.fromEntries(
@@ -2347,7 +2351,7 @@ export function summarizeTutorStubResistantLearnerMergedPoweredRun({ rows, desig
     const typedFailureAccounting = retained.every((row) => Boolean(row.registered_failure?.code));
     const gates = {
       execution_and_typed_failure_accounting:
-        completed.length + retained.length === dialoguesPerFace && typedFailureAccounting,
+        completed.length + retained.length + technicalLosses.length === dialoguesPerFace && typedFailureAccounting,
       runtime_safety_no_prohibited_delivery: prohibited.length === 0,
       endpoint_validity_backstop: backstopOk,
     };
@@ -2360,6 +2364,7 @@ export function summarizeTutorStubResistantLearnerMergedPoweredRun({ rows, desig
       statistics: {
         planned_rows: dialoguesPerFace,
         completed_rows: completed.length,
+        technical_loss_rows: technicalLosses.length,
         determinate: determinate.length,
         rung_counts: rungCounts,
         rung_at_least_1: rungAtLeast1,
@@ -2382,11 +2387,18 @@ export function summarizeTutorStubResistantLearnerMergedPoweredRun({ rows, desig
         codes: retained.map((row) => row.registered_failure?.code || null),
         replacement_allowed: false,
       },
+      technical_losses: {
+        count: technicalLosses.length,
+        case_ids: technicalLosses.map((row) => row.job.id),
+        excluded_from_denominator: true,
+        rerun_prohibited: true,
+      },
       prohibited_case_ids: prohibited.map((row) => row.job.id),
       gates,
     };
   });
   const anyIndeterminate = faces.some((face) => face.status === 'measurement_indeterminate');
+  const totalTechnicalLosses = faces.reduce((sum, face) => sum + face.technical_losses.count, 0);
   return {
     schema: 'machinespirits.tutor-stub.resistant-learner-merged-powered-report.v1',
     study_id: design.studyId,
@@ -2396,6 +2408,9 @@ export function summarizeTutorStubResistantLearnerMergedPoweredRun({ rows, desig
       : anyIndeterminate
         ? 'measurement_indeterminate'
         : 'failed',
+    ...(totalTechnicalLosses > 0
+      ? { disclosed_amendments: ['technical_loss_units_accounted_never_rerun_excluded_from_denominators'] }
+      : {}),
     faces,
     rows,
     calibration_only: false,

@@ -44,10 +44,20 @@ export const TUTOR_STUB_RESISTANT_LEARNER_MERGED_USAGE = `Usage:
     --powered --dialogues-per-face 108 \
     --dry-run | --launch [--parallelism 4]
 
+  node scripts/run-tutor-stub-resistant-learner-merged-calibration.js \
+    --design config/tutor-stub-resistant-learner-merged-design.v5.json \
+    --destination /absolute/existing/halted/run-root \
+    --powered --dialogues-per-face 108 \
+    --resume --launch [--parallelism 4]
+
 --dry-run executes the complete zero-call preflight and writes nothing.
 --launch requires an attended TTY and records typed operator approval in approval.json.
 --powered runs the powered study on fresh blocks (a multiple of 18 dialogues per face,
 inside the design's registered 36-180 bounds); calibration rows are never reused.
+--resume continues a halted powered run in place: completed and retained units are
+banked as recorded, units that died without a typed outcome become disclosed
+technical losses (never rerun), and only never-started units execute. The recorded
+approval.json covers the resume; no re-approval ceremony.
 No GO note, commit binding, source-file byte pin, approval schema version, or re-signature cycle is used.`;
 
 function writeOnce(filePath, value) {
@@ -86,6 +96,54 @@ function repositoryRelative(value) {
   return relative;
 }
 
+export function readTutorStubResistantLearnerMergedResumeState({ destination, loaded, plan }) {
+  const reportPath = path.join(destination, 'report.json');
+  for (const required of ['approval.json', 'plan.json', 'report.json', 'run-ledger.jsonl']) {
+    if (!fs.existsSync(path.join(destination, required))) {
+      throw new Error(`resume requires ${required} in the run root`);
+    }
+  }
+  const priorPlan = JSON.parse(fs.readFileSync(path.join(destination, 'plan.json'), 'utf8'));
+  if (priorPlan?.design?.sha256 !== loaded.sha256) {
+    throw new Error('resume requires the same sealed design as the recorded plan');
+  }
+  const priorReport = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  const priorRows = Array.isArray(priorReport.rows) ? priorReport.rows : [];
+  const planJobById = new Map(plan.jobs.map((job) => [job.id, job]));
+  for (const row of priorRows) {
+    if (!planJobById.has(row.job.id)) {
+      throw new Error(`recorded row ${row.job.id} is not in the rebuilt plan; refusing to resume`);
+    }
+  }
+  const rowIds = new Set(priorRows.map((row) => row.job.id));
+  // A job directory with no recorded row means the launcher itself was
+  // interrupted mid-unit. The unit is partially observed, so it becomes a
+  // disclosed technical loss; the sealed dispositions forbid any rerun.
+  const jobsDir = path.join(destination, 'jobs');
+  const orphanRows = (fs.existsSync(jobsDir) ? fs.readdirSync(jobsDir) : [])
+    .filter((name) => planJobById.has(name) && !rowIds.has(name))
+    .map((name) => ({
+      job: planJobById.get(name),
+      status: 'failed',
+      exit: { code: null, signal: null, spawn_error: 'no recorded row (launcher interrupted mid-unit)' },
+      attempts: 0,
+      trace: null,
+      transcript: null,
+      outcome: null,
+      registered_failure: null,
+      registered_failure_artifact: null,
+      registered_failure_artifact_issues: [],
+    }));
+  const rows = [...priorRows, ...orphanRows];
+  return {
+    rows,
+    attempts: Number(priorReport.execution?.model_attempts) || 0,
+    prior_complete: rows.filter((row) => row.status === 'complete').length,
+    prior_retained: rows.filter((row) => row.status === TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_STATUS).length,
+    prior_technical_losses: rows.filter((row) => row.status === 'failed').length,
+  };
+}
+
 async function attendedApproval({ preflight, input = process.stdin, output = process.stdout }) {
   const phrase =
     preflight.phase === 'powered'
@@ -108,47 +166,67 @@ export async function executeTutorStubResistantLearnerMergedCalibration({
   preflight,
   approval,
   provenance,
+  resume = false,
   childSpec = tutorStubResistantLearnerCalibrationChildSpec,
   runChild = runTutorStubResistantLearnerCalibrationChild,
   extractRow = extractTutorStubResistantLearnerCalibrationRow,
 } = {}) {
-  if (fs.existsSync(destination)) throw new Error('merged resistant-learner destination is create-once');
-  fs.mkdirSync(path.dirname(destination), { recursive: true });
-  fs.mkdirSync(destination, { recursive: false });
-  fs.mkdirSync(path.join(destination, 'jobs'));
-  writeOnce(path.join(destination, 'approval.json'), approval);
   const plan = preflight.plan;
   const ledgerPath = path.join(destination, 'run-ledger.jsonl');
-  writeOnce(path.join(destination, 'plan.json'), {
-    schema: 'machinespirits.tutor-stub.resistant-learner-merged-attended-plan.v1',
-    status: 'typed_approval_recorded_attended_launch',
-    ...(preflight.phase === 'powered' ? { phase: 'powered', dialogues_per_face: preflight.dialogues_per_face } : {}),
-    approval_path: 'approval.json',
-    source: provenance,
-    design: {
-      path: loaded.relativePath,
-      sha256: loaded.sha256,
-      enforcement: 'recorded_not_pinned',
-    },
-    model_attempt_ceiling: preflight.hard_attempt_ceiling,
-    preflight,
-    plan,
-  });
-  writeOnce(ledgerPath, '');
-  appendLedger(ledgerPath, {
-    type: 'launch',
-    approval_path: 'approval.json',
-    source_commit: provenance.commit,
-    source_tree: provenance.tree,
-    dirty: provenance.dirty,
-    planned_units: plan.jobs.length,
-    hard_attempt_ceiling: preflight.hard_attempt_ceiling,
-  });
-
-  const rows = [];
-  const queue = plan.jobs.map((job) => ({ loaded, job }));
-  let cursor = 0;
+  let rows = [];
   let attempts = 0;
+  if (resume) {
+    if (!fs.existsSync(destination)) throw new Error('resume requires an existing run root');
+    const state = readTutorStubResistantLearnerMergedResumeState({ destination, loaded, plan });
+    rows = state.rows;
+    attempts = state.attempts;
+    appendLedger(ledgerPath, {
+      type: 'resume',
+      source_commit: provenance.commit,
+      source_tree: provenance.tree,
+      dirty: provenance.dirty,
+      prior_complete: state.prior_complete,
+      prior_retained: state.prior_retained,
+      prior_technical_losses: state.prior_technical_losses,
+      prior_attempts: attempts,
+      remaining_units: plan.jobs.length - rows.length,
+    });
+  } else {
+    if (fs.existsSync(destination)) throw new Error('merged resistant-learner destination is create-once');
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.mkdirSync(destination, { recursive: false });
+    fs.mkdirSync(path.join(destination, 'jobs'));
+    writeOnce(path.join(destination, 'approval.json'), approval);
+    writeOnce(path.join(destination, 'plan.json'), {
+      schema: 'machinespirits.tutor-stub.resistant-learner-merged-attended-plan.v1',
+      status: 'typed_approval_recorded_attended_launch',
+      ...(preflight.phase === 'powered' ? { phase: 'powered', dialogues_per_face: preflight.dialogues_per_face } : {}),
+      approval_path: 'approval.json',
+      source: provenance,
+      design: {
+        path: loaded.relativePath,
+        sha256: loaded.sha256,
+        enforcement: 'recorded_not_pinned',
+      },
+      model_attempt_ceiling: preflight.hard_attempt_ceiling,
+      preflight,
+      plan,
+    });
+    writeOnce(ledgerPath, '');
+    appendLedger(ledgerPath, {
+      type: 'launch',
+      approval_path: 'approval.json',
+      source_commit: provenance.commit,
+      source_tree: provenance.tree,
+      dirty: provenance.dirty,
+      planned_units: plan.jobs.length,
+      hard_attempt_ceiling: preflight.hard_attempt_ceiling,
+    });
+  }
+
+  const bankedIds = new Set(rows.map((row) => row.job.id));
+  const queue = plan.jobs.filter((job) => !bankedIds.has(job.id)).map((job) => ({ loaded, job }));
+  let cursor = 0;
   let haltReason = null;
   async function worker() {
     while (cursor < queue.length && !haltReason) {
@@ -181,7 +259,7 @@ export async function executeTutorStubResistantLearnerMergedCalibration({
         ...(haltReason ? { halt_reason: haltReason } : {}),
       });
       process.stdout.write(
-        `completed ${rows.length}/${queue.length}; attempts ${attempts}/${preflight.hard_attempt_ceiling}${haltReason ? `; halted: ${haltReason}` : ''}\n`,
+        `completed ${rows.length}/${plan.jobs.length}; attempts ${attempts}/${preflight.hard_attempt_ceiling}${haltReason ? `; halted: ${haltReason}` : ''}\n`,
       );
     }
   }
@@ -207,12 +285,18 @@ export async function executeTutorStubResistantLearnerMergedCalibration({
       retained_substantive_units: rows.filter((row) => row.status === TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_STATUS)
         .length,
       failed_units: rows.filter((row) => row.status === 'failed').length,
-      missing_units: queue.length - rows.length,
+      missing_units: plan.jobs.length - rows.length,
       model_attempts: attempts,
       model_attempt_ceiling: preflight.hard_attempt_ceiling,
     },
   };
-  writeOnce(path.join(destination, 'report.json'), report);
+  const reportPath = path.join(destination, 'report.json');
+  if (resume) {
+    let haltedIndex = 1;
+    while (fs.existsSync(path.join(destination, `report.halted.${haltedIndex}.json`))) haltedIndex += 1;
+    fs.renameSync(reportPath, path.join(destination, `report.halted.${haltedIndex}.json`));
+  }
+  writeOnce(reportPath, report);
   appendLedger(ledgerPath, {
     type: 'seal',
     status: report.status,
@@ -234,6 +318,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
       parallelism: { type: 'string', default: '1' },
       powered: { type: 'boolean', default: false },
       'dialogues-per-face': { type: 'string' },
+      resume: { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
       launch: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
@@ -267,12 +352,14 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
   } else if (values['dialogues-per-face'] !== undefined) {
     throw new Error('--dialogues-per-face is only valid with --powered');
   }
+  if (values.resume && !values.powered) throw new Error('--resume is only valid with --powered');
   const preflight = await (overrides.runPreflight || runTutorStubResistantLearnerMergedPreflight)({
     loaded,
     root: ROOT,
     destination,
     destinationExists: overrides.destinationExists || fs.existsSync,
     ...(values.powered ? { powered: true, dialoguesPerFace } : {}),
+    ...(values.resume ? { resume: true } : {}),
     ...(overrides.probeRoute ? { probeRoute: overrides.probeRoute } : {}),
     ...(overrides.smokeRole ? { smokeRole: overrides.smokeRole } : {}),
   });
@@ -286,13 +373,24 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
   if (!Number.isInteger(parallelism) || parallelism < 1 || parallelism > 4) {
     throw new Error('parallelism must be an integer from 1 to 4');
   }
-  const authorization = await (overrides.operatorApproval || attendedApproval)({ preflight });
-  const approval = buildTutorStubResistantLearnerMergedApproval({
-    signedBy: authorization.signedBy,
-    approvalPhrase: authorization.approvalPhrase,
-    preflight,
-  });
-  approval.method = authorization.method;
+  let approval;
+  if (values.resume) {
+    // The recorded typed approval covers the study; a resume after a technical
+    // halt is the same study, so no re-approval ceremony runs here.
+    approval = JSON.parse(fs.readFileSync(path.join(destination, 'approval.json'), 'utf8'));
+    if (approval.powered_run_authorized !== true) throw new Error('resume requires the recorded powered approval');
+    if (approval.dialogues_per_face !== preflight.dialogues_per_face) {
+      throw new Error('recorded approval covers a different powered size');
+    }
+  } else {
+    const authorization = await (overrides.operatorApproval || attendedApproval)({ preflight });
+    approval = buildTutorStubResistantLearnerMergedApproval({
+      signedBy: authorization.signedBy,
+      approvalPhrase: authorization.approvalPhrase,
+      preflight,
+    });
+    approval.method = authorization.method;
+  }
   const provenance = (overrides.sourceProvenance || tutorStubResistantLearnerMergedSourceProvenance)();
   return (overrides.execute || executeTutorStubResistantLearnerMergedCalibration)({
     loaded,
@@ -301,6 +399,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     preflight,
     approval,
     provenance,
+    resume: values.resume,
   });
 }
 

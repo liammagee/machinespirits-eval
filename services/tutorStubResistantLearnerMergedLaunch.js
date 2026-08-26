@@ -121,6 +121,7 @@ export async function runTutorStubResistantLearnerMergedPreflight({
   smokeRole = smokeTutorStubResistantLearnerProtocolV2Role,
   powered = false,
   dialoguesPerFace = null,
+  resume = false,
 } = {}) {
   if (loaded?.design?.schema !== MERGED_SCHEMA) throw new Error('merged preflight requires the merged v1 design');
   const plan = powered
@@ -162,7 +163,9 @@ export async function runTutorStubResistantLearnerMergedPreflight({
     all_48_world_register_scenes_compiled: compilation.rows?.length === 48,
     route_probes_passed: routeProbes.every((probe) => probe.status === 'passed_zero_call'),
     role_smokes_passed: roleSmokes.every((smoke) => smoke.status === 'passed_zero_call_stub'),
-    destination_absent: destinationExists(destination) === false,
+    ...(resume
+      ? { destination_resumable: destinationExists(destination) === true }
+      : { destination_absent: destinationExists(destination) === false }),
     planned_calls_match_design:
       plannedRoleCalls === plan.jobs.length * loaded.design.attemptCeilings.plannedCallsPerDialogue,
     planned_calls_within_ceiling: plannedRoleCalls <= hardAttemptCeiling,
@@ -174,6 +177,7 @@ export async function runTutorStubResistantLearnerMergedPreflight({
     status: Object.values(checks).every(Boolean) ? 'passed_zero_call' : 'failed',
     phase: powered ? 'powered' : 'calibration',
     ...(powered ? { dialogues_per_face: dialoguesPerFace } : {}),
+    ...(resume ? { resume: true } : {}),
     study_id: loaded.design.studyId,
     destination,
     design: { path: loaded.relativePath, sha256: loaded.sha256 },

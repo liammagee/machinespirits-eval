@@ -14,6 +14,10 @@ import {
   tutorStubResistantLearnerMergedFaceDesign,
 } from '../services/tutorStubResistantLearnerCalibration.js';
 import { tutorStubResistantLearnerCalibrationChildSpec } from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
+import {
+  executeTutorStubResistantLearnerMergedCalibration,
+  readTutorStubResistantLearnerMergedResumeState,
+} from '../scripts/run-tutor-stub-resistant-learner-merged-calibration.js';
 import { renderPoweredRunReport } from '../scripts/report-resistant-learner-powered-run.js';
 import {
   buildTutorStubResistantLearnerMergedApproval,
@@ -452,4 +456,142 @@ test('the powered report reader prints the registered statistic and failure brea
   assert.match(text, /faceB \(R1\): passed/);
   assert.match(text, /cross-face pooling allowed: no/);
   assert.throws(() => renderPoweredRunReport({ schema: 'other' }), /requires a merged powered-run report/);
+});
+
+test('powered summary accounts a disclosed technical loss without a rerun and outside every denominator', () => {
+  const loaded = loadV5();
+  const lossRow = { status: 'failed', job: { id: 'merged-faceA-pow-b01-edged-w9', face_id: 'faceA' }, attempts: 4 };
+  const rows = [
+    syntheticPoweredRow({ faceId: 'faceA', id: 'merged-faceA-pow-b01-warm-w1', rung: '2' }),
+    syntheticPoweredRow({ faceId: 'faceA', id: 'merged-faceA-pow-b01-plain-w2', rung: '1' }),
+    lossRow,
+    syntheticPoweredRow({ faceId: 'faceB', id: 'merged-faceB-pow-b01-w1-warm-r1', rung: '1' }),
+    syntheticPoweredRow({ faceId: 'faceB', id: 'merged-faceB-pow-b01-w1-plain-r1', rung: '1' }),
+    syntheticPoweredRow({ faceId: 'faceB', id: 'merged-faceB-pow-b01-w1-edged-r1', rung: '1' }),
+  ];
+  const report = summarizeTutorStubResistantLearnerMergedPoweredRun({
+    rows,
+    design: loaded.design,
+    dialoguesPerFace: 3,
+  });
+  assert.equal(report.status, 'passed');
+  assert.deepEqual(report.disclosed_amendments, [
+    'technical_loss_units_accounted_never_rerun_excluded_from_denominators',
+  ]);
+  const faceA = report.faces[0];
+  assert.equal(faceA.gates.execution_and_typed_failure_accounting, true);
+  assert.equal(faceA.statistics.technical_loss_rows, 1);
+  assert.deepEqual(faceA.technical_losses, {
+    count: 1,
+    case_ids: ['merged-faceA-pow-b01-edged-w9'],
+    excluded_from_denominator: true,
+    rerun_prohibited: true,
+  });
+  assert.equal(faceA.statistics.registered_statistic.denominator, 2);
+  assert.equal(faceA.statistics.registered_statistic.numerator, 2);
+
+  const rendered = renderPoweredRunReport(report);
+  assert.match(rendered, /technical losses \(disclosed, never rerun, not in any denominator\): 1/u);
+  assert.match(rendered, /merged-faceA-pow-b01-edged-w9/u);
+
+  const cleanReport = summarizeTutorStubResistantLearnerMergedPoweredRun({
+    rows: rows.filter((row) => row !== lossRow),
+    design: loaded.design,
+    dialoguesPerFace: 3,
+  });
+  assert.equal('disclosed_amendments' in cleanReport, false);
+
+  const shortReport = summarizeTutorStubResistantLearnerMergedPoweredRun({
+    rows: rows.slice(1),
+    design: loaded.design,
+    dialoguesPerFace: 3,
+  });
+  assert.equal(shortReport.faces[0].gates.execution_and_typed_failure_accounting, false);
+});
+
+test('powered resume banks recorded units, never reruns the lost unit, and finishes the plan', async () => {
+  const loaded = loadV5();
+  const plan = buildTutorStubResistantLearnerPoweredPlan(loaded.design, { dialoguesPerFace: 36 });
+  const preflight = {
+    phase: 'powered',
+    dialogues_per_face: 36,
+    hard_attempt_ceiling: plan.jobs.length * loaded.design.attemptCeilings.maximumReservationsPerDialogue,
+    plan,
+  };
+  const destination = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'powered-resume-')), 'run-root');
+  const crashJobId = plan.jobs[5].id;
+  const provenance = { commit: 'test-commit', tree: 'test-tree', dirty: false, enforcement: 'recorded_not_pinned' };
+  const approval = { powered_run_authorized: true, dialogues_per_face: 36 };
+  const firstRunCalls = [];
+  const firstReport = await executeTutorStubResistantLearnerMergedCalibration({
+    loaded,
+    destination,
+    parallelism: 1,
+    preflight,
+    approval,
+    provenance,
+    childSpec: ({ job }) => ({ jobId: job.id }),
+    runChild: async (spec) => {
+      firstRunCalls.push(spec.jobId);
+      return { code: spec.jobId === crashJobId ? 1 : 0, signal: null, spawn_error: null };
+    },
+    extractRow: ({ job }) =>
+      job.id === crashJobId
+        ? { status: 'failed', job: { id: job.id, face_id: job.face_id }, attempts: 5, registered_failure: null }
+        : { ...syntheticPoweredRow({ faceId: job.face_id, id: job.id, rung: '1' }), attempts: 3 },
+  });
+  assert.equal(firstReport.status, 'failed');
+  assert.match(firstReport.halt_reason, /technical failure/u);
+  assert.equal(firstReport.execution.failed_units, 1);
+  const bankedIds = firstRunCalls.slice();
+  const firstAttempts = firstReport.execution.model_attempts;
+  assert.equal(firstAttempts, (bankedIds.length - 1) * 3 + 5);
+
+  const resumeCalls = [];
+  const finalReport = await executeTutorStubResistantLearnerMergedCalibration({
+    loaded,
+    destination,
+    parallelism: 2,
+    preflight,
+    approval,
+    provenance,
+    resume: true,
+    childSpec: ({ job }) => ({ jobId: job.id }),
+    runChild: async (spec) => {
+      resumeCalls.push(spec.jobId);
+      return { code: 0, signal: null, spawn_error: null };
+    },
+    extractRow: ({ job }) => ({ ...syntheticPoweredRow({ faceId: job.face_id, id: job.id, rung: '1' }), attempts: 3 }),
+  });
+  assert.ok(resumeCalls.every((id) => !bankedIds.includes(id)));
+  assert.ok(!resumeCalls.includes(crashJobId));
+  assert.equal(resumeCalls.length, plan.jobs.length - bankedIds.length);
+  assert.equal(finalReport.status, 'passed');
+  assert.equal(finalReport.halt_reason, null);
+  assert.equal(finalReport.execution.complete_units, plan.jobs.length - 1);
+  assert.equal(finalReport.execution.failed_units, 1);
+  assert.equal(finalReport.execution.missing_units, 0);
+  assert.equal(finalReport.execution.model_attempts, firstAttempts + resumeCalls.length * 3);
+  const crashFace = plan.jobs[5].face_id;
+  const lossFace = finalReport.faces.find((face) => face.face_id === crashFace);
+  assert.deepEqual(lossFace.technical_losses.case_ids, [crashJobId]);
+  assert.ok(fs.existsSync(path.join(destination, 'report.halted.1.json')));
+  const ledger = fs
+    .readFileSync(path.join(destination, 'run-ledger.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map((line) => JSON.parse(line));
+  const resumeEvent = ledger.find((event) => event.type === 'resume');
+  assert.equal(resumeEvent.prior_technical_losses, 1);
+  assert.equal(resumeEvent.remaining_units, plan.jobs.length - bankedIds.length);
+
+  assert.throws(
+    () =>
+      readTutorStubResistantLearnerMergedResumeState({
+        destination,
+        loaded: { ...loaded, sha256: 'different' },
+        plan,
+      }),
+    /same sealed design/u,
+  );
 });
