@@ -14,6 +14,7 @@ import {
   tutorStubResistantLearnerMergedFaceDesign,
 } from '../services/tutorStubResistantLearnerCalibration.js';
 import { tutorStubResistantLearnerCalibrationChildSpec } from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
+import { renderPoweredRunReport } from '../scripts/report-resistant-learner-powered-run.js';
 import {
   buildTutorStubResistantLearnerMergedApproval,
   runTutorStubResistantLearnerMergedPreflight,
@@ -418,4 +419,37 @@ test('the launcher child spec forwards the powered size to the child', () => {
   });
   assert.equal(calibrationSpec.args.includes('--resistant-learner-powered-dialogues-per-face'), false);
   fs.rmSync(destination, { recursive: true, force: true });
+});
+
+test('the powered report reader prints the registered statistic and failure breakdown', () => {
+  const loaded = loadV5();
+  const retained = {
+    ...syntheticPoweredRow({ faceId: 'faceA', id: 'merged-faceA-pow-b01-warm-w2', rung: '1' }),
+    status: 'retained_substantive_failure',
+    registered_failure: { code: 'tutor_stub_tutor_discriminating_question_non_delivery' },
+  };
+  retained.job = { ...retained.job, world: 'world_030_rowan_flat', register: 'warm' };
+  const rows = [
+    syntheticPoweredRow({ faceId: 'faceA', id: 'merged-faceA-pow-b01-warm-w1', rung: '2' }),
+    syntheticPoweredRow({ faceId: 'faceA', id: 'merged-faceA-pow-b01-plain-w1', rung: '1' }),
+    retained,
+    syntheticPoweredRow({ faceId: 'faceB', id: 'merged-faceB-pow-b01-w1-warm-r1', rung: '1' }),
+    syntheticPoweredRow({ faceId: 'faceB', id: 'merged-faceB-pow-b01-w1-plain-r1', rung: '1' }),
+    syntheticPoweredRow({ faceId: 'faceB', id: 'merged-faceB-pow-b01-w1-edged-r1', rung: '1' }),
+  ];
+  const report = summarizeTutorStubResistantLearnerMergedPoweredRun({
+    rows,
+    design: loaded.design,
+    dialoguesPerFace: 3,
+  });
+  const text = renderPoweredRunReport(report);
+  assert.match(text, /run status: passed/);
+  assert.match(text, /faceA \(B1\): passed/);
+  assert.match(text, /registered statistic \(rung>=1 among determinate completed\): 2\/2 = 1\.000/);
+  assert.match(text, /practical floor 0\.25 met/);
+  assert.match(text, /1x tutor_stub_tutor_discriminating_question_non_delivery/);
+  assert.match(text, /1x at world_030_rowan_flat \/ warm/);
+  assert.match(text, /faceB \(R1\): passed/);
+  assert.match(text, /cross-face pooling allowed: no/);
+  assert.throws(() => renderPoweredRunReport({ schema: 'other' }), /requires a merged powered-run report/);
 });
