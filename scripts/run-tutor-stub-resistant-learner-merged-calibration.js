@@ -180,6 +180,9 @@ export async function executeTutorStubResistantLearnerMergedCalibration({
     const state = readTutorStubResistantLearnerMergedResumeState({ destination, loaded, plan });
     rows = state.rows;
     attempts = state.attempts;
+    if (attempts >= preflight.hard_attempt_ceiling) {
+      throw new Error('recorded attempts already reach the ceiling; nothing may resume');
+    }
     appendLedger(ledgerPath, {
       type: 'resume',
       source_commit: provenance.commit,
@@ -242,12 +245,16 @@ export async function executeTutorStubResistantLearnerMergedCalibration({
       const exit = await runChild(spec);
       const row = extractRow({ job, spec, exit });
       attempts += row.attempts;
-      if (row.attempts > loaded.design.attemptCeilings.maximumReservationsPerDialogue) {
-        throw new Error(`job ${job.id} exceeded its per-dialogue attempt ceiling`);
-      }
-      if (attempts > preflight.hard_attempt_ceiling) throw new Error('merged calibration attempt ceiling exceeded');
+      // A ceiling breach halts the run but must never lose the paid outcome:
+      // the row is recorded and the report is still written.
+      const ceilingBreach =
+        row.attempts > loaded.design.attemptCeilings.maximumReservationsPerDialogue
+          ? `attempt ceiling breach: job ${job.id} used ${row.attempts} reservations (limit ${loaded.design.attemptCeilings.maximumReservationsPerDialogue})`
+          : attempts > preflight.hard_attempt_ceiling
+            ? `attempt ceiling breach: cumulative ${attempts} exceeds ${preflight.hard_attempt_ceiling}`
+            : null;
       rows.push(row);
-      haltReason ||= tutorStubResistantLearnerCalibrationHaltReason(row);
+      haltReason ||= ceilingBreach || tutorStubResistantLearnerCalibrationHaltReason(row);
       appendLedger(ledgerPath, {
         type: 'unit_complete',
         job_id: job.id,

@@ -166,8 +166,15 @@ export async function runTutorStubResistantLearnerMergedPreflight({
     ...(resume
       ? { destination_resumable: destinationExists(destination) === true }
       : { destination_absent: destinationExists(destination) === false }),
-    planned_calls_match_design:
-      plannedRoleCalls === plan.jobs.length * loaded.design.attemptCeilings.plannedCallsPerDialogue,
+    // For powered runs the planned-calls product IS the definition, so a
+    // match check would recompute its own expectation; only calibration has
+    // an independent registered constant to compare against.
+    ...(powered
+      ? {}
+      : {
+          planned_calls_match_design:
+            plannedRoleCalls === plan.jobs.length * loaded.design.attemptCeilings.plannedCallsPerDialogue,
+        }),
     planned_calls_within_ceiling: plannedRoleCalls <= hardAttemptCeiling,
   };
   return {

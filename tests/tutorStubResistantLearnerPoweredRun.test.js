@@ -595,3 +595,65 @@ test('powered resume banks recorded units, never reruns the lost unit, and finis
     /same sealed design/u,
   );
 });
+
+test('a ceiling breach halts with the row recorded and the report written', async () => {
+  const loaded = loadV5();
+  const plan = buildTutorStubResistantLearnerPoweredPlan(loaded.design, { dialoguesPerFace: 36 });
+  const perDialogueMax = loaded.design.attemptCeilings.maximumReservationsPerDialogue;
+  const preflight = {
+    phase: 'powered',
+    dialogues_per_face: 36,
+    hard_attempt_ceiling: plan.jobs.length * perDialogueMax,
+    plan,
+  };
+  const destination = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'powered-ceiling-')), 'run-root');
+  const breachJobId = plan.jobs[3].id;
+  const report = await executeTutorStubResistantLearnerMergedCalibration({
+    loaded,
+    destination,
+    parallelism: 1,
+    preflight,
+    approval: { powered_run_authorized: true, dialogues_per_face: 36 },
+    provenance: { commit: 'test', tree: 'test', dirty: false, enforcement: 'recorded_not_pinned' },
+    childSpec: ({ job }) => ({ jobId: job.id }),
+    runChild: async () => ({ code: 0, signal: null, spawn_error: null }),
+    extractRow: ({ job }) => ({
+      ...syntheticPoweredRow({ faceId: job.face_id, id: job.id, rung: '1' }),
+      attempts: job.id === breachJobId ? perDialogueMax + 1 : 3,
+    }),
+  });
+  assert.equal(report.status, 'failed');
+  assert.match(report.halt_reason, /attempt ceiling breach/u);
+  assert.ok(fs.existsSync(path.join(destination, 'report.json')));
+  assert.ok(report.rows.some((row) => row.job.id === breachJobId));
+  const ledger = fs
+    .readFileSync(path.join(destination, 'run-ledger.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map((line) => JSON.parse(line));
+  const breachEvent = ledger.find((event) => event.job_id === breachJobId);
+  assert.match(breachEvent.halt_reason, /attempt ceiling breach/u);
+
+  const reportPath = path.join(destination, 'report.json');
+  const doctored = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  doctored.execution.model_attempts = preflight.hard_attempt_ceiling;
+  fs.writeFileSync(reportPath, JSON.stringify(doctored, null, 2));
+  await assert.rejects(
+    executeTutorStubResistantLearnerMergedCalibration({
+      loaded,
+      destination,
+      parallelism: 1,
+      preflight,
+      approval: { powered_run_authorized: true, dialogues_per_face: 36 },
+      provenance: { commit: 'test', tree: 'test', dirty: false, enforcement: 'recorded_not_pinned' },
+      resume: true,
+      childSpec: ({ job }) => ({ jobId: job.id }),
+      runChild: async () => ({ code: 0, signal: null, spawn_error: null }),
+      extractRow: ({ job }) => ({
+        ...syntheticPoweredRow({ faceId: job.face_id, id: job.id, rung: '1' }),
+        attempts: 3,
+      }),
+    }),
+    /nothing may resume/u,
+  );
+});
