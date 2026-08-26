@@ -18,6 +18,7 @@ export const TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES = Object.freeze([
   // child boundary as retained substantive outcomes and never become learner
   // noncompliance or a determinate rung.
   'tutor_stub_tutor_bounded_test_non_delivery',
+  'tutor_stub_tutor_discriminating_question_non_delivery',
   'tutor_stub_tutor_delivery_adjudication_indeterminate',
 ]);
 

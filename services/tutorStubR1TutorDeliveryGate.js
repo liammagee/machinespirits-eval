@@ -8,6 +8,8 @@
 import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
 
 export const TUTOR_STUB_TUTOR_BOUNDED_TEST_NON_DELIVERY_CODE = 'tutor_stub_tutor_bounded_test_non_delivery';
+export const TUTOR_STUB_TUTOR_DISCRIMINATING_QUESTION_NON_DELIVERY_CODE =
+  'tutor_stub_tutor_discriminating_question_non_delivery';
 
 export async function applyTutorStubR1TutorDeliveryGate({
   state,
@@ -86,10 +88,17 @@ export async function applyTutorStubR1TutorDeliveryGate({
     publicTranscriptChanged: false,
   });
   if (!verdict.delivered) {
+    const study = state?.resistanceActionRegisterStudy?.resistant_learner_study;
     const error = new Error(
-      'registered face-B tutor failed to deliver the bounded standing-conditions test after the allowed repair',
+      study === 'B1'
+        ? 'registered face-A tutor failed to deliver the discriminating question after the allowed repair'
+        : 'registered face-B tutor failed to deliver the bounded standing-conditions test after the allowed repair',
     );
-    error.code = TUTOR_STUB_TUTOR_BOUNDED_TEST_NON_DELIVERY_CODE;
+    error.code =
+      enforcement.exhaustionCode ||
+      (study === 'B1'
+        ? TUTOR_STUB_TUTOR_DISCRIMINATING_QUESTION_NON_DELIVERY_CODE
+        : TUTOR_STUB_TUTOR_BOUNDED_TEST_NON_DELIVERY_CODE);
     error.disposition = enforcement.exhaustionDisposition;
     error.substantiveStudyFailure = true;
     error.recoverable = false;
@@ -100,4 +109,8 @@ export async function applyTutorStubR1TutorDeliveryGate({
   return candidate;
 }
 
-export default { applyTutorStubR1TutorDeliveryGate, TUTOR_STUB_TUTOR_BOUNDED_TEST_NON_DELIVERY_CODE };
+export default {
+  applyTutorStubR1TutorDeliveryGate,
+  TUTOR_STUB_TUTOR_BOUNDED_TEST_NON_DELIVERY_CODE,
+  TUTOR_STUB_TUTOR_DISCRIMINATING_QUESTION_NON_DELIVERY_CODE,
+};

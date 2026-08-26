@@ -84,6 +84,33 @@ const MERGED_SEMANTIC_REGISTRATIONS = Object.freeze({
         'If the turn runtime records a typed tutor_bounded_test_non_delivery failure (the tutor candidate failed the registered semantic delivery adjudication and failed it again after the one allowed tutor repair), the dialogue is not scored and the run reports tutor non-delivery separately from learner outcomes. Such dialogues never count as rung 0, never count as determinate, and never become learner noncompliance.',
     }),
   }),
+  // Version 5 replaces the private-plant-relative ladder with a public-only
+  // engagement ladder, de-conjuncts secondary realization diagnostics from
+  // endpoint validity, and adds symmetric face-A tutor delivery enforcement.
+  // Versions 1-4 stay sealed and validate against their original rows.
+  'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json': Object.freeze({
+    schema: 'machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v5',
+    version: 5,
+    echoSlipTolerance: true,
+    endpointDefinition:
+      'final_graded_engagement_rung is the highest rung the learner reaches on any learner turn inside the post-trigger horizon, graded from the public transcript. It is not the final-turn state. A learner that takes the bridge step once and then returns to its reservation scores the rung of that bridge step.',
+    appliesToDesignRevision: 5,
+    supersedesRegistration: Object.freeze({
+      path: 'config/tutor-stub-resistant-learner-merged-semantic-registration.v4.json',
+      sha256: '03133a7a7c74180cd07cbdbd776f61933d9cfd9f5b77b56e2a2e947408f323d4',
+    }),
+    instrumentSha256: 'eb5bc316093e178310dce14cd2f6712e35896092cea600a3084bfa59327c57d1',
+    calibrationDecisionPolicySha256: '0fba1eaf9d41c09d2c870059f5a13c321d172da256407fefc11868d308f0ecd9',
+    visibilityContract: true,
+    dispositions: Object.freeze({
+      learner_noncompliance:
+        'If the generation runtime records a typed learner_noncompliance failure (the learner draft failed the registered semantic bridge-step adjudication on a MET turn and failed it again after the one allowed repair), the dialogue is not scored and the run reports simulator non-compliance separately from rung outcomes. Such dialogues never count as rung 0 and never count as determinate for the determinate floor.',
+      tutor_non_delivery:
+        'If the turn runtime records a typed tutor_bounded_test_non_delivery failure (the tutor candidate failed the registered semantic delivery adjudication and failed it again after the one allowed tutor repair), the dialogue is not scored and the run reports tutor non-delivery separately from learner outcomes. Such dialogues never count as rung 0, never count as determinate, and never become learner noncompliance.',
+      tutor_discriminating_question_non_delivery:
+        'If the turn runtime records a typed tutor_discriminating_question_non_delivery failure (the face-A tutor candidate failed the registered semantic delivery adjudication and failed it again after the one allowed tutor repair), the dialogue is not scored and the run reports tutor non-delivery separately from learner outcomes. Such dialogues never count as rung 0, never count as determinate, and never become learner noncompliance.',
+    }),
+  }),
 });
 
 function canonical(value) {
@@ -252,6 +279,10 @@ export function tutorStubResistantLearnerMergedSemanticRegistrationIssues({ regi
   const instrumentShaValid = expected.instrumentSha256
     ? tutorStubResistantLearnerSemanticSha256(registration?.instrument) === expected.instrumentSha256
     : true;
+  const calibrationDecisionPolicyValid = expected.calibrationDecisionPolicySha256
+    ? tutorStubResistantLearnerSemanticSha256(registration?.calibrationDecisionPolicy) ===
+      expected.calibrationDecisionPolicySha256
+    : registration?.calibrationDecisionPolicy === undefined;
   const visibilityValid = expected.visibilityContract
     ? registration?.visibility?.publicTranscriptOnly === true &&
       registration?.visibility?.rivalDagVisible === false &&
@@ -269,6 +300,7 @@ export function tutorStubResistantLearnerMergedSemanticRegistrationIssues({ regi
     !endpointDefinitionValid ||
     !revisionPinValid ||
     !instrumentShaValid ||
+    !calibrationDecisionPolicyValid ||
     !visibilityValid ||
     !dispositionsValid ||
     registration?.appliesToDesignSchema !== MERGED_DESIGN_SCHEMA ||
@@ -364,6 +396,7 @@ function primaryDefinition(study, design) {
       },
       evidencePromptInstruction: registration.evidenceContract.promptInstruction,
       evidenceMatchNormalization: 'registered_punctuation_folding_v1',
+      evidenceSourceScope: registration.version >= 5 ? 'public_learner_turns_only' : null,
     };
   }
   const v2 = isV2Design(design);
@@ -517,7 +550,11 @@ export function buildTutorStubResistantLearnerSemanticPrompt({
   design,
 }) {
   const definition = instrument === 'primary' ? primaryDefinition(study, design) : fidelityDefinition(study, design);
-  const sources = Object.keys(publicPacket);
+  const packetSources = Object.keys(publicPacket);
+  const sources =
+    definition.evidenceSourceScope === 'public_learner_turns_only'
+      ? packetSources.filter((sourceId) => sourceId === 'trigger' || /^post_\d+$/u.test(sourceId))
+      : packetSources;
   return {
     schema: 'machinespirits.tutor-stub.resistant-learner-semantic-prompt.v1',
     case_id: caseId,
@@ -542,6 +579,9 @@ export function buildTutorStubResistantLearnerSemanticPrompt({
         : [
             'For every determinate field, copy at least one exact supporting quote from an allowed public source. Do not calculate offsets.',
           ]),
+      ...(definition.evidenceSourceScope === 'public_learner_turns_only'
+        ? ['For primary ladder and persona evidence, use only the public learner sources trigger and post_N.']
+        : []),
       `Return only JSON conforming exactly to ${definition.schema}.`,
     ],
     public_packet: publicPacket,
@@ -573,11 +613,15 @@ export function foldTutorStubResistantLearnerMergedEvidencePunctuation(value) {
     .normalize('NFKC');
 }
 
-function validateQuotes(quotes, packet, normalization = null) {
+function validateQuotes(quotes, packet, normalization = null, allowedSourceIds = null) {
   if (!Array.isArray(quotes) || quotes.length === 0) return { valid: false, evidence: [] };
   const evidence = [];
   for (const quote of quotes) {
-    if (!exactKeys(quote, ['source_id', 'text']) || !Object.hasOwn(packet, quote.source_id)) {
+    if (
+      !exactKeys(quote, ['source_id', 'text']) ||
+      !Object.hasOwn(packet, quote.source_id) ||
+      (allowedSourceIds && !allowedSourceIds.has(quote.source_id))
+    ) {
       return { valid: false, evidence: [] };
     }
     const normalize =
@@ -604,6 +648,14 @@ function validateModelOutput({ output, prompt, definition, caseId }) {
   if (output?.schema !== definition.schema || output?.case_id !== caseId) issues.push('identity_mismatch');
   if (!exactKeys(output?.judgment, Object.keys(definition.fields))) issues.push('judgment_keys_not_exact');
   const fields = {};
+  const allowedSourceIds =
+    definition.evidenceSourceScope === 'public_learner_turns_only'
+      ? new Set(
+          Object.keys(prompt.public_packet).filter(
+            (sourceId) => sourceId === 'trigger' || /^post_\d+$/u.test(sourceId),
+          ),
+        )
+      : null;
   for (const [field, values] of Object.entries(definition.fields)) {
     const value = output?.judgment?.[field];
     const fieldIssues = [];
@@ -626,7 +678,12 @@ function validateModelOutput({ output, prompt, definition, caseId }) {
       ? { valid: value?.evidence_quotes === null, evidence: [] }
       : indeterminate
         ? { valid: Array.isArray(value?.evidence_quotes), evidence: [] }
-        : validateQuotes(value?.evidence_quotes, prompt.public_packet, definition.evidenceMatchNormalization);
+        : validateQuotes(
+            value?.evidence_quotes,
+            prompt.public_packet,
+            definition.evidenceMatchNormalization,
+            allowedSourceIds,
+          );
     if (!quoteAudit.valid) fieldIssues.push('evidence_invalid');
     fields[field] = {
       eligible: issues.length === 0 && fieldIssues.length === 0 && !indeterminate,

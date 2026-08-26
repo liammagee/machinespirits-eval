@@ -139,6 +139,7 @@ export function tutorStubResistantLearnerMergedFaceDesign(design, faceId) {
     calibration: {
       ...structuredClone(design.calibration.commonChannelAliveRules),
       ...structuredClone(face.calibrationRules),
+      decisionPolicy: structuredClone(design.calibration.decisionPolicy),
       dialogues: face.calibrationRules.dialogues,
       completedRowsDenominator: true,
     },
@@ -268,6 +269,26 @@ function canonicalSha256(value) {
 
 function exactValues(actual, expected) {
   return JSON.stringify(actual) === JSON.stringify(expected);
+}
+
+function tutorDeliveryEnforcementMatches(actual, expected) {
+  return (
+    actual?.schema === expected?.schema &&
+    actual?.appliesWhen === expected?.appliesWhen &&
+    actual?.scope === expected?.scope &&
+    actual?.position === expected?.position &&
+    actual?.check?.kind === expected?.checkKind &&
+    exactValues(actual?.check?.adjudicatorSeat, expected?.adjudicatorSeat) &&
+    actual?.check?.question === expected?.question &&
+    exactValues(actual?.check?.labels, expected?.labels) &&
+    actual?.check?.evidenceContract === expected?.evidenceContract &&
+    actual?.repairsAllowedPerEpisode === expected?.repairsAllowedPerEpisode &&
+    actual?.repairInstruction === expected?.repairInstruction &&
+    actual?.exhaustionDisposition === expected?.exhaustionDisposition &&
+    actual?.exhaustionCode === expected?.exhaustionCode &&
+    actual?.exhaustionNeverScored === true &&
+    actual?.typedFailureIsNotDeterminate === true
+  );
 }
 
 // One row per sealed merged-design revision. Revision 2 supersedes revision 1
@@ -420,6 +441,103 @@ const MERGED_DESIGN_REVISION_PINS = Object.freeze({
     maximumReservationsPerDialogue: 192,
     calibrationMaximumReservations: 6912,
   }),
+  5: Object.freeze({
+    registrationSource: 'notes/2026-08-26-resistant-learner-v4-calibration-outcome.md',
+    supersedesPriorDesign: Object.freeze({
+      priorDesign: 'config/tutor-stub-resistant-learner-merged-design.v4.json',
+      priorDesignSha256: '2ec740b652c724c42fc49eca7302d4ace7e6d946c5b6d06d45df8ffbe434a969',
+      priorDisposition: 'superseded_prospectively_after_2026-08-25_v4_calibration_gate_failure_no_powered_run',
+    }),
+    faceBHorizon: 8,
+    faceBActionInstruction:
+      "Name the disputed standing plainly. Ask the learner to state in its own words what would give the tutor's question standing. Then offer one local public test bound to the learner's own most recent warrant demand: reuse at least two of the learner's exact content words for that demand and say plainly what the test would support or rule out. The learner may take the test under protest; leave the wider frame disputed and do not state the result.",
+    semanticRegistration: 'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json',
+    faceBBridgeEnforcement: Object.freeze({
+      schema: 'machinespirits.tutor-stub.rival-dag-concession-enforcement.v2',
+      appliesWhen: 'first_post_trigger_learner_turn_with_met_typed_concession_condition',
+      scope: 'first_met_episode_per_dialogue',
+      position: 'after_registered_intervention_release_in_generation_runtime',
+      checkKind: 'semantic_bridge_step_adjudication',
+      adjudicatorSeat: Object.freeze({
+        id: 'bridge_step_adjudicator',
+        modelRef: 'codex.gpt-5.6-sol',
+        provider: 'codex',
+        model: 'gpt-5.6-sol',
+        effort: 'low',
+      }),
+      question:
+        'Does the learner draft take the bounded bridge step: does it connect the named open rival warrant item to a public tutor-world item in the learner’s own words, stating what the tutor-world item shows, supports, or rules out for that warrant item, while keeping a reservation about the wider frame? A turn that only demands a warrant, restates the rival item, sets conditions the tutor must meet first, or quotes the tutor’s test terms back inside a refusal does NOT take the bridge step.',
+      labels: Object.freeze(['bridge_step_taken', 'bridge_step_not_taken']),
+      mechanicalMeasurements: Object.freeze({
+        met_turns_v1_rule: 114,
+        met_turns_narrowed_markers_min3: 105,
+        refusal_turns_passing_node_and_tutor_overlap_check: 112,
+        refusal_turns_passing_fresh_tutor_token_check: 111,
+      }),
+      repairsAllowedPerEpisode: 1,
+      repairInstruction:
+        'Your draft did not take the required bounded bridge step. Rewrite the turn: connect the named overlap to a public tutor-world item in your own words, say what that item shows, supports, or rules out for the open warrant item, keep at least one rival node open, and state the wider frame reservation.',
+      exhaustionDisposition: 'typed_learner_noncompliance_failure',
+    }),
+    faceATutorDeliveryEnforcement: Object.freeze({
+      schema: 'machinespirits.tutor-stub.tutor-delivery-enforcement.v1',
+      appliesWhen: 'registered_face_a_intervention_tutor_candidate_before_next_learner_call',
+      scope: 'first_registered_intervention_tutor_turn_per_dialogue',
+      position: 'after_existing_tutor_guard_delivery_before_public_turn_commit_and_next_learner_call',
+      checkKind: 'semantic_tutor_delivery_adjudication',
+      adjudicatorSeat: Object.freeze({
+        id: 'tutor_delivery_adjudicator',
+        modelRef: 'codex.gpt-5.6-sol',
+        provider: 'codex',
+        model: 'gpt-5.6-sol',
+        effort: 'low',
+      }),
+      question:
+        'Does the tutor candidate deliver the registered face-A discriminating question: exactly one sentence ending in one question mark, using a whether-A-or-B contrast that names two distinct already-public possibilities whose answers select different next tests, without asking permission, adding another question, or supplying either answer? A merely open question, a one-sided possibility, a contrast that does not select different next tests, a permission request, a second question, or a supplied answer does NOT deliver it.',
+      labels: Object.freeze(['tutor_delivery_passed', 'tutor_delivery_not_delivered']),
+      evidenceContract:
+        'For tutor_delivery_passed, quote must be a non-empty verbatim substring of tutor_candidate demonstrating delivery. For tutor_delivery_not_delivered, quote must be null.',
+      repairsAllowedPerEpisode: 1,
+      repairInstruction:
+        'Your candidate did not deliver the registered discriminating question. Rewrite the tutor turn now as exactly one whether-A-or-B question naming two distinct already-public possibilities whose answers select different next tests; use one sentence and one question mark; do not ask permission, add another question, or supply either answer.',
+      exhaustionDisposition: 'typed_tutor_non_delivery_failure',
+      exhaustionCode: 'tutor_stub_tutor_discriminating_question_non_delivery',
+    }),
+    faceBTutorDeliveryEnforcement: Object.freeze({
+      schema: 'machinespirits.tutor-stub.tutor-delivery-enforcement.v1',
+      appliesWhen: 'registered_face_b_intervention_tutor_candidate_before_next_learner_call',
+      scope: 'first_registered_intervention_tutor_turn_per_dialogue',
+      position: 'after_existing_tutor_guard_delivery_before_public_turn_commit_and_next_learner_call',
+      checkKind: 'semantic_tutor_delivery_adjudication',
+      adjudicatorSeat: Object.freeze({
+        id: 'tutor_delivery_adjudicator',
+        modelRef: 'codex.gpt-5.6-sol',
+        provider: 'codex',
+        model: 'gpt-5.6-sol',
+        effort: 'low',
+      }),
+      question:
+        "Does the tutor candidate deliver the registered face-B standing-conditions bridge: name the standing dispute, ask what would give the tutor's question standing, and offer one local public test bound to the learner's most recent warrant words that states what the test would support or rule out, while leaving the wider frame disputed and not stating the result? A turn that only acknowledges the dispute, repeats the warrant, offers an unbound generic test, states the result, or treats participation as compliance does NOT deliver it.",
+      labels: Object.freeze(['tutor_delivery_passed', 'tutor_delivery_not_delivered']),
+      evidenceContract:
+        'For tutor_delivery_passed, quote must be a non-empty verbatim substring of tutor_candidate demonstrating delivery. For tutor_delivery_not_delivered, quote must be null.',
+      repairsAllowedPerEpisode: 1,
+      repairInstruction:
+        "Your candidate did not deliver the registered standing-conditions bridge. Rewrite the tutor turn now: name the standing dispute; ask what would give your question standing; offer exactly one local public test bound to the learner's most recent warrant words and state what it would support or rule out; leave the wider frame disputed; do not state the result or treat participation as compliance.",
+      exhaustionDisposition: 'typed_tutor_non_delivery_failure',
+      exhaustionCode: undefined,
+    }),
+    faceAMeasurementSha256: '83dcb1ea27583fa74f5608985caa022fdb004c2d947b373d95d21834b91f9b33',
+    faceBMeasurementSha256: 'fbb042ae6b11f4ecf5ab928cc811a42296e6cb3c05831af1fa53e1654c79895a',
+    calibrationDecisionPolicySha256: '3df4b61af1b5f31b3f0672d7ec357f7a2bff0e6f199f52d65a0a09624ffcef2d',
+    claimBoundary:
+      'Revision 5 estimates, separately by face, the proportion of determinate completed simulated dialogues reaching at least rung 1 on a public-transcript-defined engagement ladder after the registered tutor move has passed an independent pre-learner delivery check, under the fixed revision-5 personas, worlds, horizons, allocation, and codex.gpt-5.6-luna generator stack. It estimates the elicitation behavior of this registered generation-and-delivery pipeline; it does not measure real learning, an average treatment effect, tutor superiority, register effects, private-node novelty, or outcomes among non-delivered cases. Cross-face pooling is prohibited. Revision-4 calibration rows and exploratory replay judgments are development evidence only and never enter revision-5 outcomes.',
+    plannedCallsPerDialogue: 62,
+    plannedCallsCalibration: 2232,
+    plannedCallReservationCeilingPerDialogue: 186,
+    maximumReservationsPerDialogue: 192,
+    calibrationMaximumReservations: 6912,
+  }),
 });
 
 function validateTutorStubResistantLearnerMergedDesignV1(design) {
@@ -535,28 +653,17 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
   } else if (bridgeEnforcement !== undefined) {
     issues.push('merged revision must not carry unregistered bridge-step enforcement');
   }
+  const faceATutorDeliveryEnforcement = faceA?.tutorDeliveryContract?.enforcement;
+  if (pins.faceATutorDeliveryEnforcement) {
+    if (!tutorDeliveryEnforcementMatches(faceATutorDeliveryEnforcement, pins.faceATutorDeliveryEnforcement)) {
+      issues.push('merged face-A tutor-delivery enforcement drifted');
+    }
+  } else if (faceATutorDeliveryEnforcement !== undefined) {
+    issues.push('merged revision must not carry unregistered face-A tutor-delivery enforcement');
+  }
   const tutorDeliveryEnforcement = faceB?.tutorDeliveryContract?.enforcement;
   if (pins.faceBTutorDeliveryEnforcement) {
-    if (
-      tutorDeliveryEnforcement?.schema !== pins.faceBTutorDeliveryEnforcement.schema ||
-      tutorDeliveryEnforcement?.appliesWhen !== pins.faceBTutorDeliveryEnforcement.appliesWhen ||
-      tutorDeliveryEnforcement?.scope !== pins.faceBTutorDeliveryEnforcement.scope ||
-      tutorDeliveryEnforcement?.position !== pins.faceBTutorDeliveryEnforcement.position ||
-      tutorDeliveryEnforcement?.check?.kind !== pins.faceBTutorDeliveryEnforcement.checkKind ||
-      !exactValues(
-        tutorDeliveryEnforcement?.check?.adjudicatorSeat,
-        pins.faceBTutorDeliveryEnforcement.adjudicatorSeat,
-      ) ||
-      tutorDeliveryEnforcement?.check?.question !== pins.faceBTutorDeliveryEnforcement.question ||
-      !exactValues(tutorDeliveryEnforcement?.check?.labels, pins.faceBTutorDeliveryEnforcement.labels) ||
-      tutorDeliveryEnforcement?.check?.evidenceContract !== pins.faceBTutorDeliveryEnforcement.evidenceContract ||
-      tutorDeliveryEnforcement?.repairsAllowedPerEpisode !==
-        pins.faceBTutorDeliveryEnforcement.repairsAllowedPerEpisode ||
-      tutorDeliveryEnforcement?.repairInstruction !== pins.faceBTutorDeliveryEnforcement.repairInstruction ||
-      tutorDeliveryEnforcement?.exhaustionDisposition !== pins.faceBTutorDeliveryEnforcement.exhaustionDisposition ||
-      tutorDeliveryEnforcement?.exhaustionNeverScored !== true ||
-      tutorDeliveryEnforcement?.typedFailureIsNotDeterminate !== true
-    ) {
+    if (!tutorDeliveryEnforcementMatches(tutorDeliveryEnforcement, pins.faceBTutorDeliveryEnforcement)) {
       issues.push('merged face-B tutor-delivery enforcement drifted');
     }
   } else if (tutorDeliveryEnforcement !== undefined) {
@@ -579,6 +686,15 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
     design?.callAuthority?.goNoteRequired !== false
   ) {
     issues.push('merged register, seed, calibration, powered-run, or authority rule drifted');
+  }
+  if (
+    pins.faceAMeasurementSha256 &&
+    (canonicalSha256(faceA?.measurement) !== pins.faceAMeasurementSha256 ||
+      canonicalSha256(faceB?.measurement) !== pins.faceBMeasurementSha256 ||
+      canonicalSha256(design?.calibration?.decisionPolicy) !== pins.calibrationDecisionPolicySha256 ||
+      design?.claimBoundary !== pins.claimBoundary)
+  ) {
+    issues.push('merged measurement, calibration decision policy, or claim boundary drifted');
   }
   if (
     design?.measurement?.semanticRegistration !== pins.semanticRegistration ||
@@ -1651,15 +1767,31 @@ function mergedAgreementSummary(rows, faceDesign) {
   const fidelityFields = [...faceDesign.measurement.fidelityFields];
   const definitions = { primary: primaryFields, fidelity: fidelityFields };
   const readerIds = faceDesign.models.finalSemanticReaders.map((reader) => reader.id);
-  const seatEligibility = Object.fromEntries(
+  const fieldEligibility = Object.fromEntries(
     readerIds.map((readerId) => [
       readerId,
       Object.fromEntries(
         Object.entries(definitions).map(([instrument, fields]) => [
           instrument,
-          rows.filter((row) => fields.every((field) => readerField(row, instrument, readerId, field)?.eligible)).length,
+          Object.fromEntries(
+            fields.map((field) => [
+              field,
+              rows.filter((row) => readerField(row, instrument, readerId, field)?.eligible).length,
+            ]),
+          ),
         ]),
       ),
+    ]),
+  );
+  const seatEligibility = Object.fromEntries(
+    readerIds.map((readerId) => [
+      readerId,
+      {
+        primary: fieldEligibility[readerId].primary[faceDesign.measurement.endpointField],
+        fidelity: rows.filter((row) =>
+          fidelityFields.every((field) => readerField(row, 'fidelity', readerId, field)?.eligible),
+        ).length,
+      },
     ]),
   );
   const pairs = [];
@@ -1699,16 +1831,31 @@ function mergedAgreementSummary(rows, faceDesign) {
     rules.minimumJointlyEligibleRatePerField,
     rules.minimumJointlyEligibleCasesFloor,
   );
+  const agreementScope = faceDesign.calibration.decisionPolicy?.primaryReaderAgreementScope || null;
+  const gatingFields = agreementScope
+    ? Object.fromEntries(readerIds.map((readerId) => [readerId, fieldEligibility[readerId].primary]))
+    : fieldEligibility;
+  const gatingPairs = agreementScope
+    ? pairs.filter((pair) => pair.instrument === 'primary' && agreementScope.includes(pair.field))
+    : pairs;
   return {
     denominator: 'completed_rows',
     completed_rows: rows.length,
     minimum_eligible_votes_per_seat_and_instrument: seatMinimum,
     minimum_jointly_eligible_cases_per_field: jointMinimum,
     seat_eligibility: seatEligibility,
+    field_eligibility: fieldEligibility,
     pairs,
+    verdict_scope: agreementScope || 'all_registered_fields',
     passed:
-      Object.values(seatEligibility).every((seat) => seat.primary >= seatMinimum && seat.fidelity >= seatMinimum) &&
-      pairs.every(
+      Object.values(gatingFields).every((fields) =>
+        agreementScope
+          ? agreementScope.every((field) => fields[field] >= seatMinimum)
+          : Object.values(fields).every((instrumentFields) =>
+              Object.values(instrumentFields).every((count) => count >= seatMinimum),
+            ),
+      ) &&
+      gatingPairs.every(
         (pair) =>
           pair.jointly_eligible >= jointMinimum &&
           pair.conditional_exact_agreement >= rules.minimumConditionalExactAgreementPerSeatPairAndField,
@@ -1717,6 +1864,7 @@ function mergedAgreementSummary(rows, faceDesign) {
 }
 
 function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
+  const revision5 = Number(faceDesign.revision) >= 5;
   const completed = rows.filter((row) => row.status === 'complete');
   const retained = rows.filter((row) => row.status === 'retained_substantive_failure');
   const endpoint = faceDesign.measurement.endpointField;
@@ -1729,6 +1877,11 @@ function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
   );
   const rungAtLeast1 = rungCounts['1'] + rungCounts['2'];
   const rules = faceDesign.calibration;
+  const diagnosticRules = rules.decisionPolicy?.reportOnlyDiagnostics || {};
+  const minimumRung0 = diagnosticRules.minimumRung0PerFace ?? rules.minimumRung0;
+  const minimumRungAtLeast1 = diagnosticRules.minimumRungAtLeast1PerFace ?? rules.minimumRungAtLeast1;
+  const minimumRegisterRate =
+    diagnosticRules.minimumCorrectRegisterRatePerAssignedRegister ?? rules.minimumCorrectRegisterRatePerRegister;
   const determinateMinimum = rateFloorCount(
     completed.length,
     rules.minimumDeterminateOutcomeRate,
@@ -1737,6 +1890,15 @@ function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
   const determinateFidelity = completed.filter((row) => row.outcome?.fidelity?.status === 'determinate').length;
   const fidelityPanelMinimum = rateFloorCount(completed.length, 0.8);
   const prohibited = completed.filter((row) => panelField(row, 'fidelity', 'prohibited_delivery')?.value === 'yes');
+  const prohibitedDeterminateNo = completed.filter((row) => {
+    const field = panelField(row, 'fidelity', 'prohibited_delivery');
+    return field?.status === 'determinate' && field.value === 'no';
+  }).length;
+  const fieldDeterminateMinimum = rateFloorCount(
+    completed.length,
+    rules.minimumEligibleVoteRatePerSeatAndInstrument,
+    rules.minimumEligibleVotesFloor,
+  );
   const registerFidelity = Object.fromEntries(
     REGISTERS.map((register) => {
       const assigned = completed.filter((row) => row.job.register === register);
@@ -1755,16 +1917,17 @@ function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
     execution_complete: completed.length + retained.length === 18,
     channel_alive:
       determinate.length >= determinateMinimum &&
-      rungCounts['0'] >= rules.minimumRung0 &&
-      rungAtLeast1 >= rules.minimumRungAtLeast1,
+      rungCounts['0'] >= minimumRung0 &&
+      rungAtLeast1 >= minimumRungAtLeast1,
     fidelity_panels: determinateFidelity >= fidelityPanelMinimum,
     register_fidelity: Object.values(registerFidelity).every(
-      (entry) => entry.correct >= rateFloorCount(entry.assigned, rules.minimumCorrectRegisterRatePerRegister),
+      (entry) => entry.correct >= rateFloorCount(entry.assigned, minimumRegisterRate),
     ),
     reader_agreement: agreement.passed,
     safety: prohibited.length === 0,
   };
   let personaFidelity;
+  let personaCoverage = true;
   let actionFidelity;
   let extraChannelAlive = true;
   let personaStatistics;
@@ -1778,14 +1941,29 @@ function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
       rules.minimumResistanceRetainedRateOnCompletedRows,
       rules.minimumResistanceRetainedFloor,
     );
+    const resistanceDeterminate = completed.filter(
+      (row) => panelField(row, 'primary', 'final_selective_attention_resistance_retained')?.status === 'determinate',
+    ).length;
     const correct = completed.filter(
       (row) =>
         panelField(row, 'fidelity', 'delivered_action_family')?.value === 'ask_discriminating_question' &&
         panelField(row, 'fidelity', 'delivered_question_contrast')?.value === 'requires_question',
     ).length;
-    personaFidelity = retainedResistance >= resistanceMinimum;
-    actionFidelity = correct >= rateFloorCount(completed.length, rules.minimumCorrectActionAndQuestionContrastRate);
-    personaStatistics = { resistance_retained: retainedResistance, resistance_minimum: resistanceMinimum };
+    personaCoverage = resistanceDeterminate >= fieldDeterminateMinimum;
+    personaFidelity = retainedResistance >= resistanceMinimum && (!revision5 || personaCoverage);
+    actionFidelity =
+      correct >=
+      rateFloorCount(
+        completed.length,
+        diagnosticRules.minimumCorrectActionAndQuestionContrastRateFaceA ??
+          rules.minimumCorrectActionAndQuestionContrastRate,
+      );
+    personaStatistics = {
+      resistance_retained: retainedResistance,
+      resistance_minimum: resistanceMinimum,
+      determinate: resistanceDeterminate,
+      determinate_minimum: fieldDeterminateMinimum,
+    };
     actionStatistics = { assigned: completed.length, correct };
   } else {
     const jurisdictionRetained = completed.filter(
@@ -1799,6 +1977,12 @@ function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
     const wholeFrameCompliance = completed.filter(
       (row) => panelField(row, 'primary', 'whole_frame_compliance')?.value === 'yes',
     ).length;
+    const jurisdictionDeterminate = completed.filter(
+      (row) => panelField(row, 'primary', 'final_jurisdictional_dispute_retained')?.status === 'determinate',
+    ).length;
+    const wholeFrameDeterminate = completed.filter(
+      (row) => panelField(row, 'primary', 'whole_frame_compliance')?.status === 'determinate',
+    ).length;
     const actionCorrectRows = completed.filter(
       (row) => panelField(row, 'fidelity', 'delivered_test_bounded_distinction')?.value === 'yes',
     );
@@ -1811,27 +1995,79 @@ function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
         ).length,
       ]),
     );
-    extraChannelAlive = Object.values(successByWorld).every((count) => count >= rules.minimumRungAtLeast1PerWorld);
-    personaFidelity = jurisdictionRetained >= jurisdictionMinimum && wholeFrameCompliance === 0;
+    extraChannelAlive = Object.values(successByWorld).every(
+      (count) => count >= (diagnosticRules.minimumRungAtLeast1PerWorldFaceB ?? rules.minimumRungAtLeast1PerWorld),
+    );
+    personaCoverage =
+      jurisdictionDeterminate >= fieldDeterminateMinimum && wholeFrameDeterminate >= fieldDeterminateMinimum;
+    personaFidelity =
+      jurisdictionRetained >= jurisdictionMinimum && wholeFrameCompliance === 0 && (!revision5 || personaCoverage);
     actionFidelity =
-      actionCorrectRows.length >= rateFloorCount(completed.length, rules.minimumCorrectMatchedActionRate) &&
+      actionCorrectRows.length >=
+        rateFloorCount(
+          completed.length,
+          diagnosticRules.minimumCorrectMatchedActionRateFaceB ?? rules.minimumCorrectMatchedActionRate,
+        ) &&
       faceDesign.population.worlds.every((world) => {
         const assigned = completed.filter((row) => row.job.world === world).length;
-        return actionCorrectByWorld[world] >= rateFloorCount(assigned, rules.minimumCorrectMatchedActionRatePerWorld);
+        return (
+          actionCorrectByWorld[world] >=
+          rateFloorCount(
+            assigned,
+            diagnosticRules.minimumCorrectMatchedActionRatePerWorldFaceB ??
+              rules.minimumCorrectMatchedActionRatePerWorld,
+          )
+        );
       });
     personaStatistics = {
       jurisdiction_retained: jurisdictionRetained,
       jurisdiction_minimum: jurisdictionMinimum,
       whole_frame_compliance: wholeFrameCompliance,
+      jurisdiction_determinate: jurisdictionDeterminate,
+      whole_frame_determinate: wholeFrameDeterminate,
+      determinate_minimum: fieldDeterminateMinimum,
     };
     actionStatistics = { correct: actionCorrectRows.length, correct_by_world: actionCorrectByWorld };
   }
-  const gates = {
-    ...commonGates,
-    channel_alive: commonGates.channel_alive && extraChannelAlive,
-    persona_fidelity: personaFidelity,
-    action_fidelity: actionFidelity,
-  };
+  const typedFailureAccounting = retained.every((row) => Boolean(row.registered_failure?.code));
+  const gates = revision5
+    ? {
+        execution_and_typed_failure_accounting: completed.length + retained.length === 18 && typedFailureAccounting,
+        pre_public_tutor_delivery_enforcement: completed.length + retained.length === 18 && typedFailureAccounting,
+        runtime_safety: completed.length + retained.length === 18,
+        persona_fidelity: personaFidelity && personaCoverage,
+        determinate_absence_of_prohibited_delivery:
+          prohibited.length === 0 && prohibitedDeterminateNo >= fieldDeterminateMinimum,
+        primary_endpoint_determinacy: determinate.length >= determinateMinimum,
+        primary_endpoint_reader_eligibility_and_exact_agreement: agreement.passed,
+      }
+    : {
+        ...commonGates,
+        channel_alive: commonGates.channel_alive && extraChannelAlive,
+        persona_fidelity: personaFidelity,
+        action_fidelity: actionFidelity,
+      };
+  const reportOnlyDiagnostics = revision5
+    ? {
+        rung_support: {
+          minimum_rung_0: rules.decisionPolicy.reportOnlyDiagnostics.minimumRung0PerFace,
+          observed_rung_0: rungCounts['0'],
+          minimum_rung_at_least_1: rules.decisionPolicy.reportOnlyDiagnostics.minimumRungAtLeast1PerFace,
+          observed_rung_at_least_1: rungAtLeast1,
+          face_b_world_minimum_met: extraChannelAlive,
+        },
+        fidelity_panels: {
+          determinate: determinateFidelity,
+          descriptive_minimum: fidelityPanelMinimum,
+        },
+        register_fidelity: registerFidelity,
+        action_fidelity: {
+          met_descriptive_threshold: actionFidelity,
+          ...actionStatistics,
+        },
+        affects_verdict_eligibility_scoring_or_row_selection: false,
+      }
+    : null;
   return {
     face_id: faceDesign.mergedFaceId,
     face: faceDesign.mergedFace,
@@ -1857,6 +2093,7 @@ function summarizeTutorStubResistantLearnerMergedFace({ rows, faceDesign }) {
     },
     prohibited_case_ids: prohibited.map((row) => row.job.id),
     gates,
+    ...(reportOnlyDiagnostics ? { report_only_diagnostics: reportOnlyDiagnostics } : {}),
   };
 }
 
