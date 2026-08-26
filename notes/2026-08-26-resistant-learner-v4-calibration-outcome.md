@@ -217,3 +217,33 @@ The decision rule applies unchanged: if any floor is missed in either repetition
   SHA-256: `513f258ec4737a887a544cb7802b6613e7e50364e7392d522b0853ea4c2a0dfd`
 
 not registered, not launched — operator decision pending
+
+## 2026-08-26 addendum: alias defect found, Opus-5 rehearsal clears all floors
+
+The Opus-5 seat failures were a code defect, not seat availability. The rehearsal harness resolves each seat through the shared provider alias map in `config/providers.yaml`, which had pinned rows for `sonnet-5` and `opus-4-8` but none for `opus-5`. The resolver fell back to the bare alias `opus-5`, which the Claude CLI rejects with `[claude-code:unrecognized_model] {"model":"opus-5","query_source":"sdk"}` on stderr and a fabricated error message in place of a reply. Every harness Opus-5 call therefore failed on arrival, deterministically, in both the codex sandbox and the operator's attended session, while every route probe passed because probes hand the full model id `claude-opus-5` straight to the bridge. The registered runtime's own route table already carries the full id, so the calibration path itself was never broken. The prior addendum's reading of the failure as a seat-availability leak is superseded by this finding.
+
+The fix is commit `d5ef6142` on this branch: one pinned alias row (`opus-5: claude-opus-5`) plus a harness change that saves the recovered stdout and stderr text for every failed call attempt, so a dark seat names its own cause. No design file, floor, anchor, seat, or registered rule changed; the amended V5 design and registration SHAs recorded above stand.
+
+A relaunch attempt from the operator's attended Claude session at root `resistant-learner-v5-three-reader-opus5-panel-rehearsal-2-2026-08-26` was stopped by hand after 15 records when the fail-fast monitor showed the Opus seat dark (0 eligible of 6). It is preserved as an invalid technical attempt, never citable; its captured error text is what exposed the alias defect.
+
+### Fresh Opus-5 rehearsal (all floors clear)
+
+The fresh create-once root is `resistant-learner-v5-three-reader-opus5-panel-rehearsal-3-2026-08-26` under the same private analysis directory. It ran from the operator's attended Claude session on working tree e5ad6009 with the two `d5ef6142` files applied, reread the same 32 burned revision-4 public transcripts without modifying their root, used two fresh-context repetitions and all three registered low-effort seats, generated no tutor or learner dialogue, ran no tie auditor, and launched no calibration or study.
+
+It finalized 192/192 reader records with 193/384 attempts. The one extra attempt was a Sonnet transport failure during a passing rate-limit event; its single outcome-blind retry recovered the record. Every seat was eligible on every record: Sol 64/64, Sonnet 64/64, Opus-5 64/64. Pair order below is Sol–Sonnet / Sol–Opus-5 / Sonnet–Opus-5.
+
+| Face | Repetition | Determinate (floor) | Cases with at least two eligible votes (floor) | Pairwise conditional exact agreement | Mean (backstop) | Result |
+| --- | ---: | ---: | ---: | --- | ---: | --- |
+| A | 1 | 18/18 (15) | 18/18 (13) | 13/18 = 0.722 / 13/18 = 0.722 / 12/18 = 0.667 | 0.704 (0.5) | All floors clear |
+| A | 2 | 18/18 (15) | 18/18 (13) | 16/18 = 0.889 / 13/18 = 0.722 / 15/18 = 0.833 | 0.815 (0.5) | All floors clear |
+| B | 1 | 14/14 (12) | 14/14 (10) | 11/14 = 0.786 / 12/14 = 0.857 / 13/14 = 0.929 | 0.857 (0.5) | All floors clear |
+| B | 2 | 14/14 (12) | 14/14 (10) | 10/14 = 0.714 / 11/14 = 0.786 / 11/14 = 0.786 | 0.762 (0.5) | All floors clear |
+
+Every registered floor passes in both repetitions on both faces, and the mean pairwise backstop clears on all four rows. Majority margins were 3-0 on 43 of 64 endpoints and 2-1 on 21; no two-eligible split, 1-1-1, or under-two-eligible case appeared. The rehearsal report records `all_registered_floors_clear: true`, no launch, and no dialogue.
+
+- Fresh Opus-5 rehearsal report (sealed, read-only): `replay-report.json`
+  SHA-256: `1a8bc1c79a118fc19b890836ad6d271e3a12944ec2c640a40b563447d26b8bb3`
+
+The usual caveats stand: burned transcripts, anchors drafted after observing V4, directional and stack-bounded. Per the registered decision rule this is ready-for-operator and still not launched.
+
+ready-for-operator — not launched, operator decision pending
