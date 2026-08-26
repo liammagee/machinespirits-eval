@@ -69,6 +69,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
     learnerText,
     passthrough,
     registerSelection,
+    registeredTutorDeliveryRepairInstruction = null,
     speakerAdvisoryBlocks = null,
     state,
     systemPrompt,
@@ -220,6 +221,14 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
       });
     }
     const firstDraftContractAdvisory = passthrough ? null : tutorStubFirstDraftContractPrompt(firstDraftContract);
+    const tutorDeliveryRepairAdvisory =
+      !passthrough && registeredTutorDeliveryRepairInstruction
+        ? [
+            '[Registered tutor-delivery repair]',
+            registeredTutorDeliveryRepairInstruction,
+            '[End registered tutor-delivery repair]',
+          ].join('\n')
+        : null;
     const comprehensionAdvisory = passthrough
       ? null
       : tutorStubComprehensionPrompt(state?.comprehension, { turn: tutorTurn });
@@ -287,6 +296,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
       // a control block into a real dialogue.
       speakerAdvisoryBlocks?.has('empty_plan') ? (emptyPlanAdvisory ?? null) : null,
       withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
+      tutorDeliveryRepairAdvisory,
       cardFinalSlot && !cardAfterLearner ? state?.mannerSwitch?.card || null : null,
     ]
       .filter(Boolean)
@@ -377,8 +387,8 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
         throw error;
       }
       effectiveSpeakerSystemPrompt = recovery.systemPrompt;
-      effectiveSpeakerUserPrompt = recovery.userPrompt;
-      effectiveSpeakerInstructionTexts = recovery.instructionTexts;
+      effectiveSpeakerUserPrompt = [recovery.userPrompt, tutorDeliveryRepairAdvisory].filter(Boolean).join('\n\n');
+      effectiveSpeakerInstructionTexts = [...recovery.instructionTexts, tutorDeliveryRepairAdvisory].filter(Boolean);
       speakerPrivilegeAudit = {
         ...recovery.speakerPrivilegeAudit,
         recovery: {
@@ -413,6 +423,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
       speakerPublicPremiseIds,
       speakingResponseConfiguration,
       tutorFeedbackAdvisory,
+      tutorDeliveryRepairAdvisory,
       tutorTurn,
     };
   };

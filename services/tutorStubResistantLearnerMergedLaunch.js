@@ -85,6 +85,25 @@ export function tutorStubResistantLearnerMergedRouteTable(design) {
         );
       }
     }
+    const tutorDelivery = faceDesign.tutorDeliveryContract?.enforcement;
+    if (tutorDelivery?.check?.kind === 'semantic_tutor_delivery_adjudication') {
+      rows.push(
+        routeRow({
+          faceId,
+          study,
+          role: 'tutor.delivery_repair',
+          transportRole: 'tutor_stub_tutor_delivery_repair',
+          route: coreRoute(faceDesign, 'tutor'),
+        }),
+        routeRow({
+          faceId,
+          study,
+          role: `tutor_delivery.${tutorDelivery.check.adjudicatorSeat.id}`,
+          transportRole: `tutor_stub_tutor_delivery_${tutorDelivery.check.adjudicatorSeat.id}`,
+          route: tutorDelivery.check.adjudicatorSeat,
+        }),
+      );
+    }
     return rows;
   });
 }

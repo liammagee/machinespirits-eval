@@ -29,12 +29,12 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const TUTOR_STUB_RESISTANT_LEARNER_MERGED_USAGE = `Usage:
   node scripts/run-tutor-stub-resistant-learner-merged-calibration.js \
-    --design config/tutor-stub-resistant-learner-merged-design.v2.json \
+    --design config/tutor-stub-resistant-learner-merged-design.v4.json \
     --destination /absolute/create-once/run-root \
     --dry-run
 
   node scripts/run-tutor-stub-resistant-learner-merged-calibration.js \
-    --design config/tutor-stub-resistant-learner-merged-design.v2.json \
+    --design config/tutor-stub-resistant-learner-merged-design.v4.json \
     --destination /absolute/create-once/run-root \
     --launch [--parallelism 4]
 

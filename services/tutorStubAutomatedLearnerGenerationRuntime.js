@@ -93,6 +93,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   adjudicateTutorStubResistanceConfirmationOutcome: injectedResistanceConfirmationOutcome = null,
   adjudicateTutorStubResistanceInterventionFidelity: injectedResistanceInterventionFidelity = null,
   adjudicateRivalDagBridgeStep: injectedRivalDagBridgeStep = null,
+  adjudicateTutorStubTutorDelivery: injectedTutorDelivery = null,
   callPromptModel,
   classificationFromCombinedAnalysis,
   env = process.env,
@@ -149,6 +150,8 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     null;
   const adjudicateRivalDagBridgeStep =
     injectedRivalDagBridgeStep || semanticAdjudicators.adjudicateRivalDagBridgeStep || null;
+  const adjudicateTutorStubTutorDelivery =
+    injectedTutorDelivery || semanticAdjudicators.adjudicateTutorStubTutorDelivery || null;
   const semanticAdherence = createTutorStubResistanceSemanticAdherenceBridge({
     observationSemantics,
     adjudicateCandidate: adjudicateResistanceSemanticCandidate,
@@ -873,6 +876,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   return {
     adjudicateTutorStubResistanceConfirmationOutcome,
     adjudicateTutorStubResistanceInterventionFidelity,
+    adjudicateTutorStubTutorDelivery,
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
     automatedLearnerTraceMetadata,

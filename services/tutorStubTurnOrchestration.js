@@ -17,6 +17,7 @@ import {
 import { throwTutorStubBoredomMeasurementIndeterminate } from './tutorStubBoredomSemanticAdjudication.js';
 import { tutorStubBoredomUnreadableTurnIsPassedOver } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 } from './tutorStubRivalAttentionSemanticAdjudicationV3.js';
+import { applyTutorStubR1TutorDeliveryGate } from './tutorStubR1TutorDeliveryGate.js';
 
 export function tutorStubResistantLearnerFinalSemanticReadersRequired({
   study,
@@ -162,6 +163,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     adjudicateTutorStubBoredomObservation,
     adjudicateTutorStubResistanceConfirmationOutcome,
     adjudicateTutorStubResistanceInterventionFidelity,
+    adjudicateTutorStubTutorDelivery,
     analyzeLearnerTurn,
     appendTraceEvent,
     appendTutorStubTurnFailureTraceRecords,
@@ -825,9 +827,21 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       });
       precomputedResponse = null;
     }
-    const response =
-      precomputedResponse ||
-      (await callTutor({
+    const tutorDeliveryGateActive = Boolean(
+      registerSelection?.resistance_action_register_intervention &&
+      state.resistanceActionRegisterStudy?.design?.tutorDeliveryContract?.enforcement?.check?.kind ===
+        'semantic_tutor_delivery_adjudication',
+    );
+    if (precomputedResponse?.speculativeCacheHit && tutorDeliveryGateActive) {
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_tutor_prefetch_bypassed',
+        turn: tutorTurn,
+        reason: 'registered_tutor_delivery_gate_requires_post_intervention_candidate',
+      });
+      precomputedResponse = null;
+    }
+    const realizeTutorCandidate = (registeredTutorDeliveryRepairInstruction = null, roleBase = 'tutor_stub_tutor') =>
+      callTutor({
         learnerText,
         history: state.history,
         state,
@@ -850,9 +864,24 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         learnerMessages: learnerInput?.messages || null,
         tutorFeedback,
         feedbackAdaptationPlan,
+        registeredTutorDeliveryRepairInstruction,
+        roleBase,
         deferStreamOutput: Boolean(runtimeOptions.isCurrent),
         signal: runtimeOptions.signal || null,
-      }));
+      });
+    let response = precomputedResponse || (await realizeTutorCandidate());
+    response = await applyTutorStubR1TutorDeliveryGate({
+      state,
+      response,
+      turnNumber: tutorTurn,
+      learnerText,
+      interventionApplied: tutorDeliveryGateActive,
+      adjudicateTutorDelivery: adjudicateTutorStubTutorDelivery,
+      repairTutor: ({ instruction }) => realizeTutorCandidate(instruction, 'tutor_stub_tutor_delivery_repair'),
+      appendTraceEvent,
+      signal: runtimeOptions.signal || null,
+      isCurrent: runtimeOptions.isCurrent || null,
+    });
     pointOfAction = state.pointOfAction?.current || pointOfAction;
     response.tutorRef = state.tuning?.activeRef || state.tutorInstance?.ref || null;
     assertTutorStubTurnAttemptCurrent(runtimeOptions);

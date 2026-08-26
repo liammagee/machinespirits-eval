@@ -14,6 +14,11 @@ export const TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES = Object.freeze([
   // verifiable registered verdict.
   'tutor_stub_learner_noncompliance',
   'tutor_stub_rival_dag_bridge_step_adjudication_indeterminate',
+  // Merged-design revision-4 tutor-side delivery failures. These cross the
+  // child boundary as retained substantive outcomes and never become learner
+  // noncompliance or a determinate rung.
+  'tutor_stub_tutor_bounded_test_non_delivery',
+  'tutor_stub_tutor_delivery_adjudication_indeterminate',
 ]);
 
 const RETAINED_SUBSTANTIVE_FAILURE_CODE_SET = new Set(TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES);
