@@ -188,3 +188,23 @@ frame-refuser's rung-2 rate above its measured base?
   delivery verdict to re-type. A read-only probe over the real run root
   confirms the re-type fires on exactly the one mislabeled row. Resume waits
   on the operator's attended TTY-typed `APPROVE CALIBRATION 7128`.
+- 2026-08-27: Resume ran attended to the end: 36/36 dialogues accounted, 743
+  of 7,128 reservations, zero technical failures; the re-typed row and 21 new
+  typed non-deliveries were all retained, so the code fix held live. The
+  calibration FAILED its authoritative gates; under the kill rule no powered
+  run happens on this registration. Attrition drove it: 22/36 dialogues ended
+  as typed non-delivery (11 per arm), leaving 7 completed per arm against
+  floors of 8 — the determinate-outcome and eligible-vote gates failed in
+  both arms. The treatment arm also failed its turn-level delivery floor
+  (13/18, 0.72 vs 0.8) and the blind-panel arm-separation bound (1/7
+  completed rows read as the bridge, bound 0.1). The reader panel held where
+  measurable: pairwise endpoint agreement 1.0 (treatment) and 0.86
+  (reference). All 14 completed dialogues ended at rung 1; reference rung-2
+  rate 0/7 against the measured base 0.114. Non-delivery concentrated in the
+  Marrick world (14/18 exhausted vs 8/18 in Rowan Flat) and hit both arms
+  alike, and reference exhaustion rose from 7/18 (v2) to 11/18 under an
+  unchanged instruction — the committed-voice change cannot be the whole
+  story. Run archived at
+  `artifacts/tutor-stub-live/frame-refuser-depth-gate1-v3-2026-08-27` in the
+  private archive repo. Any continuation needs a fresh registration; no
+  floor is relaxed after data.
