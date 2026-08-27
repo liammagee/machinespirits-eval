@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-08-26
-updated: 2026-08-26
+updated: 2026-08-27
 verification: >-
   A fresh registration fixes one move contrast, an engagement endpoint of
   rung 2 or higher on the sealed ladder, registered interpretability floors,
@@ -46,9 +46,11 @@ frame-refuser's rung-2 rate above its measured base?
 
 ## Assets carried in
 
-- The engagement ladder and the two-seat reader panel (Sol and Sonnet, both
-  votes must agree per field, 0.8 agreement floor) are validated on sealed
-  data and are reused unchanged.
+- The engagement ladder and the three-seat modal reader panel (Sol, Sonnet,
+  and Opus; modal value across eligible votes per field, 0.8 pairwise
+  agreement floor) are validated on sealed data and are reused unchanged.
+  (Description corrected 2026-08-27, outcome-blind: earlier drafts said
+  two-seat; the sealed v5 instrument has three seats.)
 - The measured rung-2 base rate of 0.114 on face B anchors the power scan.
 - The claim scope stays inside the R1 worlds (Marrick and Rowan Flat) and the
   persona-permitted elicitation boundary.
@@ -96,3 +98,18 @@ frame-refuser's rung-2 rate above its measured base?
   0.35; sizing rule picks the smallest arm size reaching 0.80 exact power at
   the calibration-updated reference rate (60 per arm at the design base).
   Calibration is 20 dialogues and waits on a signed Gate 1 approval.
+- 2026-08-27: Gate 1 launcher built zero-call. New calibration-only CLI
+  `scripts/run-tutor-stub-frame-refuser-depth-calibration.js` +
+  `services/tutorStubFrameRefuserDepthLaunch.js`; depth support (validator,
+  arm projection, 20-job balanced plan, compilation preflight, gated
+  calibration report) added to `services/tutorStubResistantLearnerCalibration.js`.
+  Dry run passes all 12 preflight checks with zero model calls: 20 jobs,
+  1,280 planned calls under the 3,960 ceiling, 8 compiled arm-world-scene
+  rows, 20 rival DAGs, 24 route rows probed. Two outcome-blind description
+  corrections recorded: the sealed endpoint panel is three-seat modal, not
+  two-seat (design JSON `measurement.readerPanel.seats`, registration note,
+  this card). Disclosed prospectively: the depth contrast is bundle-level —
+  condition-discharge bundle vs bridge bundle, including handoff-mode
+  differences — not a single-sentence manipulation. Calibration waits on the
+  operator's attended TTY-typed approval (`APPROVE CALIBRATION 3960`); no GO
+  note, no commit binding.

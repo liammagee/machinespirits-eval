@@ -89,7 +89,7 @@
     "echoGuard": "unchanged from parent design faceB",
     "readerPanel": {
       "protocolSource": "config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json",
-      "seats": "the sealed two-seat endpoint pair (codex.gpt-5.6-sol and claude-code sonnet); both eligible medium/high-confidence votes must agree per field",
+      "seats": "the sealed three-seat modal endpoint panel (codex.gpt-5.6-sol, claude-code.sonnet-5, claude-code.opus-5); each field takes the modal value across eligible medium/high-confidence votes",
       "minimumPairwiseExactAgreement": 0.8,
       "generatorExcludedFromVoting": "codex.gpt-5.6-luna",
       "visibility": "public transcript only; arm assignment, rival DAG, and directives are never shown to endpoint seats"
