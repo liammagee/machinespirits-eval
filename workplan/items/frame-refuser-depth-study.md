@@ -25,6 +25,9 @@ links:
   items:
     - resistant-learner-strategy-close
     - resistance-action-register-integration
+  notes:
+    - notes/2026-08-26-frame-refuser-depth-registration.md
+    - config/tutor-stub-frame-refuser-depth-design.v1.json
 tags:
   - tutor-stub
   - resistant-learners
@@ -84,3 +87,12 @@ frame-refuser's rung-2 rate above its measured base?
 
 - 2026-08-26: Card opened after the §6.28 close. No model call is authorized
   or active; P0 is zero-call.
+- 2026-08-26: P0 and P1 done zero-call. Design file
+  `config/tutor-stub-frame-refuser-depth-design.v1.json` (revision 1) and
+  registration `notes/2026-08-26-frame-refuser-depth-registration.md` frozen.
+  Treatment is condition discharge (meet the named condition with one public
+  exhibit, re-offer the same test); reference is the sealed
+  standing-conditions bridge at its measured 0.114. Registered alternative
+  0.35; sizing rule picks the smallest arm size reaching 0.80 exact power at
+  the calibration-updated reference rate (60 per arm at the design base).
+  Calibration is 20 dialogues and waits on a signed Gate 1 approval.
