@@ -244,3 +244,27 @@ frame-refuser's rung-2 rate above its measured base?
   planned calls, 9,504 reservations (approval phrase `APPROVE CALIBRATION
   9504`). Zero-call dry run passes all 14 preflight checks; depth suite
   17/17. The paid Gate 1 run waits on attended TTY-typed approval.
+- 2026-08-27: Gate 1 v4 paid run FAILED (run root
+  `.tutor-stub-auto-eval/frame-refuser-depth-gate1-v4-2026-08-27`, source
+  commit c83596b8, clean tree, 1,266 of 9,504 reservations). The v4 fixes
+  worked: treatment delivery 19/19 adjudicated turns delivered (v3:
+  13/18), attrition back to 40% (19 typed failures of 48; v3: 61%), both
+  arms reached the floor of 8 completed (14 treatment, 15 reference), and
+  the determinate-outcome and accounting gates passed. Three gates
+  failed, all in the reader panel. (1) Pairwise exact endpoint agreement
+  under 0.8 in both arms (treatment a-b 0.714, a-c 0.714; reference a-b
+  0.733). Reader_a (codex.gpt-5.6-sol) sits in every failing pair and
+  cast 6 of the 9 stray votes; its stray rung-2 votes quote learner posts
+  that name a quantitative bound (pressure-interval overlap) while still
+  withholding — Sol grades that as a sizing update, both Claude seats
+  hold it at rung 1. A real rubric-boundary case, not noise. (2)
+  Treatment reader_b (sonnet-5) eligible fidelity votes 10 of 14 vs floor
+  12: four votes on `delivered_test_bounded_distinction` returned
+  `evidence_invalid` with empty evidence arrays and were discarded. (3)
+  Treatment bridge-read 2/14 = 0.143 vs bound 0.1 (rows marrick_r11,
+  rowan_flat_r4; one row over). Endpoint substance: treatment 0/14 at
+  rung 2, reference 1/15 = 0.067 (design base 0.114) — no lift even
+  before the gates. Kill rule: no powered run on this registration; any
+  continuation is a fresh registration. Run archived at
+  `artifacts/tutor-stub-live/frame-refuser-depth-gate1-v4-2026-08-27` in
+  the private archive repo.
