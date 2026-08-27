@@ -128,8 +128,27 @@ const DEPTH_REVISIONS = Object.freeze({
     caseId: (armId, world, repeat) => `depth_${armId}_cal_${world}_r${repeat}`,
     artifactSchemaVersion: 'v2',
   }),
+  // Revision 3 exists because the revision-2 treatment instruction let the
+  // tutor wrap the condition, exhibit, and re-offer inside the reference
+  // move's standing formula; 3 of 11 completed treatment turns blind-read as
+  // the bridge and one ended with the forbidden standing question. Sizing,
+  // ceilings, gates, and floors are unchanged; only the instruction, the
+  // treatment adjudication question, the seed, and the case-id stem move.
+  3: Object.freeze({
+    dialogues: 36,
+    perArm: 18,
+    masterSeed: 2026082801,
+    plannedCallsCalibration: 2304,
+    calibrationMaximumReservations: 7128,
+    authoritativeGates: DEPTH_AUTHORITATIVE_GATES_V2,
+    gateConstants: DEPTH_GATE_CONSTANTS_V2,
+    // `cal3` keeps every revision-3 case id distinct from both archived
+    // failed calibrations, so no row can collide with or reuse them.
+    caseId: (armId, world, repeat) => `depth_${armId}_cal3_${world}_r${repeat}`,
+    artifactSchemaVersion: 'v3',
+  }),
 });
-export const TUTOR_STUB_FRAME_REFUSER_DEPTH_CURRENT_REVISION = 2;
+export const TUTOR_STUB_FRAME_REFUSER_DEPTH_CURRENT_REVISION = 3;
 
 function depthRevision(design) {
   const revision = DEPTH_REVISIONS[design?.revision];
@@ -952,6 +971,9 @@ function validateTutorStubFrameRefuserDepthDesignV1(design) {
   }
   if (design.revision >= 2 && design?.lineage?.firstCalibration?.rowsReused !== false) {
     issues.push('depth revision 2 must disclose the failed first calibration and refuse row reuse');
+  }
+  if (design.revision >= 3 && design?.lineage?.secondCalibration?.rowsReused !== false) {
+    issues.push('depth revision 3 must disclose the failed second calibration and refuse row reuse');
   }
   const ceilings = design?.attemptCeilings || {};
   if (

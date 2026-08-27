@@ -249,7 +249,7 @@ const MOVE_INSTRUCTIONS = Object.freeze({
   // this entry exists so `assignedMove` recognizes the move and so the host
   // default can never drift from the registration without a test failing.
   condition_discharge:
-    "Restate the learner's named condition in one short clause. Then present exactly one already-public exhibit or public relation that bears on that condition, naming the exhibit. Then re-offer the exact same local test you offered before, in one sentence. Do not ask what would give your question standing. Do not introduce evidence that is not already public.",
+    "Restate the learner's named condition in one short clause. Then present exactly one already-public exhibit or public relation that bears on that condition, naming the exhibit. Then re-offer the exact same local test you offered before, in one sentence and in committed voice: say that you are ready to run it now on the named exhibit. Do not ask what would give your question standing. Do not use a standing-precondition formula such as 'before your question can have standing' or 'before your question can stand'. Do not ask the learner what assay or test would establish the condition. Do not introduce evidence that is not already public.",
 });
 
 const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
@@ -262,7 +262,7 @@ const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
   stage_public_evidence_for_next_step:
     'Stage the next already-public piece of evidence, name it plainly, and say what it does not yet settle. Say nothing about the learner’s state, ask no question, and do not say what the evidence shows.',
   condition_discharge:
-    "Restate the learner's named condition in one clause, present one named already-public exhibit bearing on that condition, and re-offer the exact same local test; do not ask what would give the question standing.",
+    "Restate the learner's named condition in one clause, present one named already-public exhibit bearing on that condition, and re-offer the exact same local test in committed voice, ready to run now; do not use a standing-precondition formula, do not ask what test would establish the condition, and do not ask what would give the question standing.",
 });
 
 const SHIPPED_MOVE_DELIVERY_DIRECTIVES = Object.freeze({
