@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-04T02:52:40.375Z",
+  "generated_at": "2026-08-27T03:38:41.216Z",
   "html": "notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.standalone.html",
   "image_format": "png",
   "image_prefix": "dramatic-recognition-arc",
@@ -128,6 +128,18 @@
       "section_id": "after-the-verdict",
       "section_kicker": "What happened next",
       "visual_metaphor": "an elaborate black strategy gearbox and classifier bank bolted onto the tutor's route, with local dials visibly moving, while the red proof-outcome line remains flat and stops short of the checked answer; beside it, a smaller simple proof-control loop continues as the retained baseline—the machinery changes conduct but does not improve the proof"
+    },
+    {
+      "alt": "Standing wording is ignored, while the same rule handed over at the threshold moves one learner through and leaves another naming terms one step short.",
+      "caption": "The learner who resists: The arc so far asked whether the tutor could change its own course.",
+      "image_file": "notes/poetics/images/dramatic-recognition-arc-11.png",
+      "image_src": "images/dramatic-recognition-arc-11.png",
+      "panel": 11,
+      "prompt_panel_total": 11,
+      "section_heading": "We turned the experiment around: could a tutor move, actually delivered, reach a learner built to push back?",
+      "section_id": "resistance",
+      "section_kicker": "The learner who resists",
+      "visual_metaphor": "a two-door threshold contrast on an off-white 60px Swiss grid: at the left door the registered rule sits on a faded standing sign while the learner walks past unread; at the right door a gatekeeper hands the same rule to the learner exactly at the threshold and a signature-red -18-degree slash marks the delivered action; beside the right door, a second learner holds a small TERMS placard at a marked line, naming a condition but remaining one rung short of stepping through"
     }
   ]
 }
