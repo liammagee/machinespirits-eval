@@ -54,6 +54,36 @@ test('terminal fallback delivers optional actorial-realization findings as advis
   assert.equal(decision.dispositions[0].legacyOverride, 'terminal_fallback_actorial_advisory');
 });
 
+test('terminal fallback accommodation holds under the delivered shadow policy', () => {
+  // Regression for the two face-B marrick losses in the resistant-learner
+  // merged powered run (2026-08-26): the accommodation demoted only the
+  // strict column, while live dialogues deliver the shadow column, so a
+  // conversational composition finding rejected the deterministic fallback
+  // and the process died mid-dialogue.
+  const compositionIssue = { guard: 'response_composition', type: 'learner_selected_test_not_acknowledged' };
+  const fallback = decideTutorStubGuardDelivery([compositionIssue], {
+    boundaryPolicy: 'shadow_advisory',
+    terminalFallback: true,
+  });
+  assert.equal(fallback.ok, true);
+  assert.deepEqual(fallback.hardIssues, []);
+  assert.deepEqual(fallback.advisoryIssues, [compositionIssue]);
+  assert.equal(fallback.dispositions[0].legacyOverride, 'terminal_fallback_conversational_advisory');
+
+  // Ordinary attempts under the same policy still send the draft back.
+  const ordinary = decideTutorStubGuardDelivery([compositionIssue], { boundaryPolicy: 'shadow_advisory' });
+  assert.equal(ordinary.ok, false);
+  assert.deepEqual(ordinary.hardIssues, [compositionIssue]);
+
+  // Evidence boundaries keep their veto on the last resort under shadow too.
+  const leak = decideTutorStubGuardDelivery([leakIssue], {
+    boundaryPolicy: 'shadow_advisory',
+    terminalFallback: true,
+  });
+  assert.equal(leak.ok, false);
+  assert.equal(leak.hardIssues.length, 1);
+});
+
 test('evidence boundaries stay hard on the terminal fallback', () => {
   const decision = decideTutorStubGuardDelivery([leakIssue], { terminalFallback: true });
   assert.equal(decision.ok, false);
