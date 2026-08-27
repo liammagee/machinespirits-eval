@@ -1,7 +1,7 @@
 ---
 id: frame-refuser-depth-study
 title: Test whether any tutor move lifts the frame-refuser above naming a condition
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
@@ -18,13 +18,15 @@ verification: >-
   distinct delivered behaviour at a registered floor. A null inside the
   powered design's claim boundary is a result. All paid artifacts pass
   npm run archive:runs and are committed in the private archive repository.
-claim_status: planned
+claim_status: scope-bound
 depends_on:
   - resistant-learner-strategy-close
 links:
   items:
     - resistant-learner-strategy-close
     - resistance-action-register-integration
+    - frame-refuser-refusal-narrowing
+    - frame-refuser-satisfiable-condition
   notes:
     - notes/2026-08-26-frame-refuser-depth-registration.md
     - config/tutor-stub-frame-refuser-depth-design.v1.json
@@ -32,6 +34,8 @@ links:
     - config/tutor-stub-frame-refuser-depth-design.v2.json
     - notes/2026-08-27-frame-refuser-depth-registration-v3.md
     - config/tutor-stub-frame-refuser-depth-design.v3.json
+    - notes/2026-08-27-frame-refuser-depth-registration-v4.md
+    - config/tutor-stub-frame-refuser-depth-design.v4.json
 tags:
   - tutor-stub
   - resistant-learners
@@ -268,3 +272,23 @@ frame-refuser's rung-2 rate above its measured base?
   continuation is a fresh registration. Run archived at
   `artifacts/tutor-stub-live/frame-refuser-depth-gate1-v4-2026-08-27` in
   the private archive repo.
+- 2026-08-27: CLOSED as a firm calibration-stage null; claim scope-bound.
+  Pooled across the four calibration runs, the condition-discharge move
+  produced rung 2 in 0 of 38 graded dialogues; the sealed bridge in 2 of
+  38 (design base 0.114). At the registered alternative rate of 0.35,
+  0 of 38 is near impossible; even at the base rate it has about a 1%
+  chance. The v4 run showed the move itself is clean (delivery 19/19),
+  so the null is about the persona, not the instrument. Claim boundary:
+  this persona, this engagement ladder, this move family, calibration
+  data only — no powered run ran, so no registered powered claim exists.
+  Two bounded readings recorded: (1) the persona's named condition
+  demands evidence the world may not contain, so meeting it can never
+  complete; (2) the v4 judge disagreement sits exactly where the learner
+  gives ground while refusing (names bounds, weighs the pressure-interval
+  overlap) — movement below the ladder's resolution. Successor cards:
+  `frame-refuser-refusal-narrowing` (finer endpoint on the archived
+  transcripts first) and `frame-refuser-satisfiable-condition` (persona
+  whose condition the world can meet). Tutor-conduct measurement needs no
+  new card (resistance-action register line). Paper fold-in pending: one
+  bounded paragraph in the resistant-learner section under its claim
+  discipline. All four runs archived in the private archive repo.
