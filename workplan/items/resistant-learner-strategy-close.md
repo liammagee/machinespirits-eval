@@ -116,3 +116,10 @@ tags:
   signed note received only the equivalent mechanical `draft` to `GO` and
   `4,806` to `4806` normalizations; its scientific and spending scope is
   unchanged, and no model call was made.
+- 2026-08-26: The V5 merged powered run sealed PASSED: 216/216 units accounted
+  (120 complete, 94 retained typed failures, 2 disclosed technical losses,
+  both face-B marrick plain, never rerun). Registered statistic: face A 45/49
+  = 0.918 rung>=1, Wilson95 [0.808, 0.968]; face B 70/70 = 1.000, [0.948,
+  1.000]; both floors and both panel backstops pass. Rung-2 rates 0.592 vs
+  0.114. Artifacts archived and pushed (private repo commit fac8bff3).
+  Results folded into the paper as new §6.28 at v3.0.292.
