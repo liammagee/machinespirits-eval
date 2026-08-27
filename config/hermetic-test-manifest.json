@@ -568,6 +568,7 @@
         "tests/tutorStubFirstDraftCampaign.test.js",
         "tests/tutorStubFirstDraftContract.test.js",
         "tests/tutorStubFirstDraftOuterLoop.test.js",
+        "tests/tutorStubFrameRefuserDepthStudy.test.js",
         "tests/tutorStubFrozenReplay.test.js",
         "tests/tutorStubFrozenReplayCheckpoint.test.js",
         "tests/tutorStubGuardAccounting.test.js",

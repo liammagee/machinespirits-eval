@@ -16,7 +16,9 @@ import {
   loadTutorStubResistantLearnerDesign,
   runTutorStubResistantLearnerCompilationPreflight,
   summarizeTutorStubResistantLearnerCalibration,
+  TUTOR_STUB_FRAME_REFUSER_DEPTH_DESIGN_SCHEMA_V1,
   TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1,
+  tutorStubFrameRefuserDepthArmDesign,
   tutorStubFrameRefuserR1Prompt,
   tutorStubResistantLearnerMergedFaceDesign,
 } from '../services/tutorStubResistantLearnerCalibration.js';
@@ -151,14 +153,17 @@ export function tutorStubResistantLearnerCalibrationChildSpec({
   const designPath = path.relative(ROOT, loaded.path);
   const b1 = job.study === 'B1';
   const executionDesign =
-    loaded.design.schema === TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1
-      ? tutorStubResistantLearnerMergedFaceDesign(loaded.design, job.face_id)
-      : loaded.design;
+    loaded.design.schema === TUTOR_STUB_FRAME_REFUSER_DEPTH_DESIGN_SCHEMA_V1
+      ? tutorStubFrameRefuserDepthArmDesign(loaded.design, job.arm_id, { root: ROOT })
+      : loaded.design.schema === TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1
+        ? tutorStubResistantLearnerMergedFaceDesign(loaded.design, job.face_id)
+        : loaded.design;
   const models = executionDesign.models;
   const rivalDagDesign = [
     'machinespirits.tutor-stub.resistant-learner-study-design.v2',
     'machinespirits.tutor-stub.resistant-learner-study-design.v3',
     TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1,
+    TUTOR_STUB_FRAME_REFUSER_DEPTH_DESIGN_SCHEMA_V1,
   ].includes(loaded.design.schema);
   const rivalDag = rivalDagDesign ? mintTutorStubRivalLearnerDag({ design: executionDesign, job, root: ROOT }) : null;
   if (rivalDag) writeOnce(path.join(jobRoot, 'rival-learner-dag.json'), rivalDag);
@@ -279,6 +284,12 @@ export function extractTutorStubResistantLearnerCalibrationRow({ job, spec, exit
   const outcomes = events.filter(
     (event) => event.type === 'resistant_learner_calibration_semantic_adjudication' && event.case_id === job.id,
   );
+  // Per-arm delivery adjudication verdicts, one event per gate pass. The depth
+  // summarizer reads the last event as the episode verdict; rows from designs
+  // without delivery enforcement carry an empty array.
+  const delivery = events
+    .filter((event) => event.type === 'tutor_delivery_enforcement')
+    .map((event) => ({ turn: event.turn, delivered: event.delivered, repairAttempts: event.repairAttempts }));
   const complete = exit.code === 0 && trace && outcomes.length === 1 && fs.existsSync(spec.transcript);
   const registeredStudyOutcome = readTutorStubRegisteredStudyOutcome({
     filePath: spec.registeredStudyOutcome,
@@ -297,6 +308,7 @@ export function extractTutorStubResistantLearnerCalibrationRow({ job, spec, exit
     trace: trace ? path.relative(destinationRoot(spec), trace) : null,
     transcript: fs.existsSync(spec.transcript) ? path.relative(destinationRoot(spec), spec.transcript) : null,
     outcome: outcomes.length === 1 ? { primary: outcomes[0].primary, fidelity: outcomes[0].fidelity } : null,
+    delivery,
     registered_failure: retainedSubstantiveFailure ? registeredStudyOutcome.outcome : null,
     registered_failure_artifact: registeredStudyOutcome.present
       ? path.relative(destinationRoot(spec), spec.registeredStudyOutcome)

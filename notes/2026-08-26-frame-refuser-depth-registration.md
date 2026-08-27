@@ -53,9 +53,13 @@ instruction was read by nothing and one dialogue in five broke it.
 Primary: the proportion of determinate completed dialogues per arm with
 `final_graded_engagement_rung` = 2, compared by a two-sided exact conditional
 test at alpha 0.05. Secondary: the rung>=1 rate per arm as a saturation
-check. The ladder, echo guard, and two-seat endpoint panel (Sol and Sonnet,
-both eligible medium/high-confidence votes must agree per field, 0.8
-pairwise-agreement floor) are the sealed instruments, unchanged. Endpoint
+check. The ladder, echo guard, and three-seat modal endpoint panel (Sol,
+Sonnet, and Opus; each field takes the modal value across eligible
+medium/high-confidence votes; 0.8 pairwise-agreement floor) are the sealed
+instruments, unchanged. (Outcome-blind description correction 2026-08-27:
+an earlier draft of this note and the design file described the sealed
+panel as a two-seat pair; the sealed v5 instrument has three seats with a
+modal mechanism. No measurement rule changed.) Endpoint
 seats see the public transcript only; the arm assignment is never shown to
 them.
 

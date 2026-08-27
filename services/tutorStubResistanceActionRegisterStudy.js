@@ -174,6 +174,19 @@ const MOVE_TO_HOST_ACTION = Object.freeze({
   // manipulation. v8 therefore cannot say the question did the work, only that
   // the move did.
   stage_public_evidence_for_next_step: 'reanchor_public_evidence',
+  // The fifth move is the frame-refuser depth-study treatment arm
+  // (config/tutor-stub-frame-refuser-depth-design.v1.json): discharge the
+  // learner's named condition instead of asking what would give the question
+  // standing. It takes `reanchor_public_evidence` for the same reason the v8
+  // reference arm did: the move must not ask a question (asking is what the
+  // reference bridge does), and this is the listed no-question family whose
+  // contract already stages one public exhibit and names its limit. The cost
+  // is the same four-way family bundle the v8 comment above prices: the two
+  // depth arms differ in family, handoff mode, part weighting and
+  // guard-recovery together, so the depth claim is bundle-level — the
+  // condition-discharge bundle against the bridge bundle, never the exhibit
+  // sentence alone. The design file registers this disclosure.
+  condition_discharge: 'reanchor_public_evidence',
 });
 
 // Readers outside this module need the same answer the runtime uses. The
@@ -230,6 +243,13 @@ const MOVE_INSTRUCTIONS = Object.freeze({
   // rule.
   stage_public_evidence_for_next_step:
     'Continue the inquiry as though the learner had said nothing about themselves. Stage the next already-public piece of evidence and name it plainly. Do not mention, acknowledge, or respond to the learner’s interest, effort, mood or pace, and do not comment on how the work is going. Ask no question of any kind. Do not simplify the task, re-motivate the learner, or offer a choice. You may name the public object and may say what it does not yet settle; you must not say what it shows, must not state or hint at any finding, inference or conclusion, and must not draw a conclusion from it.',
+  // The depth-study treatment instruction, byte-identical to
+  // arms.treatment.actionInstruction in the registered depth design file. The
+  // study runtime overrides this text with the design's own copy at launch;
+  // this entry exists so `assignedMove` recognizes the move and so the host
+  // default can never drift from the registration without a test failing.
+  condition_discharge:
+    "Restate the learner's named condition in one short clause. Then present exactly one already-public exhibit or public relation that bears on that condition, naming the exhibit. Then re-offer the exact same local test you offered before, in one sentence. Do not ask what would give your question standing. Do not introduce evidence that is not already public.",
 });
 
 const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
@@ -241,6 +261,8 @@ const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
     'Name one small step the learner can take now, on a named public object; do not say what it shows, do not infer from it, and do not offer a choice.',
   stage_public_evidence_for_next_step:
     'Stage the next already-public piece of evidence, name it plainly, and say what it does not yet settle. Say nothing about the learner’s state, ask no question, and do not say what the evidence shows.',
+  condition_discharge:
+    "Restate the learner's named condition in one clause, present one named already-public exhibit bearing on that condition, and re-offer the exact same local test; do not ask what would give the question standing.",
 });
 
 const SHIPPED_MOVE_DELIVERY_DIRECTIVES = Object.freeze({

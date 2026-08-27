@@ -42,6 +42,36 @@ export const TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1 =
 const B1_ID = 'resistant-learner-b1-authored-pickup';
 const R1_ID = 'resistant-learner-r1-graded-engagement';
 const MERGED_ID = 'resistant-learner-merged-graded-engagement';
+export const TUTOR_STUB_FRAME_REFUSER_DEPTH_DESIGN_SCHEMA_V1 =
+  'machinespirits.tutor-stub.frame-refuser-depth-study-design.v1';
+const DEPTH_ID = 'frame-refuser-depth';
+const DEPTH_ARM_IDS = Object.freeze(['treatment', 'reference']);
+const DEPTH_WORLDS = Object.freeze(['world_005_marrick', 'world_030_rowan_flat']);
+// The seven authoritative calibration gates, byte-identical to
+// design.calibration.authoritativeGates in the registered depth design file.
+// The validator compares the file against this list so the code constants
+// below can never drift from the registration without failing closed.
+const DEPTH_AUTHORITATIVE_GATES = Object.freeze([
+  'minimumDeterminateOutcomeRate 0.8 with floor 8',
+  'minimumEligibleVoteRatePerSeatAndInstrument 0.8 with floor 8',
+  'minimumPairwiseExactEndpointAgreement 0.8',
+  'minimumTreatmentDeliveryRate 0.8 on adjudicated intervention turns',
+  'maximumReferenceContaminationRate 0.1 on adjudicated intervention turns',
+  'maximumConfirmedProhibitedDeliveries 0',
+  'minimumJurisdictionRetainedRateOnCompletedRows 0.67 with floor 6',
+]);
+const DEPTH_GATE_CONSTANTS = Object.freeze({
+  minimumDeterminateOutcomeRate: 0.8,
+  minimumDeterminateOutcomeFloor: 8,
+  minimumEligibleVoteRatePerSeatAndInstrument: 0.8,
+  minimumEligibleVotesFloor: 8,
+  minimumPairwiseExactEndpointAgreement: 0.8,
+  minimumTreatmentDeliveryRate: 0.8,
+  maximumReferenceContaminationRate: 0.1,
+  maximumConfirmedProhibitedDeliveries: 0,
+  minimumJurisdictionRetainedRateOnCompletedRows: 0.67,
+  minimumJurisdictionRetainedFloor: 6,
+});
 const BOREDOM_TEMPLATE = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json';
 const REFUSER_TEMPLATE = 'config/tutor-stub-resistance-action-register-crossed-registration.v9.json';
 const JUDGES = Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5']);
@@ -69,6 +99,10 @@ function isRivalDagDesign(design) {
 
 function isMergedDesign(design) {
   return design?.schema === TUTOR_STUB_RESISTANT_LEARNER_MERGED_DESIGN_SCHEMA_V1;
+}
+
+function isDepthDesign(design) {
+  return design?.schema === TUTOR_STUB_FRAME_REFUSER_DEPTH_DESIGN_SCHEMA_V1;
 }
 
 function mergedFace(design, faceId) {
@@ -736,7 +770,137 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
   return { valid: issues.length === 0, issues };
 }
 
+function validateTutorStubFrameRefuserDepthDesignV1(design) {
+  const issues = [];
+  if (design?.revision !== 1 || design?.studyId !== DEPTH_ID) issues.push('depth design identity is unsupported');
+  if (design?.status !== 'prospective_zero_call_design_pending_typed_approval') issues.push('depth status drifted');
+  if (design?.workplanItem !== 'frame-refuser-depth-study') issues.push('depth workplan item drifted');
+  const lineage = design?.lineage || {};
+  if (
+    lineage.parentDesign !== 'config/tutor-stub-resistant-learner-merged-design.v5.json' ||
+    lineage.reuseOfParentRows !== false ||
+    lineage.measuredReferenceRung2Rate !== 0.114
+  ) {
+    issues.push('depth lineage drifted');
+  }
+  const population = design?.population || {};
+  if (
+    population.profile !== 'frame_refuser-r1-rival-dag-v3' ||
+    population.baseCompatibilityId !== 'frame_refuser' ||
+    !exactValues(population.worlds, DEPTH_WORLDS) ||
+    population.maximumTriggerLearnerTurn !== 2 ||
+    population.outcomeHorizonPostTriggerLearnerTurns !== 8
+  ) {
+    issues.push('depth population drifted from the sealed face-B population');
+  }
+  if (design?.register?.held !== 'plain' || design?.register?.reportOnly !== true) {
+    issues.push('depth register hold drifted');
+  }
+  const treatment = design?.arms?.treatment || {};
+  const reference = design?.arms?.reference || {};
+  if (
+    treatment.id !== 'condition_discharge' ||
+    treatment.hostActionFamily !== 'reanchor_public_evidence' ||
+    !String(treatment.actionInstruction || '').trim()
+  ) {
+    issues.push('depth treatment arm drifted');
+  }
+  if (
+    reference.id !== 'standing_conditions_bridge' ||
+    reference.hostActionFamily !== 'clarify_distinction' ||
+    reference.actionInstruction !==
+      'unchanged from parent design faceB tutorDeliveryContract.actionInstructions.test_bounded_distinction'
+  ) {
+    issues.push('depth reference arm drifted');
+  }
+  try {
+    if (
+      tutorStubResistanceHostActionFamily('condition_discharge') !== treatment.hostActionFamily ||
+      tutorStubResistanceHostActionFamily('test_bounded_distinction') !== reference.hostActionFamily
+    ) {
+      issues.push('depth arm host action families disagree with the registered move map');
+    }
+  } catch (error) {
+    issues.push(`depth arm move is not registered with the host: ${error.message}`);
+  }
+  const floors = design?.arms?.distinctDeliveredBehaviourFloors || {};
+  if (floors.minimumTreatmentDeliveryRate !== 0.8 || floors.maximumReferenceContaminationRate !== 0.1) {
+    issues.push('depth delivered-contrast floors drifted');
+  }
+  const enforcement = design?.tutorDeliveryEnforcement || {};
+  const seat = enforcement?.perArmAdjudication?.adjudicatorSeat;
+  if (
+    enforcement.schema !== 'machinespirits.tutor-stub.tutor-delivery-enforcement.v1' ||
+    enforcement.repairsAllowedPerEpisode !== 1 ||
+    enforcement.exhaustionDisposition !== 'typed_tutor_non_delivery_failure' ||
+    enforcement.exhaustionNeverScored !== true ||
+    enforcement.typedFailureIsNotDeterminate !== true ||
+    !String(enforcement?.perArmAdjudication?.treatmentQuestion || '').trim() ||
+    !String(enforcement?.perArmAdjudication?.referenceQuestion || '').trim() ||
+    !exactValues(seat, {
+      id: 'tutor_delivery_adjudicator',
+      modelRef: 'codex.gpt-5.6-sol',
+      provider: 'codex',
+      model: 'gpt-5.6-sol',
+      effort: 'low',
+    })
+  ) {
+    issues.push('depth tutor-delivery enforcement drifted');
+  }
+  if (
+    design?.measurement?.endpointField !== 'final_graded_engagement_rung' ||
+    design?.measurement?.readerPanel?.protocolSource !==
+      'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json' ||
+    design?.measurement?.readerPanel?.minimumPairwiseExactAgreement !== 0.8
+  ) {
+    issues.push('depth measurement or reader panel drifted');
+  }
+  if (
+    design?.calibration?.dialogues !== 20 ||
+    design?.calibration?.perArm !== 10 ||
+    !exactValues(design?.calibration?.authoritativeGates, DEPTH_AUTHORITATIVE_GATES)
+  ) {
+    issues.push('depth calibration registration drifted from the code gate constants');
+  }
+  if (
+    design?.poweredRun?.authorization !== 'not_granted_by_this_design_or_calibration' ||
+    design?.poweredRun?.calibrationRowsExcluded !== true ||
+    design?.poweredRun?.registeredAlternative !== 0.35
+  ) {
+    issues.push('depth powered-run boundary drifted');
+  }
+  if (design?.randomization?.masterSeed !== 2026082601) issues.push('depth master seed drifted');
+  const ceilings = design?.attemptCeilings || {};
+  if (
+    ceilings.plannedCallsCalibration !== 1280 ||
+    ceilings.maximumReservationsPerPlannedCall !== 3 ||
+    ceilings.calibrationMaximumReservations !== 3960
+  ) {
+    issues.push('depth attempt ceilings drifted');
+  }
+  if (
+    design?.models?.tutor !== LUNA_MODEL_REF ||
+    design?.models?.learner !== LUNA_MODEL_REF ||
+    design?.models?.cliEffort !== 'low' ||
+    design?.models?.analysisScope !== 'classifier_and_learner_record_support_only'
+  ) {
+    issues.push('depth model stack drifted from the sealed stack');
+  }
+  if (
+    design?.callAuthority?.grantsModelCalls !== false ||
+    design?.callAuthority?.approvalSurvivesCodeFix !== true ||
+    design?.callAuthority?.goNoteRequired !== false
+  ) {
+    issues.push('depth call authority drifted');
+  }
+  if (design?.dispositions?.validUnitRerun !== false || design?.dispositions?.interimOutcomeAnalysis !== false) {
+    issues.push('depth dispositions drifted');
+  }
+  return { valid: issues.length === 0, issues };
+}
+
 export function validateTutorStubResistantLearnerDesign(design) {
+  if (isDepthDesign(design)) return validateTutorStubFrameRefuserDepthDesignV1(design);
   if (isMergedDesign(design)) return validateTutorStubResistantLearnerMergedDesignV1(design);
   const issues = [];
   const studyId = design?.studyId;
@@ -951,6 +1115,102 @@ export function loadTutorStubResistantLearnerDesign({ designPath, root = process
   return { path: absolute, source, sha256: sha256(source), design };
 }
 
+const depthParentCache = new Map();
+
+function tutorStubFrameRefuserDepthParent(design, root) {
+  const key = `${root}:${design.lineage.parentDesign}`;
+  if (!depthParentCache.has(key)) {
+    depthParentCache.set(key, loadTutorStubResistantLearnerDesign({ designPath: design.lineage.parentDesign, root }));
+  }
+  return depthParentCache.get(key);
+}
+
+// Project one depth arm onto the sealed parent face-B execution design. The
+// projection keeps the merged v1 schema so every rival-DAG dispatch in the
+// runtime treats it exactly like the sealed face-B design; only the
+// intervention move, the per-arm delivery contract, the depth randomization
+// seed, and the depth calibration constants differ. The reference arm keeps
+// the sealed contract text and instruction bytes unchanged; its adjudication
+// question is the registered per-arm reference question, which adds the
+// no-exhibit contamination clause the depth design measures.
+export function tutorStubFrameRefuserDepthArmDesign(design, armId, { root = process.cwd() } = {}) {
+  if (!isDepthDesign(design)) throw new Error('the depth arm projection requires the frame-refuser depth design');
+  if (!DEPTH_ARM_IDS.includes(armId)) {
+    throw new Error(`frame-refuser depth arm ${JSON.stringify(armId)} is not registered`);
+  }
+  const parent = tutorStubFrameRefuserDepthParent(design, root);
+  const faceB = tutorStubResistantLearnerMergedFaceDesign(parent.design, 'faceB');
+  const arm = design.arms[armId];
+  const move = armId === 'treatment' ? 'condition_discharge' : faceB.intervention.action;
+  const sealedContract = faceB.tutorDeliveryContract;
+  const enforcement = design.tutorDeliveryEnforcement;
+  const armEnforcement = {
+    ...structuredClone(sealedContract.enforcement),
+    appliesWhen: enforcement.appliesWhen,
+    scope: enforcement.scope,
+    position: enforcement.position,
+    check: {
+      ...structuredClone(sealedContract.enforcement.check),
+      adjudicatorSeat: structuredClone(enforcement.perArmAdjudication.adjudicatorSeat),
+      question:
+        armId === 'treatment'
+          ? enforcement.perArmAdjudication.treatmentQuestion
+          : enforcement.perArmAdjudication.referenceQuestion,
+    },
+    repairsAllowedPerEpisode: enforcement.repairsAllowedPerEpisode,
+    exhaustionDisposition: enforcement.exhaustionDisposition,
+    exhaustionNeverScored: enforcement.exhaustionNeverScored,
+    typedFailureIsNotDeterminate: enforcement.typedFailureIsNotDeterminate,
+    ...(armId === 'treatment'
+      ? {
+          exhaustionCode: 'tutor_stub_tutor_condition_discharge_non_delivery',
+          repairInstruction: `Your candidate did not deliver the registered condition-discharge. Rewrite the tutor turn now: ${arm.actionInstruction}`,
+        }
+      : {}),
+  };
+  // The treatment contract omits compactActionInstructions on purpose: the
+  // compile falls back to the host COMPACT_MOVE_INSTRUCTIONS entry, so the
+  // compact text has one source instead of two copies that can drift.
+  const tutorDeliveryContract =
+    armId === 'treatment'
+      ? {
+          actionInstructions: { condition_discharge: arm.actionInstruction },
+          registerInstructions: structuredClone(sealedContract.registerInstructions),
+          enforcement: armEnforcement,
+        }
+      : { ...structuredClone(sealedContract), enforcement: armEnforcement };
+  return {
+    ...faceB,
+    status: design.status,
+    workplanItem: design.workplanItem,
+    claimBoundary: design.claimBoundary,
+    depthStudyId: design.studyId,
+    depthExecution: {
+      studyId: design.studyId,
+      armId,
+      move,
+      registeredMoveId: arm.id,
+      hostActionFamily: arm.hostActionFamily,
+    },
+    intervention: {
+      action: move,
+      registeredMoveId: arm.id,
+      definition: arm.definition,
+      heldFixedAcrossRegisters: true,
+    },
+    tutorDeliveryContract,
+    randomization: structuredClone(design.randomization),
+    calibration: {
+      ...faceB.calibration,
+      ...DEPTH_GATE_CONSTANTS,
+      dialogues: design.calibration.perArm,
+      completedRowsDenominator: true,
+    },
+    dispositions: structuredClone(design.dispositions),
+    callAuthority: structuredClone(design.callAuthority),
+  };
+}
+
 function ranked(values, seed, block) {
   return values
     .map((value) => ({ value, rank_sha256: sha256(`${seed}:${block}:${value}`) }))
@@ -1096,6 +1356,48 @@ function buildMergedJobs(design) {
   }));
 }
 
+function buildFrameRefuserDepthJobs(design) {
+  const seed = design.randomization.masterSeed;
+  const jobs = [];
+  for (const armId of DEPTH_ARM_IDS) {
+    const arm = design.arms[armId];
+    const move = armId === 'treatment' ? 'condition_discharge' : 'test_bounded_distinction';
+    for (const world of design.population.worlds) {
+      for (let repeat = 1; repeat <= 5; repeat += 1) {
+        jobs.push({
+          id: `depth-${armId}-cal-${world}-r${repeat}`,
+          study: 'R1',
+          arm_id: armId,
+          world,
+          register: 'plain',
+          action: move,
+          registered_move_id: arm.id,
+          pedagogical_move: move,
+          host_action_family: tutorStubResistanceHostActionFamily(move),
+          maximum_trigger_turn: design.population.maximumTriggerLearnerTurn,
+          outcome_horizon_learner_turns: design.population.outcomeHorizonPostTriggerLearnerTurns,
+          repeat,
+        });
+      }
+    }
+  }
+  return orderedJobs(jobs, seed).map((job, index) => ({
+    ...job,
+    batch_id: `batch_${String(Math.floor(index / 4) + 1).padStart(2, '0')}`,
+    seed: job.run_seed,
+    realization: job.register,
+    assignment_manifest_sha256: canonicalSha256({
+      id: job.id,
+      arm: job.arm_id,
+      world: job.world,
+      register: job.register,
+      action: job.action,
+      seed: job.run_seed,
+    }),
+    assignment_rank_sha256: job.order_sha256,
+  }));
+}
+
 function buildMergedPoweredJobs(design, blocksPerFace) {
   const seed = design.randomization.masterSeed;
   const faceA = mergedFace(design, 'faceA');
@@ -1213,15 +1515,24 @@ export function buildTutorStubResistantLearnerCalibrationPlan(design) {
   const validation = validateTutorStubResistantLearnerDesign(design);
   if (!validation.valid) throw new Error(`resistant-learner design invalid: ${validation.issues.join('; ')}`);
   const merged = isMergedDesign(design);
-  const jobs = merged ? buildMergedJobs(design) : design.studyId === B1_ID ? buildB1Jobs(design) : buildR1Jobs(design);
-  const expectedJobs = merged ? 36 : 18;
+  const depth = isDepthDesign(design);
+  const jobs = depth
+    ? buildFrameRefuserDepthJobs(design)
+    : merged
+      ? buildMergedJobs(design)
+      : design.studyId === B1_ID
+        ? buildB1Jobs(design)
+        : buildR1Jobs(design);
+  const expectedJobs = depth ? 20 : merged ? 36 : 18;
   if (jobs.length !== expectedJobs || new Set(jobs.map((job) => job.id)).size !== expectedJobs) {
     throw new Error(`resistant-learner calibration requires ${expectedJobs} unique jobs`);
   }
   const plan = {
-    schema: merged
-      ? 'machinespirits.tutor-stub.resistant-learner-merged-calibration-plan.v1'
-      : 'machinespirits.tutor-stub.resistant-learner-calibration-plan.v1',
+    schema: depth
+      ? 'machinespirits.tutor-stub.frame-refuser-depth-calibration-plan.v1'
+      : merged
+        ? 'machinespirits.tutor-stub.resistant-learner-merged-calibration-plan.v1'
+        : 'machinespirits.tutor-stub.resistant-learner-calibration-plan.v1',
     status: 'planned_zero_call',
     study_id: design.studyId,
     master_seed: design.randomization.masterSeed,
@@ -1310,6 +1621,14 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     ['edgeFollowsAssignedMoveNotLearnerProfile', true],
     ['faceThreatExcluded', true],
   ]);
+  if (loaded.design.depthExecution) {
+    // The depth study reassigns the compiled pedagogical move per arm. Only
+    // the in-memory runtime copy changes; the v9 registration file on disk
+    // keeps its own sealed assignment (test_bounded_distinction).
+    runtime.registration.design.factors.actionFit.assignments[loaded.design.population.baseCompatibilityId] = {
+      matched: loaded.design.depthExecution.move,
+    };
+  }
   runtime.realization = job.register;
   runtime.repeat = job.batch_id;
   state.resistanceActionRegisterStudy = {
@@ -1346,6 +1665,7 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     assignmentIndex: job.assignment_index,
     runSeed: job.run_seed,
     world: job.world,
+    ...(job.arm_id ? { armId: job.arm_id, depthStudyId: loaded.design.depthStudyId || null } : {}),
     designPath: path.relative(root, loaded.path),
     designSha256: loaded.sha256,
     treatment: {
@@ -1384,9 +1704,11 @@ export function configureTutorStubResistantLearnerCalibrationFromCli({
   const job = plan.jobs.find((candidate) => candidate.id === jobId);
   if (!job) throw new Error(`resistant-learner calibration job ${JSON.stringify(jobId)} is not registered`);
   const b1 = job.study === 'B1';
-  const executionDesign = isMergedDesign(loaded.design)
-    ? tutorStubResistantLearnerMergedFaceDesign(loaded.design, job.face_id)
-    : loaded.design;
+  const executionDesign = isDepthDesign(loaded.design)
+    ? tutorStubFrameRefuserDepthArmDesign(loaded.design, job.arm_id, { root })
+    : isMergedDesign(loaded.design)
+      ? tutorStubResistantLearnerMergedFaceDesign(loaded.design, job.face_id)
+      : loaded.design;
   const executionLoaded = { ...loaded, design: executionDesign };
   const expectedTurns = job.maximum_trigger_turn + job.outcome_horizon_learner_turns;
   const expectedObservation = executionDesign.models.triggerObservation.semantics;
@@ -1626,7 +1948,181 @@ function runTutorStubResistantLearnerMergedCompilationPreflight({ loaded, root }
   };
 }
 
+function runTutorStubFrameRefuserDepthCompilationPreflight({ loaded, root }) {
+  const design = loaded.design;
+  const plan = buildTutorStubResistantLearnerCalibrationPlan(design);
+  const armDesigns = Object.fromEntries(
+    DEPTH_ARM_IDS.map((armId) => [armId, tutorStubFrameRefuserDepthArmDesign(design, armId, { root })]),
+  );
+  const parent = tutorStubFrameRefuserDepthParent(design, root);
+  const parentRoutes = tutorStubResistantLearnerRuntimeModelRoutes(parent.design);
+  const expectedModels = {
+    tutor: parentRoutes.tutor,
+    analysis: parentRoutes.analysis,
+    analysisScope: parentRoutes.analysisScope,
+    learner: parentRoutes.learner,
+    cliEffort: parentRoutes.cliEffort,
+    triggerObservation: parentRoutes.triggerObservationByFace.faceB,
+    finalSemanticReaders: parentRoutes.finalSemanticReaders,
+  };
+  const modelRoute = {
+    declared: armDesigns.treatment.models,
+    runtime: expectedModels,
+    passed: DEPTH_ARM_IDS.every((armId) => exactValues(armDesigns[armId].models, expectedModels)),
+  };
+  const worldRegistry = auditRuntimeWorldRegistry(design.population.worlds, root);
+  const rivalDags = plan.jobs.map((job) => mintTutorStubRivalLearnerDag({ design: armDesigns[job.arm_id], job, root }));
+  // Both sides of these products are independent registered constants: the
+  // per-dialogue ceilings come from the parent design, the calibration totals
+  // from the depth file. A drift on either side fails here, before any call.
+  const perDialogue = armDesigns.treatment.attemptCeilings;
+  const attemptCeilingClosure = {
+    planned_calls: plan.jobs.length * perDialogue.plannedCallsPerDialogue,
+    registered_planned_calls_calibration: design.attemptCeilings.plannedCallsCalibration,
+    planned_reservation_ceiling: plan.jobs.length * perDialogue.maximumReservationsPerDialogue,
+    registered_calibration_maximum_reservations: design.attemptCeilings.calibrationMaximumReservations,
+    passed:
+      plan.jobs.length * perDialogue.plannedCallsPerDialogue === design.attemptCeilings.plannedCallsCalibration &&
+      plan.jobs.length * perDialogue.maximumReservationsPerDialogue ===
+        design.attemptCeilings.calibrationMaximumReservations,
+  };
+  const rows = [];
+  for (const armId of DEPTH_ARM_IDS) {
+    const armDesign = armDesigns[armId];
+    for (const world of design.population.worlds) {
+      const configurationJob = plan.jobs.find((job) => job.arm_id === armId && job.world === world);
+      for (const scene of ['bare', 'due_clue']) {
+        const state = {
+          trace: [],
+          turns: [],
+          history: [],
+          register: { palette: ['warm', 'plain', 'ironic', 'sarcastic'], history: [], policy: 'field' },
+          world: {},
+        };
+        configureR1({
+          state,
+          root,
+          loaded: { ...loaded, design: armDesign },
+          job: configurationJob,
+          appendTraceEvent() {},
+        });
+        const compiled = compileTutorStubResistanceActionRegisterStudyAssignment(state.resistanceActionRegisterStudy);
+        const progression = compileTutorStubTurnProgressionContract({
+          ...preflightScene(scene),
+          actionFamily: compiled.host_action_family,
+          registeredQuestionRule: null,
+        });
+        const safety = safetyOverrideProbe(compiled);
+        const rivalDag = mintTutorStubRivalLearnerDag({ design: armDesign, job: configurationJob, root });
+        const personaPrompt = tutorStubRivalLearnerDagPrompt({ design: armDesign, job: configurationJob, root });
+        const registeredInstruction = armDesign.tutorDeliveryContract.actionInstructions[configurationJob.action];
+        const enforcementQuestion =
+          state.resistanceActionRegisterStudy.design.tutorDeliveryContract.enforcement.check.question;
+        const expectedQuestionText =
+          armId === 'treatment'
+            ? design.tutorDeliveryEnforcement.perArmAdjudication.treatmentQuestion
+            : design.tutorDeliveryEnforcement.perArmAdjudication.referenceQuestion;
+        const issues = [];
+        if (compiled.pedagogical_move !== configurationJob.action) issues.push('pedagogical_move_drift');
+        if (compiled.assigned_realization !== 'plain') issues.push('assigned_realization_drift');
+        if (compiled.instruction_source !== 'study_design_override')
+          issues.push('depth_delivery_contract_not_compiled');
+        if (compiled.action_instruction !== registeredInstruction) issues.push('registered_instruction_byte_drift');
+        if (enforcementQuestion !== expectedQuestionText) issues.push('per_arm_adjudication_question_drift');
+        if (!/concise neutral/iu.test(compiled.realization_contrast_instruction)) {
+          issues.push('plain_register_contract_incomplete');
+        }
+        if (!safety.passed) issues.push('protected_affect_guard_failed');
+        if (!personaPrompt.includes(rivalDag.sha256)) issues.push('rival_dag_prompt_binding_failed');
+        if (armId === 'treatment') {
+          // The depth registration holds its contrast on exhibit-presentation,
+          // adjudicated per arm from tutor text; it registers no typed
+          // question rule, and the treatment instruction bans only the
+          // standing question. So the family's declarative default governs the
+          // bare scene, and a staged due clue lawfully outranks the family
+          // (the documented due-source precedence in
+          // tutorStubTurnProgressionContract). Pin both outcomes so a change
+          // in that precedence order surfaces here before any call.
+          const expectedQuestionAllowed = scene === 'due_clue';
+          if (progression.handoff_contract.question_allowed !== expectedQuestionAllowed) {
+            issues.push('question_permission_drift');
+          }
+          if (
+            !/named condition/iu.test(compiled.action_instruction) ||
+            !/already-public/iu.test(compiled.action_instruction) ||
+            !/exact same local test/iu.test(compiled.action_instruction) ||
+            !/do not ask what would give/iu.test(compiled.action_instruction)
+          ) {
+            issues.push('condition_discharge_contract_incomplete');
+          }
+          // The registered treatment instruction is also the host default for
+          // condition_discharge; the two copies must stay byte-identical so
+          // an override loss can never silently deliver a different move.
+          const hostDefault = compileTutorStubResistanceActionRegisterStudyAssignment({
+            ...state.resistanceActionRegisterStudy,
+            study_assignment_instruction_overrides: null,
+          });
+          if (hostDefault.action_instruction !== design.arms.treatment.actionInstruction) {
+            issues.push('host_default_instruction_drifted_from_registration');
+          }
+        } else {
+          if (progression.handoff_contract.question_allowed !== true) issues.push('question_permission_drift');
+          if (
+            !/disputed standing/iu.test(compiled.action_instruction) ||
+            !/in its own words/iu.test(compiled.action_instruction) ||
+            !/under protest/iu.test(compiled.action_instruction) ||
+            !/wider frame disputed/iu.test(compiled.action_instruction) ||
+            !/do not state the result/iu.test(compiled.action_instruction)
+          ) {
+            issues.push('standing_conditions_bridge_contract_incomplete');
+          }
+        }
+        rows.push({
+          arm_id: armId,
+          study: design.studyId,
+          world: configurationJob.world,
+          action: configurationJob.action,
+          assigned_register: configurationJob.register,
+          scene,
+          compiled,
+          question_allowed: progression.handoff_contract.question_allowed,
+          safety,
+          persona_prompt_sha256: sha256(personaPrompt),
+          rival_dag_sha256: rivalDag.sha256,
+          issues,
+          passed: issues.length === 0,
+        });
+      }
+    }
+  }
+  return {
+    schema: 'machinespirits.tutor-stub.frame-refuser-depth-compilation-preflight.v1',
+    study: design.studyId,
+    status:
+      worldRegistry.passed &&
+      modelRoute.passed &&
+      attemptCeilingClosure.passed &&
+      rivalDags.length === 20 &&
+      rows.length === 8 &&
+      rows.every((row) => row.passed)
+        ? 'passed_zero_call'
+        : 'failed',
+    expected_rows: 8,
+    world_registry: worldRegistry,
+    model_route: modelRoute,
+    attempt_ceiling_closure: attemptCeilingClosure,
+    rival_dag_count: rivalDags.length,
+    rival_dag_set_sha256: sha256(rivalDags.map((dag) => dag.sha256).join('\n')),
+    rows,
+    model_calls: 0,
+    production_writes: 0,
+  };
+}
+
 export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root = process.cwd() } = {}) {
+  if (isDepthDesign(loaded?.design)) {
+    return runTutorStubFrameRefuserDepthCompilationPreflight({ loaded, root });
+  }
   if (isMergedDesign(loaded?.design)) {
     return runTutorStubResistantLearnerMergedCompilationPreflight({ loaded, root });
   }
@@ -2421,7 +2917,145 @@ export function summarizeTutorStubResistantLearnerMergedPoweredRun({ rows, desig
   };
 }
 
-export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) {
+function depthDeliverySummary(rows) {
+  // A row is "adjudicated" when the delivery gate ran at least once on it; the
+  // last enforcement event carries the post-repair verdict for the episode.
+  const adjudicated = rows.filter((row) => Array.isArray(row.delivery) && row.delivery.length > 0);
+  const delivered = adjudicated.filter((row) => row.delivery[row.delivery.length - 1].delivered === true);
+  return {
+    adjudicated: adjudicated.length,
+    delivered: delivered.length,
+    not_delivered: adjudicated.length - delivered.length,
+  };
+}
+
+export function summarizeTutorStubFrameRefuserDepthCalibration({ rows, design, root = process.cwd() } = {}) {
+  const arms = DEPTH_ARM_IDS.map((armId) => {
+    const armDesign = tutorStubFrameRefuserDepthArmDesign(design, armId, { root });
+    const armRows = rows.filter((row) => row.job.arm_id === armId);
+    const completed = armRows.filter((row) => row.status === 'complete');
+    const retained = armRows.filter((row) => row.status === 'retained_substantive_failure');
+    const rules = armDesign.calibration;
+    const endpoint = armDesign.measurement.endpointField;
+    const determinate = completed.filter((row) => panelField(row, 'primary', endpoint)?.status === 'determinate');
+    const rungCounts = Object.fromEntries(
+      ['0', '1', '2'].map((rung) => [
+        rung,
+        determinate.filter((row) => panelField(row, 'primary', endpoint)?.value === rung).length,
+      ]),
+    );
+    const agreement = mergedAgreementSummary(completed, armDesign);
+    // Delivery is read over completed AND retained rows: a typed non-delivery
+    // failure is exactly the case the delivered-contrast floors must see.
+    const delivery = depthDeliverySummary([...completed, ...retained]);
+    const prohibited = completed.filter((row) => panelField(row, 'fidelity', 'prohibited_delivery')?.value === 'yes');
+    const jurisdictionRetained = completed.filter(
+      (row) => panelField(row, 'primary', 'final_jurisdictional_dispute_retained')?.value === 'yes',
+    ).length;
+    const bridgeDelivered = completed.filter(
+      (row) => panelField(row, 'fidelity', 'delivered_test_bounded_distinction')?.value === 'yes',
+    ).length;
+    const seatMinimum = rateFloorCount(
+      completed.length,
+      rules.minimumEligibleVoteRatePerSeatAndInstrument,
+      rules.minimumEligibleVotesFloor,
+    );
+    const endpointPairs = agreement.endpoint_panel.pairwise_exact_agreements;
+    const gates = {
+      execution_and_typed_failure_accounting:
+        completed.length + retained.length === rules.dialogues &&
+        retained.every((row) => Boolean(row.registered_failure?.code)),
+      determinate_outcome:
+        determinate.length >=
+        rateFloorCount(completed.length, rules.minimumDeterminateOutcomeRate, rules.minimumDeterminateOutcomeFloor),
+      eligible_vote_rate_per_seat_and_instrument: Object.values(agreement.seat_eligibility).every((seat) =>
+        Object.values(seat).every((count) => count === null || count >= seatMinimum),
+      ),
+      pairwise_exact_endpoint_agreement:
+        endpointPairs.length === 3 &&
+        endpointPairs.every(
+          (pair) =>
+            Number.isFinite(pair.conditional_exact_agreement) &&
+            pair.conditional_exact_agreement >= rules.minimumPairwiseExactEndpointAgreement,
+        ),
+      ...(armId === 'treatment'
+        ? {
+            treatment_delivery_rate:
+              delivery.adjudicated >= 1 &&
+              delivery.delivered >= rateFloorCount(delivery.adjudicated, rules.minimumTreatmentDeliveryRate),
+            treatment_any_adjudicated_delivery: delivery.delivered >= 1,
+          }
+        : {
+            // The reference adjudication question already forbids presenting an
+            // exhibit, so every adjudicated non-delivery counts against the
+            // contamination bound. That direction is conservative: it can only
+            // overstate contamination, never hide it.
+            reference_contamination_bound:
+              delivery.adjudicated >= 1 &&
+              delivery.not_delivered <= delivery.adjudicated * rules.maximumReferenceContaminationRate,
+          }),
+      no_confirmed_prohibited_delivery: prohibited.length === 0,
+      jurisdiction_retained:
+        jurisdictionRetained >=
+        rateFloorCount(
+          completed.length,
+          rules.minimumJurisdictionRetainedRateOnCompletedRows,
+          rules.minimumJurisdictionRetainedFloor,
+        ),
+    };
+    return {
+      arm_id: armId,
+      registered_move_id: armDesign.depthExecution.registeredMoveId,
+      pedagogical_move: armDesign.depthExecution.move,
+      host_action_family: armDesign.depthExecution.hostActionFamily,
+      status: Object.values(gates).every(Boolean) ? 'passed' : 'failed',
+      gates,
+      statistics: {
+        completed_rows: completed.length,
+        retained_typed_failures: retained.length,
+        determinate: determinate.length,
+        rung_counts: rungCounts,
+        rung_2_rate: determinate.length ? rungCounts['2'] / determinate.length : null,
+        delivery,
+        confirmed_prohibited_deliveries: prohibited.length,
+        jurisdiction_retained: jurisdictionRetained,
+        delivered_test_bounded_distinction_report_only: bridgeDelivered,
+      },
+      agreement,
+    };
+  });
+  const referenceArm = arms.find((arm) => arm.arm_id === 'reference');
+  return {
+    schema: 'machinespirits.tutor-stub.frame-refuser-depth-calibration-report.v1',
+    study_id: design.studyId,
+    status:
+      arms.every((arm) => arm.status === 'passed') &&
+      arms.reduce((sum, arm) => sum + arm.statistics.confirmed_prohibited_deliveries, 0) === 0
+        ? 'passed'
+        : 'failed',
+    arms,
+    rows,
+    pooled_confirmed_prohibited_deliveries: arms.reduce(
+      (sum, arm) => sum + arm.statistics.confirmed_prohibited_deliveries,
+      0,
+    ),
+    sizing_update: {
+      purpose: 'update the power table reference rung-2 rate for powered-run sizing; not an interim outcome analysis',
+      reference_rung_2: referenceArm.statistics.rung_counts['2'],
+      reference_determinate: referenceArm.statistics.determinate,
+      reference_rung_2_rate: referenceArm.statistics.rung_2_rate,
+    },
+    calibration_only: true,
+    powered_run_authorized: false,
+    calibration_rows_poolable_into_powered_run: false,
+    claim_boundary: design.claimBoundary,
+  };
+}
+
+export function summarizeTutorStubResistantLearnerCalibration({ rows, design, root = process.cwd() }) {
+  if (isDepthDesign(design)) {
+    return summarizeTutorStubFrameRefuserDepthCalibration({ rows, design, root });
+  }
   if (isMergedDesign(design)) {
     const faces = ['faceA', 'faceB'].map((faceId) => {
       const faceDesign = tutorStubResistantLearnerMergedFaceDesign(design, faceId);
@@ -2679,6 +3313,8 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design }) 
 
 export default {
   buildTutorStubResistantLearnerCalibrationPlan,
+  summarizeTutorStubFrameRefuserDepthCalibration,
+  tutorStubFrameRefuserDepthArmDesign,
   buildTutorStubResistantLearnerPoweredPlan,
   configureTutorStubResistantLearnerCalibrationFromCli,
   loadTutorStubResistantLearnerDesign,
