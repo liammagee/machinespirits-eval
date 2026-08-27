@@ -24,8 +24,9 @@ import {
 } from '../scripts/run-tutor-stub-frame-refuser-depth-calibration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v2.json';
+const DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v3.json';
 const V1_DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v1.json';
+const V2_DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v2.json';
 
 function loadDesign() {
   return loadTutorStubResistantLearnerDesign({ designPath: DESIGN_PATH, root: ROOT });
@@ -100,7 +101,7 @@ test('arm projections carry the registered per-arm contracts on sealed face-B ma
     assert.equal(arm.calibration.maximumTreatmentBridgeReadRate, 0.1);
     assert.equal(arm.calibration.maximumReferenceContaminationRate, undefined);
     assert.equal(arm.calibration.minimumPairwiseExactEndpointAgreement, 0.8);
-    assert.equal(arm.randomization.masterSeed, 2026082701);
+    assert.equal(arm.randomization.masterSeed, 2026082801);
     assert.equal(arm.attemptCeilings.plannedCallsPerDialogue, 64);
     assert.equal(arm.attemptCeilings.maximumReservationsPerDialogue, 198);
   }
@@ -110,7 +111,7 @@ test('arm projections carry the registered per-arm contracts on sealed face-B ma
 test('calibration plan is 36 jobs balanced nine per arm-world with stable deterministic ranks', () => {
   const design = loadDesign().design;
   const plan = buildTutorStubResistantLearnerCalibrationPlan(design);
-  assert.equal(plan.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-plan.v2');
+  assert.equal(plan.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-plan.v3');
   assert.equal(plan.jobs.length, 36);
   for (const armId of ['treatment', 'reference']) {
     for (const world of design.population.worlds) {
@@ -120,7 +121,7 @@ test('calibration plan is 36 jobs balanced nine per arm-world with stable determ
   for (const job of plan.jobs) {
     // Underscore-only ids: the sealed reader seat merged a hyphen-underscore
     // boundary when echoing revision-1 case ids, voiding its votes.
-    assert.match(job.id, /^depth_(treatment|reference)_cal_[a-z0-9_]+_r\d+$/u);
+    assert.match(job.id, /^depth_(treatment|reference)_cal3_[a-z0-9_]+_r\d+$/u);
     assert.equal(job.register, 'plain');
     assert.match(job.batch_id, /^batch_\d{2}$/);
     assert.equal(typeof job.assignment_manifest_sha256, 'string');
@@ -179,7 +180,7 @@ test('launch preflight covers both arm delivery roles, probes zero-call, and wri
   assert.equal(preflight.production_writes, 0);
   assert.equal(preflight.planned_role_calls, 2304);
   assert.equal(preflight.hard_attempt_ceiling, 7128);
-  assert.equal(preflight.schema, 'machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.v2');
+  assert.equal(preflight.schema, 'machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.v3');
   assert.equal(preflight.checks.design_revision_current, true);
   assert.equal(preflight.checks.case_ids_underscore_only, true);
   assert.equal(fs.existsSync(destination), false);
@@ -253,7 +254,7 @@ test('depth summarizer passes on clean synthetic rows and reports the sizing upd
   const design = loadDesign().design;
   const rows = syntheticDepthRows(design);
   const report = summarizeTutorStubResistantLearnerCalibration({ rows, design, root: ROOT });
-  assert.equal(report.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-report.v2');
+  assert.equal(report.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-report.v3');
   assert.equal(report.status, 'passed');
   assert.equal(report.calibration_only, true);
   assert.equal(report.powered_run_authorized, false);
@@ -415,5 +416,26 @@ test('revision 1 stays valid as provenance but the launch preflight refuses to r
   // Revision 1's hyphenated ids are also refused on their own terms.
   assert.equal(preflight.checks.case_ids_underscore_only, false);
   assert.equal(preflight.schema, 'machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.v1');
+  assert.equal(preflight.model_calls_executed, 0);
+});
+
+test('revision 2 stays valid as provenance but the launch preflight refuses to run it', async () => {
+  const loadedV2 = loadTutorStubResistantLearnerDesign({ designPath: V2_DESIGN_PATH, root: ROOT });
+  assert.equal(validateTutorStubResistantLearnerDesign(loadedV2.design).valid, true);
+  assert.equal(loadedV2.design.revision, 2);
+  loadedV2.relativePath = V2_DESIGN_PATH;
+  const preflight = await runTutorStubFrameRefuserDepthPreflight({
+    loaded: loadedV2,
+    root: ROOT,
+    destination: path.join(os.tmpdir(), `frame-refuser-depth-v2-refused-${process.pid}`),
+    destinationExists: () => false,
+    probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
+    smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', provider_model_calls: 0 }),
+  });
+  assert.equal(preflight.status, 'failed');
+  assert.equal(preflight.checks.design_revision_current, false);
+  // Revision 2's underscore ids are fine on their own terms; only currency fails.
+  assert.equal(preflight.checks.case_ids_underscore_only, true);
+  assert.equal(preflight.schema, 'machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.v2');
   assert.equal(preflight.model_calls_executed, 0);
 });

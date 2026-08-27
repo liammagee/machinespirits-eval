@@ -30,6 +30,8 @@ links:
     - config/tutor-stub-frame-refuser-depth-design.v1.json
     - notes/2026-08-27-frame-refuser-depth-registration-v2.md
     - config/tutor-stub-frame-refuser-depth-design.v2.json
+    - notes/2026-08-27-frame-refuser-depth-registration-v3.md
+    - config/tutor-stub-frame-refuser-depth-design.v3.json
 tags:
   - tutor-stub
   - resistant-learners
@@ -141,3 +143,28 @@ frame-refuser's rung-2 rate above its measured base?
   Launch preflight refuses the superseded revision-1 file. Dry run passes
   all 14 checks zero-call; 12/12 tests pass. Calibration waits on attended
   TTY-typed `APPROVE CALIBRATION 7128`.
+- 2026-08-27: Revision-2 Gate 1 calibration ran attended and FAILED two
+  treatment gates before any powered run; archived at
+  `artifacts/tutor-stub-live/frame-refuser-depth-gate1-v2-2026-08-27` in the
+  private archive repo, rows never reused. Every revision-2 plumbing fix
+  held (11/11 determinate both arms, floors reachable, reference arm passed
+  all gates). Diagnosis: the treatment instruction under-specified the voice
+  of the re-offer — the tutor delivered condition + exhibit + re-offer
+  wrapped in the reference move's standing formula ("Before your question
+  can have standing…", one turn ending "what assay shall test that?").
+  Blind panel read 3/11 completed treatment turns as the bridge (bound 0.1);
+  one endpoint seat pair hit 0.727 vs the 0.8 floor, partly on the same
+  hybrid turns. The bridge-read gate did its registered job: it caught the
+  v7 arm-convergence class.
+- 2026-08-27: Revision 3 registered zero-call as a fresh registration with
+  disclosure (`notes/2026-08-27-frame-refuser-depth-registration-v3.md`,
+  `config/tutor-stub-frame-refuser-depth-design.v3.json`). Changes: the
+  treatment instruction and adjudication question now require the re-offer
+  in committed voice (state readiness to run the test now on the named
+  exhibit) and ban the standing-precondition formula by name; fresh master
+  seed 2026082801 with a `cal3` case-id stem so no id collides with either
+  archived run; sizing, floors, gates, and ceilings unchanged. Known issue
+  disclosed, not fixed: the shared analysis fallback can leak "Classifier
+  returned non-JSON output." into a spoken turn. Launch preflight refuses
+  both superseded revisions. Calibration waits on attended TTY-typed
+  `APPROVE CALIBRATION 7128` (unchanged — ceilings did not move).

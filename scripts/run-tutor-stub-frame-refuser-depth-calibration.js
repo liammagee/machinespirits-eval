@@ -29,18 +29,18 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const TUTOR_STUB_FRAME_REFUSER_DEPTH_USAGE = `Usage:
   node scripts/run-tutor-stub-frame-refuser-depth-calibration.js \
-    --design config/tutor-stub-frame-refuser-depth-design.v2.json \
+    --design config/tutor-stub-frame-refuser-depth-design.v3.json \
     --destination /absolute/create-once/run-root \
     --dry-run
 
   node scripts/run-tutor-stub-frame-refuser-depth-calibration.js \
-    --design config/tutor-stub-frame-refuser-depth-design.v2.json \
+    --design config/tutor-stub-frame-refuser-depth-design.v3.json \
     --destination /absolute/create-once/run-root \
     --launch [--parallelism 4]
 
 --dry-run executes the complete zero-call preflight and writes nothing.
 --launch requires an attended TTY and records typed operator approval in approval.json.
-This launcher runs Gate 1 calibration only (revision 2: 36 dialogues, 18 per arm). The powered
+This launcher runs Gate 1 calibration only (revision 3: 36 dialogues, 18 per arm). The powered
 run is a separate later gate with its own attended approval; calibration rows are
 never pooled into it.
 No GO note, commit binding, source-file byte pin, approval schema version, or re-signature cycle is used.`;
