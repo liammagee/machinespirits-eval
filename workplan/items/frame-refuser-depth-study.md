@@ -208,3 +208,21 @@ frame-refuser's rung-2 rate above its measured base?
   `artifacts/tutor-stub-live/frame-refuser-depth-gate1-v3-2026-08-27` in the
   private archive repo. Any continuation needs a fresh registration; no
   floor is relaxed after data.
+- 2026-08-27: Post-run trace diagnosis (zero-call, recorded artifacts only).
+  The attrition splits into three channels. (1) Treatment delivery exhaustion,
+  0 in v2 to 5 in v3: the frame-refuser voices its condition IN the banned
+  standing formula (its scripted turn is "Before your question can stand, we
+  must assay..."), the treatment instruction tells the tutor to restate the
+  condition, tutors often close by quoting the learner's line verbatim, and
+  the registered adjudication question bans the formula with no exemption for
+  quoted learner words — 4 of the 5 final rejected drafts contain the quoted
+  formula. The ban catches the echo, not the tutor's own move; the 7
+  completed treatment rows show the committed-voice move is deliverable when
+  the quote is dropped. (2) Learner noncompliance, 6 (v2) to 8 (v3): the
+  scripted learner fails its own compliance check; pre-existing channel,
+  untouched by the v3 change. (3) Reference delivery exhaustion, 4 (v2) to 8
+  (v3) under an unchanged instruction: rejected drafts phrase the bridge as a
+  question to the learner or quote the warrant instead of stating the bounded
+  test; draw noise not excluded. Any v4 must exempt (or forbid) the learner
+  quote in the treatment turn AND budget floors for the realized 61%
+  attrition, else fix the learner-noncompliance channel first.
