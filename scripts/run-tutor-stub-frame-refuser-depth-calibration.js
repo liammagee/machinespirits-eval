@@ -38,8 +38,16 @@ export const TUTOR_STUB_FRAME_REFUSER_DEPTH_USAGE = `Usage:
     --destination /absolute/create-once/run-root \
     --launch [--parallelism 4]
 
+  node scripts/run-tutor-stub-frame-refuser-depth-calibration.js \
+    --design config/tutor-stub-frame-refuser-depth-design.v3.json \
+    --destination /absolute/existing/run-root \
+    --resume [--parallelism 4]
+
 --dry-run executes the complete zero-call preflight and writes nothing.
 --launch requires an attended TTY and records typed operator approval in approval.json.
+--resume continues a halted run root after a code-defect fix: every recorded dialogue
+keeps its paid outcome (a typed failure mislabeled as technical is re-typed from its
+recorded trace, never re-run); only never-started dialogues run, under the same ceilings.
 This launcher runs Gate 1 calibration only (revision 3: 36 dialogues, 18 per arm). The powered
 run is a separate later gate with its own attended approval; calibration rows are
 never pooled into it.
@@ -93,6 +101,62 @@ async function attendedApproval({ preflight, input = process.stdin, output = pro
   }
 }
 
+// Paths of an already-recorded job, with no side effects: the real childSpec
+// mints the rival DAG create-once, so it must never run twice for one job.
+function resumeJobSpec({ destination, job }) {
+  const jobRoot = path.join(destination, 'jobs', job.id);
+  return {
+    jobRoot,
+    traceDir: path.join(jobRoot, 'traces'),
+    transcript: path.join(jobRoot, 'transcript.json'),
+    registeredStudyOutcome: path.join(jobRoot, 'registered-study-outcome.json'),
+    stdout: path.join(jobRoot, 'stdout.log'),
+    stderr: path.join(jobRoot, 'stderr.log'),
+  };
+}
+
+// The delivery gate appends its enforcement event only after the final
+// verdict, and a delivered=false final verdict always raises the typed
+// non-delivery error on the next line. So a recorded row whose last
+// enforcement event says delivered=false is the registered typed failure,
+// whatever the child exit looked like. Until 2026-08-27 the treatment arm's
+// exhaustion code was missing from the shared retained-codes list, so the
+// child crossed the boundary unrecognized and the row was mislabeled as a
+// technical failure. Re-typing reads the recorded trace; it never re-runs
+// the dialogue.
+function retypeResumedDepthRow(row) {
+  if (row.status !== 'failed' || row.registered_failure) return row;
+  const last = row.delivery[row.delivery.length - 1];
+  if (!last || last.delivered !== false) return row;
+  const code =
+    row.job.arm_id === 'treatment'
+      ? 'tutor_stub_tutor_condition_discharge_non_delivery'
+      : 'tutor_stub_tutor_bounded_test_non_delivery';
+  return {
+    ...row,
+    status: TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_STATUS,
+    registered_failure: {
+      code,
+      disposition: 'substantive_registered_failure_stop_no_replacement',
+      substantive_study_failure: true,
+      recoverable: false,
+      replacement_allowed: false,
+      retyped_on_resume: true,
+      retype_evidence: 'recorded trace tutor_delivery_enforcement event: delivered=false after the allowed repair',
+    },
+  };
+}
+
+function readDepthLedgerUnits(ledgerPath) {
+  const units = new Map();
+  const lines = fs.readFileSync(ledgerPath, 'utf8').split('\n').filter(Boolean);
+  for (const line of lines) {
+    const entry = JSON.parse(line);
+    if (entry.type === 'unit_complete') units.set(entry.job_id, entry);
+  }
+  return units;
+}
+
 export async function executeTutorStubFrameRefuserDepthCalibration({
   loaded,
   destination,
@@ -103,6 +167,7 @@ export async function executeTutorStubFrameRefuserDepthCalibration({
   childSpec = tutorStubResistantLearnerCalibrationChildSpec,
   runChild = runTutorStubResistantLearnerCalibrationChild,
   extractRow = extractTutorStubResistantLearnerCalibrationRow,
+  resume = false,
 } = {}) {
   const plan = preflight.plan;
   const ledgerPath = path.join(destination, 'run-ledger.jsonl');
@@ -111,39 +176,91 @@ export async function executeTutorStubFrameRefuserDepthCalibration({
   // arm projection. Both arms share it.
   const perDialogueCeiling = tutorStubFrameRefuserDepthArmDesign(loaded.design, 'treatment', { root: ROOT })
     .attemptCeilings.maximumReservationsPerDialogue;
-  if (fs.existsSync(destination)) throw new Error('frame-refuser depth destination is create-once');
-  fs.mkdirSync(path.dirname(destination), { recursive: true });
-  fs.mkdirSync(destination, { recursive: false });
-  fs.mkdirSync(path.join(destination, 'jobs'));
-  writeOnce(path.join(destination, 'approval.json'), approval);
-  writeOnce(path.join(destination, 'plan.json'), {
-    schema: 'machinespirits.tutor-stub.frame-refuser-depth-attended-plan.v1',
-    status: 'typed_approval_recorded_attended_launch',
-    approval_path: 'approval.json',
-    source: provenance,
-    design: {
-      path: loaded.relativePath,
-      sha256: loaded.sha256,
-      enforcement: 'recorded_not_pinned',
-    },
-    model_attempt_ceiling: preflight.hard_attempt_ceiling,
-    preflight,
-    plan,
-  });
-  writeOnce(ledgerPath, '');
-  appendLedger(ledgerPath, {
-    type: 'launch',
-    approval_path: 'approval.json',
-    source_commit: provenance.commit,
-    source_tree: provenance.tree,
-    dirty: provenance.dirty,
-    planned_units: plan.jobs.length,
-    hard_attempt_ceiling: preflight.hard_attempt_ceiling,
-  });
-
   const rows = [];
   let attempts = 0;
-  const queue = plan.jobs.map((job) => ({ loaded, job }));
+  let recordedUnits = new Map();
+  if (resume) {
+    for (const name of ['approval.json', 'plan.json', 'run-ledger.jsonl', 'jobs']) {
+      if (!fs.existsSync(path.join(destination, name))) {
+        throw new Error(`resume needs an existing run root with ${name}`);
+      }
+    }
+    recordedUnits = readDepthLedgerUnits(ledgerPath);
+    const retypedJobs = [];
+    for (const job of plan.jobs) {
+      const entry = recordedUnits.get(job.id);
+      if (!entry) continue;
+      const spec = resumeJobSpec({ destination, job });
+      if (!fs.existsSync(spec.jobRoot)) {
+        throw new Error(`recorded job ${job.id} has no job directory; refusing to resume`);
+      }
+      const exitCode = entry.status === 'complete' ? 0 : 1;
+      const extracted = extractRow({ job, spec, exit: { code: exitCode, signal: null, spawn_error: null } });
+      const row = retypeResumedDepthRow(extracted);
+      if (row !== extracted) retypedJobs.push(job.id);
+      if (row.status === 'failed') {
+        throw new Error(`recorded job ${job.id} is a technical failure the trace cannot re-type; refusing to resume`);
+      }
+      rows.push(row);
+      attempts += row.attempts;
+    }
+    if (attempts > preflight.hard_attempt_ceiling) {
+      throw new Error('recorded attempts already exceed the hard ceiling; refusing to resume');
+    }
+    const reportPath = path.join(destination, 'report.json');
+    if (fs.existsSync(reportPath)) {
+      let n = 1;
+      while (fs.existsSync(path.join(destination, `report.halted-${n}.json`))) n += 1;
+      fs.renameSync(reportPath, path.join(destination, `report.halted-${n}.json`));
+    }
+    appendLedger(ledgerPath, {
+      type: 'resume',
+      approved_by: approval.approved_by,
+      typed_phrase: approval.typed_phrase,
+      method: approval.method,
+      source_commit: provenance.commit,
+      source_tree: provenance.tree,
+      dirty: provenance.dirty,
+      recorded_units: rows.length,
+      recorded_attempts: attempts,
+      retyped_units: retypedJobs,
+      pending_units: plan.jobs.length - rows.length,
+      hard_attempt_ceiling: preflight.hard_attempt_ceiling,
+      note: 'create-once destination check waived for resume; recorded dialogues keep their outcomes and are never re-run',
+    });
+  } else {
+    if (fs.existsSync(destination)) throw new Error('frame-refuser depth destination is create-once');
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.mkdirSync(destination, { recursive: false });
+    fs.mkdirSync(path.join(destination, 'jobs'));
+    writeOnce(path.join(destination, 'approval.json'), approval);
+    writeOnce(path.join(destination, 'plan.json'), {
+      schema: 'machinespirits.tutor-stub.frame-refuser-depth-attended-plan.v1',
+      status: 'typed_approval_recorded_attended_launch',
+      approval_path: 'approval.json',
+      source: provenance,
+      design: {
+        path: loaded.relativePath,
+        sha256: loaded.sha256,
+        enforcement: 'recorded_not_pinned',
+      },
+      model_attempt_ceiling: preflight.hard_attempt_ceiling,
+      preflight,
+      plan,
+    });
+    writeOnce(ledgerPath, '');
+    appendLedger(ledgerPath, {
+      type: 'launch',
+      approval_path: 'approval.json',
+      source_commit: provenance.commit,
+      source_tree: provenance.tree,
+      dirty: provenance.dirty,
+      planned_units: plan.jobs.length,
+      hard_attempt_ceiling: preflight.hard_attempt_ceiling,
+    });
+  }
+
+  const queue = plan.jobs.filter((job) => !recordedUnits.has(job.id)).map((job) => ({ loaded, job }));
   let cursor = 0;
   let haltReason = null;
   async function worker() {
@@ -222,6 +339,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
       parallelism: { type: 'string', default: '1' },
       'dry-run': { type: 'boolean', default: false },
       launch: { type: 'boolean', default: false },
+      resume: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
     },
     allowPositionals: false,
@@ -230,8 +348,9 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     process.stdout.write(`${TUTOR_STUB_FRAME_REFUSER_DEPTH_USAGE}\n`);
     return null;
   }
-  if (values['dry-run'] === values.launch) {
-    throw new Error('select exactly one of --dry-run or --launch');
+  const modes = ['dry-run', 'launch', 'resume'].filter((mode) => values[mode]);
+  if (modes.length !== 1) {
+    throw new Error('select exactly one of --dry-run, --launch, or --resume');
   }
   if (!values.design || !values.destination) {
     throw new Error(`--design and --destination are required\n\n${TUTOR_STUB_FRAME_REFUSER_DEPTH_USAGE}`);
@@ -248,7 +367,9 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     loaded,
     root: ROOT,
     destination,
-    destinationExists: overrides.destinationExists || fs.existsSync,
+    // Resume continues an existing run root, so the create-once check is
+    // waived here and the waiver is recorded in the resume ledger entry.
+    destinationExists: values.resume ? () => false : overrides.destinationExists || fs.existsSync,
     ...(overrides.probeRoute ? { probeRoute: overrides.probeRoute } : {}),
     ...(overrides.smokeRole ? { smokeRole: overrides.smokeRole } : {}),
   });
@@ -277,6 +398,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     preflight,
     approval,
     provenance,
+    resume: values.resume,
   });
 }
 
