@@ -20,6 +20,12 @@ export const TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES = Object.freeze([
   'tutor_stub_tutor_bounded_test_non_delivery',
   'tutor_stub_tutor_discriminating_question_non_delivery',
   'tutor_stub_tutor_delivery_adjudication_indeterminate',
+  // Frame-refuser depth treatment arm: the condition-discharge delivery
+  // contract exhausted its one allowed repair. Registered as a retained typed
+  // non-delivery, never scored. Missing from this list until 2026-08-27, so
+  // the first live exhaustion crossed the child boundary unrecognized and
+  // halted the v3 calibration as a technical failure.
+  'tutor_stub_tutor_condition_discharge_non_delivery',
 ]);
 
 const RETAINED_SUBSTANTIVE_FAILURE_CODE_SET = new Set(TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES);

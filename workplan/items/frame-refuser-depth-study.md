@@ -168,3 +168,23 @@ frame-refuser's rung-2 rate above its measured base?
   returned non-JSON output." into a spoken turn. Launch preflight refuses
   both superseded revisions. Calibration waits on attended TTY-typed
   `APPROVE CALIBRATION 7128` (unchanged — ceilings did not move).
+- 2026-08-27: Revision-3 Gate 1 calibration launched attended and halted after
+  5 dialogues on a code defect, not a study defect. The treatment arm's typed
+  exhaustion code (`tutor_stub_tutor_condition_discharge_non_delivery`) was
+  missing from the shared retained-failure code list, so the first treatment
+  delivery exhaustion crossed the child boundary unrecognized and read as a
+  technical failure; the halt rule then stopped the block as registered. The
+  treatment arm never exhausted delivery in the v1 or v2 runs, so this path
+  first executed paid live. Recorded outcomes: 1 complete treatment
+  (delivered), 1 mislabeled treatment exhaustion, 3 retained reference
+  non-deliveries; 31 dialogues never started; 73 of 7,128 reservations used.
+  Fix (zero-call): the code joins the retained list, and the launcher gains
+  `--resume`, which keeps every recorded paid outcome, re-types the mislabeled
+  row from its recorded trace (never re-runs it), runs only the never-started
+  dialogues under the same ceilings, and records the attended re-typed phrase
+  plus provenance in a ledger `resume` entry. No approval artifact is voided
+  or re-signed. 16/16 depth tests pass, including a launch-halt-resume round
+  trip and a fail-closed refusal when a recorded technical failure has no
+  delivery verdict to re-type. A read-only probe over the real run root
+  confirms the re-type fires on exactly the one mislabeled row. Resume waits
+  on the operator's attended TTY-typed `APPROVE CALIBRATION 7128`.
