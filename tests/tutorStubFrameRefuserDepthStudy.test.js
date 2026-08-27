@@ -24,7 +24,8 @@ import {
 } from '../scripts/run-tutor-stub-frame-refuser-depth-calibration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v1.json';
+const DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v2.json';
+const V1_DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v1.json';
 
 function loadDesign() {
   return loadTutorStubResistantLearnerDesign({ designPath: DESIGN_PATH, root: ROOT });
@@ -39,21 +40,23 @@ test('depth design file validates and every registered constant fails closed', (
   assert.equal(validateTutorStubResistantLearnerDesign(design).valid, true);
   const mutations = [
     (d) => (d.studyId = 'frame-refuser-depth-2'),
-    (d) => (d.randomization.masterSeed = 2026082602),
-    (d) => (d.attemptCeilings.plannedCallsCalibration = 1281),
-    (d) => (d.attemptCeilings.calibrationMaximumReservations = 3961),
-    (d) => (d.calibration.perArm = 9),
+    (d) => (d.randomization.masterSeed = 2026082702),
+    (d) => (d.randomization.caseIdRule = 'hyphen_allowed'),
+    (d) => (d.attemptCeilings.plannedCallsCalibration = 2305),
+    (d) => (d.attemptCeilings.calibrationMaximumReservations = 7129),
+    (d) => (d.calibration.perArm = 10),
     (d) => d.calibration.authoritativeGates.pop(),
     (d) => (d.arms.treatment.hostActionFamily = 'clarify_distinction'),
     (d) => (d.arms.reference.actionInstruction = 'a new instruction'),
     (d) => (d.arms.distinctDeliveredBehaviourFloors.minimumTreatmentDeliveryRate = 0.7),
-    (d) => (d.arms.distinctDeliveredBehaviourFloors.maximumReferenceContaminationRate = 0.2),
+    (d) => (d.arms.distinctDeliveredBehaviourFloors.maximumTreatmentBridgeReadRate = 0.2),
     (d) => (d.tutorDeliveryEnforcement.perArmAdjudication.adjudicatorSeat.model = 'gpt-5.6-luna'),
     (d) => (d.tutorDeliveryEnforcement.repairsAllowedPerEpisode = 2),
     (d) => (d.population.worlds = ['world_005_marrick']),
     (d) => (d.models.tutor = 'openrouter.nemotron'),
     (d) => (d.callAuthority.grantsModelCalls = true),
     (d) => (d.lineage.measuredReferenceRung2Rate = 0.2),
+    (d) => (d.lineage.firstCalibration.rowsReused = true),
   ];
   for (const mutate of mutations) {
     const mutated = designCopy();
@@ -92,28 +95,32 @@ test('arm projections carry the registered per-arm contracts on sealed face-B ma
     assert.equal(arm.tutorDeliveryContract.enforcement.repairsAllowedPerEpisode, 1);
     assert.match(arm.tutorDeliveryContract.registerInstructions.plain, /concise neutral/iu);
     assert.equal(arm.models.finalSemanticReaders.length, 3);
-    assert.equal(arm.calibration.dialogues, 10);
+    assert.equal(arm.calibration.dialogues, 18);
     assert.equal(arm.calibration.minimumTreatmentDeliveryRate, 0.8);
-    assert.equal(arm.calibration.maximumReferenceContaminationRate, 0.1);
+    assert.equal(arm.calibration.maximumTreatmentBridgeReadRate, 0.1);
+    assert.equal(arm.calibration.maximumReferenceContaminationRate, undefined);
     assert.equal(arm.calibration.minimumPairwiseExactEndpointAgreement, 0.8);
-    assert.equal(arm.randomization.masterSeed, 2026082601);
+    assert.equal(arm.randomization.masterSeed, 2026082701);
     assert.equal(arm.attemptCeilings.plannedCallsPerDialogue, 64);
     assert.equal(arm.attemptCeilings.maximumReservationsPerDialogue, 198);
   }
   assert.throws(() => tutorStubFrameRefuserDepthArmDesign(design, 'placebo', { root: ROOT }));
 });
 
-test('calibration plan is 20 jobs balanced five per arm-world with stable deterministic ranks', () => {
+test('calibration plan is 36 jobs balanced nine per arm-world with stable deterministic ranks', () => {
   const design = loadDesign().design;
   const plan = buildTutorStubResistantLearnerCalibrationPlan(design);
-  assert.equal(plan.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-plan.v1');
-  assert.equal(plan.jobs.length, 20);
+  assert.equal(plan.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-plan.v2');
+  assert.equal(plan.jobs.length, 36);
   for (const armId of ['treatment', 'reference']) {
     for (const world of design.population.worlds) {
-      assert.equal(plan.jobs.filter((job) => job.arm_id === armId && job.world === world).length, 5);
+      assert.equal(plan.jobs.filter((job) => job.arm_id === armId && job.world === world).length, 9);
     }
   }
   for (const job of plan.jobs) {
+    // Underscore-only ids: the sealed reader seat merged a hyphen-underscore
+    // boundary when echoing revision-1 case ids, voiding its votes.
+    assert.match(job.id, /^depth_(treatment|reference)_cal_[a-z0-9_]+_r\d+$/u);
     assert.equal(job.register, 'plain');
     assert.match(job.batch_id, /^batch_\d{2}$/);
     assert.equal(typeof job.assignment_manifest_sha256, 'string');
@@ -127,7 +134,7 @@ test('compilation preflight passes zero-call and pins the due-clue question prec
   assert.equal(preflight.status, 'passed_zero_call');
   assert.equal(preflight.model_calls, 0);
   assert.equal(preflight.rows.length, 8);
-  assert.equal(preflight.rival_dag_count, 20);
+  assert.equal(preflight.rival_dag_count, 36);
   assert.equal(preflight.attempt_ceiling_closure.passed, true);
   for (const row of preflight.rows) {
     assert.equal(row.passed, true, `${row.arm_id}/${row.world}/${row.scene}: ${row.issues.join('|')}`);
@@ -170,8 +177,11 @@ test('launch preflight covers both arm delivery roles, probes zero-call, and wri
   assert.equal(preflight.status, 'passed_zero_call');
   assert.equal(preflight.model_calls_executed, 0);
   assert.equal(preflight.production_writes, 0);
-  assert.equal(preflight.planned_role_calls, 1280);
-  assert.equal(preflight.hard_attempt_ceiling, 3960);
+  assert.equal(preflight.planned_role_calls, 2304);
+  assert.equal(preflight.hard_attempt_ceiling, 7128);
+  assert.equal(preflight.schema, 'machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.v2');
+  assert.equal(preflight.checks.design_revision_current, true);
+  assert.equal(preflight.checks.case_ids_underscore_only, true);
   assert.equal(fs.existsSync(destination), false);
   for (const armId of ['treatment', 'reference']) {
     assert.ok(roles.includes(`${armId}:tutor_stub_tutor_delivery_repair`));
@@ -243,7 +253,7 @@ test('depth summarizer passes on clean synthetic rows and reports the sizing upd
   const design = loadDesign().design;
   const rows = syntheticDepthRows(design);
   const report = summarizeTutorStubResistantLearnerCalibration({ rows, design, root: ROOT });
-  assert.equal(report.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-report.v1');
+  assert.equal(report.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-report.v2');
   assert.equal(report.status, 'passed');
   assert.equal(report.calibration_only, true);
   assert.equal(report.powered_run_authorized, false);
@@ -252,12 +262,17 @@ test('depth summarizer passes on clean synthetic rows and reports the sizing upd
   const reference = report.arms.find((arm) => arm.arm_id === 'reference');
   assert.equal(treatment.gates.treatment_delivery_rate, true);
   assert.equal(treatment.gates.treatment_any_adjudicated_delivery, true);
-  assert.equal(reference.gates.reference_contamination_bound, true);
+  assert.equal(treatment.gates.treatment_bridge_read_bound, true);
+  // Revision 2 registers no reference-side contamination gate; cleanliness is
+  // certified per completed row by the delivery adjudication and reported.
+  assert.equal('reference_contamination_bound' in reference.gates, false);
+  assert.equal(reference.statistics.completed_delivery_certified, 18);
+  assert.equal(treatment.statistics.completed_delivery_certified, 18);
   assert.equal(treatment.statistics.rung_2_rate, 1);
   assert.equal(reference.statistics.rung_2_rate, 0);
-  assert.equal(reference.statistics.delivered_test_bounded_distinction_report_only, 10);
+  assert.equal(reference.statistics.delivered_test_bounded_distinction_report_only, 18);
   assert.equal(report.sizing_update.reference_rung_2, 0);
-  assert.equal(report.sizing_update.reference_determinate, 10);
+  assert.equal(report.sizing_update.reference_determinate, 18);
   assert.match(report.sizing_update.purpose, /not an interim outcome analysis/u);
 });
 
@@ -265,8 +280,9 @@ test('depth delivered-contrast floors fail closed on delivery loss and contamina
   const design = loadDesign().design;
   const shortDelivery = syntheticDepthRows(design);
   let flipped = 0;
+  // 18 adjudicated at the 0.8 floor needs 15 delivered; four losses breach it.
   for (const row of shortDelivery) {
-    if (row.job.arm_id === 'treatment' && flipped < 3) {
+    if (row.job.arm_id === 'treatment' && flipped < 4) {
       row.delivery = [{ turn: 3, delivered: false, repairAttempts: 1 }];
       flipped += 1;
     }
@@ -275,20 +291,19 @@ test('depth delivered-contrast floors fail closed on delivery loss and contamina
   assert.equal(shortReport.status, 'failed');
   assert.equal(shortReport.arms.find((arm) => arm.arm_id === 'treatment').gates.treatment_delivery_rate, false);
 
-  const contaminated = syntheticDepthRows(design);
+  // Bridge-read bound: three completed treatment rows read by the blind panel
+  // as the sealed bridge move (3 > 18 * 0.1) must fail the arm-separation gate.
+  const converged = syntheticDepthRows(design);
   flipped = 0;
-  for (const row of contaminated) {
-    if (row.job.arm_id === 'reference' && flipped < 2) {
-      row.delivery = [{ turn: 3, delivered: false, repairAttempts: 1 }];
+  for (const row of converged) {
+    if (row.job.arm_id === 'treatment' && flipped < 3) {
+      row.outcome.fidelity.fields.delivered_test_bounded_distinction.value = 'yes';
       flipped += 1;
     }
   }
-  const contaminatedReport = summarizeTutorStubResistantLearnerCalibration({ rows: contaminated, design, root: ROOT });
-  assert.equal(contaminatedReport.status, 'failed');
-  assert.equal(
-    contaminatedReport.arms.find((arm) => arm.arm_id === 'reference').gates.reference_contamination_bound,
-    false,
-  );
+  const convergedReport = summarizeTutorStubResistantLearnerCalibration({ rows: converged, design, root: ROOT });
+  assert.equal(convergedReport.status, 'failed');
+  assert.equal(convergedReport.arms.find((arm) => arm.arm_id === 'treatment').gates.treatment_bridge_read_bound, false);
 
   const unadjudicated = syntheticDepthRows(design);
   for (const row of unadjudicated) {
@@ -307,13 +322,13 @@ test('typed approval accepts only the exact registered phrase and the usage reje
     phase: 'calibration',
     study_id: 'frame-refuser-depth',
     destination: '/x',
-    jobs: 20,
-    planned_role_calls: 1280,
-    hard_attempt_ceiling: 3960,
+    jobs: 36,
+    planned_role_calls: 2304,
+    hard_attempt_ceiling: 7128,
   };
   const approval = buildTutorStubFrameRefuserDepthApproval({
     signedBy: 'operator',
-    approvalPhrase: 'APPROVE CALIBRATION 3960',
+    approvalPhrase: 'APPROVE CALIBRATION 7128',
     preflight,
   });
   assert.equal(approval.calibration_only, true);
@@ -322,12 +337,12 @@ test('typed approval accepts only the exact registered phrase and the usage reje
   assert.throws(() =>
     buildTutorStubFrameRefuserDepthApproval({
       signedBy: 'operator',
-      approvalPhrase: 'APPROVE CALIBRATION 4000',
+      approvalPhrase: 'APPROVE CALIBRATION 3960',
       preflight,
     }),
   );
   assert.throws(() =>
-    buildTutorStubFrameRefuserDepthApproval({ signedBy: '', approvalPhrase: 'APPROVE CALIBRATION 3960', preflight }),
+    buildTutorStubFrameRefuserDepthApproval({ signedBy: '', approvalPhrase: 'APPROVE CALIBRATION 7128', preflight }),
   );
   assert.match(
     TUTOR_STUB_FRAME_REFUSER_DEPTH_USAGE,
@@ -345,16 +360,16 @@ test('launcher main records the typed approval and hands execute the sealed pref
         phase: 'calibration',
         study_id: loaded.design.studyId,
         destination,
-        jobs: 20,
-        planned_role_calls: 1280,
-        hard_attempt_ceiling: 3960,
+        jobs: 36,
+        planned_role_calls: 2304,
+        hard_attempt_ceiling: 7128,
         plan: { jobs: [] },
       }),
       destinationExists: () => false,
       isTTY: true,
       operatorApproval: async () => ({
         signedBy: 'operator',
-        approvalPhrase: 'APPROVE CALIBRATION 3960',
+        approvalPhrase: 'APPROVE CALIBRATION 7128',
         method: 'attended_interactive_phrase',
       }),
       sourceProvenance: () => ({ commit: 'c', tree: 't', dirty: false, enforcement: 'recorded_not_pinned' }),
@@ -365,7 +380,7 @@ test('launcher main records the typed approval and hands execute the sealed pref
     },
   );
   assert.equal(report.status, 'passed');
-  assert.equal(captured.approval.typed_phrase, 'APPROVE CALIBRATION 3960');
+  assert.equal(captured.approval.typed_phrase, 'APPROVE CALIBRATION 7128');
   assert.equal(captured.approval.method, 'attended_interactive_phrase');
   assert.equal(captured.parallelism, 2);
   assert.equal(captured.provenance.enforcement, 'recorded_not_pinned');
@@ -375,9 +390,30 @@ test('launcher main records the typed approval and hands execute the sealed pref
   );
   await assert.rejects(
     depthLauncherMain(['--design', DESIGN_PATH, '--destination', '/absolute/depth-root', '--launch'], {
-      runPreflight: async () => ({ status: 'passed_zero_call', hard_attempt_ceiling: 3960, plan: { jobs: [] } }),
+      runPreflight: async () => ({ status: 'passed_zero_call', hard_attempt_ceiling: 7128, plan: { jobs: [] } }),
       isTTY: false,
     }),
     /attended TTY/u,
   );
+});
+
+test('revision 1 stays valid as provenance but the launch preflight refuses to run it', async () => {
+  const loadedV1 = loadTutorStubResistantLearnerDesign({ designPath: V1_DESIGN_PATH, root: ROOT });
+  assert.equal(validateTutorStubResistantLearnerDesign(loadedV1.design).valid, true);
+  assert.equal(loadedV1.design.revision, 1);
+  loadedV1.relativePath = V1_DESIGN_PATH;
+  const preflight = await runTutorStubFrameRefuserDepthPreflight({
+    loaded: loadedV1,
+    root: ROOT,
+    destination: path.join(os.tmpdir(), `frame-refuser-depth-v1-refused-${process.pid}`),
+    destinationExists: () => false,
+    probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
+    smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', provider_model_calls: 0 }),
+  });
+  assert.equal(preflight.status, 'failed');
+  assert.equal(preflight.checks.design_revision_current, false);
+  // Revision 1's hyphenated ids are also refused on their own terms.
+  assert.equal(preflight.checks.case_ids_underscore_only, false);
+  assert.equal(preflight.schema, 'machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.v1');
+  assert.equal(preflight.model_calls_executed, 0);
 });

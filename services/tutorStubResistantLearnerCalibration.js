@@ -72,6 +72,74 @@ const DEPTH_GATE_CONSTANTS = Object.freeze({
   minimumJurisdictionRetainedRateOnCompletedRows: 0.67,
   minimumJurisdictionRetainedFloor: 6,
 });
+// Revision 2, registered after the failed 2026-08-27 revision-1 calibration:
+// the reference contamination gate (which re-counted typed non-delivery
+// failures) is replaced by a blind-panel arm-separation bound on completed
+// treatment rows; reference cleanliness stays enforced by the bundled
+// adjudication question and is certified per row, reported but not gated.
+const DEPTH_AUTHORITATIVE_GATES_V2 = Object.freeze([
+  'minimumDeterminateOutcomeRate 0.8 with floor 8',
+  'minimumEligibleVoteRatePerSeatAndInstrument 0.8 with floor 8',
+  'minimumPairwiseExactEndpointAgreement 0.8',
+  'minimumTreatmentDeliveryRate 0.8 on adjudicated intervention turns',
+  'maximumTreatmentBridgeReadRate 0.1 on completed treatment rows (blind-panel arm separation)',
+  'maximumConfirmedProhibitedDeliveries 0',
+  'minimumJurisdictionRetainedRateOnCompletedRows 0.67 with floor 6',
+]);
+const DEPTH_GATE_CONSTANTS_V2 = Object.freeze({
+  minimumDeterminateOutcomeRate: 0.8,
+  minimumDeterminateOutcomeFloor: 8,
+  minimumEligibleVoteRatePerSeatAndInstrument: 0.8,
+  minimumEligibleVotesFloor: 8,
+  minimumPairwiseExactEndpointAgreement: 0.8,
+  minimumTreatmentDeliveryRate: 0.8,
+  maximumTreatmentBridgeReadRate: 0.1,
+  maximumConfirmedProhibitedDeliveries: 0,
+  minimumJurisdictionRetainedRateOnCompletedRows: 0.67,
+  minimumJurisdictionRetainedFloor: 6,
+});
+// Registered per-revision calibration constants. Revision 2 exists because
+// revision 1 failed its own Gate 1 (case-id echo defect, floors sized against
+// planned instead of completed dialogues, contamination double-count); the
+// failed run is archived and none of its rows are reused.
+const DEPTH_REVISIONS = Object.freeze({
+  1: Object.freeze({
+    dialogues: 20,
+    perArm: 10,
+    masterSeed: 2026082601,
+    plannedCallsCalibration: 1280,
+    calibrationMaximumReservations: 3960,
+    authoritativeGates: DEPTH_AUTHORITATIVE_GATES,
+    gateConstants: DEPTH_GATE_CONSTANTS,
+    caseId: (armId, world, repeat) => `depth-${armId}-cal-${world}-r${repeat}`,
+    artifactSchemaVersion: 'v1',
+  }),
+  2: Object.freeze({
+    dialogues: 36,
+    perArm: 18,
+    masterSeed: 2026082701,
+    plannedCallsCalibration: 2304,
+    calibrationMaximumReservations: 7128,
+    authoritativeGates: DEPTH_AUTHORITATIVE_GATES_V2,
+    gateConstants: DEPTH_GATE_CONSTANTS_V2,
+    // Underscore-only case ids: the failed revision-1 run showed the sealed
+    // reader seat deterministically merging a hyphen-underscore boundary when
+    // echoing the case id, which voided every one of its votes.
+    caseId: (armId, world, repeat) => `depth_${armId}_cal_${world}_r${repeat}`,
+    artifactSchemaVersion: 'v2',
+  }),
+});
+export const TUTOR_STUB_FRAME_REFUSER_DEPTH_CURRENT_REVISION = 2;
+
+function depthRevision(design) {
+  const revision = DEPTH_REVISIONS[design?.revision];
+  if (!revision) throw new Error(`frame-refuser depth revision ${JSON.stringify(design?.revision)} is not registered`);
+  return revision;
+}
+
+export function tutorStubFrameRefuserDepthArtifactSchemaVersion(design) {
+  return depthRevision(design).artifactSchemaVersion;
+}
 const BOREDOM_TEMPLATE = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v8.json';
 const REFUSER_TEMPLATE = 'config/tutor-stub-resistance-action-register-crossed-registration.v9.json';
 const JUDGES = Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5']);
@@ -772,7 +840,11 @@ function validateTutorStubResistantLearnerMergedDesignV1(design) {
 
 function validateTutorStubFrameRefuserDepthDesignV1(design) {
   const issues = [];
-  if (design?.revision !== 1 || design?.studyId !== DEPTH_ID) issues.push('depth design identity is unsupported');
+  if (!DEPTH_REVISIONS[design?.revision] || design?.studyId !== DEPTH_ID) {
+    issues.push('depth design identity is unsupported');
+    return { valid: false, issues };
+  }
+  const revision = depthRevision(design);
   if (design?.status !== 'prospective_zero_call_design_pending_typed_approval') issues.push('depth status drifted');
   if (design?.workplanItem !== 'frame-refuser-depth-study') issues.push('depth workplan item drifted');
   const lineage = design?.lineage || {};
@@ -824,7 +896,12 @@ function validateTutorStubFrameRefuserDepthDesignV1(design) {
     issues.push(`depth arm move is not registered with the host: ${error.message}`);
   }
   const floors = design?.arms?.distinctDeliveredBehaviourFloors || {};
-  if (floors.minimumTreatmentDeliveryRate !== 0.8 || floors.maximumReferenceContaminationRate !== 0.1) {
+  if (
+    floors.minimumTreatmentDeliveryRate !== 0.8 ||
+    (design.revision === 1
+      ? floors.maximumReferenceContaminationRate !== 0.1
+      : floors.maximumTreatmentBridgeReadRate !== revision.gateConstants.maximumTreatmentBridgeReadRate)
+  ) {
     issues.push('depth delivered-contrast floors drifted');
   }
   const enforcement = design?.tutorDeliveryEnforcement || {};
@@ -856,9 +933,9 @@ function validateTutorStubFrameRefuserDepthDesignV1(design) {
     issues.push('depth measurement or reader panel drifted');
   }
   if (
-    design?.calibration?.dialogues !== 20 ||
-    design?.calibration?.perArm !== 10 ||
-    !exactValues(design?.calibration?.authoritativeGates, DEPTH_AUTHORITATIVE_GATES)
+    design?.calibration?.dialogues !== revision.dialogues ||
+    design?.calibration?.perArm !== revision.perArm ||
+    !exactValues(design?.calibration?.authoritativeGates, revision.authoritativeGates)
   ) {
     issues.push('depth calibration registration drifted from the code gate constants');
   }
@@ -869,12 +946,18 @@ function validateTutorStubFrameRefuserDepthDesignV1(design) {
   ) {
     issues.push('depth powered-run boundary drifted');
   }
-  if (design?.randomization?.masterSeed !== 2026082601) issues.push('depth master seed drifted');
+  if (design?.randomization?.masterSeed !== revision.masterSeed) issues.push('depth master seed drifted');
+  if (design.revision >= 2 && design?.randomization?.caseIdRule !== 'underscore_only_lowercase') {
+    issues.push('depth revision 2 requires the underscore-only case-id rule');
+  }
+  if (design.revision >= 2 && design?.lineage?.firstCalibration?.rowsReused !== false) {
+    issues.push('depth revision 2 must disclose the failed first calibration and refuse row reuse');
+  }
   const ceilings = design?.attemptCeilings || {};
   if (
-    ceilings.plannedCallsCalibration !== 1280 ||
+    ceilings.plannedCallsCalibration !== revision.plannedCallsCalibration ||
     ceilings.maximumReservationsPerPlannedCall !== 3 ||
-    ceilings.calibrationMaximumReservations !== 3960
+    ceilings.calibrationMaximumReservations !== revision.calibrationMaximumReservations
   ) {
     issues.push('depth attempt ceilings drifted');
   }
@@ -1202,7 +1285,7 @@ export function tutorStubFrameRefuserDepthArmDesign(design, armId, { root = proc
     randomization: structuredClone(design.randomization),
     calibration: {
       ...faceB.calibration,
-      ...DEPTH_GATE_CONSTANTS,
+      ...depthRevision(design).gateConstants,
       dialogues: design.calibration.perArm,
       completedRowsDenominator: true,
     },
@@ -1358,14 +1441,22 @@ function buildMergedJobs(design) {
 
 function buildFrameRefuserDepthJobs(design) {
   const seed = design.randomization.masterSeed;
+  const revision = depthRevision(design);
+  const repeatsPerWorld = revision.perArm / design.population.worlds.length;
   const jobs = [];
   for (const armId of DEPTH_ARM_IDS) {
     const arm = design.arms[armId];
     const move = armId === 'treatment' ? 'condition_discharge' : 'test_bounded_distinction';
     for (const world of design.population.worlds) {
-      for (let repeat = 1; repeat <= 5; repeat += 1) {
+      for (let repeat = 1; repeat <= repeatsPerWorld; repeat += 1) {
+        // Revision 2 case ids are underscore-only: the sealed reader seat
+        // must echo the case id byte-exactly, and the failed revision-1 run
+        // showed it deterministically merging hyphen-underscore boundaries.
+        if (design.revision >= 2 && !/^[a-z0-9_]+$/u.test(revision.caseId(armId, world, repeat))) {
+          throw new Error('depth revision 2 case ids must be lowercase underscore-only');
+        }
         jobs.push({
-          id: `depth-${armId}-cal-${world}-r${repeat}`,
+          id: revision.caseId(armId, world, repeat),
           study: 'R1',
           arm_id: armId,
           world,
@@ -1523,13 +1614,13 @@ export function buildTutorStubResistantLearnerCalibrationPlan(design) {
       : design.studyId === B1_ID
         ? buildB1Jobs(design)
         : buildR1Jobs(design);
-  const expectedJobs = depth ? 20 : merged ? 36 : 18;
+  const expectedJobs = depth ? depthRevision(design).dialogues : merged ? 36 : 18;
   if (jobs.length !== expectedJobs || new Set(jobs.map((job) => job.id)).size !== expectedJobs) {
     throw new Error(`resistant-learner calibration requires ${expectedJobs} unique jobs`);
   }
   const plan = {
     schema: depth
-      ? 'machinespirits.tutor-stub.frame-refuser-depth-calibration-plan.v1'
+      ? `machinespirits.tutor-stub.frame-refuser-depth-calibration-plan.${depthRevision(design).artifactSchemaVersion}`
       : merged
         ? 'machinespirits.tutor-stub.resistant-learner-merged-calibration-plan.v1'
         : 'machinespirits.tutor-stub.resistant-learner-calibration-plan.v1',
@@ -2096,13 +2187,13 @@ function runTutorStubFrameRefuserDepthCompilationPreflight({ loaded, root }) {
     }
   }
   return {
-    schema: 'machinespirits.tutor-stub.frame-refuser-depth-compilation-preflight.v1',
+    schema: `machinespirits.tutor-stub.frame-refuser-depth-compilation-preflight.${depthRevision(design).artifactSchemaVersion}`,
     study: design.studyId,
     status:
       worldRegistry.passed &&
       modelRoute.passed &&
       attemptCeilingClosure.passed &&
-      rivalDags.length === 20 &&
+      rivalDags.length === depthRevision(design).dialogues &&
       rows.length === 8 &&
       rows.every((row) => row.passed)
         ? 'passed_zero_call'
@@ -2984,16 +3075,35 @@ export function summarizeTutorStubFrameRefuserDepthCalibration({ rows, design, r
               delivery.adjudicated >= 1 &&
               delivery.delivered >= rateFloorCount(delivery.adjudicated, rules.minimumTreatmentDeliveryRate),
             treatment_any_adjudicated_delivery: delivery.delivered >= 1,
+            // Revision 2 arm-separation bound: if the blind three-seat panel
+            // reads a committed treatment turn as the sealed bridge move, the
+            // arms have converged (the v7 defect class). Completed rows only;
+            // the panel never sees the assignment.
+            ...(design.revision >= 2
+              ? {
+                  treatment_bridge_read_bound:
+                    completed.length >= 1 && bridgeDelivered <= completed.length * rules.maximumTreatmentBridgeReadRate,
+                }
+              : {}),
           }
-        : {
-            // The reference adjudication question already forbids presenting an
-            // exhibit, so every adjudicated non-delivery counts against the
-            // contamination bound. That direction is conservative: it can only
-            // overstate contamination, never hide it.
-            reference_contamination_bound:
-              delivery.adjudicated >= 1 &&
-              delivery.not_delivered <= delivery.adjudicated * rules.maximumReferenceContaminationRate,
-          }),
+        : // Revision 2 registers no reference-side gate here: the revision-1
+          // contamination gate counted typed non-delivery failures (already
+          // retained as failures) as contamination, double-charging one event.
+          // Reference cleanliness is enforced by the bundled adjudication
+          // question — a completed reference row exists only after the delivery
+          // seat certified bridge-without-exhibit — and that certificate is
+          // reported in the statistics below.
+          design.revision >= 2
+          ? {}
+          : {
+              // The reference adjudication question already forbids presenting an
+              // exhibit, so every adjudicated non-delivery counts against the
+              // contamination bound. That direction is conservative: it can only
+              // overstate contamination, never hide it.
+              reference_contamination_bound:
+                delivery.adjudicated >= 1 &&
+                delivery.not_delivered <= delivery.adjudicated * rules.maximumReferenceContaminationRate,
+            }),
       no_confirmed_prohibited_delivery: prohibited.length === 0,
       jurisdiction_retained:
         jurisdictionRetained >=
@@ -3020,13 +3130,26 @@ export function summarizeTutorStubFrameRefuserDepthCalibration({ rows, design, r
         confirmed_prohibited_deliveries: prohibited.length,
         jurisdiction_retained: jurisdictionRetained,
         delivered_test_bounded_distinction_report_only: bridgeDelivered,
+        // Every completed row must carry a final delivered=true verdict from
+        // the per-arm adjudication (the gate throws otherwise); recorded so a
+        // reader can verify the reference cleanliness certificate per row.
+        ...(design.revision >= 2
+          ? {
+              completed_delivery_certified: completed.filter(
+                (row) =>
+                  Array.isArray(row.delivery) &&
+                  row.delivery.length > 0 &&
+                  row.delivery[row.delivery.length - 1].delivered === true,
+              ).length,
+            }
+          : {}),
       },
       agreement,
     };
   });
   const referenceArm = arms.find((arm) => arm.arm_id === 'reference');
   return {
-    schema: 'machinespirits.tutor-stub.frame-refuser-depth-calibration-report.v1',
+    schema: `machinespirits.tutor-stub.frame-refuser-depth-calibration-report.${depthRevision(design).artifactSchemaVersion}`,
     study_id: design.studyId,
     status:
       arms.every((arm) => arm.status === 'passed') &&

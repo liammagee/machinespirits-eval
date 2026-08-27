@@ -1,8 +1,10 @@
 import {
   buildTutorStubResistantLearnerCalibrationPlan,
   runTutorStubResistantLearnerCompilationPreflight,
+  TUTOR_STUB_FRAME_REFUSER_DEPTH_CURRENT_REVISION,
   TUTOR_STUB_FRAME_REFUSER_DEPTH_DESIGN_SCHEMA_V1,
   tutorStubFrameRefuserDepthArmDesign,
+  tutorStubFrameRefuserDepthArtifactSchemaVersion,
 } from './tutorStubResistantLearnerCalibration.js';
 import {
   probeTutorStubResistantLearnerCliRoute,
@@ -123,17 +125,27 @@ export async function runTutorStubFrameRefuserDepthPreflight({
   const armDesign = tutorStubFrameRefuserDepthArmDesign(design, 'treatment', { root });
   const plannedRoleCalls = design.attemptCeilings.plannedCallsCalibration;
   const hardAttemptCeiling = design.attemptCeilings.calibrationMaximumReservations;
+  const dialogues = design.calibration.dialogues;
+  const perArm = design.calibration.perArm;
+  const perWorld = perArm / design.population.worlds.length;
   const checks = {
-    depth_design_v1: design.schema === TUTOR_STUB_FRAME_REFUSER_DEPTH_DESIGN_SCHEMA_V1,
-    full_plan_20_jobs: plan.jobs.length === 20,
-    both_arms_10_jobs: ARM_IDS.every((armId) => plan.jobs.filter((job) => job.arm_id === armId).length === 10),
-    worlds_balanced_5_per_arm: ARM_IDS.every((armId) =>
+    depth_design_schema: design.schema === TUTOR_STUB_FRAME_REFUSER_DEPTH_DESIGN_SCHEMA_V1,
+    // A superseded revision must not be runnable: revision 1 failed its own
+    // Gate 1 on 2026-08-27 and rerunning it would be resampling after a
+    // failure. This is a registration-identity check, not an approval gate.
+    design_revision_current: design.revision === TUTOR_STUB_FRAME_REFUSER_DEPTH_CURRENT_REVISION,
+    full_plan_job_count: plan.jobs.length === dialogues,
+    both_arms_balanced: ARM_IDS.every((armId) => plan.jobs.filter((job) => job.arm_id === armId).length === perArm),
+    worlds_balanced_per_arm: ARM_IDS.every((armId) =>
       design.population.worlds.every(
-        (world) => plan.jobs.filter((job) => job.arm_id === armId && job.world === world).length === 5,
+        (world) => plan.jobs.filter((job) => job.arm_id === armId && job.world === world).length === perWorld,
       ),
     ),
+    // The sealed reader seat must echo each case id byte-exactly; mixed
+    // separators defeated that echo in the failed revision-1 run.
+    case_ids_underscore_only: plan.jobs.every((job) => /^[a-z0-9_]+$/u.test(job.id)),
     compilation_passed: compilation.status === 'passed_zero_call',
-    all_20_rival_dags_minted: compilation.rival_dag_count === 20,
+    all_rival_dags_minted: compilation.rival_dag_count === dialogues,
     all_8_arm_world_scene_rows_compiled: compilation.rows?.length === 8,
     route_probes_passed: routeProbes.every((probe) => probe.status === 'passed_zero_call'),
     role_smokes_passed: roleSmokes.every((smoke) => smoke.status === 'passed_zero_call_stub'),
@@ -146,7 +158,7 @@ export async function runTutorStubFrameRefuserDepthPreflight({
     planned_calls_within_ceiling: plannedRoleCalls <= hardAttemptCeiling,
   };
   return {
-    schema: 'machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.v1',
+    schema: `machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.${tutorStubFrameRefuserDepthArtifactSchemaVersion(design)}`,
     status: Object.values(checks).every(Boolean) ? 'passed_zero_call' : 'failed',
     phase: 'calibration',
     study_id: design.studyId,
