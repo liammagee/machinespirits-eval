@@ -226,3 +226,21 @@ frame-refuser's rung-2 rate above its measured base?
   test; draw noise not excluded. Any v4 must exempt (or forbid) the learner
   quote in the treatment turn AND budget floors for the realized 61%
   attrition, else fix the learner-noncompliance channel first.
+- 2026-08-27: Revision 4 registered (zero-call). Design
+  `config/tutor-stub-frame-refuser-depth-design.v4.json`; note
+  `notes/2026-08-27-frame-refuser-depth-registration-v4.md`. Two changes,
+  both from the trace diagnosis. (1) Quote-echo trap closed from both
+  sides: the treatment instruction now requires the condition restatement
+  in the tutor's own words (no word-for-word repetition of the learner's
+  sentence), and the adjudication question judges only the tutor's own
+  voice — explicit quotes of the learner are exempt from the formula ban,
+  while the restatement itself must not be such a quote. (2) Attrition
+  budgeted: 48 dialogues (24 per arm, 12 per world per arm) so the
+  unchanged floors of 8 completed per arm are reachable at both observed
+  attrition rates (39% in v2, 61% in v3). Gates, floors, endpoint, power
+  scan, and the sealed stack are unchanged. Fresh seed 2026082901, `cal4`
+  case-id stem; the launch preflight refuses all three superseded designs.
+  Ceilings scale at the registered 198 reservations per dialogue: 3,072
+  planned calls, 9,504 reservations (approval phrase `APPROVE CALIBRATION
+  9504`). Zero-call dry run passes all 14 preflight checks; depth suite
+  17/17. The paid Gate 1 run waits on attended TTY-typed approval.

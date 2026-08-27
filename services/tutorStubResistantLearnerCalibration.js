@@ -147,8 +147,31 @@ const DEPTH_REVISIONS = Object.freeze({
     caseId: (armId, world, repeat) => `depth_${armId}_cal3_${world}_r${repeat}`,
     artifactSchemaVersion: 'v3',
   }),
+  // Revision 4 exists because the revision-3 calibration failed on attrition
+  // and on a quote-echo trap: the treatment adjudication banned the
+  // standing-precondition formula with no rule for words the tutor quotes
+  // from the learner, whose own condition-naming line IS that formula — 4 of
+  // 5 exhausted treatment drafts quoted it verbatim and were rejected for
+  // it. Revision 4 requires the restatement in the tutor's own words, tells
+  // the adjudicator to judge only the tutor's own voice, and resizes to 48
+  // dialogues so the unchanged floors of 8 completed per arm are reachable
+  // at the observed 61 percent typed-failure attrition. Gates, floors, and
+  // per-dialogue ceilings do not move.
+  4: Object.freeze({
+    dialogues: 48,
+    perArm: 24,
+    masterSeed: 2026082901,
+    plannedCallsCalibration: 3072,
+    calibrationMaximumReservations: 9504,
+    authoritativeGates: DEPTH_AUTHORITATIVE_GATES_V2,
+    gateConstants: DEPTH_GATE_CONSTANTS_V2,
+    // `cal4` keeps every revision-4 case id distinct from all three archived
+    // failed calibrations, so no row can collide with or reuse them.
+    caseId: (armId, world, repeat) => `depth_${armId}_cal4_${world}_r${repeat}`,
+    artifactSchemaVersion: 'v4',
+  }),
 });
-export const TUTOR_STUB_FRAME_REFUSER_DEPTH_CURRENT_REVISION = 3;
+export const TUTOR_STUB_FRAME_REFUSER_DEPTH_CURRENT_REVISION = 4;
 
 function depthRevision(design) {
   const revision = DEPTH_REVISIONS[design?.revision];
@@ -974,6 +997,9 @@ function validateTutorStubFrameRefuserDepthDesignV1(design) {
   }
   if (design.revision >= 3 && design?.lineage?.secondCalibration?.rowsReused !== false) {
     issues.push('depth revision 3 must disclose the failed second calibration and refuse row reuse');
+  }
+  if (design.revision >= 4 && design?.lineage?.thirdCalibration?.rowsReused !== false) {
+    issues.push('depth revision 4 must disclose the failed third calibration and refuse row reuse');
   }
   const ceilings = design?.attemptCeilings || {};
   if (
