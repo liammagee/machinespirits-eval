@@ -37,7 +37,16 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // They fire only when a study passes its own delivered-contrast rule in, so no
 // earlier trace can carry either row and version-10 readings stay comparable.
 // The broad live-progression family is unchanged and still advisory in shadow.
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 11;
+// 12 (2026-08-26): the terminal-fallback accommodations now demote the shadow
+// column as well as the strict column. They were written (v. 2026-07-22) when
+// strict was the delivered policy; live dialogues moved to shadow_advisory on
+// 2026-08-07, and a shadow column left hard let a conversational composition
+// finding (learner_selected_test_not_acknowledged) reject the deterministic
+// fallback and kill the dialogue — the two face-B marrick technical losses in
+// the resistant-learner merged powered run. Evidence, clue-transaction,
+// closure, public-obligation, registered-contrast, repetition and unknown
+// findings keep their vetoes on the last resort in both columns.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 12;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -385,7 +394,10 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
     terminalFallbackDramaticFormOverride ||
     terminalFallbackStyleOverride;
   const strictDisposition = actorialOverride || terminalFallbackOverride ? ADVISORY : resolved.rule.strict;
-  const shadowDisposition = terminalFallbackStyleOverride ? ADVISORY : resolved.rule.shadow;
+  // The accommodation must hold under whichever boundary policy is delivered.
+  // Demoting only the strict column stops protecting the last resort the day
+  // the delivered policy becomes shadow_advisory (catalog version 12).
+  const shadowDisposition = terminalFallbackOverride ? ADVISORY : resolved.rule.shadow;
   return {
     issue: normalized,
     known: resolved.known,
