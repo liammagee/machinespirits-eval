@@ -28,6 +28,8 @@ links:
   notes:
     - notes/2026-08-26-frame-refuser-depth-registration.md
     - config/tutor-stub-frame-refuser-depth-design.v1.json
+    - notes/2026-08-27-frame-refuser-depth-registration-v2.md
+    - config/tutor-stub-frame-refuser-depth-design.v2.json
 tags:
   - tutor-stub
   - resistant-learners
@@ -113,3 +115,29 @@ frame-refuser's rung-2 rate above its measured base?
   differences — not a single-sentence manipulation. Calibration waits on the
   operator's attended TTY-typed approval (`APPROVE CALIBRATION 3960`); no GO
   note, no commit binding.
+- 2026-08-27: Revision-1 Gate 1 calibration ran attended and FAILED its own
+  gates before any powered run. Full run archived in the private archive repo
+  (`artifacts/tutor-stub-live/frame-refuser-depth-gate1-2026-08-27`), rows
+  never reused. Diagnosis: three instrument defects, none in the tutor or
+  learner. (1) Mixed hyphen-underscore case ids defeated Sol's case-id echo
+  in 12/12 completed dialogues, voiding all its votes — the eligible-vote,
+  pairwise, and determinate gates failed in both arms. (2) Floors of 8 were
+  sized against 10 planned dialogues per arm, near-unreachable under the
+  sealed machinery's ~35% typed-failure attrition (7/10 and 5/10 completed).
+  (3) The reference contamination gate double-counted typed non-delivery
+  failures as contamination (2/9 tripped it with zero actual exhibits).
+  Delivery itself worked: treatment delivered 10/10; blind panel read 0/7
+  completed treatment rows as the bridge.
+- 2026-08-27: Revision 2 registered zero-call as a fresh registration with
+  disclosure (`notes/2026-08-27-frame-refuser-depth-registration-v2.md`,
+  `config/tutor-stub-frame-refuser-depth-design.v2.json`). Fixes: underscore-
+  only case ids (registered rule, checked at plan build and launch preflight);
+  36 dialogues, 18 per arm (floors unchanged, now reachable at P≈0.98);
+  contamination gate replaced by a blind-panel arm-separation bound
+  (`maximumTreatmentBridgeReadRate` 0.1 on completed treatment rows) with
+  reference cleanliness enforced by the bundled adjudication and certified
+  per row, reported not gated. Fresh master seed 2026082701; no revision-1
+  assignment re-drawn. Ceilings 2,304 planned calls / 7,128 reservations.
+  Launch preflight refuses the superseded revision-1 file. Dry run passes
+  all 14 checks zero-call; 12/12 tests pass. Calibration waits on attended
+  TTY-typed `APPROVE CALIBRATION 7128`.
