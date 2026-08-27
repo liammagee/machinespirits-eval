@@ -1,13 +1,13 @@
 ---
 id: resistance-action-register-integration
 title: Integrate resistance diagnosis, pedagogical action, and tonal register across tutor harnesses
-status: active
+status: done
 type: research
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-18
-updated: 2026-08-23
+updated: 2026-08-26
 verification: >-
   The sealed 200-dialogue warm/non-warm confirmation completed every unit on
   its initial attempt with no technical recovery and exactly one final
@@ -4272,3 +4272,10 @@ and explicit human approval.
   after seeing the data is refused. A successor must fix the reference side's
   question leak in the harness before it is sized, and belongs in a fresh
   registration. No further paid call in this line is authorized.
+- 2026-08-26: Closed. The warm/non-warm confirmation stands as descriptive,
+  scope-bound evidence with the causal claim withheld; the five boredom
+  proof-DAG studies stand as a registered null series in paper §6.27. No
+  further paid call in this line is authorized, and nothing here licenses a
+  claim that any tutor move helps a bored learner. The one live successor
+  question — whether any move lifts the frame-refuser above naming a
+  condition — moves to its own card, frame-refuser-depth-study.
