@@ -1,8 +1,8 @@
 # Cartoon Image Prompts
 
 Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.standalone.html
-Generated at: 2026-08-04T02:52:40.373Z
-Panel count: 10
+Generated at: 2026-08-27T03:38:41.214Z
+Panel count: 11
 Format: png
 House style: docs/design/machinespirits-house-style.md
 Prompt style: machinespirits-poetics-editorial-cartoon-v2
@@ -12,7 +12,7 @@ Prompt lineage: each code block preserves the panel-total line from the run that
 
 Title: How a tutor learned to change course
 Description: The earlier study found no average change in how tutors adapted. This follow-up asks a more ordinary question: when a learner gets stuck, can the tutor notice, change course, and help them reach an answer that can be checked?
-Top terms: tutor, learner, rule, proof, answer, turn, lesson, move, hidden, check, completed, without, changed, conduct, across, change, panel, paper
+Top terms: tutor, learner, rule, move, proof, answer, lesson, turn, every, hidden, change, changed, check, completed, conduct, without, panel, whether
 
 Selected sections:
 - 01 #starting-point: The average stayed flat. We wanted to know what happened at the stuck point. -> notes/poetics/images/dramatic-recognition-arc-01.png
@@ -25,6 +25,7 @@ Selected sections:
 - 08 #the-guards: Two pacing rules helped. Which one helped depended on the shape of the lesson. -> notes/poetics/images/dramatic-recognition-arc-08.png
 - 09 #verdict: The tutor can govern parts of its conduct. The claim stays deliberately small. -> notes/poetics/images/dramatic-recognition-arc-09.png
 - 10 #after-the-verdict: We added more strategy machinery. It changed the tutor's behaviour, but it still did not make the tutor better at the proof. -> notes/poetics/images/dramatic-recognition-arc-10.png
+- 11 #resistance: We turned the experiment around: could a tutor move, actually delivered, reach a learner built to push back? -> notes/poetics/images/dramatic-recognition-arc-11.png
 
 ## Prompts
 
@@ -527,6 +528,57 @@ an elaborate black strategy gearbox and classifier bank bolted onto the tutor's 
 
 Caption this image will carry in the page:
 What happened next: It changed the tutor's behaviour, but it still did not make the tutor better at the proof.
+
+Composition requirements:
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
+
+Return a short final note listing the created file.
+```
+
+### Prompt 11 - #resistance
+
+Target image: notes/poetics/images/dramatic-recognition-arc-11.png
+HTML src: images/dramatic-recognition-arc-11.png
+Caption: The learner who resists: The arc so far asked whether the tutor could change its own course.
+Alt: Standing wording is ignored, while the same rule handed over at the threshold moves one learner through and leaves another naming terms one step short.
+Visual metaphor: a two-door threshold contrast on an off-white 60px Swiss grid: at the left door the registered rule sits on a faded standing sign while the learner walks past unread; at the right door a gatekeeper hands the same rule to the learner exactly at the threshold and a signature-red -18-degree slash marks the delivered action; beside the right door, a second learner holds a small TERMS placard at a marked line, naming a condition but remaining one rung short of stepping through
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-11.png
+Panel: 11 of 11
+Target article section: #resistance
+Section heading: We turned the experiment around: could a tutor move, actually delivered, reach a learner built to push back?
+Article title: How a tutor learned to change course
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-11.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
+
+Textual context to complement:
+We turned the experiment around: could a tutor move, actually delivered, reach a learner built to push back? The arc so far asked whether the tutor could change its own course. We built learners who resist — one who asks permission for every move, one who overclaims and defends, one who goes bored mid-proof, one who refuses the tutor's whole frame — and asked whether a specific tutor move, issued by machinery at the detected moment, changes what the learner does next. Handing the tutor a standing permission — the exact wording of the move, pasted into its instructions — produced zero uses of it in twenty-four dialogues.
+
+Image concept:
+a two-door threshold contrast on an off-white 60px Swiss grid: at the left door the registered rule sits on a faded standing sign while the learner walks past unread; at the right door a gatekeeper hands the same rule to the learner exactly at the threshold and a signature-red -18-degree slash marks the delivered action; beside the right door, a second learner holds a small TERMS placard at a marked line, naming a condition but remaining one rung short of stepping through
+
+Caption this image will carry in the page:
+The learner who resists: The arc so far asked whether the tutor could change its own course.
 
 Composition requirements:
 - Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.

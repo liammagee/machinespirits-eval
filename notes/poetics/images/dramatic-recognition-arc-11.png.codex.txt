@@ -1,0 +1,3 @@
+Created a valid 1600×1000 PNG using built-in ImageGen and the supplied two-door threshold prompt:
+
+[dramatic-recognition-arc-11.png](/Users/lmagee/Dev/machinespirits/machinespirits-eval/notes/poetics/images/dramatic-recognition-arc-11.png)

@@ -38,7 +38,8 @@ const STYLE_ID = 'machinespirits-poetics-editorial-cartoon-v2';
 
 // Preserve the panel-total line from the prompt that actually generated each
 // shipped image. Panels 02–09 came from the nine-panel 2026-07-23 refresh;
-// corrected Panel 01 and new Panel 10 came from the ten-panel 2026-08-04 pass.
+// corrected Panel 01 and new Panel 10 came from the ten-panel 2026-08-04 pass;
+// Panel 11 came from the eleven-panel 2026-08-27 resistance-line pass.
 const IMAGE_ORIGIN_PANEL_TOTALS = {
   'starting-point': 10,
   'the-stage': 9,
@@ -50,6 +51,7 @@ const IMAGE_ORIGIN_PANEL_TOTALS = {
   'the-guards': 9,
   verdict: 9,
   'after-the-verdict': 10,
+  resistance: 11,
 };
 
 const STYLE_GUIDE = `
@@ -90,6 +92,7 @@ Options:
   --html <path>          Source/target HTML. Default: ${DEFAULTS.html}
   --image-dir <path>     Image output directory. Default: ${DEFAULTS.imageDir}
   --count <number>       Number of image prompts/panels. Default: main numbered section count.
+  --generate-panel <n>  Run Codex only for panel n while retaining the complete prompt pack.
   --format <svg|png>     Image format Codex should create. Default: ${DEFAULTS.format}
   --image-prefix <slug>  Managed image filename prefix. Default: ${DEFAULTS.imagePrefix}
   --prompt-file <path>   Prompt text file. Default: <image-dir>/<html-stem>-image-prompts.txt
@@ -118,6 +121,7 @@ function parseArgs(argv) {
     codexArgs: [],
     dangerous: false,
     dryRun: false,
+    generatePanel: null,
     skipCodex: false,
     skipHtml: false,
   };
@@ -138,6 +142,8 @@ function parseArgs(argv) {
       opts.imageDir = next();
     } else if (arg === '--count') {
       opts.count = parsePositiveInt(next(), 'count');
+    } else if (arg === '--generate-panel') {
+      opts.generatePanel = parsePositiveInt(next(), 'generate-panel');
     } else if (arg === '--format') {
       opts.format = next().toLowerCase();
     } else if (arg === '--image-prefix') {
@@ -420,6 +426,8 @@ function inferVisualMetaphor(section) {
       'three square evidence cards locked to one grid—a check, a boundary bracket, and an open ring—while a heavy red stamp marks the narrow claim CONDUCT ONLY; the paired tutor and learner remain outside any imagined mind-reading apparatus',
     'after-the-verdict':
       "an elaborate black strategy gearbox and classifier bank bolted onto the tutor's route, with local dials visibly moving, while the red proof-outcome line remains flat and stops short of the checked answer; beside it, a smaller simple proof-control loop continues as the retained baseline—the machinery changes conduct but does not improve the proof",
+    resistance:
+      'a two-door threshold contrast on an off-white 60px Swiss grid: at the left door the registered rule sits on a faded standing sign while the learner walks past unread; at the right door a gatekeeper hands the same rule to the learner exactly at the threshold and a signature-red -18-degree slash marks the delivered action; beside the right door, a second learner holds a small TERMS placard at a marked line, naming a condition but remaining one rung short of stepping through',
   };
   if (byId[id]) return byId[id];
   if (text.includes('guard') || text.includes('world')) return byId['the-guards'];
@@ -460,6 +468,8 @@ function buildAlt(section, metaphor) {
     verdict: 'Three evidence cards sit above a tutor and learner under a red CONDUCT ONLY stamp that limits the claim.',
     'after-the-verdict':
       'An elaborate strategy machine moves many local gauges but stops short of the proof finish, while the smaller baseline control loop reaches a checked result.',
+    resistance:
+      'Standing wording is ignored, while the same rule handed over at the threshold moves one learner through and leaves another naming terms one step short.',
   };
   return byId[section.id] || clampText(`Black-and-white editorial diagram: ${metaphor}.`, 240);
 }
@@ -590,10 +600,10 @@ ${panel.codex_prompt}
   fs.writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
 }
 
-async function runCodexForPanels(panels, opts) {
+async function runCodexForPanels(panels, opts, totalPanels = panels.length) {
   ensureCodexSkillSupportDirs();
   for (const panel of panels) {
-    console.log(`Generating ${panel.image_file} with ${opts.codexBin} (${panel.panel}/${panels.length})...`);
+    console.log(`Generating ${panel.image_file} with ${opts.codexBin} (${panel.panel}/${totalPanels})...`);
     await runCodex(panel.codex_prompt, panel, opts);
   }
 }
@@ -612,7 +622,7 @@ async function runCodex(prompt, panel, opts) {
   const transcriptPath = path.join(path.dirname(panel.image_path), `${path.basename(panel.image_path)}.codex.log`);
   const args = ['exec', '-C', ROOT];
   if (opts.ephemeral) args.push('--ephemeral');
-  if (!opts.codexMemories) args.push('-c', 'memories=false');
+  if (!opts.codexMemories) args.push('--disable', 'memories');
   if (opts.dangerous) {
     args.push('--dangerously-bypass-approvals-and-sandbox');
   } else {
@@ -708,7 +718,7 @@ function updateHtmlWithImages(html, panels) {
       const section = byId.get(panel.section_id);
       return {
         block: buildFigureBlock(panel),
-        index: section ? section.closeIndex : fallbackInsertionIndex(next),
+        index: section ? lineStartIndex(next, section.closeIndex) : fallbackInsertionIndex(next),
       };
     })
     .sort((a, b) => b.index - a.index);
@@ -717,6 +727,11 @@ function updateHtmlWithImages(html, panels) {
     next = `${next.slice(0, insertion.index)}\n${insertion.block}\n${next.slice(insertion.index)}`;
   }
   return next;
+}
+
+function lineStartIndex(text, index) {
+  const precedingNewline = text.lastIndexOf('\n', Math.max(0, index - 1));
+  return precedingNewline === -1 ? 0 : precedingNewline + 1;
 }
 
 function stripManagedImageBlocks(html) {
@@ -966,6 +981,11 @@ async function main() {
     opts,
     selectedSections,
   });
+  const generationPanels =
+    opts.generatePanel === null ? panels : panels.filter((panel) => panel.panel === opts.generatePanel);
+  if (opts.generatePanel !== null && generationPanels.length !== 1) {
+    throw new Error(`--generate-panel ${opts.generatePanel} does not identify a selected panel`);
+  }
 
   writePromptPack({
     analysis,
@@ -983,7 +1003,7 @@ async function main() {
   }
 
   if (!opts.skipCodex) {
-    await runCodexForPanels(panels, opts);
+    await runCodexForPanels(generationPanels, opts, panels.length);
   } else {
     console.log('Skipped Codex image generation.');
   }

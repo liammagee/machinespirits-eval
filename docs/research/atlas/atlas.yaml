@@ -54,7 +54,7 @@ atlas:
     advice fails to change behaviour, can a small model be trained to own one move?
 
   families_intro: |
-    The findings fall into three broad families. Each label says how firmly we can hold
+    The findings fall into four broad families. Each label says how firmly we can hold
     the result. Here is the short version before the detail.
 
   findings:
@@ -90,6 +90,23 @@ atlas:
         One early advantage disappeared after a turn-counting error was fixed. The
         durable contribution is the testing method — especially the trap scenarios,
         explicit checks, and delivery audits — rather than a richer model of the learner.
+    - family: "A delivered move can reach the learner who resists"
+      verdict: scope-bound
+      body: |
+        A late line of studies built learners that resist — deferring every move,
+        overclaiming, bored, or refusing the tutor's frame — and tested moves issued
+        by machinery at detected moments. Delivery is the hinge: on the
+        permission-seeking learner the same permission pasted into the standing
+        prompt was never used once, while machinery issuing it at the moment changed
+        the learner's conduct; on the overconfident learner the standing wording
+        landed part-way, and the delivered gate still beat it. In the line's powered
+        run, a delivered, state-matched move re-engaged almost every resistant
+        learner.
+      caveat: >-
+        What the move wins depends on the shape of the resistance: bored learners went
+        back to the work, while frame-refusers mostly stopped at naming a condition
+        rather than acting on it. Whether any move converts that naming into doing is
+        the line's open question — and all of it is simulated-learner evidence.
 
   maps:
     methodological: |
@@ -443,3 +460,41 @@ modules:
       sentence repairs half the deficit.
     sections: ["6.23", "6.24"]
     cross_refs: ["advice-versus-enforcement", "program2-trained-move", "rubrics-as-instruments", "model-dependence"]
+
+  - id: resistant-learner-delivered-move
+    n: 18
+    title: "Reaching the Learner Who Resists"
+    family: recognition
+    status: scope-bound
+    claim: >-
+      Against simulated learners built to resist — deferential, overconfident, bored,
+      or refusing the tutor's frame — a move the machinery actually delivers at a
+      detected moment changes conduct more than the same wording as a standing
+      instruction: on the permission-seeking learner the standing wording was never
+      used at all, and on the overconfident learner it landed only part-way between
+      no instruction and the delivered gate. In the line's powered run, a delivered, state-matched
+      move re-engaged 45 of 49 readable dialogues on the boredom face (0.918) and 70
+      of 70 on the refusal face (1.000), but depth tracked the resistance shape: most
+      re-engaged bored learners returned to the work, while refusers mostly stopped
+      at naming a condition and rarely acted under protest.
+    abstract: >-
+      Four studies walk one idea across opposite deficit shapes. On a
+      permission-seeking learner, the gate's always-on per-turn steering carried the
+      deference-break effect while the sensor-timed challenge paid separately in
+      decision correctness (about twelve points), and the gate's wording pasted as a
+      standing instruction delivered zero challenges in twenty-four dialogues. On an
+      overconfident learner a later, sealed re-analysis of the readers' own
+      judgments — a post-hoc label the finding carries everywhere — located the
+      effect in epistemic state, not voice: warranted commitment shifts more than
+      doubled under the gate while both voice-pinned conduct channels stayed flat,
+      and the registered primary endpoint closed late, directional only, under a
+      disclosed instrument amendment. Five
+      registered studies on a bored learner returned no move claim — a window that
+      could not be reached, then a contrast that was not delivered — and closed as a
+      measurement result. The powered two-face run then held delivery to exhaustive
+      checks and found re-engagement near ceiling on both faces, with the boredom
+      face doing the work and the refusal face naming its terms. Development-tier
+      throughout: simulated learners, one model family in the speaking seats, no
+      human-learning claim.
+    sections: ["6.25", "6.26", "6.27", "6.28"]
+    cross_refs: ["adaptation-four-locks", "advice-versus-enforcement", "recognition-calibration", "human-learning-translation"]

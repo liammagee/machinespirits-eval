@@ -1,13 +1,13 @@
 ---
 id: resistant-learner-strategy-close
 title: Establish one claimable strategy for bored and frame-refusing learners
-status: active
+status: done
 type: research
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-23
-updated: 2026-08-23
+updated: 2026-08-26
 verification: >-
   B1 and R1 each pass their predeclared calibration and powered-run rules; the
   resulting strategic-move and same-run warm/plain/edged register claims are
@@ -15,7 +15,7 @@ verification: >-
   all paid artifacts pass npm run archive:runs and are committed in the
   private archive repository.
 branch: codex/resistant-learner-go-binding-normalization
-claim_status: planned
+claim_status: scope-bound
 links:
   items:
     - resistance-action-register-integration
@@ -123,3 +123,11 @@ tags:
   1.000]; both floors and both panel backstops pass. Rung-2 rates 0.592 vs
   0.114. Artifacts archived and pushed (private repo commit fac8bff3).
   Results folded into the paper as new §6.28 at v3.0.292.
+- 2026-08-26: Card closed. Verification met: both faces passed every
+  predeclared calibration and powered-run rule, §6.28 carries the claim with
+  its frozen boundaries, and all paid artifacts are archived in the private
+  repo. External surfaces updated the same day: atlas module
+  resistant-learner-delivered-move (§6.25–6.28), arc-guide panel 11, and the
+  blueprint's step 04/05/07 additions. The open refuser-depth question (can
+  any move convert naming into doing?) is NOT covered by this card and needs
+  a fresh registration if pursued.

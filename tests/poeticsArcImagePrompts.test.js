@@ -36,8 +36,8 @@ test('poetics arc prompt pack carries the Machine Spirits editorial house style'
   assert.equal(manifest.style, 'machinespirits-poetics-editorial-cartoon-v2');
   assert.equal(manifest.style_guide, 'docs/design/machinespirits-house-style.md');
   assert.equal(manifest.style_profile, 'editorial');
-  assert.equal(manifest.images.length, 10);
-  assert.equal(path.basename(manifest.images.at(-1).image_file), 'dramatic-recognition-arc-10.png');
+  assert.equal(manifest.images.length, 11);
+  assert.equal(path.basename(manifest.images.at(-1).image_file), 'dramatic-recognition-arc-11.png');
   assert.match(prompts, /off-white #fafafa/u);
   assert.match(prompts, /signature red #E63946/u);
   assert.match(prompts, /60px Swiss grid/u);
@@ -45,5 +45,6 @@ test('poetics arc prompt pack carries the Machine Spirits editorial house style'
   assert.match(prompts, /Treat red as an action verb/u);
   assert.match(prompts, /at most two, each five words or fewer/u);
   assert.match(prompts, /open evidence window/u);
+  assert.match(prompts, /faded standing sign[\s\S]*hands the same rule to the learner exactly at the threshold/u);
   assert.doesNotMatch(prompts, /blind tutor/iu);
 });
