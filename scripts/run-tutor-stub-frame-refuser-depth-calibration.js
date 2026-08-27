@@ -29,17 +29,17 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const TUTOR_STUB_FRAME_REFUSER_DEPTH_USAGE = `Usage:
   node scripts/run-tutor-stub-frame-refuser-depth-calibration.js \
-    --design config/tutor-stub-frame-refuser-depth-design.v3.json \
+    --design config/tutor-stub-frame-refuser-depth-design.v4.json \
     --destination /absolute/create-once/run-root \
     --dry-run
 
   node scripts/run-tutor-stub-frame-refuser-depth-calibration.js \
-    --design config/tutor-stub-frame-refuser-depth-design.v3.json \
+    --design config/tutor-stub-frame-refuser-depth-design.v4.json \
     --destination /absolute/create-once/run-root \
     --launch [--parallelism 4]
 
   node scripts/run-tutor-stub-frame-refuser-depth-calibration.js \
-    --design config/tutor-stub-frame-refuser-depth-design.v3.json \
+    --design config/tutor-stub-frame-refuser-depth-design.v4.json \
     --destination /absolute/existing/run-root \
     --resume [--parallelism 4]
 
@@ -48,7 +48,7 @@ export const TUTOR_STUB_FRAME_REFUSER_DEPTH_USAGE = `Usage:
 --resume continues a halted run root after a code-defect fix: every recorded dialogue
 keeps its paid outcome (a typed failure mislabeled as technical is re-typed from its
 recorded trace, never re-run); only never-started dialogues run, under the same ceilings.
-This launcher runs Gate 1 calibration only (revision 3: 36 dialogues, 18 per arm). The powered
+This launcher runs Gate 1 calibration only (revision 4: 48 dialogues, 24 per arm). The powered
 run is a separate later gate with its own attended approval; calibration rows are
 never pooled into it.
 No GO note, commit binding, source-file byte pin, approval schema version, or re-signature cycle is used.`;
