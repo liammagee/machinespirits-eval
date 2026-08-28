@@ -16,6 +16,10 @@ links:
     - eslint.config.js
     - .prettierignore
     - TUTOR-CORE-INHOUSING.md
+  items:
+    - tutor-core-runtime-lint-defects
+depends_on:
+  - tutor-core-runtime-lint-defects
 tags:
   - lint
   - formatting
@@ -41,5 +45,9 @@ Acceptance:
 This is deliberately separate from `codex-default-drift-and-tutor-core-lint`,
 which owns only the provider-default projection repair.
 
+- 2026-08-27 — A no-ignore audit found 30 ESLint errors and formatting drift in
+  27 of 35 JavaScript files. Two findings can throw at runtime and were split
+  into `tutor-core-runtime-lint-defects`; this card now waits for that focused
+  repair and owns only the broad policy/formatting adoption.
 - 2026-08-27 — Split from the combined default-drift card before any lint or
   formatting configuration was changed.
