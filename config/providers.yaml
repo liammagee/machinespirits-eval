@@ -65,6 +65,23 @@ providers:
   openrouter:
     api_key_env: OPENROUTER_API_KEY
     base_url: https://openrouter.ai/api/v1/chat/completions
+    # Optional remaining-credit lookup for budgeted runs
+    # (services/adaptiveTutor/providerBalanceProbe.js). A provider is probed
+    # ONLY where this block is present, so no route starts being called because
+    # someone guessed its API. Nothing declares it today.
+    #
+    # Before uncommenting: confirm the endpoint and the response field names
+    # against OpenRouter's own current documentation and one real response. An
+    # adapter written from memory is how a probe starts reporting a confident
+    # wrong number, and the run's local ceiling stays the binding control
+    # either way.
+    #
+    # balance_probe:
+    #   url: https://openrouter.ai/api/v1/credits
+    #   granted_path: data.total_credits
+    #   used_path: data.total_usage
+    #   auth: bearer
+    #   documented_at: 'YYYY-MM-DD'
     default_model: nvidia/nemotron-3-nano-30b-a3b
     # default_model: nvidia/nemotron-3-nano-30b-a3b:free
     models:

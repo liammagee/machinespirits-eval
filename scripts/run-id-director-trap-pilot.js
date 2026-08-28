@@ -39,6 +39,7 @@ import * as realLLM from '../services/adaptiveTutor/realLLM.js';
 import { createAdaptivePersistence } from '../services/adaptiveTutor/persistence.js';
 import {
   bindRunLedger,
+  checkBalanceBeforeDispatch,
   executeMeteredUnits,
   finalizeMeteredRun,
   meterCallAI,
@@ -391,6 +392,18 @@ export async function main(
           maxTokens: agentConfig.hyperparameters?.max_tokens,
         });
         if (tracker) realLLM.setActiveBudgetTracker(tracker);
+
+        // Advisory unless the provider config declares the capability and a
+        // stop policy. The ledger remains the binding control.
+        await checkBalanceBeforeDispatch({
+          provider: agentConfig.provider,
+          providerConfig: evalConfigLoader.getProviderConfig(agentConfig.provider),
+          maxCostUsd,
+          alreadyExposedUsd: tracker ? tracker.summary().ceilingExposureUsd : 0,
+          policy: run.metadata?.balancePolicy || 'warn',
+          label: 'id-director-trap',
+          verbose,
+        });
 
         console.log(
           `[id-director-trap] runId=${runId} profile=${profileName} ` +

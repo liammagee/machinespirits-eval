@@ -19,6 +19,12 @@
 //     that reached a provider may have been billed.
 
 import { createBudgetTracker } from './budgetTracker.js';
+import {
+  BALANCE_POLICY,
+  ProviderBalanceStopError,
+  compareCeilingWithBalance,
+  probeProviderBalance,
+} from './providerBalanceProbe.js';
 
 const BUDGET_ERROR_CODES = new Set(['BUDGET_EXCEEDED', 'BUDGET_LEDGER_PERSISTENCE']);
 
@@ -62,6 +68,43 @@ export function bindRunLedger({ evaluationStore, runId, maxCostUsd, verbose = fa
     }
     throw error;
   }
+}
+
+// Optional pre-dispatch balance check. Runs only where the provider's own
+// config declares the capability; otherwise it is a no-op that says so.
+//
+// The ledger stays the binding control either way: an unknown balance never
+// stops a run, and a known shortfall stops one only under an explicitly
+// declared `stop` policy, because a ceiling above the remaining credit says
+// what the run COULD reach, not what it will spend.
+export async function checkBalanceBeforeDispatch({
+  provider,
+  providerConfig = {},
+  maxCostUsd = null,
+  alreadyExposedUsd = 0,
+  policy = BALANCE_POLICY.WARN,
+  fetchImpl = globalThis.fetch,
+  label = 'run',
+  verbose = false,
+} = {}) {
+  if (maxCostUsd == null) return null;
+
+  const balance = await probeProviderBalance({ provider, providerConfig, fetchImpl });
+  const verdict = compareCeilingWithBalance({ balance, maxCostUsd, alreadyExposedUsd, policy });
+
+  if (verdict.decision === 'stop') {
+    throw new ProviderBalanceStopError(`[${label}] ${verdict.reason} Declared policy is stop.`, {
+      provider,
+      remainingUsd: verdict.remainingUsd,
+      headroomUsd: verdict.headroomUsd,
+    });
+  }
+  if (verdict.decision === 'warn') {
+    console.warn(`[${label}] balance warning: ${verdict.reason}`);
+  } else if (verbose) {
+    console.log(`[${label}] balance check: ${verdict.reason}`);
+  }
+  return { balance, verdict };
 }
 
 export function finalizeMeteredRun({ evaluationStore, runId, halted = false, haltCode = null, totalTests = 0 } = {}) {
