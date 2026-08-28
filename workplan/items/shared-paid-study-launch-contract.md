@@ -25,6 +25,8 @@ links:
   items:
     - paid-study-endpoint-runtime-preflight
     - budget-tracker-balance-probe-and-rates
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/846
 tags:
   - paid-study
   - launch
