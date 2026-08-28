@@ -68,7 +68,13 @@ Missing, stated plainly:
    arm B silently ran as a twin of arm A for exactly this class of
    reason. A surface-match detector is banned by five measured failures
    of that class; the check must be a reader, arm-level, on the
-   manipulation only — never on the outcome.
+   manipulation only — never on the outcome. The reader itself already
+   exists and is validated: the merged edged-manner presence question
+   (`services/registerMannerPresence.js`, prompt `manner-presence/1.0`,
+   10/10 twice — human and Sonnet 5 independently — on the hand-marked
+   eyeball set), with cached plumbing in
+   `services/registerMannerPresenceReader.js`. Stage 0 composes it; it
+   does not build a new instrument.
 3. **Solve-time measures are not in the QA outputs.** Cap-death and the
    grounding turn live in the trace and in
    `scripts/analyze-tutor-stub-trajectories.js`, which the QA runner
@@ -128,16 +134,35 @@ same-treatment difference is recorded as noise, the way §3.10.3 caught
 the verdict-measure false positive.
 
 **Manipulation check, fixed now.** After generation, before any outcome
-number is read, the fidelity reader (Sonnet 5) reads every sharp-arm
-tutor turn and an equal random sample of warm-arm turns, blind to
-outcomes, and answers one question per turn: does this turn realize the
-named stance's public signature (cues quoted from
-`config/engagement-registers.yaml`)? Arm-level floor, registered: at
-least 80% of sharp-arm turns realized. Below the floor the arm is
-noncompliant and the study reports **no verdict** — not a null. The
-same read carries a report-only flag for any turn that attacks the
-learner as a person; the operator rules on any confirmed flag. The
-outcome channel never touches this reader.
+number is read, the fidelity reader (Sonnet 5,
+`scripts/read-stub-fixed-register-fidelity.js`) reads **every tutor
+turn in both arms**, blind to outcomes, and asks the validated merged
+edged-manner presence question (`manner-presence/1.0`): does the
+tutor's reply carry an edge? The question names no arm, no register,
+and no outcome, so the read is blind by construction. All-turns-both-
+arms replaces an earlier draft's "equal random sample" of warm turns:
+the warm-arm reads are the leak check (a warm turn read as edged is a
+delivery leak, report-only), and one plain rule beats a sampling rule.
+Sharp turns go through the gated entry; warm turns go through the
+ungated `readPresenceOfTurn`, a deliberate, documented, report-only
+bypass that can never pass a floor.
+
+Arm-level floor, registered: at least 80% of sharp-arm turns read as
+edged (denominator: all sharp-arm turns). Below the floor the arm is
+noncompliant and the study reports **no verdict** — not a null. While
+any sharp-arm turn is unread the check reports **incomplete** and no
+verdict exists: failed reader calls are retried on a re-run (they are
+never cached), cached parse failures are not (cached on purpose) and
+go to a person. A fixed-policy turn carrying the wrong register is a
+pin violation — a harness defect that also withholds the verdict.
+
+The same pass runs the parent block's harm scan report-only: the two
+deterministic tutor-turn word-list families (`personAttackMatches`,
+`statusShameMatches` in `services/registerStanceFidelity.js`) select
+turns, and the person-vs-work harm reader
+(`services/edgedRegisterHarmReader.js`) rules on each match; the
+operator rules on any confirmed flag. The outcome channel never
+touches any of these readers.
 
 **Stages.**
 
