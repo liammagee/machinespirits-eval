@@ -179,6 +179,16 @@ arms and varying only whether the tutor discharges the demand.
    exhibit path for a standing-rivalry job. It needs one reached by a
    registered study code, leaving the `B1` and `R1` mints byte-identical.
    Zero-call work, with the plan-build preflight below as its test.
+   *Landed 2026-08-28*: study code `R2` mints the authored path's premises
+   in release order, each node marked `openNodeKind: "exhibit"`; the demand
+   selection rule is implemented fail-closed
+   (`selectTutorStubDemandedExhibit`); an R2 job refuses a design that does
+   not register the exhibit mint. Regression:
+   `tests/tutorStubFrameRefuserSatisfiableMint.test.js` pins the minted
+   demands for both worlds against the tables above, the fail-closed
+   refusals, the byte-identical `B1`/`R1` node shapes, and — mechanically —
+   the undischargeability finding itself (no world premise matches any
+   authored-path rule consequent).
 2. **Plan-build preflight.** Refuse unless every minted open node carries
    `openNodeKind: "exhibit"` and resolves to an authored-path premise id,
    and unless the demand selection rule yields a demanded exhibit for every

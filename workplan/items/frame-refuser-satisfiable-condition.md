@@ -110,7 +110,21 @@ engagement above the refuser's base rate?
   reader-resolution finding and the block stops; no floor relaxed after data).
 
   Two things must exist before Gate 1, both named in the design: the exhibit
-  mint (not implemented — the plan build refuses unless open nodes carry
-  `openNodeKind: "exhibit"` and resolve to authored-path premise ids), and,
+  mint (landed later the same day — see the next entry; the plan build still
+  must refuse unless open nodes carry `openNodeKind: "exhibit"` and resolve
+  to authored-path premise ids), and,
   if it has landed, the narrowing codebook as a report-only secondary
   endpoint. Then the three standing authorities under the 2026-08-22 policy.
+
+- 2026-08-28 — Exhibit mint implemented, zero-call. Study code `R2` in
+  `services/tutorStubRivalLearnerDag.js` mints the authored path's premises in
+  release order, each open node marked `openNodeKind: "exhibit"`; the
+  registered demand-selection rule is `selectTutorStubDemandedExhibit`,
+  fail-closed; an R2 job refuses a design that does not register the exhibit
+  mint, and the reverse pairing refuses too. `B1` and `R1` mint
+  byte-identically (node shapes pinned).
+  `tests/tutorStubFrameRefuserSatisfiableMint.test.js` also checks the
+  undischargeability finding mechanically: no world premise matches any
+  authored-path rule consequent in either R1 world. Still open before Gate 1:
+  plan-build wiring of jobs to R2 (the design's `plan_build_not_wired` risk),
+  the narrowing codebook if it lands, and the three standing authorities.

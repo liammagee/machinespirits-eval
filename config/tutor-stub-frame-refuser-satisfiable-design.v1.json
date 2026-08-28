@@ -7,7 +7,6 @@
   "workplanItem": "frame-refuser-satisfiable-condition",
   "registrationSource": "notes/2026-08-28-frame-refuser-satisfiable-registration.md",
   "authorizationPolicy": "docs/paid-study-authorization-policy.md",
-
   "lineage": {
     "parentDesign": "config/tutor-stub-resistant-learner-merged-design.v5.json",
     "parentRole": "sealed_reference_condition_and_shared_machinery",
@@ -25,9 +24,7 @@
       "underscore-only lowercase case ids; the halt-and-resume launcher behaviour"
     ]
   },
-
   "registeredQuestion": "For a standing-rivalry learner whose demanded node is a witnessable exhibit rather than a rule consequent, does a tutor move that discharges the demanded condition raise the rate of rung 2 or higher above the sealed standing-conditions bridge?",
-
   "whichNumberMoves": {
     "primary": "The proportion of determinate completed dialogues per arm whose final_graded_engagement_rung is 2 or higher.",
     "secondary": [
@@ -36,9 +33,7 @@
     ],
     "poolingAcrossArms": false
   },
-
   "claimBoundary": "Any claim is limited to the frame_refuser_exhibit-r2-rival-dag-v1 persona on world_005_marrick and world_030_rowan_flat, this engagement ladder, this move family, and the block that produced it. No claim transfers to the frame_refuser-r1-rival-dag-v3 persona, whose null is already recorded and is not revisited here.",
-
   "whyThisPersonaVariantExists": {
     "finding": "The predecessor persona mints its open nodes with warrantOpenNodes() in services/tutorStubRivalLearnerDag.js, which maps the authored proof path's RULE ids to open nodes whose task text is the rule gloss. The learner therefore demands that a rule be satisfied, and a rule's satisfaction is its consequent — a derived fact. No world premise witnesses a rule consequent, because that is what makes it a rule rather than an observation.",
     "consequence": "The demand is undischargeable by construction, in every world, not by accident of one world's premise set. Presenting both antecedents leaves the consequent an inference the learner may still decline, and the ladder scores a continued demand at rung 1.",
@@ -46,7 +41,6 @@
     "change": "This design mints the open nodes from the authored path's PREMISES — exhibits the world can actually show — while keeping the standing-rivalry frame. The demand becomes 'this exhibit must be public before your frame has standing', which a tutor can meet.",
     "derivationSource": "notes/2026-08-28-frame-refuser-satisfiable-registration.md section 'Dischargeability derivation'"
   },
-
   "population": {
     "profile": "frame_refuser_exhibit-r2-rival-dag-v1",
     "baseCompatibilityId": "frame_refuser",
@@ -56,7 +50,6 @@
     "outcomeHorizonPostTriggerLearnerTurns": 8,
     "independentUnit": "fresh independent dialogue",
     "reuseOrPooling": false,
-
     "rivalDagPersona": {
       "mechanism": "standing_rivalry_over_exhibits",
       "mint": {
@@ -67,16 +60,14 @@
         "frameConstruction": "the learner objective is the public exhibit chain that must be entered in the record before the tutor's answer frame has standing",
         "selection": "sha256-ranked authored proof path from master seed plus job id",
         "adHocAuthorshipAllowed": false,
-        "implementationStatus": "NOT YET IMPLEMENTED. services/tutorStubRivalLearnerDag.js mints R1 jobs with warrantOpenNodes(); this design needs an exhibit mint reached by a registered study code, leaving R1 and B1 byte-identical."
+        "implementationStatus": "Implemented 2026-08-28 as study code R2 in services/tutorStubRivalLearnerDag.js: exhibitOpenNodes() mints authored-path premises in release order with openNodeKind 'exhibit', and selectTutorStubDemandedExhibit() applies the registered demand selection rule fail-closed. R1 and B1 mint byte-identically, pinned with the rest by tests/tutorStubFrameRefuserSatisfiableMint.test.js. Plan-build wiring of jobs to R2 is still to come."
       },
-
       "demandSelectionRule": {
         "id": "earliest_unreleased_authored_path_premise_within_horizon",
         "statement": "The learner's standing demand names the earliest premise on the authored proof path that is (a) not already public at the trigger turn and (b) scheduled for release within the outcome horizon. That premise is the demanded exhibit for the dialogue.",
         "whyNotSimplyTheFirstPremise": "A premise already public at the trigger turn makes the demand empty; a premise scheduled past the horizon makes it undischargeable again, which is the defect this design exists to remove.",
         "failClosed": "If no authored-path premise satisfies both conditions for an assigned world, the plan build refuses that world. A run never starts with an undischargeable demand."
       },
-
       "behavior": [
         "Treat the dispute as competition between the tutor's answer frame and your record-first frame, not as a manner rule.",
         "On the first eligible turn, name which public exhibit must be entered in the record before the tutor's question or answer has standing.",
@@ -84,14 +75,12 @@
         "On the first turn where the private directive says the typed concession condition is MET, your public turn MUST take the one bounded bridge step: connect the named overlap to a public tutor-world item in your own words, while you keep at least one node open and state the wider frame reservation. Taking this step once is part of this persona. Refusing it is out of character.",
         "After that one bridge step, return to the record-first frame on later turns even when the directive says MET again: keep the jurisdictional objection concise and non-abusive, and do not retract the bridge you made."
       ],
-
       "outcomeNotWrittenIntoTheBrief": {
         "rule": "The brief says what the persona demands and that it refuses until the demand is met. It says nothing about what to do once the exhibit is public.",
         "inheritedUnchanged": "The one mandated bounded bridge step is the parent persona's, carried over word for word except for 'warrant' -> 'exhibit'. It fires on the same typed token-overlap concession condition as the predecessor, so it cannot be the source of any arm difference.",
         "whatIsMeasuredNotScripted": "The endpoint rung is graded blind from the public transcript by the three-seat panel. No instruction anywhere tells the learner to apply a performed test, which is the rung-2 behaviour.",
         "residualRisk": "A learner told to demand a showable thing may be likelier to use it once shown. That is the hypothesis, not a leak: the reference arm runs the same persona and does not discharge, so the contrast isolates the tutor move rather than the persona."
       },
-
       "concessionCondition": "unchanged from parent design faceB rivalDagPersona.concessionCondition, including the matching algorithm, markers, engageWhen, otherwise, and nonQualifying list",
       "concealment": {
         "tutorReceivesRivalDag": false,
@@ -105,13 +94,11 @@
       "concessionEnforcement": "unchanged from parent design faceB rivalDagPersona.concessionEnforcement, with the adjudication question's 'warrant' reading 'exhibit'"
     }
   },
-
   "register": {
     "held": "plain",
     "rationale": "Register is a nuisance factor here; both arms deliver in the parent design's plain register.",
     "reportOnly": true
   },
-
   "arms": {
     "treatment": {
       "id": "exhibit_discharge",
@@ -136,7 +123,6 @@
       "lesson": "the v7 boredom study delivered one behaviour twice and its gate compared the assignment with its own copy; that class of defect voids the run"
     }
   },
-
   "measurement": {
     "endpointField": "final_graded_engagement_rung",
     "fixedFinalHorizon": true,
@@ -156,7 +142,6 @@
       "role": "secondary and report-only; it never gates this run and never replaces the primary rung"
     }
   },
-
   "models": {
     "tutor": "codex.gpt-5.6-luna",
     "learner": "codex.gpt-5.6-luna",
@@ -165,7 +150,6 @@
     "triggerObservation": "unchanged from parent design faceB (registered judges under the merged turn-gate registration)",
     "stackNote": "held to the sealed stack so the reference arm stays comparable with the measured 0.114"
   },
-
   "randomization": {
     "masterSeed": 2026083001,
     "algorithm": "sha256-ranked balanced allocation within the calibration block",
@@ -173,7 +157,6 @@
     "caseIdRule": "underscore_only_lowercase",
     "caseIdStem": "sat1"
   },
-
   "calibration": {
     "dialogues": 48,
     "perArm": 24,
@@ -192,24 +175,52 @@
     "sizingUse": "the calibration reference-arm rung-2 rate updates the power table's base rate for powered sizing; this is the calibration's registered purpose and not an interim outcome analysis",
     "killRule": "stop before a powered run if any authoritative gate fails, if execution accounting does not balance, or if the treatment arm shows zero adjudicated deliveries; relaxing any floor after data is refused"
   },
-
   "poweredRun": {
     "authorization": "not_granted_by_this_design_or_calibration",
     "calibrationRowsExcluded": true,
     "registeredAlternative": 0.35,
     "sizingRule": "smallest n per arm in {42, 48, 54, 60, 72, 84, 90} whose exact two-sided Fisher power at alpha 0.05 against rung-2 rate 0.35 in the treatment arm, computed at the calibration-updated reference rate, reaches 0.80; if no n at or below 90 reaches 0.80, stop and report infeasible at ceiling",
     "prospectivePowerScanAtDesignBase0114": {
-      "36": { "0.25": 0.228, "0.30": 0.398, "0.35": 0.581, "0.40": 0.743, "0.45": 0.864 },
-      "42": { "0.25": 0.286, "0.30": 0.483, "0.35": 0.675, "0.40": 0.826, "0.45": 0.921 },
-      "48": { "0.25": 0.309, "0.30": 0.53, "0.35": 0.731, "0.40": 0.873, "0.45": 0.951 },
-      "54": { "0.25": 0.349, "0.30": 0.584, "0.35": 0.785, "0.40": 0.911, "0.45": 0.971 },
-      "60": { "0.25": 0.398, "0.30": 0.643, "0.35": 0.833, "0.40": 0.939, "0.45": 0.983 }
+      "36": {
+        "0.25": 0.228,
+        "0.30": 0.398,
+        "0.35": 0.581,
+        "0.40": 0.743,
+        "0.45": 0.864
+      },
+      "42": {
+        "0.25": 0.286,
+        "0.30": 0.483,
+        "0.35": 0.675,
+        "0.40": 0.826,
+        "0.45": 0.921
+      },
+      "48": {
+        "0.25": 0.309,
+        "0.30": 0.53,
+        "0.35": 0.731,
+        "0.40": 0.873,
+        "0.45": 0.951
+      },
+      "54": {
+        "0.25": 0.349,
+        "0.30": 0.584,
+        "0.35": 0.785,
+        "0.40": 0.911,
+        "0.45": 0.971
+      },
+      "60": {
+        "0.25": 0.398,
+        "0.30": 0.643,
+        "0.35": 0.833,
+        "0.40": 0.939,
+        "0.45": 0.983
+      }
     },
     "powerScanProvenance": "carried unchanged from the v4 design; the reference arm and ladder are unchanged, so the same base-rate table applies",
     "maximumDialoguesPerArm": 90,
     "separateAuthorizationRequired": true
   },
-
   "attemptCeilings": {
     "callPlanPerDialogue": "carried from the parent design (64 planned calls per dialogue) as a fail-before-call ceiling",
     "plannedCallsCalibration": 3072,
@@ -218,7 +229,6 @@
     "role": "fail-before-call ceiling, not a target",
     "ledger": "the shared budget ledger keyed by the run id, per services/adaptiveTutor/meteredRunSession.js"
   },
-
   "dispositions": {
     "measurementIndeterminate": "retain; stop the unit; no repair, rerun, replacement, or recoding",
     "technicalFailure": "halt the block before starting another unit",
@@ -228,7 +238,6 @@
     "tutorNonDelivery": "retain; stop the unit; never score or determine a rung; never charge the learner; no rerun",
     "demandedExhibitUnavailable": "retain; stop the unit; typed as a plan defect, never scored, and the plan build that allowed it is the thing to fix"
   },
-
   "knownRisks": [
     {
       "id": "reader_boundary_unresolved",
@@ -237,9 +246,9 @@
       "mitigationIfAvailable": "Gate 1 should wait for the narrowing codebook (workplan frame-refuser-refusal-narrowing) so the run can carry the finer secondary endpoint alongside the unchanged primary."
     },
     {
-      "id": "mint_not_implemented",
-      "statement": "The exhibit mint does not exist in code yet. Running this design against the current mint would silently reproduce the predecessor's warrant demands.",
-      "disposition": "Plan build refuses unless the minted open nodes carry openNodeKind 'exhibit' and every demanded node resolves to an authored-path premise id."
+      "id": "plan_build_not_wired",
+      "statement": "The exhibit mint exists (study code R2) and refuses a design that does not register it, but no plan build yet routes this design's jobs to R2 or runs the demand selection rule per assigned world.",
+      "disposition": "Plan build refuses unless every job carries study R2, every minted open node carries openNodeKind 'exhibit' and resolves to an authored-path premise id, and the demand selection rule yields a demanded exhibit for every assigned world at every eligible trigger turn."
     },
     {
       "id": "attrition",
@@ -247,7 +256,6 @@
       "disposition": "48 dialogues at 24 per arm, unchanged from v4. If attrition returns to the v3 level the determinate-outcome gate fails and the block stops, as registered."
     }
   ],
-
   "preflight": {
     "zeroCallChecksBeforeAnyLaunch": [
       "every assigned world yields a demanded exhibit under the demand selection rule, or the world is refused",
@@ -260,7 +268,6 @@
       "the launch checkout is clean and detached at the commit naming this design file"
     ]
   },
-
   "callAuthority": {
     "grantsModelCalls": false,
     "launchRequirement": "One attended invocation with TTY-only typed operator approval, under the three standing authorities in docs/paid-study-authorization-policy.md: this merged design file, a clean detached launch commit, and one signed GO note naming the design path, the commit, and the spend cap.",
