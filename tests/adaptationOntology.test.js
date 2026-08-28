@@ -15,7 +15,8 @@ const NS = 'https://machinespirits.dev/ontology/reasoning#';
 const WORKED_ABOX = `@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-# D42 CLEAN PASS -> PeripeteiaInducedRecognition (all six upstream gates fire)
+# D42 CALIBRATION-BOUNDARY TREATMENT PASS -> PeripeteiaInducedRecognition
+# (all six treatment-side upstream gates fire; this does not make D42 a clean control anchor)
 ms:Trig_D42 a ms:Misfit ; ms:isDirectorCued true ; ms:branchLocal true ; ms:triggerConfidence 0.9 .
 ms:Route_D42 a ms:RouteChange ; ms:consumesTrigger ms:Trig_D42 ; ms:surfacesAsDevice true .
 ms:Perf_D42 a ms:PerformDevice ; ms:committedInSpeech true .
@@ -90,7 +91,7 @@ const prop = (s, p) =>
     .filter((q) => q.subject.value === NS + s && q.predicate.value === NS + p)
     .map((q) => q.object.value.replace(NS, ''));
 
-test('D42 clean chain derives PeripeteiaInducedRecognition (intervention-attributable)', () => {
+test('D42 calibration-boundary treatment chain derives PeripeteiaInducedRecognition', () => {
   assert.ok(typeOf('R_D42').includes('PeripeteiaInducedRecognition'));
 });
 

@@ -1,18 +1,31 @@
 import { strict as assert } from 'node:assert';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
+import yaml from 'yaml';
 import {
   buildIterationPlan,
+  DEFAULT_ANALYZER_VERSION,
   DEFAULT_CRITICS,
   evaluateRunGate,
   loadRepairInputsByDrama,
   parseArgs,
   readFinalPublicLearnerTurn,
   repairInputsForItem,
+  renderMarkdown,
+  runLoop,
+  SEMANTIC_ANALYZER_VERSION,
+  summaryPaths,
+  validatePreparedSummary,
+  validateResumePreflight,
+  writableSummaryPaths,
+  workflowIdentity,
+  workflowStages,
 } from '../scripts/run-poetics-adaptation-loop.js';
 import {
+  insertPoeticsTutorAdaptationOnce,
   openPoeticsStore,
   upsertPoeticsItem,
   upsertPoeticsRun,
@@ -32,9 +45,10 @@ function modelSlug(model) {
     .toLowerCase();
 }
 
-function gateArgs(runId) {
+function gateArgs(runId, analyzerVersion = DEFAULT_ANALYZER_VERSION) {
   return {
     runId,
+    analyzerVersion,
     targetOnly: ['D42'],
     targetArms: ['routine', 'none', 'peripeteia-only'],
     minCritics: 4,
@@ -43,6 +57,96 @@ function gateArgs(runId) {
     actionVoteCut: 3,
     controlMaxRecognitionVotes: 1,
   };
+}
+
+function writeCompleteTargetSpec(root) {
+  const targetSpec = path.join(root, 'complete-anchor-set.yaml');
+  fs.writeFileSync(
+    targetSpec,
+    yaml.stringify({
+      meta: {
+        clean_anchor_set: {
+          status: 'complete',
+          required_core: ['D50', 'D53'],
+          qualified_third_anchor: 'D55',
+          claim_gate_ready: true,
+        },
+      },
+    }),
+    'utf8',
+  );
+  return targetSpec;
+}
+
+function writeStructurallyCompleteSemanticPacket(root) {
+  return writeSemanticPacket(root, ['plan-fixture-item']);
+}
+
+function writeSemanticPacket(root, itemIds) {
+  const packetPath = path.join(root, 'semantic-adjudications.json');
+  const intentionalIndeterminate = (judgeId, runId) => ({
+    judge_id: judgeId,
+    independent_run_id: runId,
+    label: 'indeterminate',
+    confidence: 'high',
+    rationale: 'Plan-wiring fixture only; no adjudication is executed.',
+    evidence: [],
+  });
+  fs.writeFileSync(
+    packetPath,
+    `${JSON.stringify({
+      schema: 'machinespirits.poetics.semantic-change-adjudication-packet.v1',
+      items: Object.fromEntries(
+        itemIds.map((itemId) => [
+          itemId,
+          {
+            tutor_judgments: [
+              intentionalIndeterminate('mock-tutor-a', 'mock-tutor-run-a'),
+              intentionalIndeterminate('mock-tutor-b', 'mock-tutor-run-b'),
+            ],
+            learner_judgments: [
+              intentionalIndeterminate('mock-learner-a', 'mock-learner-run-a'),
+              intentionalIndeterminate('mock-learner-b', 'mock-learner-run-b'),
+            ],
+          },
+        ]),
+      ),
+    })}\n`,
+    'utf8',
+  );
+  return packetPath;
+}
+
+function seedPreparedBatches(db, batchIds, targets = ['D50', 'D53', 'D55']) {
+  const itemIds = [];
+  for (const batchId of batchIds) {
+    upsertPoeticsRun(db, {
+      id: batchId,
+      sourceRoot: `config/poetics-calibration/${batchId}`,
+      batchId,
+      generator: 'mock',
+      metadata: {},
+    });
+    for (const dramaId of targets) {
+      for (const arm of ['routine', 'none', 'peripeteia-only']) {
+        const itemId = `${batchId}:target-r01:${arm}:${dramaId}`;
+        itemIds.push(itemId);
+        upsertPoeticsItem(db, {
+          id: itemId,
+          runId: batchId,
+          unitId: 'target-r01',
+          repeat: 'r01',
+          arm,
+          tid: dramaId,
+          dramaId,
+          discipline: 'fixture',
+          condition: arm,
+          metadata: {},
+        });
+      }
+    }
+  }
+  return itemIds;
 }
 
 function scoreMetadata({ origin = 'none', actional = 0, mechanism = 0 } = {}) {
@@ -156,12 +260,25 @@ function seedRun(db, runId, { routineForms = ['flat', 'flat', 'flat', 'flat'] } 
 }
 
 describe('run-poetics-adaptation-loop', () => {
+  it('blocks the claim loop while the registered clean-anchor set lacks a third anchor', () => {
+    assert.throws(
+      () => parseArgs(['--batch-prefix', 'loop-test', '--run-stamp', '20260527T110000Z', '--dry-run']),
+      /clean anchor set is incomplete.*cannot use a reduced denominator/,
+    );
+  });
+
   it('builds a bounded production command for clean adaptation targets', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-plan-'));
     const args = parseArgs([
       '--batch-prefix',
       'loop-test',
       '--run-stamp',
       '20260527T120000Z',
+      '--target-spec',
+      writeCompleteTargetSpec(root),
+      '--target-only',
+      'D50,D53,D55',
+      '--prepare-semantic',
       '--max-iterations',
       '2',
       '--required-passes',
@@ -172,21 +289,132 @@ describe('run-poetics-adaptation-loop', () => {
 
     assert.equal(plan.batchId, 'loop-test-20260527T120000Z-i01');
     assert.ok(plan.commands.production.includes('--target-only'));
-    assert.ok(plan.commands.production.includes('D42,D50,D53'));
+    assert.ok(plan.commands.production.includes('D50,D53,D55'));
+    assert.ok(!plan.commands.production.includes('D42,D50,D53'));
     assert.ok(plan.commands.production.includes('--target-adaptation-arms'));
     assert.ok(plan.commands.production.includes('routine,none,peripeteia-only'));
     assert.ok(plan.commands.production.includes('--only'));
     assert.ok(plan.commands.production.includes('target-r01'));
     assert.ok(plan.commands.production.includes('--structure-critic'));
     assert.ok(plan.commands.production.includes('rules'));
+    assert.deepEqual(workflowStages(args), ['production', 'ingest']);
+  });
+
+  it('does not allow a complete anchor set to run without an explicit semantic stage', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-v4-block-'));
+    assert.throws(
+      () =>
+        parseArgs([
+          '--batch-prefix',
+          'loop-test',
+          '--run-stamp',
+          '20260527T121500Z',
+          '--target-spec',
+          writeCompleteTargetSpec(root),
+          '--target-only',
+          'D50,D53,D55',
+          '--dry-run',
+        ]),
+      /require exactly one staged mode/,
+    );
+  });
+
+  it('does not accept semantic judgments until preparation has produced transcripts', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-premature-packet-'));
+    assert.throws(
+      () =>
+        parseArgs([
+          '--batch-prefix',
+          'loop-test',
+          '--run-stamp',
+          '20260527T121600Z',
+          '--target-spec',
+          writeCompleteTargetSpec(root),
+          '--target-only',
+          'D50,D53,D55',
+          '--prepare-semantic',
+          '--semantic-adjudications',
+          writeStructurallyCompleteSemanticPacket(root),
+          '--dry-run',
+        ]),
+      /cannot accept judgments before the transcripts exist/,
+    );
+  });
+
+  it('requires a semantic packet when resuming prepared batches', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-resume-no-packet-'));
+    assert.throws(
+      () =>
+        parseArgs([
+          '--batch-prefix',
+          'loop-test',
+          '--run-stamp',
+          '20260527T121700Z',
+          '--target-spec',
+          writeCompleteTargetSpec(root),
+          '--target-only',
+          'D50,D53,D55',
+          '--resume-prepared',
+          '--dry-run',
+        ]),
+      /requires --semantic-adjudications and semantic v5/,
+    );
+  });
+
+  it('requires the complete matched routine/none/peripeteia arm set', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-arm-set-'));
+    assert.throws(
+      () =>
+        parseArgs([
+          '--batch-prefix',
+          'loop-test',
+          '--run-stamp',
+          '20260527T121800Z',
+          '--target-spec',
+          writeCompleteTargetSpec(root),
+          '--target-only',
+          'D50,D53,D55',
+          '--target-arms',
+          'peripeteia-only',
+          '--prepare-semantic',
+          '--dry-run',
+        ]),
+      /must match the registered matched arm set/,
+    );
+  });
+
+  it('rejects a duplicate target that silently omits the registered third anchor', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-duplicate-target-'));
+    assert.throws(
+      () =>
+        parseArgs([
+          '--batch-prefix',
+          'loop-test',
+          '--run-stamp',
+          '20260527T121900Z',
+          '--target-spec',
+          writeCompleteTargetSpec(root),
+          '--target-only',
+          'D50,D50,D53',
+          '--prepare-semantic',
+          '--dry-run',
+        ]),
+      /must match the registered clean anchor set: D50,D53,D55/,
+    );
   });
 
   it('forwards --effort to the production batch as --claude-effort', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-effort-'));
     const args = parseArgs([
       '--batch-prefix',
       'loop-test',
       '--run-stamp',
       '20260529T120000Z',
+      '--target-spec',
+      writeCompleteTargetSpec(root),
+      '--target-only',
+      'D50,D53,D55',
+      '--prepare-semantic',
       '--generator',
       'claude',
       '--effort',
@@ -273,6 +501,265 @@ describe('run-poetics-adaptation-loop', () => {
     });
   });
 
+  it('wires an explicit semantic packet to v5 analysis and reporting', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-semantic-plan-'));
+    const packetPath = writeStructurallyCompleteSemanticPacket(root);
+    const args = parseArgs([
+      '--batch-prefix',
+      'loop-test',
+      '--run-stamp',
+      '20260529T130000Z',
+      '--target-spec',
+      writeCompleteTargetSpec(root),
+      '--target-only',
+      'D50,D53,D55',
+      '--max-iterations',
+      '1',
+      '--required-passes',
+      '1',
+      '--resume-prepared',
+      '--semantic-adjudications',
+      packetPath,
+      '--dry-run',
+    ]);
+    const plan = buildIterationPlan(args, 1);
+
+    assert.equal(args.analyzerVersion, SEMANTIC_ANALYZER_VERSION);
+    const packetIndex = plan.commands.adaptation.indexOf('--semantic-adjudications');
+    assert.equal(plan.commands.adaptation[packetIndex + 1], packetPath);
+    const reportVersionIndex = plan.commands.report.indexOf('--analyzer-version');
+    assert.equal(plan.commands.report[reportVersionIndex + 1], SEMANTIC_ANALYZER_VERSION);
+    assert.deepEqual(workflowStages(args), ['adaptation', 'report']);
+  });
+
+  it('reports prepared batches as awaiting adjudication without a false gate verdict', () => {
+    const markdown = renderMarkdown({
+      generatedAt: '2026-08-27T00:00:00.000Z',
+      status: 'awaiting_semantic_adjudication',
+      requiredPasses: 2,
+      passes: 0,
+      config: {
+        workflowStage: 'prepare_semantic',
+        targetOnly: ['D50', 'D53', 'D55'],
+        targetArms: ['routine', 'none', 'peripeteia-only'],
+        critics: DEFAULT_CRITICS,
+        controlMaxRecognitionVotes: 1,
+        recognitionVoteCut: 3,
+        actionVoteCut: 3,
+        originVoteCut: 3,
+        originHardGate: false,
+      },
+      iterations: [
+        {
+          iteration: 1,
+          batchId: 'loop-test-prepared-i01',
+          gate: null,
+          stageError: null,
+        },
+      ],
+    });
+
+    assert.match(markdown, /Passes: not evaluated; awaiting independent semantic adjudication/);
+    assert.match(markdown, /\| 1 \| loop-test-prepared-i01 \| not evaluated \| not evaluated \| none \|/);
+  });
+
+  it('preserves stage-specific summaries and rejects prepare/resume configuration drift', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-stage-provenance-'));
+    const targetSpec = writeCompleteTargetSpec(root);
+    const packetPath = writeStructurallyCompleteSemanticPacket(root);
+    const reportPrefix = path.join(root, 'loop-status');
+    const common = [
+      '--batch-prefix',
+      'loop-test',
+      '--run-stamp',
+      '20260529T140000Z',
+      '--target-spec',
+      targetSpec,
+      '--target-only',
+      'D50,D53,D55',
+      '--max-iterations',
+      '2',
+      '--required-passes',
+      '1',
+      '--report-prefix',
+      reportPrefix,
+    ];
+    const prepareArgs = parseArgs([...common, '--prepare-semantic']);
+    const resumeArgs = parseArgs([...common, '--resume-prepared', '--semantic-adjudications', packetPath]);
+    const preparePaths = summaryPaths(prepareArgs);
+    const resumePaths = summaryPaths(resumeArgs);
+    assert.notEqual(preparePaths.jsonPath, resumePaths.jsonPath);
+    assert.match(preparePaths.jsonPath, /-prepare-semantic\.json$/);
+    assert.match(resumePaths.jsonPath, /-resume-prepared\.json$/);
+
+    fs.writeFileSync(
+      preparePaths.jsonPath,
+      `${JSON.stringify({
+        status: 'awaiting_semantic_adjudication',
+        config: { workflowIdentity: workflowIdentity(prepareArgs) },
+        iterations: [{ batchId: 'loop-test-20260529T140000Z-i01' }, { batchId: 'loop-test-20260529T140000Z-i02' }],
+      })}\n`,
+      'utf8',
+    );
+    assert.equal(validatePreparedSummary(resumeArgs).summary.status, 'awaiting_semantic_adjudication');
+    assert.throws(() => runLoop(prepareArgs), /prepared semantic summary already exists; use a new run stamp/);
+
+    fs.writeFileSync(resumePaths.jsonPath, '{"status":"failed"}\n', 'utf8');
+    assert.match(writableSummaryPaths(resumeArgs).jsonPath, /-resume-prepared-attempt-02\.json$/);
+
+    const driftedResume = parseArgs([
+      ...common,
+      '--recognition-vote-cut',
+      '2',
+      '--resume-prepared',
+      '--semantic-adjudications',
+      packetPath,
+    ]);
+    assert.throws(() => validatePreparedSummary(driftedResume), /configuration drift: recognitionVoteCut/);
+  });
+
+  it('preflights semantic packet coverage across every prepared batch before any v5 write', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-global-packet-preflight-'));
+    const dbPath = path.join(root, 'poetics.db');
+    const targetSpec = writeCompleteTargetSpec(root);
+    const reportPrefix = path.join(root, 'loop-status');
+    const batchIds = ['loop-test-20260529T150000Z-i01', 'loop-test-20260529T150000Z-i02'];
+    const db = openPoeticsStore(dbPath);
+    const itemIds = seedPreparedBatches(db, batchIds);
+    db.close();
+    const packetPath = writeSemanticPacket(root, itemIds.slice(0, -1));
+    const common = [
+      '--batch-prefix',
+      'loop-test',
+      '--run-stamp',
+      '20260529T150000Z',
+      '--target-spec',
+      targetSpec,
+      '--target-only',
+      'D50,D53,D55',
+      '--max-iterations',
+      '2',
+      '--required-passes',
+      '1',
+      '--report-prefix',
+      reportPrefix,
+      '--db',
+      dbPath,
+    ];
+    const prepareArgs = parseArgs([...common, '--prepare-semantic']);
+    const resumeArgs = parseArgs([...common, '--resume-prepared', '--semantic-adjudications', packetPath]);
+    const preparePaths = summaryPaths(prepareArgs);
+    fs.writeFileSync(
+      preparePaths.jsonPath,
+      `${JSON.stringify({
+        status: 'awaiting_semantic_adjudication',
+        config: { workflowIdentity: workflowIdentity(prepareArgs) },
+        iterations: batchIds.map((batchId) => ({ batchId })),
+      })}\n`,
+      'utf8',
+    );
+
+    assert.throws(() => runLoop(resumeArgs), /packet coverage is incomplete across prepared batches/);
+    const verifyDb = openPoeticsStore(dbPath);
+    try {
+      const count = verifyDb
+        .prepare('SELECT COUNT(*) AS count FROM poetics_tutor_adaptations WHERE analyzer_version = ?')
+        .get(SEMANTIC_ANALYZER_VERSION).count;
+      assert.equal(count, 0);
+    } finally {
+      verifyDb.close();
+    }
+  });
+
+  it('resumes after completed analysis by rerunning only reports, while rejecting partial v5 coverage', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-analysis-recovery-'));
+    const dbPath = path.join(root, 'poetics.db');
+    const targetSpec = writeCompleteTargetSpec(root);
+    const batchIds = ['loop-test-20260529T160000Z-i01', 'loop-test-20260529T160000Z-i02'];
+    const db = openPoeticsStore(dbPath);
+    const itemIds = seedPreparedBatches(db, batchIds);
+    const packetPath = writeSemanticPacket(root, itemIds);
+    const packetSha256 = createHash('sha256').update(fs.readFileSync(packetPath)).digest('hex');
+    const resumeArgs = parseArgs([
+      '--batch-prefix',
+      'loop-test',
+      '--run-stamp',
+      '20260529T160000Z',
+      '--target-spec',
+      targetSpec,
+      '--target-only',
+      'D50,D53,D55',
+      '--max-iterations',
+      '2',
+      '--required-passes',
+      '1',
+      '--db',
+      dbPath,
+      '--resume-prepared',
+      '--semantic-adjudications',
+      packetPath,
+    ]);
+    const provenance = {
+      semantic_adjudication_provenance: {
+        packet_schema: 'machinespirits.poetics.semantic-change-adjudication-packet.v1',
+        packet_sha256: packetSha256,
+        create_once: true,
+        historical_recompute_allowed: false,
+      },
+      peripeteia: {
+        tutor_adaptive_mechanism_measurement: { status: 'determinate', value: true },
+        tutor_representation_change_measurement: { status: 'determinate', value: false },
+        learner_actional_change_measurement: { status: 'determinate', value: true },
+        learner_representation_change_measurement: { status: 'determinate', value: false },
+      },
+    };
+    for (const itemId of itemIds.filter((id) => id.startsWith(`${batchIds[0]}:`))) {
+      insertPoeticsTutorAdaptationOnce(db, {
+        itemId,
+        analyzerVersion: SEMANTIC_ANALYZER_VERSION,
+        learnerSelfReframe: null,
+        tutorStrategyShift: false,
+        tutorContingentAdaptation: null,
+        sharedSalientTerms: [],
+        metadata: provenance,
+      });
+    }
+    const preparedSummary = { iterations: batchIds.map((batchId) => ({ batchId })) };
+    const preflight = validateResumePreflight(db, resumeArgs, preparedSummary);
+    assert.equal(preflight.batchStates[batchIds[0]].analysisCompleted, true);
+    assert.equal(preflight.batchStates[batchIds[1]].analysisCompleted, false);
+    assert.deepEqual(workflowStages(resumeArgs, preflight.batchStates[batchIds[0]]), ['report']);
+    assert.deepEqual(workflowStages(resumeArgs, preflight.batchStates[batchIds[1]]), ['adaptation', 'report']);
+
+    const completedItemId = itemIds.find((id) => id.startsWith(`${batchIds[0]}:`));
+    db.prepare('UPDATE poetics_tutor_adaptations SET metadata = ? WHERE item_id = ? AND analyzer_version = ?').run(
+      JSON.stringify({ semantic_adjudication_provenance: provenance.semantic_adjudication_provenance }),
+      completedItemId,
+      SEMANTIC_ANALYZER_VERSION,
+    );
+    assert.throws(() => validateResumePreflight(db, resumeArgs, preparedSummary), /malformed semantic v5 persistence/);
+    db.prepare('UPDATE poetics_tutor_adaptations SET metadata = ? WHERE item_id = ? AND analyzer_version = ?').run(
+      JSON.stringify(provenance),
+      completedItemId,
+      SEMANTIC_ANALYZER_VERSION,
+    );
+
+    insertPoeticsTutorAdaptationOnce(db, {
+      itemId: itemIds.find((id) => id.startsWith(`${batchIds[1]}:`)),
+      analyzerVersion: SEMANTIC_ANALYZER_VERSION,
+      learnerSelfReframe: null,
+      tutorStrategyShift: false,
+      tutorContingentAdaptation: null,
+      sharedSalientTerms: [],
+      metadata: provenance,
+    });
+    assert.throws(
+      () => validateResumePreflight(db, resumeArgs, preparedSummary),
+      /partial semantic v5 persistence.*no new analysis was started/,
+    );
+    db.close();
+  });
+
   it('passes when controls stay negative and peripeteia induces branch-valid recognition', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-pass-'));
     const db = openPoeticsStore(path.join(root, 'poetics.db'));
@@ -353,6 +840,150 @@ describe('run-poetics-adaptation-loop', () => {
         assert.equal(item.hamartiaRepair.source.hamartia?.includes('script_lowering'), true, arm);
         assert.equal(item.hamartiaRepair.source.correctedRule?.includes('lesson_objective'), true, arm);
       }
+    } finally {
+      db.close();
+    }
+  });
+
+  it('keeps semantic judge ambiguity indeterminate instead of collapsing it to mechanism absence', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-indeterminate-'));
+    const db = openPoeticsStore(path.join(root, 'poetics.db'));
+    try {
+      const runId = 'loop-indeterminate';
+      seedRun(db, runId);
+      const peripeteiaId = `${runId}:target-r01:peripeteia-only:T01`;
+      insertPoeticsTutorAdaptationOnce(db, {
+        itemId: peripeteiaId,
+        analyzerVersion: SEMANTIC_ANALYZER_VERSION,
+        learnerSelfReframe: true,
+        tutorStrategyShift: false,
+        tutorContingentAdaptation: false,
+        tutorAdaptationScore: null,
+        sharedSalientTerms: [],
+        metadata: {
+          branch_validity: { valid: true, learner_reversal_event_used: true },
+          peripeteia: {
+            instrumented_pressure: true,
+            private_mechanism_declared: true,
+            tutor_adaptive_mechanism: null,
+            tutor_strategy_reversal: null,
+            tutor_adaptive_mechanism_measurement: {
+              status: 'measurement_indeterminate',
+              value: null,
+              reasons: ['semantic_label_disagreement'],
+            },
+            tutor_representation_change_measurement: {
+              status: 'measurement_indeterminate',
+              value: null,
+              reasons: ['semantic_label_disagreement'],
+            },
+            learner_actional_change_measurement: {
+              status: 'measurement_indeterminate',
+              value: null,
+              reasons: ['semantic_label_disagreement'],
+            },
+            learner_representation_change_measurement: {
+              status: 'measurement_indeterminate',
+              value: null,
+              reasons: ['semantic_label_disagreement'],
+            },
+          },
+        },
+      });
+
+      const legacyGate = evaluateRunGate(db, gateArgs(runId));
+      assert.equal(legacyGate.pass, true, 'the historical v4 row remains unchanged');
+
+      const gate = evaluateRunGate(db, gateArgs(runId, SEMANTIC_ANALYZER_VERSION));
+      const peripeteia = gate.items.find((item) => item.arm === 'peripeteia-only');
+      assert.equal(gate.pass, false);
+      assert.deepEqual(peripeteia.failures, [
+        'learner_measurement_indeterminate',
+        'mechanism_measurement_indeterminate',
+      ]);
+      assert.equal(peripeteia.adaptationGate.tutorAdaptiveMechanism, null);
+      assert.equal(peripeteia.adaptationGate.tutorRepresentationChangeStatus, 'measurement_indeterminate');
+      assert.equal(peripeteia.adaptationGate.learnerActionalChange, null);
+      assert.equal(peripeteia.adaptationGate.learnerRepresentationChangeStatus, 'measurement_indeterminate');
+    } finally {
+      db.close();
+    }
+  });
+
+  it('treats a v5 row with missing semantic measurements as indeterminate, never as legacy fallback', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-missing-v5-measurement-'));
+    const db = openPoeticsStore(path.join(root, 'poetics.db'));
+    try {
+      const runId = 'loop-missing-v5-measurement';
+      seedRun(db, runId);
+      const peripeteiaId = `${runId}:target-r01:peripeteia-only:T01`;
+      insertPoeticsTutorAdaptationOnce(db, {
+        itemId: peripeteiaId,
+        analyzerVersion: SEMANTIC_ANALYZER_VERSION,
+        learnerSelfReframe: true,
+        tutorStrategyShift: true,
+        tutorContingentAdaptation: true,
+        tutorAdaptationScore: 90,
+        sharedSalientTerms: [],
+        metadata: {
+          branch_validity: { valid: true, learner_reversal_event_used: true },
+          peripeteia: {
+            instrumented_pressure: true,
+            private_mechanism_declared: true,
+            tutor_adaptive_mechanism: true,
+            tutor_strategy_reversal: true,
+          },
+        },
+      });
+
+      const gate = evaluateRunGate(db, gateArgs(runId, SEMANTIC_ANALYZER_VERSION));
+      const peripeteia = gate.items.find((item) => item.arm === 'peripeteia-only');
+      assert.equal(gate.pass, false);
+      assert.deepEqual(peripeteia.failures, [
+        'learner_measurement_indeterminate',
+        'mechanism_measurement_indeterminate',
+      ]);
+      assert.equal(peripeteia.adaptationGate.tutorAdaptiveMechanism, null);
+      assert.equal(peripeteia.adaptationGate.tutorAdaptiveMechanismStatus, 'measurement_indeterminate');
+      assert.equal(peripeteia.adaptationGate.learnerActionalChangeStatus, 'measurement_indeterminate');
+    } finally {
+      db.close();
+    }
+  });
+
+  it('marks mixed scorer protocols indeterminate instead of pooling incompatible votes', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-mixed-protocols-'));
+    const db = openPoeticsStore(path.join(root, 'poetics.db'));
+    try {
+      const runId = 'loop-mixed-protocols';
+      seedRun(db, runId);
+      const itemId = `${runId}:target-r01:peripeteia-only:T01`;
+      const critic = DEFAULT_CRITICS[0];
+      const stored = db
+        .prepare('SELECT metadata FROM poetics_scores WHERE item_id = ? AND critic_model = ?')
+        .get(itemId, critic);
+      const metadata = JSON.parse(stored.metadata);
+      metadata.mechanism_measurement_protocol_version =
+        'poetics-phase2-mechanism-measurement-v2-semantic-authoritative';
+      metadata.learner_action_measurement_protocol_version =
+        'poetics-phase2-learner-action-measurement-v1-semantic-authoritative';
+      db.prepare('UPDATE poetics_scores SET metadata = ? WHERE item_id = ? AND critic_model = ?').run(
+        JSON.stringify(metadata),
+        itemId,
+        critic,
+      );
+
+      const gate = evaluateRunGate(db, gateArgs(runId));
+      const peripeteia = gate.items.find((item) => item.arm === 'peripeteia-only');
+      assert.equal(gate.pass, false);
+      assert.deepEqual(peripeteia.failures, [
+        'learner_measurement_indeterminate',
+        'mechanism_measurement_indeterminate',
+      ]);
+      assert.equal(peripeteia.actionalVotes, null);
+      assert.equal(peripeteia.tutorMechanismVotes, null);
+      assert.equal(peripeteia.adaptationGate.learnerScorePanel.status, 'measurement_indeterminate');
+      assert.equal(peripeteia.adaptationGate.tutorScorePanel.status, 'measurement_indeterminate');
     } finally {
       db.close();
     }

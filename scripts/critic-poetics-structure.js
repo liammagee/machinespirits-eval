@@ -145,6 +145,27 @@ function hasPeripeteiaReorientation(turns, peripeteia) {
   return PERIPETEIA_PRESSURE_FRAME.test(text) && PERIPETEIA_REPLACEMENT_FRAME.test(text);
 }
 
+function semanticPeripeteiaMeasurements(peripeteia) {
+  const tutorAdaptive =
+    peripeteia?.tutor_adaptive_mechanism_measurement || peripeteia?.adaptive_mechanism_measurement || null;
+  const tutorRepresentation =
+    peripeteia?.tutor_representation_change_measurement ||
+    peripeteia?.representation_change_measurement ||
+    tutorAdaptive?.representation_change_measurement ||
+    null;
+  const learnerActional = peripeteia?.learner_actional_change_measurement || null;
+  const learnerRepresentation =
+    peripeteia?.learner_representation_change_measurement || learnerActional?.representation_change_measurement || null;
+  return { tutorAdaptive, tutorRepresentation, learnerActional, learnerRepresentation };
+}
+
+function criticMeasurement(measurement) {
+  return {
+    status: measurement?.status || 'not_adjudicated',
+    value: measurement?.status === 'determinate' ? measurement.value : null,
+  };
+}
+
 function deterministicChecks({ id: _id, item, raw }) {
   const turns = parseTurns(raw);
   const tutorTurns = turns.filter((turn) => turn.role === 'TUTOR');
@@ -152,7 +173,14 @@ function deterministicChecks({ id: _id, item, raw }) {
   const stageTurns = turns.filter((turn) => turn.role === 'STAGE');
   const publicTurns = turns.filter((turn) => turn.role === 'TUTOR' || turn.role === 'LEARNER');
   const unknownBlocks = turns.filter((turn) => turn.role === 'UNKNOWN');
-  const peripeteia = analyzePeripeteia(turns.filter((turn) => turn.phase !== 'unknown'));
+  const peripeteia = analyzePeripeteia(
+    turns.filter((turn) => turn.phase !== 'unknown'),
+    [],
+    {
+      tutorMechanismJudgments: [],
+      learnerActionJudgments: [],
+    },
+  );
   const requiresPeripeteia = String(item?.tutor_adaptation_policy || '').includes('peripeteia');
 
   const violations = [];
@@ -174,8 +202,12 @@ function deterministicChecks({ id: _id, item, raw }) {
   if (!item?.dialogue_approach) warnings.push('missing_dialogue_approach_in_key');
   if (requiresPeripeteia && !peripeteia.learner_reversal_pressure)
     warnings.push('peripeteia_arm_without_detected_pressure');
-  if (requiresPeripeteia && !peripeteia.tutor_adaptive_mechanism)
-    warnings.push('peripeteia_arm_without_detected_tutor_mechanism');
+  const { tutorAdaptive: mechanismMeasurement } = semanticPeripeteiaMeasurements(peripeteia);
+  if (requiresPeripeteia && mechanismMeasurement?.status !== 'determinate') {
+    warnings.push('peripeteia_mechanism_semantic_adjudication_pending');
+  } else if (requiresPeripeteia && mechanismMeasurement.value === false) {
+    warnings.push('peripeteia_arm_without_semantically_adjudicated_tutor_mechanism');
+  }
   if (requiresPeripeteia && !hasPeripeteiaReorientation(turns, peripeteia)) {
     violations.push('peripeteia_arm_without_earned_reorientation');
   }
@@ -227,28 +259,39 @@ function chunk(items, size) {
 }
 
 function buildCriticPrompt(items) {
-  const payload = items.map(({ id, item, raw, rule }) => ({
-    id,
-    design_context: {
-      drama_id: item.drama_id,
-      discipline: item.discipline,
-      pedagogical_approach: item.pedagogical_approach,
-      dialogue_approach: item.dialogue_approach,
-      dramatic_shape: item.dramatic_shape,
-      tutor_adaptation_policy: item.tutor_adaptation_policy,
-    },
-    deterministic_rule_findings: {
-      pass: rule.pass,
-      violations: rule.violations,
-      warnings: rule.warnings,
-      peripeteia: {
-        learner_reversal_pressure: rule.peripeteia.learner_reversal_pressure,
-        tutor_adaptive_mechanism: rule.peripeteia.tutor_adaptive_mechanism,
-        score: rule.peripeteia.tutor_peripeteia_score,
+  const payload = items.map(({ id, item, raw, rule }) => {
+    const measurements = semanticPeripeteiaMeasurements(rule.peripeteia);
+    return {
+      id,
+      design_context: {
+        drama_id: item.drama_id,
+        discipline: item.discipline,
+        pedagogical_approach: item.pedagogical_approach,
+        dialogue_approach: item.dialogue_approach,
+        dramatic_shape: item.dramatic_shape,
+        tutor_adaptation_policy: item.tutor_adaptation_policy,
       },
-    },
-    transcript: raw,
-  }));
+      deterministic_rule_findings: {
+        pass: rule.pass,
+        violations: rule.violations,
+        warnings: rule.warnings,
+        peripeteia: {
+          learner_reversal_pressure: rule.peripeteia.learner_reversal_pressure,
+          tutor_adaptive_mechanism_measurement: criticMeasurement(measurements.tutorAdaptive),
+          tutor_representation_change_measurement: criticMeasurement(measurements.tutorRepresentation),
+          learner_actional_change_measurement: criticMeasurement(measurements.learnerActional),
+          learner_representation_change_measurement: criticMeasurement(measurements.learnerRepresentation),
+          semantically_adjudicated_tutor_mechanism:
+            measurements.tutorAdaptive?.status === 'determinate' ? measurements.tutorAdaptive.value : null,
+          semantically_adjudicated_learner_action:
+            measurements.learnerActional?.status === 'determinate' ? measurements.learnerActional.value : null,
+          auxiliary_mechanism_signals: rule.peripeteia.auxiliary_mechanism_signals,
+          lexical_or_regex_authority: 'none',
+        },
+      },
+      transcript: raw,
+    };
+  });
   return `You are a fast structural compliance critic for generated teaching dramas.
 
 This is NOT a formal recognition/trap/flat evaluation. Do not score learning outcome.
@@ -283,15 +326,23 @@ ${JSON.stringify(payload, null, 2)}`;
 
 function mockModelResult(items) {
   return {
-    items: items.map(({ id, rule }) => ({
-      id,
-      public_clean: rule.pass,
-      modern_idiom: true,
-      classical_structure: rule.peripeteia.learner_reversal_pressure ? 'clear' : 'partial',
-      tutor_habit_break: rule.peripeteia.tutor_adaptive_mechanism ? 'clear' : 'partial',
-      pass: rule.pass,
-      notes: 'mock structural critic result',
-    })),
+    items: items.map(({ id, rule }) => {
+      const { tutorAdaptive: mechanismMeasurement } = semanticPeripeteiaMeasurements(rule.peripeteia);
+      return {
+        id,
+        public_clean: rule.pass,
+        modern_idiom: true,
+        classical_structure: rule.peripeteia.learner_reversal_pressure ? 'clear' : 'partial',
+        tutor_habit_break:
+          mechanismMeasurement?.status === 'determinate'
+            ? mechanismMeasurement.value
+              ? 'clear'
+              : 'absent'
+            : 'partial',
+        pass: rule.pass,
+        notes: 'mock structural critic result',
+      };
+    }),
   };
 }
 

@@ -15,6 +15,15 @@ meta:
   profiles:
     base: { tutor: baseline, learner: ego_superego_authentic }
     recognition: { tutor: recognition, learner: ego_superego_recognition_authentic }
+  clean_anchor_set:
+    status: incomplete_pending_third_anchor
+    required_core: [D50, D53]
+    qualified_third_anchor: null
+    claim_gate_ready: false
+    note: >-
+      D42 is a calibration boundary, and the existing-evidence D54-D57 screen
+      qualified no replacement. The bounded claim loop must not run with a
+      silently reduced two-anchor denominator.
 
 dramas:
   - id: D35
@@ -254,15 +263,14 @@ dramas:
   - id: D42
     discipline: physics
     topic: "Why force arrows name interactions on an object, not the direction it happens to move"
-    evaluation_role: clean_low_organic_anchor
-    baseline_control_class: low_organic_reversal
-    organic_reversal_risk: low
+    evaluation_role: topic_forced_reorientation_calibration_boundary
+    baseline_control_class: topic_forced_reorientation_boundary
+    organic_reversal_risk: high
     baseline_control_note: >-
-      Clean low-organic anchor. The D42/D45 local smoke kept prefix and negative
-      arms below consensus recognition; use this as a main negative/control
-      anchor. The shared prefix should keep to diagram notation: label each
-      force by interaction and object, without using a sudden counterexample
-      where motion visibly contradicts the learner before the branch.
+      Calibration/boundary case only; do not include it in the clean-anchor
+      denominator. Its directional artifact and planted arrow-as-motion error
+      can force reorientation in routine/none controls, making it useful for
+      detecting critic over-attribution rather than for a clean negative anchor.
     pedagogical_approach: montessori_prepared_environment
     dialogue_approach: montessori_observation
     persona: focused_achiever

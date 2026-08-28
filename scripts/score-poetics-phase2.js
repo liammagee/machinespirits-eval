@@ -139,6 +139,71 @@ const BLIND_SCORING_PROTOCOL = {
   },
 };
 
+// Version the mechanism axis separately from the stable blind-scoring protocol.
+// Historical artifacts produced before this version used lexical/regex matches as
+// a hard score clamp. In v2 the critic's semantic judgment is authoritative once
+// the exact-quote location gates pass; lexical/regex matches remain visible only
+// as diagnostics. Historical rows are never silently relabelled or recomputed.
+const LEGACY_MECHANISM_MEASUREMENT_PROTOCOL = Object.freeze({
+  version: 'poetics-phase2-mechanism-measurement-v1-hard-regex-clamp',
+  semanticAuthority: 'critic_score_subject_to_regex_clamp',
+  lexicalOrRegexAuthority: 'hard_clamp',
+  exactQuoteLocationAuthority: 'hard_gate',
+  ambiguityOrJudgeDisagreement: 'not_represented',
+  historicalScorePolicy: 'preserve_without_recompute',
+});
+
+const MECHANISM_MEASUREMENT_PROTOCOL = Object.freeze({
+  version: 'poetics-phase2-mechanism-measurement-v2-semantic-authoritative',
+  semanticAuthority: 'critic_semantic_score',
+  lexicalOrRegexAuthority: 'auxiliary_only',
+  exactQuoteLocationAuthority: 'hard_gate',
+  ambiguityOrJudgeDisagreement: 'measurement_indeterminate',
+  historicalScorePolicy: 'preserve_without_recompute',
+});
+
+const LEGACY_LEARNER_ACTION_MEASUREMENT_PROTOCOL = Object.freeze({
+  version: 'poetics-phase2-learner-action-measurement-v0-unversioned',
+  semanticAuthority: 'critic_semantic_score',
+  lexicalOrRegexAuthority: 'none',
+  exactQuoteLocationAuthority: 'hard_gate',
+  ambiguityOrJudgeDisagreement: 'not_represented',
+  historicalScorePolicy: 'preserve_without_recompute',
+});
+
+const LEARNER_ACTION_MEASUREMENT_PROTOCOL = Object.freeze({
+  version: 'poetics-phase2-learner-action-measurement-v1-semantic-authoritative',
+  semanticAuthority: 'critic_semantic_score',
+  lexicalOrRegexAuthority: 'none',
+  exactQuoteLocationAuthority: 'hard_gate',
+  ambiguityOrJudgeDisagreement: 'measurement_indeterminate',
+  historicalScorePolicy: 'preserve_without_recompute',
+});
+
+function protocolVersionForExistingRow(row, artifact) {
+  if (row?.mechanismMeasurementProtocolVersion) return row.mechanismMeasurementProtocolVersion;
+  if (row?.mechanismMeasurementProtocol?.version) return row.mechanismMeasurementProtocol.version;
+  if (artifact?.mechanismMeasurementProtocol?.version) return artifact.mechanismMeasurementProtocol.version;
+  const roleScores = row?.roleSymmetricScores || {};
+  const hasHistoricalMechanismMeasurement =
+    row?.tutorStrategicReversal != null ||
+    row?.tutorAdaptiveMechanism != null ||
+    row?.adaptiveMechanismQuality != null ||
+    roleScores.tutor_strategy_reversal != null ||
+    roleScores.tutor_adaptive_mechanism != null ||
+    roleScores.tutor_adaptive_mechanism_quality != null;
+  return hasHistoricalMechanismMeasurement ? LEGACY_MECHANISM_MEASUREMENT_PROTOCOL.version : null;
+}
+
+function learnerActionProtocolVersionForExistingRow(row) {
+  if (row?.learnerActionMeasurementProtocolVersion) return row.learnerActionMeasurementProtocolVersion;
+  if (row?.learnerActionMeasurementProtocol?.version) return row.learnerActionMeasurementProtocol.version;
+  const roleScores = row?.roleSymmetricScores || {};
+  const hasHistoricalLearnerActionMeasurement =
+    row?.actionalBreakthrough != null || roleScores.learner_actional_breakthrough != null;
+  return hasHistoricalLearnerActionMeasurement ? LEGACY_LEARNER_ACTION_MEASUREMENT_PROTOCOL.version : null;
+}
+
 // ── critic prompt (Phase-2 axes; the §2 transposition + the new stated-insight) ──
 
 function buildPhase2Prompt(turns) {
@@ -363,6 +428,7 @@ function hasPeripeteiaMechanismShift(evidence, justification = '') {
     publicMechanism,
     likelyRoutineNarrowing,
     passes: stockTaking && publicMechanism && !likelyRoutineNarrowing,
+    lexical_or_regex_authority: 'none',
   };
 }
 
@@ -455,6 +521,7 @@ function applyPhase2Gates(parsed, turns, wholeText) {
   // TUTOR ADAPTIVE MECHANISM — the primary adaptation axis for peripeteia.
   const tsr = parsed.tutor_strategy_reversal || {};
   let tutorStrategicReversal = clampScore(tsr.score);
+  let tutorMechanismAuxiliary = null;
   if (tutorStrategicReversal > 3) {
     if (!reversalTrigger || !postReversalTutorText) {
       flags.push(`tutor_strategy_reversal_clamp_no_post_tutor:${tutorStrategicReversal}->3`);
@@ -463,22 +530,14 @@ function applyPhase2Gates(parsed, turns, wholeText) {
       flags.push(`tutor_strategy_reversal_evidence_clamp:${tutorStrategicReversal}->3`);
       tutorStrategicReversal = 3;
     } else {
-      const mechanismShift = hasPeripeteiaMechanismShift(tsr.evidence, tsr.justification);
-      if (!mechanismShift.passes) {
-        flags.push(
-          `tutor_strategy_reversal_mechanism_clamp:${tutorStrategicReversal}->3` +
-            `:stock=${mechanismShift.stockTaking ? 1 : 0}` +
-            `:device=${mechanismShift.publicMechanism ? 1 : 0}` +
-            `:routine=${mechanismShift.likelyRoutineNarrowing ? 1 : 0}`,
-        );
-        tutorStrategicReversal = 3;
-      }
+      tutorMechanismAuxiliary = hasPeripeteiaMechanismShift(tsr.evidence, tsr.justification);
     }
   }
 
   // ADAPTIVE MECHANISM QUALITY — quality of the public device, gated by mechanism evidence.
   const amq = parsed.adaptive_mechanism_quality || {};
   let adaptiveMechanismQuality = clampScore(amq.score);
+  let adaptiveMechanismQualityAuxiliary = null;
   if (adaptiveMechanismQuality > 3) {
     if (!reversalTrigger || !postReversalTutorText) {
       flags.push(`adaptive_mechanism_quality_clamp_no_post_tutor:${adaptiveMechanismQuality}->3`);
@@ -487,13 +546,10 @@ function applyPhase2Gates(parsed, turns, wholeText) {
       flags.push(`adaptive_mechanism_quality_evidence_clamp:${adaptiveMechanismQuality}->3`);
       adaptiveMechanismQuality = 3;
     } else {
-      const qualityDevice = hasPeripeteiaMechanismShift(amq.evidence, amq.justification);
-      if (tutorStrategicReversal <= 3 || !qualityDevice.publicMechanism || qualityDevice.likelyRoutineNarrowing) {
+      adaptiveMechanismQualityAuxiliary = hasPeripeteiaMechanismShift(amq.evidence, amq.justification);
+      if (tutorStrategicReversal <= 3) {
         flags.push(
           `adaptive_mechanism_quality_mechanism_clamp:${adaptiveMechanismQuality}->3` +
-            `:stock=${qualityDevice.stockTaking ? 1 : 0}` +
-            `:device=${qualityDevice.publicMechanism ? 1 : 0}` +
-            `:routine=${qualityDevice.likelyRoutineNarrowing ? 1 : 0}` +
             `:mechanism_score=${tutorStrategicReversal}`,
         );
         adaptiveMechanismQuality = 3;
@@ -602,6 +658,14 @@ function applyPhase2Gates(parsed, turns, wholeText) {
         source: 'adaptive_mechanism_quality_axis',
       },
     },
+    auxiliaryMechanismSignals: {
+      protocol_version: MECHANISM_MEASUREMENT_PROTOCOL.version,
+      lexical_or_regex_authority: 'none',
+      tutor_strategy_reversal: tutorMechanismAuxiliary,
+      adaptive_mechanism_quality: adaptiveMechanismQualityAuxiliary,
+    },
+    mechanismMeasurementProtocolVersion: MECHANISM_MEASUREMENT_PROTOCOL.version,
+    learnerActionMeasurementProtocolVersion: LEARNER_ACTION_MEASUREMENT_PROTOCOL.version,
     flags,
   };
 }
@@ -691,6 +755,9 @@ async function scoreItem({ id, text }, modelKey, mock) {
     tutorAdaptationEvidence: g.tutorAdaptationEvidence,
     tutorAdaptationJustification: g.tutorAdaptationJustification,
     roleSymmetricScores: g.roleSymmetricScores,
+    auxiliaryMechanismSignals: g.auxiliaryMechanismSignals,
+    mechanismMeasurementProtocolVersion: g.mechanismMeasurementProtocolVersion,
+    learnerActionMeasurementProtocolVersion: g.learnerActionMeasurementProtocolVersion,
     flags: g.flags,
   };
   row.recognitionOrigin = recognitionOriginForScoreRow(row);
@@ -974,7 +1041,22 @@ function loadExistingSuccessfulScores(outPath, critic) {
       );
       return new Map();
     }
-    return new Map((existing.scored || []).filter((row) => row?.id && !row.error).map((row) => [row.id, row]));
+    return new Map(
+      (existing.scored || [])
+        .filter((row) => row?.id && !row.error)
+        .map((row) => {
+          const mechanismVersion = protocolVersionForExistingRow(row, existing);
+          const learnerActionVersion = learnerActionProtocolVersionForExistingRow(row);
+          return [
+            row.id,
+            {
+              ...row,
+              ...(mechanismVersion ? { mechanismMeasurementProtocolVersion: mechanismVersion } : {}),
+              ...(learnerActionVersion ? { learnerActionMeasurementProtocolVersion: learnerActionVersion } : {}),
+            },
+          ];
+        }),
+    );
   } catch (err) {
     console.warn(`WARN: could not read existing score artifact ${outPath}: ${err.message}`);
     return new Map();
@@ -1129,6 +1211,12 @@ async function mainScore(o) {
           skipped,
         },
         blindScoringProtocol: BLIND_SCORING_PROTOCOL,
+        mechanismMeasurementProtocol: MECHANISM_MEASUREMENT_PROTOCOL,
+        learnerActionMeasurementProtocol: LEARNER_ACTION_MEASUREMENT_PROTOCOL,
+        roleMeasurementProtocols: {
+          tutor_adaptive_mechanism: MECHANISM_MEASUREMENT_PROTOCOL,
+          learner_actional_change: LEARNER_ACTION_MEASUREMENT_PROTOCOL,
+        },
         scored,
       },
       null,
@@ -1157,6 +1245,10 @@ export {
   numberTranscript,
   buildPhase2Prompt,
   BLIND_SCORING_PROTOCOL,
+  LEARNER_ACTION_MEASUREMENT_PROTOCOL,
+  LEGACY_LEARNER_ACTION_MEASUREMENT_PROTOCOL,
+  LEGACY_MECHANISM_MEASUREMENT_PROTOCOL,
+  MECHANISM_MEASUREMENT_PROTOCOL,
   applyPhase2Gates,
   deriveForm,
   agree,
@@ -1164,4 +1256,6 @@ export {
   hasPeripeteiaMechanismShift,
   roleTexts,
   tutorTextAfterPivot,
+  protocolVersionForExistingRow,
+  learnerActionProtocolVersionForExistingRow,
 };

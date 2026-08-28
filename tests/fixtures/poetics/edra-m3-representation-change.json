@@ -1,0 +1,303 @@
+{
+  "schema": "machinespirits.poetics.semantic-change-fixtures.v2",
+  "cases": [
+    {
+      "id": "d42_semantic_change_regex_miss",
+      "pre_tutor": "Look again at where the arrow begins on the cart diagram.",
+      "post_tutor": "The arrow is not the path. Mark the spot where the arrow starts on the diagram, then draw the push out from that mark.",
+      "pre_learner": "But that still seems wrong to me. I am stuck on what the representation asks me to do.",
+      "post_learner": "I was reading the arrow as the cart's path. Now I mark the contact and draw the force from that point.",
+      "tutor_judgments": [
+        {
+          "judge_id": "mock-sol",
+          "independent_run_id": "d42-sol-r1",
+          "label": "representation_change",
+          "confidence": "high",
+          "from_state": "reading the arrow as a path",
+          "to_state": "marking the contact point and drawing the force from it",
+          "evidence": [
+            { "source": "pre_tutor", "quote": "where the arrow begins on the cart diagram" },
+            { "source": "post_tutor", "quote": "Mark the spot where the arrow starts on the diagram" }
+          ],
+          "rationale": "The public device changes from reading a drawn path to constructing force from a marked interaction point."
+        },
+        {
+          "judge_id": "mock-sonnet",
+          "independent_run_id": "d42-sonnet-r1",
+          "label": "representation_change",
+          "confidence": "high",
+          "from_state": "arrow-as-trajectory",
+          "to_state": "contact-point force construction",
+          "evidence": [
+            { "source": "pre_tutor", "quote": "where the arrow begins" },
+            { "source": "post_tutor", "quote": "draw the push out from that mark" }
+          ],
+          "rationale": "The public task changes what the diagram represents and how it must be used."
+        }
+      ],
+      "learner_judgments": [
+        {
+          "judge_id": "mock-sol",
+          "independent_run_id": "d42-learner-sol-r1",
+          "label": "representation_change",
+          "confidence": "high",
+          "from_state": "arrow as cart path",
+          "to_state": "force from contact point",
+          "evidence": [
+            { "source": "pre_learner", "quote": "stuck on what the representation asks me to do" },
+            { "source": "post_learner", "quote": "mark the contact and draw the force from that point" }
+          ],
+          "rationale": "The learner publicly replaces the trajectory reading with a contact-force construction."
+        },
+        {
+          "judge_id": "mock-sonnet",
+          "independent_run_id": "d42-learner-sonnet-r1",
+          "label": "representation_change",
+          "confidence": "high",
+          "from_state": "unclear representational operation",
+          "to_state": "contact-point force operation",
+          "evidence": [
+            { "source": "pre_learner", "quote": "what the representation asks me to do" },
+            { "source": "post_learner", "quote": "I was reading the arrow as the cart's path" }
+          ],
+          "rationale": "The learner names and replaces the prior representation."
+        }
+      ],
+      "expected_status": "determinate",
+      "expected_mechanism_value": true,
+      "expected_representation_value": true,
+      "expected_learner_value": true
+    },
+    {
+      "id": "generic_redraw_regex_hit_semantic_no",
+      "pre_tutor": "Explain the same worksheet one more time.",
+      "post_tutor": "Switch to a new diagram and map the same object again, using the same labels and the same rule.",
+      "pre_learner": "I am applying the same labels and rule.",
+      "post_learner": "I copied the same labels and rule onto the new diagram.",
+      "tutor_judgments": [
+        {
+          "judge_id": "mock-sol",
+          "independent_run_id": "redraw-sol-r1",
+          "label": "no_mechanism_change",
+          "confidence": "high",
+          "evidence": [
+            { "source": "pre_tutor", "quote": "same worksheet" },
+            { "source": "post_tutor", "quote": "using the same labels and the same rule" }
+          ],
+          "rationale": "The surface is redrawn, but the represented relation and learner operation are unchanged."
+        },
+        {
+          "judge_id": "mock-sonnet",
+          "independent_run_id": "redraw-sonnet-r1",
+          "label": "no_mechanism_change",
+          "confidence": "high",
+          "evidence": [
+            { "source": "pre_tutor", "quote": "Explain the same worksheet" },
+            { "source": "post_tutor", "quote": "map the same object again" }
+          ],
+          "rationale": "Changing the sheet does not substitute a new device, role, task, or evidence standard."
+        }
+      ],
+      "learner_judgments": [
+        {
+          "judge_id": "mock-sol",
+          "independent_run_id": "redraw-learner-sol-r1",
+          "label": "no_actional_change",
+          "confidence": "high",
+          "evidence": [
+            { "source": "pre_learner", "quote": "same labels and rule" },
+            { "source": "post_learner", "quote": "same labels and rule" }
+          ],
+          "rationale": "The learner repeats the same operation on a new surface."
+        },
+        {
+          "judge_id": "mock-sonnet",
+          "independent_run_id": "redraw-learner-sonnet-r1",
+          "label": "no_actional_change",
+          "confidence": "high",
+          "evidence": [
+            { "source": "pre_learner", "quote": "applying the same" },
+            { "source": "post_learner", "quote": "copied the same" }
+          ],
+          "rationale": "No new learner action or representation appears."
+        }
+      ],
+      "expected_status": "determinate",
+      "expected_mechanism_value": false,
+      "expected_representation_value": false,
+      "expected_learner_value": false
+    },
+    {
+      "id": "nonrepresentational_counterexample_change",
+      "pre_tutor": "Repeat the definition and check the labels.",
+      "post_tutor": "Test a counterexample that keeps every label but breaks the claimed consequence.",
+      "pre_learner": "I can repeat the definition, but I do not see why the consequence follows.",
+      "post_learner": "This case keeps the labels and breaks the consequence, so the definition alone is not enough.",
+      "tutor_judgments": [
+        {
+          "judge_id": "mock-sol",
+          "independent_run_id": "counterexample-sol-r1",
+          "label": "other_mechanism_change",
+          "change_kind": "counterexample_case",
+          "confidence": "high",
+          "from_state": "definition repetition",
+          "to_state": "counterexample test",
+          "evidence": [
+            { "source": "pre_tutor", "quote": "Repeat the definition" },
+            { "source": "post_tutor", "quote": "Test a counterexample" }
+          ],
+          "rationale": "The tutor visibly changes the task from repetition to a falsifying case without changing representation."
+        },
+        {
+          "judge_id": "mock-sonnet",
+          "independent_run_id": "counterexample-sonnet-r1",
+          "label": "other_mechanism_change",
+          "change_kind": "counterexample_case",
+          "confidence": "high",
+          "from_state": "label check",
+          "to_state": "consequence-breaking test",
+          "evidence": [
+            { "source": "pre_tutor", "quote": "check the labels" },
+            { "source": "post_tutor", "quote": "breaks the claimed consequence" }
+          ],
+          "rationale": "A new counterexample mechanism replaces the failed label-check route."
+        }
+      ],
+      "learner_judgments": [
+        {
+          "judge_id": "mock-sol",
+          "independent_run_id": "counterexample-learner-sol-r1",
+          "label": "other_actional_change",
+          "change_kind": "counterexample_application",
+          "confidence": "high",
+          "from_state": "definition repetition",
+          "to_state": "counterexample inference",
+          "evidence": [
+            { "source": "pre_learner", "quote": "repeat the definition" },
+            { "source": "post_learner", "quote": "keeps the labels and breaks the consequence" }
+          ],
+          "rationale": "The learner performs the counterexample test and changes the inference."
+        },
+        {
+          "judge_id": "mock-sonnet",
+          "independent_run_id": "counterexample-learner-sonnet-r1",
+          "label": "other_actional_change",
+          "change_kind": "counterexample_application",
+          "confidence": "high",
+          "from_state": "unresolved repetition",
+          "to_state": "counterexample-based rejection",
+          "evidence": [
+            { "source": "pre_learner", "quote": "do not see why the consequence follows" },
+            { "source": "post_learner", "quote": "definition alone is not enough" }
+          ],
+          "rationale": "The learner changes action and conclusion through the new case."
+        }
+      ],
+      "expected_status": "determinate",
+      "expected_mechanism_value": true,
+      "expected_representation_value": false,
+      "expected_learner_value": true
+    },
+    {
+      "id": "one_sided_change_evidence",
+      "pre_tutor": "Keep the card beside the object and name the visible label.",
+      "post_tutor": "Turn the card and trace the relation from the mark.",
+      "tutor_judgments": [
+        {
+          "judge_id": "mock-sol",
+          "independent_run_id": "one-sided-sol-r1",
+          "label": "representation_change",
+          "confidence": "high",
+          "from_state": "static object label",
+          "to_state": "relational trace",
+          "evidence": [{ "source": "post_tutor", "quote": "trace the relation from the mark" }],
+          "rationale": "The later operation appears relational, but no quoted before-state supports the comparison."
+        },
+        {
+          "judge_id": "mock-sonnet",
+          "independent_run_id": "one-sided-sonnet-r1",
+          "label": "representation_change",
+          "confidence": "high",
+          "from_state": "static object label",
+          "to_state": "relational trace",
+          "evidence": [{ "source": "post_tutor", "quote": "Turn the card and trace the relation" }],
+          "rationale": "The apparent change lacks a quoted before-state and cannot be determinate."
+        }
+      ],
+      "learner_judgments": [],
+      "expected_status": "measurement_indeterminate",
+      "expected_mechanism_value": null,
+      "expected_representation_value": null,
+      "expected_learner_value": null
+    },
+    {
+      "id": "judge_ambiguity",
+      "pre_tutor": "Use the card to label the object.",
+      "post_tutor": "Turn the card and trace the relation from the mark.",
+      "tutor_judgments": [
+        {
+          "judge_id": "mock-sol",
+          "independent_run_id": "ambiguous-sol-r1",
+          "label": "representation_change",
+          "confidence": "high",
+          "from_state": "static object label",
+          "to_state": "relational trace from the marked position",
+          "evidence": [
+            { "source": "pre_tutor", "quote": "label the object" },
+            { "source": "post_tutor", "quote": "trace the relation from the mark" }
+          ],
+          "rationale": "The operation changes from labeling to relational tracing."
+        },
+        {
+          "judge_id": "mock-sonnet",
+          "independent_run_id": "ambiguous-sonnet-r1",
+          "label": "indeterminate",
+          "confidence": "high",
+          "evidence": [],
+          "rationale": "The short excerpt does not establish whether the represented relation changed."
+        }
+      ],
+      "learner_judgments": [],
+      "expected_status": "measurement_indeterminate",
+      "expected_mechanism_value": null,
+      "expected_representation_value": null,
+      "expected_learner_value": null
+    },
+    {
+      "id": "judge_disagreement",
+      "pre_tutor": "Use the card to label the object.",
+      "post_tutor": "Turn the card and trace the relation from the mark.",
+      "tutor_judgments": [
+        {
+          "judge_id": "mock-sol",
+          "independent_run_id": "disagree-sol-r1",
+          "label": "representation_change",
+          "confidence": "high",
+          "from_state": "static object label",
+          "to_state": "relational trace from the marked position",
+          "evidence": [
+            { "source": "pre_tutor", "quote": "label the object" },
+            { "source": "post_tutor", "quote": "trace the relation from the mark" }
+          ],
+          "rationale": "The learner is asked to use a relational trace rather than a static label."
+        },
+        {
+          "judge_id": "mock-sonnet",
+          "independent_run_id": "disagree-sonnet-r1",
+          "label": "no_mechanism_change",
+          "confidence": "high",
+          "evidence": [
+            { "source": "pre_tutor", "quote": "Use the card" },
+            { "source": "post_tutor", "quote": "Turn the card" }
+          ],
+          "rationale": "The same card and represented object remain in use."
+        }
+      ],
+      "learner_judgments": [],
+      "expected_status": "measurement_indeterminate",
+      "expected_mechanism_value": null,
+      "expected_representation_value": null,
+      "expected_learner_value": null
+    }
+  ]
+}
