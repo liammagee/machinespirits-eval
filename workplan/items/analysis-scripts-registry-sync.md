@@ -15,6 +15,8 @@ verification: A sync script with check and write modes reconciles
   study family so the doc stays navigable.
 claim_status: methods
 links:
+  prs:
+    - 843
   notes:
     - scripts/ANALYSIS-SCRIPTS.md
     - scripts/analysis-scripts-registry.json
@@ -53,3 +55,4 @@ Suggested worker: Codex Sol at Extra High reasoning effort.
   focused hermetic tests 2/2; CI classifier/local-runner audit tests 30/30;
   ESLint and Prettier passed; hermetic test-manifest and workplan source checks
   passed; `git diff --check` passed.
+- 2026-08-28 — Opened PR #843.
