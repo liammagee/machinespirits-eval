@@ -1,0 +1,36 @@
+name: Ref governance monitor
+
+on:
+  push:
+    tags:
+      - 'release/**'
+      - 'paper/**'
+      - 'experiment/**'
+      - 'archive-snapshot/**'
+  schedule:
+    - cron: '17 9 * * 1'
+  workflow_dispatch: {}
+
+jobs:
+  refs:
+    name: Managed ref status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          filter: blob:none
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Fetch managed archive branches and tags
+        run: >-
+          git fetch origin
+          '+refs/heads/archive/*:refs/remotes/origin/archive/*'
+          '+refs/tags/*:refs/tags/*'
+          --prune
+
+      - name: Validate ref and version registry
+        run: npm run refs:check
