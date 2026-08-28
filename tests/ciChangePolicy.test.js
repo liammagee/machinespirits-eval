@@ -6,7 +6,9 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
+  changedFilesBetween,
   classifyCiChanges,
+  classifyCiRange,
   pathAllowsFocusedCi,
   pathAllowsValidatorOnlyCi,
   pathRequiresValidationFramework,
@@ -38,7 +40,6 @@ test('focused CI is allowlisted to authored metadata and workplan surfaces', () 
     '.agents/skills/ms-workplan/SKILL.md',
     'docs/local-ci.md',
     'workplan/items/example.md',
-    'config/tutor-stub-example-study-go-request.v1.json',
   ]) {
     assert.equal(pathAllowsFocusedCi(file), true, file);
   }
@@ -47,6 +48,7 @@ test('focused CI is allowlisted to authored metadata and workplan surfaces', () 
 test('runtime, dependency, workflow, database, evaluator, and tutor paths fail closed to full CI', () => {
   for (const file of [
     '.github/workflows/test.yml',
+    'README.md',
     'package.json',
     'package-lock.json',
     'scripts/tutor-stub-surface-acceptance-scenario.mjs',
@@ -59,32 +61,36 @@ test('runtime, dependency, workflow, database, evaluator, and tutor paths fail c
     'tutor-core/services/dialogueEngine.js',
     'config/tutor-agents.yaml',
     'config/example-authorization.consumed.v1.json',
+    'config/tutor-stub-example-study-go-request.v1.json',
+    'docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json',
+    'docs/pedagogical-move-contract.md',
+    'docs/ref-status.md',
+    'docs/research/human-coding-codebook.md',
+    'docs/research/paper-full-2.0.md',
+    'workplan/items/adaptive-warrant-outcome-study.md',
+    'workplan/items/guarded-learner-outcome-study.md',
+    'workplan/items/resistance-action-register-integration.md',
   ]) {
     assert.equal(pathAllowsFocusedCi(file), false, file);
     assert.equal(classifyCiChanges({ changedFiles: [file] }).profile, 'full', file);
   }
 });
 
-test('the registered study-GO validator and its paired test use validator-only CI', () => {
-  const changedFiles = [
-    'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
-    'tests/tutorStubResistantProfileStudyGoRequest.test.js',
-    'workplan/items/resistance-action-register-integration.md',
-  ];
+test('the self-running validator test uses validator-only CI', () => {
+  const changedFiles = ['tests/tutorStubResistantProfileStudyGoRequest.test.js', 'workplan/items/example.md'];
   const result = classifyCiChanges({ changedFiles });
   assert.equal(result.profile, 'validator-only');
   assert.equal(result.fullRequired, false);
-  assert.deepEqual(result.validatorPaths, changedFiles.slice(0, 2));
+  assert.deepEqual(result.validatorPaths, changedFiles.slice(0, 1));
   assert.deepEqual(result.validatorTests, ['tests/tutorStubResistantProfileStudyGoRequest.test.js']);
   assert.equal(pathAllowsValidatorOnlyCi(changedFiles[0]), true);
-  assert.equal(pathAllowsValidatorOnlyCi(changedFiles[1]), true);
   assert.deepEqual(selectValidatorOnlyCi([changedFiles[0]]).tests, result.validatorTests);
-  assert.deepEqual(selectValidatorOnlyCi([changedFiles[1]]).tests, result.validatorTests);
 });
 
-test('validator-only CI fails closed when a runtime, endpoint, or unregistered validator is mixed in', () => {
-  const registered = 'scripts/check-tutor-stub-resistant-profile-study-go-request.js';
+test('validator-only CI fails closed when shared code, runtime, endpoint, or unregistered validators are mixed in', () => {
+  const registered = 'tests/tutorStubResistantProfileStudyGoRequest.test.js';
   for (const widenedPath of [
+    'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
     'services/tutorStubResistanceAxisDiscriminationPreflight.js',
     'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json',
     'scripts/check-unregistered-validator.js',
@@ -93,6 +99,26 @@ test('validator-only CI fails closed when a runtime, endpoint, or unregistered v
     assert.equal(result.profile, 'full', widenedPath);
     assert.equal(result.fullRequired, true, widenedPath);
     assert.deepEqual(result.validatorTests, [], widenedPath);
+  }
+});
+
+test('machine-coupled authored surfaces and legacy study requests require full CI', () => {
+  for (const file of [
+    'README.md',
+    'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml',
+    'docs/adaptation-refinement/relay/118-go-guarded-main-block.md',
+    'docs/pedagogical-move-contract.md',
+    'docs/ref-status.md',
+    'docs/research/human-coding-codebook.md',
+    'docs/research/paper-full-2.0.md',
+    'workplan/items/adaptive-warrant-outcome-study.md',
+    'workplan/items/guarded-learner-outcome-study.md',
+    'workplan/items/resistance-action-register-integration.md',
+    'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v4.json',
+  ]) {
+    const result = classifyCiChanges({ changedFiles: [file] });
+    assert.equal(result.profile, 'full', file);
+    assert.equal(result.fullRequired, true, file);
   }
 });
 
@@ -143,12 +169,55 @@ test('classifier preserves a committed leading-whitespace path and fails closed'
   }
 });
 
-test('research prose keeps the validation framework without allocating runtime tests', () => {
-  const result = classifyCiChanges({ changedFiles: ['docs/research/paper-full-2.0.md'] });
+test('a runtime file renamed into focused docs preserves both paths and requires full CI', () => {
+  const projectRoot = createGitFixture();
+  try {
+    fs.mkdirSync(path.join(projectRoot, 'services'), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, 'services/runtime.js'), 'export const runtime = true;\n');
+    git(projectRoot, ['add', 'services/runtime.js']);
+    git(projectRoot, ['commit', '--quiet', '-m', 'runtime base']);
+    const base = git(projectRoot, ['rev-parse', 'HEAD']);
+
+    git(projectRoot, ['mv', 'services/runtime.js', 'docs/runtime.md']);
+    git(projectRoot, ['commit', '--quiet', '-m', 'hide runtime as docs']);
+    const head = git(projectRoot, ['rev-parse', 'HEAD']);
+
+    assert.deepEqual(changedFilesBetween(base, head, projectRoot), ['docs/runtime.md', 'services/runtime.js']);
+    const result = classifyCiRange({ base, head, projectRoot });
+    assert.equal(result.profile, 'full');
+    assert.match(result.reason, /services\/runtime\.js/u);
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('a deleted test retains its old path and requires full CI', () => {
+  const projectRoot = createGitFixture();
+  try {
+    fs.mkdirSync(path.join(projectRoot, 'tests'), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, 'tests/deleted.test.js'), 'export const covered = true;\n');
+    git(projectRoot, ['add', 'tests/deleted.test.js']);
+    git(projectRoot, ['commit', '--quiet', '-m', 'test base']);
+    const base = git(projectRoot, ['rev-parse', 'HEAD']);
+
+    fs.rmSync(path.join(projectRoot, 'tests/deleted.test.js'));
+    git(projectRoot, ['add', '-u']);
+    git(projectRoot, ['commit', '--quiet', '-m', 'delete test']);
+    const head = git(projectRoot, ['rev-parse', 'HEAD']);
+
+    assert.deepEqual(changedFilesBetween(base, head, projectRoot), ['tests/deleted.test.js']);
+    assert.equal(classifyCiRange({ base, head, projectRoot }).profile, 'full');
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('ordinary research prose keeps the validation framework while protected research inputs run full', () => {
+  const result = classifyCiChanges({ changedFiles: ['docs/research/methods-paper.md'] });
   assert.equal(result.profile, 'focused');
   assert.equal(result.fullRequired, false);
   assert.equal(result.validationRequired, true);
-  assert.equal(pathRequiresValidationFramework('docs/research/paper-full-2.0.md'), true);
+  assert.equal(pathRequiresValidationFramework('docs/research/methods-paper.md'), true);
 
   const ordinaryDocs = classifyCiChanges({ changedFiles: ['docs/local-ci.md'] });
   assert.equal(ordinaryDocs.validationRequired, false);
@@ -156,27 +225,28 @@ test('research prose keeps the validation framework without allocating runtime t
   const studyGo = classifyCiChanges({
     changedFiles: ['config/tutor-stub-example-study-go-request.v1.json'],
   });
-  assert.equal(studyGo.authorizationRequired, true);
+  assert.equal(studyGo.profile, 'full');
+  assert.equal(studyGo.authorizationRequired, false);
 });
 
 test('focused validation parses changed JSON and rejects malformed or widened changes', () => {
   const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-change-policy-'));
   try {
-    fs.mkdirSync(path.join(projectRoot, 'config'));
-    fs.writeFileSync(path.join(projectRoot, 'config', 'sample-study-go-request.v1.json'), '{"ok":true}\n');
+    fs.mkdirSync(path.join(projectRoot, 'docs'));
+    fs.writeFileSync(path.join(projectRoot, 'docs', 'sample.json'), '{"ok":true}\n');
     assert.equal(
       validateFocusedChanges({
-        changedFiles: ['config/sample-study-go-request.v1.json'],
+        changedFiles: ['docs/sample.json'],
         projectRoot,
       }).profile,
       'focused',
     );
 
-    fs.writeFileSync(path.join(projectRoot, 'config', 'sample-study-go-request.v1.json'), '{bad json}\n');
+    fs.writeFileSync(path.join(projectRoot, 'docs', 'sample.json'), '{bad json}\n');
     assert.throws(
       () =>
         validateFocusedChanges({
-          changedFiles: ['config/sample-study-go-request.v1.json'],
+          changedFiles: ['docs/sample.json'],
           projectRoot,
         }),
       /JSON/u,
@@ -314,14 +384,80 @@ test('workflows expose the classifier and focused gate without retired runtime f
   const ci = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
   const validation = fs.readFileSync(path.resolve('.github/workflows/validate.yml'), 'utf8');
   assert.match(ci, /node scripts\/ci-change-policy\.js/u);
+  assert.match(ci, /node --test tests\/ciChangePolicy\.test\.js tests\/localCiRunner\.test\.js/u);
+  assert.match(
+    ci,
+    /validator_required: \$\{\{ steps\.manual\.outputs\.validator_required \|\| steps\.changes\.outputs\.validator_required \}\}/u,
+  );
+  assert.match(ci, /echo "validator_required=false" >> "\$GITHUB_OUTPUT"/u);
   assert.match(ci, /needs\.classify\.outputs\.full_required == 'true'/u);
   assert.match(ci, /--validate-focused/u);
   assert.match(ci, /^ {2}validator-only:\n {4}name: Focused validator checks$/mu);
   assert.match(ci, /needs\.classify\.outputs\.validator_required == 'true'/u);
   assert.match(ci, /node --test \$VALIDATOR_TESTS/u);
   assert.match(ci, /\.\/node_modules\/\.bin\/eslint \$VALIDATOR_PATHS/u);
+  assert.match(ci, /case "\$PROFILE:\$FULL_REQUIRED:\$VALIDATOR_REQUIRED" in/u);
+  assert.match(ci, /require_result "\$CLASSIFY_RESULT" success "classifier"/u);
+  assert.match(ci, /require_result "\$CONTRACT_RESULT" success "test contract"/u);
+
+  function resultArm(label) {
+    const startMarker = `            ${label})\n`;
+    const start = ci.indexOf(startMarker);
+    assert.notEqual(start, -1, label);
+    const end = ci.indexOf('              ;;', start);
+    assert.notEqual(end, -1, label);
+    return ci.slice(start + startMarker.length, end);
+  }
+
+  for (const [label, expectations] of [
+    [
+      'full:true:false',
+      [
+        ['FOCUSED_RESULT', 'skipped'],
+        ['VALIDATOR_RESULT', 'skipped'],
+        ['LINT_RESULT', 'success'],
+        ['TEST_RESULT', 'success'],
+        ['PTY_RESULT', 'success'],
+        ['COVERAGE_RESULT', 'success'],
+      ],
+    ],
+    [
+      'focused:false:false',
+      [
+        ['FOCUSED_RESULT', 'success'],
+        ['VALIDATOR_RESULT', 'skipped'],
+        ['LINT_RESULT', 'skipped'],
+        ['TEST_RESULT', 'skipped'],
+        ['PTY_RESULT', 'skipped'],
+        ['COVERAGE_RESULT', 'skipped'],
+      ],
+    ],
+    [
+      'validator-only:false:true',
+      [
+        ['FOCUSED_RESULT', 'skipped'],
+        ['VALIDATOR_RESULT', 'success'],
+        ['LINT_RESULT', 'skipped'],
+        ['TEST_RESULT', 'skipped'],
+        ['PTY_RESULT', 'skipped'],
+        ['COVERAGE_RESULT', 'skipped'],
+      ],
+    ],
+  ]) {
+    const arm = resultArm(label);
+    for (const [variable, expected] of expectations) {
+      assert.ok(
+        arm.includes(`require_result "$${variable}" ${expected} `),
+        `${label} must require ${variable}=${expected}`,
+      );
+    }
+  }
+  assert.match(ci, /Invalid CI classifier outputs/u);
   assert.doesNotMatch(ci, /ELECTRON_/u);
   assert.match(validation, /needs\.classify\.outputs\.validation_required == 'true'/u);
+  assert.match(validation, /case "\$VALIDATION_REQUIRED:\$VALIDATE_RESULT" in/u);
+  assert.match(validation, /true:success\|false:skipped\)/u);
+  assert.match(validation, /Validation selection mismatch/u);
   assert.doesNotMatch(validation, /ELECTRON_/u);
 
   for (const workflow of [

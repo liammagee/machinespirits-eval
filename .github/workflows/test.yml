@@ -19,7 +19,7 @@ jobs:
       full_required: ${{ steps.manual.outputs.full_required || steps.changes.outputs.full_required }}
       profile: ${{ steps.manual.outputs.profile || steps.changes.outputs.profile }}
       authorization_required: ${{ steps.changes.outputs.authorization_required }}
-      validator_required: ${{ steps.changes.outputs.validator_required }}
+      validator_required: ${{ steps.manual.outputs.validator_required || steps.changes.outputs.validator_required }}
       validator_tests: ${{ steps.changes.outputs.validator_tests }}
       validator_paths: ${{ steps.changes.outputs.validator_paths }}
     steps:
@@ -34,6 +34,7 @@ jobs:
         run: |
           echo "profile=full" >> "$GITHUB_OUTPUT"
           echo "full_required=true" >> "$GITHUB_OUTPUT"
+          echo "validator_required=false" >> "$GITHUB_OUTPUT"
 
       - name: Classify changed paths
         id: changes
@@ -62,6 +63,9 @@ jobs:
 
       - name: Reject skill-local tool preapprovals
         run: npm run skills:permissions:check
+
+      - name: Exercise the classifier bootstrap contract
+        run: node --test tests/ciChangePolicy.test.js tests/localCiRunner.test.js
 
   focused:
     name: Focused authored-metadata checks
@@ -247,6 +251,9 @@ jobs:
     steps:
       - name: Require every selected lane to pass
         env:
+          PROFILE: ${{ needs.classify.outputs.profile }}
+          FULL_REQUIRED: ${{ needs.classify.outputs.full_required }}
+          VALIDATOR_REQUIRED: ${{ needs.classify.outputs.validator_required }}
           CLASSIFY_RESULT: ${{ needs.classify.result }}
           CONTRACT_RESULT: ${{ needs.test-contract.result }}
           FOCUSED_RESULT: ${{ needs.focused.result }}
@@ -256,11 +263,43 @@ jobs:
           PTY_RESULT: ${{ needs.pty-concurrency.result }}
           COVERAGE_RESULT: ${{ needs.risk-coverage.result }}
         run: |
-          for result in \
-            "$CLASSIFY_RESULT" "$CONTRACT_RESULT" "$FOCUSED_RESULT" "$VALIDATOR_RESULT" \
-            "$LINT_RESULT" "$TEST_RESULT" "$PTY_RESULT" "$COVERAGE_RESULT"; do
-            case "$result" in
-              success|skipped) ;;
-              *) echo "Selected CI lane did not pass: $result" >&2; exit 1 ;;
-            esac
-          done
+          require_result() {
+            if [ "$1" != "$2" ]; then
+              echo "$3: expected $2, got ${1:-<missing>}" >&2
+              exit 1
+            fi
+          }
+
+          require_result "$CLASSIFY_RESULT" success "classifier"
+          require_result "$CONTRACT_RESULT" success "test contract"
+
+          case "$PROFILE:$FULL_REQUIRED:$VALIDATOR_REQUIRED" in
+            full:true:false)
+              require_result "$FOCUSED_RESULT" skipped "focused lane"
+              require_result "$VALIDATOR_RESULT" skipped "validator lane"
+              require_result "$LINT_RESULT" success "lint lane"
+              require_result "$TEST_RESULT" success "test lane"
+              require_result "$PTY_RESULT" success "PTY lane"
+              require_result "$COVERAGE_RESULT" success "coverage lane"
+              ;;
+            focused:false:false)
+              require_result "$FOCUSED_RESULT" success "focused lane"
+              require_result "$VALIDATOR_RESULT" skipped "validator lane"
+              require_result "$LINT_RESULT" skipped "lint lane"
+              require_result "$TEST_RESULT" skipped "test lane"
+              require_result "$PTY_RESULT" skipped "PTY lane"
+              require_result "$COVERAGE_RESULT" skipped "coverage lane"
+              ;;
+            validator-only:false:true)
+              require_result "$FOCUSED_RESULT" skipped "focused lane"
+              require_result "$VALIDATOR_RESULT" success "validator lane"
+              require_result "$LINT_RESULT" skipped "lint lane"
+              require_result "$TEST_RESULT" skipped "test lane"
+              require_result "$PTY_RESULT" skipped "PTY lane"
+              require_result "$COVERAGE_RESULT" skipped "coverage lane"
+              ;;
+            *)
+              echo "Invalid CI classifier outputs: profile=${PROFILE:-<missing>} full_required=${FULL_REQUIRED:-<missing>} validator_required=${VALIDATOR_REQUIRED:-<missing>}" >&2
+              exit 1
+              ;;
+          esac
