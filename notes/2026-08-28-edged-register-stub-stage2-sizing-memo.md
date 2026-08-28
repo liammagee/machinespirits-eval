@@ -2,8 +2,9 @@
 
 Date: 2026-08-28
 Workplan item: edged-register-stub-dag-replication
-Status: DRAFT — Stage 2 runs only on a fresh signed GO. This memo is design
-input, not authorization.
+Status: GO — given by Liam Magee in session, 2026-08-28, with the ruling
+"keep diligent". The GO covers this memo's question, design, endpoints, and
+spend ceilings, and stays valid across code-defect fixes.
 
 ## 1. What Stage 1 was
 
@@ -98,7 +99,8 @@ scripted core?
   spread — both grounds; the learner genuinely does not move under warm).
 - Diligent: the drop rule's letter (0/12 closure) says drop; the cause is
   the call pool, not the character. RECOMMENDATION: keep it, with the
-  operator's ruling recorded here before launch. OPERATOR RULING: ________
+  operator's ruling recorded here before launch. OPERATOR RULING: keep
+  diligent (given in session, 2026-08-28).
 - Stage-1 rows take no part in Stage-2 analysis (registered; unchanged).
 
 **Call pool: 180 per dialogue.** Derivation: observed burn is ~3.2 calls
