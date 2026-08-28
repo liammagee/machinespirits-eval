@@ -7,7 +7,10 @@ import {
   buildIterationPlan,
   DEFAULT_CRITICS,
   evaluateRunGate,
+  loadRepairInputsByDrama,
   parseArgs,
+  readFinalPublicLearnerTurn,
+  repairInputsForItem,
 } from '../scripts/run-poetics-adaptation-loop.js';
 import {
   openPoeticsStore,
@@ -16,6 +19,11 @@ import {
   upsertPoeticsScore,
   upsertPoeticsTutorAdaptation,
 } from '../services/poeticsStore.js';
+
+const PUBLIC_TEXT_FIXTURE = JSON.parse(
+  fs.readFileSync(new URL('./fixtures/hamartia-repair-public-text-v1.json', import.meta.url), 'utf8'),
+);
+const RELATIVE_PUBLIC_TRANSCRIPT = 'tests/fixtures/hamartia-repair-public-transcript-v1.txt';
 
 function modelSlug(model) {
   return String(model)
@@ -51,7 +59,11 @@ function scoreMetadata({ origin = 'none', actional = 0, mechanism = 0 } = {}) {
   };
 }
 
-function addItem(db, runId, { arm, tid, qualityStatus = 'ok', qualityWarnings = [] }) {
+function addItem(
+  db,
+  runId,
+  { arm, tid, qualityStatus = 'ok', qualityWarnings = [], samplePath = null, metadata = {} },
+) {
   const itemId = `${runId}:target-r01:${arm}:${tid}`;
   upsertPoeticsItem(db, {
     id: itemId,
@@ -64,12 +76,12 @@ function addItem(db, runId, { arm, tid, qualityStatus = 'ok', qualityWarnings = 
     discipline: 'music',
     condition: arm,
     intendedLean: arm === 'peripeteia-only' ? 'recognition' : 'flat',
-    samplePath: `sample/${arm}/${tid}.txt`,
+    samplePath: samplePath || `sample/${arm}/${tid}.txt`,
     fullTranscriptPath: `transcripts/${arm}/${tid}.full.md`,
     keyPath: `key-${arm}.yaml`,
     qualityStatus,
     qualityWarnings,
-    metadata: {},
+    metadata,
   });
   return itemId;
 }
@@ -195,6 +207,72 @@ describe('run-poetics-adaptation-loop', () => {
     assert.equal(plan.commands.production[ci + 1], '4');
   });
 
+  it('prefers exact registered repair inputs before generic metadata and preserves fallbacks', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-repair-inputs-'));
+    const targetSpec = path.join(root, 'targets.yaml');
+    fs.writeFileSync(
+      targetSpec,
+      [
+        'dramas:',
+        '  - id: D42',
+        '    hamartia: exact registered hamartia',
+        '    corrected_rule: exact registered correction',
+        '    learner_start_state: generic registered learner state',
+        '    lesson_objective: generic registered lesson objective',
+        '  - id: D43',
+        '    learner_start_state: fallback learner state',
+        '    lesson_objective: fallback lesson objective',
+      ].join('\n'),
+      'utf8',
+    );
+
+    const repairInputsByDrama = loadRepairInputsByDrama(targetSpec);
+    const exact = repairInputsForItem(
+      {
+        dramaId: 'D42',
+        metadata: {
+          keyItem: {
+            learner_start_state: 'generic item learner state',
+            lesson_objective: 'generic item lesson objective',
+          },
+        },
+      },
+      { repairInputsByDrama },
+    );
+    assert.deepEqual(exact.hamartia, { value: 'exact registered hamartia', source: 'target_spec.hamartia' });
+    assert.deepEqual(exact.correctedRule, {
+      value: 'exact registered correction',
+      source: 'target_spec.corrected_rule',
+    });
+
+    const fallback = repairInputsForItem({ dramaId: 'D43', metadata: {} }, { repairInputsByDrama });
+    assert.deepEqual(fallback.hamartia, {
+      value: 'fallback learner state',
+      source: 'target_spec.learner_start_state',
+    });
+    assert.deepEqual(fallback.correctedRule, {
+      value: 'fallback lesson objective',
+      source: 'target_spec.lesson_objective',
+    });
+  });
+
+  it('reads repo-relative public samples and distinguishes missing or unlabelled transcripts', () => {
+    const relative = readFinalPublicLearnerTurn(RELATIVE_PUBLIC_TRANSCRIPT);
+    assert.equal(relative.status, 'ok');
+    assert.equal(relative.turn.turnNumber, 2);
+
+    const missing = readFinalPublicLearnerTurn('tests/fixtures/does-not-exist.txt');
+    assert.deepEqual(missing, { status: 'file_not_found', turn: null });
+
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-public-read-'));
+    const unlabelled = path.join(root, 'unlabelled.txt');
+    fs.writeFileSync(unlabelled, 'A transcript without a ROLE-labelled learner turn.', 'utf8');
+    assert.deepEqual(readFinalPublicLearnerTurn(unlabelled), {
+      status: 'no_public_learner_turn',
+      turn: null,
+    });
+  });
+
   it('passes when controls stay negative and peripeteia induces branch-valid recognition', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-pass-'));
     const db = openPoeticsStore(path.join(root, 'poetics.db'));
@@ -206,6 +284,75 @@ describe('run-poetics-adaptation-loop', () => {
       assert.equal(gate.pass, true);
       assert.equal(gate.passedItems, 3);
       assert.deepEqual(gate.failureCounts, {});
+      assert.ok(gate.items.every((item) => item.hamartiaRepair?.definition === PUBLIC_TEXT_FIXTURE.definition));
+      assert.ok(gate.items.every((item) => item.hamartiaRepair?.disposition === 'indeterminate'));
+      assert.ok(gate.items.every((item) => item.hamartiaRepair?.source.publicTextStatus === 'file_not_found'));
+    } finally {
+      db.close();
+    }
+  });
+
+  it('emits the frozen tri-state public repair block without changing the adaptation gate', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-repair-'));
+    const db = openPoeticsStore(path.join(root, 'poetics.db'));
+    try {
+      const runId = 'loop-repair';
+      seedRun(db, runId);
+      const fixtureByCategory = Object.fromEntries(
+        ['positive', 'negative', 'ambiguous'].map((category) => [
+          category,
+          PUBLIC_TEXT_FIXTURE.cases.find((fixture) => fixture.category === category),
+        ]),
+      );
+      const casesByArm = {
+        'peripeteia-only': fixtureByCategory.positive,
+        routine: fixtureByCategory.negative,
+        none: fixtureByCategory.ambiguous,
+      };
+
+      for (const [arm, fixture] of Object.entries(casesByArm)) {
+        const samplePath = arm === 'peripeteia-only' ? RELATIVE_PUBLIC_TRANSCRIPT : path.join(root, `${arm}.txt`);
+        if (path.isAbsolute(samplePath)) {
+          fs.writeFileSync(
+            samplePath,
+            [
+              'LEARNER: "opening public turn"',
+              '',
+              'TUTOR: "test the old check against the object"',
+              '',
+              `LEARNER: ${fixture.publicText}`,
+            ].join('\n'),
+            'utf8',
+          );
+        }
+        const itemId = `${runId}:target-r01:${arm}:T01`;
+        db.prepare('UPDATE poetics_items SET sample_path = ?, metadata = ? WHERE id = ?').run(
+          samplePath,
+          JSON.stringify({
+            keyItem: {
+              curriculum_script_notes: {
+                script_lowering: { learner_start_state: fixture.hamartia },
+                curriculum: { lesson_objective: fixture.correctedRule },
+              },
+            },
+          }),
+          itemId,
+        );
+      }
+
+      const gate = evaluateRunGate(db, gateArgs(runId));
+      assert.equal(gate.pass, true, 'repair is descriptive and must not alter the existing gate');
+      assert.deepEqual(gate.failureCounts, {});
+
+      for (const [arm, fixture] of Object.entries(casesByArm)) {
+        const item = gate.items.find((candidate) => candidate.arm === arm);
+        assert.equal(item.hamartiaRepair.definition, PUBLIC_TEXT_FIXTURE.definition, arm);
+        assert.equal(item.hamartiaRepair.disposition, fixture.expectedDisposition, arm);
+        assert.equal(item.hamartiaRepair.source.learnerTurnNumber, 2, arm);
+        assert.equal(item.hamartiaRepair.source.publicTextStatus, 'ok', arm);
+        assert.equal(item.hamartiaRepair.source.hamartia?.includes('script_lowering'), true, arm);
+        assert.equal(item.hamartiaRepair.source.correctedRule?.includes('lesson_objective'), true, arm);
+      }
     } finally {
       db.close();
     }

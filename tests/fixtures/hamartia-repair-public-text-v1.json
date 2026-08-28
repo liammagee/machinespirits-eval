@@ -1,0 +1,142 @@
+{
+  "definition": "public-text-v1",
+  "frozen": true,
+  "cases": [
+    {
+      "id": "food_web_explicit_rule_and_check",
+      "category": "positive",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "I was using the arrow as a chase arrow. That would send it from rabbit to grass, which is the old mistake. The rule is food to eater because the arrow tracks energy transfer. My replacement check is grass to rabbit: energy leaves the grass and enters the rabbit.",
+      "expectedDisposition": "repaired"
+    },
+    {
+      "id": "fractions_explicit_rule_and_check",
+      "category": "positive",
+      "hamartia": "To add fractions, add the numerators and add the denominators.",
+      "correctedRule": "Rewrite the fractions with a common denominator, then add the numerators while keeping that denominator.",
+      "publicText": "The old rule of adding tops and bottoms fails. Now the check is a common denominator: one half plus one third becomes three sixths plus two sixths, which is five sixths, not two fifths.",
+      "expectedDisposition": "repaired"
+    },
+    {
+      "id": "food_web_owned_correction_after_attribution",
+      "category": "positive",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "You said food to eater, so I tested both directions against energy transfer. The old check was chase direction, and that old check failed. Now the check is food to eater because energy enters the rabbit from the grass.",
+      "expectedDisposition": "repaired"
+    },
+    {
+      "id": "food_web_explicitly_negates_old_replacement",
+      "category": "positive",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "I was using eater to food as the old check, and that old check failed. Now the replacement check is food to eater because energy transfers, not eater to food.",
+      "expectedDisposition": "repaired"
+    },
+    {
+      "id": "food_web_old_check_still_wrong",
+      "category": "positive",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "The old check is still wrong: eater to food because it follows the chase. Now the replacement check is food to eater because energy transfers from grass to rabbit.",
+      "expectedDisposition": "repaired"
+    },
+    {
+      "id": "food_web_reasserts_hamartia",
+      "category": "negative",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "I was using the arrow as a chase arrow. Now the replacement check is still who chases whom: the rabbit chases the grass, so the arrow goes rabbit to grass.",
+      "expectedDisposition": "not_repaired"
+    },
+    {
+      "id": "food_web_unowned_echo",
+      "category": "negative",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "You said food to eater, so I will copy grass to rabbit. I do not know why yet.",
+      "expectedDisposition": "not_repaired"
+    },
+    {
+      "id": "food_web_mixed_commitment",
+      "category": "ambiguous",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "The rule might be food to eater because energy moves from grass to rabbit, so grass to rabbit. But I still think the arrow is mainly showing what chases what, so rabbit to grass also seems right.",
+      "expectedDisposition": "indeterminate"
+    },
+    {
+      "id": "fractions_mixed_commitment",
+      "category": "ambiguous",
+      "hamartia": "To add fractions, add the numerators and add the denominators.",
+      "correctedRule": "Rewrite the fractions with a common denominator, then add the numerators while keeping that denominator.",
+      "publicText": "Using a common denominator gives three sixths plus two sixths, so five sixths. But adding the original tops and bottoms still gives two fifths, and I am not sure which rule controls.",
+      "expectedDisposition": "indeterminate"
+    },
+    {
+      "id": "food_web_replacement_repeats_hamartia",
+      "category": "ambiguous",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "I was using eater to food because it shows who chases whom, and that was wrong. Now the replacement check is eater to food because the chase goes rabbit to grass.",
+      "expectedDisposition": "indeterminate"
+    },
+    {
+      "id": "food_web_both_rules_can_be_right",
+      "category": "ambiguous",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "I was using eater to food as the old check. Both rules can be right, but I prefer the new check: food to eater because energy transfers from grass to rabbit.",
+      "expectedDisposition": "indeterminate"
+    },
+    {
+      "id": "food_web_rejects_corrected_anchor",
+      "category": "ambiguous",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "I was using eater to food because it shows who chases whom, and that was wrong. Now the replacement check is not energy transfer; use the predator toward the prey instead.",
+      "expectedDisposition": "indeterminate"
+    },
+    {
+      "id": "food_web_corrected_anchor_fails",
+      "category": "ambiguous",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "I was using eater to food because it shows who chases whom, and that old check failed. Now the replacement check is energy transfer fails here; use predator toward prey instead.",
+      "expectedDisposition": "indeterminate"
+    },
+    {
+      "id": "food_web_old_approach_also_works",
+      "category": "ambiguous",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "I was using eater to food as the old check, and the old approach also works; I can use both. The new check is food to eater because energy transfers from grass to rabbit.",
+      "expectedDisposition": "indeterminate"
+    },
+    {
+      "id": "food_web_mixed_owned_and_unowned_repair",
+      "category": "ambiguous",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "I will copy food to eater because you said so, and I do not know why. I was using eater to food as the old check, and that old check failed. Now the replacement check is food to eater because energy enters the rabbit from the grass.",
+      "expectedDisposition": "indeterminate"
+    },
+    {
+      "id": "food_web_correct_replacement_uses_still",
+      "category": "ambiguous",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "The old check was eater to food. The new check is still food to eater because energy transfers from grass to rabbit.",
+      "expectedDisposition": "indeterminate"
+    },
+    {
+      "id": "food_web_either_approach_works",
+      "category": "ambiguous",
+      "hamartia": "A food-web arrow points from the eater to the food because it shows who chases whom.",
+      "correctedRule": "A food-web arrow points from the food to the eater because it tracks energy transfer.",
+      "publicText": "I was using eater to food as the old check, and that old check failed. The new check is food to eater because energy transfers, although either approach works.",
+      "expectedDisposition": "indeterminate"
+    }
+  ]
+}

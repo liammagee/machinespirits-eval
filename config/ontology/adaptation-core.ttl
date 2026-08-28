@@ -64,7 +64,7 @@ ms:OrganicRecognition owl:disjointWith ms:PeripeteiaInducedRecognition .
 ms:ScaffoldedRepair a owl:Class ; rdfs:subClassOf ms:HamartiaRepairStage ;
   rdfs:comment "Repair on an event whose MechanismShift gate fired -> tutor_induced (R-CORR-SCAFFOLDED)." .
 ms:SelfRepair       a owl:Class ; rdfs:subClassOf ms:HamartiaRepairStage ;
-  rdfs:comment "Repair on an event carrying a recognition FailureAxis -> self_discovered (R-CORR-SELF)." .
+  rdfs:comment "Repair on an event whose MechanismShift gate did not fire -> self_discovered (R-CORR-SELF). Recognition failure remains orthogonal under R-REPAIR." .
 ms:ScaffoldedRepair owl:disjointWith ms:SelfRepair .
 
 ms:CorrectionOrigin a owl:Class .
@@ -72,10 +72,10 @@ ms:tutor_induced   a ms:CorrectionOrigin .
 ms:self_discovered a ms:CorrectionOrigin .
 
 # -- manifest vs latent repair (the concealed-interior axis; ADAPTATION-PLAN-2.0 §6.10) --
-# gateFired on a HamartiaRepairStage = DURABLE repair (the corrected rule in BOTH the
-# learner's PUBLIC final turn AND HIDDEN deliberation). Public-only = a CostumeRepair (said
-# the fix; latent reasoning does not hold it -- the manifest != latent gap). Latent-only =
-# SilentRepair. publicRepair/latentRepair are the population bridge's repair-detector inputs.
+# A registered population bridge may assert gateFired directly (the current loop uses the
+# narrow public-text-v1 rule). The stronger concealed-interior axis remains separate below:
+# publicRepair + latentRepair classify Durable/Costume/Silent without inventing latent
+# evidence from a public turn.
 ms:publicRepair a owl:DatatypeProperty ; rdfs:domain ms:HamartiaRepairStage ; rdfs:range xsd:boolean ;
   rdfs:comment "corrected rule present in the learner's PUBLIC final turn (manifest)." .
 ms:latentRepair a owl:DatatypeProperty ; rdfs:domain ms:HamartiaRepairStage ; rdfs:range xsd:boolean ;

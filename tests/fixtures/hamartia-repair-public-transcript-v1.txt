@@ -1,0 +1,5 @@
+LEARNER: I think the arrow follows the animal that is chasing its food.
+
+TUTOR: Test the direction against what the arrow tracks.
+
+LEARNER: I was using the arrow as a chase arrow, which is the old mistake. The rule is food to eater because the arrow tracks energy transfer. My replacement check is grass to rabbit: energy leaves the grass and enters the rabbit.
