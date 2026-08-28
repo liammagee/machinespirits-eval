@@ -273,6 +273,8 @@ const LOCAL_REGISTER_POLICIES = new Set([
   'random',
   'bland',
   'negative',
+  'fixed_warm',
+  'fixed_sarcastic',
 ]);
 
 const CONTROLLED_CLASSIFIER_FIELDS = [

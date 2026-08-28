@@ -1,3 +1,5 @@
+import { TUTOR_STUB_FIXED_REGISTER_POLICIES } from './tutorStubRegisterPolicyComposition.js';
+
 export function createTutorStubResponsePolicySelectionRuntime(dependencies = {}) {
   const {
     EXPLICIT_PERFORMANCE_CLEAR_WORDS,
@@ -190,6 +192,42 @@ export function createTutorStubResponsePolicySelectionRuntime(dependencies = {})
       expected_progress_marker: 'Observe learner-DAG and field movement without adaptive register selection.',
       confidence: null,
       source: 'fixed_bland_register_policy',
+    };
+  }
+
+  function fixedRegisterEngagementStanceSelection({ state, classification, policy }) {
+    const pinnedRegister = TUTOR_STUB_FIXED_REGISTER_POLICIES[policy];
+    if (!pinnedRegister) {
+      throw new Error(
+        `Unknown fixed-register policy: ${policy}. Expected ${Object.keys(TUTOR_STUB_FIXED_REGISTER_POLICIES).join(', ')}.`,
+      );
+    }
+    const palette = new Set(state.register?.palette || []);
+    if (!palette.has(pinnedRegister)) {
+      throw new Error(
+        `Fixed-register policy ${policy} requires the ${pinnedRegister} register in the active palette; ` +
+          `the policy never substitutes another register. Active palette: ${[...palette].join(', ') || '(empty)'}.`,
+      );
+    }
+    const requestType = classification?.turn?.request_type || 'fixed_register_baseline';
+    return {
+      selected_register: pinnedRegister,
+      request_type: requestType,
+      action_family: 'baseline_plain_response',
+      legacy_selected_register: preferredLegacyRegister({
+        register: pinnedRegister,
+        requestType,
+        actionFamily: 'baseline_plain_response',
+      }),
+      reviewer_signal: `${policy}_policy`,
+      register_reason: `Fixed-register policy pins the ${pinnedRegister} register on every tutor turn as a delivery arm.`,
+      evidence_span: classification?.turn?.summary || '',
+      risk_flags: [],
+      expected_dag_move: 'No adaptive register-specific DAG move is predicted for a fixed delivery arm.',
+      expected_field_move: `Hold the ${pinnedRegister} stance constant so outcome differences price the delivery policy.`,
+      expected_progress_marker: 'Observe learner-DAG and field movement under a constant delivery register.',
+      confidence: null,
+      source: 'fixed_register_policy',
     };
   }
 
@@ -627,6 +665,7 @@ export function createTutorStubResponsePolicySelectionRuntime(dependencies = {})
     shouldUseDynamicBrisk,
     fallbackRegisterSelection,
     fixedBlandEngagementStanceSelection,
+    fixedRegisterEngagementStanceSelection,
     policySamplingContext,
     explicitPerformanceDirectiveValue,
     resolveTutorStubCharacterChoice,

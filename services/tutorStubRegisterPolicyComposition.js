@@ -12,12 +12,19 @@ export const TUTOR_STUB_REGISTER_PRIMARY_POLICIES = Object.freeze([
   'bland',
   'random',
   'negative',
+  'fixed_warm',
+  'fixed_sarcastic',
 ]);
 
 export const TUTOR_STUB_REGISTER_OVERLAY_POLICIES = Object.freeze(['state', 'field', 'edge_timing']);
 export const DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD = 0.7;
 
-const CONTROL_POLICIES = new Set(['bland', 'random', 'negative']);
+export const TUTOR_STUB_FIXED_REGISTER_POLICIES = Object.freeze({
+  fixed_warm: 'warm',
+  fixed_sarcastic: 'sarcastic',
+});
+
+const CONTROL_POLICIES = new Set(['bland', 'random', 'negative', 'fixed_warm', 'fixed_sarcastic']);
 
 function normalizePolicyName(value) {
   return String(value || '')

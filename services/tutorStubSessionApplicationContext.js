@@ -43,6 +43,7 @@ export function createTutorStubSessionApplicationContext({
   ROOT,
   STUB,
   TUTOR_STUB_FEEDBACK_REASONS,
+  TUTOR_STUB_FIXED_REGISTER_POLICIES,
   TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   TUTOR_STUB_LEARNER_RESPONSE_PROVENANCE_SCHEMA,
   TUTOR_STUB_OPENING_REQUIREMENTS,
@@ -264,6 +265,14 @@ export function createTutorStubSessionApplicationContext({
   const registerPalette = buildRegisterPalette(registerPaletteMode);
   const randomRegisterSelectionEnabled = registerPolicy === 'random';
   const negativeRegisterSelectionEnabled = registerPolicy === 'negative';
+  const fixedRegisterSelectionEnabled = registerPolicy in TUTOR_STUB_FIXED_REGISTER_POLICIES;
+  if (fixedRegisterSelectionEnabled && !registerPalette.includes(TUTOR_STUB_FIXED_REGISTER_POLICIES[registerPolicy])) {
+    throw new Error(
+      `--register-policy ${registerPolicy} pins the ${TUTOR_STUB_FIXED_REGISTER_POLICIES[registerPolicy]} register, ` +
+        `which is not in the active palette (${registerPalette.join(', ') || 'empty'}). ` +
+        `Pass a --register-palette that includes it; the policy never substitutes another register.`,
+    );
+  }
   const fieldRegisterSelectionEnabled = registerPolicy === 'field';
   const trajectoryRegisterSelectionEnabled = registerPolicy === 'trajectory';
   const dynamicalSystemRegisterSelectionEnabled = registerPolicy === 'dynamical_system';
@@ -288,6 +297,7 @@ export function createTutorStubSessionApplicationContext({
     (combinedLearnerAnalysisEnabled ||
       randomRegisterSelectionEnabled ||
       negativeRegisterSelectionEnabled ||
+      fixedRegisterSelectionEnabled ||
       lightAdaptationEnabled),
   );
   const requestedTutorCharacter = resolveTutorStubCharacterChoice(args['tutor-character']);
@@ -790,6 +800,7 @@ export function createTutorStubSessionApplicationContext({
     explanatoryDebugConfig,
     fieldRegisterSelectionEnabled,
     fieldVisualizationEnabled,
+    fixedRegisterSelectionEnabled,
     firstMessage,
     humanDiscourseConfig,
     humanDiscoursePreviewFrame,

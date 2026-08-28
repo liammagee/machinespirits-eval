@@ -1,4 +1,5 @@
 import { ensureTutorStubWarrantGate } from './tutorStubWarrantGate.js';
+import { TUTOR_STUB_FIXED_REGISTER_POLICIES } from './tutorStubRegisterPolicyComposition.js';
 import { buildTutorStubDialogueClosureFrame } from './tutorStubDialogueClosure.js';
 import { projectAdaptiveWarrantEvidenceAvailability } from './adaptiveWarrantInquiryCompletion.js';
 import {
@@ -69,6 +70,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
     explicitPerformanceDirectiveValue,
     fallbackRegisterSelection,
     fixedBlandEngagementStanceSelection,
+    fixedRegisterEngagementStanceSelection,
     negativeEngagementStanceSelection,
     performanceTemperatureScope,
     policySamplingContext,
@@ -146,6 +148,8 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
       });
     } else if (policy === 'state') {
       rawSelection = stateEngagementStanceSelection({ state, classification, tutorLearnerDag });
+    } else if (policy in TUTOR_STUB_FIXED_REGISTER_POLICIES) {
+      rawSelection = fixedRegisterEngagementStanceSelection({ state, classification, policy });
     } else if (policy === 'bland') {
       rawSelection = fixedBlandEngagementStanceSelection({ state, classification });
     }
