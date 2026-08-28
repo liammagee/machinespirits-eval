@@ -651,6 +651,7 @@
         "tests/tutorStubResistanceActionRegisterConfirmationV9.test.js",
         "tests/tutorStubResistanceActionRegisterStudy.test.js",
         "tests/tutorStubResistanceManipulationValidation.test.js",
+        "tests/tutorStubResistanceMeasurementValidationConsolidation.test.js",
         "tests/tutorStubResistanceRecoveryOffsetCleaning.test.js",
         "tests/tutorStubResistanceRecoverySemanticAdjudication.test.js",
         "tests/tutorStubResistanceRecoverySemanticAdjudicationV2.test.js",
