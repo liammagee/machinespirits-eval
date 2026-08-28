@@ -112,8 +112,7 @@ function listPublicTutorInstances(root) {
   }));
 }
 
-function listPublicModelAliases() {
-  const providers = loadProviders()?.providers || {};
+function listPublicModelAliases(providers) {
   return Object.entries(providers)
     .flatMap(([provider, config]) =>
       Object.keys(config?.models || {}).map((alias) => ({
@@ -124,6 +123,22 @@ function listPublicModelAliases() {
       })),
     )
     .sort((left, right) => left.ref.localeCompare(right.ref));
+}
+
+function publicDefaultModelRef(providers, provider) {
+  const config = providers[provider];
+  if (!config?.default_model) return null;
+
+  const aliases = Object.entries(config.models || {});
+  const match =
+    aliases.find(([alias]) => alias === config.default_model) ||
+    aliases.find(([, resolvedModel]) => resolvedModel === config.default_model);
+  if (!match) {
+    throw new Error(
+      `Provider ${provider} default_model ${config.default_model} has no public alias in config/providers.yaml`,
+    );
+  }
+  return `${provider}.${match[0]}`;
 }
 
 /**
@@ -145,11 +160,10 @@ export function buildTutorStubPublicCatalog({ root = DEFAULT_ROOT } = {}) {
   }));
   const worlds = listProductionWorlds(root);
   const tutors = listPublicTutorInstances(root);
-  const models = listPublicModelAliases();
+  const providers = loadProviders()?.providers || {};
+  const models = listPublicModelAliases(providers);
   const curricula = listPublicCurricula(root);
-  const defaultModel = models.some((model) => model.ref === 'codex.gpt-5.6-terra')
-    ? 'codex.gpt-5.6-terra'
-    : models[0]?.ref || null;
+  const defaultModel = publicDefaultModelRef(providers, 'codex') || models[0]?.ref || null;
   return {
     schema: TUTOR_STUB_PUBLIC_CATALOG_SCHEMA,
     version: TUTOR_STUB_PUBLIC_CATALOG_VERSION,
