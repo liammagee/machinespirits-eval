@@ -77,6 +77,11 @@ budget.
    carry `openNodeKind: "exhibit"` and resolve to authored-path premise ids —
    so running this design against today's code fails closed rather than
    silently reproducing the old demands.
+   *Later the same day:* the mint landed as study code `R2` with the
+   fail-closed demand selection rule and a regression test
+   (`tests/tutorStubFrameRefuserSatisfiableMint.test.js`); the design's
+   remaining implementation risk is renamed `plan_build_not_wired`. This
+   entry stands as written for what the design session did and did not do.
 4. *Demand selection.* Naming "the first premise" fails two ways, so the rule
    is: earliest authored-path premise not yet public at the trigger and
    scheduled inside the outcome horizon; refuse the world if none exists. I
