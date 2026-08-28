@@ -920,6 +920,8 @@ function summarizeItem(item, args) {
     learnerRepresentationChangeMeasurement?.status === 'measurement_indeterminate';
   const scoreErrors = item.scores.filter((score) => score.error).length;
   const adaptationGate = {
+    measurementAvailable: Boolean(item.adaptation),
+    analyzerVersion: args.analyzerVersion,
     branchValid: Boolean(branchValidity.valid),
     reversalEventUsed: Boolean(branchValidity.learner_reversal_event_used),
     instrumentedPressure: Boolean(peripeteia.instrumented_pressure),
