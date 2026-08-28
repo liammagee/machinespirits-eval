@@ -1,13 +1,13 @@
 ---
 id: tutor-stub-serial-test-lane
-title: "Declared serial lane for tutor-stub tests in the hermetic runner"
-status: triaged
+title: Declared serial lane for tutor-stub tests in the hermetic runner
+status: active
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-27
-updated: 2026-08-27
+updated: 2026-08-28
 verification: The hermetic runner supports a lane declared in the test manifest
   that runs its files serially or at bounded concurrency; the tutor-stub files
   that fail in bulk under load are assigned to it; the lane runs in CI; the
@@ -23,6 +23,7 @@ tags:
   - ci
   - codex-sol
   - effort-xhigh
+branch: codex/tutor-stub-serial-test-lane
 ---
 
 Tutor-stub tests fail in bulk when the machine is loaded and pass when re-run
