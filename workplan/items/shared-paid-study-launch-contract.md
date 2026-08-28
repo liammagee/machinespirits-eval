@@ -70,3 +70,8 @@ fixture tests, and a nine-launcher inventory ratchet. No launcher migration was
 eligible: the six post-policy launchers in scope have already served sealed or
 live runs, so their bytes remain unchanged under narrow historical/live
 exemptions.
+
+2026-08-28: PR #846 merged as `60ed189a`; all PR checks passed. The card remains
+in review because integrated `main` CI at `61814f58` exposed an unrelated
+dependency-free bootstrap regression from the earlier skill refresh. Close this
+card after that shared CI contract is repaired and the final `main` run is green.

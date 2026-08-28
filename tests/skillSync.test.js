@@ -84,6 +84,21 @@ test('skill permission check rejects skill-local tool preapprovals', () => {
   assert.match(accepted.stdout, /No repo-local skills declare allowed-tools preapprovals/);
 });
 
+test('skill permission check bootstraps without installed dependencies', () => {
+  const { dir, config } = makeFixture();
+  const isolatedCli = path.join(dir, 'sync-agent-skills.mjs');
+  fs.copyFileSync(CLI, isolatedCli);
+  const executable = fs.realpathSync(isolatedCli);
+
+  const result = spawnSync('node', [executable, 'check-permissions', '--config', config], {
+    encoding: 'utf8',
+    cwd: dir,
+  });
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stdout, /No repo-local skills declare allowed-tools preapprovals/);
+});
+
 test('skill check rejects unsupported Codex frontmatter and legacy placeholders', () => {
   const { roots, config } = makeFixture();
   const synced = run(config, ['sync']);

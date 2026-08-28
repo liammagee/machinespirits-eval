@@ -6,14 +6,21 @@
  * every skill identical across every tool; some skills are provider-specific.
  */
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import YAML from 'yaml';
 
 const __filename = fileURLToPath(import.meta.url);
+const require = createRequire(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const DEFAULT_CONFIG = path.join(ROOT, 'config', 'agent-skill-sync.json');
 const CODEX_SKILL_FRONTMATTER_KEYS = new Set(['name', 'description', 'license', 'allowed-tools', 'metadata']);
+let YAML;
+
+function parseYaml(source) {
+  YAML ??= require('yaml');
+  return YAML.parse(source);
+}
 
 function fail(message) {
   console.error(`skill-sync: ${message}`);
@@ -135,7 +142,7 @@ export function codexSkillStructuralViolations(config) {
 
     let frontmatter;
     try {
-      frontmatter = YAML.parse(match[1]);
+      frontmatter = parseYaml(match[1]);
     } catch (error) {
       violations.push({ name: directoryName, file, message: `invalid YAML frontmatter: ${error.message}` });
       continue;
@@ -171,7 +178,7 @@ export function codexSkillStructuralViolations(config) {
     const openaiFile = path.join(root, directoryName, 'agents', 'openai.yaml');
     if (fs.existsSync(openaiFile)) {
       try {
-        const openai = YAML.parse(fs.readFileSync(openaiFile, 'utf8')) || {};
+        const openai = parseYaml(fs.readFileSync(openaiFile, 'utf8')) || {};
         const shortDescription = String(openai.interface?.short_description || '');
         const defaultPrompt = String(openai.interface?.default_prompt || '');
         if (shortDescription.length < 25 || shortDescription.length > 64) {

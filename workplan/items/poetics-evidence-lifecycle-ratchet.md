@@ -67,4 +67,7 @@ without touching the pending EDRA scorer changes.
 bundle, terminal loop hook, fail-closed manual packaging, and synthetic
 inventory/partial-attempt fixtures on
 `codex/poetics-evidence-lifecycle-ratchet`; focused tests and source/lint checks
-pass. Awaiting PR review.
+pass. PR #847 merged as `92fe1567`; all PR checks passed. The card remains in
+review because integrated `main` CI at `61814f58` exposed an unrelated
+dependency-free bootstrap regression from the earlier skill refresh. Close this
+card after that shared CI contract is repaired and the final `main` run is green.

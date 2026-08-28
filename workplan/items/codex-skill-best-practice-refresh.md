@@ -1,15 +1,18 @@
 ---
 id: codex-skill-best-practice-refresh
 title: Refresh repository Codex skills against current skill guidance
-status: done
+status: review
 type: maintenance
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-28
 updated: 2026-08-28
-verification: All repository Codex skills validate, resolve from the canonical discovery root without duplicate names, reference current commands and policies, and pass focused skill, workplan, formatting, and diff checks.
-branch: main
+verification: All repository Codex skills validate, resolve from the canonical
+  discovery root without duplicate names, reference current commands and
+  policies, and pass focused skill, dependency-free CI bootstrap, workplan,
+  formatting, and diff checks.
+branch: codex/repair-skill-bootstrap-close-cards
 tags:
   - codex
   - skills
@@ -53,3 +56,16 @@ Closure (2026-08-28):
   tests, skill mirror and structure checks, the 111-script analysis registry
   check, hermetic evaluation configuration validation (213 profiles, 30
   scenarios, 8 providers), 550/550 workplan items, and `git diff --check`.
+
+Reopened (2026-08-28): integrated `main` CI at `61814f58` showed that the new
+top-level `yaml` import made `skills:permissions:check` fail in the deliberately
+dependency-free Hermetic test contract before `npm ci`. Repair the bootstrap
+path, retain real YAML parsing for structural validation, and prove both paths
+with focused fixtures before returning this card to `done`.
+
+Repair (2026-08-28): YAML loading is now deferred until structural validation,
+so `skills:permissions:check` passes in a clean checkout without `node_modules`
+while `skills:check` retains real YAML parsing after install. The isolated
+bootstrap regression and existing skill-sync suite pass 4/4; focused lint,
+formatting, workplan source, and diff checks pass. Awaiting PR and integrated
+`main` CI verification.

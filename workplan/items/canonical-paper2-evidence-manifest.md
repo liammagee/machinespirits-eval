@@ -26,6 +26,8 @@ links:
     - refactor-paper-manifest-fixtures
     - paper2-priority1-closeout
     - edra-m3-second-mechanism-lexicon
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/848
 tags:
   - paper-2
   - provenance
@@ -76,3 +78,8 @@ This is zero-call integrity work and can proceed while EDRA review is pending.
   historical disclosure, and misdirected canonical claims. No paper text,
   empirical number, database row, or archived result was changed; model and
   provider calls remained zero.
+- 2026-08-28 — PR #848 merged as `61814f58`; all PR checks passed. The card
+  remains in review because integrated `main` CI exposed an unrelated
+  dependency-free bootstrap regression from the earlier skill refresh. Close
+  this card after that shared CI contract is repaired and the final `main` run
+  is green.
