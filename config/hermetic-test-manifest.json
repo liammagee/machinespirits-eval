@@ -151,6 +151,7 @@
         "tests/agonEpisode.test.js",
         "tests/agonReferee.test.js",
         "tests/analysis-smoke.test.js",
+        "tests/analysisScriptsRegistry.test.js",
         "tests/analyze-adaptive-state-decomposition-v24.test.js",
         "tests/analyze-insight-action-gap.test.js",
         "tests/analyze-recognition-lexicon.test.js",
