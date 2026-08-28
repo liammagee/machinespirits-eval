@@ -1,5 +1,47 @@
+// Adaptive-cell resume. Runs created by services/adaptiveTutor/ carry
+// kind='adaptive_trap' and plan their work from their own scenario source, so
+// the generic resume path (which rebuilds standard suggestion tests from the
+// shared scenario catalogue) cannot reconstruct them. Mirrors the same
+// dispatch the `run` command makes for adaptive profiles.
+async function resumeAdaptiveRun({ runId, run, verbose, evalConfigLoader, evaluationStore }) {
+  const { createAdaptiveEvaluationRunner } = await import('../../../services/adaptiveTutor/index.js');
+  const { resumeAdaptiveEvaluation } = createAdaptiveEvaluationRunner({ evaluationStore });
+
+  const profileName = run.metadata?.profileName || run.metadata?.profileNames?.[0];
+  const profiles = evalConfigLoader.loadTutorAgents()?.profiles || {};
+  const evalProfile = profileName ? profiles[profileName] : null;
+  if (!evalProfile) {
+    console.error(`Error: run ${runId} names adaptive profile '${profileName}', which is not in tutor-agents.yaml.`);
+    process.exit(1);
+  }
+
+  const summary = await resumeAdaptiveEvaluation({ runId, evalProfile, verbose });
+
+  if (summary.alreadyComplete) {
+    console.log(`[adaptive] ${runId}: every planned unit already has a row. Nothing to resume.`);
+    return;
+  }
+
+  const budgetTag = summary.budget
+    ? ` budget=$${summary.budget.accumulatedUsd.toFixed(4)}/$${summary.budget.maxUsd.toFixed(2)} (${summary.budget.utilizationPct.toFixed(1)}%)`
+    : '';
+  const haltTag = summary.halted ? ' [BUDGET HALT]' : '';
+  console.log(
+    `[adaptive] resume ${runId}: resumed=${summary.persisted.length}/${summary.resumedUnits} of ${summary.totalScenarios} planned llmMode=${summary.llmMode}${budgetTag}${haltTag}`,
+  );
+  if (summary.unresolvedUnitIds?.length) {
+    console.error(`[adaptive] unresolved planned units: ${summary.unresolvedUnitIds.join(', ')}`);
+  }
+  if (summary.halted) {
+    console.error(`[adaptive] halt reason: ${summary.haltReason || '(unknown)'}`);
+    process.exit(2);
+  }
+  console.log('\nResume complete.');
+}
+
 export async function runResumeCommand(context) {
-  const { expandRunId, args, getFlag, getOption, evaluationRunner, evaluationStore, anovaStats } = context;
+  const { expandRunId, args, getFlag, getOption, evaluationRunner, evaluationStore, evalConfigLoader, anovaStats } =
+    context;
 
   const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'resume'));
   if (!runId) {
@@ -10,6 +52,12 @@ export async function runResumeCommand(context) {
   const verbose = getFlag('verbose');
   const force = getFlag('force');
   const parallelism = parseInt(getOption('parallelism', '2'), 10);
+
+  const existingRun = evaluationStore.getRun(runId);
+  if (existingRun?.metadata?.kind === 'adaptive_trap') {
+    await resumeAdaptiveRun({ runId, run: existingRun, verbose, evalConfigLoader, evaluationStore });
+    return;
+  }
 
   const result = await evaluationRunner.resumeEvaluation({
     runId,

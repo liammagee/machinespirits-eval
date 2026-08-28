@@ -1007,6 +1007,19 @@ function writeArtifacts({ outDir, scenarioYaml, report }) {
   return { jsonPath, mdPath, fixturePath };
 }
 
+// A metered run's budget ledger lives in the isolated store, keyed by its run
+// id, and so does the run row itself. Deleting that store would destroy the
+// only durable record of what was spent and leave no run to restart against,
+// so a metered run keeps its store whatever --keep-temp says.
+export function resolveStoreRetention({ keepTemp = false, budget = null } = {}) {
+  const meteredRun = budget != null;
+  return {
+    meteredRun,
+    retainStore: Boolean(keepTemp) || meteredRun,
+    retainedForBudgetLedger: meteredRun && !keepTemp,
+  };
+}
+
 export async function runComparison({
   outDir = DEFAULT_OUT_DIR,
   keepTemp = false,
@@ -1139,12 +1152,25 @@ export async function runComparison({
     failures,
   };
 
-  const artifacts = writeArtifacts({ outDir, scenarioYaml, report });
-  if (!keepTemp) {
+  const { meteredRun, retainStore, retainedForBudgetLedger } = resolveStoreRetention({
+    keepTemp,
+    budget: result.budget,
+  });
+  report.runtime.tempArtifactsPreserved = retainStore;
+  report.runtime.tmpDir = retainStore ? tmpDir : null;
+  report.runtime.tmpDb = retainStore ? tmpDb : null;
+  report.runtime.tmpLogs = retainStore ? tmpLogs : null;
+  report.runtime.scenarioPath = retainStore ? scenarioPath : null;
+  report.runtime.storeRetainedForBudgetLedger = retainedForBudgetLedger;
+  if (!retainStore) {
     // Keep the temp path in the report for immediate local audit, but remove
     // the isolated DB/log payload by default so repeated runs do not pile up.
     fs.rmSync(tmpDir, { recursive: true, force: true });
+  } else if (meteredRun && !keepTemp) {
+    console.log(`[dag-resistance] metered run ${result.runId}: budget ledger and run rows kept at ${tmpDb}`);
   }
+
+  const artifacts = writeArtifacts({ outDir, scenarioYaml, report });
 
   if (strict && failures.length) {
     const err = new Error(`DAG/resistance comparison failed:\n- ${failures.join('\n- ')}`);

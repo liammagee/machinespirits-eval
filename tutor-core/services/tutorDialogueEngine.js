@@ -3330,7 +3330,10 @@ export async function runDialogue(context, options = {}) {
  */
 export async function quickGenerate(context, options = {}) {
   const { learnerContext, curriculumContext, simulationsContext } = context;
-  const { isNewUser = false, profileName = null } = options;
+  // `hyperparameters` was read as a bare identifier below with nothing
+  // declaring it, so every call to this exported function threw a
+  // ReferenceError before reaching the ego. It is an option, like the rest.
+  const { isNewUser = false, profileName = null, hyperparameters = null } = options;
 
   // Generate unique dialogue ID for log correlation (even in quick mode)
   const dialogueId = `dialogue-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

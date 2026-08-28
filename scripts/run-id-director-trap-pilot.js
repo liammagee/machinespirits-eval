@@ -37,7 +37,15 @@ import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import * as idDirectorEngine from '../services/idDirectorEngine.js';
 import * as realLLM from '../services/adaptiveTutor/realLLM.js';
 import { createAdaptivePersistence } from '../services/adaptiveTutor/persistence.js';
-import { createBudgetTracker } from '../services/adaptiveTutor/budgetTracker.js';
+import {
+  bindRunLedger,
+  checkBalanceBeforeDispatch,
+  executeMeteredUnits,
+  finalizeMeteredRun,
+  meterCallAI,
+  resolveSpendCeiling,
+  selectPendingUnits,
+} from '../services/adaptiveTutor/meteredRunSession.js';
 import { learnerTurnIndexForTutorTurn } from './lib/trapTurnConvention.js';
 import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
@@ -241,15 +249,31 @@ function parseFlag(args, name, fallback = undefined) {
   return fallback;
 }
 
+// The dependency bundle the id-director engine runs under.
+//
+// Every model call this engine makes — id, ego, plan, verifier — goes through
+// its injected `callAI`, and that path does NOT run through realLLM, so
+// realLLM.setActiveBudgetTracker never saw any of them: only the synthetic
+// learner was ever charged against the ceiling. Wrapping `callAI` here is what
+// puts the whole engine behind the run's ledger.
+export function createIdDirectorEngineDeps({ tracker = null, tutorConfig, callAI = idDirectorEngine.__defaultCallAI }) {
+  return {
+    tutorConfig,
+    callAI: tracker ? meterCallAI(callAI, { tracker }) : callAI,
+  };
+}
+
 export async function main(
   args = process.argv.slice(2),
-  { rootDir = REPO_ROOT, env = process.env, evaluationStore = null, createStore } = {},
+  { rootDir = REPO_ROOT, env = process.env, evaluationStore = null, createStore, callAI = undefined } = {},
 ) {
   const profileName = parseFlag(args, 'profile', 'cell_106_id_director_pedagogy_tuned');
   const scenarioFilter = parseFlag(args, 'scenarios');
   const runsPerConfig = Number(parseFlag(args, 'runs', '1'));
-  const maxCostUsdRaw = parseFlag(args, 'max-cost');
-  const maxCostUsd = maxCostUsdRaw != null ? Number(maxCostUsdRaw) : null;
+  // A malformed ceiling stops the pilot here. It used to fall through
+  // `Number('abc') > 0` and run the whole thing with no ceiling at all.
+  const maxCostUsd = resolveSpendCeiling(parseFlag(args, 'max-cost'));
+  const resumeRunId = parseFlag(args, 'resume') || null;
   const verbose = args.includes('--verbose');
 
   const profile = evalConfigLoader.getTutorProfile(profileName);
@@ -280,12 +304,82 @@ export async function main(
     async (store) => {
       const { createAdaptiveRun } = createAdaptivePersistence({ evaluationStore: store });
 
+      // The plan is fixed before any call, so a restart replays exactly the
+      // units this pilot set out to run.
+      const plannedUnits = [];
+      for (const scenario of scenarios) {
+        for (let runIndex = 0; runIndex < runsPerConfig; runIndex++) {
+          plannedUnits.push({
+            scenarioId: scenario.id,
+            runIndex,
+            unitId: runsPerConfig > 1 ? `${scenario.id}__r${runIndex}` : scenario.id,
+          });
+        }
+      }
+
+      // A durable run identity has to exist before the first metered call,
+      // because the budget ledger is keyed by run id.
+      let run;
+      if (resumeRunId) {
+        run = store.getRun(resumeRunId);
+        if (!run) throw new Error(`--resume: run not found: ${resumeRunId}`);
+        if (run.metadata?.architecture !== 'id_director') {
+          throw new Error(`--resume: run ${resumeRunId} is not an id-director run`);
+        }
+        if ((run.metadata?.maxCostUsd ?? null) !== maxCostUsd) {
+          throw new Error(
+            `--resume: run ${resumeRunId} was launched with ceiling ${run.metadata?.maxCostUsd ?? 'none'}; ` +
+              `pass the same --max-cost (got ${maxCostUsd ?? 'none'})`,
+          );
+        }
+      } else {
+        run = createAdaptiveRun({
+          description: `id-director trap pilot (${profileName})`,
+          totalScenarios: plannedUnits.length,
+          profileName,
+          llmMode: 'real',
+          metadata: {
+            profileName,
+            scenarioSource: 'config/adaptive-trap-scenarios.yaml',
+            maxCostUsd,
+            architecture: 'id_director',
+            runsPerConfig,
+            plannedUnits,
+          },
+        });
+      }
+      const runId = run.id;
+      const resumePlan = resumeRunId ? run.metadata?.plannedUnits || plannedUnits : plannedUnits;
+      const { completedUnitIds, pendingUnits } = selectPendingUnits({
+        evaluationStore: store,
+        runId,
+        plannedUnits: resumePlan,
+      });
+
       let tracker = null;
       try {
         // Inject evalConfigLoader so the id-director engine sees claude-code as
         // configured (its CLI manages auth; tutor-core's getProviderConfig flips it
         // to isConfigured=false because no api_key_env / base_url is set).
-        idDirectorEngine.__setDeps({ tutorConfig: evalConfigLoader });
+        //
+        // The ledger is bound here too. Every id, ego, plan, and verifier call
+        // this engine makes goes through its injected callAI, which does NOT
+        // route via realLLM — so before this wrapper only the synthetic learner
+        // was ever charged against the ceiling.
+        tracker = bindRunLedger({
+          evaluationStore: store,
+          runId,
+          maxCostUsd,
+          verbose,
+          label: 'id-director-trap',
+        });
+        idDirectorEngine.__setDeps(
+          createIdDirectorEngineDeps({
+            tracker,
+            tutorConfig: evalConfigLoader,
+            ...(callAI ? { callAI } : {}),
+          }),
+        );
 
         // Route the synthetic learner's callRole('learnerTurn', ...) through the
         // same provider/model as the tutor side. Without this, realLLM falls back
@@ -297,59 +391,67 @@ export async function main(
           temperature: agentConfig.hyperparameters?.temperature,
           maxTokens: agentConfig.hyperparameters?.max_tokens,
         });
+        if (tracker) realLLM.setActiveBudgetTracker(tracker);
 
-        if (maxCostUsd != null && maxCostUsd > 0) {
-          tracker = createBudgetTracker({ maxUsd: maxCostUsd });
-          realLLM.setActiveBudgetTracker(tracker);
-        }
-
-        const totalScenarios = scenarios.length * runsPerConfig;
-        const run = createAdaptiveRun({
-          description: `id-director trap pilot (${profileName})`,
-          totalScenarios,
-          profileName,
-          llmMode: 'real',
-          metadata: {
-            profileName,
-            scenarioSource: 'config/adaptive-trap-scenarios.yaml',
-            maxCostUsd,
-            architecture: 'id_director',
-          },
+        // Advisory unless the provider config declares the capability and a
+        // stop policy. The ledger remains the binding control.
+        await checkBalanceBeforeDispatch({
+          provider: agentConfig.provider,
+          providerConfig: evalConfigLoader.getProviderConfig(agentConfig.provider),
+          maxCostUsd,
+          alreadyExposedUsd: tracker ? tracker.summary().ceilingExposureUsd : 0,
+          policy: run.metadata?.balancePolicy || 'warn',
+          label: 'id-director-trap',
+          verbose,
         });
-        const runId = run.id;
 
         console.log(
           `[id-director-trap] runId=${runId} profile=${profileName} ` +
             `provider=${agentConfig.provider} model=${agentConfig.model} ` +
-            `scenarios=${scenarios.length} runsPerConfig=${runsPerConfig}`,
+            `planned=${resumePlan.length} done=${completedUnitIds.size} pending=${pendingUnits.length}`,
         );
 
-        let persisted = 0;
-        let failed = 0;
-        for (const scenario of scenarios) {
-          for (let runIndex = 0; runIndex < runsPerConfig; runIndex++) {
-            const variantId = runsPerConfig > 1 ? `${scenario.id}__r${runIndex}` : scenario.id;
-            try {
-              const out = await runScenario({
-                evaluationStore: store,
-                runId,
-                scenario: { ...scenario, id: variantId },
-                profile,
-                profileName,
-                agentConfig,
-                verbose,
-              });
-              persisted++;
-              console.log(`[id-director-trap]   ✓ ${variantId} (turns=${out.turns}, dialogue=${out.dialogueId})`);
-            } catch (err) {
-              failed++;
-              console.error(`[id-director-trap]   ✗ ${variantId}: ${err.message}`);
-              if (verbose) console.error(err.stack);
-            }
-          }
-        }
+        const outcome = await executeMeteredUnits({
+          units: pendingUnits,
+          label: 'id-director-trap',
+          verbose,
+          execute: async (unit) => {
+            const scenario = scenarios.find((candidate) => candidate.id === unit.scenarioId);
+            if (!scenario) throw new Error(`scenario ${unit.scenarioId} is not in the scenario source`);
+            const out = await runScenario({
+              evaluationStore: store,
+              runId,
+              scenario: { ...scenario, id: unit.unitId },
+              profile,
+              profileName,
+              agentConfig,
+              verbose,
+            });
+            console.log(`[id-director-trap]   ✓ ${unit.unitId} (turns=${out.turns}, dialogue=${out.dialogueId})`);
+          },
+        });
 
-        console.log(`[id-director-trap] runId=${runId} persisted=${persisted}/${totalScenarios} failed=${failed}`);
+        const totalTests = completedUnitIds.size + outcome.completedUnitIds.length;
+        finalizeMeteredRun({
+          evaluationStore: store,
+          runId,
+          halted: outcome.halted,
+          haltCode: outcome.haltCode,
+          totalTests,
+        });
+
+        const budget = tracker ? tracker.summary() : null;
+        console.log(
+          `[id-director-trap] runId=${runId} persisted=${totalTests}/${resumePlan.length} ` +
+            `failed=${outcome.failures.length}` +
+            (budget
+              ? ` budget=$${budget.accumulatedUsd.toFixed(4)}/$${budget.maxUsd.toFixed(2)} (${budget.utilizationPct.toFixed(1)}%)`
+              : ''),
+        );
+        if (outcome.halted) {
+          console.error(`[id-director-trap] halt reason: ${outcome.haltReason || '(unknown)'}`);
+          return 2;
+        }
         return 0;
       } finally {
         realLLM.clearActiveCellConfig();

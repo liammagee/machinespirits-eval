@@ -456,6 +456,10 @@ export async function negotiateDialectically(options) {
   console.log('[Dialectical] Starting negotiation');
 
   // Phase 3: Check for recent learner demand events
+  // The demand text extends the caller's context rather than replacing it, so
+  // it is built into its own binding: `learnerContext` above is a const, and
+  // reassigning it threw before the superego critique was ever generated.
+  let effectiveLearnerContext = learnerContext;
   let recentDemands = [];
   if (learnerId && writingPad) {
     recentDemands = learnerIntegrationService.getLearnerEvents(learnerId, {
@@ -468,7 +472,7 @@ export async function negotiateDialectically(options) {
       console.log(`[Dialectical] Recent learner demand: ${dominantDemand.demandCategory} (strength: ${dominantDemand.demandStrength})`);
 
       // Adjust learnerContext to include demand information
-      learnerContext = `${learnerContext}\nRecent learner demand: ${dominantDemand.demandCategory} (${(dominantDemand.demandStrength ?? 0).toFixed(2)} strength)`;
+      effectiveLearnerContext = `${learnerContext}\nRecent learner demand: ${dominantDemand.demandCategory} (${(dominantDemand.demandStrength ?? 0).toFixed(2)} strength)`;
     }
   }
 
@@ -480,7 +484,7 @@ export async function negotiateDialectically(options) {
   // Step 1: Generate superego critique
   const superegoChallenge = await generateSuperegoCritique({
     egoSuggestion,
-    learnerContext,
+    learnerContext: effectiveLearnerContext,
     writingPad,
     compliance: superegoCompliance,
     superegoModel,
@@ -534,7 +538,7 @@ export async function negotiateDialectically(options) {
     const egoResponse = await egoRespondsToSuperego({
       superegoChallenge: superegoChallenge.critique,
       originalSuggestion: egoSuggestion,
-      learnerContext,
+      learnerContext: effectiveLearnerContext,
       writingPad,
       round,
       egoModel,
@@ -642,7 +646,7 @@ export async function negotiateDialectically(options) {
       recognitionType,
       struggleDepth,
       persistenceLayer: 'conscious',
-      learnerContext: JSON.stringify({ context: learnerContext }),
+      learnerContext: JSON.stringify({ context: effectiveLearnerContext }),
       dialogueTrace: JSON.stringify(dialogueTrace),
       // Phase 0 compatibility — pass as objects (createRecognitionMoment accesses
       // properties like .voice, .intensity and stringifies internally for the DB)
@@ -655,7 +659,7 @@ export async function negotiateDialectically(options) {
       learnerNeed: {
         urgent: recognitionSeeking > 0.5,
         intensity: recognitionSeeking,
-        need: inferLearnerNeed(learnerContext),
+        need: inferLearnerNeed(effectiveLearnerContext),
       },
       synthesis: {
         synthesis: synthesis?.resolution || '',

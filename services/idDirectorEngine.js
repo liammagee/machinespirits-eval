@@ -414,6 +414,11 @@ export function countPriorEdgeMoments(traceLike) {
   return count;
 }
 
+// The engine's own model-call function, exported so a launcher can wrap it —
+// e.g. to reserve each id / ego / plan / verifier call against a run's budget
+// ledger — without having to rebuild the CLI-bridge routing it carries.
+export const __defaultCallAI = callAIWithCliBridge;
+
 export function __setDeps(overrides = {}) {
   if (overrides.tutorConfig) _deps.tutorConfig = overrides.tutorConfig;
   if (overrides.tutorWritingPad) _deps.tutorWritingPad = overrides.tutorWritingPad;

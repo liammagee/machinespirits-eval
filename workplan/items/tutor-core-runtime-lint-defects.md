@@ -1,13 +1,13 @@
 ---
 id: tutor-core-runtime-lint-defects
 title: "Repair tutor-core runtime faults exposed by lint"
-status: triaged
+status: review
 type: maintenance
 priority: P2
-owner: unassigned
+owner: claude
 source: review
 created: 2026-08-27
-updated: 2026-08-27
+updated: 2026-08-28
 verification: Focused regression tests execute the writing-pad demand branch
   in negotiateDialectically and the exported quickGenerate option flow; both
   complete without an assignment or undefined-variable error, the relevant
@@ -46,3 +46,16 @@ Acceptance:
 No affected run has been identified, so this is P2 rather than an incident P1.
 The remaining lint and formatting adoption stays on
 `tutor-core-lint-and-format` after these behavior-bearing fixes land.
+
+- 2026-08-28 — Landed. Both faults were reproduced first, in
+  `tutor-core/services/__tests__/runtimeDefects.test.js`: the demand branch
+  threw `TypeError: Assignment to constant variable` at
+  `dialecticalEngine.js:471`, and `quickGenerate()` threw
+  `ReferenceError: hyperparameters is not defined` on every call.
+  Repairs are narrow. The demand text now extends the caller context into its
+  own binding, which the superego critique, the ego reply, and the recognition
+  moment all read — the reassignment was meant to reach all four call sites, so
+  all four follow it. `quickGenerate()` reads `hyperparameters` from its options
+  with the same `null` default `egoGenerateSuggestions()` already uses, so the
+  public option shape is unchanged. Core suite 142/142 and
+  `tests/tutorCoreSeamGuard.test.js` green. No formatting sweep in this change.
