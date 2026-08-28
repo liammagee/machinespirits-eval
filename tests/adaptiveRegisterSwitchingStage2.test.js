@@ -13,6 +13,7 @@ import {
   validateAdaptiveRegisterSwitchingStage1Gate,
 } from '../services/adaptiveRegisterSwitchingStage2.js';
 import {
+  ADAPTIVE_REGISTER_SWITCHING_STAGE2_FIELDED_CHANNELS,
   assembleAdaptiveRegisterSwitchingStage2Preflight,
   buildAdaptiveRegisterSwitchingStage2PreflightPackets,
   buildAdaptiveRegisterSwitchingStage2SyntheticCorpus,
@@ -245,13 +246,50 @@ test('paid-study endpoint preflight exercises the full 105-row production assemb
 test('paid-study endpoint preflight fails closed for every registered runtime mismatch', () => {
   const baseline = readJson(ENDPOINT_CONTRACT_PATH);
   const cases = buildAdaptiveRegisterSwitchingStage2SyntheticCorpus();
+  const fieldedChannels = [...ADAPTIVE_REGISTER_SWITCHING_STAGE2_FIELDED_CHANNELS];
   const run = (contract, options = {}) =>
     runPaidStudyEndpointPreflight({
       contract,
+      fieldedChannels: options.fieldedChannels ?? fieldedChannels,
       cases: options.cases || cases,
       buildPackets: options.buildPackets || buildAdaptiveRegisterSwitchingStage2PreflightPackets,
       assemble: options.assemble || assembleAdaptiveRegisterSwitchingStage2Preflight,
     });
+
+  const validFielding = run(baseline);
+  assert.equal(validFielding.model_calls, 0);
+  assert.equal(validFielding.production_writes, 0);
+
+  let packetBuilds = 0;
+  let assemblies = 0;
+  assert.throws(
+    () =>
+      run(baseline, {
+        fieldedChannels: fieldedChannels.filter((channelId) => channelId !== 'manner_presence_reader'),
+        buildPackets: (...args) => {
+          packetBuilds += 1;
+          return buildAdaptiveRegisterSwitchingStage2PreflightPackets(...args);
+        },
+        assemble: (...args) => {
+          assemblies += 1;
+          return assembleAdaptiveRegisterSwitchingStage2Preflight(...args);
+        },
+      }),
+    /conversion_adaptive_vs_router_warm: required channel manner_presence_reader is not fielded by the prospective run/u,
+  );
+  assert.equal(packetBuilds, 0);
+  assert.equal(assemblies, 0);
+
+  const unfieldedContractChannel = structuredClone(baseline);
+  unfieldedContractChannel.channels.shadow_reader = {
+    enabled: true,
+    implementation: 'prospective adapter does not field this channel',
+  };
+  unfieldedContractChannel.endpoints[0].required_channels.push('shadow_reader');
+  assert.throws(
+    () => runAdaptiveRegisterSwitchingStage2EndpointPreflight(unfieldedContractChannel),
+    /conversion_adaptive_vs_router_warm: required channel shadow_reader is not fielded by the prospective run/u,
+  );
 
   const disabledReader = structuredClone(baseline);
   disabledReader.channels.manner_presence_reader.enabled = false;

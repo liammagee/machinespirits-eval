@@ -48,7 +48,7 @@ function endpointCases(endpoint, cases) {
   return Array.isArray(arms) ? cases.filter((row) => arms.includes(row.arm)) : cases;
 }
 
-export function validatePaidStudyEndpointContract(contract) {
+export function validatePaidStudyEndpointContract(contract, { fieldedChannels } = {}) {
   const errors = [];
   if (contract?.schema !== PAID_STUDY_ENDPOINT_CONTRACT_SCHEMA) errors.push('unsupported endpoint-contract schema');
   if (!String(contract?.study_id || '').trim()) errors.push('endpoint contract requires study_id');
@@ -60,6 +60,9 @@ export function validatePaidStudyEndpointContract(contract) {
   if (!String(contract?.runner?.packet_builder || '').trim()) errors.push('runner packet_builder is required');
   if (!String(contract?.runner?.result_assembler || '').trim()) errors.push('runner result_assembler is required');
   const channels = contract?.channels && typeof contract.channels === 'object' ? contract.channels : {};
+  const fielded = fieldedChannels
+    ? new Set(exactUniqueStrings(fieldedChannels, 'prospective fielded channels', errors))
+    : null;
   const endpointRows = Array.isArray(contract?.endpoints) ? contract.endpoints : [];
   const endpointIds = exactUniqueStrings(
     endpointRows.map((endpoint) => endpoint?.id),
@@ -91,6 +94,9 @@ export function validatePaidStudyEndpointContract(contract) {
       else if (channel.enabled !== true) errors.push(`${label}: required channel ${channelId} is disabled`);
       else if (!String(channel.implementation || '').trim()) {
         errors.push(`${label}: required channel ${channelId} has no implementation`);
+      }
+      if (fielded && !fielded.has(channelId)) {
+        errors.push(`${label}: required channel ${channelId} is not fielded by the prospective run`);
       }
     }
     for (const field of exactUniqueStrings(endpoint.required_event_fields, `${label} required event fields`, errors)) {
@@ -192,8 +198,13 @@ function validatePackets(contract, cases, packets, errors) {
   }
 }
 
-export function runPaidStudyEndpointPreflight({ contract, cases, buildPackets, assemble }) {
-  const contractValidation = validatePaidStudyEndpointContract(contract);
+/**
+ * `fieldedChannels`, when supplied, must come from the prospective run shape,
+ * not from `contract.channels`: the comparison is useful only when the two
+ * declarations are independent.
+ */
+export function runPaidStudyEndpointPreflight({ contract, fieldedChannels, cases, buildPackets, assemble }) {
+  const contractValidation = validatePaidStudyEndpointContract(contract, { fieldedChannels });
   if (!contractValidation.ok) throw new Error(`endpoint contract invalid: ${contractValidation.errors.join('; ')}`);
   if (typeof buildPackets !== 'function') throw new Error('endpoint preflight requires the production packet builder');
   if (typeof assemble !== 'function') throw new Error('endpoint preflight requires the production result assembler');
