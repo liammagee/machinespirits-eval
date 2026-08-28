@@ -1,7 +1,7 @@
 ---
 id: analysis-scripts-registry-sync
 title: Mechanically sync ANALYSIS-SCRIPTS.md with the real script set
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: codex
@@ -56,3 +56,5 @@ Suggested worker: Codex Sol at Extra High reasoning effort.
   ESLint and Prettier passed; hermetic test-manifest and workplan source checks
   passed; `git diff --check` passed.
 - 2026-08-28 — Opened PR #843.
+- 2026-08-28 — PR #843 merged with all hosted checks complete and no failed or
+  pending checks; the synchronized 111/111 registry is closed.

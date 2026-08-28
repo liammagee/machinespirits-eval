@@ -1,7 +1,7 @@
 ---
 id: hamartia-repair-signal-population-bridge
 title: Build the durable-repair signal for the ontology population bridge
-status: review
+status: done
 type: research
 priority: P2
 owner: codex
@@ -17,6 +17,8 @@ verification: Frozen public-text-v1 positive, negative, and ambiguous cases
   and the workplan source check pass.
 claim_status: methods
 links:
+  prs:
+    - 840
   notes:
     - notes/poetics/2026-06-04-adaptation-correction-next-steps.md
     - services/ontology/adaptationAboxBridge.js
@@ -76,3 +78,5 @@ bounded plumbing with the detector and reconcile scripts already in place.
 - 2026-08-28: Verified entirely offline with focused detector, summarizer,
   bridge, ontology, and default-module tests plus formatting, syntax, lint, and
   workplan checks. No model-backed or paid calls were made.
+- 2026-08-28: PR #840 merged with all hosted checks complete and no failed or
+  pending checks; the frozen tri-state bridge acceptance evidence is final.

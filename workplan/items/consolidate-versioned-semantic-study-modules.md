@@ -1,14 +1,14 @@
 ---
 id: consolidate-versioned-semantic-study-modules
 title: "Consolidate the copy-pasted versioned semantic study modules"
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: codex
 branch: codex/consolidate-versioned-semantic-study-modules
 source: manual
 created: 2026-08-27
-updated: 2026-08-27
+updated: 2026-08-28
 verification: The 40-module inventory records before/after SHA-256 evidence;
   22 hard-protected and 14 deliberately preserved historical modules plus two
   protected tests remain byte-identical; four demonstrably source-unpinned
@@ -18,6 +18,8 @@ verification: The 40-module inventory records before/after SHA-256 evidence;
   and diff check pass.
 claim_status: methods
 links:
+  prs:
+    - 845
   notes:
     - notes/2026-08-27-versioned-semantic-study-module-consolidation.md
 tags:
@@ -60,3 +62,6 @@ without turning those observations into a new source-pin gate.
   542/542 workplan items valid, and clean diff checks. Dependencies were
   restored mechanically with `npm ci`; no model-backed or paid study ran and
   no model calls were made.
+- 2026-08-28 — PR #845 merged with all hosted checks complete and no failed or
+  pending checks; forward-only consolidation is closed with protected history
+  byte-identical.

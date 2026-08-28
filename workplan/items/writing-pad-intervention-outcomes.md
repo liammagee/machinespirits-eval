@@ -1,7 +1,7 @@
 ---
 id: writing-pad-intervention-outcomes
 title: Record intervention outcomes in the tutor Writing Pad
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -15,6 +15,8 @@ verification: When a turn resolves, the strategy the previous turn recorded as
   and learner-side trace labels are unchanged; historical logs still parse.
 claim_status: methods
 links:
+  prs:
+    - 836
   notes:
     - services/learnerTutorInteractionEngine.js
 tags:
@@ -73,3 +75,5 @@ Suggested worker: Codex Sol at Extra High reasoning effort.
   id-director, transcript, trace-schema, symmetry, and interaction-store tests;
   `npm run lint:all`; `npm run wp:source-check` (539/539 items).
 - Model-backed evaluation calls: 0.
+- PR #836 merged with all hosted checks complete and no failed or pending
+  checks; the stated multi-turn and symmetry acceptance evidence is final.

@@ -1,14 +1,14 @@
 ---
 id: ci-change-classifier-escape-audit
 title: "Audit the CI change classifier for regression escape paths"
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
 branch: codex/ci-change-classifier-escape-audit
 source: manual
 created: 2026-08-27
-updated: 2026-08-27
+updated: 2026-08-28
 verification: A written audit enumerates every path through the change
   classifier (full, focused, validator-only) and, for each skipped lane, either
   proves the skip safe or lands a fix; each found escape gets a regression
@@ -16,6 +16,8 @@ verification: A written audit enumerates every path through the change
   the full lanes; the audit note is committed under notes/.
 claim_status: methods
 links:
+  prs:
+    - 838
   notes:
     - notes/2026-08-27-ci-change-classifier-escape-audit.md
     - scripts/ci-change-policy.js
@@ -54,3 +56,5 @@ adversarial enumeration, and the whole audit runs offline.
   test-manifest, skill-permission, workplan-source, YAML-parse, and diff checks
   all pass. The audit commit was rebased onto `origin/main` at `973e1f2f` and
   is ready for hosted full-CI review.
+- 2026-08-28: PR #838 merged with all hosted checks complete and no failed or
+  pending checks; the bounded audit and planted-change regressions are closed.

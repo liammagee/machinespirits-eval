@@ -1,7 +1,7 @@
 ---
 id: budget-tracker-balance-probe-and-rates
 title: "Budget tracker safety foundation: durable reservations and rate provenance"
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -17,6 +17,8 @@ verification: Transactional SQLite tests prove per-attempt reservations survive
   provenance rather than masquerading as exact spend.
 claim_status: methods
 links:
+  prs:
+    - 839
   notes:
     - services/adaptiveTutor/budgetTracker.js
     - services/adaptiveTutor/realLLM.js
@@ -83,3 +85,7 @@ passed; `npm run lint:all`, `npm run test:manifest`,
 independent Extra High safety review reported no actionable findings. Model
 activity remained inactive: 0 provider/model calls completed, 0 failed, hard
 ceiling 0. No balance probe or paid/model-backed run was started.
+
+2026-08-28 Closeout: PR #839 merged with all hosted checks complete and no
+failed or pending checks; the safety-foundation scope is done and its three
+explicit follow-up cards remain separate work.

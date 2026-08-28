@@ -1,19 +1,21 @@
 ---
 id: codex-default-drift-and-tutor-core-lint
 title: "Fix the Codex default-model drift"
-status: review
+status: done
 type: maintenance
 priority: P3
 owner: codex
 source: manual
 created: 2026-08-27
-updated: 2026-08-27
+updated: 2026-08-28
 verification: The served catalog derives the Codex default from
   config/providers.yaml, the browser emergency projection has tested parity
   with it, and the focused web-surface and tutor-core seam tests pass offline.
 branch: codex/codex-default-model-drift
 claim_status: methods
 links:
+  prs:
+    - 841
   notes:
     - services/tutorStubCatalog.js
     - public/tutor/fallbackCatalog.js
@@ -43,3 +45,6 @@ The separate lint and formatting migration is tracked by
   made the served default config-derived; extracted the browser emergency
   projection for parity testing; passed focused tests, lint, format,
   workplan validation, seam guards, and web acceptance offline.
+- 2026-08-28 — PR #841 merged with all hosted checks complete and no failed or
+  pending checks; the default-model drift slice is closed, while
+  `tutor-core-lint-and-format` remains a separate card.

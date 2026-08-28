@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-serial-test-lane
 title: Diagnose tutor-stub load failures before adding a serial lane
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -14,6 +14,8 @@ verification: Under host load above the 14-way Node concurrency ceiling, both
   candidate files pass alone; no unsupported serial lane is added.
 claim_status: methods
 links:
+  prs:
+    - 844
   notes:
     - scripts/run-hermetic-tests.js
     - config/hermetic-test-manifest.json
@@ -59,3 +61,6 @@ lower concurrency.
   5,294 tests / 0 failures and shard 2 4,419 tests / 0 failures. Their ordinary
   mix includes all 294 tutor-stub files. No manifest lane, package-script lane,
   workflow job, or workflow-structure assertion was added.
+- 2026-08-28 — PR #844 merged with all hosted checks complete and no failed or
+  pending checks; diagnosis closed the deterministic defect without adding an
+  unsupported serial lane.

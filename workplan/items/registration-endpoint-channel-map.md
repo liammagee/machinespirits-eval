@@ -1,13 +1,13 @@
 ---
 id: registration-endpoint-channel-map
 title: Fail zero-call endpoint preflight when a required channel is unfielded
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-27
-updated: 2026-08-27
+updated: 2026-08-28
 verification: Before provider initialization or production writes, the shared
   deterministic endpoint preflight compares every enabled endpoint's existing
   required_channels with an independent prospective adapter fielding list and
@@ -15,6 +15,8 @@ verification: Before provider initialization or production writes, the shared
   remain zero-call; existing closed runs and artifacts remain untouched.
 claim_status: methods
 links:
+  prs:
+    - 837
   notes:
     - docs/adaptation-refinement/relay/DEFECT-LEDGER.md
 tags:
@@ -65,3 +67,5 @@ re-signing step, HOLD packet, or other authorization machinery.
   existing child/assembly failures already stop completion. No model call,
   production write, registration, run artifact, certificate, digest, or
   approval file was created or changed.
+- 2026-08-28: PR #837 merged with all hosted checks complete and no failed or
+  pending checks; the zero-call preflight acceptance evidence above is final.
