@@ -22,7 +22,6 @@ import { jsonrepair } from 'jsonrepair';
 import { getProviderConfig } from '../learnerConfigLoader.js';
 import { callAIWithCliBridge } from '../cliProviderBridge.js';
 import { POLICY_ACTIONS, POLICY_ACTION_DESCRIPTIONS, POLICY_ACTION_DETAILS } from './policyActions.js';
-import { lookupRates } from './budgetTracker.js';
 import { parseIdConstruction } from '../idDirectorEngine.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -33,12 +32,9 @@ const PROMPTS_DIR = path.resolve(__dirname, '..', '..', 'prompts');
 // preserving the (agentConfig, system, user, role) → flat-token-shape
 // contract the rest of this module + the budget tracker depend on.
 //
-// Cost synthesis: tutor-core's callAnthropic does not include `cost` in its
-// usage payload (only callOpenRouter does — OpenRouter echoes its own cost).
-// To keep the budget ceiling honest across providers, we synthesize cost
-// from tokens × the budgetTracker rate table whenever the provider didn't
-// report one. This keeps anthropic.sonnet a viable Gate B option without
-// flying blind on actual spend.
+// Cost accounting is delegated to budgetTracker: a provider-reported numeric
+// cost remains exact evidence, while a missing cost can only become a
+// provenance-labelled catalog estimate/conservative bound (or remain unknown).
 //
 // Retry-on-network-error: a single transient blip (DNS, undici "terminated",
 // upstream 5xx, 429 rate limit) was enough to cascade-fail the first Gate B
@@ -69,6 +65,11 @@ const NON_RETRYABLE_ERROR_PATTERNS = [
 ];
 
 function isRetryableError(err) {
+  // Budget and ledger failures are local safety failures, never transport
+  // failures. Keep this explicit even though reserve/settle live outside the
+  // provider-error catch below: a message such as "SQLite 500" must not turn
+  // a failed durable write into another billable dispatch.
+  if (err?.code === 'BUDGET_EXCEEDED' || err?.code === 'BUDGET_LEDGER_PERSISTENCE') return false;
   const msg = err?.message || String(err || '');
   if (NON_RETRYABLE_ERROR_PATTERNS.some((re) => re.test(msg))) return false;
   return RETRYABLE_ERROR_PATTERNS.some((re) => re.test(msg));
@@ -79,12 +80,10 @@ function isRetryableError(err) {
 // isolation, output bounds, and Codex event audit; this adapter retains only
 // adaptive tracing and the historical flat usage shape.
 //
-// Returns the same flat-token shape callAI synthesizes for OpenRouter/Anthropic
-// so the rest of callRole (budget tracker recording, schema validation) stays
-// provider-agnostic. inputTokens/outputTokens/cost are 0 because the CLI does
-// not echo usage and the call hits a subscription window, not a metered
-// endpoint — assertBelowCeiling therefore never aborts a CLI call, which is
-// the intended behaviour.
+// Returns the same flat-token shape callAI uses for OpenRouter/Anthropic.
+// Subscription-backed CLIs may omit usage. Missing cost remains missing here;
+// the budget tracker classifies the route as `not_metered_here` rather than
+// manufacturing a provider-reported numeric zero.
 const CLI_TIMEOUT_MS = 360_000;
 
 // Set ADAPTIVE_TUTOR_CLI_TRACE=1 to log every claude-code CLI subprocess call
@@ -112,14 +111,14 @@ export async function callAdaptiveCli(agentConfig, systemPrompt, userPrompt, rol
         `[adaptive-cli] done  role=${role} latency=${result.latencyMs}ms outBytes=${Buffer.byteLength(result.text || '')}`,
       );
     }
-    // Keep the flat token/cost contract used by the adaptive budget tracker.
-    // Subscription-backed CLIs may not report usage, so retain the historical
-    // zero values rather than leaking bridge-level nulls into callers.
+    // Keep the flat token contract used by adaptive accounting. Do not coerce
+    // absent cost to zero: numeric zero is meaningful provider evidence and
+    // must remain distinguishable from a missing field.
     return {
       ...result,
       inputTokens: result.inputTokens ?? 0,
       outputTokens: result.outputTokens ?? 0,
-      cost: result.cost ?? 0,
+      cost: typeof result.cost === 'number' && Number.isFinite(result.cost) ? result.cost : null,
     };
   } catch (error) {
     if (/timed out/iu.test(error?.message || '')) {
@@ -129,70 +128,183 @@ export async function callAdaptiveCli(agentConfig, systemPrompt, userPrompt, rol
   }
 }
 
+const DEFAULT_CALL_DEPENDENCIES = Object.freeze({
+  unifiedCall: (request) => unifiedAIProvider.call(request),
+  adaptiveCliCall: (agentConfig, systemPrompt, userPrompt, role) =>
+    callAdaptiveCli(agentConfig, systemPrompt, userPrompt, role),
+  sleep: (delayMs) => new Promise((resolve) => setTimeout(resolve, delayMs)),
+  random: () => Math.random(),
+});
+
+let _callDependencies = { ...DEFAULT_CALL_DEPENDENCIES };
+
+// Narrow, resettable seam for offline tests. Production callers should use
+// callRole; this exists so budget-ordering tests can prove that durable reserve
+// and settle operations surround dispatch without touching a provider, CLI,
+// network, or real backoff timer.
+export function setRealLLMTestDependencies(overrides = {}) {
+  const allowed = new Set(Object.keys(DEFAULT_CALL_DEPENDENCIES));
+  for (const [name, value] of Object.entries(overrides)) {
+    if (!allowed.has(name)) throw new Error(`adaptiveTutor.realLLM: unknown test dependency '${name}'`);
+    if (typeof value !== 'function') {
+      throw new Error(`adaptiveTutor.realLLM: test dependency '${name}' must be a function`);
+    }
+  }
+  _callDependencies = { ...DEFAULT_CALL_DEPENDENCIES, ...overrides };
+}
+
+export function resetRealLLMTestDependencies() {
+  _callDependencies = { ...DEFAULT_CALL_DEPENDENCIES };
+}
+
+function normalizedTokenCount(value) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0;
+}
+
+function normalizeCallResponse(response, { configuredProvider, configuredModel, isCliProvider }) {
+  const usage = isCliProvider ? response : response?.usage;
+  const reportedCostCandidate = usage?.cost;
+  const reportedCostPresent = typeof reportedCostCandidate === 'number' && Number.isFinite(reportedCostCandidate);
+  const inputTokens = normalizedTokenCount(usage?.inputTokens);
+  const outputTokens = normalizedTokenCount(usage?.outputTokens);
+
+  return {
+    text: isCliProvider ? response?.text || '' : response?.content || '',
+    model: response?.model || configuredModel,
+    provider: response?.provider || configuredProvider,
+    latencyMs: response?.latencyMs,
+    inputTokens,
+    outputTokens,
+    // Catalog settlement requires both sides of the token equation. Treat a
+    // partial/zero usage payload as unresolved so the full reservation stays
+    // charged rather than estimating from incomplete evidence.
+    tokenUsagePresent: inputTokens > 0 && outputTokens > 0,
+    reportedCostPresent,
+    reportedCost: reportedCostPresent ? reportedCostCandidate : null,
+  };
+}
+
+function untrackedCostResult({ provider, model, reportedCostPresent, reportedCost }) {
+  if (provider === 'claude-code' || provider === 'codex') {
+    return {
+      usd: 0,
+      basis: 'not_metered_here',
+      provenance: { provider, model, source: 'subscription_route' },
+    };
+  }
+  if (reportedCostPresent) {
+    return {
+      usd: reportedCost,
+      basis: 'provider_reported',
+      provenance: { provider, model, source: 'provider_response' },
+    };
+  }
+  return {
+    usd: null,
+    basis: 'unknown',
+    provenance: { provider, model, source: 'provider_response_missing_cost' },
+  };
+}
+
 async function callAI(agentConfig, systemPrompt, userPrompt, role) {
   const { provider, model, hyperparameters } = agentConfig;
+  const isCliProvider = provider === 'claude-code' || provider === 'codex';
+  const tracker = _activeBudgetTracker;
+  const promptText = `${systemPrompt}\n${userPrompt}`;
 
   // Branch the per-call function on provider: local CLI providers skip
   // tutor-core entirely; everything else keeps the existing
   // unifiedAIProvider path. Retry/backoff applies uniformly.
-  const callOnce =
-    provider === 'claude-code' || provider === 'codex'
-      ? () => callAdaptiveCli(agentConfig, systemPrompt, userPrompt, role)
-      : () =>
-          unifiedAIProvider.call({
-            provider,
-            model,
-            systemPrompt,
-            messages: [{ role: 'user', content: userPrompt }],
-            preset: 'direct',
-            config: {
-              temperature: hyperparameters?.temperature,
-              maxTokens: hyperparameters?.max_tokens,
-            },
-          });
+  const callOnce = isCliProvider
+    ? () => _callDependencies.adaptiveCliCall(agentConfig, systemPrompt, userPrompt, role)
+    : () =>
+        _callDependencies.unifiedCall({
+          provider,
+          model,
+          systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }],
+          preset: 'direct',
+          config: {
+            temperature: hyperparameters?.temperature,
+            maxTokens: hyperparameters?.max_tokens,
+          },
+        });
 
   const maxAttempts = 3;
   const backoffsMs = [500, 2000]; // wait[i] applies after attempt i+1 fails
-  let response;
   let lastErr;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    // Reserve immediately before every physical dispatch. This intentionally
+    // sits outside the provider-error catch: a denial or persistence failure
+    // is terminal and cannot trigger a transport retry.
+    const reservation = tracker
+      ? await tracker.reserveAttempt({
+          provider,
+          model,
+          role,
+          promptText,
+          maxOutputTokens: hyperparameters?.max_tokens,
+        })
+      : null;
+
+    let response;
     try {
       response = await callOnce();
-      lastErr = null;
-      break;
     } catch (err) {
       lastErr = err;
+      // A transport failure is spend-ambiguous: the provider may have accepted
+      // and billed the request before the client lost the response. Persist
+      // that state before considering another physical attempt.
+      if (tracker) {
+        await tracker.markAttemptAmbiguous(reservation, {
+          reason: err?.message || String(err),
+        });
+      }
       if (attempt === maxAttempts || !isRetryableError(err)) throw err;
       const baseDelay = backoffsMs[attempt - 1];
-      const jitter = Math.floor(Math.random() * baseDelay * 0.2);
+      const jitter = Math.floor(_callDependencies.random() * baseDelay * 0.2);
       const delay = baseDelay + jitter;
       console.warn(
         `[adaptive.realLLM] retry ${attempt}/${maxAttempts - 1} for ${role || 'call'} after ${delay}ms: ${(err?.message || String(err)).slice(0, 160)}`,
       );
-      await new Promise((r) => setTimeout(r, delay));
+      await _callDependencies.sleep(delay);
+      continue;
     }
-  }
-  if (!response) throw lastErr || new Error('adaptiveTutor.realLLM: callAI exhausted retries with no response');
 
-  // CLI providers already return flat-token shape; tutor-core path needs unpacking.
-  if (provider === 'claude-code' || provider === 'codex') return response;
+    const normalized = normalizeCallResponse(response, {
+      configuredProvider: provider,
+      configuredModel: model,
+      isCliProvider,
+    });
+    // Settle is deliberately outside the provider-error catch. If the
+    // response arrived but the durable ledger update fails, retrying would
+    // dispatch a second billable request and make the accounting defect worse.
+    const costResult = tracker
+      ? await tracker.settleAttempt(reservation, {
+          provider: normalized.provider,
+          model: normalized.model,
+          inputTokens: normalized.inputTokens,
+          outputTokens: normalized.outputTokens,
+          tokenUsagePresent: normalized.tokenUsagePresent,
+          reportedCostPresent: normalized.reportedCostPresent,
+          reportedCost: normalized.reportedCost,
+        })
+      : untrackedCostResult(normalized);
 
-  const inputTokens = response.usage?.inputTokens || 0;
-  const outputTokens = response.usage?.outputTokens || 0;
-  let cost = response.usage?.cost || 0;
-  if (cost === 0 && (inputTokens > 0 || outputTokens > 0)) {
-    const [inRate, outRate] = lookupRates(response.model || model);
-    cost = (inputTokens / 1000) * inRate + (outputTokens / 1000) * outRate;
+    return {
+      text: normalized.text,
+      model: normalized.model,
+      provider: normalized.provider,
+      latencyMs: normalized.latencyMs,
+      inputTokens: normalized.inputTokens,
+      outputTokens: normalized.outputTokens,
+      cost: costResult?.usd ?? null,
+      costBasis: costResult?.basis ?? 'unknown',
+      rateProvenance: costResult?.provenance ?? null,
+      ...(costResult?.ceilingExposureUsd != null ? { ceilingExposureUsd: costResult.ceilingExposureUsd } : {}),
+    };
   }
-  return {
-    text: response.content || '',
-    model: response.model,
-    provider: response.provider,
-    latencyMs: response.latencyMs,
-    inputTokens,
-    outputTokens,
-    cost,
-  };
+  throw lastErr || new Error('adaptiveTutor.realLLM: callAI exhausted retries with no response');
 }
 
 const DEFAULT_PROVIDER = 'openrouter';
@@ -205,10 +317,11 @@ const DEFAULT_PROVIDER = 'openrouter';
 const DEFAULT_MODEL_ALIAS = 'sonnet';
 
 // Module-scoped budget tracker. Bound by runAdaptiveEvaluation in index.js
-// when --max-cost is set; cleared in its finally block. callRole consults
-// it on every invocation. Module-level state (rather than arg-threading
-// through the LangGraph builder) keeps the change surgical: graph nodes
-// already call callRole(role, payload) with no per-invocation context.
+// when --max-cost is set; cleared in its finally block. callAI consults it
+// around every physical transport attempt, including retries and corrective
+// re-calls. Module-level state (rather than arg-threading through the LangGraph
+// builder) keeps the change surgical: graph nodes already call
+// callRole(role, payload) with no per-invocation context.
 let _activeBudgetTracker = null;
 
 export function setActiveBudgetTracker(tracker) {
@@ -1386,29 +1499,7 @@ export async function callRole(role, payload) {
   const agentConfig = buildAgentConfig(role);
   const userPrompt = buildUser(payload);
 
-  // Pre-call budget gate. The estimate is a heuristic abort signal; the
-  // exact cost is recorded post-call from raw.cost (set by tutor-core's
-  // callAI). When no tracker is active (mock runs, or --max-cost omitted)
-  // both branches are no-ops.
-  if (_activeBudgetTracker) {
-    const promptForEstimate = `${systemPrompt}\n${userPrompt}`;
-    const est = _activeBudgetTracker.estimate(
-      promptForEstimate,
-      agentConfig.hyperparameters?.max_tokens,
-      agentConfig.model,
-    );
-    _activeBudgetTracker.assertBelowCeiling(est);
-  }
-
   const raw = await callAI(agentConfig, systemPrompt, userPrompt, role);
-
-  if (_activeBudgetTracker) {
-    _activeBudgetTracker.record({
-      inputTokens: raw?.inputTokens || 0,
-      outputTokens: raw?.outputTokens || 0,
-      cost: raw?.cost || 0,
-    });
-  }
 
   const text = raw?.text ?? '';
 
@@ -1495,13 +1586,6 @@ export async function callRole(role, payload) {
       'self-contained rewritten tutor system prompt), "detectedFrustrationSignal" (string), ' +
       '"correctiveDirective" (string).';
     const rawRetry = await callAI(agentConfig, systemPrompt, correctiveUserPrompt, role);
-    if (_activeBudgetTracker) {
-      _activeBudgetTracker.record({
-        inputTokens: rawRetry?.inputTokens || 0,
-        outputTokens: rawRetry?.outputTokens || 0,
-        cost: rawRetry?.cost || 0,
-      });
-    }
     result = parseAndValidate(rawRetry?.text ?? '');
     if (!result.ok) {
       console.warn(

@@ -12,6 +12,7 @@ import {
   loadTutorCharismaRubric,
   loadTutorHolisticRubric,
 } from '../rubricEvaluator.js';
+import { createBudgetRepository } from './budgetRepository.js';
 import { openEvaluationDatabase } from './connection.js';
 import { createDialogueLogRepository } from './dialogueLogRepository.js';
 import { createExportRepository } from './exportRepository.js';
@@ -147,6 +148,7 @@ export function createEvaluationStore({
     getScenarioStats: (...args) => statisticsRepository.getScenarioStats(...args),
   });
   const dialogueLogRepository = createDialogueLogRepository({ logsRoot: resolvedLogsRoot });
+  const budgetRepository = createBudgetRepository({ db, now });
 
   const operations = {
     ...resultRepository,
@@ -156,6 +158,7 @@ export function createEvaluationStore({
     ...statisticsRepository,
     ...exportRepository,
     ...dialogueLogRepository,
+    ...budgetRepository,
   };
   const store = Object.fromEntries(
     Object.entries(operations)

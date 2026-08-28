@@ -665,6 +665,57 @@ describe('call() with local provider (non-streaming)', () => {
   });
 });
 
+describe('call() with OpenRouter cost provenance', () => {
+  let originalFetch;
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('preserves an absent provider cost as null', async () => {
+    globalThis.fetch.mockResolvedValueOnce(
+      mockJSONResponse({
+        id: 'offline-no-cost',
+        choices: [{ message: { content: 'No cost field.' }, finish_reason: 'stop' }],
+        usage: { prompt_tokens: 10, completion_tokens: 4 },
+      })
+    );
+
+    const result = await call({
+      provider: 'openrouter',
+      model: 'test-org/test-model',
+      systemPrompt: 'Offline test',
+      messages: [{ role: 'user', content: 'Hi' }],
+    });
+
+    expect(result.usage.cost).toBeNull();
+  });
+
+  it('preserves a provider-reported numeric zero', async () => {
+    globalThis.fetch.mockResolvedValueOnce(
+      mockJSONResponse({
+        id: 'offline-zero-cost',
+        choices: [{ message: { content: 'Zero is explicit.' }, finish_reason: 'stop' }],
+        usage: { prompt_tokens: 10, completion_tokens: 4, cost: 0 },
+      })
+    );
+
+    const result = await call({
+      provider: 'openrouter',
+      model: 'test-org/test-model',
+      systemPrompt: 'Offline test',
+      messages: [{ role: 'user', content: 'Hi' }],
+    });
+
+    expect(result.usage.cost).toBe(0);
+  });
+});
+
 // ===========================================================================
 // Utility exports
 // ===========================================================================
