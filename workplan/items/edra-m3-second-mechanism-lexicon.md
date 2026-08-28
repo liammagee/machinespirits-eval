@@ -1,13 +1,13 @@
 ---
 id: edra-m3-second-mechanism-lexicon
 title: "Finish EDRA M3: second mechanism lexicon, anchor demotion, paper amendment"
-status: active
+status: done
 type: research
 priority: P2
 owner: codex
 source: manual
 created: 2026-08-27
-updated: 2026-08-27
+updated: 2026-08-28
 verification: >-
   Forward-only semantic v5 tutor-mechanism and learner-action measurement
   requires two independent, high-confidence judges with quoted before/after
@@ -27,6 +27,7 @@ links:
     - notes/poetics/2026-05-28-edra-m3-surgery-spec.md
     - notes/poetics/2026-05-26-stratified-adaptation-pilot.md
     - notes/poetics/2026-08-27-edra-m3-historical-v4-reproducibility-audit.md
+    - notes/poetics/2026-08-28-semantic-v5-conceptual-replication-option.md
     - docs/research/paper-full-2.0.md
   code:
     - scripts/analyze-poetics-tutor-adaptation.js
@@ -114,6 +115,10 @@ Suggested worker: Codex Sol at Ultra reasoning effort.
 - 2026-08-27 — Model/provider activity remained inactive: zero generation,
   judging, or paid calls. All verification used fixtures, mocks, local checks,
   and existing evidence.
+- 2026-08-28 — Recorded semantic v5 as a deferred conceptual-replication option,
+  not a recovery or validation of the missing historical v4 aggregate. The note
+  fixes the estimand, outcome meanings, non-claims, incomplete third-anchor gate,
+  and preservation requirements without starting any model-backed operation.
 
 ## Log
 
@@ -130,3 +135,7 @@ Suggested worker: Codex Sol at Ultra reasoning effort.
   correction, and the card remains active pending recovery of authentic
   historical gate evidence or prospective qualification of a third clean
   semantic-v5 anchor.
+- 2026-08-28 — Closed after merged PR #842 and the deferred-v5 note. All scoped
+  implementation, measurement-boundary, paper-caveat, and outcome-blind-screen
+  work is complete. A future v5 study would require its own explicit priority,
+  completed clean-anchor set, prospective design, and model-run authority.
