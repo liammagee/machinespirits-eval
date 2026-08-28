@@ -46,7 +46,7 @@ function createGitFixture() {
 function buildAutoPlan(changedFiles, argv = []) {
   const requested = parseLocalCiArgs(argv);
   const selection = resolveLocalCiProfile(requested, changedFiles);
-  const options = { ...requested, profile: selection.profile };
+  const options = { ...requested, profile: selection.profile, requestedProfile: selection.requestedProfile };
   return {
     options,
     selection,
@@ -168,6 +168,21 @@ test('automatic local CI preserves fail-closed selection and research validation
   assert.equal(
     canonicalPaper.plan.some((lane) => lane.id === 'node-tests'),
     true,
+  );
+
+  const refStatus = buildAutoPlan(['docs/ref-status.md']);
+  assert.equal(refStatus.selection.classification.refGovernanceRequired, true);
+  assert.equal(
+    refStatus.plan.some((lane) => lane.id === 'ref-governance'),
+    true,
+  );
+
+  const unrelatedRuntime = buildAutoPlan(['services/evaluationStore.js']);
+  assert.equal(unrelatedRuntime.selection.profile, 'full');
+  assert.equal(unrelatedRuntime.selection.classification.refGovernanceRequired, false);
+  assert.equal(
+    unrelatedRuntime.plan.some((lane) => lane.id === 'ref-governance'),
+    false,
   );
 
   const explicitFull = parseLocalCiArgs(['--profile=full', '--no-install', '--surface=never']);
@@ -337,10 +352,13 @@ test('full local CI plan covers the data-independent GitHub command contract', (
   for (const expected of [
     'npm run test:manifest',
     'npm run skills:permissions:check',
+    'node --test tests/ciChangePolicy.test.js tests/localCiRunner.test.js',
     'npm run refs:check',
     'npm run lint',
+    'npm run lint:tutor-core',
     'npm run lint:cycles',
     'npm run format:check',
+    'npm run format:check:tutor-core',
     'npm run test:root -- --shard=1/2 --quiet',
     'npm run test:root -- --shard=2/2 --quiet',
     'npm run test:core -- --quiet',
@@ -509,4 +527,8 @@ test('npm and workflow integration expose local and manual recovery entry points
   assert.equal(manifest.scripts['native:rebuild:node'], undefined);
   const workflow = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
   assert.match(workflow, /^ {2}workflow_dispatch: \{\}$/mu);
+  const refWorkflow = fs.readFileSync(path.resolve('.github/workflows/ref-governance.yml'), 'utf8');
+  assert.match(refWorkflow, /^ {2}schedule:$/mu);
+  assert.match(refWorkflow, /^ {2}workflow_dispatch: \{\}$/mu);
+  assert.match(refWorkflow, /archive-snapshot\/\*\*/u);
 });
