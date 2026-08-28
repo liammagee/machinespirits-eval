@@ -1,0 +1,278 @@
+{
+  "schema": "machinespirits.tutor-stub.frame-refuser-satisfiable-study-design.v1",
+  "revision": 1,
+  "studyId": "frame-refuser-satisfiable",
+  "label": "Condition discharge against the sealed standing-conditions bridge, on a frame-refuser whose demanded node is a witnessable exhibit",
+  "status": "prospective_zero_call_design_pending_implementation_and_typed_approval",
+  "workplanItem": "frame-refuser-satisfiable-condition",
+  "registrationSource": "notes/2026-08-28-frame-refuser-satisfiable-registration.md",
+  "authorizationPolicy": "docs/paid-study-authorization-policy.md",
+  "lineage": {
+    "parentDesign": "config/tutor-stub-resistant-learner-merged-design.v5.json",
+    "parentRole": "sealed_reference_condition_and_shared_machinery",
+    "predecessorStudy": "config/tutor-stub-frame-refuser-depth-design.v4.json",
+    "predecessorOutcome": "closed_as_calibration_stage_null_0_of_38_at_rung_2",
+    "predecessorRowsReused": false,
+    "measuredReferenceRung2Rate": 0.114,
+    "measuredReferenceRung2Counts": "8/70 determinate face-B dialogues in the sealed merged powered run",
+    "whatCarriesOverUnchanged": [
+      "the three-seat modal endpoint panel and its 0.8 pairwise exact agreement floor",
+      "the engagement ladder rungs 0/1/2, byte-identical, so the 0.114 base stays comparable",
+      "the reference arm: the sealed face-B standing-conditions bridge, unchanged",
+      "the v4 quote-echo exemption in the treatment adjudication question",
+      "the v4 attrition budget (48 dialogues, 24 per arm, floors of 8 completed per arm)",
+      "underscore-only lowercase case ids; the halt-and-resume launcher behaviour"
+    ]
+  },
+  "registeredQuestion": "For a standing-rivalry learner whose demanded node is a witnessable exhibit rather than a rule consequent, does a tutor move that discharges the demanded condition raise the rate of rung 2 or higher above the sealed standing-conditions bridge?",
+  "whichNumberMoves": {
+    "primary": "The proportion of determinate completed dialogues per arm whose final_graded_engagement_rung is 2 or higher.",
+    "secondary": [
+      "The rung>=1 rate per arm as a saturation check against the sealed 70/70.",
+      "The proportion of completed treatment rows in which the demanded exhibit was made public within the outcome horizon (discharge opportunity rate), reported not gated."
+    ],
+    "poolingAcrossArms": false
+  },
+  "claimBoundary": "Any claim is limited to the frame_refuser_exhibit-r2-rival-dag-v1 persona on world_005_marrick and world_030_rowan_flat, this engagement ladder, this move family, and the block that produced it. No claim transfers to the frame_refuser-r1-rival-dag-v3 persona, whose null is already recorded and is not revisited here.",
+  "whyThisPersonaVariantExists": {
+    "finding": "The predecessor persona mints its open nodes with warrantOpenNodes() in services/tutorStubRivalLearnerDag.js, which maps the authored proof path's RULE ids to open nodes whose task text is the rule gloss. The learner therefore demands that a rule be satisfied, and a rule's satisfaction is its consequent — a derived fact. No world premise witnesses a rule consequent, because that is what makes it a rule rather than an observation.",
+    "consequence": "The demand is undischargeable by construction, in every world, not by accident of one world's premise set. Presenting both antecedents leaves the consequent an inference the learner may still decline, and the ladder scores a continued demand at rung 1.",
+    "workedCase": "world_030_rowan_flat open_1_R1_release demands 'A fitting released water during the incident when it opens under raised pressure and the building pressure rose during that same interval.' Its consequent is releasedWaterDuring(basinFeedHose, incidentWindow). The world contains p_split (opens under raised pressure) and p_pressure (pressure rose during the interval) and no premise witnessing the conjunction.",
+    "change": "This design mints the open nodes from the authored path's PREMISES — exhibits the world can actually show — while keeping the standing-rivalry frame. The demand becomes 'this exhibit must be public before your frame has standing', which a tutor can meet.",
+    "derivationSource": "notes/2026-08-28-frame-refuser-satisfiable-registration.md section 'Dischargeability derivation'"
+  },
+  "population": {
+    "profile": "frame_refuser_exhibit-r2-rival-dag-v1",
+    "baseCompatibilityId": "frame_refuser",
+    "worlds": ["world_005_marrick", "world_030_rowan_flat"],
+    "trigger": "unchanged from the parent design: first determinate public standing-rivalry turn under config/tutor-stub-resistant-learner-merged-turn-gate-registration.v1.json",
+    "maximumTriggerLearnerTurn": 2,
+    "outcomeHorizonPostTriggerLearnerTurns": 8,
+    "independentUnit": "fresh independent dialogue",
+    "reuseOrPooling": false,
+    "rivalDagPersona": {
+      "mechanism": "standing_rivalry_over_exhibits",
+      "mint": {
+        "source": "the assigned validated dramatic-derivation world",
+        "pipeline": "loadWorld -> buildLearnerDagSnapshot -> buildLearnerDag",
+        "openNodeKind": "exhibit",
+        "openNodeRule": "the authored proof path's premises, in release order, each node's task text being that premise's authored surface",
+        "frameConstruction": "the learner objective is the public exhibit chain that must be entered in the record before the tutor's answer frame has standing",
+        "selection": "sha256-ranked authored proof path from master seed plus job id",
+        "adHocAuthorshipAllowed": false,
+        "implementationStatus": "Implemented 2026-08-28 as study code R2 in services/tutorStubRivalLearnerDag.js (exhibitOpenNodes plus the fail-closed selectTutorStubDemandedExhibit), and wired into the plan build in services/tutorStubResistantLearnerCalibration.js: every job carries study R2 and a resolved demanded exhibit, or the plan refuses to build. R1 and B1 mint byte-identically. Pinned by tests/tutorStubFrameRefuserSatisfiableMint.test.js and tests/tutorStubFrameRefuserSatisfiablePlan.test.js."
+      },
+      "demandSelectionRule": {
+        "id": "earliest_unreleased_authored_path_premise_within_horizon",
+        "statement": "The learner's standing demand names the earliest premise on the authored proof path that is (a) not already public at the trigger turn and (b) scheduled for release within the outcome horizon. That premise is the demanded exhibit for the dialogue.",
+        "whyNotSimplyTheFirstPremise": "A premise already public at the trigger turn makes the demand empty; a premise scheduled past the horizon makes it undischargeable again, which is the defect this design exists to remove.",
+        "failClosed": "If no authored-path premise satisfies both conditions for an assigned world, the plan build refuses that world. A run never starts with an undischargeable demand."
+      },
+      "behavior": [
+        "Treat the dispute as competition between the tutor's answer frame and your record-first frame, not as a manner rule.",
+        "On the first eligible turn, name which public exhibit must be entered in the record before the tutor's question or answer has standing.",
+        "On a turn where the private directive says the typed concession condition is NOT met, state the next exact exhibit demand or explain why the proposed test still depends on the disputed frame.",
+        "On the first turn where the private directive says the typed concession condition is MET, your public turn MUST take the one bounded bridge step: connect the named overlap to a public tutor-world item in your own words, while you keep at least one node open and state the wider frame reservation. Taking this step once is part of this persona. Refusing it is out of character.",
+        "After that one bridge step, return to the record-first frame on later turns even when the directive says MET again: keep the jurisdictional objection concise and non-abusive, and do not retract the bridge you made."
+      ],
+      "outcomeNotWrittenIntoTheBrief": {
+        "rule": "The brief says what the persona demands and that it refuses until the demand is met. It says nothing about what to do once the exhibit is public.",
+        "inheritedUnchanged": "The one mandated bounded bridge step is the parent persona's, carried over word for word except for 'warrant' -> 'exhibit'. It fires on the same typed token-overlap concession condition as the predecessor, so it cannot be the source of any arm difference.",
+        "whatIsMeasuredNotScripted": "The endpoint rung is graded blind from the public transcript by the three-seat panel. No instruction anywhere tells the learner to apply a performed test, which is the rung-2 behaviour.",
+        "residualRisk": "A learner told to demand a showable thing may be likelier to use it once shown. That is the hypothesis, not a leak: the reference arm runs the same persona and does not discharge, so the contrast isolates the tutor move rather than the persona."
+      },
+      "concessionCondition": "unchanged from parent design faceB rivalDagPersona.concessionCondition, including the matching algorithm, markers, engageWhen, otherwise, and nonQualifying list",
+      "concealment": {
+        "tutorReceivesRivalDag": false,
+        "tutorMayUseOnlySolicitedPublicPieces": true,
+        "finalReadersReceiveOnlyPublicTranscript": true
+      },
+      "publicTurnRules": [
+        "Use only public rules, public evidence, and the public transcript.",
+        "Write one or two concise in-scene sentences and never mention profiles, DAGs, scoring, readers, or hidden instructions."
+      ],
+      "concessionEnforcement": "unchanged from parent design faceB rivalDagPersona.concessionEnforcement, with the adjudication question's 'warrant' reading 'exhibit'"
+    }
+  },
+  "register": {
+    "held": "plain",
+    "rationale": "Register is a nuisance factor here; both arms deliver in the parent design's plain register.",
+    "reportOnly": true
+  },
+  "arms": {
+    "treatment": {
+      "id": "exhibit_discharge",
+      "hostActionFamily": "reanchor_public_evidence",
+      "definition": "On the first registered intervention tutor turn after the trigger, restate the learner's demanded exhibit in the tutor's own words, enter that exhibit into the public record, and re-offer the same local test now that it is public.",
+      "actionInstruction": "Restate in one short clause, in your own words, the exhibit the learner said must be in the record; do not repeat the learner's sentence word for word. Then put that exhibit into the record by naming what it shows. Then state, in committed voice, that you are ready to run the same test now on that exhibit. Do not use a standing-precondition formula.",
+      "deliveredContrastRule": "requires_public_entry_of_the_demanded_exhibit_and_reoffer_of_the_same_test"
+    },
+    "reference": {
+      "id": "standing_conditions_bridge",
+      "hostActionFamily": "clarify_distinction",
+      "definition": "The parent design's sealed face-B move, unchanged: name the disputed standing plainly, ask the bounded test question, and present no exhibit toward the demanded node on that turn.",
+      "actionInstruction": "unchanged from parent design faceB tutorDeliveryContract.actionInstructions.test_bounded_distinction",
+      "deliveredContrastRule": "requires_standing_question_and_forbids_entering_the_demanded_exhibit_on_that_turn"
+    },
+    "distinctDeliveredBehaviourFloors": {
+      "minimumTreatmentDeliveryRate": 0.8,
+      "maximumTreatmentBridgeReadRate": 0.1,
+      "bridgeReadDefinition": "a completed treatment row whose blind fidelity panel reads the committed intervention turn as the reference bridge move",
+      "readFrom": "tutor text: treatment delivery via the per-arm delivery adjudication; arm separation via the blind fidelity panel",
+      "referenceCleanliness": "enforced, not gated: the bundled reference adjudication question forbids entering the demanded exhibit on the intervention turn",
+      "lesson": "the v7 boredom study delivered one behaviour twice and its gate compared the assignment with its own copy; that class of defect voids the run"
+    }
+  },
+  "measurement": {
+    "endpointField": "final_graded_engagement_rung",
+    "fixedFinalHorizon": true,
+    "ladderSource": "parent design faceB measurement.rungs, BYTE-IDENTICAL and deliberately not clarified (0 standing_objection_only, 1 propositional_local_engagement, 2 local_step_under_protest)",
+    "ladderNotAmended": "The v4 run failed pairwise agreement at one rubric boundary: a learner naming a quantitative bound while still withholding. Clarifying the ladder here would break comparability with the measured 0.114 reference rate, so the ladder is left alone and the risk is carried openly under knownRisks.",
+    "echoGuard": "unchanged from parent design faceB",
+    "readerPanel": {
+      "protocolSource": "config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json",
+      "seats": "the sealed three-seat modal endpoint panel (codex.gpt-5.6-sol, claude-code.sonnet-5, claude-code.opus-5); each field takes the modal value across eligible medium/high-confidence votes",
+      "minimumPairwiseExactAgreement": 0.8,
+      "generatorExcludedFromVoting": "codex.gpt-5.6-luna",
+      "visibility": "public transcript only; arm assignment, rival DAG, and directives are never shown to endpoint seats"
+    },
+    "secondaryNarrowingEndpoint": {
+      "status": "carried only if the narrowing codebook has landed before Gate 1",
+      "source": "workplan item frame-refuser-refusal-narrowing",
+      "role": "secondary and report-only; it never gates this run and never replaces the primary rung"
+    }
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "learner": "codex.gpt-5.6-luna",
+    "analysisScope": "classifier_and_learner_record_support_only",
+    "cliEffort": "low",
+    "triggerObservation": "unchanged from parent design faceB (registered judges under the merged turn-gate registration)",
+    "stackNote": "held to the sealed stack so the reference arm stays comparable with the measured 0.114"
+  },
+  "randomization": {
+    "masterSeed": 2026083001,
+    "algorithm": "sha256-ranked balanced allocation within the calibration block",
+    "seedDisclosure": "fresh seed for this study so no assignment from any of the four archived depth calibrations is re-drawn; their rows are never reused and no unit from them is resampled",
+    "caseIdRule": "underscore_only_lowercase",
+    "caseIdStem": "sat1"
+  },
+  "calibration": {
+    "dialogues": 48,
+    "perArm": 24,
+    "allocation": "twelve dialogues per world per arm, sha256-ranked balanced allocation from the master seed",
+    "attritionBasis": "sized on the v4 realized attrition of 40% (19 typed failures of 48), which reached floors of 8 in both arms",
+    "authoritativeGates": [
+      "minimumDeterminateOutcomeRate 0.8 with floor 8",
+      "minimumEligibleVoteRatePerSeatAndInstrument 0.8 with floor 8",
+      "minimumPairwiseExactEndpointAgreement 0.8",
+      "minimumTreatmentDeliveryRate 0.8 on adjudicated intervention turns",
+      "maximumTreatmentBridgeReadRate 0.1 on completed treatment rows",
+      "maximumConfirmedProhibitedDeliveries 0",
+      "minimumJurisdictionRetainedRateOnCompletedRows 0.67 with floor 6",
+      "minimumDischargeOpportunityRateOnCompletedTreatmentRows 0.8: the demanded exhibit was available to the tutor within the outcome horizon"
+    ],
+    "sizingUse": "the calibration reference-arm rung-2 rate updates the power table's base rate for powered sizing; this is the calibration's registered purpose and not an interim outcome analysis",
+    "killRule": "stop before a powered run if any authoritative gate fails, if execution accounting does not balance, or if the treatment arm shows zero adjudicated deliveries; relaxing any floor after data is refused"
+  },
+  "poweredRun": {
+    "authorization": "not_granted_by_this_design_or_calibration",
+    "calibrationRowsExcluded": true,
+    "registeredAlternative": 0.35,
+    "sizingRule": "smallest n per arm in {42, 48, 54, 60, 72, 84, 90} whose exact two-sided Fisher power at alpha 0.05 against rung-2 rate 0.35 in the treatment arm, computed at the calibration-updated reference rate, reaches 0.80; if no n at or below 90 reaches 0.80, stop and report infeasible at ceiling",
+    "prospectivePowerScanAtDesignBase0114": {
+      "36": {
+        "0.25": 0.228,
+        "0.30": 0.398,
+        "0.35": 0.581,
+        "0.40": 0.743,
+        "0.45": 0.864
+      },
+      "42": {
+        "0.25": 0.286,
+        "0.30": 0.483,
+        "0.35": 0.675,
+        "0.40": 0.826,
+        "0.45": 0.921
+      },
+      "48": {
+        "0.25": 0.309,
+        "0.30": 0.53,
+        "0.35": 0.731,
+        "0.40": 0.873,
+        "0.45": 0.951
+      },
+      "54": {
+        "0.25": 0.349,
+        "0.30": 0.584,
+        "0.35": 0.785,
+        "0.40": 0.911,
+        "0.45": 0.971
+      },
+      "60": {
+        "0.25": 0.398,
+        "0.30": 0.643,
+        "0.35": 0.833,
+        "0.40": 0.939,
+        "0.45": 0.983
+      }
+    },
+    "powerScanProvenance": "carried unchanged from the v4 design; the reference arm and ladder are unchanged, so the same base-rate table applies",
+    "maximumDialoguesPerArm": 90,
+    "separateAuthorizationRequired": true
+  },
+  "attemptCeilings": {
+    "callPlanPerDialogue": "carried from the parent design (64 planned calls per dialogue) as a fail-before-call ceiling",
+    "plannedCallsCalibration": 3072,
+    "maximumReservationsPerPlannedCall": 3,
+    "calibrationMaximumReservations": 9504,
+    "role": "fail-before-call ceiling, not a target",
+    "ledger": "the shared budget ledger keyed by the run id, per services/adaptiveTutor/meteredRunSession.js"
+  },
+  "dispositions": {
+    "measurementIndeterminate": "retain; stop the unit; no repair, rerun, replacement, or recoding",
+    "technicalFailure": "halt the block before starting another unit",
+    "validUnitRerun": false,
+    "outcomeSelection": false,
+    "interimOutcomeAnalysis": false,
+    "tutorNonDelivery": "retain; stop the unit; never score or determine a rung; never charge the learner; no rerun",
+    "demandedExhibitUnavailable": "retain; stop the unit; typed as a plan defect, never scored, and the plan build that allowed it is the thing to fix"
+  },
+  "knownRisks": [
+    {
+      "id": "reader_boundary_unresolved",
+      "statement": "The v4 run failed pairwise exact endpoint agreement (0.714 treatment, 0.733 reference) at one boundary: a learner naming a quantitative bound while still withholding. codex.gpt-5.6-sol reads that as rung 2; both Claude seats hold it at rung 1.",
+      "disposition": "The ladder is not amended, so the risk stands. If pairwise agreement fails again in the same boundary cell, that is a reader-resolution finding and the block stops. No floor is relaxed after data.",
+      "mitigationIfAvailable": "Gate 1 should wait for the narrowing codebook (workplan frame-refuser-refusal-narrowing) so the run can carry the finer secondary endpoint alongside the unchanged primary."
+    },
+    {
+      "id": "launch_path_not_wired",
+      "statement": "The plan build resolves and refuses, but no launch preflight compiles the runtime for this design: its per-arm delivery enforcement text is recorded as a reference to the sealed face-B contract rather than written out, so the arm projection the launcher needs cannot be built yet.",
+      "disposition": "Write the per-arm delivery adjudication questions into the design, then build the arm projection and launch preflight the way the depth study does. runTutorStubFrameRefuserSatisfiablePlanPreflight covers seven of the eight registered pre-launch checks today; the eighth is launch provenance, which is recorded and never enforced."
+    },
+    {
+      "id": "attrition",
+      "statement": "Realized attrition was 40% (v4) and 61% (v3). Floors of 8 per arm were reachable at 40% but not at 61%.",
+      "disposition": "48 dialogues at 24 per arm, unchanged from v4. If attrition returns to the v3 level the determinate-outcome gate fails and the block stops, as registered."
+    }
+  ],
+  "preflight": {
+    "zeroCallChecksBeforeAnyLaunch": [
+      "every assigned world yields a demanded exhibit under the demand selection rule, or the world is refused",
+      "minted open nodes carry openNodeKind 'exhibit' and resolve to authored-path premise ids",
+      "case ids are underscore-only lowercase and use the sat1 stem",
+      "no case id collides with any of the four archived depth calibration runs",
+      "the ladder rungs are byte-identical to the parent design faceB rungs",
+      "the reference arm instruction is byte-identical to the parent design faceB instruction",
+      "planned calls and reservations sit under the registered ceilings",
+      "the launch checkout is clean and detached at the commit naming this design file"
+    ]
+  },
+  "callAuthority": {
+    "grantsModelCalls": false,
+    "launchRequirement": "One attended invocation with TTY-only typed operator approval, under the three standing authorities in docs/paid-study-authorization-policy.md: this merged design file, a clean detached launch commit, and one signed GO note naming the design path, the commit, and the spend cap.",
+    "provenance": "Record source commit, source tree, and dirty flag in plan.json; do not enforce source or design digests at launch.",
+    "approvalSurvivesCodeFix": true,
+    "archive": "all paid artifacts pass npm run archive:runs and are committed in the private archive repository"
+  }
+}
