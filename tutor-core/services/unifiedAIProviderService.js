@@ -115,6 +115,7 @@ export function getAvailableProvider() {
  * @property {number} usage.inputTokens - Input/prompt tokens
  * @property {number} usage.outputTokens - Output/completion tokens
  * @property {number} usage.totalTokens - Total tokens
+ * @property {number|null} [usage.cost] - Provider-reported cost when present; null when absent
  * @property {number} latencyMs - Response time in milliseconds
  * @property {string} provider - Provider used
  */
@@ -196,7 +197,8 @@ async function callOpenRouter(model, systemPrompt, messages, config) {
     }
     inputTokens = data.usage?.prompt_tokens || 0;
     outputTokens = data.usage?.completion_tokens || 0;
-    cost = data.usage?.cost || 0;
+    const reportedCost = data.usage?.cost;
+    cost = typeof reportedCost === 'number' && Number.isFinite(reportedCost) ? reportedCost : null;
   }
 
   return {
@@ -206,7 +208,7 @@ async function callOpenRouter(model, systemPrompt, messages, config) {
       inputTokens,
       outputTokens,
       totalTokens: inputTokens + outputTokens,
-      cost: cost || 0,
+      cost: cost ?? null,
     },
     latencyMs: Date.now() - startTime,
     provider: 'openrouter',
@@ -609,7 +611,7 @@ export async function call({
         inputTokens,
         outputTokens,
         totalTokens: inputTokens + outputTokens,
-        cost: ext.cost || 0,
+        cost: typeof ext.cost === 'number' && Number.isFinite(ext.cost) ? ext.cost : null,
       },
       latencyMs: ext.latencyMs ?? Date.now() - startTime,
       provider,

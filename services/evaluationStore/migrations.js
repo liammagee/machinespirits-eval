@@ -1,4 +1,5 @@
 import { retypeScoreAuditResultId, scoreAuditTableSql } from './scoreAuditRetype.js';
+import { BUDGET_LEDGER_SCHEMA_SQL } from './budgetRepository.js';
 
 export function migrateEvaluationDatabase(db) {
   // Migrate: rename evaluator_model → judge_model if the old column exists
@@ -352,6 +353,13 @@ export function migrateEvaluationDatabase(db) {
   // Migrations: Add columns to evaluation_runs
   migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`, 'git_commit');
   migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN package_version TEXT`, 'package_version');
+
+  // Crash-safe run budget ledger. A reservation is committed before a model
+  // attempt is dispatched. Pending and ambiguous attempts deliberately retain
+  // their reserved exposure; a settled attempt replaces that bound with its
+  // explicit cost and provenance. The composite attempt key permits a caller
+  // to reuse its local attempt id across providers without collapsing them.
+  db.exec(BUDGET_LEDGER_SCHEMA_SQL);
 
   // Migration: Revert any accidental renames (batch→matrix, interact→interaction)
   try {

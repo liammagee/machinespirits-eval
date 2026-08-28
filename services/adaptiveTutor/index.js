@@ -233,7 +233,20 @@ export async function runAdaptiveEvaluation({
   // Budget tracker is bound when --max-cost is set. Mock runs ignore it.
   let tracker = null;
   if (maxCostUsd != null && maxCostUsd > 0 && llmMode() !== 'mock') {
-    tracker = createBudgetTracker({ maxUsd: maxCostUsd });
+    try {
+      tracker = createBudgetTracker({
+        maxUsd: maxCostUsd,
+        runId: run.id,
+        ledgerStore: evaluationStore,
+      });
+    } catch (error) {
+      evaluationStore.updateRun(run.id, {
+        status: 'halted_budget_ledger',
+        totalTests: 0,
+        completedAt: new Date().toISOString(),
+      });
+      throw error;
+    }
     setActiveBudgetTracker(tracker);
     if (verbose) console.log(`[adaptive] budget ceiling: $${maxCostUsd.toFixed(2)}`);
   }
@@ -258,6 +271,7 @@ export async function runAdaptiveEvaluation({
   const persisted = [];
   let halted = false;
   let haltReason = null;
+  let haltCode = null;
 
   try {
     outer: for (const yamlScenario of scenarios) {
@@ -334,10 +348,12 @@ export async function runAdaptiveEvaluation({
           }
           if (verbose) console.log(`[adaptive]   ✓ ${scenario.id}`);
         } catch (err) {
-          if (err?.code === 'BUDGET_EXCEEDED') {
+          if (err?.code === 'BUDGET_EXCEEDED' || err?.code === 'BUDGET_LEDGER_PERSISTENCE') {
             halted = true;
             haltReason = err.message;
-            console.error(`[adaptive] BUDGET HALT on ${scenario.id}: ${err.message}`);
+            haltCode = err.code;
+            const haltLabel = err.code === 'BUDGET_EXCEEDED' ? 'BUDGET' : 'BUDGET LEDGER';
+            console.error(`[adaptive] ${haltLabel} HALT on ${scenario.id}: ${err.message}`);
             break outer;
           }
           console.error(`[adaptive]   ✗ ${scenario.id}: ${err.message}`);
@@ -351,7 +367,11 @@ export async function runAdaptiveEvaluation({
   }
 
   evaluationStore.updateRun(run.id, {
-    status: halted ? 'halted_budget' : 'completed',
+    status: halted
+      ? haltCode === 'BUDGET_LEDGER_PERSISTENCE'
+        ? 'halted_budget_ledger'
+        : 'halted_budget'
+      : 'completed',
     totalTests: persisted.length,
     completedAt: new Date().toISOString(),
   });
@@ -363,6 +383,7 @@ export async function runAdaptiveEvaluation({
     llmMode: llmMode(),
     halted,
     haltReason,
+    haltCode,
     budget: tracker ? tracker.summary() : null,
   };
 }
