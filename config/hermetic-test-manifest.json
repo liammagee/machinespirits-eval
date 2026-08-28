@@ -393,6 +393,7 @@
         "tests/pedagogical-orientation-coverage.test.js",
         "tests/pedagogicalMoveContract.test.js",
         "tests/pilot.test.js",
+        "tests/pilotStorePathDiscipline.test.js",
         "tests/pilotTutorSessionAdapter.test.js",
         "tests/plan3DagSfsAudit.test.js",
         "tests/poeticsAdminAuth.test.js",
