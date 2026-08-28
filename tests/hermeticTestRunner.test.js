@@ -860,8 +860,8 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.match(workflow, /^ {8}node-version: \[22, 24\]\n {8}shard: \[1, 2\]$/mu);
   assert.match(workflow, /npm run test:root -- --shard=\$\{\{ matrix\.shard \}\}\/2 --quiet/u);
   assert.match(workflow, /^ {8}if: matrix\.shard == 1\n {8}run: npm run test:core -- --quiet$/mu);
-  assert.equal(workflow.match(/cache: npm/gu)?.length, 5);
-  assert.equal(workflow.match(/^ {6}- run: npm ci$/gmu)?.length, 5);
+  assert.equal(workflow.match(/cache: npm/gu)?.length, 6);
+  assert.equal(workflow.match(/^ {6}- run: npm ci$/gmu)?.length, 6);
   assert.doesNotMatch(workflow, /npm ci --omit=optional/u);
   assert.doesNotMatch(workflow, /lfs: true/u);
 
