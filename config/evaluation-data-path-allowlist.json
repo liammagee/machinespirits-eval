@@ -1,5 +1,9 @@
 {
   "version": 1,
   "databasePaths": [],
-  "dialogueLogPaths": []
+  "dialogueLogPaths": [],
+  "absoluteHomePaths": [
+    "scripts/run-adaptive-warrant-steering-decomposition.js",
+    "services/tutorStubFirstDraftOuterLoop.js"
+  ]
 }

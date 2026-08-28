@@ -242,6 +242,19 @@ describe('roster — load + key lookup', () => {
 });
 
 describe('assignment discovery + slug safety', () => {
+  it('inherits the standard EVAL_EXPORTS_DIR fallback when no A19 path override is set', () => {
+    const exportsRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-exports-root-'));
+    const workspace = resolveWorkspace({ EVAL_EXPORTS_DIR: exportsRoot });
+    assert.equal(workspace.exportsRoot, exportsRoot);
+    assert.equal(workspace.assignmentsDir, path.join(exportsRoot, 'a19', 'human-coder-assignments'));
+    assert.equal(workspace.submissionsRoot, path.join(exportsRoot, 'a19', 'human-coder-submissions'));
+    assert.equal(workspace.rosterPath, path.join(exportsRoot, 'a19', 'adjudication-roster.json'));
+    assert.equal(
+      workspace.defaultCodebookPath,
+      path.join(exportsRoot, 'a19', 'adjudication-codebooks', 'learner-standing-v01.codebook.json'),
+    );
+  });
+
   it('discovers *.assignment.json but never key files', () => {
     const ctx = makeWorkspace();
     seedAssignment(ctx, 'packet-a');
@@ -286,13 +299,9 @@ describe('assignment discovery + slug safety', () => {
       submissionDirForSlug(workspace, 'packet-b'),
       path.join(ctx.env.A19_ADJUDICATION_SUBMISSIONS_ROOT, 'packet-b'),
     );
-    // Without OUT_DIR the legacy slug matches the offline CLI's default dir
-    // (path computation only — never write there from a test).
+    // Without OUT_DIR the legacy slug stays under the panel's submissions root.
     const cliParity = resolveWorkspace({ ...ctx.env, A19_ADJUDICATION_OUT_DIR: undefined });
-    assert.match(
-      submissionDirForSlug(cliParity, 'packet-a'),
-      /exports[/\\]a19[/\\]human-coder-submissions[/\\]packet-a$/u,
-    );
+    assert.equal(submissionDirForSlug(cliParity, 'packet-a'), path.join(cliParity.submissionsRoot, 'packet-a'));
   });
 });
 

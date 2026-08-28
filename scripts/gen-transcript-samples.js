@@ -19,10 +19,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { buildDialogueQualityPrompt } from '../services/rubricEvaluator.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
+import {
+  resolveEvaluationDbPath,
+  resolveEvaluationSecondaryArtifactDir,
+  resolveTutorDialoguesDir,
+} from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
-const DEFAULT_OUT_DIR = path.resolve(__dirname, '..', 'logs', 'transcript-samples');
+const ROOT_DIR = path.resolve(__dirname, '..');
+const LOGS_DIR = resolveTutorDialoguesDir(ROOT_DIR);
+const DEFAULT_OUT_DIR = resolveEvaluationSecondaryArtifactDir(ROOT_DIR, 'transcript-samples');
 const FACTORIAL_2X2X2_PROFILE_SET = new Set([
   'cell_1_base_single_unified',
   'cell_2_base_single_psycho',
@@ -68,7 +74,7 @@ function parseArgs() {
 
 async function openDb() {
   const Database = (await import('better-sqlite3')).default;
-  const dbPath = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+  const dbPath = resolveEvaluationDbPath(ROOT_DIR);
   return new Database(dbPath, { readonly: true });
 }
 

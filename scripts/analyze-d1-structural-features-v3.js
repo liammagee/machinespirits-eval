@@ -56,12 +56,13 @@ import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { pearson } from './analyze-recognition-lexicon.js';
 import { extractFeatures as extractV1Features, FEATURE_KEYS as V1_KEYS } from './analyze-d1-structural-features.js';
 import { extractFeatures as extractV2Features, FEATURE_KEYS as V2_KEYS } from './analyze-d1-structural-features-v2.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+const ROOT_DIR = path.resolve(__dirname, '..');
 const DEFAULT_CACHE = path.resolve(__dirname, '..', 'exports', 'd1-embeddings-cache.json');
 
 // ── Canonical references ───────────────────────────────────────────────
@@ -552,6 +553,7 @@ function parseArgs(argv) {
     judge: 'claude-code/sonnet',
     output: null,
     cache: DEFAULT_CACHE,
+    db: null,
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -559,6 +561,7 @@ function parseArgs(argv) {
     else if (a === '--judge') args.judge = argv[++i];
     else if (a === '--output') args.output = argv[++i];
     else if (a === '--cache') args.cache = argv[++i];
+    else if (a === '--db') args.db = argv[++i];
   }
   return args;
 }
@@ -569,7 +572,7 @@ async function main() {
     console.error('OPENAI_API_KEY not set in environment. Aborting.');
     process.exit(1);
   }
-  const db = new Database(DB_PATH, { readonly: true });
+  const db = new Database(resolveEvaluationDbPath(ROOT_DIR, args.db), { readonly: true, fileMustExist: true });
   const cells = [
     'cell_1_base_single_unified',
     'cell_5_recog_single_unified',

@@ -22,7 +22,7 @@ const DEFAULTS = {
   sourceRoot: path.join(ROOT, 'exports', 'a17-one-side-replay-replication', 'd5-redacted-control-run5'),
   root: null,
   spec: path.join(ROOT, 'config', 'poetics-calibration', 'oedipus-pilot-v2.yaml'),
-  envFile: '/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env',
+  envFile: path.join(ROOT, '.env'),
   scenario: 'D_OED5',
   generator: 'api',
   apiModel: 'sonnet',

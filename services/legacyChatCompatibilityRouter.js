@@ -36,6 +36,7 @@ import {
 import { DIRECTOR_META, FEATURE_META, normalizeAssistProposal } from './legacyChatAssistProposal.js';
 import { admitFixedModelCalls, createModelCallBudget, resolveHttpMaxModelCalls } from './httpModelWorkAdmission.js';
 import { EvaluationAdmissionError, hasEvalApiPrivilegedOverride } from './evalRequestAdmission.js';
+import { resolveEvaluationDbPath } from './evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -120,8 +121,6 @@ export function createLegacyChatAdmissionMiddleware({ endpoint, plannedModelCall
 // models can finish thinking and still speak — without touching the
 // experiment-load-bearing YAML.
 const CHAT_MIN_MAX_TOKENS = 4000;
-
-const EVAL_DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT_DIR, 'data', 'evaluations.db');
 
 function cellSortKey(name) {
   const m = name.match(/^cell_(\d+)/);
@@ -243,20 +242,21 @@ function emptyResultStats(status = 'unavailable', note = 'No local evaluation DB
 }
 
 function loadResultStatsByProfile() {
+  const dbPath = resolveEvaluationDbPath(ROOT_DIR);
   let stat;
   try {
-    stat = fs.statSync(EVAL_DB_PATH);
+    stat = fs.statSync(dbPath);
   } catch {
     return emptyResultStats();
   }
 
-  if (resultStatsCache?.dbPath === EVAL_DB_PATH && resultStatsCache?.mtimeMs === stat.mtimeMs) {
+  if (resultStatsCache?.dbPath === dbPath && resultStatsCache?.mtimeMs === stat.mtimeMs) {
     return resultStatsCache.stats;
   }
 
   let db;
   try {
-    db = new Database(EVAL_DB_PATH, { readonly: true, fileMustExist: true });
+    db = new Database(dbPath, { readonly: true, fileMustExist: true });
     const cols = new Set(
       db
         .prepare('PRAGMA table_info(evaluation_results)')
@@ -317,7 +317,7 @@ function loadResultStatsByProfile() {
 
     const byProfile = new Map(rows.map((row) => [row.profileName, row]));
     const stats = { status: 'available', byProfile, note: null };
-    resultStatsCache = { dbPath: EVAL_DB_PATH, mtimeMs: stat.mtimeMs, stats };
+    resultStatsCache = { dbPath, mtimeMs: stat.mtimeMs, stats };
     return stats;
   } catch (err) {
     console.warn('[chat] result summary unavailable:', err.message);

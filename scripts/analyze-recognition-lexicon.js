@@ -44,8 +44,10 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 // ── Lexicon ─────────────────────────────────────────────────────────────
 //
@@ -326,12 +328,13 @@ export function processRows(rawRows) {
 // ── CLI ─────────────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { runIds: [], json: false, output: null, minRows: 30 };
+  const args = { runIds: [], json: false, output: null, minRows: 30, db: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--json') args.json = true;
     else if (a === '--output') args.output = argv[++i];
     else if (a === '--min-rows') args.minRows = parseInt(argv[++i], 10);
+    else if (a === '--db') args.db = argv[++i];
     else if (!a.startsWith('--')) args.runIds.push(a);
   }
   return args;
@@ -339,7 +342,7 @@ function parseArgs(argv) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const db = new Database(DB_PATH, { readonly: true });
+  const db = new Database(resolveEvaluationDbPath(ROOT_DIR, args.db), { readonly: true, fileMustExist: true });
 
   const raw = loadRows(db, args.runIds);
   console.log(`Loaded ${raw.length} candidate rows`);

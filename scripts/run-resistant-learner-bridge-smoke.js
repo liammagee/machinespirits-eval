@@ -24,11 +24,11 @@ const REGISTERS = ['warm', 'plain', 'edged'];
 
 export const TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_SMOKE_ATTEMPT_CEILING = 800;
 export const TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_SMOKE_USAGE = `Usage:
-  EVAL_ARCHIVE_DIR=/Users/lmagee/Dev/machinespirits/machinespirits-eval-private \\
+  EVAL_ARCHIVE_DIR=/path/to/machinespirits-eval-private \\
     node scripts/run-resistant-learner-bridge-smoke.js --launch
 
 Zero-call plan inspection:
-  EVAL_ARCHIVE_DIR=/Users/lmagee/Dev/machinespirits/machinespirits-eval-private \\
+  EVAL_ARCHIVE_DIR=/path/to/machinespirits-eval-private \\
     node scripts/run-resistant-learner-bridge-smoke.js --dry-run
 
 The attended launch writes once to:
