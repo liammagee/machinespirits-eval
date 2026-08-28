@@ -3,11 +3,11 @@ id: edged-register-stub-dag-replication
 title: Re-ask the edged-register question inside the tutor-stub proof-DAG harness
 status: active
 type: experiment
-priority: P2
-owner: unassigned
+priority: P1
+owner: claude
 source: manual
 created: 2026-08-18
-updated: 2026-08-18
+updated: 2026-08-27
 verification: One stub-harness block contrasts a sharp delivery policy against
   the warm policy on the same worlds and the same proof-DAG, with completion
   taken from the DAG rather than from a model reader, and reports whether the
@@ -98,3 +98,11 @@ question — does a sharp delivery cost the learner anything — asked where
 - Commit trailer `Workplan-item: edged-register-stub-dag-replication`.
   Never commit `workplan/BOARD.md` or `workplan/board.json` on a branch.
 - The operator rules on any confirmed harm signal, never the agent.
+
+## Log
+
+- 2026-08-27: Raised to P1 and taken by claude on operator instruction
+  ("super high priority now"). Work starts at the card's own step 1:
+  read §3.10-§3.10.4 of the draft note, then survey the stub harness's
+  register machinery before designing the contrast. Zero-call until a
+  signed GO.
