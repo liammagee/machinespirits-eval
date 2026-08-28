@@ -110,3 +110,19 @@ test('extractContractLedger returns empty ledger when no contract entries exist'
   assert.deepEqual(extractContractLedger(null), []);
   assert.deepEqual(extractContractLedger([{ role: 'engagement_router', state: {} }]), []);
 });
+
+test('historical interaction traces without action-contract entries remain readable', () => {
+  const historicalTrace = {
+    turns: [
+      {
+        phase: 'tutor',
+        internalDeliberation: [{ role: 'ego', content: 'An older tutor draft.' }],
+      },
+      {
+        phase: 'learner',
+        internalDeliberation: [{ role: 'unified_learner', content: 'An older learner response.' }],
+      },
+    ],
+  };
+  assert.deepEqual(extractContractLedger(historicalTrace), []);
+});

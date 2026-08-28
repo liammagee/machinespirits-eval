@@ -19,7 +19,10 @@ import {
   buildLearnerReversalEvent,
   buildTutorAffectiveAdaptationContext,
   runInteraction,
+  TUTOR_STRATEGY_OUTCOME_DEFINITION,
 } from '../services/learnerTutorInteractionEngine.js';
+import { extractContractLedger } from '../services/blueprintActionContracts.js';
+import * as tutorWritingPad from '../services/memory/tutorWritingPad.js';
 const { INTERACTION_OUTCOMES } = interactionEngine;
 
 // ---------------------------------------------------------------------------
@@ -45,6 +48,19 @@ function createStubLlmCall() {
 
   stubLlmCall.calls = calls;
   return stubLlmCall;
+}
+
+function createScriptedLearnerCall(responses) {
+  let responseIndex = 0;
+  return async function scriptedLearnerCall() {
+    const content = responses[responseIndex] ?? responses.at(-1) ?? '';
+    responseIndex++;
+    return {
+      content,
+      usage: { inputTokens: 1, outputTokens: 1 },
+      latencyMs: 0,
+    };
+  };
 }
 
 function promptSurface(callOrSystemPrompt, messages = []) {
@@ -282,6 +298,103 @@ describe('runInteraction (multi-turn)', () => {
     assert.ok('after' in result.writingPadSnapshots.learner, 'learner should have after snapshot');
     assert.ok('before' in result.writingPadSnapshots.tutor, 'tutor should have before snapshot');
     assert.ok('after' in result.writingPadSnapshots.tutor, 'tutor should have after snapshot');
+  });
+
+  it('accumulates next-turn success and failure marks through the canonical intervention ledger', async () => {
+    const learnerId = 'test-writing-pad-outcomes-binary';
+    tutorWritingPad.clearTutorData(learnerId);
+
+    try {
+      const result = await runInteraction(
+        {
+          learnerId,
+          sessionId: 'test-writing-pad-outcomes-binary-session',
+          personaId: 'eager_novice',
+          tutorProfile: 'budget',
+          topic: MINIMAL_SCENARIO.topic,
+          scenario: MINIMAL_SCENARIO,
+        },
+        createScriptedLearnerCall([
+          'I am stuck on the first case.',
+          'I will test the first case because it isolates the changing variable.',
+          'Okay.',
+        ]),
+        {
+          maxTurns: 2,
+          forceMaxTurns: true,
+          learnerProfile: 'unified',
+          scriptedTutorTurns: ['Try one case and say what changes.', 'Now try the neighboring case.'],
+        },
+      );
+
+      const ledger = extractContractLedger(result);
+      assert.deepEqual(
+        ledger.map((record) => record.outcome),
+        ['success', 'failure'],
+      );
+      assert.ok(ledger.every((record) => record.status === 'closed'));
+      assert.ok(ledger.every((record) => record.writing_pad_strategy_effectiveness_recorded === true));
+
+      const effectiveness = tutorWritingPad
+        .getStrategyEffectiveness(learnerId)
+        .find((strategy) => strategy.strategyType === 'scripted_replay');
+      assert.equal(effectiveness?.successCount, 1);
+      assert.equal(effectiveness?.failureCount, 1);
+
+      const recordedOutcomes = tutorWritingPad
+        .getRecentInterventions(learnerId)
+        .map((intervention) => intervention.learnerResponse)
+        .sort();
+      assert.deepEqual(recordedOutcomes, ['failure', 'success']);
+      assert.deepEqual(TUTOR_STRATEGY_OUTCOME_DEFINITION.requiredEvidence, ['renewed content-bearing work']);
+
+      const learnerInternalRoles = result.turns
+        .filter((turn) => turn.phase === 'learner')
+        .flatMap((turn) => turn.internalDeliberation || [])
+        .map((entry) => entry.role);
+      assert.ok(
+        !learnerInternalRoles.includes('action_contract'),
+        'tutor intervention bookkeeping must not be relabelled as learner deliberation',
+      );
+      assert.deepEqual(Object.keys(result.writingPadSnapshots).sort(), ['learner', 'tutor']);
+    } finally {
+      tutorWritingPad.clearTutorData(learnerId);
+    }
+  });
+
+  it('preserves an inconclusive next-turn outcome without counting it as failure', async () => {
+    const learnerId = 'test-writing-pad-outcomes-inconclusive';
+    tutorWritingPad.clearTutorData(learnerId);
+
+    try {
+      const result = await runInteraction(
+        {
+          learnerId,
+          sessionId: 'test-writing-pad-outcomes-inconclusive-session',
+          personaId: 'eager_novice',
+          tutorProfile: 'budget',
+          topic: MINIMAL_SCENARIO.topic,
+          scenario: MINIMAL_SCENARIO,
+        },
+        createScriptedLearnerCall(['I am stuck.', 'The relation has two sides.']),
+        {
+          maxTurns: 1,
+          forceMaxTurns: true,
+          learnerProfile: 'unified',
+          scriptedTutorTurns: ['Try one case and say what changes.'],
+        },
+      );
+
+      const ledger = extractContractLedger(result);
+      assert.equal(ledger.length, 1);
+      assert.equal(ledger[0].status, 'closed');
+      assert.equal(ledger[0].outcome, 'inconclusive');
+      assert.notEqual(ledger[0].writing_pad_strategy_effectiveness_recorded, true);
+      assert.deepEqual(tutorWritingPad.getStrategyEffectiveness(learnerId), []);
+      assert.equal(tutorWritingPad.getRecentInterventions(learnerId)[0]?.learnerResponse, 'inconclusive');
+    } finally {
+      tutorWritingPad.clearTutorData(learnerId);
+    }
   });
 
   it('INTERACTION_OUTCOMES exports expected keys', () => {
