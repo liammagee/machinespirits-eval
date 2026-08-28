@@ -99,6 +99,7 @@ import * as anovaStats from '../services/anovaStats.js';
 import { createEvaluationStore } from '../services/evaluationStore/createEvaluationStore.js';
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 const { getScenario } = evalConfigLoader;
 import { projectTranscriptArtifacts } from '../services/transcriptProjection.js';
 import theme from '../services/cliTheme.js';
@@ -115,7 +116,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
+const LOGS_DIR = resolveTutorDialoguesDir(path.resolve(__dirname, '..'));
 
 const args = process.argv.slice(2);
 const command = args.find((a) => !a.startsWith('--')) || 'list';

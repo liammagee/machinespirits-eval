@@ -28,6 +28,7 @@ import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 
 import * as evalConfigLoader from '../evalConfigLoader.js';
+import { resolveEvaluationExportsRoot } from '../evaluationDataPaths.js';
 import interactionEngine from '../learnerTutorInteractionEngine.js';
 import {
   loadLiveComposeCurriculum as loadCurriculumContext,
@@ -700,7 +701,9 @@ export function viewSession(sessionId, opts = {}) {
   return sessionView(getSession(sessionId), !!opts.debug);
 }
 
-const SAVE_DIR = path.resolve(ROOT, 'exports/live-compose');
+function resolveSaveDir() {
+  return path.join(resolveEvaluationExportsRoot(ROOT), 'live-compose');
+}
 
 function safeSlug(s) {
   return String(s || '')
@@ -734,10 +737,11 @@ export function defaultTranscriptName(session) {
  */
 export function saveSession(sessionId, opts = {}) {
   const session = getSession(sessionId);
-  fs.mkdirSync(SAVE_DIR, { recursive: true });
+  const saveDir = resolveSaveDir();
+  fs.mkdirSync(saveDir, { recursive: true });
   const base = safeSlug(opts.filename) || defaultTranscriptName(session) || session.id;
-  const dest = path.resolve(SAVE_DIR, `${base}.yaml`);
-  if (!dest.startsWith(`${SAVE_DIR}${path.sep}`)) {
+  const dest = path.resolve(saveDir, `${base}.yaml`);
+  if (!dest.startsWith(`${saveDir}${path.sep}`)) {
     throw liveError('unsafe filename', 'LIVE_UNSAFE_FILENAME', 400);
   }
   const artifact = {

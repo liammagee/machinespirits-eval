@@ -35,30 +35,24 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
 import { validateA19HumanCoderFile, FORBIDDEN_PRIVATE_MARKERS } from '../scripts/validate-a19-human-coder-file.js';
-import {
-  buildCoderSubmission,
-  defaultSubmissionDirForAssignment,
-  nextCoderId,
-} from '../scripts/run-a19-human-adjudication-cli.js';
+import { buildCoderSubmission, nextCoderId } from '../scripts/run-a19-human-adjudication-cli.js';
+import { resolveEvaluationExportsRoot } from './evaluationDataPaths.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-
+const DEFAULT_EXPORTS_ROOT = resolveEvaluationExportsRoot(ROOT, null, { env: {} });
 const DEFAULT_ASSIGNMENT = path.join(
-  ROOT,
-  'exports',
+  DEFAULT_EXPORTS_ROOT,
   'a19',
   'human-coder-assignments',
   'moral-disclosure-standing-repair-a.assignment.json',
 );
 const DEFAULT_CODEBOOK = path.join(
-  ROOT,
-  'exports',
+  DEFAULT_EXPORTS_ROOT,
   'a19',
   'adjudication-codebooks',
   'learner-standing-v01.codebook.json',
 );
-const DEFAULT_SUBMISSIONS_ROOT = path.join(ROOT, 'exports', 'a19', 'human-coder-submissions');
-const DEFAULT_ROSTER = path.join(ROOT, 'exports', 'a19', 'adjudication-roster.json');
+
 const DEFAULT_PANEL_CONFIG = path.join(ROOT, 'config', 'teaching-drama-axioms', 'a19-adjudication-panel.yaml');
 
 export const ROSTER_SCHEMA_VERSION = 'a19-adjudication-roster-v01';
@@ -171,15 +165,26 @@ export function assignmentSlug(assignmentPath) {
  * defaults. Pure function of `env` so tests can construct isolated workspaces.
  */
 export function resolveWorkspace(env = process.env) {
-  const legacyAssignmentPath = path.resolve(env.A19_ADJUDICATION_ASSIGNMENT || DEFAULT_ASSIGNMENT);
+  const exportsRoot = resolveEvaluationExportsRoot(ROOT, null, { env });
+  const a19Root = path.join(exportsRoot, 'a19');
+  const defaultAssignment = path.join(
+    a19Root,
+    'human-coder-assignments',
+    'moral-disclosure-standing-repair-a.assignment.json',
+  );
+  const legacyAssignmentPath = path.resolve(env.A19_ADJUDICATION_ASSIGNMENT || defaultAssignment);
   const assignmentsDir = path.resolve(env.A19_ADJUDICATION_ASSIGNMENTS_DIR || path.dirname(legacyAssignmentPath));
   return {
+    exportsRoot,
     assignmentsDir,
     legacyAssignmentPath,
     codebookOverridePath: env.A19_ADJUDICATION_CODEBOOK ? path.resolve(env.A19_ADJUDICATION_CODEBOOK) : null,
-    submissionsRoot: path.resolve(env.A19_ADJUDICATION_SUBMISSIONS_ROOT || DEFAULT_SUBMISSIONS_ROOT),
+    defaultCodebookPath: path.join(a19Root, 'adjudication-codebooks', 'learner-standing-v01.codebook.json'),
+    submissionsRoot: path.resolve(
+      env.A19_ADJUDICATION_SUBMISSIONS_ROOT || path.join(a19Root, 'human-coder-submissions'),
+    ),
     legacyOutDir: env.A19_ADJUDICATION_OUT_DIR ? path.resolve(env.A19_ADJUDICATION_OUT_DIR) : null,
-    rosterPath: path.resolve(env.A19_ADJUDICATION_ROSTER || DEFAULT_ROSTER),
+    rosterPath: path.resolve(env.A19_ADJUDICATION_ROSTER || path.join(a19Root, 'adjudication-roster.json')),
     panelConfigPath: path.resolve(env.A19_ADJUDICATION_PANEL_CONFIG || DEFAULT_PANEL_CONFIG),
   };
 }
@@ -194,11 +199,6 @@ export function submissionDirForSlug(workspace, slug) {
   if (workspace.legacyOutDir && slug === assignmentSlug(workspace.legacyAssignmentPath)) {
     return workspace.legacyOutDir;
   }
-  if (!workspace.legacyOutDir && slug === assignmentSlug(workspace.legacyAssignmentPath)) {
-    // Match the CLI's default for the legacy assignment so server and CLI
-    // submissions land in the same place.
-    return defaultSubmissionDirForAssignment(workspace.legacyAssignmentPath);
-  }
   return path.join(workspace.submissionsRoot, slug);
 }
 
@@ -208,7 +208,7 @@ export function resolveCodebookPath(workspace, assignment) {
     const candidate = path.resolve(ROOT, assignment.codebook_path);
     if (fs.existsSync(candidate)) return candidate;
   }
-  return DEFAULT_CODEBOOK;
+  return workspace.defaultCodebookPath;
 }
 
 // ---------------------------------------------------------------------------

@@ -34,7 +34,7 @@
  *
  * Pooling is config-clean: runId is only a batch label; profile +
  * ADAPTIVE_TUTOR_LLM=real are byte-identical per arm across quota windows
- * (see /Users/lmagee/.claude/jobs/05bb1981/P3-RUNID-LEDGER.md).
+ * (see the private P3-RUNID-LEDGER.md run ledger).
  *
  * Usage:
  *   node scripts/analyze-a16-rewrite-slope.js \

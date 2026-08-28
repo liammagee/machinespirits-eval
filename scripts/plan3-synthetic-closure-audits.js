@@ -13,16 +13,10 @@ import path from 'node:path';
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import {
-  resolveEvaluationDbPath,
-  resolvePathFromRoot,
-  resolveTutorDialoguesDir,
-  resolveTutorDialoguesDirCandidates,
-} from '../services/evaluationDataPaths.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDirCandidates } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
-const STABLE_ROOT = '/Users/lmagee/Dev/machinespirits/machinespirits-eval';
 
 const DEFAULT_OUT_DIR = path.join(ROOT_DIR, 'exports', 'plan3-synthetic-closure-audits');
 const DEFAULT_SFS_ARTIFACT = path.join(ROOT_DIR, 'exports', 'plan3-sfs-audit', 'sfs-matched-feedback.json');
@@ -96,18 +90,8 @@ function firstExisting(paths) {
 }
 
 function discoverInputs(args) {
-  const dbPath =
-    args.dbPath ||
-    firstExisting([
-      resolveEvaluationDbPath(ROOT_DIR),
-      ROOT_DIR === STABLE_ROOT ? null : resolvePathFromRoot(STABLE_ROOT, 'data/evaluations.db'),
-    ]);
-  const logsDir =
-    args.logsDir ||
-    firstExisting([
-      ...resolveTutorDialoguesDirCandidates(ROOT_DIR),
-      ROOT_DIR === STABLE_ROOT ? null : resolveTutorDialoguesDir(STABLE_ROOT),
-    ]);
+  const dbPath = args.dbPath || firstExisting([resolveEvaluationDbPath(ROOT_DIR)]);
+  const logsDir = args.logsDir || firstExisting(resolveTutorDialoguesDirCandidates(ROOT_DIR));
   return {
     dbPath,
     logsDir,
@@ -163,7 +147,6 @@ function cleanText(value) {
 function compactPath(file) {
   if (!file) return null;
   if (file.startsWith(ROOT_DIR)) return path.relative(ROOT_DIR, file);
-  if (file.startsWith(STABLE_ROOT)) return path.relative(STABLE_ROOT, file);
   return file;
 }
 

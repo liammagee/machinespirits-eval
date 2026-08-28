@@ -154,6 +154,24 @@ describe('liveCompose · turn cap', () => {
 });
 
 describe('liveCompose · saveSession', () => {
+  it('writes under EVAL_EXPORTS_DIR when the standard exports override is set', async () => {
+    const exportsRoot = fs.mkdtempSync(path.join('/tmp', 'live-compose-exports-'));
+    const previous = process.env.EVAL_EXPORTS_DIR;
+    process.env.EVAL_EXPORTS_DIR = exportsRoot;
+    try {
+      const { session } = await startSession(
+        { humanRole: ROLES.LEARNER, openingSpeaker: ROLES.TUTOR, topic: 'exports override' },
+        mock,
+      );
+      saveSession(session.id, { filename: 'exports-override-test' });
+      assert.ok(fs.existsSync(path.join(exportsRoot, 'live-compose', 'exports-override-test.yaml')));
+    } finally {
+      if (previous === undefined) delete process.env.EVAL_EXPORTS_DIR;
+      else process.env.EVAL_EXPORTS_DIR = previous;
+      fs.rmSync(exportsRoot, { recursive: true, force: true });
+    }
+  });
+
   it('writes a self-describing transcript artifact with deliberation retained', async () => {
     const { session } = await startSession(
       { humanRole: ROLES.LEARNER, openingSpeaker: ROLES.TUTOR, topic: 'save-test logarithms' },

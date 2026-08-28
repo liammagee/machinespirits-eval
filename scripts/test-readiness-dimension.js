@@ -18,10 +18,13 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { callModelCliText } from '../services/cliProviderBridge.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
-const DIALOGUES_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
+const ROOT_DIR = path.resolve(__dirname, '..');
+const dbArgIndex = process.argv.indexOf('--db');
+const DB_PATH = resolveEvaluationDbPath(ROOT_DIR, dbArgIndex === -1 ? null : process.argv[dbArgIndex + 1]);
+const DIALOGUES_DIR = resolveTutorDialoguesDir(ROOT_DIR);
 const DRY_RUN = process.argv.includes('--dry-run');
 
 // Parse --model flag (default: claude-code)

@@ -34,11 +34,11 @@ export const TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_PICKUP_PROBE_JOB_IDS = Object.f
   'B1-cal-edged-world_031_tideway_makerspace',
 ]);
 export const TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_PICKUP_PROBE_USAGE = `Usage:
-  EVAL_ARCHIVE_DIR=/Users/lmagee/Dev/machinespirits/machinespirits-eval-private \\
+  EVAL_ARCHIVE_DIR=/path/to/machinespirits-eval-private \\
     node scripts/run-resistant-learner-bridge-pickup-probe.js --launch
 
 Zero-call packet inspection:
-  EVAL_ARCHIVE_DIR=/Users/lmagee/Dev/machinespirits/machinespirits-eval-private \\
+  EVAL_ARCHIVE_DIR=/path/to/machinespirits-eval-private \\
     node scripts/run-resistant-learner-bridge-pickup-probe.js --dry-run
 
 The attended launch reads the sealed bridge-smoke B1 transcripts and writes once to:

@@ -33,10 +33,11 @@ import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { pearson } from './analyze-recognition-lexicon.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+const ROOT_DIR = path.resolve(__dirname, '..');
 const CACHE_PATH = path.resolve(__dirname, '..', 'exports', 'd1-embeddings-cache.json');
 
 const JUDGES = [
@@ -321,14 +322,15 @@ function buildReport(runId, judges) {
 }
 
 async function main() {
-  const args = { runId: 'eval-2026-04-24-e9a785c0', output: null };
+  const args = { runId: 'eval-2026-04-24-e9a785c0', output: null, db: null };
   const argv = process.argv.slice(2);
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--run-id') args.runId = argv[++i];
     else if (argv[i] === '--output') args.output = argv[++i];
+    else if (argv[i] === '--db') args.db = argv[++i];
   }
 
-  const db = new Database(DB_PATH, { readonly: true });
+  const db = new Database(resolveEvaluationDbPath(ROOT_DIR, args.db), { readonly: true, fileMustExist: true });
   const cache = loadCache(CACHE_PATH);
   console.log(`Cache loaded with ${Object.keys(cache).length} embeddings`);
 

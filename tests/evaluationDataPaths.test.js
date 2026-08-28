@@ -7,6 +7,7 @@ import {
   resolveConfiguredEvaluationDbPath,
   resolveConfiguredTutorDialoguesDir,
   resolveEvaluationDbPath,
+  resolveEvaluationExportsRoot,
   resolveEvaluationLogsRoot,
   resolveEvaluationSecondaryArtifactDir,
   resolveTutorDialoguesDir,
@@ -71,6 +72,20 @@ test('evaluation DB path falls back to repo data when no canonical DB exists', (
   withEnv({ MS_DATA_HOME: missingDataHome, EVAL_DB_PATH: null }, () => {
     assert.equal(resolveEvaluationDbPath(root), path.join(root, 'data', 'evaluations.db'));
   });
+});
+
+test('exports root honors explicit and environment overrides relative to the repo root', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-path-root-'));
+
+  assert.equal(resolveEvaluationExportsRoot(root, null, { env: {} }), path.join(root, 'exports'));
+  assert.equal(
+    resolveEvaluationExportsRoot(root, null, { env: { EVAL_EXPORTS_DIR: 'shared-exports' } }),
+    path.join(root, 'shared-exports'),
+  );
+  assert.equal(
+    resolveEvaluationExportsRoot(root, 'explicit-exports', { env: { EVAL_EXPORTS_DIR: 'ignored' } }),
+    path.join(root, 'explicit-exports'),
+  );
 });
 
 test('logs root follows explicit, env, canonical data home, then repo fallback', () => {

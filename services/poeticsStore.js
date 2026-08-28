@@ -2,14 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath } from './evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DATA_DIR = path.join(ROOT_DIR, 'data');
 
 function defaultDbPath() {
-  return process.env.EVAL_DB_PATH || path.join(DATA_DIR, 'evaluations.db');
+  return resolveEvaluationDbPath(ROOT_DIR);
 }
 
 function encodeJson(value) {

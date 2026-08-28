@@ -36,10 +36,11 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { pearson } from './analyze-recognition-lexicon.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 const TARGETS = [
   {
@@ -346,7 +347,13 @@ function buildReport(targetResults) {
 }
 
 async function main() {
-  const db = new Database(DB_PATH, { readonly: true });
+  const args = { output: null, db: null };
+  const argv = process.argv.slice(2);
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--output') args.output = argv[++i];
+    else if (argv[i] === '--db') args.db = argv[++i];
+  }
+  const db = new Database(resolveEvaluationDbPath(ROOT_DIR, args.db), { readonly: true, fileMustExist: true });
   const targetResults = [];
   for (const target of TARGETS) {
     const result = processTarget(db, target);
@@ -355,11 +362,6 @@ async function main() {
       .map(([name, c]) => `${name}: n=${c.n}, ends-Q=${fmt(c.endsQRate)}, r=${fmt(c.r)}`)
       .join(' | ');
     console.log(`${target.label}: ${summary}`);
-  }
-  const args = { output: null };
-  const argv = process.argv.slice(2);
-  for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === '--output') args.output = argv[++i];
   }
   const report = buildReport(targetResults);
   const outPath = args.output || path.join(__dirname, '..', 'exports', 'd1-ends-question-replication.md');

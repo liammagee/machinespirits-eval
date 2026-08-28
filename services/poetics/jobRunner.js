@@ -4,6 +4,8 @@ import { spawn as realSpawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
+import { resolveEvaluationExportsRoot } from '../evaluationDataPaths.js';
+
 // ============================================================================
 // Poetics job launcher — guarded spawner for local browser-launched run types.
 //
@@ -30,7 +32,7 @@ export const ROOT_DIR = path.resolve(__dirname, '../..');
 // Exports root is overridable via EVAL_EXPORTS_DIR, the same way EVAL_DB_PATH /
 // EVAL_LOGS_DIR relocate the DB + logs. Defaults to <repo>/exports for the web
 // servers + CLI, so behaviour is unchanged when the env var is unset.
-const EXPORTS_ROOT = process.env.EVAL_EXPORTS_DIR || path.join(ROOT_DIR, 'exports');
+const EXPORTS_ROOT = resolveEvaluationExportsRoot(ROOT_DIR);
 const LOG_DIR = path.join(EXPORTS_ROOT, '.poetics-job-logs');
 
 // Keep only the tail of stdout/stderr in memory; the full stream goes to logFile.
