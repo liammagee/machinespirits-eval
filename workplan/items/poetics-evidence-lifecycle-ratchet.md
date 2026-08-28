@@ -1,13 +1,14 @@
 ---
 id: poetics-evidence-lifecycle-ratchet
 title: "Make poetics claim evidence durable before a run can close"
-status: triaged
+status: review
 type: infra
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-08-28
 updated: 2026-08-28
+branch: codex/poetics-evidence-lifecycle-ratchet
 verification: Fixture-only poetics runs preserve the run, items, critic rows,
   labels, tutor adaptations, semantic measurements, item-gate stream, reports,
   and referenced raw artifacts in a hash-verified durable bundle before
@@ -24,6 +25,8 @@ links:
     - edra-m3-second-mechanism-lexicon
     - enforce-tutor-stub-artifact-lifecycle
     - run-artifact-archiving
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/847
 tags:
   - poetics
   - provenance
@@ -59,3 +62,9 @@ Acceptance:
 
 The implementation can begin on the existing packager and inventory surfaces
 without touching the pending EDRA scorer changes.
+
+2026-08-28: Implemented the post-EDRA-M3 inventory, atomic create-once private
+bundle, terminal loop hook, fail-closed manual packaging, and synthetic
+inventory/partial-attempt fixtures on
+`codex/poetics-evidence-lifecycle-ratchet`; focused tests and source/lint checks
+pass. Awaiting PR review.
