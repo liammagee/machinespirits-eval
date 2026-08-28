@@ -1,0 +1,936 @@
+{
+  "version": 1,
+  "families": [
+    { "id": "evaluation-core", "title": "Evaluation, measurement, and longitudinal analysis" },
+    { "id": "architecture-ablations", "title": "A-series architecture replications and ablations" },
+    { "id": "recognition-mechanisms", "title": "Recognition and D-series mechanism studies" },
+    { "id": "adaptive-policy-state", "title": "Adaptive policy, learner state, and Plan 2.x" },
+    { "id": "dramatic-derivation-poetics", "title": "Dramatic derivation and poetics" },
+    { "id": "figure-falsifier", "title": "Figure-lattice falsifier and reader diagnostics" },
+    { "id": "program2-step4", "title": "Program 2 and Step 4" },
+    { "id": "tutor-stub-field-resistance", "title": "Tutor-stub field, resistance, and confirmatory studies" }
+  ],
+  "scripts": [
+    {
+      "path": "scripts/analyze-a10-nemotron-replication.js",
+      "family": "architecture-ablations",
+      "purpose": "Recompute the A10/A10b matched-specificity contrasts on Nemotron with the ego model held constant.",
+      "flags": []
+    },
+    {
+      "path": "scripts/analyze-a10-prompt-density-control.js",
+      "family": "architecture-ablations",
+      "purpose": "Test whether the recognition effect is reducible to prompt density or pedagogical specificity.",
+      "flags": [],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-a10b-orientation-family.js",
+      "family": "architecture-ablations",
+      "purpose": "Compare base, recognition, matched-pedagogical, and matched-behaviorist prompt families.",
+      "flags": [],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-a11-m2-gemini-flash-isolation.js",
+      "family": "architecture-ablations",
+      "purpose": "Isolate the M2 multi-agent effect on Gemini Flash against the existing single-agent baseline.",
+      "flags": [],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-a12-disengagement-replication.js",
+      "family": "architecture-ablations",
+      "purpose": "Replicate the A12 M3 disengagement result using per-dialogue score slopes.",
+      "flags": [],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-a16-rewrite-slope.js",
+      "family": "architecture-ablations",
+      "purpose": "Compute the A16 pre-registered post-trigger strategy-rewrite slope and secondary criteria.",
+      "flags": ["--arm", "--out"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-a3-capability-threshold.js",
+      "family": "architecture-ablations",
+      "purpose": "Test the A3 cognitive-prosthesis capability threshold across the designated cells.",
+      "flags": ["--out"]
+    },
+    {
+      "path": "scripts/analyze-a5-writing-pad.js",
+      "family": "architecture-ablations",
+      "purpose": "Evaluate the A5 controlled ablation of the three-layer Writing Pad mechanism.",
+      "flags": ["--out"]
+    },
+    {
+      "path": "scripts/analyze-a7-h2-slope.js",
+      "family": "architecture-ablations",
+      "purpose": "Recompute the A7 H2 longitudinal learning-slope test directly from the database.",
+      "flags": ["--db", "--json", "--ts"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-a7-h3-novel-tokens.js",
+      "family": "architecture-ablations",
+      "purpose": "Measure A7 H3 cross-session memory reuse with novel-token incorporation.",
+      "flags": ["--timestamp"]
+    },
+    {
+      "path": "scripts/analyze-a7-h3-overlap.js",
+      "family": "architecture-ablations",
+      "purpose": "Measure A7 H3 memory reuse with token-set Jaccard overlap.",
+      "flags": ["--timestamp"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-a7-h4-sample.js",
+      "family": "architecture-ablations",
+      "purpose": "Draw the deterministic blinded late-session sample for A7 H4 hand-coding.",
+      "flags": ["--n-per-arc", "--timestamp"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-a7-longitudinal.js",
+      "family": "architecture-ablations",
+      "purpose": "Summarize A7 longitudinal Writing Pad reuse and record the remaining deeper analyses.",
+      "flags": ["--learners", "--timestamp"]
+    },
+    {
+      "path": "scripts/analyze-accumulation.js",
+      "family": "evaluation-core",
+      "purpose": "Report accumulated dataset coverage, group sizes, and minimum detectable effects.",
+      "flags": ["--epoch", "--json", "--profile", "--target-n"]
+    },
+    {
+      "path": "scripts/analyze-adaptation-belief-calibration.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Score adaptive learner-state beliefs for coverage, Brier loss, calibration, margin, and unsupported confidence.",
+      "flags": ["--json", "--judge-model", "--markdown", "--out", "--profile", "--run-id", "--scenario-file"]
+    },
+    {
+      "path": "scripts/analyze-adaptation-generalization.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Analyze paired hidden-state generalization suites for adaptive policy transfer.",
+      "flags": ["--json", "--judge-model", "--markdown", "--out", "--profile", "--run-id", "--scenario-file"]
+    },
+    {
+      "path": "scripts/analyze-adaptation-outcome-closure.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Measure whether post-trigger adaptive moves close the registered learner outcomes.",
+      "flags": ["--json", "--judge-model", "--markdown", "--out", "--profile", "--reobserve", "--run-id"]
+    },
+    {
+      "path": "scripts/analyze-adaptation-quality.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Combine strict strategy-shift correctness with tutor, learner, and dialogue quality outcomes.",
+      "flags": [
+        "--baseline",
+        "--db",
+        "--json",
+        "--judge-model",
+        "--logs-dir",
+        "--markdown",
+        "--md",
+        "--min-quality-delta",
+        "--min-shift-rate",
+        "--out",
+        "--profile",
+        "--run",
+        "--run-id",
+        "--runs"
+      ]
+    },
+    {
+      "path": "scripts/analyze-adaptive-state-decomposition-v24.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Run the frozen v2.4 decomposition audit of the adaptive learner-state sensor stop.",
+      "flags": ["--base-config", "--help", "--instrument-config", "--out", "--pilot-run", "--s0-run"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-adaptive-state-validity-v2.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Validate the sealed S0-to-S2 learner-state lineage and issue the v2 sensor decision.",
+      "flags": ["--config", "--help", "--out", "--parent", "--run", "--s0-parent", "--stdout"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-adaptive-state-validity.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Evaluate held-out learner-state prediction, calibration, incremental value, and the sensor gate.",
+      "flags": [
+        "--benchmark-dir",
+        "--bootstrap-group",
+        "--bootstrap-iterations",
+        "--bootstrap-seed",
+        "--k",
+        "--out",
+        "--representations",
+        "--targets"
+      ]
+    },
+    {
+      "path": "scripts/analyze-cross-judge.js",
+      "family": "evaluation-core",
+      "purpose": "Compare score distributions and agreement across selected runs and judges.",
+      "flags": ["--json", "--judges", "--runs"]
+    },
+    {
+      "path": "scripts/analyze-cross-model-interaction.js",
+      "family": "architecture-ablations",
+      "purpose": "Test the pre-registered interaction between plan mode and model capability.",
+      "flags": ["--codex", "--flash", "--out"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-d1-cross-judge-replication.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Replicate the D1 mechanism finding across Sonnet, Opus, and GPT judges.",
+      "flags": ["--db", "--output", "--run-id"]
+    },
+    {
+      "path": "scripts/analyze-d1-ends-question-replication.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Replicate the ends-with-question mediator across runs, applications, cells, and multi-turn data.",
+      "flags": ["--db", "--output"]
+    },
+    {
+      "path": "scripts/analyze-d1-multifeature-ols.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Test whether the ends-with-question mediator survives multifeature OLS controls.",
+      "flags": ["--db", "--judge", "--output", "--run-id"]
+    },
+    {
+      "path": "scripts/analyze-d1-orientation-lexicon.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Compare recognition and intersubjective orientation lexicons against tutor scores.",
+      "flags": ["--db", "--judge", "--output", "--run-id"]
+    },
+    {
+      "path": "scripts/analyze-d1-structural-features-v2.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Extend D1 structural-feature analysis after the initial ends-with-question result.",
+      "flags": ["--db", "--judge", "--output", "--run-id"]
+    },
+    {
+      "path": "scripts/analyze-d1-structural-features-v3.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Add embedding similarities and a cross-feature correlation matrix to D1 structural analysis.",
+      "flags": ["--cache", "--db", "--judge", "--output", "--run-id"]
+    },
+    {
+      "path": "scripts/analyze-d1-structural-features.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Test the first D1 set of message-level structural mediators directly.",
+      "flags": ["--db", "--judge", "--output", "--run-id"]
+    },
+    {
+      "path": "scripts/analyze-d2-support-pilot.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Test whether the recognition main effect transfers to the D2 support-coaching pilot.",
+      "flags": ["--out"]
+    },
+    {
+      "path": "scripts/analyze-d4-disposition-gradient.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Test the D4 learner-disposition gradient across the selected evaluation run.",
+      "flags": ["--out"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-derivation-learner-dag-batch.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Aggregate learner-DAG batch artifacts into a model-free summary and report.",
+      "flags": ["--help", "--labels", "--limit", "--out-dir", "--run-dir"]
+    },
+    {
+      "path": "scripts/analyze-derivation-learner-object-outcomes.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Separate proof verdicts from learner-object ownership, durability, assertion gaps, and leaks.",
+      "flags": ["--help", "--out", "--run", "--search-dir"]
+    },
+    {
+      "path": "scripts/analyze-derivation-logic-consolidation.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Consolidate artifact-only logic outcomes across dramatic-derivation runs and worlds.",
+      "flags": ["--json", "--loop-dir", "--out", "--patterns", "--worlds"]
+    },
+    {
+      "path": "scripts/analyze-derivation-loop-results.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Summarize derivation-loop diagnoses, selector regret, static-policy regret, and failure classes.",
+      "flags": [
+        "--expected-file",
+        "--expected-labels",
+        "--help",
+        "--json",
+        "--loop-dir",
+        "--out",
+        "--pattern",
+        "--selector-arm",
+        "--selector-version"
+      ]
+    },
+    {
+      "path": "scripts/analyze-derivation-selector-candidates.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Search completed artifacts for selector-policy candidates and critical-case features.",
+      "flags": ["--critical", "--help", "--json", "--out", "--summary"]
+    },
+    {
+      "path": "scripts/analyze-derivation-selector-consolidation.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Consolidate selector-visible cases and emit bounded episode-replay commands.",
+      "flags": [
+        "--episode-real",
+        "--episode-window",
+        "--help",
+        "--json",
+        "--labels",
+        "--loop-dir",
+        "--out",
+        "--pattern"
+      ]
+    },
+    {
+      "path": "scripts/analyze-domain-generalization.js",
+      "family": "architecture-ablations",
+      "purpose": "Test whether the recognition main effect generalizes to non-philosophy domains.",
+      "flags": ["--out"]
+    },
+    {
+      "path": "scripts/analyze-dramatic-reversal.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Probe dramatic reversal, recognition, and actional dissociation in stored dialogues.",
+      "flags": ["--db", "--dry-run", "--json", "--limit", "--llm-pass"]
+    },
+    {
+      "path": "scripts/analyze-eval-costs.js",
+      "family": "evaluation-core",
+      "purpose": "Calculate token use and cost summaries from evaluation progress logs.",
+      "flags": ["--battery", "--file", "--help", "--json", "--summary"]
+    },
+    {
+      "path": "scripts/analyze-eval-results.js",
+      "family": "evaluation-core",
+      "purpose": "Compute factorial effects, confidence intervals, tests, and exports for evaluation results.",
+      "flags": [
+        "--aggregate",
+        "--db",
+        "--dimensions",
+        "--epoch",
+        "--export",
+        "--help",
+        "--judge",
+        "--profiles",
+        "--run-id",
+        "--scenarios",
+        "--verbose"
+      ]
+    },
+    {
+      "path": "scripts/analyze-figure-holdout.js",
+      "family": "figure-falsifier",
+      "purpose": "Train the figure reader on one corpus and test top-k recovery on a held-out corpus.",
+      "flags": ["--label", "--seed", "--source", "--test", "--train", "--trials"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-figure-lattice-control.js",
+      "family": "figure-falsifier",
+      "purpose": "Run balanced figure-lattice controls while dropping selected coded attributes.",
+      "flags": ["--drop", "--no-coded", "--per-figure", "--seed", "--trials"]
+    },
+    {
+      "path": "scripts/analyze-figure-lattice-fresh.js",
+      "family": "figure-falsifier",
+      "purpose": "Apply the lattice falsifier to fresh delivery-stamped turns and null baselines.",
+      "flags": ["--no-coded", "--null", "--seed", "--source", "--traces", "--trials"]
+    },
+    {
+      "path": "scripts/analyze-figure-lattice.js",
+      "family": "figure-falsifier",
+      "purpose": "Run the registered figure-lattice closure and coded-attribute comparison.",
+      "flags": [],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-figure-reader-bias.js",
+      "family": "figure-falsifier",
+      "purpose": "Diagnose figure-reader class bias, fitted profiles, and cross-class score asymmetry.",
+      "flags": ["--json"]
+    },
+    {
+      "path": "scripts/analyze-figure-recovery.js",
+      "family": "figure-falsifier",
+      "purpose": "Estimate post-hoc leave-one-out figure recovery and shuffle baselines.",
+      "flags": ["--drop-quiet", "--seed", "--source", "--traces", "--trials"]
+    },
+    {
+      "path": "scripts/analyze-grounding-validator-silent-drops.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Audit grounding-validator proposal, silent-drop, citation, and terminal-transition rates.",
+      "flags": ["--db", "--out", "--profile", "--run-id"]
+    },
+    {
+      "path": "scripts/analyze-insight-action-gap.js",
+      "family": "evaluation-core",
+      "purpose": "Measure coupling between tutor self-reflection and same-turn action against message drift.",
+      "flags": ["--json", "--min-pairs", "--output"]
+    },
+    {
+      "path": "scripts/analyze-interaction-evals.js",
+      "family": "evaluation-core",
+      "purpose": "Aggregate bilateral interaction scores from interaction-evaluation JSON logs.",
+      "flags": []
+    },
+    {
+      "path": "scripts/analyze-judge-reliability.js",
+      "family": "evaluation-core",
+      "purpose": "Measure inter-judge reliability on content-matched responses and report disagreements.",
+      "flags": ["--db", "--json", "--judge", "--run", "--verbose"]
+    },
+    {
+      "path": "scripts/analyze-learner-paradox-holistic.js",
+      "family": "evaluation-core",
+      "purpose": "Test holistic convergent validity for the learner-paradox result.",
+      "flags": ["--out"]
+    },
+    {
+      "path": "scripts/analyze-learner-profile-world-deconfound.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Apply the frozen learner-profile recovery instrument while separating persona from world.",
+      "flags": ["--archive-commit", "--archive-repo", "--cohort", "--json", "--no-write", "--output"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-learning-stagnation.js",
+      "family": "evaluation-core",
+      "purpose": "Detect learning stagnation patterns across multi-turn dialogue trajectories.",
+      "flags": ["--db", "--json", "--judge", "--strict"]
+    },
+    {
+      "path": "scripts/analyze-mechanism-traces.js",
+      "family": "evaluation-core",
+      "purpose": "Compute revision, ego specificity, adaptation, and run-variance process measures from traces.",
+      "flags": ["--db", "--json", "--judge", "--logs", "--output", "--verbose"]
+    },
+    {
+      "path": "scripts/analyze-merged-calibration-trigger-window-clip.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Detect merged-calibration units killed by a bored-profile check inside an open trigger window.",
+      "flags": ["--json", "--root"]
+    },
+    {
+      "path": "scripts/analyze-modulation-learning.js",
+      "family": "evaluation-core",
+      "purpose": "Analyze drama-machine modulation metrics and synthetic learning outcomes.",
+      "flags": []
+    },
+    {
+      "path": "scripts/analyze-ontology-tom.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Screen stored ontology-pilot dialogues for ToM consistency and anagnorisis overlap.",
+      "flags": []
+    },
+    {
+      "path": "scripts/analyze-plan25-branch-screen.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Evaluate a Plan 2.5 prefix-branch replay against its predeclared screen gate.",
+      "flags": ["--help", "--out-dir", "--run-dir", "--score-files"]
+    },
+    {
+      "path": "scripts/analyze-plan25-origin-demarcation.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Recompute deterministic recognition-origin subtypes for existing Plan 2.5 score artifacts.",
+      "flags": ["--help", "--out-dir"]
+    },
+    {
+      "path": "scripts/analyze-poetics-production-v1.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Aggregate Poetics production batches and verify target/control repeat counts.",
+      "flags": [
+        "--control-repeats",
+        "--help",
+        "--markdown",
+        "--no-json",
+        "--no-markdown",
+        "--out",
+        "--root-dir",
+        "--target-repeats"
+      ]
+    },
+    {
+      "path": "scripts/analyze-poetics-tutor-adaptation.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Analyze tutor adaptation and pseudo-catharsis signals in Poetics sidecar artifacts.",
+      "flags": ["--csv", "--db", "--dry-run", "--help", "--out", "--run-id", "--target-only"]
+    },
+    {
+      "path": "scripts/analyze-program2-live-pilot-5b.mjs",
+      "family": "program2-step4",
+      "purpose": "Analyze the Program 2 Phase 5b fallback-battery confirmation with frozen pooling rules.",
+      "flags": ["--json", "--phase5-root"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-program2-live-pilot-5c.mjs",
+      "family": "program2-step4",
+      "purpose": "Analyze Program 2 Phase 5c cross-world transfer and cue leakage.",
+      "flags": ["--json", "--marrick-world", "--transfer-world"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-program2-live-pilot-5d.mjs",
+      "family": "program2-step4",
+      "purpose": "Analyze the Program 2 Phase 5d delivery-integrity rider against pooled controls.",
+      "flags": ["--json", "--phase5-root", "--phase5b-root"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-program2-live-pilot-5e.mjs",
+      "family": "program2-step4",
+      "purpose": "Analyze Program 2 Phase 5e or 5f transfer under phase-specific frozen gates.",
+      "flags": ["--analysis-phase", "--gate-spec", "--json", "--marrick-world", "--transfer-world"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-program2-live-pilot-5f.mjs",
+      "family": "program2-step4",
+      "purpose": "Run the shared Program 2 transfer analyzer with the frozen Phase 5f configuration.",
+      "flags": ["--gate-spec", "--json", "--marrick-world", "--transfer-world"],
+      "flagEvidence": ["scripts/analyze-program2-live-pilot-5e.mjs"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-program2-live-pilot.mjs",
+      "family": "program2-step4",
+      "purpose": "Compute the frozen endpoint analysis for the Program 2 Phase 5 live committee pilot.",
+      "flags": ["--json"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-program2-weights-interface-retest.mjs",
+      "family": "program2-step4",
+      "purpose": "Analyze Program 2 weights-interface retest rows against the registered retest specification.",
+      "flags": ["--gate-spec", "--json"]
+    },
+    {
+      "path": "scripts/analyze-prosthesis.js",
+      "family": "evaluation-core",
+      "purpose": "Report cognitive-prosthesis dimension scores and failure patterns for cells 66 through 68.",
+      "flags": []
+    },
+    {
+      "path": "scripts/analyze-recognition-definitions.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Compare alternative recognition-effect definitions, memory controls, and balanced samples.",
+      "flags": [
+        "--balanced-per-cell",
+        "--base-mem-profile",
+        "--base-nomem-profile",
+        "--db",
+        "--help",
+        "--json",
+        "--judge-pattern",
+        "--recog-mem-profile",
+        "--recog-nomem-profile",
+        "--run-ids"
+      ]
+    },
+    {
+      "path": "scripts/analyze-recognition-lexicon.js",
+      "family": "recognition-mechanisms",
+      "purpose": "Measure ten recognition-concept densities, condition effects, and score correlations.",
+      "flags": ["--db", "--json", "--min-rows", "--output"]
+    },
+    {
+      "path": "scripts/analyze-recognition-origin-cut-sweep.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Reclassify recognition-origin outcomes across candidate score cutoffs.",
+      "flags": ["--out", "--run-prefix"]
+    },
+    {
+      "path": "scripts/analyze-recognition-origin-panel-recompose.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Recompose recognition-origin verdicts under alternate critic panels and vote thresholds.",
+      "flags": ["--out", "--run-prefix"]
+    },
+    {
+      "path": "scripts/analyze-register-confirmatory-step2.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Rebuild the frozen register-confirmatory Step 2 selection, bootstrap, gates, QA, and lineage.",
+      "flags": ["--check", "--help", "--selection", "--sonnet-root", "--terra-root"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-rubric-consistency.js",
+      "family": "evaluation-core",
+      "purpose": "Check agreement and consistency across per-turn, holistic, learner, and dialogue rubrics.",
+      "flags": ["--judge", "--run-id", "--verbose"]
+    },
+    {
+      "path": "scripts/analyze-rubric-pca.js",
+      "family": "evaluation-core",
+      "purpose": "Reproduce tutor-rubric PCA, reliability, and dimensionality diagnostics.",
+      "flags": ["--db", "--json", "--judge", "--runs", "--score-source"]
+    },
+    {
+      "path": "scripts/analyze-rubric-sensitivity.js",
+      "family": "evaluation-core",
+      "purpose": "Audit versioned rubric spread, floor and ceiling, factor structure, coverage, and agreement.",
+      "flags": ["--db", "--help", "--json", "--out", "--runs", "--version"]
+    },
+    {
+      "path": "scripts/analyze-run.js",
+      "family": "evaluation-core",
+      "purpose": "Produce a detailed statistical summary for one evaluation run.",
+      "flags": []
+    },
+    {
+      "path": "scripts/analyze-sarcasm-determinate-gate-decomposition.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Recompute the sarcasm determinate-negation gate as a fixed 2-by-2 decomposition.",
+      "flags": ["--child-run", "--db", "--output-json", "--output-md", "--parent-arm", "--parent-run", "--run-id"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-sarcasm-mood-floor-replication.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Replicate the sarcasm mood-floor result across two independent runs.",
+      "flags": ["--db", "--first-run", "--output-json", "--output-md", "--run-id", "--second-run"]
+    },
+    {
+      "path": "scripts/analyze-shrinkage-probes.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Run deterministic shrinkage replication and null-scaling analyses over result artifacts.",
+      "flags": ["--contrast", "--replications", "--treat"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-stance-contingency.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Analyze pressure-by-response contingency in the stance-probe dialogue report.",
+      "flags": ["--report"]
+    },
+    {
+      "path": "scripts/analyze-step4-compliance.mjs",
+      "family": "program2-step4",
+      "purpose": "Compute frozen Step 4 point-of-action coaching compliance and fixed-horizon outcomes.",
+      "flags": ["--json"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-step4-trigger-density.js",
+      "family": "program2-step4",
+      "purpose": "Audit Step 4 trigger density against the frozen final-analysis manifest.",
+      "flags": ["--check", "--help"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-strategy-ledger-contrasts.js",
+      "family": "dramatic-derivation-poetics",
+      "purpose": "Compute the pre-registered Strategy Ledger Phase 3 arm contrasts and endpoints.",
+      "flags": ["--design", "--help", "--out", "--runs"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-strategy-shift.js",
+      "family": "adaptive-policy-state",
+      "purpose": "Score strict adaptive strategy shifts, counterfactual divergence, and refinement proxies.",
+      "flags": ["--judge-model", "--out", "--profile", "--run-id"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-superego-framing-trajectory.js",
+      "family": "evaluation-core",
+      "purpose": "Compare coded superego reframing trajectories with structural incorporation proxies.",
+      "flags": [
+        "--codebook",
+        "--coding",
+        "--db",
+        "--help",
+        "--json",
+        "--logs",
+        "--output",
+        "--prepare-candidates",
+        "--sample-per-profile"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-superego-taxonomy.js",
+      "family": "evaluation-core",
+      "purpose": "Summarize classified superego critique categories and parse failures.",
+      "flags": ["--input", "--json"]
+    },
+    {
+      "path": "scripts/analyze-superego-transitions.js",
+      "family": "evaluation-core",
+      "purpose": "Analyze category transitions and revision responses across classified superego critiques.",
+      "flags": ["--input"]
+    },
+    {
+      "path": "scripts/analyze-text-behaviors.js",
+      "family": "evaluation-core",
+      "purpose": "Compute text-level behavior, ceiling, vocabulary, trajectory, and mediation diagnostics.",
+      "flags": ["--db", "--json", "--section", "--verbose"]
+    },
+    {
+      "path": "scripts/analyze-timing-pair.js",
+      "family": "program2-step4",
+      "purpose": "Segment Step 3 panel results into the registered timing-pair comparisons.",
+      "flags": []
+    },
+    {
+      "path": "scripts/analyze-trajectory-curves.js",
+      "family": "evaluation-core",
+      "purpose": "Analyze learner and tutor score trajectories by turn and dimension.",
+      "flags": ["--all-multiturn", "--json", "--judge", "--min-turns"]
+    },
+    {
+      "path": "scripts/analyze-tutor-learner-asymmetry.js",
+      "family": "evaluation-core",
+      "purpose": "Test whether the tutor-versus-learner recognition-effect gap shrinks with dynamic learners.",
+      "flags": ["--judge", "--out"]
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-auto-evals.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Aggregate tutor-stub auto-evaluations, QA gates, database rows, and run-ledger evidence.",
+      "flags": [
+        "--baseline-policy",
+        "--db",
+        "--dir",
+        "--include-dry-run",
+        "--json",
+        "--latest",
+        "--ledger",
+        "--no-db",
+        "--no-dir",
+        "--no-ledger",
+        "--out",
+        "--policies",
+        "--qa",
+        "--qa-max-mean-failure-rate",
+        "--qa-max-outcome-spread",
+        "--qa-min-worst-closure",
+        "--qa-min-worst-coverage",
+        "--qa-min-worst-outcome",
+        "--qa-minimum-effect",
+        "--qa-noninferiority-margin"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Analyze the registered boredom action-by-register proof-DAG study and its confirmation batches.",
+      "flags": ["--amendment", "--batch", "--expected-source-commit", "--help", "--json", "--out", "--registration"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-field-traces.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Compare tutor-stub proof-DAG state transitions with learner-field classifications.",
+      "flags": ["--help", "--json", "--limit-mismatches", "--min-field-delta", "--out", "--trace", "--traces-dir"]
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-profile-discrimination.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Measure resistant-profile trace separability, control similarity, and registered gate criteria.",
+      "flags": [
+        "--compacted",
+        "--compacted-root",
+        "--control-profile",
+        "--gate-profiles",
+        "--help",
+        "--include-text",
+        "--json",
+        "--out",
+        "--require-pooled",
+        "--required-analysis-model",
+        "--required-learner-model",
+        "--required-policies",
+        "--required-profiles",
+        "--required-runs-per-profile",
+        "--required-traces",
+        "--required-turns",
+        "--required-tutor-model",
+        "--target-average-cosine",
+        "--target-max-to-control",
+        "--trace",
+        "--trace-root",
+        "--write-compacted"
+      ]
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-resistance-action-register-baseline.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Combine the two frozen resistance action-register baseline batches with recovery and provenance audits.",
+      "flags": [
+        "--batch-a",
+        "--batch-b",
+        "--expected-analysis-source-commit",
+        "--expected-source-commit",
+        "--expected-trace-source-commit",
+        "--help",
+        "--json",
+        "--out",
+        "--prefix-bundle",
+        "--registration"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-resistance-action-register-confirmation.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Combine nine resistance action-register confirmation batches with bounded-recovery provenance checks.",
+      "flags": [
+        "--allowed-batch-source-commit",
+        "--allowed-recovery-base-commit",
+        "--batch",
+        "--expected-source-commit",
+        "--help",
+        "--json",
+        "--out",
+        "--registration"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-resistance-axis-calibration.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Calibrate resistant-learner opportunity axes and enforce registered trace, model, and sample gates.",
+      "flags": [
+        "--help",
+        "--json",
+        "--out",
+        "--registered-report",
+        "--registration",
+        "--required-analysis-model",
+        "--required-learner-model",
+        "--required-policies",
+        "--required-profiles",
+        "--required-registered-report-sha256",
+        "--required-runs-per-profile",
+        "--required-traces",
+        "--required-turns",
+        "--required-tutor-model",
+        "--trace"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-resistance-measurement-validation-v5.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Build the combined V5 resistance-measurement validation report from its sealed artifacts.",
+      "flags": [
+        "--archive-dir",
+        "--destination",
+        "--fidelity-destination",
+        "--go-request",
+        "--primary-destination",
+        "--source-commit",
+        "--source-tree"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-resistance-measurement-validation-v6.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Build the combined V6 resistance-measurement validation report from its sealed artifacts.",
+      "flags": [
+        "--archive-dir",
+        "--destination",
+        "--fidelity-destination",
+        "--go-request",
+        "--primary-destination",
+        "--source-commit",
+        "--source-tree"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-resistance-measurement-validation-v7.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Build the combined V7 resistance-measurement validation report from its sealed artifacts.",
+      "flags": [
+        "--archive-dir",
+        "--destination",
+        "--fidelity-destination",
+        "--go-request",
+        "--primary-destination",
+        "--source-commit",
+        "--source-tree"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-resistance-measurement-validation-v8.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Build the combined V8 resistance-measurement validation report from its sealed artifacts.",
+      "flags": [
+        "--archive-dir",
+        "--destination",
+        "--fidelity-destination",
+        "--go-request",
+        "--primary-destination",
+        "--source-commit",
+        "--source-tree"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-resistance-recovery-offset-cleaning.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Create a deterministic outcome-blind derivative with corrected semantic-evidence offsets.",
+      "flags": ["--destination", "--json", "--source"],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-resistance-recovery-semantic-validation.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Materialize the resistance-recovery semantic-validation report from sealed inputs.",
+      "flags": [
+        "--archive-dir",
+        "--destination",
+        "--go-request",
+        "--source-commit",
+        "--source-tree",
+        "--validation-registration"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-resistance-semantic-validation.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Materialize the resistance semantic-validation report with registered source and execution provenance.",
+      "flags": [
+        "--archive-dir",
+        "--destination",
+        "--execution-source-commit",
+        "--execution-source-tree",
+        "--go-request",
+        "--source-commit",
+        "--source-tree",
+        "--validation-registration"
+      ],
+      "frozen": true
+    },
+    {
+      "path": "scripts/analyze-tutor-stub-trajectories.js",
+      "family": "tutor-stub-field-resistance",
+      "purpose": "Report tutor-stub fixed-horizon outcomes and trajectory AUC by policy and learner profile.",
+      "flags": ["--auc-horizon", "--baseline", "--horizons", "--json", "--out", "--pressure-turn", "--recovery-window"]
+    },
+    {
+      "path": "scripts/analyze-within-test-change.js",
+      "family": "evaluation-core",
+      "purpose": "Compute symmetric first-to-last rubric and text-proxy change within multi-turn tests.",
+      "flags": ["--db", "--dry-run", "--json", "--metric-version", "--smoke-test"]
+    }
+  ]
+}
