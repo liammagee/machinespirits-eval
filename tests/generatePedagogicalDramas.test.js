@@ -2980,29 +2980,39 @@ describe('generate-pedagogical-dramas', () => {
     const learnerEntries = trace.turns
       .filter((turn) => turn.phase === 'learner')
       .flatMap((turn) => turn.internalDeliberation || []);
+    const tutorModelEntries = tutorEntries.filter((entry) => entry.provenance?.backend);
+    const learnerModelEntries = learnerEntries.filter((entry) => entry.provenance?.backend);
 
-    assert.ok(tutorEntries.length > 0, 'expected tutor deliberation entries');
-    assert.ok(learnerEntries.length > 0, 'expected learner deliberation entries');
+    assert.ok(tutorModelEntries.length > 0, 'expected tutor deliberation entries');
+    assert.ok(learnerModelEntries.length > 0, 'expected learner deliberation entries');
     assert.ok(
-      tutorEntries.every((entry) => entry.provenance?.backend === 'claude'),
+      tutorModelEntries.every((entry) => entry.provenance.backend === 'claude'),
       'all tutor role calls should be routed to claude',
     );
     assert.ok(
-      learnerEntries.every((entry) => entry.provenance?.backend === 'codex'),
+      learnerModelEntries.every((entry) => entry.provenance.backend === 'codex'),
       'all learner role calls should be routed to codex',
     );
     assert.ok(
-      [...tutorEntries, ...learnerEntries].every((entry) => entry.provenance?.promptHashes?.combined),
+      [...tutorModelEntries, ...learnerModelEntries].every((entry) => entry.provenance.promptHashes?.combined),
       'every role call should persist a prompt hash',
     );
     assert.ok(
-      learnerEntries
+      tutorEntries.some((entry) => entry.role === 'action_contract'),
+      'the tutor trace should retain the non-model intervention ledger',
+    );
+    assert.ok(
+      learnerEntries.every((entry) => entry.role !== 'action_contract'),
+      'the tutor intervention ledger must not be injected into learner deliberation',
+    );
+    assert.ok(
+      learnerModelEntries
         .filter((entry) => entry.role === 'ego')
         .every((entry) => entry.provenance?.agentRole === 'learner_ego'),
       'learner ego should be one stable routed role across initial and adjudication stages',
     );
     assert.ok(
-      tutorEntries
+      tutorModelEntries
         .filter((entry) => entry.role === 'ego')
         .every((entry) => entry.provenance?.agentRole === 'tutor_ego'),
       'tutor ego should be one stable routed role across initial and adjudication stages',
