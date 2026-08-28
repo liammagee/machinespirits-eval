@@ -20,7 +20,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import yaml from 'yaml';
 import { openPoeticsStore } from '../services/poeticsStore.js';
+import { detectPublicTextRepair, extractFinalLearnerPublicText } from '../services/ontology/hamartiaRepairDetector.js';
 import { classifyPoeticsConsensus } from './lib/poeticsConsensus.js';
 import { originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 
@@ -301,6 +303,109 @@ function decodeJson(value, fallback = null) {
   }
 }
 
+function firstTextCandidate(candidates) {
+  for (const candidate of candidates) {
+    const value = String(candidate?.value || '').trim();
+    if (value) return { value, source: candidate.source };
+  }
+  return { value: '', source: null };
+}
+
+function loadRepairInputsByDrama(targetSpec) {
+  if (!targetSpec || !fs.existsSync(targetSpec)) return {};
+  try {
+    const spec = yaml.parse(fs.readFileSync(targetSpec, 'utf8')) || {};
+    const raw = spec.dramas || spec.target || [];
+    const dramas = Array.isArray(raw) ? raw : Object.values(raw);
+    return Object.fromEntries(
+      dramas
+        .filter((drama) => drama?.id)
+        .map((drama) => [
+          drama.id,
+          {
+            hamartia: String(drama.hamartia || '').trim(),
+            correctedRule: String(drama.corrected_rule || drama.correctedRule || '').trim(),
+            learnerStartState: String(drama.learner_start_state || '').trim(),
+            lessonObjective: String(
+              drama.lesson_objective || drama.curriculum_script_notes?.curriculum?.lesson_objective || '',
+            ).trim(),
+          },
+        ]),
+    );
+  } catch {
+    return {};
+  }
+}
+
+function repairInputsForItem(item, args) {
+  const keyItem = item.metadata?.keyItem || {};
+  const notes = keyItem.curriculum_script_notes || {};
+  const registered = args.repairInputsByDrama?.[item.dramaId] || {};
+  const hamartia = firstTextCandidate([
+    { value: keyItem.hamartia, source: 'item.metadata.keyItem.hamartia' },
+    {
+      value: notes.script_lowering?.hamartia,
+      source: 'item.metadata.keyItem.curriculum_script_notes.script_lowering.hamartia',
+    },
+    { value: registered.hamartia, source: 'target_spec.hamartia' },
+    { value: keyItem.learner_start_state, source: 'item.metadata.keyItem.learner_start_state' },
+    {
+      value: notes.script_lowering?.learner_start_state,
+      source: 'item.metadata.keyItem.curriculum_script_notes.script_lowering.learner_start_state',
+    },
+    { value: registered.learnerStartState, source: 'target_spec.learner_start_state' },
+  ]);
+  const correctedRule = firstTextCandidate([
+    { value: keyItem.corrected_rule, source: 'item.metadata.keyItem.corrected_rule' },
+    { value: keyItem.correctedRule, source: 'item.metadata.keyItem.correctedRule' },
+    {
+      value: notes.curriculum?.corrected_rule,
+      source: 'item.metadata.keyItem.curriculum_script_notes.curriculum.corrected_rule',
+    },
+    { value: registered.correctedRule, source: 'target_spec.corrected_rule' },
+    { value: keyItem.lesson_objective, source: 'item.metadata.keyItem.lesson_objective' },
+    {
+      value: notes.curriculum?.lesson_objective,
+      source: 'item.metadata.keyItem.curriculum_script_notes.curriculum.lesson_objective',
+    },
+    { value: registered.lessonObjective, source: 'target_spec.lesson_objective' },
+  ]);
+  return { hamartia, correctedRule };
+}
+
+function readFinalPublicLearnerTurn(samplePath) {
+  if (!samplePath) return { status: 'missing_path', turn: null };
+  const absolute = path.isAbsolute(samplePath) ? samplePath : path.resolve(ROOT, samplePath);
+  if (!fs.existsSync(absolute)) return { status: 'file_not_found', turn: null };
+  try {
+    const turn = extractFinalLearnerPublicText(fs.readFileSync(absolute, 'utf8'));
+    return turn ? { status: 'ok', turn } : { status: 'no_public_learner_turn', turn: null };
+  } catch (error) {
+    return { status: 'read_error', turn: null, errorCode: error?.code || null };
+  }
+}
+
+function summarizeHamartiaRepair(item, args) {
+  const inputs = repairInputsForItem(item, args);
+  const publicTurn = readFinalPublicLearnerTurn(item.samplePath);
+  const finalTurn = publicTurn.turn;
+  return {
+    ...detectPublicTextRepair({
+      hamartia: inputs.hamartia.value,
+      correctedRule: inputs.correctedRule.value,
+      publicText: finalTurn?.publicText || '',
+    }),
+    source: {
+      hamartia: inputs.hamartia.source,
+      correctedRule: inputs.correctedRule.source,
+      publicText: item.samplePath || null,
+      publicTextStatus: publicTurn.status,
+      publicTextErrorCode: publicTurn.errorCode || null,
+      learnerTurnNumber: finalTurn?.turnNumber ?? null,
+    },
+  };
+}
+
 function scoreValue(...values) {
   for (const value of values) {
     const n = Number(value);
@@ -345,6 +450,7 @@ function loadGateItems(db, runId, analyzerVersion = DEFAULT_ANALYZER_VERSION) {
         i.drama_id,
         i.quality_status,
         i.quality_warnings,
+        i.sample_path,
         i.metadata AS item_metadata,
         s.critic_model,
         s.form_class,
@@ -381,6 +487,7 @@ function loadGateItems(db, runId, analyzerVersion = DEFAULT_ANALYZER_VERSION) {
         dramaId: row.drama_id,
         qualityStatus: row.quality_status,
         qualityWarnings: decodeJson(row.quality_warnings, []),
+        samplePath: row.sample_path || null,
         metadata: decodeJson(row.item_metadata, {}),
         adaptation: row.adaptation_metadata
           ? {
@@ -441,6 +548,7 @@ function summarizeItem(item, args) {
     privateRoute: Boolean(peripeteia.private_mechanism_declared),
     publicMechanism: Boolean(peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal),
   };
+  const hamartiaRepair = summarizeHamartiaRepair(item, args);
   const quality = qualityProblems(item);
   const failures = [];
   const isControlArm = ['routine', 'none'].includes(item.arm);
@@ -495,12 +603,17 @@ function summarizeItem(item, args) {
     actionalVotes,
     tutorMechanismVotes,
     adaptationGate,
+    hamartiaRepair,
     pass: failures.length === 0,
     failures: [...new Set(failures)],
   };
 }
 
 function evaluateRunGate(db, args) {
+  const summaryArgs = {
+    ...args,
+    repairInputsByDrama: args.repairInputsByDrama || loadRepairInputsByDrama(args.targetSpec),
+  };
   const items = loadGateItems(db, args.runId, args.analyzerVersion || DEFAULT_ANALYZER_VERSION);
   const selected = items.filter(
     (item) =>
@@ -514,7 +627,7 @@ function evaluateRunGate(db, args) {
   }
   const present = new Set(selected.map((item) => expectedItemKey(item.dramaId, item.arm)));
   const missing = [...expected].filter((key) => !present.has(key));
-  const itemSummaries = selected.map((item) => summarizeItem(item, args));
+  const itemSummaries = selected.map((item) => summarizeItem(item, summaryArgs));
   for (const key of missing) {
     const [dramaId, arm] = key.split(':');
     itemSummaries.push({
@@ -530,6 +643,7 @@ function evaluateRunGate(db, args) {
       actionalVotes: 0,
       tutorMechanismVotes: 0,
       adaptationGate: {},
+      hamartiaRepair: summarizeHamartiaRepair({ dramaId, metadata: {}, samplePath: null }, summaryArgs),
       pass: false,
       failures: ['missing_item'],
     });
@@ -598,8 +712,8 @@ function renderMarkdown(summary) {
     lines.push('');
     lines.push(`## ${iteration.batchId}`);
     lines.push('');
-    lines.push('| drama | arm | pass | recog | origin | action | branch | failures |');
-    lines.push('|---|---|---:|---:|---|---:|---:|---|');
+    lines.push('| drama | arm | pass | recog | origin | action | branch | repair | failures |');
+    lines.push('|---|---|---:|---:|---|---:|---:|---|---|');
     for (const item of iteration.gate.items) {
       const origin = Object.entries(item.origins || {})
         .filter(([, v]) => v)
@@ -616,8 +730,8 @@ function renderMarkdown(summary) {
         `| ${item.dramaId || ''} | ${item.arm || ''} | ${item.pass ? 'yes' : 'no'} | ${
           item.consensus?.recognitionVotes || 0
         }/${item.consensus?.totalCritics || 0} | ${origin || 'none'} | ${item.actionalVotes || 0} | ${branch} | ${
-          item.failures.join(', ') || 'none'
-        } |`,
+          item.hamartiaRepair?.disposition || 'indeterminate'
+        } | ${item.failures.join(', ') || 'none'} |`,
       );
     }
   }
@@ -752,7 +866,10 @@ export {
   DEFAULT_TARGETS,
   buildIterationPlan,
   evaluateRunGate,
+  loadRepairInputsByDrama,
   parseArgs,
+  readFinalPublicLearnerTurn,
+  repairInputsForItem,
   renderMarkdown,
   runLoop,
 };

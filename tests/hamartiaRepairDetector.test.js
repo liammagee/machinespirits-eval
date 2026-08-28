@@ -1,11 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {
+  PUBLIC_TEXT_REPAIR_DEFINITION,
+  PUBLIC_TEXT_REPAIR_DISPOSITIONS,
   extractLearnerRepairText,
+  extractFinalLearnerPublicText,
+  detectPublicTextRepair,
   latentManifestDivergence,
   buildRepairPrompt,
   detectRepair,
 } from '../services/ontology/hamartiaRepairDetector.js';
+
+const PUBLIC_TEXT_FIXTURE = JSON.parse(
+  fs.readFileSync(new URL('./fixtures/hamartia-repair-public-text-v1.json', import.meta.url), 'utf8'),
+);
 
 test('extractLearnerRepairText pulls the FINAL learner turn manifest + latent first-thought', () => {
   const delib = {
@@ -38,6 +47,77 @@ test('extractLearnerRepairText pulls the FINAL learner turn manifest + latent fi
 
 test('extractLearnerRepairText returns null when there are no learner turns', () => {
   assert.equal(extractLearnerRepairText({ turns: [{ phase: 'tutor' }] }), null);
+});
+
+test('extractFinalLearnerPublicText reads only the final ROLE-labelled public learner turn', () => {
+  const result = extractFinalLearnerPublicText(
+    [
+      'LEARNER: "first public turn"',
+      '',
+      'TUTOR: "one public reply"',
+      '',
+      'STAGE: [the cards move]',
+      '',
+      'LEARNER: "final public rule and check"',
+    ].join('\n'),
+  );
+  assert.deepEqual(result, { turnNumber: 2, publicText: '"final public rule and check"' });
+  assert.equal(extractFinalLearnerPublicText('TUTOR: "no learner turn"'), null);
+});
+
+test('public-text-v1 matches the frozen positive, negative, and ambiguous cases exactly', () => {
+  assert.equal(PUBLIC_TEXT_FIXTURE.frozen, true);
+  assert.equal(PUBLIC_TEXT_FIXTURE.definition, PUBLIC_TEXT_REPAIR_DEFINITION);
+  assert.deepEqual([...new Set(PUBLIC_TEXT_FIXTURE.cases.map((fixture) => fixture.category))].sort(), [
+    'ambiguous',
+    'negative',
+    'positive',
+  ]);
+
+  for (const fixture of PUBLIC_TEXT_FIXTURE.cases) {
+    const result = detectPublicTextRepair(fixture);
+    assert.equal(result.definition, PUBLIC_TEXT_REPAIR_DEFINITION, fixture.id);
+    assert.equal(result.disposition, fixture.expectedDisposition, fixture.id);
+    assert.equal(
+      result.durableRepair,
+      fixture.expectedDisposition === PUBLIC_TEXT_REPAIR_DISPOSITIONS.REPAIRED
+        ? true
+        : fixture.expectedDisposition === PUBLIC_TEXT_REPAIR_DISPOSITIONS.NOT_REPAIRED
+          ? false
+          : null,
+      fixture.id,
+    );
+  }
+});
+
+test('ambiguous public repair remains indeterminate rather than becoming a negative', () => {
+  const ambiguous = PUBLIC_TEXT_FIXTURE.cases.filter((fixture) => fixture.category === 'ambiguous');
+  assert.ok(ambiguous.length > 0);
+  for (const fixture of ambiguous) {
+    const result = detectPublicTextRepair(fixture);
+    assert.equal(result.disposition, PUBLIC_TEXT_REPAIR_DISPOSITIONS.INDETERMINATE, fixture.id);
+    assert.equal(result.durableRepair, null, fixture.id);
+  }
+});
+
+test('missing registered inputs remain indeterminate', () => {
+  const positive = PUBLIC_TEXT_FIXTURE.cases.find((fixture) => fixture.category === 'positive');
+  const incomplete = [
+    { ...positive, hamartia: '' },
+    { ...positive, correctedRule: '' },
+    { ...positive, publicText: '' },
+  ];
+  for (const fixture of incomplete) {
+    const result = detectPublicTextRepair(fixture);
+    assert.equal(result.disposition, PUBLIC_TEXT_REPAIR_DISPOSITIONS.INDETERMINATE);
+    assert.equal(result.durableRepair, null);
+  }
+});
+
+test('public repair does not require recognition or insight vocabulary', () => {
+  const fractions = PUBLIC_TEXT_FIXTURE.cases.find((fixture) => fixture.id === 'fractions_explicit_rule_and_check');
+  assert.doesNotMatch(fractions.publicText, /\b(?:aha|insight|recognition|realize[ds]?)\b/i);
+  assert.equal(detectPublicTextRepair(fractions).disposition, PUBLIC_TEXT_REPAIR_DISPOSITIONS.REPAIRED);
 });
 
 test('latentManifestDivergence flags low token overlap as diverged', () => {
