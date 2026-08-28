@@ -18,6 +18,7 @@ jobs:
     outputs:
       full_required: ${{ steps.manual.outputs.full_required || steps.changes.outputs.full_required }}
       profile: ${{ steps.manual.outputs.profile || steps.changes.outputs.profile }}
+      ref_governance_required: ${{ steps.manual.outputs.ref_governance_required || steps.main.outputs.ref_governance_required || steps.changes.outputs.ref_governance_required }}
       authorization_required: ${{ steps.changes.outputs.authorization_required }}
       validator_required: ${{ steps.manual.outputs.validator_required || steps.changes.outputs.validator_required }}
       validator_tests: ${{ steps.changes.outputs.validator_tests }}
@@ -34,7 +35,13 @@ jobs:
         run: |
           echo "profile=full" >> "$GITHUB_OUTPUT"
           echo "full_required=true" >> "$GITHUB_OUTPUT"
+          echo "ref_governance_required=true" >> "$GITHUB_OUTPUT"
           echo "validator_required=false" >> "$GITHUB_OUTPUT"
+
+      - name: Require ref governance after main integration
+        id: main
+        if: github.event_name == 'push'
+        run: echo "ref_governance_required=true" >> "$GITHUB_OUTPUT"
 
       - name: Classify changed paths
         id: changes
@@ -59,6 +66,12 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
+
+      - name: Validate dependency bootstrap ordering
+        run: >-
+          node --test
+          --test-name-pattern='test-contract installs dependencies before every dependency-bearing bootstrap check'
+          tests/ciChangePolicy.test.js
 
       - run: npm ci
 
@@ -141,6 +154,28 @@ jobs:
           ./node_modules/.bin/eslint $VALIDATOR_PATHS
           ./node_modules/.bin/prettier --check $VALIDATOR_PATHS
 
+  ref-governance:
+    name: Ref governance
+    needs: [classify, test-contract]
+    if: needs.classify.outputs.ref_governance_required == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Fetch managed archive branches and tags
+        run: >-
+          git fetch origin
+          '+refs/heads/archive/*:refs/remotes/origin/archive/*'
+          '+refs/tags/*:refs/tags/*'
+          --prune
+
+      - name: Validate ref and version registry
+        run: npm run refs:check
+
   lint:
     needs: [classify, test-contract]
     if: needs.classify.outputs.full_required == 'true'
@@ -155,16 +190,6 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - run: npm ci
-
-      - name: Fetch managed archive branches and tags
-        run: >-
-          git fetch origin
-          '+refs/heads/archive/*:refs/remotes/origin/archive/*'
-          '+refs/tags/*:refs/tags/*'
-          --prune
-
-      - name: Validate ref and version registry
-        run: npm run refs:check
 
       - run: npm run lint
       # tutor-core/ keeps its own lint and format policy so the module stays
@@ -254,32 +279,55 @@ jobs:
   result:
     name: CI result
     if: always()
-    needs: [classify, test-contract, focused, validator-only, lint, test, pty-concurrency, risk-coverage]
+    needs: [classify, test-contract, focused, validator-only, ref-governance, lint, test, pty-concurrency, risk-coverage]
     runs-on: ubuntu-latest
     steps:
       - name: Require every selected lane to pass
         env:
           PROFILE: ${{ needs.classify.outputs.profile }}
           FULL_REQUIRED: ${{ needs.classify.outputs.full_required }}
+          REF_GOVERNANCE_REQUIRED: ${{ needs.classify.outputs.ref_governance_required }}
           VALIDATOR_REQUIRED: ${{ needs.classify.outputs.validator_required }}
           CLASSIFY_RESULT: ${{ needs.classify.result }}
           CONTRACT_RESULT: ${{ needs.test-contract.result }}
           FOCUSED_RESULT: ${{ needs.focused.result }}
           VALIDATOR_RESULT: ${{ needs.validator-only.result }}
+          REF_GOVERNANCE_RESULT: ${{ needs.ref-governance.result }}
           LINT_RESULT: ${{ needs.lint.result }}
           TEST_RESULT: ${{ needs.test.result }}
           PTY_RESULT: ${{ needs.pty-concurrency.result }}
           COVERAGE_RESULT: ${{ needs.risk-coverage.result }}
         run: |
+          failures=0
           require_result() {
             if [ "$1" != "$2" ]; then
               echo "$3: expected $2, got ${1:-<missing>}" >&2
-              exit 1
+              failures=$((failures + 1))
             fi
           }
 
+          echo "CI lane conclusions:"
+          printf '%-22s %s\n' \
+            classifier "${CLASSIFY_RESULT:-<missing>}" \
+            test-contract "${CONTRACT_RESULT:-<missing>}" \
+            focused "${FOCUSED_RESULT:-<missing>}" \
+            validator-only "${VALIDATOR_RESULT:-<missing>}" \
+            ref-governance "${REF_GOVERNANCE_RESULT:-<missing>}" \
+            lint "${LINT_RESULT:-<missing>}" \
+            test "${TEST_RESULT:-<missing>}" \
+            pty-concurrency "${PTY_RESULT:-<missing>}" \
+            risk-coverage "${COVERAGE_RESULT:-<missing>}"
+
           require_result "$CLASSIFY_RESULT" success "classifier"
           require_result "$CONTRACT_RESULT" success "test contract"
+
+          case "$REF_GOVERNANCE_REQUIRED:$REF_GOVERNANCE_RESULT" in
+            true:success|false:skipped) ;;
+            *)
+              echo "ref governance: required=${REF_GOVERNANCE_REQUIRED:-<missing>} result=${REF_GOVERNANCE_RESULT:-<missing>}" >&2
+              failures=$((failures + 1))
+              ;;
+          esac
 
           case "$PROFILE:$FULL_REQUIRED:$VALIDATOR_REQUIRED" in
             full:true:false)
@@ -308,6 +356,11 @@ jobs:
               ;;
             *)
               echo "Invalid CI classifier outputs: profile=${PROFILE:-<missing>} full_required=${FULL_REQUIRED:-<missing>} validator_required=${VALIDATOR_REQUIRED:-<missing>}" >&2
-              exit 1
+              failures=$((failures + 1))
               ;;
           esac
+
+          if [ "$failures" -ne 0 ]; then
+            echo "CI result: $failures lane contract mismatch(es)" >&2
+            exit 1
+          fi

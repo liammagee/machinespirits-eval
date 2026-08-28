@@ -32,6 +32,20 @@ const FULL_CI_EXACT_PATHS = new Set([
 
 const FULL_CI_PATH_PREFIXES = ['docs/adaptation-refinement/'];
 
+// Ref governance is a separate integrity surface. Select it for changes that
+// can alter the managed-ref contract, while letting unrelated full-CI changes
+// avoid failing on external ref drift that they did not introduce.
+const REF_GOVERNANCE_EXACT_PATHS = new Set([
+  '.github/workflows/ref-governance.yml',
+  '.github/workflows/test.yml',
+  'docs/ref-status.md',
+  'docs/tagging-and-version-protocol.md',
+  'scripts/ci-change-policy.js',
+  'scripts/ref-governance.js',
+  'tests/ciChangePolicy.test.js',
+  'tests/refGovernance.test.js',
+]);
+
 const FOCUSED_PATH_PREFIXES = [
   '.agents/skills/',
   '.claude/skills/',
@@ -57,12 +71,17 @@ export function fullCiClassification(reason) {
   return {
     profile: 'full',
     fullRequired: true,
+    refGovernanceRequired: true,
     validationRequired: true,
     authorizationRequired: false,
     validatorPaths: [],
     validatorTests: [],
     reason,
   };
+}
+
+export function pathRequiresRefGovernance(file) {
+  return REF_GOVERNANCE_EXACT_PATHS.has(file);
 }
 
 export function validateChangedPath(file) {
@@ -128,6 +147,7 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
     return {
       profile: 'validator-only',
       fullRequired: false,
+      refGovernanceRequired: safeChangedFiles.some(pathRequiresRefGovernance),
       validationRequired: safeChangedFiles.some(pathRequiresValidationFramework),
       authorizationRequired: false,
       validatorPaths: validatorOnly.paths,
@@ -141,6 +161,7 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
     return {
       profile: 'full',
       fullRequired: true,
+      refGovernanceRequired: safeChangedFiles.some(pathRequiresRefGovernance),
       validationRequired: true,
       authorizationRequired: false,
       validatorPaths: [],
@@ -152,6 +173,7 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
   return {
     profile: 'focused',
     fullRequired: false,
+    refGovernanceRequired: safeChangedFiles.some(pathRequiresRefGovernance),
     validationRequired: safeChangedFiles.some(pathRequiresValidationFramework),
     authorizationRequired: false,
     validatorPaths: [],
@@ -275,7 +297,7 @@ function main() {
   if (args.githubOutput) {
     fs.appendFileSync(
       args.githubOutput,
-      `profile=${result.profile}\nfull_required=${result.fullRequired}\nvalidation_required=${result.validationRequired}\nauthorization_required=${result.authorizationRequired}\nvalidator_required=${result.validatorTests.length > 0}\nvalidator_tests=${result.validatorTests.join(' ')}\nvalidator_paths=${result.validatorPaths.join(' ')}\n`,
+      `profile=${result.profile}\nfull_required=${result.fullRequired}\nref_governance_required=${result.refGovernanceRequired}\nvalidation_required=${result.validationRequired}\nauthorization_required=${result.authorizationRequired}\nvalidator_required=${result.validatorTests.length > 0}\nvalidator_tests=${result.validatorTests.join(' ')}\nvalidator_paths=${result.validatorPaths.join(' ')}\n`,
     );
   }
   console.log(JSON.stringify(result));

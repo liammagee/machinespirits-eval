@@ -11,6 +11,7 @@ import {
   classifyCiRange,
   pathAllowsFocusedCi,
   pathAllowsValidatorOnlyCi,
+  pathRequiresRefGovernance,
   pathRequiresValidationFramework,
   selectValidatorOnlyCi,
   validateChangedPath,
@@ -120,6 +121,30 @@ test('machine-coupled authored surfaces and legacy study requests require full C
     assert.equal(result.profile, 'full', file);
     assert.equal(result.fullRequired, true, file);
   }
+});
+
+test('ref governance is selected only for its managed inputs and fails closed when classification is unavailable', () => {
+  for (const file of [
+    '.github/workflows/ref-governance.yml',
+    '.github/workflows/test.yml',
+    'docs/ref-status.md',
+    'docs/tagging-and-version-protocol.md',
+    'scripts/ci-change-policy.js',
+    'scripts/ref-governance.js',
+    'tests/ciChangePolicy.test.js',
+    'tests/refGovernance.test.js',
+  ]) {
+    assert.equal(pathRequiresRefGovernance(file), true, file);
+    assert.equal(classifyCiChanges({ changedFiles: [file] }).refGovernanceRequired, true, file);
+  }
+
+  for (const file of ['docs/local-ci.md', 'services/evaluationStore.js', 'tests/localCiRunner.test.js']) {
+    assert.equal(pathRequiresRefGovernance(file), false, file);
+    assert.equal(classifyCiChanges({ changedFiles: [file] }).refGovernanceRequired, false, file);
+  }
+
+  assert.equal(classifyCiChanges({ changedFiles: [] }).refGovernanceRequired, true);
+  assert.equal(classifyCiChanges({ changedFiles: ['docs/local-ci.md'], forceFull: true }).refGovernanceRequired, true);
 });
 
 test('unknown, empty, and mixed change sets use full CI', () => {
@@ -389,7 +414,12 @@ test('workflows expose the classifier and focused gate without retired runtime f
     ci,
     /validator_required: \$\{\{ steps\.manual\.outputs\.validator_required \|\| steps\.changes\.outputs\.validator_required \}\}/u,
   );
+  assert.match(
+    ci,
+    /ref_governance_required: \$\{\{ steps\.manual\.outputs\.ref_governance_required \|\| steps\.main\.outputs\.ref_governance_required \|\| steps\.changes\.outputs\.ref_governance_required \}\}/u,
+  );
   assert.match(ci, /echo "validator_required=false" >> "\$GITHUB_OUTPUT"/u);
+  assert.match(ci, /echo "ref_governance_required=true" >> "\$GITHUB_OUTPUT"/u);
   assert.match(ci, /needs\.classify\.outputs\.full_required == 'true'/u);
   assert.match(ci, /--validate-focused/u);
   assert.match(ci, /^ {2}validator-only:\n {4}name: Focused validator checks$/mu);
@@ -399,6 +429,10 @@ test('workflows expose the classifier and focused gate without retired runtime f
   assert.match(ci, /case "\$PROFILE:\$FULL_REQUIRED:\$VALIDATOR_REQUIRED" in/u);
   assert.match(ci, /require_result "\$CLASSIFY_RESULT" success "classifier"/u);
   assert.match(ci, /require_result "\$CONTRACT_RESULT" success "test contract"/u);
+  assert.match(ci, /case "\$REF_GOVERNANCE_REQUIRED:\$REF_GOVERNANCE_RESULT" in/u);
+  assert.match(ci, /true:success\|false:skipped\)/u);
+  assert.match(ci, /CI lane conclusions:/u);
+  assert.match(ci, /CI result: \$failures lane contract mismatch/u);
 
   function resultArm(label) {
     const startMarker = `            ${label})\n`;
@@ -463,10 +497,48 @@ test('workflows expose the classifier and focused gate without retired runtime f
   for (const workflow of [
     ci,
     validation,
+    fs.readFileSync(path.resolve('.github/workflows/ref-governance.yml'), 'utf8'),
     fs.readFileSync(path.resolve('.github/workflows/tutor-stub-surface-acceptance.yml'), 'utf8'),
     fs.readFileSync(path.resolve('.github/workflows/workplan-validate.yml'), 'utf8'),
     fs.readFileSync(path.resolve('.github/workflows/workplan-commit-trailer.yml'), 'utf8'),
   ]) {
     assert.match(workflow, /fetch-depth: 0\n {10}filter: blob:none/u);
   }
+});
+
+test('test-contract installs dependencies before every dependency-bearing bootstrap check', () => {
+  const workflow = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
+  const start = workflow.indexOf('  test-contract:\n');
+  const end = workflow.indexOf('\n  focused:\n', start);
+  assert.notEqual(start, -1);
+  assert.notEqual(end, -1);
+  const contract = workflow.slice(start, end);
+
+  const setup = contract.indexOf('uses: actions/setup-node@v7');
+  const staticOrderingCheck = contract.indexOf('name: Validate dependency bootstrap ordering');
+  const install = contract.indexOf('run: npm ci');
+  const manifest = contract.indexOf('run: npm run test:manifest');
+  const permissions = contract.indexOf('run: npm run skills:permissions:check');
+  const classifier = contract.indexOf('run: node --test tests/ciChangePolicy.test.js tests/localCiRunner.test.js');
+
+  for (const [label, index] of [
+    ['setup-node', setup],
+    ['static ordering check', staticOrderingCheck],
+    ['npm ci', install],
+    ['test manifest', manifest],
+    ['skill permissions', permissions],
+    ['classifier contract', classifier],
+  ]) {
+    assert.notEqual(index, -1, `${label} must be present in test-contract`);
+  }
+  assert.ok(setup < staticOrderingCheck, 'setup-node must precede the dependency-free ordering check');
+  assert.ok(staticOrderingCheck < install, 'the dependency-free ordering check must run before installation');
+  for (const [label, index] of [
+    ['test manifest', manifest],
+    ['skill permissions', permissions],
+    ['classifier contract', classifier],
+  ]) {
+    assert.ok(install < index, `npm ci must precede ${label}`);
+  }
+  assert.equal(contract.match(/^ {6}- run: npm ci$/gmu)?.length, 1);
 });

@@ -2,9 +2,10 @@
 /**
  * Pre-push gate for the CI lint lane.
  *
- * Runs `npm run lint:all` — eslint, the import-cycle check, and prettier's
- * format check, exactly the three commands CI's lint job runs — before the
- * push leaves the machine, and blocks the push when they fail. See
+ * Runs `npm run lint:all` — root and tutor-core ESLint, the import-cycle
+ * check, and both Prettier checks, matching CI's lint job — before the push
+ * leaves the machine, and blocks the push when they fail. Ref governance is a
+ * separately selected CI/local-CI lane. See
  * services/lintPrePushHook.js for why this one blocks where the
  * workplan-trailer hook only reports.
  *
