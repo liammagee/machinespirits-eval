@@ -582,6 +582,7 @@
         "tests/tutorStubFirstDraftOuterLoop.test.js",
         "tests/tutorStubFrameRefuserDepthStudy.test.js",
         "tests/tutorStubFrameRefuserSatisfiableMint.test.js",
+        "tests/tutorStubFrameRefuserSatisfiablePlan.test.js",
         "tests/tutorStubFrozenReplay.test.js",
         "tests/tutorStubFrozenReplayCheckpoint.test.js",
         "tests/tutorStubGuardAccounting.test.js",

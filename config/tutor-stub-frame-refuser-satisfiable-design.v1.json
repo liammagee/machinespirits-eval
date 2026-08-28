@@ -60,7 +60,7 @@
         "frameConstruction": "the learner objective is the public exhibit chain that must be entered in the record before the tutor's answer frame has standing",
         "selection": "sha256-ranked authored proof path from master seed plus job id",
         "adHocAuthorshipAllowed": false,
-        "implementationStatus": "Implemented 2026-08-28 as study code R2 in services/tutorStubRivalLearnerDag.js: exhibitOpenNodes() mints authored-path premises in release order with openNodeKind 'exhibit', and selectTutorStubDemandedExhibit() applies the registered demand selection rule fail-closed. R1 and B1 mint byte-identically, pinned with the rest by tests/tutorStubFrameRefuserSatisfiableMint.test.js. Plan-build wiring of jobs to R2 is still to come."
+        "implementationStatus": "Implemented 2026-08-28 as study code R2 in services/tutorStubRivalLearnerDag.js (exhibitOpenNodes plus the fail-closed selectTutorStubDemandedExhibit), and wired into the plan build in services/tutorStubResistantLearnerCalibration.js: every job carries study R2 and a resolved demanded exhibit, or the plan refuses to build. R1 and B1 mint byte-identically. Pinned by tests/tutorStubFrameRefuserSatisfiableMint.test.js and tests/tutorStubFrameRefuserSatisfiablePlan.test.js."
       },
       "demandSelectionRule": {
         "id": "earliest_unreleased_authored_path_premise_within_horizon",
@@ -246,9 +246,9 @@
       "mitigationIfAvailable": "Gate 1 should wait for the narrowing codebook (workplan frame-refuser-refusal-narrowing) so the run can carry the finer secondary endpoint alongside the unchanged primary."
     },
     {
-      "id": "plan_build_not_wired",
-      "statement": "The exhibit mint exists (study code R2) and refuses a design that does not register it, but no plan build yet routes this design's jobs to R2 or runs the demand selection rule per assigned world.",
-      "disposition": "Plan build refuses unless every job carries study R2, every minted open node carries openNodeKind 'exhibit' and resolves to an authored-path premise id, and the demand selection rule yields a demanded exhibit for every assigned world at every eligible trigger turn."
+      "id": "launch_path_not_wired",
+      "statement": "The plan build resolves and refuses, but no launch preflight compiles the runtime for this design: its per-arm delivery enforcement text is recorded as a reference to the sealed face-B contract rather than written out, so the arm projection the launcher needs cannot be built yet.",
+      "disposition": "Write the per-arm delivery adjudication questions into the design, then build the arm projection and launch preflight the way the depth study does. runTutorStubFrameRefuserSatisfiablePlanPreflight covers seven of the eight registered pre-launch checks today; the eighth is launch provenance, which is recorded and never enforced."
     },
     {
       "id": "attrition",

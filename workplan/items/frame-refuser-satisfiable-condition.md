@@ -128,3 +128,29 @@ engagement above the refuser's base rate?
   authored-path rule consequent in either R1 world. Still open before Gate 1:
   plan-build wiring of jobs to R2 (the design's `plan_build_not_wired` risk),
   the narrowing codebook if it lands, and the three standing authorities.
+
+- 2026-08-28 — Plan build wired, zero-call. The satisfiable design now has a
+  validator, a job builder, and a plan preflight in
+  `services/tutorStubResistantLearnerCalibration.js`. The plan builds 48 jobs,
+  24 per version of the tutor and 12 per world each, and **resolves the demanded
+  exhibit per world at build time**: Marrick demands `p_alloy` (released turn
+  4), Rowan Flat demands `p_split` (turn 3). A world that cannot supply a
+  premise both unreleased at the trigger and released inside the outcome
+  horizon stops the plan build, so the predecessor's defect — paying for 38
+  dialogues before anyone saw the demand could not be met — cannot repeat.
+  Planned calls come to 3,072 and reservations to 9,504, matching the
+  registered ceilings exactly from two independent sides.
+  `runTutorStubFrameRefuserSatisfiablePlanPreflight` runs seven of the design's
+  eight registered pre-launch checks (the eighth is launch provenance, recorded
+  and never enforced) and re-mints all 48 jobs to check the plan rather than
+  trusting it. The validator refuses any drift in the things held fixed for
+  comparability: reference arm, ladder, panel, stack, ceilings, seed, and the
+  call-authority boundary. `tests/tutorStubFrameRefuserSatisfiablePlan.test.js`
+  (6 tests) pins all of it.
+
+  Still open before Gate 1, now the only code item: the launch path. The
+  design records its per-arm delivery enforcement as a reference to the sealed
+  face-B contract rather than writing the two adjudication questions out, so
+  the arm projection a launcher needs cannot be built yet. Writing those two
+  questions is a design decision, not a code gap. Then the narrowing codebook
+  if it lands, and the three standing authorities.
