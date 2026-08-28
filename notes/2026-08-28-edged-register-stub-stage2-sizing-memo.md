@@ -133,3 +133,36 @@ pass, archive — the same after-run order as Stage 1.
 Stage 1 ran from worktree branch codex/resistance-axis-heldout-registration
 at eval commit 194653a8 (clean tree at launch). Reports, ledgers, packed
 traces, and this memo's numbers all live under the four archived roots.
+
+## 6. Amendment 1 — prompt-size guard raise and relaunch (2026-08-28)
+
+The first Stage-2 launch (root `qa-matrix-2026-08-28T20-52-23-839Z`,
+affective_resistant, warm arm) exposed a second instrument ceiling. The
+tutor turn prompt grows with the standing state and crossed the frozen
+42,000-character audit guard at turn ~38 — one turn behind where the old
+120-call pool used to bind. Four of six sealed rows died on it (turns
+37–39, coverages 0.5–1.0, two full chains unclosed); one row was a
+leak-guard stop (turn 11); one row reached the 40-turn cap clean — the
+first cap-bound row in the study, proof the 180-call pool works. The
+guard had no recovery path for the tutor seat and no setting, so closure
+was censored again.
+
+The run was paused at 6 of 72 dialogues to stop spend under the open
+question. Sunk spend: the 6 sealed rows plus 6 killed in-flight partials,
+about 1,900 generation calls at most. The sealed rows stand as records
+and take no part in any analysis.
+
+Operator ruling (given in session, 2026-08-28): "Sure, raise it —
+perhaps higher still, to 64,000 characters. This is not a great reason to
+fail. Raise and relaunch."
+
+Change: `tutor_turn` guard in `services/tutorStubPromptAudit.js` raised
+from 42,000 chars / 10,500 approx tokens to 64,000 / 16,000, with a
+recorded comment. The 40-turn safety cap bounds all prompt growth, so the
+margin is bounded. Tests, lint, and format pass. The relaunch runs the
+full 72-dialogue block fresh from the commit that carries this amendment.
+The aborted root is archived with the study artifacts, marked void.
+
+Spend accounting: the fresh block spends the full registered ceiling
+(12,960 generation calls) again; the sunk ~1,900 sits on top. The
+operator's ruling above covers this.
