@@ -2,9 +2,15 @@ import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
 import {
   BLIND_SCORING_PROTOCOL,
+  LEARNER_ACTION_MEASUREMENT_PROTOCOL,
+  LEGACY_LEARNER_ACTION_MEASUREMENT_PROTOCOL,
+  LEGACY_MECHANISM_MEASUREMENT_PROTOCOL,
+  MECHANISM_MEASUREMENT_PROTOCOL,
   applyPhase2Gates,
   buildPhase2Prompt,
   hasPeripeteiaMechanismShift,
+  learnerActionProtocolVersionForExistingRow,
+  protocolVersionForExistingRow,
   tutorTextAfterPivot,
 } from '../scripts/score-poetics-phase2.js';
 
@@ -119,7 +125,7 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
     assert.ok(gated.flags.includes('tutor_strategy_reversal_evidence_clamp:5->3'));
   });
 
-  it('clamps ordinary same-route narrowing as insufficient for peripeteia adaptation', () => {
+  it('keeps regex classification auxiliary to the semantic mechanism score', () => {
     const wholeText = turns.map((turn) => turn.text).join('\n');
     const gated = applyPhase2Gates(
       baseParsed({
@@ -132,11 +138,19 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
       turns,
       wholeText,
     );
-    assert.equal(gated.tutorStrategicReversal100, 50);
-    assert.ok(gated.flags.some((flag) => flag.startsWith('tutor_strategy_reversal_mechanism_clamp:5->3')));
+    assert.equal(gated.tutorStrategicReversal100, 100);
+    assert.equal(gated.auxiliaryMechanismSignals.lexical_or_regex_authority, 'none');
+    assert.equal(
+      gated.auxiliaryMechanismSignals.protocol_version,
+      'poetics-phase2-mechanism-measurement-v2-semantic-authoritative',
+    );
+    assert.equal(gated.mechanismMeasurementProtocolVersion, MECHANISM_MEASUREMENT_PROTOCOL.version);
+    assert.equal(gated.learnerActionMeasurementProtocolVersion, LEARNER_ACTION_MEASUREMENT_PROTOCOL.version);
+    assert.equal(gated.auxiliaryMechanismSignals.tutor_strategy_reversal.passes, false);
+    assert.ok(!gated.flags.some((flag) => flag.startsWith('tutor_strategy_reversal_mechanism_clamp')));
   });
 
-  it('clamps adaptive mechanism quality unless a real public mechanism shift passes', () => {
+  it('does not let an auxiliary regex veto semantic mechanism quality', () => {
     const wholeText = turns.map((turn) => turn.text).join('\n');
     const gated = applyPhase2Gates(
       baseParsed({
@@ -154,9 +168,10 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
       turns,
       wholeText,
     );
-    assert.equal(gated.tutorStrategicReversal100, 50);
-    assert.equal(gated.adaptiveMechanismQuality100, 50);
-    assert.ok(gated.flags.some((flag) => flag.startsWith('adaptive_mechanism_quality_mechanism_clamp:5->3')));
+    assert.equal(gated.tutorStrategicReversal100, 100);
+    assert.equal(gated.adaptiveMechanismQuality100, 100);
+    assert.equal(gated.auxiliaryMechanismSignals.adaptive_mechanism_quality.passes, false);
+    assert.ok(!gated.flags.some((flag) => flag.startsWith('adaptive_mechanism_quality_mechanism_clamp')));
   });
 
   it('allows mechanism quality evidence to quote the device when the mechanism axis already validated stock-taking', () => {
@@ -187,6 +202,11 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
         'The tutor shifts from underlining to a print-facing caption test.',
       ).passes,
       true,
+    );
+    assert.equal(
+      hasPeripeteiaMechanismShift('Switch to a new diagram.', 'Try a different public surface.')
+        .lexical_or_regex_authority,
+      'none',
     );
     assert.equal(
       hasPeripeteiaMechanismShift(
@@ -273,5 +293,41 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
       'file_path',
       'score_history',
     ]);
+    assert.equal(MECHANISM_MEASUREMENT_PROTOCOL.semanticAuthority, 'critic_semantic_score');
+    assert.equal(MECHANISM_MEASUREMENT_PROTOCOL.lexicalOrRegexAuthority, 'auxiliary_only');
+    assert.equal(MECHANISM_MEASUREMENT_PROTOCOL.ambiguityOrJudgeDisagreement, 'measurement_indeterminate');
+    assert.equal(LEARNER_ACTION_MEASUREMENT_PROTOCOL.semanticAuthority, 'critic_semantic_score');
+    assert.equal(LEARNER_ACTION_MEASUREMENT_PROTOCOL.lexicalOrRegexAuthority, 'none');
+    assert.equal(LEARNER_ACTION_MEASUREMENT_PROTOCOL.ambiguityOrJudgeDisagreement, 'measurement_indeterminate');
+    assert.equal(LEGACY_MECHANISM_MEASUREMENT_PROTOCOL.lexicalOrRegexAuthority, 'hard_clamp');
+    assert.notEqual(MECHANISM_MEASUREMENT_PROTOCOL.version, LEGACY_MECHANISM_MEASUREMENT_PROTOCOL.version);
+    assert.equal(
+      protocolVersionForExistingRow(
+        { tutorStrategicReversal: 75 },
+        { mechanismMeasurementProtocol: MECHANISM_MEASUREMENT_PROTOCOL },
+      ),
+      MECHANISM_MEASUREMENT_PROTOCOL.version,
+    );
+    assert.equal(
+      protocolVersionForExistingRow(
+        {
+          tutorStrategicReversal: 50,
+          mechanismMeasurementProtocolVersion: LEGACY_MECHANISM_MEASUREMENT_PROTOCOL.version,
+        },
+        { mechanismMeasurementProtocol: MECHANISM_MEASUREMENT_PROTOCOL },
+      ),
+      LEGACY_MECHANISM_MEASUREMENT_PROTOCOL.version,
+      'row provenance wins when a v1 row is carried into a v2 artifact',
+    );
+    assert.equal(
+      protocolVersionForExistingRow({ tutorStrategicReversal: 50 }, {}),
+      LEGACY_MECHANISM_MEASUREMENT_PROTOCOL.version,
+    );
+    assert.equal(protocolVersionForExistingRow({ formClass: 'flat' }, {}), null);
+    assert.equal(
+      learnerActionProtocolVersionForExistingRow({ actionalBreakthrough: 75 }),
+      LEGACY_LEARNER_ACTION_MEASUREMENT_PROTOCOL.version,
+    );
+    assert.equal(learnerActionProtocolVersionForExistingRow({ formClass: 'flat' }), null);
   });
 });

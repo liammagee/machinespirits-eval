@@ -14,15 +14,26 @@
  */
 
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { openPoeticsStore, upsertPoeticsTutorAdaptation } from '../services/poeticsStore.js';
+import {
+  insertPoeticsTutorAdaptationOnce,
+  openPoeticsStore,
+  upsertPoeticsTutorAdaptation,
+} from '../services/poeticsStore.js';
+import {
+  adjudicatePoeticsLearnerActionalChange,
+  adjudicatePoeticsMechanismChange,
+} from '../services/poeticsRepresentationChangeAdjudication.js';
 import { analyzePseudoCatharsis } from '../services/pseudoCatharsisDetector.js';
 import { reframeMatchStats } from './generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const ANALYZER_VERSION = 'tutor-adaptation-v4';
+const SEMANTIC_ANALYZER_VERSION = 'tutor-adaptation-v5-semantic-change';
+const SEMANTIC_ADJUDICATION_PACKET_SCHEMA = 'machinespirits.poetics.semantic-change-adjudication-packet.v1';
 
 const STOPWORDS = new Set(
   [
@@ -220,6 +231,7 @@ function parseArgs(argv) {
     csv: null,
     dryRun: false,
     targetOnly: false,
+    semanticAdjudicationsPath: null,
   };
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
@@ -229,10 +241,16 @@ function parseArgs(argv) {
     else if (token === '--csv') args.csv = path.resolve(argv[++i]);
     else if (token === '--dry-run') args.dryRun = true;
     else if (token === '--target-only') args.targetOnly = true;
-    else if (token === '--help' || token === '-h') {
+    else if (token === '--semantic-adjudications' || token === '--representation-adjudications') {
+      args.semanticAdjudicationsPath = path.resolve(argv[++i]);
+    } else if (token === '--help' || token === '-h') {
       console.log(`Usage:
   node scripts/analyze-poetics-tutor-adaptation.js [--run-id ID] [--db FILE]
-      [--out summary.json] [--csv rows.csv] [--target-only] [--dry-run]`);
+      [--out summary.json] [--csv rows.csv] [--target-only] [--dry-run]
+      [--semantic-adjudications semantic-packet.json]
+
+Pass a semantic packet for create-once v5 measurement. Omitting it retains
+historical v4 reproduction only; v4 regex signals must not support new claims.`);
       process.exit(0);
     } else {
       throw new Error(`unknown arg: ${token}`);
@@ -256,6 +274,25 @@ function decodeJson(value, fallback = null) {
   } catch {
     return fallback;
   }
+}
+
+function sha256Text(value) {
+  return createHash('sha256').update(String(value)).digest('hex');
+}
+
+function loadSemanticAdjudicationPacket(filePath) {
+  if (!filePath) return null;
+  if (!fs.existsSync(filePath)) throw new Error(`semantic adjudications not found: ${filePath}`);
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const packet = JSON.parse(raw);
+  if (packet?.schema !== SEMANTIC_ADJUDICATION_PACKET_SCHEMA || !packet?.items) {
+    throw new Error(`semantic adjudications must use schema ${SEMANTIC_ADJUDICATION_PACKET_SCHEMA}`);
+  }
+  Object.defineProperty(packet, '_localProvenance', {
+    value: { path: rel(filePath), sha256: sha256Text(raw) },
+    enumerable: false,
+  });
+  return packet;
 }
 
 function round(value, digits = 3) {
@@ -305,6 +342,7 @@ function loadItems(db, { runId = null, targetOnly = false } = {}) {
         i.control_role,
         i.sample_path,
         i.full_transcript_path,
+        i.content_hash,
         i.metadata
       FROM poetics_items i
       ${whereSql}
@@ -474,7 +512,10 @@ const TUTOR_REVERSAL_PATTERNS = [
   /\b(?:I was asking|that route|my question|the task|we should not|rather than)\b[\s\S]{0,120}\b(?:instead|try|switch|start|test|use)\b/i,
 ];
 
-const MECHANISM_SHIFT_PATTERNS = [
+// High-precision lexical cues retained for diagnostics only. They may suggest
+// where a semantic judge should look, but they never mint or veto a
+// representation-change label in the v5 measurement path.
+const AUXILIARY_MECHANISM_SHIFT_PATTERNS = [
   {
     id: 'criterion_gate',
     patterns: [
@@ -645,7 +686,7 @@ function learnerSelfReframePressureScore(text) {
 }
 
 function mechanismHits(text) {
-  return MECHANISM_SHIFT_PATTERNS.filter((mechanism) =>
+  return AUXILIARY_MECHANISM_SHIFT_PATTERNS.filter((mechanism) =>
     mechanism.patterns.some((pattern) => pattern.test(String(text || ''))),
   ).map((mechanism) => mechanism.id);
 }
@@ -808,10 +849,50 @@ function learnerOutcomeAfterReversal(learnerTurn) {
   return 'flat_or_partial';
 }
 
+function semanticStorageCompatibility(semanticMeasurement) {
+  if (!semanticMeasurement) return null;
+  return {
+    canonical_status_paths: [
+      'metadata.peripeteia.tutor_adaptive_mechanism_measurement.status',
+      'metadata.peripeteia.tutor_representation_change_measurement.status',
+      'metadata.peripeteia.learner_actional_change_measurement.status',
+      'metadata.peripeteia.learner_representation_change_measurement.status',
+    ],
+    legacy_read_aliases: {
+      tutor_adaptive_mechanism_measurement: 'metadata.peripeteia.adaptive_mechanism_measurement',
+      tutor_representation_change_measurement: 'metadata.peripeteia.representation_change_measurement',
+    },
+    legacy_boolean_sentinels: {
+      learner_self_reframe: 0,
+      tutor_contingent_adaptation: 0,
+    },
+    sentinel_is_not_a_negative_measurement: true,
+  };
+}
+
+function tutorAdaptiveMechanismMeasurement(peripeteia) {
+  return peripeteia?.tutor_adaptive_mechanism_measurement || peripeteia?.adaptive_mechanism_measurement || null;
+}
+
+function tutorRepresentationChangeMeasurement(peripeteia) {
+  return (
+    peripeteia?.tutor_representation_change_measurement ||
+    peripeteia?.representation_change_measurement ||
+    tutorAdaptiveMechanismMeasurement(peripeteia)?.representation_change_measurement ||
+    null
+  );
+}
+
 function analyzePeripeteia(
   turns,
   traceTurns = [],
-  { tutorAdaptationPolicy = null, minPressureTurnNumber = null, pairedPrefixThrough = null } = {},
+  {
+    tutorAdaptationPolicy = null,
+    minPressureTurnNumber = null,
+    pairedPrefixThrough = null,
+    tutorMechanismJudgments = null,
+    learnerActionJudgments = null,
+  } = {},
 ) {
   const instrumented = policyIncludes(tutorAdaptationPolicy, 'peripeteia')
     ? findInstrumentedReversalUse(turns, traceTurns, { minPressureTurnNumber })
@@ -830,7 +911,7 @@ function analyzePeripeteia(
   const mechanismDepth = mechanismNovelty.length;
   const pressureScore = Math.max(pressure?.score || 0, instrumented?.event?.confidence || 0);
   const strongPressure = Boolean(instrumented || pressureScore >= 0.65);
-  const tutorStrategyReversal = Boolean(
+  const legacyTutorStrategyReversal = Boolean(
     strongPressure &&
     postTutor &&
     (explicitReversal ||
@@ -838,47 +919,96 @@ function analyzePeripeteia(
       (strategyShift && mechanismDepth >= 1 && postOverlap >= 0.15) ||
       (instrumented?.declaredRouteChange && mechanismDepth >= 1 && postOverlap >= 0.1)),
   );
-  // A real public route change can occur without our scenario-bound mechanism
-  // lexicon firing: novelMechanismHits matches a keyword list that misses
-  // representation swaps (e.g. tile -> marker-on-diagram), so mechanismDepth reads 0
-  // even when the tutor visibly changes the public device. Credit it when an
-  // INSTRUMENTED private route change (declaredRouteChange — peripeteia arms only,
-  // controls have instrumented=null so this path cannot fire for them) surfaces
-  // publicly as BOTH a categorical strategy shift AND re-use of the pressured
-  // material, WITHOUT requiring mechanismDepth. strategyShift + postOverlap are the
-  // load-bearing PUBLIC predicates; strongPressure + declaredRouteChange are
-  // private-trace confirmatory, so a private self-report alone cannot satisfy it.
-  // (notes/poetics/2026-05-28-edra-m3-surgery-spec.md FIX 1.)
-  const publicRouteChange = Boolean(
+  // Historical v4 compatibility: this public-route disjunct credited an
+  // instrumented route change when the old lexicon missed a representation swap.
+  // It remains here only to reproduce v4 rows; semantic v5 does not consult it.
+  const legacyPublicRouteChange = Boolean(
     strongPressure && postTutor && strategyShift && instrumented?.declaredRouteChange && postOverlap >= 0.1,
   );
-  // tutor_strategy_reversal stays the strict lexical/explicit signal;
-  // tutor_adaptive_mechanism is the broader public-route-change signal. These were
-  // aliased to one var, which under-credited fitted terse devices (score pinned at
-  // 49) and forced false private_only_adaptation gate failures.
-  const tutorAdaptiveMechanism = tutorStrategyReversal || publicRouteChange;
-  const tutorPeripeteiaScore = pressureTurn
-    ? round(
-        Math.min(
-          tutorAdaptiveMechanism ? 100 : 49,
-          10 +
-            Math.min(25, pressureScore * 25) +
-            Math.min(15, postOverlap * 100) +
-            Math.min(25, mechanismDepth * 12.5) +
-            (strategyShift ? 10 : 0) +
-            (explicitReversal ? 20 : 0) +
-            (instrumented?.declaredRouteChange ? 10 : 0),
-        ),
-        1,
-      )
-    : 0;
   const outcomeLearner = postTutor ? nextLearnerAfter(turns, postTutor) : null;
+  const semanticMeasurement = tutorMechanismJudgments !== null || learnerActionJudgments !== null;
+  const adaptiveMechanismMeasurement = semanticMeasurement
+    ? adjudicatePoeticsMechanismChange({
+        beforeText: preTutor?.text || '',
+        afterText: postTutor?.text || '',
+        judgments: tutorMechanismJudgments || [],
+        advisorySignals: {
+          novel_mechanism_hits: mechanismNovelty,
+          tutor_strategy_before: beforeStrategy,
+          tutor_strategy_after: afterStrategy,
+          tutor_strategy_shift: strategyShift,
+          explicit_reversal: explicitReversal,
+        },
+      })
+    : null;
+  const representationChangeMeasurement = adaptiveMechanismMeasurement?.representation_change_measurement || null;
+  const learnerActionalChangeMeasurement = semanticMeasurement
+    ? adjudicatePoeticsLearnerActionalChange({
+        beforeText: pressureTurn?.text || '',
+        afterText: outcomeLearner?.text || '',
+        judgments: learnerActionJudgments || [],
+        advisorySignals: {
+          learner_outcome_after_reversal: learnerOutcomeAfterReversal(outcomeLearner),
+          legacy_marker_reframe_score: outcomeLearner ? markerReframeScore(outcomeLearner.text) : null,
+        },
+      })
+    : null;
+  const learnerRepresentationChangeMeasurement =
+    learnerActionalChangeMeasurement?.representation_change_measurement || null;
+  const measurementIndeterminate = adaptiveMechanismMeasurement?.status === 'measurement_indeterminate';
+
+  // v4 stays available only so its historical rows remain reproducible. The v5
+  // path is forward-only: two independent semantic judges are authoritative for
+  // the broader changed public mechanism and its representation-change subtype;
+  // every regex-derived signal above is advisory.
+  const tutorStrategyReversal = semanticMeasurement
+    ? measurementIndeterminate
+      ? null
+      : Boolean(strongPressure && postTutor && adaptiveMechanismMeasurement.value)
+    : legacyTutorStrategyReversal;
+  const tutorAdaptiveMechanism = semanticMeasurement
+    ? tutorStrategyReversal
+    : legacyTutorStrategyReversal || legacyPublicRouteChange;
+  let tutorPeripeteiaScore;
+  if (measurementIndeterminate) {
+    tutorPeripeteiaScore = null;
+  } else if (!pressureTurn) {
+    tutorPeripeteiaScore = 0;
+  } else if (semanticMeasurement) {
+    tutorPeripeteiaScore = round(
+      Math.min(
+        tutorAdaptiveMechanism ? 100 : 49,
+        10 +
+          Math.min(25, pressureScore * 25) +
+          Math.min(15, postOverlap * 100) +
+          (adaptiveMechanismMeasurement.value ? 25 : 0) +
+          (instrumented?.declaredRouteChange ? 10 : 0),
+      ),
+      1,
+    );
+  } else {
+    tutorPeripeteiaScore = round(
+      Math.min(
+        tutorAdaptiveMechanism ? 100 : 49,
+        10 +
+          Math.min(25, pressureScore * 25) +
+          Math.min(15, postOverlap * 100) +
+          Math.min(25, mechanismDepth * 12.5) +
+          (strategyShift ? 10 : 0) +
+          (explicitReversal ? 20 : 0) +
+          (instrumented?.declaredRouteChange ? 10 : 0),
+      ),
+      1,
+    );
+  }
   return {
     learner_reversal_pressure: Boolean(pressure || instrumented),
     instrumented_pressure: Boolean(instrumented),
     pressure_score: pressureScore,
     trigger_type: instrumented?.event?.triggerType || pressure?.triggerType || null,
     pressure_turn_number: pressureTurn?.turnNumber ?? null,
+    learner_pre_turn: pressureTurn?.turnNumber ?? null,
+    learner_post_turn: outcomeLearner?.turnNumber ?? null,
     tutor_pre_turn: preTutor?.turnNumber ?? null,
     tutor_post_turn: postTutor?.turnNumber ?? null,
     tutor_strategy_before: beforeStrategy,
@@ -886,6 +1016,17 @@ function analyzePeripeteia(
     tutor_strategy_shift: strategyShift,
     explicit_reversal: explicitReversal,
     novel_mechanism_hits: mechanismNovelty,
+    auxiliary_mechanism_signals: {
+      lexical_or_regex_authority: semanticMeasurement ? 'none' : 'legacy_v4',
+      mechanism_depth: mechanismDepth,
+      legacy_tutor_strategy_reversal: legacyTutorStrategyReversal,
+      legacy_public_route_change: legacyPublicRouteChange,
+    },
+    mechanism_measurement_mode: semanticMeasurement ? 'semantic_v5' : 'legacy_v4',
+    tutor_adaptive_mechanism_measurement: adaptiveMechanismMeasurement,
+    tutor_representation_change_measurement: representationChangeMeasurement,
+    learner_actional_change_measurement: learnerActionalChangeMeasurement,
+    learner_representation_change_measurement: learnerRepresentationChangeMeasurement,
     tutor_strategy_reversal: tutorStrategyReversal,
     tutor_adaptive_mechanism: tutorAdaptiveMechanism,
     private_mechanism_route: instrumented?.privateMechanismRoute || null,
@@ -911,7 +1052,14 @@ function pairedPrefixPressureMinTurn(trace) {
   return { minPressureTurnNumber: Number(match[1]), pairedPrefixThrough: prefixThrough };
 }
 
-function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
+function analyzeTraceForTutorAdaptation({
+  itemId,
+  trace,
+  sourceTracePath,
+  sourceTraceSha256 = null,
+  tutorMechanismJudgments = null,
+  learnerActionJudgments = null,
+}) {
   const turns = publicTurns(trace);
   const { minPressureTurnNumber, pairedPrefixThrough } = pairedPrefixPressureMinTurn(trace);
   const tutorAdaptationPolicy =
@@ -920,6 +1068,8 @@ function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
     tutorAdaptationPolicy,
     minPressureTurnNumber,
     pairedPrefixThrough,
+    tutorMechanismJudgments,
+    learnerActionJudgments,
   });
   const branchValidity = branchValidityForTrace(trace, turns, {
     tutorAdaptationPolicy,
@@ -929,11 +1079,35 @@ function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
   const anchor = cue ? extractAnchor(cue.text) : '';
   const cuePivot = cue ? findCuePivot(turns, cue, anchor) : null;
   const organic = cuePivot ? null : findOrganicPivot(turns);
-  const pivotLearner = cuePivot?.turn || organic?.pivot || null;
-  const resolvedAnchor = anchor || organic?.anchor || '';
+  const semanticMeasurement = tutorMechanismJudgments !== null || learnerActionJudgments !== null;
+  const semanticPivotLearner = semanticMeasurement
+    ? turns.find(
+        (turn) => turn.phase === 'learner' && Number(turn.turnNumber) === Number(peripeteia.learner_post_turn),
+      ) || null
+    : null;
+  const semanticPreLearner = semanticMeasurement
+    ? turns.find(
+        (turn) => turn.phase === 'learner' && Number(turn.turnNumber) === Number(peripeteia.learner_pre_turn),
+      ) || null
+    : null;
+  const pivotLearner = semanticMeasurement ? semanticPivotLearner : cuePivot?.turn || organic?.pivot || null;
+  const resolvedAnchor = semanticMeasurement ? semanticPreLearner?.text || '' : anchor || organic?.anchor || '';
   const cueAnalysis = cuePivot?.analysis || null;
-  const learnerReframeScore = cueAnalysis?.learnerReframeScore ?? organic?.learnerReframeScore ?? 0;
-  const learnerSelfReframe = Boolean(cueAnalysis?.learnerSelfReframe || organic?.learnerSelfReframe);
+  const legacyLearnerReframeScore = cueAnalysis?.learnerReframeScore ?? organic?.learnerReframeScore ?? 0;
+  const legacyLearnerSelfReframe = Boolean(cueAnalysis?.learnerSelfReframe || organic?.learnerSelfReframe);
+  const learnerRepresentationMeasurement = peripeteia.learner_representation_change_measurement;
+  const learnerSelfReframe = semanticMeasurement
+    ? learnerRepresentationMeasurement?.status === 'determinate'
+      ? learnerRepresentationMeasurement.value
+      : null
+    : legacyLearnerSelfReframe;
+  const learnerReframeScore = semanticMeasurement
+    ? learnerSelfReframe == null
+      ? null
+      : learnerSelfReframe
+        ? 100
+        : 0
+    : legacyLearnerReframeScore;
 
   const preTutor = pivotLearner ? findTutorBefore(turns, pivotLearner) : null;
   const postTutor = pivotLearner ? findTutorAfter(turns, pivotLearner) : null;
@@ -953,11 +1127,14 @@ function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
         postTutor.text,
       )
     : false;
-  const tutorContingentAdaptation = Boolean(
-    learnerSelfReframe &&
-    postTutor &&
-    ((postOverlap >= 0.16 && uptakeDelta >= 0.03 && novelShared.length >= 2) || explicitUptake),
-  );
+  const tutorContingentAdaptation =
+    learnerSelfReframe == null
+      ? null
+      : Boolean(
+          learnerSelfReframe &&
+          postTutor &&
+          ((postOverlap >= 0.16 && uptakeDelta >= 0.03 && novelShared.length >= 2) || explicitUptake),
+        );
   const rawTutorAdaptationScore = Math.min(
     100,
     20 +
@@ -966,11 +1143,12 @@ function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
       Math.min(10, novelShared.length * 2) +
       (strategyShift ? 10 : 0),
   );
-  const tutorAdaptationScore = learnerSelfReframe ? round(rawTutorAdaptationScore, 1) : 0;
+  const tutorAdaptationScore =
+    learnerSelfReframe == null ? null : learnerSelfReframe ? round(rawTutorAdaptationScore, 1) : 0;
 
   return {
     itemId,
-    analyzerVersion: ANALYZER_VERSION,
+    analyzerVersion: semanticMeasurement ? SEMANTIC_ANALYZER_VERSION : ANALYZER_VERSION,
     sourceTracePath: sourceTracePath ? rel(sourceTracePath) : null,
     cuePolicy: cue?.directorCue?.revisitPolicy || (cue ? 'anchor' : null),
     cueTurnNumber: cue?.turnNumber ?? null,
@@ -1001,28 +1179,102 @@ function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
       explicitUptake,
       peripeteia,
       branch_validity: branchValidity,
+      analysis_provenance: {
+        source_trace_sha256: sourceTraceSha256 || sha256Text(JSON.stringify(trace)),
+        source_trace_path: sourceTracePath ? rel(sourceTracePath) : null,
+        recorded_not_enforced: true,
+      },
+      ...(semanticMeasurement
+        ? { semantic_storage_compatibility: semanticStorageCompatibility(semanticMeasurement) }
+        : {}),
     },
   };
 }
 
-function analyzeItem(item) {
+function analyzeItem(item, semanticAdjudicationPacket = null) {
+  const packetItem = semanticAdjudicationPacket?.items?.[item.id] || null;
+  if (semanticAdjudicationPacket && !packetItem) {
+    throw new Error(`semantic adjudication packet is missing selected item: ${item.id}`);
+  }
+  if (
+    semanticAdjudicationPacket &&
+    (!Array.isArray(packetItem.tutor_judgments) ||
+      packetItem.tutor_judgments.length !== 2 ||
+      !Array.isArray(packetItem.learner_judgments) ||
+      packetItem.learner_judgments.length !== 2)
+  ) {
+    throw new Error(
+      `semantic adjudication packet item ${item.id} must contain exactly two tutor_judgments and two learner_judgments`,
+    );
+  }
+  const tutorMechanismJudgments = semanticAdjudicationPacket ? packetItem?.tutor_judgments || [] : null;
+  const learnerActionJudgments = semanticAdjudicationPacket ? packetItem?.learner_judgments || [] : null;
+  const semanticMeasurement = semanticAdjudicationPacket !== null;
   const tracePath = tracePathForItem(item);
   if (!tracePath) {
+    const adaptiveMechanismMeasurement =
+      tutorMechanismJudgments === null
+        ? null
+        : adjudicatePoeticsMechanismChange({
+            beforeText: '',
+            afterText: '',
+            judgments: tutorMechanismJudgments,
+            advisorySignals: {},
+          });
+    const learnerActionalChangeMeasurement =
+      learnerActionJudgments === null
+        ? null
+        : adjudicatePoeticsLearnerActionalChange({
+            beforeText: '',
+            afterText: '',
+            judgments: learnerActionJudgments,
+            advisorySignals: {},
+          });
     return {
       itemId: item.id,
-      analyzerVersion: ANALYZER_VERSION,
+      analyzerVersion: semanticMeasurement ? SEMANTIC_ANALYZER_VERSION : ANALYZER_VERSION,
       sourceTracePath: null,
-      learnerSelfReframe: false,
+      learnerSelfReframe: semanticMeasurement ? null : false,
       tutorStrategyShift: false,
-      tutorContingentAdaptation: false,
-      tutorAdaptationScore: 0,
+      tutorContingentAdaptation: semanticMeasurement ? null : false,
+      tutorAdaptationScore: semanticMeasurement ? null : 0,
       uptakeDelta: 0,
       sharedSalientTerms: [],
-      metadata: { error: 'missing_trace' },
+      metadata: {
+        error: 'missing_trace',
+        peripeteia: {
+          mechanism_measurement_mode: semanticMeasurement ? 'semantic_v5' : 'legacy_v4',
+          tutor_adaptive_mechanism_measurement: adaptiveMechanismMeasurement,
+          tutor_representation_change_measurement:
+            adaptiveMechanismMeasurement?.representation_change_measurement || null,
+          learner_actional_change_measurement: learnerActionalChangeMeasurement,
+          learner_representation_change_measurement:
+            learnerActionalChangeMeasurement?.representation_change_measurement || null,
+          tutor_strategy_reversal: semanticMeasurement ? null : false,
+          tutor_adaptive_mechanism: semanticMeasurement ? null : false,
+          tutor_peripeteia_score: semanticMeasurement ? null : 0,
+        },
+        analysis_provenance: {
+          source_trace_sha256: null,
+          ingested_item_content_hash: item.content_hash || null,
+          recorded_not_enforced: true,
+        },
+        ...(semanticMeasurement
+          ? { semantic_storage_compatibility: semanticStorageCompatibility(semanticMeasurement) }
+          : {}),
+      },
     };
   }
-  const trace = JSON.parse(fs.readFileSync(tracePath, 'utf8'));
-  return analyzeTraceForTutorAdaptation({ itemId: item.id, trace, sourceTracePath: tracePath });
+  const traceRaw = fs.readFileSync(tracePath, 'utf8');
+  const trace = JSON.parse(traceRaw);
+  return analyzeTraceForTutorAdaptation({
+    itemId: item.id,
+    trace,
+    sourceTracePath: tracePath,
+    sourceTraceSha256: sha256Text(traceRaw),
+    tutorMechanismJudgments,
+    learnerActionJudgments,
+  });
 }
 
 function summarizeRows(rows) {
@@ -1034,39 +1286,91 @@ function summarizeRows(rows) {
       arm: row.arm || 'default',
       total: 0,
       learnerSelfReframes: 0,
+      learnerRepresentationDeterminate: 0,
+      learnerRepresentationIndeterminate: 0,
       tutorAdaptations: 0,
+      tutorUptakeDeterminate: 0,
       branchValid: 0,
       reversalEventsUsed: 0,
       instrumentedPressure: 0,
       privateRoutes: 0,
       peripeteiaAdaptations: 0,
+      peripeteiaDeterminate: 0,
+      peripeteiaIndeterminate: 0,
+      tutorRepresentationChanges: 0,
+      tutorRepresentationDeterminate: 0,
+      tutorRepresentationIndeterminate: 0,
+      learnerActionalChanges: 0,
+      learnerActionDeterminate: 0,
+      learnerActionIndeterminate: 0,
+      peripeteiaDeterminateScores: 0,
       peripeteiaScoreSum: 0,
       scoreSum: 0,
+      scoreCount: 0,
       uptakeDeltaSum: 0,
+      uptakeDeltaCount: 0,
     };
     const peripeteia = row.metadata?.peripeteia || {};
     const branchValidity = row.metadata?.branch_validity || {};
     groups[key].total += 1;
     if (row.learnerSelfReframe) groups[key].learnerSelfReframes += 1;
     if (row.tutorContingentAdaptation) groups[key].tutorAdaptations += 1;
+    const learnerRepresentation = peripeteia.learner_representation_change_measurement;
+    if (learnerRepresentation?.status === 'measurement_indeterminate') {
+      groups[key].learnerRepresentationIndeterminate += 1;
+    } else {
+      groups[key].learnerRepresentationDeterminate += 1;
+      groups[key].tutorUptakeDeterminate += 1;
+      if (Number.isFinite(row.tutorAdaptationScore)) {
+        groups[key].scoreSum += row.tutorAdaptationScore;
+        groups[key].scoreCount += 1;
+      }
+      if (Number.isFinite(row.uptakeDelta)) {
+        groups[key].uptakeDeltaSum += row.uptakeDelta;
+        groups[key].uptakeDeltaCount += 1;
+      }
+    }
     if (branchValidity.valid) groups[key].branchValid += 1;
     if (branchValidity.learner_reversal_event_used) groups[key].reversalEventsUsed += 1;
     if (peripeteia.instrumented_pressure) groups[key].instrumentedPressure += 1;
     if (peripeteia.private_mechanism_declared) groups[key].privateRoutes += 1;
-    if (peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal) {
-      groups[key].peripeteiaAdaptations += 1;
+    const tutorMechanism = tutorAdaptiveMechanismMeasurement(peripeteia);
+    const tutorRepresentation = tutorRepresentationChangeMeasurement(peripeteia);
+    if (tutorMechanism?.status === 'measurement_indeterminate') {
+      groups[key].peripeteiaIndeterminate += 1;
+    } else {
+      groups[key].peripeteiaDeterminate += 1;
+      if (peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal) {
+        groups[key].peripeteiaAdaptations += 1;
+      }
     }
-    groups[key].peripeteiaScoreSum += peripeteia.tutor_peripeteia_score || 0;
-    groups[key].scoreSum += row.tutorAdaptationScore || 0;
-    groups[key].uptakeDeltaSum += row.uptakeDelta || 0;
+    if (tutorRepresentation?.status === 'measurement_indeterminate') {
+      groups[key].tutorRepresentationIndeterminate += 1;
+    } else if (tutorRepresentation?.status === 'determinate') {
+      groups[key].tutorRepresentationDeterminate += 1;
+      if (tutorRepresentation.value) groups[key].tutorRepresentationChanges += 1;
+    }
+    if (peripeteia.learner_actional_change_measurement?.status === 'measurement_indeterminate') {
+      groups[key].learnerActionIndeterminate += 1;
+    } else if (peripeteia.learner_actional_change_measurement?.status === 'determinate') {
+      groups[key].learnerActionDeterminate += 1;
+      if (peripeteia.learner_actional_change_measurement.value) groups[key].learnerActionalChanges += 1;
+    }
+    if (Number.isFinite(peripeteia.tutor_peripeteia_score)) {
+      groups[key].peripeteiaDeterminateScores += 1;
+      groups[key].peripeteiaScoreSum += peripeteia.tutor_peripeteia_score;
+    }
   }
   return Object.values(groups)
     .sort((a, b) => `${a.runId}:${a.arm}`.localeCompare(`${b.runId}:${b.arm}`))
     .map((group) => ({
       ...group,
-      meanTutorAdaptationScore: round(group.scoreSum / group.total, 1),
-      meanPeripeteiaScore: round(group.peripeteiaScoreSum / group.total, 1),
-      meanUptakeDelta: round(group.uptakeDeltaSum / group.total),
+      meanTutorAdaptationScore: group.scoreCount > 0 ? round(group.scoreSum / group.scoreCount, 1) : null,
+      meanPeripeteiaScore:
+        group.peripeteiaDeterminateScores > 0
+          ? round(group.peripeteiaScoreSum / group.peripeteiaDeterminateScores, 1)
+          : null,
+      meanUptakeDelta: group.uptakeDeltaCount > 0 ? round(group.uptakeDeltaSum / group.uptakeDeltaCount) : null,
     }));
 }
 
@@ -1094,6 +1398,15 @@ function renderCsv(rows) {
     'learner_reversal_candidate_trigger_types',
     'requires_learner_reframe_event',
     'learner_reframe_event_used',
+    'mechanism_measurement_mode',
+    'tutor_adaptive_mechanism_measurement_status',
+    'tutor_adaptive_mechanism_value',
+    'tutor_representation_change_measurement_status',
+    'tutor_representation_change_value',
+    'learner_actional_change_measurement_status',
+    'learner_actional_change_value',
+    'learner_representation_change_measurement_status',
+    'learner_representation_change_value',
     'source_trace_path',
   ];
   const lines = [header.join(',')];
@@ -1101,6 +1414,9 @@ function renderCsv(rows) {
     lines.push(
       (() => {
         const branchValidity = row.metadata?.branch_validity || {};
+        const peripeteia = row.metadata?.peripeteia || {};
+        const learnerMeasurementIndeterminate =
+          peripeteia.learner_actional_change_measurement?.status === 'measurement_indeterminate';
         return [
           row.runId,
           row.itemId,
@@ -1108,8 +1424,8 @@ function renderCsv(rows) {
           row.arm,
           row.tid,
           row.dramaId,
-          row.learnerSelfReframe ? 1 : 0,
-          row.tutorContingentAdaptation ? 1 : 0,
+          learnerMeasurementIndeterminate ? null : row.learnerSelfReframe ? 1 : 0,
+          learnerMeasurementIndeterminate ? null : row.tutorContingentAdaptation ? 1 : 0,
           row.tutorAdaptationScore,
           row.uptakeDelta,
           row.tutorStrategyBefore,
@@ -1124,6 +1440,15 @@ function renderCsv(rows) {
           branchValidity.learner_reversal_candidate_trigger_types,
           branchValidity.requires_learner_reframe_event,
           branchValidity.learner_reframe_event_used,
+          peripeteia.mechanism_measurement_mode,
+          tutorAdaptiveMechanismMeasurement(peripeteia)?.status,
+          tutorAdaptiveMechanismMeasurement(peripeteia)?.value,
+          tutorRepresentationChangeMeasurement(peripeteia)?.status,
+          tutorRepresentationChangeMeasurement(peripeteia)?.value,
+          peripeteia.learner_actional_change_measurement?.status,
+          peripeteia.learner_actional_change_measurement?.value,
+          peripeteia.learner_representation_change_measurement?.status,
+          peripeteia.learner_representation_change_measurement?.value,
           row.sourceTracePath,
         ];
       })()
@@ -1135,18 +1460,62 @@ function renderCsv(rows) {
 }
 
 function buildAnalysis(db, args) {
+  const semanticAdjudicationPacket = loadSemanticAdjudicationPacket(args.semanticAdjudicationsPath);
   const items = loadItems(db, { runId: args.runId, targetOnly: args.targetOnly });
-  const rows = items.map((item) => ({
-    runId: item.run_id,
-    unitId: item.unit_id,
-    arm: item.arm,
-    tid: item.tid,
-    dramaId: item.drama_id,
-    ...analyzeItem(item),
-  }));
+  if (semanticAdjudicationPacket) {
+    const missingOrIncomplete = items.filter((item) => {
+      const packetItem = semanticAdjudicationPacket.items?.[item.id];
+      return (
+        !packetItem ||
+        !Array.isArray(packetItem.tutor_judgments) ||
+        packetItem.tutor_judgments.length !== 2 ||
+        !Array.isArray(packetItem.learner_judgments) ||
+        packetItem.learner_judgments.length !== 2
+      );
+    });
+    if (missingOrIncomplete.length) {
+      throw new Error(
+        `semantic adjudication packet coverage is incomplete for selected items: ${missingOrIncomplete
+          .map((item) => item.id)
+          .join(', ')}`,
+      );
+    }
+  }
+  const rows = items.map((item) => {
+    const analyzed = analyzeItem(item, semanticAdjudicationPacket);
+    analyzed.metadata = {
+      ...analyzed.metadata,
+      analysis_provenance: {
+        ...analyzed.metadata?.analysis_provenance,
+        ingested_item_content_hash: item.content_hash || null,
+      },
+    };
+    if (semanticAdjudicationPacket) {
+      analyzed.metadata = {
+        ...analyzed.metadata,
+        semantic_adjudication_provenance: {
+          packet_schema: semanticAdjudicationPacket.schema,
+          packet_path: semanticAdjudicationPacket._localProvenance.path,
+          packet_sha256: semanticAdjudicationPacket._localProvenance.sha256,
+          create_once: true,
+          historical_recompute_allowed: false,
+          recorded_not_enforced: true,
+        },
+      };
+    }
+    return {
+      runId: item.run_id,
+      unitId: item.unit_id,
+      arm: item.arm,
+      tid: item.tid,
+      dramaId: item.drama_id,
+      ...analyzed,
+    };
+  });
   return {
     generatedAt: new Date().toISOString(),
-    analyzerVersion: ANALYZER_VERSION,
+    analyzerVersion: semanticAdjudicationPacket ? SEMANTIC_ANALYZER_VERSION : ANALYZER_VERSION,
+    semanticAdjudicationPacket: semanticAdjudicationPacket ? semanticAdjudicationPacket._localProvenance : null,
     runFilter: args.runId || null,
     targetOnly: args.targetOnly,
     summary: summarizeRows(rows),
@@ -1156,7 +1525,13 @@ function buildAnalysis(db, args) {
 
 function persistAnalysis(db, rows) {
   const tx = db.transaction(() => {
-    for (const row of rows) upsertPoeticsTutorAdaptation(db, row);
+    for (const row of rows) {
+      if (row.analyzerVersion === SEMANTIC_ANALYZER_VERSION) {
+        insertPoeticsTutorAdaptationOnce(db, row);
+      } else {
+        upsertPoeticsTutorAdaptation(db, row);
+      }
+    }
   });
   tx();
 }
@@ -1172,15 +1547,28 @@ function main() {
     const total = analysis.rows.length;
     const adapted = analysis.rows.filter((row) => row.tutorContingentAdaptation).length;
     const learner = analysis.rows.filter((row) => row.learnerSelfReframe).length;
+    const mechanismIndeterminate = analysis.rows.filter(
+      (row) => tutorAdaptiveMechanismMeasurement(row.metadata?.peripeteia)?.status === 'measurement_indeterminate',
+    ).length;
+    const learnerIndeterminate = analysis.rows.filter(
+      (row) => row.metadata?.peripeteia?.learner_actional_change_measurement?.status === 'measurement_indeterminate',
+    ).length;
     console.log(
       `${args.dryRun ? 'would analyze' : 'analyzed'} tutor adaptation: ` +
-        `${total} item(s), ${learner} learner self-reframe(s), ${adapted} tutor contingent adaptation(s)`,
+        `${total} item(s), ${learner} learner self-reframe(s), ${adapted} tutor contingent adaptation(s), ` +
+        `${mechanismIndeterminate} tutor mechanism and ${learnerIndeterminate} learner action measurement-indeterminate`,
     );
     for (const group of analysis.summary) {
       console.log(
-        `  ${group.runId} ${group.arm}: learner ${group.learnerSelfReframes}/${group.total}, ` +
-          `uptake ${group.tutorAdaptations}/${group.total}, mean uptake ${group.meanTutorAdaptationScore}, ` +
-          `peripeteia ${group.peripeteiaAdaptations}/${group.total}, mean peripeteia ${group.meanPeripeteiaScore}`,
+        `  ${group.runId} ${group.arm}: learner ${group.learnerSelfReframes}/${group.learnerRepresentationDeterminate}, ` +
+          `learner indeterminate ${group.learnerRepresentationIndeterminate}, ` +
+          `uptake ${group.tutorAdaptations}/${group.tutorUptakeDeterminate}, mean uptake ${group.meanTutorAdaptationScore}, ` +
+          `peripeteia ${group.peripeteiaAdaptations}/${group.peripeteiaDeterminate}, ` +
+          `indeterminate ${group.peripeteiaIndeterminate}, tutor representation ` +
+          `${group.tutorRepresentationChanges}/${group.tutorRepresentationDeterminate}, ` +
+          `tutor representation indeterminate ${group.tutorRepresentationIndeterminate}, learner action ` +
+          `${group.learnerActionalChanges}/${group.learnerActionDeterminate}, ` +
+          `learner indeterminate ${group.learnerActionIndeterminate}, mean peripeteia ${group.meanPeripeteiaScore}`,
       );
     }
   } finally {
@@ -1199,12 +1587,16 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 
 export {
   ANALYZER_VERSION,
+  SEMANTIC_ADJUDICATION_PACKET_SCHEMA,
+  SEMANTIC_ANALYZER_VERSION,
   analyzePeripeteia,
   analyzeTraceForTutorAdaptation,
   branchValidityForTrace,
   buildAnalysis,
   learnerResistanceScore,
+  loadSemanticAdjudicationPacket,
   markerReframeScore,
+  persistAnalysis,
   renderCsv,
   strategyFor,
   terms,

@@ -350,6 +350,135 @@ function seed(db) {
   });
 }
 
+function seedSemanticV5ReportRows(db) {
+  const runId = 'poetics-semantic-v5-report';
+  const analyzerVersion = 'tutor-adaptation-v5-semantic-change';
+  upsertPoeticsRun(db, {
+    id: runId,
+    sourceRoot: 'config/poetics-calibration/poetics-semantic-v5-report',
+    batchId: runId,
+    generator: 'mock',
+    metadata: {},
+  });
+  for (const [suffix, measurement, score] of [
+    ['determinate', { status: 'determinate', value: true }, 80],
+    ['indeterminate', { status: 'measurement_indeterminate', value: null }, null],
+  ]) {
+    const itemId = `${runId}:target-${suffix}:peripeteia-only:T05`;
+    upsertPoeticsItem(db, {
+      id: itemId,
+      runId,
+      unitId: `target-${suffix}`,
+      repeat: suffix,
+      arm: 'peripeteia-only',
+      tid: 'T05',
+      dramaId: 'D55',
+      discipline: 'mathematics',
+      condition: 'peripeteia-only',
+      intendedLean: 'recognition',
+      metadata: {},
+    });
+    upsertPoeticsTutorAdaptation(db, {
+      itemId,
+      analyzerVersion,
+      learnerSelfReframe: measurement.value,
+      tutorContingentAdaptation: measurement.value,
+      tutorAdaptationScore: score,
+      uptakeDelta: 0,
+      tutorStrategyBefore: 'mechanism_explanation',
+      tutorStrategyAfter: suffix === 'determinate' ? 'counterexample' : null,
+      tutorStrategyShift: suffix === 'determinate',
+      sharedSalientTerms: [],
+      metadata: {
+        peripeteia: {
+          learner_reversal_pressure: true,
+          instrumented_pressure: true,
+          private_mechanism_declared: true,
+          mechanism_measurement_mode: 'semantic_v5',
+          ...(suffix === 'determinate'
+            ? {
+                tutor_adaptive_mechanism_measurement: measurement,
+                tutor_representation_change_measurement: measurement,
+              }
+            : {
+                // Preserve a pre-canonical v5 row to exercise dual-read compatibility.
+                adaptive_mechanism_measurement: measurement,
+                representation_change_measurement: measurement,
+              }),
+          learner_actional_change_measurement: measurement,
+          learner_representation_change_measurement: measurement,
+          tutor_strategy_reversal: suffix === 'determinate' ? true : null,
+          tutor_adaptive_mechanism: suffix === 'determinate' ? true : null,
+          tutor_peripeteia_score: score,
+        },
+        branch_validity: {
+          requires_learner_reversal_event: true,
+          learner_reversal_event_used: true,
+          requires_learner_reframe_event: false,
+          learner_reframe_event_used: false,
+          valid: true,
+        },
+      },
+    });
+  }
+  return { runId, analyzerVersion };
+}
+
+function seedMixedProtocolReportRows(db) {
+  const runId = 'poetics-mixed-protocol-report';
+  const criticModel = 'mock/critic';
+  upsertPoeticsRun(db, {
+    id: runId,
+    sourceRoot: `config/poetics-calibration/${runId}`,
+    batchId: runId,
+    generator: 'mock',
+    metadata: {},
+  });
+  const protocols = [
+    {
+      suffix: 'legacy',
+      tutor: 'poetics-phase2-mechanism-measurement-v1-hard-regex-clamp',
+      learner: 'poetics-phase2-learner-action-measurement-v0-unversioned',
+    },
+    {
+      suffix: 'semantic',
+      tutor: 'poetics-phase2-mechanism-measurement-v2-semantic-authoritative',
+      learner: 'poetics-phase2-learner-action-measurement-v1-semantic-authoritative',
+    },
+  ];
+  for (const [index, protocol] of protocols.entries()) {
+    const itemId = `${runId}:target-r0${index + 1}:peripeteia-only:T0${index + 1}`;
+    upsertPoeticsItem(db, {
+      id: itemId,
+      runId,
+      unitId: `target-r0${index + 1}`,
+      repeat: `r0${index + 1}`,
+      arm: 'peripeteia-only',
+      tid: `T0${index + 1}`,
+      dramaId: index ? 'D53' : 'D50',
+      discipline: 'mathematics',
+      condition: 'peripeteia-only',
+      intendedLean: 'recognition',
+      metadata: {},
+    });
+    upsertPoeticsScore(db, {
+      itemId,
+      criticModel,
+      scoreFile: `scores/${protocol.suffix}.json`,
+      formClass: 'recognition',
+      recontextualization: 75,
+      statedInsight: 25,
+      metadata: {
+        actional_breakthrough: 75,
+        adaptive_mechanism_quality: 75,
+        mechanism_measurement_protocol_version: protocol.tutor,
+        learner_action_measurement_protocol_version: protocol.learner,
+      },
+    });
+  }
+  return { runId, criticModel };
+}
+
 describe('poetics sidecar report and browser', () => {
   it('parses public scripts into theatrical preview blocks', () => {
     const blocks = parseTranscriptPreview(`STAGE: [A card is turned over.]
@@ -470,6 +599,124 @@ TUTOR: Try the second case.`);
       assert.ok(renderCsv(adaptiveReport).includes('branch_valid'));
       assert.ok(renderCsv(adaptiveReport).includes('tutor_peripeteia_score'));
       assert.ok(renderCsv(adaptiveReport).includes('68'));
+      assert.equal(adaptiveReport.runs[0].targetAdaptation.reframe.mechanismDeterminate, 1);
+      assert.equal(adaptiveReport.runs[0].targetAdaptation.reframe.mechanismMeasurementIndeterminate, 0);
+    }));
+
+  it('reports semantic v5 indeterminacy without putting it in mechanism denominators or means', () =>
+    withDb((db) => {
+      const { runId, analyzerVersion } = seedSemanticV5ReportRows(db);
+      const report = buildPoeticsReport(db, { runId, analyzerVersion });
+      const bucket = report.runs[0].targetAdaptation['peripeteia-only'];
+
+      assert.equal(bucket.total, 2);
+      assert.equal(bucket.peripeteiaScored, 2);
+      assert.equal(bucket.mechanismDeterminate, 1);
+      assert.equal(bucket.mechanismMeasurementIndeterminate, 1);
+      assert.equal(bucket.tutorMechanisms, 1);
+      assert.equal(bucket.tutorRepresentationDeterminate, 1);
+      assert.equal(bucket.tutorRepresentationIndeterminate, 1);
+      assert.equal(bucket.tutorRepresentationChanges, 1);
+      assert.equal(bucket.peripeteiaScoreCount, 1);
+      assert.equal(bucket.peripeteiaScoreSum, 80);
+      assert.equal(bucket.learnerActionDeterminate, 1);
+      assert.equal(bucket.learnerActionMeasurementIndeterminate, 1);
+      assert.equal(bucket.learnerActionalChanges, 1);
+      assert.equal(bucket.learnerRepresentationDeterminate, 1);
+      assert.equal(bucket.learnerRepresentationIndeterminate, 1);
+
+      const markdown = renderMarkdown(report);
+      assert.match(markdown, /Tutor mechanism determinate/);
+      assert.match(markdown, /Tutor measurement indeterminate/);
+      assert.match(markdown, /Tutor representation change/);
+      assert.match(markdown, /Tutor representation indeterminate/);
+      assert.match(markdown, /Learner action indeterminate/);
+      assert.match(markdown, /\| peripeteia-only \| 2 .* \| 1\/1 \| 1 \| 80 \|/);
+
+      const csv = renderCsv(report);
+      const [headerLine, ...dataLines] = csv.trim().split('\n');
+      const header = headerLine.split(',');
+      const itemIndex = header.indexOf('item_id');
+      const learnerLegacyIndex = header.indexOf('learner_self_reframe');
+      const tutorUptakeLegacyIndex = header.indexOf('tutor_contingent_adaptation');
+      const statusIndex = header.indexOf('tutor_adaptive_mechanism_measurement_status');
+      const valueIndex = header.indexOf('tutor_adaptive_mechanism_value');
+      const indeterminateIndex = header.indexOf('tutor_mechanism_measurement_indeterminate');
+      const learnerStatusIndex = header.indexOf('learner_actional_change_measurement_status');
+      const learnerIndeterminateIndex = header.indexOf('learner_action_measurement_indeterminate');
+      const rows = dataLines.map((line) => line.split(','));
+      const determinate = rows.find((row) => row[itemIndex].includes('target-determinate'));
+      const indeterminate = rows.find((row) => row[itemIndex].includes('target-indeterminate'));
+      assert.equal(determinate[statusIndex], 'determinate');
+      assert.equal(determinate[valueIndex], 'true');
+      assert.equal(determinate[indeterminateIndex], 'false');
+      assert.equal(determinate[learnerLegacyIndex], '1');
+      assert.equal(determinate[tutorUptakeLegacyIndex], '1');
+      assert.equal(determinate[learnerStatusIndex], 'determinate');
+      assert.equal(determinate[learnerIndeterminateIndex], 'false');
+      assert.equal(indeterminate[statusIndex], 'measurement_indeterminate');
+      assert.equal(indeterminate[valueIndex], '');
+      assert.equal(indeterminate[indeterminateIndex], 'true');
+      assert.equal(indeterminate[learnerLegacyIndex], '');
+      assert.equal(indeterminate[tutorUptakeLegacyIndex], '');
+      assert.equal(indeterminate[learnerStatusIndex], 'measurement_indeterminate');
+      assert.equal(indeterminate[learnerIndeterminateIndex], 'true');
+    }));
+
+  it('exposes semantic-v5 indeterminacy in the browser without coercing DB sentinels to false', () =>
+    withDb((db) => {
+      const { runId } = seedSemanticV5ReportRows(db);
+      const determinateId = `${runId}:target-determinate:peripeteia-only:T05`;
+      upsertPoeticsTutorAdaptation(db, {
+        itemId: determinateId,
+        analyzerVersion: 'tutor-adaptation-v4',
+        learnerSelfReframe: false,
+        tutorContingentAdaptation: false,
+        tutorAdaptationScore: 0,
+        sharedSalientTerms: [],
+        metadata: { peripeteia: { tutor_adaptive_mechanism: false } },
+      });
+      const detail = getItem(db, `${runId}:target-indeterminate:peripeteia-only:T05`);
+      const determinate = getItem(db, determinateId);
+
+      assert.equal(detail.tutorAdaptation.learner_self_reframe, null);
+      assert.equal(detail.tutorAdaptation.tutor_contingent_adaptation, null);
+      assert.deepEqual(detail.tutorAdaptation.semantic_measurements.tutor_adaptive_mechanism, {
+        status: 'measurement_indeterminate',
+        value: null,
+      });
+      assert.deepEqual(detail.tutorAdaptation.semantic_measurements.learner_representation_change, {
+        status: 'measurement_indeterminate',
+        value: null,
+      });
+      assert.deepEqual(determinate.tutorAdaptation.semantic_measurements.tutor_adaptive_mechanism, {
+        status: 'determinate',
+        value: true,
+      });
+      assert.deepEqual(determinate.tutorAdaptation.semantic_measurements.tutor_representation_change, {
+        status: 'determinate',
+        value: true,
+      });
+      assert.equal(determinate.tutorAdaptation.analyzer_version, 'tutor-adaptation-v5-semantic-change');
+      assert.match(renderBrowserHtml(), /Semantic measurement status/);
+    }));
+
+  it('splits scorer summaries by protocol instead of pooling historical and semantic rows', () =>
+    withDb((db) => {
+      const { runId, criticModel } = seedMixedProtocolReportRows(db);
+      const report = buildPoeticsReport(db, { runId });
+      const bucket = report.runs[0].targetByCriticArm[criticModel]['peripeteia-only'];
+      assert.deepEqual(bucket.learnerActionByProtocol, {
+        'poetics-phase2-learner-action-measurement-v0-unversioned': { hits: 1, total: 1 },
+        'poetics-phase2-learner-action-measurement-v1-semantic-authoritative': { hits: 1, total: 1 },
+      });
+      assert.deepEqual(bucket.adaptiveQualityByProtocol, {
+        'poetics-phase2-mechanism-measurement-v1-hard-regex-clamp': { hits: 1, total: 1 },
+        'poetics-phase2-mechanism-measurement-v2-semantic-authoritative': { hits: 1, total: 1 },
+      });
+      const markdown = renderMarkdown(report);
+      assert.match(markdown, /1\/1 \(100%\) \[poetics-phase2-mechanism-measurement-v1-hard-regex-clamp\]/);
+      assert.match(markdown, /1\/1 \(100%\) \[poetics-phase2-mechanism-measurement-v2-semantic-authoritative\]/);
     }));
 
   it('lists runs and retrieves script details for the browser API layer', () =>

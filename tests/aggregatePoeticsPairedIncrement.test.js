@@ -1,6 +1,16 @@
 import { strict as assert } from 'node:assert';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { test } from 'node:test';
-import { classifyPair, validScored, wilson } from '../scripts/aggregate-poetics-paired-increment.js';
+import yaml from 'yaml';
+import {
+  classifyPair,
+  parseArgs,
+  tutorAdaptiveMechanismValue,
+  validScored,
+  wilson,
+} from '../scripts/aggregate-poetics-paired-increment.js';
 
 const item = ({ totalCritics = 4, failures = [], pass = false } = {}) => ({
   consensus: { totalCritics },
@@ -26,6 +36,19 @@ test('classifyPair: clean controls + failing peripeteia → null (lift=0)', () =
   });
   assert.equal(r.status, 'null');
   assert.equal(r.lift, 0);
+});
+
+test('classifyPair: semantic indeterminacy is excluded rather than counted as a null outcome', () => {
+  for (const failure of ['mechanism_measurement_indeterminate', 'learner_measurement_indeterminate']) {
+    const r = classifyPair({
+      peri: item({ pass: false, failures: [failure] }),
+      controls: [item()],
+      minCritics: 4,
+    });
+    assert.equal(r.status, 'measurement_indeterminate');
+    assert.equal(r.lift, null);
+    assert.match(r.reason, new RegExp(failure));
+  }
 });
 
 test('classifyPair: under-scored peripeteia arm → invalid_coverage', () => {
@@ -60,10 +83,76 @@ test('classifyPair: a quality-warned peripeteia arm is not validly scored → in
   assert.equal(r.lift, null);
 });
 
-test('validScored requires enough critics and no quality warning', () => {
+test('paired-increment aggregation has no implicit D42/v4 claim default', () => {
+  assert.throws(
+    () => parseArgs(['--run-id', 'historical-run']),
+    /--target-only is required; there is no implicit clean-anchor default/,
+  );
+  assert.throws(
+    () => parseArgs(['--run-id', 'historical-run', '--target-only', 'D42,D50,D53']),
+    /D42 is calibration-only/,
+  );
+  const historical = parseArgs(['--run-id', 'historical-run', '--target-only', 'D42,D50,D53', '--historical-v4']);
+  assert.equal(historical.analyzerVersion, 'tutor-adaptation-v4');
+});
+
+test('new paired-increment aggregation requires the registered semantic-v5 anchor set', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-paired-increment-targets-'));
+  const targetSpec = path.join(root, 'targets.yaml');
+  fs.writeFileSync(
+    targetSpec,
+    yaml.stringify({
+      meta: {
+        clean_anchor_set: {
+          status: 'complete',
+          required_core: ['D50', 'D53'],
+          qualified_third_anchor: 'D55',
+          claim_gate_ready: true,
+        },
+      },
+    }),
+    'utf8',
+  );
+  const args = parseArgs([
+    '--run-id',
+    'semantic-run',
+    '--target-spec',
+    targetSpec,
+    '--target-only',
+    'D50,D53,D55',
+    '--analyzer-version',
+    'tutor-adaptation-v5-semantic-change',
+  ]);
+  assert.deepEqual(args.targetOnly, ['D50', 'D53', 'D55']);
+  assert.equal(args.analyzerVersion, 'tutor-adaptation-v5-semantic-change');
+  assert.throws(
+    () =>
+      parseArgs([
+        '--run-id',
+        'semantic-run',
+        '--target-spec',
+        targetSpec,
+        '--target-only',
+        'D50,D50,D53',
+        '--analyzer-version',
+        'tutor-adaptation-v5-semantic-change',
+      ]),
+    /must match the registered clean anchor set/,
+  );
+});
+
+test('validScored requires enough critics with no quality or scorer failure', () => {
   assert.equal(validScored(item({ totalCritics: 4 }), 4), true);
   assert.equal(validScored(item({ totalCritics: 3 }), 4), false);
   assert.equal(validScored(item({ totalCritics: 4, failures: ['quality_warning'] }), 4), false);
+  assert.equal(validScored(item({ totalCritics: 4, failures: ['scorer_error'] }), 4), false);
+});
+
+test('paired-increment evidence exports read the canonical tutor mechanism field with legacy fallback', () => {
+  assert.equal(tutorAdaptiveMechanismValue({ adaptationGate: { tutorAdaptiveMechanism: true } }), true);
+  assert.equal(tutorAdaptiveMechanismValue({ adaptationGate: { tutorAdaptiveMechanism: false } }), false);
+  assert.equal(tutorAdaptiveMechanismValue({ adaptationGate: { publicMechanism: true } }), true);
+  assert.equal(tutorAdaptiveMechanismValue({ adaptationGate: {} }), null);
 });
 
 test('wilson score interval: empty is [0,0]; 1/3 excludes 0 but is wide', () => {

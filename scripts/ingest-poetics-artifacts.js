@@ -33,6 +33,24 @@ const CONTROL_ROLES = new Map([
   ['d26-hard-trap', 'hard_trap_control'],
 ]);
 
+const LEGACY_MECHANISM_MEASUREMENT_PROTOCOL = Object.freeze({
+  version: 'poetics-phase2-mechanism-measurement-v1-hard-regex-clamp',
+  semanticAuthority: 'critic_score_subject_to_regex_clamp',
+  lexicalOrRegexAuthority: 'hard_clamp',
+  exactQuoteLocationAuthority: 'hard_gate',
+  ambiguityOrJudgeDisagreement: 'not_represented',
+  historicalScorePolicy: 'preserve_without_recompute',
+});
+
+const LEGACY_LEARNER_ACTION_MEASUREMENT_PROTOCOL = Object.freeze({
+  version: 'poetics-phase2-learner-action-measurement-v0-unversioned',
+  semanticAuthority: 'critic_semantic_score',
+  lexicalOrRegexAuthority: 'none',
+  exactQuoteLocationAuthority: 'hard_gate',
+  ambiguityOrJudgeDisagreement: 'not_represented',
+  historicalScorePolicy: 'preserve_without_recompute',
+});
+
 function parseArgs(argv) {
   const args = {
     rootDir: null,
@@ -78,6 +96,98 @@ function readYaml(filePath) {
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function hasMechanismMeasurement(row) {
+  const roleScores = row?.roleSymmetricScores || {};
+  return (
+    row?.tutorStrategicReversal != null ||
+    row?.tutorAdaptiveMechanism != null ||
+    row?.adaptiveMechanismQuality != null ||
+    roleScores.tutor_strategy_reversal != null ||
+    roleScores.tutor_adaptive_mechanism != null ||
+    roleScores.tutor_adaptive_mechanism_quality != null
+  );
+}
+
+function mechanismMeasurementProtocolForScore(artifact, row) {
+  const rowProtocol = row?.mechanismMeasurementProtocol || null;
+  const rowVersion = row?.mechanismMeasurementProtocolVersion || rowProtocol?.version || null;
+  const artifactProtocol = artifact?.mechanismMeasurementProtocol || null;
+  const artifactVersion = artifactProtocol?.version || artifact?.mechanismMeasurementProtocolVersion || null;
+
+  if (rowProtocol) {
+    return {
+      ...rowProtocol,
+      version: rowVersion,
+      provenance: 'score_row',
+    };
+  }
+  if (rowVersion) {
+    if (rowVersion === LEGACY_MECHANISM_MEASUREMENT_PROTOCOL.version) {
+      return { ...LEGACY_MECHANISM_MEASUREMENT_PROTOCOL, provenance: 'score_row' };
+    }
+    if (rowVersion === artifactVersion && artifactProtocol) {
+      return { ...artifactProtocol, provenance: 'score_row' };
+    }
+    return { version: rowVersion, provenance: 'score_row' };
+  }
+  if (artifactProtocol || artifactVersion) {
+    return {
+      ...(artifactProtocol || {}),
+      version: artifactVersion,
+      provenance: 'score_artifact',
+    };
+  }
+
+  // The tutor-mechanism axes predate explicit protocol metadata. Their original
+  // implementation used regex matches as hard score clamps, so keep that
+  // historical identity during ingest rather than relabelling them as v2.
+  if (hasMechanismMeasurement(row)) {
+    return {
+      ...LEGACY_MECHANISM_MEASUREMENT_PROTOCOL,
+      provenance: 'inferred_from_unversioned_historical_mechanism_axes',
+    };
+  }
+  return null;
+}
+
+function hasLearnerActionMeasurement(row) {
+  const roleScores = row?.roleSymmetricScores || {};
+  return row?.actionalBreakthrough != null || roleScores.learner_actional_breakthrough != null;
+}
+
+function learnerActionMeasurementProtocolForScore(artifact, row) {
+  const rowProtocol = row?.learnerActionMeasurementProtocol || null;
+  const rowVersion = row?.learnerActionMeasurementProtocolVersion || rowProtocol?.version || null;
+  const artifactProtocol =
+    artifact?.learnerActionMeasurementProtocol || artifact?.roleMeasurementProtocols?.learner_actional_change || null;
+  const artifactVersion = artifactProtocol?.version || artifact?.learnerActionMeasurementProtocolVersion || null;
+
+  if (rowProtocol) return { ...rowProtocol, version: rowVersion, provenance: 'score_row' };
+  if (rowVersion) {
+    if (rowVersion === LEGACY_LEARNER_ACTION_MEASUREMENT_PROTOCOL.version) {
+      return { ...LEGACY_LEARNER_ACTION_MEASUREMENT_PROTOCOL, provenance: 'score_row' };
+    }
+    if (rowVersion === artifactVersion && artifactProtocol) {
+      return { ...artifactProtocol, provenance: 'score_row' };
+    }
+    return { version: rowVersion, provenance: 'score_row' };
+  }
+  if (artifactProtocol || artifactVersion) {
+    return {
+      ...(artifactProtocol || {}),
+      version: artifactVersion,
+      provenance: 'score_artifact',
+    };
+  }
+  if (hasLearnerActionMeasurement(row)) {
+    return {
+      ...LEGACY_LEARNER_ACTION_MEASUREMENT_PROTOCOL,
+      provenance: 'inferred_from_unversioned_historical_learner_action_axis',
+    };
+  }
+  return null;
 }
 
 function hashFile(filePath) {
@@ -203,6 +313,8 @@ function buildIngestPlan({ rootDir, runId = null, labels = [], labelsKey = null 
       const keyRel = artifact.qualityPolicy?.key;
       if (!keyRel) continue;
       for (const row of artifact.scored || []) {
+        const mechanismMeasurementProtocol = mechanismMeasurementProtocolForScore(artifact, row);
+        const learnerActionMeasurementProtocol = learnerActionMeasurementProtocolForScore(artifact, row);
         const itemId =
           itemByKeyTid.get(`${keyRel}:${row.id}`) || itemByKeyTid.get(`${rel(absFromRoot(keyRel))}:${row.id}`);
         if (!itemId) continue;
@@ -229,6 +341,15 @@ function buildIngestPlan({ rootDir, runId = null, labels = [], labelsKey = null 
             actional_breakthrough_justification: row.actionalBreakthroughJustification ?? null,
             rawScores: row.rawScores || null,
             role_symmetric_scores: row.roleSymmetricScores || null,
+            role_measurement_protocols: {
+              tutor_adaptive_mechanism: mechanismMeasurementProtocol,
+              learner_actional_change: learnerActionMeasurementProtocol,
+            },
+            mechanism_measurement_protocol: mechanismMeasurementProtocol,
+            mechanism_measurement_protocol_version: mechanismMeasurementProtocol?.version || null,
+            learner_action_measurement_protocol: learnerActionMeasurementProtocol,
+            learner_action_measurement_protocol_version: learnerActionMeasurementProtocol?.version || null,
+            auxiliary_mechanism_signals: row.auxiliaryMechanismSignals || null,
             reversal_trigger_learner_turn: row.reversalTriggerLearnerTurn ?? null,
             tutor_strategic_reversal: row.tutorStrategicReversal ?? null,
             tutor_adaptive_mechanism: row.tutorAdaptiveMechanism ?? row.tutorStrategicReversal ?? null,
@@ -343,4 +464,11 @@ if (path.resolve(process.argv[1] || '') === __filename) {
   }
 }
 
-export { buildIngestPlan, persistIngestPlan };
+export {
+  LEGACY_LEARNER_ACTION_MEASUREMENT_PROTOCOL,
+  LEGACY_MECHANISM_MEASUREMENT_PROTOCOL,
+  buildIngestPlan,
+  learnerActionMeasurementProtocolForScore,
+  mechanismMeasurementProtocolForScore,
+  persistIngestPlan,
+};

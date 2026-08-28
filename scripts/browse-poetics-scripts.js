@@ -92,6 +92,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v4';
+const SEMANTIC_TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v5-semantic-change';
 
 function parseArgs(argv) {
   const args = {
@@ -128,6 +129,46 @@ function decodeJson(value, fallback = null) {
   } catch {
     return fallback;
   }
+}
+
+function semanticMeasurementSnapshot(measurement) {
+  if (measurement?.status === 'determinate' && typeof measurement.value === 'boolean') {
+    return { status: 'determinate', value: measurement.value };
+  }
+  return { status: 'measurement_indeterminate', value: null };
+}
+
+function hydrateTutorAdaptation(row) {
+  if (!row) return null;
+  const metadata = decodeJson(row.metadata, {});
+  const semanticV5 = String(row.analyzer_version || '').startsWith('tutor-adaptation-v5');
+  const peripeteia = metadata?.peripeteia || {};
+  const semanticMeasurements = semanticV5
+    ? {
+        tutor_adaptive_mechanism: semanticMeasurementSnapshot(
+          peripeteia.tutor_adaptive_mechanism_measurement || peripeteia.adaptive_mechanism_measurement,
+        ),
+        tutor_representation_change: semanticMeasurementSnapshot(
+          peripeteia.tutor_representation_change_measurement || peripeteia.representation_change_measurement,
+        ),
+        learner_actional_change: semanticMeasurementSnapshot(peripeteia.learner_actional_change_measurement),
+        learner_representation_change: semanticMeasurementSnapshot(
+          peripeteia.learner_representation_change_measurement,
+        ),
+      }
+    : null;
+  const learnerRepresentation = semanticMeasurements?.learner_representation_change || null;
+  const learnerMeasurementIndeterminate = semanticV5 && learnerRepresentation?.status !== 'determinate';
+
+  return {
+    ...row,
+    learner_self_reframe: semanticV5 ? (learnerRepresentation?.value ?? null) : Boolean(row.learner_self_reframe),
+    tutor_strategy_shift: Boolean(row.tutor_strategy_shift),
+    tutor_contingent_adaptation: learnerMeasurementIndeterminate ? null : Boolean(row.tutor_contingent_adaptation),
+    shared_salient_terms: decodeJson(row.shared_salient_terms, []),
+    metadata,
+    semantic_measurements: semanticMeasurements,
+  };
 }
 
 function resolveArtifact(relPath) {
@@ -960,7 +1001,9 @@ function getItem(db, id) {
         tutor_adaptation_score, evidence, metadata, created_at
       FROM poetics_tutor_adaptations
       WHERE item_id = ?
-      ORDER BY analyzer_version = '${TUTOR_ADAPTATION_ANALYZER_VERSION}' DESC, created_at DESC
+      ORDER BY analyzer_version = '${SEMANTIC_TUTOR_ADAPTATION_ANALYZER_VERSION}' DESC,
+        analyzer_version = '${TUTOR_ADAPTATION_ANALYZER_VERSION}' DESC,
+        created_at DESC
       LIMIT 1
     `,
     )
@@ -997,16 +1040,7 @@ function getItem(db, id) {
     originDiagnostics: originDiagnosticsForScores(scores),
     labels,
     reviewFlags,
-    tutorAdaptation: tutorAdaptation
-      ? {
-          ...tutorAdaptation,
-          learner_self_reframe: Boolean(tutorAdaptation.learner_self_reframe),
-          tutor_strategy_shift: Boolean(tutorAdaptation.tutor_strategy_shift),
-          tutor_contingent_adaptation: Boolean(tutorAdaptation.tutor_contingent_adaptation),
-          shared_salient_terms: decodeJson(tutorAdaptation.shared_salient_terms, []),
-          metadata: decodeJson(tutorAdaptation.metadata, {}),
-        }
-      : null,
+    tutorAdaptation: hydrateTutorAdaptation(tutorAdaptation),
     sampleText,
     fullTranscriptText,
     samplePreview: parseTranscriptPreview(sampleText),
@@ -10752,6 +10786,14 @@ function renderAdaptationSidecar(adaptation) {
   if (!adaptation) return '<div class="empty">No tutor adaptation sidecar row found.</div>';
   const strategy = [adaptation.tutor_strategy_before, adaptation.tutor_strategy_after].filter(Boolean).join(' -> ');
   const peripeteia = adaptation.metadata?.peripeteia || null;
+  const semanticMeasurements = adaptation.semantic_measurements || null;
+  const semanticStatusHtml = semanticMeasurements ? '<h3>Semantic measurement status</h3>' +
+    '<table><tbody>' +
+    '<tr><th>Tutor adaptive mechanism</th><td>' + esc(semanticMeasurements.tutor_adaptive_mechanism?.status || 'measurement_indeterminate') + '</td></tr>' +
+    '<tr><th>Tutor representation change</th><td>' + esc(semanticMeasurements.tutor_representation_change?.status || 'measurement_indeterminate') + '</td></tr>' +
+    '<tr><th>Learner actional change</th><td>' + esc(semanticMeasurements.learner_actional_change?.status || 'measurement_indeterminate') + '</td></tr>' +
+    '<tr><th>Learner representation change</th><td>' + esc(semanticMeasurements.learner_representation_change?.status || 'measurement_indeterminate') + '</td></tr>' +
+    '</tbody></table>' : '';
   const branch = adaptation.metadata?.branch_validity || null;
   const branchHtml = branch ? '<h3>Branch validity diagnostics</h3>' +
     '<div class="score-note"><strong>Private event check.</strong> This verifies that the branch actually supplied the private event it was designed to test. Peripeteia arms require a learnerReversalEventUsed; uptake arms require a learnerReframeEventUsed.</div>' +
@@ -10769,7 +10811,7 @@ function renderAdaptationSidecar(adaptation) {
     '<tr><th>' + metricLabel('Trigger / outcome', 'Trigger type and next learner outcome: recognition, trap, maintained resistance, flat, or unknown.') + '</th><td>' + esc([peripeteia.trigger_type, peripeteia.learner_outcome_after_reversal].filter(Boolean).join(' -> ') || 'n/a') + '</td></tr>' +
     '<tr><th>' + metricLabel('Rule evidence excerpts', 'Excerpt pair used by the peripeteia analyzer.') + '</th><td class="evidence-cell">' + esc(peripeteia.evidence || '') + '</td></tr>' +
     '</tbody></table>' : '';
-  return branchHtml + peripeteiaHtml + '<h3>Recognition-contingent tutor uptake sidecar (secondary)</h3>' +
+  return semanticStatusHtml + branchHtml + peripeteiaHtml + '<h3>Recognition-contingent tutor uptake sidecar (secondary)</h3>' +
     '<div class="score-note"><strong>Secondary closure pattern.</strong> This deterministic analyzer is not an LLM critic score. It checks whether a learner self-reframe is followed by a tutor move that takes up that changed frame. Useful, but not the main adaptation trigger.</div>' +
     '<table><tbody>' +
     '<tr><th>' + metricLabel('Learner self-reframe (sidecar)', 'Rule detection that a later learner turn revisits or reframes the learner\\'s own earlier wording.') + '</th><td>' + esc(boolOrNA(adaptation.learner_self_reframe)) + '</td></tr>' +

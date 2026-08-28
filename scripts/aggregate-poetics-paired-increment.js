@@ -27,13 +27,18 @@
  * Usage:
  *   node scripts/aggregate-poetics-paired-increment.js --run-id <id> [--run-id <id> ...]
  *     [--db data/evaluations.db] [--out exports/paired-increment-<stamp>.json]
- *     [--target-only D42,D50,D53] [--min-critics 4]
+ *     --target-only D50,D53,<qualified-third> --analyzer-version tutor-adaptation-v5-semantic-change
+ *     [--min-critics 4]
+ *
+ * Historical reproduction of the former D42/D50/D53 panel is explicit:
+ *   --target-only D42,D50,D53 --historical-v4
  */
 
 import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import yaml from 'yaml';
 import { openPoeticsStore } from '../services/poeticsStore.js';
 import { evaluateRunGate } from './run-poetics-adaptation-loop.js';
 
@@ -41,6 +46,9 @@ const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const PERI_ARM = 'peripeteia-only';
 const CONTROL_ARMS = ['routine', 'none'];
+const DEFAULT_TARGET_SPEC = path.join(ROOT, 'config', 'poetics-calibration', 'phase2-classic-drama-adaptation-v1.yaml');
+const LEGACY_ANALYZER_VERSION = 'tutor-adaptation-v4';
+const SEMANTIC_ANALYZER_VERSION = 'tutor-adaptation-v5-semantic-change';
 
 function parseArgs(argv) {
   const a = {
@@ -48,7 +56,10 @@ function parseArgs(argv) {
     dbPath: null,
     out: null,
     itemGatesOut: null,
-    targetOnly: ['D42', 'D50', 'D53'],
+    targetOnly: [],
+    targetSpec: DEFAULT_TARGET_SPEC,
+    analyzerVersion: null,
+    historicalV4: false,
     targetArms: ['routine', 'none', 'peripeteia-only'],
     minCritics: 4,
     recognitionVoteCut: 3,
@@ -63,6 +74,9 @@ function parseArgs(argv) {
     else if (t === '--out') a.out = path.resolve(argv[++i]);
     else if (t === '--item-gates-out') a.itemGatesOut = path.resolve(argv[++i]);
     else if (t === '--target-only') a.targetOnly = String(argv[++i]).split(',').filter(Boolean);
+    else if (t === '--target-spec') a.targetSpec = path.resolve(argv[++i]);
+    else if (t === '--analyzer-version') a.analyzerVersion = argv[++i];
+    else if (t === '--historical-v4') a.historicalV4 = true;
     else if (t === '--min-critics') a.minCritics = parseInt(argv[++i], 10);
     else if (t === '--help' || t === '-h') {
       console.log(
@@ -72,6 +86,38 @@ function parseArgs(argv) {
     } else throw new Error(`unknown arg: ${t}`);
   }
   if (!a.runIds.length) throw new Error('need at least one --run-id');
+  if (!a.targetOnly.length) {
+    throw new Error('--target-only is required; there is no implicit clean-anchor default');
+  }
+  if (a.historicalV4) {
+    if (a.analyzerVersion && a.analyzerVersion !== LEGACY_ANALYZER_VERSION) {
+      throw new Error('--historical-v4 cannot be combined with a non-v4 analyzer');
+    }
+    a.analyzerVersion = LEGACY_ANALYZER_VERSION;
+  } else {
+    if (a.targetOnly.includes('D42')) {
+      throw new Error('D42 is calibration-only; use --historical-v4 for explicit historical reproduction');
+    }
+    if (a.analyzerVersion !== SEMANTIC_ANALYZER_VERSION) {
+      throw new Error(`new paired-increment claims require --analyzer-version ${SEMANTIC_ANALYZER_VERSION}`);
+    }
+    if (!fs.existsSync(a.targetSpec)) throw new Error(`--target-spec not found: ${a.targetSpec}`);
+    const spec = yaml.parse(fs.readFileSync(a.targetSpec, 'utf8')) || {};
+    const anchors = spec?.meta?.clean_anchor_set || {};
+    if (!anchors.claim_gate_ready || anchors.status !== 'complete' || !anchors.qualified_third_anchor) {
+      throw new Error('registered clean-anchor set is incomplete; paired-increment claims remain blocked');
+    }
+    const registeredTargets = [...(anchors.required_core || []), anchors.qualified_third_anchor];
+    const requestedTargets = [...new Set(a.targetOnly)].sort();
+    const canonicalTargets = [...new Set(registeredTargets)].sort();
+    if (
+      a.targetOnly.length !== requestedTargets.length ||
+      requestedTargets.length !== canonicalTargets.length ||
+      requestedTargets.some((target, index) => target !== canonicalTargets[index])
+    ) {
+      throw new Error(`--target-only must match the registered clean anchor set: ${registeredTargets.join(',')}`);
+    }
+  }
   return a;
 }
 
@@ -91,7 +137,8 @@ function validScored(item, minCritics) {
     item &&
     (item.consensus?.totalCritics ?? 0) >= minCritics &&
     !item.failures.includes('quality_warning') &&
-    !item.failures.includes('quality_status'),
+    !item.failures.includes('quality_status') &&
+    !item.failures.includes('scorer_error'),
   );
 }
 
@@ -103,6 +150,16 @@ function classifyPair({ peri, controls, minCritics }) {
       status: 'invalid_coverage',
       lift: null,
       reason: !periValid ? 'peripeteia arm not validly scored' : 'no validly-scored control',
+    };
+  }
+  const indeterminateFailures = ['mechanism_measurement_indeterminate', 'learner_measurement_indeterminate'].filter(
+    (failure) => peri.failures.includes(failure),
+  );
+  if (indeterminateFailures.length) {
+    return {
+      status: 'measurement_indeterminate',
+      lift: null,
+      reason: `peripeteia measurement indeterminate: ${indeterminateFailures.join(', ')}`,
     };
   }
   const leaking = validControls.filter((c) => c.failures.includes('control_leak'));
@@ -121,6 +178,10 @@ function classifyPair({ peri, controls, minCritics }) {
   };
 }
 
+function tutorAdaptiveMechanismValue(item) {
+  return item?.adaptationGate?.tutorAdaptiveMechanism ?? item?.adaptationGate?.publicMechanism ?? null;
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const db = openPoeticsStore(args.dbPath || undefined);
@@ -132,6 +193,7 @@ function main() {
     originVoteCut: args.originVoteCut,
     actionVoteCut: args.actionVoteCut,
     controlMaxRecognitionVotes: args.controlMaxRecognitionVotes,
+    analyzerVersion: args.analyzerVersion,
   };
 
   const itemRows = [];
@@ -150,7 +212,7 @@ function main() {
           totalCritics: it.consensus?.totalCritics ?? null,
           claimStatus: it.consensus?.claimStatus ?? null,
           actionalVotes: it.actionalVotes ?? null,
-          publicMechanism: it.adaptationGate?.publicMechanism ?? null,
+          publicMechanism: tutorAdaptiveMechanismValue(it),
           originInducedVotes: it.originInducedVotes ?? null,
           originAmbiguous: it.originAmbiguous ?? null,
           qualityStatus: it.qualityStatus ?? null,
@@ -173,7 +235,7 @@ function main() {
                 recognitionVotes: peri.consensus?.recognitionVotes ?? null,
                 totalCritics: peri.consensus?.totalCritics ?? null,
                 actionalVotes: peri.actionalVotes ?? null,
-                publicMechanism: peri.adaptationGate?.publicMechanism ?? null,
+                publicMechanism: tutorAdaptiveMechanismValue(peri),
                 originAmbiguous: peri.originAmbiguous ?? null,
                 failures: peri.failures,
               }
@@ -191,6 +253,7 @@ function main() {
   const nNull = valid.filter((p) => p.lift === 0).length;
   const nCoverage = pairs.filter((p) => p.status === 'invalid_coverage').length;
   const nControlLeak = pairs.filter((p) => p.status === 'invalid_control_leak').length;
+  const nMeasurementIndeterminate = pairs.filter((p) => p.status === 'measurement_indeterminate').length;
   const meanLift = nValid ? nPositive / nValid : null;
   const ci = wilson(nPositive, nValid);
   const positiveDramas = [...new Set(valid.filter((p) => p.lift === 1).map((p) => p.dramaId))];
@@ -222,6 +285,7 @@ function main() {
       null: nNull,
       invalidCoverage: nCoverage,
       invalidControlLeak: nControlLeak,
+      measurementIndeterminate: nMeasurementIndeterminate,
       recognitiveClosureLift: meanLift,
       wilson95: ci,
       positiveDramas,
@@ -248,7 +312,8 @@ function main() {
   }
   console.log(
     `\n  valid pairs: ${nValid} (positive ${nPositive}, null ${nNull}) · ` +
-      `invalidated: coverage ${nCoverage}, control-leak ${nControlLeak}`,
+      `invalidated: coverage ${nCoverage}, control-leak ${nControlLeak}, ` +
+      `measurement-indeterminate ${nMeasurementIndeterminate}`,
   );
   console.log(
     `  recognitive_closure_lift = ${meanLift === null ? 'n/a' : meanLift.toFixed(3)} ` +
@@ -270,4 +335,4 @@ if (path.resolve(process.argv[1] || '') === __filename) {
   }
 }
 
-export { classifyPair, validScored, wilson };
+export { classifyPair, parseArgs, tutorAdaptiveMechanismValue, validScored, wilson };

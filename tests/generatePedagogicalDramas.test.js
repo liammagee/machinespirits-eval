@@ -900,10 +900,13 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(byId.get('D37').evaluation_role, 'quality_boundary_revise_before_use');
     assert.equal(byId.get('D37').baseline_control_class, 'no_cue_reframe_leakage_boundary');
 
-    for (const id of ['D42', 'D45']) {
-      assert.equal(byId.get(id).evaluation_role, 'clean_low_organic_anchor', `${id} should be a promoted anchor`);
-      assert.equal(byId.get(id).organic_reversal_risk, 'low', `${id} should remain low-risk`);
-    }
+    assert.equal(byId.get('D42').evaluation_role, 'topic_forced_reorientation_calibration_boundary');
+    assert.equal(byId.get('D42').baseline_control_class, 'topic_forced_reorientation_boundary');
+    assert.equal(byId.get('D42').organic_reversal_risk, 'high');
+    assert.match(byId.get('D42').baseline_control_note, /do not include it in the clean-anchor denominator/i);
+
+    assert.equal(byId.get('D45').evaluation_role, 'clean_low_organic_anchor');
+    assert.equal(byId.get('D45').organic_reversal_risk, 'low');
 
     assert.equal(byId.get('D47').evaluation_role, 'organic_reversal_boundary');
     assert.equal(byId.get('D47').baseline_control_class, 'prefix_reversal_boundary');
@@ -931,6 +934,38 @@ describe('generate-pedagogical-dramas', () => {
       assert.equal(byId.get(id).baseline_control_class, 'low_organic_reversal');
       assert.equal(byId.get(id).organic_reversal_risk, 'low');
       assert.match(byId.get(id).baseline_control_note, /Fresh (?:D42\/D45-like|D50-like) candidate/);
+    }
+  });
+
+  it('screens every D54-D57 anchor candidate without outcome selection or historical rescoring', () => {
+    const spec = yaml.parse(
+      fs.readFileSync(
+        path.join(ROOT, 'config/poetics-calibration/phase2-low-organic-anchor-candidates-v2.yaml'),
+        'utf8',
+      ),
+    );
+    const screen = spec.meta.anchor_screen;
+    const byId = new Map(spec.dramas.map((drama) => [drama.id, drama]));
+
+    assert.equal(screen.required_repeats, 2);
+    assert.equal(screen.minimum_valid_critics_per_control, 4);
+    assert.deepEqual(screen.control_arms, ['routine', 'none']);
+    assert.equal(screen.treatment_outcomes_used_for_selection, false);
+    assert.equal(screen.historical_rescoring_allowed, false);
+    assert.equal(screen.result, 'no_candidate_qualified');
+
+    assert.deepEqual(
+      ['D54', 'D55', 'D56'].map((id) => byId.get(id).anchor_screen.disposition),
+      [
+        'ineligible_existing_control_leakage',
+        'pending_insufficient_evidence_with_control_risk',
+        'ineligible_existing_control_leakage',
+      ],
+    );
+    assert.equal(byId.get('D57').anchor_screen.disposition, 'pending_insufficient_evidence');
+    for (const id of ['D54', 'D55', 'D56', 'D57']) {
+      assert.equal(byId.get(id).evaluation_role, 'low_organic_anchor_candidate');
+      assert.notEqual(byId.get(id).evaluation_role, 'clean_low_organic_anchor');
     }
   });
 

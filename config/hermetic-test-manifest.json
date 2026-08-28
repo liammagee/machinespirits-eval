@@ -406,6 +406,7 @@
         "tests/poeticsIngest.test.js",
         "tests/poeticsJobRunner.test.js",
         "tests/poeticsReportBrowser.test.js",
+        "tests/poeticsRepresentationChangeAdjudication.test.js",
         "tests/poeticsTutorAdaptationAnalyzer.test.js",
         "tests/pointOfActionGateGrader.test.js",
         "tests/processUtils.test.js",
