@@ -182,6 +182,8 @@
     "seed": "node scripts/seed-db.js",
     "paper:bug-audit": "node scripts/validate-bug-claims.js",
     "paper:integrity-audit": "node scripts/validate-bug-claims.js",
+    "paper:manifest": "node scripts/validate-paper-manifest.js",
+    "paper:manifest:legacy": "node scripts/validate-paper-manifest.js --target legacy",
     "paper:provable-discourse": "node scripts/validate-provable-discourse.js",
     "paper:provable-discourse:smoke": "node scripts/validate-provable-discourse.js --smoke",
     "paper:provable-discourse:todo": "node scripts/validate-provable-discourse.js --write-todo",

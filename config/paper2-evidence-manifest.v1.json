@@ -1,0 +1,150 @@
+{
+  "schema": "paper2-evidence-manifest/v1",
+  "version": "1.0.0",
+  "generated": "2026-08-28",
+  "paper": "docs/research/paper-full-2.0.md",
+  "description": "Paper 2.0 empirical claim-family inventory. This manifest classifies evidence availability; it does not create, replace, or revise empirical results.",
+  "semantic_authorities": [
+    {
+      "id": "paper2-mechanism-claims",
+      "module_id": "provable-discourse.paper2-mechanisms",
+      "locator": "config/provable-discourse-mechanisms.yaml",
+      "format": "yaml-claims",
+      "claim_id_prefixes": ["paper2."],
+      "semantic_sha256": "e8e698d7ac3311731c212adf220e6132b23841b969c88fcf71495fec3bc7188d"
+    },
+    {
+      "id": "paper2-program2-claims",
+      "module_id": "provable-discourse.paper2-program2",
+      "locator": "config/provable-discourse-program2.yaml",
+      "format": "yaml-claims",
+      "claim_id_prefixes": ["paper2.program2."],
+      "semantic_sha256": "96df8b34e4762010997bca609f174d82e3961ff97c994c290c888524fc4a7ba7"
+    },
+    {
+      "id": "dramatic-derivation-claim-ledger",
+      "module_id": "dramatic-derivation.strategy-ledger.phase3",
+      "locator": "exports/dramatic-derivation/strategy-ledger/phase3-contrasts-report.json",
+      "format": "json-document",
+      "semantic_paths": ["$"],
+      "semantic_sha256": "f4aed7016fd37784c85a67c3db71d641658db3faeaa69aadf160b898bdf3b383"
+    },
+    {
+      "id": "tutor-stub-resistant-learner-design",
+      "module_id": "tutor-stub.frame-refuser-depth.design-v4",
+      "locator": "config/tutor-stub-frame-refuser-depth-design.v4.json",
+      "format": "json-document",
+      "semantic_paths": ["$"],
+      "semantic_sha256": "14b9ad873e431c2735350eb7288d5c725b4b1490a2fa1bfd7e28e0d40d2cd432"
+    },
+    {
+      "id": "edra-m3-historical-v4-audit",
+      "module_id": "poetics.edra-m3.historical-v4-audit",
+      "locator": "notes/poetics/2026-08-27-edra-m3-historical-v4-reproducibility-audit.md",
+      "format": "text-markers",
+      "semantic_markers": [
+        "historical reported result",
+        "currently computationally reproducible from the preserved substrate",
+        "absent adaptation measurements as `false` would manufacture a 0/9 null"
+      ],
+      "semantic_sha256": "683fde34798e3ec0c32c54c595cb326e2ffcb5a85b989c1ce46148383ed0c74f"
+    }
+  ],
+  "claim_families": [
+    {
+      "id": "core-mechanisms-and-model-boundaries",
+      "paper_sections": ["6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7"],
+      "paper_markers": [
+        "### 6.1 Calibration",
+        "### 6.7 Architectural Extension: The Id-Director Family and Charismatic Pedagogy"
+      ],
+      "evidence_class": "database-recomputable",
+      "semantic_authority_ids": ["paper2-mechanism-claims"],
+      "substrates": [{ "kind": "evaluation-database", "path": "data/evaluations.db" }]
+    },
+    {
+      "id": "adaptive-runner-and-hypothesis-ledger",
+      "paper_sections": ["6.8", "6.9"],
+      "paper_markers": [
+        "### 6.8 Architectural Extension: The Adaptive Runner and Trap-Scenario Methodology",
+        "### 6.9 Evidence-Bound Hypothesis Tracking"
+      ],
+      "evidence_class": "database-recomputable",
+      "semantic_authority_ids": ["paper2-mechanism-claims"],
+      "substrates": [{ "kind": "evaluation-database", "path": "data/evaluations.db" }]
+    },
+    {
+      "id": "offline-state-policy-diagnostics",
+      "paper_sections": ["6.10", "6.11", "6.12"],
+      "paper_markers": [
+        "### 6.10 Modelling the Concealed Interior",
+        "### 6.12 Can the Revision Be Read as Adaptation Versus Compliance?"
+      ],
+      "evidence_class": "archived-artifact-recomputable",
+      "semantic_authority_ids": ["paper2-mechanism-claims"],
+      "substrates": [
+        { "kind": "archived-artifact", "path": "config/adaptive-plan2-1-evidence-bearing-scenarios.yaml" },
+        { "kind": "archived-artifact", "path": "exports/dramatic-derivation/selector-v1-summary.json" }
+      ]
+    },
+    {
+      "id": "dramatic-derivation-and-register-selection",
+      "paper_sections": ["6.13", "6.14", "6.15", "6.16", "6.17", "6.18", "6.19"],
+      "paper_markers": [
+        "### 6.13 Can the Tutor Govern Its Own Conduct?",
+        "### 6.19 The Sensor Program Closes on a Transparent Substrate"
+      ],
+      "evidence_class": "archived-artifact-recomputable",
+      "semantic_authority_ids": ["dramatic-derivation-claim-ledger", "paper2-mechanism-claims"],
+      "substrates": [
+        {
+          "kind": "archived-artifact",
+          "path": "exports/dramatic-derivation/strategy-ledger/phase3-contrasts-report.json"
+        },
+        {
+          "kind": "archived-artifact",
+          "path": "exports/register-confirmatory-evidence/final/profile-discrimination.json"
+        }
+      ]
+    },
+    {
+      "id": "program2-weight-and-context-studies",
+      "paper_sections": ["6.20", "6.21", "6.22", "6.23", "6.24"],
+      "paper_markers": ["### 6.20 Program-2: Training the Warrant Move", "### 6.24 The Four Locks:"],
+      "evidence_class": "archived-artifact-recomputable",
+      "semantic_authority_ids": ["paper2-program2-claims"],
+      "substrates": [
+        {
+          "kind": "archived-artifact",
+          "path": "config/adaptive-tutor-evidence/program-2-phase4-results.manifest.json"
+        },
+        { "kind": "archived-artifact", "path": "config/adaptive-tutor-evidence/program-2-phase5d.manifest.json" }
+      ]
+    },
+    {
+      "id": "tutor-stub-warrant-and-resistant-learner-studies",
+      "paper_sections": ["6.25", "6.26", "6.27", "6.28"],
+      "paper_markers": ["### 6.25 The Live Warrant Gate:", "### 6.28 One Powered Run, Two Faces of Resistance:"],
+      "evidence_class": "archived-artifact-recomputable",
+      "semantic_authority_ids": ["tutor-stub-resistant-learner-design"],
+      "substrates": [
+        { "kind": "archived-artifact", "path": "config/tutor-stub-frame-refuser-depth-design.v4.json" },
+        {
+          "kind": "archived-artifact",
+          "path": "config/tutor-stub-resistance-semantic-adjudication-development-evidence.v4.json"
+        }
+      ]
+    },
+    {
+      "id": "edra-m3-historical-v4-lift",
+      "paper_sections": ["7.9"],
+      "paper_markers": [
+        "historical reported result but is withdrawn as currently computationally reproducible support"
+      ],
+      "evidence_class": "historical-only",
+      "semantic_authority_ids": ["edra-m3-historical-v4-audit"],
+      "substrates": [],
+      "disclosure": "That point estimate therefore remains a **historical reported result but is withdrawn as currently computationally reproducible support**"
+    }
+  ]
+}

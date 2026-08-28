@@ -7,6 +7,11 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { validatePaperManifest } from '../services/paperManifestValidator.js';
+import {
+  computeSemanticAuthorityFingerprint,
+  validatePaper2EvidenceManifest,
+} from '../services/paper2EvidenceManifestValidator.js';
+import { resolvePaperManifestTarget } from '../scripts/validate-paper-manifest.js';
 
 const RUN_ID = 'eval-2026-07-25-abcd1234';
 const CLI_PATH = fileURLToPath(new URL('../scripts/validate-paper-manifest.js', import.meta.url));
@@ -231,4 +236,113 @@ test('CLI accepts explicit fixture paths and returns exact success/failure codes
   );
   assert.equal(drift.status, 1);
   assert.match(drift.stdout, /scored=1, expected=2/);
+});
+
+function createPaper2Fixture() {
+  const authority = {
+    id: 'fixture-claims',
+    module_id: 'fixture.claims',
+    locator: 'fixture-claims.yaml',
+    format: 'yaml-claims',
+    claim_id_prefixes: ['paper2.fixture.'],
+  };
+  const authoritySource = `claims:\n  - id: paper2.fixture.result\n    statement: { pattern: fixture }\n    evidence: { type: db_count }\n    assertion: { op: eq, expected: 1 }\n`;
+  authority.semantic_sha256 = computeSemanticAuthorityFingerprint(authority, authoritySource);
+  const disclosure = 'This estimate is historical-only and is not computationally reproducible.';
+  const paper = `# Fixture Paper 2\n\n### 6.1 Fixture result\n\nCanonical fixture claim.\n\n### 7.9 Historical disclosure\n\n${disclosure}\n`;
+  const manifest = {
+    schema: 'paper2-evidence-manifest/v1',
+    version: '1.0.0-test',
+    paper: 'docs/research/paper-full-2.0.md',
+    semantic_authorities: [authority],
+    claim_families: [
+      {
+        id: 'fixture-db',
+        paper_sections: ['6.1'],
+        paper_markers: ['Canonical fixture claim.'],
+        evidence_class: 'database-recomputable',
+        semantic_authority_ids: ['fixture-claims'],
+        substrates: [{ kind: 'evaluation-database', path: 'fixture.db' }],
+      },
+      {
+        id: 'fixture-history',
+        paper_sections: ['7.9'],
+        paper_markers: [disclosure],
+        evidence_class: 'historical-only',
+        semantic_authority_ids: ['fixture-claims'],
+        substrates: [],
+        disclosure,
+      },
+    ],
+  };
+  return { manifest, paper, authoritySource };
+}
+
+test('canonical target is Paper 2 and legacy selection is explicit', () => {
+  const root = '/fixture-root';
+  const canonical = resolvePaperManifestTarget([], root);
+  const legacy = resolvePaperManifestTarget(['--target', 'legacy'], root);
+
+  assert.equal(canonical.paper, join(root, 'docs/research/paper-full-2.0.md'));
+  assert.equal(canonical.manifest, join(root, 'config/paper2-evidence-manifest.v1.json'));
+  assert.equal(legacy.paper, join(root, 'docs/research/paper-full.md'));
+  assert.equal(legacy.manifest, join(root, 'config/paper-manifest.json'));
+  assert.equal(resolvePaperManifestTarget(['--target', 'unknown'], root), null);
+});
+
+test('Paper 2 fixture accepts database and disclosed historical-only families', () => {
+  const { manifest, paper, authoritySource } = createPaper2Fixture();
+  const result = validatePaper2EvidenceManifest({
+    manifest,
+    paper,
+    db: {},
+    readAuthority: () => authoritySource,
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.match(messages(result, 'pass').join('\n'), /1 database, 0 artifact, 1 historical-only/);
+});
+
+test('Paper 2 fixture fails on missing artifact substrate and unclassified evidence', () => {
+  const { manifest, paper, authoritySource } = createPaper2Fixture();
+  manifest.claim_families[0] = {
+    ...manifest.claim_families[0],
+    evidence_class: 'archived-artifact-recomputable',
+    substrates: [{ kind: 'archived-artifact', path: 'missing-result.json' }],
+  };
+  const missing = validatePaper2EvidenceManifest({
+    manifest,
+    paper,
+    db: {},
+    readAuthority: () => authoritySource,
+    substrateExists: () => false,
+  });
+  manifest.claim_families[0].evidence_class = 'unknown';
+  const unclassified = validatePaper2EvidenceManifest({
+    manifest,
+    paper,
+    db: {},
+    readAuthority: () => authoritySource,
+  });
+
+  assert.equal(missing.exitCode, 1);
+  assert.match(messages(missing).join('\n'), /archived substrate missing: missing-result\.json/);
+  assert.equal(unclassified.exitCode, 1);
+  assert.match(messages(unclassified).join('\n'), /evidence_class is missing or unclassified/);
+});
+
+test('Paper 2 fixture fails when a canonical claim is missing or misdirected', () => {
+  const { manifest, paper, authoritySource } = createPaper2Fixture();
+  manifest.claim_families[0].paper_markers = ['Claim copied from the legacy paper.'];
+  manifest.claim_families[0].paper_sections = ['6.2'];
+  const result = validatePaper2EvidenceManifest({
+    manifest,
+    paper,
+    db: {},
+    readAuthority: () => authoritySource,
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.match(messages(result).join('\n'), /canonical paper marker missing/);
+  assert.match(messages(result).join('\n'), /Unclassified Paper 2 result sections: 6\.1/);
 });
