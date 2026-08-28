@@ -14,6 +14,20 @@
 
 import * as writingPadService from './writingPadService.js';
 
+// SQLite's CURRENT_TIMESTAMP is UTC but is stored as `YYYY-MM-DD HH:MM:SS`,
+// which JavaScript otherwise interprets in the host's local timezone. On a
+// negative UTC offset a newly written moment therefore appears to be hours in
+// the future and misses even a zero-age consolidation gate. Preserve explicit
+// offsets/ISO strings, while making the database-native shape unambiguously
+// UTC on every host.
+function persistedTimestampMs(value) {
+  const normalized =
+    typeof value === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/u.test(value)
+      ? `${value.replace(' ', 'T')}Z`
+      : value;
+  return new Date(normalized).getTime();
+}
+
 // ============================================================================
 // Pattern Detection (Conscious → Preconscious)
 // ============================================================================
@@ -154,7 +168,7 @@ export function shouldConsolidateToUnconscious(recognitionMoment, options = {}) 
   }
 
   // Check age
-  const age = Date.now() - new Date(recognitionMoment.created_at).getTime();
+  const age = Date.now() - persistedTimestampMs(recognitionMoment.created_at);
   if (age < minAge) {
     return false;
   }
