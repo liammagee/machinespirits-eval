@@ -166,3 +166,38 @@ The aborted root is archived with the study artifacts, marked void.
 Spend accounting: the fresh block spends the full registered ceiling
 (12,960 generation calls) again; the sunk ~1,900 sits on top. The
 operator's ruling above covers this.
+
+## 7. Amendment 2 — summary-writer defect and free rebuild (2026-08-28)
+
+The relaunched affective_resistant cell finished all 24 dialogues, then
+the end-of-run report writer died with "Invalid string length". Cause:
+the writer built the whole summary as one pretty-printed JSON string,
+and a 24-row cell of 40-turn dialogues pushed that single string past
+Node's maximum (~536M characters; the streamed file came out at 292MB,
+so the pretty form would have been ~540MB). Every dialogue trace, log,
+and evidence event was already safe on disk — only the summary, HTML
+report, ledger entry, and seal were missing.
+
+Fix (free post-processing, no model calls, no design change):
+
+1. `scripts/run-tutor-stub-auto-eval.js` now streams the summary file —
+   small fields keep the pretty layout, the two large arrays are written
+   one compact element per line. No single string scales with the run.
+2. A new `--rebuild-from <run dir>` mode reconstructs a crashed run's
+   summary, report, ledger entry, and seal from its on-disk evidence
+   (run plan, job-completed events, per-job traces). Each per-job result
+   is a pure function of those artifacts.
+
+The resistant cell was rebuilt with the new mode: 24/24 rows, sealed
+with integrity verified and zero unmet contract items, status
+"incomplete" because one sarcastic row is a leak-guard stop (a failed
+row stands and is reported, per the registered rules). The proof_skipper
+cell was already running on the old code when the fix landed; if its
+summary write dies the same way, the same rebuild recovers it. The
+diligent cell starts a fresh process and runs the fixed writer.
+
+Resistant-cell scoreboard (rebuilt summary; fidelity read still to run):
+warm 12 rows, 1 grounded closure (turn 27), 11 turn-cap stops, mean
+final coverage 0.792, mean coverage at learner turn 16 = 0.278;
+sarcastic 12 rows, 0 closures, 11 turn-cap stops, 1 leak-guard stop,
+mean final coverage 0.864, mean coverage at learner turn 16 = 0.417.
