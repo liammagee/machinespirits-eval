@@ -336,9 +336,9 @@ function gitOutput(args, projectRoot, { trim = true } = {}) {
 
 export async function changedFilesForRange(base, head, projectRoot = PROJECT_ROOT) {
   const queries = [
-    ['range', ['diff', '--name-only', '-z', `${base}...${head}`]],
-    ['unstaged', ['diff', '--name-only', '-z']],
-    ['staged', ['diff', '--cached', '--name-only', '-z']],
+    ['range', ['diff', '--no-renames', '--name-only', '-z', `${base}...${head}`]],
+    ['unstaged', ['diff', '--no-renames', '--name-only', '-z']],
+    ['staged', ['diff', '--cached', '--no-renames', '--name-only', '-z']],
     ['untracked', ['ls-files', '--others', '--exclude-standard', '-z']],
   ];
   const results = await Promise.allSettled(queries.map(([, args]) => gitOutput(args, projectRoot, { trim: false })));

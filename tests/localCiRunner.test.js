@@ -89,7 +89,7 @@ test('local CI arguments expose bounded profiles and explicit parity switches', 
   assert.throws(() => parseLocalCiArgs(['--node20-container']), /Unknown local CI option/u);
 });
 
-test('automatic local CI selection matches the hosted profiles for PR 699, 700, and 701 shapes', () => {
+test('automatic local CI selection matches hosted full, validator-only, and retired-request boundaries', () => {
   const pr699 = buildAutoPlan([
     'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json',
     'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json',
@@ -110,11 +110,7 @@ test('automatic local CI selection matches the hosted profiles for PR 699, 700, 
     false,
   );
 
-  const pr700Files = [
-    'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
-    'tests/tutorStubResistantProfileStudyGoRequest.test.js',
-    'workplan/items/resistance-action-register-integration.md',
-  ];
+  const pr700Files = ['tests/tutorStubResistantProfileStudyGoRequest.test.js', 'workplan/items/example.md'];
   const pr700 = buildAutoPlan(pr700Files);
   assert.equal(pr700.selection.profile, 'validator-only');
   assert.deepEqual(
@@ -123,11 +119,7 @@ test('automatic local CI selection matches the hosted profiles for PR 699, 700, 
   );
   const pr700Commands = displays(pr700.plan);
   assert.ok(pr700Commands.includes('node --test tests/tutorStubResistantProfileStudyGoRequest.test.js'));
-  assert.ok(
-    pr700Commands.includes(
-      './node_modules/.bin/eslint scripts/check-tutor-stub-resistant-profile-study-go-request.js tests/tutorStubResistantProfileStudyGoRequest.test.js',
-    ),
-  );
+  assert.ok(pr700Commands.includes('./node_modules/.bin/eslint tests/tutorStubResistantProfileStudyGoRequest.test.js'));
   assert.equal(
     pr700Commands.some((command) => command === 'npm run lint'),
     false,
@@ -138,13 +130,19 @@ test('automatic local CI selection matches the hosted profiles for PR 699, 700, 
     'workplan/items/resistance-action-register-integration.md',
   ];
   const pr701 = buildAutoPlan(pr701Files);
-  assert.equal(pr701.selection.profile, 'focused');
-  assert.equal(pr701.selection.classification.authorizationRequired, true);
-  assert.deepEqual(
-    pr701.plan.map((lane) => lane.id),
-    ['install', 'contract', 'focused', 'workplan'],
+  assert.equal(pr701.selection.profile, 'full');
+  assert.equal(pr701.selection.classification.authorizationRequired, false);
+  assert.equal(
+    pr701.plan.some((lane) => lane.id === 'node-tests'),
+    true,
   );
-  assert.ok(displays(pr701.plan).includes('node --test tests/tutorStubResistantProfileStudyGoRequest.test.js'));
+
+  const sharedValidator = buildAutoPlan(['scripts/check-tutor-stub-resistant-profile-study-go-request.js']);
+  assert.equal(sharedValidator.selection.profile, 'full');
+  assert.equal(
+    sharedValidator.plan.some((lane) => lane.id === 'node-tests'),
+    true,
+  );
 });
 
 test('automatic local CI preserves fail-closed selection and research validation', () => {
@@ -158,11 +156,18 @@ test('automatic local CI preserves fail-closed selection and research validation
   const unknown = buildAutoPlan(['unexpected.bin']);
   assert.equal(unknown.selection.profile, 'full');
 
-  const research = buildAutoPlan(['docs/research/paper-full-2.0.md']);
+  const research = buildAutoPlan(['docs/research/methods-paper.md']);
   assert.equal(research.selection.profile, 'focused');
   assert.deepEqual(
     research.plan.map((lane) => lane.id),
     ['install', 'contract', 'focused', 'validation', 'workplan'],
+  );
+
+  const canonicalPaper = buildAutoPlan(['docs/research/paper-full-2.0.md']);
+  assert.equal(canonicalPaper.selection.profile, 'full');
+  assert.equal(
+    canonicalPaper.plan.some((lane) => lane.id === 'node-tests'),
+    true,
   );
 
   const explicitFull = parseLocalCiArgs(['--profile=full', '--no-install', '--surface=never']);
@@ -219,6 +224,33 @@ test('local change collection preserves a committed leading-whitespace path', as
     assert.match(selection.classification.reason, /invalid changed path/u);
   } finally {
     fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('local change collection preserves both sides of committed and staged renames', async () => {
+  for (const state of ['committed', 'staged']) {
+    const projectRoot = createGitFixture();
+    try {
+      fs.mkdirSync(path.join(projectRoot, 'services'), { recursive: true });
+      fs.writeFileSync(path.join(projectRoot, 'services/runtime.js'), 'export const runtime = true;\n');
+      git(projectRoot, ['add', 'services/runtime.js']);
+      git(projectRoot, ['commit', '--quiet', '-m', 'runtime base']);
+      const base = git(projectRoot, ['rev-parse', 'HEAD']);
+
+      git(projectRoot, ['mv', 'services/runtime.js', 'docs/runtime.md']);
+      if (state === 'committed') git(projectRoot, ['commit', '--quiet', '-m', 'hide runtime as docs']);
+
+      const result = await changedFilesForRange(base, 'HEAD', projectRoot);
+      assert.equal(result.ok, true, state);
+      assert.deepEqual(result.changedFiles, ['docs/runtime.md', 'services/runtime.js'], state);
+      const selection = resolveLocalCiProfile(parseLocalCiArgs([]), result.changedFiles, {
+        collectionOk: result.ok,
+        errors: result.errors,
+      });
+      assert.equal(selection.profile, 'full', state);
+    } finally {
+      fs.rmSync(projectRoot, { recursive: true, force: true });
+    }
   }
 });
 

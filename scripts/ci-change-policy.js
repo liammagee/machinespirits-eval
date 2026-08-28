@@ -15,8 +15,22 @@ const FOCUSED_EXACT_PATHS = new Set([
   'CLAUDE.md',
   'DOCS.md',
   'GEMINI.md',
-  'README.md',
 ]);
+
+// These paths live on otherwise-authored surfaces, but runtime services or
+// skipped full-CI contracts consume their contents directly.
+const FULL_CI_EXACT_PATHS = new Set([
+  'README.md',
+  'docs/pedagogical-move-contract.md',
+  'docs/ref-status.md',
+  'docs/research/human-coding-codebook.md',
+  'docs/research/paper-full-2.0.md',
+  'workplan/items/adaptive-warrant-outcome-study.md',
+  'workplan/items/guarded-learner-outcome-study.md',
+  'workplan/items/resistance-action-register-integration.md',
+]);
+
+const FULL_CI_PATH_PREFIXES = ['docs/adaptation-refinement/'];
 
 const FOCUSED_PATH_PREFIXES = [
   '.agents/skills/',
@@ -28,14 +42,13 @@ const FOCUSED_PATH_PREFIXES = [
   'workplan/playbook/',
 ];
 
-const STUDY_GO_METADATA_PATH = /^config\/[^/]*study-go-request[^/]*\.json$/u;
+// Historical request files are executable inputs to several distinct runtime
+// and test contracts. A filename pattern cannot safely select one validator.
+const STUDY_GO_RUNTIME_PATH = /^config\/[^/]*study-go-request[^/]*\.json$/u;
 
 const VALIDATOR_ONLY_GROUPS = [
   {
-    paths: new Set([
-      'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
-      'tests/tutorStubResistantProfileStudyGoRequest.test.js',
-    ]),
+    paths: new Set(['tests/tutorStubResistantProfileStudyGoRequest.test.js']),
     tests: ['tests/tutorStubResistantProfileStudyGoRequest.test.js'],
   },
 ];
@@ -70,11 +83,14 @@ export function validateChangedFiles(changedFiles) {
 }
 
 export function pathAllowsFocusedCi(file) {
-  return (
-    FOCUSED_EXACT_PATHS.has(file) ||
-    FOCUSED_PATH_PREFIXES.some((prefix) => file.startsWith(prefix)) ||
-    STUDY_GO_METADATA_PATH.test(file)
-  );
+  if (
+    FULL_CI_EXACT_PATHS.has(file) ||
+    FULL_CI_PATH_PREFIXES.some((prefix) => file.startsWith(prefix)) ||
+    STUDY_GO_RUNTIME_PATH.test(file)
+  ) {
+    return false;
+  }
+  return FOCUSED_EXACT_PATHS.has(file) || FOCUSED_PATH_PREFIXES.some((prefix) => file.startsWith(prefix));
 }
 
 export function pathRequiresValidationFramework(file) {
@@ -113,7 +129,7 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
       profile: 'validator-only',
       fullRequired: false,
       validationRequired: safeChangedFiles.some(pathRequiresValidationFramework),
-      authorizationRequired: safeChangedFiles.some((file) => STUDY_GO_METADATA_PATH.test(file)),
+      authorizationRequired: false,
       validatorPaths: validatorOnly.paths,
       validatorTests: validatorOnly.tests,
       reason: `allowlisted validator-only change: ${validatorOnly.paths.join(', ')}`,
@@ -137,7 +153,7 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
     profile: 'focused',
     fullRequired: false,
     validationRequired: safeChangedFiles.some(pathRequiresValidationFramework),
-    authorizationRequired: safeChangedFiles.some((file) => STUDY_GO_METADATA_PATH.test(file)),
+    authorizationRequired: false,
     validatorPaths: [],
     validatorTests: [],
     reason: `focused authored metadata only: ${safeChangedFiles.join(', ')}`,
@@ -150,7 +166,12 @@ function git(args, projectRoot = PROJECT_ROOT, { trim = true } = {}) {
 }
 
 export function changedFilesBetween(base, head, projectRoot = PROJECT_ROOT) {
-  const output = git(['diff', '--name-only', '-z', `${base}...${head}`], projectRoot, { trim: false });
+  // Disable rename folding so both the deleted source and added destination
+  // reach the path classifier. Otherwise runtime.js -> docs/runtime.md looks
+  // like an authored-doc-only change.
+  const output = git(['diff', '--no-renames', '--name-only', '-z', `${base}...${head}`], projectRoot, {
+    trim: false,
+  });
   return output ? output.split('\0').filter(Boolean) : [];
 }
 
