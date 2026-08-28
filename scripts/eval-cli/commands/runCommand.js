@@ -251,6 +251,22 @@ export async function runEvaluationCommand(context) {
     process.exit(1);
   }
   if (adaptiveProfiles.length > 0) {
+    // Budget scope is per run, because the durable ledger is keyed by run id
+    // (services/evaluationStore/budgetRepository.js) and each adaptive profile
+    // creates its own run. One --max-cost across N profiles would therefore
+    // license N ceilings, not one. Refuse before any dispatch rather than
+    // silently multiplying the operator's number.
+    if (maxCostUsd != null && adaptiveProfiles.length > 1) {
+      console.error(`\nError: --max-cost is ambiguous across ${adaptiveProfiles.length} adaptive profiles.`);
+      console.error('Each adaptive profile opens its own run and its own budget ledger, so one');
+      console.error(`--max-cost ${maxCostUsd} would allow up to $${(maxCostUsd * adaptiveProfiles.length).toFixed(2)}`);
+      console.error('across this invocation, not $' + maxCostUsd.toFixed(2) + '.');
+      console.error('\nRun one adaptive profile per invocation, each with its own ceiling:');
+      for (const profileName of adaptiveProfiles) {
+        console.error(`  node scripts/eval-cli.js run --profiles ${profileName} --max-cost <usd>`);
+      }
+      process.exit(1);
+    }
     const { createAdaptiveEvaluationRunner } = await import('../../../services/adaptiveTutor/index.js');
     const { runAdaptiveEvaluation } = createAdaptiveEvaluationRunner({ evaluationStore });
     const summaries = [];

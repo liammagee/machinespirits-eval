@@ -114,6 +114,7 @@
         "tests/adaptive-mock-learner.test.js",
         "tests/adaptiveRegisterSwitching.test.js",
         "tests/adaptiveRegisterSwitchingStage2.test.js",
+        "tests/adaptiveResumeAndBudgetScope.test.js",
         "tests/adaptiveRunEvidencePackage.test.js",
         "tests/adaptiveStateBenchmarkIntegrity.test.js",
         "tests/adaptiveStateBenchmarkV2.test.js",
