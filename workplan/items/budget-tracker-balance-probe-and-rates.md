@@ -23,7 +23,7 @@ tags:
   - adaptive-tutor
   - spend-ceiling
   - codex-sol
-  - effort-xhigh
+  - effort-ultra
 ---
 
 Three related gaps in the spend ceiling, one long known:
@@ -45,4 +45,6 @@ the id-director trap pilot. The spend ceiling is one of the few rails the
 authorization hard rule says to keep — this card makes it true, it adds no
 gate.
 
-Suggested worker: Codex Sol at Extra High reasoning effort.
+Suggested worker: Codex Sol at Ultra reasoning effort. The hard spend ceiling
+crosses provider behavior, rate provenance, and crash-safe persisted state, so
+the design and failure-mode audit deserve the higher tier.

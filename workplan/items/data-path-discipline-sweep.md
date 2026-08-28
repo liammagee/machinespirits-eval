@@ -1,7 +1,7 @@
 ---
 id: data-path-discipline-sweep
 title: "Path-discipline sweep: DB, logs, exports, and archive resolvers everywhere"
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -21,6 +21,8 @@ links:
     - services/evaluationDataPaths.js
     - services/evaluationDbReadonly.js
     - scripts/check-evaluation-data-paths.js
+  prs:
+    - 835
 tags:
   - data-paths
   - hermetic
@@ -68,3 +70,7 @@ checks pass; 57 pilot, resistant-learner registration, and sealed steering
 checks pass; `npm run lint`, `npm run format:check`,
 `node scripts/check-evaluation-data-paths.js`, `npm run wp:source-check`, and
 `git diff --check` pass.
+
+2026-08-28 Closeout: PR #835 merged to `main`; its replacement hosted run
+passed the hermetic contract, all four Node test shards, lint, risk coverage,
+PTY/loopback concurrency, validation, and workplan checks.
