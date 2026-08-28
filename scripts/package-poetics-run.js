@@ -15,6 +15,7 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 import { openPoeticsStore } from '../services/poeticsStore.js';
+import { auditPoeticsEvidenceInventory, POETICS_EVIDENCE_INVENTORY } from '../services/poeticsEvidenceLifecycle.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -28,6 +29,7 @@ function parseArgs(argv) {
     dbPath: null,
     archiveDir: DEFAULT_ARCHIVE_DIR,
     manifestDir: DEFAULT_MANIFEST_DIR,
+    itemGatesPath: null,
     dryRun: false,
   };
   for (let i = 0; i < argv.length; i++) {
@@ -36,11 +38,13 @@ function parseArgs(argv) {
     else if (token === '--db') args.dbPath = path.resolve(argv[++i]);
     else if (token === '--archive-dir') args.archiveDir = path.resolve(argv[++i]);
     else if (token === '--manifest-dir') args.manifestDir = path.resolve(argv[++i]);
+    else if (token === '--item-gates') args.itemGatesPath = path.resolve(argv[++i]);
     else if (token === '--dry-run') args.dryRun = true;
     else if (token === '--help' || token === '-h') {
       console.log(`Usage:
   node scripts/package-poetics-run.js --run-id RUN_ID [--db FILE]
       [--archive-dir artifacts/poetics-runs] [--manifest-dir config/poetics-calibration/runs]
+      --item-gates exports/item-gates-RUN_ID.jsonl
       [--dry-run]
 
 Writes ignored compressed JSONL archives under archive-dir/RUN_ID/ and a commit-ready
@@ -51,6 +55,7 @@ manifest under manifest-dir/RUN_ID.manifest.json.`);
     }
   }
   if (!args.runId) throw new Error('--run-id is required');
+  if (!args.itemGatesPath) throw new Error('--item-gates is required for claim-evidence closure');
   return args;
 }
 
@@ -85,6 +90,24 @@ function sha256Buffer(buffer) {
 
 function sha256File(filePath) {
   return sha256Buffer(fs.readFileSync(filePath));
+}
+
+function loadItemGateRows(filePath, runId) {
+  if (!filePath || !fs.existsSync(filePath)) throw new Error('missing poetics claim evidence: item_gate_stream');
+  const rows = fs
+    .readFileSync(filePath, 'utf8')
+    .split(/\r?\n/u)
+    .filter((line) => line.trim())
+    .map((line, index) => {
+      try {
+        return JSON.parse(line);
+      } catch (error) {
+        throw new Error(`invalid item-gate JSON at line ${index + 1}: ${error.message}`);
+      }
+    });
+  const selected = rows.filter((row) => row.runId === runId);
+  if (!selected.length) throw new Error(`item-gate stream does not cover poetics run ${runId}`);
+  return selected;
 }
 
 function gitCommit() {
@@ -312,9 +335,12 @@ function summarizeBundle(bundle, refs, missingArtifacts) {
 }
 
 async function packagePoeticsRun(options) {
+  const itemGateRows = loadItemGateRows(options.itemGatesPath, options.runId);
   const db = openPoeticsStore(options.dbPath || undefined);
   let bundle;
   try {
+    const audit = auditPoeticsEvidenceInventory({ db });
+    if (!audit.ok) throw new Error(`poetics evidence inventory audit failed: ${audit.errors.join('; ')}`);
     bundle = loadRunBundle(db, options.runId);
   } finally {
     db.close();
@@ -325,14 +351,11 @@ async function packagePoeticsRun(options) {
   const runSegment = encodePathSegment(options.runId);
   const runArchiveDir = path.join(archiveDir, runSegment);
   const refs = artifactRefs(bundle);
-  const missingArtifacts = [];
+  const missingArtifacts = refs
+    .filter((ref) => !fs.existsSync(ref.absPath))
+    .map((ref) => ({ kind: ref.kind, path: ref.path, contexts: ref.contexts }));
 
   if (options.dryRun) {
-    for (const ref of refs) {
-      if (!fs.existsSync(ref.absPath)) {
-        missingArtifacts.push({ kind: ref.kind, path: ref.path, contexts: ref.contexts });
-      }
-    }
     return {
       dryRun: true,
       manifestPath: path.join(manifestDir, `${runSegment}.manifest.json`),
@@ -347,6 +370,17 @@ async function packagePoeticsRun(options) {
     };
   }
 
+  if (missingArtifacts.length) {
+    throw new Error(
+      `missing poetics claim evidence: ${missingArtifacts.map((entry) => `${entry.kind} ${entry.path}`).join('; ')}`,
+    );
+  }
+
+  const manifestPath = path.join(manifestDir, `${runSegment}.manifest.json`);
+  if (fs.existsSync(runArchiveDir) || fs.existsSync(manifestPath)) {
+    throw new Error(`poetics run archive is create-once: ${runSegment}`);
+  }
+
   fs.mkdirSync(runArchiveDir, { recursive: true });
   const files = {};
   files.run = await writeJsonlGzip(path.join(runArchiveDir, 'run.jsonl.gz'), [bundle.run]);
@@ -358,6 +392,7 @@ async function packagePoeticsRun(options) {
     path.join(runArchiveDir, 'tutor-adaptations.jsonl.gz'),
     bundle.tutorAdaptations,
   );
+  files.itemGates = await writeJsonlGzip(path.join(runArchiveDir, 'item-gates.jsonl.gz'), itemGateRows);
   files.artifacts = await writeArtifactArchive(path.join(runArchiveDir, 'artifacts.jsonl.gz'), refs, missingArtifacts);
 
   const manifest = {
@@ -379,11 +414,20 @@ async function packagePoeticsRun(options) {
     counts: summarizeBundle(bundle, refs, missingArtifacts),
     artifactKinds: kindCounts(refs),
     missingArtifacts,
+    itemGateRows: itemGateRows.length,
+    evidenceInventory: {
+      databaseTables: Object.keys(POETICS_EVIDENCE_INVENTORY.databaseTables),
+      sidecarKinds: Object.keys(POETICS_EVIDENCE_INVENTORY.sidecars),
+      nonClaimBearingExemptions: POETICS_EVIDENCE_INVENTORY.nonClaimBearingExemptions,
+    },
   };
 
   fs.mkdirSync(manifestDir, { recursive: true });
-  const manifestPath = path.join(manifestDir, `${runSegment}.manifest.json`);
-  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  for (const file of Object.values(files)) {
+    const absolute = resolveStoredPath(file.path);
+    if (sha256File(absolute) !== file.sha256) throw new Error(`archive hash verification failed: ${file.path}`);
+  }
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { flag: 'wx' });
   return {
     dryRun: false,
     manifestPath,

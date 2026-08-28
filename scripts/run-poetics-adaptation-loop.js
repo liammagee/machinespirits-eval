@@ -27,6 +27,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
 import { openPoeticsStore } from '../services/poeticsStore.js';
+import { createPoeticsEvidenceBundle } from '../services/poeticsEvidenceLifecycle.js';
 import { detectPublicTextRepair, extractFinalLearnerPublicText } from '../services/ontology/hamartiaRepairDetector.js';
 import { SEMANTIC_ADJUDICATION_PACKET_SCHEMA } from './analyze-poetics-tutor-adaptation.js';
 import { classifyPoeticsConsensus } from './lib/poeticsConsensus.js';
@@ -102,6 +103,7 @@ function parseArgs(argv) {
     failOnGate: true,
     originHardGate: false,
     reportPrefix: null,
+    evidenceArchiveDir: null,
     semanticAdjudicationsPath: null,
     analyzerVersion: DEFAULT_ANALYZER_VERSION,
     prepareSemantic: false,
@@ -141,6 +143,7 @@ function parseArgs(argv) {
     else if (token === '--root-parent') args.rootParent = path.resolve(argv[++i]);
     else if (token === '--db') args.dbPath = path.resolve(argv[++i]);
     else if (token === '--report-prefix') args.reportPrefix = path.resolve(argv[++i]);
+    else if (token === '--evidence-archive') args.evidenceArchiveDir = path.resolve(argv[++i]);
     else if (token === '--semantic-adjudications' || token === '--representation-adjudications') {
       args.semanticAdjudicationsPath = path.resolve(argv[++i]);
       args.analyzerVersion = SEMANTIC_ANALYZER_VERSION;
@@ -177,6 +180,7 @@ Options:
   --prepare-semantic                Generate/score/ingest bounded items, then stop for judgments
   --resume-prepared                 Analyze/gate the same prepared batches; requires a packet
   --semantic-adjudications FILE     Create-once tutor + learner semantic judgments
+  --evidence-archive DIR            Durable private archive (default: EVAL_ARCHIVE_DIR)
   --no-fail-on-gate                 Write reports but exit 0 when gates fail`);
       process.exit(0);
     } else {
@@ -1164,12 +1168,63 @@ function renderMarkdown(summary) {
   return `${lines.join('\n')}\n`;
 }
 
-function writeSummary(summary, args) {
-  const { jsonPath, mdPath } = writableSummaryPaths(args);
+function writeSummary(summary, args, paths = writableSummaryPaths(args)) {
+  const { jsonPath, mdPath } = paths;
   fs.mkdirSync(path.dirname(jsonPath), { recursive: true });
   fs.writeFileSync(jsonPath, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
   fs.writeFileSync(mdPath, renderMarkdown(summary), 'utf8');
   return { jsonPath, mdPath };
+}
+
+function loopClaimArtifacts(summary, args, written) {
+  const artifacts = [
+    { surface: 'loop_status_json', path: written.jsonPath },
+    { surface: 'loop_status_markdown', path: written.mdPath },
+    { surface: 'target_spec', path: args.targetSpec },
+  ];
+  if (args.semanticAdjudicationsPath) {
+    artifacts.push({ surface: 'semantic_adjudication_packet', path: args.semanticAdjudicationsPath });
+  }
+  for (const iteration of summary.iterations) {
+    const plan = buildIterationPlan(args, iteration.iteration);
+    artifacts.push({
+      surface: 'production_batch_plan',
+      path: path.join(plan.rootDir, 'batch-plan.json'),
+      required: false,
+      context: { runId: plan.batchId },
+    });
+    for (const [surface, filePath] of [
+      ['tutor_adaptation_report_json', path.join(EXPORTS_DIR, `${plan.batchId}-tutor-adaptation.json`)],
+      ['tutor_adaptation_report_csv', path.join(EXPORTS_DIR, `${plan.batchId}-tutor-adaptation.csv`)],
+      ['sidecar_report_json', path.join(EXPORTS_DIR, `${plan.batchId}-sidecar-report.json`)],
+      ['sidecar_report_csv', path.join(EXPORTS_DIR, `${plan.batchId}-sidecar-report.csv`)],
+      ['sidecar_report_markdown', path.join(EXPORTS_DIR, `${plan.batchId}-sidecar-report.md`)],
+    ]) {
+      artifacts.push({ surface, path: filePath, required: false, context: { runId: plan.batchId } });
+    }
+  }
+  return artifacts;
+}
+
+function archiveLoopEvidence(summary, args, written) {
+  let archiveRoot = args.evidenceArchiveDir;
+  if (!archiveRoot && args.mock) {
+    archiveRoot = path.join(path.dirname(written.jsonPath), '.private-poetics-evidence');
+    fs.mkdirSync(archiveRoot, { recursive: true });
+  }
+  const itemGateRows = summary.iterations.flatMap((iteration) =>
+    (iteration.gate?.items || []).map((item) => ({ runId: iteration.batchId, ...item })),
+  );
+  return createPoeticsEvidenceBundle({
+    bundleId: path.basename(written.jsonPath, '.json'),
+    status: summary.status,
+    runIds: summary.iterations.map((iteration) => iteration.batchId),
+    dbPath: args.dbPath || undefined,
+    archiveRoot,
+    claimArtifacts: loopClaimArtifacts(summary, args, written),
+    rawRunRoots: summary.iterations.map((iteration) => iteration.rootDir),
+    itemGateRows,
+  });
 }
 
 function runLoop(args) {
@@ -1302,6 +1357,29 @@ function runLoop(args) {
   else if (summary.status !== 'passed') summary.status = 'failed';
 
   const written = writeSummary(summary, args);
+  if (!args.dryRun) {
+    try {
+      const archived = archiveLoopEvidence(summary, args, written);
+      summary.evidenceArchive = {
+        status: 'verified',
+        createOnce: true,
+        path: rel(archived.path),
+        manifestPath: rel(archived.manifestPath),
+        filesSha256: archived.manifest.filesSha256,
+      };
+      writeSummary(summary, args, written);
+    } catch (error) {
+      const attemptedStatus = summary.status;
+      summary.status = 'failed_evidence_archive';
+      summary.evidenceArchive = {
+        status: 'failed',
+        attemptedStatus,
+        error: error?.message || String(error),
+      };
+      writeSummary(summary, args, written);
+      throw new Error(`poetics closeout evidence archive failed: ${summary.evidenceArchive.error}`, { cause: error });
+    }
+  }
   console.log(`\nloop status json → ${rel(written.jsonPath)}`);
   console.log(`loop status md   → ${rel(written.mdPath)}`);
   return summary;
