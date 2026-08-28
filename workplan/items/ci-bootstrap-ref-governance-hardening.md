@@ -1,7 +1,7 @@
 ---
 id: ci-bootstrap-ref-governance-hardening
 title: Harden CI bootstrap ordering and isolate ref-governance diagnostics
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -17,6 +17,7 @@ links:
   prs:
     - 838
     - 849
+    - 853
 tags:
   - ci
   - reliability
@@ -59,3 +60,9 @@ alias, approval mechanism, or paid/model-backed check.
   an automatic local-CI dry run selecting the expected full, ref-governance,
   contract, root/tutor-core lint, test, coverage, validation, and workplan
   lanes. No model-backed or paid calls were made.
+- 2026-08-28: PR #853 merged as `d0862049`. Its protected-branch checks were
+  green before merge, and the post-merge `main` push passed CI (including the
+  bootstrap-order, ref-governance, root/tutor-core lint, Node 22/24, PTY,
+  coverage, and aggregate-result lanes), Validation Framework, Workplan
+  validation, and Workplan commit-link validation. All acceptance criteria are
+  satisfied; the item is closed.
