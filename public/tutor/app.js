@@ -1,3 +1,5 @@
+import { fallbackCatalog } from './fallbackCatalog.js';
+
 const tutorMountIndex = window.location.pathname.indexOf('/tutor');
 const APP_PREFIX = tutorMountIndex > 0 ? window.location.pathname.slice(0, tutorMountIndex) : '';
 const API = `${APP_PREFIX}/api/tutor-stub`;
@@ -195,41 +197,6 @@ function replaceOptions(select) {
   while (select.firstChild) select.firstChild.remove();
 }
 
-function fallbackCatalog() {
-  return {
-    defaults: {
-      lab: 'pure_chat',
-      world: 'none',
-      tutor: 'dramatic-detective@v1',
-      model: 'codex.gpt-5.6-terra',
-    },
-    labs: [
-      {
-        id: 'pure_chat',
-        title: 'Pure chat',
-        summary: 'A learner-safe text conversation with one speaking-model call per turn.',
-        audience: 'learner_safe',
-        maturity: 'stable',
-        costClass: 'metered',
-        launch: { engine: 'tutor_stub', mode: 'passthrough', available: true, requiresWorld: false },
-      },
-      {
-        id: 'human_scaffold',
-        title: 'Human scaffold',
-        summary: 'A learner-safe dramatic inquiry with public evidence tracking.',
-        audience: 'learner_safe',
-        maturity: 'stable',
-        costClass: 'metered',
-        launch: { engine: 'tutor_stub', mode: 'scaffold', available: true, requiresWorld: true },
-      },
-    ],
-    worlds: [{ id: 'none', title: 'Open topic (no authored world)' }],
-    tutors: [{ id: 'dramatic-detective', ref: 'dramatic-detective@v1', title: 'Dramatic detective' }],
-    models: [{ ref: 'codex.gpt-5.6-terra', label: 'Codex · GPT-5.6 Terra' }],
-    curricula: [],
-  };
-}
-
 function projectedCatalog(payload) {
   return payload?.catalog || payload || fallbackCatalog();
 }
@@ -297,7 +264,10 @@ function renderCatalog(catalog) {
 
   replaceOptions(elements.model);
   for (const model of catalog.models || []) option(elements.model, model.ref, model.label || model.ref);
-  if (!elements.model.options.length) option(elements.model, 'codex.gpt-5.6-terra', 'Codex · GPT-5.6 Terra');
+  if (!elements.model.options.length) {
+    const [fallbackModel] = fallbackCatalog().models;
+    option(elements.model, fallbackModel.ref, fallbackModel.label);
+  }
   if (catalog.defaults?.model && [...elements.model.options].some((row) => row.value === catalog.defaults.model)) {
     elements.model.value = catalog.defaults.model;
   }

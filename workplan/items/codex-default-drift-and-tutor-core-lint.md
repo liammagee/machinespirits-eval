@@ -1,44 +1,45 @@
 ---
 id: codex-default-drift-and-tutor-core-lint
-title: "Fix the Codex default-model drift; lint the in-housed tutor-core"
-status: triaged
+title: "Fix the Codex default-model drift"
+status: review
 type: maintenance
 priority: P3
 owner: codex
 source: manual
 created: 2026-08-27
 updated: 2026-08-27
-verification: The served catalog and the browser fallback read the Codex
-  default from config/providers.yaml instead of hardcoding a model, with a
-  test that fails when the two drift; tutor-core/ is linted and formatted
-  either by adoption into the repo eslint config or by its own committed
-  config, with the lint lane covering its 35 JS files; the one-way dependency
-  seam (tutor-core never imports the eval repo) is untouched.
+verification: The served catalog derives the Codex default from
+  config/providers.yaml, the browser emergency projection has tested parity
+  with it, and the focused web-surface and tutor-core seam tests pass offline.
+branch: codex/codex-default-model-drift
 claim_status: methods
 links:
   notes:
     - services/tutorStubCatalog.js
+    - public/tutor/fallbackCatalog.js
     - config/providers.yaml
-    - eslint.config.js
 tags:
   - config
-  - lint
-  - codex-sol
-  - effort-xhigh
+  - codex-default
+  - browser-fallback
 ---
 
-Two small drifts with the same shape — a rule stated in one place and
-contradicted where it executes:
+`config/providers.yaml` names `gpt-5.6-luna` as the standing Codex default,
+but the served catalog and browser emergency fallback selected
+`codex.gpt-5.6-terra` independently.
 
-1. `config/providers.yaml` names `gpt-5.6-luna` as the standing Codex default
-   and says so in a comment, but the catalog hardcodes `codex.gpt-5.6-terra`
-   as its preferred default (tutorStubCatalog.js:150), and the browser
-   fallback list in `public/tutor/app.js` hand-writes the same stale model.
-   Both should read the config, with a drift test.
-2. The eslint exclusion of `tutor-core/` says the module keeps "its own
-   upstream lint rules" — but no lint or format config exists there, so 35
-   files answer to nobody. The module was in-housed in May; the upstream
-   premise no longer holds. Adopt it into the repo config or give it a real
-   config of its own, keeping the re-extraction seam clean.
+Acceptance:
 
-Suggested worker: Codex Sol at Extra High reasoning effort.
+- The served catalog resolves the configured Codex `default_model` to its
+  public provider alias without naming a preferred model in service code.
+- The client-only emergency catalog is an explicit static projection whose
+  parity with the server-derived default is covered by an offline test.
+- No `tutor-core/` file or dependency direction changes in this slice.
+
+The separate lint and formatting migration is tracked by
+`tutor-core-lint-and-format`.
+
+- 2026-08-27 — Split the tutor-core lint migration into its own source card;
+  made the served default config-derived; extracted the browser emergency
+  projection for parity testing; passed focused tests, lint, format,
+  workplan validation, seam guards, and web acceptance offline.
