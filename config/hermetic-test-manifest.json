@@ -391,6 +391,8 @@
         "tests/ontologyView.test.js",
         "tests/outcome-observer.test.js",
         "tests/packagePoeticsRun.test.js",
+        "tests/paidStudyLaunchContract.test.js",
+        "tests/paidStudyLauncherInventory.test.js",
         "tests/paperManifestValidator.test.js",
         "tests/pedagogical-orientation-coverage.test.js",
         "tests/pedagogicalMoveContract.test.js",

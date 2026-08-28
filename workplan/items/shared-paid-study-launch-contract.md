@@ -1,10 +1,10 @@
 ---
 id: shared-paid-study-launch-contract
 title: "Use one lightweight launch contract for post-policy paid studies"
-status: triaged
+status: review
 type: infra
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-08-28
 updated: 2026-08-28
@@ -25,12 +25,15 @@ links:
   items:
     - paid-study-endpoint-runtime-preflight
     - budget-tracker-balance-probe-and-rates
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/846
 tags:
   - paid-study
   - launch
   - provenance
   - spend-ceiling
   - supplementary-scan
+branch: codex/shared-paid-study-launch-contract
 ---
 
 The standing 2026-08-22 policy deliberately reduced paid-study authorization
@@ -61,3 +64,9 @@ Acceptance:
   historical exemption.
 
 This is consolidation of the lightweight policy, not a new approval layer.
+
+2026-08-28: Added the shared admission and fail-before-call ledger helper,
+fixture tests, and a nine-launcher inventory ratchet. No launcher migration was
+eligible: the six post-policy launchers in scope have already served sealed or
+live runs, so their bytes remain unchanged under narrow historical/live
+exemptions.
