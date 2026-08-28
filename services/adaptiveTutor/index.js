@@ -16,7 +16,7 @@ import { runScenario, runScenarioWithCounterfactual } from './runner.js';
 import { llmMode } from './llm.js';
 import { assertWorldAdaptationSpecUsable, summarizeWorldAdaptationSpec } from './actionPolicy.js';
 import { createAdaptivePersistence } from './persistence.js';
-import { createBudgetTracker } from './budgetTracker.js';
+import { bindRunLedger, finalizeMeteredRun } from './meteredRunSession.js';
 import {
   setActiveBudgetTracker,
   clearActiveBudgetTracker,
@@ -373,37 +373,11 @@ async function executeAdaptiveUnits({ prepared, runId, units, tracker, persisten
   return { persisted, halted, haltReason, haltCode, unresolvedUnitIds };
 }
 
-function finalizeAdaptiveRun({ evaluationStore, runId, halted, haltCode, totalTests }) {
-  evaluationStore.updateRun(runId, {
-    status: halted
-      ? haltCode === 'BUDGET_LEDGER_PERSISTENCE'
-        ? 'halted_budget_ledger'
-        : 'halted_budget'
-      : 'completed',
-    totalTests,
-    completedAt: new Date().toISOString(),
-  });
-}
-
-// Bind the run's ceiling to its own durable ledger. `initializeBudgetLedger`
-// is idempotent on (runId, maxUsd), so a resume reopens the same ledger and
-// inherits every reservation the interrupted attempt already booked.
-function bindBudgetTracker({ evaluationStore, runId, maxCostUsd, verbose, finalizeOnFailure = true }) {
+// Mock runs never reach a provider, so they carry no ceiling. Everything else
+// binds the shared run ledger (services/adaptiveTutor/meteredRunSession.js).
+function bindBudgetTracker({ evaluationStore, runId, maxCostUsd, verbose }) {
   if (maxCostUsd == null || !(maxCostUsd > 0) || llmMode() === 'mock') return null;
-  try {
-    const tracker = createBudgetTracker({ maxUsd: maxCostUsd, runId, ledgerStore: evaluationStore });
-    if (verbose) console.log(`[adaptive] budget ceiling: $${maxCostUsd.toFixed(2)}`);
-    return tracker;
-  } catch (error) {
-    if (finalizeOnFailure) {
-      evaluationStore.updateRun(runId, {
-        status: 'halted_budget_ledger',
-        totalTests: 0,
-        completedAt: new Date().toISOString(),
-      });
-    }
-    throw error;
-  }
+  return bindRunLedger({ evaluationStore, runId, maxCostUsd, verbose, label: 'adaptive' });
 }
 
 export async function runAdaptiveEvaluation({
@@ -466,7 +440,7 @@ export async function runAdaptiveEvaluation({
     verbose,
   });
 
-  finalizeAdaptiveRun({
+  finalizeMeteredRun({
     evaluationStore,
     runId: run.id,
     halted: outcome.halted,
@@ -579,7 +553,7 @@ export async function resumeAdaptiveEvaluation({
     verbose,
   });
 
-  finalizeAdaptiveRun({
+  finalizeMeteredRun({
     evaluationStore,
     runId,
     halted: outcome.halted,

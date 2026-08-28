@@ -383,6 +383,7 @@
         "tests/messageChainAudit.test.js",
         "tests/messageChainAuditCli.test.js",
         "tests/messageChainAuditCore.test.js",
+        "tests/meteredRunSession.test.js",
         "tests/miniDramaMachines.test.js",
         "tests/navParity.test.js",
         "tests/negativeRegisterEffectGrid.test.js",
