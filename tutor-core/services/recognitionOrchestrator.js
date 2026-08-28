@@ -193,7 +193,7 @@ export function processDialogueResult(learnerId, dialogueResult, learnerResponse
       retrieveContext: true,
       situationContext: {
         learnerStruggling: learnerResponse?.context?.struggling || false,
-        recentBreakthrough: phase3Results.events.some(e => e?.eventType === 'breakthrough'),
+        recentBreakthrough: phase3Results.events.some((e) => e?.eventType === 'breakthrough'),
       },
     });
     results.phases.memoryDynamics = memoryCycleResult;
@@ -359,10 +359,12 @@ export function runMaintenance(learnerId) {
 
     // Phase 3: Evolve learner archetype based on accumulated patterns
     const archetype = learnerIntegrationService.evolveLearnerArchetype(learnerId);
-    results.tasks.archetypeEvolution = archetype ? {
-      evolved: true,
-      style: archetype.preferredLearningStyle,
-    } : { evolved: false };
+    results.tasks.archetypeEvolution = archetype
+      ? {
+          evolved: true,
+          style: archetype.preferredLearningStyle,
+        }
+      : { evolved: false };
 
     return results;
   } catch (error) {
@@ -420,7 +422,7 @@ export function getFullRecognitionState(learnerId) {
 
     // Phase 2: Recent recognition moments with dialogue traces
     const recentMoments = writingPadService.getRecognitionMoments(pad.id, { limit: 20 });
-    const dialecticalHistory = recentMoments.map(m => ({
+    const dialecticalHistory = recentMoments.map((m) => ({
       id: m.id,
       createdAt: m.created_at,
       strategy: m.synthesis_strategy,

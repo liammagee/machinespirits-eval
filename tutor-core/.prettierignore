@@ -1,0 +1,11 @@
+node_modules/
+data/
+logs/
+
+# Prompts, config and docs are authored by hand; only source code is formatted.
+prompts/
+config/
+migrations/
+*.md
+*.yaml
+*.yml

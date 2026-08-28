@@ -83,7 +83,7 @@ function sanitizeText(text) {
  */
 function sanitizeMessages(messages) {
   if (!Array.isArray(messages)) return messages;
-  return messages.map(m => ({
+  return messages.map((m) => ({
     ...m,
     content: sanitizeText(m.content),
   }));
@@ -146,7 +146,7 @@ async function callOpenRouter(model, systemPrompt, messages, config) {
     temperature: config.temperature ?? 0.7,
     messages: [
       { role: 'system', content: sanitizeText(systemPrompt) },
-      ...sanitizedMessages.map(m => ({
+      ...sanitizedMessages.map((m) => ({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.content,
       })),
@@ -193,7 +193,9 @@ async function callOpenRouter(model, systemPrompt, messages, config) {
     if (!content) {
       const finishReason = data.choices?.[0]?.finish_reason || 'unknown';
       const nativeError = data.choices?.[0]?.native_finish_reason || data.error?.message || '';
-      console.warn(`[OpenRouter] Empty response from ${effectiveModel}: finish_reason=${finishReason}, native=${nativeError}, choices=${data.choices?.length || 0}, error=${JSON.stringify(data.error || null)}`);
+      console.warn(
+        `[OpenRouter] Empty response from ${effectiveModel}: finish_reason=${finishReason}, native=${nativeError}, choices=${data.choices?.length || 0}, error=${JSON.stringify(data.error || null)}`,
+      );
     }
     inputTokens = data.usage?.prompt_tokens || 0;
     outputTokens = data.usage?.completion_tokens || 0;
@@ -236,7 +238,7 @@ async function callAnthropic(model, systemPrompt, messages, config) {
     max_tokens: config.maxTokens || 1000,
     temperature: config.temperature ?? 0.5,
     system: sanitizeText(systemPrompt),
-    messages: sanitizedMessages.map(m => ({
+    messages: sanitizedMessages.map((m) => ({
       role: m.role === 'user' ? 'user' : 'assistant',
       content: m.content,
     })),
@@ -308,7 +310,7 @@ async function callOpenAI(model, systemPrompt, messages, config) {
     temperature: config.temperature ?? 0.5,
     messages: [
       { role: 'system', content: sanitizeText(systemPrompt) },
-      ...sanitizedMessages.map(m => ({
+      ...sanitizedMessages.map((m) => ({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.content,
       })),
@@ -380,7 +382,7 @@ async function callGemini(model, systemPrompt, messages, config) {
 
   // Gemini uses a different structure
   const sanitizedMessages = sanitizeMessages(messages);
-  const contents = sanitizedMessages.map(m => ({
+  const contents = sanitizedMessages.map((m) => ({
     role: m.role === 'user' ? 'user' : 'model',
     parts: [{ text: m.content }],
   }));
@@ -419,7 +421,7 @@ async function callGemini(model, systemPrompt, messages, config) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    }
+    },
   );
 
   if (!res.ok) {
@@ -451,8 +453,7 @@ async function callLocal(model, systemPrompt, messages, config) {
 
   const baseUrl = process.env.LOCAL_AI_URL || 'http://localhost:1234';
   // Normalize: strip trailing slash, ensure /v1/chat/completions
-  const endpoint = baseUrl.replace(/\/+$/, '').replace(/\/v1\/chat\/completions$/, '')
-    + '/v1/chat/completions';
+  const endpoint = baseUrl.replace(/\/+$/, '').replace(/\/v1\/chat\/completions$/, '') + '/v1/chat/completions';
 
   const effectiveModel = model || 'local-model';
 
@@ -463,7 +464,7 @@ async function callLocal(model, systemPrompt, messages, config) {
     max_tokens: config.maxTokens || 1000,
     messages: [
       { role: 'system', content: sanitizeText(systemPrompt) },
-      ...sanitizedMessages.map(m => ({
+      ...sanitizedMessages.map((m) => ({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.content,
       })),
@@ -522,12 +523,12 @@ async function callLocal(model, systemPrompt, messages, config) {
 const PROVIDER_MAP = {
   openrouter: callOpenRouter,
   anthropic: callAnthropic,
-  claude: callAnthropic,  // alias
+  claude: callAnthropic, // alias
   openai: callOpenAI,
   gemini: callGemini,
-  google: callGemini,  // alias
+  google: callGemini, // alias
   local: callLocal,
-  lmstudio: callLocal,  // alias
+  lmstudio: callLocal, // alias
 };
 
 /**
@@ -691,14 +692,7 @@ export function createCallFactory(provider = null) {
  * @param {Object} [options.config] - Config overrides
  * @returns {Promise<AIResponse>}
  */
-export async function generateText({
-  prompt,
-  systemPrompt = '',
-  provider,
-  model,
-  preset = 'direct',
-  config = {},
-}) {
+export async function generateText({ prompt, systemPrompt = '', provider, model, preset = 'direct', config = {} }) {
   return call({
     provider,
     model,
@@ -822,7 +816,7 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
             stream: true,
             messages: [
               { role: 'system', content: sanitizeText(systemPrompt) },
-              ...sanitizedMessages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
+              ...sanitizedMessages.map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
             ],
           }),
         }),
@@ -851,7 +845,10 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
             temperature: config.temperature ?? 0.5,
             stream: true,
             system: sanitizeText(systemPrompt),
-            messages: sanitizedMessages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
+            messages: sanitizedMessages.map((m) => ({
+              role: m.role === 'user' ? 'user' : 'assistant',
+              content: m.content,
+            })),
           }),
         }),
         format: 'anthropic',
@@ -878,7 +875,7 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
             stream: true,
             messages: [
               { role: 'system', content: sanitizeText(systemPrompt) },
-              ...sanitizedMessages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
+              ...sanitizedMessages.map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
             ],
           }),
         }),
@@ -893,12 +890,15 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
       const apiKey = getApiKey('gemini');
       if (!apiKey) throw new Error('Gemini API key missing. Set GEMINI_API_KEY.');
       const effectiveModel = model || getDefaultModel('gemini');
-      const contents = sanitizedMessages.map(m => ({
+      const contents = sanitizedMessages.map((m) => ({
         role: m.role === 'user' ? 'user' : 'model',
         parts: [{ text: m.content }],
       }));
       if (systemPrompt) {
-        contents.unshift({ role: 'user', parts: [{ text: `[System Instructions]\n${sanitizeText(systemPrompt)}\n\n[End System Instructions]` }] });
+        contents.unshift({
+          role: 'user',
+          parts: [{ text: `[System Instructions]\n${sanitizeText(systemPrompt)}\n\n[End System Instructions]` }],
+        });
         contents.splice(1, 0, { role: 'model', parts: [{ text: 'I understand and will follow these instructions.' }] });
       }
       return {
@@ -915,7 +915,7 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
                 topP: config.topP ?? 0.9,
               },
             }),
-          }
+          },
         ),
         format: 'gemini',
         model: effectiveModel,
@@ -926,7 +926,8 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
     case 'local':
     case 'lmstudio': {
       const localBaseUrl = config.providerConfig?.base_url || process.env.LOCAL_AI_URL || 'http://localhost:1234';
-      const endpoint = localBaseUrl.replace(/\/+$/, '').replace(/\/v1\/chat\/completions$/, '') + '/v1/chat/completions';
+      const endpoint =
+        localBaseUrl.replace(/\/+$/, '').replace(/\/v1\/chat\/completions$/, '') + '/v1/chat/completions';
       const effectiveModel = model || 'local-model';
       const localHeaders = { 'Content-Type': 'application/json' };
       const localApiKey = config.providerConfig?.apiKey;
@@ -942,7 +943,7 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
             stream: true,
             messages: [
               { role: 'system', content: sanitizeText(systemPrompt) },
-              ...sanitizedMessages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
+              ...sanitizedMessages.map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
             ],
           }),
         }),
@@ -967,14 +968,7 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
  * @param {Object} options - Same as call() options
  * @yields {{type: string, content: string, usage?: Object, latencyMs?: number, provider?: string, model?: string}}
  */
-export async function* callStream({
-  provider,
-  model,
-  systemPrompt,
-  messages,
-  preset = 'direct',
-  config = {},
-}) {
+export async function* callStream({ provider, model, systemPrompt, messages, preset = 'direct', config = {} }) {
   const presetConfig = PRESETS[preset] || PRESETS.direct;
   const finalConfig = {
     temperature: config.temperature ?? presetConfig.temperature,
@@ -983,8 +977,12 @@ export async function* callStream({
   };
 
   const startTime = Date.now();
-  const { response, format, model: effectiveModel, provider: effectiveProvider } =
-    await buildStreamRequest(provider, model, systemPrompt, messages, finalConfig);
+  const {
+    response,
+    format,
+    model: effectiveModel,
+    provider: effectiveProvider,
+  } = await buildStreamRequest(provider, model, systemPrompt, messages, finalConfig);
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));

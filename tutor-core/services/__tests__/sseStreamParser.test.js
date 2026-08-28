@@ -55,10 +55,7 @@ describe('parseSSEStream', () => {
 
     it('should fire onDone with complete text', async () => {
       const onDone = vi.fn();
-      const response = mockResponse([
-        'data: {"choices":[{"delta":{"content":"done"}}]}\n\n',
-        'data: [DONE]\n\n',
-      ]);
+      const response = mockResponse(['data: {"choices":[{"delta":{"content":"done"}}]}\n\n', 'data: [DONE]\n\n']);
 
       await parseSSEStream(response, { onDone, format: 'openai' });
       expect(onDone).toHaveBeenCalledWith('done');
@@ -102,10 +99,7 @@ describe('parseSSEStream', () => {
 
     it('should handle chunks split across boundaries', async () => {
       // Simulate a chunk that arrives split mid-line
-      const response = mockResponse([
-        'data: {"choices":[{"del',
-        'ta":{"content":"split"}}]}\n\ndata: [DONE]\n\n',
-      ]);
+      const response = mockResponse(['data: {"choices":[{"del', 'ta":{"content":"split"}}]}\n\ndata: [DONE]\n\n']);
 
       const result = await parseSSEStream(response, { format: 'openai' });
       expect(result.text).toBe('split');
@@ -166,10 +160,7 @@ describe('parseSSEStream', () => {
     });
 
     it('should default to openai format', async () => {
-      const response = mockResponse([
-        'data: {"choices":[{"delta":{"content":"default"}}]}\n\n',
-        'data: [DONE]\n\n',
-      ]);
+      const response = mockResponse(['data: {"choices":[{"delta":{"content":"default"}}]}\n\n', 'data: [DONE]\n\n']);
 
       const result = await parseSSEStream(response);
       expect(result.text).toBe('default');

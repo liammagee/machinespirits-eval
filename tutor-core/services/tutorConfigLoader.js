@@ -7,11 +7,7 @@
  * Uses shared configLoaderBase.js for common loading patterns.
  */
 
-import {
-  loadProviders,
-  createConfigLoader,
-  createPromptLoader,
-} from './configLoaderBase.js';
+import { loadProviders, createConfigLoader, createPromptLoader } from './configLoaderBase.js';
 import { createBoundResolver } from './modelResolver.js';
 
 // ============================================================================
@@ -106,7 +102,7 @@ export const getPromptMetadata = promptLoader.getPromptMetadata;
 // ============================================================================
 
 // Callbacks for prompt reload notifications
-let promptReloadCallbacks = [];
+const promptReloadCallbacks = [];
 
 /**
  * Get the active profile configuration
@@ -303,11 +299,13 @@ export function getInterventionThresholds(profileName = null) {
  */
 export function getEvaluationConfig() {
   const config = loadConfig();
-  return config.evaluation || {
-    log_dialogues: false,
-    metrics: [],
-    ab_testing: { enabled: false },
-  };
+  return (
+    config.evaluation || {
+      log_dialogues: false,
+      metrics: [],
+      ab_testing: { enabled: false },
+    }
+  );
 }
 
 /**
@@ -316,13 +314,15 @@ export function getEvaluationConfig() {
  */
 export function getLoggingConfig() {
   const config = loadConfig();
-  return config.logging || {
-    log_api_calls: false,
-    level: 'info',
-    path: 'logs/tutor-api',
-    include_prompts: false,
-    include_responses: false,
-  };
+  return (
+    config.logging || {
+      log_api_calls: false,
+      level: 'info',
+      path: 'logs/tutor-api',
+      include_prompts: false,
+      include_responses: false,
+    }
+  );
 }
 
 /**

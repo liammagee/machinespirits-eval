@@ -513,6 +513,7 @@
         "tests/trapTurnConvention.test.js",
         "tests/turnComparisonAnalyzer.test.js",
         "tests/turnPlanSampler.test.js",
+        "tests/tutorCoreLintPolicy.test.js",
         "tests/tutorCoreSeamGuard.test.js",
         "tests/tutorPrBenchmarkCalibration.test.js",
         "tests/tutorPrBenchmarkRubric.test.js",

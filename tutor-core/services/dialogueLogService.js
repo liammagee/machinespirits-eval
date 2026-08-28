@@ -23,9 +23,10 @@ export function listLogDates() {
     return [];
   }
 
-  return fs.readdirSync(apiLogsDir)
-    .filter(f => f.endsWith('.jsonl'))
-    .map(f => f.replace('api-', '').replace('.jsonl', ''))
+  return fs
+    .readdirSync(apiLogsDir)
+    .filter((f) => f.endsWith('.jsonl'))
+    .map((f) => f.replace('api-', '').replace('.jsonl', ''))
     .sort()
     .reverse();
 }
@@ -44,13 +45,18 @@ export function getApiLogEntries(date) {
   }
 
   const content = fs.readFileSync(logFile, 'utf-8');
-  return content.trim().split('\n').filter(line => line).map(line => {
-    try {
-      return JSON.parse(line);
-    } catch (e) {
-      return null;
-    }
-  }).filter(Boolean);
+  return content
+    .trim()
+    .split('\n')
+    .filter((line) => line)
+    .map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch (e) {
+        return null;
+      }
+    })
+    .filter(Boolean);
 }
 
 /**
@@ -62,7 +68,7 @@ export function getApiLogEntries(date) {
  */
 export function groupIntoDialogues(entries, gapMs = 30000) {
   // Check if entries have dialogueId - use ID-based grouping if available
-  const hasDialogueIds = entries.some(e => e.dialogueId);
+  const hasDialogueIds = entries.some((e) => e.dialogueId);
 
   if (hasDialogueIds) {
     // Group by dialogueId for reliable grouping
@@ -97,9 +103,7 @@ export function groupIntoDialogues(entries, gapMs = 30000) {
     }
 
     // Sort dialogues by start time
-    dialogues.sort((a, b) =>
-      new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-    );
+    dialogues.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
     return dialogues;
   }
@@ -161,7 +165,7 @@ export function parseEgoResponse(response) {
 
     const parsed = JSON.parse(jsonStr);
     if (Array.isArray(parsed)) {
-      return parsed.map(s => ({
+      return parsed.map((s) => ({
         type: s.type,
         priority: s.priority,
         title: s.title,
@@ -340,9 +344,7 @@ export function formatLogEntry(entry) {
  */
 export function formatDialogue(dialogue) {
   // Sort entries by step number for consistent chronological order
-  const formattedEntries = dialogue.entries
-    .map(formatLogEntry)
-    .sort((a, b) => (a.step || 0) - (b.step || 0));
+  const formattedEntries = dialogue.entries.map(formatLogEntry).sort((a, b) => (a.step || 0) - (b.step || 0));
 
   return {
     dialogueId: dialogue.dialogueId, // For tracing
@@ -410,12 +412,7 @@ export function summarizeDialogue(dialogue) {
  * @returns {object} Dialogues and metadata
  */
 export function getDialogues(options = {}) {
-  const {
-    date = new Date().toISOString().slice(0, 10),
-    limit = 10,
-    offset = 0,
-    formatted = true,
-  } = options;
+  const { date = new Date().toISOString().slice(0, 10), limit = 10, offset = 0, formatted = true } = options;
   const { dialogues: dialogueLogsDir, interactions: interactionEvalsDir } = getTutorCoreLogDirectories();
 
   let allDialogues = [];
@@ -423,8 +420,9 @@ export function getDialogues(options = {}) {
   // FIRST: Try to load from dialogue files (richer semantic data)
   if (fs.existsSync(dialogueLogsDir)) {
     try {
-      const dialogueFiles = fs.readdirSync(dialogueLogsDir)
-        .filter(f => f.startsWith('dialogue-') && f.endsWith('.json'));
+      const dialogueFiles = fs
+        .readdirSync(dialogueLogsDir)
+        .filter((f) => f.startsWith('dialogue-') && f.endsWith('.json'));
 
       for (const file of dialogueFiles) {
         const filePath = path.join(dialogueLogsDir, file);
@@ -456,8 +454,9 @@ export function getDialogues(options = {}) {
   // ALSO: Load interaction eval files
   if (fs.existsSync(interactionEvalsDir)) {
     try {
-      const evalFiles = fs.readdirSync(interactionEvalsDir)
-        .filter(f => (f.startsWith('short-') || f.startsWith('long-')) && f.endsWith('.json'));
+      const evalFiles = fs
+        .readdirSync(interactionEvalsDir)
+        .filter((f) => (f.startsWith('short-') || f.startsWith('long-')) && f.endsWith('.json'));
 
       for (const file of evalFiles) {
         const filePath = path.join(interactionEvalsDir, file);
@@ -514,7 +513,7 @@ export function getDialogues(options = {}) {
 
   return {
     date,
-    dialogues: formatted ? slicedDialogues.map(d => d) : slicedDialogues, // Already formatted by formatRawDialogueFile
+    dialogues: formatted ? slicedDialogues.map((d) => d) : slicedDialogues, // Already formatted by formatRawDialogueFile
     total,
     offset,
     limit,
@@ -557,7 +556,7 @@ export function getLogStatistics(options = {}) {
   const dates = listLogDates();
   const { startDate, endDate } = options;
 
-  const filteredDates = dates.filter(d => {
+  const filteredDates = dates.filter((d) => {
     if (startDate && d < startDate) return false;
     if (endDate && d > endDate) return false;
     return true;
@@ -571,7 +570,8 @@ export function getLogStatistics(options = {}) {
     byDate: [],
   };
 
-  for (const date of filteredDates.slice(0, 7)) { // Last 7 days max
+  for (const date of filteredDates.slice(0, 7)) {
+    // Last 7 days max
     const entries = getApiLogEntries(date);
     const dialogues = groupIntoDialogues(entries);
 
@@ -638,7 +638,7 @@ export function getDialogueById(dialogueId) {
 
   // Fallback: Get log entries from API logs
   const entries = getApiLogEntries(date);
-  const matchingEntries = entries.filter(e => e.dialogueId === dialogueId);
+  const matchingEntries = entries.filter((e) => e.dialogueId === dialogueId);
 
   if (matchingEntries.length > 0) {
     return formatDialogue({
@@ -654,7 +654,7 @@ export function getDialogueById(dialogueId) {
   for (const d of dates.slice(0, 5)) {
     if (d === date) continue;
     const altEntries = getApiLogEntries(d);
-    const altMatching = altEntries.filter(e => e.dialogueId === dialogueId);
+    const altMatching = altEntries.filter((e) => e.dialogueId === dialogueId);
     if (altMatching.length > 0) {
       return formatDialogue({
         startTime: altMatching[0].timestamp,
@@ -767,13 +767,13 @@ function formatInteractionEvalFile(rawData, evalId, timestamp) {
     scenarioName: rawData.scenarioName,
     personaId: rawData.personaId,
     startTime,
-    endTime: turns.length > 0 ? (turns[turns.length - 1].timestamp || startTime) : startTime,
+    endTime: turns.length > 0 ? turns[turns.length - 1].timestamp || startTime : startTime,
     entryCount: entries.length,
     entries,
     summary: {
-      egoCount: entries.filter(e => e.agent === 'ego').length,
-      superegoCount: entries.filter(e => e.agent === 'superego').length,
-      userCount: entries.filter(e => e.agent === 'user').length,
+      egoCount: entries.filter((e) => e.agent === 'ego').length,
+      superegoCount: entries.filter((e) => e.agent === 'superego').length,
+      userCount: entries.filter((e) => e.agent === 'user').length,
       totalTurns: turns.length,
       totalLatencyMs: metrics.totalLatencyMs || 0,
       totalInputTokens: (metrics.learnerInputTokens || 0) + (metrics.tutorInputTokens || 0),
@@ -903,8 +903,8 @@ function formatRawDialogueFile(rawData, dialogueId, timestamp) {
     entryCount: entries.length,
     entries,
     summary: {
-      egoCount: entries.filter(e => e.agent === 'ego').length,
-      superegoCount: entries.filter(e => e.agent === 'superego').length,
+      egoCount: entries.filter((e) => e.agent === 'ego').length,
+      superegoCount: entries.filter((e) => e.agent === 'superego').length,
       totalSuggestions: rawData.suggestions?.length || 0,
       approvedCount: rawData.finalReview?.approved ? 1 : 0,
       revisedCount: rawData.rounds > 1 ? rawData.rounds - 1 : 0,

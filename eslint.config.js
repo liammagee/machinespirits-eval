@@ -43,7 +43,10 @@ export default [
   },
   {
     // tutor-core/ is vendored (in-housed from @machinespirits/tutor-core, see
-    // TUTOR-CORE-INHOUSING.md) — keep it under its own upstream lint rules, not the eval repo's.
+    // TUTOR-CORE-INHOUSING.md) and has to stay re-extractable, so its lint and format
+    // policy lives inside the module (tutor-core/eslint.config.js + .prettierrc.json) and
+    // travels with it. Ignored here only so nothing is linted twice under two rule sets —
+    // `npm run lint:all` runs that config over every file in the module.
     // *.workflow.js are Workflow-tool scripts: they use top-level await/return and injected
     // globals (agent/phase/pipeline/args), valid in the Workflow runtime but not parseable as
     // plain modules — exclude them rather than lint them under app rules.

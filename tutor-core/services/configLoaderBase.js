@@ -152,7 +152,7 @@ export function resolveProviderConfig(providers, providerName) {
   }
 
   // Resolve API key from environment (if required)
-  const apiKey = provider.api_key_env ? (process.env[provider.api_key_env] || '') : '';
+  const apiKey = provider.api_key_env ? process.env[provider.api_key_env] || '' : '';
 
   // Providers without api_key_env (local, lmstudio, etc.) only need base_url.
   // Hook-handled external providers (CLI bridges) are always considered

@@ -80,7 +80,9 @@ describe('dialecticalEngine.generateSuperegoCritique — bug 1 (prior-session-me
     });
 
     expect(lastGenerateTextCall).not.toBeNull();
-    expect(lastGenerateTextCall.prompt).toContain('Prior recognition moments (from unconscious memory, most recent last):');
+    expect(lastGenerateTextCall.prompt).toContain(
+      'Prior recognition moments (from unconscious memory, most recent last):',
+    );
     expect(lastGenerateTextCall.prompt).toContain('BUG1-MARKER-RECENT breakthrough on long division');
   });
 
@@ -97,7 +99,7 @@ describe('dialecticalEngine.generateSuperegoCritique — bug 1 (prior-session-me
     });
 
     expect(lastGenerateTextCall.prompt).toContain(
-      'Prior recognition moments (from unconscious memory, most recent last):\n[]'
+      'Prior recognition moments (from unconscious memory, most recent last):\n[]',
     );
   });
 
@@ -110,7 +112,7 @@ describe('dialecticalEngine.generateSuperegoCritique — bug 1 (prior-session-me
     });
 
     expect(lastGenerateTextCall.prompt).toContain(
-      'Prior recognition moments (from unconscious memory, most recent last):\n[]'
+      'Prior recognition moments (from unconscious memory, most recent last):\n[]',
     );
   });
 

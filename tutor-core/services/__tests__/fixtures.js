@@ -102,12 +102,14 @@ export function seedWritingPad(db, learnerId, overrides = {}) {
   };
   const data = { ...defaults, ...overrides, id, learner_id: learnerId };
 
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO writing_pads (id, learner_id, total_recognition_moments, dialectical_depth,
       mutual_transformation_score, pedagogical_attunement, conscious_state, preconscious_state, unconscious_state)
     VALUES (@id, @learner_id, @total_recognition_moments, @dialectical_depth,
       @mutual_transformation_score, @pedagogical_attunement, @conscious_state, @preconscious_state, @unconscious_state)
-  `).run(data);
+  `,
+  ).run(data);
 
   return db.prepare('SELECT * FROM writing_pads WHERE id = ?').get(id);
 }
@@ -139,7 +141,8 @@ export function seedRecognitionMoment(db, padId, overrides = {}) {
   };
   const data = { ...defaults, ...overrides, id, writing_pad_id: padId };
 
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO recognition_moments (id, writing_pad_id, session_id, created_at,
       thesis_position, antithesis_position, struggle_depth, mutual_acknowledgment,
       recognition_type, persistence_layer, consolidated_at, synthesis_strategy,
@@ -148,7 +151,8 @@ export function seedRecognitionMoment(db, padId, overrides = {}) {
       @thesis_position, @antithesis_position, @struggle_depth, @mutual_acknowledgment,
       @recognition_type, @persistence_layer, @consolidated_at, @synthesis_strategy,
       @synthesis_resolution, @transformative)
-  `).run(data);
+  `,
+  ).run(data);
 
   return db.prepare('SELECT * FROM recognition_moments WHERE id = ?').get(id);
 }
@@ -176,12 +180,14 @@ export function seedLearnerEvent(db, learnerId, padId, overrides = {}) {
   };
   const data = { ...defaults, ...overrides, id, learner_id: learnerId, writing_pad_id: padId };
 
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO learner_recognition_events (id, learner_id, writing_pad_id, session_id,
       event_type, resistance_interpretation, trigger_event, evidence, recognition_achieved)
     VALUES (@id, @learner_id, @writing_pad_id, @session_id,
       @event_type, @resistance_interpretation, @trigger_event, @evidence, @recognition_achieved)
-  `).run(data);
+  `,
+  ).run(data);
 
   return db.prepare('SELECT * FROM learner_recognition_events WHERE id = ?').get(id);
 }
