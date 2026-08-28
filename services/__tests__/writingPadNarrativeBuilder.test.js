@@ -12,6 +12,11 @@ import assert from 'node:assert/strict';
 // tutor-core imports below are dynamic and come after this assignment.
 const TMP_DB_PATH = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'writing-pad-narrative-test-')), 'lms.sqlite');
 process.env.AUTH_DB_PATH = TMP_DB_PATH;
+// CI runs in UTC, which used to hide the SQLite CURRENT_TIMESTAMP parsing bug
+// this file exercises through real consolidation. Pin a non-UTC host timezone
+// so a regression is visible everywhere.
+const ORIGINAL_TZ = process.env.TZ;
+process.env.TZ = 'America/Chicago';
 
 const { getOrInitializeWritingPad, createRecognitionMoment, updateUnconscious } =
   await import('../../tutor-core/services/writingPadService.js');
@@ -23,6 +28,8 @@ const { buildWritingPadNarrative, WRITING_PAD_NARRATIVE_BUILDER_VERSION } =
 after(() => {
   closeDb();
   fs.rmSync(path.dirname(TMP_DB_PATH), { recursive: true, force: true });
+  if (ORIGINAL_TZ === undefined) delete process.env.TZ;
+  else process.env.TZ = ORIGINAL_TZ;
 });
 
 test('buildWritingPadNarrative: null learnerId/empty string returns null without touching the DB', () => {
