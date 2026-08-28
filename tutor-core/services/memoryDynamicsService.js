@@ -47,13 +47,11 @@ export function detectPatternsFromConscious(learnerId) {
   const patterns = [];
 
   // Pattern 1: Repeated suggestion types
-  const suggestionTypes = thoughts
-    .filter(t => t.type === 'suggestion')
-    .map(t => t.suggestionType);
+  const suggestionTypes = thoughts.filter((t) => t.type === 'suggestion').map((t) => t.suggestionType);
 
   if (suggestionTypes.length > 0) {
     const typeCounts = {};
-    suggestionTypes.forEach(type => {
+    suggestionTypes.forEach((type) => {
       typeCounts[type] = (typeCounts[type] || 0) + 1;
     });
 
@@ -158,9 +156,7 @@ export function shouldConsolidateToUnconscious(recognitionMoment, options = {}) 
 
   // Check transformative condition
   if (requireTransformative) {
-    const isTransformative =
-      recognitionMoment.mutual_acknowledgment ||
-      (recognitionMoment.struggle_depth || 0) > 0.6;
+    const isTransformative = recognitionMoment.mutual_acknowledgment || (recognitionMoment.struggle_depth || 0) > 0.6;
 
     if (!isTransformative) {
       return false;
@@ -206,7 +202,9 @@ export function autoConsolidateToUnconscious(learnerId, options = {}) {
   }
 
   if (consolidated.length > 0) {
-    console.log(`[MemoryDynamics] Auto-consolidated ${consolidated.length} moment(s) to unconscious for learner ${learnerId}`);
+    console.log(
+      `[MemoryDynamics] Auto-consolidated ${consolidated.length} moment(s) to unconscious for learner ${learnerId}`,
+    );
   }
 
   return {
@@ -255,11 +253,7 @@ export function autoForgetStalePatterns(learnerId) {
  * Queries unconscious layer based on current situation
  */
 export function retrieveUnconsciousContext(learnerId, situationContext = {}) {
-  const {
-    learnerStruggling = false,
-    recentBreakthrough = false,
-    demandType = null,
-  } = situationContext;
+  const { learnerStruggling = false, recentBreakthrough = false, demandType: _demandType = null } = situationContext;
 
   const queryParams = {
     limit: 5,
@@ -280,7 +274,7 @@ export function retrieveUnconsciousContext(learnerId, situationContext = {}) {
   const traces = writingPadService.queryUnconscious(learnerId, queryParams);
 
   // Extract insights from traces
-  const insights = traces.map(trace => ({
+  const insights = traces.map((trace) => ({
     timestamp: trace.timestamp,
     synthesis: trace.synthesis,
     transformations: trace.transformations,
@@ -344,7 +338,10 @@ export function runMemoryCycle(learnerId, context = {}) {
             confidence: 0.55,
           });
         } catch (promoteError) {
-          console.error(`[MemoryDynamics] Failed to persist recalled context for learner ${learnerId}:`, promoteError.message);
+          console.error(
+            `[MemoryDynamics] Failed to persist recalled context for learner ${learnerId}:`,
+            promoteError.message,
+          );
         }
       }
     }

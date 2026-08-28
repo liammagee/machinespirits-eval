@@ -48,11 +48,15 @@ function resolveDialecticalModel(modelOverride, agentRole = 'superego') {
     try {
       const r = configLoader.resolveModel(modelOverride);
       if (r?.model) {
-        console.log(`[Dialectical] Model resolved for ${agentRole}: ${JSON.stringify(modelOverride)} -> ${r.provider}/${r.model}`);
+        console.log(
+          `[Dialectical] Model resolved for ${agentRole}: ${JSON.stringify(modelOverride)} -> ${r.provider}/${r.model}`,
+        );
         return { provider: r.provider, model: r.model };
       }
     } catch (e) {
-      console.warn(`[Dialectical] Model resolution failed for ${agentRole} override ${JSON.stringify(modelOverride)}: ${e.message}`);
+      console.warn(
+        `[Dialectical] Model resolution failed for ${agentRole} override ${JSON.stringify(modelOverride)}: ${e.message}`,
+      );
     }
   } else {
     console.log(`[Dialectical] No model override for ${agentRole}, falling through to config`);
@@ -68,7 +72,9 @@ function resolveDialecticalModel(modelOverride, agentRole = 'superego') {
         return { provider: r.provider, model: r.model };
       }
     }
-  } catch { /* fall through */ }
+  } catch {
+    /* fall through */
+  }
 
   // 3. Profile default model
   try {
@@ -80,7 +86,9 @@ function resolveDialecticalModel(modelOverride, agentRole = 'superego') {
         return { provider: r.provider, model: r.model };
       }
     }
-  } catch { /* fall through */ }
+  } catch {
+    /* fall through */
+  }
 
   // 4. Last resort
   console.warn(`[Dialectical] All model resolution failed for ${agentRole}, using last-resort default`);
@@ -127,9 +135,7 @@ export async function generateSuperegoCritique(options) {
   }
 
   // Build prompt with context from Writing Pad
-  const unconsciousContext = writingPad
-    ? JSON.stringify(writingPad.unconscious.learnerArchetype, null, 2)
-    : '{}';
+  const unconsciousContext = writingPad ? JSON.stringify(writingPad.unconscious.learnerArchetype, null, 2) : '{}';
 
   const recentPatterns = writingPad
     ? JSON.stringify(writingPad.preconscious.recentPatterns.slice(0, 3), null, 2)
@@ -145,16 +151,17 @@ export async function generateSuperegoCritique(options) {
   // reader but has zero callers on this request path. Added directly here,
   // minimal and additive, since this function already owns the one prompt
   // where "Learner archetype"/"Recent patterns" are embedded the same way.
-  const priorSessionMemory = writingPad && Array.isArray(writingPad.unconscious.permanentTraces)
-    ? JSON.stringify(
-        writingPad.unconscious.permanentTraces.slice(-3).map((trace) => ({
-          synthesis: trace.synthesis || null,
-          recognitionType: trace.recognitionType || null,
-        })),
-        null,
-        2
-      )
-    : '[]';
+  const priorSessionMemory =
+    writingPad && Array.isArray(writingPad.unconscious.permanentTraces)
+      ? JSON.stringify(
+          writingPad.unconscious.permanentTraces.slice(-3).map((trace) => ({
+            synthesis: trace.synthesis || null,
+            recognitionType: trace.recognitionType || null,
+          })),
+          null,
+          2,
+        )
+      : '[]';
 
   // Build priority/depriority criteria guidance from behavioral overrides
   let criteriaGuidance = '';
@@ -169,9 +176,7 @@ export async function generateSuperegoCritique(options) {
   }
 
   // Inject superego prompt extension (self-reflections, disposition) before the core prompt
-  const extensionBlock = superegoPromptExtension
-    ? `${superegoPromptExtension}\n\n`
-    : '';
+  const extensionBlock = superegoPromptExtension ? `${superegoPromptExtension}\n\n` : '';
 
   const prompt = `${extensionBlock}You are the SUPEREGO - the internalized voice of pedagogical authority, a composite of past teachers, mentors, and educational ideals. You uphold rigorous pedagogical standards.
 
@@ -219,7 +224,9 @@ If the suggestion is pedagogically sound, set disapproves: false.`;
       maxTokens: adjustMaxTokensForModel(3500, resolved.model),
     });
 
-    console.log(`[Dialectical] Superego critique response (${response.text?.length || 0} chars, provider=${resolved.provider}, model=${resolved.model}): "${(response.text || '').substring(0, 120)}..."`);
+    console.log(
+      `[Dialectical] Superego critique response (${response.text?.length || 0} chars, provider=${resolved.provider}, model=${resolved.model}): "${(response.text || '').substring(0, 120)}..."`,
+    );
 
     if (!response.text || response.text.trim().length === 0) {
       throw new Error(`Empty response from ${resolved.model}`);
@@ -374,9 +381,7 @@ export async function superegoEvaluatesRevision(options) {
     superegoModel = null,
   } = options;
 
-  const learnerArchetype = writingPad
-    ? JSON.stringify(writingPad.unconscious.learnerArchetype, null, 2)
-    : '{}';
+  const learnerArchetype = writingPad ? JSON.stringify(writingPad.unconscious.learnerArchetype, null, 2) : '{}';
 
   const prompt = `You are the SUPEREGO agent evaluating ego's revised suggestion.
 
@@ -469,7 +474,9 @@ export async function negotiateDialectically(options) {
 
     if (recentDemands.length > 0) {
       const dominantDemand = recentDemands[0];
-      console.log(`[Dialectical] Recent learner demand: ${dominantDemand.demandCategory} (strength: ${dominantDemand.demandStrength})`);
+      console.log(
+        `[Dialectical] Recent learner demand: ${dominantDemand.demandCategory} (strength: ${dominantDemand.demandStrength})`,
+      );
 
       // Adjust learnerContext to include demand information
       effectiveLearnerContext = `${learnerContext}\nRecent learner demand: ${dominantDemand.demandCategory} (${(dominantDemand.demandStrength ?? 0).toFixed(2)} strength)`;
@@ -477,9 +484,10 @@ export async function negotiateDialectically(options) {
   }
 
   // Apply behavioral override for max_rejections (cap negotiation rounds)
-  const effectiveMaxRounds = behavioralOverrides?.max_rejections != null
-    ? Math.min(maxNegotiationRounds, behavioralOverrides.max_rejections)
-    : maxNegotiationRounds;
+  const effectiveMaxRounds =
+    behavioralOverrides?.max_rejections != null
+      ? Math.min(maxNegotiationRounds, behavioralOverrides.max_rejections)
+      : maxNegotiationRounds;
 
   // Step 1: Generate superego critique
   const superegoChallenge = await generateSuperegoCritique({
@@ -504,7 +512,12 @@ export async function negotiateDialectically(options) {
     };
   }
 
-  console.log('[Dialectical] Conflict detected:', superegoChallenge.principle, 'severity:', (superegoChallenge.severity ?? 0).toFixed(2));
+  console.log(
+    '[Dialectical] Conflict detected:',
+    superegoChallenge.principle,
+    'severity:',
+    (superegoChallenge.severity ?? 0).toFixed(2),
+  );
 
   // Track dialogue between ego and superego
   const dialogueTrace = [
@@ -532,7 +545,9 @@ export async function negotiateDialectically(options) {
 
   while (round < effectiveMaxRounds && !synthesis) {
     round++;
-    console.log(`[Dialectical] Negotiation round ${round}/${effectiveMaxRounds}${behavioralOverrides?.max_rejections != null ? ` (capped from ${maxNegotiationRounds} by behavioral override)` : ''}`);
+    console.log(
+      `[Dialectical] Negotiation round ${round}/${effectiveMaxRounds}${behavioralOverrides?.max_rejections != null ? ` (capped from ${maxNegotiationRounds} by behavioral override)` : ''}`,
+    );
 
     // Ego responds to superego's critique
     const egoResponse = await egoRespondsToSuperego({
@@ -706,7 +721,7 @@ export async function negotiateDialectically(options) {
  * Generate learner insight from recent breakthrough events
  * Phase 3: Connects learner's actual behavior to recognition moments
  */
-function generateLearnerInsight(learnerId, synthesis, dialogueTrace) {
+function generateLearnerInsight(learnerId, synthesis, _dialogueTrace) {
   if (!learnerId) return null;
 
   // Check for recent breakthroughs
@@ -801,7 +816,8 @@ function determineSynthesisStrategy(synthesis, mutualAcknowledgment) {
 
   // Check transformations to see who dominated
   const egoLearned = synthesis.transformations?.ego && !synthesis.transformations.ego.includes('Compromised');
-  const superegoLearned = synthesis.transformations?.superego && !synthesis.transformations.superego.includes('Accepted partial');
+  const superegoLearned =
+    synthesis.transformations?.superego && !synthesis.transformations.superego.includes('Accepted partial');
 
   if (egoLearned && !superegoLearned) {
     return 'learner_dominates'; // Ego prevailed

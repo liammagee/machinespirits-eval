@@ -51,21 +51,12 @@ export {
   _fetchProvider,
   isContextOverflowError,
   truncateForContextOverflow,
-  extractStructuredSummary
+  extractStructuredSummary,
 } from './services/tutorDialogueEngine.js';
 
-export {
-  generateChatReply,
-  generateDirectReply,
-  generateText
-} from './services/aiService.js';
+export { generateChatReply, generateDirectReply, generateText } from './services/aiService.js';
 
-export {
-  loadConfig,
-  getActiveProfile,
-  resolveModel,
-  listProfiles
-} from './services/tutorConfigLoader.js';
+export { loadConfig, getActiveProfile, resolveModel, listProfiles } from './services/tutorConfigLoader.js';
 
 export {
   processDialogueResult,
@@ -81,7 +72,7 @@ export {
   getMemoryLayerProgression,
   computeRecognitionFlow,
   getDialecticalContinuity,
-  getMilestoneDefinitions
+  getMilestoneDefinitions,
 } from './services/recognitionGamificationService.js';
 
 export { parseSSEStream } from './services/sseStreamParser.js';

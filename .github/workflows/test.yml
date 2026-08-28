@@ -167,8 +167,12 @@ jobs:
         run: npm run refs:check
 
       - run: npm run lint
+      # tutor-core/ keeps its own lint and format policy so the module stays
+      # re-extractable; the root config ignores it, so it needs its own step.
+      - run: npm run lint:tutor-core
       - run: npm run lint:cycles
       - run: npm run format:check
+      - run: npm run format:check:tutor-core
 
   test:
     needs: [classify, test-contract]

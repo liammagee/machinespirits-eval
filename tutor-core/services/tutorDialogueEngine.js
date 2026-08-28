@@ -33,7 +33,6 @@ export { isQuietOrTranscript, setQuietMode } from './dialogueLoggingState.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, '..');
 const initialLogDirectories = getTutorCoreLogDirectories();
 
 // Derived log dirs — recomputed when the shared tutor-core log root changes.
@@ -112,7 +111,7 @@ function getAgentTarget(fromAgent, hasSuperego) {
  */
 function trimMetricsForTrace(metrics) {
   if (!metrics) return null;
-  const { text, ...trimmed } = metrics;
+  const { text: _text, ...trimmed } = metrics;
   return trimmed;
 }
 
@@ -129,7 +128,7 @@ function extractStructuredSummary(learnerContext) {
   if (!learnerContext || typeof learnerContext !== 'string') return null;
 
   const summaryMatch = learnerContext.match(
-    /(⚠️[^\n]*\n)?<structured_context_summary>[\s\S]*?<\/structured_context_summary>\n?[^\n]*/
+    /(⚠️[^\n]*\n)?<structured_context_summary>[\s\S]*?<\/structured_context_summary>\n?[^\n]*/,
   );
   if (!summaryMatch) return null;
 
@@ -239,8 +238,7 @@ export function getCurrentProfileName() {
  * Check if debug logging is enabled
  */
 function isDebugMode() {
-  return process.env.TUTOR_DEBUG === 'true' ||
-         process.env.TUTOR_DEBUG_LOGS === 'true';
+  return process.env.TUTOR_DEBUG === 'true' || process.env.TUTOR_DEBUG_LOGS === 'true';
 }
 
 /**
@@ -264,7 +262,7 @@ function writeDebugLog(dialogueId, entry) {
 
     logs.push({
       timestamp: new Date().toISOString(),
-      ...entry
+      ...entry,
     });
 
     fs.writeFileSync(logFile, JSON.stringify(logs, null, 2));
@@ -357,13 +355,13 @@ function transcript(role, content, options = {}) {
   const state = _getState();
   state.transcriptStep++;
   const roleColors = {
-    'LEARNER CONTEXT': '\x1b[32m',  // green
-    'LEARNER ACTION': '\x1b[35m',    // magenta - learner's response/action
-    'LEARNER MESSAGE': '\x1b[35m',   // magenta - learner's chat message
-    'EGO': '\x1b[36m',               // cyan
-    'EGO INITIAL': '\x1b[36m',       // cyan
-    'EGO REVISED': '\x1b[36m',       // cyan
-    'SUPEREGO': '\x1b[33m',          // yellow
+    'LEARNER CONTEXT': '\x1b[32m', // green
+    'LEARNER ACTION': '\x1b[35m', // magenta - learner's response/action
+    'LEARNER MESSAGE': '\x1b[35m', // magenta - learner's chat message
+    EGO: '\x1b[36m', // cyan
+    'EGO INITIAL': '\x1b[36m', // cyan
+    'EGO REVISED': '\x1b[36m', // cyan
+    SUPEREGO: '\x1b[33m', // yellow
     'SUPEREGO PRE-ANALYSIS': '\x1b[33m',
     'SUPEREGO REVIEW': '\x1b[33m',
   };
@@ -395,7 +393,6 @@ function transcript(role, content, options = {}) {
 
   // Show context summary if provided
   if (context) {
-    let contextLine = `${dim}`;
     const contextParts = [];
     if (context.currentPage) contextParts.push(`📄 ${context.currentPage}`);
     if (context.sessionTime) contextParts.push(`⏱ ${context.sessionTime}`);
@@ -447,7 +444,7 @@ function transcript(role, content, options = {}) {
     if (content.feedback) {
       console.log(`${bold}Feedback:${reset}`);
       if (Array.isArray(content.feedback)) {
-        content.feedback.forEach(f => {
+        content.feedback.forEach((f) => {
           console.log(`  • ${f.issue || f}`);
           if (f.suggestion) console.log(`    ${dim}→ ${f.suggestion}${reset}`);
         });
@@ -458,7 +455,7 @@ function transcript(role, content, options = {}) {
     }
     if (content.suggestedChanges?.revisions) {
       console.log(`${bold}Suggested Revisions:${reset}`);
-      content.suggestedChanges.revisions.forEach(r => {
+      content.suggestedChanges.revisions.forEach((r) => {
         console.log(`  • ${r}`);
       });
     }
@@ -467,7 +464,7 @@ function transcript(role, content, options = {}) {
     }
     if (content.reinterpretations) {
       console.log(`${bold}Signal Reinterpretations:${reset}`);
-      content.reinterpretations.forEach(r => {
+      content.reinterpretations.forEach((r) => {
         console.log(`  ${bold}Signal:${reset} ${r.signal}`);
         console.log(`    ${dim}Ego likely:${reset} ${r.egoLikely}`);
         console.log(`    ${dim}Alternative:${reset} ${r.alternativeReading}`);
@@ -565,14 +562,14 @@ function formatChatLog(agent, data, options = {}) {
   const latency = data.latencyMs ? `${(data.latencyMs / 1000).toFixed(1)}s` : '?';
   const { step, action, showPrompt = false, from, to } = options;
 
-  let lines = [];
+  const lines = [];
 
   // Step indicator for conversation flow
   const stepLabel = step ? fmt.boldColor('brightWhite', `[${step}] `) : '';
   const actionLabel = action ? fmt.dim(` → ${action}`) : '';
 
   // Flow direction indicator (from → to)
-  const flowLabel = (from && to) ? fmt.dim(` [${from} → ${to}]`) : '';
+  const flowLabel = from && to ? fmt.dim(` [${from} → ${to}]`) : '';
 
   // Agent header with distinct colors
   const lineChar = agent === 'ego' ? '━' : '─';
@@ -580,9 +577,13 @@ function formatChatLog(agent, data, options = {}) {
   lines.push(`\n${fmt.color(lineColor, lineChar.repeat(65))}`);
 
   if (agent === 'ego') {
-    lines.push(`${stepLabel}${fmt.boldColor('brightCyan', '🎯 Ego')} ${fmt.color('cyan', '(Tutor)')}${actionLabel}${flowLabel} ${fmt.dim(`[${modelShort}, ${latency}]`)}`);
+    lines.push(
+      `${stepLabel}${fmt.boldColor('brightCyan', '🎯 Ego')} ${fmt.color('cyan', '(Tutor)')}${actionLabel}${flowLabel} ${fmt.dim(`[${modelShort}, ${latency}]`)}`,
+    );
   } else {
-    lines.push(`${stepLabel}${fmt.boldColor('brightMagenta', '⚖️  Superego')} ${fmt.color('magenta', '(Critic)')}${actionLabel}${flowLabel} ${fmt.dim(`[${modelShort}, ${latency}]`)}`);
+    lines.push(
+      `${stepLabel}${fmt.boldColor('brightMagenta', '⚖️  Superego')} ${fmt.color('magenta', '(Critic)')}${actionLabel}${flowLabel} ${fmt.dim(`[${modelShort}, ${latency}]`)}`,
+    );
   }
   lines.push(fmt.color(lineColor, lineChar.repeat(65)));
 
@@ -620,7 +621,9 @@ function formatChatLog(agent, data, options = {}) {
       if (agent === 'ego') {
         // Ego returns array of suggestions
         if (Array.isArray(parsed)) {
-          lines.push(`${fmt.bold('Generated')} ${fmt.boldColor('brightWhite', parsed.length)} ${fmt.bold('suggestion(s):')}`);
+          lines.push(
+            `${fmt.bold('Generated')} ${fmt.boldColor('brightWhite', parsed.length)} ${fmt.bold('suggestion(s):')}`,
+          );
           lines.push('');
           parsed.forEach((s, i) => {
             const priorityBadge = fmt.priority(s.priority || 'medium');
@@ -647,12 +650,22 @@ function formatChatLog(agent, data, options = {}) {
         const verdictText = isApproved ? 'APPROVED' : 'NEEDS REVISION';
         const verdictColor = isApproved ? 'brightGreen' : 'brightYellow';
         const verdictIcon = isApproved ? '✓' : '✗';
-        const confidence = parsed.confidence ? ` ${fmt.dim(`(${Math.round(parsed.confidence * 100)}% confidence)`)}` : '';
+        const confidence = parsed.confidence
+          ? ` ${fmt.dim(`(${Math.round(parsed.confidence * 100)}% confidence)`)}`
+          : '';
 
-        lines.push(`${fmt.bold('Verdict:')} ${fmt.boldColor(verdictColor, verdictIcon + ' ' + verdictText)}${confidence}`);
+        lines.push(
+          `${fmt.bold('Verdict:')} ${fmt.boldColor(verdictColor, verdictIcon + ' ' + verdictText)}${confidence}`,
+        );
 
         if (parsed.interventionType) {
-          const actionColors = { approve: 'green', critique: 'yellow', revise: 'yellow', reframe: 'cyan', escalate: 'red' };
+          const actionColors = {
+            approve: 'green',
+            critique: 'yellow',
+            revise: 'yellow',
+            reframe: 'cyan',
+            escalate: 'red',
+          };
           const actionColor = actionColors[parsed.interventionType] || 'white';
           lines.push(`${fmt.bold('Action:')} ${fmt.color(actionColor, parsed.interventionType)}`);
         }
@@ -679,6 +692,7 @@ function formatChatLog(agent, data, options = {}) {
 /**
  * Reset step counter for a new dialogue
  */
+// eslint-disable-next-line no-unused-vars -- no caller in the vendored tree; kept for re-extraction rather than removed here
 function resetStepCounter() {
   const state = _getState();
   state.stepCounter = 0;
@@ -698,10 +712,10 @@ function nextStep() {
 function getActionLabel(agentRole) {
   const actionMap = {
     'superego-reinterpret': 'pre-analyze',
-    'learner': 'context',
-    'ego': 'generate',
+    learner: 'context',
+    ego: 'generate',
     'ego-retry': 'retry',
-    'superego': 'review',
+    superego: 'review',
     'superego-fallback': 'review (fallback)',
     'ego-revise': 'revise',
   };
@@ -751,7 +765,10 @@ function logApiCall(agentRole, action, data, options = {}) {
   // Allow overrides from options for special cases like incorporate-feedback
   const profile = configLoader.getActiveProfile(state.profileName);
   const hasSuperegoOverride = !!state.superegoModelOverride;
-  const hasSuperego = !state.disableSuperego && (profile.dialogue?.enabled === true || hasSuperegoOverride) && (profile.superego !== null || hasSuperegoOverride);
+  const hasSuperego =
+    !state.disableSuperego &&
+    (profile.dialogue?.enabled === true || hasSuperegoOverride) &&
+    (profile.superego !== null || hasSuperegoOverride);
 
   let flowDirection;
   if (options.from && options.to) {
@@ -759,11 +776,12 @@ function logApiCall(agentRole, action, data, options = {}) {
     flowDirection = { direction: options.direction || 'request', from: options.from, to: options.to };
   } else {
     // Default flow based on agent (using getAgentTarget for type safety)
-    flowDirection = agent === 'ego'
-      ? { direction: 'request', from: 'ego', to: getAgentTarget('ego', hasSuperego) }
-      : agent === 'superego'
-      ? { direction: 'response', from: 'superego', to: 'ego' }
-      : { direction: 'unknown', from: agent, to: 'unknown' };
+    flowDirection =
+      agent === 'ego'
+        ? { direction: 'request', from: 'ego', to: getAgentTarget('ego', hasSuperego) }
+        : agent === 'superego'
+          ? { direction: 'response', from: 'superego', to: 'ego' }
+          : { direction: 'unknown', from: agent, to: 'unknown' };
   }
 
   const logEntry = {
@@ -785,13 +803,15 @@ function logApiCall(agentRole, action, data, options = {}) {
 
   // Console log in chat-style format for readability (skip in transcript mode)
   if (!useTranscriptMode) {
-    console.log(formatChatLog(agent, data, {
-      step,
-      action: actionLabel,
-      showPrompt,
-      from: flowDirection.from,
-      to: flowDirection.to
-    }));
+    console.log(
+      formatChatLog(agent, data, {
+        step,
+        action: actionLabel,
+        showPrompt,
+        from: flowDirection.from,
+        to: flowDirection.to,
+      }),
+    );
   }
 
   // Write to file (keep JSON format for programmatic access)
@@ -816,7 +836,7 @@ function logApiCall(agentRole, action, data, options = {}) {
       outputTokens: data.outputTokens,
       // Always include full prompt and response in debug logs
       prompt: data.prompt,
-      response: data.response
+      response: data.response,
     });
   }
 }
@@ -828,6 +848,7 @@ function logApiCall(agentRole, action, data, options = {}) {
  * @param {string} action - Action type ('context_input', 'final_output')
  * @param {object} data - Flow data (direction, suggestions, context summary, etc.)
  */
+// eslint-disable-next-line no-unused-vars -- no caller in the vendored tree; kept for re-extraction rather than removed here
 function logFlowEntry(agent, action, data = {}) {
   const loggingConfig = configLoader.getLoggingConfig();
   if (!loggingConfig.log_api_calls) return;
@@ -1344,9 +1365,9 @@ function isContextOverflowError(status, errorMessage) {
   return (
     (status === 400 || status === 500) &&
     (msg.includes('tokens to keep from the initial prompt') ||
-     msg.includes('context length') ||
-     msg.includes('context window') ||
-     msg.includes('model has crashed'))
+      msg.includes('context length') ||
+      msg.includes('context window') ||
+      msg.includes('model has crashed'))
   );
 }
 
@@ -1428,7 +1449,7 @@ async function callAI(agentConfig, systemPrompt, userPrompt, agentRole = 'unknow
     if (result.contextOverflow) {
       throw new Error(
         `Context overflow for ${agentConfig.model} even after level-${MAX_OVERFLOW_RETRIES} truncation. ` +
-        `Error: ${result.errorMessage}`,
+          `Error: ${result.errorMessage}`,
       );
     }
 
@@ -1453,7 +1474,13 @@ async function callAI(agentConfig, systemPrompt, userPrompt, agentRole = 'unknow
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
 
-      const retryResult = await _callAIOnce(agentConfig, effectiveSystemPrompt, effectiveUserPrompt, agentRole, options);
+      const retryResult = await _callAIOnce(
+        agentConfig,
+        effectiveSystemPrompt,
+        effectiveUserPrompt,
+        agentRole,
+        options,
+      );
       if (retryResult.text) {
         retryResult.emptyContentRetries = attempt + 1;
         return retryResult;
@@ -1477,15 +1504,16 @@ async function callAI(agentConfig, systemPrompt, userPrompt, agentRole = 'unknow
 async function _callAIOnce(agentConfig, systemPrompt, userPrompt, agentRole = 'unknown', options = {}) {
   const { onToken, messageHistory = null, ...logOptions } = options;
   const { provider, providerConfig, model, hyperparameters } = agentConfig;
-  let {
+  // max_tokens is raised below for reasoning models, so it alone stays a `let`.
+  const {
     temperature = 0.5,
-    max_tokens = 1500,
     top_p,
     reasoning_effort = 'low',
     reasoning_max_tokens,
     reasoning_exclude,
     max_completion_tokens,
   } = hyperparameters;
+  let { max_tokens = 1500 } = hyperparameters;
 
   // Thinking/reasoning models (kimi-k2-thinking, deepseek-r1) use internal
   // chain-of-thought that consumes max_tokens. Boost significantly.
@@ -1527,7 +1555,10 @@ async function _callAIOnce(agentConfig, systemPrompt, userPrompt, agentRole = 'u
     // OpenAI, OpenRouter, local, lmstudio: standard {role, content} messages with system role
     messages = messageHistory?.length
       ? [{ role: 'system', content: `${systemPrompt}\n\n${userPrompt}` }, ...messageHistory]
-      : [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
+      : [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ];
     effectiveSystem = systemPrompt; // Not used by _fetchProvider for these providers
   }
 
@@ -1599,7 +1630,8 @@ async function superegoReinterpretSignals(learnerContext, options = {}) {
           isConfigured: resolved.isConfigured ?? superegoConfig.providerConfig?.isConfigured,
         },
       };
-      if (!isQuietOrTranscript()) console.log(`[Superego Reinterpret] Model override: ${JSON.stringify(superegoModel)} -> ${resolved.model}`);
+      if (!isQuietOrTranscript())
+        console.log(`[Superego Reinterpret] Model override: ${JSON.stringify(superegoModel)} -> ${resolved.model}`);
     }
   }
 
@@ -1719,20 +1751,25 @@ Write a DETAILED, comprehensive suggestion message (150-250+ characters). Explai
   };
 
   // Include Superego's reinterpretation if available (Drama Machine Strategy 2)
-  const reinterpretationContext = superegoReinterpretation ? `
+  const reinterpretationContext = superegoReinterpretation
+    ? `
 ## Internal Voice (Consider Carefully)
 
 Your internal critic has reviewed the learner signals and offers this perspective:
 
-${superegoReinterpretation.reinterpretations?.map(r =>
-    `- **${r.signal}**: You might think "${r.egoLikely}" but consider: ${r.alternativeReading}. Implication: ${r.implication}`
-  ).join('\n')}
+${superegoReinterpretation.reinterpretations
+  ?.map(
+    (r) =>
+      `- **${r.signal}**: You might think "${r.egoLikely}" but consider: ${r.alternativeReading}. Implication: ${r.implication}`,
+  )
+  .join('\n')}
 
 **Overall caution**: ${superegoReinterpretation.overallCaution || 'None provided'}
 
 You don't have to accept all of this, but engage with it honestly.
 
-` : '';
+`
+    : '';
 
   const userPrompt = `${reinterpretationContext}
 ${outputSizeInstructions[outputSize] || ''}
@@ -1753,12 +1790,16 @@ ${simulationsContext}
 
 Generate **1 suggestion** (focus on the single best action).
 
-${isNewUser ? 'This is a NEW USER with no history — suggest their first lecture.' : `This is a RETURNING USER. Read the Learner Context above carefully before responding.
+${
+  isNewUser
+    ? 'This is a NEW USER with no history — suggest their first lecture.'
+    : `This is a RETURNING USER. Read the Learner Context above carefully before responding.
 Your suggestion MUST:
 1. Reference SPECIFIC data from the learner context (e.g., retry counts, struggle signals, time on page, completed lectures)
 2. Use an actionTarget that is an EXACT ID from the Available Curriculum above (e.g., "479-lecture-3", NOT made-up IDs)
 3. Follow the decision heuristics in your system prompt — if struggle signals are present, suggest REVIEW, not a new lecture
-4. Explain WHY this specific content addresses THIS learner's situation`}
+4. Explain WHY this specific content addresses THIS learner's situation`
+}
 
 **CRITICAL CONSTRAINTS:**
 - actionTarget MUST be an ID that appears in the curriculum above. NEVER invent IDs like "101-lecture-1" or "learner-001"
@@ -1814,9 +1855,7 @@ ${userPrompt}`;
     // Phase 2: AI-powered dialectical negotiation
     if (dialecticalNegotiation) {
       // Get or initialize writing pad for memory context
-      const writingPad = learnerId
-        ? writingPadService.getOrInitializeWritingPad(learnerId)
-        : null;
+      const writingPad = learnerId ? writingPadService.getOrInitializeWritingPad(learnerId) : null;
 
       try {
         const negotiation = await dialecticalEngine.negotiateDialectically({
@@ -1891,7 +1930,7 @@ ${userPrompt}`;
             learnerNeed,
             synthesis,
             { compliance: superegoCompliance, seeking: recognitionSeeking },
-            learnerId // Phase 1: Persist to Writing Pad if learner ID provided
+            learnerId, // Phase 1: Persist to Writing Pad if learner ID provided
           );
 
           if (!isQuietOrTranscript()) {
@@ -2031,6 +2070,7 @@ async function parseJsonWithFallback(text, pattern, retryFn, context) {
 /**
  * Get a fallback config that uses a stronger model (sonnet instead of haiku)
  */
+// eslint-disable-next-line no-unused-vars -- no caller in the vendored tree; kept for re-extraction rather than removed here
 function getFallbackConfig(originalConfig) {
   // If already using sonnet or opus, no fallback available
   const modelName = originalConfig.modelName || '';
@@ -2055,7 +2095,16 @@ function getFallbackConfig(originalConfig) {
  * Superego reviews and critiques Ego's suggestions
  */
 async function superegoReview(egoSuggestions, learnerContext, options = {}) {
-  const { previousFeedback = null, profileName = null, strategy = null, superegoModel = null, superegoPromptExtension = null, superegoHyperparameters = null, onToken = null, messageHistory = null } = options;
+  const {
+    previousFeedback = null,
+    profileName = null,
+    strategy = null,
+    superegoModel = null,
+    superegoPromptExtension = null,
+    superegoHyperparameters = null,
+    onToken = null,
+    messageHistory = null,
+  } = options;
 
   let superegoConfig = configLoader.getAgentConfig('superego', profileName, { strategy });
   if (!superegoConfig && !superegoModel) {
@@ -2081,7 +2130,10 @@ async function superegoReview(egoSuggestions, learnerContext, options = {}) {
         metrics: null,
       };
     }
-    if (!isQuietOrTranscript()) console.log(`[Superego Review] No superego in profile '${profileName}', bootstrapped from 'recognition' template`);
+    if (!isQuietOrTranscript())
+      console.log(
+        `[Superego Review] No superego in profile '${profileName}', bootstrapped from 'recognition' template`,
+      );
   }
 
   // Apply superego model override if specified (for benchmarking)
@@ -2099,7 +2151,8 @@ async function superegoReview(egoSuggestions, learnerContext, options = {}) {
           isConfigured: resolved.isConfigured ?? superegoConfig.providerConfig?.isConfigured,
         },
       };
-      if (!isQuietOrTranscript()) console.log(`[Superego Review] Model override: ${JSON.stringify(superegoModel)} -> ${resolved.model}`);
+      if (!isQuietOrTranscript())
+        console.log(`[Superego Review] Model override: ${JSON.stringify(superegoModel)} -> ${resolved.model}`);
     }
   }
 
@@ -2110,9 +2163,7 @@ async function superegoReview(egoSuggestions, learnerContext, options = {}) {
     };
   }
 
-  const feedbackContext = previousFeedback
-    ? `\n## Previous Feedback (from last round)\n${previousFeedback}\n`
-    : '';
+  const feedbackContext = previousFeedback ? `\n## Previous Feedback (from last round)\n${previousFeedback}\n` : '';
 
   // The superego checks specificity, evidence, appropriateness, and tone against
   // learner signals — the structured summary contains all the key data points.
@@ -2148,29 +2199,27 @@ Respond with ONLY a JSON object in the format specified.`;
     ? `${superegoPromptExtension}\n\n${superegoConfig.prompt}`
     : superegoConfig.prompt;
 
-  const response = await callAI(superegoConfig, effectiveSuperegoPrompt, userPrompt, 'superego', { onToken, messageHistory });
+  const response = await callAI(superegoConfig, effectiveSuperegoPrompt, userPrompt, 'superego', {
+    onToken,
+    messageHistory,
+  });
 
   // No model-swapping fallback: parse failures auto-approve rather than
   // silently switching to a different model (which compromises test integrity)
   const retryFn = null;
 
   // Parse without fallback
-  const { parsed, rawResponse } = await parseJsonWithFallback(
-    response.text,
-    /\{[\s\S]*\}/,
-    retryFn,
-    'Superego'
-  );
+  const { parsed, rawResponse } = await parseJsonWithFallback(response.text, /\{[\s\S]*\}/, retryFn, 'Superego');
 
   if (!parsed) {
     return {
-      approved: true,  // Don't reject ego for superego's parse failure
+      approved: true, // Don't reject ego for superego's parse failure
       interventionType: 'none',
       feedback: 'Unable to parse superego review, auto-approving',
       rawResponse,
       metrics: response,
       usedFallback: false,
-      parseFailure: true,  // Flag for trace analysis
+      parseFailure: true, // Flag for trace analysis
     };
   }
 
@@ -2186,7 +2235,17 @@ Respond with ONLY a JSON object in the format specified.`;
  * Ego revises suggestions based on Superego feedback
  */
 async function egoRevise(originalSuggestions, superegoFeedback, learnerContext, curriculumContext, options = {}) {
-  const { profileName = null, from = null, to = null, direction = null, egoModel = null, hyperparameters = null, systemPromptExtension = null, onToken = null, messageHistory = null } = options;
+  const {
+    profileName = null,
+    from = null,
+    to = null,
+    direction = null,
+    egoModel = null,
+    hyperparameters = null,
+    systemPromptExtension = null,
+    onToken = null,
+    messageHistory = null,
+  } = options;
 
   let egoConfig = configLoader.getAgentConfig('ego', profileName);
   if (!egoConfig) {
@@ -2226,12 +2285,12 @@ async function egoRevise(originalSuggestions, superegoFeedback, learnerContext, 
 The quality reviewer provided this feedback:
 - Intervention type: ${superegoFeedback.interventionType}
 - Feedback: ${superegoFeedback.feedback}
-${superegoFeedback.suggestedChanges?.revisions
-    ? `- Specific revisions needed:\n${superegoFeedback.suggestedChanges.revisions.map(r => `  - ${r}`).join('\n')}`
-    : ''}
-${superegoFeedback.pedagogicalNote
-    ? `- Pedagogical note: ${superegoFeedback.pedagogicalNote}`
-    : ''}
+${
+  superegoFeedback.suggestedChanges?.revisions
+    ? `- Specific revisions needed:\n${superegoFeedback.suggestedChanges.revisions.map((r) => `  - ${r}`).join('\n')}`
+    : ''
+}
+${superegoFeedback.pedagogicalNote ? `- Pedagogical note: ${superegoFeedback.pedagogicalNote}` : ''}
 
 ## Your Original Suggestions
 
@@ -2263,7 +2322,11 @@ Respond with ONLY a JSON array of revised suggestions.`;
     ? `${systemPromptExtension}\n\n${egoConfig.prompt}`
     : egoConfig.prompt;
 
-  const response = await callAI(egoConfig, effectiveSystemPrompt, userPrompt, 'ego-revise', { ...callOptions, onToken, messageHistory });
+  const response = await callAI(egoConfig, effectiveSystemPrompt, userPrompt, 'ego-revise', {
+    ...callOptions,
+    onToken,
+    messageHistory,
+  });
 
   // Extract JSON from response (handles markdown code blocks)
   const suggestions = extractJsonArray(response.text);
@@ -2419,7 +2482,8 @@ function normalizeInternalHistoryConfig(config = null) {
     window = Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : INTERNAL_HISTORY_DEFAULTS.window;
   }
 
-  const rawMaxChars = config.max_chars_per_message ?? config.maxCharsPerMessage ?? INTERNAL_HISTORY_DEFAULTS.maxCharsPerMessage;
+  const rawMaxChars =
+    config.max_chars_per_message ?? config.maxCharsPerMessage ?? INTERNAL_HISTORY_DEFAULTS.maxCharsPerMessage;
   const parsedMaxChars = Number(rawMaxChars);
 
   return {
@@ -2428,17 +2492,20 @@ function normalizeInternalHistoryConfig(config = null) {
     surface: config.surface || INTERNAL_HISTORY_DEFAULTS.surface,
     scope: config.scope || INTERNAL_HISTORY_DEFAULTS.scope,
     window,
-    maxCharsPerMessage: Number.isFinite(parsedMaxChars) && parsedMaxChars > 0
-      ? Math.floor(parsedMaxChars)
-      : INTERNAL_HISTORY_DEFAULTS.maxCharsPerMessage,
+    maxCharsPerMessage:
+      Number.isFinite(parsedMaxChars) && parsedMaxChars > 0
+        ? Math.floor(parsedMaxChars)
+        : INTERNAL_HISTORY_DEFAULTS.maxCharsPerMessage,
   };
 }
 
 function internalHistoryUsesMessages(config) {
-  return config.enabled === true &&
+  return (
+    config.enabled === true &&
     config.surface === 'messages' &&
     config.scope === 'unified_exchange' &&
-    config.window !== 0;
+    config.window !== 0
+  );
 }
 
 function stringifyInternalHistoryPayload(payload) {
@@ -2488,9 +2555,7 @@ function _buildInternalHistoryMessages(events, targetAgent, config = {}, externa
     return null;
   }
 
-  const eventWindow = normalized.window === 'all'
-    ? events
-    : events.slice(-Math.max(0, normalized.window * 2));
+  const eventWindow = normalized.window === 'all' ? events : events.slice(-Math.max(0, normalized.window * 2));
 
   if (!eventWindow.length) return null;
 
@@ -2506,10 +2571,7 @@ function _buildInternalHistoryMessages(events, targetAgent, config = {}, externa
     });
   }
 
-  const combined = mergeAdjacentSameRoleMessages([
-    ...(externalHistory || []),
-    ...internalMessages,
-  ]);
+  const combined = mergeAdjacentSameRoleMessages([...(externalHistory || []), ...internalMessages]);
 
   return combined.length > 0 ? combined : null;
 }
@@ -2540,7 +2602,7 @@ export async function runDialogue(context, options = {}) {
     superegoPromptExtension = null, // Dynamic disposition adjustments prepended to superego system prompt
     // Recognition engine parameters (Phase 0-1)
     superegoCompliance = 0.7, // How much ego obeys the ghost (0.0-1.0)
-    recognitionSeeking = 0.6,  // How much ego seeks recognition from learner (0.0-1.0)
+    recognitionSeeking = 0.6, // How much ego seeks recognition from learner (0.0-1.0)
     learnerId = null, // Phase 1: Writing Pad persistence
     dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
     threadNegotiationResolution = false, // A5: carry the negotiated resolution into the delivered suggestion across revision rounds (else discarded — see threadNegotiationResolutionIntoSuggestions)
@@ -2555,9 +2617,8 @@ export async function runDialogue(context, options = {}) {
 
   // Helper: create an onToken callback for a specific agent/round that fires
   // through the onStream callback with agent context attached
-  const makeOnToken = (agent, round) => onStream
-    ? (token) => onStream({ type: 'token', agent, round, token })
-    : undefined;
+  const makeOnToken = (agent, round) =>
+    onStream ? (token) => onStream({ type: 'token', agent, round, token }) : undefined;
 
   const dialogueConfig = configLoader.getDialogueConfig(profileName);
   const effectiveMaxRounds = maxRounds ?? dialogueConfig.max_rounds ?? 2;
@@ -2586,7 +2647,10 @@ export async function runDialogue(context, options = {}) {
 
   // Start monitoring session for real-time tracking
   const profile = configLoader.getActiveProfile(profileName);
-  const hasSuperego = !disableSuperego && (profile.dialogue?.enabled === true || !!superegoModel) && (profile.superego !== null || !!superegoModel);
+  const hasSuperego =
+    !disableSuperego &&
+    (profile.dialogue?.enabled === true || !!superegoModel) &&
+    (profile.superego !== null || !!superegoModel);
   let egoConfig = configLoader.getAgentConfig('ego', profileName);
 
   // Apply ego model override if specified (for benchmarking)
@@ -2641,18 +2705,24 @@ export async function runDialogue(context, options = {}) {
 
   if (loggingConfig.log_api_calls && !useTranscriptMode) {
     console.log(`\n${fmt.boldColor('brightBlue', '╔' + '═'.repeat(63) + '╗')}`);
-    console.log(`${fmt.boldColor('brightBlue', '║')} ${fmt.boldColor('brightWhite', '🧠 TUTOR DIALOGUE')} ${fmt.dim(`[${dialogueId.slice(-12)}]`)}${' '.repeat(25)}${fmt.boldColor('brightBlue', '║')}`);
+    console.log(
+      `${fmt.boldColor('brightBlue', '║')} ${fmt.boldColor('brightWhite', '🧠 TUTOR DIALOGUE')} ${fmt.dim(`[${dialogueId.slice(-12)}]`)}${' '.repeat(25)}${fmt.boldColor('brightBlue', '║')}`,
+    );
     console.log(`${fmt.boldColor('brightBlue', '╚' + '═'.repeat(63) + '╝')}`);
 
     const profileText = fmt.boldColor('cyan', profileName || configLoader.getActiveProfile().name);
     const roundsText = fmt.boldColor('yellow', effectiveMaxRounds);
     const preAnalysisText = dialogueConfig.skip_pre_analysis ? fmt.color('gray', 'off') : fmt.color('green', 'on');
-    console.log(`${fmt.bold('Profile:')} ${profileText} ${fmt.dim('|')} ${fmt.bold('Max Rounds:')} ${roundsText} ${fmt.dim('|')} ${fmt.bold('Pre-analysis:')} ${preAnalysisText}`);
+    console.log(
+      `${fmt.bold('Profile:')} ${profileText} ${fmt.dim('|')} ${fmt.bold('Max Rounds:')} ${roundsText} ${fmt.dim('|')} ${fmt.bold('Pre-analysis:')} ${preAnalysisText}`,
+    );
 
     // Step 0: Show learner context as the initiating "message"
     const step0 = nextStep();
     console.log(`\n${fmt.color('brightGreen', '━'.repeat(65))}`);
-    console.log(`${fmt.boldColor('brightWhite', `[${step0}] `)}${fmt.boldColor('brightGreen', '👤 Learner')} ${fmt.color('green', '(Context)')}${fmt.dim(' → input')}`);
+    console.log(
+      `${fmt.boldColor('brightWhite', `[${step0}] `)}${fmt.boldColor('brightGreen', '👤 Learner')} ${fmt.color('green', '(Context)')}${fmt.dim(' → input')}`,
+    );
     console.log(fmt.color('brightGreen', '━'.repeat(65)));
 
     // Check if trace mode is enabled to show full context
@@ -2713,7 +2783,11 @@ export async function runDialogue(context, options = {}) {
 
   if (!skipPreAnalysis) {
     try {
-      const reinterpResult = await superegoReinterpretSignals(learnerContext, { profileName, strategy: superegoStrategy, superegoModel });
+      const reinterpResult = await superegoReinterpretSignals(learnerContext, {
+        profileName,
+        strategy: superegoStrategy,
+        superegoModel,
+      });
       if (reinterpResult?.reinterpretation) {
         superegoReinterpretation = reinterpResult.reinterpretation;
 
@@ -2753,7 +2827,7 @@ export async function runDialogue(context, options = {}) {
         if (loggingConfig.log_api_calls && !useTranscriptMode) {
           console.log(`\n>>> SUPEREGO PRE-ANALYSIS <<<`);
           if (superegoReinterpretation.reinterpretations?.length > 0) {
-            superegoReinterpretation.reinterpretations.forEach(r => {
+            superegoReinterpretation.reinterpretations.forEach((r) => {
               console.log(`  Signal: ${r.signal}`);
               console.log(`    Ego likely: "${r.egoLikely}"`);
               console.log(`    Alternative: ${r.alternativeReading}`);
@@ -2784,36 +2858,31 @@ export async function runDialogue(context, options = {}) {
   const useUnifiedInternalHistory = internalHistoryUsesMessages(internalHistoryConfig);
 
   // Internal chains track ego and superego exchanges within this turn
-  let egoInternalHistory = [];    // Ego's drafts + superego feedback (for ego revision)
-  let superegoInternalHistory = []; // Superego's own prior critiques (for multi-round review)
+  const egoInternalHistory = []; // Ego's drafts + superego feedback (for ego revision)
+  const superegoInternalHistory = []; // Superego's own prior critiques (for multi-round review)
   const unifiedInternalHistory = [];
 
   onStream?.({ type: 'stage', stage: 'ego_generating', round: 0 });
-  const egoInitial = await egoGenerateSuggestions(
-    learnerContext,
-    curriculumContext,
-    simulationsContext,
-    {
-      isNewUser,
-      profileName,
-      superegoReinterpretation,
-      outputSize,
-      egoModel,
-      superegoModel,
-      hyperparameters,
-      systemPromptExtension,
-      superegoPromptExtension,
-      // Pass recognition parameters
-      superegoCompliance,
-      recognitionSeeking,
-      learnerId,
-      dialecticalNegotiation,
-      behavioralOverrides,
-      onToken: makeOnToken('ego', 0),
-      // Pass external history for message chain mode
-      messageHistory: useMessageChains ? messageHistory : null,
-    }
-  );
+  const egoInitial = await egoGenerateSuggestions(learnerContext, curriculumContext, simulationsContext, {
+    isNewUser,
+    profileName,
+    superegoReinterpretation,
+    outputSize,
+    egoModel,
+    superegoModel,
+    hyperparameters,
+    systemPromptExtension,
+    superegoPromptExtension,
+    // Pass recognition parameters
+    superegoCompliance,
+    recognitionSeeking,
+    learnerId,
+    dialecticalNegotiation,
+    behavioralOverrides,
+    onToken: makeOnToken('ego', 0),
+    // Pass external history for message chain mode
+    messageHistory: useMessageChains ? messageHistory : null,
+  });
   onStream?.({ type: 'complete', agent: 'ego', round: 0 });
 
   // Record ego's initial output in its internal chain (for revision rounds)
@@ -2826,9 +2895,7 @@ export async function runDialogue(context, options = {}) {
   currentSuggestions = egoInitial.suggestions;
   // A5: snapshot the negotiated resolution now, before any revision round
   // can discard it. See threadNegotiationResolutionIntoSuggestions() above.
-  const initialNegotiation = threadNegotiationResolution
-    ? captureNegotiationResolution(currentSuggestions)
-    : null;
+  const initialNegotiation = threadNegotiationResolution ? captureNegotiationResolution(currentSuggestions) : null;
   recordInternalHistoryEvent(
     unifiedInternalHistory,
     internalHistoryConfig,
@@ -2879,12 +2946,24 @@ export async function runDialogue(context, options = {}) {
 
   // Retry once for dialogue-enabled profiles before returning 0-round failure
   if (currentSuggestions.length === 0 && hasSuperego) {
-    if (!isQuietOrTranscript()) console.log(`[Dialogue] Ego initial generation empty for dialogue profile, retrying...`);
-    const egoRetry = await egoGenerateSuggestions(
-      learnerContext, curriculumContext, simulationsContext,
-      { isNewUser, profileName, superegoReinterpretation, outputSize, egoModel, superegoModel, hyperparameters,
-        systemPromptExtension, superegoPromptExtension, superegoCompliance, recognitionSeeking, learnerId, dialecticalNegotiation, behavioralOverrides }
-    );
+    if (!isQuietOrTranscript())
+      console.log(`[Dialogue] Ego initial generation empty for dialogue profile, retrying...`);
+    const egoRetry = await egoGenerateSuggestions(learnerContext, curriculumContext, simulationsContext, {
+      isNewUser,
+      profileName,
+      superegoReinterpretation,
+      outputSize,
+      egoModel,
+      superegoModel,
+      hyperparameters,
+      systemPromptExtension,
+      superegoPromptExtension,
+      superegoCompliance,
+      recognitionSeeking,
+      learnerId,
+      dialecticalNegotiation,
+      behavioralOverrides,
+    });
     currentSuggestions = egoRetry.suggestions || [];
     recordInternalHistoryEvent(
       unifiedInternalHistory,
@@ -2951,7 +3030,9 @@ export async function runDialogue(context, options = {}) {
     // Log round indicator with rich formatting
     if (loggingConfig.log_api_calls && !useTranscriptMode) {
       const roundLabel = `ROUND ${round}/${effectiveMaxRounds}`;
-      console.log(`\n${fmt.boldColor('brightYellow', '═'.repeat(20))} ${fmt.bold(fmt.color('brightYellow', roundLabel))} ${fmt.boldColor('brightYellow', '═'.repeat(20))}`);
+      console.log(
+        `\n${fmt.boldColor('brightYellow', '═'.repeat(20))} ${fmt.bold(fmt.color('brightYellow', roundLabel))} ${fmt.boldColor('brightYellow', '═'.repeat(20))}`,
+      );
     }
 
     // Superego reviews — skip entirely when superego is disabled (single-agent cells)
@@ -2959,19 +3040,23 @@ export async function runDialogue(context, options = {}) {
     if (hasSuperego) {
       const superegoMessageHistory = useUnifiedInternalHistory
         ? _buildInternalHistoryMessages(unifiedInternalHistory, 'superego', internalHistoryConfig)
-        : (useMessageChains ? (superegoInternalHistory.length > 0 ? superegoInternalHistory : null) : null);
+        : useMessageChains
+          ? superegoInternalHistory.length > 0
+            ? superegoInternalHistory
+            : null
+          : null;
 
       onStream?.({ type: 'stage', stage: 'superego_reviewing', round });
-      superegoResult = await superegoReview(
-        currentSuggestions,
-        learnerContext,
-        {
-          previousFeedback, profileName, strategy: superegoStrategy, superegoModel, superegoPromptExtension,
-          superegoHyperparameters,
-          onToken: makeOnToken('superego', round),
-          messageHistory: superegoMessageHistory,
-        }
-      );
+      superegoResult = await superegoReview(currentSuggestions, learnerContext, {
+        previousFeedback,
+        profileName,
+        strategy: superegoStrategy,
+        superegoModel,
+        superegoPromptExtension,
+        superegoHyperparameters,
+        onToken: makeOnToken('superego', round),
+        messageHistory: superegoMessageHistory,
+      });
       onStream?.({ type: 'complete', agent: 'superego', round });
     } else {
       superegoResult = { approved: true, interventionType: 'none', feedback: 'No superego configured', metrics: null };
@@ -3037,23 +3122,28 @@ export async function runDialogue(context, options = {}) {
     }
 
     // Transcript mode: Show superego review with metrics
-    transcript('SUPEREGO REVIEW', {
-      approved: superegoResult.approved,
-      feedback: superegoResult.feedback,
-      interventionType: superegoResult.interventionType,
-      confidence: superegoResult.confidence,
-      suggestedChanges: superegoResult.suggestedChanges,
-    }, {
-      metrics: superegoResult.metrics,
-      response: superegoResult.rawResponse,
-    });
+    transcript(
+      'SUPEREGO REVIEW',
+      {
+        approved: superegoResult.approved,
+        feedback: superegoResult.feedback,
+        interventionType: superegoResult.interventionType,
+        confidence: superegoResult.confidence,
+        suggestedChanges: superegoResult.suggestedChanges,
+      },
+      {
+        metrics: superegoResult.metrics,
+        response: superegoResult.rawResponse,
+      },
+    );
 
     // Check if superego has suggestions to incorporate (even if approved)
-    const hasSuggestions = superegoResult.suggestedChanges &&
+    const hasSuggestions =
+      superegoResult.suggestedChanges &&
       (superegoResult.suggestedChanges.revisions?.length > 0 ||
-       superegoResult.suggestedChanges.contextAddition ||
-       superegoResult.suggestedChanges.messageRefinement ||
-       superegoResult.suggestedChanges.priorityAdjustment);
+        superegoResult.suggestedChanges.contextAddition ||
+        superegoResult.suggestedChanges.messageRefinement ||
+        superegoResult.suggestedChanges.priorityAdjustment);
 
     // If approved with suggestions, do a final ego revision to incorporate feedback
     if (superegoResult.approved && hasSuggestions) {
@@ -3072,18 +3162,25 @@ export async function runDialogue(context, options = {}) {
         egoRevisionHistory = [
           ...(messageHistory || []),
           ...egoInternalHistory,
-          { role: 'user', content: `Quality review feedback:\n${superegoResult.feedback || superegoResult.rawResponse}` },
+          {
+            role: 'user',
+            content: `Quality review feedback:\n${superegoResult.feedback || superegoResult.rawResponse}`,
+          },
         ];
       }
 
       onStream?.({ type: 'stage', stage: 'ego_revising', round });
-      const egoRevision = await egoRevise(
-        currentSuggestions,
-        superegoResult,
-        learnerContext,
-        curriculumContext,
-        { profileName, from: 'ego', to: 'user', direction: 'response', egoModel, hyperparameters, systemPromptExtension, onToken: makeOnToken('ego', round), messageHistory: egoRevisionHistory }
-      );
+      const egoRevision = await egoRevise(currentSuggestions, superegoResult, learnerContext, curriculumContext, {
+        profileName,
+        from: 'ego',
+        to: 'user',
+        direction: 'response',
+        egoModel,
+        hyperparameters,
+        systemPromptExtension,
+        onToken: makeOnToken('ego', round),
+        messageHistory: egoRevisionHistory,
+      });
       onStream?.({ type: 'complete', agent: 'ego', round });
       currentSuggestions = threadNegotiationResolution
         ? threadNegotiationResolutionIntoSuggestions(egoRevision.suggestions, initialNegotiation)
@@ -3176,20 +3273,24 @@ export async function runDialogue(context, options = {}) {
       rejectionRevisionHistory = [
         ...(messageHistory || []),
         ...egoInternalHistory,
-        { role: 'user', content: `Quality review feedback (rejected):\n${superegoResult.feedback || superegoResult.rawResponse}` },
+        {
+          role: 'user',
+          content: `Quality review feedback (rejected):\n${superegoResult.feedback || superegoResult.rawResponse}`,
+        },
       ];
     }
 
     onStream?.({ type: 'stage', stage: 'ego_revising', round });
     previousFeedback = superegoResult.feedback;
-    const previousSuggestions = currentSuggestions.map(s => ({ ...s }));
-    const egoRevision = await egoRevise(
-      currentSuggestions,
-      superegoResult,
-      learnerContext,
-      curriculumContext,
-      { profileName, egoModel, hyperparameters, systemPromptExtension, onToken: makeOnToken('ego', round), messageHistory: rejectionRevisionHistory }
-    );
+    const previousSuggestions = currentSuggestions.map((s) => ({ ...s }));
+    const egoRevision = await egoRevise(currentSuggestions, superegoResult, learnerContext, curriculumContext, {
+      profileName,
+      egoModel,
+      hyperparameters,
+      systemPromptExtension,
+      onToken: makeOnToken('ego', round),
+      messageHistory: rejectionRevisionHistory,
+    });
     onStream?.({ type: 'complete', agent: 'ego', round });
     currentSuggestions = threadNegotiationResolution
       ? threadNegotiationResolutionIntoSuggestions(egoRevision.suggestions, initialNegotiation)
@@ -3198,7 +3299,10 @@ export async function runDialogue(context, options = {}) {
     // Record the revision exchange in ego's internal chain
     if (useMessageChains) {
       egoInternalHistory.push(
-        { role: 'user', content: `Quality review feedback (rejected):\n${superegoResult.feedback || superegoResult.rawResponse}` },
+        {
+          role: 'user',
+          content: `Quality review feedback (rejected):\n${superegoResult.feedback || superegoResult.rawResponse}`,
+        },
         { role: 'assistant', content: egoRevision.rawResponse || JSON.stringify(egoRevision.suggestions) },
       );
     }
@@ -3214,7 +3318,10 @@ export async function runDialogue(context, options = {}) {
     // further rounds won't help — converge early
     const similarity = suggestionSimilarity(previousSuggestions, currentSuggestions);
     if (similarity >= convergenceThreshold) {
-      if (!isQuietOrTranscript()) console.log(`[Dialogue] Round ${round}: similarity ${(similarity * 100).toFixed(0)}% >= threshold ${(convergenceThreshold * 100).toFixed(0)}%, converging`);
+      if (!isQuietOrTranscript())
+        console.log(
+          `[Dialogue] Round ${round}: similarity ${(similarity * 100).toFixed(0)}% >= threshold ${(convergenceThreshold * 100).toFixed(0)}%, converging`,
+        );
       metrics.totalLatencyMs = Date.now() - startTime;
       monitoringService.endSession(dialogueId);
       const result = {
@@ -3347,21 +3454,16 @@ export async function quickGenerate(context, options = {}) {
     modelId: egoConfig?.model || 'unknown',
   });
 
-  const result = await egoGenerateSuggestions(
-    learnerContext,
-    curriculumContext,
-    simulationsContext,
-    {
-      isNewUser,
-      profileName,
-      hyperparameters,
-      // Recognition parameters (use defaults if not specified)
-      superegoCompliance: options.superegoCompliance,
-      recognitionSeeking: options.recognitionSeeking,
-      learnerId: options.learnerId,
-      dialecticalNegotiation: options.dialecticalNegotiation,
-    }
-  );
+  const result = await egoGenerateSuggestions(learnerContext, curriculumContext, simulationsContext, {
+    isNewUser,
+    profileName,
+    hyperparameters,
+    // Recognition parameters (use defaults if not specified)
+    superegoCompliance: options.superegoCompliance,
+    recognitionSeeking: options.recognitionSeeking,
+    learnerId: options.learnerId,
+    dialecticalNegotiation: options.dialecticalNegotiation,
+  });
 
   // Record monitoring event and end session
   if (result.metrics) {
@@ -3407,9 +3509,9 @@ export function analyzeInterventionNeeds(sessionState, recentEvents = [], profil
   }
 
   // Check for rapid navigation (possible confusion)
-  const pageViews = recentEvents.filter(e => (e.event_type || e.type) === 'page_view');
+  const pageViews = recentEvents.filter((e) => (e.event_type || e.type) === 'page_view');
   if (pageViews.length >= 3) {
-    const times = pageViews.slice(0, 3).map(e => new Date(e.created_at || e.timestamp).getTime());
+    const times = pageViews.slice(0, 3).map((e) => new Date(e.created_at || e.timestamp).getTime());
     const windowMs = thresholds.rapid_nav_window_ms || 30000;
     if (Math.max(...times) - Math.min(...times) < windowMs) {
       analysis.intensity = 'high';
@@ -3419,7 +3521,7 @@ export function analyzeInterventionNeeds(sessionState, recentEvents = [], profil
   }
 
   // Check for repeated retries (frustration)
-  const retries = recentEvents.filter(e => (e.event_type || e.type) === 'activity_retry');
+  const retries = recentEvents.filter((e) => (e.event_type || e.type) === 'activity_retry');
   if (retries.length >= (thresholds.retry_frustration_count || 3)) {
     analysis.intensity = 'high';
     analysis.focus.push('consolidation');
@@ -3427,16 +3529,15 @@ export function analyzeInterventionNeeds(sessionState, recentEvents = [], profil
   }
 
   // Check for idle periods (disengagement)
-  const idleEvents = recentEvents.filter(e => (e.event_type || e.type) === 'idle_start');
+  const idleEvents = recentEvents.filter((e) => (e.event_type || e.type) === 'idle_start');
   if (idleEvents.length >= 2) {
     analysis.focus.push('engagement');
     analysis.context += 'Multiple idle periods - may need more engaging content. ';
   }
 
   // Check for good progress (can challenge more)
-  const completions = recentEvents.filter(e =>
-    (e.event_type || e.type) === 'activity_submit' &&
-    e.context?.metadata?.success
+  const completions = recentEvents.filter(
+    (e) => (e.event_type || e.type) === 'activity_submit' && e.context?.metadata?.success,
   );
   if (completions.length >= 3 && analysis.intensity === 'normal') {
     analysis.intensity = 'low';
@@ -3490,16 +3591,17 @@ export function listDebugLogs(limit = 20) {
   }
 
   try {
-    const files = fs.readdirSync(DEBUG_LOGS_DIR)
-      .filter(f => f.endsWith('.json'))
-      .map(f => {
+    const files = fs
+      .readdirSync(DEBUG_LOGS_DIR)
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => {
         const filePath = path.join(DEBUG_LOGS_DIR, f);
         const stats = fs.statSync(filePath);
         const dialogueId = f.replace('.json', '');
         return {
           dialogueId,
           createdAt: stats.mtime.toISOString(),
-          sizeBytes: stats.size
+          sizeBytes: stats.size,
         };
       })
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -3530,7 +3632,9 @@ export function formatDebugLogs(logs) {
 
   for (const entry of logs) {
     lines.push(`─── ${entry.agent?.toUpperCase()} (${entry.agentRole}) @ Step ${entry.step} ───`);
-    lines.push(`Model: ${entry.model} | Latency: ${entry.latencyMs}ms | Tokens: ${entry.inputTokens}→${entry.outputTokens}`);
+    lines.push(
+      `Model: ${entry.model} | Latency: ${entry.latencyMs}ms | Tokens: ${entry.inputTokens}→${entry.outputTokens}`,
+    );
     lines.push('');
 
     if (entry.prompt) {
@@ -3585,7 +3689,7 @@ const GHOST_VOICE = {
         // Direct answers, explicit solutions
         const giveaway = suggestion.message?.match(/(?:the answer is|here's how to|directly|simply do)/i);
         return giveaway ? 0.8 : 0.0;
-      }
+      },
     },
     {
       principle: 'productive_struggle',
@@ -3594,16 +3698,16 @@ const GHOST_VOICE = {
         // Too much scaffolding, comfort-seeking
         const overscaffold = suggestion.message?.match(/(?:don't worry|it's easy|here's a hint)/i);
         return overscaffold ? 0.7 : 0.0;
-      }
+      },
     },
     {
       principle: 'intellectual_autonomy',
-      voice: 'Learners must develop their own path. Don\'t prescribe solutions.',
+      voice: "Learners must develop their own path. Don't prescribe solutions.",
       disapprovesWhen: (suggestion) => {
         // Prescriptive, directive
         const prescriptive = suggestion.message?.match(/(?:you should|you must|do this)/i);
         return prescriptive ? 0.6 : 0.0;
-      }
+      },
     },
   ],
 
@@ -3637,7 +3741,7 @@ const GHOST_VOICE = {
       voice: triggeredMaxim?.voice || null,
       principle: triggeredMaxim?.principle || null,
     };
-  }
+  },
 };
 
 /**
@@ -3722,13 +3826,7 @@ function inferLearnerNeed(learnerContext, recognitionSeeking) {
  * @returns {object} { suggestion: object, transformative: boolean, synthesis: string }
  */
 function negotiateInternally(options) {
-  const {
-    impulse,
-    ghostJudgment,
-    learnerNeed,
-    compliance,
-    seeking,
-  } = options;
+  const { impulse, ghostJudgment, learnerNeed, compliance, seeking } = options;
 
   // Weighted decision based on parameters
   const ghostWeight = compliance;
@@ -3887,7 +3985,18 @@ export function clearRecognitionMoments() {
 export { transcript, isTranscriptMode, isExpandMode, resetTranscript, parseContextSummary };
 
 // Export callAI for testability (empty-content retry wrapper + underlying single-attempt)
-export { callAI, _callAIOnce, _fetchProvider, isContextOverflowError, truncateForContextOverflow, extractStructuredSummary, normalizeInternalHistoryConfig, _buildInternalHistoryMessages, EMPTY_CONTENT_MAX_RETRIES, EMPTY_CONTENT_RETRY_DELAYS };
+export {
+  callAI,
+  _callAIOnce,
+  _fetchProvider,
+  isContextOverflowError,
+  truncateForContextOverflow,
+  extractStructuredSummary,
+  normalizeInternalHistoryConfig,
+  _buildInternalHistoryMessages,
+  EMPTY_CONTENT_MAX_RETRIES,
+  EMPTY_CONTENT_RETRY_DELAYS,
+};
 
 export default {
   runDialogue,

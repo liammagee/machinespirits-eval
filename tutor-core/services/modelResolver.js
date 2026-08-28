@@ -47,7 +47,7 @@ export function resolveModel(ref, getProviderConfig) {
       modelAlias = ref.slice(dotIndex + 1);
     } else {
       throw new Error(
-        `Invalid model reference: "${ref}". Use format "provider.model" (e.g., "openrouter.haiku", "anthropic.sonnet")`
+        `Invalid model reference: "${ref}". Use format "provider.model" (e.g., "openrouter.haiku", "anthropic.sonnet")`,
       );
     }
   } else if (typeof ref === 'object' && ref !== null) {
@@ -55,9 +55,7 @@ export function resolveModel(ref, getProviderConfig) {
     modelAlias = ref.model;
 
     if (!providerName || !modelAlias) {
-      throw new Error(
-        'Model reference object must have both "provider" and "model" properties'
-      );
+      throw new Error('Model reference object must have both "provider" and "model" properties');
     }
   } else {
     throw new Error('Model reference must be a string or object');

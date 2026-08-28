@@ -9,7 +9,7 @@
  * - Exports MACHINE_SPIRIT_PERSONA for use by other modules
  */
 
-import { getDefaultModel, getDefaultProviderId } from './aiConfigService.js';
+import { getDefaultProviderId } from './aiConfigService.js';
 import * as unifiedProvider from './unifiedAIProviderService.js';
 
 // Unified Machine Spirit persona - single source of truth for AI identity
@@ -54,23 +54,25 @@ FORMATTING RULES:
 // ============================================================================
 
 const buildContext = (message, ranked) => {
-  const context = ranked.map((a, i) => [
-    `Source [${i + 1}]: ${a.title}`,
-    `Updated: ${a.updated} · Length: ${a.length}`,
-    a.content.slice(0, 2000)
-  ].join('\n')).join('\n\n');
+  const context = ranked
+    .map((a, i) =>
+      [`Source [${i + 1}]: ${a.title}`, `Updated: ${a.updated} · Length: ${a.length}`, a.content.slice(0, 2000)].join(
+        '\n',
+      ),
+    )
+    .join('\n\n');
 
   const prompt = [
     MACHINE_SPIRIT_PERSONA,
     '',
-    'Answer the user\'s question using the provided context.',
+    "Answer the user's question using the provided context.",
     'If the answer is not in the context, offer what insight you can while noting the archives are silent on specifics.',
     'Cite your sources using [Source N] format.',
     '',
     `User question: ${message}`,
     '',
     'Context:',
-    context
+    context,
   ].join('\n');
   return prompt;
 };
@@ -114,7 +116,7 @@ export const generateDirectReply = async (message, provider = null, model) => {
   console.log('[AI Service] Direct reply request:', {
     provider: effectiveProvider,
     model: model || 'default',
-    messagePreview: message.slice(0, 100)
+    messagePreview: message.slice(0, 100),
   });
 
   const response = await unifiedProvider.call({
@@ -150,7 +152,7 @@ export const generateSocraticResponse = async (
   history = [],
   systemPrompt = null,
   provider = null,
-  model = null
+  model = null,
 ) => {
   const defaultPrompt = `You are a Socratic tutor engaging in philosophical dialogue about: ${topic}
 
@@ -168,9 +170,9 @@ Remember: The goal is not to lecture but to midwife understanding through dialog
   const fullSystemPrompt = systemPrompt || defaultPrompt;
 
   // Build conversation context
-  const conversationContext = history.map(msg =>
-    `${msg.role === 'student' ? 'Student' : 'Tutor'}: ${msg.content}`
-  ).join('\n\n');
+  const conversationContext = history
+    .map((msg) => `${msg.role === 'student' ? 'Student' : 'Tutor'}: ${msg.content}`)
+    .join('\n\n');
 
   const prompt = `${fullSystemPrompt}
 
@@ -216,7 +218,7 @@ export const generateCodeReview = async ({
   activityDescription,
   testCases = [],
   systemPrompt = null,
-  provider = null
+  provider = null,
 }) => {
   const defaultPrompt = `You are an expert code reviewer and programming tutor. Review the submitted code with an educational focus.
 
@@ -224,9 +226,16 @@ Activity: ${activityTitle || 'Code Exercise'}
 ${activityDescription ? `Description: ${activityDescription}` : ''}
 Language: ${language}
 
-${testCases.length > 0 ? `Expected functionality (based on test cases):
-${testCases.filter(t => !t.hidden).map(t => `- ${t.name}: Input "${t.input}" should produce "${t.expectedOutput}"`).join('\n')}
-` : ''}
+${
+  testCases.length > 0
+    ? `Expected functionality (based on test cases):
+${testCases
+  .filter((t) => !t.hidden)
+  .map((t) => `- ${t.name}: Input "${t.input}" should produce "${t.expectedOutput}"`)
+  .join('\n')}
+`
+    : ''
+}
 
 Review the code and provide feedback in the following JSON format:
 {
@@ -268,7 +277,7 @@ Respond ONLY with valid JSON in the format specified above.`;
   try {
     const response = await unifiedProvider.call({
       provider: selected,
-      model: selected === 'claude' ? (process.env.CODE_REVIEW_MODEL || 'claude-sonnet-4-20250514') : null,
+      model: selected === 'claude' ? process.env.CODE_REVIEW_MODEL || 'claude-sonnet-4-20250514' : null,
       systemPrompt: fullSystemPrompt,
       messages: [{ role: 'user', content: prompt }],
       preset: 'codeReview',
@@ -285,7 +294,7 @@ Respond ONLY with valid JSON in the format specified above.`;
         score: typeof parsed.score === 'number' ? parsed.score : null,
         strengths: parsed.strengths || [],
         improvements: parsed.improvements || [],
-        model: response.model
+        model: response.model,
       };
     }
 
@@ -296,7 +305,7 @@ Respond ONLY with valid JSON in the format specified above.`;
       score: null,
       strengths: [],
       improvements: [],
-      model: response.model
+      model: response.model,
     };
   } catch (error) {
     throw new Error(`Code review failed: ${error.message}`);
@@ -347,12 +356,12 @@ export const generateText = async ({
 export const getProviderStatus = () => unifiedProvider.getProviderStatus();
 
 export const getSuggestedPrompts = () => [
-  "What is the connection between Hegel and AI?",
+  'What is the connection between Hegel and AI?',
   "Explain the concept of 'Technosymbiosis'.",
-  "Summarize the latest lecture in EPOL 479.",
-  "What are the risks of algorithmic governance?",
-  "How does machine learning relate to human pedagogy?",
-  "Define 'stochastic parrots' in this context."
+  'Summarize the latest lecture in EPOL 479.',
+  'What are the risks of algorithmic governance?',
+  'How does machine learning relate to human pedagogy?',
+  "Define 'stochastic parrots' in this context.",
 ];
 
 // Export the unified persona for use by other modules

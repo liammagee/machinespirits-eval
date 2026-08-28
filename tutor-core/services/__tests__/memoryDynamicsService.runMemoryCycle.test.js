@@ -69,22 +69,28 @@ describe('memoryDynamicsService.runMemoryCycle — bug 2 (retrieved context is n
     expect(result.operations.contextRetrieval.relevantTraces).toBe(1);
 
     const pad = writingPadService.getWritingPad(learnerId);
-    const recalled = pad.preconscious.recentPatterns.filter(p => p.type === 'recalled_context');
+    const recalled = pad.preconscious.recentPatterns.filter((p) => p.type === 'recalled_context');
     expect(recalled.length).toBe(1);
-    expect(recalled[0].observation).toBe(
-      'BUG2-MARKER learner and tutor reached a shared framing of long division'
-    );
+    expect(recalled[0].observation).toBe('BUG2-MARKER learner and tutor reached a shared framing of long division');
   });
 
   it('still clears the conscious layer in the same cycle that persists recalled context (ordering safety)', () => {
     const learnerId = 'learner-bug2-c';
     runMemoryCycle(learnerId, {});
     writingPadService.updateConscious(learnerId, {
-      workingThoughts: [{ type: 'suggestion', suggestionType: 'hint', content: 'x', timestamp: new Date().toISOString() }],
+      workingThoughts: [
+        { type: 'suggestion', suggestionType: 'hint', content: 'x', timestamp: new Date().toISOString() },
+      ],
     });
     writingPadService.updateUnconscious(learnerId, {
       permanentTraces: [
-        { id: 't1', timestamp: new Date().toISOString(), synthesis: 'ORDERING-MARKER', recognitionType: 'pedagogical', struggleDepth: 0.5 },
+        {
+          id: 't1',
+          timestamp: new Date().toISOString(),
+          synthesis: 'ORDERING-MARKER',
+          recognitionType: 'pedagogical',
+          struggleDepth: 0.5,
+        },
       ],
     });
 
@@ -92,7 +98,7 @@ describe('memoryDynamicsService.runMemoryCycle — bug 2 (retrieved context is n
 
     const pad = writingPadService.getWritingPad(learnerId);
     // The recalled_context pattern from unconscious must survive...
-    expect(pad.preconscious.recentPatterns.some(p => p.observation === 'ORDERING-MARKER')).toBe(true);
+    expect(pad.preconscious.recentPatterns.some((p) => p.observation === 'ORDERING-MARKER')).toBe(true);
     // ...while conscious.workingThoughts (this turn's ephemeral notes) is wiped.
     expect(pad.conscious.workingThoughts).toEqual([]);
   });
@@ -102,14 +108,20 @@ describe('memoryDynamicsService.runMemoryCycle — bug 2 (retrieved context is n
     runMemoryCycle(learnerId, {});
     writingPadService.updateUnconscious(learnerId, {
       permanentTraces: [
-        { id: 't-no-synth', timestamp: new Date().toISOString(), synthesis: null, recognitionType: 'existential', struggleDepth: 0.9 },
+        {
+          id: 't-no-synth',
+          timestamp: new Date().toISOString(),
+          synthesis: null,
+          recognitionType: 'existential',
+          struggleDepth: 0.9,
+        },
       ],
     });
 
     runMemoryCycle(learnerId, { retrieveContext: true });
 
     const pad = writingPadService.getWritingPad(learnerId);
-    const recalled = pad.preconscious.recentPatterns.find(p => p.type === 'recalled_context');
+    const recalled = pad.preconscious.recentPatterns.find((p) => p.type === 'recalled_context');
     expect(recalled).toBeDefined();
     expect(recalled.observation).toBe('(prior recognition moment with no synthesis text)');
   });
