@@ -1,12 +1,25 @@
 # Adaptive Tutor Active Plan: A20 Conduct-Policy Compiler
 
-Status: canonical active plan, 2026-06-15. This consolidates the adaptive
-tutor planning notes into one current roadmap. It is a planning artifact only:
-it does not authorize new paid runs, and it does not overwrite historical
-selector, replay, recognition, or learned-adaptation results.
+Status: canonical plan **for the A20 conduct-policy arc**, 2026-06-15; that arc
+is closed (see the next section) and this file has been dormant since 1 July.
+It consolidates the conduct-policy planning notes into one roadmap and sets the
+gate for reopening proof-control work. It is a planning artifact only: it does
+not authorize new paid runs, and it does not overwrite historical selector,
+replay, recognition, or learned-adaptation results.
 
-This file is the active plan. The other plan-like notes remain evidence ledgers
-or closed arcs, not competing roadmaps.
+**Scope, so three live documents do not read as one contest** (scoped
+2026-08-28, workplan item `adaptive-tutor-canonical-kernel-contract`):
+
+- This file is canonical for the A20 conduct-policy closeout and its reopening
+  gate. It is not the authority on which implementation is canonical.
+- `ADAPTIVE-TUTOR-KERNEL-CONTRACT.md` names the canonical adaptive tutoring
+  kernel (`services/adaptiveTutor/`), its interfaces, and every surface around
+  it — following `PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md`.
+- `notes/2026-08-03-adaptive-causality-living-log.md` is the live assessment of
+  the evidence boundary, by its own statement not a production-readiness claim.
+
+Live work is tracked on the `workplan/` board, not here. The other plan-like
+notes remain evidence ledgers or closed arcs, not competing roadmaps.
 
 ## Current Promotion Status: Closed / Not Promoted
 
