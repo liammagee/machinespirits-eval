@@ -8,6 +8,7 @@
  *   --manifest <path>  Override the paper manifest path
  *   --paper <path>     Override the canonical paper path
  *   --db <path>        Override the evaluation database path
+ *   --target <name>    canonical (default) or legacy
  */
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -16,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { validatePaperManifest } from '../services/paperManifestValidator.js';
+import { validatePaper2EvidenceManifest } from '../services/paper2EvidenceManifestValidator.js';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(SCRIPT_DIR, '..');
@@ -27,6 +29,22 @@ export function getArgValue(argv, flag) {
     if (token.startsWith(`${flag}=`)) return token.slice(flag.length + 1);
   }
   return null;
+}
+
+export function resolvePaperManifestTarget(argv, root = ROOT) {
+  const target = getArgValue(argv, '--target') || 'canonical';
+  if (!['canonical', 'legacy'].includes(target)) return null;
+  return target === 'legacy'
+    ? {
+        target,
+        manifest: join(root, 'config', 'paper-manifest.json'),
+        paper: join(root, 'docs', 'research', 'paper-full.md'),
+      }
+    : {
+        target,
+        manifest: join(root, 'config', 'paper2-evidence-manifest.v1.json'),
+        paper: join(root, 'docs', 'research', 'paper-full-2.0.md'),
+      };
 }
 
 function readJson(path) {
@@ -73,8 +91,13 @@ export function renderPaperManifestResult(result, logger = console.log) {
 }
 
 export function runPaperManifestCli(argv = process.argv.slice(2), logger = console.log) {
-  const manifestPath = getArgValue(argv, '--manifest') || join(ROOT, 'config', 'paper-manifest.json');
-  const paperPath = getArgValue(argv, '--paper') || join(ROOT, 'docs', 'research', 'paper-full.md');
+  const resolvedTarget = resolvePaperManifestTarget(argv);
+  if (!resolvedTarget) {
+    logger(`Unknown paper-manifest target: ${getArgValue(argv, '--target')} (expected canonical or legacy)`);
+    return 1;
+  }
+  const manifestPath = getArgValue(argv, '--manifest') || resolvedTarget.manifest;
+  const paperPath = getArgValue(argv, '--paper') || resolvedTarget.paper;
   const databasePath = resolveEvaluationDbPath(ROOT, getArgValue(argv, '--db'));
   const fixStatus = argv.includes('--fix-status');
   const manifest = readJson(manifestPath);
@@ -92,16 +115,28 @@ export function runPaperManifestCli(argv = process.argv.slice(2), logger = conso
     }
   }
 
-  const result = validatePaperManifest({
-    manifest,
-    db,
-    paper,
-    fixStatus,
-    deep: argv.includes('--deep'),
-    manifestPath,
-    databasePath,
-    paperPath,
-  });
+  const result =
+    manifest?.schema === 'paper2-evidence-manifest/v1'
+      ? validatePaper2EvidenceManifest({
+          manifest,
+          db,
+          paper,
+          manifestPath,
+          databasePath,
+          paperPath,
+          readAuthority: (locator) => readText(join(ROOT, locator)),
+          substrateExists: (substrate) => existsSync(join(ROOT, substrate)),
+        })
+      : validatePaperManifest({
+          manifest,
+          db,
+          paper,
+          fixStatus,
+          deep: argv.includes('--deep'),
+          manifestPath,
+          databasePath,
+          paperPath,
+        });
   db?.close();
   renderPaperManifestResult(result, logger);
   return result.exitCode;

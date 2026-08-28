@@ -181,6 +181,8 @@ image requires network access the first time.
 - The local runner is sequential so failures and reports are deterministic.
 - DB-backed provenance, message-chain, and paper-manifest validators remain
   separate because GitHub deliberately lacks the private evaluation database.
+  `npm run paper:manifest` is the canonical Paper 2 check; the retained Paper 1
+  count check is explicit as `npm run paper:manifest:legacy`.
 - Paid or model-consuming commands are never part of local CI.
 - During an Actions outage, do not merge merely because no check appeared.
   Run `npm run ci:local -- --profile full`, retain its ignored report path in
