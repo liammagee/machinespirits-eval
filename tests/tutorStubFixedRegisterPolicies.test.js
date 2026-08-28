@@ -4,6 +4,12 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { loadWorld } from '../services/dramaticDerivation/world.js';
+import {
+  buildTutorStubLearnerDagPreflight,
+  buildTutorStubPublicLearnerAnalysisPrompt,
+  buildTutorStubPublicLearnerAnalysisWorld,
+} from '../services/tutorStubPublicLearnerAnalysis.js';
 import {
   TUTOR_STUB_FIXED_REGISTER_POLICIES,
   parseTutorStubRegisterPolicyStack,
@@ -136,4 +142,35 @@ test('fixed-register dispatch, launch validation, and prompt line are wired', ()
 
   const analysis = sourceOf('services/tutorStubPublicLearnerAnalysis.js');
   assert.match(analysis, /'fixed_warm',\n\s*'fixed_sarcastic',\n\]\);/u);
+
+  const help = sourceOf('services/tutorStubCliHelp.js');
+  assert.match(help, /\|negative\|fixed_warm\|fixed_sarcastic>/u);
+  assert.match(help, /negative, fixed_warm, or fixed_sarcastic/u);
+
+  assert.match(context, /fixedRegisterSelectionEnabled && lightAdaptationEnabled/u);
+});
+
+test('fixed policies tell the reviewer not to choose a stance and drop the stance schema', () => {
+  const world = loadWorld(path.join(ROOT, 'config', 'drama-derivation', 'world-016-ai-syllabus-af1.yaml'));
+  const publicWorld = buildTutorStubPublicLearnerAnalysisWorld(world);
+  const preflight = buildTutorStubLearnerDagPreflight({ world, tutorTurn: 1 });
+  for (const policy of Object.keys(TUTOR_STUB_FIXED_REGISTER_POLICIES)) {
+    const prompt = buildTutorStubPublicLearnerAnalysisPrompt({
+      learnerText: 'I already covered that.',
+      topic: world.title,
+      world: publicWorld,
+      tutorTurn: 1,
+      currentTutorText: world.setting,
+      dagPreflight: preflight,
+      publicStagedEvidence: [],
+      registerPolicy: policy,
+      registerEnabled: true,
+      registerPalette: ['warm', 'sarcastic'],
+    });
+    // The reviewer hears the same "stay out" instruction the other controls
+    // hear, and sees neither the stance schema nor the palette.
+    assert.match(prompt, new RegExp(`Policy is ${policy}: do not choose an engagement stance`, 'u'));
+    assert.doesNotMatch(prompt, /register_selection/u);
+    assert.doesNotMatch(prompt, /"warm", "sarcastic"/u);
+  }
 });

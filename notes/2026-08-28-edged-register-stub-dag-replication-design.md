@@ -27,6 +27,15 @@ grounded on the record or it is not. The question asked here:
 A null is a result. The claim, either way, is bounded to simulated
 learners, this stack, one world, and the tested personas.
 
+History inside this harness: exactly one prior registration carried an
+edged arm
+(`config/tutor-stub-resistance-action-register-crossed-registration.v1.json`,
+realization levels plain/warm/edged), and versions v2 through v10 all
+dropped the edged level with an explicit `edgedRealizationAbsent`
+marker. Every realized edge so far was a one-tutor-turn intervention
+that reverted after uptake. No edged register has ever run for a whole
+dialogue here; Stage 2 is the first.
+
 ## 2. What the harness can already express, and what is missing
 
 Already there (surveyed 2026-08-28, file references in the workplan card
@@ -123,7 +132,12 @@ Fidelity reader `claude-code` Sonnet 5. Never nemotron/kimi.
   within the cap (binary, exact test); cap-death rate; grounding turn
   T\* among grounded dialogues (trajectory-analyzer second pass).
 - Report-only: the outcome-only composite, per-persona splits, register
-  trace counts, mean turns, the fidelity reader's attack flags.
+  trace counts, mean turns, the fidelity reader's attack flags. Known
+  instrument note on the composite: its turn-efficiency term divides by
+  a hardcoded 120-turn scale, not `--safety-turns`, so under a 40-turn
+  cap that term stays above 0.667 even at cap death. The composite is
+  report-only here for that reason among others; no registered endpoint
+  uses it.
 
 **Same-treatment control, fixed now.** Each arm's dialogues split into
 two halves by repeat index, registered before any row exists. The two
@@ -219,3 +233,22 @@ this stack — free of the reader confound, and consonant with the parent
 block's direction. If it does not, the parent's weak gap stays what it
 was: unresolved at 48% power, with the reader confound intact. Neither
 result prices a single turn's tone, real learners, or other worlds.
+
+## 6. Build log (defect fixes after Stage 0; no registered rule changed)
+
+A peer survey of the register machinery (2026-08-27) confirmed the
+selection seams and found three build gaps. All three were fixed the
+same day, zero-call, both arms affected identically:
+
+- The learner-analysis reviewer prompt had no policy instruction for
+  the fixed arms, while every other local policy tells the reviewer not
+  to choose a stance. Both fixed policies now carry the same control
+  wording (`services/tutorStubPublicLearnerAnalysis.js`).
+- The CLI usage text did not list the fixed policies. Launch commands
+  are copied from usage output, so an operator could not discover them.
+  Both lists now include them (`services/tutorStubCliHelp.js`).
+- Light adaptation dispatches above the policy ladder and could leave
+  the pin on matched turns — including through an inherited
+  `TUTOR_STUB_LIGHT_ADAPTATION` in the operator's shell. Launch now
+  fails closed: a fixed arm refuses to start with light adaptation on
+  (`services/tutorStubSessionApplicationContext.js`).

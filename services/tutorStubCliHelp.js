@@ -92,7 +92,7 @@ Options:
   --register-palette <all|safe|negative|non-simulated|csv>
                          tutor-register palette for selection (default: all);
                          all includes every register in the registry
-  --register-policy <dynamic|state|field|trajectory|dynamical_system|empirical_dynamical_system|continuous_dynamical_system|continuous_empirical_dynamical_system|bland|random|negative>
+  --register-policy <dynamic|state|field|trajectory|dynamical_system|empirical_dynamical_system|continuous_dynamical_system|continuous_empirical_dynamical_system|bland|random|negative|fixed_warm|fixed_sarcastic>
                          dynamic lets the reviewer choose; field maps observed
                          field/DAG movement to a local probability distribution;
                          trajectory extends field with recent velocity, slope,
@@ -107,7 +107,10 @@ Options:
                          probability distribution;
                          bland fixes a plain non-adaptive baseline register;
                          random samples uniformly from the active palette;
-                         negative samples only ironic, sarcastic, face_threat
+                         negative samples only ironic, sarcastic, face_threat;
+                         fixed_warm and fixed_sarcastic pin that one register
+                         on every tutor turn, and fail closed at launch when
+                         the palette lacks it
                          (default: ${STUB.registerPolicy}); append +state,
                          +field, and/or +edge_timing to add overlays. The
                          edge_timing overlay admits irony/sarcasm only for
@@ -478,7 +481,7 @@ Environment:
                          empirical_dynamical_system,
                          continuous_dynamical_system,
                          continuous_empirical_dynamical_system, bland, random,
-                         or negative
+                         negative, fixed_warm, or fixed_sarcastic
   TUTOR_STUB_REGISTER_EMPIRICAL_PRIOR
                          optional JSON prior path for empirical register mapping
   TUTOR_STUB_REGISTER_TEMPERATURE

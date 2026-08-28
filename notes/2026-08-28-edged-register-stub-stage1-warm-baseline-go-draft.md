@@ -43,7 +43,10 @@ Before launching, the operator re-runs it with `--print-plan` and
 checks the header still says: 48 expected rows, policies
 `fixed_warm` only, world `world_005_marrick`, DAG mode `strict_dag`,
 palette `warm,sarcastic`, and `codex.gpt-5.6-luna` in all three model
-seats. Never nemotron/kimi in any seat.
+seats. Never nemotron/kimi in any seat. The launch shell must not
+export `TUTOR_STUB_LIGHT_ADAPTATION`: a fixed-register arm now refuses
+to start with light adaptation on, so a leftover export crashes the
+launch at boot instead of silently unpinning turns.
 
 ## Spend ceilings
 

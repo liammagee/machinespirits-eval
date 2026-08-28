@@ -273,6 +273,16 @@ export function createTutorStubSessionApplicationContext({
         `Pass a --register-palette that includes it; the policy never substitutes another register.`,
     );
   }
+  // Light adaptation dispatches above the policy ladder in the selection
+  // runtime, so with it on, some turns would leave the pin silently — including
+  // via an inherited TUTOR_STUB_LIGHT_ADAPTATION in the operator's shell.
+  if (fixedRegisterSelectionEnabled && lightAdaptationEnabled) {
+    throw new Error(
+      `--register-policy ${registerPolicy} pins one register for the whole dialogue; ` +
+        `light adaptation would override the pin on matched turns. Pass --no-light-adaptation ` +
+        `(and unset TUTOR_STUB_LIGHT_ADAPTATION) to run a fixed-register arm.`,
+    );
+  }
   const fieldRegisterSelectionEnabled = registerPolicy === 'field';
   const trajectoryRegisterSelectionEnabled = registerPolicy === 'trajectory';
   const dynamicalSystemRegisterSelectionEnabled = registerPolicy === 'dynamical_system';
