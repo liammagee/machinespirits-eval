@@ -1,7 +1,7 @@
 ---
 id: repair-current-ref-status-drift
 title: Refresh ref status and restore green main
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -43,4 +43,8 @@ that no ref itself is moved, created, or deleted as part of the repair.
 - 2026-08-28: Refreshed remote refs and regenerated the registry through the
   existing renderer. The only registry change is canonical paper version
   `3.0.293` to `3.0.295`; no managed ref changed. Local `refs:check` and
-  workplan source validation pass. Awaiting hosted `main` verification.
+  workplan source validation pass.
+- 2026-08-28: Commit `1fd696dd` passed the complete hosted `main` CI,
+  validation, workplan, and commit-link workflows. Merged that repair into PRs
+  #846, #847, and #848; every applicable hosted check passed and all three PRs
+  report a clean merge state.
