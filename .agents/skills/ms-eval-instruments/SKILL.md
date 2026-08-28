@@ -1,14 +1,18 @@
 ---
 name: ms-eval-instruments
-description: Map of every instrument that scores tutor performance — four families, where each channel's outputs live, how to read disagreement between them, and how to rebuild the all-channel A/B dashboard. Read-only; never starts runs or calls paid APIs.
-argument-hint: [family or channel name]
+description: Explain the current evaluation-instrument families, their evidence units, storage lanes, and disagreement. Use for measurement-map questions or the tutor-stub A/B dashboard; inspect live configs, migrations, and the analysis registry rather than claiming a frozen exhaustive catalog.
 ---
 
 Answer questions about how tutor performance is measured, and keep the channels
-straight. If `$ARGUMENTS` names a family or channel, answer for that one and
+straight. If the user's request names a family or channel, answer for that one and
 stop. This skill never starts runs, never calls a model, never writes the DB.
 
-## The four families
+Before answering, inspect current `config/evaluation-rubric*.yaml`, versioned
+rubrics, `services/evaluationStore/migrations.js`, the relevant cell YAML, and
+`scripts/ANALYSIS-SCRIPTS.md`. The families below are a routing map, not an
+exhaustive registry.
+
+## Four routing families
 
 **1. Rubric scoring — an LLM judge reads a dialogue.**
 
@@ -16,8 +20,8 @@ stop. This skill never starts runs, never calls a model, never writes the DB.
 |---|---|---|
 | v2.2 tutor rubric (8 dims, per turn; active default) | `config/evaluation-rubric-*.yaml` | `evaluation_results` columns via `eval-cli evaluate` |
 | Mirrored learner / dialogue / deliberation rubrics | same | same, symmetric columns |
-| v3.0 suite (general factor + content accuracy; opt-in) | `config/rubrics/v3.0/` | separate artifacts; never mixed with v2.2 |
-| Charisma v1.0 (Weber; id-director cells 101-109 only) | `config/evaluation-rubric-charisma.yaml` | `tutor_charisma_*` columns |
+| v3.0 suite (general factor + content accuracy; opt-in) | `config/rubrics/v3.0/` | versioned derived runs/lanes; never mix with v2.2 |
+| Charisma v1.0 (Weber; current id-director profiles) | `config/evaluation-rubric-charisma.yaml` | `tutor_charisma_*` columns; resolve eligible cells live |
 | Poetics v1.0 (Aristotle; whole transcript, not turns) | `config/evaluation-rubric-poetics.yaml` | `npm run poetics:*` exports |
 
 Rule: never rescore historical data under a newer rubric version, and never
@@ -54,7 +58,8 @@ flags: `scripts/ANALYSIS-SCRIPTS.md`. Never guess a script name; read that file.
 ## Reading disagreement
 
 Channels are kept separate so they can disagree, and the disagreement is a
-finding, not an error to reconcile. Worked example (2026-07-29): the per-turn
+finding, not an error to reconcile. Historical worked example (2026-07-29;
+reverify its files before citing): the per-turn
 performance contract wins every channel that grades against the authored plan
 (guard audit 1.67 vs 5.04 broken rules per turn; PR bench 8/13 vs 1/12
 delivery passes) and loses both pairwise channels (15% blind, 25% clue-shown).
@@ -75,6 +80,7 @@ verdicts attached only where run, case, version and model lane all match:
 node scripts/build-tutor-stub-ab-dashboard.js
 ```
 
-Writes `exports/tutor-stub-ab/dashboard.html`. `--all-runs` widens from
+Writes `exports/tutor-stub-ab/dashboard.html`, so it is a zero-model derived
+artifact write, not a read-only action. Ask before rebuilding. `--all-runs` widens from
 LLM-read runs to every run on disk; `--runs a,b` adds named runs; `--out`
-moves the output. Pure file reads — free, safe to rerun any time.
+moves the output.

@@ -1,7 +1,6 @@
 ---
 name: ms-big-picture
 description: State-of-the-nation report and off-the-rails audit — board health, velocity, paper stability, CI, and standing-discipline checks. Read-only and free by default; pass "deep" to also run the deterministic validators.
-argument-hint: [deep] [days=14] [save]
 ---
 
 Produce a big-picture report on the whole programme: where the research stands, where
@@ -14,11 +13,10 @@ Ground rules:
 - **Read-only by default.** Gather facts with the commands below. Never start eval
   runs, never call paid APIs, never run `npm test` from this skill. If a check fails,
   recommend the follow-up command instead of running it.
-- **In-repo sources only** (board, paper, git, gh). Auto-memory may be used as a
-  secondary cross-check for closed arcs, but the board lanes and the paper changelog
-  are authoritative.
+- **Current authorities only** (item sources, canonical paper, exact Git refs,
+  hosted CI/PR state). Do not substitute conversation memory for live evidence.
 - **Fixed report shape** (below), so successive reports are comparable.
-- Default window is 14 days; a number in `$ARGUMENTS` overrides it.
+- Default window is 14 days; a number in the user's request overrides it.
 
 ## 1. Gather facts
 
@@ -32,6 +30,11 @@ node scripts/workplan.js list --status review
 node scripts/workplan.js list --blocked
 node scripts/workplan.js list --status triaged
 
+# Establish the checkout and authoritative comparison ref before interpreting
+# history. Say when origin/main has not been refreshed in this session.
+git status --short --branch
+git rev-list --left-right --count origin/main...HEAD
+
 # Velocity and work mix
 git log --since="$DAYS days ago" --oneline | wc -l
 git log --since="$DAYS days ago" --oneline --grep="Merge pull request" | wc -l
@@ -39,8 +42,8 @@ git log --since="$DAYS days ago" --no-merges --format=%s | grep -oE '^[a-z]+' | 
 
 # Direct-to-main work: first-parent, non-merge commits other than workplan card
 # maintenance.
-# `wp:pr-link` only runs on pull_request events, so these skipped the
-# card-link check — they are unlinked, not necessarily ungoverned.
+# Direct main pushes are checked by the commit-trailer workflow; inspect each
+# commit for a Workplan-item trailer or an applicable exemption.
 git log --first-parent --since="$DAYS days ago" --no-merges --format="%h %s" | grep -vE " (workplan:|chore\(workplan\):)"
 
 # For each one, decide whether a card actually covers it. Cards rarely record
@@ -73,14 +76,11 @@ line number, read ~8 lines each) and classify each one:
 
 Score each pass / warn / fail with one line of evidence.
 
-- **R1 — All work is board-governed.** Ask whether each direct-to-main commit is
-  *covered by a card*, not merely whether it went through a PR — the PR route is the
-  enforcement mechanism, card coverage is the invariant. A commit with no card behind
-  it is a governance gap: fail, name it, and propose the card. A commit whose card
-  exists but never records it is a traceability gap: warn, and say the branch
-  protection / trailer options are the durable fix. Note in the report that
-  direct-to-main pushes still run the full CI suite (`test.yml` triggers on push to
-  main); only `wp:pr-link` and the source-only generated check are skipped.
+- **R1 — All work is board-governed.** Check PRs for `Workplan item:` and direct
+  main commits for the enforced `Workplan-item:` trailer or documented
+  exemption. Then verify that the named card actually covers the files and
+  intent. A missing or false link is a governance gap; do not describe current
+  direct-main pushes as bypassing the card-link check.
 - **R2 — Paper moves only deliberately.** Every claim-changing entry in the window
   states its provenance (pre-registration tier, run IDs) and has a board card.
   Audit-corrections are a *good* sign (the checking machinery firing), not a failure.
@@ -111,13 +111,16 @@ Score each pass / warn / fail with one line of evidence.
   nemotron/kimi default warning is still wired (`services/stackDefaultWarning.js`);
   workplan views remain untracked and current board reads derive from `items/`.
 
-## 3. Deep mode (only when `$ARGUMENTS` contains "deep")
+## 3. Deep mode (only when the user's request contains "deep")
 
 Additionally run the deterministic validators and fold their verdicts into R2/R5:
 
 ```bash
 npm run wp:check          # item validity + in-memory board renderability
-node scripts/eval-cli.js validate-config
+big_picture_config_dir="$(mktemp -d -t machinespirits-config-check.XXXXXX)"
+EVAL_DB_PATH="$big_picture_config_dir/evaluations.db" \
+EVAL_LOGS_DIR="$big_picture_config_dir/logs" \
+  node scripts/eval-cli.js validate-config
 npm run provenance:validate
 node scripts/validate-paper-manifest.js
 ```
@@ -140,5 +143,5 @@ the fix, don't escalate.
 
 Style: plain sentences throughout; no coined shorthand, no arrow chains, never the
 word "honest"/"honestly". If run on a feature branch or a dirty tree, say so at the
-top. If `$ARGUMENTS` contains "save", also write the report to
+top. If the user's request contains "save", also write the report to
 `notes/big-picture/YYYY-MM-DD.md` (create the directory if needed).

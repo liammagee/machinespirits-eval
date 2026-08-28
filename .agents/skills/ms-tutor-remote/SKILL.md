@@ -1,11 +1,16 @@
 ---
 name: ms-tutor-remote
-description: Play a real tutor-stub session from chat — including Codex on the web or mobile, where there is no terminal. You are the learner; Codex relays each turn to the actual tutor-stub CLI running headlessly. Use to sit a tutoring drama from a phone, demo a world, or feel a tutor's behaviour without a TTY.
-argument-hint: "[world id or description, e.g. world_001_nocturne | --lab mixed_drafting | --model claude-code.opus]"
+description: Inspect or close a headless tutor-stub remote session from chat. Do not relay learner turns until tutor-stub-remote supports stdin or a message-file input; interpolating arbitrary user text into a shell command is unsafe. Use ms-play-tutor for a simulated chat-only roleplay meanwhile.
 ---
 
-The user wants to **be the learner** in a live tutor-stub session. You are the
-relay, not the tutor: every tutor line comes from the real CLI, never from you.
+This skill's turn-relay path is temporarily on hold. The current remote driver
+accepts learner text only as a command-line positional argument. The available
+shell surface cannot safely transport arbitrary quotes, backticks, or command
+substitutions from user text without interpolation risk.
+
+Do not start a new live session or send a learner turn from this skill. Safe
+read-only/control uses for an already known session are `worlds`, `status`,
+`transcript`, and an explicitly requested `end`.
 
 The session is the actual `scripts/tutor-stub.js --session-rpc` process behind
 the `/api/tutor-stub` transport. `scripts/tutor-stub-remote.js` boots the server
@@ -13,7 +18,7 @@ on demand and remembers the session id, so each turn is one Bash call.
 
 ## 1. Pick the scene
 
-Parse `$ARGUMENTS` for a world id, `--lab`, `--tutor`, or `--model`. If the user
+Read the user's request for a world id, `--lab`, `--tutor`, or `--model`. If the user
 described a scene instead of naming one ("something with a missing manuscript"),
 list the catalog and choose a plausible match, saying which you picked:
 
@@ -21,21 +26,15 @@ list the catalog and choose a plausible match, saying which you picked:
 node scripts/tutor-stub-remote.js worlds
 ```
 
-Defaults that need no argument: lab `pure_chat`, tutor `dramatic-detective@v1`,
-model `claude-code.sonnet-5`.
+The historical default is lab `pure_chat`, tutor `dramatic-detective@v1`, model
+`claude-code.sonnet-5`, but no credential or route is guaranteed. Inspect the
+catalog and preflight the explicitly selected route before any future live use.
+Never install dependencies automatically; report missing dependencies and ask.
 
-**Do not change the model default without being asked.** It routes through the
-Claude Code CLI bridge, which is the only provider guaranteed to have
-credentials in a cloud container. Catalog defaults point at `codex.*`, which
-will fail there.
-
-If the container is fresh, `npm ci` first — the driver cannot boot a server
-without dependencies installed.
-
-## 2. Open the session
+## 2. Opening a session is currently blocked
 
 ```bash
-node scripts/tutor-stub-remote.js start --world world_001_nocturne
+# Do not run until the safe learner-message transport is implemented.
 ```
 
 First run also boots the server (a few seconds). Print the scene one-liner it
@@ -44,13 +43,15 @@ session opens with no tutor line, invite the user to speak first.
 
 ## 3. The turn loop
 
-For every learner message the user writes:
+Do not interpolate learner text into this historical command:
 
 ```bash
-node scripts/tutor-stub-remote.js say "<the user's exact words>"
+node scripts/tutor-stub-remote.js say "<unsafe-shell-interpolation>"
 ```
 
-Then relay the tutor's reply **verbatim** and wait. Rules that matter:
+This remains blocked until the driver accepts stdin or `--message-file` and the
+skill can pass bytes without shell evaluation. Once implemented, relay the
+tutor's reply verbatim and preserve one user message → one tutor turn.
 
 - **Never write the learner's lines.** The user is the learner. If their message
   is ambiguous ("ok go on"), pass it through — a real learner says that too.

@@ -1,6 +1,6 @@
 ---
 name: ms-techne-doc
-description: Create, edit, view, or package a "techne doc" — a hand-authored editorial HTML note (like the dramatic-recognition arc / "summary arc") built against the shared techne.css + techne.js framework. Use when asked to make, edit, update, rebuild, view, or share the arc note, the summary arc, or a new techne/editorial HTML note. These docs are edited as HTML directly — there is no build step.
+description: Create, edit, inspect, or package a hand-authored techne HTML note using the shared techne.css and techne.js framework. Publishing is a separate external action and requires an explicit publish request plus confirmation after a dry-run.
 ---
 
 Work on **techne docs** — hand-authored editorial HTML notes against a shared framework. Read the full convention first: `notes/poetics/TECHNE-DOCS.md`.
@@ -10,10 +10,10 @@ Work on **techne docs** — hand-authored editorial HTML notes against a shared 
 ## Tasks
 
 **Make a new doc**
-```bash
-cp notes/poetics/techne-template.html notes/poetics/<name>.html
-```
-Then edit `<main>` and add each section's `id` to the rail nav. See TECHNE-DOCS.md for the component vocabulary and opt-in feature hooks.
+
+Read `notes/poetics/techne-template.html`, create the requested file with
+`apply_patch`, then edit `<main>` and add each section's `id` to the rail nav.
+See TECHNE-DOCS.md for the component vocabulary and opt-in feature hooks.
 
 **Edit**
 - Content → edit the doc's `.html` directly (no rebuild; just reload).
@@ -29,11 +29,23 @@ node notes/poetics/package-standalone.js notes/poetics/<name>.html   # → <name
 npm run poetics:package-arc                                          # arc shortcut
 ```
 
-**Publish the arc to machinespirits.org** (via the content-philosophy → Fly pathway)
+**Publish the arc to machinespirits.org** (only on an explicit publish request)
 ```bash
 npm run poetics:publish-arc -- --dry-run     # preview the plan, write nothing
-npm run poetics:publish-arc                  # stage into ../machinespirits-content-philosophy
-npm run poetics:publish-arc -- --publish     # stage + run ./publish (DEPLOYS LIVE, ~3-5 min)
+```
+
+The dry-run is inspection only. Staging writes to a sibling repository and
+`--publish` deploys externally; after showing the dry-run, obtain immediate
+confirmation for the exact next action. Do not infer staging or deployment
+authority from a request to create, edit, view, package, rebuild, or share a
+local file. Do not probe this publisher with unknown flags or `--help`; its
+current parser does not fail closed on unknown options.
+
+After confirmation, use exactly one of:
+
+```bash
+npm run poetics:publish-arc                  # stage only
+npm run poetics:publish-arc -- --publish     # stage and deploy live
 ```
 The note is published like the other `ai-tutor` explainers (e.g. `geist-explained.html`):
 a self-contained, public-ised HTML article dropped into
@@ -53,3 +65,9 @@ copies the referenced cartoon PNGs. **The outward deploy is human-gated — only
 - Selectors in `techne.css`/`techne.js` are class-based (`.s`, `.gl-term`), not tag-based — keep them that way so components survive tag changes.
 - The connected `:3466/arc` view needs the poetics browser to serve `/assets` (route in `scripts/browse-poetics-scripts.js`); restart it after asset changes.
 - A new doc must sit beside `assets/` (in `notes/poetics/`) so the relative `assets/…` links resolve.
+- Visually inspect edited/package output at desktop and mobile widths.
+- A claim-bearing techne doc inherits from one canonical paper. Verify every
+  numeric/empirical statement against `docs/research/paper-full-2.0.md` and use
+  `paper-claim-auditor` after substantive claim or caption edits.
+- Use `$ms-theory-synthesis` for the dedicated theory surface; this skill owns
+  the general HTML framework and packaging behavior.

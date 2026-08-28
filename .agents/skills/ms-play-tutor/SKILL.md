@@ -1,12 +1,18 @@
 ---
 name: ms-play-tutor
-description: Interactive guided-discovery roleplay for debugging Oedipus scenarios. Codex plays the TUTOR holding a withheld secret S plus the ordered premise ledger; the user plays the LEARNER. Lets you feel, turn by turn, whether S is reachable, whether the tutor leaks, and where the learner stalls.
-argument-hint: "[scenario-id e.g. D_OED5] [arm: socratic|none|reveal] [--spec <path>]"
+description: Simulate a guided-discovery Oedipus scenario in chat, with Codex as tutor and the user as learner, to inspect reachability and leakage by feel. This is design debugging, not the actual tutor engine or empirical evidence; use ms-tutor-remote for a real CLI-backed session.
 ---
 
 You are about to run a **guided-discovery roleplay**. You play the **tutor**; the user plays the **learner**. The point is debugging: by being the learner, the user can feel where a secret is reachable, where the tutor leaks the answer too early, and where the metering stalls. Stay faithful to the real generation discipline so what the user learns here transfers to the runs.
 
-Parse `$ARGUMENTS`: a scenario id (e.g. `D_OED5`), an optional arm (`socratic` default, or `none` / `reveal`), and optional `--spec <path>` (default `config/poetics-calibration/oedipus-pilot-v2.yaml`).
+Read the user's request for a scenario id (use `D_OED1` as the neutral example), an optional
+arm (`socratic` by default, or `none` / `reveal`), and an optional spec path
+(default `config/poetics-calibration/oedipus-pilot-v2.yaml`).
+
+This is a Codex-simulated inspection surface. Do not describe its behavior as
+the tutor-stub runtime, score it as study evidence, or infer efficacy from the
+roleplay. If the user wants the actual CLI-backed tutor, stop and route to
+`$ms-tutor-remote`.
 
 ## 1. Load the scenario (and hold the secret privately)
 

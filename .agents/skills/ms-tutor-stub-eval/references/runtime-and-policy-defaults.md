@@ -1,4 +1,4 @@
-# Runtime and Policy Defaults
+# Runtime, Policy, and Model Defaults
 
 Read this reference before composing or changing a tutor-stub launch: modes, worlds, policies, profiles, models, stopping, output paths, remembered settings, or runtime semantics.
 
@@ -69,8 +69,8 @@ Key choices and defaults:
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
 - Automated learner profile: default `diligent`; vary with `--auto-learner-profile answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic|counterexample_hunter|goalpost_shifter|bored|frame_defiant|fast_learner|slow_learner` (or the character-facing alias `--learner-character`), or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v4`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter twelve are sharper stress profiles. `bored` withholds effort without permission-seeking; `frame_defiant` disputes jurisdiction over the inquiry frame rather than evidence, tone, or trust. `counterexample_hunter` tests every rule with a counterexample, `goalpost_shifter` raises a new acceptance condition, `fast_learner` grounds the current reasoning link then asks for the next clue, and `slow_learner` retains evidence but asks to settle one clue at a time.
 - Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
-- Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
-- Models: the interactive named tutor defaults to speaking tutor `codex.gpt-5.6-terra` at `medium` CLI effort, analysis/classifier/DAG `codex.gpt-5.6-sol`, and automated learner `codex.gpt-5.6-terra`. Generic auto-eval, QA-matrix, and ABM-panel launches instead default every otherwise-unpinned Codex role to `codex.gpt-5.6-luna`. Explicit launch overrides and frozen experiment pins always win.
+- Runs: default `3` for baseline comparisons and `5` for core/frontier policy comparisons. ABM supports check, dry-run, and summarization only until its child commands enforce the automated-eval lab and a hard model-call budget.
+- Models: the interactive named tutor defaults to speaking tutor `codex.gpt-5.6-terra` at `medium` CLI effort, analysis/classifier/DAG `codex.gpt-5.6-sol`, and automated learner `codex.gpt-5.6-terra`. Generic auto-eval and QA-matrix launches instead default every otherwise-unpinned Codex role to `codex.gpt-5.6-luna`. Explicit launch overrides and registered experiment pins always win.
 - Learned warrant committee: human interactive chat defaults to the local
   `program2-sft-instruct-v2` Qwen specialist with fallback policy `v2`. It is
   consulted only on detected `warrant_skip` moments; the frontier tutor still
@@ -137,12 +137,12 @@ Key choices and defaults:
   `qa-plan.json` is configuration intent only. Once a same-model profile gate
   passes at `n=3`, a different-model rerun is optional cross-model robustness,
   not a prerequisite for profile discrimination.
-- Parallelism: default `8` for `auto-eval`; ABM panel is currently serial.
+- Parallelism: default `8` for `auto-eval`; ABM inspection expands serial child commands.
 - Turn stopping: default `--turns until-grounded --safety-turns 120`.
 - Token cap: default `--max-tokens 4096` for `auto-eval` and resumes to avoid output-limit failures.
 - Speaker history: tutor and learner calls normally replay the complete public dialogue as speaker-relative `user`/`assistant` messages. If a long automated-learner replay alone would exceed its audited prompt budget, that call keeps a tutor-led recent window and an explicit public omission marker; other audit failures remain fail-closed. Direct API providers retain native roles; the Codex/Claude CLI bridge alone flattens them at the transport boundary.
 - Analysis memory compaction: default on; `--history-turns 4` controls the raw recent window plus compact state/field/dialogue summaries used by auxiliary classifier, learner-record, and clarification prompts. It also sets the recent-turn target for the automated-learner budget fallback. `--no-memory-summary` disables auxiliary summaries but does not disable the budget fallback.
-- Trace/output dir: default `.tutor-stub-auto-eval/<descriptive-run-id>` for auto-eval, `exports/tutor-stub-abm-panel` for ABM.
+- Trace/output dir: default `.tutor-stub-auto-eval/<descriptive-run-id>` for auto-eval, `exports/tutor-stub-abm-panel` for ABM dry-run/report artifacts.
 - Eval ledger: default `.tutor-stub-auto-eval/ledger.jsonl` plus `.tutor-stub-auto-eval/ledger.md`; this is local/ignored. Use `--no-ledger` to skip. For SQL querying, ingest JSON summaries into `data/evaluations.db` with `npm run tutor:stub:ingest`.
 - Debug turn ids: automatic `turn id > <run-id>:tNNN` lines appear only in persistent technical debug mode. `/id` (aliases `/turn-id`, `/debug-id`) always prints the last completed or in-progress id plus the exact JSONL trace path and copies that complete diagnostic block to the system clipboard for pasting into Codex. Clipboard failure is non-fatal and leaves the printed block available for manual selection.
 - Live release notes: `/release-notes` rebuilds a 24-hour tutor-stub change view

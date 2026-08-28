@@ -1,74 +1,59 @@
 ---
 name: ms-paper-comic-explainer
-description: Generate Machine Spirits-style comic panels from a PDF paper, create ChatGPT image prompts, render optional PNG panels, or compose generated SVG/PNG panels into an explainer HTML file with distributed section-level placement.
-argument-hint: "[pdf-or-out-dir] [template-html]"
+description: Create prompts or bitmap panels from the current canonical Paper 2.0, or compose verified existing panels into explainer HTML. Resolve the matching paper version first; use the imagegen skill for raster generation and keep captions within the canonical paper's claim boundary.
 ---
 
-Use `scripts/generate-paper-comics.js` through `npm run paper:comics -- ...`.
+# Paper Comic Explainer
 
-## Interactive Intake
+Use `scripts/generate-paper-comics.js` through `npm run paper:comics -- ...` for
+prompt preparation and deterministic composition. Use `$imagegen` for bitmap
+generation unless the user explicitly requests the direct Image API and accepts
+its cost.
 
-If `$ARGUMENTS` is incomplete, infer defaults from the repo and ask one concise question before running. Capture:
+## Resolve the source
 
-- Mode: generate from PDF, compose existing panels into HTML, make PNGs, make ChatGPT prompts, or a combined run.
-- PDF path: default `docs/research/paper-2.0-v3.0.79.pdf` if present.
-- Image count: default `12` for the paper 2/geist explainer, otherwise `6`.
-- Output directory: default latest `public/eval/generated/paper-comics/*` with a `manifest.json`, or derive one from the PDF slug.
-- HTML template: default `public/eval/geist-explained.html` if present.
-- HTML output: default `<template-base>-with-distributed-comics.html`.
-- Image source: default `auto`; use `png` only when the user asks for PNG insertion.
+1. Read the version from `docs/research/paper-full-2.0.md` frontmatter.
+2. Resolve `docs/research/paper-2.0-v<version>.pdf`. If it is missing, use
+   `$ms-build-paper` or stop; never silently select an older PDF.
+3. Read the relevant canonical sections and establish a unique output directory
+   that records the paper version.
 
-## Run Patterns
+## Choose one mode
 
-Compose existing panels into the explainer with smart section placement:
+- `prompts`: generate panel briefs/prompts only; no image-provider call.
+- `generate`: create raster panels with `$imagegen`, preserving the prompt and
+  paper-section provenance for each image.
+- `compose`: place existing verified SVG/PNG panels into a named HTML template;
+  no provider call.
+- `combined`: generation and composition, with model-backed generation clearly
+  separated from the deterministic compose step.
 
-```bash
-npm run paper:comics -- --out-dir public/eval/generated/paper-comics/paper-2-0-v3-0-79 --html-template public/eval/geist-explained.html --compose-html-only --html-placement distributed --html-image-source auto
-```
-
-Use PNGs in the composed page:
-
-```bash
-npm run paper:comics -- --out-dir public/eval/generated/paper-comics/paper-2-0-v3-0-79 --png-only
-npm run paper:comics -- --out-dir public/eval/generated/paper-comics/paper-2-0-v3-0-79 --html-template public/eval/geist-explained.html --compose-html-only --html-placement distributed --html-image-source png
-```
-
-Generate ChatGPT prompts:
+For prompt or compose flags, verify the current parser before use. Example:
 
 ```bash
-npm run paper:comics -- --out-dir public/eval/generated/paper-comics/paper-2-0-v3-0-79 --chatgpt-prompts-only
+npm run paper:comics -- \
+  --out-dir public/eval/generated/paper-comics/paper-2-0-v<version> \
+  --chatgpt-prompts-only
+
+npm run paper:comics -- \
+  --out-dir public/eval/generated/paper-comics/paper-2-0-v<version> \
+  --html-template public/eval/geist-explained.html \
+  --compose-html-only --html-placement distributed \
+  --html-image-source auto
 ```
 
-Generate a fresh run from a PDF and compose it:
+## Verify
 
-```bash
-npm run paper:comics -- docs/research/paper-2.0-v3.0.79.pdf --count 12 --out-dir public/eval/generated/paper-comics/paper-2-0-v3-0-79 --html-template public/eval/geist-explained.html --html-placement distributed --html-image-source auto
-```
+- Confirm every source image exists, is the intended version, and appears in
+  the manifest.
+- Inspect `composed-html-report.json` for section placement and missing assets.
+- Open the result for visual QA at representative desktop and mobile widths.
+- Check every caption, numeric claim, and interpretive label against the exact
+  canonical paper section. A comic may simplify presentation, not originate a
+  claim.
+- After substantive caption or claim-bearing edits, use the
+  `paper-claim-auditor` reviewer.
 
-## Validation
-
-Before running, validate required paths. If using `--html-image-source png`, either run `--png-only` first or confirm PNG files exist. If running the OpenAI Image API, require `OPENAI_API_KEY`.
-
-After composing, run:
-
-```bash
-node --check scripts/generate-paper-comics.js
-node - public/eval/geist-explained-with-distributed-comics.html <<'NODE'
-const fs = require('fs');
-const path = require('path');
-const htmlPath = process.argv[2];
-const html = fs.readFileSync(htmlPath, 'utf8');
-const root = path.dirname(htmlPath);
-const missing = [...html.matchAll(/<img[^>]+src="([^"]+)"/g)]
-  .map((m) => m[1])
-  .filter((src) => !/^(https?:|data:)/.test(src))
-  .filter((src) => !fs.existsSync(path.resolve(root, src)));
-if (missing.length) {
-  console.error(missing.join('\n'));
-  process.exit(1);
-}
-console.log('All local image references exist.');
-NODE
-```
-
-Check `public/eval/generated/paper-comics/<run>/composed-html-report.json` to confirm each image was matched to a section rather than all inserted in one location.
+Report paper version/PDF, mode, provider-call status, prompt/manifest paths,
+HTML path, visual QA, claim audit, and any missing asset or indeterminate
+caption.

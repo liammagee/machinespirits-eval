@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tutor Stub Eval"
+  short_description: "Run and analyze bounded tutor-stub experiments"
+  default_prompt: "Use $ms-tutor-stub-eval to configure, run, recover, or analyze a bounded tutor-stub experiment."

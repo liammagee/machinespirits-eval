@@ -8,10 +8,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import YAML from 'yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const DEFAULT_CONFIG = path.join(ROOT, 'config', 'agent-skill-sync.json');
+const CODEX_SKILL_FRONTMATTER_KEYS = new Set(['name', 'description', 'license', 'allowed-tools', 'metadata']);
 
 function fail(message) {
   console.error(`skill-sync: ${message}`);
@@ -116,6 +118,84 @@ export function skillPermissionViolations(config) {
   return violations;
 }
 
+export function codexSkillStructuralViolations(config) {
+  const root = config.roots.agents;
+  if (!root) return [{ name: '<root>', file: null, message: 'configured roots must include agents' }];
+
+  const violations = [];
+  const names = new Map();
+  for (const directoryName of listSkillNames(root)) {
+    const file = path.join(root, directoryName, 'SKILL.md');
+    const source = fs.readFileSync(file, 'utf8');
+    const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/u);
+    if (!match) {
+      violations.push({ name: directoryName, file, message: 'missing YAML frontmatter block' });
+      continue;
+    }
+
+    let frontmatter;
+    try {
+      frontmatter = YAML.parse(match[1]);
+    } catch (error) {
+      violations.push({ name: directoryName, file, message: `invalid YAML frontmatter: ${error.message}` });
+      continue;
+    }
+    if (!frontmatter || typeof frontmatter !== 'object' || Array.isArray(frontmatter)) {
+      violations.push({ name: directoryName, file, message: 'frontmatter must be a mapping' });
+      continue;
+    }
+
+    for (const key of Object.keys(frontmatter)) {
+      if (!CODEX_SKILL_FRONTMATTER_KEYS.has(key)) {
+        violations.push({ name: directoryName, file, message: `unsupported frontmatter key: ${key}` });
+      }
+    }
+
+    const name = String(frontmatter.name || '').trim();
+    const description = String(frontmatter.description || '').trim();
+    if (!/^[a-z0-9-]+$/u.test(name)) {
+      violations.push({ name: directoryName, file, message: 'name must use lowercase letters, digits, and hyphens' });
+    } else {
+      if (name !== directoryName) {
+        violations.push({ name: directoryName, file, message: `frontmatter name ${name} must match directory` });
+      }
+      if (names.has(name)) {
+        violations.push({ name: directoryName, file, message: `duplicate skill name also used by ${names.get(name)}` });
+      } else names.set(name, directoryName);
+    }
+    if (!description) violations.push({ name: directoryName, file, message: 'description is required' });
+    if (source.includes('$ARGUMENTS')) {
+      violations.push({ name: directoryName, file, message: 'legacy $ARGUMENTS placeholder is unsupported' });
+    }
+
+    const openaiFile = path.join(root, directoryName, 'agents', 'openai.yaml');
+    if (fs.existsSync(openaiFile)) {
+      try {
+        const openai = YAML.parse(fs.readFileSync(openaiFile, 'utf8')) || {};
+        const shortDescription = String(openai.interface?.short_description || '');
+        const defaultPrompt = String(openai.interface?.default_prompt || '');
+        if (shortDescription.length < 25 || shortDescription.length > 64) {
+          violations.push({
+            name: directoryName,
+            file: openaiFile,
+            message: 'interface.short_description must be 25-64 characters',
+          });
+        }
+        if (defaultPrompt && !defaultPrompt.includes(`$${name}`)) {
+          violations.push({
+            name: directoryName,
+            file: openaiFile,
+            message: `interface.default_prompt must mention $${name}`,
+          });
+        }
+      } catch (error) {
+        violations.push({ name: directoryName, file: openaiFile, message: `invalid openai.yaml: ${error.message}` });
+      }
+    }
+  }
+  return violations;
+}
+
 function listFiles(dir) {
   const out = [];
   const walk = (current, prefix = '') => {
@@ -203,6 +283,12 @@ function cmdCheck(config, selected) {
   printStatus(rows);
   const bad = rows.filter((r) => r.status !== 'same');
   if (bad.length) fail(`${bad.length} mirror target(s) need sync`);
+  const structural = codexSkillStructuralViolations(config);
+  for (const violation of structural) {
+    console.log(`invalid\t${violation.name}\t${violation.file ? rel(violation.file) : '--'}\t${violation.message}`);
+  }
+  if (structural.length) fail(`${structural.length} Codex skill structure violation(s)`);
+  console.log('All canonical Codex skill entrypoints have valid structure.');
 }
 
 function cmdCheckPermissions(config) {

@@ -1,4 +1,4 @@
-# Human Sessions
+# Human and Interactive Sessions
 
 Read this reference for passthrough, direct, scaffold, mixed-learner, coach, voice, feedback, tuning, resume-last, or interactive CLI work.
 

@@ -1,4 +1,4 @@
-# Prompt and World Safety
+# Prompt, World, and Privilege Safety
 
 Read this reference before any model-backed run and whenever prompts, worlds, public-evidence boundaries, or prompt-audit recovery are in scope.
 

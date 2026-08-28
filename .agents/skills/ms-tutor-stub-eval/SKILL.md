@@ -1,6 +1,6 @@
 ---
 name: ms-tutor-stub-eval
-description: Run, resume, analyze, or configure tutor-stub detective-world experiments, including human sessions, automated policy and learner evals, ABM or QA panels, field and cross-run analysis, and bounded recovery of an already authorized run. An analysis or configuration request is not authority for a new model-backed run.
+description: Configure, run, recover, or analyze tutor-stub detective-world experiments, including human sessions, automated policy or learner evals, QA matrices, field reports, and cross-run comparisons. Use ms-tutor-stub-study-status for a read-only status snapshot; inspection or analysis alone never authorizes model calls.
 ---
 
 # Tutor Stub Eval
@@ -23,15 +23,22 @@ Use this skill for `scripts/tutor-stub.js`,
   ceiling when they are not already fixed. Do not infer authority from an old
   run, a workplan card, a prior dry-run, or loading this skill.
 - Standing technical-recovery authority applies only after a technical failure
-  in an already authorized run and only inside its frozen source/digests,
+  in an already authorized run and only when the study question and design,
   model/provider, world/profile, seed/configuration/rubric, data/payload scope,
-  and maximum attempt/spend ceiling. Preserve every completed and failed
-  attempt; resume only missing or failed units through the existing mechanism
-  into a fresh non-overwriting destination or checkpoint. Never rerun valid
-  outputs or choose among outcomes.
+  and maximum attempt/spend ceiling remain unchanged. Record the source commit
+  and dirt state as provenance; do not bind approval to source-file digests or
+  treat a code-defect fix as a new scientific design. Preserve every completed
+  and failed attempt; recover only missing or failed units through the existing
+  mechanism into a fresh non-overwriting destination or checkpoint. Never
+  rerun valid outputs or choose among outcomes.
 - Stop and ask if a failure may be substantive, the same failure repeats and
-  suggests a code defect, or recovery would change any frozen input, route,
-  scope, budget, or interpretation.
+  suggests an unresolved code defect, or recovery would change the study
+  design, sealed data inputs, route, scope, budget, or interpretation.
+- For a registered paid study, follow
+  `docs/paid-study-authorization-policy.md`: a merged design, a clean detached
+  launch commit containing it, and a signed GO note. Use the shared runner's
+  create-once, ceiling, ledger, and archive behavior; never recreate the retired
+  digest-bound request/certificate machinery inside this skill.
 
 ## Always-loaded safety
 
@@ -57,15 +64,18 @@ Use this skill for `scripts/tutor-stub.js`,
 Ask at most 1–3 concise questions when a materially important choice is missing.
 Use defaults only inside the mode and execution scope the user authorized.
 
-- Mode: `human`, `auto-eval`, `resume`, `abm-panel`, `analyze`, or
-  `multi-eval`; default to `auto-eval` for an authorized comparison and
-  `human` when the user will play the learner.
+- Mode: `human`, `auto-eval`, `resume`, `analyze`, or `multi-eval`; default to
+  `auto-eval` for an authorized comparison and `human` when the user will play
+  the learner. ABM inspection, dry-run, and summarization are available, but
+  the current ABM wrapper is not an approved live route because it does not
+  pass the automated-eval lab and a hard per-dialogue model-call budget to its
+  child processes.
 - World: `world_005_marrick`.
 - Automated learner: `diligent`; use `core` routinely, `sentinel` for a
   cheap discrimination screen, `stress` for targeted failure modes, and
   `audit` only when an all-profile sweep is intentional.
-- Runs: 3 for baseline comparisons, 5 for core/frontier policy comparisons,
-  and 1 for ABM panels. Auto-eval parallelism defaults to 8; ABM is serial.
+- Runs: 3 for baseline comparisons and 5 for core/frontier policy comparisons.
+  Auto-eval parallelism defaults to 8.
 - Stop/token defaults: `--turns until-grounded`, `--safety-turns 120`, and
   `--max-tokens 4096`; auxiliary history defaults to `--history-turns 4`.
 - Interactive roles default to speaking tutor `codex.gpt-5.6-terra` at
@@ -76,9 +86,9 @@ Use defaults only inside the mode and execution scope the user authorized.
 - Do not recommend `codex.mini`, `codex.gpt-mini`, or
   `codex.gpt-5-mini`; this local Codex route rejects them.
 - Auto-eval output defaults under
-  `.tutor-stub-auto-eval/<descriptive-run-id>`; ABM output defaults under
-  `exports/tutor-stub-abm-panel`. Keep the local ignored ledger unless the
-  user explicitly opts out.
+  `.tutor-stub-auto-eval/<descriptive-run-id>`. ABM dry-run and report artifacts
+  default under `exports/tutor-stub-abm-panel`. Keep the local ignored ledger
+  unless the user explicitly opts out.
 
 ## Route to detail
 
@@ -96,18 +106,23 @@ Read only the references needed for the current mode:
 - For existing artifacts, the report index, profile discrimination, field/state
   reports, multi-eval comparisons, SQL ingest, or result interpretation, read
   [analysis and results](references/analysis-and-results.md).
+- For a status-only request about one existing QA or study session, stop routing
+  here and use `$ms-tutor-stub-study-status` so the exact-worktree reporter and
+  its read-only boundary are loaded.
 
 ## Execution flow
 
 1. Classify the request as zero-call inspection/analysis or authorized live
-   execution. Record the exact source SHA and relevant existing artifact/run.
+   execution. Record the exact source SHA, dirt state, and relevant existing
+   artifact/run.
 2. Read the mode reference and any linked safety/default reference before
    forming the command.
 3. Before a model-backed run, complete the prompt/world preflight. Always
    dry-run first when model refs, policies, profiles, or output directories
    changed.
-4. Run only the authorized bounded unit. On technical failure, apply the frozen
-   recovery rule above; otherwise stop rather than widening scope.
+4. Run only the authorized bounded unit. On technical failure, apply the
+   unchanged-study recovery rule above and any stricter registered-study runner
+   rule; otherwise stop rather than widening scope.
 5. Report the exact command or analysis source, source SHA, observed models,
    world/profile/policies, seeds/runs, output paths, completed/failed units, and
    whether the result is technical, incomplete, or interpretable. Stop when the
@@ -116,7 +131,8 @@ Read only the references needed for the current mode:
 ## Long-running study status
 
 Before launch, after each cohort or other meaningful milestone, at every
-technical stop, before and after any recovery, and before analysis, send a
+technical stop, before and after any recovery, before analysis, and at least
+every 60–90 seconds while a long-running study remains active, send a
 plain-language block in this form:
 
 ```text
@@ -142,13 +158,7 @@ running. When nothing material changed, send the same block with `no material
 change`. A worker sends this block to its coordinator, and the coordinator
 relays it in plain language rather than forwarding an internal event name.
 
-For a zero-call filesystem snapshot, use:
-
-```bash
-node scripts/report-tutor-stub-study-status.js <qa-artifact-root>
-node scripts/report-tutor-stub-study-status.js <qa-artifact-root> --json
-```
-
-This reporter reads plans, events, traces, budgets, and seals only. It does not
-prove live process or provider activity and must not be used as recovery
-authority.
+For a zero-call filesystem snapshot, use `$ms-tutor-stub-study-status` rather
+than recreating its exact-worktree resolution here. Its reporter reads plans,
+events, traces, budgets, and seals only; it does not prove live process or
+provider activity and must not be used as recovery authority.

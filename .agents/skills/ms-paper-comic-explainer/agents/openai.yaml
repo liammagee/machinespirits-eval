@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paper Comic Explainer"
+  short_description: "Create and compose paper comic explainer panels"
+  default_prompt: "Use $ms-paper-comic-explainer to create or compose Machine Spirits paper-comic panels into an explainer page."

@@ -20,6 +20,7 @@ npm run tutor:stub:auto-eval -- \
   --cli-effort medium \
   --history-turns 4 \
   --max-tokens 4096 \
+  --model-call-budget 120 \
   --trace-dir .tutor-stub-auto-eval/baseline-register-policy-p8 \
   --keep-going
 ```
@@ -39,6 +40,7 @@ npm run tutor:stub:auto-eval -- \
   --cli-effort medium \
   --history-turns 4 \
   --max-tokens 4096 \
+  --model-call-budget 120 \
   --trace-dir .tutor-stub-auto-eval/adaptive-register-policy-p8 \
   --keep-going
 ```
@@ -87,15 +89,18 @@ npm run tutor:stub:auto-eval -- \
   --progress-interval 30 \
   --history-turns 4 \
   --max-tokens 4096 \
+  --model-call-budget 120 \
   --keep-going
 ```
 
-If failures say `max_tokens or model output limit was reached`, increase
-`--max-tokens`. `--history-turns 4` can reduce auxiliary analysis prompts but
-does not compact tutor or learner speaker history. If failures are quota/network
-failures, keep the same token cap and rerun after quota/network recovery.
+If failures say `max_tokens or model output limit was reached`, treat a higher
+`--max-tokens` value as a prospective configuration amendment, not automatic
+technical recovery. `--history-turns 4` can reduce auxiliary analysis prompts
+but does not compact tutor or learner speaker history. For quota or network
+failures, keep both the token and model-call caps unchanged and recover only
+the failed units after the provider route is healthy.
 
-## ABM Learner Panel
+## ABM Learner Panel (Inspection Only)
 
 Validate personas:
 
@@ -103,11 +108,16 @@ Validate personas:
 npm run tutor:stub:abm-panel -- --check
 ```
 
-Run the full 9-persona panel once per persona:
+The current ABM wrapper does not pass `--lab automated_eval` and an explicit
+`--model-call-budget` to its child tutor-stub processes. Until that runtime is
+hardened and tested, do not use `--live`; the skill supports validation,
+dry-run inspection, and summarization only.
+
+Inspect the full 9-persona command plan without model calls:
 
 ```bash
 npm run tutor:stub:abm-panel -- \
-  --live \
+  --dry-run \
   --runs 1 \
   --turns until-grounded \
   --safety-turns 120 \
@@ -156,6 +166,7 @@ npm run tutor:stub:qa -- \
   --cli-effort medium \
   --history-turns 4 \
   --max-tokens 4096 \
+  --model-call-budget 120 \
   --keep-going
 ```
 

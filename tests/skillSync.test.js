@@ -19,7 +19,10 @@ function makeFixture() {
   for (const root of Object.values(roots)) fs.mkdirSync(root, { recursive: true });
   const source = path.join(roots.claude, 'ms-workplan');
   fs.mkdirSync(source, { recursive: true });
-  fs.writeFileSync(path.join(source, 'SKILL.md'), '---\nname: ms-workplan\n---\n\nUse the board.\n');
+  fs.writeFileSync(
+    path.join(source, 'SKILL.md'),
+    '---\nname: ms-workplan\ndescription: Use the canonical workplan board.\n---\n\nUse the board.\n',
+  );
   const config = path.join(dir, 'config.json');
   fs.writeFileSync(
     config,
@@ -72,8 +75,35 @@ test('skill permission check rejects skill-local tool preapprovals', () => {
   assert.match(rejected.stdout, /preapproved-tools\tclaude\tms-workplan/);
   assert.match(rejected.stderr, /must use the normal permission flow/);
 
-  fs.writeFileSync(sourceSkill, '---\nname: ms-workplan\n---\n\nUse the board.\n');
+  fs.writeFileSync(
+    sourceSkill,
+    '---\nname: ms-workplan\ndescription: Use the canonical workplan board.\n---\n\nUse the board.\n',
+  );
   const accepted = run(config, ['check-permissions']);
   assert.equal(accepted.status, 0, accepted.stdout + accepted.stderr);
   assert.match(accepted.stdout, /No repo-local skills declare allowed-tools preapprovals/);
+});
+
+test('skill check rejects unsupported Codex frontmatter and legacy placeholders', () => {
+  const { roots, config } = makeFixture();
+  const synced = run(config, ['sync']);
+  assert.equal(synced.status, 0, synced.stdout + synced.stderr);
+  const target = path.join(roots.agents, 'ms-invalid');
+  fs.mkdirSync(target, { recursive: true });
+  fs.writeFileSync(
+    path.join(target, 'SKILL.md'),
+    '---\nname: ms-invalid\ndescription: Invalid test skill.\nargument-hint: value\n---\n\nUse $ARGUMENTS.\n',
+  );
+  fs.mkdirSync(path.join(target, 'agents'), { recursive: true });
+  fs.writeFileSync(
+    path.join(target, 'agents', 'openai.yaml'),
+    'interface:\n  short_description: "too short"\n  default_prompt: "Run the invalid skill."\n',
+  );
+
+  const rejected = run(config, ['check']);
+  assert.equal(rejected.status, 1);
+  assert.match(rejected.stdout, /unsupported frontmatter key: argument-hint/u);
+  assert.match(rejected.stdout, /legacy \$ARGUMENTS placeholder is unsupported/u);
+  assert.match(rejected.stdout, /short_description must be 25-64 characters/u);
+  assert.match(rejected.stdout, /default_prompt must mention \$ms-invalid/u);
 });

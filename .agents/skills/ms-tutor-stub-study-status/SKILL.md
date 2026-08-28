@@ -1,6 +1,6 @@
 ---
 name: ms-tutor-stub-study-status
-description: Report evidence-backed, read-only status for an existing tutor-stub QA or study session, running the canonical zero-call reporter from the exact session worktree. Use for questions about current progress, completed or failed units, calls and ceilings, repairs, blockers, or whether human input is needed. Do not use to launch, resume, recover, stop, signal, or analyze a study.
+description: Report a zero-call, evidence-backed snapshot for one existing tutor-stub QA or study session from its exact worktree and artifact root. Use for progress, units, calls, repairs, blockers, or human-decision status; do not launch, resume, recover, stop, signal, or analyze the study.
 ---
 
 # Tutor Stub Study Status
@@ -39,8 +39,8 @@ node <skill-repo>/scripts/report-tutor-stub-study-status.js <artifact-root>
 
 Add `--json` only when the user requests machine-readable output. Use absolute
 paths for both the reporter and artifact root. Before reporting results, record
-the session worktree, its `HEAD` SHA, the artifact root, and the reporter
-checkout's `HEAD` SHA.
+the session worktree, its `HEAD` SHA and dirt state, the artifact root, and the
+reporter checkout's `HEAD` SHA and dirt state.
 
 Do not run a process-status command to supplement the snapshot. The reporter's
 `Model activity: not verifiable` is the correct result unless the user has
@@ -52,7 +52,8 @@ started without a readable terminal event; it does not prove a live process.
 
 Return the reporter's human-readable block without replacing its counts or
 technical-stop distinction. Precede it with the verified session worktree,
-session SHA, artifact root, and reporter SHA. Explain malformed trailing JSONL
+session SHA and dirt state, artifact root, and reporter SHA and dirt state.
+Explain malformed trailing JSONL
 as an ignored partial write, not a study failure.
 
 Never treat this status as recovery authority. If the block says a human

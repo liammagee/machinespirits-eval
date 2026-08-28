@@ -1,11 +1,13 @@
 ---
 name: ms-derivation-episode-replay
-description: Use dramatic derivation episode replay to resume a saved `run-derivation-loop.js` result from a frozen transcript prefix. Trigger when debugging selector/pacing/guard failures, trying a small policy/script change from a failure turn, preserving turns before an unexpected aporia/disengagement/overreach/lucky-leap, or accelerating current dramatic derivation runs without paying to regenerate the whole prefix.
+description: Replay a completed dramatic-derivation prefix with an explicitly mocked suffix to debug selector, pacing, guard, or script behavior. Real suffix generation is blocked because the episode runner does not yet inherit and enforce the source run's model routes and attempt ceiling.
 ---
 
-Use `scripts/run-derivation-episode.js` to replay a saved dramatic derivation prefix exactly and resume live at a chosen turn. This is for local mechanism triage, not final evidence. It answers: "if everything through turn N-1 is identical, does this policy/script change repair the failure?"
+Use `scripts/run-derivation-episode.js` to replay a saved dramatic derivation
+prefix and exercise a mocked suffix at a chosen turn. This is local mechanism
+triage, not final evidence.
 
-Argument shape: `<failed-label|run-dir> --turn N [--window K] [--real] [guard/script overrides]`.
+Argument shape: `<failed-label|run-dir> --turn N [--window K] [guard/script overrides]`.
 
 ## Safety
 
@@ -15,7 +17,13 @@ Argument shape: `<failed-label|run-dir> --turn N [--window K] [--real] [guard/sc
   ```
 - Use a completed source run with `result.json` and `diagnosis.json` under `exports/dramatic-derivation/loop/<label>/` or `exports/dramatic-derivation/episodes/<label>/`.
 - Do not change `--world`; the episode CLI refuses it because replaying role outputs into another world is undefined.
-- The episode CLI defaults to mock. Pass `--real` only when the user has explicitly asked to spend or the current task already authorizes paid real runs.
+- Force `DERIVATION_LLM=mock` in the command. An ambient
+  `DERIVATION_LLM=real` can otherwise make a suffix real even without
+  `--real`.
+- Do not use `--real`. The runner currently resolves environment routes rather
+  than inheriting and pinning `diagnosis.backend.roles`, and it exposes no
+  enforced episode attempt ceiling. A real result would not be the claimed
+  single-variable replay.
 - Treat episodes as counterfactual debugging artifacts. A repaired episode is a candidate fix, not held-out selector evidence. Promote it to a fresh first-pass loop/fan before making claims.
 
 ## Choose the Turn
@@ -30,11 +38,10 @@ Argument shape: `<failed-label|run-dir> --turn N [--window K] [--real] [guard/sc
 For a selector/pacing policy adjustment:
 
 ```bash
-node scripts/run-derivation-episode.js \
+DERIVATION_LLM=mock node scripts/run-derivation-episode.js \
   --from exports/dramatic-derivation/loop/<failed-label> \
   --turn <first-live-turn> \
   --window 6 \
-  --real \
   --pacing-guard-selective-v1 off \
   --pacing-guard-selective-v2 on \
   --label <failed-label>-v2-from-t<turn> \
@@ -44,16 +51,16 @@ node scripts/run-derivation-episode.js \
 For a tutor-script adjustment:
 
 ```bash
-node scripts/run-derivation-episode.js \
+DERIVATION_LLM=mock node scripts/run-derivation-episode.js \
   --from exports/dramatic-derivation/loop/<failed-label> \
   --turn <first-live-turn> \
   --window 6 \
-  --real \
   --script config/drama-derivation/tutor-scripts/<candidate>.md \
   --label <failed-label>-scriptfix-from-t<turn>
 ```
 
-For a free plumbing check, omit `--real`; the source prefix still replays and the suffix uses mock roles.
+Every supported episode is a free plumbing check: the source prefix replays
+and the suffix uses explicitly mocked roles.
 
 ## Verify the Prefix
 
@@ -86,7 +93,9 @@ When a live selector run produces an unexpected failure:
 1. Wait for the target label to finish; do not replay from a partial artifact.
 2. Identify the earliest material failure turn from `diagnosis.json`/log tail: aporia, disengagement, overreach burst, lucky leap, visible false-block, or the first turn where `D` stops recovering.
 3. Run one short episode from just before that turn using the candidate policy/script change.
-4. If the episode fixes the local failure and `prefixIntegrity.ok` is true, run a fresh first-pass full loop under a new label. Do not overwrite the original selector result.
+4. If the episode fixes the local failure and `prefixIntegrity.ok` is true,
+   report the candidate repair and stop. A fresh full loop is a separate
+   model-backed action requiring its own current authority and bounded route.
 5. If the episode also fails, inspect the transcript around `--turn`; avoid taxonomy creep. Classify the failure as route failure, guard brittleness, implementation artifact, or world/learner-stack instability.
 
 ## Report

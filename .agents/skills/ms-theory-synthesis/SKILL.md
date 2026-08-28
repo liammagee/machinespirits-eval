@@ -1,13 +1,14 @@
 ---
 name: ms-theory-synthesis
-description: Refresh the "theory behind the machine" synthesis — the reference surface mapping the project's theoretical lineages (Hegel recognition · Freud ego/superego/id · Weber charisma · Aristotle poetics) onto the architecture, mechanisms, and findings. Use when asked to update, refresh, re-synthesise, or re-stamp the theory synthesis / theory-synthesis.html / the /theory surface, or after the paper version bumps and the theory prose needs re-checking.
+description: Refresh the theory-synthesis HTML that maps Hegel, Freud, Weber, and Aristotle onto current architecture and paper findings. Use for theory-synthesis.html or the /theory surface; it inherits claims from the canonical paper and never originates findings.
 ---
 
 Refresh the **theory synthesis** — a techne reference surface at `notes/poetics/theory-synthesis.html`, served at **`/theory`** in the web app and (by construction) the desktop. It maps the four theoretical lineages the project operationalises onto concrete mechanisms and findings, and reports what the data did to each.
 
 **It is a reference surface, NOT a source of claims.** Every number inherits from `docs/research/paper-full-2.0.md`. Refreshing it never invents a finding — it re-presents the paper's framing and re-points at the code. (Same discipline as paper spin-offs: a new empirical claim belongs in the paper first.)
 
-A refresh has two halves. The **prose** half needs reading + judgement (do it / fan it out). The **mechanical** half is the script.
+A refresh has two halves. The **prose** half needs reading and judgement;
+delegation is optional and proportional. The **mechanical** half is the script.
 
 ## When to refresh
 - The paper version bumped and the threads/§ pointers may have moved → run `npm run theory:check` first; it flags version drift.
@@ -23,9 +24,12 @@ A refresh has two halves. The **prose** half needs reading + judgement (do it / 
    Exit 0 = refs resolve and the stamped paper version is current. Non-zero = a referenced file is missing, or the stamp lags the paper.
 
 2. **Re-synthesise the prose (judgement).** The `.html` IS the source — edit it directly (no build step; read `notes/poetics/TECHNE-DOCS.md` for the component vocabulary). Re-read the theory threads in the paper and how they are operationalised in code, then update the affected sections:
-   - **In the paper** — the recognition mechanisms (§3.2, §3.5), the architecture (§4.1–4.2), the matched-specificity control (§7.9 / A10), the poetics arc (§6.10, §7.9), and any new theory framing.
+   - **In the paper** — derive current theory-bearing sections by heading and
+     keyword search. Do not freeze the poetics arc at old §6.10/§7.9 pointers;
+     current coverage extends through later §6.13 and §6.25–§6.28 material.
    - **In the code** — recognition prompts + `recognition_quality` (v2.2), the bilateral ego/superego engines, `idDirectorEngine.js` + the charisma rubric, the poetics rubric + drama generator, `tutor-agents.yaml` cell families.
-   - For a wide refresh, fan out read-only Explore agents (one for the paper, one for the code) and synthesise from their digests — that is how the doc was first built.
+   - For a wide refresh, optional read-only reviewers may inspect paper and code
+     separately; direct synthesis is also valid.
    - **Rule:** every figure must trace to a paper §; mark each thread supported / qualified / null with the right chip colour (`chip--moss` / `chip--ochre` / `chip--brick`). Do not let a costume-vs-substance caveat drop (the dramatic instrument reads form, not learning).
 
 3. **Re-stamp + re-validate (mechanical):**
@@ -39,6 +43,9 @@ A refresh has two halves. The **prose** half needs reading + judgement (do it / 
    ```bash
    npm run poetics:serve   # then open http://127.0.0.1:3466/theory
    ```
+   Inspect representative desktop and mobile widths. After a substantive prose
+   or claim-bearing change, use the `paper-claim-auditor` reviewer because this
+   surface is a spin-off of the canonical paper.
 
 ## Script details
 
@@ -53,5 +60,5 @@ A refresh has two halves. The **prose** half needs reading + judgement (do it / 
 - The doc must stay a sibling of `notes/poetics/assets/` so `assets/techne.css` resolves when framed.
 
 ## Related
-- `/ms-techne-doc` — the techne HTML framework this doc is built on.
-- `/ms-build-paper`, `/ms-author-paper2` — the canonical paper the synthesis inherits from.
+- `$ms-techne-doc` — the techne HTML framework this doc is built on.
+- `$ms-build-paper`, `$ms-author-paper2` — the canonical paper the synthesis inherits from.
