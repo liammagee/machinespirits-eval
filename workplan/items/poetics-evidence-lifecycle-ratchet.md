@@ -25,6 +25,8 @@ links:
     - edra-m3-second-mechanism-lexicon
     - enforce-tutor-stub-artifact-lifecycle
     - run-artifact-archiving
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/847
 tags:
   - poetics
   - provenance
