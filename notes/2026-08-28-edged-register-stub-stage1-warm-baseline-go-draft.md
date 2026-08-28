@@ -1,8 +1,7 @@
 # Edged-register stub replication — Stage 1 warm baseline GO note
 
-**DRAFT FOR HUMAN REVIEW — NOT SIGNED. This note licenses nothing until
-the operator signs it, commits the signed copy, and separately approves
-the launch. It never self-activates.**
+**SIGNED. The operator gave GO in session on 2026-08-27 and the launch
+was approved in the same message. This note licenses Stage 1 only.**
 
 Workplan item: `edged-register-stub-dag-replication`.
 Design (registration): `notes/2026-08-28-edged-register-stub-dag-replication-design.md`.
@@ -127,7 +126,7 @@ SHA or a digest.
 
 ---
 
-Operator sign-off (blank until signed):
+Operator sign-off:
 
-Signed:
-Date:
+Signed: Liam Magee (GO given in session)
+Date: 2026-08-27
