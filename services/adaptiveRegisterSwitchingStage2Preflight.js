@@ -5,6 +5,17 @@ import {
 import { summarizeAdaptiveRegisterSwitchingStage2 } from './adaptiveRegisterSwitchingStage2.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
 
+// This list describes what the production Stage-2 adapter actually fields. It
+// is intentionally independent of the endpoint contract so preflight can catch
+// a registration that requires a channel the prospective run does not provide.
+export const ADAPTIVE_REGISTER_SWITCHING_STAGE2_FIELDED_CHANNELS = Object.freeze([
+  'conversion_fold',
+  'learner_rubric',
+  'manner_presence_reader',
+  'register_rubric',
+  'tutor_rubric',
+]);
+
 function syntheticStance(registerName) {
   return {
     applies: true,
@@ -127,6 +138,7 @@ export function assembleAdaptiveRegisterSwitchingStage2Preflight({ packets, cont
 export function runAdaptiveRegisterSwitchingStage2EndpointPreflight(contract) {
   return runPaidStudyEndpointPreflight({
     contract,
+    fieldedChannels: ADAPTIVE_REGISTER_SWITCHING_STAGE2_FIELDED_CHANNELS,
     cases: buildAdaptiveRegisterSwitchingStage2SyntheticCorpus(),
     buildPackets: buildAdaptiveRegisterSwitchingStage2PreflightPackets,
     assemble: assembleAdaptiveRegisterSwitchingStage2Preflight,
@@ -134,6 +146,7 @@ export function runAdaptiveRegisterSwitchingStage2EndpointPreflight(contract) {
 }
 
 export default {
+  ADAPTIVE_REGISTER_SWITCHING_STAGE2_FIELDED_CHANNELS,
   assembleAdaptiveRegisterSwitchingStage2Preflight,
   buildAdaptiveRegisterSwitchingStage2PreflightPackets,
   buildAdaptiveRegisterSwitchingStage2SyntheticCorpus,
