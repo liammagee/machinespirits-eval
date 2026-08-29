@@ -174,3 +174,42 @@ test('fixed policies tell the reviewer not to choose a stance and drop the stanc
     assert.doesNotMatch(prompt, /"warm", "sarcastic"/u);
   }
 });
+
+test('no stance override may rewrite a fixed register pin', () => {
+  // Stage 2 of the edged-register replication ran with the release-pacing and
+  // instructional-repair overrides unscoped, so a sarcastic-pinned arm
+  // delivered warm on 66 of 455 tutor turns. The pin is terminal: every
+  // override that rewrites the selected stance has to exempt a fixed policy.
+  // The predeclared pressure probe is the one deliberate exception — it forces
+  // face_threat by design, independent of the register policy.
+  const configuration = sourceOf('services/tutorStubResponseConfigurationSelectionRuntime.js');
+  assert.match(configuration, /const fixedRegisterPinned = policy in TUTOR_STUB_FIXED_REGISTER_POLICIES;/u);
+
+  const callSites = [...configuration.matchAll(/applyEngagementStanceOverride\(source,/gu)];
+  assert.equal(
+    callSites.length,
+    6,
+    'a stance override was added or removed; check each one exempts a fixed register pin',
+  );
+
+  for (const site of callSites) {
+    const before = configuration.slice(0, site.index);
+    // Start the guard window at the previous override so one block's condition
+    // can never vouch for the next block.
+    const previous = before.lastIndexOf('applyEngagementStanceOverride(source,');
+    const guard = before.slice(previous === -1 ? 0 : previous);
+    const exempted =
+      /!fixedRegisterPinned/u.test(guard) ||
+      /policy === 'dynamic'/u.test(guard) ||
+      /predeclaredPressureTurns\(\)/u.test(guard);
+    assert.ok(
+      exempted,
+      `a stance override near "${guard.slice(0, 90).replace(/\s+/gu, ' ')}" can rewrite a fixed register pin`,
+    );
+  }
+
+  assert.match(
+    configuration,
+    /hostile register forced at learner turn \$\{pressureProbeTurn\} by design, independent/u,
+  );
+});

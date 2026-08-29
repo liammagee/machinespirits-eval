@@ -114,6 +114,10 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
     const randomStanceEnabled = randomPerformanceEnabled && !explicitRegister && !lightAdaptationTriggered;
     const randomCharacterEnabled = randomPerformanceEnabled && !explicitCharacter && !lightAdaptationTriggered;
     const externalStanceDirective = Boolean(lightAdaptationTriggered || explicitRegister || randomStanceEnabled);
+    // A fixed delivery arm pins its register on every tutor turn, so the pin is a
+    // terminal decision rather than a starting value: no later stance override may
+    // rewrite it. Only the predeclared pressure probe stays outside this, by design.
+    const fixedRegisterPinned = policy in TUTOR_STUB_FIXED_REGISTER_POLICIES;
     if (lightAdaptationTriggered) {
       rawSelection = randomEngagementStanceSelection({ state, classification, lightAdaptation });
     } else if (explicitRegister) {
@@ -209,6 +213,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
     const releasePacing = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
     if (
       !externalStanceDirective &&
+      !fixedRegisterPinned &&
       comprehensionPressure === 0 &&
       releasePacing?.signal?.direction &&
       releasePacing.signal.direction !== 'steady' &&
@@ -278,7 +283,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         source: 'dynamic_learner_acceleration_guard',
       });
     }
-    if (!externalStanceDirective && characterDefaultStance) {
+    if (!externalStanceDirective && !fixedRegisterPinned && characterDefaultStance) {
       const definition = getEngagementStanceDefinition(characterDefaultStance) || {};
       source = applyEngagementStanceOverride(source, characterDefaultStance, {
         register_reason: `The explicitly selected ${explicitCharacter} character defaults to ${characterDefaultStance} so its recurring dramatic action can expose the current mismatch. Use /register to direct another voice independently.`,
@@ -301,7 +306,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         predeclared_pressure: true,
       });
     }
-    if (instructionalMetaRepair) {
+    if (instructionalMetaRepair && !fixedRegisterPinned) {
       source = applyEngagementStanceOverride(source, 'plain', {
         register_reason:
           'Instructional repair overrides proof-facing performance pressure for this turn; use plain, unadorned language before returning to the inquiry.',
