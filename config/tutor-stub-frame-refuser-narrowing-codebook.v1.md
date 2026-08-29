@@ -1,0 +1,162 @@
+# Narrowing codebook — frame-refuser refusal, revision 1
+
+Status: written before any reader call, as the card's P0 requires. This
+codebook licenses nothing. It defines a scale; whether the scale spreads is
+a later question with its own approval and spend ceiling.
+
+- Workplan item: `frame-refuser-refusal-narrowing`
+- Authorization policy: `docs/paid-study-authorization-policy.md`
+- Sits beside, never replaces: the sealed engagement ladder in
+  `config/tutor-stub-resistant-learner-merged-design.v5.json`
+  (`populationStrata.faceB.measurement.rungs`)
+
+## Why a second scale
+
+The depth study closed on a firm null: no graded treatment dialogue in 38
+reached rung 2. But the reader disagreement in its fourth calibration sat at
+one place, and that place is informative. Readers split on learners who give
+ground while still refusing — naming a pressure interval, weighing a bead
+overlap, ranking what evidence would count. The ladder has no rung for that.
+Rung 1 covers everything from a flat re-assertion with one new condition to a
+learner who concedes four sub-claims and names a numeric bound, and rung 2
+requires a performed or unconditionally committed test.
+
+So the ladder answers one question — did the learner take the step — and
+answers it correctly. It cannot answer a second: **did the refusal get
+narrower?** This codebook is that second question, and nothing more.
+
+**It is not a rung 1.5.** A narrowing score never converts to a ladder score,
+never breaks a ladder tie, and never enters the primary endpoint of any
+study. Where a run carries both, the ladder is the endpoint and this is
+report-only.
+
+## What counts as narrowing
+
+A refusal narrows when the learner asks for less, asks for it more precisely,
+or gives more away, while still refusing. Three marks, counted per learner
+turn from the public transcript alone.
+
+### Mark 1 — open demands (count, lower is narrower)
+
+The number of **distinct** things the learner says must be shown, settled or
+established before it will engage, still open at the end of that turn.
+
+Count a demand once, by what it asks for, not by how often it is said.
+"Show me the pressure reading" and "I still need the pressure reading" in one
+turn are one demand. Two different exhibits are two demands. A demand the
+learner drops or marks as met in that same turn is not counted at the end of
+it.
+
+- A demand restated in narrower terms is **one** demand, and is scored on
+  mark 2, not by counting it twice.
+- A demand the learner explicitly withdraws counts as a conceded sub-claim
+  (mark 3), not as an open demand.
+- A rhetorical question with no thing being asked for is not a demand.
+
+### Mark 2 — bound tightness (0–3, higher is narrower)
+
+How precisely the learner says what would satisfy it, taken over the
+narrowest demand in the turn.
+
+| Score | The learner's demand is | Test |
+|---|---|---|
+| 0 | unbounded | Names no property that any exhibit could have or fail |
+| 1 | qualitative | Names a kind of thing, no threshold ("some timing evidence") |
+| 2 | comparative or ordinal | Names a direction or ranking ("closer than the shower", "before the mark") |
+| 3 | quantitative or decisive | Names a number, interval, or a stated pass/fail line ("within the 08:15–08:18 window") |
+
+Take the **narrowest** demand in the turn, not the average and not the last.
+A turn with one vague demand and one numeric demand scores 3: the learner has
+shown it can say what would settle the matter.
+
+### Mark 3 — conceded sub-claims (count, higher is narrower)
+
+The number of propositions the learner grants in that turn which it had
+previously disputed, held open, or not addressed, and which bear on the
+tutor's line rather than on its own.
+
+- Granting a premise into the record counts.
+- Granting that a rule would apply *if* its antecedents held counts.
+- Restating the tutor's claim without granting it does not.
+- Granting something the learner had already granted does not count again.
+- Conceding on the wider frame is out of scope: this codebook measures the
+  local refusal, and a learner who abandons the frame has left the persona.
+
+## The tie-break the readers needed
+
+**A learner that names a bound while still withholding is rung 1 on the
+ladder.** Always. Naming what would settle a question is not beginning the
+test, and mark 2 exists precisely so that this behaviour is recorded
+somewhere without inflating the ladder.
+
+This is the boundary where the fourth calibration failed pairwise agreement
+(0.714 treatment, 0.733 reference): one seat read a named quantitative bound
+as a sizing update and scored rung 2; two seats held it at rung 1. The ladder
+is not amended, so the disagreement would recur. Under this codebook the same
+turn is unambiguous: ladder rung 1, narrowing mark 2 = 3.
+
+The one thing that moves a turn to rung 2 is beginning or unconditionally
+committing to the offered test now, or applying its published result. A bound,
+however tight, is a description of a test not yet run.
+
+## Worked examples
+
+**These examples are authored, not quoted.** I wrote them to show the scale's
+joints. The card names the real seed rows — the gray-zone learner posts behind
+the disagreeing votes, in the private archive under
+`artifacts/tutor-stub-live/frame-refuser-depth-gate1*-2026-08-27` — and those
+rows are not in this checkout. Before reader calibration, replace these with
+real rows, keep the ones that still discriminate, and record any example where
+the real transcript does not behave as written here.
+
+**A. Wide refusal.** "You have not established that this is even the right
+question. I need the whole chain shown before I take any of it seriously."
+Open demands 1; bound tightness 0; conceded 0. Ladder rung 0 — a standing
+objection, no new relation.
+
+**B. Narrowing on tightness alone.** "I still say the frame is wrong. But if
+you want me to look at the hose, show me water leaving it between 08:15 and
+08:18 — not before, not after." Open demands 1; bound tightness 3; conceded 0.
+Ladder rung 1. This is the disputed cell, and the pair of scores says exactly
+what happened.
+
+**C. Narrowing on concession.** "Fine — the alloy is dross, I will not argue
+that, and I accept the crucible follows if the assay holds. What I still will
+not accept is that this settles who cast it." Open demands 1; bound tightness
+1; conceded 2. Ladder rung 1.
+
+**D. Narrowing on demand count.** Earlier turn demanded the timestamp, the dye
+path and the caster's name; this turn: "Drop the caster for now. The timestamp
+and the dye path are what I need." Open demands 2; bound tightness 2;
+conceded 0. Ladder rung 1. Narrower than the earlier turn on mark 1 alone.
+
+**E. Not narrowing, and not rung 2.** "Run it and tell me what you get."
+Open demands 1; bound tightness 1; conceded 0. Ladder rung 1 — asking for a
+result is not beginning the test.
+
+## Reading a dialogue
+
+Score every learner turn from the trigger turn to the end of the outcome
+horizon. A refusal narrows across a dialogue when, comparing the last scored
+turn with the first: open demands fall, or bound tightness rises, or conceded
+sub-claims rise, with no mark moving the other way. Report the three marks
+separately as well as that combined direction, because a scale that only ever
+reports its own summary hides which mark carried it.
+
+Turns where the learner has left the persona, or where the tutor did not
+deliver its registered move, are not scored. They are recorded as unscored
+with the reason.
+
+## What this codebook does not do
+
+It does not measure learning, understanding, or whether the tutor taught
+well. It measures the shape of one simulated learner's refusal, on the public
+transcript, in this study's worlds. A narrowing refusal may be a tutor doing
+good work or a learner running out of objections, and these three counts
+cannot tell those apart.
+
+It authorizes no model call. The next step on the card is a three-seat reader
+calibration on a sampled slice of archived rows, under its own attended
+approval and spend ceiling, to find out whether the scale spreads between the
+two versions of the tutor at all. If it does not spread, that is the finding
+and the card closes.

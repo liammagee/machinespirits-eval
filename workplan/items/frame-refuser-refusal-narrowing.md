@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-08-27
-updated: 2026-08-27
+updated: 2026-08-29
 verification: >-
   A written narrowing codebook exists before any reader call. Reader
   calibration on archived transcripts passes registered agreement floors
@@ -23,6 +23,8 @@ links:
   items:
     - frame-refuser-depth-study
     - frame-refuser-satisfiable-condition
+  notes:
+    - config/tutor-stub-frame-refuser-narrowing-codebook.v1.md
 tags:
   - tutor-stub
   - resistant-learners
@@ -78,3 +80,43 @@ produces rung 2?
 
 - 2026-08-27: Card opened from the depth-study closeout. No model call is
   authorized; P0 is zero-call.
+- 2026-08-29: **P0 done, zero-call.**
+  `config/tutor-stub-frame-refuser-narrowing-codebook.v1.md` defines the three
+  registered marks with their directions: open demands still standing at the
+  end of a turn (lower is narrower), bound tightness on a 0–3 scale over the
+  turn's narrowest demand (higher is narrower), and sub-claims conceded on the
+  tutor's line (higher is narrower). Counting rules cover the cases that would
+  otherwise be judged twice — a demand restated in narrower terms is one demand
+  scored on tightness, a withdrawn demand is a concession rather than an open
+  demand, and a concession on the wider frame is out of scope because a learner
+  who abandons the frame has left the persona.
+
+  The tie-break the readers needed is written plainly: a learner naming a bound
+  while still withholding is rung 1 on the ladder, always. That is the cell
+  where the fourth calibration failed pairwise agreement (0.714 and 0.733), and
+  since the ladder is deliberately unamended the disagreement would otherwise
+  recur. Under the codebook the same turn reads unambiguously as ladder rung 1
+  with bound tightness 3.
+
+  The codebook takes no authority over the ladder: it never converts to a
+  ladder score, never breaks a ladder tie, and never enters a primary endpoint.
+  Where a run carries both, the ladder is the endpoint and this is report-only.
+
+  **One thing to fix before P1.** The card asks for worked examples from the
+  archived gray-zone rows. Those rows live in the private archive and are not in
+  this checkout, so the five examples are authored illustrations, marked as such
+  in the file. Writing invented learner speech and presenting it as archived
+  evidence would be fabrication. Replace them with real rows before reader
+  calibration, keep the ones that still discriminate, and record any example the
+  real transcripts contradict.
+
+  `tests/tutorStubFrameRefuserNarrowingCodebook.test.js` (6 tests) pins the
+  three marks and their directions, the tie-break with the agreement figures it
+  answers, the four sentences disclaiming authority over the ladder, the
+  no-model-call boundary with its stated null outcome, and that the examples
+  stay marked as authored.
+
+  Next is P1: three-seat reader calibration on a sampled slice of archived rows,
+  under its own attended approval and spend ceiling. If the scale does not
+  spread between the two versions of the tutor, that is the finding and the card
+  closes.
