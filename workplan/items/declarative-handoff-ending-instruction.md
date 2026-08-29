@@ -65,18 +65,38 @@ rows 25–27: a rule binds only where the code reads it.
 
 ## Not fixed by this
 
-The `nocturne_boundary_handoff` benchmark case still fails on the
-writing side. That is not a missing instruction. The refreshed compact
-prompt already bars the question twice — once on the HANDOFF line and
-once on the TACTIC line — and the model asks anyway. Changing the
-harness cannot fix model non-compliance; any wording change would need
-paid benchmark calls to verify.
+The benchmark still fails on the writing side, and the six-call strong
+run at the authorized push settles what kind of failure it is. Codex
+passed all three cases. Sonnet failed two of three, both on the same
+broken rule — asking a question the handoff forbids. The one case I had
+guessed at, the boundary handoff, is the one Sonnet passed.
+
+The two failing endings:
+
+- counterpressure write — "The ledger, not the lamp, is what would
+  settle a period of use — has anyone opened it yet?"
+- period source — "That fixes when the nocturne was written, but not yet
+  whose hand held the pen. What does the copy-room ledger show for that
+  same winter?"
+
+Codex on the same two turns ends flat: "the period of use must be shown
+before the paper can date the nocturne", and "This dates the nocturne,
+but does not identify its composer."
+
+So this is not a missing instruction and not one bad case. The refreshed
+compact prompt bars the question twice, once on the handoff line and
+once on the tactic line, and one model of the two still asks. The hook
+also compared the saved baseline responses under this change's audit
+code: 0 improved, 0 regressed of 6. The fix neither helped nor hurt the
+benchmark, which is right — the benchmark never reaches the redraft path
+this fix corrects.
 
 ## Log
 
-- 2026-08-29: Defect found while checking why one benchmark case writes a
+- 2026-08-29: Defect found while checking why a benchmark case writes a
   closing question. Fixed on both paths, with regression tests in
   `tests/tutorStubFirstDraftContract.test.js` and
-  `services/__tests__/tutorStubGuardRecovery.test.js`. Card closed; the
-  benchmark case is recorded above as a model property, not a harness
-  defect.
+  `services/__tests__/tutorStubGuardRecovery.test.js`. The authorized
+  push ran the strong preset: 4 pass, 2 fail, both failures Sonnet
+  ending on a question. Card closed; the benchmark shortfall is recorded
+  above as a per-model writing property, not a harness defect.
