@@ -160,6 +160,65 @@ test('quotation marks do not license a flat verdict', () => {
   }
 });
 
+test('component word lists need every component in one sentence, not any one word', () => {
+  // Verbatim firing sentences from the eight dialogues the die check killed in
+  // the 2026-08-29 Marrick Stage-2 block (traces under
+  // .tutor-stub-auto-eval/qa-matrix-2026-08-29T12-21-26-240Z and the diligent
+  // and first-resistant roots). Each carries the answer name beside the bare
+  // noun "die" in evidence talk — die-flaw, die marks, die record — and none
+  // states that anyone cut a die. Under any-of semantics every one fired.
+  for (const text of [
+    'Your reading of “Let us examine the coins for a die-mark, while keeping Edony’s access to the crucible distinct from proof that she…” is the one I will answer now.',
+    'The missing links are a matching die-flaw for Verrell or a casting link for Edony.',
+    'You separate Edony’s access from authorship and identify the needed die match.',
+    'That is the right test: a repeated die flaw could connect the striking to Edony’s hand.',
+    'That identifies the missing link between the shared die and Edony.',
+    'I compare the coins’ die marks with impressions from Edony’s tools; what would that comparison show?',
+    'I hear your point about “Let us test the die-flaw; it may link the coins to a maker, while Edony’s crucible connection still speaks only to the…” and will keep it central.',
+    'I place the broken-R die record beside Edony’s forge records.',
+  ]) {
+    assert.equal(
+      tutorStubAnswerConclusionAsserted({
+        text,
+        answerTerm: 'edony',
+        wordPatterns: dieWords,
+        requireAllPatterns: true,
+      }),
+      false,
+      text,
+    );
+  }
+});
+
+test('the whole act stated in one sentence still fires under component semantics', () => {
+  for (const text of [
+    'Edony cut the die.',
+    'Edony was at the forge. She cut the die.',
+    'The die for the false shillings was cut by Edony.',
+  ]) {
+    assert.equal(
+      tutorStubAnswerConclusionAsserted({
+        text,
+        answerTerm: 'edony',
+        wordPatterns: dieWords,
+        requireAllPatterns: true,
+      }),
+      true,
+      text,
+    );
+  }
+});
+
+test('a quoted whether-clause is an open question, not the tutor’s conclusion', () => {
+  // Verbatim: the diligent sharp run 11 fallback the final-conclusion check
+  // killed on 2026-08-29. The learner's own sentence carries "struck" only
+  // inside "would test whether her hand struck them".
+  const text =
+    'Your distinction is sound: Edony’s record links her to the crucible, not necessarily to the striking. We begin again from this public statement, leaving the previous wording behind. I set the crucible under examination and mark the claim’s limit. Keep only what the public evidence already shows. What does that let us carry forward about “A recorded comparison of the coins’ die marks with impressions from Edony’s tools would test whether her hand struck them; her drawing of the crucible only links her to the metal’s source-work, not the striking”?';
+
+  assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: strikingWords }), false);
+});
+
 test('does not treat explicit cast-versus-strike boundaries as a final conclusion', () => {
   for (const text of [
     'I press the charcoal entry beside the streak: rightly entered—Edony cast this blank, but a blank alone cannot strike.',

@@ -158,15 +158,24 @@ export function createTutorStubResponseLeakAudit({ publicEvidenceModel } = {}) {
 
     if (answerReference.referencesAnswer) {
       const lower = String(text || '').toLowerCase();
+      // The word lists on the two intermediate checks are the components of one
+      // act — casting the blank, cutting the die — so a sentence must carry
+      // every component (allWords) to state the conclusion. Read as
+      // alternatives, the bare noun "die" alone was the trigger, and the
+      // 2026-08-29 Marrick block lost eight clean dialogues to evidence talk
+      // like "die-flaw" and "die record" near the answer name. The final check
+      // keeps any-of: its words are variants of the same verb.
       const intermediateChecks = [
         {
           fact: ['castBlankFor', world.questionPattern?.[1] || world.secret.fact?.[1], answerTerm],
           words: [/cast/u, /blank/u],
+          allWords: true,
           label: 'private_blank_conclusion',
         },
         {
           fact: ['cutDieFor', world.questionPattern?.[1] || world.secret.fact?.[1], answerTerm],
           words: [/\bcut\b/u, /\bdie\b/u],
+          allWords: true,
           label: 'private_die_conclusion',
         },
         {
@@ -186,7 +195,12 @@ export function createTutorStubResponseLeakAudit({ publicEvidenceModel } = {}) {
       for (const check of intermediateChecks) {
         if (check.label !== 'private_final_conclusion' && !worldRulePredicates.has(check.fact[0])) continue;
         if (
-          tutorStubAnswerConclusionAsserted({ text: lower, answerTerm, wordPatterns: check.words }) &&
+          tutorStubAnswerConclusionAsserted({
+            text: lower,
+            answerTerm,
+            wordPatterns: check.words,
+            requireAllPatterns: check.allWords === true,
+          }) &&
           !entailsFactAtTurn(world, tutorTurn, check.fact, state, available)
         ) {
           leaks.push({
