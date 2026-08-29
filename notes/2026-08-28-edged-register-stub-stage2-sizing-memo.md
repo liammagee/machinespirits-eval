@@ -261,3 +261,58 @@ the paid fidelity read (sharp-arm 0.8 presence floor binds; warm leak
 report-only against the Stage-1 baseline), then archive of all roots
 including the void root `qa-matrix-2026-08-28T20-52-23-839Z`. Both wait
 on the operator's word.
+
+## 9. The pin did not hold in the resistant cell (2026-08-28)
+
+A free `--mock` fidelity pass, run before any paid read, refused a verdict
+on both arms: **68 pin violations** over 2,484 fixed-policy tutor turns.
+Stage 1 had zero over 1,562. Every violation is in the
+`affective_resistant` cell; `proof_skipper` and `diligent` have none.
+
+| Cell / arm | pinned | recorded | turns | violations |
+|---|---|---|---|---|
+| affective_resistant / fixed_sarcastic | sarcastic | warm | 455 | 65 |
+| affective_resistant / fixed_sarcastic | sarcastic | plain | 455 | 1 |
+| affective_resistant / fixed_warm | warm | plain | 467 | 2 |
+
+**Cause — a harness defect, not a rebuild artifact.** The raw job traces,
+written live during the run, carry `"selected_register":"warm"` inside
+sarcastic-pinned jobs, so the wrong register was chosen at run time, not
+reconstructed by `--rebuild-from`. Light adaptation was off throughout
+(`enabled:false`, `triggered:false` on every recorded turn), so that path
+is ruled out. The reason strings name the real path: 130 occurrences of
+"The learner asked for more time, so the tutor shifts to warm" in the
+sarcastic arm. The fixed-register policy set the stance, and a later
+release-pacing override rewrote it. A second override,
+`instructional_meta_repair`, forced `plain` and accounts for the other 3.
+
+Stage 1 could not see this. It pinned warm only, and the pacing
+override's target is also warm, so the rewrite was a no-op on every turn.
+
+Fixed in `a8e0d82f`: the pin is now terminal, and a regression test
+requires every stance override to carry a fixed-pin exemption, a
+dynamic-policy scope, or the pressure-probe condition.
+
+**What it does to the finding.** The leak carries *warm* into the
+*sarcastic* arm, so it pulls the two arms together; the sarcastic
+advantage at turn 16 (0.455 vs 0.278) survives it rather than resting on
+it. There is no dose-response either: sorting the 11 clean sarcastic rows
+by leak rate, the eight lightest-leaking rows (5.0-10.0%) mean 0.459 at
+turn 16 and the three heaviest (17.5-55.0%) mean 0.445. No sarcastic row
+is leak-free, so a clean subset cannot be recovered from this data.
+
+**The real threat is policy asymmetry, not register impurity.** The
+pacing trigger fired at similar rates in both arms (130 decelerate events
+sarcastic, 100 warm; zero accelerate events anywhere). In the warm arm
+the response changed nothing. In the sarcastic arm it softened the tutor
+to warm exactly when the learner asked to slow down. So the sarcastic arm
+ran a mildly responsive policy — sharp, yielding on request — while the
+warm arm ran a flat one. "Sharp but yielding beats uniformly warm" is a
+live alternative reading of the headline result, and no fidelity read can
+separate it from "sharp beats warm". Only a re-run on the fixed code can.
+
+**Open.** The two clean cells can be read for fidelity as they stand. The
+resistant cell needs re-running on `a8e0d82f` before its result is
+interpretable: 24 dialogues, 4,320 generation calls at the 180-call pool,
+plus its share of the fidelity read. That is new spend against the
+study's ceiling and waits on the operator's word.
