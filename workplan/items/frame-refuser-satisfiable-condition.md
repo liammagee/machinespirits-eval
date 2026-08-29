@@ -154,3 +154,31 @@ engagement above the refuser's base rate?
   the arm projection a launcher needs cannot be built yet. Writing those two
   questions is a design decision, not a code gap. Then the narrowing codebook
   if it lands, and the three standing authorities.
+
+- 2026-08-29 — Revision 2: delivery waits for release, and both adjudication
+  questions are written. Found while drafting the questions: revision 1's
+  treatment move could not be delivered. A premise becomes public through the
+  paced release schedule, not by the tutor speaking it, and both demanded
+  exhibits release after the turn the move would have fired on — Marrick's
+  `p_alloy` at turn 4 and Rowan Flat's `p_split` at turn 3, against a move
+  firing at tutor turn 2 or 3. Marrick was undeliverable in every dialogue.
+  Unfixed, 24 treatment dialogues would have run and the delivery gate would
+  have failed at Gate 1 after the spend.
+
+  Both arms now deliver on the first intervention turn at or after the demanded
+  exhibit is public, inside the horizon: turns 4–10 in Marrick, 3–10 in Rowan
+  Flat, the same floor for both arms. The contrast becomes cleaner — the
+  exhibit is on the table and one tutor uses it. The cost is that *when* the
+  reference move lands no longer matches the sealed condition the 0.114 base
+  was measured on; that is carried as a stated risk, and the calibration's own
+  reference rate updates the power table.
+
+  Nothing measured is invalidated. The depth study required an already-public
+  exhibit and delivered 19 of 19; the 0.114 rate came from the bridge, which
+  presents no exhibit.
+
+  The two per-arm adjudication questions are written out, with the quote-echo
+  exemption carried over. The validator refuses a reference question that does
+  not forbid the demanded exhibit and a treatment question without the
+  exemption. `tests/tutorStubFrameRefuserSatisfiablePlan.test.js` is now 8
+  tests. Next: the arm projection and launch preflight, then Gate 1.

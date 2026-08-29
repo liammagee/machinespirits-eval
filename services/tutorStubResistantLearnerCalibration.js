@@ -53,6 +53,8 @@ const DEPTH_ID = 'frame-refuser-depth';
 export const TUTOR_STUB_FRAME_REFUSER_SATISFIABLE_DESIGN_SCHEMA_V1 =
   'machinespirits.tutor-stub.frame-refuser-satisfiable-study-design.v1';
 const SATISFIABLE_ID = 'frame-refuser-satisfiable';
+export const SATISFIABLE_CURRENT_REVISION = 2;
+export const SATISFIABLE_DELIVERY_TIMING_RULE = 'first_intervention_turn_at_or_after_the_demanded_exhibit_is_public';
 const SATISFIABLE_MASTER_SEED = 2026083001;
 const SATISFIABLE_CASE_ID_STEM = 'sat1';
 const DEPTH_ARM_IDS = Object.freeze(['treatment', 'reference']);
@@ -1071,7 +1073,12 @@ function validateTutorStubFrameRefuserDepthDesignV1(design) {
  */
 function validateTutorStubFrameRefuserSatisfiableDesignV1(design) {
   const issues = [];
-  if (design?.revision !== 1 || design?.studyId !== SATISFIABLE_ID) {
+  // Revision 2 exists because revision 1's treatment move could not be
+  // delivered: a premise becomes public through the paced release schedule, not
+  // by the tutor speaking it, and both demanded exhibits release after the turn
+  // the move would have fired on. Both arms now deliver at or after the exhibit
+  // is public. See the design's whyDeliveryWaitsForRelease block.
+  if (design?.revision !== SATISFIABLE_CURRENT_REVISION || design?.studyId !== SATISFIABLE_ID) {
     issues.push('satisfiable design identity is unsupported');
     return { valid: false, issues };
   }
@@ -1108,6 +1115,50 @@ function validateTutorStubFrameRefuserSatisfiableDesignV1(design) {
   }
   if (population?.rivalDagPersona?.demandSelectionRule?.id !== TUTOR_STUB_DEMANDED_EXHIBIT_RULE) {
     issues.push('satisfiable demand selection rule drifted from the implemented rule');
+  }
+  // The revision-2 fix: the tutor cannot bring a premise forward, so the move
+  // waits for it, and both arms wait together or the contrast is not a contrast.
+  const timing = population?.rivalDagPersona?.demandSelectionRule?.deliveryTiming || {};
+  if (
+    timing.id !== SATISFIABLE_DELIVERY_TIMING_RULE ||
+    timing.heldIdenticalAcrossArms !== true ||
+    !String(timing.ifTheExhibitNeverBecomesPublicInsideTheHorizon || '').trim()
+  ) {
+    issues.push('satisfiable delivery timing rule drifted');
+  }
+  if (!String(design?.whyDeliveryWaitsForRelease?.fix || '').trim()) {
+    issues.push('satisfiable design must record why delivery waits for release');
+  }
+
+  // Both adjudication questions must be written out, not left as a reference:
+  // without them no arm projection can be built.
+  const adjudication = design?.tutorDeliveryEnforcement?.perArmAdjudication || {};
+  if (
+    design?.tutorDeliveryEnforcement?.schema !== 'machinespirits.tutor-stub.tutor-delivery-enforcement.v1' ||
+    design?.tutorDeliveryEnforcement?.repairsAllowedPerEpisode !== 1 ||
+    design?.tutorDeliveryEnforcement?.exhaustionNeverScored !== true ||
+    design?.tutorDeliveryEnforcement?.typedFailureIsNotDeterminate !== true ||
+    !String(adjudication.treatmentQuestion || '').trim() ||
+    !String(adjudication.referenceQuestion || '').trim() ||
+    !exactValues(adjudication.adjudicatorSeat, {
+      id: 'tutor_delivery_adjudicator',
+      modelRef: 'codex.gpt-5.6-sol',
+      provider: 'codex',
+      model: 'gpt-5.6-sol',
+      effort: 'low',
+    })
+  ) {
+    issues.push('satisfiable tutor-delivery enforcement drifted');
+  }
+  // The reference question must forbid the demanded exhibit, or both arms could
+  // deliver the same behaviour and the gate would compare a copy with itself.
+  if (!/WITHOUT naming the exhibit/u.test(String(adjudication.referenceQuestion || ''))) {
+    issues.push('satisfiable reference adjudication must forbid naming the demanded exhibit');
+  }
+  // The treatment question must judge the tutor's own voice; the learner's own
+  // line IS the banned formula, and quoting it sank four revision-3 drafts.
+  if (!/Judge only the tutor's own voice/u.test(String(adjudication.treatmentQuestion || ''))) {
+    issues.push('satisfiable treatment adjudication must carry the quote-echo exemption');
   }
 
   if (design?.register?.held !== 'plain' || design?.register?.reportOnly !== true) {
@@ -1804,6 +1855,12 @@ function buildFrameRefuserSatisfiableJobs(design, { root = process.cwd() } = {})
             premise_id: demand.demandedPremiseId,
             release_turn: demand.releaseTurn,
           },
+          // The tutor cannot bring a premise forward, so the registered move
+          // waits for it. Same floor in both arms: the contrast is what the
+          // tutor does with an exhibit both tutors can see, not who saw one.
+          delivery_timing_rule: SATISFIABLE_DELIVERY_TIMING_RULE,
+          earliest_delivery_turn: demand.releaseTurn,
+          latest_delivery_turn: maximumTriggerTurn + horizon,
           rival_dag_sha256: dag.sha256,
           repeat,
         });
@@ -2481,6 +2538,18 @@ export function runTutorStubFrameRefuserSatisfiablePlanPreflight({ loaded, root 
         job.demanded_exhibit.release_turn > job.maximum_trigger_turn &&
         job.demanded_exhibit.release_turn <= job.maximum_trigger_turn + job.outcome_horizon_learner_turns,
     ),
+    // 1b. The registered move must have a turn it can actually fire on: the
+    // exhibit public, and still inside the horizon. Without this the treatment
+    // move is undeliverable, which is the revision-1 defect.
+    delivery_window_is_reachable: plan.jobs.every(
+      (job) =>
+        job.earliest_delivery_turn <= job.latest_delivery_turn &&
+        job.delivery_timing_rule === SATISFIABLE_DELIVERY_TIMING_RULE,
+    ),
+    both_arms_share_the_delivery_floor: design.population.worlds.every((world) => {
+      const floors = new Set(plan.jobs.filter((job) => job.world === world).map((job) => job.earliest_delivery_turn));
+      return floors.size === 1;
+    }),
     // 2. The mint is the exhibit mint, and every node is an authored premise.
     minted_nodes_are_exhibits: mints.every((mint) => mint.every_node_is_an_exhibit),
     minted_nodes_resolve_to_authored_premises: mints.every((mint) => mint.every_node_resolves_to_an_authored_premise),

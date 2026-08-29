@@ -1,4 +1,4 @@
-# Registration — frame-refuser with a satisfiable condition (revision 1)
+# Registration — frame-refuser with a satisfiable condition (revision 2)
 
 Status: prospective, zero-call. This registration licenses nothing. It names
 a design, shows why its central condition can be met, and states what has to
@@ -87,8 +87,13 @@ rule.
 
 The variant mints the open nodes from the authored path's **premises**. A
 premise is an exhibit: authored surface text describing something the world
-can show. The tutor holds the premise ledger, so entering an exhibit into
-the public record is a move the tutor can actually make.
+can show. Once an exhibit is public, the tutor can name it and say what it
+shows — which is the move the demand asks for.
+
+*(Revision 1 said here that the tutor could enter an exhibit into the record
+itself. It cannot: the release schedule makes a premise public, on a paced
+clock. See "Revision 2" below, which is why the registered move now waits for
+the exhibit rather than firing straight after the trigger.)*
 
 `world_030_rowan_flat`, authored path premises and their scheduled release
 turns:
@@ -135,6 +140,10 @@ authored-path premise that is both not yet public at the trigger turn and
 scheduled for release inside the outcome horizon. If no premise satisfies
 both conditions for an assigned world, the plan build refuses that world.
 A run never starts with an undischargeable demand.
+
+The companion rule, added in revision 2, says when the tutor may answer it:
+the registered move is delivered on the first intervention turn at or after
+the demanded exhibit is public, the same turn in both arms.
 
 ## What is unchanged, and why
 
@@ -218,3 +227,63 @@ Any claim is limited to the `frame_refuser_exhibit-r2-rival-dag-v1` persona
 on `world_005_marrick` and `world_030_rowan_flat`, this ladder, this move
 family, and the block that produced it. Nothing here revisits the
 predecessor's null, which stands as recorded.
+
+## Revision 2 — the tutor cannot bring an exhibit forward
+
+Revision 1 said the treatment tutor should "put that exhibit into the
+record". It cannot. A premise becomes public through the world's release
+schedule, run on a paced virtual clock (`services/tutorStubReleasePacing.js`);
+the tutor can point at an exhibit that is already public, and nothing more.
+The predecessor design knew this — its treatment question says "one named
+**already-public** exhibit" — and revision 1 lost the constraint while
+rewording.
+
+The timing collided as well. The registered move fires on the first
+intervention tutor turn after the trigger, and the trigger lands no later
+than learner turn 2, so the move would have fired at tutor turn 2 or 3. The
+demanded exhibits release later: Marrick's `p_alloy` at turn 4, Rowan Flat's
+`p_split` at turn 3. In Marrick the treatment move was undeliverable in every
+dialogue; in Rowan Flat only on the later trigger, and only if pacing did not
+slip it. Twenty-four treatment dialogues would have run, about half of them
+structurally unable to deliver, and the 0.8 delivery-rate gate would have
+failed at Gate 1 after the spend.
+
+**The fix.** Both arms deliver the registered move on the first intervention
+tutor turn at or after the demanded exhibit is public, inside the outcome
+horizon. The delivery windows are turns 4–10 in Marrick and 3–10 in Rowan
+Flat. Both arms wait together, so the contrast is exactly: the exhibit is on
+the table, the treatment tutor restates it and re-offers the test, the
+reference tutor asks the standing question and leaves it alone. That is a
+cleaner contrast than revision 1's, which would have compared a tutor using
+an exhibit against a tutor that could not have used one either.
+
+**What it costs.** The reference instruction stays byte-identical, but when it
+lands moves: the measured 0.114 base rate was taken with the bridge delivered
+straight after the trigger. This is the second registered departure from the
+sealed condition, after the demanded node kind, and it is carried openly as a
+known risk. The calibration's reference-arm rate is what updates the power
+table, so a shifted base is measured rather than assumed.
+
+**What it does not touch.** The predecessor depth study required an
+already-public exhibit and delivered on 19 of 19 adjudicated turns, so its
+null stands. The 0.114 rate came from the standing-conditions bridge, which
+presents no exhibit at all. Nothing measured is invalidated; the defect was in
+the design written on 2026-08-28, before any call.
+
+## The two adjudication questions
+
+Both are now written out rather than referenced, which is what the arm
+projection needs. They follow the predecessor's revision-4 shape, including
+the quote-echo exemption that sank four revision-3 drafts — the learner's own
+condition-naming line *is* the banned standing formula, so the adjudicator
+judges the tutor's own voice.
+
+- **Treatment.** Restate in the tutor's own words the exhibit the learner
+  demanded (not a word-for-word copy), name what that already-public exhibit
+  shows, and re-offer the same local test in committed voice — without asking
+  what would give the question standing and without a standing-precondition
+  formula in the tutor's own voice.
+- **Reference.** Deliver the sealed bridge (name the disputed standing, ask
+  what would give the question standing, offer one bounded distinction)
+  **without** naming the demanded exhibit and without presenting evidence
+  toward it.

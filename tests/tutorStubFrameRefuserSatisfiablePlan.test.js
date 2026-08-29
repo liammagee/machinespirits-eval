@@ -42,6 +42,43 @@ const EXPECTED_DEMAND = {
   world_030_rowan_flat: { premise: 'p_split', turn: 3 },
 };
 
+test('the delivery window is reachable and shared by both arms', () => {
+  // Revision 2 exists because revision 1's treatment move could not be
+  // delivered: a premise becomes public through the paced release schedule, not
+  // by the tutor speaking it, and both demanded exhibits release after the turn
+  // the move would have fired on. Marrick was undeliverable in every dialogue.
+  const plan = buildTutorStubResistantLearnerCalibrationPlan(design(), { root: REPO_ROOT });
+  for (const job of plan.jobs) {
+    assert.equal(job.delivery_timing_rule, 'first_intervention_turn_at_or_after_the_demanded_exhibit_is_public');
+    // The move waits for the exhibit, and the wait must fit inside the horizon.
+    assert.equal(job.earliest_delivery_turn, job.demanded_exhibit.release_turn);
+    assert.ok(
+      job.earliest_delivery_turn <= job.latest_delivery_turn,
+      `${job.world} has no turn on which the registered move could fire`,
+    );
+  }
+  // Both arms wait together, or the contrast is not a contrast: it becomes
+  // "one tutor saw an exhibit and the other did not".
+  for (const world of Object.keys(EXPECTED_DEMAND)) {
+    const floors = new Set(plan.jobs.filter((job) => job.world === world).map((job) => job.earliest_delivery_turn));
+    assert.equal(floors.size, 1, `${world} must give both arms the same delivery floor`);
+  }
+});
+
+test('both adjudication questions are written out and separate the arms', () => {
+  const enforcement = design().tutorDeliveryEnforcement.perArmAdjudication;
+  // The treatment question must demand the three parts of the move and carry
+  // the quote-echo exemption; the learner's own line IS the banned formula.
+  assert.match(enforcement.treatmentQuestion, /restate in the tutor's own words/u);
+  assert.match(enforcement.treatmentQuestion, /name what that already-public exhibit shows/u);
+  assert.match(enforcement.treatmentQuestion, /re-offer the same local test in committed voice/u);
+  assert.match(enforcement.treatmentQuestion, /Judge only the tutor's own voice/u);
+  // The reference question must forbid the exhibit, or the gate would compare
+  // one delivered behaviour with its own copy.
+  assert.match(enforcement.referenceQuestion, /WITHOUT naming the exhibit/u);
+  assert.doesNotMatch(enforcement.referenceQuestion, /unchanged from parent design/u);
+});
+
 test('the registered design validates', () => {
   const result = validateTutorStubResistantLearnerDesign(design());
   assert.deepEqual(result.issues, []);
@@ -188,4 +225,15 @@ test('the validator refuses each thing held fixed for comparability', () => {
   refuses((d) => {
     d.callAuthority.grantsModelCalls = true;
   }, /call authority drifted/u);
+  // The revision-2 fix itself, and the two questions it unblocked.
+  refuses((d) => {
+    d.population.rivalDagPersona.demandSelectionRule.deliveryTiming.heldIdenticalAcrossArms = false;
+  }, /delivery timing rule drifted/u);
+  refuses((d) => {
+    d.tutorDeliveryEnforcement.perArmAdjudication.referenceQuestion =
+      'Does the tutor name the disputed standing and offer one bounded distinction?';
+  }, /must forbid naming the demanded exhibit/u);
+  refuses((d) => {
+    d.tutorDeliveryEnforcement.perArmAdjudication.treatmentQuestion = 'Did the tutor discharge the exhibit?';
+  }, /must carry the quote-echo exemption/u);
 });

@@ -1,6 +1,6 @@
 {
   "schema": "machinespirits.tutor-stub.frame-refuser-satisfiable-study-design.v1",
-  "revision": 1,
+  "revision": 2,
   "studyId": "frame-refuser-satisfiable",
   "label": "Condition discharge against the sealed standing-conditions bridge, on a frame-refuser whose demanded node is a witnessable exhibit",
   "status": "prospective_zero_call_design_pending_implementation_and_typed_approval",
@@ -66,7 +66,14 @@
         "id": "earliest_unreleased_authored_path_premise_within_horizon",
         "statement": "The learner's standing demand names the earliest premise on the authored proof path that is (a) not already public at the trigger turn and (b) scheduled for release within the outcome horizon. That premise is the demanded exhibit for the dialogue.",
         "whyNotSimplyTheFirstPremise": "A premise already public at the trigger turn makes the demand empty; a premise scheduled past the horizon makes it undischargeable again, which is the defect this design exists to remove.",
-        "failClosed": "If no authored-path premise satisfies both conditions for an assigned world, the plan build refuses that world. A run never starts with an undischargeable demand."
+        "failClosed": "If no authored-path premise satisfies both conditions for an assigned world, the plan build refuses that world. A run never starts with an undischargeable demand.",
+        "deliveryTiming": {
+          "id": "first_intervention_turn_at_or_after_the_demanded_exhibit_is_public",
+          "statement": "The registered move is delivered on the first intervention tutor turn that is (a) after the trigger and (b) at or after the turn on which the demanded exhibit became public. Both arms use the same rule, so both deliver at the same point relative to the exhibit.",
+          "heldIdenticalAcrossArms": true,
+          "ifTheExhibitNeverBecomesPublicInsideTheHorizon": "typed tutor non-delivery through no fault: retain, stop the unit, never score a rung. Counted against the discharge-opportunity rate, which is what measures how often release pacing denied the tutor its chance.",
+          "whyNotTheFirstTurnAfterTheTrigger": "See whyDeliveryWaitsForRelease: the demanded exhibit is not public then, so the treatment move cannot be delivered at all."
+        }
       },
       "behavior": [
         "Treat the dispute as competition between the tutor's answer frame and your record-first frame, not as a manner rule.",
@@ -103,16 +110,16 @@
     "treatment": {
       "id": "exhibit_discharge",
       "hostActionFamily": "reanchor_public_evidence",
-      "definition": "On the first registered intervention tutor turn after the trigger, restate the learner's demanded exhibit in the tutor's own words, enter that exhibit into the public record, and re-offer the same local test now that it is public.",
-      "actionInstruction": "Restate in one short clause, in your own words, the exhibit the learner said must be in the record; do not repeat the learner's sentence word for word. Then put that exhibit into the record by naming what it shows. Then state, in committed voice, that you are ready to run the same test now on that exhibit. Do not use a standing-precondition formula.",
-      "deliveredContrastRule": "requires_public_entry_of_the_demanded_exhibit_and_reoffer_of_the_same_test"
+      "definition": "On the first intervention tutor turn at or after the demanded exhibit is public, restate that exhibit in the tutor's own words, name what it shows, and re-offer the same local test now that it is on the table.",
+      "actionInstruction": "Restate in one short clause, in your own words, the exhibit the learner said must be in the record; do not repeat the learner's sentence word for word. Then name what that exhibit shows. Then state, in committed voice, that you are ready to run the same test now on it. Do not ask what would give your question standing, and do not use a standing-precondition formula.",
+      "deliveredContrastRule": "requires_restatement_and_naming_of_the_demanded_public_exhibit_and_reoffer_of_the_same_test"
     },
     "reference": {
       "id": "standing_conditions_bridge",
       "hostActionFamily": "clarify_distinction",
-      "definition": "The parent design's sealed face-B move, unchanged: name the disputed standing plainly, ask the bounded test question, and present no exhibit toward the demanded node on that turn.",
+      "definition": "The parent design's sealed face-B move, unchanged: name the disputed standing, ask the bounded test question, and say nothing of the demanded exhibit on that turn. Delivered on the same turn as the treatment move.",
       "actionInstruction": "unchanged from parent design faceB tutorDeliveryContract.actionInstructions.test_bounded_distinction",
-      "deliveredContrastRule": "requires_standing_question_and_forbids_entering_the_demanded_exhibit_on_that_turn"
+      "deliveredContrastRule": "requires_standing_question_and_forbids_naming_the_demanded_exhibit_on_that_turn"
     },
     "distinctDeliveredBehaviourFloors": {
       "minimumTreatmentDeliveryRate": 0.8,
@@ -236,7 +243,7 @@
     "outcomeSelection": false,
     "interimOutcomeAnalysis": false,
     "tutorNonDelivery": "retain; stop the unit; never score or determine a rung; never charge the learner; no rerun",
-    "demandedExhibitUnavailable": "retain; stop the unit; typed as a plan defect, never scored, and the plan build that allowed it is the thing to fix"
+    "demandedExhibitUnavailable": "retain; stop the unit; typed tutor non-delivery through no fault, never scored, never charged to the learner, no rerun. This is release pacing denying the tutor its chance, not a plan defect: the plan build proves the exhibit is scheduled inside the horizon, and the discharge-opportunity gate measures how often the schedule delivered."
   },
   "knownRisks": [
     {
@@ -246,19 +253,25 @@
       "mitigationIfAvailable": "Gate 1 should wait for the narrowing codebook (workplan frame-refuser-refusal-narrowing) so the run can carry the finer secondary endpoint alongside the unchanged primary."
     },
     {
-      "id": "launch_path_not_wired",
-      "statement": "The plan build resolves and refuses, but no launch preflight compiles the runtime for this design: its per-arm delivery enforcement text is recorded as a reference to the sealed face-B contract rather than written out, so the arm projection the launcher needs cannot be built yet.",
-      "disposition": "Write the per-arm delivery adjudication questions into the design, then build the arm projection and launch preflight the way the depth study does. runTutorStubFrameRefuserSatisfiablePlanPreflight covers seven of the eight registered pre-launch checks today; the eighth is launch provenance, which is recorded and never enforced."
+      "id": "arm_projection_not_built",
+      "statement": "The per-arm delivery adjudication questions are now written, so the arm projection and launch preflight can be built. Neither exists yet.",
+      "disposition": "Build the arm projection and launch preflight the way the depth study does, then Gate 1. Zero-call work."
     },
     {
       "id": "attrition",
       "statement": "Realized attrition was 40% (v4) and 61% (v3). Floors of 8 per arm were reachable at 40% but not at 61%.",
       "disposition": "48 dialogues at 24 per arm, unchanged from v4. If attrition returns to the v3 level the determinate-outcome gate fails and the block stops, as registered."
+    },
+    {
+      "id": "delivery_turn_moved_against_the_measured_base",
+      "statement": "Both arms now deliver at or after the demanded exhibit is public rather than straight after the trigger. The reference instruction is byte-identical, but the measured 0.114 rung-2 rate was taken with it delivered straight after the trigger.",
+      "disposition": "Stated, not hidden. The calibration reference-arm rate is what updates the power table, so a shifted base is measured rather than assumed; if the calibration reference rate departs sharply from 0.114 that is itself the finding, and the sizing uses the measured value."
     }
   ],
   "preflight": {
     "zeroCallChecksBeforeAnyLaunch": [
       "every assigned world yields a demanded exhibit under the demand selection rule, or the world is refused",
+      "the demanded exhibit's scheduled release turn sits at or before the last intervention turn allowed by the outcome horizon, or the world is refused",
       "minted open nodes carry openNodeKind 'exhibit' and resolve to authored-path premise ids",
       "case ids are underscore-only lowercase and use the sat1 stem",
       "no case id collides with any of the four archived depth calibration runs",
@@ -274,5 +287,36 @@
     "provenance": "Record source commit, source tree, and dirty flag in plan.json; do not enforce source or design digests at launch.",
     "approvalSurvivesCodeFix": true,
     "archive": "all paid artifacts pass npm run archive:runs and are committed in the private archive repository"
+  },
+  "whyDeliveryWaitsForRelease": {
+    "finding": "A premise becomes public through the world's release schedule, run on a paced virtual clock (services/tutorStubReleasePacing.js), not by the tutor choosing to speak it. The tutor can point at an exhibit that is already public; it cannot bring one forward. Revision 1's treatment instruction said 'put that exhibit into the record', which the machinery cannot do.",
+    "collision": "The registered move fires on the first intervention tutor turn after the trigger, and the trigger lands no later than learner turn 2, so the move would fire at tutor turn 2 or 3. The demanded exhibits release later: world_005_marrick p_alloy at authored turn 4, world_030_rowan_flat p_split at authored turn 3. In Marrick the treatment move was undeliverable in every dialogue; in Rowan Flat only on the later trigger, and only if pacing did not slip it.",
+    "consequence_if_unfixed": "24 treatment dialogues would have run, about half of them structurally unable to deliver the move, and the 0.8 delivery-rate gate would have failed at Gate 1 after the spend.",
+    "fix": "Both arms deliver the registered move on the first intervention tutor turn at or after the demanded exhibit is public, inside the outcome horizon. Same turn for both arms, so the contrast is exactly: the exhibit is on the table, the treatment tutor uses it and re-offers the test, the reference tutor asks the standing question and leaves it alone.",
+    "costOfTheFix": "The reference arm's instruction text stays byte-identical, but WHEN it lands moves: the measured 0.114 base rate was taken with the bridge delivered straight after the trigger. This is the one registered thing besides the demanded node kind that no longer matches the sealed condition, and it is stated rather than hidden. A reviewer should press on whether the base rate stays a fair comparison.",
+    "whyNotDemandAnAlreadyPublicExhibit": "A demand for something already in the record is empty: the learner has nothing to withhold standing over, so there is no refusal for the tutor to answer.",
+    "doesNotAffectEarlierWork": "The predecessor depth study's treatment required 'one named already-public exhibit' and delivered on 19 of 19 adjudicated turns, so its null is untouched. The 0.114 base rate came from the standing-conditions bridge, which presents no exhibit at all."
+  },
+  "tutorDeliveryEnforcement": {
+    "schema": "machinespirits.tutor-stub.tutor-delivery-enforcement.v1",
+    "appliesWhen": "registered_intervention_tutor_candidate_before_next_learner_call",
+    "scope": "first_registered_intervention_tutor_turn_per_dialogue_at_or_after_the_demanded_exhibit_is_public",
+    "position": "after_existing_tutor_guard_delivery_before_public_turn_commit_and_next_learner_call",
+    "repairsAllowedPerEpisode": 1,
+    "exhaustionDisposition": "typed_tutor_non_delivery_failure",
+    "exhaustionNeverScored": true,
+    "typedFailureIsNotDeterminate": true,
+    "perArmAdjudication": {
+      "adjudicatorSeat": {
+        "id": "tutor_delivery_adjudicator",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "effort": "low"
+      },
+      "treatmentQuestion": "Does the tutor candidate deliver the registered exhibit discharge: restate in the tutor's own words the exhibit the learner demanded be in the record (not a word-for-word copy of the learner's sentence), name what that already-public exhibit shows, and re-offer the same local test in committed voice, without asking what would give the tutor's question standing, without a standing-precondition formula such as 'before your question can have standing' in the tutor's own voice, and without asking the learner what test would settle the demand? Judge only the tutor's own voice: words the candidate explicitly quotes or attributes to the learner do not count as the tutor's use of a banned formula, but the required restatement must not itself be such a quote.",
+      "referenceQuestion": "Does the tutor candidate deliver the registered standing-conditions bridge (name the disputed standing, ask what would give the question standing, offer one bounded distinction) WITHOUT naming the exhibit the learner demanded and WITHOUT presenting any evidence toward it?",
+      "quoteEchoExemption": "carried unchanged from the predecessor revision 4: the adjudicator judges the tutor's own voice, because the learner's own condition-naming line IS the banned formula and 4 of 5 exhausted revision-3 drafts were rejected for quoting it."
+    }
   }
 }
