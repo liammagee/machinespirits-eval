@@ -11,10 +11,12 @@ updated: 2026-08-29
 verification: "A Tutor Lab chat is live on machinespirits.org before day 1: tutor-core runs behind a website route, each turn shows draft/critique/revision, students can switch critic setting (off/advisory/adversarial) and prompt stance (recognition/placebo/enhanced/naive), access is class-keyed with a per-session budget; courses/479-fall-2026 has a course page pointing at it; students need no access to this repo."
 claim_status: methods
 depends_on: []
-blocked_by: "The deployed CLI-primary route completed one real two-round turn but did not complete a 12-student x 2-turn load check within 45 minutes; choose API-primary serving or a queued/scaled CLI topology before classroom use."
+blocked_by: "Codex Luna passed the live single-turn smoke, but the one-shared-CPU deployment failed the 24-turn seminar gate at concurrency 6 (15 passed, 3 timed out at 300 seconds, 6 unrun); choose queued/backpressured serving or added compute before a new prospective bounded load check."
 links:
   notes:
     - COURSE-479-PLAN.md
+  prs:
+    - https://github.com/liammagee/machinespirits/pull/53
 tags:
   - course
   - teaching
@@ -31,9 +33,9 @@ stances — the same variants as the factorial experiments.
 
 Engine: this repo's tutor-core, mounted inside the website's Express stack
 (the seam was kept one-way for re-extraction); NOT the website's older
-ego/superego engine. The deployed provider plan is `claude-code.sonnet`
-through the CLI bridge as primary and `anthropic.sonnet` through the API as
-fallback; never nemotron/kimi by default.
+ego/superego engine. The deployed provider plan is `codex.gpt-5.6-luna` at
+medium effort through the CLI bridge as primary and `anthropic.sonnet`
+through the API as fallback; never nemotron/kimi by default.
 
 Full plan: `COURSE-479-PLAN.md` (repo root, worktree `../ms-course-479`).
 
@@ -120,3 +122,19 @@ inferred. Website PR #52 records the same blocker. Do not close this card or
 rerun the model-backed check until the owner chooses between API-primary
 serving and a queued/scaled CLI topology, then validates the selected path
 under the same 12 x 2 workload.
+
+2026-08-29 Codex: WEBSITE PR #53 SWITCHED THE LIVE ROUTE TO CODEX LUNA. The
+owner enabled device-code authorization, authenticated the production Codex
+CLI with ChatGPT on its persistent volume, and authorized the bounded serving
+check. A live one-turn smoke completed in 44.8 seconds on
+`codex.gpt-5.6-luna` at medium effort with no fallback.
+
+The registered 12-session x 2-turn check then ran at concurrency 6 with a
+300-second per-turn timeout. Luna successfully served 15 of 24 planned turns;
+3 timed out at the client boundary and 6 did not run to completion. No
+successful response used fallback. Because interrupted route requests left
+server-side CLI children running, the Fly machine was restarted to terminate
+them; it returned healthy, retained the ChatGPT login, and had no Codex worker
+left. The live surface is usable at low concurrency, but classroom readiness
+is still blocked on a topology decision: queue/backpressure on the existing
+machine or added compute, followed by a new prospective bounded load check.
