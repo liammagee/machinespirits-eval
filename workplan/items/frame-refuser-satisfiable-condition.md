@@ -182,3 +182,34 @@ engagement above the refuser's base rate?
   not forbid the demanded exhibit and a treatment question without the
   exemption. `tests/tutorStubFrameRefuserSatisfiablePlan.test.js` is now 8
   tests. Next: the arm projection and launch preflight, then Gate 1.
+
+- 2026-08-29 — Launch path built, zero-call. The last code item before Gate 1
+  is done. `tutorStubFrameRefuserSatisfiableArmDesign` projects each version of
+  the tutor onto the sealed parent's runtime design, carrying four things and
+  no more: the intervention move, the per-arm delivery contract, this study's
+  seed, and its calibration constants. The reference arm keeps the sealed
+  instruction bytes; only when it lands has moved.
+
+  Two things the projection must carry, both now pinned by tests. The per-arm
+  adjudication question has to reach the enforcement seat, or the delivery gate
+  judges the sealed move on both arms and reports a contrast nobody delivered.
+  And the arm has to carry this study's exhibit-minting persona, not the sealed
+  face-B one — inherit that and the learner demands rule warrants again, making
+  the study its own predecessor, with nothing else to notice.
+
+  Both arms compile through the runtime: 8 rows (two arms, two worlds, two
+  scenes), all passing, 48 rival DAGs minted, zero calls. The route table
+  covers 24 seats including the delivery adjudicator each arm needs for its
+  delivered-contrast floor, all on the sealed stack. The launch preflight
+  (`services/tutorStubFrameRefuserSatisfiableLaunch.js`) passes with 3,072
+  planned calls under the 9,504 ceiling, and the typed approval demands the
+  exact phrase and authorizes calibration only.
+
+  One thing removed rather than added: the launch preflight carries no revision
+  check. The design validator accepts only the current revision, so a
+  superseded one cannot load at all — a check there could only recompute its
+  own expectation. `tests/tutorStubFrameRefuserSatisfiableLaunch.test.js` is 9
+  tests; 108 pass across the satisfiable and neighbouring suites.
+
+  What remains is not code: the three standing authorities, and the narrowing
+  codebook if it lands. Passing the preflight is not authorization.

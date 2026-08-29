@@ -253,9 +253,9 @@
       "mitigationIfAvailable": "Gate 1 should wait for the narrowing codebook (workplan frame-refuser-refusal-narrowing) so the run can carry the finer secondary endpoint alongside the unchanged primary."
     },
     {
-      "id": "arm_projection_not_built",
-      "statement": "The per-arm delivery adjudication questions are now written, so the arm projection and launch preflight can be built. Neither exists yet.",
-      "disposition": "Build the arm projection and launch preflight the way the depth study does, then Gate 1. Zero-call work."
+      "id": "gate_1_authorities_outstanding",
+      "statement": "The launch path is built and passes zero-call: arm projection, runtime compilation of both arms, route table, launch preflight and typed approval (services/tutorStubFrameRefuserSatisfiableLaunch.js). Nothing in code now stands between this design and a run.",
+      "disposition": "The remaining gates are not code: the three standing authorities under docs/paid-study-authorization-policy.md, and the narrowing codebook if it lands before Gate 1 as a report-only secondary endpoint. Passing the preflight is not authorization; callAuthority.grantsModelCalls stays false."
     },
     {
       "id": "attrition",
