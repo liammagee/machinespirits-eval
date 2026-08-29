@@ -101,6 +101,17 @@ export function buildTutorStubSimplifiedRecoveryConfiguration(
   return configuration;
 }
 
+// The redraft prompt used to fall back to "use at most one concrete, answerable
+// question" whatever the handoff said, so a turn rejected for asking a forbidden
+// question could be sent back with an order to ask one.
+function recoveryEndingLine(firstDraftContract) {
+  const instruction = firstDraftContract?.ending?.instruction;
+  if (instruction) return `END — ${instruction}`;
+  return firstDraftContract?.progression?.handoff_contract?.question_allowed === false
+    ? 'END — End declaratively at the compiled public boundary; ask no question and use no question mark.'
+    : 'END — Use at most one concrete, answerable question.';
+}
+
 export function tutorStubSimplifiedRecoveryPrompt({ configuration = null, firstDraftContract = null } = {}) {
   const part = configuration?.actorial_part || 'examiner';
   const instructionalMetaRepair = configuration?.discourse_plane?.plane === 'instructional_meta';
@@ -124,9 +135,7 @@ export function tutorStubSimplifiedRecoveryPrompt({ configuration = null, firstD
     `ENACT — ${partCue} Keep it direct and unadorned.`,
     evidence.length ? 'PUBLIC EVIDENCE — deliver each supplied line once and add nothing beyond it:' : null,
     ...evidence.map((row) => `- ${row}`),
-    firstDraftContract?.ending?.instruction
-      ? `END — ${firstDraftContract.ending.instruction}`
-      : 'END — Use at most one concrete, answerable question.',
+    recoveryEndingLine(firstDraftContract),
     'Use ordinary words, one relation per sentence, one continuous public voice, and no role label or stage direction.',
     '[End tutor-only minimal recovery contract]',
   ]

@@ -224,6 +224,22 @@ function endingCue({
     if (clarification) {
       return 'End declaratively at the compiled public boundary and explicitly permit the learner to ask which clue, connection, or term needs explaining; do not ask a question.';
     }
+    // Without this branch the barred case fell through to the question-support
+    // instruction and to the two light-question defaults below, so a handoff
+    // that forbids a question could still hand the writer "end with at most one
+    // light question". The compact renderer never read this field, but the guard
+    // recovery prompt does, which is where the contradiction reached a redraft.
+    if (questionSupport?.responsiveRepairRequired) {
+      return 'The learner says an earlier question went unanswered. Answer it directly from the public record and do not replace that answer with another exercise; end declaratively without a question.';
+    }
+    return [
+      questionSupport?.guardRequired
+        ? 'Do not ask the learner to invent or name an unseen record, source, person, or fact.'
+        : null,
+      'End declaratively at the compiled public boundary; do not ask a question or use a question mark.',
+    ]
+      .filter(Boolean)
+      .join(' ');
   }
   if (questionSupport?.responsiveRepairRequired) {
     return 'The learner says an earlier question went unanswered. Answer it directly; do not replace that answer with another exercise.';

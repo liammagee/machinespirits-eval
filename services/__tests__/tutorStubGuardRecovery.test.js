@@ -387,3 +387,30 @@ test('minimal recovery contract preserves action, public evidence, and terminal 
   assert.match(prompt, /close the named public record, and ask no question/iu);
   assert.match(prompt, /Explicitly close the inquiry and ask no question/iu);
 });
+
+// A contract with no ending instruction fell back to an order to ask a question,
+// whatever the handoff said, so a turn rejected for a forbidden question could be
+// sent back with an instruction to write one.
+test('the redraft contract ends declaratively when the handoff forbids a question', () => {
+  const barred = tutorStubSimplifiedRecoveryPrompt({
+    configuration: { actorial_part: 'examiner' },
+    firstDraftContract: {
+      learner_move: 'The learner asks what to write next.',
+      progression: { handoff_contract: { question_allowed: false } },
+    },
+  });
+
+  assert.match(barred, /END — End declaratively at the compiled public boundary/iu);
+  assert.match(barred, /ask no question and use no question mark/iu);
+  assert.doesNotMatch(barred, /at most one concrete, answerable question/iu);
+
+  const open = tutorStubSimplifiedRecoveryPrompt({
+    configuration: { actorial_part: 'examiner' },
+    firstDraftContract: {
+      learner_move: 'The learner asks what to write next.',
+      progression: { handoff_contract: { question_allowed: true } },
+    },
+  });
+
+  assert.match(open, /END — Use at most one concrete, answerable question/iu);
+});
