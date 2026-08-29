@@ -26,6 +26,11 @@ export const TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES = Object.freeze([
   // the first live exhaustion crossed the child boundary unrecognized and
   // halted the v3 calibration as a technical failure.
   'tutor_stub_tutor_condition_discharge_non_delivery',
+  // Satisfiable-condition treatment arm: the demanded exhibit was scheduled,
+  // but the tutor still failed to deliver the registered exhibit-discharge
+  // move after its one repair. Retain and report it exactly like the depth
+  // arm's condition-discharge failure; never score or replace the dialogue.
+  'tutor_stub_tutor_exhibit_discharge_non_delivery',
 ]);
 
 const RETAINED_SUBSTANTIVE_FAILURE_CODE_SET = new Set(TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_CODES);

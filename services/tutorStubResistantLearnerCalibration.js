@@ -2262,6 +2262,16 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     trigger_learner_sha256: null,
     maximum_trigger_turn: job.maximum_trigger_turn,
     outcome_horizon_learner_turns: job.outcome_horizon_learner_turns,
+    ...(job.delivery_timing_rule
+      ? {
+          delivery_timing_rule: job.delivery_timing_rule,
+          earliest_delivery_turn: job.earliest_delivery_turn,
+          latest_delivery_turn: job.latest_delivery_turn,
+          demanded_exhibit: structuredClone(job.demanded_exhibit),
+          pending_intervention_trigger: null,
+          intervention_turn: null,
+        }
+      : {}),
     final_learner_without_tutor_reply: true,
     ...(isRivalDagDesign(loaded.design)
       ? { study_assignment_instruction_overrides: structuredClone(loaded.design.tutorDeliveryContract) }
@@ -2325,9 +2335,11 @@ export function configureTutorStubResistantLearnerCalibrationFromCli({
   const b1 = job.study === 'B1';
   const executionDesign = isDepthDesign(loaded.design)
     ? tutorStubFrameRefuserDepthArmDesign(loaded.design, job.arm_id, { root })
-    : isMergedDesign(loaded.design)
-      ? tutorStubResistantLearnerMergedFaceDesign(loaded.design, job.face_id)
-      : loaded.design;
+    : isSatisfiableDesign(loaded.design)
+      ? tutorStubFrameRefuserSatisfiableArmDesign(loaded.design, job.arm_id, { root })
+      : isMergedDesign(loaded.design)
+        ? tutorStubResistantLearnerMergedFaceDesign(loaded.design, job.face_id)
+        : loaded.design;
   const executionLoaded = { ...loaded, design: executionDesign };
   const expectedTurns = job.maximum_trigger_turn + job.outcome_horizon_learner_turns;
   const expectedObservation = executionDesign.models.triggerObservation.semantics;
@@ -3988,9 +4000,153 @@ export function summarizeTutorStubFrameRefuserDepthCalibration({ rows, design, r
   };
 }
 
+function satisfiableDischargeOpportunity(row) {
+  const premiseId = row.job?.demanded_exhibit?.premise_id;
+  const latestTurn = Number(row.job?.latest_delivery_turn);
+  if (!premiseId || !Number.isFinite(latestTurn)) return false;
+  return (row.release_pacing || []).some(
+    (event) => Number(event.turn) <= latestTurn && (event.released_now || []).includes(premiseId),
+  );
+}
+
+export function summarizeTutorStubFrameRefuserSatisfiableCalibration({ rows, design, root = process.cwd() } = {}) {
+  const arms = DEPTH_ARM_IDS.map((armId) => {
+    const armDesign = tutorStubFrameRefuserSatisfiableArmDesign(design, armId, { root });
+    const armRows = rows.filter((row) => row.job.arm_id === armId);
+    const completed = armRows.filter((row) => row.status === 'complete');
+    const retained = armRows.filter((row) => row.status === 'retained_substantive_failure');
+    const rules = armDesign.calibration;
+    const endpoint = armDesign.measurement.endpointField;
+    const determinate = completed.filter((row) => panelField(row, 'primary', endpoint)?.status === 'determinate');
+    const rungCounts = Object.fromEntries(
+      ['0', '1', '2'].map((rung) => [
+        rung,
+        determinate.filter((row) => panelField(row, 'primary', endpoint)?.value === rung).length,
+      ]),
+    );
+    const agreement = mergedAgreementSummary(completed, armDesign);
+    const delivery = depthDeliverySummary([...completed, ...retained]);
+    const prohibited = completed.filter((row) => panelField(row, 'fidelity', 'prohibited_delivery')?.value === 'yes');
+    const jurisdictionRetained = completed.filter(
+      (row) => panelField(row, 'primary', 'final_jurisdictional_dispute_retained')?.value === 'yes',
+    ).length;
+    const bridgeDelivered = completed.filter(
+      (row) => panelField(row, 'fidelity', 'delivered_test_bounded_distinction')?.value === 'yes',
+    ).length;
+    const dischargeOpportunity = completed.filter(satisfiableDischargeOpportunity).length;
+    const seatMinimum = rateFloorCount(
+      completed.length,
+      rules.minimumEligibleVoteRatePerSeatAndInstrument,
+      rules.minimumEligibleVotesFloor,
+    );
+    const endpointPairs = agreement.endpoint_panel.pairwise_exact_agreements;
+    const gates = {
+      execution_and_typed_failure_accounting:
+        completed.length + retained.length === rules.dialogues &&
+        retained.every((row) => Boolean(row.registered_failure?.code)),
+      determinate_outcome:
+        determinate.length >=
+        rateFloorCount(completed.length, rules.minimumDeterminateOutcomeRate, rules.minimumDeterminateOutcomeFloor),
+      eligible_vote_rate_per_seat_and_instrument: Object.values(agreement.seat_eligibility).every((seat) =>
+        Object.values(seat).every((count) => count === null || count >= seatMinimum),
+      ),
+      pairwise_exact_endpoint_agreement:
+        endpointPairs.length === 3 &&
+        endpointPairs.every(
+          (pair) =>
+            Number.isFinite(pair.conditional_exact_agreement) &&
+            pair.conditional_exact_agreement >= rules.minimumPairwiseExactEndpointAgreement,
+        ),
+      ...(armId === 'treatment'
+        ? {
+            treatment_delivery_rate:
+              delivery.adjudicated >= 1 &&
+              delivery.delivered >= rateFloorCount(delivery.adjudicated, rules.minimumTreatmentDeliveryRate),
+            treatment_any_adjudicated_delivery: delivery.delivered >= 1,
+            treatment_bridge_read_bound:
+              completed.length >= 1 && bridgeDelivered <= completed.length * rules.maximumTreatmentBridgeReadRate,
+            discharge_opportunity:
+              completed.length >= 1 &&
+              dischargeOpportunity >=
+                rateFloorCount(completed.length, rules.minimumDischargeOpportunityRateOnCompletedTreatmentRows),
+          }
+        : {}),
+      no_confirmed_prohibited_delivery: prohibited.length === 0,
+      jurisdiction_retained:
+        jurisdictionRetained >=
+        rateFloorCount(
+          completed.length,
+          rules.minimumJurisdictionRetainedRateOnCompletedRows,
+          rules.minimumJurisdictionRetainedFloor,
+        ),
+    };
+    return {
+      arm_id: armId,
+      registered_move_id: armDesign.satisfiableExecution.registeredMoveId,
+      pedagogical_move: armDesign.satisfiableExecution.move,
+      host_action_family: armDesign.satisfiableExecution.hostActionFamily,
+      status: Object.values(gates).every(Boolean) ? 'passed' : 'failed',
+      gates,
+      statistics: {
+        completed_rows: completed.length,
+        retained_typed_failures: retained.length,
+        determinate: determinate.length,
+        rung_counts: rungCounts,
+        rung_2_rate: determinate.length ? rungCounts['2'] / determinate.length : null,
+        delivery,
+        confirmed_prohibited_deliveries: prohibited.length,
+        jurisdiction_retained: jurisdictionRetained,
+        delivered_test_bounded_distinction: bridgeDelivered,
+        completed_delivery_certified: completed.filter(
+          (row) =>
+            Array.isArray(row.delivery) &&
+            row.delivery.length > 0 &&
+            row.delivery[row.delivery.length - 1].delivered === true,
+        ).length,
+        ...(armId === 'treatment'
+          ? {
+              demanded_exhibit_available_within_horizon: dischargeOpportunity,
+              demanded_exhibit_unavailable_within_horizon: completed.length - dischargeOpportunity,
+            }
+          : {}),
+      },
+      agreement,
+    };
+  });
+  const referenceArm = arms.find((arm) => arm.arm_id === 'reference');
+  return {
+    schema: 'machinespirits.tutor-stub.frame-refuser-satisfiable-calibration-report.v1',
+    study_id: design.studyId,
+    status:
+      arms.every((arm) => arm.status === 'passed') &&
+      arms.reduce((sum, arm) => sum + arm.statistics.confirmed_prohibited_deliveries, 0) === 0
+        ? 'passed'
+        : 'failed',
+    arms,
+    rows,
+    pooled_confirmed_prohibited_deliveries: arms.reduce(
+      (sum, arm) => sum + arm.statistics.confirmed_prohibited_deliveries,
+      0,
+    ),
+    sizing_update: {
+      purpose: 'update the power table reference rung-2 rate for powered-run sizing; not an interim outcome analysis',
+      reference_rung_2: referenceArm.statistics.rung_counts['2'],
+      reference_determinate: referenceArm.statistics.determinate,
+      reference_rung_2_rate: referenceArm.statistics.rung_2_rate,
+    },
+    calibration_only: true,
+    powered_run_authorized: false,
+    calibration_rows_poolable_into_powered_run: false,
+    claim_boundary: design.claimBoundary,
+  };
+}
+
 export function summarizeTutorStubResistantLearnerCalibration({ rows, design, root = process.cwd() }) {
   if (isDepthDesign(design)) {
     return summarizeTutorStubFrameRefuserDepthCalibration({ rows, design, root });
+  }
+  if (isSatisfiableDesign(design)) {
+    return summarizeTutorStubFrameRefuserSatisfiableCalibration({ rows, design, root });
   }
   if (isMergedDesign(design)) {
     const faces = ['faceA', 'faceB'].map((faceId) => {
@@ -4250,6 +4406,8 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design, ro
 export default {
   buildTutorStubResistantLearnerCalibrationPlan,
   summarizeTutorStubFrameRefuserDepthCalibration,
+  summarizeTutorStubFrameRefuserSatisfiableCalibration,
+  tutorStubFrameRefuserSatisfiableArmDesign,
   tutorStubFrameRefuserDepthArmDesign,
   buildTutorStubResistantLearnerPoweredPlan,
   configureTutorStubResistantLearnerCalibrationFromCli,

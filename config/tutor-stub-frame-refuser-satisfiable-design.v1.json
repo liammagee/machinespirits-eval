@@ -254,8 +254,8 @@
     },
     {
       "id": "gate_1_authorities_outstanding",
-      "statement": "The launch path is built and passes zero-call: arm projection, runtime compilation of both arms, route table, launch preflight and typed approval (services/tutorStubFrameRefuserSatisfiableLaunch.js). Nothing in code now stands between this design and a run.",
-      "disposition": "The remaining gates are not code: the three standing authorities under docs/paid-study-authorization-policy.md, and the narrowing codebook if it lands before Gate 1 as a report-only secondary endpoint. Passing the preflight is not authorization; callAuthority.grantsModelCalls stays false."
+      "statement": "The executable calibration path is built and passes zero-call: arm projection, runtime compilation of both arms, route table, launch preflight, shared-contract admission, fail-before-call reservations, sequential unit execution, and the registered report (scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js).",
+      "disposition": "The remaining gates are the standing authorities under docs/paid-study-authorization-policy.md, and the narrowing codebook if it lands before Gate 1 as a report-only secondary endpoint. Passing the preflight is not authorization; callAuthority.grantsModelCalls stays false."
     },
     {
       "id": "attrition",

@@ -185,34 +185,7 @@ export async function runTutorStubFrameRefuserSatisfiablePreflight({
   };
 }
 
-export function buildTutorStubFrameRefuserSatisfiableApproval({
-  signedBy,
-  approvalPhrase,
-  preflight,
-  approvedAt = new Date().toISOString(),
-} = {}) {
-  const expectedPhrase = `APPROVE CALIBRATION ${preflight.hard_attempt_ceiling}`;
-  if (!String(signedBy || '').trim()) throw new Error('typed approval requires the operator name');
-  if (approvalPhrase !== expectedPhrase) throw new Error(`typed approval must be exactly: ${expectedPhrase}`);
-  return {
-    approved_by: String(signedBy).trim(),
-    approved_at: approvedAt,
-    typed_phrase: approvalPhrase,
-    scope: 'frame-refuser satisfiable-condition exhibit-discharge calibration only',
-    study_id: preflight.study_id,
-    destination: preflight.destination,
-    jobs: preflight.jobs,
-    planned_role_calls: preflight.planned_role_calls,
-    hard_attempt_ceiling: preflight.hard_attempt_ceiling,
-    create_once: true,
-    attended: true,
-    calibration_only: true,
-    powered_run_authorized: false,
-  };
-}
-
 export default {
-  buildTutorStubFrameRefuserSatisfiableApproval,
   runTutorStubFrameRefuserSatisfiablePreflight,
   tutorStubFrameRefuserSatisfiableRouteTable,
 };

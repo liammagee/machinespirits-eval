@@ -15,21 +15,30 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
   SATISFIABLE_CURRENT_REVISION,
+  buildTutorStubResistantLearnerCalibrationPlan,
   loadTutorStubResistantLearnerDesign,
+  configureTutorStubResistantLearnerCalibrationFromCli,
   runTutorStubResistantLearnerCompilationPreflight,
+  summarizeTutorStubResistantLearnerCalibration,
   tutorStubFrameRefuserSatisfiableArmDesign,
   validateTutorStubResistantLearnerDesign,
 } from '../services/tutorStubResistantLearnerCalibration.js';
 import {
-  buildTutorStubFrameRefuserSatisfiableApproval,
   runTutorStubFrameRefuserSatisfiablePreflight,
   tutorStubFrameRefuserSatisfiableRouteTable,
 } from '../services/tutorStubFrameRefuserSatisfiableLaunch.js';
+import {
+  executeTutorStubFrameRefuserSatisfiableCalibration,
+  main as satisfiableLauncherMain,
+  TUTOR_STUB_FRAME_REFUSER_SATISFIABLE_USAGE,
+} from '../scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js';
+import { tutorStubRegisteredStudyOutcomeFromError } from '../services/tutorStubRegisteredStudyOutcome.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN_PATH = 'config/tutor-stub-frame-refuser-satisfiable-design.v1.json';
@@ -128,6 +137,60 @@ test('both arms compile through the runtime with the right question and mint', (
   assert.equal(families.size, 2, 'each arm compiles to its own host action family');
 });
 
+test('the production CLI configuration projects the selected arm before execution', () => {
+  const loaded = load();
+  const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded.design, { root: REPO_ROOT });
+  for (const armId of ['treatment', 'reference']) {
+    const job = plan.jobs.find((candidate) => candidate.arm_id === armId);
+    const armDesign = tutorStubFrameRefuserSatisfiableArmDesign(loaded.design, armId, { root: REPO_ROOT });
+    const state = {
+      trace: [],
+      turns: [],
+      history: [],
+      register: { palette: ['warm', 'plain', 'ironic', 'sarcastic'], history: [], policy: 'field' },
+      world: {},
+    };
+    configureTutorStubResistantLearnerCalibrationFromCli({
+      args: {
+        'resistant-learner-calibration-design': DESIGN_PATH,
+        'resistant-learner-calibration-job': job.id,
+        'model-call-budget': String(armDesign.attemptCeilings.maximumReservationsPerDialogue),
+        model: 'codex.gpt-5.6-luna',
+        'classifier-model': 'codex.gpt-5.6-luna',
+        'learner-record-model': 'codex.gpt-5.6-luna',
+        'auto-learner-model': 'codex.gpt-5.6-luna',
+        'cli-effort': 'low',
+        world: job.world,
+        'run-seed': String(job.run_seed),
+        'eval-repeat': String(job.assignment_index),
+        'eval-job-id': job.id,
+        'acknowledge-research-use': true,
+        'dag-mode': 'strict_dag',
+        'register-policy': 'field',
+        'register-palette': 'warm,plain,ironic,sarcastic',
+      },
+      state,
+      root: REPO_ROOT,
+      autoLearnerEnabled: true,
+      autoLearnerProfileId: 'frame_refuser',
+      autoTurns: job.maximum_trigger_turn + job.outcome_horizon_learner_turns,
+      appendTraceEvent(target, event) {
+        target.push(event);
+      },
+      observationSemantics: armDesign.models.triggerObservation.semantics,
+    });
+
+    const projected = state.resistanceActionRegisterStudy.design;
+    assert.equal(projected.satisfiableExecution.armId, armId);
+    assert.equal(projected.satisfiableExecution.move, job.action);
+    assert.equal(projected.population.profile, 'frame_refuser_exhibit-r2-rival-dag-v1');
+    assert.ok(state.privateRivalLearnerDag.openNodes.every((node) => node.openNodeKind === 'exhibit'));
+    assert.equal(state.resistanceActionRegisterStudy.delivery_timing_rule, job.delivery_timing_rule);
+    assert.equal(state.resistanceActionRegisterStudy.earliest_delivery_turn, job.earliest_delivery_turn);
+    assert.deepEqual(state.resistanceActionRegisterStudy.demanded_exhibit, job.demanded_exhibit);
+  }
+});
+
 test('the route table covers every seat the run needs, on the sealed stack', () => {
   const routes = tutorStubFrameRefuserSatisfiableRouteTable(design(), { root: REPO_ROOT });
   for (const armId of ['treatment', 'reference']) {
@@ -199,36 +262,181 @@ test('a destination that already exists stops the launch', async () => {
   assert.equal(result.status, 'failed');
 });
 
-test('the typed approval demands the exact phrase and authorizes calibration only', async () => {
-  const result = await preflight();
-  const approval = buildTutorStubFrameRefuserSatisfiableApproval({
-    signedBy: 'operator',
-    approvalPhrase: `APPROVE CALIBRATION ${result.hard_attempt_ceiling}`,
-    preflight: result,
+function syntheticSatisfiableRows(studyDesign) {
+  const treatmentDesign = tutorStubFrameRefuserSatisfiableArmDesign(studyDesign, 'treatment', { root: REPO_ROOT });
+  const readers = treatmentDesign.models.finalSemanticReaders;
+  const fidelityReaders = readers.filter((reader) =>
+    treatmentDesign.measurement.readerPanel.fidelityJudges.includes(reader.modelRef),
+  );
+  return buildTutorStubResistantLearnerCalibrationPlan(studyDesign, { root: REPO_ROOT }).jobs.map((job) => {
+    const treatmentArm = job.arm_id === 'treatment';
+    const primaryValues = {
+      final_graded_engagement_rung: treatmentArm ? '2' : '1',
+      final_jurisdictional_dispute_retained: 'yes',
+      whole_frame_compliance: 'no',
+    };
+    const fidelityValues = {
+      delivered_test_bounded_distinction: treatmentArm ? 'no' : 'yes',
+      delivered_register: 'plain',
+      prohibited_delivery: 'no',
+    };
+    const makePanel = (instrument, values) => ({
+      status: 'determinate',
+      fields: Object.fromEntries(
+        Object.entries(values).map(([field, value]) => [
+          field,
+          {
+            status: 'determinate',
+            value,
+            eligible_judges: (instrument === 'primary' ? readers : fidelityReaders).map((reader) => reader.id),
+          },
+        ]),
+      ),
+      seats: (instrument === 'primary' ? readers : fidelityReaders).map((reader) => ({
+        judge_id: reader.id,
+        validation: {
+          fields: Object.fromEntries(
+            Object.entries(values).map(([field, value]) => [field, { eligible: true, value }]),
+          ),
+        },
+      })),
+    });
+    return {
+      job,
+      status: 'complete',
+      delivery: [{ turn: job.earliest_delivery_turn, delivered: true, repairAttempts: 0 }],
+      release_pacing: [{ turn: job.demanded_exhibit.release_turn, released_now: [job.demanded_exhibit.premise_id] }],
+      outcome: {
+        primary: makePanel('primary', primaryValues),
+        fidelity: makePanel('fidelity', fidelityValues),
+      },
+    };
   });
-  assert.equal(approval.calibration_only, true);
-  assert.equal(approval.powered_run_authorized, false);
-  assert.equal(approval.attended, true);
-  assert.equal(approval.create_once, true);
-  assert.equal(approval.hard_attempt_ceiling, 9504);
+}
 
-  // A near-miss phrase is not approval, and neither is an unsigned one.
-  assert.throws(
-    () =>
-      buildTutorStubFrameRefuserSatisfiableApproval({
-        signedBy: 'operator',
-        approvalPhrase: 'APPROVE CALIBRATION',
-        preflight: result,
+test('the satisfiable report gates the actual exhibit opportunity and remains calibration-only', () => {
+  const studyDesign = design();
+  const rows = syntheticSatisfiableRows(studyDesign);
+  const report = summarizeTutorStubResistantLearnerCalibration({ rows, design: studyDesign, root: REPO_ROOT });
+  assert.equal(report.schema, 'machinespirits.tutor-stub.frame-refuser-satisfiable-calibration-report.v1');
+  assert.equal(report.status, 'passed');
+  assert.equal(report.calibration_only, true);
+  assert.equal(report.powered_run_authorized, false);
+  const treatment = report.arms.find((candidate) => candidate.arm_id === 'treatment');
+  assert.equal(treatment.gates.discharge_opportunity, true);
+  assert.equal(treatment.statistics.demanded_exhibit_available_within_horizon, 24);
+
+  for (const row of rows.filter((candidate) => candidate.job.arm_id === 'treatment').slice(0, 5)) {
+    row.release_pacing = [];
+  }
+  const failed = summarizeTutorStubResistantLearnerCalibration({ rows, design: studyDesign, root: REPO_ROOT });
+  assert.equal(failed.status, 'failed');
+  assert.equal(failed.arms.find((candidate) => candidate.arm_id === 'treatment').gates.discharge_opportunity, false);
+});
+
+test('exhibit-discharge non-delivery crosses the child boundary as a retained typed outcome', () => {
+  const outcome = tutorStubRegisteredStudyOutcomeFromError({
+    error: {
+      code: 'tutor_stub_tutor_exhibit_discharge_non_delivery',
+      substantiveStudyFailure: true,
+    },
+    jobId: 'sat1_treatment_cal_world_005_marrick_r1',
+  });
+  assert.equal(outcome.status, 'retained_substantive_failure');
+  assert.equal(outcome.code, 'tutor_stub_tutor_exhibit_discharge_non_delivery');
+  assert.equal(outcome.replacement_allowed, false);
+});
+
+test('the executable path reserves every unit through the shared ledger and writes the registered report', async (t) => {
+  const loaded = load();
+  loaded.relativePath = DESIGN_PATH;
+  const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded.design, { root: REPO_ROOT });
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'satisfiable-launch-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const destination = path.join(base, 'run');
+  fs.mkdirSync(destination);
+  const events = [];
+  let reserved = 0;
+  let closed = false;
+  const admission = {
+    source: { commit: 'launch', tree: 'tree' },
+    authorization: { commit: 'go', path: 'notes/go.md' },
+    get reserved() {
+      return reserved;
+    },
+    reserveModelAttempts(count, detail) {
+      reserved += count;
+      events.push({ type: 'reservation', count, ...detail });
+    },
+    record(event) {
+      events.push(event);
+    },
+    close(event) {
+      closed = true;
+      events.push(event);
+    },
+  };
+  const report = await executeTutorStubFrameRefuserSatisfiableCalibration({
+    loaded,
+    destination,
+    preflight: { plan, hard_attempt_ceiling: 9504 },
+    admission,
+    childSpec: ({ job }) => ({ job }),
+    runChild: async () => ({ code: 0, signal: null, spawn_error: null }),
+    extractRow: ({ job }) => ({ job, status: 'complete', attempts: 1 }),
+    summarize: ({ rows: reportedRows }) => ({ schema: 'synthetic', status: 'passed', rows: reportedRows }),
+    progress: () => {},
+  });
+  assert.equal(report.status, 'passed');
+  assert.equal(report.execution.complete_units, 48);
+  assert.equal(report.execution.reserved_model_attempts, 9504);
+  assert.equal(report.execution.observed_model_attempts, 48);
+  assert.equal(events.filter((event) => event.type === 'reservation').length, 48);
+  assert.equal(closed, true);
+  assert.equal(fs.existsSync(path.join(destination, 'plan.json')), true);
+  assert.equal(fs.existsSync(path.join(destination, 'report.json')), true);
+});
+
+test('launcher main admits through the shared contract and has no approval or resume ceremony', async () => {
+  const captured = {};
+  const result = await satisfiableLauncherMain(
+    [
+      '--design',
+      DESIGN_PATH,
+      '--destination',
+      '/absolute/satisfiable-root',
+      '--launch-commit',
+      'launch',
+      '--go-note-commit',
+      'go',
+      '--go-note-path',
+      'notes/go.md',
+      '--accept-charges',
+    ],
+    {
+      runPreflight: async ({ loaded, destination }) => ({
+        status: 'passed_zero_call',
+        study_id: loaded.design.studyId,
+        destination,
+        hard_attempt_ceiling: 9504,
+        plan: { jobs: [] },
       }),
-    /must be exactly/u,
+      destinationExists: () => false,
+      admit: (input) => {
+        captured.admission = input;
+        return { source: { commit: 'launch' } };
+      },
+      execute: async (input) => {
+        captured.execution = input;
+        return { status: 'passed' };
+      },
+    },
   );
-  assert.throws(
-    () =>
-      buildTutorStubFrameRefuserSatisfiableApproval({
-        signedBy: '   ',
-        approvalPhrase: `APPROVE CALIBRATION ${result.hard_attempt_ceiling}`,
-        preflight: result,
-      }),
-    /operator name/u,
-  );
+  assert.equal(result.status, 'passed');
+  assert.equal(captured.admission.designPath, DESIGN_PATH);
+  assert.equal(captured.admission.spendCap, 9504);
+  assert.equal(captured.admission.launchCommit, 'launch');
+  assert.equal(captured.execution.admission.source.commit, 'launch');
+  assert.doesNotMatch(TUTOR_STUB_FRAME_REFUSER_SATISFIABLE_USAGE, /APPROVE CALIBRATION|--resume/u);
+  assert.match(TUTOR_STUB_FRAME_REFUSER_SATISFIABLE_USAGE, /shared standing launch contract/u);
 });

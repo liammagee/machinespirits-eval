@@ -742,6 +742,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     }
     if (state.resistanceActionRegisterStudy?.enabled) {
       const beforeStudySelection = registerSelection;
+      const beforeStudyHistoryLength = state.resistanceActionRegisterStudy.history?.length || 0;
       registerSelection = applyTutorStubResistanceActionRegisterStudyIntervention({
         selection: registerSelection,
         state,
@@ -768,6 +769,19 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           intervention: jsonClone(intervention),
           publicTranscriptChanged: false,
         });
+      } else if ((state.resistanceActionRegisterStudy.history?.length || 0) > beforeStudyHistoryLength) {
+        const timing = state.resistanceActionRegisterStudy.history.at(-1);
+        if (['trigger_captured_pending_delivery', 'pending_delivery_wait'].includes(timing?.status)) {
+          appendTraceEvent(state.trace, {
+            type: 'resistance_action_register_intervention_pending',
+            turn: tutorTurn,
+            turnId,
+            jobId: state.resistanceActionRegisterStudy.job_id,
+            batchId: state.resistanceActionRegisterStudy.batch_id,
+            timing: jsonClone(timing),
+            publicTranscriptChanged: false,
+          });
+        }
       }
     }
     const tutorFeedback = learnerInput?.tutorFeedback || null;
@@ -1631,6 +1645,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       if (
         state.resistanceActionRegisterStudy?.dynamic_confirmation === true &&
         state.resistanceActionRegisterStudy?.consumed !== true &&
+        !Number.isFinite(state.resistanceActionRegisterStudy?.trigger_turn) &&
         turnNumber > Number(state.resistanceActionRegisterStudy?.maximum_trigger_turn)
       ) {
         const boredomProofDag = state.resistanceActionRegisterStudy?.dynamic_boredom_proof_dag === true;
