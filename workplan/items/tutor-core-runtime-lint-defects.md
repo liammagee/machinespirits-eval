@@ -1,7 +1,7 @@
 ---
 id: tutor-core-runtime-lint-defects
 title: "Repair tutor-core runtime faults exposed by lint"
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: claude
@@ -19,6 +19,8 @@ links:
     - tests/tutorCoreSeamGuard.test.js
   items:
     - tutor-core-lint-and-format
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/849
 tags:
   - tutor-core
   - runtime

@@ -1,7 +1,7 @@
 ---
 id: provider-balance-capability-probe
 title: Optional provider-balance capability probe for budgeted runs
-status: review
+status: done
 type: infra
 priority: P2
 owner: claude
@@ -17,6 +17,8 @@ claim_status: methods
 links:
   items:
     - budget-tracker-balance-probe-and-rates
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/849
 tags:
   - adaptive-tutor
   - spend-ceiling

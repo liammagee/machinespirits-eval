@@ -1,7 +1,7 @@
 ---
 id: adaptive-tutor-canonical-kernel-contract
 title: Declare the canonical adaptive-tutor kernel and adapter boundaries
-status: review
+status: done
 type: infra
 priority: P1
 owner: claude
@@ -28,6 +28,8 @@ links:
     - adaptive-curriculum-memory-controller
     - adaptive-eval-resume-and-shared-budget-scope
     - tutor-stub-unified-session-surface
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/851
 tags:
   - adaptive-tutor
   - architecture

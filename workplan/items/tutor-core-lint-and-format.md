@@ -1,7 +1,7 @@
 ---
 id: tutor-core-lint-and-format
 title: "Cover the in-housed tutor-core with lint and formatting checks"
-status: review
+status: done
 type: maintenance
 priority: P3
 owner: claude
@@ -18,6 +18,8 @@ links:
     - TUTOR-CORE-INHOUSING.md
   items:
     - tutor-core-runtime-lint-defects
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/851
 depends_on:
   - tutor-core-runtime-lint-defects
 tags:

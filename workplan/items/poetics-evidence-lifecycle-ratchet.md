@@ -1,7 +1,7 @@
 ---
 id: poetics-evidence-lifecycle-ratchet
 title: "Make poetics claim evidence durable before a run can close"
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
