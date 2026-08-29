@@ -1,7 +1,7 @@
 ---
 id: trap-and-dag-budget-ledger-adoption
 title: Complete budget-ledger adoption in trap and DAG launchers
-status: review
+status: done
 type: infra
 priority: P1
 owner: claude
@@ -17,6 +17,8 @@ claim_status: methods
 links:
   items:
     - budget-tracker-balance-probe-and-rates
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/849
 tags:
   - adaptive-tutor
   - spend-ceiling

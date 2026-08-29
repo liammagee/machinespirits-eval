@@ -1,7 +1,7 @@
 ---
 id: canonical-paper2-evidence-manifest
 title: Make canonical Paper 2.0—not the legacy paper—the evidence-manifest authority
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -26,6 +26,8 @@ links:
     - refactor-paper-manifest-fixtures
     - paper2-priority1-closeout
     - edra-m3-second-mechanism-lexicon
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/848
 tags:
   - paper-2
   - provenance

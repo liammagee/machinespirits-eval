@@ -1,7 +1,7 @@
 ---
 id: shared-paid-study-launch-contract
 title: "Use one lightweight launch contract for post-policy paid studies"
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex

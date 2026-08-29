@@ -1,7 +1,7 @@
 ---
 id: adaptive-eval-resume-and-shared-budget-scope
 title: Adaptive resume and multi-profile budget scope
-status: review
+status: done
 type: infra
 priority: P1
 owner: claude
@@ -16,6 +16,8 @@ claim_status: methods
 links:
   items:
     - budget-tracker-balance-probe-and-rates
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/849
 tags:
   - adaptive-tutor
   - spend-ceiling
