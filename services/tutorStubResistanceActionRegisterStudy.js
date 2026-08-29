@@ -43,6 +43,8 @@ export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA =
 export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PLAN_SCHEMA =
   'machinespirits.tutor-stub.resistance-action-register-plan.v1';
 
+const SATISFIABLE_DELIVERY_TIMING_RULE = 'first_intervention_turn_at_or_after_the_demanded_exhibit_is_public';
+
 export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA =
   'machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1';
 
@@ -1470,18 +1472,59 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
 } = {}) {
   const runtime = state?.resistanceActionRegisterStudy;
   if (!selection || !runtime?.enabled) return selection;
+  const turn = decisionTurn(state, tutorLearnerDag);
   const semanticObservation = isTutorStubResistanceSemanticObservation(
     runtime.registration?.design?.trigger?.observationSemantics,
   );
-  const eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
-    runtime,
-    learnerText,
-    classification,
-    tutorLearnerDag,
-    semanticAdjudication,
-    turnNumber: decisionTurn(state, tutorLearnerDag),
-    expectedPublicContext: semanticObservation ? tutorStubResistanceSemanticPublicContext(state) : null,
-  });
+  const delayedDelivery = runtime.delivery_timing_rule === SATISFIABLE_DELIVERY_TIMING_RULE;
+  const pendingTrigger = delayedDelivery ? runtime.pending_intervention_trigger : null;
+  const eligibility = pendingTrigger?.eligibility
+    ? clone(pendingTrigger.eligibility)
+    : tutorStubResistanceActionRegisterTreatmentEligibility({
+        runtime,
+        learnerText,
+        classification,
+        tutorLearnerDag,
+        semanticAdjudication,
+        turnNumber: turn,
+        expectedPublicContext: semanticObservation ? tutorStubResistanceSemanticPublicContext(state) : null,
+      });
+
+  if (pendingTrigger && turn < Number(runtime.earliest_delivery_turn)) {
+    runtime.history.push({
+      turn,
+      status: 'pending_delivery_wait',
+      trigger_turn: pendingTrigger.turn,
+      earliest_delivery_turn: runtime.earliest_delivery_turn,
+      demanded_exhibit: clone(runtime.demanded_exhibit),
+    });
+    return selection;
+  }
+
+  if (!pendingTrigger && eligibility.eligible && delayedDelivery) {
+    runtime.trigger_turn = turn;
+    runtime.trigger_learner_text = String(learnerText || '');
+    runtime.trigger_learner_sha256 = sha256(runtime.trigger_learner_text);
+    if (turn < Number(runtime.earliest_delivery_turn)) {
+      runtime.pending_intervention_trigger = {
+        status: 'captured_pending_delivery',
+        turn,
+        learner_text: runtime.trigger_learner_text,
+        learner_sha256: runtime.trigger_learner_sha256,
+        eligibility: clone(eligibility),
+      };
+      runtime.history.push({
+        turn,
+        status: 'trigger_captured_pending_delivery',
+        trigger_learner_sha256: runtime.trigger_learner_sha256,
+        earliest_delivery_turn: runtime.earliest_delivery_turn,
+        latest_delivery_turn: runtime.latest_delivery_turn,
+        demanded_exhibit: clone(runtime.demanded_exhibit),
+        public_observation: clone(eligibility.shadow.observation),
+      });
+      return selection;
+    }
+  }
   const registeredEdgedSafetyReason =
     runtime.resistant_learner_calibration === true &&
     runtime.realization === 'edged' &&
@@ -1493,7 +1536,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
       : null;
   if (!eligibility.eligible && !registeredEdgedSafetyReason) {
     runtime.history.push({
-      turn: decisionTurn(state, tutorLearnerDag),
+      turn,
       status: 'not_applied',
       reasons: [...eligibility.reasons],
       public_observation: clone(eligibility.shadow.observation),
@@ -1524,12 +1567,20 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
       moveType
     ] ?? null;
 
-  const turn = decisionTurn(state, tutorLearnerDag);
   const intervention = {
     schema: TUTOR_STUB_RESISTANCE_ACTION_REGISTER_INTERVENTION_SCHEMA,
     status: 'applied',
     authority: 'explicit_study_only_opt_in',
     turn,
+    ...(delayedDelivery
+      ? {
+          trigger_turn: runtime.trigger_turn,
+          delivery_timing_rule: runtime.delivery_timing_rule,
+          earliest_delivery_turn: runtime.earliest_delivery_turn,
+          latest_delivery_turn: runtime.latest_delivery_turn,
+          demanded_exhibit: clone(runtime.demanded_exhibit),
+        }
+      : {}),
     profile_cohort: runtime.profile,
     profile_identity_triggered: false,
     public_trigger: {
@@ -1606,9 +1657,15 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
   }
   runtime.consumed = true;
   if (runtime.dynamic_confirmation === true) {
-    runtime.trigger_turn = turn;
-    runtime.trigger_learner_text = String(learnerText || '');
-    runtime.trigger_learner_sha256 = sha256(runtime.trigger_learner_text);
+    if (!Number.isFinite(runtime.trigger_turn)) {
+      runtime.trigger_turn = turn;
+      runtime.trigger_learner_text = String(learnerText || '');
+      runtime.trigger_learner_sha256 = sha256(runtime.trigger_learner_text);
+    }
+  }
+  if (delayedDelivery) {
+    runtime.intervention_turn = turn;
+    runtime.pending_intervention_trigger = null;
   }
   runtime.history.push(clone(next.resistance_action_register_intervention));
   if (state?.register?.history?.at(-1) === selection) state.register.history[state.register.history.length - 1] = next;

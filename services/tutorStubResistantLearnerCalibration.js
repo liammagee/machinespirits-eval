@@ -1518,6 +1518,114 @@ export function tutorStubFrameRefuserSatisfiableRivalDagDesign(design, { root = 
   };
 }
 
+/**
+ * Project one satisfiable-study arm onto the sealed parent face-B execution
+ * design, the same way the depth study does. The projection keeps the merged
+ * v1 schema so every rival-DAG dispatch in the runtime treats it exactly like
+ * the sealed face-B design.
+ *
+ * Only four things differ from the sealed face B: the intervention move, the
+ * per-arm delivery contract, this study's seed, and its calibration constants.
+ * The reference arm keeps the sealed contract text byte for byte; its
+ * adjudication question is the registered reference question, which adds the
+ * clause forbidding the demanded exhibit on that turn.
+ *
+ * The delivery scope carries the revision-2 fix: the move fires on the first
+ * intervention turn at or after the demanded exhibit is public, the same rule
+ * in both arms. Without it the treatment move cannot be delivered at all.
+ */
+export function tutorStubFrameRefuserSatisfiableArmDesign(design, armId, { root = process.cwd() } = {}) {
+  if (!isSatisfiableDesign(design)) {
+    throw new Error('the satisfiable arm projection requires the frame-refuser satisfiable design');
+  }
+  if (!DEPTH_ARM_IDS.includes(armId)) {
+    throw new Error(`frame-refuser satisfiable arm ${JSON.stringify(armId)} is not registered`);
+  }
+  const parent = sealedParentDesign(design, root);
+  const faceB = tutorStubResistantLearnerMergedFaceDesign(parent.design, 'faceB');
+  const arm = design.arms[armId];
+  const move = armId === 'treatment' ? 'condition_discharge' : faceB.intervention.action;
+  const sealedContract = faceB.tutorDeliveryContract;
+  const enforcement = design.tutorDeliveryEnforcement;
+  const armEnforcement = {
+    ...structuredClone(sealedContract.enforcement),
+    appliesWhen: enforcement.appliesWhen,
+    scope: enforcement.scope,
+    position: enforcement.position,
+    check: {
+      ...structuredClone(sealedContract.enforcement.check),
+      adjudicatorSeat: structuredClone(enforcement.perArmAdjudication.adjudicatorSeat),
+      question:
+        armId === 'treatment'
+          ? enforcement.perArmAdjudication.treatmentQuestion
+          : enforcement.perArmAdjudication.referenceQuestion,
+    },
+    repairsAllowedPerEpisode: enforcement.repairsAllowedPerEpisode,
+    exhaustionDisposition: enforcement.exhaustionDisposition,
+    exhaustionNeverScored: enforcement.exhaustionNeverScored,
+    typedFailureIsNotDeterminate: enforcement.typedFailureIsNotDeterminate,
+    ...(armId === 'treatment'
+      ? {
+          exhaustionCode: 'tutor_stub_tutor_exhibit_discharge_non_delivery',
+          repairInstruction: `Your candidate did not deliver the registered exhibit discharge. Rewrite the tutor turn now: ${arm.actionInstruction}`,
+        }
+      : {}),
+  };
+  // The treatment contract omits compactActionInstructions on purpose, as the
+  // depth projection does: the compile falls back to the host's own compact
+  // text, so there is one source rather than two copies that can drift.
+  const tutorDeliveryContract =
+    armId === 'treatment'
+      ? {
+          actionInstructions: { condition_discharge: arm.actionInstruction },
+          registerInstructions: structuredClone(sealedContract.registerInstructions),
+          enforcement: armEnforcement,
+        }
+      : { ...structuredClone(sealedContract), enforcement: armEnforcement };
+  return {
+    ...faceB,
+    status: design.status,
+    workplanItem: design.workplanItem,
+    claimBoundary: design.claimBoundary,
+    // The arm must carry THIS study's population, not the sealed face-B one:
+    // its jobs run study code R2, and the minter refuses an R2 job whose
+    // design does not register the exhibit mint. The concession condition is
+    // resolved from the sealed face B, so it cannot drift from it.
+    population: {
+      ...structuredClone(design.population),
+      triggerRegistration: faceB.population.triggerRegistration,
+    },
+    rivalDagPersona: tutorStubFrameRefuserSatisfiableRivalDagDesign(design, { root }).rivalDagPersona,
+    satisfiableStudyId: design.studyId,
+    satisfiableExecution: {
+      studyId: design.studyId,
+      armId,
+      move,
+      registeredMoveId: arm.id,
+      hostActionFamily: arm.hostActionFamily,
+      // Carried onto the arm so the runtime never has to re-derive when the
+      // move may fire, and so a projection that lost the rule is visible.
+      deliveryTimingRule: design.population.rivalDagPersona.demandSelectionRule.deliveryTiming.id,
+    },
+    intervention: {
+      action: move,
+      registeredMoveId: arm.id,
+      definition: arm.definition,
+      heldFixedAcrossRegisters: true,
+    },
+    tutorDeliveryContract,
+    randomization: structuredClone(design.randomization),
+    calibration: {
+      ...faceB.calibration,
+      ...SATISFIABLE_GATE_CONSTANTS,
+      dialogues: design.calibration.perArm,
+      completedRowsDenominator: true,
+    },
+    dispositions: structuredClone(design.dispositions),
+    callAuthority: structuredClone(design.callAuthority),
+  };
+}
+
 // Project one depth arm onto the sealed parent face-B execution design. The
 // projection keeps the merged v1 schema so every rival-DAG dispatch in the
 // runtime treats it exactly like the sealed face-B design; only the
@@ -2119,12 +2227,14 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     ['edgeFollowsAssignedMoveNotLearnerProfile', true],
     ['faceThreatExcluded', true],
   ]);
-  if (loaded.design.depthExecution) {
-    // The depth study reassigns the compiled pedagogical move per arm. Only
-    // the in-memory runtime copy changes; the v9 registration file on disk
-    // keeps its own sealed assignment (test_bounded_distinction).
+  const armExecution = loaded.design.depthExecution || loaded.design.satisfiableExecution;
+  if (armExecution) {
+    // The depth and satisfiable studies both reassign the compiled pedagogical
+    // move per arm. Only the in-memory runtime copy changes; the v9
+    // registration file on disk keeps its own sealed assignment
+    // (test_bounded_distinction).
     runtime.registration.design.factors.actionFit.assignments[loaded.design.population.baseCompatibilityId] = {
-      matched: loaded.design.depthExecution.move,
+      matched: armExecution.move,
     };
   }
   runtime.realization = job.register;
@@ -2133,6 +2243,11 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     ...runtime,
     dynamic_confirmation: true,
     resistant_learner_calibration: true,
+    // The RUNTIME study code, not the mint's. Both the depth and satisfiable
+    // studies run the standing-rivalry runtime path and its trigger semantics,
+    // so both stay 'R1' here; the satisfiable study's jobs carry study 'R2',
+    // which selects the exhibit mint and nothing else. Setting 'R2' here would
+    // silently route the trigger observation and semantic runtime elsewhere.
     resistant_learner_study: 'R1',
     design: structuredClone(loaded.design),
     design_path: path.relative(root, loaded.path),
@@ -2147,6 +2262,16 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     trigger_learner_sha256: null,
     maximum_trigger_turn: job.maximum_trigger_turn,
     outcome_horizon_learner_turns: job.outcome_horizon_learner_turns,
+    ...(job.delivery_timing_rule
+      ? {
+          delivery_timing_rule: job.delivery_timing_rule,
+          earliest_delivery_turn: job.earliest_delivery_turn,
+          latest_delivery_turn: job.latest_delivery_turn,
+          demanded_exhibit: structuredClone(job.demanded_exhibit),
+          pending_intervention_trigger: null,
+          intervention_turn: null,
+        }
+      : {}),
     final_learner_without_tutor_reply: true,
     ...(isRivalDagDesign(loaded.design)
       ? { study_assignment_instruction_overrides: structuredClone(loaded.design.tutorDeliveryContract) }
@@ -2163,7 +2288,13 @@ function configureR1({ state, root, loaded, job, appendTraceEvent }) {
     assignmentIndex: job.assignment_index,
     runSeed: job.run_seed,
     world: job.world,
-    ...(job.arm_id ? { armId: job.arm_id, depthStudyId: loaded.design.depthStudyId || null } : {}),
+    ...(job.arm_id
+      ? {
+          armId: job.arm_id,
+          depthStudyId: loaded.design.depthStudyId || null,
+          satisfiableStudyId: loaded.design.satisfiableStudyId || null,
+        }
+      : {}),
     designPath: path.relative(root, loaded.path),
     designSha256: loaded.sha256,
     treatment: {
@@ -2204,9 +2335,11 @@ export function configureTutorStubResistantLearnerCalibrationFromCli({
   const b1 = job.study === 'B1';
   const executionDesign = isDepthDesign(loaded.design)
     ? tutorStubFrameRefuserDepthArmDesign(loaded.design, job.arm_id, { root })
-    : isMergedDesign(loaded.design)
-      ? tutorStubResistantLearnerMergedFaceDesign(loaded.design, job.face_id)
-      : loaded.design;
+    : isSatisfiableDesign(loaded.design)
+      ? tutorStubFrameRefuserSatisfiableArmDesign(loaded.design, job.arm_id, { root })
+      : isMergedDesign(loaded.design)
+        ? tutorStubResistantLearnerMergedFaceDesign(loaded.design, job.face_id)
+        : loaded.design;
   const executionLoaded = { ...loaded, design: executionDesign };
   const expectedTurns = job.maximum_trigger_turn + job.outcome_horizon_learner_turns;
   const expectedObservation = executionDesign.models.triggerObservation.semantics;
@@ -2605,6 +2738,129 @@ export function runTutorStubFrameRefuserSatisfiablePlanPreflight({ loaded, root 
   };
 }
 
+/**
+ * Compile both satisfiable arms through the runtime, zero-call. This is what
+ * the depth study's compilation preflight does, and it catches the class of
+ * defect a plan check cannot: an arm whose contract does not survive being
+ * lowered onto the host, or whose adjudication question does not reach the
+ * enforcement seat.
+ */
+function runTutorStubFrameRefuserSatisfiableCompilationPreflight({ loaded, root }) {
+  const design = loaded.design;
+  const plan = buildTutorStubResistantLearnerCalibrationPlan(design, { root });
+  const armDesigns = Object.fromEntries(
+    DEPTH_ARM_IDS.map((armId) => [armId, tutorStubFrameRefuserSatisfiableArmDesign(design, armId, { root })]),
+  );
+  const parent = sealedParentDesign(design, root);
+  const parentRoutes = tutorStubResistantLearnerRuntimeModelRoutes(parent.design);
+  const expectedModels = {
+    tutor: parentRoutes.tutor,
+    analysis: parentRoutes.analysis,
+    analysisScope: parentRoutes.analysisScope,
+    learner: parentRoutes.learner,
+    cliEffort: parentRoutes.cliEffort,
+    triggerObservation: parentRoutes.triggerObservationByFace.faceB,
+    finalSemanticReaders: parentRoutes.finalSemanticReaders,
+  };
+  const modelRoute = {
+    declared: armDesigns.treatment.models,
+    runtime: expectedModels,
+    passed: DEPTH_ARM_IDS.every((armId) => exactValues(armDesigns[armId].models, expectedModels)),
+  };
+  const worldRegistry = auditRuntimeWorldRegistry(design.population.worlds, root);
+  const rivalDags = plan.jobs.map((job) => mintTutorStubRivalLearnerDag({ design: armDesigns[job.arm_id], job, root }));
+
+  const rows = [];
+  for (const armId of DEPTH_ARM_IDS) {
+    const armDesign = armDesigns[armId];
+    for (const world of design.population.worlds) {
+      const configurationJob = plan.jobs.find((job) => job.arm_id === armId && job.world === world);
+      for (const scene of ['bare', 'due_clue']) {
+        const state = {
+          trace: [],
+          turns: [],
+          history: [],
+          register: { palette: ['warm', 'plain', 'ironic', 'sarcastic'], history: [], policy: 'field' },
+          world: {},
+        };
+        configureR1({
+          state,
+          root,
+          loaded: { ...loaded, design: armDesign },
+          job: configurationJob,
+          appendTraceEvent() {},
+        });
+        const compiled = compileTutorStubResistanceActionRegisterStudyAssignment(state.resistanceActionRegisterStudy);
+        const progression = compileTutorStubTurnProgressionContract({
+          ...preflightScene(scene),
+          actionFamily: compiled.host_action_family,
+          registeredQuestionRule: null,
+        });
+        const safety = safetyOverrideProbe(compiled);
+        const rivalDag = mintTutorStubRivalLearnerDag({ design: armDesign, job: configurationJob, root });
+        const personaPrompt = tutorStubRivalLearnerDagPrompt({ design: armDesign, job: configurationJob, root });
+        const enforcementQuestion =
+          state.resistanceActionRegisterStudy.design.tutorDeliveryContract.enforcement.check.question;
+        const expectedQuestion =
+          armId === 'treatment'
+            ? design.tutorDeliveryEnforcement.perArmAdjudication.treatmentQuestion
+            : design.tutorDeliveryEnforcement.perArmAdjudication.referenceQuestion;
+
+        const issues = [];
+        if (compiled.host_action_family !== armDesign.satisfiableExecution.hostActionFamily) {
+          issues.push(`compiled host action family ${compiled.host_action_family} is not the registered one`);
+        }
+        if (enforcementQuestion !== expectedQuestion) {
+          issues.push('the registered per-arm adjudication question did not reach the enforcement seat');
+        }
+        if (!safety.passed) issues.push('safety override probe failed');
+        // The demand must be an exhibit at the point the learner speaks it,
+        // and the persona prompt is where the learner reads it.
+        if (rivalDag.openNodes.some((node) => node.openNodeKind !== 'exhibit')) {
+          issues.push('the compiled rival DAG is not exhibit-minted');
+        }
+        if (!personaPrompt.includes(configurationJob.demanded_exhibit.node_id)) {
+          issues.push('the demanded exhibit does not appear in the learner persona prompt');
+        }
+        rows.push({
+          arm_id: armId,
+          world,
+          action: configurationJob.action,
+          scene,
+          compiled_move: compiled.pedagogical_move ?? null,
+          host_action_family: compiled.host_action_family,
+          question_allowed: progression.handoff_contract.question_allowed,
+          safety,
+          persona_prompt_sha256: sha256(personaPrompt),
+          rival_dag_sha256: rivalDag.sha256,
+          issues,
+          passed: issues.length === 0,
+        });
+      }
+    }
+  }
+
+  return {
+    schema: 'machinespirits.tutor-stub.frame-refuser-satisfiable-compilation-preflight.v1',
+    study: 'satisfiable',
+    status:
+      worldRegistry.passed &&
+      modelRoute.passed &&
+      rivalDags.length === design.calibration.dialogues &&
+      rows.length === 8 &&
+      rows.every((row) => row.passed)
+        ? 'passed_zero_call'
+        : 'failed',
+    expected_rows: 8,
+    world_registry: worldRegistry,
+    model_route: modelRoute,
+    rival_dag_count: rivalDags.length,
+    rival_dag_set_sha256: sha256(rivalDags.map((dag) => dag.sha256).join('\n')),
+    rows,
+    model_calls: 0,
+  };
+}
+
 function runTutorStubFrameRefuserDepthCompilationPreflight({ loaded, root }) {
   const design = loaded.design;
   const plan = buildTutorStubResistantLearnerCalibrationPlan(design);
@@ -2777,6 +3033,9 @@ function runTutorStubFrameRefuserDepthCompilationPreflight({ loaded, root }) {
 }
 
 export function runTutorStubResistantLearnerCompilationPreflight({ loaded, root = process.cwd() } = {}) {
+  if (isSatisfiableDesign(loaded?.design)) {
+    return runTutorStubFrameRefuserSatisfiableCompilationPreflight({ loaded, root });
+  }
   if (isDepthDesign(loaded?.design)) {
     return runTutorStubFrameRefuserDepthCompilationPreflight({ loaded, root });
   }
@@ -3741,9 +4000,153 @@ export function summarizeTutorStubFrameRefuserDepthCalibration({ rows, design, r
   };
 }
 
+function satisfiableDischargeOpportunity(row) {
+  const premiseId = row.job?.demanded_exhibit?.premise_id;
+  const latestTurn = Number(row.job?.latest_delivery_turn);
+  if (!premiseId || !Number.isFinite(latestTurn)) return false;
+  return (row.release_pacing || []).some(
+    (event) => Number(event.turn) <= latestTurn && (event.released_now || []).includes(premiseId),
+  );
+}
+
+export function summarizeTutorStubFrameRefuserSatisfiableCalibration({ rows, design, root = process.cwd() } = {}) {
+  const arms = DEPTH_ARM_IDS.map((armId) => {
+    const armDesign = tutorStubFrameRefuserSatisfiableArmDesign(design, armId, { root });
+    const armRows = rows.filter((row) => row.job.arm_id === armId);
+    const completed = armRows.filter((row) => row.status === 'complete');
+    const retained = armRows.filter((row) => row.status === 'retained_substantive_failure');
+    const rules = armDesign.calibration;
+    const endpoint = armDesign.measurement.endpointField;
+    const determinate = completed.filter((row) => panelField(row, 'primary', endpoint)?.status === 'determinate');
+    const rungCounts = Object.fromEntries(
+      ['0', '1', '2'].map((rung) => [
+        rung,
+        determinate.filter((row) => panelField(row, 'primary', endpoint)?.value === rung).length,
+      ]),
+    );
+    const agreement = mergedAgreementSummary(completed, armDesign);
+    const delivery = depthDeliverySummary([...completed, ...retained]);
+    const prohibited = completed.filter((row) => panelField(row, 'fidelity', 'prohibited_delivery')?.value === 'yes');
+    const jurisdictionRetained = completed.filter(
+      (row) => panelField(row, 'primary', 'final_jurisdictional_dispute_retained')?.value === 'yes',
+    ).length;
+    const bridgeDelivered = completed.filter(
+      (row) => panelField(row, 'fidelity', 'delivered_test_bounded_distinction')?.value === 'yes',
+    ).length;
+    const dischargeOpportunity = completed.filter(satisfiableDischargeOpportunity).length;
+    const seatMinimum = rateFloorCount(
+      completed.length,
+      rules.minimumEligibleVoteRatePerSeatAndInstrument,
+      rules.minimumEligibleVotesFloor,
+    );
+    const endpointPairs = agreement.endpoint_panel.pairwise_exact_agreements;
+    const gates = {
+      execution_and_typed_failure_accounting:
+        completed.length + retained.length === rules.dialogues &&
+        retained.every((row) => Boolean(row.registered_failure?.code)),
+      determinate_outcome:
+        determinate.length >=
+        rateFloorCount(completed.length, rules.minimumDeterminateOutcomeRate, rules.minimumDeterminateOutcomeFloor),
+      eligible_vote_rate_per_seat_and_instrument: Object.values(agreement.seat_eligibility).every((seat) =>
+        Object.values(seat).every((count) => count === null || count >= seatMinimum),
+      ),
+      pairwise_exact_endpoint_agreement:
+        endpointPairs.length === 3 &&
+        endpointPairs.every(
+          (pair) =>
+            Number.isFinite(pair.conditional_exact_agreement) &&
+            pair.conditional_exact_agreement >= rules.minimumPairwiseExactEndpointAgreement,
+        ),
+      ...(armId === 'treatment'
+        ? {
+            treatment_delivery_rate:
+              delivery.adjudicated >= 1 &&
+              delivery.delivered >= rateFloorCount(delivery.adjudicated, rules.minimumTreatmentDeliveryRate),
+            treatment_any_adjudicated_delivery: delivery.delivered >= 1,
+            treatment_bridge_read_bound:
+              completed.length >= 1 && bridgeDelivered <= completed.length * rules.maximumTreatmentBridgeReadRate,
+            discharge_opportunity:
+              completed.length >= 1 &&
+              dischargeOpportunity >=
+                rateFloorCount(completed.length, rules.minimumDischargeOpportunityRateOnCompletedTreatmentRows),
+          }
+        : {}),
+      no_confirmed_prohibited_delivery: prohibited.length === 0,
+      jurisdiction_retained:
+        jurisdictionRetained >=
+        rateFloorCount(
+          completed.length,
+          rules.minimumJurisdictionRetainedRateOnCompletedRows,
+          rules.minimumJurisdictionRetainedFloor,
+        ),
+    };
+    return {
+      arm_id: armId,
+      registered_move_id: armDesign.satisfiableExecution.registeredMoveId,
+      pedagogical_move: armDesign.satisfiableExecution.move,
+      host_action_family: armDesign.satisfiableExecution.hostActionFamily,
+      status: Object.values(gates).every(Boolean) ? 'passed' : 'failed',
+      gates,
+      statistics: {
+        completed_rows: completed.length,
+        retained_typed_failures: retained.length,
+        determinate: determinate.length,
+        rung_counts: rungCounts,
+        rung_2_rate: determinate.length ? rungCounts['2'] / determinate.length : null,
+        delivery,
+        confirmed_prohibited_deliveries: prohibited.length,
+        jurisdiction_retained: jurisdictionRetained,
+        delivered_test_bounded_distinction: bridgeDelivered,
+        completed_delivery_certified: completed.filter(
+          (row) =>
+            Array.isArray(row.delivery) &&
+            row.delivery.length > 0 &&
+            row.delivery[row.delivery.length - 1].delivered === true,
+        ).length,
+        ...(armId === 'treatment'
+          ? {
+              demanded_exhibit_available_within_horizon: dischargeOpportunity,
+              demanded_exhibit_unavailable_within_horizon: completed.length - dischargeOpportunity,
+            }
+          : {}),
+      },
+      agreement,
+    };
+  });
+  const referenceArm = arms.find((arm) => arm.arm_id === 'reference');
+  return {
+    schema: 'machinespirits.tutor-stub.frame-refuser-satisfiable-calibration-report.v1',
+    study_id: design.studyId,
+    status:
+      arms.every((arm) => arm.status === 'passed') &&
+      arms.reduce((sum, arm) => sum + arm.statistics.confirmed_prohibited_deliveries, 0) === 0
+        ? 'passed'
+        : 'failed',
+    arms,
+    rows,
+    pooled_confirmed_prohibited_deliveries: arms.reduce(
+      (sum, arm) => sum + arm.statistics.confirmed_prohibited_deliveries,
+      0,
+    ),
+    sizing_update: {
+      purpose: 'update the power table reference rung-2 rate for powered-run sizing; not an interim outcome analysis',
+      reference_rung_2: referenceArm.statistics.rung_counts['2'],
+      reference_determinate: referenceArm.statistics.determinate,
+      reference_rung_2_rate: referenceArm.statistics.rung_2_rate,
+    },
+    calibration_only: true,
+    powered_run_authorized: false,
+    calibration_rows_poolable_into_powered_run: false,
+    claim_boundary: design.claimBoundary,
+  };
+}
+
 export function summarizeTutorStubResistantLearnerCalibration({ rows, design, root = process.cwd() }) {
   if (isDepthDesign(design)) {
     return summarizeTutorStubFrameRefuserDepthCalibration({ rows, design, root });
+  }
+  if (isSatisfiableDesign(design)) {
+    return summarizeTutorStubFrameRefuserSatisfiableCalibration({ rows, design, root });
   }
   if (isMergedDesign(design)) {
     const faces = ['faceA', 'faceB'].map((faceId) => {
@@ -4003,6 +4406,8 @@ export function summarizeTutorStubResistantLearnerCalibration({ rows, design, ro
 export default {
   buildTutorStubResistantLearnerCalibrationPlan,
   summarizeTutorStubFrameRefuserDepthCalibration,
+  summarizeTutorStubFrameRefuserSatisfiableCalibration,
+  tutorStubFrameRefuserSatisfiableArmDesign,
   tutorStubFrameRefuserDepthArmDesign,
   buildTutorStubResistantLearnerPoweredPlan,
   configureTutorStubResistantLearnerCalibrationFromCli,

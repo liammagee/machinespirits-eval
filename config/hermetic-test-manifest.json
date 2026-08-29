@@ -581,6 +581,8 @@
         "tests/tutorStubFirstDraftContract.test.js",
         "tests/tutorStubFirstDraftOuterLoop.test.js",
         "tests/tutorStubFrameRefuserDepthStudy.test.js",
+        "tests/tutorStubFrameRefuserNarrowingCodebook.test.js",
+        "tests/tutorStubFrameRefuserSatisfiableLaunch.test.js",
         "tests/tutorStubFrameRefuserSatisfiableMint.test.js",
         "tests/tutorStubFrameRefuserSatisfiablePlan.test.js",
         "tests/tutorStubFrozenReplay.test.js",

@@ -27,6 +27,12 @@
       "reason": "Used by the completed revision-4 Gate 1 calibration; preserve its attended-launch and resume semantics."
     },
     {
+      "path": "scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js",
+      "registered": "2026-08-29",
+      "disposition": "shared_contract",
+      "reason": "First post-policy tutor-stub calibration launcher; adopts services/paidStudyLaunchContract.js for admission, create-once state, reservations, and the append-only ledger."
+    },
+    {
       "path": "scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js",
       "registered": "2026-08-22",
       "disposition": "historical_live_exemption",

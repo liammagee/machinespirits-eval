@@ -555,6 +555,73 @@ test('study-only intervention assigns the typed action before its compatible reg
   assert.equal(unchanged, later);
 });
 
+test('a satisfiable-study trigger waits for its registered exhibit turn without losing the trigger', () => {
+  const selection = baseSelection();
+  const study = runtime('frame_defiant', 'matched', 'plain');
+  study.dynamic_confirmation = true;
+  study.delivery_timing_rule = 'first_intervention_turn_at_or_after_the_demanded_exhibit_is_public';
+  study.earliest_delivery_turn = 4;
+  study.latest_delivery_turn = 10;
+  study.demanded_exhibit = { premise_id: 'p_exhibit', release_turn: 4 };
+  study.pending_intervention_trigger = null;
+  study.trigger_turn = null;
+  study.trigger_learner_text = null;
+  study.trigger_learner_sha256 = null;
+  const state = stateWith(study, selection);
+  const learnerText = 'I reject your frame. You do not get to set this question.';
+  const classification = {
+    turn: {
+      request_type: 'resistance_or_low_agency',
+      discourse_move: 'challenge',
+      evidence_use: 'none',
+      epistemic_stance: 'resistant',
+      agency: 'steering',
+    },
+  };
+
+  const captured = applyTutorStubResistanceActionRegisterStudyIntervention({
+    selection,
+    state,
+    learnerText,
+    classification,
+    tutorLearnerDag: { model: { turn: 2 } },
+  });
+  assert.equal(captured, selection);
+  assert.equal(study.consumed, false);
+  assert.equal(study.trigger_turn, 2);
+  assert.equal(study.pending_intervention_trigger.status, 'captured_pending_delivery');
+  assert.equal(study.history.at(-1).status, 'trigger_captured_pending_delivery');
+
+  const waitingSelection = baseSelection();
+  const waiting = applyTutorStubResistanceActionRegisterStudyIntervention({
+    selection: waitingSelection,
+    state,
+    learnerText: 'The exhibit still is not on the table.',
+    classification: null,
+    tutorLearnerDag: { model: { turn: 3 } },
+  });
+  assert.equal(waiting, waitingSelection);
+  assert.equal(study.consumed, false);
+  assert.equal(study.history.at(-1).status, 'pending_delivery_wait');
+
+  const deliverySelection = baseSelection();
+  const delivered = applyTutorStubResistanceActionRegisterStudyIntervention({
+    selection: deliverySelection,
+    state,
+    learnerText: 'The exhibit is now public.',
+    classification: null,
+    tutorLearnerDag: { model: { turn: 4 } },
+  });
+  assert.notEqual(delivered, deliverySelection);
+  assert.equal(study.consumed, true);
+  assert.equal(study.trigger_turn, 2);
+  assert.equal(study.intervention_turn, 4);
+  assert.equal(study.pending_intervention_trigger, null);
+  assert.equal(delivered.resistance_action_register_intervention.trigger_turn, 2);
+  assert.equal(delivered.resistance_action_register_intervention.turn, 4);
+  assert.equal(delivered.resistance_action_register_intervention.demanded_exhibit.premise_id, 'p_exhibit');
+});
+
 test('study assignment rebinds stance-derived performance without changing the action or host part', () => {
   const staleWarmSelection = baseSelection('warm');
   staleWarmSelection.response_configuration.actorial_part = 'advocate';
