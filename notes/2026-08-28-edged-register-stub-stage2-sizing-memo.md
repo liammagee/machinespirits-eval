@@ -201,3 +201,63 @@ warm 12 rows, 1 grounded closure (turn 27), 11 turn-cap stops, mean
 final coverage 0.792, mean coverage at learner turn 16 = 0.278;
 sarcastic 12 rows, 0 closures, 11 turn-cap stops, 1 leak-guard stop,
 mean final coverage 0.864, mean coverage at learner turn 16 = 0.417.
+
+## 8. Stage-2 block complete — first results (2026-08-29)
+
+All 72 dialogues ran. Three cell roots, each sealed with integrity verified
+and zero unmet contract items:
+
+- affective_resistant: `qa-matrix-2026-08-28T21-41-13-718Z` (sealed
+  incomplete: 1 leak-guard row)
+- proof_skipper: `qa-matrix-2026-08-28T23-01-11-203Z` (sealed complete:
+  no failed rows)
+- diligent: `qa-matrix-2026-08-29T00-13-58-641Z` (sealed incomplete:
+  4 leak-guard rows)
+
+The fixed streaming writer ran the diligent cell's report without incident
+(279MB summary). The proof_skipper cell wrote on the old code and fit
+under the limit (426MB) because its dialogues closed early.
+
+**Stop causes over 72 rows.** 20 grounded closures, 46 turn-cap stops,
+5 leak-guard stops (7%), 1 turn-cap stop shy of coverage in the resistant
+warm arm counted among the 46. The call pool never bound and the prompt
+guard never fired — the 180-call pool and the 64,000-character ceiling did
+their jobs. The turn cap is now the modal stop.
+
+**Primary endpoint (trajectory pass, 67 clean rows, guard rows excluded
+by design).** Coverage at learner turn 16, sarcastic vs warm:
+
+| Character | sarcastic | warm |
+|---|---|---|
+| affective_resistant | 0.455 | 0.278 |
+| diligent | 0.467 | 0.450 |
+| proof_skipper | 0.444 | 0.486 |
+
+Area under the coverage curve to turn 16 shows the same shape: resistant
+0.164 vs 0.112; diligent 0.214 vs 0.218; proof_skipper 0.204 vs 0.200.
+
+Reading: the manner contrast lives in one cell. On the resistant learner
+the edged manner moves coverage well ahead of warm at every horizon. On
+the diligent and proof-skipping learners the two manners are within noise
+of each other. This matches the Stage-1 leak finding from the other side:
+resistance pulls edge out of a warm-pinned tutor, and supplied edge helps
+only the resistant learner.
+
+**Secondary (closure).** proof_skipper: 10/12 both manners; warm grounds
+faster (mean turn 25.7 vs 28.1). affective_resistant: warm 1/12,
+sarcastic 0/12. diligent: 0/24 — every clean diligent row but two ended
+at the 40-turn cap, 15 of them with the full chain assembled and the
+close unspoken. Stage 1's diligent censoring was blamed on the call pool;
+the pool is gone and the pattern stands, so the cause is the character's
+closing behaviour, not the budget. Closure stays a valid endpoint only
+where grounding happens well inside the cap.
+
+**Guard stops.** 5/72 (resistant sarcastic 1; diligent warm 2, sarcastic
+2) vs Stage 1's 3/48. Diligent is the guard-heavy character in both
+stages. Failed rows stand and are reported; none were resampled.
+
+Report: `.tutor-stub-auto-eval/stage2-trajectory-report.md`. Still open:
+the paid fidelity read (sharp-arm 0.8 presence floor binds; warm leak
+report-only against the Stage-1 baseline), then archive of all roots
+including the void root `qa-matrix-2026-08-28T20-52-23-839Z`. Both wait
+on the operator's word.
