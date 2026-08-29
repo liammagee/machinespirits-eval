@@ -3,9 +3,9 @@
 //
 // The risk this holds off is drift of authority. The codebook exists because
 // the ladder cannot say whether a refusal got narrower; the moment it starts
-// deciding ladder scores, breaking ladder ties, or feeding a primary endpoint,
-// the study has quietly changed its endpoint without a registration. The other
-// risk is the tie-break going missing: a learner naming a bound while
+// deciding ladder scores, breaking ladder ties, or feeding the current study's
+// primary endpoint, the study has quietly changed its endpoint without a new
+// registration. The other risk is the tie-break going missing: a learner naming a bound while
 // withholding is rung 1, and that sentence is the whole reason the codebook
 // was written.
 //
@@ -19,7 +19,9 @@ import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CODEBOOK_PATH = path.join(REPO_ROOT, 'config/tutor-stub-frame-refuser-narrowing-codebook.v1.md');
+const WORKPLAN_PATH = path.join(REPO_ROOT, 'workplan/items/frame-refuser-refusal-narrowing.md');
 const codebook = () => fs.readFileSync(CODEBOOK_PATH, 'utf8');
+const workplan = () => fs.readFileSync(WORKPLAN_PATH, 'utf8');
 
 test('the codebook defines all three registered marks', () => {
   const text = codebook();
@@ -43,23 +45,26 @@ test('the codebook carries the tie-break the readers split on', () => {
   assert.match(text, /0\.733/u);
 });
 
-test('the codebook never claims authority over the ladder', () => {
+test('the codebook preserves the ladder while allowing a future registered endpoint', () => {
   const text = codebook();
   assert.match(text, /It is not a rung 1\.5/u);
   assert.match(text, /never converts to a ladder score/u);
   assert.match(text, /never breaks a ladder tie/u);
-  assert.match(text, /never enters the primary endpoint/u);
+  assert.match(text, /already registered satisfiable study/u);
+  assert.match(text, /P1 is\s+instrument-building calibration/u);
   assert.match(text, /report-only/u);
+  assert.match(text, /later fresh registered study may promote/u);
+  assert.doesNotMatch(text, /never enters the primary endpoint of any\s+study/u);
 });
 
 test('the codebook grants no model call and names its next gate', () => {
   const text = codebook();
   assert.match(text, /licenses nothing/u);
   assert.match(text, /authorizes no model call/u);
-  // The next step is paid reading and must carry its own approval.
-  assert.match(text, /its own attended\s+approval and spend ceiling/u);
+  // The next paid step must carry an explicit GO and spend ceiling.
+  assert.match(text, /its own explicit GO and\s+spend ceiling/u);
   // And it must say what a null result means, before anyone reads.
-  assert.match(text, /If it does not spread, that is the finding/u);
+  assert.match(text, /If readers cannot meet the\s+agreement floors or the measure does not spread/u);
 });
 
 test('the worked examples are marked authored, not quoted from the archive', () => {
@@ -70,6 +75,37 @@ test('the worked examples are marked authored, not quoted from the archive', () 
   assert.match(text, /These examples are authored, not quoted/u);
   assert.match(text, /not in this checkout/u);
   assert.match(text, /Before reader calibration, replace these with\s+real rows/u);
+});
+
+test('P0 stays open until the archived examples replace the authored draft', () => {
+  const text = codebook();
+  const card = workplan();
+  assert.match(text, /P0 remains open until/u);
+  assert.match(text, /next zero-call step is to replace the authored\s+examples/u);
+  assert.match(card, /P0 draft written, zero-call; P0 remains open/u);
+  assert.doesNotMatch(card, /P0 done/u);
+});
+
+test('all three longitudinal marks are comparable end-of-turn states', () => {
+  const text = codebook();
+  assert.match(text, /three marks are end-of-turn\s+states/u);
+  assert.match(text, /Silence does not\s+close a demand/u);
+  assert.match(text, /previously stated bound\s+carries forward/u);
+  assert.match(text, /not used in the first-to-last combined\s+direction/u);
+  assert.match(text, /cumulative number of distinct propositions/u);
+  assert.match(text, /maintained concession remains in the end-of-turn state/u);
+  assert.match(text, /explicit retraction removes it/u);
+});
+
+test('unscored outcomes stay visible in each arm denominator', () => {
+  const text = codebook();
+  assert.match(text, /Every assigned dialogue remains in its arm denominator/u);
+  assert.match(text, /persona_exit/u);
+  assert.match(text, /registered_move_not_delivered/u);
+  assert.match(text, /refusal_resolved/u);
+  assert.match(text, /unconditional_refusal_no_open_demand/u);
+  assert.match(text, /assigned dialogues, scorable dialogues/u);
+  assert.match(text, /Spread among scorable rows\s+alone\s+cannot open/u);
 });
 
 test('every worked example carries all three marks and a ladder rung', () => {
@@ -85,4 +121,6 @@ test('every worked example carries all three marks and a ladder rung', () => {
   assert.equal(scored.length, 5);
   const rungs = text.match(/Ladder rung [012]/gu) || [];
   assert.equal(rungs.length, 5);
+  assert.match(text, /Open demands 2; bound tightness 1; conceded 1\./u);
+  assert.doesNotMatch(text, /Narrower than the earlier turn on mark 1 alone/u);
 });
