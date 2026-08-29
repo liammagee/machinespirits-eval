@@ -1,22 +1,22 @@
 ---
 id: course-479-externalization
 title: Tutor Lab instrument for course 479 (Fall 2026)
-status: blocked
+status: done
 type: content
 priority: P1
-owner: human
+owner: codex
 source: manual
 created: 2026-08-09
 updated: 2026-08-29
 verification: "A Tutor Lab chat is live on machinespirits.org before day 1: tutor-core runs behind a website route, each turn shows draft/critique/revision, students can switch critic setting (off/advisory/adversarial) and prompt stance (recognition/placebo/enhanced/naive), access is class-keyed with a per-session budget; courses/479-fall-2026 has a course page pointing at it; students need no access to this repo."
 claim_status: methods
 depends_on: []
-blocked_by: "Codex Luna passed the live single-turn smoke, but the one-shared-CPU deployment failed the 24-turn seminar gate at concurrency 6 (15 passed, 3 timed out at 300 seconds, 6 unrun); choose queued/backpressured serving or added compute before a new prospective bounded load check."
 links:
   notes:
     - COURSE-479-PLAN.md
   prs:
     - https://github.com/liammagee/machinespirits/pull/53
+    - https://github.com/liammagee/machinespirits/pull/55
 tags:
   - course
   - teaching
@@ -138,3 +138,13 @@ them; it returned healthy, retained the ChatGPT login, and had no Codex worker
 left. The live surface is usable at low concurrency, but classroom readiness
 is still blocked on a topology decision: queue/backpressure on the existing
 machine or added compute, followed by a new prospective bounded load check.
+
+2026-08-29 Codex: CLASSROOM LOAD GATE PASSED. Website PR #55 deployed one
+LAX Fly machine with 4 shared CPUs, 1 GB RAM, the existing persistent volume,
+and the unchanged Codex Luna route. The single authorized 12-session x 2-turn
+check completed 24/24 Luna responses at concurrency 6 in 221.1 seconds, with
+50.5 seconds median latency, 59.9 seconds p90, and 69.7 seconds maximum. No
+turn timed out and no successful response used fallback. Public health stayed
+green, the ChatGPT login persisted, and no Codex worker remained after the
+run. Together with the already-live class-keyed Tutor Lab and course pages,
+the card's declared completion boundary is satisfied.
