@@ -1,0 +1,97 @@
+{
+  "schema": "machinespirits.tutor-stub.defiant-warrant-outcome-pilot-design.v1",
+  "studyId": "defiant-warrant-outcome-gate1-pilot",
+  "workplanItem": "defiant-warrant-outcome-study",
+  "registration": "docs/adaptation-refinement/2026-08-29-defiant-warrant-outcome-design.md",
+  "question": "Does a tutor that serves the frame's warrant (states what the assigned test can and cannot establish, and offers the frame as conditional on that scope) settle the frame and unblock the proof for the frame-defiant learner, against a tutor that presses the test without grounds?",
+  "authorization": {
+    "rule": "plain_go_2026-08-21",
+    "note": "The operator's plain GO covers this study: question, design, measurement rules, spend ceiling. It stays valid until the study itself changes. A code-defect fix does not void it. Provenance is recorded at launch into plan.json, never enforced. No digest binding, no re-approval ceremony."
+  },
+  "arms": {
+    "warrant_serving": {
+      "conductInstruction": "When the learner disputes your standing to set the frame of this inquiry, answer that standing question directly before you press any test. State plainly what the currently assigned test can establish and what it cannot establish. Then offer the frame as conditional on that stated scope, not as settled authority. Do this every time the learner raises the dispute. Keep your manner warm or plain. Do not mock the learner and do not harden your tone."
+    },
+    "warrant_withholding": {
+      "conductInstruction": "When the learner disputes your standing to set the frame of this inquiry, do not take up that standing question. Press the currently assigned test and restate the task in ordinary words. Do not state what the test can or cannot establish, and do not offer the frame as conditional on any scope. Do this every time the learner raises the dispute. Keep your manner warm or plain. Do not mock the learner and do not harden your tone."
+    }
+  },
+  "randomization": {
+    "masterSeed": 20260829,
+    "algorithm": "sha256_ranked_balanced_block_permutation_v1",
+    "blocks": 9,
+    "dialoguesPerBlock": 2,
+    "assignmentsPerArmPerBlock": 1
+  },
+  "sampleSize": {
+    "allocatedTotal": 18,
+    "allocatedPerArm": 9,
+    "phase": "gate1_calibration_pilot",
+    "note": "Gate 1 measures base rates, fidelity, and spread. Main-block thresholds and power are frozen from these numbers; the pilot itself licenses no confirmatory claim."
+  },
+  "execution": {
+    "world": "world_005_marrick",
+    "dagMode": "strict_dag",
+    "autoLearnerProfile": "frame_defiant",
+    "autoTurns": 8,
+    "registerPolicy": "field",
+    "registerPalette": "safe",
+    "registerOverlayThreshold": "0.7",
+    "releaseSpeed": "1",
+    "historyTurns": "4",
+    "maxTokens": "4096",
+    "maximumReservationsPerDialogue": 48,
+    "technicalRecovery": {
+      "maximumProcessAttemptsPerUnit": 3,
+      "validUnitRerun": false,
+      "semanticIndeterminacyRecovery": false,
+      "outcomeSelection": false
+    }
+  },
+  "spendCeiling": {
+    "pilotMaximumModelAttemptReservations": 864,
+    "conductReaderCallBudget": 400
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "learner": "codex.gpt-5.6-luna",
+    "analysis": "codex.gpt-5.6-luna",
+    "cliEffort": "low",
+    "conductReader": "claude-code.sonnet-5",
+    "forbidden": ["nemotron", "kimi"]
+  },
+  "measurement": {
+    "deliveredConductRule": "Arm membership for fidelity is read from the tutor's own delivered text by a reader with the written codebook (docs/adaptation-refinement/2026-08-29-defiant-warrant-conduct-codebook.md), never from the assignment. Fidelity floors are frozen from Gate-1 numbers, not guessed now.",
+    "coPrimaryA": {
+      "name": "frame_settlement",
+      "level": "dialogue_binary",
+      "rule": "The dialogue contains at least one learner turn whose DAG advance records a supported move while the deterministic frame-jurisdiction marker (resistantLearnerObservationMarkers.frameJurisdictionDispute, the same instrument the held-out gate used for the 14/24 baseline) is absent from that same learner turn. Grant-of-standing turns flagged by the conduct reader count as settlement only in the descriptive layer until Gate-1 numbers freeze a rule.",
+      "expectedDirection": "higher_under_warrant_serving",
+      "baseline": "0 of 3 sealed held-out dialogues"
+    },
+    "coPrimaryB": {
+      "name": "strict_dag_coverage_final_turn",
+      "level": "dialogue_continuous",
+      "rule": "bestPathCoverage from the final turn_complete turnRecord's tutorLearnerDagModel assessment. Machine-checked; no reader.",
+      "expectedDirection": "higher_under_warrant_serving"
+    },
+    "secondary": {
+      "name": "escalation_guard",
+      "rule": "Per-arm mean of the deterministic dispute marker over learner turns 5-8 minus turns 1-4."
+    },
+    "descriptive": [
+      "bounded_claim_events",
+      "first_merits_engagement_turn",
+      "dispute_wording_drift",
+      "grant_of_standing_candidates"
+    ],
+    "thresholds": "frozen_after_gate1"
+  },
+  "exclusions": {
+    "resamplingAfterFailure": false,
+    "selfJudging": false,
+    "indeterminateMeansStop": true,
+    "reuse": false,
+    "pooling": false
+  }
+}
