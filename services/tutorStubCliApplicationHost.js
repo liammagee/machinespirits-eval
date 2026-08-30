@@ -565,6 +565,7 @@ import { createTutorStubSessionApplicationContext } from './tutorStubSessionAppl
 import { createTutorStubSessionApplicationRuntime } from './tutorStubSessionApplicationRuntime.js';
 import { createTutorStubScenarioController } from './tutorStubScenarioController.js';
 import { selectTutorStubBoredomSemanticAdjudicatorFactory } from './tutorStubBoredomActionRegisterProofDagStudy.js';
+import { createTutorStubDefiantWarrantConductAdjudicator } from './tutorStubDefiantWarrantConductGate.js';
 import { configureTutorStubResistanceStudiesFromCli } from './tutorStubResistanceStudyCliRuntime.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -1826,6 +1827,11 @@ export async function runTutorStubCliApplicationHost({
     acknowledgeTutorStubOpeningRelease,
     advanceTutorStubDialogueClosure,
     adjudicateTutorStubBoredomObservation: boredomAdjudicatorFactory(callPromptModel, resolveModel),
+    adjudicateTutorStubDefiantWarrantConduct: createTutorStubDefiantWarrantConductAdjudicator({
+      appendTraceEvent,
+      callPromptModel,
+      resolveModel,
+    }),
     adjudicateTutorStubResistanceConfirmationOutcome,
     adjudicateTutorStubResistanceInterventionFidelity,
     adjudicateTutorStubTutorDelivery,

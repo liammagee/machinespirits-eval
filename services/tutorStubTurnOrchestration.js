@@ -18,6 +18,7 @@ import { throwTutorStubBoredomMeasurementIndeterminate } from './tutorStubBoredo
 import { tutorStubBoredomUnreadableTurnIsPassedOver } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 } from './tutorStubRivalAttentionSemanticAdjudicationV3.js';
 import { applyTutorStubR1TutorDeliveryGate } from './tutorStubR1TutorDeliveryGate.js';
+import { applyTutorStubDefiantWarrantConductGate } from './tutorStubDefiantWarrantConductGate.js';
 
 export function tutorStubResistantLearnerFinalSemanticReadersRequired({
   study,
@@ -161,6 +162,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     acknowledgeTutorStubOpeningRelease,
     advanceTutorStubDialogueClosure,
     adjudicateTutorStubBoredomObservation,
+    adjudicateTutorStubDefiantWarrantConduct,
     adjudicateTutorStubResistanceConfirmationOutcome,
     adjudicateTutorStubResistanceInterventionFidelity,
     adjudicateTutorStubTutorDelivery,
@@ -892,6 +894,23 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       interventionApplied: tutorDeliveryGateActive,
       adjudicateTutorDelivery: adjudicateTutorStubTutorDelivery,
       repairTutor: ({ instruction }) => realizeTutorCandidate(instruction, 'tutor_stub_tutor_delivery_repair'),
+      appendTraceEvent,
+      signal: runtimeOptions.signal || null,
+      isCurrent: runtimeOptions.isCurrent || null,
+    });
+    // Registered defiant-warrant conduct gate (design revision 2): on
+    // dispute-adjacent turns the private candidate must deliver the assigned
+    // arm's conduct before it becomes public. Inert for v1 designs (no
+    // conduct_gate on state) and for every other study.
+    response = await applyTutorStubDefiantWarrantConductGate({
+      state,
+      response,
+      turnNumber: tutorTurn,
+      learnerText,
+      priorTutorText: state.turns?.at(-1)?.tutor || state.openingRealization?.text || '',
+      classification,
+      adjudicateConduct: adjudicateTutorStubDefiantWarrantConduct,
+      repairTutor: ({ instruction }) => realizeTutorCandidate(instruction, 'tutor_stub_defiant_warrant_conduct_repair'),
       appendTraceEvent,
       signal: runtimeOptions.signal || null,
       isCurrent: runtimeOptions.isCurrent || null,

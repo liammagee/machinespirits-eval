@@ -21,6 +21,12 @@
       "reason": "Predates the standing 2026-08-22 policy."
     },
     {
+      "path": "scripts/run-tutor-stub-defiant-warrant-pilot.js",
+      "registered": "2026-08-29",
+      "disposition": "historical_live_exemption",
+      "reason": "Produced the live defiant-warrant Gate-1 v1 run on 2026-08-29 and serves the registered v2 re-run under the operator's standing plain GO; attended launch with the design's spend ceiling, no commit-bound admission per the 2026-08-21 rule."
+    },
+    {
       "path": "scripts/run-tutor-stub-frame-refuser-depth-calibration.js",
       "registered": "2026-08-27",
       "disposition": "historical_live_exemption",
