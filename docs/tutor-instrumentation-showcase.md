@@ -14,6 +14,14 @@ to a conclusion. The showcase is the surface you read when you want to see the
 system work. The frozen A/B is the surface you read when you want to know what
 caused a difference.
 
+The public transcripts are projected by
+`buildTutorStubShowcaseDramaticDialogue()` into
+`machinespirits.dramatic-dialogue-interchange.v1` and the shared renderer's
+`parallel` layout. That gives the showcase, frozen A/B, crossed-action example,
+and other public dialogue surfaces one speaker/arm/provenance vocabulary. It
+does not make the free-running arms controlled; the evidence meaning remains
+the one stated here and in `docs/dramatic-dialogue-renderer.md`.
+
 ```bash
 npm run tutor:stub:showcase -- --print-plan     # zero calls
 npm run tutor:stub:showcase                     # paid, attended
