@@ -1,7 +1,7 @@
 ---
 id: frame-refuser-refusal-narrowing
 title: Measure whether condition discharge narrows the frame-refuser's refusal
-status: active
+status: done
 type: experiment
 priority: P2
 owner: codex
@@ -9,14 +9,12 @@ source: manual
 created: 2026-08-27
 updated: 2026-08-30
 verification: >-
-  A written narrowing codebook exists before any reader call. Reader
-  calibration on archived transcripts passes registered agreement floors
-  under its own explicit GO and spend ceiling. A fresh registered
-  contrast runs only if the scale shows spread on archived rows, with its
-  own endpoint, floors, power scan, and explicit GO. Archived rows
-  are never reused as confirmatory evidence. All paid artifacts are
-  committed in the private archive repository.
-claim_status: planned
+  The registered 72-attempt archived-row calibration completed under its
+  exact ceiling with 67 of 72 outputs eligible and no transport failures.
+  Reader B missed the 0.90 eligibility floor at 20 of 24, and every reader
+  pair missed at least one 0.80 agreement floor. The fresh-study gate is
+  therefore closed; all paid artifacts are committed in the private archive.
+claim_status: killed
 depends_on:
   - frame-refuser-depth-study
 links:
@@ -27,12 +25,14 @@ links:
     - config/tutor-stub-frame-refuser-narrowing-codebook.v1.md
     - config/tutor-stub-frame-refuser-narrowing-instrument.v1.md
     - config/tutor-stub-frame-refuser-narrowing-calibration-design.v1.json
+    - https://github.com/liammagee/machinespirits-eval/pull/872
+    - https://github.com/liammagee/machinespirits-eval/pull/873
 tags:
   - tutor-stub
   - resistant-learners
   - frame-refusal
   - engagement-ladder
-branch: codex/frame-refuser-narrowing-p1-recovery
+branch: codex/frame-refuser-narrowing-closeout
 ---
 
 ## Question
@@ -228,3 +228,24 @@ produces rung 2?
   The code and zero-call checks do not themselves resume model activity. If a
   transport failure repeats during the recovery launch, the recovery seals and
   stops for human review rather than opening another automatic continuation.
+
+- 2026-08-30: **P1 calibration completed; line closed at the registered
+  agreement gate.** The final attended calibration sent each of the 24 archived
+  public dialogue packets once to Sol, Sonnet 5, and Opus 5. It completed all 72
+  assignments at the hard ceiling with no transport failures, retries, missing
+  units, or configuration drift. Sixty-seven outputs were eligible. Reader B
+  supplied 20 eligible outputs, below the required 22 of 24; readers A and C
+  supplied 24 and 23. Every reader pair also missed at least one registered 0.80
+  exact-agreement floor, principally on open demands, conceded sub-claims, and
+  first-to-last direction.
+
+  The exploratory spread checks passed: 10 reference and 12 treatment rows were
+  scorable, eight final-state tuples appeared, 22 of 24 assigned rows moved, and
+  the assigned-row narrower rates were 6 of 12 for reference versus 8 of 12 for
+  treatment. Those figures do not establish an effect because the instrument's
+  agreement gate failed. Under the prospective stopping rule, no fresh contrast
+  opens and the archived rows remain instrument-building evidence only.
+
+  The sealed report and all 72 result files are preserved in the private
+  archive. This card is complete with `claim_status: killed`: the narrowing
+  instrument did not earn promotion to a confirmatory study.
