@@ -30,7 +30,7 @@ tags:
   - resistant-learners
   - frame-refusal
   - engagement-ladder
-branch: codex/frame-refuser-narrowing-p0-v4
+branch: codex/frame-refuser-narrowing-post-fix
 ---
 
 ## Question
@@ -153,3 +153,23 @@ produces rung 2?
   ceiling. If its sample cannot demonstrate the missing states, readers cannot
   meet the agreement floors, or the measure does not spread, that is the
   finding and the card closes.
+
+- 2026-08-29: **Post-merge source correction, zero-call.** A runtime audit after
+  P0 merged found that its evidence check had reversed the final learner-turn
+  mapping. `state.turns[].learner` is the learner input before that row's tutor
+  response; the semantic packet's final `post_horizon` is the newly generated
+  learner response after the final tutor turn. The report-cited
+  `public_learner_surface` is therefore the correct final public post, not a
+  nested rendering to discard.
+
+  The codebook now uses the report's exact `post_N` surfaces for five archived
+  A=2, B=1, C=1 disagreement rows across v2 and v4. Their cumulative
+  `(open demands, tightness, concessions)` scores are `(1,3,2)`, `(2,3,2)`,
+  `(2,3,1)`, `(1,3,2)`, and `(1,3,3)`. A direct regression test pins the packet
+  order so a stored incoming learner turn cannot again be mistaken for the
+  learner response generated after the final tutor turn.
+
+  No P1 reader call is authorized. The card remains active for the separately
+  registered three-seat calibration under its own explicit GO and spend
+  ceiling; this correction changes neither that gate nor the sealed engagement
+  ladder.

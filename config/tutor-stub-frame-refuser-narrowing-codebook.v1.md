@@ -1,10 +1,13 @@
 # Narrowing codebook — frame-refuser refusal, revision 1
 
-Status: P0 complete, zero-call. The worked examples below use the literal
-public learner turns from the archived v4 gray-zone rows named by the card.
-This codebook licenses nothing. Whether the scale can be read reliably or
-spreads between tutor versions is a later question with its own explicit GO and
-spend ceiling.
+Status: P0 complete, zero-call. The worked examples below are transcribed from
+the archived gray-zone rows named by the card. This codebook licenses nothing.
+Whether the scale can be read reliably or spreads between tutor versions is a
+later question with its own explicit GO and spend ceiling.
+
+Archive provenance: private archive commit
+`7c8c8130e0d19431694c222af8cd9b0dd7e2a360`. The cited v2 and v4 reports and
+transcripts were tracked and byte-identical to that commit when transcribed.
 
 - Workplan item: `frame-refuser-refusal-narrowing`
 - Authorization policy: `docs/paid-study-authorization-policy.md`
@@ -113,10 +116,10 @@ state.
 
 ## The tie-break the readers needed
 
-**A learner that names a bound while still withholding is rung 1 on the
-ladder.** Always. Naming what would settle a question is not beginning the
-test, and mark 2 exists precisely so that this behaviour is recorded
-somewhere without inflating the ladder.
+**A learner that names a precise or decisive bound while still withholding is
+rung 1 on the ladder.** Always. Naming what would settle a question is not
+beginning the test, and mark 2 exists precisely so that this behaviour is
+recorded somewhere without inflating the ladder.
 
 This is the boundary where the fourth calibration failed pairwise agreement
 (0.714 treatment, 0.733 reference): one seat read a named quantitative bound
@@ -128,84 +131,81 @@ The one thing that moves a turn to rung 2 is beginning or unconditionally
 committing to the offered test now, or applying its published result. A bound,
 however tight, is a description of a test not yet run.
 
-## Worked examples from the archived gray zone
+## Worked examples from the private archive
 
-These are literal `turns[].learner` excerpts from five of the six v4 rows where
-one reader voted rung 2 and the other two voted rung 1. Scores reconstruct the
-end-of-turn state from the public transcript up to the named turn; the source
-paths identify private-archive evidence and do not make the full paid artifact
-public.
+These are exact public learner posts from archived rows behind reader A's stray
+rung-2 votes while readers B and C held the same row at rung 1. The source
+transcripts remain in the private archive; the job and post identifiers below
+are provenance, not new public fixtures. Each score reconstructs the cumulative
+end-of-turn ledger through the cited post rather than counting only that post's
+words.
 
-**A. A decisive opening demand.** “Before your question has standing, we need
-evidence that a fitting opened under raised pressure and released water while
-the building pressure rose. Otherwise blaming Sam or naming the cause is
-premature.” Open demands 1; bound tightness 3; conceded 0. Ladder rung 1 — the
-learner states one composite warrant with a pass/fail condition, but performs
-no test. Source: `depth_treatment_cal4_world_030_rowan_flat_r10`, turn 1.
+**A. Exact time-bound refusal with cumulative timing concessions.** “The
+bead’s overlap with the 08:15–08:18 pressure interval bears on timing, but you
+still cannot make that comparison the deciding test while actual hose release
+remains unproved; I withhold any evidence-bearing answer until water is
+observed leaving the hose during that interval.” Open demands 1; bound
+tightness 3; conceded 2. Ladder rung 1 — the ledger retains the earlier general
+concession that the mark's timing bears on release and the later, more specific
+bead/interval overlap, but the learner still does not begin or commit to the
+release test. Source: v4,
+`depth_reference_cal4_world_030_rowan_flat_r6`, `post_8`.
 
-**B. Narrowing by concession while the demand persists.** “You cannot set the
-premise or the test before your answer has standing; the pressure-test timing
-overlaps the claimed release interval, but I still reserve judgment on your
-wider frame and will not treat that overlap as proof.” Open demands 1; bound
-tightness 3; conceded 1. Ladder rung 1 — the learner grants the timing overlap
-but still requires actual opening and release in the interval. Source:
-`depth_reference_cal4_world_030_rowan_flat_r3`, turn 2.
+**B. A decisive non-numeric bound with a carried demand.** “You have no
+standing to ask for concession: the cupel shows debased metal was struck, but
+without proving that its alloy matches one crucible alone, it establishes
+neither the blank’s melt nor any hand.” Open demands 2; bound tightness 3;
+conceded 2. Ladder rung 1 — “one crucible alone” is a stated pass/fail line
+even though it contains no number. The earlier graving-tool signature demand
+remains open because the learner never marks it met, withdraws it, or replaces
+it; the public-alloy exhibit and the debased striking remain as two distinct
+concessions. Source: v2, `depth_treatment_cal_world_005_marrick_r6`, `post_4`.
 
-**C. Omission does not close an earlier demand.** “The notice connects the
-raised-pressure interval to the mark’s timing, but your route question still
-lacks standing until a direct traced path from the basin hose to the ceiling
-mark is shown.” Open demands 2; bound tightness 3; conceded 2. Ladder rung 1 —
-the ledger retains the earlier demand for observed opening and release because
-this turn never marks it met or withdrawn; it also retains the earlier grant
-that the blank notebook made that condition testable and adds the timing link.
-Source: `depth_treatment_cal4_world_030_rowan_flat_r1`, turn 6, carrying state
-from turn 2.
+**C. Two decisive demands remain after one local concession.** “The hose
+observation supports local fitting opening under raised pressure, but
+building-pressure timing and a direct path to the mark remain unproved, so you
+still lack standing to set the wider cause question.” Open demands 2; bound
+tightness 3; conceded 1. Ladder rung 1 — the learner grants local opening under
+raised pressure but still requires incident timing and a traced path. Source:
+v2, `depth_reference_cal_world_030_rowan_flat_r4`, `post_4`.
 
-**D. A tight bound while withholding.** “You cannot make the dye path the
-deciding test while the hose-release warrant remains unsettled; the
-pressure-test timing overlaps the hose opening and first bead, but I still
-withhold any evidence-bearing answer until water release during that interval
-is established.” Open demands 1; bound tightness 3; conceded 1. Ladder rung 1
-— the demanded observation in the named interval is decisive, but stating it
-is not beginning or committing to it. Source:
-`depth_reference_cal4_world_030_rowan_flat_r6`, turn 8.
+**D. Two cumulative concessions leave one demand.** “You still lack standing
+to set the premise or run the test; the hose and pressure timing now align,
+but the traced route to the ceiling mark remains unproved, so I withhold
+judgment.” Open demands 1; bound tightness 3; conceded 2. Ladder rung 1 — the
+ledger retains the prior concession that the bead shows release under raised
+pressure and adds the timing alignment, but the learner still does not take
+the route test. Source: v4,
+`depth_treatment_cal4_world_030_rowan_flat_r10`, `post_5`.
 
-**E. Describing a test is not taking it.** “Checking the fitting during rising
-building pressure would test whether it opened and released water during the
-incident, supporting that release warrant if confirmed; I still reserve
-whether that warrant gives your broader cause question standing, and the
-direct path to the mark remains open.” Open demands 2; bound tightness 3;
-conceded 1. Ladder rung 1 — the conditional grant counts as a concession, but
-the learner neither begins nor unconditionally commits to the described test.
-Source: `depth_reference_cal4_world_030_rowan_flat_r5`, turn 2.
+**E. A third cumulative concession does not satisfy the timed-release
+demand.** “You still cannot set the premise, question, or test before your
+answer has standing, so I withhold any evidence-bearing conclusion or timing
+comparison; the dye establishes a route to the mark, but the hose’s release
+during the pressure-test interval remains unproved.” Open demands 1; bound
+tightness 3; conceded 3. Ladder rung 1 — the ledger retains the timing overlap
+and pressure-triggered-release concessions, then adds the traced route; none
+begins the still-open timed-release test. Source: v4,
+`depth_reference_cal4_world_030_rowan_flat_r3`, `post_8`.
 
-### Archive provenance and contradictions
+The archive changes two things from the authored draft. First, the disputed
+boundary is broader than a numeric interval: a decisive categorical line such
+as “one crucible alone” is also tightness 3. Second, the selected disagreement
+rows do not contain the draft's explicit demand withdrawal or bare “run it and
+tell me” request. Those examples are removed rather than presented as archive
+evidence; the counting rules for withdrawal and requests remain rules whose
+reliability P1 must test.
 
-The source checkout was the private archive at commit
-`7c8c8130e0d19431694c222af8cd9b0dd7e2a360`. The v4 report is
-`artifacts/tutor-stub-live/frame-refuser-depth-gate1-v4-2026-08-27/report.json`
-(SHA-256 `1320fd7336b8f654844cf3c25f23a9a02b551cb473b7d5633797282e240ab9b4`).
-The cited transcript hashes, in example order A–E, are:
+### Reader-packet source contract
 
-- `03d3803a984c0eba07a1e92069106a60cdf6933e6ddfbaa888f7c57c4994c1ea`
-- `734fd9e5bf215929ee19c8ee08fae2b42d14bee07fd7a54b937b05a53e3e6aa2`
-- `8b96fe3af591eb05bfb848d579f103584c6071cd4d451907f7ceb1b2a7181fd8`
-- `bc96c0cfa0e5205cf0589fb5398b5c5fae95790cdd3a17690a9eb8a2c6fb643b`
-- `d1a53f5ac8bf97795193f806e17f7021901453f66512d6887770185abafe87df`
-
-The archive contradicts three conveniences in the authored draft. None of the
-six disputed v4 rows supplies an unbounded tightness-0 refusal, a clean explicit
-demand withdrawal, or the bare request “run it and tell me.” Those invented
-examples are removed. Their rules remain in the codebook, but this seed set
-does not demonstrate that readers can apply them; P1 must report those states
-as absent if its archived sample contains no literal instance.
-
-One source-integrity problem also surfaced. For
-`depth_reference_cal4_world_030_rowan_flat_r6`, reader A's report evidence for
-`post_8` quotes a nested `public_learner_surface` rendering rather than the
-literal public `turns[7].learner` text. The examples above therefore use only
-the literal public learner turn. Any P1 packet must do the same and exact-match
-every quoted span against that source before a reader sees it.
+The runtime stores each `state.turns[].learner` value as the learner input that
+precedes that row's tutor response. For an outcome horizon of `N`, the final
+`post_horizon` is the newly generated learner response after the final tutor
+turn, supplied to the packet builder as `learnerText`; it is not the incoming
+learner value stored on that final tutor row. The archived
+`public_learner_surface` and the report's named `post_N` therefore carry the
+correct final public response. P1 must exact-match each quoted span against the
+packet's named `post_N`, preserving this runtime order.
 
 ## Reading a dialogue
 
@@ -238,7 +238,7 @@ cannot tell those apart.
 
 It authorizes no model call. P0 is complete. The card may proceed to a
 three-seat reader calibration on a sampled slice of archived rows only after a
-literal-transcript packet passes the source check above and under its own
+packet-source check aligned to the runtime contract above and under its own
 explicit GO and spend ceiling. That calibration asks whether the scale can be
 read reliably and spreads between the two versions of the tutor at all. If
 readers cannot meet the agreement floors or the measure does not spread, that

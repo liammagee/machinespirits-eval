@@ -16,6 +16,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildTutorStubResistantLearnerFinalHorizonPacket } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CODEBOOK_PATH = path.join(REPO_ROOT, 'config/tutor-stub-frame-refuser-narrowing-codebook.v1.md');
@@ -40,7 +41,7 @@ test('the codebook carries the tie-break the readers split on', () => {
   const text = codebook();
   // The fourth calibration failed pairwise agreement at exactly this boundary.
   // The ladder is not amended, so the codebook must settle it in words.
-  assert.match(text, /names a bound while still withholding is rung 1 on the\s+ladder/u);
+  assert.match(text, /names a precise or decisive bound while still withholding is\s+rung 1 on the ladder/u);
   assert.match(text, /0\.714/u, 'the codebook should name the agreement it is answering');
   assert.match(text, /0\.733/u);
 });
@@ -67,17 +68,18 @@ test('the codebook grants no model call and names its next gate', () => {
   assert.match(text, /If\s+readers\s+cannot meet the\s+agreement floors or the measure does not spread/u);
 });
 
-test('the worked examples use literal archived v4 turns with provenance', () => {
+test('the worked examples are authentic archived disagreement rows with provenance', () => {
   const text = codebook();
-  assert.match(text, /literal `turns\[\]\.learner` excerpts/u);
-  assert.match(text, /five of the six v4 rows/u);
+  assert.match(text, /exact public learner posts from archived rows behind reader A's stray\s+rung-2 votes/u);
+  assert.match(text, /source\s+transcripts remain in the private archive/u);
   assert.match(text, /7c8c8130e0d19431694c222af8cd9b0dd7e2a360/u);
-  assert.match(text, /1320fd7336b8f654844cf3c25f23a9a02b551cb473b7d5633797282e240ab9b4/u);
-  assert.match(text, /depth_reference_cal4_world_030_rowan_flat_r3/u);
-  assert.match(text, /depth_reference_cal4_world_030_rowan_flat_r5/u);
   assert.match(text, /depth_reference_cal4_world_030_rowan_flat_r6/u);
-  assert.match(text, /depth_treatment_cal4_world_030_rowan_flat_r1/u);
+  assert.match(text, /depth_treatment_cal_world_005_marrick_r6/u);
+  assert.match(text, /depth_reference_cal_world_030_rowan_flat_r4/u);
   assert.match(text, /depth_treatment_cal4_world_030_rowan_flat_r10/u);
+  assert.match(text, /depth_reference_cal4_world_030_rowan_flat_r3/u);
+  assert.match(text, /depth_treatment_cal_world_005_marrick_r6`, `post_4`/u);
+  assert.match(text, /depth_treatment_cal4_world_030_rowan_flat_r10`, `post_5`/u);
   assert.doesNotMatch(text, /These examples are authored, not quoted/u);
 });
 
@@ -91,15 +93,32 @@ test('P0 is complete while reader calibration remains separately gated', () => {
   assert.doesNotMatch(text, /P0 remains open/u);
 });
 
-test('archive contradictions constrain the next packet', () => {
+test('the reader packet source is the runtime post-horizon surface', () => {
   const text = codebook();
-  assert.match(text, /None of the\s+six disputed v4 rows supplies an unbounded tightness-0 refusal/u);
-  assert.match(text, /clean explicit\s+demand withdrawal/u);
-  assert.match(
-    text,
-    /nested `public_learner_surface` rendering rather than the\s+literal public `turns\[7\]\.learner` text/u,
-  );
-  assert.match(text, /exact-match\s+every quoted span against that source/u);
+  const state = {
+    resistanceActionRegisterStudy: {
+      trigger_turn: 4,
+      outcome_horizon_learner_turns: 2,
+    },
+    turns: [
+      { turn: 4, learner: 'trigger learner', tutor: 'intervention tutor' },
+      { turn: 5, learner: 'post one', tutor: 'tutor one' },
+      { turn: 6, learner: 'incoming learner before final tutor', tutor: 'final tutor' },
+    ],
+  };
+
+  const packet = buildTutorStubResistantLearnerFinalHorizonPacket(state, 'final generated learner');
+
+  assert.deepEqual(packet, {
+    trigger: 'trigger learner',
+    intervention: 'intervention tutor',
+    post_1: 'post one',
+    tutor_1: 'tutor one',
+    post_2: 'final generated learner',
+  });
+  assert.notEqual(packet.post_2, state.turns[2].learner);
+  assert.match(text, /final\s+`post_horizon` is the newly generated learner response/u);
+  assert.match(text, /exact-match each quoted span against the\s+packet's named `post_N`/u);
 });
 
 test('all three longitudinal marks are comparable end-of-turn states', () => {
@@ -137,6 +156,9 @@ test('every worked example carries all three marks and a ladder rung', () => {
   assert.equal(scored.length, 5);
   const rungs = text.match(/Ladder rung [012]/gu) || [];
   assert.equal(rungs.length, 5);
+  assert.match(text, /Open demands 1; bound tightness 3; conceded 2\./u);
   assert.match(text, /Open demands 2; bound tightness 3; conceded 2\./u);
+  assert.match(text, /Open demands 2; bound tightness 3; conceded 1\./u);
+  assert.match(text, /Open demands 1; bound tightness 3; conceded 3\./u);
   assert.doesNotMatch(text, /Narrower than the earlier turn on mark 1 alone/u);
 });
