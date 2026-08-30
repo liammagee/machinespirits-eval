@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en" data-skin="machine-spirits">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>From a null trajectory effect to a working control loop</title>
+<meta name="description" content="A transcript-led account of how the adaptive tutor evolved from a null trajectory result into bounded state-contingent control — and what remains unproven." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" />
+<link rel="stylesheet" href="assets/techne.css" />
+<style>
+  :root {
+    --signal: var(--brick-d, #9f321e);
+    --safe: var(--moss-d, #496c4c);
+    --cool: #315e71;
+    --spine: color-mix(in srgb, var(--ink-3) 30%, transparent);
+  }
+  .hero__h1 { max-width: 15ch; }
+  .hero__subtitle { max-width: 62rem; }
+  .hero__verdict {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 1px;
+    margin-top: clamp(1.2rem, 3vw, 2.3rem);
+    border: 1px solid var(--rule);
+    background: var(--rule);
+  }
+  .hero__verdict > div { padding: 1rem 1.15rem; background: var(--paper); }
+  .hero__verdict strong { display: block; color: var(--brick-d); font-size: clamp(1.65rem, 3.2vw, 3rem); line-height: 1; }
+  .hero__verdict span { display: block; margin-top: 0.45rem; color: var(--ink-3); font-family: "Space Mono", monospace; font-size: var(--s-mini); line-height: 1.55; }
+
+  .evolution {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    margin: 1.4rem 0 0.5rem;
+    border: 1px solid var(--rule);
+  }
+  .evo {
+    position: relative;
+    min-height: 15rem;
+    padding: 1rem;
+    border-right: 1px solid var(--rule);
+    background: var(--paper);
+  }
+  .evo:last-child { border-right: 0; }
+  .evo__n { color: var(--brick-d); font: 700 var(--s-mini)/1 "Space Mono", monospace; letter-spacing: 0.08em; }
+  .evo h3 { margin: 1.35rem 0 0.45rem; font-size: 1.05rem; line-height: 1.15; }
+  .evo p { margin: 0; color: var(--ink-2); font-size: 0.9rem; line-height: 1.55; }
+  .evo__outcome { position: absolute; right: 1rem; bottom: 0.9rem; left: 1rem; border-top: 1px solid var(--rule); padding-top: 0.55rem; color: var(--ink-3); font: 700 0.67rem/1.45 "Space Mono", monospace; text-transform: uppercase; letter-spacing: 0.07em; }
+  .evo--now { box-shadow: inset 0 4px 0 var(--moss); }
+
+  .device-strip { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 1.2rem 0; }
+  .device {
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.38rem 0.68rem;
+    color: var(--ink-2);
+    background: var(--paper-2);
+    font: 600 0.72rem/1.2 "Space Mono", monospace;
+  }
+  .device b { color: var(--brick-d); }
+
+  .dag-controls, .state-controls, .guard-controls, .gallery-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 1rem 0;
+  }
+  .mode-btn {
+    appearance: none;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.52rem 0.82rem;
+    background: var(--paper);
+    color: var(--ink-2);
+    cursor: pointer;
+    font: 700 0.72rem/1 "Space Mono", monospace;
+  }
+  .mode-btn:hover, .mode-btn:focus-visible { border-color: var(--brick); outline: none; }
+  .mode-btn[aria-pressed="true"] { border-color: var(--brick-d); background: var(--brick-d); color: white; }
+
+  .dag-shell { border: 1px solid var(--rule); background: var(--paper-2); padding: clamp(0.75rem, 2vw, 1.2rem); }
+  .dag-flow { display: grid; gap: 0.55rem; }
+  .dag__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+  .dag__node {
+    min-height: 5.5rem;
+    display: grid;
+    align-content: center;
+    gap: 0.35rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.75rem;
+    background: var(--paper);
+  }
+  .dag__node strong { font-size: 0.9rem; }
+  .dag__node span { color: var(--ink-3); font-size: 0.76rem; line-height: 1.4; }
+  .dag__node--derived { border-color: var(--safe); }
+  .dag__node--gap { border-style: dashed; border-color: var(--signal); }
+  .dag__rule { display: grid; place-items: center; min-height: 2.2rem; color: var(--safe); font: 700 0.66rem/1.35 "Space Mono", monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+  .dag__rule::before { content: "↓ "; }
+  .dag__rule--gap { color: var(--signal); }
+  .dag__plus { text-align: center; color: var(--ink-3); font: 700 0.67rem/1.2 "Space Mono", monospace; text-transform: uppercase; letter-spacing: 0.06em; }
+  .dag__verdict { margin: 1rem 0 0; border-left: 3px solid var(--moss); padding-left: 0.85rem; font-size: 0.92rem; }
+  .dag__verdict[data-tone="warning"] { border-left-color: var(--brick); }
+  .release-line { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-top: 1rem; background: var(--rule); border: 1px solid var(--rule); }
+  .release { background: var(--paper); padding: 0.65rem; font-size: 0.72rem; line-height: 1.4; }
+  .release b { display: block; color: var(--brick-d); font: 700 0.66rem/1.3 "Space Mono", monospace; }
+
+  .compare { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.2rem; }
+  .compare__lane { border: 1px solid var(--rule); background: var(--paper-2); }
+  .compare__head { display: flex; justify-content: space-between; gap: 0.75rem; align-items: center; padding: 0.7rem 0.85rem; border-bottom: 1px solid var(--rule); }
+  .compare__head h3 { margin: 0; font-size: 0.95rem; }
+  .score-chip { border-radius: 999px; padding: 0.24rem 0.5rem; color: white; background: var(--signal); font: 700 0.65rem/1 "Space Mono", monospace; white-space: nowrap; }
+  .score-chip--pass { background: var(--safe); }
+  .swim { padding: 0.85rem; }
+  .swim__head, .swim__row { display: grid; grid-template-columns: minmax(0, 1fr) 2.7rem minmax(0, 1fr); gap: 0.55rem; }
+  .swim__head { margin-bottom: 0.55rem; color: var(--ink-3); font: 700 0.62rem/1.2 "Space Mono", monospace; text-transform: uppercase; letter-spacing: 0.08em; }
+  .swim__head span:last-child { text-align: right; }
+  .swim__spine { display: grid; place-items: start center; position: relative; }
+  .swim__spine::before { content: ""; position: absolute; top: 0; bottom: -0.85rem; width: 1px; background: var(--spine); }
+  .swim__turn { z-index: 1; display: grid; place-items: center; width: 2rem; height: 2rem; border: 1px solid var(--rule); border-radius: 50%; background: var(--paper); color: var(--brick-d); font: 700 0.63rem/1 "Space Mono", monospace; }
+  .speech { border: 1px solid var(--rule); border-radius: 5px; padding: 0.75rem; background: var(--paper); font-size: 0.84rem; line-height: 1.55; }
+  .speech--learner { grid-column: 3; }
+  .speech--tutor { grid-column: 1; }
+  .swim__row--learner .swim__spine { grid-column: 2; }
+  .swim__row--tutor .swim__spine { grid-column: 2; }
+  .swim__row--learner .speech { grid-column: 3; }
+  .swim__row--tutor .speech { grid-column: 1; }
+  .speech__who { display: block; margin-bottom: 0.4rem; color: var(--ink-3); font: 700 0.62rem/1.2 "Space Mono", monospace; text-transform: uppercase; letter-spacing: 0.07em; }
+  .gloss { margin: 0 0.85rem 0.85rem; border-top: 1px solid var(--rule); padding-top: 0.7rem; color: var(--ink-2); font-size: 0.8rem; line-height: 1.5; }
+  .gloss b { color: var(--brick-d); font-family: "Space Mono", monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .state-stage { border: 1px solid var(--rule); background: var(--paper-2); }
+  .state-stage__meta { display: flex; justify-content: space-between; gap: 1rem; padding: 0.7rem 0.85rem; border-bottom: 1px solid var(--rule); color: var(--ink-3); font: 700 0.68rem/1.4 "Space Mono", monospace; }
+  .state-stage .swim { max-width: 58rem; margin-inline: auto; }
+  .state-stage .gloss { max-width: 56rem; margin-inline: auto; padding-bottom: 0.85rem; }
+
+  .gallery-label { margin: 1rem 0 0.35rem; color: var(--ink-3); font: 700 0.65rem/1.3 "Space Mono", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+  .gallery-frame { border: 1px solid var(--rule); background: var(--paper-2); }
+  .gallery-meta { display: flex; justify-content: space-between; gap: 1rem; padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--rule); color: var(--ink-3); font: 700 0.64rem/1.45 "Space Mono", monospace; }
+  .gallery-question { margin: 0; padding: 0.85rem; border-bottom: 1px solid var(--rule); background: var(--paper); font-size: 0.92rem; line-height: 1.5; }
+  .gallery-question b { display: block; margin-bottom: 0.3rem; color: var(--brick-d); font: 700 0.63rem/1.3 "Space Mono", monospace; letter-spacing: 0.07em; text-transform: uppercase; }
+  .gallery-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); }
+  .gallery-arm { min-width: 0; padding: 0.85rem; background: var(--paper); }
+  .gallery-arm__head { display: flex; justify-content: space-between; gap: 0.6rem; align-items: baseline; margin-bottom: 0.65rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule); }
+  .gallery-arm__head strong { font-size: 0.86rem; }
+  .gallery-arm__head span { color: var(--ink-3); font: 700 0.6rem/1.3 "Space Mono", monospace; text-transform: uppercase; }
+  .gallery-reply { margin: 0; font-size: 0.8rem; line-height: 1.55; white-space: pre-wrap; }
+  .gallery-reading { margin: 0; padding: 0.85rem; border-top: 1px solid var(--rule); color: var(--ink-2); font-size: 0.82rem; line-height: 1.55; }
+  .gallery-reading b { color: var(--brick-d); font: 700 0.63rem/1.3 "Space Mono", monospace; letter-spacing: 0.07em; text-transform: uppercase; }
+  .rulers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 1rem; border: 1px solid var(--rule); background: var(--rule); }
+  .ruler { padding: 0.75rem; background: var(--paper); }
+  .ruler b { display: block; margin-bottom: 0.35rem; color: var(--brick-d); font: 700 0.64rem/1.3 "Space Mono", monospace; text-transform: uppercase; }
+  .ruler p { margin: 0; color: var(--ink-2); font-size: 0.75rem; line-height: 1.5; }
+
+  .price-legend { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 1rem 0; }
+  .price-legend span { border: 1px solid var(--rule); border-radius: 999px; padding: 0.32rem 0.6rem; background: var(--paper-2); color: var(--ink-3); font: 700 0.62rem/1.2 "Space Mono", monospace; }
+  .price-legend b { color: var(--brick-d); }
+  .price-group { margin-top: 1.2rem; }
+  .price-group__head { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; margin-bottom: 0.5rem; border-bottom: 2px solid var(--rule); padding-bottom: 0.45rem; }
+  .price-group__head h3 { margin: 0; font-size: 1rem; }
+  .price-group__head span { color: var(--ink-3); font: 700 0.62rem/1.3 "Space Mono", monospace; text-transform: uppercase; }
+  .price-grid { display: grid; gap: 0.6rem; }
+  .price-row { display: grid; grid-template-columns: 0.8fr 1fr 1fr; border: 1px solid var(--rule); background: var(--rule); gap: 1px; }
+  .price-cell { min-width: 0; padding: 0.72rem; background: var(--paper); color: var(--ink-2); font-size: 0.76rem; line-height: 1.48; }
+  .price-cell b { display: block; margin-bottom: 0.3rem; color: var(--ink); font-size: 0.79rem; }
+  .price-cell--device b { color: var(--brick-d); font: 700 0.67rem/1.3 "Space Mono", monospace; text-transform: uppercase; }
+  .price-tag { display: inline-block; margin-top: 0.35rem; border-radius: 999px; padding: 0.22rem 0.42rem; background: var(--paper-2); color: var(--ink-3); font: 700 0.58rem/1.2 "Space Mono", monospace; }
+  .price-reading { border-left: 3px solid var(--moss); }
+  .price-reading--cost { border-left-color: var(--brick); }
+  .price-reading strong { color: var(--brick-d); }
+  .price-cell:last-child { grid-column: 1 / -1; }
+
+  .pipeline { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.45rem; margin: 1rem 0; }
+  .pipe { position: relative; border: 1px solid var(--rule); padding: 0.65rem; min-height: 5.8rem; background: var(--paper); font-size: 0.76rem; line-height: 1.35; }
+  .pipe b { display: block; margin-bottom: 0.35rem; color: var(--brick-d); font: 700 0.64rem/1.2 "Space Mono", monospace; text-transform: uppercase; }
+  .pipe + .pipe::before { content: "→"; position: absolute; left: -0.52rem; top: 2rem; color: var(--ink-3); }
+  .guard-stat { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; border: 1px solid var(--rule); background: var(--rule); }
+  .guard-stat > div { background: var(--paper); padding: 0.85rem; }
+  .guard-stat strong { display: block; color: var(--brick-d); font-size: 1.6rem; }
+  .guard-stat span { color: var(--ink-3); font-size: 0.78rem; line-height: 1.5; }
+
+  .boundary { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.82rem; }
+  .boundary th, .boundary td { border: 1px solid var(--rule); padding: 0.65rem; text-align: left; vertical-align: top; }
+  .boundary th { color: var(--brick-d); font: 700 0.68rem/1.4 "Space Mono", monospace; text-transform: uppercase; letter-spacing: 0.06em; }
+  .yes { color: var(--safe); font-weight: 700; }
+  .no { color: var(--signal); font-weight: 700; }
+  .provenance { margin-top: 1.2rem; padding: 0.9rem; border: 1px solid var(--rule); background: var(--paper-2); color: var(--ink-3); font-size: 0.77rem; line-height: 1.6; }
+  .provenance code { overflow-wrap: anywhere; }
+  [hidden] { display: none !important; }
+
+  @media (max-width: 66rem) {
+    .evolution { grid-template-columns: 1fr 1fr; }
+    .evo:nth-child(2) { border-right: 0; }
+    .evo:nth-child(-n+2) { border-bottom: 1px solid var(--rule); }
+    .pipeline { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 48rem) {
+    .hero__verdict, .guard-stat { grid-template-columns: 1fr; }
+    .evolution { grid-template-columns: 1fr; }
+    .evo, .evo:nth-child(2) { min-height: 12.5rem; border-right: 0; border-bottom: 1px solid var(--rule); }
+    .evo:last-child { border-bottom: 0; }
+    .dag__pair { grid-template-columns: 1fr; }
+    .gallery-pair, .rulers { grid-template-columns: 1fr; }
+    .release-line { grid-template-columns: 1fr 1fr; }
+    .pipeline { grid-template-columns: 1fr 1fr; }
+    .pipe + .pipe::before { display: none; }
+    .price-row { grid-template-columns: 1fr 1fr; }
+    .price-cell:last-child { grid-column: 1 / -1; }
+  }
+  @media (max-width: 36rem) {
+    .swim__head { display: none; }
+    .swim__row { grid-template-columns: 2rem minmax(0, 1fr); }
+    .swim__row--learner .swim__spine, .swim__row--tutor .swim__spine { grid-column: 1; grid-row: 1; }
+    .swim__row--learner .speech, .swim__row--tutor .speech { grid-column: 2; grid-row: 1; }
+    .release-line, .pipeline { grid-template-columns: 1fr; }
+    .state-stage__meta, .gallery-meta { display: grid; }
+    .price-group__head { display: grid; }
+    .price-row { grid-template-columns: 1fr; }
+    .price-cell:last-child { grid-column: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <button class="toc-toggle" id="tocToggle" type="button" aria-controls="toc" aria-expanded="false" title="Contents">☰</button>
+    <span class="rail__title">Machine Spirits · adaptive tutoring</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#evolution">Evolution</a>
+      <a href="#proof">Proof DAG</a>
+      <a href="#crossed">Wrong / right</a>
+      <a href="#repertoire">Repertoire</a>
+      <a href="#instrumentation">With / without</a>
+      <a href="#pricing">Price map</a>
+      <a href="#delivery">Delivery</a>
+      <a href="#boundary">Boundary</a>
+    </nav>
+    <div class="rail__actions"><button class="rail__btn" id="themeToggle" type="button">Dark</button></div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<aside class="toc" id="toc" aria-hidden="true" aria-label="Table of contents">
+  <div class="toc__head"><span class="label">Contents</span><button class="toc__close" id="tocClose" type="button" aria-label="Close contents">×</button></div>
+  <ol class="toc__list" id="tocList">
+    <li class="toc__item" data-target="evolution"><a href="#evolution"><span class="toc__n">01</span> Four changes</a></li>
+    <li class="toc__item" data-target="proof"><a href="#proof"><span class="toc__n">02</span> Proof before persuasion</a></li>
+    <li class="toc__item" data-target="crossed"><a href="#crossed"><span class="toc__n">03</span> Same learner, different move</a></li>
+    <li class="toc__item" data-target="repertoire"><a href="#repertoire"><span class="toc__n">04</span> The move repertoire</a></li>
+    <li class="toc__item" data-target="instrumentation"><a href="#instrumentation"><span class="toc__n">05</span> With and without</a></li>
+    <li class="toc__item" data-target="pricing"><a href="#pricing"><span class="toc__n">06</span> Instrumentation price map</a></li>
+    <li class="toc__item" data-target="delivery"><a href="#delivery"><span class="toc__n">07</span> Did the treatment arrive?</a></li>
+    <li class="toc__item" data-target="boundary"><a href="#boundary"><span class="toc__n">08</span> What is actually established</a></li>
+  </ol>
+  <dl class="toc__meta">
+    <dt>Evidence cut</dt><dd>Paper 2.0 §6.3, §6.23 and §6.24; adjudicated Rowan Flat exports; frozen Tallow Street A/B replay</dd>
+    <dt>Claim boundary</dt><dd>Simulated, development-tier conduct — not human learning</dd>
+  </dl>
+</aside>
+<div class="toc__scrim" id="tocScrim" aria-hidden="true"></div>
+
+<main>
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> Research explainer · updated 2026-08-29</div>
+    <div class="hero__masthead"><span class="label">Machine Spirits</span><span class="hero__rule"></span><span class="label">Transcript-led report</span></div>
+    <h1 class="hero__h1">From a null trajectory effect to a <span class="em">working control loop</span></h1>
+    <p class="hero__subtitle">In May, recognition did not steepen tutor trajectories relative to baseline. Today, a heavier controller can detect a particular learner state, choose a matching move, and make the delivered tutor reply fit that state. That is real progress — and a much narrower claim.</p>
+    <div class="hero__verdict" aria-label="Then and now summary">
+      <div><strong>d = 0.03</strong><span>May: recognition did not change tutor trajectory slopes across N = 432 dialogues; every tested factor stayed at d ≤ 0.15.</span></div>
+      <div><strong>5/6 vs 0/6</strong><span>Now: at the endgame stake, the matched card produced the target tutor conduct five times in six; the deliberately wrong card did so zero times in six.</span></div>
+    </div>
+    <div class="hero__lede"><div><p>The apparent reversal disappears once we ask what each result measures. The May study tested whether lightweight prompts and an inner critic changed a diffuse conversation-level slope. The later work built a control system around one local decision: <em>what kind of stuckness is this, and what should the tutor do next?</em> The advance is not “the old hypothesis was right.” It is that adaptation became explicit enough to test causally.</p></div></div>
+  </section>
+
+  <div class="shell">
+    <section class="s" id="evolution">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The architectural story</p>
+          <h2 class="s__h">Four changes turned “be adaptive” into an <em>observable decision</em>.</h2>
+          <p>The important shift was not adding ever more advice. It was separating the jobs that had previously been folded into one fluent reply.</p>
+          <div class="evolution">
+            <article class="evo"><span class="evo__n">01 · MAY</span><h3>Prompt + inner critic</h3><p>The tutor drafts, critiques, and revises. Both baseline and recognition tutors adapt descriptively, but the experimental factors do not change the trajectory.</p><div class="evo__outcome">Null on modulation</div></article>
+            <article class="evo"><span class="evo__n">02 · EXTERNAL STATE</span><h3>Make the lesson inspectable</h3><p>A proof DAG records what follows from which clues; a release schedule records what the learner is allowed to know at each turn.</p><div class="evo__outcome">Premature release becomes detectable</div></article>
+            <article class="evo"><span class="evo__n">03 · TYPED MOVES</span><h3>Name the stuck state</h3><p>Demand, mockery, grievance, a false memory, and a fused social stake become different states with different candidate actions.</p><div class="evo__outcome">State → action can be crossed</div></article>
+            <article class="evo evo--now"><span class="evo__n">04 · CLOSED LOOP</span><h3>Measure what shipped and what followed</h3><p>The system records sensing, selected card, delivered text, and later outcomes separately. A wrong card can now be forced as a causal control on tutor conduct.</p><div class="evo__outcome">Bounded causal conduct result</div></article>
+          </div>
+          <div class="device-strip" aria-label="Devices and their roles">
+            <span class="device"><b>Proof DAG</b> · what can follow</span>
+            <span class="device"><b>Release calendar</b> · what is public now</span>
+            <span class="device"><b>State detector</b> · what kind of stuckness</span>
+            <span class="device"><b>Move card</b> · what to try</span>
+            <span class="device"><b>Delivery guard</b> · what reached the learner</span>
+            <span class="device"><b>Outcome ledger</b> · what happened next</span>
+          </div>
+        </div>
+        <div class="mr"><p class="note note--moss"><span class="note__lbl">Reading rule</span> The May and current results are adjacent, not pooled. They use different interventions and different outcomes.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="proof">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Device 1 · proof DAG</p>
+          <h2 class="s__h">A plausible story does not become a conclusion <em>without the missing link</em>.</h2>
+          <p>Rowan Flat is deliberately ordinary. A stain appears below Sam's bathroom after Sam showers. That is a good suspicion. It is not yet a cause. Use the switch to compare the tempting shortcut with the proof path the authored world permits.</p>
+          <div class="dag-controls" role="group" aria-label="Proof path view">
+            <button class="mode-btn" type="button" data-dag-mode="shortcut" aria-pressed="false">Tempting shortcut</button>
+            <button class="mode-btn" type="button" data-dag-mode="checked" aria-pressed="true">Checked path</button>
+          </div>
+          <div class="dag-shell">
+            <div id="proofDag" aria-live="polite">
+              <div class="dag-flow" id="dagChecked">
+                <div class="dag__pair">
+                  <div class="dag__node"><strong>p_split · split hose opens</strong><span>A paper strip catches the first bead when pressure is raised.</span></div>
+                  <div class="dag__node"><strong>p_pressure · pressure rose</strong><span>The building test raised pressure during the incident window.</span></div>
+                </div>
+                <div class="dag__rule">Both required · R1_release</div>
+                <div class="dag__node dag__node--derived"><strong>Derived · hose released water</strong><span>The first rule establishes that the basin hose released water during the incident.</span></div>
+                <div class="dag__plus">then combine the derived result with one more premise</div>
+                <div class="dag__pair">
+                  <div class="dag__node"><strong>releasedWaterDuring</strong><span>The result carried forward from R1_release.</span></div>
+                  <div class="dag__node"><strong>p_dye · traced path</strong><span>Blue dye travels from the hose split to the leading edge of the stain.</span></div>
+                </div>
+                <div class="dag__rule">Both required · R2_path</div>
+                <div class="dag__node dag__node--derived"><strong>Derived · basin hose caused the mark</strong><span>The authored DAG now licenses the causal conclusion.</span></div>
+              </div>
+              <div class="dag-flow" id="dagShortcut" hidden>
+                <div class="dag__pair">
+                  <div class="dag__node"><strong>p_shower · Sam showered</strong><span>The shower happened shortly before the stain appeared.</span></div>
+                  <div class="dag__node dag__node--gap"><strong>Missing · traced shower path</strong><span>No observation connects water from the shower screen to the ceiling mark.</span></div>
+                </div>
+                <div class="dag__rule dag__rule--gap">Both required · R3_shower cannot fire</div>
+                <div class="dag__node dag__node--gap"><strong>Not licensed · Sam's shower caused the mark</strong><span>Timing supplies one premise. The required physical path is absent.</span></div>
+              </div>
+            </div>
+            <p class="dag__verdict" id="dagVerdict">What actually happened: split + raised pressure establish a release; dye supplies the physical path. The DAG licenses the basin hose as the cause.</p>
+            <div class="release-line" aria-label="Evidence release schedule">
+              <div class="release"><b>TURN 2</b>Sam showered</div>
+              <div class="release"><b>TURN 3</b>Hose split under pressure</div>
+              <div class="release"><b>TURN 5</b>Pressure rose at 08:15</div>
+              <div class="release"><b>TURN 7</b>Dye traced to stain</div>
+            </div>
+          </div>
+        </div>
+        <div class="mr"><p class="note"><span class="note__lbl">Not a counterfactual transcript</span> “Tempting shortcut” visualizes an invalid inference available in the world specification. It is not a generated alternative dialogue.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="crossed">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Device 2 · state-contingent action</p>
+          <h2 class="s__h">Same kind of learner turn. Two forced moves. <em>Only one addresses the real obstacle.</em></h2>
+          <p>At the endgame, the learner already understands the plumbing. The remaining obstacle is social: accepting the hose feels like admitting that the earlier objection to blaming Sam was worthless. The experiment deliberately forces the record-reopening card and the stake-splitting card at this same planted state.</p>
+          <div class="compare">
+            <article class="compare__lane">
+              <div class="compare__head"><h3>Wrong move · reopen the record</h3><span class="score-chip">0/6 matched</span></div>
+              <div class="swim">
+                <div class="swim__head"><span>Tutor</span><span></span><span>Learner</span></div>
+                <div class="swim__row swim__row--learner"><div class="swim__spine"><span class="swim__turn">L</span></div><div class="speech"><span class="speech__who">Learner · turn 10</span>If I write “basin hose” in that notebook, I’m apologising to Sam at eight. So it’s steam. It can be steam.</div></div>
+                <div class="swim__row swim__row--tutor"><div class="speech"><span class="speech__who">Tutor · forced settled-claim card</span>Let's actually turn to the page instead of guessing what it says. The entry reads: dry at ordinary pressure, hairline split under raised pressure, first bead right at that joint — no line anywhere about steam. […] What does the dye's path say about where that water actually went?</div><div class="swim__spine"><span class="swim__turn">T</span></div></div>
+              </div>
+              <p class="gloss"><b>Plain language</b><br />The tutor proves the plumbing again. But the learner's problem is no longer the plumbing; it is what changing their mind will mean socially.</p>
+            </article>
+            <article class="compare__lane">
+              <div class="compare__head"><h3>Right move · split finding from stake</h3><span class="score-chip score-chip--pass">5/6 matched</span></div>
+              <div class="swim">
+                <div class="swim__head"><span>Tutor</span><span></span><span>Learner</span></div>
+                <div class="swim__row swim__row--learner"><div class="swim__spine"><span class="swim__turn">L</span></div><div class="speech"><span class="speech__who">Learner · turn 10</span>If I write “split hose,” I’m apologising to Sam at eight. So it can still be steam, can’t it?</div></div>
+                <div class="swim__row swim__row--tutor"><div class="speech"><span class="speech__who">Tutor · forced stake card</span>Your objection was never “the hose did it” — it was “timing isn't proof,” and that's a separate claim from what caused the mark. Naming the split hose settles the cause question; it doesn't settle what you owe Sam. […] Was your case against Sam ever “the shower definitely did it,” or was it “we jumped to a cause without a path”?</div><div class="swim__spine"><span class="swim__turn">T</span></div></div>
+              </div>
+              <p class="gloss"><b>Plain language</b><br />The tutor separates two things: the hose caused the stain, and the learner was still right to oppose blame before anyone had traced a path.</p>
+            </article>
+          </div>
+          <p class="provenance"><strong>Selection rule.</strong> This pair uses Rowan Flat, replication <code>k=0</code>, at the same planted endgame-stake state under the two fixed policies. Ellipses shorten the recorded tutor replies; no words inside the retained spans were rewritten. The 5/6 and 0/6 totals are pooled across both registered worlds and human-ruled by conduct.</p>
+        </div>
+        <div class="mr"><p class="note note--moss"><span class="note__lbl">What changed</span> The system is no longer graded for merely sounding adaptive. The wrong action is made available on purpose, and an adjudication of the delivered tutor reply decides the conduct contrast.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="repertoire">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Device 3 · a small move repertoire</p>
+          <h2 class="s__h">“Resistance” is not one thing. <em>The useful move changes with its form.</em></h2>
+          <p>Choose a learner state. Each example is one adjudicated right-arm moment from the same plainspoken world. The totals compare that state's matching card with a named tempting mismatch across both worlds.</p>
+          <div class="state-controls" role="group" aria-label="Choose learner state">
+            <button class="mode-btn" type="button" data-state="demand" aria-pressed="true">Deadline demand</button>
+            <button class="mode-btn" type="button" data-state="mockery" aria-pressed="false">Mockery</button>
+            <button class="mode-btn" type="button" data-state="lost" aria-pressed="false">Lost thread</button>
+            <button class="mode-btn" type="button" data-state="grievance" aria-pressed="false">Grievance</button>
+          </div>
+          <div class="state-stage" id="stateStage" aria-live="polite">
+            <div class="state-stage__meta"><span id="stateMove">Move · accept the deadline, narrow the check</span><span id="stateScore">Right 5/6 · wrong 1/6</span></div>
+            <div class="swim">
+              <div class="swim__head"><span>Tutor</span><span></span><span>Learner</span></div>
+              <div class="swim__row swim__row--learner"><div class="swim__spine"><span class="swim__turn">L</span></div><div class="speech" id="stateLearner"><span class="speech__who">Learner · turn 2</span>Meeting’s at eight. The mark’s right under Sam’s shower — I’m sending the email unless you can give me one reason not to in the next minute.</div></div>
+              <div class="swim__row swim__row--tutor"><div class="speech" id="stateTutor"><span class="speech__who">Tutor · demand card</span>Here's what the log actually shows: Sam's shower ran from 08:05 to 08:13. […] That's timing and habit, not a path. Before you send that email, check one thing: does any entry trace water from that screen down to the table-end ceiling, or only note the shower happened?</div><div class="swim__spine"><span class="swim__turn">T</span></div></div>
+            </div>
+            <p class="gloss" id="stateGloss"><b>Plain language</b><br />Do not argue with the urgency. Accept the clock and turn it into one decisive, answerable check.</p>
+          </div>
+          <p class="provenance"><strong>Selection rule.</strong> One delivery-verified, human-ruled right-arm row per state from Rowan Flat, <code>k=0</code>. The lost-thread example is included because it is communicatively useful, but its card is <em>not</em> claimed as causal: the tutor untangled that state 5/6 even when given an adversarial card. Ellipses only shorten replies.</p>
+        </div>
+        <div class="mr"><p class="note"><span class="note__lbl">Small kernel</span> Six entries are causally supported in this simulated stack: five across two worlds, and flat/bored in one. One more — the lost thread — is handled natively. More cards are not automatically better.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="instrumentation">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The contrast gallery · frozen A/B replay</p>
+          <h2 class="s__h">One learner turn. A bare tutor. <em>Six instruments added one at a time.</em></h2>
+          <p>This is the closest view of what each advisory block actually does to the prose. The world, public transcript, learner turn, speaking model, effort, and recorded guard set stay fixed. Only one private block is added. Choose a moment, then choose an instrument.</p>
+
+          <p class="gallery-label">Shared learner moment</p>
+          <div class="gallery-controls" role="group" aria-label="Choose frozen learner moment">
+            <button class="mode-btn" type="button" data-gallery-moment="suspect" aria-pressed="true">Open a suspect</button>
+            <button class="mode-btn" type="button" data-gallery-moment="exclude" aria-pressed="false">Rule one out</button>
+            <button class="mode-btn" type="button" data-gallery-moment="diagnose" aria-pressed="false">Test new evidence</button>
+          </div>
+
+          <p class="gallery-label">Private block added to the same turn</p>
+          <div class="gallery-controls" role="group" aria-label="Choose instrumentation block">
+            <button class="mode-btn" type="button" data-gallery-instrument="continuity" aria-pressed="true">Continuity</button>
+            <button class="mode-btn" type="button" data-gallery-instrument="evidence" aria-pressed="false">Evidence window</button>
+            <button class="mode-btn" type="button" data-gallery-instrument="classifier" aria-pressed="false">Learner classifier</button>
+            <button class="mode-btn" type="button" data-gallery-instrument="dag" aria-pressed="false">Learner DAG</button>
+            <button class="mode-btn" type="button" data-gallery-instrument="scaffold" aria-pressed="false">Human scaffold</button>
+            <button class="mode-btn" type="button" data-gallery-instrument="contract" aria-pressed="false">First-draft contract</button>
+          </div>
+
+          <div class="gallery-frame" id="instrumentGallery" aria-live="polite">
+            <div class="gallery-meta"><span id="galleryCase">Tallow Street · turn 1 · open a suspect</span><span>Codex gpt-5.6-terra · medium · frozen context</span></div>
+            <p class="gallery-question"><b>Shared learner</b><span id="galleryLearner">What should I write next about the depot’s new chargers?</span></p>
+            <div class="gallery-pair">
+              <article class="gallery-arm">
+                <div class="gallery-arm__head"><strong>Without</strong><span>Bare tutor · 0 advisory characters</span></div>
+                <p class="gallery-reply" id="galleryBare">I lower my pen over the draft motion. Write this much: the chargers are a plausible suspect because they are a heavy new evening load—but we do not yet know whether their current uses Tallow Street’s feeder.</p>
+              </article>
+              <article class="gallery-arm">
+                <div class="gallery-arm__head"><strong>With</strong><span id="galleryWithLabel">Context continuity only</span></div>
+                <p class="gallery-reply" id="galleryWith">I’d minute them as a plausible suspect: they are a heavy new evening load. But their arrival alone does not show they share Tallow Street’s supply. What evidence would show whether their current runs through the same feeder?</p>
+              </article>
+            </div>
+            <p class="gallery-reading"><b>Editorial reading</b><br /><span id="galleryGloss">The added continuity line changes little in the finding, but it restores a handoff: instead of ending on uncertainty, the tutor asks for the exact missing connection.</span></p>
+          </div>
+
+          <div class="rulers" aria-label="Three readings of the frozen instrumentation corpus">
+            <div class="ruler"><b>Plan-aware audit</b><p>Across 35 frozen runs, the contract reduces open-rule failures by 0.47 per turn. Every other single block stays within ±0.17 of bare.</p></div>
+            <div class="ruler"><b>Independent prose judge</b><p>On the same 68 decided pairs, showing the due clue raises the contract’s wins from 10 to 19. It still loses about seven in ten.</p></div>
+            <div class="ruler"><b>Minimal content control</b><p>A due-clue line without the contract wins 9 of 11 decided clue turns against bare and 23 of 30 against the contract. The clue helps; much of the wrapping costs.</p></div>
+          </div>
+
+          <p class="provenance"><strong>Selection rule.</strong> All 21 displayed replies come from the three Tallow Street cases in <code>exports/tutor-stub-ab/ab-2026-07-28T10-39-39-785Z/report.json</code>: one bare candidate plus six single-block candidates per shared learner turn. Text is unedited. These are frozen-context candidate-next-turn comparisons, not free-running dialogues: after the first replayed turn, the recorded learner would be answering a different tutor. The pooled ruler results come from Paper 2.0 §6.23 and the completed <code>tutor-instrumentation-ab-harness</code> record.</p>
+        </div>
+        <div class="mr"><p class="note note--moss"><span class="note__lbl">How to read it</span> Look first for a changed pedagogical operation—not extra detail. Some blocks alter the next question, some merely restyle the same inference, and the contract often supplies information at the price of a much heavier turn.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="pricing">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The wider contrast atlas · different devices, different rulers</p>
+          <h2 class="s__h">Instrumentation pays when it adds <em>missing state or a timed move</em> — not merely more machinery.</h2>
+          <p>The frozen gallery above isolates six private blocks on one shared turn. The larger programme tested other devices at other causal locations: a miniature critic, character casting, whole stacks, and state-timed move cards. These are not one leaderboard. The label on each row says whether the comparison holds the turn fixed or lets the dialogue run.</p>
+          <div class="price-legend" aria-label="Comparison-class legend">
+            <span><b>Frozen turn</b> same learner utterance and public prefix</span>
+            <span><b>Live bench</b> learner answers the changed tutor</span>
+            <span><b>Independent reading</b> plan hidden from the judge</span>
+          </div>
+
+          <div class="price-group">
+            <div class="price-group__head"><h3>What reaches the speaking tutor</h3><span>Frozen-turn comparisons · Paper 2.0 §6.23</span></div>
+            <div class="price-grid">
+              <article class="price-row">
+                <div class="price-cell price-cell--device"><b>Visible-record blocks</b>Continuity, evidence window, classifier, learner DAG, scaffold<span class="price-tag">frozen turn · open rules</span></div>
+                <div class="price-cell"><b>Without</b>The frontier tutor sees the public dialogue and learner’s turn.</div>
+                <div class="price-cell"><b>With</b>The same visible record is reorganised as continuity, an evidence boundary, diagnosis, graph state, or a discourse scaffold.</div>
+                <div class="price-cell price-reading"><b>Observed difference</b>Every single block remained within ±0.17 broken open rules per turn of bare. <strong>Plainly:</strong> useful internal paperwork, but no isolated lift on this ruler.</div>
+              </article>
+
+              <article class="price-row">
+                <div class="price-cell price-cell--device"><b>First-draft contract</b>Full per-turn composition plan<span class="price-tag">frozen turn · open rules + two judge readings</span></div>
+                <div class="price-cell"><b>Without</b>The tutor must infer the immediate job from the public record.</div>
+                <div class="price-cell"><b>With</b>The tutor receives the due finding plus part, source, composition, and handoff instructions.</div>
+                <div class="price-cell price-reading price-reading--cost"><b>Observed difference</b>Open-rule failures fell by 0.47 per turn, but an independent blind judge chose the contract only 10/68 times; showing the due clue raised that to 19/68. <strong>Plainly:</strong> useful payload, costly wrapping.</div>
+              </article>
+
+              <article class="price-row">
+                <div class="price-cell price-cell--device"><b>Due-line only</b>One newly available fact<span class="price-tag">frozen turn · schedule shown</span></div>
+                <div class="price-cell"><b>Without</b>No private notice of what the world file has just made available.</div>
+                <div class="price-cell"><b>With</b>“Newly open to you in this inquiry…” followed by the due public sentence — and nothing on a quiet turn.</div>
+                <div class="price-cell price-reading"><b>Observed difference</b>Preferred to bare on 9/11 decided clue turns and to the full contract on 23/30 pairs; quiet turns split 6/15 against bare. <strong>Plainly:</strong> the smallest information-bearing dose carried the effect.</div>
+              </article>
+
+              <article class="price-row">
+                <div class="price-cell price-cell--device"><b>Tuned mini critic</b>Protected question span<span class="price-tag">frozen turn · paired prose judge</span></div>
+                <div class="price-cell"><b>Without</b>The frontier writer chooses its own question — or chooses silence.</div>
+                <div class="price-cell"><b>With</b>A tuned mini writes a question that the frontier must compose around.</div>
+                <div class="price-cell price-reading price-reading--cost"><b>Observed difference</b>The frontier’s choice won 10/11 judged disagreements; when only the mini wanted a question, silence won 5/5. <strong>Plainly:</strong> a critic that knows one move cannot know when to stop using it.</div>
+              </article>
+
+              <article class="price-row">
+                <div class="price-cell price-cell--device"><b>Light character shift</b>One uncued manner instruction<span class="price-tag">frozen turn · shifted vs quiet</span></div>
+                <div class="price-cell"><b>Without</b>The tutor stays in the model’s ordinary house register.</div>
+                <div class="price-cell"><b>With</b>A hash-selected part changes the manner, without adding a new teaching move.</div>
+                <div class="price-cell price-reading price-reading--cost"><b>Observed difference</b>The shifted reply won 5/20 decided shifted turns; quiet turns split 4/8. <strong>Plainly:</strong> manner without occasion pulled attention away from the learner’s material.</div>
+              </article>
+
+              <article class="price-row">
+                <div class="price-cell price-cell--device"><b>Radical conduct card</b>A part with an explicit move<span class="price-tag">frozen turn · dose contrast</span></div>
+                <div class="price-cell"><b>Without</b>A mild one-line part assignment changes register but names no concrete conduct.</div>
+                <div class="price-cell"><b>With</b>A two-line card demands an action — for example, the copyist counterexample that separates style from identity.</div>
+                <div class="price-cell price-reading"><b>Observed difference</b>The radical card edged the mild shift 11/21 and reached 9/21 against bare. <strong>Plainly:</strong> stronger costume did not reliably win, but a card carrying a real move sometimes did.</div>
+              </article>
+            </div>
+          </div>
+
+          <div class="price-group">
+            <div class="price-group__head"><h3>What the live controller does at the moment of difficulty</h3><span>Free-running stress bench · Paper 2.0 §6.24</span></div>
+            <div class="price-grid">
+              <article class="price-row">
+                <div class="price-cell price-cell--device"><b>Full six-block stack</b>All knowledge-shaped advisories<span class="price-tag">live bench · planted repairs</span></div>
+                <div class="price-cell"><b>Without</b>No advisory blocks: 6/24 right repairs at planted difficulty moments.</div>
+                <div class="price-cell"><b>With</b>All six blocks: 6/28 right repairs, longer dialogues, and one more capitulation.</div>
+                <div class="price-cell price-reading price-reading--cost"><b>Observed difference</b>The extra state descriptions did not improve the tutor’s repair conduct. <strong>Plainly:</strong> knowing more about the case did not tell the tutor what to do now.</div>
+              </article>
+
+              <article class="price-row">
+                <div class="price-cell price-cell--device"><b>State-timed move cards</b>Pressure type → concrete action<span class="price-tag">live bench · adjudicated gold</span></div>
+                <div class="price-cell"><b>Without</b>The never-adapting butler made 40/72 right repairs in the pooled two-world replication.</div>
+                <div class="price-cell"><b>With</b>The v3 switch made 48/73, firing cards such as credit-then-test, reopen-the-record, or split-stake-from-cause.</div>
+                <div class="price-cell price-reading"><b>Observed difference</b>The pooled replication passed, although the short world reversed. <strong>Plainly:</strong> a typed action at the right moment added something; its value remained local.</div>
+              </article>
+
+              <article class="price-row">
+                <div class="price-cell price-cell--device"><b>Typed quiet-state detector</b>Confusion, flatness, quiet defiance<span class="price-tag">live bench · gate then hardening</span></div>
+                <div class="price-cell"><b>Without</b>A correctly timed but untyped “check the person” card reached 10/18 right repairs.</div>
+                <div class="price-cell"><b>With</b>A detected state received its matching card: compare the two lines, split the stake, or offer one short lure.</div>
+                <div class="price-cell price-reading"><b>Observed difference</b>On the fast world, the typed arm reached 14/18, then held at 22/30 after hardening; the long-world port did not transfer (16/27). <strong>Plainly:</strong> timing was necessary, but timing without typing was not sufficient — and the detector remained local.</div>
+              </article>
+            </div>
+          </div>
+
+          <p class="pq">The common pattern is not “more instrumentation works.” It is: add only what the tutor cannot already see, and bind any action to the state in which it is useful.<cite>Paper 2.0 §6.23–§6.24 · simulated learners</cite></p>
+          <p class="provenance"><strong>Comparison rule.</strong> Frozen-turn rows hold the learner utterance and public prefix fixed and report plan-aware or independent-reader channels separately. Live-bench rows allow the learner to answer and use planted, adjudicated repair moments; they are not direct continuations of the frozen Tallow cases. All counts and interpretations in this atlas are inherited from canonical Paper 2.0 §6.23–§6.24; no new run or cross-ruler aggregate was created.</p>
+        </div>
+        <div class="mr"><p class="note note--moss"><span class="note__lbl">Architecture lesson</span>Instrumentation has at least four jobs: represent visible state, inject unavailable state, choose a move, and verify delivery. The results improve only when the job and the missing causal link match.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="delivery">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Device 4 · delivery and outcome ledger</p>
+          <h2 class="s__h">A treatment cannot explain an outcome if the harness <em>rewrote it before delivery</em>.</h2>
+          <p>One of the programme's most useful corrections was methodological. Under the strict guard, a deterministic safety template replaced the tutor's drafted wording on 62% of turns. The first trial looked null partly because both arms were often receiving the guard's prose. Flipping the guard to advisory let the planned wording arrive — and exposed a negative effect on the registered legitimate-closure endpoint.</p>
+          <div class="pipeline" aria-label="Closed-loop measurement pipeline">
+            <div class="pipe"><b>1 · Public state</b>What is known now?</div>
+            <div class="pipe"><b>2 · Detector</b>What kind of stuckness?</div>
+            <div class="pipe"><b>3 · Selected move</b>What should change?</div>
+            <div class="pipe"><b>4 · Draft</b>What did the tutor write?</div>
+            <div class="pipe"><b>5 · Delivered turn</b>What reached the learner?</div>
+            <div class="pipe"><b>6 · Outcome</b>What happened next?</div>
+          </div>
+          <div class="guard-stat">
+            <div><strong>Strict guard</strong><span>Template authored 62% of turns. Contract and bare appeared level: 22/33 vs 20/29 legitimate closures, p = 1.000.</span></div>
+            <div><strong>Advisory guard</strong><span>The first draft shipped unaltered on 90–96% of contract turns. The contract then reduced legitimate closure: 12/36 vs 24/36, p = 0.0091.</span></div>
+          </div>
+          <p class="pq">The architecture improved the honesty of the experiment before it improved the headline.<cite>Paper 2.0 §6.23–6.24 · simulated learners</cite></p>
+          <p>The mechanism was visible in the transcript form: contract tutors asked many more late yes/no questions, often supplying the candidate conclusion inside the question. Learners could answer without ever carrying the conclusion themselves — exactly what the closure endpoint required. This is not a success story disguised as a failure. It is the control loop doing its scientific job: showing that a delivered device can matter in the wrong direction.</p>
+        </div>
+        <div class="mr"><p class="note note--brick"><span class="note__lbl">Limit</span> This negative contract result is a separate registered trial. It explains why delivery must be measured; it is not part of the crossed-card 5/6 vs 0/6 estimate.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="boundary">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The honest stopping point</p>
+          <h2 class="s__h">What improved is the tutor's <em>local causal control</em>, not yet human learning.</h2>
+          <table class="boundary">
+            <thead><tr><th>Question</th><th>Current reading</th><th>What would strengthen it</th></tr></thead>
+            <tbody>
+              <tr><td>Can the system expose whether an inference is licensed?</td><td class="yes">Yes, through authored proof paths and release schedules.</td><td>More worlds with independently checked DAGs and delivery guards that enforce them.</td></tr>
+              <tr><td>Can it distinguish states that need different moves?</td><td class="yes">Yes, for a bounded simulated repertoire. Five entries carry two-world evidence; flat/bored carries a one-world bound.</td><td>Held-out states, models, personas, and independently adjudicated labels.</td></tr>
+              <tr><td>Does the selected move reach the learner?</td><td class="yes">Measured, not assumed.</td><td>One shared renderer/ledger surface across study families.</td></tr>
+              <tr><td>Does better immediate conduct transfer?</td><td class="no">The first probe's world gap was persona identity. A later episode-citation measure exceeded a structurally zero cold baseline, but its causal move test was null.</td><td>A fresh, cold-baselined move-level transfer design.</td></tr>
+              <tr><td>Does it help human learners?</td><td class="no">Open.</td><td>Human-coded state/move validity, then a bounded human outcome study.</td></tr>
+              <tr><td>Did the May recognition hypothesis become positive?</td><td class="no">No. The N = 432 trajectory result remains null.</td><td>A new preregistered study if that original construct is revisited.</td></tr>
+            </tbody>
+          </table>
+          <div class="claim">
+            <span class="claim__no">→</span>
+            <h3 class="claim__h">The clearest present claim <span class="chip chip--moss">supported, bounded</span></h3>
+            <div class="claim__body"><p>For these simulated learners, worlds, and tutor stack, forcing the action matched to a local learner state can cause the delivered tutor reply to exhibit better state-appropriate conduct than forcing a plausible mismatched action. The apparatus now records enough of that chain to say why. It does not yet show a move-level transfer benefit or human learning.</p></div>
+          </div>
+          <p class="provenance"><strong>Evidence map.</strong> Headline null: <code>docs/research/paper-full-2.0.md</code> §6.3. Crossed conduct: <code>workplan/items/adaptive-causality-crossed-effects.md</code> and <code>exports/crossed-effects/conduct-tags.json</code>. Repertoire: <code>workplan/items/adaptive-causality-repertoire.md</code> and <code>exports/crossed-effects/repertoire-tags.json</code>. Proof: <code>config/drama-derivation/world-030-rowan-flat.yaml</code>. Frozen instrumentation: <code>exports/tutor-stub-ab/ab-2026-07-28T10-39-39-785Z/report.json</code> and <code>tutor-instrumentation-ab-harness</code>. Delivery-guard correction: Paper 2.0 §6.23–6.24. Transcript quotations preserve the public learner and tutor text; plain-language blocks are editorial glosses.</p>
+        </div>
+        <div class="mr"><p class="note note--moss"><span class="note__lbl">Next visual step</span> The gallery makes the extraction need concrete: <code>shared-dramatic-dialogue-renderer-component</code> now owns a common component API across the existing transcript surfaces.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="colophon"><p><span class="label">Colophon</span> &nbsp; A light Techne report using the repository's shared design and transcript swimlane grammar. No model calls were made to produce the analysis. Updated 29 August 2026.</p></footer>
+</main>
+
+<script src="assets/techne.js"></script>
+<script>
+(() => {
+  const dagModes = {
+    shortcut: {
+      verdict: "What would have happened under the shortcut: coincidence becomes cause. The proof DAG stops here because the shower-to-ceiling path is missing.",
+      tone: "warning"
+    },
+    checked: {
+      verdict: "What actually happened: split + raised pressure establish a release; dye supplies the physical path. The DAG licenses the basin hose as the cause.",
+      tone: "safe"
+    }
+  };
+  const setDag = (mode) => {
+    const data = dagModes[mode];
+    document.querySelectorAll("[data-dag-mode]").forEach(btn => btn.setAttribute("aria-pressed", String(btn.dataset.dagMode === mode)));
+    document.getElementById("dagChecked").hidden = mode !== "checked";
+    document.getElementById("dagShortcut").hidden = mode !== "shortcut";
+    const verdict = document.getElementById("dagVerdict");
+    verdict.textContent = data.verdict;
+    verdict.dataset.tone = data.tone;
+  };
+  document.querySelectorAll("[data-dag-mode]").forEach(btn => btn.addEventListener("click", () => setDag(btn.dataset.dagMode)));
+  setDag("checked");
+
+  const states = {
+    demand: {
+      move: "Move · accept the deadline, narrow the check",
+      score: "Right 5/6 · wrong 1/6",
+      turn: "2",
+      card: "demand card",
+      learner: "Meeting’s at eight. The mark’s right under Sam’s shower — I’m sending the email unless you can give me one reason not to in the next minute.",
+      tutor: "Here's what the log actually shows: Sam's shower ran from 08:05 to 08:13. […] That's timing and habit, not a path. Before you send that email, check one thing: does any entry trace water from that screen down to the table-end ceiling, or only note the shower happened?",
+      gloss: "Do not argue with the urgency. Accept the clock and turn it into one decisive, answerable check."
+    },
+    mockery: {
+      move: "Move · change register, preserve the reasoning",
+      score: "Right 6/6 · wrong 2/6",
+      turn: "4",
+      card: "mockery card",
+      learner: "Mate, you sound like a plumber’s invoice. The hose only opens when pressure’s raised, so that’s where the water may have started—not Sam’s shower.",
+      tutor: "Fair enough — no more invoice-talk. The hose bit's a real find: it stays dry normally, but that hairline split opens and beads water when pressure climbs. […] That's good for saying ‘this thing can leak under pressure,’ not for saying ‘this is where Wednesday's water came from.’",
+      gloss: "Take the joke. Drop the technical register. Keep the distinction between a possible source and a traced cause."
+    },
+    lost: {
+      move: "Native conduct · put the two lines side by side",
+      score: "Right 6/6 · adversarial 5/6 · not causal",
+      turn: "6",
+      card: "confused-state card",
+      learner: "Hang on — was that pressure test on Sam’s shower line or the basin line? I’ve got ‘hose’ in the notebook and now I can’t tell which hose I meant.",
+      tutor: "Good question — let's untangle it. The notice says the pressure test raised the whole building's supply at 08:15. The hose you found splitting under pressure is the one under the basin. Which line did you write ‘hose’ against in your notebook — the shower, or the basin?",
+      gloss: "Stop advancing the case. Name the ambiguity, restore the two referents, and let the learner reconnect the note. The model usually did this even under the wrong card."
+    },
+    grievance: {
+      move: "Move · credit contribution before the next test",
+      score: "Right 6/6 · wrong 2/6",
+      turn: "8",
+      card: "grievance card",
+      learner: "I’ve kept that notebook for two months. Every damp towel, every date. Tell me one entry of mine that’s actually counted for anything today.",
+      tutor: "Two entries of yours are doing real work right now: you wrote ‘basin line, hairline split, opening under raised pressure’ — that's what let us line the hose up against the pressure test at all. And you wrote ‘no water route from screen to ceiling’ — that's what kept us from closing the case on Sam before the evidence was in. […]",
+      gloss: "The learner is asking whether their work mattered. Answer that first with specific contributions; only then ask for another inference."
+    }
+  };
+  const setState = (key) => {
+    const data = states[key];
+    document.querySelectorAll("[data-state]").forEach(btn => btn.setAttribute("aria-pressed", String(btn.dataset.state === key)));
+    document.getElementById("stateMove").textContent = data.move;
+    document.getElementById("stateScore").textContent = data.score;
+    document.getElementById("stateLearner").innerHTML = `<span class="speech__who">Learner · turn ${data.turn}</span>${data.learner}`;
+    document.getElementById("stateTutor").innerHTML = `<span class="speech__who">Tutor · ${data.card}</span>${data.tutor}`;
+    document.getElementById("stateGloss").innerHTML = `<b>Plain language</b><br />${data.gloss}`;
+  };
+  document.querySelectorAll("[data-state]").forEach(btn => btn.addEventListener("click", () => setState(btn.dataset.state)));
+
+  const galleryLabels = {
+    continuity: "Context continuity only",
+    evidence: "Evidence window only",
+    classifier: "Learner classifier only",
+    dag: "Learner DAG only",
+    scaffold: "Human scaffold only",
+    contract: "First-draft contract only"
+  };
+  const galleryMoments = {
+    suspect: {
+      caseLabel: "Tallow Street · turn 1 · open a suspect",
+      learner: "What should I write next about the depot’s new chargers?",
+      bare: "I lower my pen over the draft motion. Write this much: the chargers are a plausible suspect because they are a heavy new evening load—but we do not yet know whether their current uses Tallow Street’s feeder.",
+      arms: {
+        continuity: {
+          reply: "I’d minute them as a plausible suspect: they are a heavy new evening load. But their arrival alone does not show they share Tallow Street’s supply. What evidence would show whether their current runs through the same feeder?",
+          gloss: "The added continuity line changes little in the finding, but it restores a handoff: instead of ending on uncertainty, the tutor asks for the exact missing connection."
+        },
+        evidence: {
+          reply: "I enter it as a plausible lead: the depot’s six chargers draw their heaviest current in the evening, when the vans return. Does that coincidence yet show their current reaches Tallow Street’s wire?",
+          gloss: "The evidence window supplies the currently public clue—the evening load—and immediately tests its limit. It turns a general suspicion into a timing claim that still lacks a wire path."
+        },
+        classifier: {
+          reply: "I set down the first exhibit: the chargers are a heavy new evening load—but the depot record does not yet say which feeder carries their current. What would that missing wire detail change about the motion?",
+          gloss: "The classifier version names the missing fact as the centre of the learner’s task. The reasoning is close to bare, but the question makes the unresolved relation explicit."
+        },
+        dag: {
+          reply: "I steady the minute-book: “The depot’s new chargers are a plausible suspect because they add a heavy evening load; we do not yet know whether their current uses Tallow Street’s feeder.”  \n\nWhat evidence would show they are on the same wire as the brownout?",
+          gloss: "The learner-DAG block keeps the conclusion at the licensed frontier: suspect, not cause. Its visible addition is the request for the missing edge—same wire as the brownout."
+        },
+        scaffold: {
+          reply: "I note that the chargers are a strong suspect: they draw a heavy evening load. But we still need to know whether that load runs through Tallow Street’s supply.",
+          gloss: "The scaffold compresses the same inference into a clean two-step explanation. It does not create a learner handoff, so the operation is clearer but less dialogic."
+        },
+        contract: {
+          reply: "Write: I can record only what the meeting has heard; current means flowing electricity. I inspect the depot planning application beside the motion sheet, checking what this public exhibit actually establishes. “I attest: The depot's six new chargers draw their heaviest current in the evening, when the vans come home to plug in. The meeting noted the coincidence with satisfaction.” I underline “heaviest” in the minute-book. What does that statement support or rule out about the chargers?",
+          gloss: "The contract authors the whole performance: glossary, source entrance, gesture, and handoff question. It makes the due clue unmistakable, but the learner receives a much longer and more tutor-owned turn."
+        }
+      }
+    },
+    exclude: {
+      caseLabel: "Tallow Street · turn 5 · rule one suspect out",
+      learner: "What should I put in the minutes about the chargers being dark during the stocktake?",
+      bare: "Write: “During the stocktake the depot chargers were dark, yet Tallow Street still browned out at 18:40; the chargers are therefore not the cause.” The motion against the depot cannot stand on a blackout that occurs without them.",
+      arms: {
+        continuity: {
+          reply: "Write: “During the stocktake the depot chargers were dark, yet Tallow Street still browned out at 18:40; the chargers are ruled out.”\n\nThe motion against the depot has lost its timing evidence. What part of the street’s supply should the minutes examine next?",
+          gloss: "Here the inference is already easy. Continuity does not change the ruling; it adds the next investigative step. This is a useful near-null case rather than an instrumentation success."
+        },
+        evidence: {
+          reply: "Write: “Even with the depot chargers dark throughout the stocktake, Tallow Street browned out at 18:40; the chargers are ruled out of the motion.” The timing and the dark chargers leave the cause elsewhere in the supply.",
+          gloss: "The evidence window produces almost the same exclusion as bare. It tightens the evidential wording but adds no new pedagogical operation."
+        },
+        classifier: {
+          reply: "Write: “During the stocktake the depot chargers were dark, yet Tallow Street still browned out at 18:40; the evidence does not support blaming the depot chargers.” The timing and the dark chargers both point the meeting away from that motion.",
+          gloss: "The classifier changes the register from causal certainty to warranted blame. The practical conclusion remains the same: stop pursuing the charger motion."
+        },
+        dag: {
+          reply: "Write: “During the stocktake, the depot chargers were off, yet Tallow Street still browned out at 18:40; the motion against the depot is not supported.” The dark chargers clear the depot from this particular accusation.",
+          gloss: "The DAG version makes the claim boundary explicit—this motion is unsupported—without changing the route. At a settled exclusion, extra state buys little."
+        },
+        scaffold: {
+          reply: "Write: “With the chargers dark throughout the stocktake, Tallow Street still browned out at 18:40; the depot chargers are ruled out.” The cause is elsewhere in the street’s supply.",
+          gloss: "The scaffold is the shortest version and converges with bare. It demonstrates that more instrumentation need not produce a visibly different move."
+        },
+        contract: {
+          reply: "Write: “The depot chargers did not cause the Tallow Street brownout.” My case is the depot chargers did not cause it, though the pen chart names no culprit. The stocktake note supports: The depot chargers did not cause the Tallow Street brownout; actual cause remains open. I slam the stocktake note down: the motion against the depot chargers cannot stand.",
+          gloss: "The contract repeats the exclusion through several slots and dramatizes the document. It preserves the important limit—actual cause remains open—but turns a simple inference into a heavily authored performance."
+        }
+      }
+    },
+    diagnose: {
+      caseLabel: "Tallow Street · turn 8 · test new evidence",
+      learner: "What should I write next about GREBE-9’s condition being a serious concern?",
+      bare: "Write: “GREBE-9’s repeated renewal warnings make it a serious suspect, but the minutes need evidence that it is failing during the Thursday load.” Which part of the transformer’s Thursday performance should we examine next?",
+      arms: {
+        continuity: {
+          reply: "Write: “GREBE-9’s repeated renewal warnings make it a suspect, but the minutes need evidence that it is failing during Thursday’s load.” I close the ledger gently. What reading would show the transformer is actually struggling then?",
+          gloss: "Continuity keeps the same epistemic frontier and slightly sharpens the next test: ask for a Thursday reading, not another general warning."
+        },
+        evidence: {
+          reply: "I pull the oil-temperature card from GREBE-9’s gauge: it runs cool most days, then climbs past its red line every Thursday evening as the lamps turn amber. Write: “GREBE-9 overheats at the very hour of the brownout, strengthening the concern that it is failing under Thursday’s load.” What does that coincidence now suggest?",
+          gloss: "The evidence window visibly changes the turn because it carries the newly available oil-temperature clue. The tutor can move from asking for a test to interpreting a result."
+        },
+        classifier: {
+          reply: "Write: “GREBE-9’s repeated renewal warnings make it a serious suspect, but they do not yet prove it failed on Thursday.”  \n\nI underline “serious concern,” not “verdict.” What evidence would show the transformer was actually struggling under the Thursday load?",
+          gloss: "The classifier emphasizes the learner’s risk of settling too early: concern is not verdict. It changes the framing more than the evidence available."
+        },
+        dag: {
+          reply: "Write: “GREBE-9’s repeated renewal warnings make it a serious suspect, but they do not yet prove it failed on Thursday.” What evidence would turn that concern into a finding?",
+          gloss: "The DAG block gives the cleanest statement of the missing proof step. It does not supply the new clue; it asks what would convert suspicion into a finding."
+        },
+        scaffold: {
+          reply: "Write: “GREBE-9 overheats past its safe limit every Thursday evening, showing it is failing under that recurring load.” I hold up its temperature card: calm all week, then a Thursday fever. That makes GREBE-9 more than a concern—but we still need to know whether it supplies Tallow Street.",
+          gloss: "The scaffold carries the temperature clue and preserves one remaining link: failing under load still does not prove that GREBE-9 supplies this street."
+        },
+        contract: {
+          reply: "Write: “GREBE-9’s condition—its working health—is concerning, but renewal warnings alone do not prove failure.” My case is GREBE-9 warrants concern, not blame; the maintenance ledger needs a test. I read the oil-temperature card: “a tidy week of low readings, then a fever every Thursday evening, climbing past the red line at the very hour the lamps go amber.” The oil-temperature card supports concern, not cause: The depot chargers did not cause the Tallow Street brownout; actual cause remains open. Does GREBE-9’s Thursday fever now challenge the claim that its renewal marks were merely caution?",
+          gloss: "The contract supplies and stages the clue, but it also drags a prior charger conclusion into the turn. Instrumentation increases explicit control while making the response longer and less locally economical."
+        }
+      }
+    }
+  };
+  let galleryMoment = "suspect";
+  let galleryInstrument = "continuity";
+  const renderGallery = () => {
+    const moment = galleryMoments[galleryMoment];
+    const arm = moment.arms[galleryInstrument];
+    document.querySelectorAll("[data-gallery-moment]").forEach(btn => btn.setAttribute("aria-pressed", String(btn.dataset.galleryMoment === galleryMoment)));
+    document.querySelectorAll("[data-gallery-instrument]").forEach(btn => btn.setAttribute("aria-pressed", String(btn.dataset.galleryInstrument === galleryInstrument)));
+    document.getElementById("galleryCase").textContent = moment.caseLabel;
+    document.getElementById("galleryLearner").textContent = moment.learner;
+    document.getElementById("galleryBare").textContent = moment.bare;
+    document.getElementById("galleryWithLabel").textContent = galleryLabels[galleryInstrument];
+    document.getElementById("galleryWith").textContent = arm.reply;
+    document.getElementById("galleryGloss").textContent = arm.gloss;
+  };
+  document.querySelectorAll("[data-gallery-moment]").forEach(btn => btn.addEventListener("click", () => { galleryMoment = btn.dataset.galleryMoment; renderGallery(); }));
+  document.querySelectorAll("[data-gallery-instrument]").forEach(btn => btn.addEventListener("click", () => { galleryInstrument = btn.dataset.galleryInstrument; renderGallery(); }));
+  renderGallery();
+})();
+</script>
+</body>
+</html>
