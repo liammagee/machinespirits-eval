@@ -4,10 +4,11 @@ title: Measure whether condition discharge narrows the frame-refuser's refusal
 status: active
 type: experiment
 priority: P2
-owner: claude
+owner: codex
 source: manual
 created: 2026-08-27
 updated: 2026-08-29
+branch: codex/frame-refuser-narrowing-p0
 verification: >-
   A written narrowing codebook exists before any reader call. Reader
   calibration on archived transcripts passes registered agreement floors
@@ -131,3 +132,39 @@ produces rung 2?
   a three-seat reader calibration under its own explicit GO and spend ceiling.
   If the scale cannot be read reliably or does not spread between tutor
   versions, that is the finding and the card closes.
+
+- 2026-08-29: **P0 complete, zero-call.** Read the archived v1–v4 calibration
+  reports and their public transcripts from the private repository without
+  making a reader or generation call. The cited v2 and v4 files were tracked
+  and byte-identical to private archive commit
+  `ea940aaec0fead44c6ed6a0a9c3bdb09b1cfff1a`. Replaced all five authored
+  illustrations with exact public learner posts from rows where reader A voted
+  rung 2 while the other two seats held the row at rung 1:
+  `depth_reference_cal4_world_030_rowan_flat_r6`,
+  `depth_treatment_cal_world_005_marrick_r6`,
+  `depth_reference_cal_world_030_rowan_flat_r4`,
+  `depth_treatment_cal4_world_030_rowan_flat_r10`, and
+  `depth_reference_cal4_world_030_rowan_flat_r3`. Each example records its
+  archive version, job id, learner post, all three narrowing marks, and the
+  unchanged ladder rung.
+
+  Source verification corrected an off-by-one mistake in the unfinished draft:
+  the first transcription used each turn's incoming learner text rather than
+  the report-cited public post produced after that turn. The final examples now
+  use the report's exact post identifiers and transcript surfaces. Rebuilding
+  the cumulative ledgers also exposed more retained state than the draft had
+  counted: the examples score `(open demands, tightness, concessions)` as
+  `(1,3,2)`, `(2,3,2)`, `(2,3,1)`, `(1,3,2)`, and `(1,3,3)` respectively.
+
+  The real rows refine the codebook in two ways. A bound can be decisive without
+  being numeric — “one crucible alone” is a tightness-3 pass/fail line — and
+  readers must carry forward earlier demands and concessions even when the
+  dissenting evidence span quotes only the final post. The selected disagreement
+  rows do not supply the draft's explicit demand-withdrawal or bare “run it and
+  tell me” examples. Those invented lines were removed rather than passed off as
+  archive evidence; their associated counting rules remain hypotheses for P1.
+
+  No P1 reader call is authorized. The card remains active because its next
+  step is paid instrument calibration on archived rows under a separate,
+  literal GO and spend ceiling. The narrowing scale remains report-only beside
+  the sealed engagement ladder in the satisfiable-condition study.

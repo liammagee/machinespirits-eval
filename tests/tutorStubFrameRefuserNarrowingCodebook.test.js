@@ -40,7 +40,7 @@ test('the codebook carries the tie-break the readers split on', () => {
   const text = codebook();
   // The fourth calibration failed pairwise agreement at exactly this boundary.
   // The ladder is not amended, so the codebook must settle it in words.
-  assert.match(text, /names a bound while still withholding is rung 1 on the\s+ladder/u);
+  assert.match(text, /names a precise or decisive bound while still withholding is\s+rung 1 on the ladder/u);
   assert.match(text, /0\.714/u, 'the codebook should name the agreement it is answering');
   assert.match(text, /0\.733/u);
 });
@@ -64,26 +64,32 @@ test('the codebook grants no model call and names its next gate', () => {
   // The next paid step must carry an explicit GO and spend ceiling.
   assert.match(text, /its own explicit GO and\s+spend ceiling/u);
   // And it must say what a null result means, before anyone reads.
-  assert.match(text, /If readers cannot meet the\s+agreement floors or the measure does not spread/u);
+  assert.match(text, /If\s+readers cannot meet the\s+agreement floors or the measure does not spread/u);
 });
 
-test('the worked examples are marked authored, not quoted from the archive', () => {
+test('the worked examples are authentic archived disagreement rows with provenance', () => {
   const text = codebook();
-  // The archived gray-zone rows are not in this checkout. Presenting invented
-  // learner speech as archived evidence would be fabrication; the codebook
-  // says plainly that the examples are authored and must be replaced.
-  assert.match(text, /These examples are authored, not quoted/u);
-  assert.match(text, /not in this checkout/u);
-  assert.match(text, /Before reader calibration, replace these with\s+real rows/u);
+  assert.match(text, /exact public learner posts from archived rows behind reader A's stray\s+rung-2 votes/u);
+  assert.match(text, /source\s+transcripts remain in the private archive/u);
+  assert.match(text, /ea940aaec0fead44c6ed6a0a9c3bdb09b1cfff1a/u);
+  assert.match(text, /depth_reference_cal4_world_030_rowan_flat_r6/u);
+  assert.match(text, /depth_treatment_cal_world_005_marrick_r6/u);
+  assert.match(text, /depth_reference_cal_world_030_rowan_flat_r4/u);
+  assert.match(text, /depth_treatment_cal4_world_030_rowan_flat_r10/u);
+  assert.match(text, /depth_reference_cal4_world_030_rowan_flat_r3/u);
+  assert.match(text, /depth_treatment_cal_world_005_marrick_r6`, `post_4`/u);
+  assert.match(text, /depth_treatment_cal4_world_030_rowan_flat_r10`, `post_5`/u);
+  assert.doesNotMatch(text, /These examples are authored, not quoted/u);
 });
 
-test('P0 stays open until the archived examples replace the authored draft', () => {
+test('P0 is complete while paid reader calibration remains separately gated', () => {
   const text = codebook();
   const card = workplan();
-  assert.match(text, /P0 remains open until/u);
-  assert.match(text, /next zero-call step is to replace the authored\s+examples/u);
-  assert.match(card, /P0 draft written, zero-call; P0 remains open/u);
-  assert.doesNotMatch(card, /P0 done/u);
+  assert.match(text, /Status: P0 complete, zero-call/u);
+  assert.match(text, /P0 is complete/u);
+  assert.match(card, /P0 complete, zero-call/u);
+  assert.match(card, /No P1 reader call is authorized/u);
+  assert.doesNotMatch(text, /P0 remains open/u);
 });
 
 test('all three longitudinal marks are comparable end-of-turn states', () => {
@@ -121,6 +127,9 @@ test('every worked example carries all three marks and a ladder rung', () => {
   assert.equal(scored.length, 5);
   const rungs = text.match(/Ladder rung [012]/gu) || [];
   assert.equal(rungs.length, 5);
-  assert.match(text, /Open demands 2; bound tightness 1; conceded 1\./u);
+  assert.match(text, /Open demands 1; bound tightness 3; conceded 2\./u);
+  assert.match(text, /Open demands 2; bound tightness 3; conceded 2\./u);
+  assert.match(text, /Open demands 2; bound tightness 3; conceded 1\./u);
+  assert.match(text, /Open demands 1; bound tightness 3; conceded 3\./u);
   assert.doesNotMatch(text, /Narrower than the earlier turn on mark 1 alone/u);
 });
