@@ -14,15 +14,128 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildTutorStubResistantLearnerFinalHorizonPacket } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
+import {
+  buildTutorStubFrameRefuserNarrowingPlan,
+  buildTutorStubFrameRefuserNarrowingReaderPrompt,
+  evaluateTutorStubFrameRefuserNarrowingReaderResponse,
+  loadTutorStubFrameRefuserNarrowingDesign,
+  summarizeTutorStubFrameRefuserNarrowingCalibration,
+} from '../services/tutorStubFrameRefuserNarrowingCalibration.js';
+import {
+  executeTutorStubFrameRefuserNarrowingCalibration,
+  prepareTutorStubFrameRefuserNarrowingCalibration,
+} from '../scripts/run-tutor-stub-frame-refuser-narrowing-calibration.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CODEBOOK_PATH = path.join(REPO_ROOT, 'config/tutor-stub-frame-refuser-narrowing-codebook.v1.md');
+const DESIGN_PATH = 'config/tutor-stub-frame-refuser-narrowing-calibration-design.v1.json';
 const WORKPLAN_PATH = path.join(REPO_ROOT, 'workplan/items/frame-refuser-refusal-narrowing.md');
 const codebook = () => fs.readFileSync(CODEBOOK_PATH, 'utf8');
 const workplan = () => fs.readFileSync(WORKPLAN_PATH, 'utf8');
+
+function createNarrowingArchiveFixture(t) {
+  const archiveRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-refuser-narrowing-'));
+  t.after(() => fs.rmSync(archiveRoot, { recursive: true, force: true }));
+  const loaded = loadTutorStubFrameRefuserNarrowingDesign({ root: REPO_ROOT, designPath: DESIGN_PATH });
+  for (const source of loaded.design.source.reportDirectories) {
+    const rows = [];
+    for (const arm of loaded.design.sample.arms) {
+      for (const world of loaded.design.sample.worlds) {
+        for (let repeat = 1; repeat <= 2; repeat += 1) {
+          const id = `${source.version}_${arm}_${world}_${repeat}`;
+          const transcriptRelative = `jobs/${id}/transcript.json`;
+          const transcript = {
+            turns: [
+              { turn: 1, learner: `trigger ${repeat}`, tutor: `intervention ${repeat}` },
+              { turn: 2, learner: `post one ${repeat}`, tutor: `tutor one ${repeat}` },
+            ],
+            registerSelection: {
+              history: [
+                {
+                  turn: 3,
+                  light_adaptation: { current_signal: { public_learner_surface: `final surface ${repeat}` } },
+                },
+              ],
+            },
+          };
+          const transcriptPath = path.join(archiveRoot, source.path, transcriptRelative);
+          fs.mkdirSync(path.dirname(transcriptPath), { recursive: true });
+          fs.writeFileSync(transcriptPath, `${JSON.stringify(transcript)}\n`);
+          rows.push({
+            status: 'complete',
+            job: { id, arm_id: arm, world, outcome_horizon_learner_turns: 2 },
+            delivery: [{ delivered: true, turn: 1 }],
+            transcript: transcriptRelative,
+          });
+        }
+      }
+    }
+    const reportPath = path.join(archiveRoot, source.path, 'report.json');
+    fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+    fs.writeFileSync(reportPath, `${JSON.stringify({ rows })}\n`);
+  }
+  const plan = buildTutorStubFrameRefuserNarrowingPlan({
+    loaded,
+    archiveRoot,
+    verifyCommittedFile: () => true,
+  });
+  return { archiveRoot, loaded, plan };
+}
+
+function eligibleMeasurement(direction, finalTuple) {
+  const [open, bound, conceded] = finalTuple;
+  const finalState = {
+    source_id: 'post_2',
+    disposition: 'scored',
+    open_demand_count: open,
+    bound_tightness: bound,
+    conceded_subclaim_count: conceded,
+  };
+  const firstState =
+    direction === 'narrower'
+      ? {
+          source_id: 'trigger',
+          disposition: 'scored',
+          open_demand_count: open + 1,
+          bound_tightness: Math.max(0, bound - 1),
+          conceded_subclaim_count: Math.max(0, conceded - 1),
+        }
+      : { ...finalState, source_id: 'trigger' };
+  return { eligible: true, issues: [], direction, states: [firstState, finalState] };
+}
+
+function fakeAdmission(ceiling) {
+  let reserved = 0;
+  let closed = false;
+  const events = [];
+  return {
+    source: { commit: 'a'.repeat(40), tree: 'b'.repeat(40) },
+    authorization: { commit: 'c'.repeat(40), path: 'notes/go.md' },
+    get reserved() {
+      return reserved;
+    },
+    get closed() {
+      return closed;
+    },
+    events,
+    reserveModelAttempts(count, detail) {
+      assert.ok(reserved + count <= ceiling, 'reservation must fail before exceeding the ceiling');
+      reserved += count;
+      events.push({ type: 'reserved', ...detail });
+    },
+    record(event) {
+      events.push(event);
+    },
+    close(event) {
+      events.push(event);
+      closed = true;
+    },
+  };
+}
 
 test('the codebook defines all three registered marks', () => {
   const text = codebook();
@@ -161,4 +274,260 @@ test('every worked example carries all three marks and a ladder rung', () => {
   assert.match(text, /Open demands 2; bound tightness 3; conceded 1\./u);
   assert.match(text, /Open demands 1; bound tightness 3; conceded 3\./u);
   assert.doesNotMatch(text, /Narrower than the earlier turn on mark 1 alone/u);
+});
+
+test('the P1 design fixes the sample, independent routes, floors, and 72-attempt ceiling without granting calls', () => {
+  const { design } = loadTutorStubFrameRefuserNarrowingDesign({ root: REPO_ROOT, designPath: DESIGN_PATH });
+  assert.equal(design.sample.size, 24);
+  assert.equal(design.sample.perVersion, 6);
+  assert.equal(design.sample.perArm, 12);
+  assert.equal(design.sample.perWorld, 12);
+  assert.equal(design.readers.seats.length, 3);
+  assert.deepEqual(
+    design.readers.seats.map((seat) => [seat.id, seat.modelRef, seat.effort]),
+    [
+      ['reader_a', 'codex.gpt-5.6-sol', 'low'],
+      ['reader_b', 'claude-code.sonnet-5', 'low'],
+      ['reader_c', 'claude-code.opus-5', 'low'],
+    ],
+  );
+  assert.equal(design.readers.automaticRetries, 0);
+  assert.equal(design.attemptCeiling.plannedCalls, 72);
+  assert.equal(design.attemptCeiling.maximumAttempts, 72);
+  assert.equal(design.agreementGates.minimumPairwiseExactAgreement, 0.8);
+  assert.equal(design.spreadGate.minimumAbsoluteNarrowerRateGap, 0.15);
+  assert.equal(design.launch.designGrantsModelCalls, false);
+});
+
+test('the zero-call plan selects 24 unique balanced rows and takes the final post from runtime history', (t) => {
+  const { plan } = createNarrowingArchiveFixture(t);
+  assert.equal(plan.status, 'passed_zero_call');
+  assert.equal(plan.model_calls_executed, 0);
+  assert.equal(plan.planned_model_calls, 72);
+  assert.equal(plan.hard_attempt_ceiling, 72);
+  assert.equal(plan.cases.length, 24);
+  assert.equal(new Set(plan.cases.map((entry) => entry.case_id)).size, 24);
+  assert.deepEqual(plan.sample.balances.version, { v1: 6, v2: 6, v3: 6, v4: 6 });
+  assert.deepEqual(plan.sample.balances.arm, { reference: 12, treatment: 12 });
+  assert.deepEqual(plan.sample.balances.world, { world_005_marrick: 12, world_030_rowan_flat: 12 });
+  assert.match(plan.cases[0].public_packet.post_2, /^final surface/u);
+  assert.doesNotMatch(plan.cases[0].public_packet.post_2, /^post one/u);
+});
+
+test('reader prompts expose only the rule instrument and public dialogue', () => {
+  const prompt = buildTutorStubFrameRefuserNarrowingReaderPrompt({
+    instrumentText: fs.readFileSync(
+      path.join(REPO_ROOT, 'config/tutor-stub-frame-refuser-narrowing-instrument.v1.md'),
+      'utf8',
+    ),
+    caseId: 'nrw_001',
+    publicPacket: {
+      trigger: 'Show me one decisive line.',
+      intervention: 'Here is the line.',
+      post_1: 'That helps, but the interval still matters.',
+    },
+  });
+  const visible = `${prompt.system_prompt}\n${prompt.user_prompt}`;
+  assert.match(visible, /nrw_001/u);
+  assert.match(visible, /Show me one decisive line/u);
+  assert.doesNotMatch(visible, /reference|treatment|source job|depth_.*_r\d/u);
+  assert.doesNotMatch(visible, /0\.714|0\.733/u, 'worked-example calibration evidence must not leak to readers');
+});
+
+test('reader outputs require exact non-future evidence and an audited model envelope', () => {
+  const publicPacket = {
+    trigger: 'Show me a threshold.',
+    intervention: 'Use ten percent.',
+    post_1: 'Ten percent is concrete.',
+  };
+  const prompt = buildTutorStubFrameRefuserNarrowingReaderPrompt({
+    instrumentText: 'Apply the registered rules.',
+    caseId: 'nrw_001',
+    publicPacket,
+  });
+  const output = {
+    case_id: 'nrw_001',
+    states: [
+      {
+        source_id: 'trigger',
+        disposition: 'scored',
+        open_demands: [{ description: 'threshold', evidence: [{ source_id: 'trigger', text: 'a threshold' }] }],
+        tightest_bound: {
+          score: 1,
+          description: 'qualitative threshold request',
+          evidence: [{ source_id: 'trigger', text: 'a threshold' }],
+        },
+        conceded_subclaims: [],
+      },
+      {
+        source_id: 'post_1',
+        disposition: 'scored',
+        open_demands: [{ description: 'threshold', evidence: [{ source_id: 'trigger', text: 'a threshold' }] }],
+        tightest_bound: {
+          score: 3,
+          description: 'numerical threshold',
+          evidence: [{ source_id: 'post_1', text: 'Ten percent' }],
+        },
+        conceded_subclaims: [
+          { description: 'threshold is concrete', evidence: [{ source_id: 'post_1', text: 'is concrete' }] },
+        ],
+      },
+    ],
+  };
+  const seat = { provider: 'codex', model: 'gpt-5.6-sol', effort: 'low' };
+  const response = {
+    text: JSON.stringify(output),
+    provider: seat.provider,
+    model: seat.model,
+    effort: seat.effort,
+    structuredOutput: true,
+    prohibitedToolEventCountObserved: true,
+    prohibitedToolEventCount: 0,
+  };
+  const accepted = evaluateTutorStubFrameRefuserNarrowingReaderResponse({ response, seat, prompt });
+  assert.equal(accepted.eligible, true);
+  assert.equal(accepted.direction, 'narrower');
+
+  output.states[0].open_demands[0].evidence = [{ source_id: 'post_1', text: 'Ten percent' }];
+  const rejected = evaluateTutorStubFrameRefuserNarrowingReaderResponse({
+    response: { ...response, text: JSON.stringify(output) },
+    seat,
+    prompt,
+  });
+  assert.equal(rejected.eligible, false);
+  assert.ok(rejected.issues.some((issue) => issue.includes('future_source')));
+});
+
+test('three agreeing seats can pass agreement and spread only through the registered mechanical gates', (t) => {
+  const { loaded, plan } = createNarrowingArchiveFixture(t);
+  const tuples = [
+    [1, 1, 0],
+    [1, 2, 1],
+    [2, 3, 1],
+  ];
+  const records = plan.cases.flatMap((entry, index) => {
+    const direction = entry.source.arm_id === 'treatment' ? 'narrower' : 'unchanged';
+    const measurement = eligibleMeasurement(direction, tuples[index % tuples.length]);
+    return loaded.design.readers.seats.map((seat) => ({
+      case_id: entry.case_id,
+      seat_id: seat.id,
+      measurement,
+    }));
+  });
+  const report = summarizeTutorStubFrameRefuserNarrowingCalibration({ plan, records, design: loaded.design });
+  assert.equal(report.agreement.pass, true);
+  assert.equal(report.spread.pass, true);
+  assert.equal(report.status, 'passed_instrument_gate');
+  assert.equal(report.fresh_study_gate_open, true);
+  assert.equal(report.archived_rows_confirmatory, false);
+});
+
+test('the complete preflight writes nothing and the launcher makes exactly 72 non-retried reader calls', async (t) => {
+  const { archiveRoot } = createNarrowingArchiveFixture(t);
+  const destination = path.join(archiveRoot, 'artifacts/tutor-stub-live/narrowing-reader-test');
+  const preflight = prepareTutorStubFrameRefuserNarrowingCalibration({
+    root: REPO_ROOT,
+    designPath: DESIGN_PATH,
+    archiveRoot,
+    destination,
+    verifyCommittedFile: () => true,
+    resolve: (modelRef) => {
+      const seat = {
+        'codex.gpt-5.6-sol': ['codex', 'gpt-5.6-sol'],
+        'claude-code.sonnet-5': ['claude-code', 'claude-sonnet-5'],
+        'claude-code.opus-5': ['claude-code', 'claude-opus-5'],
+      }[modelRef];
+      return { provider: seat[0], model: seat[1], isConfigured: true };
+    },
+  });
+  assert.equal(preflight.status, 'passed_zero_call');
+  assert.equal(preflight.model_calls_executed, 0);
+  assert.equal(fs.existsSync(destination), false, 'zero-call preflight must not create the destination');
+
+  fs.mkdirSync(destination, { recursive: true });
+  const admission = fakeAdmission(72);
+  let calls = 0;
+  const callBridge = async (agentConfig, _systemPrompt, userPrompt, _role, options) => {
+    calls += 1;
+    const request = JSON.parse(userPrompt);
+    return {
+      text: JSON.stringify({
+        case_id: request.case_id,
+        states: request.public_dialogue
+          .filter((row) => row.speaker === 'learner')
+          .map((row) => ({
+            source_id: row.source_id,
+            disposition: 'measurement_indeterminate',
+            open_demands: [],
+            tightest_bound: null,
+            conceded_subclaims: [],
+          })),
+      }),
+      provider: agentConfig.provider,
+      model: agentConfig.model,
+      effort: options.effort,
+      structuredOutput: true,
+      prohibitedToolEventCount: 0,
+    };
+  };
+  const report = await executeTutorStubFrameRefuserNarrowingCalibration({
+    preflight,
+    admission,
+    callBridge,
+    progress: () => {},
+  });
+  assert.equal(calls, 72);
+  assert.equal(admission.reserved, 72);
+  assert.equal(admission.closed, true);
+  assert.equal(report.execution.complete_units, 72);
+  assert.equal(report.execution.eligible_units, 72);
+  assert.equal(report.execution.missing_units, 0);
+  assert.equal(fs.readdirSync(path.join(destination, 'results')).length, 72);
+  assert.equal(report.status, 'failed_agreement', 'categorical-only agreement cannot pass the three-mark gate');
+});
+
+test('a transport failure is sealed after one attempt with no retry', async (t) => {
+  const { archiveRoot } = createNarrowingArchiveFixture(t);
+  const destination = path.join(archiveRoot, 'artifacts/tutor-stub-live/narrowing-reader-transport-failure');
+  const preflight = prepareTutorStubFrameRefuserNarrowingCalibration({
+    root: REPO_ROOT,
+    designPath: DESIGN_PATH,
+    archiveRoot,
+    destination,
+    verifyCommittedFile: () => true,
+    resolve: (modelRef) => {
+      const seat = {
+        'codex.gpt-5.6-sol': ['codex', 'gpt-5.6-sol'],
+        'claude-code.sonnet-5': ['claude-code', 'claude-sonnet-5'],
+        'claude-code.opus-5': ['claude-code', 'claude-opus-5'],
+      }[modelRef];
+      return { provider: seat[0], model: seat[1], isConfigured: true };
+    },
+  });
+  preflight.plan = {
+    ...preflight.plan,
+    cases: preflight.plan.cases.slice(0, 1),
+    planned_model_calls: 1,
+    hard_attempt_ceiling: 1,
+  };
+  preflight.resolvedReaders = preflight.resolvedReaders.slice(0, 1);
+  fs.mkdirSync(destination, { recursive: true });
+  const admission = fakeAdmission(1);
+  let calls = 0;
+  await assert.rejects(
+    executeTutorStubFrameRefuserNarrowingCalibration({
+      preflight,
+      admission,
+      callBridge: async () => {
+        calls += 1;
+        throw new Error('synthetic transport failure');
+      },
+      progress: () => {},
+    }),
+    /synthetic transport failure/u,
+  );
+  assert.equal(calls, 1);
+  assert.equal(admission.reserved, 1);
+  assert.equal(admission.closed, true);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(destination, 'failure.json'), 'utf8')).status, 'transport_failure');
 });
