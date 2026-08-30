@@ -171,6 +171,35 @@ test('configure accepts the host-resolved profile id when args carry the rendere
   );
 });
 
+test('configure accepts a reduced recovery budget and rejects one above the cap', () => {
+  const loaded = loadDesign();
+  const plan = buildTutorStubDefiantWarrantPlan(loaded.design);
+  const job = plan.jobs[0];
+  const base = {
+    args: null,
+    state: {},
+    root: ROOT,
+    autoLearnerEnabled: true,
+    autoLearnerProfileId: loaded.design.execution.autoLearnerProfile,
+    autoTurns: loaded.design.execution.autoTurns,
+  };
+  const reduced = configureTutorStubDefiantWarrantFromCli({
+    ...base,
+    args: { ...validCliArgs(loaded.design, job), 'model-call-budget': '18' },
+  });
+  assert.equal(reduced.enabled, true);
+  const cap = loaded.design.execution.maximumReservationsPerDialogue;
+  assert.throws(
+    () =>
+      configureTutorStubDefiantWarrantFromCli({
+        ...base,
+        state: {},
+        args: { ...validCliArgs(loaded.design, job), 'model-call-budget': String(cap + 1) },
+      }),
+    /launch pins drifted from the registered design: per-dialogue budget/u,
+  );
+});
+
 test('configure throws when a launch pin drifts', () => {
   const loaded = loadDesign();
   const plan = buildTutorStubDefiantWarrantPlan(loaded.design);

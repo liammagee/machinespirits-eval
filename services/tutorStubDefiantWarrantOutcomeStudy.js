@@ -185,7 +185,10 @@ export function configureTutorStubDefiantWarrantFromCli({
   if (args['dag-mode'] !== design.execution.dagMode) drift.push('dag mode');
   if (args['register-policy'] !== design.execution.registerPolicy) drift.push('register policy');
   if (args['register-palette'] !== design.execution.registerPalette) drift.push('register palette');
-  if (Number(args['model-call-budget']) !== design.execution.maximumReservationsPerDialogue) {
+  // Recovery attempts pass a reduced budget (the registered cap minus the
+  // dialogue's prior spend), so the pin is an upper bound, not an equality.
+  const budgetArg = Number(args['model-call-budget']);
+  if (!Number.isInteger(budgetArg) || budgetArg < 1 || budgetArg > design.execution.maximumReservationsPerDialogue) {
     drift.push('per-dialogue budget');
   }
   for (const key of ['model', 'classifier-model', 'learner-record-model', 'auto-learner-model']) {
