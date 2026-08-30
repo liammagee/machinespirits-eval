@@ -3,17 +3,17 @@ id: adaptive-causality-move-transfer-validation
 title: "Run a fresh cold-baselined causal test of move-level transfer"
 status: blocked
 type: experiment
-priority: P1
+priority: P2
 owner: unassigned
 source: review
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-30
 verification: "A fresh preregistered matched design compares one named state-appropriate move with one plausible mismatch, verifies sensing and delivered conduct before outcome reading, measures an independently scored transfer task against frozen cold baselines with a fixed multi-sample rule, and reports the null or indeterminate result without pooling or re-thresholding the sealed 3/7 versus 2/7 causal probe."
-blocked_by: "Independent state/move validation and a transportable learner substrate must pass first; any model-backed run also requires a bounded design, explicit GO, and an enforced call/spend ceiling"
+blocked_by: "Independent state/move and proof-DAG validation must pass first; a replacement design must use harness-owned public state and any model-backed run needs a bounded design, explicit GO, and an enforced call/spend ceiling"
 claim_status: future
 depends_on:
   - adaptive-causality-human-state-move-validation
-  - adaptive-learner-substrate-transport-recovery
+  - adaptive-proof-dag-cross-world-validation
 links:
   notes:
     - notes/2026-08-03-adaptive-causality-living-log.md
@@ -41,7 +41,8 @@ registered causal stake-move comparison was null at 3/7 versus 2/7. Those
 results remain sealed and are not a pilot from which to tune a new threshold.
 
 A new design must choose one move-level transfer claim in advance, hold the
-public state, world, model seats, resources, and delivery policy fixed, and
+public state in the harness, world, model seats, resources, and delivery policy
+fixed, and
 force a named matched move versus a named plausible mismatch. Cold answers are
 collected and frozen before treated outcomes. The transfer task must require the
 learner to apply a method or distinction without copying the prior episode's
@@ -52,3 +53,8 @@ Report sensing, selected move, delivered realization, immediate learner
 transition, and transfer separately. Failed delivery stops the outcome reading;
 missing or judge-disputed transfer evidence is indeterminate. Simulated transfer
 is not a human-learning result.
+
+2026-08-30 Codex: Downgraded from P1 to P2 and removed the dropped synthetic-
+substrate dependency. Any future transfer test must control learner state in
+the harness and first clear the independent state/move and proof-DAG validity
+gates; it remains separate from the human-outcome pilot.

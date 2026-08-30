@@ -1,7 +1,7 @@
 ---
 id: paid-study-cross-session-budget-lease
 title: Enforce one paid-study ceiling across concurrent sessions
-status: review
+status: done
 type: infra
 priority: P0
 owner: codex
@@ -24,6 +24,8 @@ links:
   code:
     - services/paidStudyLaunchContract.js
     - tests/paidStudyLaunchContract.test.js
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/883
 tags:
   - paid-study
   - spend-ceiling
@@ -76,3 +78,5 @@ Acceptance:
   38 focused contract/launcher tests, 2 launcher-inventory tests, targeted
   ESLint and Prettier checks, and 569/569 workplan items. No model calls were
   made.
+- 2026-08-30: PR #883 merged at `e34ee66d9` with all required CI checks green;
+  moved the card to done.

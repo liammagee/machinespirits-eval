@@ -7,9 +7,9 @@ priority: P2
 owner: codex
 source: manual
 created: 2026-07-22
-updated: 2026-07-26
+updated: 2026-08-30
 branch: codex/program-2-stall-phase2-exploratory
-blocked_by: Exploratory Phase 2 leaves only six accepted-original train rows and zero dev rows; future sealed runs must grow and re-audit the source corpus before training.
+blocked_by: A comprehensive zero-call re-audit through Phase 5f yields only 54/100 strict audit-passing stagnant_repeat moments; the accepted-original split still has six train and zero dev rows, so training remains blocked pending new eligible sealed corpus.
 verification: "A stall-move specialist, SFT-trained on audit-labeled stagnant_repeat exhaust from the sealed archives under a fresh frozen prereg (own run licenses — the Program-2 ledger is spent), clears its frozen offline bars (floor+0.15 pattern on held-out stall moments under a deterministic stall-audit designed and frozen BEFORE training) and then a live committee-stall pilot passes E1s (CI > 0 vs silent controls) at the frozen guardrails, with the stall-density precondition met by a stall-enriched design."
 claim_status: exploratory
 links:
@@ -226,3 +226,13 @@ accepted-original, strict-audit source examples: six train, zero dev, one
 held-out. A local same-lineage floor on the nine text-auditable dev/held-out
 moments found mixed descriptive cells and no stable warrant-to-stall benefit.
 Phase 3 remains closed; no training or external model call was made.
+
+2026-08-30 Codex: Blocker refresh first reproduced the frozen four-root result
+exactly (139/140 sealed dialogues, 101 raw moments, 49 strict passes), then
+explicitly added all eligible Phase 5d and Phase 5f roots. The comprehensive
+zero-call inventory covers 180 planned and 175 sealed dialogues, with 112 raw
+`stagnant_repeat` moments but only 54/100 strict audit-passing source turns.
+Phase 5f's cohort stopped at 14/18 sealed dialogues for insufficient
+opportunities; four intentionally unrun units and quarantined pre-isolation
+traces were not counted. The corpus floor therefore remains a genuine blocker:
+no dataset rebuild, training, paid judging, or live pilot is licensed.

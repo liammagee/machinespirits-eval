@@ -7,10 +7,12 @@ priority: P1
 owner: human
 source: review
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-30
 verification: "Two independent human coders complete a frozen, arm-blinded stratified packet from sealed adaptive-causality traces; agreement, disagreements, state confusion, and move-realization fidelity are reported overall and by arm; ambiguous or discordant cases remain indeterminate; the adaptive mechanism claim is either retained within those measured bounds or narrowed without post-hoc relabelling."
-blocked_by: "Two independent human coders for a frozen stratified packet drawn only from sealed, provenance-bearing adaptive-causality traces"
+blocked_by: "The zero-call blinded packet must first be prepared and frozen; two independent human coders are then required"
 claim_status: planned
+depends_on:
+  - adaptive-causality-human-state-move-packet-prep
 links:
   notes:
     - notes/2026-08-03-adaptive-causality-living-log.md
@@ -19,6 +21,7 @@ links:
   items:
     - adaptive-causality-crossed-effects
     - adaptive-causality-repertoire
+    - adaptive-causality-human-state-move-packet-prep
     - consolidated-labelling-game-harness
     - rubric-v3-calibration-and-held-out-acceptance
     - superego-taxonomy-human-validation
@@ -51,3 +54,9 @@ after seeing the disagreements.
 2026-08-29 Codex: Captured from the comprehensive adaptive-tutor review. The
 card records a missing publication-validity step and authorizes no model call,
 new experiment, or claim expansion.
+
+2026-08-30 Codex: Human-work review found that the external validity goal
+remains central but the named frozen packet does not yet exist. Added the
+zero-call packet-preparation dependency rather than treating this card as
+immediately ready for coders. This card continues to own only the independent
+human rulings and claim-bound comparison after that packet freezes.
