@@ -9,7 +9,7 @@ source: review
 created: 2026-08-29
 updated: 2026-08-29
 verification: "Independent reviewers complete a frozen, outcome-blind packet covering Rowan Flat plus at least two materially different authored worlds; for every sampled release turn they agree which premises are public, which proof rules can fire, and which conclusions remain forbidden; disagreement stays indeterminate; deterministic guard fixtures reproduce the rulings without changing sealed historical artifacts."
-blocked_by: "Independent proof/release reviewers and a frozen validation packet from at least two additional authored worlds; no model generation is needed or authorized"
+blocked_by: "Two independent proof/release reviewers must complete and freeze the prepared cross-world-v1 submissions; the zero-call packet, machine key, and comparison tooling are ready"
 claim_status: planned
 depends_on:
   - proof-dag-dramatic-derivation-assessment
@@ -24,6 +24,11 @@ links:
     - proof-dag-dramatic-derivation-assessment
     - lean-semantic-web-proof-dag-validation
     - adaptive-causality-publication-holdout
+  code:
+    - config/proof-dag-validation/cross-world-v1.packet.json
+    - services/dramaticDerivation/proofDagReview.js
+    - scripts/proof-dag-cross-world-review.js
+    - docs/proof-dag-cross-world-review.md
 tags:
   - adaptive-tutor
   - proof-dag
@@ -51,3 +56,15 @@ This is a validity check on world semantics and delivery enforcement, not a tuto
 efficacy study. A defect creates a prospective corrected world/version and a
 regression fixture; it must not rewrite a sealed historical run or silently
 reinterpret its outcome.
+
+2026-08-29 Codex: Implemented the zero-call preparation slice. The frozen
+six-case packet covers partial and first-licensed release prefixes in Rowan
+Flat, the Campus FAQ Machine, and the Unsigned Nocturne. Reviewer material is
+separated from the machine-derived key; candidate labels are neutral; tutor and
+learner outputs, downstream outcomes, and expected rulings are absent. The
+comparison path validates complete independent submissions and preserves any
+explicit uncertainty or coder disagreement as `indeterminate`. The packet
+SHA-256 is `8d25c0c1053ec88f36d07a3b2d4f37cdf7eef41de7869c91b486be5020d2f4c2`.
+Focused and adjacent dramatic-derivation tests pass 109/109. No model calls or
+human rulings were made. The card remains blocked only on two independent human
+reviewers completing the frozen packet.

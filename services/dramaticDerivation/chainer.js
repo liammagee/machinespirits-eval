@@ -102,6 +102,37 @@ export function entails(baseFacts, rules, goal) {
 }
 
 /**
+ * Enumerate every rule grounding enabled by the closure of `baseFacts`.
+ *
+ * `closure()` deliberately records only the first proof of a fact. Review and
+ * inspection surfaces sometimes need the wider question: which authored rules
+ * could fire, including a rule whose conclusion was already established by a
+ * different path? This helper answers that question without changing closure
+ * semantics or the live entitlement gate.
+ */
+export function ruleFirings(baseFacts, rules) {
+  const { facts } = closure(baseFacts, rules);
+  const firings = [];
+  const seen = new Set();
+
+  for (const rule of rules) {
+    for (const { bindings, premises } of joinPatterns(rule.if, facts)) {
+      const conclusions = rule.then.map((pattern) => substitute(pattern, bindings));
+      const key = JSON.stringify([rule.id, premises, conclusions.map(factKey)]);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      firings.push({
+        rule: rule.id,
+        premises: premises.map((premiseKey) => facts.get(premiseKey)),
+        conclusions,
+      });
+    }
+  }
+
+  return firings;
+}
+
+/**
  * Full proof of `goal` down to base facts ("which facts did the forcing"),
  * or null if not entailed.
  */
