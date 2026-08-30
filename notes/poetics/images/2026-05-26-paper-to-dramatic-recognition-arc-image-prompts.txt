@@ -1,7 +1,7 @@
 # Cartoon Image Prompts
 
 Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
-Generated at: 2026-08-30T14:24:54.406Z
+Generated at: 2026-08-30T21:02:49.462Z
 Panel count: 11
 Format: png
 House style: docs/design/machinespirits-house-style.md
@@ -12,7 +12,7 @@ Prompt lineage: each code block preserves the panel-total line from the run that
 
 Title: How a tutor learned to change course
 Description: The earlier study found no average change in how tutors adapted. This follow-up asks a more ordinary question: when a learner gets stuck, can the tutor notice, change course, and help them reach an answer that can be checked?
-Top terms: tutor, learner, rule, move, proof, answer, lesson, turn, every, conduct, hidden, change, changed, check, completed, without, panel, whether
+Top terms: tutor, learner, rule, move, proof, answer, turn, lesson, every, completed, conduct, hidden, change, changed, check, without, panel, still
 
 Selected sections:
 - 01 #starting-point: The average stayed flat. We wanted to know what happened at the stuck point. -> notes/poetics/images/dramatic-recognition-arc-01.png
@@ -470,7 +470,7 @@ Machine Spirits editorial illustration: the editorial Techne layer translated th
 - The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
-The tutor can govern parts of its conduct. So the current conclusion is modest: the hidden-state rule plus unfinished proof work is a reliable baseline; adaptive switching between signals is not established. The useful gains came from seeing missing evidence and enforcing small rules, not from asking the tutor to choose a more elaborate strategy. Five limits travel with that headline “A tutor can adapt parts of its conduct on a long proof” is a real but narrow claim:.
+The tutor can govern parts of its conduct. So the current conclusion is modest: the hidden-state rule plus unfinished proof work is a reliable baseline; adaptive switching between signals is not established. The useful gains came from seeing missing evidence and enforcing small rules, not from asking the tutor to choose a more elaborate strategy. Six limits travel with that headline “A tutor can adapt parts of its conduct on a long proof” is a real but narrow claim:.
 
 Image concept:
 three square evidence cards locked to one grid—a check, a boundary bracket, and an open ring—while a heavy red stamp marks the narrow claim CONDUCT ONLY; the paired tutor and learner remain outside any imagined mind-reading apparatus
