@@ -291,6 +291,26 @@ test('keeps a writable-entry scene invitation declarative after the uptake answe
   assert.ok(wordCount(prompt) <= 220, `expected writable V1 prompt at most 220 words, received ${wordCount(prompt)}`);
 });
 
+// The barred branch of the ending cue returned only for a bounded choice or a
+// clarification invitation. With neither set it fell through to the question
+// support instruction and then to the light-question defaults, so the detailed
+// contract said "end with at most one light question" while its own handoff
+// forbade one. The compact renderer never reads this field, but the guard
+// recovery prompt renders it as END, which is where the contradiction reached a
+// redraft of a turn that had just been rejected for asking a question.
+test('ends declaratively in the detailed contract when the handoff forbids a question', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next?',
+    responseConfiguration: configuration(),
+  });
+
+  assert.equal(contract.progression.handoff_contract.question_allowed, false);
+  assert.match(contract.ending.instruction, /do not ask a question/iu);
+  assert.doesNotMatch(contract.ending.instruction, /one light question/iu);
+  assert.doesNotMatch(contract.ending.instruction, /if you do ask/iu);
+  assert.doesNotMatch(contract.ending.instruction, /you may consolidate/iu);
+});
+
 // The contract computed `evidence.committed_public_surfaces` for a long time and
 // never rendered it, so every slot saying "licensed" named a licence the page did
 // not carry. On the frozen A/B bench that produced reproducible hard leaks — a
