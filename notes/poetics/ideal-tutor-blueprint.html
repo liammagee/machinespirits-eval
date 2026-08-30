@@ -74,7 +74,7 @@
 
   <section class="hero">
     <!-- BLUEPRINT:PROVENANCE:START -->
-    <div class="hero__rune"><span>§</span> Build blueprint · inherits <code>paper-full-2.0.md</code> v3.0.293 (July 2026) · refreshed 2026-08-28 · commit 147a2d6f</div>
+    <div class="hero__rune"><span>§</span> Build blueprint · inherits <code>paper-full-2.0.md</code> v3.0.297 (July 2026) · refreshed 2026-08-30 · commit 54e8a52ab</div>
     <!-- BLUEPRINT:PROVENANCE:END -->
     <h1 class="hero__h1">How to build the <span class="em">ideal AI tutor</span></h1>
     <p class="hero__subtitle">A complete recipe, from first principles. It assumes an API key to a capable language model, something to teach, and ordinary programming skill — and nothing else. Each step gives the design, the code, and a brief you can hand to a coding agent; every choice carries a pointer to the research that backs it.</p>
@@ -511,7 +511,7 @@ any judge; the judge is additive only.</code></div>
         <div class="body">
           <p class="s__kicker">The skip list</p>
           <h2 class="s__h">Tested, and not worth building.</h2>
-          <p>Each of these seemed reasonable, was built, and measured as a null or a backfire. The general form: anything that tells the model what the transcript already shows. When your coding agent proposes one of these — and it will, they are the obvious ideas — point it here.</p>
+          <p>Each of these seemed reasonable, was built, and measured as a null or a backfire. The general form: anything that tells the model what the transcript already shows — and, from the other side, anything that needs the model to hold back what its training insists on giving. When your coding agent proposes one of these — and it will, they are the obvious ideas — point it here.</p>
           <ul>
             <li><strong>A layered episodic memory system.</strong> Switched off in a controlled test, the headline effect did not shrink. The stance lives in the prompt. <span class="chip chip--brick"><span class="chip__dot"></span> §6.6.9</span></li>
             <li><strong>An agent that builds a profile of the learner.</strong> Across six models: neutral on one, harmful on five. Model weakness did not predict benefit. <span class="chip chip--brick"><span class="chip__dot"></span> §6.6.10</span></li>
@@ -521,9 +521,11 @@ any judge; the judge is additive only.</code></div>
             <li><strong>Prompt + critic together on a strong model, budgeted as additive.</strong> They substitute. <span class="chip chip--brick"><span class="chip__dot"></span> §6.4 · §6.14</span></li>
             <li><strong>Standing advice in any wrapper</strong> — persisted playbooks, coached reflection distilled into memory, well-timed side-coaching. Consumed wrongly or not at all. <span class="chip chip--brick"><span class="chip__dot"></span> §6.15 · §6.16 · §7.12</span></li>
             <li><strong>Choosing speaking style from a learner profile; unprompted character shifts.</strong> No confirmed benefit; an unoccasioned costume priced negative twice. <span class="chip chip--brick"><span class="chip__dot"></span> §6.17 · §6.23</span></li>
+            <li><strong>Varying the tone while the moves stay fixed.</strong> Sarcastic and warm deliveries of the same scripted moves were indistinguishable in all three learner characters; five designs that varied manner alone produced no resolved positive outcome. The moves carry the effect. <span class="chip chip--brick"><span class="chip__dot"></span> §6.29 · §8.9</span></li>
             <li><strong>A better hidden-state sensor.</strong> On the tested bench the "hidden" state was fully recoverable from public history — nothing was concealed for a sensor to find. Build a genuinely ambiguous substrate first. <span class="chip chip--brick"><span class="chip__dot"></span> §6.19</span></li>
             <li><strong>Enforcing style, character, or progress at the output.</strong> Enforcement delivers typed transactions, never quality, and answers the hardest turns with templates. <span class="chip chip--brick"><span class="chip__dot"></span> §6.24 · §6.18</span></li>
             <li><strong>Branching on whether a revision shows genuine uptake or mere compliance, read from text.</strong> Tested on the tutor's own revisions after critique: two careful annotators could not agree (κ = 0.084). <span class="chip chip--brick"><span class="chip__dot"></span> §6.12</span></li>
+            <li><strong>A control tutor that withholds what the model is trained to give.</strong> Asked to press the assigned test without serving its grounds, the tutor delivered the withholding conduct in 0 of 8 dialogues as an instruction and 0 of 9 under enforced repair — it wrote a new justification each time the violating sentence was quoted back. A design that needs the model to be less forthcoming than its training should verify delivered conduct before scoring, or treat that arm as unavailable. <span class="chip chip--brick"><span class="chip__dot"></span> §6.30 · §7.16</span></li>
           </ul>
         </div>
         <div class="mr">
