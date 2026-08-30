@@ -1,0 +1,43 @@
+{
+  "schema": "adaptive-causality.state-move-review-hashes.v1",
+  "packet_id": "adaptive-state-move-crossed-v1",
+  "sealed_sources": [
+    {
+      "source_id": "crossed_effects",
+      "file": "conduct-tags.json",
+      "sha256": "72dbfb3e92464a1e070c7c6e91cdc8577e7bcae1f8c13ccdbd1ff75ce81a41c6"
+    },
+    {
+      "source_id": "repertoire",
+      "file": "repertoire-tags.json",
+      "sha256": "f27ffe9c9a5c6fb25b3e28624850b5faeb7b3f00d2a9a0ab439cc2d60c9b5e2d"
+    }
+  ],
+  "artifacts": [
+    {
+      "role": "packet",
+      "file": "config/adaptive-causality-validation/state-move-v1.packet.json",
+      "sha256": "38c151eed0c80b0602f3803c5a3bda2e94c127c933d9d07a6c3c4804bd573fcd"
+    },
+    {
+      "role": "codebook",
+      "file": "config/adaptive-causality-validation/state-move-v1.codebook.md",
+      "sha256": "fc4778ccd0db8721cf6a99d53e4070ea59f63b5b85f85b0a3b47033e348721c4"
+    },
+    {
+      "role": "coder_a_template",
+      "file": "config/adaptive-causality-validation/state-move-v1.coder-a.json",
+      "sha256": "d8d683be61114c3cd970c52adc2bdf8f2baa62e6704c2b391188f355c2797b18"
+    },
+    {
+      "role": "coder_b_template",
+      "file": "config/adaptive-causality-validation/state-move-v1.coder-b.json",
+      "sha256": "0d791efb4008b477b36bc17b3a5ebf18d00fbcb9a0c99bb25df2426f5d266c3c"
+    },
+    {
+      "role": "machine_key",
+      "file": "tests/fixtures/adaptive-state-move-v1.machine-key.json",
+      "sha256": "22a981fd1e0ae5a51ab9a0260f64bce866ab05f2704134180af47093d730a5ae"
+    }
+  ]
+}
