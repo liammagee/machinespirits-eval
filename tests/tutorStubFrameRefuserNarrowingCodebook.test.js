@@ -64,26 +64,42 @@ test('the codebook grants no model call and names its next gate', () => {
   // The next paid step must carry an explicit GO and spend ceiling.
   assert.match(text, /its own explicit GO and\s+spend ceiling/u);
   // And it must say what a null result means, before anyone reads.
-  assert.match(text, /If readers cannot meet the\s+agreement floors or the measure does not spread/u);
+  assert.match(text, /If\s+readers\s+cannot meet the\s+agreement floors or the measure does not spread/u);
 });
 
-test('the worked examples are marked authored, not quoted from the archive', () => {
+test('the worked examples use literal archived v4 turns with provenance', () => {
   const text = codebook();
-  // The archived gray-zone rows are not in this checkout. Presenting invented
-  // learner speech as archived evidence would be fabrication; the codebook
-  // says plainly that the examples are authored and must be replaced.
-  assert.match(text, /These examples are authored, not quoted/u);
-  assert.match(text, /not in this checkout/u);
-  assert.match(text, /Before reader calibration, replace these with\s+real rows/u);
+  assert.match(text, /literal `turns\[\]\.learner` excerpts/u);
+  assert.match(text, /five of the six v4 rows/u);
+  assert.match(text, /7c8c8130e0d19431694c222af8cd9b0dd7e2a360/u);
+  assert.match(text, /1320fd7336b8f654844cf3c25f23a9a02b551cb473b7d5633797282e240ab9b4/u);
+  assert.match(text, /depth_reference_cal4_world_030_rowan_flat_r3/u);
+  assert.match(text, /depth_reference_cal4_world_030_rowan_flat_r5/u);
+  assert.match(text, /depth_reference_cal4_world_030_rowan_flat_r6/u);
+  assert.match(text, /depth_treatment_cal4_world_030_rowan_flat_r1/u);
+  assert.match(text, /depth_treatment_cal4_world_030_rowan_flat_r10/u);
+  assert.doesNotMatch(text, /These examples are authored, not quoted/u);
 });
 
-test('P0 stays open until the archived examples replace the authored draft', () => {
+test('P0 is complete while reader calibration remains separately gated', () => {
   const text = codebook();
   const card = workplan();
-  assert.match(text, /P0 remains open until/u);
-  assert.match(text, /next zero-call step is to replace the authored\s+examples/u);
-  assert.match(card, /P0 draft written, zero-call; P0 remains open/u);
-  assert.doesNotMatch(card, /P0 done/u);
+  assert.match(text, /Status: P0 complete, zero-call/u);
+  assert.match(text, /P0 is complete/u);
+  assert.match(card, /P0 complete, zero-call/u);
+  assert.match(card, /No P1 reader call is authorized/u);
+  assert.doesNotMatch(text, /P0 remains open/u);
+});
+
+test('archive contradictions constrain the next packet', () => {
+  const text = codebook();
+  assert.match(text, /None of the\s+six disputed v4 rows supplies an unbounded tightness-0 refusal/u);
+  assert.match(text, /clean explicit\s+demand withdrawal/u);
+  assert.match(
+    text,
+    /nested `public_learner_surface` rendering rather than the\s+literal public `turns\[7\]\.learner` text/u,
+  );
+  assert.match(text, /exact-match\s+every quoted span against that source/u);
 });
 
 test('all three longitudinal marks are comparable end-of-turn states', () => {
@@ -121,6 +137,6 @@ test('every worked example carries all three marks and a ladder rung', () => {
   assert.equal(scored.length, 5);
   const rungs = text.match(/Ladder rung [012]/gu) || [];
   assert.equal(rungs.length, 5);
-  assert.match(text, /Open demands 2; bound tightness 1; conceded 1\./u);
+  assert.match(text, /Open demands 2; bound tightness 3; conceded 2\./u);
   assert.doesNotMatch(text, /Narrower than the earlier turn on mark 1 alone/u);
 });
