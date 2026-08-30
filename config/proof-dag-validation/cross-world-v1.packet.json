@@ -1,0 +1,878 @@
+{
+  "schema": "dramatic-derivation.proof-dag-review-packet.v1",
+  "packet_id": "proof-dag-cross-world-v1",
+  "purpose": "Independent semantic review of authored proof and release timing across materially different worlds; this is not tutor-output or efficacy evidence.",
+  "blinding": {
+    "excludes": ["tutor outputs", "learner outputs", "downstream outcomes", "machine rulings"],
+    "neutral_candidate_labels": true
+  },
+  "coding_instructions": [
+    "Use only the public prefix printed in each case; do not import evidence from another turn.",
+    "Mark a rule enabled only when every antecedent is public or follows from another enabled rule.",
+    "A neutral candidate is licensed only when the public prefix and rules entail it.",
+    "Keep a tempting candidate forbidden when its required path is incomplete, even if it later becomes plausible.",
+    "If the wording or rule semantics do not support a confident ruling, mark the affected field indeterminate and explain why."
+  ],
+  "response_fields": ["available_premise_ids", "enabled_rule_ids", "licensed_candidate_ids", "forbidden_candidate_ids"],
+  "worlds": [
+    {
+      "world_id": "world_030_rowan_flat",
+      "source": "config/drama-derivation/world-030-rowan-flat.yaml",
+      "title": "The Water Mark in Rowan Flat",
+      "discipline": "Household repair reasoning (a shared-flat leak review)",
+      "public_question": "What caused the new water mark on Rowan Flat's kitchen ceiling?",
+      "public_rules": [
+        {
+          "rule_id": "R1_release",
+          "plain_language": "A fitting released water during the incident when it opens under raised pressure and the building pressure rose during that same interval.",
+          "when": [
+            ["opensUnderRaisedPressure", "?x"],
+            ["pressureRoseDuring", "buildingSupply", "incidentWindow"]
+          ],
+          "then": [["releasedWaterDuring", "?x", "incidentWindow"]]
+        },
+        {
+          "rule_id": "R2_path",
+          "plain_language": "A source that released water during the incident caused the ceiling mark when a direct traced path connects that source to the mark.",
+          "when": [
+            ["releasedWaterDuring", "?x", "incidentWindow"],
+            ["tracedPathTo", "?x", "kitchenCeiling"]
+          ],
+          "then": [["causedWaterMark", "kitchenCeiling", "?x"]]
+        },
+        {
+          "rule_id": "R3_shower",
+          "plain_language": "A shower caused the mark only if it ran during the incident and water from its screen was traced to the ceiling mark. Timing without a path is not enough.",
+          "when": [
+            ["ranDuring", "?x", "incidentWindow"],
+            ["tracedPathTo", "?x", "kitchenCeiling"]
+          ],
+          "then": [["causedWaterMark", "kitchenCeiling", "?x"]]
+        }
+      ],
+      "cases": [
+        {
+          "case_id": "case_01",
+          "turn": 2,
+          "review_question": "At the end of this release turn, which listed premises are public, which rules can fire, and which neutral candidate conclusions are licensed or still forbidden?",
+          "release_ledger": [
+            {
+              "premise_id": "p_shower",
+              "release_turn": 2,
+              "via": "tutor",
+              "presentation": null
+            }
+          ],
+          "public_background": [
+            {
+              "fact": ["keepsRecord", "tenant", "repairNotebook"],
+              "plain_language": "keeps record: tenant · repair notebook"
+            }
+          ],
+          "released_evidence": [
+            {
+              "premise_id": "p_shower",
+              "release_turn": 2,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["ranDuring", "samShower", "incidentWindow"],
+              "plain_language": "ran during: sam shower · incident window",
+              "surface": "Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there."
+            }
+          ],
+          "candidate_conclusions": [
+            {
+              "candidate_id": "candidate_1",
+              "fact": ["causedWaterMark", "kitchenCeiling", "basinFeedHose"],
+              "plain_language": "caused water mark: kitchen ceiling · basin feed hose"
+            },
+            {
+              "candidate_id": "candidate_2",
+              "fact": ["causedWaterMark", "kitchenCeiling", "samShower"],
+              "plain_language": "caused water mark: kitchen ceiling · sam shower"
+            }
+          ]
+        },
+        {
+          "case_id": "case_04",
+          "turn": 7,
+          "review_question": "At the end of this release turn, which listed premises are public, which rules can fire, and which neutral candidate conclusions are licensed or still forbidden?",
+          "release_ledger": [
+            {
+              "premise_id": "p_shower",
+              "release_turn": 2,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_split",
+              "release_turn": 3,
+              "via": "director",
+              "presentation": {
+                "mode": "presented_exhibit",
+                "cue": "A paper strip is wrapped around the basin hose before the pressure is raised."
+              }
+            },
+            {
+              "premise_id": "p_pressure",
+              "release_turn": 5,
+              "via": "director",
+              "presentation": {
+                "mode": "enacted_role",
+                "role": "building caretaker reading the pressure-test notice"
+              }
+            },
+            {
+              "premise_id": "p_dye",
+              "release_turn": 7,
+              "via": "tutor",
+              "presentation": null
+            }
+          ],
+          "public_background": [
+            {
+              "fact": ["keepsRecord", "tenant", "repairNotebook"],
+              "plain_language": "keeps record: tenant · repair notebook"
+            }
+          ],
+          "released_evidence": [
+            {
+              "premise_id": "p_shower",
+              "release_turn": 2,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["ranDuring", "samShower", "incidentWindow"],
+              "plain_language": "ran during: sam shower · incident window",
+              "surface": "Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there."
+            },
+            {
+              "premise_id": "p_split",
+              "release_turn": 3,
+              "via": "director",
+              "presentation": {
+                "mode": "presented_exhibit",
+                "cue": "A paper strip is wrapped around the basin hose before the pressure is raised."
+              },
+              "fact": ["opensUnderRaisedPressure", "basinFeedHose"],
+              "plain_language": "opens under raised pressure: basin feed hose",
+              "surface": "Under the basin, the flexible cold-water hose is dry at ordinary pressure but opens along a hairline split when the gauge is raised. A paper strip around the joint shows the first bead forming there."
+            },
+            {
+              "premise_id": "p_pressure",
+              "release_turn": 5,
+              "via": "director",
+              "presentation": {
+                "mode": "enacted_role",
+                "role": "building caretaker reading the pressure-test notice"
+              },
+              "fact": ["pressureRoseDuring", "buildingSupply", "incidentWindow"],
+              "plain_language": "pressure rose during: building supply · incident window",
+              "surface": "The building notice records a mains-pressure test at 08:15. The kitchen mark appeared at 08:18, while the test was still holding the supply above its normal pressure."
+            },
+            {
+              "premise_id": "p_dye",
+              "release_turn": 7,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["tracedPathTo", "basinFeedHose", "kitchenCeiling"],
+              "plain_language": "traced path to: basin feed hose · kitchen ceiling",
+              "surface": "Blue tracing dye placed at the hose split follows the basin pipe chase and appears at the leading edge of the kitchen water mark. Dye poured along the shower screen stays in the bathroom tray."
+            }
+          ],
+          "candidate_conclusions": [
+            {
+              "candidate_id": "candidate_1",
+              "fact": ["causedWaterMark", "kitchenCeiling", "basinFeedHose"],
+              "plain_language": "caused water mark: kitchen ceiling · basin feed hose"
+            },
+            {
+              "candidate_id": "candidate_2",
+              "fact": ["causedWaterMark", "kitchenCeiling", "samShower"],
+              "plain_language": "caused water mark: kitchen ceiling · sam shower"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "world_id": "world_016_ai_syllabus_af1",
+      "source": "config/drama-derivation/world-016-ai-syllabus-af1.yaml",
+      "title": "The Campus FAQ Machine",
+      "discipline": "AI Foundations AF1: AI systems, tasks, and agents",
+      "public_question": "What should the campus FAQ tool use as its first implementation baseline, on the evidence in the formulation card?",
+      "public_rules": [
+        {
+          "rule_id": "R1_mapping",
+          "plain_language": "When the task is a fixed set of intents and an approved answer bank already exists, a deterministic mapping is possible.",
+          "when": [
+            ["fixedIntentSet", "?system"],
+            ["approvedAnswerBank", "?system"]
+          ],
+          "then": [["deterministicMappingPossible", "?system"]]
+        },
+        {
+          "rule_id": "R2_baseline",
+          "plain_language": "If a deterministic mapping is possible and there are no training labels for a learned classifier, the rule-based baseline is sufficient as the first formulation.",
+          "when": [
+            ["deterministicMappingPossible", "?system"],
+            ["noTrainingLabels", "?system"]
+          ],
+          "then": [["ruleBaselineSufficient", "?system"]]
+        },
+        {
+          "rule_id": "R3_decision",
+          "plain_language": "Where wrong guidance can affect a student record, retained staff authority matters: the tool may route or display approved guidance, but its output is not the institutional decision.",
+          "when": [
+            ["studentRecordImpact", "?system"],
+            ["staffRetainDecisionRight", "?system"]
+          ],
+          "then": [["modelOutputNotDecision", "?system"]]
+        },
+        {
+          "rule_id": "R4_choice",
+          "plain_language": "If the rule baseline is sufficient, model output is not the decision, and wrong advice is an unacceptable failure, the correct first approach is the rule-based baseline.",
+          "when": [
+            ["ruleBaselineSufficient", "?system"],
+            ["modelOutputNotDecision", "?system"],
+            ["wrongAdviceUnacceptable", "?system"]
+          ],
+          "then": [["bestApproach", "?system", "ruleBasedBaseline"]]
+        }
+      ],
+      "cases": [
+        {
+          "case_id": "case_02",
+          "turn": 8,
+          "review_question": "At the end of this release turn, which listed premises are public, which rules can fire, and which neutral candidate conclusions are licensed or still forbidden?",
+          "release_ledger": [
+            {
+              "premise_id": "m_language",
+              "release_turn": 2,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_intents",
+              "release_turn": 4,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_bank",
+              "release_turn": 6,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_labels",
+              "release_turn": 8,
+              "via": "tutor",
+              "presentation": null
+            }
+          ],
+          "public_background": [
+            {
+              "fact": ["courseModule", "AF1"],
+              "plain_language": "course module: af1"
+            },
+            {
+              "fact": ["artifact", "campusFaq", "problemFormulationCard"],
+              "plain_language": "artifact: campus faq · problem formulation card"
+            },
+            {
+              "fact": ["candidateSystem", "campusFaq"],
+              "plain_language": "candidate system: campus faq"
+            }
+          ],
+          "released_evidence": [
+            {
+              "premise_id": "m_language",
+              "release_turn": 2,
+              "via": "director",
+              "presentation": null,
+              "fact": ["naturalLanguageInterface", "campusFaq"],
+              "plain_language": "natural language interface: campus faq",
+              "surface": "The proposal calls the tool a chat assistant because students will type ordinary-language questions such as \"Can I drop this module?\" or \"Where do I upload my form?\""
+            },
+            {
+              "premise_id": "p_intents",
+              "release_turn": 4,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["fixedIntentSet", "campusFaq"],
+              "plain_language": "fixed intent set: campus faq",
+              "surface": "The artifact inventory reduces the first release to twelve fixed intents: deadline lookup, form routing, office referral, policy page link, and eight similar categories."
+            },
+            {
+              "premise_id": "p_bank",
+              "release_turn": 6,
+              "via": "director",
+              "presentation": null,
+              "fact": ["approvedAnswerBank", "campusFaq"],
+              "plain_language": "approved answer bank: campus faq",
+              "surface": "Student services already maintains an approved answer bank for those intents, with exact wording and escalation notes signed off by policy owners."
+            },
+            {
+              "premise_id": "p_labels",
+              "release_turn": 8,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["noTrainingLabels", "campusFaq"],
+              "plain_language": "no training labels: campus faq",
+              "surface": "The team has search logs and unanswered emails, but no audited labels that map past student messages to the twelve approved intents."
+            }
+          ],
+          "candidate_conclusions": [
+            {
+              "candidate_id": "candidate_1",
+              "fact": ["bestApproach", "campusFaq", "generativeAI"],
+              "plain_language": "best approach: campus faq · generative ai"
+            },
+            {
+              "candidate_id": "candidate_2",
+              "fact": ["bestApproach", "campusFaq", "ruleBasedBaseline"],
+              "plain_language": "best approach: campus faq · rule based baseline"
+            }
+          ]
+        },
+        {
+          "case_id": "case_05",
+          "turn": 16,
+          "review_question": "At the end of this release turn, which listed premises are public, which rules can fire, and which neutral candidate conclusions are licensed or still forbidden?",
+          "release_ledger": [
+            {
+              "premise_id": "m_language",
+              "release_turn": 2,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_intents",
+              "release_turn": 4,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_bank",
+              "release_turn": 6,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_labels",
+              "release_turn": 8,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_records",
+              "release_turn": 11,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_staff",
+              "release_turn": 13,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_failure",
+              "release_turn": 16,
+              "via": "director",
+              "presentation": null
+            }
+          ],
+          "public_background": [
+            {
+              "fact": ["courseModule", "AF1"],
+              "plain_language": "course module: af1"
+            },
+            {
+              "fact": ["artifact", "campusFaq", "problemFormulationCard"],
+              "plain_language": "artifact: campus faq · problem formulation card"
+            },
+            {
+              "fact": ["candidateSystem", "campusFaq"],
+              "plain_language": "candidate system: campus faq"
+            }
+          ],
+          "released_evidence": [
+            {
+              "premise_id": "m_language",
+              "release_turn": 2,
+              "via": "director",
+              "presentation": null,
+              "fact": ["naturalLanguageInterface", "campusFaq"],
+              "plain_language": "natural language interface: campus faq",
+              "surface": "The proposal calls the tool a chat assistant because students will type ordinary-language questions such as \"Can I drop this module?\" or \"Where do I upload my form?\""
+            },
+            {
+              "premise_id": "p_intents",
+              "release_turn": 4,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["fixedIntentSet", "campusFaq"],
+              "plain_language": "fixed intent set: campus faq",
+              "surface": "The artifact inventory reduces the first release to twelve fixed intents: deadline lookup, form routing, office referral, policy page link, and eight similar categories."
+            },
+            {
+              "premise_id": "p_bank",
+              "release_turn": 6,
+              "via": "director",
+              "presentation": null,
+              "fact": ["approvedAnswerBank", "campusFaq"],
+              "plain_language": "approved answer bank: campus faq",
+              "surface": "Student services already maintains an approved answer bank for those intents, with exact wording and escalation notes signed off by policy owners."
+            },
+            {
+              "premise_id": "p_labels",
+              "release_turn": 8,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["noTrainingLabels", "campusFaq"],
+              "plain_language": "no training labels: campus faq",
+              "surface": "The team has search logs and unanswered emails, but no audited labels that map past student messages to the twelve approved intents."
+            },
+            {
+              "premise_id": "p_records",
+              "release_turn": 11,
+              "via": "director",
+              "presentation": null,
+              "fact": ["studentRecordImpact", "campusFaq"],
+              "plain_language": "student record impact: campus faq",
+              "surface": "Several questions affect enrolment status, visa timing, fee liability, or transcript records if the student follows bad advice."
+            },
+            {
+              "premise_id": "p_staff",
+              "release_turn": 13,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["staffRetainDecisionRight", "campusFaq"],
+              "plain_language": "staff retain decision right: campus faq",
+              "surface": "The operating rule says the tool may route and display approved guidance, but student services staff retain authority for any decision that changes a record."
+            },
+            {
+              "premise_id": "p_failure",
+              "release_turn": 16,
+              "via": "director",
+              "presentation": null,
+              "fact": ["wrongAdviceUnacceptable", "campusFaq"],
+              "plain_language": "wrong advice unacceptable: campus faq",
+              "surface": "The risk register marks confident wrong advice as an unacceptable failure: a fluent answer is worse than a handoff when the policy consequence is uncertain."
+            }
+          ],
+          "candidate_conclusions": [
+            {
+              "candidate_id": "candidate_1",
+              "fact": ["bestApproach", "campusFaq", "generativeAI"],
+              "plain_language": "best approach: campus faq · generative ai"
+            },
+            {
+              "candidate_id": "candidate_2",
+              "fact": ["bestApproach", "campusFaq", "ruleBasedBaseline"],
+              "plain_language": "best approach: campus faq · rule based baseline"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "world_id": "world_001_nocturne",
+      "source": "config/drama-derivation/world-001-nocturne.yaml",
+      "title": "The Unsigned Nocturne",
+      "discipline": "Archival attribution (music history)",
+      "public_question": "Who composed the unsigned nocturne found in the flooded archive of the Cassia Conservatory?",
+      "public_rules": [
+        {
+          "rule_id": "R1_watermark_dating",
+          "plain_language": "A leaf carries its mill's watermark; if a paper stock was in the copy-room only during one period, whatever is written on that stock was written there in that period.",
+          "when": [
+            ["watermark", "?w", "?stock"],
+            ["stockUsedOnlyDuring", "?stock", "?period"]
+          ],
+          "then": [["writtenDuring", "?w", "?period"]]
+        },
+        {
+          "rule_id": "R1a_ink_dating",
+          "plain_language": "Ink betrays its batch; if a work's ink was mixed only during one period, the work was written in that period.",
+          "when": [
+            ["inkOf", "?w", "?batch"],
+            ["batchMixedOnlyDuring", "?batch", "?period"]
+          ],
+          "then": [["writtenDuring", "?w", "?period"]]
+        },
+        {
+          "rule_id": "R2_presence",
+          "plain_language": "Whoever was at the conservatory during the period a work was written there could have written it; no one writes in a room they never entered.",
+          "when": [
+            ["writtenDuring", "?w", "?period"],
+            ["atConservatoryDuring", "?x", "?period"]
+          ],
+          "then": [["couldHaveWritten", "?x", "?w"]]
+        },
+        {
+          "rule_id": "R2a_ledger_presence",
+          "plain_language": "The copy-room ledger does not lie: whoever signed it through a period was at the conservatory then.",
+          "when": [["signedLedger", "?x", "?period"]],
+          "then": [["atConservatoryDuring", "?x", "?period"]]
+        },
+        {
+          "rule_id": "R3_source_access",
+          "plain_language": "If a work quotes a tune that was kept within one house's walls — never printed, never performed — then whoever dwelled within those walls had the source of the work.",
+          "when": [
+            ["quotes", "?w", "?m"],
+            ["heardOnlyWithin", "?m", "?place"],
+            ["dwelledIn", "?x", "?place"]
+          ],
+          "then": [["hadSourceOf", "?x", "?w"]]
+        },
+        {
+          "rule_id": "R4_attribution",
+          "plain_language": "The archive attributes a work to one who could have written it, who had its source, and whose hand corrected its draft — copyists copy fair; only the composer strikes out and rewrites.",
+          "when": [
+            ["couldHaveWritten", "?x", "?w"],
+            ["hadSourceOf", "?x", "?w"],
+            ["draftCorrectedBy", "?w", "?x"]
+          ],
+          "then": [["composed", "?x", "?w"]]
+        }
+      ],
+      "cases": [
+        {
+          "case_id": "case_03",
+          "turn": 17,
+          "review_question": "At the end of this release turn, which listed premises are public, which rules can fire, and which neutral candidate conclusions are licensed or still forbidden?",
+          "release_ledger": [
+            {
+              "premise_id": "m_style",
+              "release_turn": 3,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_watermark",
+              "release_turn": 6,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_stock",
+              "release_turn": 9,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "m_away",
+              "release_turn": 12,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_porter",
+              "release_turn": 14,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_quotes",
+              "release_turn": 17,
+              "via": "tutor",
+              "presentation": null
+            }
+          ],
+          "public_background": [
+            {
+              "fact": ["foundIn", "nocturne", "archive"],
+              "plain_language": "found in: nocturne · archive"
+            },
+            {
+              "fact": ["unsigned", "nocturne"],
+              "plain_language": "unsigned: nocturne"
+            },
+            {
+              "fact": ["keptAt", "archive", "conservatory"],
+              "plain_language": "kept at: archive · conservatory"
+            },
+            {
+              "fact": ["maestroOf", "vess", "conservatory"],
+              "plain_language": "maestro of: vess · conservatory"
+            }
+          ],
+          "released_evidence": [
+            {
+              "premise_id": "m_style",
+              "release_turn": 3,
+              "via": "director",
+              "presentation": null,
+              "fact": ["styleOf", "nocturne", "vess"],
+              "plain_language": "style of: nocturne · vess",
+              "surface": "Every musician shown the leaves says the same: this is Vess's late manner — the suspensions, the long pedal, the way the bass walks."
+            },
+            {
+              "premise_id": "p_watermark",
+              "release_turn": 6,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["watermark", "nocturne", "heronStock"],
+              "plain_language": "watermark: nocturne · heron stock",
+              "surface": "Held to the lamp, every leaf of the nocturne shows the same heron watermark — the Brell mill's mark."
+            },
+            {
+              "premise_id": "p_stock",
+              "release_turn": 9,
+              "via": "director",
+              "presentation": null,
+              "fact": ["stockUsedOnlyDuring", "heronStock", "floodWinter"],
+              "plain_language": "stock used only during: heron stock · flood winter",
+              "surface": "The steward's stock-book is plain: heron paper entered the copy-room in the winter of the flood, and the last of it was spent before the thaw. None before, none since."
+            },
+            {
+              "premise_id": "m_away",
+              "release_turn": 12,
+              "via": "director",
+              "presentation": null,
+              "fact": ["awayDuring", "vess", "floodWinter"],
+              "plain_language": "away during: vess · flood winter",
+              "surface": "The capital's concert bills run unbroken through the flood winter: Vess played the Esten halls every week of it, and did not return until the thaw."
+            },
+            {
+              "premise_id": "p_porter",
+              "release_turn": 14,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["atConservatoryDuring", "liane", "floodWinter"],
+              "plain_language": "at conservatory during: liane · flood winter",
+              "surface": "The night porter remembers the flood winter well: the copy-room lamps burned past midnight, week upon week, and it was the archive girl, Liane, who kept them burning."
+            },
+            {
+              "premise_id": "p_quotes",
+              "release_turn": 17,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["quotes", "nocturne", "cradleSong"],
+              "plain_language": "quotes: nocturne · cradle song",
+              "surface": "Played through once, the nocturne gives up its middle voice: it carries an older tune entire — a cradle-song, set like a keepsake under the right hand's figures."
+            }
+          ],
+          "candidate_conclusions": [
+            {
+              "candidate_id": "candidate_1",
+              "fact": ["composed", "liane", "nocturne"],
+              "plain_language": "composed: liane · nocturne"
+            },
+            {
+              "candidate_id": "candidate_2",
+              "fact": ["composed", "vess", "nocturne"],
+              "plain_language": "composed: vess · nocturne"
+            }
+          ]
+        },
+        {
+          "case_id": "case_06",
+          "turn": 32,
+          "review_question": "At the end of this release turn, which listed premises are public, which rules can fire, and which neutral candidate conclusions are licensed or still forbidden?",
+          "release_ledger": [
+            {
+              "premise_id": "m_style",
+              "release_turn": 3,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_watermark",
+              "release_turn": 6,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_stock",
+              "release_turn": 9,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "m_away",
+              "release_turn": 12,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_porter",
+              "release_turn": 14,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_quotes",
+              "release_turn": 17,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_heardOnly",
+              "release_turn": 20,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "m_guest",
+              "release_turn": 23,
+              "via": "director",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_ward",
+              "release_turn": 26,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_ledger",
+              "release_turn": 29,
+              "via": "tutor",
+              "presentation": null
+            },
+            {
+              "premise_id": "p_hand",
+              "release_turn": 32,
+              "via": "director",
+              "presentation": null
+            }
+          ],
+          "public_background": [
+            {
+              "fact": ["foundIn", "nocturne", "archive"],
+              "plain_language": "found in: nocturne · archive"
+            },
+            {
+              "fact": ["unsigned", "nocturne"],
+              "plain_language": "unsigned: nocturne"
+            },
+            {
+              "fact": ["keptAt", "archive", "conservatory"],
+              "plain_language": "kept at: archive · conservatory"
+            },
+            {
+              "fact": ["maestroOf", "vess", "conservatory"],
+              "plain_language": "maestro of: vess · conservatory"
+            }
+          ],
+          "released_evidence": [
+            {
+              "premise_id": "m_style",
+              "release_turn": 3,
+              "via": "director",
+              "presentation": null,
+              "fact": ["styleOf", "nocturne", "vess"],
+              "plain_language": "style of: nocturne · vess",
+              "surface": "Every musician shown the leaves says the same: this is Vess's late manner — the suspensions, the long pedal, the way the bass walks."
+            },
+            {
+              "premise_id": "p_watermark",
+              "release_turn": 6,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["watermark", "nocturne", "heronStock"],
+              "plain_language": "watermark: nocturne · heron stock",
+              "surface": "Held to the lamp, every leaf of the nocturne shows the same heron watermark — the Brell mill's mark."
+            },
+            {
+              "premise_id": "p_stock",
+              "release_turn": 9,
+              "via": "director",
+              "presentation": null,
+              "fact": ["stockUsedOnlyDuring", "heronStock", "floodWinter"],
+              "plain_language": "stock used only during: heron stock · flood winter",
+              "surface": "The steward's stock-book is plain: heron paper entered the copy-room in the winter of the flood, and the last of it was spent before the thaw. None before, none since."
+            },
+            {
+              "premise_id": "m_away",
+              "release_turn": 12,
+              "via": "director",
+              "presentation": null,
+              "fact": ["awayDuring", "vess", "floodWinter"],
+              "plain_language": "away during: vess · flood winter",
+              "surface": "The capital's concert bills run unbroken through the flood winter: Vess played the Esten halls every week of it, and did not return until the thaw."
+            },
+            {
+              "premise_id": "p_porter",
+              "release_turn": 14,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["atConservatoryDuring", "liane", "floodWinter"],
+              "plain_language": "at conservatory during: liane · flood winter",
+              "surface": "The night porter remembers the flood winter well: the copy-room lamps burned past midnight, week upon week, and it was the archive girl, Liane, who kept them burning."
+            },
+            {
+              "premise_id": "p_quotes",
+              "release_turn": 17,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["quotes", "nocturne", "cradleSong"],
+              "plain_language": "quotes: nocturne · cradle song",
+              "surface": "Played through once, the nocturne gives up its middle voice: it carries an older tune entire — a cradle-song, set like a keepsake under the right hand's figures."
+            },
+            {
+              "premise_id": "p_heardOnly",
+              "release_turn": 20,
+              "via": "director",
+              "presentation": null,
+              "fact": ["heardOnlyWithin", "cradleSong", "varaHouse"],
+              "plain_language": "heard only within: cradle song · vara house",
+              "surface": "Mistress Odile knows the tune at one hearing: the Vara cradle-song, never printed, never performed, sung only within that house's walls."
+            },
+            {
+              "premise_id": "m_guest",
+              "release_turn": 23,
+              "via": "director",
+              "presentation": null,
+              "fact": ["dwelledIn", "vess", "varaHouse"],
+              "plain_language": "dwelled in: vess · vara house",
+              "surface": "And yet — Vess summered at the Vara house for years, the patron's own guest; whatever was sung under that roof, he will have heard."
+            },
+            {
+              "premise_id": "p_ward",
+              "release_turn": 26,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["dwelledIn", "liane", "varaHouse"],
+              "plain_language": "dwelled in: liane · vara house",
+              "surface": "Liane was raised within the Vara house — the music-master's orphan, taken in as ward; she grew up under that roof and under its songs."
+            },
+            {
+              "premise_id": "p_ledger",
+              "release_turn": 29,
+              "via": "tutor",
+              "presentation": null,
+              "fact": ["signedLedger", "liane", "floodWinter"],
+              "plain_language": "signed ledger: liane · flood winter",
+              "surface": "The copy-room ledger's winter pages carry the same initials line after line: Liane signed in through the whole of the flood winter."
+            },
+            {
+              "premise_id": "p_hand",
+              "release_turn": 32,
+              "via": "director",
+              "presentation": null,
+              "fact": ["draftCorrectedBy", "nocturne", "liane"],
+              "plain_language": "draft corrected by: nocturne · liane",
+              "surface": "Set beside her ledger entries, the draft's corrections show the same hand: the strokes that cross out and rewrite are Liane's."
+            }
+          ],
+          "candidate_conclusions": [
+            {
+              "candidate_id": "candidate_1",
+              "fact": ["composed", "liane", "nocturne"],
+              "plain_language": "composed: liane · nocturne"
+            },
+            {
+              "candidate_id": "candidate_2",
+              "fact": ["composed", "vess", "nocturne"],
+              "plain_language": "composed: vess · nocturne"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
