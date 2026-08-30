@@ -1,7 +1,7 @@
 ---
 id: shared-dramatic-dialogue-renderer-component
 title: Shared dramatic-dialogue renderer component across transcript surfaces
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -16,6 +16,8 @@ verification: "Passed: strict public interchange and
 depends_on:
   - transcript-render-standard
 links:
+  prs:
+    - 875
   items:
     - tutor-instrumentation-ab-harness
     - tutor-instrumentation-showcase
@@ -50,6 +52,9 @@ Techne visual identity. Do not delay current research reports on this refactor.
 
 ## Log
 
+- 2026-08-30 — PR #875 merged as `bd580859`; the final PR tree is
+  byte-identical to the merged `main` tree. The shared component is now the
+  maintained rendering seam for the migrated transcript surfaces.
 - 2026-08-30 — Added a strict public-only dialogue interchange and shared HTML
   renderer with single, shared-learner, and parallel layouts. Migrated the
   frozen instrumentation A/B, free-running showcase, stress-comparison
