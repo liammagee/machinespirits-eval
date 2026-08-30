@@ -391,7 +391,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
-      file: "services/evaluationStore.js"
+      file: "services/evaluationStore/resultRepository.js"
       pattern: "dialogue_content_hash|config_hash"
       min_matches: 3
     assertion:
@@ -919,7 +919,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
-      file: "services/evaluationStore.js"
+      file: "services/evaluationStore/migrations.js"
       pattern: "dialogue_content_hash|config_hash"
       min_matches: 4
     assertion:
@@ -939,14 +939,14 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
-      file: "services/evaluationStore.js"
+      file: "services/evaluationStore/createEvaluationStore.js"
       pattern: "getTutorRubricVersion|getLearnerRubricVersion|getDialogueRubricVersion"
       min_matches: 3
     assertion:
       op: gte
       expected: 3
     remediation:
-      - "If rubric version helpers are missing, check evaluationStore.js exports."
+      - "If rubric version helpers are missing, check createEvaluationStore.js and the injected scoreRepository.js write path."
     tags: [s4, scoring, verified]
 
   - id: paper2.s4.architecture.learner_deliberation
@@ -1833,6 +1833,428 @@ claims:
     remediation:
       - "If the V17 result rows change, update the §7.4.5 coverage sequence and preserve the safety-versus-outcome distinction."
     tags: [s7, apparatus, tutor-stub, proof-coverage, pilot]
+
+  # ── Sections 6.28 and 7.15: frame-refuser calibration closeouts ──
+
+  - id: paper2.frame_refuser_closeout.archived_dialogues
+    epoch: "2.0"
+    description: "Frame-refuser closeout: archived dialogues; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|archived_dialogues"
+    statement:
+      pattern: 'same 24 archived dialogues'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: narrowing.same_archived_dialogues_per_execution
+    assertion:
+      op: approx
+      expected: 24
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.first_readings
+    epoch: "2.0"
+    description: "Frame-refuser closeout: first readings; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|first_readings"
+    statement:
+      pattern: 'first execution completed 72 readings'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: narrowing.executions.0.complete_units
+    assertion:
+      op: approx
+      expected: 72
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.second_readings
+    epoch: "2.0"
+    description: "Frame-refuser closeout: second readings; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|second_readings"
+    statement:
+      pattern: 'ending with 71 readings'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: narrowing.executions.1.complete_units
+    assertion:
+      op: approx
+      expected: 71
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.first_reader_b_eligible
+    epoch: "2.0"
+    description: "Frame-refuser closeout: first reader b eligible; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|first_reader_b_eligible"
+    statement:
+      pattern: 'reader B supplied 20/24'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: narrowing.executions.0.reader_b_eligible
+    assertion:
+      op: approx
+      expected: 20
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.second_reader_b_eligible
+    epoch: "2.0"
+    description: "Frame-refuser closeout: second reader b eligible; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|second_reader_b_eligible"
+    statement:
+      pattern: '17/24 in the other'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: narrowing.executions.1.reader_b_eligible
+    assertion:
+      op: approx
+      expected: 17
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.first_spread
+    epoch: "2.0"
+    description: "Frame-refuser closeout: first spread; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|first_spread"
+    statement:
+      pattern: 'first absolute gap \(0\.167\)'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: narrowing.executions.0.absolute_narrower_rate_gap
+    assertion:
+      op: approx
+      expected: 0.167
+      tolerance_abs: 0.0005
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.second_spread
+    epoch: "2.0"
+    description: "Frame-refuser closeout: second spread; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|second_spread"
+    statement:
+      pattern: 'second \(0\.083\)'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: narrowing.executions.1.absolute_narrower_rate_gap
+    assertion:
+      op: approx
+      expected: 0.083
+      tolerance_abs: 0.0005
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.satisfiable_retained
+    epoch: "2.0"
+    description: "Frame-refuser closeout: satisfiable retained; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|satisfiable_retained"
+    statement:
+      pattern: 'All 48 units stopped as retained substantive failures'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: satisfiable.retained_substantive_units
+    assertion:
+      op: approx
+      expected: 48
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.satisfiable_attempts
+    epoch: "2.0"
+    description: "Frame-refuser closeout: satisfiable attempts; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|satisfiable_attempts"
+    statement:
+      pattern: '314 observed model attempts'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: satisfiable.observed_model_attempts
+    assertion:
+      op: approx
+      expected: 314
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.satisfiable_completed
+    epoch: "2.0"
+    description: "Frame-refuser closeout: satisfiable completed; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|satisfiable_completed"
+    statement:
+      pattern: 'zero completed or determinate endpoint rows'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: satisfiable.complete_units
+    assertion:
+      op: approx
+      expected: 0
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.budget_exposure
+    epoch: "2.0"
+    description: "Frame-refuser closeout: budget exposure; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|budget_exposure"
+    statement:
+      pattern: '144 attempts against the user'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: budget_incident.aggregate_attempted_model_calls
+    assertion:
+      op: approx
+      expected: 144
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.budget_ceiling
+    epoch: "2.0"
+    description: "Frame-refuser closeout: budget ceiling; aggregate extract of sealed private reports."
+    source_keys:
+      - "stat|frame-refuser-closeout|budget_ceiling"
+    statement:
+      pattern: '72-attempt study maximum'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: budget_incident.authorized_study_attempt_ceiling
+    assertion:
+      op: approx
+      expected: 72
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile the paper with the named sealed report; never pool, select, or rescore these closed calibrations."
+    tags: [s6, s7, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.depth_v5_complete
+    epoch: "2.0"
+    description: "Frame-refuser closeout: v5 completed dialogues; aggregate extract of a sealed private report."
+    source_keys:
+      - "stat|frame-refuser-closeout|depth_v5_complete"
+    statement:
+      pattern: 'closed with 26 complete'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: depth_v5.complete_units
+    assertion:
+      op: approx
+      expected: 26
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile with the sealed v5 report; preserve the failed agreement gate and do not pool with v1-v4 or successor calibrations."
+    tags: [s6, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.depth_v5_retained
+    epoch: "2.0"
+    description: "Frame-refuser closeout: v5 retained substantive failures; aggregate extract of a sealed private report."
+    source_keys:
+      - "stat|frame-refuser-closeout|depth_v5_retained"
+    statement:
+      pattern: '26 complete, 22 retained substantive failures'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: depth_v5.retained_substantive_units
+    assertion:
+      op: approx
+      expected: 22
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile with the sealed v5 report; preserve the failed agreement gate and do not pool with v1-v4 or successor calibrations."
+    tags: [s6, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.depth_v5_attempts
+    epoch: "2.0"
+    description: "Frame-refuser closeout: v5 observed model attempts; aggregate extract of a sealed private report."
+    source_keys:
+      - "stat|frame-refuser-closeout|depth_v5_attempts"
+    statement:
+      pattern: 'using 1,223 model attempts'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: depth_v5.observed_model_attempts
+    assertion:
+      op: approx
+      expected: 1223
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile with the sealed v5 report; preserve the failed agreement gate and do not pool with v1-v4 or successor calibrations."
+    tags: [s6, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.depth_v5_ceiling
+    epoch: "2.0"
+    description: "Frame-refuser closeout: v5 maximum model attempts; aggregate extract of a sealed private report."
+    source_keys:
+      - "stat|frame-refuser-closeout|depth_v5_ceiling"
+    statement:
+      pattern: 'within its 9,504-attempt ceiling'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: depth_v5.attempt_ceiling
+    assertion:
+      op: approx
+      expected: 9504
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile with the sealed v5 report; preserve the failed agreement gate and do not pool with v1-v4 or successor calibrations."
+    tags: [s6, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.depth_v5_treatment_rung_2
+    epoch: "2.0"
+    description: "Frame-refuser closeout: v5 treatment rung-2 count; aggregate extract of a sealed private report."
+    source_keys:
+      - "stat|frame-refuser-closeout|depth_v5_treatment_rung_2"
+    statement:
+      pattern: 'treatment reached rung 2 in \*\*1/18'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: depth_v5.treatment_rung_2
+    assertion:
+      op: approx
+      expected: 1
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile with the sealed v5 report; preserve the failed agreement gate and do not pool with v1-v4 or successor calibrations."
+    tags: [s6, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.depth_v5_treatment_completed
+    epoch: "2.0"
+    description: "Frame-refuser closeout: v5 treatment completed denominator; aggregate extract of a sealed private report."
+    source_keys:
+      - "stat|frame-refuser-closeout|depth_v5_treatment_completed"
+    statement:
+      pattern: 'treatment reached rung 2 in \*\*1/18'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: depth_v5.treatment_completed
+    assertion:
+      op: approx
+      expected: 18
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile with the sealed v5 report; preserve the failed agreement gate and do not pool with v1-v4 or successor calibrations."
+    tags: [s6, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.depth_v5_reference_rung_2
+    epoch: "2.0"
+    description: "Frame-refuser closeout: v5 reference rung-2 count; aggregate extract of a sealed private report."
+    source_keys:
+      - "stat|frame-refuser-closeout|depth_v5_reference_rung_2"
+    statement:
+      pattern: 'reference in \*\*0/8'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: depth_v5.reference_rung_2
+    assertion:
+      op: approx
+      expected: 0
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile with the sealed v5 report; preserve the failed agreement gate and do not pool with v1-v4 or successor calibrations."
+    tags: [s6, frame-refuser, calibration, scope-bound]
+
+  - id: paper2.frame_refuser_closeout.depth_v5_reference_completed
+    epoch: "2.0"
+    description: "Frame-refuser closeout: v5 reference completed denominator; aggregate extract of a sealed private report."
+    source_keys:
+      - "stat|frame-refuser-closeout|depth_v5_reference_completed"
+    statement:
+      pattern: 'reference in \*\*0/8'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json
+      path: depth_v5.reference_completed
+    assertion:
+      op: approx
+      expected: 8
+      tolerance_abs: 0
+    remediation:
+      - "Reconcile with the sealed v5 report; preserve the failed agreement gate and do not pool with v1-v4 or successor calibrations."
+    tags: [s6, frame-refuser, calibration, scope-bound]
 
   # ── Section 8: Limitations (mostly theoretical — few machine-checkable) ──
 
