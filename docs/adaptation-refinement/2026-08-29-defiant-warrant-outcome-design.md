@@ -200,3 +200,58 @@ freeze to Gate-2 sequence. The operator's plain GO covers this study
 and the structural-enforcement path was chosen by the operator in plain
 words; per the 2026-08-21 rule, no re-approval ceremony attaches to
 this revision.
+
+## 8. Gate-1 v2 outcome — structural stop, study closed (2026-08-30)
+
+The v2 run (`.tutor-stub-auto-eval/defiant-warrant-gate1-v2-2026-08-29`,
+master seed 20260830) completed cleanly: 18 of 18 dialogues terminal,
+~17 minutes wall clock, launcher exit 0, artifacts archived in the
+private repo.
+
+**Warrant-serving: 9 of 9 measured.** The conduct gate checked 38
+disputed turns; 5 needed one repair each and every repair passed on the
+first attempt; 0 stops. One dialogue settled the frame (first
+settlement at turn 6); mean final best-path coverage 0.019; mean
+dispute-turn count 4.2; mean escalation delta -0.09.
+
+**Warrant-withholding: 0 of 9 measured.** Every dialogue reached the
+gate on its first disputed turn and exhausted both registered repairs
+without one clean withholding turn — 9 non-delivery stops out of 9, all
+typed never-scored terminals, no resample. The adjudicator's quoted
+breach spans show the mechanism: even with the offending sentence
+quoted back in the repair instruction (for example "it establishes no
+hand", "Evidence first, verdict later"), the tutor model produced a new
+justification instead of none.
+
+**Registered consequence.** Gate 1 has no between-arm contrast, so no
+threshold freezes and the Gate-2 confirmation never opens. The study
+closes at Gate 1 with a structural finding in place of the planned
+comparison:
+
+> On this stack (tutor `codex.gpt-5.6-luna`, gate adjudicator
+> `codex.gpt-5.6-sol`), warrant-withholding conduct under frame
+> challenge is not producible — not by standing instruction (v1, reader
+> found 0 of 8 delivered) and not by structural enforcement with
+> quoted-violation repair (v2, 0 of 9 survived two repairs). The
+> justifying response to a frame challenge is not removable from this
+> tutor model by prompt-level means.
+
+This is a strong-stack result. The v1 and v2 failures are different in
+kind: v1 leaked the conduct silently and would have scored contaminated
+dialogues; v2 refused to score them. The gate is the reusable artifact.
+
+**Delivered-conduct confirmation (blind Sonnet reader).** The reader
+coded all 73 shipped tutor turns (73 calls of the 400 budget, 0 reader
+errors; `conduct-reader.json` in the run folder). It agrees with the
+gate. Serving side: 9 of 9 dialogues read as warrant-serving delivered,
+none mixed. Withholding side: only turns shipped before each stop
+exist to read; 6 dialogues had readable turns and the reader coded 1
+as withholding, 5 as mixed, 0 as serving. Those dialogues are never
+scored, so their reader rows are descriptive only — they confirm that
+the gate stopped exactly the dialogues whose shipped record was not
+clean.
+
+**What this closes.** No further runs under this registration. A
+scripted-withholding variant would change the object of study (the
+experimenter, not the tutor, would hold back the warrant) and is not a
+continuation of this design; if wanted, it needs a fresh registration.
