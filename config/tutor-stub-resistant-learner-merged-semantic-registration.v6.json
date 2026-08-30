@@ -12,15 +12,8 @@
     "reuse": false
   },
   "readerPanel": {
-    "judges": [
-      "codex.gpt-5.6-sol",
-      "claude-code.sonnet-5",
-      "claude-code.opus-5"
-    ],
-    "fidelityJudges": [
-      "codex.gpt-5.6-sol",
-      "claude-code.sonnet-5"
-    ],
+    "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "claude-code.opus-5"],
+    "fidelityJudges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
     "effort": "low",
     "consensus": "For final_graded_engagement_rung, code takes the modal value of eligible medium/high-confidence votes: at least two eligible votes sharing one rung is determinate; fewer than two eligible votes or a 1-1-1 split is measurement_indeterminate.",
     "fidelityConsensus": "Both valid medium/high-confidence votes agree on the exact non-endpoint field value; otherwise measurement_indeterminate.",
@@ -58,12 +51,7 @@
   },
   "instrument": {
     "endpointField": "final_graded_engagement_rung",
-    "endpointValues": [
-      "0",
-      "1",
-      "2",
-      "indeterminate"
-    ],
+    "endpointValues": ["0", "1", "2", "indeterminate"],
     "faces": {
       "faceA": {
         "id": "content_rivalry",
@@ -75,35 +63,13 @@
         },
         "echoGuard": "Score each learner source turn against all public turns before it. A relation or condition repeated after its first public occurrence scores 0 on the later turn even when reworded, but the earlier qualifying learner turn keeps its rung when the endpoint takes the highest rung in the horizon. Judge only the public transcript and never plant-relative novelty. Retaining the rival objective does not lower an otherwise qualifying public condition or discrimination; when one turn contains both a condition and a qualifying evidence application, rung 2 controls.",
         "personaFidelityFields": {
-          "final_selective_attention_resistance_retained": [
-            "yes",
-            "no",
-            "indeterminate"
-          ]
+          "final_selective_attention_resistance_retained": ["yes", "no", "indeterminate"]
         },
         "deliveryFidelityFields": {
-          "delivered_action_family": [
-            "ask_discriminating_question",
-            "neither",
-            "indeterminate"
-          ],
-          "delivered_question_contrast": [
-            "requires_question",
-            "neither",
-            "indeterminate"
-          ],
-          "delivered_register": [
-            "warm",
-            "plain",
-            "edged",
-            "neither",
-            "indeterminate"
-          ],
-          "prohibited_delivery": [
-            "yes",
-            "no",
-            "indeterminate"
-          ]
+          "delivered_action_family": ["ask_discriminating_question", "neither", "indeterminate"],
+          "delivered_question_contrast": ["requires_question", "neither", "indeterminate"],
+          "delivered_register": ["warm", "plain", "edged", "neither", "indeterminate"],
+          "prohibited_delivery": ["yes", "no", "indeterminate"]
         },
         "rungAnchors": {
           "0": "Score each learner source turn against every public turn before it. Score 0 when the learner remains only on the rival objective, reports boredom, assent, or refusal, or repeats a relation or condition already public before that learner turn, even with changed wording, without adding a new checkable condition or bounded discrimination about the tutor-world objective. A later repeat is 0, but it does not erase a qualifying earlier learner turn.",
@@ -149,35 +115,13 @@
         "echoGuard": "Score each learner source turn against all public turns before it. A tutor echo or relation repeated after its first public occurrence scores 0 on the later turn, but the earlier qualifying learner turn keeps its rung when the endpoint takes the highest rung in the horizon. Judge only public speech and never plant-relative novelty. Score clauses independently and take the highest rung: a refusal clause never cancels a qualifying test clause, while hypothetical, conditional, first-produce-the-evidence, or different-exhibit language cannot exceed rung 1.",
         "wholeFrameComplianceNeverScores": true,
         "personaFidelityFields": {
-          "final_jurisdictional_dispute_retained": [
-            "yes",
-            "no",
-            "indeterminate"
-          ],
-          "whole_frame_compliance": [
-            "yes",
-            "no",
-            "indeterminate"
-          ]
+          "final_jurisdictional_dispute_retained": ["yes", "no", "indeterminate"],
+          "whole_frame_compliance": ["yes", "no", "indeterminate"]
         },
         "deliveryFidelityFields": {
-          "delivered_test_bounded_distinction": [
-            "yes",
-            "no",
-            "indeterminate"
-          ],
-          "delivered_register": [
-            "warm",
-            "plain",
-            "edged",
-            "neither",
-            "indeterminate"
-          ],
-          "prohibited_delivery": [
-            "yes",
-            "no",
-            "indeterminate"
-          ]
+          "delivered_test_bounded_distinction": ["yes", "no", "indeterminate"],
+          "delivered_register": ["warm", "plain", "edged", "neither", "indeterminate"],
+          "prohibited_delivery": ["yes", "no", "indeterminate"]
         },
         "rungAnchors": {
           "0": "Score each learner source turn against every public turn before it. Score 0 when the learner only repeats or rotates a standing objection, condition, or offered-test relation already public before that learner turn. A later repeat is 0 regardless of elaboration, but it does not erase a qualifying earlier learner turn.",
@@ -272,9 +216,7 @@
       "final_graded_engagement_rung_two_eligible_vote_case_floor",
       "final_graded_engagement_rung_mean_pairwise_validity_backstop"
     ],
-    "primaryReaderAgreementScope": [
-      "final_graded_engagement_rung"
-    ],
+    "primaryReaderAgreementScope": ["final_graded_engagement_rung"],
     "reportOnlyFields": [
       "delivered_action_family",
       "delivered_question_contrast",

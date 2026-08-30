@@ -67,7 +67,9 @@ test('depth design file validates and every registered constant fails closed', (
     (d) => (d.lineage.measuredReferenceRung2Rate = 0.2),
     (d) => (d.lineage.firstCalibration.rowsReused = true),
     (d) => (d.lineage.fourthCalibration.rowsReused = true),
-    (d) => (d.measurement.readerPanel.protocolSource = 'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json'),
+    (d) =>
+      (d.measurement.readerPanel.protocolSource =
+        'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json'),
   ];
   for (const mutate of mutations) {
     const mutated = designCopy();

@@ -69,10 +69,7 @@
   "population": {
     "profile": "frame_refuser-r1-rival-dag-v3",
     "baseCompatibilityId": "frame_refuser",
-    "worlds": [
-      "world_005_marrick",
-      "world_030_rowan_flat"
-    ],
+    "worlds": ["world_005_marrick", "world_030_rowan_flat"],
     "trigger": "unchanged from the parent design: first determinate public standing-rivalry turn under config/tutor-stub-resistant-learner-merged-turn-gate-registration.v1.json",
     "maximumTriggerLearnerTurn": 2,
     "outcomeHorizonPostTriggerLearnerTurns": 8,

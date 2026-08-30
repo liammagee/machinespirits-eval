@@ -77,11 +77,11 @@ test('revision 6 seals the v5-era bytes and moves only its four registered amend
   // Everything else is byte-identical to v5: rungs, anchors, echo guard,
   // endpoint, consensus, backstop, judges, visibility, dispositions, policy.
   assert.deepEqual(v6.instrument.faces.faceA, v5.instrument.faces.faceA);
-  const faceBWithoutExamples = ({ workedExamples, ...rest }) => rest;
+  const faceBWithoutExamples = ({ workedExamples: _workedExamples, ...rest }) => rest;
   assert.deepEqual(faceBWithoutExamples(v6.instrument.faces.faceB), faceBWithoutExamples(v5.instrument.faces.faceB));
-  const panelWithoutSlip = ({ evidenceNullSlipTolerance, ...rest }) => rest;
+  const panelWithoutSlip = ({ evidenceNullSlipTolerance: _evidenceNullSlipTolerance, ...rest }) => rest;
   assert.deepEqual(panelWithoutSlip(v6.readerPanel), v5.readerPanel);
-  const contractWithoutInstruction = ({ promptInstruction, ...rest }) => rest;
+  const contractWithoutInstruction = ({ promptInstruction: _promptInstruction, ...rest }) => rest;
   assert.deepEqual(contractWithoutInstruction(v6.evidenceContract), contractWithoutInstruction(v5.evidenceContract));
   assert.deepEqual(v6.instrument.endpointValues, v5.instrument.endpointValues);
   assert.equal(v6.instrument.endpointDefinition, v5.instrument.endpointDefinition);
@@ -156,7 +156,10 @@ test('revision-6 schema salience appears only where the depth arm projection bin
   assert.match(evidenceQuotesSchema(v6Primary, 'whole_frame_compliance').description, /JSON literal null/u);
   assert.ok(v6Primary.instructions.some((line) => line.includes('Never attach quotes to justify a no.')));
   const v6Fidelity = build(armDesign, 'fidelity');
-  assert.match(evidenceQuotesSchema(v6Fidelity, 'delivered_test_bounded_distinction').description, /JSON literal null/u);
+  assert.match(
+    evidenceQuotesSchema(v6Fidelity, 'delivered_test_bounded_distinction').description,
+    /JSON literal null/u,
+  );
   // The sealed v5 prompt bytes must not move: no description, old instruction.
   const v5Primary = build(parentFaceB, 'primary');
   assert.equal(evidenceQuotesSchema(v5Primary, 'final_graded_engagement_rung').description, undefined);
