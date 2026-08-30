@@ -406,29 +406,72 @@ export function buildDefiantWarrantPreflight({
   };
 }
 
+function armDefiantWarrantDeathNote(absoluteDestination) {
+  const notePath = path.join(absoluteDestination, 'death-note.log');
+  const note = (line) => {
+    try {
+      fs.appendFileSync(notePath, `${new Date().toISOString()} ${line}\n`);
+    } catch {
+      /* a death note must never crash the run */
+    }
+  };
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+    process.on(signal, () => {
+      note(`launcher received ${signal} (pid ${process.pid}, ppid ${process.ppid})`);
+      process.exit(1);
+    });
+  }
+  process.on('exit', (code) => note(`launcher exit code ${code}`));
+  note(`launcher started (pid ${process.pid}, ppid ${process.ppid})`);
+}
+
 export async function runDefiantWarrantPilot({
   designPath = TUTOR_STUB_DEFIANT_WARRANT_DEFAULT_DESIGN,
   destination,
   parallelism = 4,
+  resume = false,
 } = {}) {
-  const preflight = buildDefiantWarrantPreflight({ designPath, destination });
   const loaded = loadTutorStubDefiantWarrantDesign({ designPath, root: ROOT });
   const plan = buildTutorStubDefiantWarrantPlan(loaded.design);
   const maxProcessAttempts = loaded.design.execution.technicalRecovery.maximumProcessAttemptsPerUnit;
   const absoluteDestination = path.resolve(ROOT, destination);
-  fs.mkdirSync(path.dirname(absoluteDestination), { recursive: true });
-  fs.mkdirSync(absoluteDestination, { recursive: false });
-  fs.mkdirSync(path.join(absoluteDestination, 'jobs'), { recursive: false });
-  writeOnce(path.join(absoluteDestination, 'plan.json'), {
-    ...plan,
-    status: 'launched',
-    provenance: preflight.provenance,
-    design: preflight.design,
-    destination: preflight.destination,
-    maximum_model_attempt_reservations: preflight.maximum_model_attempt_reservations,
-  });
+  let preflight;
+  if (resume) {
+    const planPath = path.join(absoluteDestination, 'plan.json');
+    if (!fs.existsSync(planPath)) throw new Error('resume destination has no plan.json');
+    if (fs.existsSync(path.join(absoluteDestination, 'execution-result.json'))) {
+      throw new Error('destination already holds an execution result; use --analyze');
+    }
+    const priorPlan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
+    if (priorPlan.assignment_sha256 !== plan.assignment_sha256) {
+      throw new Error('resume destination plan does not match the registered design assignment');
+    }
+    if (priorPlan.design?.sha256 !== loaded.sha256) {
+      throw new Error('resume destination plan pins a different design file');
+    }
+    preflight = {
+      provenance: recordDefiantWarrantProvenance(),
+      design: priorPlan.design,
+      destination: path.relative(ROOT, absoluteDestination),
+      maximum_model_attempt_reservations: loaded.design.spendCeiling.pilotMaximumModelAttemptReservations,
+    };
+  } else {
+    preflight = buildDefiantWarrantPreflight({ designPath, destination });
+    fs.mkdirSync(path.dirname(absoluteDestination), { recursive: true });
+    fs.mkdirSync(absoluteDestination, { recursive: false });
+    fs.mkdirSync(path.join(absoluteDestination, 'jobs'), { recursive: false });
+    writeOnce(path.join(absoluteDestination, 'plan.json'), {
+      ...plan,
+      status: 'launched',
+      provenance: preflight.provenance,
+      design: preflight.design,
+      destination: preflight.destination,
+      maximum_model_attempt_reservations: preflight.maximum_model_attempt_reservations,
+    });
+  }
+  armDefiantWarrantDeathNote(absoluteDestination);
   const ledgerPath = path.join(absoluteDestination, 'ledger.jsonl');
-  writeOnce(ledgerPath, '');
+  if (!resume) writeOnce(ledgerPath, '');
   const records = new Map(
     plan.jobs.map((job) => [
       job.id,
@@ -443,10 +486,130 @@ export async function runDefiantWarrantPilot({
     ]),
   );
   for (const job of plan.jobs) {
-    fs.mkdirSync(path.join(absoluteDestination, 'jobs', job.id), { recursive: false });
+    const jobDir = path.join(absoluteDestination, 'jobs', job.id);
+    if (!fs.existsSync(jobDir)) fs.mkdirSync(jobDir, { recursive: false });
   }
   let finished = 0;
   let observedReservations = 0;
+  const ledgerPathAppend = (entry) => appendLedger(ledgerPath, entry);
+  if (resume) {
+    const rows = fs
+      .readFileSync(ledgerPath, 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    for (const row of rows) {
+      const record = records.get(row.case_id);
+      if (!record) throw new Error(`ledger row names unknown job ${row.case_id}`);
+      record.attempts.push({
+        case_id: row.case_id,
+        attempt_number: row.attempt_number,
+        reservations: row.reservations,
+        cumulative_reservations: row.cumulative_unit_reservations,
+        disposition: row.disposition,
+        ledger_replayed: true,
+      });
+      record.cumulative_reservations = row.cumulative_unit_reservations;
+      observedReservations += row.reservations;
+      if (row.disposition.terminal) {
+        record.terminal = true;
+        record.terminal_category = row.disposition.category;
+        finished += 1;
+      }
+    }
+    // Adopt attempts whose child ran but whose ledger row died with the
+    // launcher: their reservations are real spend and must count against
+    // the ceilings, and a full trace is adopted as the dialogue's semantic
+    // record so a finished dialogue is never resampled.
+    for (const job of plan.jobs) {
+      const record = records.get(job.id);
+      for (;;) {
+        const attemptNumber = record.attempts.length + 1;
+        const dirName = attemptNumber === 1 ? 'initial' : `recovery-${String(attemptNumber - 1).padStart(3, '0')}`;
+        const attemptRoot = path.join(absoluteDestination, 'jobs', job.id, dirName);
+        if (!fs.existsSync(attemptRoot) || record.terminal) break;
+        let trace = null;
+        let events = [];
+        let traceError = null;
+        try {
+          const read = readTrace(path.join(attemptRoot, 'traces'));
+          trace = { path: path.relative(ROOT, read.trace), sha256: read.trace_sha256, bytes: read.trace_bytes };
+          events = read.events;
+        } catch (error) {
+          traceError = error.message;
+        }
+        const reservations = events.filter((event) => event.type === 'model_call_budget_reserved').length;
+        const fullTrace =
+          events.some((event) => event.type === 'defiant_warrant_outcome_execution_start') &&
+          events.filter((event) => event.type === 'turn_complete' && event.turnRecord).length ===
+            loaded.design.execution.autoTurns;
+        const exit = fullTrace
+          ? { code: 0, signal: null, spawn_error: null }
+          : { code: null, signal: 'LAUNCHER_LOST', spawn_error: null };
+        const disposition = classifyDefiantWarrantAttempt({
+          events,
+          exit,
+          autoTurns: loaded.design.execution.autoTurns,
+        });
+        const attempt = {
+          case_id: job.id,
+          attempt_number: attemptNumber,
+          budget: loaded.design.execution.maximumReservationsPerDialogue - record.cumulative_reservations,
+          reservations,
+          cumulative_reservations: record.cumulative_reservations + reservations,
+          exit,
+          trace,
+          trace_error: traceError,
+          transcript: null,
+          orphan_adopted: true,
+          disposition: {
+            terminal: disposition.terminal,
+            recoverable: disposition.recoverable,
+            category: disposition.category,
+            code: disposition.code || null,
+          },
+        };
+        record.attempts.push(attempt);
+        record.cumulative_reservations = attempt.cumulative_reservations;
+        observedReservations += reservations;
+        if (attempt.disposition.terminal) {
+          record.terminal = true;
+          record.terminal_category = attempt.disposition.category;
+          finished += 1;
+        }
+        ledgerPathAppend({
+          timestamp: new Date().toISOString(),
+          case_id: job.id,
+          assigned_arm: job.assigned_arm,
+          attempt_number: attempt.attempt_number,
+          reservations: attempt.reservations,
+          cumulative_unit_reservations: record.cumulative_reservations,
+          cumulative_study_reservations: observedReservations,
+          orphan_adopted: true,
+          disposition: attempt.disposition,
+        });
+        console.log(
+          JSON.stringify({
+            phase: 'resume_orphan_adoption',
+            case_id: job.id,
+            disposition: attempt.disposition.category,
+            reservations,
+          }),
+        );
+      }
+    }
+    if (observedReservations > preflight.maximum_model_attempt_reservations) {
+      throw new Error('pilot exceeded its study attempt ceiling');
+    }
+    console.log(
+      JSON.stringify({
+        phase: 'resume_replay',
+        terminal_dialogues: finished,
+        planned_dialogues: plan.jobs.length,
+        reservations: observedReservations,
+      }),
+    );
+  }
   const executeWave = async (jobs) => {
     await runPool(
       jobs,
@@ -495,7 +658,17 @@ export async function runDefiantWarrantPilot({
       },
     );
   };
-  await executeWave(plan.jobs);
+  const pendingInitial = plan.jobs.filter((job) => {
+    const record = records.get(job.id);
+    if (record.terminal) return false;
+    if (!record.attempts.length) return true;
+    return (
+      record.attempts.at(-1)?.disposition?.recoverable === true &&
+      record.attempts.length < maxProcessAttempts &&
+      record.cumulative_reservations < loaded.design.execution.maximumReservationsPerDialogue
+    );
+  });
+  await executeWave(pendingInitial);
   for (let wave = 2; wave <= maxProcessAttempts; wave += 1) {
     const recoverable = plan.jobs.filter((job) => {
       const record = records.get(job.id);
@@ -503,6 +676,7 @@ export async function runDefiantWarrantPilot({
       return (
         !record.terminal &&
         last?.disposition?.recoverable === true &&
+        record.attempts.length < maxProcessAttempts &&
         record.cumulative_reservations < loaded.design.execution.maximumReservationsPerDialogue
       );
     });
@@ -547,6 +721,7 @@ function usage() {
   return `Usage:
   node scripts/run-tutor-stub-defiant-warrant-pilot.js --preflight --destination <absent-path> [--design <path>]
   node scripts/run-tutor-stub-defiant-warrant-pilot.js --live --accept-charges --destination <absent-path> [--design <path>] [--parallelism 4]
+  node scripts/run-tutor-stub-defiant-warrant-pilot.js --resume --accept-charges --destination <existing-path> [--design <path>] [--parallelism 4]
   node scripts/run-tutor-stub-defiant-warrant-pilot.js --analyze --destination <existing-path> [--design <path>]`;
 }
 
@@ -556,6 +731,7 @@ async function main() {
     options: {
       preflight: { type: 'boolean', default: false },
       live: { type: 'boolean', default: false },
+      resume: { type: 'boolean', default: false },
       analyze: { type: 'boolean', default: false },
       'accept-charges': { type: 'boolean', default: false },
       design: { type: 'string', default: TUTOR_STUB_DEFIANT_WARRANT_DEFAULT_DESIGN },
@@ -566,7 +742,7 @@ async function main() {
     strict: true,
   });
   if (values.help) return void console.log(usage());
-  const modes = [values.preflight, values.live, values.analyze].filter(Boolean);
+  const modes = [values.preflight, values.live, values.resume, values.analyze].filter(Boolean);
   if (modes.length !== 1) throw new Error(usage());
   const common = { designPath: values.design, destination: values.destination };
   if (values.preflight) {
@@ -578,7 +754,11 @@ async function main() {
     return;
   }
   if (!values['accept-charges']) throw new Error('live pilot requires --accept-charges');
-  const result = await runDefiantWarrantPilot({ ...common, parallelism: Number(values.parallelism) });
+  const result = await runDefiantWarrantPilot({
+    ...common,
+    parallelism: Number(values.parallelism),
+    resume: values.resume,
+  });
   console.log(JSON.stringify(result, null, 2));
   if (result.execution.status !== 'complete') process.exitCode = 1;
 }
