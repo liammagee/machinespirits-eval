@@ -212,7 +212,7 @@ export function renderAnimatedVizSection(rows, { safeSlug, fieldRowTitle }) {
       dag: '#0057B8',
       risk: '#E63946'
     };
-    var policyOrder = ['bland', 'random', 'state', 'field', 'trajectory', 'dynamic', 'dynamical_system', 'empirical_dynamical_system', 'continuous_dynamical_system', 'continuous_empirical_dynamical_system', 'negative'];
+    var policyOrder = ['bland', 'fixed_warm', 'fixed_sarcastic', 'random', 'state', 'field', 'trajectory', 'dynamic', 'dynamical_system', 'empirical_dynamical_system', 'continuous_dynamical_system', 'continuous_empirical_dynamical_system', 'negative'];
     var policyPalette = {
       bland: '#0A0A0A',
       random: '#737373',

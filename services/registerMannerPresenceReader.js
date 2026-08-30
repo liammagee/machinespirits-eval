@@ -120,6 +120,27 @@ export async function readMannerPresence({
   if (!mannerPresenceApplies(registerName)) {
     return { reading: unreadMannerPresence('register_not_edged'), fromCache: false };
   }
+  return readPresenceOfTurn({ learnerMessage, tutorMessage, provider, model, cache, timeoutMs, env, callText });
+}
+
+/**
+ * The same question, the same cache, no register gate. For report-only reads
+ * of turns OUTSIDE the edged registers — e.g. a leak check asking whether a
+ * warm-arm turn carries an edge it should not. The gate above exists because
+ * no presence question is validated to GATE a non-edged arm; a report-only
+ * read that expects "no" is a different use and states it by calling this.
+ * Never use this to pass an edged arm's fidelity floor around the gate.
+ */
+export async function readPresenceOfTurn({
+  learnerMessage = '',
+  tutorMessage = '',
+  provider = DEFAULT_PRESENCE_READER.provider,
+  model = DEFAULT_PRESENCE_READER.model,
+  cache = true,
+  timeoutMs,
+  env = process.env,
+  callText = callModelCliText,
+} = {}) {
   if (!String(tutorMessage || '').trim()) {
     return { reading: unreadMannerPresence('no_tutor_turn'), fromCache: false };
   }
@@ -166,4 +187,5 @@ export default {
   presenceCacheDir,
   presenceReaderLabel,
   readMannerPresence,
+  readPresenceOfTurn,
 };

@@ -580,6 +580,8 @@
         "tests/tutorStubFirstDraftCampaign.test.js",
         "tests/tutorStubFirstDraftContract.test.js",
         "tests/tutorStubFirstDraftOuterLoop.test.js",
+        "tests/tutorStubFixedRegisterFidelity.test.js",
+        "tests/tutorStubFixedRegisterPolicies.test.js",
         "tests/tutorStubFrameRefuserDepthStudy.test.js",
         "tests/tutorStubFrameRefuserNarrowingCodebook.test.js",
         "tests/tutorStubFrameRefuserSatisfiableLaunch.test.js",

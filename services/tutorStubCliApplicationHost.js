@@ -537,6 +537,7 @@ import {
 import { createProgram2ProviderBudgetFromEnvironment } from './program2ExperimentSafety.js';
 import {
   DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+  TUTOR_STUB_FIXED_REGISTER_POLICIES,
   TUTOR_STUB_REGISTER_POLICY_COMPOSITION_SCHEMA,
   evaluateTutorStubRegisterPolicyOverlay,
   normalizeTutorStubRegisterOverlayThreshold,
@@ -916,40 +917,45 @@ export async function runTutorStubCliApplicationHost({
                 '- Engagement-stance policy: bland. The runtime uses a fixed plain register as a non-adaptive baseline.',
                 '- Do not choose or justify an engagement stance in the model output for this policy.',
               ]
-            : policy === 'trajectory'
+            : policy in TUTOR_STUB_FIXED_REGISTER_POLICIES
               ? [
-                  '- Engagement-stance policy: trajectory. The runtime maps recent learner-field and learner-DAG trajectory into a local engagement-stance distribution.',
+                  `- Engagement-stance policy: ${policy}. The runtime pins the ${TUTOR_STUB_FIXED_REGISTER_POLICIES[policy]} register on every tutor turn as a fixed delivery arm.`,
                   '- Do not choose or justify an engagement stance in the model output for this policy.',
                 ]
-              : policy === 'dynamical_system'
+              : policy === 'trajectory'
                 ? [
-                    '- Engagement-stance policy: dynamical_system. The runtime maps a continuous state/derivative vector through theory priors plus local efficacy evidence.',
+                    '- Engagement-stance policy: trajectory. The runtime maps recent learner-field and learner-DAG trajectory into a local engagement-stance distribution.',
                     '- Do not choose or justify an engagement stance in the model output for this policy.',
                   ]
-                : policy === 'empirical_dynamical_system'
+                : policy === 'dynamical_system'
                   ? [
-                      '- Engagement-stance policy: empirical_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors, local efficacy evidence, and cross-run empirical priors.',
+                      '- Engagement-stance policy: dynamical_system. The runtime maps a continuous state/derivative vector through theory priors plus local efficacy evidence.',
                       '- Do not choose or justify an engagement stance in the model output for this policy.',
                     ]
-                  : policy === 'continuous_dynamical_system'
+                  : policy === 'empirical_dynamical_system'
                     ? [
-                        '- Engagement-stance policy: continuous_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors plus local efficacy evidence into a weighted engagement-stance blend.',
+                        '- Engagement-stance policy: empirical_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors, local efficacy evidence, and cross-run empirical priors.',
                         '- Do not choose or justify an engagement stance in the model output for this policy.',
                       ]
-                    : policy === 'continuous_empirical_dynamical_system'
+                    : policy === 'continuous_dynamical_system'
                       ? [
-                          '- Engagement-stance policy: continuous_empirical_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors, local efficacy evidence, and cross-run empirical priors into a weighted engagement-stance blend.',
+                          '- Engagement-stance policy: continuous_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors plus local efficacy evidence into a weighted engagement-stance blend.',
                           '- Do not choose or justify an engagement stance in the model output for this policy.',
                         ]
-                      : [
-                          '- Engagement-stance policy: dynamic. The up-front reviewer chooses the register; do not treat the learner request type as the register.',
-                          '- Brisk pacing is available but must not be the default register.',
-                          '- Penalize repeating the same register, especially brisk. A repeated register needs a concrete reviewer reason grounded in the current public turn.',
-                          '- Use brisk only when tight pacing is the needed stance: explicit step-by-step request, visible procedural confusion about the immediate next evidence move, or a newly staged evidence item that needs one learner-owned inference.',
-                          '- Do not choose brisk merely because the learner-DAG still has a release_or_pacing_gap, inference_gap, missing premise, or incomplete proof path.',
-                          '- If the previous brisk choice produced no_clear_progress or regression_or_overreach, choose a non-brisk register unless the current learner explicitly asks for step-by-step help.',
-                          '- Good dynamic alternatives: precise for a distinction/error in terms or accountable warrant; plain for compression/transfer; charismatic for resistant, rote, answer-seeking, or low-agency compliance; witnessing for affective exposure.',
-                        ];
+                      : policy === 'continuous_empirical_dynamical_system'
+                        ? [
+                            '- Engagement-stance policy: continuous_empirical_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors, local efficacy evidence, and cross-run empirical priors into a weighted engagement-stance blend.',
+                            '- Do not choose or justify an engagement stance in the model output for this policy.',
+                          ]
+                        : [
+                            '- Engagement-stance policy: dynamic. The up-front reviewer chooses the register; do not treat the learner request type as the register.',
+                            '- Brisk pacing is available but must not be the default register.',
+                            '- Penalize repeating the same register, especially brisk. A repeated register needs a concrete reviewer reason grounded in the current public turn.',
+                            '- Use brisk only when tight pacing is the needed stance: explicit step-by-step request, visible procedural confusion about the immediate next evidence move, or a newly staged evidence item that needs one learner-owned inference.',
+                            '- Do not choose brisk merely because the learner-DAG still has a release_or_pacing_gap, inference_gap, missing premise, or incomplete proof path.',
+                            '- If the previous brisk choice produced no_clear_progress or regression_or_overreach, choose a non-brisk register unless the current learner explicitly asks for step-by-step help.',
+                            '- Good dynamic alternatives: precise for a distinction/error in terms or accountable warrant; plain for compression/transfer; charismatic for resistant, rote, answer-seeking, or low-agency compliance; witnessing for affective exposure.',
+                          ];
     if (latest) {
       lines.push(`- Last register: ${latest.selected_register}; observed efficacy: ${latestEfficacy}.`);
       if (latest.efficacy?.mismatch) {
@@ -2078,6 +2084,7 @@ export async function runTutorStubCliApplicationHost({
       ROOT,
       STUB,
       TUTOR_STUB_FEEDBACK_REASONS,
+      TUTOR_STUB_FIXED_REGISTER_POLICIES,
       TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
       TUTOR_STUB_LEARNER_RESPONSE_PROVENANCE_SCHEMA,
       TUTOR_STUB_OPENING_REQUIREMENTS,
