@@ -296,6 +296,7 @@
         "tests/dramaticDerivationUptakeNegotiation.test.js",
         "tests/dramaticDerivationVisiblePacing.test.js",
         "tests/dramaticDerivationWorlds.test.js",
+        "tests/dramaticDialogueRenderer.test.js",
         "tests/dryRun.test.js",
         "tests/dumpTurnPrompts.test.js",
         "tests/dynamicDimensions.test.js",

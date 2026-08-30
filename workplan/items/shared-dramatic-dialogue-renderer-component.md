@@ -1,14 +1,18 @@
 ---
 id: shared-dramatic-dialogue-renderer-component
-title: "Shared dramatic-dialogue renderer component across transcript surfaces"
-status: triaged
+title: Shared dramatic-dialogue renderer component across transcript surfaces
+status: review
 type: infra
 priority: P2
 owner: codex
 source: manual
 created: 2026-08-29
-updated: 2026-08-29
-verification: "Pending: one documented interchange and renderer contract reproduces existing single-dialogue, N-arm frozen comparison, and Techne explainer fixtures with responsive and accessibility checks, without changing transcript bytes or adjudication metadata."
+updated: 2026-08-30
+verification: "Passed: strict public interchange and
+  single/shared-learner/parallel renderers; 84 focused Node tests; synchronized
+  Techne fixture; stress-comparison CLI smoke; ESLint, Prettier, hermetic
+  manifest, diff check; headless Chrome at 1440x1000 and 390x844 with no
+  overflow, page errors, or unlabeled dialogue regions."
 depends_on:
   - transcript-render-standard
 links:
@@ -16,6 +20,7 @@ links:
     - tutor-instrumentation-ab-harness
     - tutor-instrumentation-showcase
     - adaptive-tutor-instrumentation-contrast-gallery
+branch: codex/shared-dramatic-dialogue-renderer-component
 ---
 
 # Shared dramatic-dialogue renderer component
@@ -42,3 +47,17 @@ This card owns the next extraction step, not a replacement renderer.
 
 No redesign of the tutor engine, transcript projection, study artifacts, or
 Techne visual identity. Do not delay current research reports on this refactor.
+
+## Log
+
+- 2026-08-30 — Added a strict public-only dialogue interchange and shared HTML
+  renderer with single, shared-learner, and parallel layouts. Migrated the
+  frozen instrumentation A/B, free-running showcase, stress-comparison
+  generator, and the Techne crossed endgame fixture. Adapters preserve source
+  learner/tutor strings and keep verdicts, standing rulings, guard labels,
+  rubric versions, provenance, and plain-language glosses explicit.
+- 2026-08-30 — Verification passed: 84 focused Node tests; synchronized Techne
+  fixture; stress-comparison CLI smoke; targeted ESLint and Prettier; hermetic
+  test-manifest and diff checks; headless Chrome at 1440×1000 and 390×844 with
+  no overflow, page errors, or unlabeled dialogue regions. Visual inspection
+  confirmed readable two-column and stacked-mobile Techne renderings.
