@@ -1,13 +1,13 @@
 ---
 id: defiant-warrant-outcome-study
 title: "Defiant-learner warrant arc: does serving the frame's warrant settle the frame and unblock the proof?"
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-30
 verification: >-
   A committed registration names the arms, the endpoints, the fidelity
   floors, and the spend ceiling before any paid call. The Gate-1 pilot
@@ -15,7 +15,7 @@ verification: >-
   main-block thresholds; the main block runs only on a second GO. Results
   land in paper-full-2.0.md under its claim discipline, and all paid
   artifacts pass npm run archive:runs into the private archive repository.
-claim_status: planned
+claim_status: scope-bound
 depends_on:
   - adaptive-warrant-outcome-study
   - resistance-action-register-integration
@@ -159,3 +159,16 @@ test without grounds?
   registered in the paid-study inventory and the artifact-lifecycle
   builder list. Next: attended v2 Gate-1 launch on the operator's
   standing GO.
+- 2026-08-30: Gate-1 v2 run complete (18/18 terminal, seed 20260830,
+  archived). Serving: 9/9 measured, 38 gated turns, 5 single repairs,
+  0 stops. Withholding: 0/9 measured — every dialogue exhausted both
+  repairs at its first disputed turn (9/9 non-delivery stops). No
+  contrast, no threshold freeze; study CLOSED at Gate 1 with the
+  structural finding: warrant-withholding under frame challenge is not
+  producible on this stack by instruction (v1: 0/8 delivered) or by
+  gated repair (v2: 0/9 survived). Blind Sonnet reader pass: 73/73
+  shipped turns coded, 0 errors; serving 9/9 delivered; withholding
+  pre-stop turns 1 withholding / 5 mixed / 0 serving — reader and gate
+  agree.
+  Registration §8 records the close. No further runs; a
+  scripted-withholding variant would need a fresh registration.
