@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -14,6 +15,7 @@ import {
   validateTutorStubDefiantWarrantDesign,
 } from '../services/tutorStubDefiantWarrantOutcomeStudy.js';
 import {
+  analysisRows,
   classifyDefiantWarrantAttempt,
   measureDefiantWarrantDialogue,
 } from '../scripts/run-tutor-stub-defiant-warrant-pilot.js';
@@ -297,4 +299,59 @@ test('dialogue measurement computes settlement, coverage, and escalation determi
   assert.equal(measures.escalation_delta, 0);
   const again = measureDefiantWarrantDialogue(events);
   assert.deepEqual(measures, again);
+});
+
+test('analysis reads the on-disk trace when a replayed terminal attempt has no trace pointer', () => {
+  const destination = fs.mkdtempSync(path.join(os.tmpdir(), 'dwo-replay-'));
+  try {
+    const caseId = 'dwo_b01_s1_warrant_withholding';
+    const traceDir = path.join(destination, 'jobs', caseId, 'initial', 'traces');
+    fs.mkdirSync(traceDir, { recursive: true });
+    const events = [
+      { type: 'tutor_opening', text: 'Welcome to Marrick.' },
+      {
+        type: 'turn_complete',
+        turnRecord: {
+          turn: 1,
+          learner: 'The tide tables show the causeway floods at dusk.',
+          tutor: 'Good. What does that tell us about the crossing time?',
+          classification: { turn: {} },
+          learnerAdvance: { supportedMoveCount: 1 },
+          tutorLearnerDagModel: { assessment: { bestPathCoverage: 0.25 } },
+        },
+      },
+    ];
+    fs.writeFileSync(path.join(traceDir, 'trace.jsonl'), events.map((row) => JSON.stringify(row)).join('\n'));
+    const execution = {
+      results: [
+        {
+          case_id: caseId,
+          terminal: true,
+          terminal_category: 'semantic_terminal',
+          cumulative_reservations: 24,
+          attempts: [
+            {
+              case_id: caseId,
+              attempt_number: 1,
+              reservations: 24,
+              cumulative_reservations: 24,
+              disposition: { terminal: true, category: 'semantic_terminal' },
+              ledger_replayed: true,
+            },
+          ],
+        },
+      ],
+    };
+    const plan = {
+      jobs: [{ id: caseId, block_id: 'dwo_block_01', assigned_arm: 'warrant_withholding', run_seed: 2026082900 }],
+    };
+    const withDisk = analysisRows(execution, plan, destination);
+    assert.equal(withDisk[0].measures.turns_measured, 1);
+    assert.equal(withDisk[0].measures.frame_settlement, true);
+    assert.ok(withDisk[0].trace);
+    const withoutDisk = analysisRows(execution, plan, undefined);
+    assert.equal(withoutDisk[0].measures, null);
+  } finally {
+    fs.rmSync(destination, { recursive: true, force: true });
+  }
 });

@@ -267,9 +267,25 @@ async function runPool(items, parallelism, worker, onResult) {
   await Promise.all(Array.from({ length: Math.min(parallelism, items.length) }, consume));
 }
 
-function finalTraceFor(row) {
-  const terminal = [...row.attempts].reverse().find((attempt) => attempt.disposition.terminal && attempt.trace?.path);
-  return terminal?.trace?.path ? path.resolve(ROOT, terminal.trace.path) : null;
+function attemptDirName(attemptNumber) {
+  return attemptNumber === 1 ? 'initial' : `recovery-${String(attemptNumber - 1).padStart(3, '0')}`;
+}
+
+function finalTraceFor(row, destination) {
+  const terminal = [...row.attempts].reverse().find((attempt) => attempt.disposition.terminal);
+  if (!terminal) return null;
+  if (terminal.trace?.path) return path.resolve(ROOT, terminal.trace.path);
+  // Ledger-replayed attempts carry no trace pointer, but their attempt
+  // directory is still on disk; read it so replayed dialogues stay measured.
+  if (destination && Number.isInteger(terminal.attempt_number)) {
+    const traceDir = path.join(destination, 'jobs', row.case_id, attemptDirName(terminal.attempt_number), 'traces');
+    try {
+      return readTrace(traceDir).trace;
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
 
 function mean(values) {
@@ -351,11 +367,11 @@ export function analyzeDefiantWarrantRows({ rows, design }) {
   };
 }
 
-function analysisRows(execution, plan) {
+export function analysisRows(execution, plan, destination) {
   const results = new Map(execution.results.map((row) => [row.case_id, row]));
   return plan.jobs.map((job) => {
     const result = results.get(job.id);
-    const trace = result ? finalTraceFor(result) : null;
+    const trace = result ? finalTraceFor(result, destination) : null;
     let measures = null;
     if (trace) {
       const events = fs
@@ -699,7 +715,7 @@ export async function runDefiantWarrantPilot({
     results,
   };
   writeOnce(path.join(absoluteDestination, 'execution-result.json'), execution);
-  const rows = analysisRows(execution, plan);
+  const rows = analysisRows(execution, plan, absoluteDestination);
   const report = analyzeDefiantWarrantRows({ rows, design: loaded.design });
   writeOnce(path.join(absoluteDestination, 'report.json'), report);
   return { execution, report, destination: preflight.destination };
@@ -713,7 +729,7 @@ export function reanalyzeDefiantWarrantDestination({
   const plan = buildTutorStubDefiantWarrantPlan(loaded.design);
   const absoluteDestination = path.resolve(ROOT, destination || '');
   const execution = JSON.parse(fs.readFileSync(path.join(absoluteDestination, 'execution-result.json'), 'utf8'));
-  const rows = analysisRows(execution, plan);
+  const rows = analysisRows(execution, plan, absoluteDestination);
   return analyzeDefiantWarrantRows({ rows, design: loaded.design });
 }
 
