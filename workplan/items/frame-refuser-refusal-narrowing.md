@@ -32,7 +32,7 @@ tags:
   - resistant-learners
   - frame-refusal
   - engagement-ladder
-branch: codex/frame-refuser-narrowing-p1
+branch: codex/frame-refuser-narrowing-p1-recovery
 ---
 
 ## Question
@@ -201,3 +201,30 @@ produces rung 2?
   remains unlaunched: this design grants no call authority, and the proposed
   numerical ceiling still needs the user's confirmation in the signed GO note
   after the design and launcher merge.
+
+- 2026-08-30: **P1 launched under the user's exact GO; paused on one technical
+  transport failure.** The merged design/launcher commit is
+  `762dc030f3e7cacefd0041fcaacacfcb9f1bc308`; the signed GO note is
+  `notes/2026-08-30-frame-refuser-narrowing-p1-go.md` at
+  `e6f1830e396a26214c1167ab606bee04e265d55f`, with a maximum of 72 model
+  attempts. The clean detached launch passed the registered safety checks and
+  zero-call preflight, then wrote its create-once run under the private archive
+  at `artifacts/tutor-stub-live/frame-refuser-narrowing-p1-2026-08-30`.
+
+  The launcher stopped and sealed the run after reserving 11 attempts: ten
+  reader records completed, and `nrw_004/reader_b` failed before producing a
+  structured response with the transport classification
+  `response_free_error (result_error_without_structured_output)`. The failed
+  assignment is retained and will not be retried. The original root, its result
+  files, failure record, and append-only ledger remain unchanged; model activity
+  is inactive.
+
+  This corrective branch adds bounded missing-only recovery. It revalidates the
+  original plan, sealed failure ledger, packet and route provenance, and all ten
+  stored reader measurements; excludes those ten completed assignments and the
+  failed assignment; and admits only the 61 never-attempted assignments into a
+  fresh create-once destination. The recovery launch cap is 61, so the two
+  destinations can reserve no more than the original combined ceiling of 72.
+  The code and zero-call checks do not themselves resume model activity. If a
+  transport failure repeats during the recovery launch, the recovery seals and
+  stops for human review rather than opening another automatic continuation.
