@@ -13,6 +13,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import {
+  DRAMATIC_DIALOGUE_INTERCHANGE_SCHEMA,
+  renderDramaticDialogueFragment,
+  renderDramaticDialogueStyles,
+} from './dramaticDialogueRenderer.js';
+import {
   MACHINE_SPIRITS_HOUSE_STYLE_SCHEMA,
   renderMachineSpiritsHouseBackdrop,
   renderMachineSpiritsHouseStyleTag,
@@ -33,87 +38,6 @@ function plainLabel(value) {
     .trim();
 }
 
-function tokenize(text) {
-  return String(text || '')
-    .split(/(\s+)/u)
-    .filter((token) => token.length > 0);
-}
-
-function normalizeToken(token) {
-  return token.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-}
-
-/**
- * Word-level diff against the baseline lane.
- *
- * Comparison is on the normalized token (case and punctuation folded) so that
- * re-punctuation does not paint a whole sentence as new, but the rendered token
- * is the arm's own text. Whitespace is carried through unmarked.
- */
-function diffTokens(baseText, armText) {
-  const base = tokenize(baseText)
-    .filter((token) => token.trim().length > 0)
-    .map(normalizeToken);
-  const arm = tokenize(armText);
-  const armWords = arm.map((token, index) => ({ token, index })).filter((entry) => entry.token.trim().length > 0);
-  const armKeys = armWords.map((entry) => normalizeToken(entry.token));
-  const rows = base.length;
-  const cols = armKeys.length;
-  const table = Array.from({ length: rows + 1 }, () => new Uint32Array(cols + 1));
-  for (let i = rows - 1; i >= 0; i -= 1) {
-    for (let j = cols - 1; j >= 0; j -= 1) {
-      table[i][j] = base[i] === armKeys[j] ? table[i + 1][j + 1] + 1 : Math.max(table[i + 1][j], table[i][j + 1]);
-    }
-  }
-  const shared = new Set();
-  let i = 0;
-  let j = 0;
-  while (i < rows && j < cols) {
-    if (base[i] === armKeys[j]) {
-      shared.add(armWords[j].index);
-      i += 1;
-      j += 1;
-    } else if (table[i + 1][j] >= table[i][j + 1]) i += 1;
-    else j += 1;
-  }
-  return arm.map((token, index) => ({
-    token,
-    status: token.trim().length === 0 ? 'space' : shared.has(index) ? 'same' : 'added',
-  }));
-}
-
-function renderDiffSpeech(baseText, armText) {
-  if (!baseText) return escapeHtml(armText || '');
-  return diffTokens(baseText, armText)
-    .map((entry) =>
-      entry.status === 'added' ? `<mark class="ab-added">${escapeHtml(entry.token)}</mark>` : escapeHtml(entry.token),
-    )
-    .join('');
-}
-
-function verdictChip(result) {
-  if (!result) return '<span class="ab-chip ab-chip--missing">no result</span>';
-  if (result.status === 'blocked') {
-    return `<span class="ab-chip ab-chip--blocked" title="${escapeHtml(result.error?.message || '')}">blocked</span>`;
-  }
-  const safety = result.safetyFailure ? '<span class="ab-chip ab-chip--safety">safety failure</span>' : '';
-  const verdict =
-    result.status === 'pass'
-      ? '<span class="ab-chip ab-chip--pass">rubric pass</span>'
-      : '<span class="ab-chip ab-chip--fail">rubric fail</span>';
-  return `${verdict}${safety}`;
-}
-
-function clusterChips(result) {
-  const hard = new Set(result?.hardFailureClusters || []);
-  return (result?.failureClusters || [])
-    .map(
-      (cluster) =>
-        `<span class="ab-chip ab-chip--cluster${hard.has(cluster) ? ' ab-chip--hard' : ''}">${escapeHtml(plainLabel(cluster))}</span>`,
-    )
-    .join('');
-}
-
 function featurePills(arm) {
   const pills = arm.features.map((feature) => `<span class="ab-pill">${escapeHtml(plainLabel(feature))}</span>`);
   // A control carries no instrumentation feature but is not the bare tutor, so
@@ -126,47 +50,90 @@ function featurePills(arm) {
   return pills.join('');
 }
 
-function armLane(arm, result, baselineText, { baseline }) {
-  const text = result?.candidate || '';
-  const body = baseline || !text ? escapeHtml(text) : renderDiffSpeech(baselineText, text);
-  const chars = text.length;
-  const advisory = result?.projection?.advisoryChars ?? null;
-  return `<div class="ab-lane" data-arm="${escapeHtml(arm.id)}" data-status="${escapeHtml(result?.status || 'missing')}">
-    <article class="ab-card${baseline ? ' ab-card--baseline' : ''}">
-      <header class="ab-card-head">
-        <span class="ab-arm-name">${escapeHtml(arm.label)}</span>
-        <span class="ab-metrics">${chars} chars${advisory === null ? '' : ` · ${advisory} advisory`}</span>
-      </header>
-      <div class="ab-speech">${body || '<em class="ab-empty">no candidate</em>'}</div>
-      <footer class="ab-card-foot">${verdictChip(result)}${clusterChips(result)}</footer>
-    </article>
-  </div>`;
+function resultVerdict(result) {
+  if (!result) return { label: 'no result', status: 'missing', tone: 'muted' };
+  if (result.status === 'blocked') {
+    return { label: 'blocked', status: 'blocked', title: result.error?.message || '', tone: 'muted' };
+  }
+  return result.status === 'pass' ? { label: 'rubric pass', status: 'pass' } : { label: 'rubric fail', status: 'fail' };
 }
 
-function turnRows(scenario, arms, resultsByKey, baselineArmId) {
-  return scenario.turns
-    .map((turn) => {
-      const baselineResult = resultsByKey.get(`${turn.caseId}__${baselineArmId}`) || null;
-      const baselineText = baselineResult?.candidate || '';
-      const lanes = arms
-        .map((arm) =>
-          armLane(arm, resultsByKey.get(`${turn.caseId}__${arm.id}`) || null, baselineText, {
-            baseline: arm.id === baselineArmId,
-          }),
-        )
-        .join('');
-      return `<section class="ab-turn" data-turn="${escapeHtml(turn.turn)}">
-        <div class="ab-spine-row">
-          <b class="ab-turn-badge">${escapeHtml(turn.turn)}</b>
-          <article class="ab-card ab-card--learner">
-            <header class="ab-card-head"><span class="ab-arm-name">learner (frozen)</span><span class="ab-metrics">identical for every arm</span></header>
-            <div class="ab-speech">${escapeHtml(turn.learnerText || '')}</div>
-          </article>
-        </div>
-        <div class="ab-lanes" style="--ab-lane-count: ${arms.length}">${lanes}</div>
-      </section>`;
-    })
-    .join('');
+function resultLabels(result) {
+  if (!result) return [];
+  const hard = new Set(result.hardFailureClusters || []);
+  return [
+    ...(result.safetyFailure
+      ? [{ label: 'safety failure', status: 'fail', tone: 'ink', kind: 'safety', group: 'safety' }]
+      : []),
+    ...(result.failureClusters || []).map((cluster) => ({
+      label: plainLabel(cluster),
+      status: hard.has(cluster) ? 'hard' : 'present',
+      tone: hard.has(cluster) ? 'fail' : 'muted',
+      kind: 'cluster',
+      group: 'clusters',
+    })),
+  ];
+}
+
+/**
+ * Adapt one frozen-learner scenario to the shared public dialogue contract.
+ * The adapter copies authored and delivered strings without rewriting them and
+ * supplies every verdict and label explicitly; the shared renderer infers none.
+ */
+export function buildTutorStubAbDramaticDialogue(report, scenario) {
+  const resultsByKey = new Map(report.results.map((result) => [`${result.caseId}__${result.armId}`, result]));
+  return {
+    schema: DRAMATIC_DIALOGUE_INTERCHANGE_SCHEMA,
+    id: `tutor-stub-ab-${scenario.id || scenario.worldId}`,
+    label: `${scenario.label} frozen learner contrast`,
+    layout: 'shared-learner',
+    arms: report.plan.arms.map((arm) => ({
+      id: arm.id,
+      label: arm.label,
+      baseline: Boolean(arm.baseline),
+      summary: arm.summary || '',
+    })),
+    turns: scenario.turns.map((turn) => ({
+      id: String(turn.caseId),
+      turn: turn.turn,
+      messages: [
+        {
+          id: `${turn.caseId}__learner`,
+          speaker: 'learner',
+          turn: turn.turn,
+          arm: null,
+          text: turn.learnerText || '',
+          delivery: { label: 'identical for every arm', status: 'frozen', tone: 'muted' },
+          provenance: { sourceId: String(turn.caseId), quoteExact: true },
+        },
+        ...report.plan.arms.map((arm) => {
+          const result = resultsByKey.get(`${turn.caseId}__${arm.id}`) || null;
+          const text = result?.candidate || '';
+          const advisory = result?.projection?.advisoryChars ?? null;
+          return {
+            id: `${turn.caseId}__${arm.id}`,
+            speaker: 'tutor',
+            turn: turn.turn,
+            arm: arm.id,
+            text,
+            delivery: {
+              label: `${text.length} chars${advisory === null ? '' : ` · ${advisory} advisory`}`,
+              status: result?.status || 'missing',
+              tone: 'muted',
+            },
+            verdict: resultVerdict(result),
+            labels: resultLabels(result),
+            provenance: { sourceId: `${turn.caseId}__${arm.id}`, quoteExact: true },
+          };
+        }),
+      ],
+    })),
+    provenance: {
+      sourceId: report.plan.id || report.plan.preset,
+      sourceHash: report.metadata?.gitSha || undefined,
+      note: 'Frozen learner turns; tutor arms are independent counterfactual replies.',
+    },
+  };
 }
 
 function summaryTable(report) {
@@ -234,10 +201,7 @@ function armLegend(report) {
 }
 
 export function renderTutorStubAbTranscriptHtml(report) {
-  const arms = report.plan.arms;
   const baselineArmId = report.summary.baselineArmId;
-  const resultsByKey = new Map();
-  for (const result of report.results) resultsByKey.set(`${result.caseId}__${result.armId}`, result);
   const scenarios = report.plan.scenarios
     .map(
       (scenario) => `<section class="ab-scenario">
@@ -246,7 +210,9 @@ export function renderTutorStubAbTranscriptHtml(report) {
           <p class="ab-note">${escapeHtml(scenario.criterion || '')}</p>
           <p class="ab-meta">world <code>${escapeHtml(scenario.worldId)}</code> · learner profile <code>${escapeHtml(scenario.learnerProfile || 'unknown')}</code> · ${scenario.turns.length} frozen turns</p>
         </header>
-        ${turnRows(scenario, arms, resultsByKey, baselineArmId)}
+        ${renderDramaticDialogueFragment(buildTutorStubAbDramaticDialogue(report, scenario), {
+          diffAgainstArm: baselineArmId,
+        })}
       </section>`,
     )
     .join('');
@@ -290,35 +256,11 @@ ${renderMachineSpiritsHouseStyleTag()}
   .ab-tag { font: 10px/1.6 var(--ms-font-mono); text-transform: uppercase; letter-spacing: 0.08em; border: 1px solid var(--ms-border); padding: 0 4px; }
   .ab-scenario { margin: 0 0 40px; }
   .ab-scenario-head { background: var(--ms-surface); border: 1px solid var(--ms-border); padding: 14px 18px; margin: 0 0 16px; }
-  .ab-turn { border-top: 2px solid var(--ms-ink); padding: 16px 0 24px; }
-  .ab-spine-row { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: start; margin-bottom: 12px; }
-  .ab-turn-badge { display: block; width: 34px; height: 34px; background: var(--ms-ink); color: var(--ms-white); font: 700 12px/34px var(--ms-font-mono); text-align: center; }
-  .ab-lanes { display: grid; grid-template-columns: repeat(var(--ab-lane-count), minmax(0, 1fr)); gap: 12px; margin-left: 56px; }
-  .ab-card { background: var(--ms-surface-elevated); border: 1px solid var(--ms-border); padding: 12px 14px; height: 100%; box-sizing: border-box; }
-  .ab-card--learner { background: var(--ms-paper-2); border-left: 3px solid var(--ms-ochre); }
-  .ab-card--baseline { border-left: 3px solid var(--ms-border); }
-  .ab-card-head { display: flex; justify-content: space-between; gap: 8px; font: 11px/1.6 var(--ms-font-mono); color: var(--ms-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-  .ab-arm-name { color: var(--ms-text); font-weight: 700; }
-  .ab-speech { font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
-  .ab-empty { color: var(--ms-text-muted); }
-  .ab-card-foot { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
-  .ab-chip { font: 10px/1.8 var(--ms-font-mono); text-transform: uppercase; letter-spacing: 0.05em; padding: 0 6px; border: 1px solid var(--ms-border); }
-  .ab-chip--pass { background: var(--ms-moss); color: var(--ms-white); border-color: var(--ms-moss-deep); }
-  .ab-chip--fail { background: var(--ms-red); color: var(--ms-white); border-color: var(--ms-red-dark); }
-  .ab-chip--safety { background: var(--ms-black); color: var(--ms-white); border-color: var(--ms-black); }
-  .ab-chip--blocked, .ab-chip--missing { background: var(--ms-paper-3); color: var(--ms-text-muted); }
-  .ab-chip--cluster { background: transparent; color: var(--ms-text-muted); }
-  .ab-chip--hard { color: var(--ms-red-dark); border-color: var(--ms-red-dark); }
-  mark.ab-added { background: rgba(var(--ms-red-rgb), 0.16); color: inherit; padding: 0 1px; }
-  body[data-ab-diff='off'] mark.ab-added { background: transparent; }
-  body[data-ab-clusters='off'] .ab-chip--cluster { display: none; }
-  @media (max-width: 900px) {
-    .ab-lanes { grid-template-columns: 1fr; margin-left: 0; }
-    .ab-spine-row { grid-template-columns: 1fr; }
-  }
+  body[data-ab-clusters='off'] .dd__labels[data-dd-label-group='clusters'] { display: none; }
+  ${renderDramaticDialogueStyles()}
 </style>
 </head>
-<body data-ab-diff="on" data-ab-clusters="on">
+<body data-ab-diff="on" data-ab-clusters="on" data-dd-diff="on">
 ${renderMachineSpiritsHouseBackdrop()}
 <div class="ab-wrap">
   <div class="ab-panel ab-masthead">
@@ -346,6 +288,7 @@ ${renderMachineSpiritsHouseBackdrop()}
     var body = document.body;
     document.getElementById('ab-toggle-diff').addEventListener('change', function (event) {
       body.dataset.abDiff = event.target.checked ? 'on' : 'off';
+      body.dataset.ddDiff = event.target.checked ? 'on' : 'off';
     });
     document.getElementById('ab-toggle-clusters').addEventListener('change', function (event) {
       body.dataset.abClusters = event.target.checked ? 'on' : 'off';
