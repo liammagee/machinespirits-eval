@@ -218,6 +218,8 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     goNotePath: values['go-note-path'],
     spendCap: loaded.design.attemptCeilings.calibrationMaximumReservations,
     destination,
+    studyId: loaded.design.studyId,
+    studyStateRoot: path.join(path.dirname(destination), '.paid-study-state'),
   });
   return (overrides.execute || executeTutorStubFrameRefuserSatisfiableCalibration)({
     loaded,

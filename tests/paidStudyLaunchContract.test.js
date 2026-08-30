@@ -2,14 +2,17 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import {
   admitPaidStudyLaunch,
   paidStudyGoNoteIssues,
   verifyPaidStudyLaunchContract,
 } from '../services/paidStudyLaunchContract.js';
+
+const RACE_WORKER = fileURLToPath(new URL('./fixtures/paidStudyLaunchRaceWorker.js', import.meta.url));
 
 function git(root, ...args) {
   return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
@@ -50,7 +53,53 @@ function fixture(t, { cap = 1200, noteCap = '1,200', firstLine = 'GO' } = {}) {
       goNoteCommit,
       goNotePath: 'notes/go.md',
       spendCap: cap,
+      studyId: 'fixture-study',
+      studyStateRoot: path.join(base, 'study-state'),
     },
+  };
+}
+
+async function runRace(value, configs) {
+  const startFile = path.join(value.base, `start-${Date.now()}`);
+  const children = configs.map((config, index) => {
+    const configPath = path.join(value.base, `worker-${Date.now()}-${index}.json`);
+    fs.writeFileSync(configPath, `${JSON.stringify({ ...config, startFile })}\n`);
+    return spawn(process.execPath, [RACE_WORKER, configPath], { stdio: ['ignore', 'pipe', 'pipe'] });
+  });
+  fs.writeFileSync(startFile, 'go\n');
+  await Promise.all(
+    children.map(
+      (child) =>
+        new Promise((resolve, reject) => {
+          let stderr = '';
+          child.stderr.on('data', (chunk) => {
+            stderr += chunk;
+          });
+          child.once('error', reject);
+          child.once('exit', (code) => {
+            if (code === 0) resolve();
+            else reject(new Error(`race worker exited ${code}: ${stderr}`));
+          });
+        }),
+    ),
+  );
+}
+
+function raceConfig({ value, destination, resultFile, providerLog, unit, recoveryFrom, closeEvent }) {
+  return {
+    admission: {
+      ...value.contract,
+      destination,
+      studyId: 'fixture-study',
+      studyStateRoot: path.join(value.base, 'study-state'),
+      ...(recoveryFrom ? { recoveryFrom } : {}),
+    },
+    reserveCount: 1,
+    unit,
+    providerLog,
+    resultFile,
+    holdMilliseconds: 100,
+    closeEvent,
   };
 }
 
@@ -112,8 +161,16 @@ test('admission creates the destination and append-only budget ledger before cal
   const admitted = admitPaidStudyLaunch({ ...value.contract, destination });
   assert.equal(fs.existsSync(destination), true);
   assert.equal(fs.existsSync(admitted.ledger_path), true);
-  assert.deepEqual(admitted.reserveModelAttempts(1, { unit: 'a' }), { reserved: 1, remaining: 1 });
-  assert.deepEqual(admitted.reserveModelAttempts(1, { unit: 'b' }), { reserved: 2, remaining: 0 });
+  assert.deepEqual(admitted.reserveModelAttempts(1, { unit: 'a' }), {
+    reserved: 1,
+    remaining: 1,
+    study_reserved: 1,
+  });
+  assert.deepEqual(admitted.reserveModelAttempts(1, { unit: 'b' }), {
+    reserved: 2,
+    remaining: 0,
+    study_reserved: 2,
+  });
   assert.throws(() => admitted.reserveModelAttempts(1, { unit: 'c' }), /exceeded before call/u);
   admitted.record({ type: 'unit_failed', unit: 'b' });
   admitted.close({ type: 'run_sealed', status: 'failed' });
@@ -139,4 +196,130 @@ test('failed authorization performs no production write', (t) => {
   const destination = path.join(value.base, 'must-not-exist');
   assert.throws(() => admitPaidStudyLaunch({ ...value.contract, destination }), /spend_cap/u);
   assert.equal(fs.existsSync(destination), false);
+});
+
+test('two processes racing on one study admit exactly one before a fake provider call', async (t) => {
+  const value = fixture(t, { cap: 3, noteCap: '3' });
+  const providerLog = path.join(value.base, 'provider-calls.log');
+  const resultFiles = [path.join(value.base, 'race-a.json'), path.join(value.base, 'race-b.json')];
+  await runRace(
+    value,
+    resultFiles.map((resultFile, index) =>
+      raceConfig({
+        value,
+        destination: path.join(value.base, `race-run-${index}`),
+        resultFile,
+        providerLog,
+        unit: `fresh-${index}`,
+        closeEvent: { type: 'run_sealed', status: 'complete' },
+      }),
+    ),
+  );
+
+  const results = resultFiles.map((file) => JSON.parse(fs.readFileSync(file, 'utf8')));
+  assert.equal(results.filter((result) => result.status === 'admitted').length, 1);
+  assert.equal(results.filter((result) => result.status === 'rejected').length, 1);
+  assert.match(results.find((result) => result.status === 'rejected').error, /active launch|duplicate fresh launch/u);
+  assert.equal(fs.readFileSync(providerLog, 'utf8').trim().split('\n').length, 1);
+  assert.equal(
+    [path.join(value.base, 'race-run-0'), path.join(value.base, 'race-run-1')].filter((destination) =>
+      fs.existsSync(destination),
+    ).length,
+    1,
+  );
+});
+
+test('a recovery cannot reserve beyond the remaining aggregate study ceiling', (t) => {
+  const value = fixture(t, { cap: 3, noteCap: '3' });
+  const initialDestination = path.join(value.base, 'aggregate-initial');
+  const initial = admitPaidStudyLaunch({ ...value.contract, destination: initialDestination });
+  initial.reserveModelAttempts(2, { unit: 'initial' });
+  initial.close({ type: 'run_sealed', status: 'technical_failure', recovery_permitted: true });
+
+  const recovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'aggregate-recovery'),
+    recoveryFrom: initialDestination,
+  });
+  assert.equal(recovery.studyReserved, 2);
+  assert.throws(() => recovery.reserveModelAttempts(2, { unit: 'too-large' }), /exceeded before call/u);
+  assert.equal(recovery.reserved, 0);
+  assert.equal(recovery.studyReserved, 2);
+  recovery.close({ type: 'run_sealed', status: 'failed' });
+});
+
+test('a sealed technical predecessor hands its remaining study budget to one recovery', async (t) => {
+  const value = fixture(t, { cap: 3, noteCap: '3' });
+  const studyStateRoot = path.join(value.base, 'study-state');
+  const initialDestination = path.join(value.base, 'initial-run');
+  const initial = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: initialDestination,
+    studyId: 'fixture-study',
+    studyStateRoot,
+  });
+  initial.reserveModelAttempts(2, { unit: 'initial' });
+  initial.close({
+    type: 'run_sealed',
+    status: 'transport_failure',
+    recovery_permitted: true,
+  });
+
+  const providerLog = path.join(value.base, 'recovery-provider-calls.log');
+  const resultFiles = [path.join(value.base, 'recovery-a.json'), path.join(value.base, 'recovery-b.json')];
+  const recoveryDestinations = [path.join(value.base, 'recovery-a'), path.join(value.base, 'recovery-b')];
+  await runRace(
+    value,
+    resultFiles.map((resultFile, index) =>
+      raceConfig({
+        value,
+        destination: recoveryDestinations[index],
+        resultFile,
+        providerLog,
+        unit: `recovery-${index}`,
+        recoveryFrom: initialDestination,
+        closeEvent: { type: 'run_sealed', status: 'complete' },
+      }),
+    ),
+  );
+
+  const results = resultFiles.map((file) => JSON.parse(fs.readFileSync(file, 'utf8')));
+  assert.equal(results.filter((result) => result.status === 'admitted').length, 1);
+  assert.equal(results.filter((result) => result.status === 'rejected').length, 1);
+  assert.equal(fs.readFileSync(providerLog, 'utf8').trim().split('\n').length, 1);
+
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        destination: path.join(value.base, 'duplicate-fresh'),
+        studyId: 'fixture-study',
+        studyStateRoot,
+      }),
+    /duplicate fresh launch/u,
+  );
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        destination: path.join(value.base, 'second-recovery'),
+        studyId: 'fixture-study',
+        studyStateRoot,
+        recoveryFrom: initialDestination,
+      }),
+    /recovery|sealed technical predecessor/u,
+  );
+
+  const studyLedger = fs
+    .readFileSync(path.join(studyStateRoot, 'fixture-study', 'study-ledger.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map(JSON.parse);
+  assert.equal(
+    studyLedger
+      .filter((event) => event.type === 'study_model_attempt_reserved')
+      .reduce((sum, event) => sum + event.count, 0),
+    3,
+  );
+  assert.equal(studyLedger.filter((event) => event.type === 'study_launch_admitted').length, 2);
 });

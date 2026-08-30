@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 
 function repositoryRelativePath(root, value, label) {
   if (!value || path.isAbsolute(value)) throw new Error(`${label} must be repository-relative`);
@@ -131,19 +132,168 @@ function appendJsonLine(fileDescriptor, event) {
   fs.fsyncSync(fileDescriptor);
 }
 
-export function admitPaidStudyLaunch({ destination, ledgerName = 'run-ledger.jsonl', ...contract }) {
+function readJsonLines(filePath, label) {
+  if (!fs.existsSync(filePath)) return [];
+  try {
+    return fs
+      .readFileSync(filePath, 'utf8')
+      .split(/\r?\n/u)
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+  } catch (error) {
+    throw new Error(`${label} is not valid JSONL: ${error.message}`);
+  }
+}
+
+function validateStudyIdentity({ studyId, studyStateRoot, recoveryFrom }) {
+  if (!/^[a-z0-9][a-z0-9._-]{0,127}$/u.test(studyId || '')) {
+    throw new Error('study id must be a stable lowercase identifier');
+  }
+  if (!studyStateRoot || !path.isAbsolute(studyStateRoot)) {
+    throw new Error('study state root must be absolute');
+  }
+  if (recoveryFrom && !path.isAbsolute(recoveryFrom)) throw new Error('recovery predecessor must be absolute');
+}
+
+function writeDurableJsonOnce(filePath, value) {
+  const descriptor = fs.openSync(filePath, 'wx');
+  try {
+    fs.writeSync(descriptor, `${JSON.stringify(value, null, 2)}\n`);
+    fs.fsyncSync(descriptor);
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
+function acquireStudyLease({ studyId, studyStateRoot, destination }) {
+  fs.mkdirSync(studyStateRoot, { recursive: true });
+  const studyDirectory = path.join(studyStateRoot, studyId);
+  fs.mkdirSync(studyDirectory, { recursive: true });
+  const leaseDirectory = path.join(studyDirectory, 'active-lease');
+  try {
+    fs.mkdirSync(leaseDirectory);
+  } catch (error) {
+    if (error?.code === 'EEXIST') {
+      throw new Error(`paid study ${studyId} already has an active launch`);
+    }
+    throw error;
+  }
+  const token = randomUUID();
+  const leasePath = path.join(leaseDirectory, 'lease.json');
+  try {
+    writeDurableJsonOnce(leasePath, {
+      schema: 'machinespirits.paid-study-active-lease.v1',
+      study_id: studyId,
+      token,
+      destination,
+      acquired_at: new Date().toISOString(),
+      pid: process.pid,
+    });
+  } catch (error) {
+    fs.rmdirSync(leaseDirectory);
+    throw error;
+  }
+  return {
+    token,
+    studyDirectory,
+    studyLedgerPath: path.join(studyDirectory, 'study-ledger.jsonl'),
+    leaseDirectory,
+    leasePath,
+  };
+}
+
+function releaseStudyLease(lease) {
+  const recorded = JSON.parse(fs.readFileSync(lease.leasePath, 'utf8'));
+  if (recorded.token !== lease.token) throw new Error('paid study lease ownership drift');
+  fs.unlinkSync(lease.leasePath);
+  fs.rmdirSync(lease.leaseDirectory);
+}
+
+function validateStudyLedger({ events, studyId, spendCap, recoveryFrom }) {
+  const created = events.find((event) => event.type === 'study_created');
+  if (!created) {
+    if (events.length) throw new Error('paid study ledger is missing its creation event');
+    if (recoveryFrom) throw new Error('recovery requires a sealed technical predecessor');
+    return;
+  }
+  if (created.study_id !== studyId) throw new Error('paid study ledger identity drift');
+  if (created.model_attempt_ceiling !== spendCap) throw new Error('paid study attempt ceiling drift');
+
+  const launches = events.filter((event) => event.type === 'study_launch_admitted');
+  if (!recoveryFrom) {
+    if (launches.length) throw new Error(`duplicate fresh launch for paid study ${studyId}`);
+    return;
+  }
+
+  const lastLaunchIndex = events.findLastIndex((event) => event.type === 'study_launch_admitted');
+  const lastSealIndex = events.findLastIndex((event) => event.type === 'study_run_sealed');
+  const seal = events[lastSealIndex];
+  if (lastSealIndex < lastLaunchIndex || seal?.destination !== recoveryFrom || seal?.recovery_permitted !== true) {
+    throw new Error('recovery requires the latest run to be a sealed technical predecessor');
+  }
+}
+
+function studyReservedAttempts(events) {
+  return events
+    .filter((event) => event.type === 'study_model_attempt_reserved')
+    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+}
+
+export function admitPaidStudyLaunch({
+  destination,
+  ledgerName = 'run-ledger.jsonl',
+  studyId,
+  studyStateRoot,
+  recoveryFrom,
+  ...contract
+}) {
   if (!destination || !path.isAbsolute(destination)) throw new Error('destination must be absolute');
   if (path.basename(ledgerName) !== ledgerName || !ledgerName.endsWith('.jsonl')) {
     throw new Error('ledger name must be a JSONL filename');
   }
+  validateStudyIdentity({ studyId, studyStateRoot, recoveryFrom });
   const verified = verifyPaidStudyLaunchContract(contract);
   if (fs.existsSync(destination)) throw new Error('paid study destination is create-once');
 
-  fs.mkdirSync(path.dirname(destination), { recursive: true });
-  fs.mkdirSync(destination, { recursive: false });
-  const ledgerPath = path.join(destination, ledgerName);
-  const ledger = fs.openSync(ledgerPath, 'ax');
+  const resolvedDestination = path.resolve(destination);
+  const resolvedRecoveryFrom = recoveryFrom ? path.resolve(recoveryFrom) : null;
+  const lease = acquireStudyLease({
+    studyId,
+    studyStateRoot: path.resolve(studyStateRoot),
+    destination: resolvedDestination,
+  });
+  let studyLedger;
+  let ledger;
+  let ledgerPath;
+  let events;
+  try {
+    events = readJsonLines(lease.studyLedgerPath, 'paid study ledger');
+    validateStudyLedger({
+      events,
+      studyId,
+      spendCap: verified.spend_cap,
+      recoveryFrom: resolvedRecoveryFrom,
+    });
+    studyLedger = fs.openSync(lease.studyLedgerPath, 'a');
+    if (!events.length) {
+      appendJsonLine(studyLedger, {
+        type: 'study_created',
+        study_id: studyId,
+        model_attempt_ceiling: verified.spend_cap,
+      });
+    }
+    fs.mkdirSync(path.dirname(resolvedDestination), { recursive: true });
+    fs.mkdirSync(resolvedDestination, { recursive: false });
+    ledgerPath = path.join(resolvedDestination, ledgerName);
+    ledger = fs.openSync(ledgerPath, 'ax');
+  } catch (error) {
+    if (ledger !== undefined) fs.closeSync(ledger);
+    if (studyLedger !== undefined) fs.closeSync(studyLedger);
+    releaseStudyLease(lease);
+    throw error;
+  }
   let reserved = 0;
+  let studyReserved = studyReservedAttempts(events);
   let closed = false;
   const ensureOpen = () => {
     if (closed) throw new Error('paid study run ledger is closed');
@@ -155,38 +305,80 @@ export function admitPaidStudyLaunch({ destination, ledgerName = 'run-ledger.jso
     design_path: verified.design.path,
     go_note: verified.authorization,
     spend_cap: verified.spend_cap,
+    study_id: studyId,
+    study_ledger: lease.studyLedgerPath,
+    launch_kind: resolvedRecoveryFrom ? 'recovery' : 'initial',
+    ...(resolvedRecoveryFrom ? { recovery_from: resolvedRecoveryFrom } : {}),
+  });
+  appendJsonLine(studyLedger, {
+    type: 'study_launch_admitted',
+    study_id: studyId,
+    destination: resolvedDestination,
+    run_ledger: ledgerPath,
+    launch_kind: resolvedRecoveryFrom ? 'recovery' : 'initial',
+    ...(resolvedRecoveryFrom ? { recovery_from: resolvedRecoveryFrom } : {}),
+    reserved_before_launch: studyReserved,
+    model_attempt_ceiling: verified.spend_cap,
   });
 
   return {
     ...verified,
-    destination,
+    study_id: studyId,
+    study_ledger_path: lease.studyLedgerPath,
+    destination: resolvedDestination,
     ledger_path: ledgerPath,
     get reserved() {
       return reserved;
+    },
+    get studyReserved() {
+      return studyReserved;
     },
     reserveModelAttempts(count = 1, detail = {}) {
       ensureOpen();
       if (!Number.isInteger(count) || count < 1)
         throw new Error('model-attempt reservation must be a positive integer');
-      if (reserved + count > verified.spend_cap) {
+      if (studyReserved + count > verified.spend_cap) {
         appendJsonLine(ledger, {
           ...detail,
           type: 'model_attempt_reservation_rejected',
           requested: count,
           reserved,
+          study_reserved: studyReserved,
           spend_cap: verified.spend_cap,
         });
-        throw new Error(`paid study spend cap exceeded before call: ${reserved + count}/${verified.spend_cap}`);
+        appendJsonLine(studyLedger, {
+          ...detail,
+          type: 'study_model_attempt_reservation_rejected',
+          destination: resolvedDestination,
+          requested: count,
+          study_reserved: studyReserved,
+          model_attempt_ceiling: verified.spend_cap,
+        });
+        throw new Error(`paid study spend cap exceeded before call: ${studyReserved + count}/${verified.spend_cap}`);
       }
+      studyReserved += count;
+      appendJsonLine(studyLedger, {
+        ...detail,
+        type: 'study_model_attempt_reserved',
+        destination: resolvedDestination,
+        count,
+        study_reserved: studyReserved,
+        model_attempt_ceiling: verified.spend_cap,
+      });
       reserved += count;
       appendJsonLine(ledger, {
         ...detail,
         type: 'model_attempt_reserved',
         count,
         reserved,
+        study_reserved: studyReserved,
         spend_cap: verified.spend_cap,
       });
-      return { reserved, remaining: verified.spend_cap - reserved };
+      return {
+        reserved,
+        remaining: verified.spend_cap - studyReserved,
+        study_reserved: studyReserved,
+      };
     },
     record(event) {
       ensureOpen();
@@ -197,8 +389,24 @@ export function admitPaidStudyLaunch({ destination, ledgerName = 'run-ledger.jso
     },
     close(event = { type: 'launcher_closed' }) {
       if (closed) return;
+      if (event.recovery_permitted === true && !['technical_failure', 'transport_failure'].includes(event.status)) {
+        throw new Error('only a sealed technical failure may permit recovery');
+      }
       appendJsonLine(ledger, event);
+      appendJsonLine(studyLedger, {
+        type: 'study_run_sealed',
+        destination: resolvedDestination,
+        run_ledger: ledgerPath,
+        run_event_type: event.type,
+        status: event.status || null,
+        recovery_permitted: event.recovery_permitted === true,
+        reserved_in_run: reserved,
+        study_reserved: studyReserved,
+        model_attempt_ceiling: verified.spend_cap,
+      });
       fs.closeSync(ledger);
+      fs.closeSync(studyLedger);
+      releaseStudyLease(lease);
       closed = true;
     },
   };

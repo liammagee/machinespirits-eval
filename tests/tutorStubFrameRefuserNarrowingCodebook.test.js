@@ -27,6 +27,7 @@ import {
 } from '../services/tutorStubFrameRefuserNarrowingCalibration.js';
 import {
   executeTutorStubFrameRefuserNarrowingCalibration,
+  main as narrowingLauncherMain,
   prepareTutorStubFrameRefuserNarrowingCalibration,
 } from '../scripts/run-tutor-stub-frame-refuser-narrowing-calibration.js';
 
@@ -548,7 +549,7 @@ test('recovery skips completed and failed units and spends only the 61 untouched
   });
   assert.equal(recoveryPreflight.prior_attempts, 11);
   assert.equal(recoveryPreflight.recovery_model_calls, 61);
-  assert.equal(recoveryPreflight.recovery_spend_cap, 61);
+  assert.equal(recoveryPreflight.remaining_study_attempts, 61);
   assert.equal(recoveryPreflight.recovery_summary.failed_unit, 'nrw_004/reader_b');
   assert.equal(recoveryPreflight.executionUnits.length, 61);
   assert.equal(recoveryPreflight.executionUnits[0].caseEntry.case_id, 'nrw_004');
@@ -588,4 +589,63 @@ test('recovery skips completed and failed units and spends only the 61 untouched
   assert.equal(report.execution.reserved_model_calls, 72);
   assert.equal(fs.readdirSync(path.join(recoveryDestination, 'results')).length, 61);
   assert.equal(fs.existsSync(path.join(recoveryDestination, 'results/nrw_004--reader_b.json')), false);
+});
+
+test('launcher admission uses one stable study identity and full ceiling for initial and recovery roots', async () => {
+  const captures = [];
+  const archiveRoot = '/absolute/private-archive';
+  const basePreflight = {
+    status: 'passed_zero_call',
+    loaded: { relativePath: DESIGN_PATH, design: { studyId: 'frame-refuser-narrowing-p1' } },
+    archiveRoot,
+    destination: `${archiveRoot}/artifacts/tutor-stub-live/run`,
+    hard_attempt_ceiling: 72,
+  };
+  const invoke = (preflight, extraArgs = []) =>
+    narrowingLauncherMain(
+      [
+        '--design',
+        DESIGN_PATH,
+        '--archive-root',
+        archiveRoot,
+        '--destination',
+        preflight.destination,
+        '--launch-commit',
+        'launch',
+        '--go-note-commit',
+        'go',
+        '--go-note-path',
+        'notes/go.md',
+        '--accept-charges',
+        ...extraArgs,
+      ],
+      {
+        prepare: () => preflight,
+        admit: (input) => {
+          captures.push(input);
+          return { source: { commit: 'launch' } };
+        },
+        execute: async () => ({ status: 'complete' }),
+      },
+    );
+
+  await invoke(basePreflight);
+  const predecessor = `${archiveRoot}/artifacts/tutor-stub-live/run`;
+  await invoke(
+    {
+      ...basePreflight,
+      destination: `${archiveRoot}/artifacts/tutor-stub-live/recovery`,
+      recovery: { source_root: predecessor },
+      remaining_study_attempts: 61,
+    },
+    ['--recovery-from', predecessor],
+  );
+
+  assert.equal(captures.length, 2);
+  assert.equal(captures[0].studyId, 'frame-refuser-narrowing-p1');
+  assert.equal(captures[1].studyId, captures[0].studyId);
+  assert.equal(captures[0].studyStateRoot, captures[1].studyStateRoot);
+  assert.equal(captures[0].spendCap, 72);
+  assert.equal(captures[1].spendCap, 72);
+  assert.equal(captures[1].recoveryFrom, predecessor);
 });
