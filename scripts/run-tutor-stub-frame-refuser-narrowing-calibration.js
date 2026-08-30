@@ -41,8 +41,8 @@ export const TUTOR_STUB_FRAME_REFUSER_NARROWING_USAGE = `Usage:
     --recovery-from /absolute/path/to/sealed-transport-failure-root \
     --destination /absolute/create-once/private-archive/artifacts/tutor-stub-live/recovery-name \
     --launch-commit <merged-detached-recovery-commit> \
-    --go-note-commit <commit-containing-recovery-go-note> \
-    --go-note-path notes/<signed-recovery-go-note>.md \
+    --go-note-commit <commit-containing-study-go-note> \
+    --go-note-path notes/<signed-study-go-note>.md \
     --accept-charges
 
 --dry-run verifies the design, sealed archive bytes, exact 24-row sample, model
@@ -50,8 +50,8 @@ routes, and 72-attempt ceiling without writing files or calling a model. The pai
 path uses the shared standing launch contract and makes exactly one non-retried
 request for each of three independent reader seats on each sampled row. Recovery
 accepts only one sealed transport-failure root, never retries its failed unit,
-skips every completed unit, and caps the fresh destination at the exact number
-of never-attempted assignments remaining inside the original 72-attempt ceiling.`;
+skips every completed unit, and draws the never-attempted assignments from the
+same durable study-wide 72-attempt ceiling. It needs no new recovery approval.`;
 
 function repositoryRelative(root, value, label) {
   if (!value || path.isAbsolute(value)) throw new Error(`${label} must be repository-relative`);
@@ -310,7 +310,7 @@ export function prepareTutorStubFrameRefuserNarrowingCalibration({
       })
     : null;
   const executionUnits = recovery?.executionUnits || allExecutionUnits(plan, readers);
-  const recoverySpendCap = recovery?.remaining_attempts ?? plan.hard_attempt_ceiling;
+  const remainingStudyAttempts = recovery?.remaining_attempts ?? plan.hard_attempt_ceiling;
   return {
     status: 'passed_zero_call',
     design: { path: loaded.relativePath, sha256: loaded.sha256 },
@@ -321,7 +321,7 @@ export function prepareTutorStubFrameRefuserNarrowingCalibration({
     planned_model_calls: plan.planned_model_calls,
     recovery_model_calls: executionUnits.length,
     prior_attempts: recovery?.prior_attempts || 0,
-    recovery_spend_cap: recoverySpendCap,
+    remaining_study_attempts: remainingStudyAttempts,
     recovery_summary: recovery
       ? {
           source_root: recovery.source_root,
@@ -418,6 +418,7 @@ export async function executeTutorStubFrameRefuserNarrowingCalibration({
         admission.close({
           type: 'run_sealed',
           status: 'transport_failure',
+          recovery_permitted: true,
           unit,
           attempted_calls: attemptedCalls,
           combined_attempts: priorAttempts + attemptedCalls,
@@ -563,8 +564,11 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     launchCommit: values['launch-commit'],
     goNoteCommit: values['go-note-commit'],
     goNotePath: values['go-note-path'],
-    spendCap: preflight.recovery_spend_cap,
+    spendCap: preflight.hard_attempt_ceiling,
     destination: preflight.destination,
+    studyId: preflight.loaded.design.studyId,
+    studyStateRoot: path.join(preflight.archiveRoot, 'artifacts/tutor-stub-live/.paid-study-state'),
+    ...(preflight.recovery ? { recoveryFrom: preflight.recovery.source_root } : {}),
   });
   return (overrides.execute || executeTutorStubFrameRefuserNarrowingCalibration)({
     preflight,

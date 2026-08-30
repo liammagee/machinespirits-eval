@@ -1,10 +1,10 @@
 ---
 id: paid-study-cross-session-budget-lease
 title: Enforce one paid-study ceiling across concurrent sessions
-status: active
+status: review
 type: infra
 priority: P0
-owner: unassigned
+owner: codex
 source: review
 created: 2026-08-30
 updated: 2026-08-30
@@ -30,6 +30,7 @@ tags:
   - concurrency
   - recovery
   - incident
+branch: codex/paid-study-cross-session-budget-lease
 ---
 
 The frame-refuser refusal-narrowing calibration exposed a real cross-session
@@ -66,3 +67,12 @@ Acceptance:
 - Preserve the three 2026-08-30 narrowing roots byte-for-byte as the incident
   record. Do not pool their measurements or retroactively relabel either as the
   uniquely authorized run.
+
+## Log
+
+- 2026-08-30: Implemented the atomic study lease, aggregate reservation ledger,
+  and sealed technical-recovery handoff on
+  `codex/paid-study-cross-session-budget-lease`. Offline verification passed:
+  38 focused contract/launcher tests, 2 launcher-inventory tests, targeted
+  ESLint and Prettier checks, and 569/569 workplan items. No model calls were
+  made.

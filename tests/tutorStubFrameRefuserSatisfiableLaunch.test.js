@@ -435,6 +435,8 @@ test('launcher main admits through the shared contract and has no approval or re
   assert.equal(result.status, 'passed');
   assert.equal(captured.admission.designPath, DESIGN_PATH);
   assert.equal(captured.admission.spendCap, 9504);
+  assert.equal(captured.admission.studyId, 'frame-refuser-satisfiable');
+  assert.equal(captured.admission.studyStateRoot, '/absolute/.paid-study-state');
   assert.equal(captured.admission.launchCommit, 'launch');
   assert.equal(captured.execution.admission.source.commit, 'launch');
   assert.doesNotMatch(TUTOR_STUB_FRAME_REFUSER_SATISFIABLE_USAGE, /APPROVE CALIBRATION|--resume/u);
