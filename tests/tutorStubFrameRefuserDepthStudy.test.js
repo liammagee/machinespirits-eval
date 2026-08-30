@@ -29,10 +29,11 @@ import {
 } from '../services/tutorStubRegisteredStudyOutcome.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v4.json';
+const DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v5.json';
 const V1_DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v1.json';
 const V2_DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v2.json';
 const V3_DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v3.json';
+const V4_DESIGN_PATH = 'config/tutor-stub-frame-refuser-depth-design.v4.json';
 
 function loadDesign() {
   return loadTutorStubResistantLearnerDesign({ designPath: DESIGN_PATH, root: ROOT });
@@ -47,7 +48,8 @@ test('depth design file validates and every registered constant fails closed', (
   assert.equal(validateTutorStubResistantLearnerDesign(design).valid, true);
   const mutations = [
     (d) => (d.studyId = 'frame-refuser-depth-2'),
-    (d) => (d.randomization.masterSeed = 2026082702),
+    // The revision-4 seed: a superseded seed must never validate under revision 5.
+    (d) => (d.randomization.masterSeed = 2026082901),
     (d) => (d.randomization.caseIdRule = 'hyphen_allowed'),
     (d) => (d.attemptCeilings.plannedCallsCalibration = 2305),
     (d) => (d.attemptCeilings.calibrationMaximumReservations = 7129),
@@ -64,6 +66,8 @@ test('depth design file validates and every registered constant fails closed', (
     (d) => (d.callAuthority.grantsModelCalls = true),
     (d) => (d.lineage.measuredReferenceRung2Rate = 0.2),
     (d) => (d.lineage.firstCalibration.rowsReused = true),
+    (d) => (d.lineage.fourthCalibration.rowsReused = true),
+    (d) => (d.measurement.readerPanel.protocolSource = 'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json'),
   ];
   for (const mutate of mutations) {
     const mutated = designCopy();
@@ -107,7 +111,13 @@ test('arm projections carry the registered per-arm contracts on sealed face-B ma
     assert.equal(arm.calibration.maximumTreatmentBridgeReadRate, 0.1);
     assert.equal(arm.calibration.maximumReferenceContaminationRate, undefined);
     assert.equal(arm.calibration.minimumPairwiseExactEndpointAgreement, 0.8);
-    assert.equal(arm.randomization.masterSeed, 2026082901);
+    assert.equal(arm.randomization.masterSeed, 2026083001);
+    // The depth arm reads the amended v6 panel protocol; the sealed parent
+    // face keeps its own v5 pointer for replay of its frozen rows.
+    assert.equal(
+      arm.measurement.readerPanel.protocolSource,
+      'config/tutor-stub-resistant-learner-merged-semantic-registration.v6.json',
+    );
     assert.equal(arm.attemptCeilings.plannedCallsPerDialogue, 64);
     assert.equal(arm.attemptCeilings.maximumReservationsPerDialogue, 198);
   }
@@ -117,7 +127,7 @@ test('arm projections carry the registered per-arm contracts on sealed face-B ma
 test('calibration plan is 48 jobs balanced twelve per arm-world with stable deterministic ranks', () => {
   const design = loadDesign().design;
   const plan = buildTutorStubResistantLearnerCalibrationPlan(design);
-  assert.equal(plan.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-plan.v4');
+  assert.equal(plan.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-plan.v5');
   assert.equal(plan.jobs.length, 48);
   for (const armId of ['treatment', 'reference']) {
     for (const world of design.population.worlds) {
@@ -127,7 +137,7 @@ test('calibration plan is 48 jobs balanced twelve per arm-world with stable dete
   for (const job of plan.jobs) {
     // Underscore-only ids: the sealed reader seat merged a hyphen-underscore
     // boundary when echoing revision-1 case ids, voiding its votes.
-    assert.match(job.id, /^depth_(treatment|reference)_cal4_[a-z0-9_]+_r\d+$/u);
+    assert.match(job.id, /^depth_(treatment|reference)_cal5_[a-z0-9_]+_r\d+$/u);
     assert.equal(job.register, 'plain');
     assert.match(job.batch_id, /^batch_\d{2}$/);
     assert.equal(typeof job.assignment_manifest_sha256, 'string');
@@ -186,7 +196,7 @@ test('launch preflight covers both arm delivery roles, probes zero-call, and wri
   assert.equal(preflight.production_writes, 0);
   assert.equal(preflight.planned_role_calls, 3072);
   assert.equal(preflight.hard_attempt_ceiling, 9504);
-  assert.equal(preflight.schema, 'machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.v4');
+  assert.equal(preflight.schema, 'machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.v5');
   assert.equal(preflight.checks.design_revision_current, true);
   assert.equal(preflight.checks.case_ids_underscore_only, true);
   assert.equal(fs.existsSync(destination), false);
@@ -260,7 +270,7 @@ test('depth summarizer passes on clean synthetic rows and reports the sizing upd
   const design = loadDesign().design;
   const rows = syntheticDepthRows(design);
   const report = summarizeTutorStubResistantLearnerCalibration({ rows, design, root: ROOT });
-  assert.equal(report.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-report.v4');
+  assert.equal(report.schema, 'machinespirits.tutor-stub.frame-refuser-depth-calibration-report.v5');
   assert.equal(report.status, 'passed');
   assert.equal(report.calibration_only, true);
   assert.equal(report.powered_run_authorized, false);
@@ -468,10 +478,32 @@ test('revision 3 stays valid as provenance but the launch preflight refuses to r
   assert.equal(preflight.model_calls_executed, 0);
 });
 
+test('revision 4 stays valid as provenance but the launch preflight refuses to run it', async () => {
+  const loadedV4 = loadTutorStubResistantLearnerDesign({ designPath: V4_DESIGN_PATH, root: ROOT });
+  assert.equal(validateTutorStubResistantLearnerDesign(loadedV4.design).valid, true);
+  assert.equal(loadedV4.design.revision, 4);
+  loadedV4.relativePath = V4_DESIGN_PATH;
+  const preflight = await runTutorStubFrameRefuserDepthPreflight({
+    loaded: loadedV4,
+    root: ROOT,
+    destination: path.join(os.tmpdir(), `frame-refuser-depth-v4-refused-${process.pid}`),
+    destinationExists: () => false,
+    probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
+    smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', provider_model_calls: 0 }),
+  });
+  assert.equal(preflight.status, 'failed');
+  assert.equal(preflight.checks.design_revision_current, false);
+  // Revision 4's defects live in its reader registration binding and its
+  // own-voice delivery carve-out, not its ids; only currency fails here.
+  assert.equal(preflight.checks.case_ids_underscore_only, true);
+  assert.equal(preflight.schema, 'machinespirits.tutor-stub.frame-refuser-depth-launch-preflight.v4');
+  assert.equal(preflight.model_calls_executed, 0);
+});
+
 test('the treatment condition-discharge exhaustion is a retained typed failure, not technical', () => {
   const outcome = tutorStubRegisteredStudyOutcomeFromError({
     error: { code: 'tutor_stub_tutor_condition_discharge_non_delivery', substantiveStudyFailure: true },
-    jobId: 'depth_treatment_cal4_world_030_rowan_flat_r1',
+    jobId: 'depth_treatment_cal5_world_030_rowan_flat_r1',
   });
   assert.equal(outcome.status, TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_STATUS);
   assert.equal(outcome.code, 'tutor_stub_tutor_condition_discharge_non_delivery');
@@ -481,7 +513,7 @@ test('the treatment condition-discharge exhaustion is a retained typed failure, 
   assert.ok(
     tutorStubRegisteredStudyOutcomeFromError({
       error: { code: 'tutor_stub_tutor_bounded_test_non_delivery', substantiveStudyFailure: true },
-      jobId: 'depth_reference_cal4_world_005_marrick_r1',
+      jobId: 'depth_reference_cal5_world_005_marrick_r1',
     }),
   );
 });

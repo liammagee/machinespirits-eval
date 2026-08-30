@@ -1,0 +1,245 @@
+{
+  "schema": "machinespirits.tutor-stub.frame-refuser-depth-study-design.v1",
+  "revision": 5,
+  "studyId": "frame-refuser-depth",
+  "label": "Condition-discharge against the sealed standing-conditions bridge on the frame-refuser rung-2 endpoint",
+  "status": "prospective_zero_call_design_pending_typed_approval",
+  "workplanItem": "frame-refuser-depth-study",
+  "registrationSource": "notes/2026-08-29-frame-refuser-depth-registration-v5.md",
+  "lineage": {
+    "parentDesign": "config/tutor-stub-resistant-learner-merged-design.v5.json",
+    "parentRole": "sealed_reference_condition_and_shared_machinery",
+    "reuseOfParentRows": false,
+    "measuredReferenceRung2Rate": 0.114,
+    "measuredReferenceRung2Counts": "8/70 determinate face-B dialogues in the sealed merged powered run",
+    "firstCalibration": {
+      "designFile": "config/tutor-stub-frame-refuser-depth-design.v1.json",
+      "ranAt": "2026-08-27",
+      "status": "failed_at_gate_1_before_any_powered_run",
+      "archivedAt": "../machinespirits-eval-private/artifacts/tutor-stub-live/frame-refuser-depth-gate1-2026-08-27",
+      "rowsReused": false,
+      "defectsFixedInThisRevision": [
+        "mixed hyphen-underscore case ids defeated the sealed reader case-id echo in 12 of 12 completed dialogues; revision 2 case ids are underscore-only",
+        "determinate and eligible-vote floors of 8 were sized against 10 planned dialogues per arm, below the sealed machinery known typed-failure attrition; revision 2 plans 18 per arm so the same floors are reachable at the sealed completion base rate",
+        "the reference contamination gate double-counted typed non-delivery failures as contamination; revision 2 replaces it with a blind-panel arm-separation bound on completed treatment rows and keeps reference cleanliness enforced by the bundled per-arm adjudication, reported but not gated"
+      ]
+    },
+    "secondCalibration": {
+      "designFile": "config/tutor-stub-frame-refuser-depth-design.v2.json",
+      "ranAt": "2026-08-27",
+      "status": "failed_at_gate_1_before_any_powered_run",
+      "archivedAt": "../machinespirits-eval-private/artifacts/tutor-stub-live/frame-refuser-depth-gate1-v2-2026-08-27",
+      "rowsReused": false,
+      "defectsFixedInThisRevision": [
+        "the registered treatment instruction let the tutor wrap the condition, exhibit, and re-offer inside the reference move's standing formula ('before your question can have standing ... what assay shall test that?'); 3 of 11 completed treatment turns were blind-read as the bridge and one ended with the forbidden standing question; the instruction and the treatment adjudication question are rewritten to committed voice with the standing-precondition formula banned by name",
+        "the one pairwise endpoint miss (0.73 on one seat pair, other pairs 0.82 and 0.91) sat partly on the hybrid turns; no floor changes — removing the hybrid surface is the fix"
+      ]
+    },
+    "thirdCalibration": {
+      "designFile": "config/tutor-stub-frame-refuser-depth-design.v3.json",
+      "ranAt": "2026-08-27",
+      "status": "failed_at_gate_1_before_any_powered_run",
+      "archivedAt": "../machinespirits-eval-private/artifacts/tutor-stub-live/frame-refuser-depth-gate1-v3-2026-08-27",
+      "rowsReused": false,
+      "defectsFixedInThisRevision": [
+        "the treatment instruction and adjudication question banned the standing-precondition formula with no rule for words the tutor quotes from the learner, whose own condition-naming line is that formula; 4 of 5 exhausted treatment drafts quoted it verbatim and were rejected for it; revision 4 requires the restatement in the tutor's own words and tells the adjudicator to judge only the tutor's own voice",
+        "the 36-dialogue plan absorbed 22 retained typed failures (61 percent attrition, against 39 percent in revision 2), leaving 7 completed per arm under the floor of 8; revision 4 plans 48 dialogues (24 per arm, 12 per world per arm) with every floor unchanged, so the floors are reachable at both observed attrition rates"
+      ]
+    },
+    "fourthCalibration": {
+      "designFile": "config/tutor-stub-frame-refuser-depth-design.v4.json",
+      "ranAt": "2026-08-27",
+      "status": "failed_at_gate_1_before_any_powered_run",
+      "archivedAt": "../machinespirits-eval-private/artifacts/tutor-stub-live/frame-refuser-depth-gate1-v4-2026-08-27",
+      "rowsReused": false,
+      "defectsFixedInThisRevision": [
+        "the sealed claude-code.sonnet-5 reader seat attached evidence_quotes arrays to no-votes where the registered evidence contract demands JSON null, voiding 29 of 29 whole_frame_compliance votes in both arms and 4 of 14 treatment delivered_test_bounded_distinction votes as evidence_invalid; merged registration v6 states the null contract outright in the evidence instruction, restates it inside the per-field output schema, and registers a one-retry evidence-null slip tolerance with a second failure leaving the field ineligible",
+        "the codex.gpt-5.6-sol reader seat split the endpoint rung boundaries on 9 of 29 completed rows (six single-seat deviations, bidirectional, seven of nine in world_030_rowan_flat), holding every sol seat pair at 0.714-0.800 against the 0.8 pairwise floor while the sonnet-opus pairs read 0.857 and 0.933; merged registration v6 adds three worked examples anchoring the disputed 1-versus-2, 0-versus-1, and committed-voice rung-2 boundaries while moving no rung, anchor, or endpoint definition",
+        "both treatment bridge reads (2 of 14 against the 0.1 bound) came from treatment turns quoting the learner's standing formula back at it, which the revision-4 own-voice carve-out passed; revision 5 bans the formula wherever it appears in the turn - own voice, quotation marks, or words attributed to the learner - in both the treatment instruction and the delivery adjudication question, because the blind outcome panel reads the turn without attribution"
+      ]
+    }
+  },
+  "registeredQuestion": "For the standing-rivalry (frame-refuser) population, does a tutor move that discharges the learner's named condition with already-public evidence and re-offers the exact local test raise the rate of rung-2 engagement (beginning or committing now to that test, wider reservation unretracted) above the rate under the sealed standing-conditions bridge?",
+  "whichNumberMoves": {
+    "primary": "The proportion of determinate completed dialogues per arm whose final_graded_engagement_rung is 2, compared across the two arms by a two-sided exact conditional test at alpha 0.05.",
+    "secondary": "The rung>=1 rate per arm as a saturation check against the sealed 70/70.",
+    "poolingAcrossArms": false
+  },
+  "claimBoundary": "Any claim is limited to the frame_refuser-r1-rival-dag-v3 persona on world_005_marrick and world_030_rowan_flat, plain register, the fixed 8-post-trigger-turn horizon, and the codex.gpt-5.6-luna generation stack with the registered reader panel. A null inside the powered design's power boundary is a result about this contrast at this size, not about the move in general.",
+  "population": {
+    "profile": "frame_refuser-r1-rival-dag-v3",
+    "baseCompatibilityId": "frame_refuser",
+    "worlds": [
+      "world_005_marrick",
+      "world_030_rowan_flat"
+    ],
+    "trigger": "unchanged from the parent design: first determinate public standing-rivalry turn under config/tutor-stub-resistant-learner-merged-turn-gate-registration.v1.json",
+    "maximumTriggerLearnerTurn": 2,
+    "outcomeHorizonPostTriggerLearnerTurns": 8,
+    "independentUnit": "fresh independent dialogue",
+    "reuseOrPooling": false,
+    "personaSource": "parent design faceB rivalDagPersona, unchanged, including the typed concession condition, bounded bridge-step enforcement, concealment, and public turn rules"
+  },
+  "register": {
+    "held": "plain",
+    "rationale": "Register is a nuisance factor here; both arms deliver in the parent design's plain register instruction. No register claim is licensed.",
+    "reportOnly": true
+  },
+  "arms": {
+    "treatment": {
+      "id": "condition_discharge",
+      "hostActionFamily": "reanchor_public_evidence",
+      "definition": "On the first registered intervention tutor turn after the trigger, restate the learner's named condition in one clause, present one already-public exhibit or relation that bears on that exact condition, and re-offer the same local test in the same turn. No new private evidence, no question about standing.",
+      "actionInstruction": "Restate the learner's named condition in one short clause in your own words; never repeat, quote, or attribute back to the learner the learner's own condition-naming sentence. Then present exactly one already-public exhibit or public relation that bears on that condition, naming the exhibit. Then re-offer the exact same local test you offered before, in one sentence and in committed voice: say that you are ready to run it now on the named exhibit. Do not ask what would give your question standing. Do not ask the learner what assay or test would establish the condition. Do not introduce evidence that is not already public. A standing-precondition formula such as 'before your question can have standing' or 'before your question can stand' must not appear anywhere in your turn: not in your own voice, not inside quotation marks, and not as words you attribute to the learner. If you need to refer to the learner's demand, call it the condition you have named, or restate its content in your own words.",
+      "deliveredContrastRule": "requires_public_exhibit_toward_named_condition_and_reoffer_of_same_test"
+    },
+    "reference": {
+      "id": "standing_conditions_bridge",
+      "hostActionFamily": "clarify_distinction",
+      "definition": "The parent design's sealed face-B move, unchanged: name the disputed standing plainly, ask what would give the tutor's question standing, and offer one bounded distinction.",
+      "actionInstruction": "unchanged from parent design faceB tutorDeliveryContract.actionInstructions.test_bounded_distinction",
+      "deliveredContrastRule": "requires_standing_question_and_forbids_presenting_evidence_toward_the_named_condition_on_the_intervention_turn"
+    },
+    "distinctDeliveredBehaviourFloors": {
+      "minimumTreatmentDeliveryRate": 0.8,
+      "maximumTreatmentBridgeReadRate": 0.1,
+      "bridgeReadDefinition": "a completed treatment row whose blind fidelity panel reads the committed intervention turn as the sealed bounded-distinction bridge (modal delivered_test_bounded_distinction = yes)",
+      "readFrom": "tutor text: treatment delivery via the per-arm delivery adjudication below, arm separation via the sealed three-seat blind fidelity panel; never from the assignment",
+      "referenceCleanliness": "enforced, not gated: the bundled reference adjudication question forbids presenting an exhibit toward the named condition, so every committed reference intervention turn is certified bridge-without-exhibit by the delivery seat; certification is reported per row",
+      "lesson": "the v7 boredom study delivered one behaviour twice and its gate compared the assignment with its own copy; the first depth calibration gated contamination on a denominator that re-counted typed failures; the second depth calibration showed the treatment tutor wrapping delivery in the reference move's standing formula (3 of 11 completed treatment turns blind-read as the bridge); both floors here are authoritative and void the block if failed; the fourth depth calibration passed treatment turns that quoted the learner's standing formula back at it under an own-voice carve-out, and the blind panel read 2 of 14 as the bridge, so revision 5 fails delivery on the formula wherever it appears in the turn"
+    }
+  },
+  "tutorDeliveryEnforcement": {
+    "schema": "machinespirits.tutor-stub.tutor-delivery-enforcement.v1",
+    "appliesWhen": "registered_intervention_tutor_candidate_before_next_learner_call",
+    "scope": "first_registered_intervention_tutor_turn_per_dialogue",
+    "position": "after_existing_tutor_guard_delivery_before_public_turn_commit_and_next_learner_call",
+    "perArmAdjudication": {
+      "adjudicatorSeat": {
+        "id": "tutor_delivery_adjudicator",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "effort": "low"
+      },
+      "treatmentQuestion": "Does the tutor candidate deliver the registered condition-discharge: restate the learner's named condition in the tutor's own words (never repeating, quoting, or attributing back the learner's condition-naming sentence), present one named already-public exhibit bearing on that condition, and re-offer the same local test in committed voice, without asking what would give the question standing, and without asking the learner what test would establish the condition? A standing-precondition formula such as 'before your question can have standing' fails delivery wherever it appears in the candidate turn: in the tutor's own voice, inside quotation marks, or as words the candidate attributes to the learner, because the blind outcome panel reads the turn without attribution.",
+      "referenceQuestion": "Does the tutor candidate deliver the registered standing-conditions bridge (name the disputed standing, ask what would give the question standing, offer one bounded distinction) WITHOUT presenting any exhibit or evidence toward the learner's named condition?",
+      "evidenceContract": "For a pass, quote must be a non-empty verbatim substring of the tutor candidate."
+    },
+    "repairsAllowedPerEpisode": 1,
+    "exhaustionDisposition": "typed_tutor_non_delivery_failure",
+    "exhaustionNeverScored": true,
+    "typedFailureIsNotDeterminate": true,
+    "lesson": "every registered instruction is read by code on the generating path; the v8 reference instruction was read by nothing and one dialogue in five broke it"
+  },
+  "measurement": {
+    "endpointField": "final_graded_engagement_rung",
+    "fixedFinalHorizon": true,
+    "ladderSource": "parent design faceB measurement.rungs, unchanged (0 standing_objection_only, 1 propositional_local_engagement, 2 local_step_under_protest)",
+    "echoGuard": "unchanged from parent design faceB",
+    "readerPanel": {
+      "protocolSource": "config/tutor-stub-resistant-learner-merged-semantic-registration.v6.json",
+      "seats": "the sealed three-seat modal endpoint panel (codex.gpt-5.6-sol, claude-code.sonnet-5, claude-code.opus-5); each field takes the modal value across eligible medium/high-confidence votes",
+      "minimumPairwiseExactAgreement": 0.8,
+      "generatorExcludedFromVoting": "codex.gpt-5.6-luna",
+      "visibility": "public transcript only; arm assignment, rival DAG, and directives are never shown to endpoint seats"
+    }
+  },
+  "calibration": {
+    "dialogues": 48,
+    "perArm": 24,
+    "allocation": "twelve dialogues per world per arm, sha256-ranked balanced allocation from the master seed",
+    "authoritativeGates": [
+      "minimumDeterminateOutcomeRate 0.8 with floor 8",
+      "minimumEligibleVoteRatePerSeatAndInstrument 0.8 with floor 8",
+      "minimumPairwiseExactEndpointAgreement 0.8",
+      "minimumTreatmentDeliveryRate 0.8 on adjudicated intervention turns",
+      "maximumTreatmentBridgeReadRate 0.1 on completed treatment rows (blind-panel arm separation)",
+      "maximumConfirmedProhibitedDeliveries 0",
+      "minimumJurisdictionRetainedRateOnCompletedRows 0.67 with floor 6"
+    ],
+    "sizingUse": "the calibration reference-arm rung-2 rate updates the power table's base rate for the powered-run sizing rule; this is the calibration's registered purpose and not an interim outcome analysis of a powered question",
+    "killRule": "stop before a powered run if any authoritative gate fails, if execution accounting does not balance, or if the treatment arm shows zero adjudicated deliveries; relaxing any floor after data is refused"
+  },
+  "poweredRun": {
+    "authorization": "not_granted_by_this_design_or_calibration",
+    "calibrationRowsExcluded": true,
+    "registeredAlternative": 0.35,
+    "sizingRule": "smallest n per arm in {42, 48, 54, 60, 72, 84, 90} whose exact two-sided Fisher power at alpha 0.05 against rung-2 rate 0.35 in the treatment arm, computed at the calibration-updated reference rate, reaches 0.80; if no n at or below 90 reaches 0.80, stop and report infeasible at ceiling",
+    "prospectivePowerScanAtDesignBase0114": {
+      "36": {
+        "0.25": 0.228,
+        "0.30": 0.398,
+        "0.35": 0.581,
+        "0.40": 0.743,
+        "0.45": 0.864
+      },
+      "42": {
+        "0.25": 0.286,
+        "0.30": 0.483,
+        "0.35": 0.675,
+        "0.40": 0.826,
+        "0.45": 0.921
+      },
+      "48": {
+        "0.25": 0.309,
+        "0.30": 0.53,
+        "0.35": 0.731,
+        "0.40": 0.873,
+        "0.45": 0.951
+      },
+      "54": {
+        "0.25": 0.349,
+        "0.30": 0.584,
+        "0.35": 0.785,
+        "0.40": 0.911,
+        "0.45": 0.971
+      },
+      "60": {
+        "0.25": 0.398,
+        "0.30": 0.643,
+        "0.35": 0.833,
+        "0.40": 0.939,
+        "0.45": 0.983
+      }
+    },
+    "maximumDialoguesPerArm": 90,
+    "separateAuthorizationRequired": true
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "learner": "codex.gpt-5.6-luna",
+    "analysisScope": "classifier_and_learner_record_support_only",
+    "cliEffort": "low",
+    "triggerObservation": "unchanged from parent design faceB (registered judges under the merged turn-gate registration)",
+    "stackNote": "held to the sealed stack for comparability of the reference arm with the measured 0.114"
+  },
+  "randomization": {
+    "masterSeed": 2026083001,
+    "algorithm": "sha256-ranked balanced allocation within calibration or powered blocks",
+    "seedDisclosure": "fresh seed for revision 5 so no revision-1, revision-2, revision-3, or revision-4 assignment is re-drawn; all four failed calibrations are archived, their rows are never reused, and no unit from them is resampled",
+    "caseIdRule": "underscore_only_lowercase"
+  },
+  "attemptCeilings": {
+    "callPlanPerDialogue": "carried from parent design (64 planned calls per dialogue) as a fail-before-call ceiling",
+    "plannedCallsCalibration": 3072,
+    "maximumReservationsPerPlannedCall": 3,
+    "calibrationMaximumReservations": 9504,
+    "role": "fail-before-call ceiling, not a target"
+  },
+  "dispositions": {
+    "measurementIndeterminate": "retain; stop the unit; no repair, rerun, replacement, or recoding",
+    "technicalFailure": "halt the block before starting another unit",
+    "validUnitRerun": false,
+    "outcomeSelection": false,
+    "interimOutcomeAnalysis": false,
+    "tutorNonDelivery": "retain; stop the unit; never score or determine a rung; never charge the learner; no rerun"
+  },
+  "callAuthority": {
+    "grantsModelCalls": false,
+    "launchRequirement": "One attended invocation with TTY-only typed operator approval recorded in approval.json.",
+    "provenance": "Record source commit, source tree, and dirty flag in plan.json; do not enforce source or design digests at launch.",
+    "approvalSurvivesCodeFix": true,
+    "goNoteRequired": false
+  }
+}

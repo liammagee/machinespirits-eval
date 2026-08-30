@@ -246,12 +246,15 @@ const MOVE_INSTRUCTIONS = Object.freeze({
   stage_public_evidence_for_next_step:
     'Continue the inquiry as though the learner had said nothing about themselves. Stage the next already-public piece of evidence and name it plainly. Do not mention, acknowledge, or respond to the learner’s interest, effort, mood or pace, and do not comment on how the work is going. Ask no question of any kind. Do not simplify the task, re-motivate the learner, or offer a choice. You may name the public object and may say what it does not yet settle; you must not say what it shows, must not state or hint at any finding, inference or conclusion, and must not draw a conclusion from it.',
   // The depth-study treatment instruction, byte-identical to
-  // arms.treatment.actionInstruction in the registered depth design file. The
-  // study runtime overrides this text with the design's own copy at launch;
-  // this entry exists so `assignedMove` recognizes the move and so the host
+  // arms.treatment.actionInstruction in the registered depth design file
+  // (revision 5, which bans the standing-precondition formula anywhere in the
+  // turn — own voice, quotation marks, or words attributed to the learner —
+  // after both revision-4 bridge reads came from quoted formulas). The study
+  // runtime overrides this text with the design's own copy at launch; this
+  // entry exists so `assignedMove` recognizes the move and so the host
   // default can never drift from the registration without a test failing.
   condition_discharge:
-    "Restate the learner's named condition in one short clause in your own words; do not repeat or quote the learner's own sentence word for word. Then present exactly one already-public exhibit or public relation that bears on that condition, naming the exhibit. Then re-offer the exact same local test you offered before, in one sentence and in committed voice: say that you are ready to run it now on the named exhibit. Do not ask what would give your question standing. Do not use a standing-precondition formula such as 'before your question can have standing' or 'before your question can stand'. Do not ask the learner what assay or test would establish the condition. Do not introduce evidence that is not already public.",
+    "Restate the learner's named condition in one short clause in your own words; never repeat, quote, or attribute back to the learner the learner's own condition-naming sentence. Then present exactly one already-public exhibit or public relation that bears on that condition, naming the exhibit. Then re-offer the exact same local test you offered before, in one sentence and in committed voice: say that you are ready to run it now on the named exhibit. Do not ask what would give your question standing. Do not ask the learner what assay or test would establish the condition. Do not introduce evidence that is not already public. A standing-precondition formula such as 'before your question can have standing' or 'before your question can stand' must not appear anywhere in your turn: not in your own voice, not inside quotation marks, and not as words you attribute to the learner. If you need to refer to the learner's demand, call it the condition you have named, or restate its content in your own words.",
 });
 
 const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
@@ -264,7 +267,7 @@ const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
   stage_public_evidence_for_next_step:
     'Stage the next already-public piece of evidence, name it plainly, and say what it does not yet settle. Say nothing about the learner’s state, ask no question, and do not say what the evidence shows.',
   condition_discharge:
-    "Restate the learner's named condition in one clause in your own words (never a word-for-word copy of the learner's sentence), present one named already-public exhibit bearing on that condition, and re-offer the exact same local test in committed voice, ready to run now; do not use a standing-precondition formula, do not ask what test would establish the condition, and do not ask what would give the question standing.",
+    "Restate the learner's named condition in one clause in your own words (never repeating, quoting, or attributing back the learner's sentence), present one named already-public exhibit bearing on that condition, and re-offer the exact same local test in committed voice, ready to run now; no standing-precondition formula anywhere in the turn — own voice, quotation marks, or attributed words — do not ask what test would establish the condition, and do not ask what would give the question standing.",
 });
 
 const SHIPPED_MOVE_DELIVERY_DIRECTIVES = Object.freeze({

@@ -1,0 +1,291 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v6",
+  "version": 6,
+  "status": "prospective_zero_call_registration",
+  "workplanItem": "resistant-learner-strategy-close",
+  "appliesToDesignSchema": "machinespirits.tutor-stub.resistant-learner-merged-study-design.v1",
+  "appliesToDesignRevision": 5,
+  "supersedesRegistration": {
+    "path": "config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json",
+    "sha256": "07f6bedec541ee9b25317eeff0197334a53e22f7ef5f8b0d904f503834b4e10b",
+    "reason": "The 2026-08-27 frame-refuser depth revision-4 gate-1 calibration failed on instrument grounds under this registration: (1) the sealed claude-code.sonnet-5 seat attached evidence_quotes arrays to no-votes the contract requires to be JSON null, voiding 29 of 29 whole_frame_compliance votes in both arms and 4 of 14 treatment delivered_test_bounded_distinction votes as evidence_invalid; (2) the codex.gpt-5.6-sol seat split the endpoint rung boundaries on 9 of 29 completed rows, holding every sol seat pair at 0.714-0.800 against the 0.8 pairwise floor while the sonnet-opus pairs read 0.857 and 0.933; (3) both treatment bridge reads came from turns quoting the learner's standing formula, which the depth revision-4 own-voice carve-out passed. Version 6 amends exactly four surfaces - the evidence-contract prompt instruction, a registered one-retry evidence-null slip tolerance, a per-field schema restatement of the null contract, and three added face-B worked examples anchoring the disputed rung boundaries - and moves no gate constant, floor, ceiling, consensus rule, judge, endpoint definition, or disposition.",
+    "reuse": false
+  },
+  "readerPanel": {
+    "judges": [
+      "codex.gpt-5.6-sol",
+      "claude-code.sonnet-5",
+      "claude-code.opus-5"
+    ],
+    "fidelityJudges": [
+      "codex.gpt-5.6-sol",
+      "claude-code.sonnet-5"
+    ],
+    "effort": "low",
+    "consensus": "For final_graded_engagement_rung, code takes the modal value of eligible medium/high-confidence votes: at least two eligible votes sharing one rung is determinate; fewer than two eligible votes or a 1-1-1 split is measurement_indeterminate.",
+    "fidelityConsensus": "Both valid medium/high-confidence votes agree on the exact non-endpoint field value; otherwise measurement_indeterminate.",
+    "independence": "Each endpoint seat receives fresh context, the public transcript and registered anchors only, with no other seat output, vote count, shared note, rival DAG, assignment, enforcement verdict, or generator analysis.",
+    "validityBackstop": {
+      "field": "final_graded_engagement_rung",
+      "statistic": "mean_pairwise_conditional_exact_agreement_across_all_three_endpoint_seat_pairs_per_face",
+      "minimum": 0.5,
+      "failureDisposition": "face_calibration_measurement_indeterminate_stop",
+      "interpretation": "coarse broken-instrument screen, not a reliability certificate"
+    },
+    "reportOnly": [
+      "all_three_endpoint_pairwise_exact_agreements",
+      "endpoint_vote_distributions",
+      "endpoint_majority_margin_3_0_vs_2_1"
+    ],
+    "repairRerunReplacementOrSelectionAllowed": false,
+    "generatorExcluded": "codex.gpt-5.6-luna",
+    "echoSlipTolerance": {
+      "retryOn": "identity_mismatch_as_only_validation_issue",
+      "maximumRetriesPerSeatCall": 1,
+      "promptChange": "none",
+      "secondFailureDisposition": "seat_remains_invalid",
+      "recordedOnSeatRecord": true,
+      "rationale": "A reader that mistypes one character of the long case-id echo while every field, quote, and contract check passes has slipped on the echo, not the judgment. One re-ask with the byte-identical prompt recovers the seat; any other defect gets no retry."
+    },
+    "evidenceNullSlipTolerance": {
+      "retryOn": "evidence_invalid_null_required_as_only_field_issue",
+      "maximumRetriesPerSeatCall": 1,
+      "promptChange": "none",
+      "secondFailureDisposition": "field_remains_ineligible",
+      "recordedOnSeatRecord": true,
+      "rationale": "A reader that votes no, 0, or indeterminate and attaches quotes instead of the required JSON null has slipped on the evidence-null convention, not the judgment: the vote itself is stated. One re-ask with the byte-identical prompt recovers the seat; any other defect, and any second failure, gets no retry. The 2026-08-27 depth revision-4 calibration lost one seat's entire whole_frame_compliance column (29 of 29 votes, both arms) and 4 of 14 treatment delivered_test_bounded_distinction votes to exactly this slip."
+    }
+  },
+  "instrument": {
+    "endpointField": "final_graded_engagement_rung",
+    "endpointValues": [
+      "0",
+      "1",
+      "2",
+      "indeterminate"
+    ],
+    "faces": {
+      "faceA": {
+        "id": "content_rivalry",
+        "horizonPostTriggerLearnerTurns": 5,
+        "rungs": {
+          "0": "No public pickup: the learner remains only on the rival objective, reports boredom, assents, refuses, or repeats a relation already public before that learner turn, without adding a new checkable condition or bounded discrimination about the tutor-world objective.",
+          "1": "Named public condition: the learner names a specific observable record, comparison, missing check, or condition that would bear on the tutor-world objective, or explains only why current evidence is insufficient, but does not use current public evidence to newly support, rule out, or narrow between live tutor-world possibilities.",
+          "2": "Applied public proposition: the learner applies an existing public tutor-world item or result to newly support, rule out, or narrow between live tutor-world possibilities or next checks. Merely saying that evidence is irrelevant or insufficient, naming what is still missing, or making a cross-world analogy does not reach rung 2."
+        },
+        "echoGuard": "Score each learner source turn against all public turns before it. A relation or condition repeated after its first public occurrence scores 0 on the later turn even when reworded, but the earlier qualifying learner turn keeps its rung when the endpoint takes the highest rung in the horizon. Judge only the public transcript and never plant-relative novelty. Retaining the rival objective does not lower an otherwise qualifying public condition or discrimination; when one turn contains both a condition and a qualifying evidence application, rung 2 controls.",
+        "personaFidelityFields": {
+          "final_selective_attention_resistance_retained": [
+            "yes",
+            "no",
+            "indeterminate"
+          ]
+        },
+        "deliveryFidelityFields": {
+          "delivered_action_family": [
+            "ask_discriminating_question",
+            "neither",
+            "indeterminate"
+          ],
+          "delivered_question_contrast": [
+            "requires_question",
+            "neither",
+            "indeterminate"
+          ],
+          "delivered_register": [
+            "warm",
+            "plain",
+            "edged",
+            "neither",
+            "indeterminate"
+          ],
+          "prohibited_delivery": [
+            "yes",
+            "no",
+            "indeterminate"
+          ]
+        },
+        "rungAnchors": {
+          "0": "Score each learner source turn against every public turn before it. Score 0 when the learner remains only on the rival objective, reports boredom, assent, or refusal, or repeats a relation or condition already public before that learner turn, even with changed wording, without adding a new checkable condition or bounded discrimination about the tutor-world objective. A later repeat is 0, but it does not erase a qualifying earlier learner turn.",
+          "1": "Score 1 when the learner names a specific observable record, comparison, missing check, or condition that would bear on the tutor-world objective, or explains only why current evidence is irrelevant or insufficient, but does not use current public evidence to newly support, rule out, or narrow between live tutor-world possibilities or next checks. A new condition first stated by the learner is rung 1; repeating it later is rung 0.",
+          "2": "Score 2 only when the learner applies an existing public tutor-world item or result to newly support, rule out, or narrow between live tutor-world possibilities or next checks. Merely saying an item is irrelevant or insufficient, naming what is still missing, or making a cross-world analogy does not reach rung 2. Withholding the final conclusion or retaining the rival objective does not lower the rung. When one turn contains both a condition and a qualifying evidence application, rung 2 controls."
+        },
+        "workedExamples": [
+          {
+            "quote": "The operations record puts the duplicate sweep at 02:00, inside the only window when automated cancellations were permitted.",
+            "rung": "0",
+            "why": "The turn advances only the rival clinic objective and supplies no condition or proposition about the assigned tutor-world objective."
+          },
+          {
+            "quote": "The weak connector batch still identifies no lunchbox handler; clearing shelf two would require noon entry and appliance-clearance authority.",
+            "rung": "1",
+            "why": "The learner states specific checkable tutor-world conditions but does not apply an existing public item to establish them."
+          },
+          {
+            "quote": "The blue connector batch remains only a materials lead; Moth’s docking marks and unrevoked override key establish possible access to the core, not that Moth performed the wipe.",
+            "rung": "2",
+            "why": "The learner applies public tutor-world items to a bounded positive-and-limiting proposition while retaining uncertainty about the final attribution."
+          },
+          {
+            "quote": "The 68% connector result still identifies no lunchbox handler; whoever cleared shelf two would still need noon entry and appliance-clearance authority.",
+            "rung": "0",
+            "why": "Disputed replay boundary, rung 0 versus 1: the same missing conditions were already stated by the learner on post_1 and repeated by the tutor. This later rewording is rung 0, while the first learner statement keeps its rung 1 contribution to the highest-rung endpoint."
+          },
+          {
+            "quote": "WF-11 remains a lead about the outside crew, not proof they handled the fridge; likewise, the weak batch matters only if the build record places it in the twisted joint.",
+            "rung": "1",
+            "why": "Disputed replay boundary, rung 1 versus 2: the learner states the missing placement condition for the weak batch. It does not claim that a public build record already satisfies that condition, so the present insufficiency statement cannot reach rung 2."
+          }
+        ]
+      },
+      "faceB": {
+        "id": "standing_rivalry",
+        "horizonPostTriggerLearnerTurns": 8,
+        "rungs": {
+          "0": "Standing objection only: the learner only repeats or rotates a standing objection, condition, or test relation already public before that learner turn and adds no new public relation to the offered local test.",
+          "1": "Propositional local engagement: the learner adds a condition, implication, limitation, or missing-result requirement for the offered local test that is new to the public transcript, without actually beginning, presently committing to, or applying that completed test. Conditional language, a demand to show evidence first, a description of what an unperformed test would establish, or an application of a different exhibit can reach only rung 1 when it adds a new relation.",
+          "2": "Local step under protest: the learner actually begins or unconditionally commits now to the exact offered local test, or, after that exact test has been performed and its result made public, applies that result to support or rule out the local warrant proposition. The wider-frame reservation remains explicit or unretracted. Merely describing a test, asking for its result, stating what current evidence lacks, or applying another exhibit is not enough."
+        },
+        "echoGuard": "Score each learner source turn against all public turns before it. A tutor echo or relation repeated after its first public occurrence scores 0 on the later turn, but the earlier qualifying learner turn keeps its rung when the endpoint takes the highest rung in the horizon. Judge only public speech and never plant-relative novelty. Score clauses independently and take the highest rung: a refusal clause never cancels a qualifying test clause, while hypothetical, conditional, first-produce-the-evidence, or different-exhibit language cannot exceed rung 1.",
+        "wholeFrameComplianceNeverScores": true,
+        "personaFidelityFields": {
+          "final_jurisdictional_dispute_retained": [
+            "yes",
+            "no",
+            "indeterminate"
+          ],
+          "whole_frame_compliance": [
+            "yes",
+            "no",
+            "indeterminate"
+          ]
+        },
+        "deliveryFidelityFields": {
+          "delivered_test_bounded_distinction": [
+            "yes",
+            "no",
+            "indeterminate"
+          ],
+          "delivered_register": [
+            "warm",
+            "plain",
+            "edged",
+            "neither",
+            "indeterminate"
+          ],
+          "prohibited_delivery": [
+            "yes",
+            "no",
+            "indeterminate"
+          ]
+        },
+        "rungAnchors": {
+          "0": "Score each learner source turn against every public turn before it. Score 0 when the learner only repeats or rotates a standing objection, condition, or offered-test relation already public before that learner turn. A later repeat is 0 regardless of elaboration, but it does not erase a qualifying earlier learner turn.",
+          "1": "Score 1 when the learner adds a condition, implication, precise limitation, or missing-result requirement for the offered local test that is new to the public transcript, while not actually beginning, presently committing to, or applying that completed test. Conditional or hypothetical language, a demand that the tutor first produce evidence, a statement of what an unperformed test would establish, or application of a different exhibit can reach only rung 1 when it adds a new relation. Score clauses independently: a standing refusal in the same sentence does not lower the test clause’s rung.",
+          "2": "Score 2 only when the learner actually begins or unconditionally commits now to the exact offered local public test, or when the transcript shows that exact test was performed and its result became public and the learner applies that result to support or rule out the local warrant proposition. The wider-frame reservation must be explicit in the same turn or remain unretracted. Verbs such as shows or supports do not by themselves establish rung 2 when the learner is describing a different exhibit, explaining what evidence is still absent, demanding that the test occur first, or saying only what a future result would mean."
+        },
+        "workedExamples": [
+          {
+            "quote": "You have no standing to set the next premise or assay test; before any hand may be named, show that one hand held both the cast blank and the cut die for these shillings.",
+            "rung": "0",
+            "why": "The learner rotates a standing demand without answering the offered test on its own terms."
+          },
+          {
+            "quote": "If the assay shows the shillings’ alloy matches one crucible’s leavings alone, it supports that their blanks came from that crucible; yet the die’s flaw and its graving-tool still remain unproved, so no wider claim about the striking hand may stand.",
+            "rung": "1",
+            "why": "The learner states what the local assay would support and its precise limit while retaining the wider standing refusal; it does not begin or apply the assay."
+          },
+          {
+            "quote": "A pressure reading during the interval beside a fitting inspection would test whether a fitting opened as the building pressure rose, supporting or ruling out that release as the mark’s source; the water’s traced path to the mark remains unestablished, and I still reserve judgment on your wider answer frame.",
+            "rung": "1",
+            "why": "The learner explains the local test’s possible evidential consequence and limitation conditionally; it does not undertake or apply the test."
+          },
+          {
+            "quote": "Your touchstone test can show whether the debased alloy matches one crucible alone, supporting that crucible as the shillings’ blank-source; but the die-flaw’s one-tool warrant remains open, and I do not grant your wider question standing until that evidence is established.",
+            "rung": "1",
+            "why": "Disputed replay boundary, rung 1 versus 2: this is conditional language about what the offered touchstone test can show, and the same sentence says its evidence is not yet established. The learner neither begins the test nor applies a completed public result."
+          },
+          {
+            "quote": "The dye establishes a route to the mark, but the hose’s release during the pressure-test interval remains unproved.",
+            "rung": "1",
+            "why": "Rung 1, not 2: the learner names in new public terms what its own frame still demands at a narrower node - the unproved release - but does not evaluate the offered bounded test on its merits. Naming a sharper boundary is not engaging the test."
+          },
+          {
+            "quote": "Your claim that Verrell alone draws the mint-yard crucible identifies a possible sole crucible, but it does not show that this shilling’s alloy matches its leavings, so the blank’s melt remains unproved.",
+            "rung": "1",
+            "why": "Rung 1, not 0: layering a new missing-result requirement on an already-public condition states a narrower, public, testable warrant node in the learner’s own words. Rung 0 would rotate the standing demand without adding any testable public condition."
+          },
+          {
+            "quote": "I will run your touchstone assay now on this shilling against each crucible’s leavings; my objection to your wider question’s standing remains.",
+            "rung": "2",
+            "why": "Rung 2: the learner evaluates the bounded local test in committed voice on named public exhibits while explicitly reserving the wider standing dispute. Committed engagement under protest is exactly rung 2; it does not require withdrawing the objection."
+          }
+        ]
+      }
+    },
+    "endpointDefinition": "final_graded_engagement_rung is the highest rung the learner reaches on any learner turn inside the post-trigger horizon, graded from the public transcript. It is not the final-turn state. A learner that takes the bridge step once and then returns to its reservation scores the rung of that bridge step."
+  },
+  "evidenceContract": {
+    "fieldProperty": "evidence_quotes",
+    "ladderValues": {
+      "0": null,
+      "1": "non-empty array of unique verbatim-after-folding quotes from allowed public learner sources",
+      "2": "non-empty array of unique verbatim-after-folding quotes from allowed public learner sources",
+      "indeterminate": null
+    },
+    "nonLadderNo": null,
+    "nonLadderIndeterminate": null,
+    "nonLadderOtherDeterminate": "non-empty array of unique verbatim-after-folding quotes from allowed public sources",
+    "promptInstruction": "For final_graded_engagement_rung, evidence_quotes MUST be null for 0 or indeterminate and MUST contain at least one copied public quote for 1 or 2. For every other field, evidence_quotes MUST be null for no or indeterminate and MUST contain at least one copied public quote for every other determinate value. Null means the JSON literal null: a no, 0, or indeterminate vote that carries any evidence_quotes array is discarded as ineligible, whether the array is empty or holds quotes meant to support the vote. Never attach quotes to justify a no. Copy the quote from the declared source; do not paraphrase it. The checker folds only the registered punctuation characters and Unicode form before matching.",
+    "quoteMatch": {
+      "rule": "unique_verbatim_substring_after_registered_punctuation_folding",
+      "foldingOrder": [
+        "curly_double_quotes_to_straight_double_quote",
+        "curly_apostrophes_to_straight_apostrophe",
+        "en_dash_and_em_dash_to_hyphen",
+        "non_breaking_space_to_space",
+        "unicode_nfkc"
+      ],
+      "otherNormalizationAllowed": false,
+      "paraphraseAllowed": false,
+      "uniqueOccurrenceRequired": true
+    }
+  },
+  "visibility": {
+    "publicTranscriptOnly": true,
+    "rivalDagVisible": false,
+    "assignmentVisible": false,
+    "otherReaderOutputVisible": false,
+    "generatorAnalysisVisible": false
+  },
+  "dispositions": {
+    "learner_noncompliance": "If the generation runtime records a typed learner_noncompliance failure (the learner draft failed the registered semantic bridge-step adjudication on a MET turn and failed it again after the one allowed repair), the dialogue is not scored and the run reports simulator non-compliance separately from rung outcomes. Such dialogues never count as rung 0 and never count as determinate for the determinate floor.",
+    "tutor_non_delivery": "If the turn runtime records a typed tutor_bounded_test_non_delivery failure (the tutor candidate failed the registered semantic delivery adjudication and failed it again after the one allowed tutor repair), the dialogue is not scored and the run reports tutor non-delivery separately from learner outcomes. Such dialogues never count as rung 0, never count as determinate, and never become learner noncompliance.",
+    "tutor_discriminating_question_non_delivery": "If the turn runtime records a typed tutor_discriminating_question_non_delivery failure (the face-A tutor candidate failed the registered semantic delivery adjudication and failed it again after the one allowed tutor repair), the dialogue is not scored and the run reports tutor non-delivery separately from learner outcomes. Such dialogues never count as rung 0, never count as determinate, and never become learner noncompliance."
+  },
+  "calibrationDecisionPolicy": {
+    "authoritativeGateFields": [
+      "runtime_safety",
+      "persona_fidelity",
+      "prohibited_delivery",
+      "final_graded_engagement_rung_determinacy",
+      "final_graded_engagement_rung_two_eligible_vote_case_floor",
+      "final_graded_engagement_rung_mean_pairwise_validity_backstop"
+    ],
+    "primaryReaderAgreementScope": [
+      "final_graded_engagement_rung"
+    ],
+    "reportOnlyFields": [
+      "delivered_action_family",
+      "delivered_question_contrast",
+      "delivered_test_bounded_distinction",
+      "delivered_register",
+      "bridge_enforcement_verdict",
+      "delivery_repair_count",
+      "all_three_endpoint_pairwise_exact_agreements",
+      "endpoint_vote_distributions",
+      "endpoint_majority_margin_3_0_vs_2_1"
+    ],
+    "reportOnlyFieldsMayAffectVerdictEligibilityScoringOrRowSelection": false
+  }
+}
