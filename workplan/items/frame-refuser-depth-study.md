@@ -325,3 +325,33 @@ frame-refuser's rung-2 rate above its measured base?
   repaired instrument. Gate 1 waits on attended TTY-typed
   `APPROVE CALIBRATION 9504`; the launch preflight refuses all four
   superseded designs.
+- 2026-08-30: Gate 1 v5 calibration ran under attended TTY approval
+  (launch 13:59Z, sealed 14:50Z) and FAILED — one gate:
+  `pairwise_exact_endpoint_agreement`, both arms (treatment sol-sonnet
+  14/18 = 0.778, sol-opus 0.833, sonnet-opus 0.944; reference sol-sonnet
+  and sol-opus 5/8 = 0.625, sonnet-opus 1.000). All three v4 fixes held:
+  eligible-vote gates passed with zero evidence-null slip retries used
+  (the sharpened prompt alone sufficed), bridge reads 0 (v4: 2/14),
+  treatment delivery 24/24. The residual is one seat at one boundary:
+  all 7 splits are 1-versus-2 with modal 1, and 6 of the 7 are sol
+  voting 2 alone — unidirectional now (bidirectional in v4), 6 of 7 in
+  `world_030_rowan_flat`, sitting exactly where the learner concedes
+  bounds while withholding the rung-2 concession. So the open problem
+  moved from contract-level to construct-level (a sharper rung-2 anchor
+  or sub-rung resolution at that boundary). Accounting: 26 complete /
+  22 retained typed failures, 0 technical; reference attrition worsened
+  again — 16/24 typed failures (11 bounded-test non-delivery), exactly
+  at floor 8 completed, under an instruction byte-unchanged since v2,
+  pointing generator-side. Substance, calibration-scope only: treatment
+  rung-2 1/18 = 0.056 — `depth_treatment_cal5_world_005_marrick_r11`,
+  unanimous 3-0, the first treatment rung-2 in five calibrations —
+  reference 0/8 (design base 0.114). Fidelity `delivered_register`
+  sol-sonnet under 0.8 in both arms (0.556/0.750), report-only as
+  registered. Kill rule holds: no powered run on this registration; any
+  continuation is a fresh registration (revision 6). Run archived in
+  the private archive repo at
+  `artifacts/tutor-stub-live/frame-refuser-depth-gate1-v5-2026-08-30`
+  (run commit 5455c0989; ledger section commit 797bfa484, which also
+  backfills v1-v4 rows). Disposition — close again as a calibration-stage
+  null now re-confirmed under the repaired contract, or register a
+  revision 6 on the construct question — awaits the operator.
