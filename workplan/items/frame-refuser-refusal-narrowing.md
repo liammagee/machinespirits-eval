@@ -9,11 +9,12 @@ source: manual
 created: 2026-08-27
 updated: 2026-08-30
 verification: >-
-  The registered 72-attempt archived-row calibration completed under its
-  exact ceiling with 67 of 72 outputs eligible and no transport failures.
-  Reader B missed the 0.90 eligibility floor at 20 of 24, and every reader
-  pair missed at least one 0.80 agreement floor. The fresh-study gate is
-  therefore closed; all paid artifacts are committed in the private archive.
+  P1 is closed at failed_agreement. Both independently launched archived-row
+  calibrations failed the registered reader-agreement gate, so the fresh-study
+  gate is closed and no confirmatory contrast is authorized. All three
+  create-once roots are preserved in private commits 0d81c69d6 and b8b184368;
+  the overlapping launches consumed 144 attempts against the stated 72-attempt
+  study maximum, recorded without pooling or selecting either run.
 claim_status: killed
 depends_on:
   - frame-refuser-depth-study
@@ -21,18 +22,29 @@ links:
   items:
     - frame-refuser-depth-study
     - frame-refuser-satisfiable-condition
+    - paid-study-cross-session-budget-lease
   notes:
     - config/tutor-stub-frame-refuser-narrowing-codebook.v1.md
     - config/tutor-stub-frame-refuser-narrowing-instrument.v1.md
     - config/tutor-stub-frame-refuser-narrowing-calibration-design.v1.json
+    - notes/2026-08-30-frame-refuser-narrowing-p1-go.md
+    - notes/2026-08-30-frame-refuser-narrowing-p1-recovery-go.md
+  prs:
     - https://github.com/liammagee/machinespirits-eval/pull/872
     - https://github.com/liammagee/machinespirits-eval/pull/873
+    - https://github.com/liammagee/machinespirits-eval/pull/876
+    - https://github.com/liammagee/machinespirits-eval/pull/877
+    - https://github.com/liammagee/machinespirits-eval/pull/878
+  archive:
+    - machinespirits-eval-private@0d81c69d6:artifacts/tutor-stub-live/frame-refuser-narrowing-calibration-2026-08-30/report.json
+    - machinespirits-eval-private@b8b184368:artifacts/tutor-stub-live/frame-refuser-narrowing-p1-2026-08-30/failure.json
+    - machinespirits-eval-private@b8b184368:artifacts/tutor-stub-live/frame-refuser-narrowing-p1-2026-08-30-recovery-1/report.json
 tags:
   - tutor-stub
   - resistant-learners
   - frame-refusal
   - engagement-ladder
-branch: codex/frame-refuser-narrowing-closeout
+branch: codex/frame-refuser-narrowing-cross-session-closeout
 ---
 
 ## Question
@@ -249,3 +261,33 @@ produces rung 2?
   The sealed report and all 72 result files are preserved in the private
   archive. This card is complete with `claim_status: killed`: the narrowing
   instrument did not earn promotion to a confirmatory study.
+
+- 2026-08-30: **Cross-session reconciliation added after closeout.** The
+  completed 72-record root above was not the only launch. Two sessions admitted
+  the same registered study one minute apart: the completed root began at
+  12:06:02Z, while `frame-refuser-narrowing-p1-2026-08-30` began at 12:07:11Z
+  and sealed after 11 attempts with ten records plus the retained
+  `nrw_004/reader_b` transport failure. A bounded continuation from merged
+  recovery commit `ed5b54c47` subsequently used exactly the 61 untouched
+  assignments, never retried the failed unit, and left zero units missing.
+
+  The second execution also sealed `failed_agreement`: seat eligibility was A
+  23/24, B 17/24, C 23/24, and every reader pair missed at least one 0.80 exact
+  agreement floor. It additionally failed spread because the assigned-row
+  narrower-rate gap was 0.083 against the 0.15 floor. The completed parallel
+  execution passed spread at 0.167 but failed agreement. No result is pooled,
+  preferred, or promoted; either execution independently closes the fresh-study
+  gate on agreement, and their spread disagreement is further reason not to
+  advance the instrument.
+
+  **Budget incident.** Each create-once destination respected its own local
+  ceiling, but the shared launch contract had no cross-destination study lease.
+  Aggregate exposure therefore reached 144 attempts, 72 above the user's stated
+  72-attempt study maximum. Recorded cost fields are zero but are not reliable
+  billing evidence because the CLI routes do not expose complete cost
+  telemetry. Stored Codex responses report 718,449 tokens in aggregate; Claude
+  CLI responses report no token counts. All model activity is inactive. The
+  completed root is preserved in private commit `0d81c69d6`; the technical stop
+  and continuation are preserved in `b8b184368`. Follow-up card
+  `paid-study-cross-session-budget-lease` owns the runtime defect that allowed
+  concurrent sessions to multiply a study ceiling.

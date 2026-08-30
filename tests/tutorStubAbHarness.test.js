@@ -30,7 +30,10 @@ import {
   tutorStubAbRuleKeying,
   tutorStubAbRuleKeyingReason,
 } from '../services/tutorStubAbRuleKeying.js';
-import { renderTutorStubAbTranscriptHtml } from '../services/tutorStubAbTranscriptHtml.js';
+import {
+  buildTutorStubAbDramaticDialogue,
+  renderTutorStubAbTranscriptHtml,
+} from '../services/tutorStubAbTranscriptHtml.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG_PATH = path.join(ROOT, 'config', 'tutor-stub-ab.yaml');
@@ -453,6 +456,18 @@ test('runner reports cluster totals and per-cluster deltas against the baseline'
   const html = renderTutorStubAbTranscriptHtml(report);
   assert.match(html, /Δ vs baseline/u);
   assert.match(html, /counterfactual/u);
+  assert.match(html, /data-dd-layout="shared-learner"/u);
+
+  const scenario = report.plan.scenarios[0];
+  const dialogue = buildTutorStubAbDramaticDialogue(report, scenario);
+  for (const [index, turn] of scenario.turns.entries()) {
+    assert.equal(dialogue.turns[index].messages[0].text, turn.learnerText, 'learner bytes are copied unchanged');
+    for (const arm of report.plan.arms) {
+      const source = report.results.find((row) => row.caseId === turn.caseId && row.armId === arm.id);
+      const message = dialogue.turns[index].messages.find((row) => row.arm === arm.id);
+      assert.equal(message.text, source.candidate, `${arm.id} tutor bytes are copied unchanged`);
+    }
+  }
 });
 
 test('one infrastructure error blocks that model for the rest of the run', async () => {

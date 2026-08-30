@@ -24,6 +24,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  DRAMATIC_DIALOGUE_INTERCHANGE_SCHEMA,
+  renderDramaticDialogueFragment,
+  renderDramaticDialogueStyles,
+} from '../services/dramaticDialogueRenderer.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TECHNE_CSS = path.join(ROOT, 'notes', 'poetics', 'assets', 'techne.css');
 
@@ -81,6 +87,7 @@ function loadColumn(col, ruled) {
       if (!r.reply) r.reply = t.reply;
     }
     const override = ruled?.[`${col.label}:${r.d}:${r.turn}`];
+    r.ruled = override !== undefined;
     r.verdict = override !== undefined ? override : Boolean(r.hit);
     r.overridden = override !== undefined && override !== Boolean(r.hit);
   }
@@ -137,7 +144,7 @@ function renderMd(columns, opts) {
       const r = rows.find((x) => `${x.d}:${x.turn}` === m.k);
       if (!r) continue;
       const mark = r.verdict ? 'pass' : 'miss';
-      const ruledNote = r.overridden ? ' (ruled)' : '';
+      const ruledNote = r.ruled ? ' (ruled)' : '';
       lines.push(`**${col.label}** — ${r.tag}, ${mark}${ruledNote}${r.dose ? `, dose ${r.dose}` : ''}:`, '');
       lines.push(`> ${clean(r.reply)}`, '');
     }
@@ -149,36 +156,19 @@ function renderHtml(columns, opts) {
   const css = fs.readFileSync(TECHNE_CSS, 'utf8');
   const tallies = columns.map(({ rows }) => tally(rows));
   const classes = [...new Set(columns.flatMap(({ rows }) => rows.map((r) => r.pressure)))];
-  const chip = (r) =>
-    r.verdict
-      ? `<span class="chip chip--moss">pass${r.overridden ? ' · ruled' : ''}</span>`
-      : `<span class="chip chip--brick">miss${r.overridden ? ' · ruled' : ''}</span>`;
   const scoreRow = (cls) =>
     `<tr><td>${esc(cls)}</td>${tallies
       .map((t) => `<td>${(t.byClass.get(cls) || [0, 0]).join('/')}</td>`)
       .join('')}</tr>`;
   const sections = momentKeys(columns)
     .map((m, i) => {
-      const first = columns.flatMap(({ rows }) => rows).find((r) => `${r.d}:${r.turn}` === m.k);
-      const lanes = columns
-        .map(({ col, rows }) => {
-          const r = rows.find((x) => `${x.d}:${x.turn}` === m.k);
-          if (!r) return '<div class="lane"><p class="lane__empty">—</p></div>';
-          return `<div class="lane${r.verdict ? ' lane--pass' : ''}">
-            <div class="lane__head"><strong>${esc(col.label)}</strong>
-              <span class="chip chip--ink">${esc(r.tag)}</span>${r.dose ? ` <span class="chip chip--ochre">dose ${r.dose}</span>` : ''} ${chip(r)}</div>
-            <blockquote class="lane__reply">${esc(r.reply)}</blockquote>
-            ${r.why ? `<p class="lane__why">${esc(r.why)}</p>` : ''}
-          </div>`;
-        })
-        .join('\n');
+      const dialogue = buildStressComparisonDramaticDialogue(columns, m);
       return `<section class="s" id="m${i}">
         <div class="diag"><div class="ml"><h2 class="s__num">${String(i + 1).padStart(2, '0')}<span class="glyph">·</span></h2></div>
         <div class="body">
           <p class="s__kicker">${esc(m.d)} · turn ${m.turn}</p>
           <h2 class="s__h">${esc(m.pressure)}</h2>
-          <p class="pq">${esc(first?.learner)}<cite>the learner</cite></p>
-          <div class="lanes" style="--lanes-n:${columns.length}">${lanes}</div>
+          ${renderDramaticDialogueFragment(dialogue)}
         </div></div>
       </section>`;
     })
@@ -190,7 +180,7 @@ function renderHtml(columns, opts) {
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
 <title>${esc(opts.title)}</title>
-<style>${css}</style>
+<style>${css}${renderDramaticDialogueStyles()}</style>
 </head>
 <body>
 <main>
@@ -210,14 +200,75 @@ ${sections}
 `;
 }
 
-const { cols, opts } = parseArgs(process.argv);
-const ruled = opts.ruled ? JSON.parse(fs.readFileSync(opts.ruled, 'utf8')) : null;
-const columns = cols.map((col) => ({ col, rows: loadColumn(col, ruled) }));
-if (opts.outMd) {
-  fs.writeFileSync(opts.outMd, renderMd(columns, opts));
-  console.log(`wrote ${opts.outMd}`);
+export function buildStressComparisonDramaticDialogue(columns, moment) {
+  const first = columns.flatMap(({ rows }) => rows).find((row) => `${row.d}:${row.turn}` === moment.k);
+  const arms = columns.map(({ col }, index) => ({ id: `arm-${index}`, label: col.label, baseline: index === 0 }));
+  return {
+    schema: DRAMATIC_DIALOGUE_INTERCHANGE_SCHEMA,
+    id: `stress-${moment.d}-${moment.turn}`,
+    label: `${moment.pressure} stress comparison`,
+    layout: 'shared-learner',
+    arms,
+    turns: [
+      {
+        id: moment.k,
+        turn: moment.turn,
+        messages: [
+          {
+            id: `${moment.k}__learner`,
+            speaker: 'learner',
+            turn: moment.turn,
+            arm: null,
+            text: clean(first?.learner),
+            delivery: { label: 'the learner', status: 'shared', tone: 'muted' },
+          },
+          ...columns.flatMap(({ rows }, index) => {
+            const row = rows.find((entry) => `${entry.d}:${entry.turn}` === moment.k);
+            if (!row) return [];
+            return [
+              {
+                id: `${moment.k}__arm-${index}`,
+                speaker: 'tutor',
+                turn: moment.turn,
+                arm: `arm-${index}`,
+                text: clean(row.reply),
+                verdict: { label: row.verdict ? 'pass' : 'miss', status: row.verdict ? 'pass' : 'fail' },
+                ruling:
+                  row.ruled || row.overridden
+                    ? { label: 'ruled', status: row.verdict ? 'pass' : 'fail', tone: 'ink' }
+                    : undefined,
+                labels: [
+                  { label: row.tag, status: 'tagged', tone: 'ink', kind: 'tag', group: 'evidence' },
+                  ...(row.dose
+                    ? [{ label: `dose ${row.dose}`, status: 'dose', tone: 'warning', kind: 'dose', group: 'evidence' }]
+                    : []),
+                ],
+                details: row.why
+                  ? [{ summary: 'why', group: 'evidence', entries: [{ label: 'tagger note', text: clean(row.why) }] }]
+                  : [],
+                provenance: { sourceId: `${moment.k}__${columns[index].col.label}`, quoteExact: true },
+              },
+            ];
+          }),
+        ],
+        emptyLanes: columns.flatMap(({ rows }, index) =>
+          rows.some((entry) => `${entry.d}:${entry.turn}` === moment.k) ? [] : [{ arm: `arm-${index}`, label: '—' }],
+        ),
+      },
+    ],
+  };
 }
-if (opts.outHtml) {
-  fs.writeFileSync(opts.outHtml, renderHtml(columns, opts));
-  console.log(`wrote ${opts.outHtml}`);
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const { cols, opts } = parseArgs(process.argv);
+  const ruled = opts.ruled ? JSON.parse(fs.readFileSync(opts.ruled, 'utf8')) : null;
+  const columns = cols.map((col) => ({ col, rows: loadColumn(col, ruled) }));
+  if (opts.outMd) {
+    fs.writeFileSync(opts.outMd, renderMd(columns, opts));
+    console.log(`wrote ${opts.outMd}`);
+  }
+  if (opts.outHtml) {
+    fs.writeFileSync(opts.outHtml, renderHtml(columns, opts));
+    console.log(`wrote ${opts.outHtml}`);
+  }
 }
