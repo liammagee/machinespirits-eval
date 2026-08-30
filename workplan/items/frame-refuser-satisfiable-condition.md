@@ -7,14 +7,14 @@ priority: P3
 owner: claude
 source: manual
 created: 2026-08-27
-updated: 2026-08-28
+updated: 2026-08-29
 verification: >-
   A persona variant is registered zero-call whose demanded condition is
   dischargeable from already-public evidence in-world, checked by a
   written derivation from the world file before any call. Any paid
   contrast is a fresh registration with its own endpoint, floors, power
-  scan, spend ceiling, and attended approval. All paid artifacts are
-  committed in the private archive repository.
+  scan and spend ceiling, launched only through the shared signed-GO
+  contract. All paid artifacts are committed in the private archive repository.
 claim_status: planned
 depends_on:
   - frame-refuser-depth-study
@@ -64,7 +64,8 @@ engagement above the refuser's base rate?
   condition; freeze a design file.
 - P1 (zero-call): registration with endpoint, floors, power scan, and
   ceilings, under the lightweight paid-study policy.
-- Gate 1: attended approval, then a small calibration block.
+- Gate 1: the three standing launch authorities, including the signed GO note,
+  then a small calibration block.
 
 ## Log
 
@@ -202,8 +203,10 @@ engagement above the refuser's base rate?
   covers 24 seats including the delivery adjudicator each arm needs for its
   delivered-contrast floor, all on the sealed stack. The launch preflight
   (`services/tutorStubFrameRefuserSatisfiableLaunch.js`) passes with 3,072
-  planned calls under the 9,504 ceiling, and the typed approval demands the
-  exact phrase and authorizes calibration only.
+  planned calls under the 9,504 ceiling. The paid path uses the shared standing
+  launch contract: a merged design, a clean detached launch commit, and a
+  signed GO note naming the design path, launch commit, and spend cap. It has
+  no study-specific approval phrase and remains calibration-only.
 
   One thing removed rather than added: the launch preflight carries no revision
   check. The design validator accepts only the current revision, so a
