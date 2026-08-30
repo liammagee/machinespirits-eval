@@ -106,3 +106,26 @@ question — does a sharp delivery cost the learner anything — asked where
   read §3.10-§3.10.4 of the draft note, then survey the stub harness's
   register machinery before designing the contrast. Zero-call until a
   signed GO.
+- 2026-08-29: Stage-2 block closed on the fixed guard. The leak guard had
+  read its compound word lists as any-word: bare "die" beside the answer
+  name ("die-flaw", "die marks") fired the private-conclusion kill with no
+  real leak. All 8 recorded kills were that defect; none showed a leak.
+  Fixed in d74969e0: component lists now need every word in one sentence,
+  variant lists keep any-of, and a quoted "whether" clause counts as
+  withholding the conclusion. 26 new tests pin the 8 kill sentences.
+  Re-runs on the fixed code (resume machinery, sealed sibling roots):
+  diligent 24/24, resistant 24/24, all 8 killed dialogues recovered
+  clean, 3 codex CLI timeouts healed on a second pass. Two turn-18
+  learner-analysis classifier calls failed all retries in the diligent
+  cell; both sit past the 16-turn endpoint horizon, so the endpoint is
+  untouched. One re-run launch was killed by a background-agent sweep;
+  relaunched detached and completed. Fidelity read on the resistant cell
+  (Sonnet 5, sealed context): pin check 0 violations in 946 turns; sharp
+  arm 432 present of 480, rate 0.90 over the 0.8 floor; one turn refused
+  by the API with a harms label every time (counterfeit-die content read
+  without tutorial framing); operator accepted the arm at 479/480. Warm
+  arm: 50 of 466 turns read as edged, report-only. Report:
+  `qa-matrix-2026-08-29T12-21-26-240Z/fidelity-resistant-final.md`.
+  Artifacts archived (private repo 0af1573c). Known residual: a
+  negated-existential sentence joined by "but no" can still trip the
+  final check; the only recorded case is in a void superseded root.
