@@ -151,6 +151,7 @@ export function configureTutorStubResistanceStudiesFromCli({
       state,
       root,
       autoLearnerEnabled,
+      autoLearnerProfileId,
       autoTurns,
       appendTraceEvent,
     });

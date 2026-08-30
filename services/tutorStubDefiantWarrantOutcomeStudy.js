@@ -159,6 +159,7 @@ export function configureTutorStubDefiantWarrantFromCli({
   state,
   root = process.cwd(),
   autoLearnerEnabled,
+  autoLearnerProfileId,
   autoTurns,
   appendTraceEvent,
 } = {}) {
@@ -174,7 +175,12 @@ export function configureTutorStubDefiantWarrantFromCli({
   const drift = [];
   if (!autoLearnerEnabled) drift.push('auto learner disabled');
   if (Number(autoTurns) !== design.execution.autoTurns) drift.push('auto turns');
-  if (args['auto-learner-profile'] !== design.execution.autoLearnerProfile) drift.push('learner profile');
+  // The CLI host rewrites args['auto-learner-profile'] to the rendered
+  // profile prompt before dispatch, so pin on the host-resolved profile id
+  // (same seam the sibling resistance studies use), with the raw arg as the
+  // fail-closed fallback for direct callers.
+  const learnerProfilePin = autoLearnerProfileId || args['auto-learner-profile'];
+  if (learnerProfilePin !== design.execution.autoLearnerProfile) drift.push('learner profile');
   if (args.world !== design.execution.world) drift.push('world');
   if (args['dag-mode'] !== design.execution.dagMode) drift.push('dag mode');
   if (args['register-policy'] !== design.execution.registerPolicy) drift.push('register policy');

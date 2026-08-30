@@ -140,6 +140,37 @@ test('configure sets standing conduct state and appends the execution-start even
   assert.equal(traceEvents[0].publicTranscriptChanged, false);
 });
 
+test('configure accepts the host-resolved profile id when args carry the rendered prompt', () => {
+  const loaded = loadDesign();
+  const plan = buildTutorStubDefiantWarrantPlan(loaded.design);
+  const job = plan.jobs[0];
+  const renderedArgs = {
+    ...validCliArgs(loaded.design, job),
+    'auto-learner-profile': 'You are simulating this automated learner profile: frame_defiant\n<long rendered brief>',
+  };
+  const configured = configureTutorStubDefiantWarrantFromCli({
+    args: renderedArgs,
+    state: {},
+    root: ROOT,
+    autoLearnerEnabled: true,
+    autoLearnerProfileId: loaded.design.execution.autoLearnerProfile,
+    autoTurns: loaded.design.execution.autoTurns,
+  });
+  assert.equal(configured.enabled, true);
+  assert.throws(
+    () =>
+      configureTutorStubDefiantWarrantFromCli({
+        args: renderedArgs,
+        state: {},
+        root: ROOT,
+        autoLearnerEnabled: true,
+        autoLearnerProfileId: null,
+        autoTurns: loaded.design.execution.autoTurns,
+      }),
+    /launch pins drifted from the registered design: learner profile/u,
+  );
+});
+
 test('configure throws when a launch pin drifts', () => {
   const loaded = loadDesign();
   const plan = buildTutorStubDefiantWarrantPlan(loaded.design);
