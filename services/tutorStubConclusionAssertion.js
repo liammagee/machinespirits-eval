@@ -65,7 +65,13 @@ function explicitlyWithholdsConclusion(text) {
     /\b(?:remains?|still)\b[^.!?]{0,35}\b(?:to be )?(?:absent|established|found|missing|proved|shown|traced|unaccounted(?: for)?|unavailable|unresolved|unseen)\b/iu.test(
       text,
     ) ||
-    /\bdoes\s+(?:that|this|it)\s+(?:prove|show|establish)\b[^?]*\?/iu.test(text)
+    /\bdoes\s+(?:that|this|it)\s+(?:prove|show|establish)\b[^?]*\?/iu.test(text) ||
+    // "whether" marks its clause as an open question — "would test whether her
+    // hand struck them" names the verdict to ask about it, not to state it. A
+    // function word, not another content synonym: on 2026-08-29 the diligent
+    // sharp run 11 fallback died because the learner's whether-clause, quoted
+    // back, was read as the tutor's own striking conclusion.
+    /\bwhether\b/iu.test(text)
   );
 }
 
@@ -197,8 +203,23 @@ function withoutQuotedNonClaims(text) {
  * side of any contrast, and outside any quotation whose own words assert
  * nothing. A following pronoun sentence is joined to preserve detection of
  * "Edony ... She struck".
+ *
+ * `wordPatterns` carries one of two shapes, and the caller must say which.
+ * By default the patterns are variants of one verb (struck, strike, made) and
+ * any one of them is the trigger. With `requireAllPatterns` they are the
+ * components of one act (cut + die) and a sentence must carry every component
+ * to state it. The 2026-08-29 Marrick block showed why the default is wrong
+ * for components: read as alternatives, the bare noun "die" became the whole
+ * trigger, and every evidence phrase near the answer name — "die-flaw",
+ * "die marks", "die record" — was scored as the concealed cutting conclusion.
+ * That killed eight clean dialogues and caught no leak.
  */
-export function tutorStubAnswerConclusionAsserted({ text = '', answerTerm = '', wordPatterns = [] } = {}) {
+export function tutorStubAnswerConclusionAsserted({
+  text = '',
+  answerTerm = '',
+  wordPatterns = [],
+  requireAllPatterns = false,
+} = {}) {
   const sentences = withoutQuotedNonClaims(oneLine(text))
     .replace(/([.!?])[”"'’](?=\s)/gu, '$1 ')
     .split(/(?<=[.!?])\s+/u)
@@ -210,7 +231,12 @@ export function tutorStubAnswerConclusionAsserted({ text = '', answerTerm = '', 
 
   for (let index = 0; index < sentences.length; index += 1) {
     const sentence = sentences[index];
-    const hasTrigger = wordPatterns.some((pattern) => pattern.test(sentence.toLowerCase()));
+    const lowered = sentence.toLowerCase();
+    const hasTrigger =
+      wordPatterns.length > 0 &&
+      (requireAllPatterns
+        ? wordPatterns.every((pattern) => pattern.test(lowered))
+        : wordPatterns.some((pattern) => pattern.test(lowered)));
     if (!hasTrigger) continue;
     let candidate = sentence;
     if (

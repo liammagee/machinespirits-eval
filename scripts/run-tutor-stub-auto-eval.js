@@ -30,6 +30,7 @@ import {
   extractTutorStubPolicyDrawDecisions,
   hashCanonicalJson,
   hashFile,
+  readRunEvents,
   verifyExperimentRun,
 } from '../services/experimentRunArtifacts.js';
 import { tutorStubPolicyRequiresDeterministicDraw } from '../services/tutorStubPolicySampler.js';
@@ -209,6 +210,7 @@ const { values: args } = parseArgs({
     'parent-run-id': { type: 'string', default: process.env.TUTOR_STUB_EVAL_PARENT_RUN_ID || '' },
     'standing-instructions-file': { type: 'string', default: '' },
     'report-from': { type: 'string', default: '' },
+    'rebuild-from': { type: 'string', default: '' },
     'resume-from': { type: 'string', default: '' },
     'resume-statuses': { type: 'string', default: 'failed' },
     index: { type: 'boolean', default: false },
@@ -314,6 +316,8 @@ Options:
   --standing-instructions-file <path>
                               append a byte-frozen conditional instruction menu to the tutor system prompt
   --report-from <json>       verify when sealed and write a derived sibling report; source stays read-only
+  --rebuild-from <run dir>   rebuild the summary, report, and seal of an unsealed run whose
+                              jobs all finished, from its on-disk evidence; no model calls
   --resume-from <json>       rerun rows in a new sealed sibling transaction; source stays read-only
   --resume-statuses <csv>    statuses to rerun with --resume-from (default: failed)
   --index                    build/update the local report index and exit
@@ -601,6 +605,8 @@ function formatCounts(counts, { limit = 6 } = {}) {
 
 const REPORT_POLICY_ORDER = [
   'bland',
+  'fixed_warm',
+  'fixed_sarcastic',
   'random',
   'state',
   'field',
@@ -5978,6 +5984,98 @@ function writeEvalLedger({ summary, summaryPath, htmlPath }) {
   console.log(`[auto-eval] ledger ${markdownPath}`);
 }
 
+function resolveRunArtifactPath(logicalPath, runDir) {
+  if (!logicalPath) return null;
+  if (logicalPath.startsWith('{run_dir}/')) {
+    return path.join(runDir, ...logicalPath.slice('{run_dir}/'.length).split('/'));
+  }
+  return resolveTracePath(logicalPath, runDir);
+}
+
+// Recovery path for a run whose jobs all finished but whose process died
+// before the summary landed (the pre-streaming writer could die on the
+// summary stringify). Every per-job result is a pure function of the job's
+// trace files plus its job_completed event, so the summary, report, ledger
+// entry, and seal can be rebuilt from disk with no model calls. The event
+// chain is appended in place, exactly as the crashed process would have.
+function rebuildRunFromEvidence(runDirArg) {
+  const traceDir = resolvePath(runDirArg);
+  const planPath = path.join(traceDir, 'run-plan.json');
+  const sealPath = path.join(traceDir, 'run-seal.json');
+  if (!fs.existsSync(planPath)) throw new Error(`--rebuild-from needs ${planPath}`);
+  if (fs.existsSync(sealPath)) {
+    throw new Error(`--rebuild-from target is already sealed (${sealPath}); use --report-from on its summary instead`);
+  }
+  const statePath = runStatePath(traceDir);
+  if (!fs.existsSync(statePath)) throw new Error(`--rebuild-from needs ${statePath}`);
+  const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+  const config = state?.config;
+  if (!config || !Object.keys(config).length) {
+    throw new Error(`--rebuild-from needs a config block in ${statePath}`);
+  }
+  const evidencePlan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
+  const completedEvents = new Map(
+    readRunEvents(traceDir)
+      .filter((event) => event.type === 'job_completed' && event.jobId)
+      .map((event) => [event.jobId, event]),
+  );
+  const primaryHorizon = positiveInt(config.primaryHorizon, 'run-state config.primaryHorizon');
+  const planJobs = (evidencePlan.jobs || []).filter((job) => job.id && job.policy);
+  if (!planJobs.length) throw new Error(`--rebuild-from found no planned jobs in ${planPath}`);
+  const results = [];
+  for (const job of planJobs) {
+    const event = completedEvents.get(job.id);
+    if (!event) continue; // never completed; resultRows reports it as missing via plannedJobs
+    const jobTraceDir = resolveRunArtifactPath(job.artifactRoot, traceDir) || traceDir;
+    const traces = listTraceFiles(jobTraceDir);
+    const traceSummaries = traces.map((tracePath) => summarizeTrace(tracePath, jobTraceDir, { primaryHorizon }));
+    const logPath = resolveRunArtifactPath(job.log, traceDir);
+    results.push({
+      key: job.id,
+      policy: job.policy,
+      runIndex: job.repeat,
+      status: event.status === 'ok' ? 'ok' : 'failed',
+      exitCode: event.exitCode ?? null,
+      signal: null,
+      traces,
+      traceSummaries,
+      log: logPath ? path.relative(ROOT, logPath) : null,
+      command: ['node', ...(job.arguments || [])],
+      rebuiltFromEvidence: true,
+    });
+  }
+  if (!results.length) throw new Error(`--rebuild-from found no completed jobs in ${traceDir}`);
+  console.log(
+    `[auto-eval] rebuilding ${results.length}/${planJobs.length} completed rows from ${path.relative(ROOT, traceDir)}`,
+  );
+  const report = writeSummary({
+    traceDir,
+    startedAt: state.startedAt || evidencePlan.createdAt,
+    results,
+    plannedJobs: planJobs,
+    failed: false,
+    configOverride: config,
+  });
+  appendRunEvent(traceDir, {
+    type: 'report_written',
+    summary: logicalArtifactPath(report.summaryPath, traceDir),
+    html: report.htmlPath ? logicalArtifactPath(report.htmlPath, traceDir) : null,
+    rebuild: true,
+  });
+  const failedRows = results.some((result) => result.status === 'failed');
+  const missingRows = results.length < planJobs.length;
+  const sealed = sealEvidenceTransaction({
+    traceDir,
+    evidencePlan,
+    results,
+    status: failedRows || missingRows ? 'incomplete' : 'complete',
+    summaryPath: report.summaryPath,
+  });
+  if (failedRows || missingRows || sealed.seal?.status === TUTOR_STUB_LEARNER_ANALYSIS_INCOMPLETE_STATUS) {
+    process.exit(1);
+  }
+}
+
 function writeReportFromSummary(summaryPath) {
   const resolvedSummaryPath = resolvePath(summaryPath);
   const sourceDir = path.dirname(resolvedSummaryPath);
@@ -7053,6 +7151,10 @@ async function main() {
     writeReportFromSummary(args['report-from']);
     return;
   }
+  if (args['rebuild-from']) {
+    rebuildRunFromEvidence(args['rebuild-from']);
+    return;
+  }
   if (args['resume-from']) {
     const plan = buildResumePlan(args['resume-from']);
     activeReadOnlySourceDir = plan.sourceDir;
@@ -7206,6 +7308,39 @@ async function main() {
   if (aborted || failedRows || sealed.seal?.status === TUTOR_STUB_LEARNER_ANALYSIS_INCOMPLETE_STATUS) process.exit(1);
 }
 
+// The summary carries every trace summary twice (results + rows), so a full
+// cell of long dialogues pushes one JSON.stringify of the whole object past
+// Node's maximum string length and the writer dies after all dialogues have
+// finished. Stream the file instead: small fields keep the pretty layout, the
+// two big arrays are written one compact element per line, and no single
+// string scales with the whole run. The output stays plain JSON.
+const SUMMARY_STREAMED_ARRAY_KEYS = new Set(['results', 'rows']);
+
+function writeSummaryJsonFile(summaryPath, summary) {
+  const handle = fs.openSync(summaryPath, 'w');
+  try {
+    const keys = Object.keys(summary);
+    fs.writeSync(handle, '{\n');
+    keys.forEach((key, index) => {
+      const separator = index < keys.length - 1 ? ',' : '';
+      const value = summary[key];
+      if (SUMMARY_STREAMED_ARRAY_KEYS.has(key) && Array.isArray(value)) {
+        fs.writeSync(handle, `  ${JSON.stringify(key)}: [`);
+        value.forEach((item, itemIndex) => {
+          fs.writeSync(handle, `${itemIndex ? ',' : ''}\n    ${JSON.stringify(item)}`);
+        });
+        fs.writeSync(handle, `\n  ]${separator}\n`);
+      } else {
+        const encoded = JSON.stringify(value, null, 2) ?? 'null';
+        fs.writeSync(handle, `  ${JSON.stringify(key)}: ${encoded.split('\n').join('\n  ')}${separator}\n`);
+      }
+    });
+    fs.writeSync(handle, '}\n');
+  } finally {
+    fs.closeSync(handle);
+  }
+}
+
 function writeSummary({
   traceDir,
   startedAt,
@@ -7250,7 +7385,7 @@ function writeSummary({
     json: summaryPath,
     html: args['no-html-report'] ? null : htmlPath,
   };
-  fs.writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`);
+  writeSummaryJsonFile(summaryPath, summary);
   console.log(`\n[auto-eval] wrote ${summaryPath}`);
   if (!args['no-html-report']) {
     writeHtmlReport({ summary, rows, htmlPath });

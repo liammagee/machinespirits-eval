@@ -87,7 +87,7 @@
     {
       "file": "services/tutorStubResponsePolicySelectionRuntime.js",
       "claim": "core policy selection, explicit performance directives, and replayable seeded sampling",
-      "sha256": "471dc3065dfff6d28178250d9058f51770702d314d69675862627db593cde5da"
+      "sha256": "a1f755100a0fd51ce87a951fcb7286c0719205be551e20f153552c514dc51b1b"
     },
     {
       "file": "services/tutorStubAdaptiveResponsePolicyRuntime.js",
@@ -97,7 +97,7 @@
     {
       "file": "services/tutorStubResponseConfigurationSelectionRuntime.js",
       "claim": "final response-configuration composition, precedence, and selection trace envelope",
-      "sha256": "83455ec1401a0d4b76fe3b950f63941b934aef8839564de58ef31145161112f7"
+      "sha256": "d438a5e8b3335a6763c1a9890ebbbbac98b28ec0cf4a50243304441ba5370171"
     },
     {
       "file": "services/tutorStubWorldPromptContext.js",

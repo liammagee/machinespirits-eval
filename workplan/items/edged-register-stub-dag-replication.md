@@ -1,20 +1,20 @@
 ---
 id: edged-register-stub-dag-replication
 title: Re-ask the edged-register question inside the tutor-stub proof-DAG harness
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-18
-updated: 2026-08-27
+updated: 2026-08-29
 verification: One stub-harness block contrasts a sharp delivery policy against
   the warm policy on the same worlds and the same proof-DAG, with completion
   taken from the DAG rather than from a model reader, and reports whether the
   sharp policy changes how much of the proof debt the learner discharges. A
   null is a result. Any paid stage runs only after its own committed GO note
   and explicit human approval.
-claim_status: planned
+claim_status: settled
 depends_on:
   - edged-register-outcome-study
 links:
@@ -106,3 +106,61 @@ question — does a sharp delivery cost the learner anything — asked where
   read §3.10-§3.10.4 of the draft note, then survey the stub harness's
   register machinery before designing the contrast. Zero-call until a
   signed GO.
+- 2026-08-29: Stage-2 block closed on the fixed guard. The leak guard had
+  read its compound word lists as any-word: bare "die" beside the answer
+  name ("die-flaw", "die marks") fired the private-conclusion kill with no
+  real leak. All 8 recorded kills were that defect; none showed a leak.
+  Fixed in d74969e0: component lists now need every word in one sentence,
+  variant lists keep any-of, and a quoted "whether" clause counts as
+  withholding the conclusion. 26 new tests pin the 8 kill sentences.
+  Re-runs on the fixed code (resume machinery, sealed sibling roots):
+  diligent 24/24, resistant 24/24, all 8 killed dialogues recovered
+  clean, 3 codex CLI timeouts healed on a second pass. Two turn-18
+  learner-analysis classifier calls failed all retries in the diligent
+  cell; both sit past the 16-turn endpoint horizon, so the endpoint is
+  untouched. One re-run launch was killed by a background-agent sweep;
+  relaunched detached and completed. Fidelity read on the resistant cell
+  (Sonnet 5, sealed context): pin check 0 violations in 946 turns; sharp
+  arm 432 present of 480, rate 0.90 over the 0.8 floor; one turn refused
+  by the API with a harms label every time (counterfeit-die content read
+  without tutorial framing); operator accepted the arm at 479/480. Warm
+  arm: 50 of 466 turns read as edged, report-only. Report:
+  `qa-matrix-2026-08-29T12-21-26-240Z/fidelity-resistant-final.md`.
+  Artifacts archived (private repo 0af1573c). Known residual: a
+  negated-existential sentence joined by "but no" can still trip the
+  final check; the only recorded case is in a void superseded root.
+- 2026-08-29 (endpoint): Final primary endpoint computed over the full
+  72-row roster on the fixed guard (memo §9). Null in every cell:
+  turn-16 coverage sarcastic vs warm — resistant 0.250/0.292, diligent
+  0.486/0.472, proof_skipper 0.444/0.486; area under the curve equally
+  flat. §8's resistant-cell sarcastic advantage came from the voided
+  pin-leak block and did not survive the clean re-run. With the teaching
+  held fixed by the scripted core, the manner alone moves nothing the
+  endpoint can see. The Stage-1 leak ordering (resistance pulls edge
+  into a warm-pinned voice) stands as the surviving finding.
+- 2026-08-29 (voided-block forensics): Counted the warm slips in the
+  voided resistant block (`qa-matrix-2026-08-28T21-41-13-718Z`) from its
+  archived traces, to weigh "the mixed delivery created the §8 effect"
+  against "lucky draw". Sarcastic arm, first 16 turns (the endpoint
+  window): 29 warm turns of 176 (16.5%). The slips were lopsided — 9 of
+  11 complete runs had 0-3 slips; one run (r4) went 14 of 16 warm and
+  scored the top mark (0.667), but three runs with a single slip scored
+  0.667 too. Within the block, more slippage does not track higher
+  coverage (pearson 0.25, spearman 0.16, n=11 — nothing). Across
+  blocks: the warm arm barely moved (0.278 voided, 0.292 clean) while
+  the fixed sarcastic arm fell 0.455 to 0.250 — suggestive, but one
+  post-hoc comparison at n=12, sd ~0.23. The clean block's pin held
+  fully: 40/40 sarcastic in all 12 runs. Verdict: no within-block
+  support for the mixed-manner story; the null stands as the record.
+  Analysis is deterministic re-count of archived events; no paid calls.
+- 2026-08-29 (closed): Card closed on the null. With the teaching moves
+  pinned by the scripted core, tone alone (sarcastic vs warm) moved no
+  outcome the proof-DAG can see, across all three learner characters.
+  Surviving findings: learner resistance pulls edge into a warm-pinned
+  tutor voice (6.6% to 17.7% across characters), and proof completion is
+  set by learner character, not tutor manner. Voided-block forensics
+  found no support for the mixed-delivery story. Reading: register here
+  indexed the relationship rather than driving the teaching; any causal
+  power of tone likely travels through the moves it licenses, which this
+  design deliberately froze. A tone-drives-moves study would be a new
+  card with its own registration; none is planned.

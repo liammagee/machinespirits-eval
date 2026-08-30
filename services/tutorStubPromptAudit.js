@@ -9,7 +9,12 @@ export const TUTOR_STUB_PROMPT_BUDGETS = Object.freeze({
   // characters. Keep the ordinary tutor_system ceiling unchanged, while
   // giving this explicitly menu-bearing surface a bounded ~2k-char margin.
   tutor_system_standing: Object.freeze({ maxChars: 24_000, maxApproxTokens: 6_000 }),
-  tutor_turn: Object.freeze({ maxChars: 42_000, maxApproxTokens: 10_500 }),
+  // Stage-2 edged-register block (2026-08-28): the tutor turn prompt grows
+  // with the standing state and crossed 42k chars at turn ~38, one turn behind
+  // the old 120-call pool, killing near-complete dialogues with no recovery
+  // path. Operator ruling: raise to 64k so the 40-turn safety cap, not this
+  // guard, is the binding stop. The turn cap bounds all prompt growth.
+  tutor_turn: Object.freeze({ maxChars: 64_000, maxApproxTokens: 16_000 }),
   // Combined classification + learner-record prompts carry the public world,
   // deterministic DAG preflight, and a bounded transcript window. The former
   // 30k ceiling rejected Marrick's baseline prompt before the first model call

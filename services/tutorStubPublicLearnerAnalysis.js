@@ -273,6 +273,8 @@ const LOCAL_REGISTER_POLICIES = new Set([
   'random',
   'bland',
   'negative',
+  'fixed_warm',
+  'fixed_sarcastic',
 ]);
 
 const CONTROLLED_CLASSIFIER_FIELDS = [
@@ -1410,6 +1412,10 @@ function localPolicyInstruction(policy) {
       'Policy is bland: do not choose an engagement stance. The runtime will use a fixed plain non-adaptive baseline stance.',
     negative:
       'Policy is negative: do not choose an engagement stance. The runtime will sample only ironic, sarcastic, and face_threat as an explicit negative-floor stance control.',
+    fixed_warm:
+      'Policy is fixed_warm: do not choose an engagement stance. The runtime pins the warm register on every tutor turn as an overlay-free fixed-register control.',
+    fixed_sarcastic:
+      'Policy is fixed_sarcastic: do not choose an engagement stance. The runtime pins the sarcastic register on every tutor turn as an overlay-free fixed-register control.',
   };
   return instructions[policy] || null;
 }
