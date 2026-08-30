@@ -274,6 +274,7 @@
         "tests/dramaticDerivationPhase6Verdict.test.js",
         "tests/dramaticDerivationPlot.test.js",
         "tests/dramaticDerivationPostTurnLifecycle.test.js",
+        "tests/dramaticDerivationProofDagReview.test.js",
         "tests/dramaticDerivationProofDebt.test.js",
         "tests/dramaticDerivationProxyDagMemory.test.js",
         "tests/dramaticDerivationPublicEvidence.test.js",
