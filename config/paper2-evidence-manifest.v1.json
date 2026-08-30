@@ -38,6 +38,18 @@
       "semantic_sha256": "14b9ad873e431c2735350eb7288d5c725b4b1490a2fa1bfd7e28e0d40d2cd432"
     },
     {
+      "id": "tutor-stub-edged-register-stage2-result",
+      "module_id": "tutor-stub.edged-register-stage2.final",
+      "locator": "notes/2026-08-28-edged-register-stub-stage2-sizing-memo.md",
+      "format": "text-markers",
+      "semantic_markers": [
+        "## 9. Final primary endpoint — full roster on fixed code (2026-08-29)",
+        "Reading: a null in every cell.",
+        "Stage 2 does not reproduce it."
+      ],
+      "semantic_sha256": "95375edb311977dcc6756a81b607d6f7fd8492d9226e8febd1f55c7c294cc28d"
+    },
+    {
       "id": "edra-m3-historical-v4-audit",
       "module_id": "poetics.edra-m3.historical-v4-audit",
       "locator": "notes/poetics/2026-08-27-edra-m3-historical-v4-reproducibility-audit.md",
@@ -123,15 +135,23 @@
     },
     {
       "id": "tutor-stub-warrant-and-resistant-learner-studies",
-      "paper_sections": ["6.25", "6.26", "6.27", "6.28"],
-      "paper_markers": ["### 6.25 The Live Warrant Gate:", "### 6.28 One Powered Run, Two Faces of Resistance:"],
+      "paper_sections": ["6.25", "6.26", "6.27", "6.28", "6.29"],
+      "paper_markers": ["### 6.25 The Live Warrant Gate:", "### 6.29 The Edged Register with the Teaching Frozen:"],
       "evidence_class": "archived-artifact-recomputable",
-      "semantic_authority_ids": ["tutor-stub-resistant-learner-design"],
+      "semantic_authority_ids": ["tutor-stub-resistant-learner-design", "tutor-stub-edged-register-stage2-result"],
       "substrates": [
         { "kind": "archived-artifact", "path": "config/tutor-stub-frame-refuser-depth-design.v4.json" },
         {
           "kind": "archived-artifact",
           "path": "config/tutor-stub-resistance-semantic-adjudication-development-evidence.v4.json"
+        },
+        {
+          "kind": "archived-artifact",
+          "path": "notes/2026-08-28-edged-register-stub-dag-replication-design.md"
+        },
+        {
+          "kind": "archived-artifact",
+          "path": "notes/2026-08-28-edged-register-stub-stage2-sizing-memo.md"
         }
       ]
     },
