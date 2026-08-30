@@ -109,12 +109,6 @@
   .release { background: var(--paper); padding: 0.65rem; font-size: 0.72rem; line-height: 1.4; }
   .release b { display: block; color: var(--brick-d); font: 700 0.66rem/1.3 "Space Mono", monospace; }
 
-  .compare { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.2rem; }
-  .compare__lane { border: 1px solid var(--rule); background: var(--paper-2); }
-  .compare__head { display: flex; justify-content: space-between; gap: 0.75rem; align-items: center; padding: 0.7rem 0.85rem; border-bottom: 1px solid var(--rule); }
-  .compare__head h3 { margin: 0; font-size: 0.95rem; }
-  .score-chip { border-radius: 999px; padding: 0.24rem 0.5rem; color: white; background: var(--signal); font: 700 0.65rem/1 "Space Mono", monospace; white-space: nowrap; }
-  .score-chip--pass { background: var(--safe); }
   .swim { padding: 0.85rem; }
   .swim__head, .swim__row { display: grid; grid-template-columns: minmax(0, 1fr) 2.7rem minmax(0, 1fr); gap: 0.55rem; }
   .swim__head { margin-bottom: 0.55rem; color: var(--ink-3); font: 700 0.62rem/1.2 "Space Mono", monospace; text-transform: uppercase; letter-spacing: 0.08em; }
@@ -222,6 +216,60 @@
     .price-row { grid-template-columns: 1fr; }
     .price-cell:last-child { grid-column: auto; }
   }
+  /* DRAMATIC_DIALOGUE:STYLES:START */
+.dd { --dd-border: var(--ms-border, var(--rule, #c8c1b6)); --dd-border-subtle: var(--ms-border-subtle, var(--rule, #ddd6ca)); --dd-surface: var(--ms-surface-elevated, var(--paper, #fff)); --dd-learner: var(--ms-paper-2, var(--paper-2, #f6f1e8)); --dd-text: var(--ms-text, var(--ink, #201c18)); --dd-muted: var(--ms-text-muted, var(--ink-3, #6e665d)); --dd-ink: var(--ms-ink, var(--ink, #201c18)); --dd-white: var(--ms-white, #fff); --dd-ochre: var(--ms-ochre, var(--ochre, #be8a2d)); --dd-moss: var(--ms-moss, var(--moss, #657f5f)); --dd-moss-deep: var(--ms-moss-deep, var(--moss-d, #496c4c)); --dd-red: var(--ms-red, var(--brick, #b14932)); --dd-red-deep: var(--ms-red-dark, var(--brick-d, #8d2f20)); color: var(--dd-text); }
+  .dd__arm-heads, .dd__lanes { display: grid; grid-template-columns: repeat(var(--dd-lane-count), minmax(0, 1fr)); gap: 0.85rem; }
+  .dd__arm-heads { margin: 0 0 0.85rem 3.5rem; }
+  .dd__arm-head { border: 1px solid var(--dd-border); background: var(--dd-surface); padding: 0.7rem 0.85rem; }
+  .dd__arm-head strong, .dd__arm-head span { display: block; }
+  .dd__arm-head span { margin-top: 0.25rem; color: var(--dd-muted); font: 0.72rem/1.5 var(--ms-font-mono, "Space Mono", monospace); }
+  .dd__arm-head--baseline, .dd__lane--baseline .dd__message--tutor { border-left: 3px solid var(--dd-border); }
+  .dd__moment { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr); gap: 0.75rem; align-items: start; border-top: 1px solid var(--dd-border-subtle); padding: 0.85rem 0; }
+  .dd__turn-gutter { display: flex; justify-content: center; padding-top: 0.2rem; }
+  .dd__turn-badge { display: grid; place-items: center; width: 2.1rem; min-height: 2.1rem; box-sizing: border-box; padding: 0.2rem; background: var(--dd-ink); color: var(--dd-white); font: 700 0.72rem/1.1 var(--ms-font-mono, "Space Mono", monospace); text-align: center; }
+  .dd__moment-body, .dd__single, .dd__lane { min-width: 0; }
+  .dd__shared { margin-bottom: 0.7rem; }
+  .dd__shared .dd__message { max-width: 62rem; background: var(--dd-learner); border-left: 3px solid var(--dd-ochre); }
+  .dd__lane { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+  .dd__arm-label { display: none; margin: 0; color: var(--dd-muted); font: 700 0.7rem/1.5 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dd__message { min-width: 0; border: 1px solid var(--dd-border); background: var(--dd-surface); padding: 0.75rem 0.85rem; box-sizing: border-box; }
+  .dd__message--learner { background: var(--dd-learner); border-left: 3px solid var(--dd-ochre); }
+  .dd__message-head { display: flex; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.45rem; color: var(--dd-muted); font: 0.7rem/1.5 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.05em; }
+  .dd__who { color: var(--dd-text); font-weight: 700; }
+  .dd__delivery { text-align: right; }
+  .dd__speech { font-size: 0.94rem; line-height: 1.62; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .dd__empty { color: var(--dd-muted); font-size: 0.84rem; font-style: italic; }
+  .dd__labels { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.55rem; }
+  .dd__badge { border: 1px solid var(--dd-border); padding: 0 0.38rem; font: 0.68rem/1.75 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.045em; }
+  .dd__badge[data-dd-tone='pass'] { border-color: var(--dd-moss-deep); background: var(--dd-moss); color: var(--dd-white); }
+  .dd__badge[data-dd-tone='fail'] { border-color: var(--dd-red-deep); background: var(--dd-red); color: var(--dd-white); }
+  .dd__badge[data-dd-tone='warning'] { border-color: var(--dd-ochre); background: var(--dd-ochre); color: #111; }
+  .dd__badge[data-dd-tone='muted'] { color: var(--dd-muted); background: transparent; }
+  .dd__badge[data-dd-tone='ink'] { border-color: var(--dd-ink); background: var(--dd-ink); color: var(--dd-white); }
+  .dd__details { margin-top: 0.45rem; color: var(--dd-muted); }
+  .dd__details summary { cursor: pointer; font: 0.68rem/1.7 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.05em; }
+  .dd__details p { margin: 0.35rem 0 0; font-size: 0.8rem; line-height: 1.5; }
+  .dd__details strong { color: var(--dd-text); }
+  .dd__gloss { margin: 0.65rem 0 0; border-top: 1px solid var(--dd-border-subtle); padding-top: 0.55rem; color: var(--dd-muted); font-size: 0.82rem; line-height: 1.5; }
+  .dd__gloss b { color: var(--dd-red-deep); font: 700 0.66rem/1.4 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.06em; }
+  mark.dd__added { background: color-mix(in srgb, var(--dd-red) 18%, transparent); color: inherit; padding: 0 0.05rem; }
+  body[data-dd-diff='off'] mark.dd__added { background: transparent; }
+  body[data-dd-stack='on'] .dd__lanes, body[data-dd-stack='on'] .dd__arm-heads { grid-template-columns: 1fr; }
+  body[data-dd-stack='on'] .dd__arm-label { display: block; }
+  @media (max-width: 74rem) {
+    .dd--parallel .dd__lanes, .dd--parallel .dd__arm-heads { grid-template-columns: 1fr; }
+    .dd--parallel .dd__arm-label { display: block; }
+  }
+  @media (max-width: 56rem) {
+    .dd--shared-learner .dd__lanes { grid-template-columns: 1fr; }
+    .dd--shared-learner .dd__arm-label { display: block; }
+    .dd__arm-heads { margin-left: 0; }
+  }
+  @media (max-width: 36rem) {
+    .dd__moment { grid-template-columns: 1fr; }
+    .dd__turn-gutter { justify-content: flex-start; }
+  }
+/* DRAMATIC_DIALOGUE:STYLES:END */
 </style>
 </head>
 <body>
@@ -362,26 +410,50 @@
           <p class="s__kicker">Device 2 · state-contingent action</p>
           <h2 class="s__h">Same kind of learner turn. Two forced moves. <em>Only one addresses the real obstacle.</em></h2>
           <p>At the endgame, the learner already understands the plumbing. The remaining obstacle is social: accepting the hose feels like admitting that the earlier objection to blaming Sam was worthless. The experiment deliberately forces the record-reopening card and the stake-splitting card at this same planted state.</p>
-          <div class="compare">
-            <article class="compare__lane">
-              <div class="compare__head"><h3>Wrong move · reopen the record</h3><span class="score-chip">0/6 matched</span></div>
-              <div class="swim">
-                <div class="swim__head"><span>Tutor</span><span></span><span>Learner</span></div>
-                <div class="swim__row swim__row--learner"><div class="swim__spine"><span class="swim__turn">L</span></div><div class="speech"><span class="speech__who">Learner · turn 10</span>If I write “basin hose” in that notebook, I’m apologising to Sam at eight. So it’s steam. It can be steam.</div></div>
-                <div class="swim__row swim__row--tutor"><div class="speech"><span class="speech__who">Tutor · forced settled-claim card</span>Let's actually turn to the page instead of guessing what it says. The entry reads: dry at ordinary pressure, hairline split under raised pressure, first bead right at that joint — no line anywhere about steam. […] What does the dye's path say about where that water actually went?</div><div class="swim__spine"><span class="swim__turn">T</span></div></div>
-              </div>
-              <p class="gloss"><b>Plain language</b><br />The tutor proves the plumbing again. But the learner's problem is no longer the plumbing; it is what changing their mind will mean socially.</p>
-            </article>
-            <article class="compare__lane">
-              <div class="compare__head"><h3>Right move · split finding from stake</h3><span class="score-chip score-chip--pass">5/6 matched</span></div>
-              <div class="swim">
-                <div class="swim__head"><span>Tutor</span><span></span><span>Learner</span></div>
-                <div class="swim__row swim__row--learner"><div class="swim__spine"><span class="swim__turn">L</span></div><div class="speech"><span class="speech__who">Learner · turn 10</span>If I write “split hose,” I’m apologising to Sam at eight. So it can still be steam, can’t it?</div></div>
-                <div class="swim__row swim__row--tutor"><div class="speech"><span class="speech__who">Tutor · forced stake card</span>Your objection was never “the hose did it” — it was “timing isn't proof,” and that's a separate claim from what caused the mark. Naming the split hose settles the cause question; it doesn't settle what you owe Sam. […] Was your case against Sam ever “the shower definitely did it,” or was it “we jumped to a cause without a path”?</div><div class="swim__spine"><span class="swim__turn">T</span></div></div>
-              </div>
-              <p class="gloss"><b>Plain language</b><br />The tutor separates two things: the hose caused the stain, and the learner was still right to oppose blame before anyone had traced a path.</p>
-            </article>
-          </div>
+          <!-- DRAMATIC_DIALOGUE:CROSSED:START -->
+<section class="dd dd--parallel" data-dd-schema="machinespirits.dramatic-dialogue-renderer.v1" data-dd-interchange="machinespirits.dramatic-dialogue-interchange.v1" data-dd-dialogue-id="adaptive-tutor-crossed-endgame" data-dd-layout="parallel" aria-label="Endgame state-contingent action contrast"><div class="dd__arm-heads" style="--dd-lane-count:2"><div class="dd__arm-head dd__arm-head--baseline" data-dd-arm="wrong-reopen">
+        <strong>Wrong move · reopen the record</strong><span>Forced settled-claim card</span>
+      </div><div class="dd__arm-head" data-dd-arm="right-split-stake">
+        <strong>Right move · split finding from stake</strong><span>Forced stake card</span>
+      </div></div><section class="dd__moment" data-dd-turn="10">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">10</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="wrong-reopen">
+            <p class="dd__arm-label">Wrong move · reopen the record</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="rowan-flat-k0-wrong-learner" data-dd-speaker="learner" data-dd-turn="10" data-dd-arm="wrong-reopen">
+    <header class="dd__message-head"><span class="dd__who">learner</span><span class="dd__delivery" data-dd-status="recorded">turn 10</span></header>
+    <div class="dd__speech">If I write “basin hose” in that notebook, I’m apologising to Sam at eight. So it’s steam. It can be steam.</div>
+
+
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="rowan-flat-k0-wrong-tutor" data-dd-speaker="tutor" data-dd-turn="10" data-dd-arm="wrong-reopen">
+    <header class="dd__message-head"><span class="dd__who">tutor</span><span class="dd__delivery" data-dd-status="recorded">forced settled-claim card</span></header>
+    <div class="dd__speech">Let&#39;s actually turn to the page instead of guessing what it says. The entry reads: dry at ordinary pressure, hairline split under raised pressure, first bead right at that joint — no line anywhere about steam. […] What does the dye&#39;s path say about where that water actually went?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="verdict" data-dd-status="fail" data-dd-group="outcome" data-dd-tone="fail">0/6 matched</span></div>
+
+
+    <p class="dd__gloss"><b>Plain language</b><br />The tutor proves the plumbing again. But the learner&#39;s problem is no longer the plumbing; it is what changing their mind will mean socially.</p>
+  </article>
+          </div><div class="dd__lane" data-dd-arm="right-split-stake">
+            <p class="dd__arm-label">Right move · split finding from stake</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="rowan-flat-k0-right-learner" data-dd-speaker="learner" data-dd-turn="10" data-dd-arm="right-split-stake">
+    <header class="dd__message-head"><span class="dd__who">learner</span><span class="dd__delivery" data-dd-status="recorded">turn 10</span></header>
+    <div class="dd__speech">If I write “split hose,” I’m apologising to Sam at eight. So it can still be steam, can’t it?</div>
+
+
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="rowan-flat-k0-right-tutor" data-dd-speaker="tutor" data-dd-turn="10" data-dd-arm="right-split-stake">
+    <header class="dd__message-head"><span class="dd__who">tutor</span><span class="dd__delivery" data-dd-status="recorded">forced stake card</span></header>
+    <div class="dd__speech">Your objection was never “the hose did it” — it was “timing isn&#39;t proof,” and that&#39;s a separate claim from what caused the mark. Naming the split hose settles the cause question; it doesn&#39;t settle what you owe Sam. […] Was your case against Sam ever “the shower definitely did it,” or was it “we jumped to a cause without a path”?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="verdict" data-dd-status="pass" data-dd-group="outcome" data-dd-tone="pass">5/6 matched</span></div>
+
+
+    <p class="dd__gloss"><b>Plain language</b><br />The tutor separates two things: the hose caused the stain, and the learner was still right to oppose blame before anyone had traced a path.</p>
+  </article>
+          </div></div>
+      </section></section>
+<!-- DRAMATIC_DIALOGUE:CROSSED:END -->
           <p class="provenance"><strong>Selection rule.</strong> This pair uses Rowan Flat, replication <code>k=0</code>, at the same planted endgame-stake state under the two fixed policies. Ellipses shorten the recorded tutor replies; no words inside the retained spans were rewritten. The 5/6 and 0/6 totals are pooled across both registered worlds and human-ruled by conduct.</p>
         </div>
         <div class="mr"><p class="note note--moss"><span class="note__lbl">What changed</span> The system is no longer graded for merely sounding adaptive. The wrong action is made available on purpose, and an adjudication of the delivered tutor reply decides the conduct contrast.</p></div>
