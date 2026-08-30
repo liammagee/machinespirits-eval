@@ -558,6 +558,7 @@
         "tests/tutorStubDagFeatures.test.js",
         "tests/tutorStubDagSnapshotPresentation.test.js",
         "tests/tutorStubDebugIdentity.test.js",
+        "tests/tutorStubDefiantWarrantOutcomeStudy.test.js",
         "tests/tutorStubDevelopmentSpeakerTransport.test.js",
         "tests/tutorStubDialogueMemoryContext.test.js",
         "tests/tutorStubDialogueSettingsPresentation.test.js",

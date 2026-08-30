@@ -112,3 +112,13 @@ test without grounds?
   P0 baseline read done from the archived sealed traces (zero calls).
   Draft registration committed for human review. No paid call until the
   operator's GO.
+- 2026-08-29: Operator gave the plain GO. P1 built zero-call: design JSON
+  (`config/tutor-stub-defiant-warrant-outcome-pilot.v1.json`), study
+  module (validate / plan / conduct card / configure with launch-pin
+  drift guard), standing conduct-card seam in tutor turn preparation
+  (manner-switch-card pattern, permission-shaped), CLI args + dispatch,
+  launcher `scripts/run-tutor-stub-defiant-warrant-pilot.js`
+  (preflight / live / analyze; provenance recorded, never enforced),
+  conduct codebook, 10 unit tests green. Wiring smoke: preflight passed
+  zero-call; a deliberately drifted stub launch failed closed naming
+  every drifted pin before any model call. Next: attended Gate-1 launch.

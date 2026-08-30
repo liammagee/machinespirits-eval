@@ -9,6 +9,7 @@ import {
 } from './tutorStubResistanceActionRegisterExecution.js';
 import { configureTutorStubResistanceManipulationValidationFromCli } from './tutorStubResistanceActionRegisterManipulationValidation.js';
 import { configureTutorStubResistanceWarmNonwarmFromCli } from './tutorStubResistanceWarmNonwarmConfirmation.js';
+import { configureTutorStubDefiantWarrantFromCli } from './tutorStubDefiantWarrantOutcomeStudy.js';
 
 function complete(values) {
   return values.every(Boolean);
@@ -49,10 +50,11 @@ export function configureTutorStubResistanceStudiesFromCli({
   ];
   const boredom = [args['boredom-proof-dag-registration'], args['boredom-proof-dag-job']];
   const resistantLearner = [args['resistant-learner-calibration-design'], args['resistant-learner-calibration-job']];
-  const modes = [baseline, confirmation, manipulation, warmNonwarm, boredom, resistantLearner];
+  const defiantWarrant = [args['defiant-warrant-outcome-design'], args['defiant-warrant-outcome-job']];
+  const modes = [baseline, confirmation, manipulation, warmNonwarm, boredom, resistantLearner, defiantWarrant];
   if (modes.filter((mode) => mode.some(Boolean)).length > 1) {
     throw new Error(
-      'baseline replay, frame confirmation, manipulation validation, warm/nonwarm confirmation, boredom proof-DAG, and resistant-learner calibration modes are mutually exclusive',
+      'baseline replay, frame confirmation, manipulation validation, warm/nonwarm confirmation, boredom proof-DAG, resistant-learner calibration, and defiant-warrant pilot modes are mutually exclusive',
     );
   }
   if (partial(baseline)) {
@@ -140,6 +142,17 @@ export function configureTutorStubResistanceStudiesFromCli({
       autoTurns,
       appendTraceEvent,
       observationSemantics,
+    });
+  }
+  if (partial(defiantWarrant)) throw new Error('defiant-warrant pilot requires design and job together');
+  if (complete(defiantWarrant)) {
+    configureTutorStubDefiantWarrantFromCli({
+      args,
+      state,
+      root,
+      autoLearnerEnabled,
+      autoTurns,
+      appendTraceEvent,
     });
   }
   if (partial(resistantLearner)) throw new Error('resistant-learner calibration requires design and job together');

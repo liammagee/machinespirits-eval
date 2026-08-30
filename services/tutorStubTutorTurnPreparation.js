@@ -297,6 +297,11 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
       speakerAdvisoryBlocks?.has('empty_plan') ? (emptyPlanAdvisory ?? null) : null,
       withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
       tutorDeliveryRepairAdvisory,
+      // Defiant-warrant pilot standing conduct card: CLI-owned like the manner
+      // switch card below, present on every tutor turn of an assigned dialogue.
+      // Permission-shaped — delivered conduct is read from the tutor's text
+      // after the run, never enforced here.
+      state?.defiantWarrantOutcomeStudy?.conduct_card || null,
       cardFinalSlot && !cardAfterLearner ? state?.mannerSwitch?.card || null : null,
     ]
       .filter(Boolean)
