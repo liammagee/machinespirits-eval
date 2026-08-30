@@ -27,6 +27,12 @@
       "reason": "Used by the completed revision-4 Gate 1 calibration; preserve its attended-launch and resume semantics."
     },
     {
+      "path": "scripts/run-tutor-stub-frame-refuser-narrowing-calibration.js",
+      "registered": "2026-08-30",
+      "disposition": "shared_contract",
+      "reason": "Post-policy archived-row instrument calibration; adopts services/paidStudyLaunchContract.js for admission, create-once state, per-reader reservations, and the append-only ledger."
+    },
+    {
       "path": "scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js",
       "registered": "2026-08-29",
       "disposition": "shared_contract",
