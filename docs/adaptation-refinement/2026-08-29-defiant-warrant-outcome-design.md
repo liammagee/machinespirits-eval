@@ -138,3 +138,65 @@ simulated learner's conduct under this stub and these pins. It does not
 show transfer to humans, to the cell harness, or to any other resistant
 profile, and it licenses no claim about register or tone — manner is held
 fixed by design.
+
+## 7. Design revision 2 — structural conduct enforcement (2026-08-29)
+
+The v1 Gate-1 run (`.tutor-stub-auto-eval/defiant-warrant-gate1-2026-08-29-r3`)
+completed 18 dialogues, but the blind Sonnet conduct reader found the
+withholding conduct delivered in **0 of 8** read dialogues. The standing
+conduct card was injected on every turn and read by no code on the
+generating path; instruction alone could not subtract the tutor model's
+default prosocial conduct. The v1 outcome numbers are uninterpretable
+and license nothing. No threshold was frozen. The frame-refuser v4
+lesson repeats: every registered instruction must be read by code on the
+generating path.
+
+Revision 2 (`config/tutor-stub-defiant-warrant-outcome-pilot.v2.json`)
+adds a **conduct gate** at the same orchestration seam as the proven R1
+tutor-delivery gate:
+
+- **Trigger (deterministic):** the current learner turn carries
+  `resistantLearnerObservationMarkers.frameJurisdictionDispute` — the
+  same instrument the outcome measures use.
+- **Check (semantic):** the private tutor candidate is adjudicated
+  against the assigned arm's registered conduct by seat
+  `codex.gpt-5.6-sol` at effort low. The seat is neither the generating
+  model (`codex.gpt-5.6-luna`, so no self-judging) nor the post-run
+  conduct reader (`claude-code.sonnet-5`, so the delivered-conduct
+  instrument stays independent of the enforcement).
+- **Evidence contract:** a verdict on the arm's quote-required label
+  must quote a verbatim substring of the candidate; any other verdict
+  must return quote null. A malformed or unverifiable verdict stops the
+  dialogue as a typed indeterminate
+  (`tutor_stub_defiant_warrant_conduct_adjudication_indeterminate`); it
+  never passes open.
+- **Repair:** up to 2 repairs per gated turn with the registered
+  per-arm repair instruction plus the adjudicator's quoted violation
+  span. Exhaustion emits `defiant_warrant_conduct_non_delivery` and
+  throws the typed terminal code
+  (`tutor_stub_defiant_warrant_conduct_non_delivery`): never scored,
+  measurement indeterminate, no resample.
+- **Symmetry:** both arms pass through the same machinery on the same
+  trigger; only the registered question and repair text differ.
+  Rejected drafts never enter public history and the learner is never
+  charged a turn for them.
+
+Budget consequences, registered up front: gate adjudications and repair
+regenerations are metered model calls on the same per-dialogue budget,
+so the per-dialogue cap rises from 48 to **72** (v1 mean was ~29; the
+worst gated turn adds up to 5 calls on up to ~4 dispute-adjacent turns)
+and the pilot generation ceiling becomes **1,296** attempts (72 x 18).
+The reader budget stays 400. Under v2 the reader pass is a
+delivered-conduct confirmation of the enforcement, not an independent
+discovery instrument; its model independence from the gate seat is what
+keeps it worth running.
+
+The v2 re-run uses a **fresh master seed (20260830)**. The v1 attempt
+froze nothing and none of its outcomes are reused, so this is a new
+Gate-1 attempt, not a resample of a measured one. Everything else in
+sections 1-6 stands unchanged: question, arms, endpoints, exclusions,
+attended-run and indeterminate-means-stop rails, and the Gate-1 to
+freeze to Gate-2 sequence. The operator's plain GO covers this study
+and the structural-enforcement path was chosen by the operator in plain
+words; per the 2026-08-21 rule, no re-approval ceremony attaches to
+this revision.
