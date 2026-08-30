@@ -108,10 +108,49 @@ function eligibleMeasurement(direction, finalTuple) {
   return { eligible: true, issues: [], direction, states: [firstState, finalState] };
 }
 
-function fakeAdmission(ceiling) {
+function resolveTestReader(modelRef) {
+  const seat = {
+    'codex.gpt-5.6-sol': ['codex', 'gpt-5.6-sol'],
+    'claude-code.sonnet-5': ['claude-code', 'claude-sonnet-5'],
+    'claude-code.opus-5': ['claude-code', 'claude-opus-5'],
+  }[modelRef];
+  return { provider: seat[0], model: seat[1], isConfigured: true };
+}
+
+function categoricalBridgeResponse(agentConfig, userPrompt, options) {
+  const request = JSON.parse(userPrompt);
+  return {
+    text: JSON.stringify({
+      case_id: request.case_id,
+      states: request.public_dialogue
+        .filter((row) => row.speaker === 'learner')
+        .map((row) => ({
+          source_id: row.source_id,
+          disposition: 'measurement_indeterminate',
+          open_demands: [],
+          tightest_bound: null,
+          conceded_subclaims: [],
+        })),
+    }),
+    provider: agentConfig.provider,
+    model: agentConfig.model,
+    effort: options.effort,
+    structuredOutput: true,
+    prohibitedToolEventCount: 0,
+  };
+}
+
+function fakeAdmission(ceiling, { ledgerPath } = {}) {
   let reserved = 0;
   let closed = false;
   const events = [];
+  const append = (event, { create = false } = {}) => {
+    events.push(event);
+    if (ledgerPath) {
+      fs.writeFileSync(ledgerPath, `${JSON.stringify(event)}\n`, { flag: create ? 'wx' : 'a' });
+    }
+  };
+  append({ type: 'launch_admitted', spend_cap: ceiling }, { create: true });
   return {
     source: { commit: 'a'.repeat(40), tree: 'b'.repeat(40) },
     authorization: { commit: 'c'.repeat(40), path: 'notes/go.md' },
@@ -125,13 +164,13 @@ function fakeAdmission(ceiling) {
     reserveModelAttempts(count, detail) {
       assert.ok(reserved + count <= ceiling, 'reservation must fail before exceeding the ceiling');
       reserved += count;
-      events.push({ type: 'reserved', ...detail });
+      append({ ...detail, type: 'model_attempt_reserved', count, reserved, spend_cap: ceiling });
     },
     record(event) {
-      events.push(event);
+      append(event);
     },
     close(event) {
-      events.push(event);
+      append(event);
       closed = true;
     },
   };
@@ -431,14 +470,7 @@ test('the complete preflight writes nothing and the launcher makes exactly 72 no
     archiveRoot,
     destination,
     verifyCommittedFile: () => true,
-    resolve: (modelRef) => {
-      const seat = {
-        'codex.gpt-5.6-sol': ['codex', 'gpt-5.6-sol'],
-        'claude-code.sonnet-5': ['claude-code', 'claude-sonnet-5'],
-        'claude-code.opus-5': ['claude-code', 'claude-opus-5'],
-      }[modelRef];
-      return { provider: seat[0], model: seat[1], isConfigured: true };
-    },
+    resolve: resolveTestReader,
   });
   assert.equal(preflight.status, 'passed_zero_call');
   assert.equal(preflight.model_calls_executed, 0);
@@ -449,26 +481,7 @@ test('the complete preflight writes nothing and the launcher makes exactly 72 no
   let calls = 0;
   const callBridge = async (agentConfig, _systemPrompt, userPrompt, _role, options) => {
     calls += 1;
-    const request = JSON.parse(userPrompt);
-    return {
-      text: JSON.stringify({
-        case_id: request.case_id,
-        states: request.public_dialogue
-          .filter((row) => row.speaker === 'learner')
-          .map((row) => ({
-            source_id: row.source_id,
-            disposition: 'measurement_indeterminate',
-            open_demands: [],
-            tightest_bound: null,
-            conceded_subclaims: [],
-          })),
-      }),
-      provider: agentConfig.provider,
-      model: agentConfig.model,
-      effort: options.effort,
-      structuredOutput: true,
-      prohibitedToolEventCount: 0,
-    };
+    return categoricalBridgeResponse(agentConfig, userPrompt, options);
   };
   const report = await executeTutorStubFrameRefuserNarrowingCalibration({
     preflight,
@@ -486,48 +499,93 @@ test('the complete preflight writes nothing and the launcher makes exactly 72 no
   assert.equal(report.status, 'failed_agreement', 'categorical-only agreement cannot pass the three-mark gate');
 });
 
-test('a transport failure is sealed after one attempt with no retry', async (t) => {
+test('recovery skips completed and failed units and spends only the 61 untouched attempts', async (t) => {
   const { archiveRoot } = createNarrowingArchiveFixture(t);
-  const destination = path.join(archiveRoot, 'artifacts/tutor-stub-live/narrowing-reader-transport-failure');
-  const preflight = prepareTutorStubFrameRefuserNarrowingCalibration({
+  const initialDestination = path.join(archiveRoot, 'artifacts/tutor-stub-live/narrowing-reader-transport-failure');
+  const initialPreflight = prepareTutorStubFrameRefuserNarrowingCalibration({
     root: REPO_ROOT,
     designPath: DESIGN_PATH,
     archiveRoot,
-    destination,
+    destination: initialDestination,
     verifyCommittedFile: () => true,
-    resolve: (modelRef) => {
-      const seat = {
-        'codex.gpt-5.6-sol': ['codex', 'gpt-5.6-sol'],
-        'claude-code.sonnet-5': ['claude-code', 'claude-sonnet-5'],
-        'claude-code.opus-5': ['claude-code', 'claude-opus-5'],
-      }[modelRef];
-      return { provider: seat[0], model: seat[1], isConfigured: true };
-    },
+    resolve: resolveTestReader,
   });
-  preflight.plan = {
-    ...preflight.plan,
-    cases: preflight.plan.cases.slice(0, 1),
-    planned_model_calls: 1,
-    hard_attempt_ceiling: 1,
-  };
-  preflight.resolvedReaders = preflight.resolvedReaders.slice(0, 1);
-  fs.mkdirSync(destination, { recursive: true });
-  const admission = fakeAdmission(1);
-  let calls = 0;
+  fs.mkdirSync(initialDestination, { recursive: true });
+  const initialAdmission = fakeAdmission(72, {
+    ledgerPath: path.join(initialDestination, 'run-ledger.jsonl'),
+  });
+  let initialCalls = 0;
   await assert.rejects(
     executeTutorStubFrameRefuserNarrowingCalibration({
-      preflight,
-      admission,
-      callBridge: async () => {
-        calls += 1;
-        throw new Error('synthetic transport failure');
+      preflight: initialPreflight,
+      admission: initialAdmission,
+      callBridge: async (agentConfig, _systemPrompt, userPrompt, _role, options) => {
+        initialCalls += 1;
+        if (initialCalls === 11) throw new Error('synthetic transport failure');
+        return categoricalBridgeResponse(agentConfig, userPrompt, options);
       },
       progress: () => {},
     }),
     /synthetic transport failure/u,
   );
-  assert.equal(calls, 1);
-  assert.equal(admission.reserved, 1);
-  assert.equal(admission.closed, true);
-  assert.equal(JSON.parse(fs.readFileSync(path.join(destination, 'failure.json'), 'utf8')).status, 'transport_failure');
+  assert.equal(initialCalls, 11);
+  assert.equal(initialAdmission.reserved, 11);
+  assert.equal(initialAdmission.closed, true);
+  assert.equal(fs.readdirSync(path.join(initialDestination, 'results')).length, 10);
+  const failure = JSON.parse(fs.readFileSync(path.join(initialDestination, 'failure.json'), 'utf8'));
+  assert.equal(failure.status, 'transport_failure');
+  assert.equal(failure.unit, 'nrw_004/reader_b');
+
+  const recoveryDestination = path.join(archiveRoot, 'artifacts/tutor-stub-live/narrowing-reader-recovery');
+  const recoveryPreflight = prepareTutorStubFrameRefuserNarrowingCalibration({
+    root: REPO_ROOT,
+    designPath: DESIGN_PATH,
+    archiveRoot,
+    destination: recoveryDestination,
+    recoveryFrom: initialDestination,
+    verifyCommittedFile: () => true,
+    resolve: resolveTestReader,
+  });
+  assert.equal(recoveryPreflight.prior_attempts, 11);
+  assert.equal(recoveryPreflight.recovery_model_calls, 61);
+  assert.equal(recoveryPreflight.recovery_spend_cap, 61);
+  assert.equal(recoveryPreflight.recovery_summary.failed_unit, 'nrw_004/reader_b');
+  assert.equal(recoveryPreflight.executionUnits.length, 61);
+  assert.equal(recoveryPreflight.executionUnits[0].caseEntry.case_id, 'nrw_004');
+  assert.equal(recoveryPreflight.executionUnits[0].seat.id, 'reader_c');
+  assert.equal(
+    recoveryPreflight.executionUnits.some(
+      ({ caseEntry, seat }) => `${caseEntry.case_id}/${seat.id}` === 'nrw_004/reader_b',
+    ),
+    false,
+  );
+  assert.equal(fs.existsSync(recoveryDestination), false, 'recovery preflight must remain zero-call and non-writing');
+
+  fs.mkdirSync(recoveryDestination, { recursive: true });
+  const recoveryAdmission = fakeAdmission(61, {
+    ledgerPath: path.join(recoveryDestination, 'run-ledger.jsonl'),
+  });
+  let recoveryCalls = 0;
+  const report = await executeTutorStubFrameRefuserNarrowingCalibration({
+    preflight: recoveryPreflight,
+    admission: recoveryAdmission,
+    callBridge: async (agentConfig, _systemPrompt, userPrompt, _role, options) => {
+      recoveryCalls += 1;
+      return categoricalBridgeResponse(agentConfig, userPrompt, options);
+    },
+    progress: () => {},
+  });
+  assert.equal(recoveryCalls, 61);
+  assert.equal(recoveryAdmission.reserved, 61);
+  assert.equal(recoveryAdmission.closed, true);
+  assert.equal(report.execution.complete_units, 71);
+  assert.equal(report.execution.failed_units, 1);
+  assert.deepEqual(report.execution.failed_unit_ids, ['nrw_004/reader_b']);
+  assert.equal(report.execution.missing_units, 0);
+  assert.equal(report.execution.prior_attempted_model_calls, 11);
+  assert.equal(report.execution.recovery_attempted_model_calls, 61);
+  assert.equal(report.execution.attempted_model_calls, 72);
+  assert.equal(report.execution.reserved_model_calls, 72);
+  assert.equal(fs.readdirSync(path.join(recoveryDestination, 'results')).length, 61);
+  assert.equal(fs.existsSync(path.join(recoveryDestination, 'results/nrw_004--reader_b.json')), false);
 });
