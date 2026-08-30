@@ -1,20 +1,20 @@
 ---
 id: edged-register-stub-dag-replication
 title: Re-ask the edged-register question inside the tutor-stub proof-DAG harness
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-18
-updated: 2026-08-27
+updated: 2026-08-29
 verification: One stub-harness block contrasts a sharp delivery policy against
   the warm policy on the same worlds and the same proof-DAG, with completion
   taken from the DAG rather than from a model reader, and reports whether the
   sharp policy changes how much of the proof debt the learner discharges. A
   null is a result. Any paid stage runs only after its own committed GO note
   and explicit human approval.
-claim_status: planned
+claim_status: settled
 depends_on:
   - edged-register-outcome-study
 links:
@@ -153,3 +153,14 @@ question — does a sharp delivery cost the learner anything — asked where
   fully: 40/40 sarcastic in all 12 runs. Verdict: no within-block
   support for the mixed-manner story; the null stands as the record.
   Analysis is deterministic re-count of archived events; no paid calls.
+- 2026-08-29 (closed): Card closed on the null. With the teaching moves
+  pinned by the scripted core, tone alone (sarcastic vs warm) moved no
+  outcome the proof-DAG can see, across all three learner characters.
+  Surviving findings: learner resistance pulls edge into a warm-pinned
+  tutor voice (6.6% to 17.7% across characters), and proof completion is
+  set by learner character, not tutor manner. Voided-block forensics
+  found no support for the mixed-delivery story. Reading: register here
+  indexed the relationship rather than driving the teaching; any causal
+  power of tone likely travels through the moves it licenses, which this
+  design deliberately froze. A tone-drives-moves study would be a new
+  card with its own registration; none is planned.
