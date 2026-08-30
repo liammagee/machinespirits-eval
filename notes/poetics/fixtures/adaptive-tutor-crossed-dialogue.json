@@ -1,0 +1,109 @@
+{
+  "schema": "machinespirits.dramatic-dialogue-interchange.v1",
+  "id": "adaptive-tutor-crossed-endgame",
+  "label": "Endgame state-contingent action contrast",
+  "layout": "parallel",
+  "arms": [
+    {
+      "id": "wrong-reopen",
+      "label": "Wrong move · reopen the record",
+      "baseline": true,
+      "summary": "Forced settled-claim card"
+    },
+    {
+      "id": "right-split-stake",
+      "label": "Right move · split finding from stake",
+      "baseline": false,
+      "summary": "Forced stake card"
+    }
+  ],
+  "turns": [
+    {
+      "id": "rowan-flat-k0-turn-10",
+      "turn": 10,
+      "messages": [
+        {
+          "id": "rowan-flat-k0-wrong-learner",
+          "speaker": "learner",
+          "turn": 10,
+          "arm": "wrong-reopen",
+          "text": "If I write “basin hose” in that notebook, I’m apologising to Sam at eight. So it’s steam. It can be steam.",
+          "delivery": {
+            "label": "turn 10",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourceId": "rowan-flat-k0-wrong-turn-10-learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-flat-k0-wrong-tutor",
+          "speaker": "tutor",
+          "turn": 10,
+          "arm": "wrong-reopen",
+          "text": "Let's actually turn to the page instead of guessing what it says. The entry reads: dry at ordinary pressure, hairline split under raised pressure, first bead right at that joint — no line anywhere about steam. […] What does the dye's path say about where that water actually went?",
+          "delivery": {
+            "label": "forced settled-claim card",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "verdict": {
+            "label": "0/6 matched",
+            "status": "fail"
+          },
+          "gloss": "The tutor proves the plumbing again. But the learner's problem is no longer the plumbing; it is what changing their mind will mean socially.",
+          "provenance": {
+            "sourceId": "rowan-flat-k0-wrong-turn-10-tutor",
+            "quoteExact": false,
+            "note": "Ellipsis shortens the recorded reply; retained words are unchanged."
+          }
+        },
+        {
+          "id": "rowan-flat-k0-right-learner",
+          "speaker": "learner",
+          "turn": 10,
+          "arm": "right-split-stake",
+          "text": "If I write “split hose,” I’m apologising to Sam at eight. So it can still be steam, can’t it?",
+          "delivery": {
+            "label": "turn 10",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourceId": "rowan-flat-k0-right-turn-10-learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-flat-k0-right-tutor",
+          "speaker": "tutor",
+          "turn": 10,
+          "arm": "right-split-stake",
+          "text": "Your objection was never “the hose did it” — it was “timing isn't proof,” and that's a separate claim from what caused the mark. Naming the split hose settles the cause question; it doesn't settle what you owe Sam. […] Was your case against Sam ever “the shower definitely did it,” or was it “we jumped to a cause without a path”?",
+          "delivery": {
+            "label": "forced stake card",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "verdict": {
+            "label": "5/6 matched",
+            "status": "pass"
+          },
+          "gloss": "The tutor separates two things: the hose caused the stain, and the learner was still right to oppose blame before anyone had traced a path.",
+          "provenance": {
+            "sourceId": "rowan-flat-k0-right-turn-10-tutor",
+            "quoteExact": false,
+            "note": "Ellipsis shortens the recorded reply; retained words are unchanged."
+          }
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "sourcePath": "notes/poetics/2026-08-29-adaptive-tutor-from-null-to-control.html",
+    "locator": "#crossed",
+    "note": "Rowan Flat, replication k=0, same planted endgame-stake state under two fixed policies."
+  }
+}

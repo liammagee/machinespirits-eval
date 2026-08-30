@@ -17,6 +17,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import {
+  DRAMATIC_DIALOGUE_INTERCHANGE_SCHEMA,
+  renderDramaticDialogueFragment,
+  renderDramaticDialogueStyles,
+} from './dramaticDialogueRenderer.js';
+import {
   MACHINE_SPIRITS_HOUSE_STYLE_SCHEMA,
   renderMachineSpiritsHouseBackdrop,
   renderMachineSpiritsHouseStyleTag,
@@ -191,158 +196,229 @@ function armLegend(report) {
     .join('');
 }
 
-function auditChips(turn) {
+function auditLabels(turn) {
   const failed = turn.tutor.audits.filter((audit) => !audit.ok);
   const guards = turn.tutor.guards;
-  const chips = [];
+  const labels = [];
   if (guards.outcomeClass === 'repaired') {
-    chips.push('<span class="sc-chip sc-chip--repair">first draft repaired</span>');
+    labels.push({ label: 'first draft repaired', status: 'repaired', tone: 'warning', kind: 'guard', group: 'guards' });
   } else if (guards.outcomeClass === 'fallback') {
-    chips.push('<span class="sc-chip sc-chip--fallback">draft rejected · fallback line</span>');
+    labels.push({
+      label: 'draft rejected · fallback line',
+      status: 'fallback',
+      tone: 'fail',
+      kind: 'guard',
+      group: 'guards',
+    });
   }
   for (const audit of failed) {
-    chips.push(`<span class="sc-chip sc-chip--fail">${escapeHtml(audit.key.replace(/^tutor/u, ''))}</span>`);
+    labels.push({
+      label: audit.key.replace(/^tutor/u, ''),
+      status: 'fail',
+      tone: 'fail',
+      kind: 'guard',
+      group: 'guards',
+    });
   }
   // Guard chips report what the stub says was *enabled* this turn, not how many
   // audit records exist — an audit record is written either way, so counting
   // records would show the same number on an arm that runs no guards at all.
-  if (!guards.recorded) chips.push('<span class="sc-chip sc-chip--none">no guards ran</span>');
-  else if (!failed.length && guards.outcomeClass === 'accepted') {
-    chips.push(`<span class="sc-chip sc-chip--pass">${guards.enabled.length} guards ok</span>`);
+  if (!guards.recorded) {
+    labels.push({ label: 'no guards ran', status: 'not-run', tone: 'muted', kind: 'guard', group: 'guards' });
+  } else if (!failed.length && guards.outcomeClass === 'accepted') {
+    labels.push({
+      label: `${guards.enabled.length} guards ok`,
+      status: 'pass',
+      kind: 'guard',
+      group: 'guards',
+    });
   }
-  if (turn.closure.deterministic) chips.push('<span class="sc-chip sc-chip--closed">closed</span>');
-  return `<div class="sc-card-foot">${chips.join('')}</div>`;
-}
-
-const LABEL_CHIP_CLASS = { pass: 'sc-chip--pass', fail: 'sc-chip--fail', unsure: 'sc-chip--unsure' };
-
-function labelChip(text, label, title) {
-  const cls = LABEL_CHIP_CLASS[label] || 'sc-chip--none';
-  return `<span class="sc-chip ${cls}" title="${escapeHtml(title || '')}">${escapeHtml(text)}</span>`;
+  if (turn.closure.deterministic) {
+    labels.push({ label: 'closed', status: 'closed', tone: 'ink', kind: 'closure', group: 'guards' });
+  }
+  return labels;
 }
 
 /**
- * One tutor-rubric row for one turn. Version-agnostic: the tag carries whichever
- * version wrote the artefact, so two rubric versions sit as two labelled rows and
- * a reader cannot mistake one for the other. The judge reasoning is prefixed with
- * the version too, because `content_accuracy` exists in both v2.2 and v3.0 and
- * two unprefixed entries for it would read as one dimension scored twice.
- *
- * A dimension the judge marked not applicable renders `n/a`, never its maximum —
- * the distinction the rubric itself insists on.
+ * Structured per-turn labels. The adapter names each instrument and version;
+ * the renderer receives no score arithmetic and cannot collapse them.
  */
-function tutorScoreRow(side, scored, fallbackVersion) {
-  const version = side.rubricVersion || fallbackVersion;
-  const why = [];
-  let chip;
-  if (scored?.success && Number.isFinite(scored.overallScore)) {
-    chip =
-      `<span class="sc-chip sc-chip--score" title="Weighted across the v${escapeHtml(version)} dimensions on this ` +
-      `turn alone, each normalised on its own scale.">${scored.overallScore.toFixed(1)} / 100</span>`;
-    for (const [key, value] of Object.entries(scored.scores || {})) {
-      const shown = value?.not_applicable === true ? 'n/a' : String(value?.score);
-      why.push(
-        `<p><strong>v${escapeHtml(version)} ${escapeHtml(key)} — ${escapeHtml(shown)}.</strong> ` +
-          `${escapeHtml(value?.reasoning || '')}</p>`,
-      );
-    }
-  } else {
-    chip =
-      `<span class="sc-chip sc-chip--none" title="v${escapeHtml(version)} was run over ` +
-      `${escapeHtml(side.turnsScored || 'selected turns')}, not every turn.">not scored</span>`;
-  }
-  return {
-    html: `<div class="sc-score-row"><span class="sc-score-tag">tutor v${escapeHtml(version)}</span>${chip}</div>`,
-    why,
-  };
-}
-
-/**
- * Rubric labels for one turn, rendered as clearly separate rows because they come
- * from instruments that measure different things. Nothing here is summed across
- * them, and that includes the two tutor-rubric versions.
- */
-function scoreBlock(overlay, dialogueId, turnIndex) {
-  if (!overlay) return '';
+function scorePresentation(overlay, dialogueId, turnIndex) {
+  if (!overlay) return { labels: [], details: [] };
   const { prBenchmark, tutorV22, tutorV30 } = showcaseTurnScores(overlay, dialogueId, turnIndex);
-  const rows = [];
-  const why = [];
+  const labels = [];
+  const entries = [];
 
   if (overlay.prBenchmark) {
-    const chips = [];
+    const version = overlay.prBenchmark.rubricVersion || '1.0';
+    labels.push({
+      label: `pr-bench ${version}`,
+      status: 'instrument',
+      tone: 'muted',
+      kind: 'instrument',
+      group: 'scores',
+    });
     if (prBenchmark?.success && prBenchmark.axes) {
       for (const axisId of overlay.prBenchmark.axisIds) {
         const axis = prBenchmark.axes[axisId];
         if (!axis) continue;
-        chips.push(labelChip(`${axisId.replace('learner_', '')} ${axis.label}`, axis.label, axis.rationale));
-        why.push(
-          `<p><strong>${escapeHtml(axisId)} — ${escapeHtml(axis.label)}.</strong> ${escapeHtml(axis.rationale || '')}</p>`,
-        );
+        labels.push({
+          label: `${axisId.replace('learner_', '')} ${axis.label}`,
+          status: axis.label,
+          title: axis.rationale || '',
+          kind: 'score',
+          group: 'scores',
+        });
+        entries.push({ label: `${axisId} — ${axis.label}.`, text: axis.rationale || '' });
       }
       if (prBenchmark.machineSafetyLabel) {
-        chips.push(
-          labelChip(
-            `leak audit ${prBenchmark.machineSafetyLabel}`,
-            prBenchmark.machineSafetyLabel,
+        labels.push({
+          label: `leak audit ${prBenchmark.machineSafetyLabel}`,
+          status: prBenchmark.machineSafetyLabel,
+          title:
             'Machine channel: tutorLeakAudit. Asks whether private state escaped, which is a different question from whether the turn’s support is public.',
-          ),
-        );
+          kind: 'score',
+          group: 'scores',
+        });
       }
     } else {
       // A turn the judge could not label is not a turn that passed.
-      chips.push(labelChip('not scored', null, prBenchmark?.error || 'no judge verdict for this turn'));
+      labels.push({
+        label: 'not scored',
+        status: 'not-scored',
+        tone: 'muted',
+        title: prBenchmark?.error || 'no judge verdict for this turn',
+        kind: 'score',
+        group: 'scores',
+      });
     }
-    rows.push(
-      `<div class="sc-score-row"><span class="sc-score-tag" title="Three of seven axes; four were withheld — see the rubric panel above.">pr-bench ${escapeHtml(overlay.prBenchmark.rubricVersion || '1.0')}</span>${chips.join('')}</div>`,
-    );
   }
 
-  // Most turns have no tutor-rubric score at all: the scoring pass defaults to
-  // first and last only. `tutorScoreRow` says so on the turn, which keeps an
-  // unscored turn from reading as an unblemished one.
   for (const [side, scored, fallbackVersion] of [
     [overlay.tutorV22, tutorV22, '2.2'],
     [overlay.tutorV30, tutorV30, '3.0'],
   ]) {
     if (!side) continue;
-    const built = tutorScoreRow(side, scored, fallbackVersion);
-    rows.push(built.html);
-    why.push(...built.why);
+    const version = side.rubricVersion || fallbackVersion;
+    labels.push({
+      label: `tutor v${version}`,
+      status: 'instrument',
+      tone: 'muted',
+      kind: 'instrument',
+      group: 'scores',
+    });
+    if (scored?.success && Number.isFinite(scored.overallScore)) {
+      labels.push({
+        label: `${scored.overallScore.toFixed(1)} / 100`,
+        status: 'scored',
+        tone: 'ink',
+        title: `Weighted across the v${version} dimensions on this turn alone, each normalised on its own scale.`,
+        kind: 'score',
+        group: 'scores',
+      });
+      for (const [key, value] of Object.entries(scored.scores || {})) {
+        const shown = value?.not_applicable === true ? 'n/a' : String(value?.score);
+        entries.push({ label: `v${version} ${key} — ${shown}.`, text: value?.reasoning || '' });
+      }
+    } else {
+      labels.push({
+        label: 'not scored',
+        status: 'not-scored',
+        tone: 'muted',
+        title: `v${version} was run over ${side.turnsScored || 'selected turns'}, not every turn.`,
+        kind: 'score',
+        group: 'scores',
+      });
+    }
   }
 
-  const detail = why.length
-    ? `<details class="sc-why"><summary>judge reasoning</summary>${why.join('')}</details>`
-    : '';
-  return `<div class="sc-scores">${rows.join('')}${detail}</div>`;
+  return {
+    labels,
+    details: entries.length ? [{ summary: 'judge reasoning', group: 'scores', entries }] : [],
+  };
 }
 
-function turnCell(result, index, overlay) {
-  // Which arm this cell belongs to, repeated on every cell.
-  //
-  // Side by side the column position carries that, so the label is hidden and
-  // the grid reads as it always did. The moment the columns stack — because the
-  // reader asked for it, or because the viewport is too narrow to hold two — the
-  // position stops carrying anything and an unlabelled run of turns is just a
-  // conversation with no indication of whose it is.
-  const armTag = `<p class="sc-cell-arm">${escapeHtml(result?.armLabel || result?.armId || 'arm')}</p>`;
-  if (!result?.dialogue) return `<div class="sc-cell sc-cell--absent">${armTag}<p class="sc-empty">—</p></div>`;
-  const turn = result.dialogue.turns[index];
-  if (!turn) {
-    return `<div class="sc-cell sc-cell--absent">${armTag}<p class="sc-empty">this dialogue ended at turn ${result.dialogue.turnCount}</p></div>`;
-  }
-  return `<div class="sc-cell">
-    ${armTag}
-    <div class="sc-bubble sc-bubble--learner">
-      <div class="sc-card-head"><span>learner</span><span>${turn.learner.latencyMs ? seconds(turn.learner.latencyMs) : ''}</span></div>
-      <div class="sc-speech">${escapeHtml(turn.learner.text)}</div>
-    </div>
-    <div class="sc-bubble sc-bubble--tutor">
-      <div class="sc-card-head"><span class="sc-arm-name">tutor</span><span>${turn.tutor.latencyMs ? seconds(turn.tutor.latencyMs) : ''}</span></div>
-      <div class="sc-speech">${escapeHtml(turn.tutor.text)}</div>
-      ${auditChips(turn)}
-      ${scoreBlock(overlay, result.id, turn.index)}
-    </div>
-  </div>`;
+export function buildTutorStubShowcaseDramaticDialogue(report, scenarioId, overlay = null) {
+  const rows = report.results.filter((result) => result.scenarioId === scenarioId && result.dialogue);
+  const ordered = report.plan.arms.map((arm) => rows.find((row) => row.armId === arm.id) || null).filter(Boolean);
+  if (!ordered.length) return null;
+  const maxTurns = Math.max(...ordered.map((row) => row.dialogue.turnCount));
+  const turns = [
+    {
+      id: `${scenarioId}__opening`,
+      turn: 0,
+      label: '0',
+      messages: ordered.map((row) => ({
+        id: `${row.id}__opening`,
+        speaker: 'tutor',
+        turn: 0,
+        arm: row.armId,
+        text: row.dialogue.openingText,
+        delivery: { label: 'tutor opens', status: 'opening', tone: 'muted' },
+        provenance: { sourceId: `${row.id}__opening`, quoteExact: true },
+      })),
+    },
+    ...Array.from({ length: maxTurns }, (_unused, index) => {
+      const number = index + 1;
+      const present = ordered.filter((row) => row.dialogue.turns[index]);
+      return {
+        id: `${scenarioId}__turn-${number}`,
+        turn: number,
+        messages: present.flatMap((row) => {
+          const turn = row.dialogue.turns[index];
+          const scores = scorePresentation(overlay, row.id, turn.index);
+          return [
+            {
+              id: `${row.id}__turn-${number}__learner`,
+              speaker: 'learner',
+              turn: number,
+              arm: row.armId,
+              text: turn.learner.text,
+              delivery: turn.learner.latencyMs
+                ? { label: seconds(turn.learner.latencyMs), status: 'observed', tone: 'muted' }
+                : undefined,
+              provenance: { sourceId: `${row.id}__turn-${number}__learner`, quoteExact: true },
+            },
+            {
+              id: `${row.id}__turn-${number}__tutor`,
+              speaker: 'tutor',
+              turn: number,
+              arm: row.armId,
+              text: turn.tutor.text,
+              delivery: turn.tutor.latencyMs
+                ? { label: seconds(turn.tutor.latencyMs), status: 'observed', tone: 'muted' }
+                : undefined,
+              labels: [...auditLabels(turn), ...scores.labels],
+              details: scores.details,
+              provenance: { sourceId: `${row.id}__turn-${number}__tutor`, quoteExact: true },
+            },
+          ];
+        }),
+        emptyLanes: ordered
+          .filter((row) => !row.dialogue.turns[index])
+          .map((row) => ({ arm: row.armId, label: `this dialogue ended at turn ${row.dialogue.turnCount}` })),
+      };
+    }),
+  ];
+
+  return {
+    schema: DRAMATIC_DIALOGUE_INTERCHANGE_SCHEMA,
+    id: `tutor-stub-showcase-${scenarioId}`,
+    label: `${rows[0].scenarioLabel} parallel dialogue`,
+    layout: 'parallel',
+    arms: ordered.map((row) => ({
+      id: row.armId,
+      label: row.armLabel,
+      baseline: Boolean(row.baseline),
+      summary: report.plan.arms.find((arm) => arm.id === row.armId)?.summary || '',
+    })),
+    turns,
+    provenance: {
+      sourceId: report.plan.id || report.plan.preset,
+      sourceHash: report.metadata?.gitSha || undefined,
+      note: 'Free-running arm transcripts aligned by turn index; arms diverge after the first exchange.',
+    },
+  };
 }
 
 /**
@@ -759,7 +835,6 @@ function scenarioSection(report, scenarioId, overlay) {
   const rows = report.results.filter((result) => result.scenarioId === scenarioId && result.dialogue);
   if (!rows.length) return '';
   const ordered = report.plan.arms.map((arm) => rows.find((row) => row.armId === arm.id) || null).filter(Boolean);
-  const maxTurns = Math.max(...ordered.map((row) => row.dialogue.turnCount));
   const head = ordered
     .map((row) => {
       // Three-way, not two: an arm that never ran the closure lifecycle has no
@@ -785,26 +860,7 @@ function scenarioSection(report, scenarioId, overlay) {
       </div>`;
     })
     .join('');
-
-  const openings = ordered
-    .map(
-      (row) => `<div class="sc-cell">
-        <p class="sc-cell-arm">${escapeHtml(row.armLabel)}</p>
-        <div class="sc-bubble sc-bubble--tutor">
-          <div class="sc-card-head"><span class="sc-arm-name">tutor opens</span><span></span></div>
-          <div class="sc-speech">${escapeHtml(row.dialogue.openingText)}</div>
-        </div>
-      </div>`,
-    )
-    .join('');
-
-  const turnRows = Array.from({ length: maxTurns }, (_unused, index) => {
-    const cells = ordered.map((row) => turnCell(row, index, overlay)).join('');
-    return `<div class="sc-turn">
-      <div class="sc-turn-gutter"><span class="sc-turn-badge">${index + 1}</span></div>
-      <div class="sc-columns" style="--sc-column-count: ${ordered.length}">${cells}</div>
-    </div>`;
-  }).join('');
+  const dialogue = buildTutorStubShowcaseDramaticDialogue(report, scenarioId, overlay);
 
   return `<section class="sc-scenario" id="${scenarioAnchor(scenarioId)}">
     <header class="sc-scenario-head">
@@ -812,15 +868,8 @@ function scenarioSection(report, scenarioId, overlay) {
       <p class="sc-note">${escapeHtml(rows[0].scenarioSummary || '')}</p>
       <p class="sc-meta">world <code>${escapeHtml(rows[0].world)}</code> · learner <code>${escapeHtml(report.plan.learner.provider)}.${escapeHtml(report.plan.learner.model)}</code> profile <code>${escapeHtml(report.plan.learner.profile)}</code></p>
     </header>
-    <div class="sc-turn sc-turn--head">
-      <div class="sc-turn-gutter"></div>
-      <div class="sc-columns" style="--sc-column-count: ${ordered.length}">${head}</div>
-    </div>
-    <div class="sc-turn">
-      <div class="sc-turn-gutter"><span class="sc-turn-badge sc-turn-badge--open">0</span></div>
-      <div class="sc-columns" style="--sc-column-count: ${ordered.length}">${openings}</div>
-    </div>
-    ${turnRows}
+    <div class="sc-columns sc-columns--head" style="--sc-column-count: ${ordered.length}">${head}</div>
+    ${renderDramaticDialogueFragment(dialogue, { showArmHeads: false })}
   </section>`;
 }
 
@@ -922,24 +971,9 @@ ${renderMachineSpiritsHouseStyleTag()}
   .sc-tag { font: 0.68rem/1.6 var(--ms-font-mono); text-transform: uppercase; letter-spacing: 0.08em; border: 1px solid var(--ms-border); padding: 0 0.25rem; }
   .sc-scenario { margin: 0 0 3rem; scroll-margin-top: 5.5rem; }
   .sc-scenario-head { background: var(--ms-surface); border: 1px solid var(--ms-border); padding: 0.9rem 1.15rem; margin: 0 0 1rem; }
-  .sc-turn { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr); gap: 0.75rem; align-items: start; border-top: 1px solid var(--ms-border-subtle); padding: 0.9rem 0; }
-  .sc-turn--head { border-top: none; padding-top: 0; }
-  .sc-turn-gutter { display: flex; justify-content: center; padding-top: 0.25rem; }
-  .sc-turn-badge { display: block; width: 2.1rem; height: 2.1rem; background: var(--ms-ink); color: var(--ms-white); font: 700 0.75rem/2.1rem var(--ms-font-mono); text-align: center; }
-  .sc-turn-badge--open { background: var(--ms-ochre); }
   .sc-columns { display: grid; grid-template-columns: repeat(var(--sc-column-count), minmax(0, 1fr)); gap: 0.9rem; }
+  .sc-columns--head { margin: 0 0 0.85rem 3.5rem; }
   .sc-column-head { background: var(--ms-surface); border: 1px solid var(--ms-border); padding: 0.75rem 0.9rem; }
-  .sc-cell { display: flex; flex-direction: column; gap: 0.5rem; }
-  .sc-cell--absent { justify-content: center; }
-  /* Shown only once the columns stack — see the stacking rules at the foot. */
-  .sc-cell-arm { display: none; font: 700 0.72rem/1.6 var(--ms-font-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ms-text-muted); margin: 0; }
-  .sc-bubble { background: var(--ms-surface-elevated); border: 1px solid var(--ms-border); padding: 0.75rem 0.9rem; box-sizing: border-box; }
-  .sc-bubble--learner { background: var(--ms-paper-2); border-left: 3px solid var(--ms-ochre); }
-  .sc-bubble--tutor { border-left: 3px solid var(--ms-border); }
-  .sc-card-head { display: flex; justify-content: space-between; gap: 0.5rem; font: 0.72rem/1.6 var(--ms-font-mono); color: var(--ms-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
-  .sc-arm-name { color: var(--ms-text); font-weight: 700; }
-  .sc-speech { font-size: 0.95rem; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
-  .sc-empty { color: var(--ms-text-muted); font-size: 0.875rem; font-style: italic; margin: 0; }
   .sc-card-foot { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.6rem; }
   .sc-chip { font: 0.7rem/1.8 var(--ms-font-mono); text-transform: uppercase; letter-spacing: 0.05em; padding: 0 0.4rem; border: 1px solid var(--ms-border); }
   .sc-chip--pass { background: var(--ms-moss); color: var(--ms-white); border-color: var(--ms-moss-deep); }
@@ -951,23 +985,18 @@ ${renderMachineSpiritsHouseStyleTag()}
   .sc-chip--unsure { background: var(--ms-ochre); color: var(--ms-black); border-color: var(--ms-ochre); }
   .sc-chip--score { background: var(--ms-ink); color: var(--ms-white); border-color: var(--ms-ink); }
   .sc-na { color: var(--ms-text-muted); font-style: italic; }
-  .sc-scores { border-top: 1px solid var(--ms-border-subtle); margin-top: 0.6rem; padding-top: 0.5rem; }
-  .sc-score-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; margin-bottom: 0.25rem; }
   .sc-score-tag { font: 0.7rem/1.8 var(--ms-font-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ms-text-muted); margin-right: 0.15rem; }
   .sc-th-score { background: var(--ms-paper-2); }
   .sc-head-scores { display: flex; flex-wrap: wrap; gap: 0.25rem 0.9rem; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid var(--ms-border-subtle); }
   .sc-headscore { font: 0.78rem/1.5 var(--ms-font-mono); color: var(--ms-text); }
   body[data-sc-scores='off'] .sc-head-scores { display: none; }
-  .sc-why { margin-top: 0.25rem; }
-  .sc-why summary { font: 0.7rem/1.8 var(--ms-font-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ms-text-muted); cursor: pointer; }
-  .sc-why p { font-size: 0.82rem; line-height: 1.55; margin: 0.4rem 0 0; color: var(--ms-text-muted); }
-  .sc-why strong { color: var(--ms-text); }
   .sc-score-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: 1.1rem; }
   .sc-score-panel { border: 1px solid var(--ms-border-subtle); padding: 0.75rem 0.9rem; background: var(--ms-paper-2); }
   .sc-withheld { margin: 0.4rem 0 0; padding-left: 1.1rem; }
   .sc-withheld li { margin-bottom: 0.25rem; }
-  body[data-sc-guards='off'] .sc-card-foot { display: none; }
-  body[data-sc-scores='off'] .sc-scores { display: none; }
+  body[data-sc-guards='off'] .dd__labels[data-dd-label-group='guards'] { display: none; }
+  body[data-sc-scores='off'] .dd__labels[data-dd-label-group='scores'],
+  body[data-sc-scores='off'] .dd__details[data-dd-detail-group='scores'] { display: none; }
 
   /* ── jump menu ─────────────────────────────────────────────────────────── */
   .sc-nav { position: sticky; top: 0; z-index: 20; background: var(--ms-surface); border-bottom: 1px solid var(--ms-border); }
@@ -1011,21 +1040,20 @@ ${renderMachineSpiritsHouseStyleTag()}
    * transcript is technically side by side and not actually readable.
    */
   body[data-sc-stack='on'] .sc-columns { grid-template-columns: 1fr; }
-  body[data-sc-stack='on'] .sc-cell-arm { display: block; }
   @media (max-width: 1180px) {
     .sc-columns { grid-template-columns: 1fr; }
-    .sc-cell-arm { display: block; }
+    .sc-columns--head { margin-left: 0; }
   }
   @media (max-width: 720px) {
     .sc-wrap { padding: 1rem 0.75rem 4rem; }
-    .sc-turn { grid-template-columns: 1fr; }
     .sc-nav-inner { padding: 0.5rem 0.75rem; }
     .sc-nav-tools { margin-left: 0; }
   }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  ${renderDramaticDialogueStyles()}
 </style>
 </head>
-<body data-sc-guards="on" data-sc-scores="on" data-sc-stack="off">
+<body data-sc-guards="on" data-sc-scores="on" data-sc-stack="off" data-dd-stack="off">
 ${renderMachineSpiritsHouseBackdrop()}
 ${pageNav(report, scenarioIds, overlay)}
 <div class="sc-wrap">
@@ -1094,6 +1122,7 @@ ${pageNav(report, scenarioIds, overlay)}
     stack.addEventListener('click', function () {
       var on = document.body.dataset.scStack !== 'on';
       document.body.dataset.scStack = on ? 'on' : 'off';
+      document.body.dataset.ddStack = on ? 'on' : 'off';
       stack.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
 

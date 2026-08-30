@@ -21,7 +21,10 @@ import {
   classifyGuardOutcome,
   validateTutorStubShowcaseConfig,
 } from '../services/tutorStubShowcase.js';
-import { renderTutorStubShowcaseHtml } from '../services/tutorStubShowcaseHtml.js';
+import {
+  buildTutorStubShowcaseDramaticDialogue,
+  renderTutorStubShowcaseHtml,
+} from '../services/tutorStubShowcaseHtml.js';
 import { buildShowcaseScoreOverlay } from '../services/tutorStubShowcaseScoreOverlay.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -486,14 +489,28 @@ test('the markdown report states that the arms are not a controlled contrast', a
 });
 
 test('the html surface renders both arms, the repair, and the standing caveat', async () => {
-  const html = renderTutorStubShowcaseHtml(await report());
+  const built = await report();
+  const html = renderTutorStubShowcaseHtml(built);
   assert.match(html, /Tutor instrumentation showcase/u);
   assert.match(html, /Bare tutor/u);
   assert.match(html, /Instrumented tutor/u);
   assert.match(html, /first draft repaired/u);
   assert.match(html, /resolved at turn 4/u);
   assert.match(html, /not evidence about human learning/u);
+  assert.match(html, /data-dd-layout="parallel"/u);
   assert.ok(!/<script src=/u.test(html), 'the surface must stay self-contained');
+
+  const scenarioId = built.results.find((row) => row.dialogue).scenarioId;
+  const dialogue = buildTutorStubShowcaseDramaticDialogue(built, scenarioId);
+  for (const source of built.results.filter((row) => row.dialogue && row.scenarioId === scenarioId)) {
+    const opening = dialogue.turns[0].messages.find((message) => message.arm === source.armId);
+    assert.equal(opening.text, source.dialogue.openingText, `${source.armId} opening bytes are unchanged`);
+    for (const [index, turn] of source.dialogue.turns.entries()) {
+      const messages = dialogue.turns[index + 1].messages.filter((message) => message.arm === source.armId);
+      assert.equal(messages.find((message) => message.speaker === 'learner').text, turn.learner.text);
+      assert.equal(messages.find((message) => message.speaker === 'tutor').text, turn.tutor.text);
+    }
+  }
 });
 
 /**
@@ -810,6 +827,6 @@ test('a collapsed transcript column still says which arm it belongs to', async (
   // button or by a narrow viewport — the heads are gone, and without this the
   // reader gets two unlabelled walls of text.
   const html = renderTutorStubShowcaseHtml(await report());
-  assert.match(html, /class="sc-cell-arm"/u);
-  assert.match(html, /body\[data-sc-stack='on'\] \.sc-cell-arm \{ display: block; \}/u);
+  assert.match(html, /class="dd__arm-label"/u);
+  assert.match(html, /body\[data-dd-stack='on'\] \.dd__arm-label \{ display: block; \}/u);
 });
