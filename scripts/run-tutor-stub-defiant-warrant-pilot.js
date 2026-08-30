@@ -152,7 +152,7 @@ function childSpec({ loaded, job, attemptRoot, budget }) {
       '--run-seed',
       String(job.run_seed),
       '--eval-repeat',
-      String(job.assignment_index),
+      String(job.assignment_index + 1),
       '--eval-job-id',
       job.id,
       '--register-policy',
