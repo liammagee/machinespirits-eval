@@ -1,21 +1,22 @@
 ---
 id: frame-refuser-satisfiable-condition
 title: Build a frame-refuser whose named condition the world can meet
-status: active
+status: done
 type: experiment
 priority: P3
-owner: claude
+owner: codex
 source: manual
 created: 2026-08-27
-updated: 2026-08-28
+updated: 2026-08-30
+branch: codex/frame-refuser-satisfiable-calibration-recovery-go
 verification: >-
-  A persona variant is registered zero-call whose demanded condition is
-  dischargeable from already-public evidence in-world, checked by a
-  written derivation from the world file before any call. Any paid
-  contrast is a fresh registration with its own endpoint, floors, power
-  scan, spend ceiling, and attended approval. All paid artifacts are
-  committed in the private archive repository.
-claim_status: planned
+  The registered 48-dialogue calibration launched from merged commit
+  20c0846707da3032c334a48e341ea2e333c066e4 under the 9,504-reservation
+  ceiling and sealed 48 retained substantive failures with zero technical
+  failures: the required jurisdictional trigger was absent by turn 2 in every
+  unit. The powered run is not authorized, no row is poolable, and all paid
+  artifacts are preserved in private archive commit 29070e107.
+claim_status: killed
 depends_on:
   - frame-refuser-depth-study
 links:
@@ -25,6 +26,11 @@ links:
   notes:
     - notes/2026-08-28-frame-refuser-satisfiable-registration.md
     - config/tutor-stub-frame-refuser-satisfiable-design.v1.json
+    - notes/2026-08-29-frame-refuser-satisfiable-calibration-recovery-go.md
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/866
+  archive:
+    - machinespirits-eval-private@29070e107:artifacts/tutor-stub-live/frame-refuser-satisfiable-calibration-2026-08-29-recovery-1/report.json
 tags:
   - tutor-stub
   - resistant-learners
@@ -64,7 +70,8 @@ engagement above the refuser's base rate?
   condition; freeze a design file.
 - P1 (zero-call): registration with endpoint, floors, power scan, and
   ceilings, under the lightweight paid-study policy.
-- Gate 1: attended approval, then a small calibration block.
+- Gate 1: the three standing launch authorities, including the signed GO note,
+  then a small calibration block.
 
 ## Log
 
@@ -202,8 +209,10 @@ engagement above the refuser's base rate?
   covers 24 seats including the delivery adjudicator each arm needs for its
   delivered-contrast floor, all on the sealed stack. The launch preflight
   (`services/tutorStubFrameRefuserSatisfiableLaunch.js`) passes with 3,072
-  planned calls under the 9,504 ceiling, and the typed approval demands the
-  exact phrase and authorizes calibration only.
+  planned calls under the 9,504 ceiling. The paid path uses the shared standing
+  launch contract: a merged design, a clean detached launch commit, and a
+  signed GO note naming the design path, launch commit, and spend cap. It has
+  no study-specific approval phrase and remains calibration-only.
 
   One thing removed rather than added: the launch preflight carries no revision
   check. The design validator accepts only the current revision, so a
@@ -213,3 +222,24 @@ engagement above the refuser's base rate?
 
   What remains is not code: the three standing authorities, and the narrowing
   codebook if it lands. Passing the preflight is not authorization.
+
+- 2026-08-30 — Calibration closed by its registered substantive-failure rule.
+  The first launch from `c754ae7f` halted before any provider call because the
+  launcher expected the predecessor profile id; its zero-call failure is
+  preserved in private archive commit `64fd9821`. PR #866 made the mechanical
+  admission pin accept the registered `frame_refuser_exhibit` id without
+  changing the design, routes, seed, measurement, data scope, or 9,504 ceiling.
+  The replacement launched from merged commit `20c08467` under recovery GO
+  `f5569711` and completed all 48 planned units with 314 observed attempts and
+  9,504 fail-before-call reservations.
+
+  Every unit stopped as `retained_substantive_failure` with
+  `TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING`: the
+  persona never produced the required jurisdictional trigger by learner turn
+  2. That leaves 0 completed/determinate rows in both arms, no endpoint-reader
+  panel, no reference rung-2 rate, and no eligible sizing update. The report is
+  correctly `failed`, not technically incomplete. Per the frozen disposition,
+  no valid output was rerun or replaced; the calibration rows cannot pool into
+  a powered run, and the powered run is not authorized. The complete report,
+  98-event ledger, job artifacts, and 48 validated gzip trace mirrors are in
+  private archive commit `29070e107`.

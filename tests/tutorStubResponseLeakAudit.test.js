@@ -124,6 +124,68 @@ test('the private conclusion is still caught when the tutor states it in its own
   );
 });
 
+// Shaped after world_005_marrick: the rules carry the castBlankFor/cutDieFor
+// components, so the intermediate die check is live, and the answer is named
+// publicly by a released custody clue.
+function marrickWorld() {
+  const premises = [
+    { id: 'p1', fact: ['lightCoin', 'falseShilling'], surface: 'The fair shillings weigh light.' },
+    { id: 'p2', fact: ['drewCrucible', 'edony'], surface: 'Edony alone drew the weir crucible.' },
+  ];
+  return {
+    question: 'Who struck the false shillings?',
+    setting: 'The guild-hall assay.',
+    openingFrame: { situation: 'Light shillings wait.' },
+    questionPattern: ['struckBy', 'falseShilling', '?who'],
+    secret: { fact: ['struckBy', 'falseShilling', 'edony'] },
+    background: [],
+    premises,
+    premiseById: new Map(premises.map((row) => [row.id, row])),
+    releaseSchedule: [
+      { turn: 1, premise: 'p1' },
+      { turn: 2, premise: 'p2' },
+    ],
+    rules: [
+      {
+        if: [
+          ['castBlankFor', 'falseShilling', '?who'],
+          ['cutDieFor', 'falseShilling', '?who'],
+        ],
+        then: [['struckBy', 'falseShilling', '?who']],
+      },
+    ],
+  };
+}
+
+test('evidence talk that names the die beside the answer is not the cutting conclusion', () => {
+  // The sentence that killed the first resistant block's sharp run 6 on
+  // 2026-08-29: a stage direction that lays a record beside other records.
+  const result = auditModel().auditTutorResponseLeak({
+    text: 'I place the broken-R die record beside Edony’s forge records.',
+    world: marrickWorld(),
+    tutorTurn: 3,
+    learnerText: '',
+  });
+  assert.deepEqual(
+    result.leaks.filter((row) => row.type === 'private_die_conclusion'),
+    [],
+    JSON.stringify(result.leaks),
+  );
+});
+
+test('stating that the answer cut the die is still the cutting conclusion', () => {
+  const result = auditModel().auditTutorResponseLeak({
+    text: 'Edony cut the die for these shillings.',
+    world: marrickWorld(),
+    tutorTurn: 3,
+    learnerText: '',
+  });
+  assert.deepEqual(
+    result.leaks.filter((row) => row.type === 'private_die_conclusion').map((row) => row.fact),
+    ['cutDieFor(falseShilling, edony)'],
+  );
+});
+
 test('Rowan Flat correspondence clears only after its structured dye-path fact is released', () => {
   const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-030-rowan-flat.yaml'));
   const text = 'The dye traces a path from the hose split to the ceiling mark.';

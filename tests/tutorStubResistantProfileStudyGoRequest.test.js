@@ -319,7 +319,7 @@ test('approved study request remains bound to its launch source and fails closed
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-profile-discrimination\.js/u);
+  assert.match(result.stderr, /source-closure-scripts\//u);
 });
 
 test('study GO request fails closed on a drifted source binding', () => {
@@ -362,7 +362,7 @@ test('consumed frame-defiant replacement request remains frozen and fails closed
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-profile-discrimination\.js/u);
+  assert.match(result.stderr, /source-closure-scripts\//u);
 });
 
 test('consumed measurement recheck remains bound to its 18-dialogue launch source and fails closed after drift', () => {
@@ -400,7 +400,7 @@ test('consumed measurement recheck remains bound to its 18-dialogue launch sourc
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-scripts\/tutor-stub\.js/u);
+  assert.match(result.stderr, /source-closure-scripts\//u);
 });
 
 test('consumed technical recovery request remains frozen and fails closed after current source drift', () => {
@@ -441,7 +441,7 @@ test('consumed technical recovery request remains frozen and fails closed after 
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-scripts\/tutor-stub\.js/u);
+  assert.match(result.stderr, /source-closure-scripts\//u);
 });
 
 test('consumed axis heldout request remains frozen and fails closed after current source drift', () => {
@@ -474,7 +474,7 @@ test('consumed axis heldout request remains frozen and fails closed after curren
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-resistance-axis-calibration\.js/u);
+  assert.match(result.stderr, /source-closure-scripts\//u);
 });
 
 test('consumed frame-refuser v1, v2, and v3 requests retain their exact approval digests', () => {

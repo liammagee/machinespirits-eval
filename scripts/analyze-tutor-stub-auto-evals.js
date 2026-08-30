@@ -670,6 +670,8 @@ function policyFieldRows(summaries, selectedPolicies) {
 function sortPolicyNames(policies) {
   const preferred = [
     'bland',
+    'fixed_warm',
+    'fixed_sarcastic',
     'random',
     'dynamic',
     'state',

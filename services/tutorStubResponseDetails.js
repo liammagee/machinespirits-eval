@@ -59,6 +59,8 @@ export function tutorStubPlainPolicyLabel(policy) {
     state: 'classifier and reasoning-state choice',
     dynamic: 'model-reviewed adaptive choice',
     bland: 'fixed plain baseline',
+    fixed_warm: 'fixed warm delivery arm',
+    fixed_sarcastic: 'fixed sarcastic delivery arm',
     random: 'random control',
     negative: 'negative-register control',
     edge_timing: 'resistance-timed edge',
