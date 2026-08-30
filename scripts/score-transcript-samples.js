@@ -22,9 +22,11 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { callModelCliText } from '../services/cliProviderBridge.js';
+import { resolveEvaluationDbPath, resolveEvaluationSecondaryArtifactDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_DIR = path.resolve(__dirname, '..', 'logs', 'transcript-samples');
+const ROOT_DIR = path.resolve(__dirname, '..');
+const DEFAULT_DIR = resolveEvaluationSecondaryArtifactDir(ROOT_DIR, 'transcript-samples');
 
 // ── Parse CLI args ──────────────────────────────────────────────────────────
 
@@ -198,7 +200,7 @@ async function main() {
   const cellMap = {};
   try {
     const Database = (await import('better-sqlite3')).default;
-    const dbPath = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+    const dbPath = resolveEvaluationDbPath(ROOT_DIR);
     const db = new Database(dbPath, { readonly: true });
     for (const pair of pairs) {
       const dialogueId = pair.base;

@@ -26,6 +26,7 @@ function parseArgs(argv) {
     json: null,
     noMarkdown: false,
     noCsv: false,
+    analyzerVersion: TUTOR_ADAPTATION_ANALYZER_VERSION,
   };
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
@@ -36,11 +37,12 @@ function parseArgs(argv) {
     else if (token === '--json') args.json = path.resolve(argv[++i]);
     else if (token === '--no-markdown') args.noMarkdown = true;
     else if (token === '--no-csv') args.noCsv = true;
+    else if (token === '--analyzer-version') args.analyzerVersion = argv[++i];
     else if (token === '--help' || token === '-h') {
       console.log(`Usage:
   node scripts/report-poetics-sidecar.js [--run-id ID] [--db FILE]
       [--out report.md] [--csv report.csv] [--json report.json]
-      [--no-markdown] [--no-csv]`);
+      [--analyzer-version VERSION] [--no-markdown] [--no-csv]`);
       process.exit(0);
     } else {
       throw new Error(`unknown arg: ${token}`);
@@ -82,9 +84,9 @@ function writeFile(filePath, content) {
   fs.writeFileSync(filePath, content, 'utf8');
 }
 
-function loadRows(db, runId = null) {
-  const where = runId ? 'WHERE r.id = ?' : '';
-  const params = runId ? [runId] : [];
+function loadRows(db, runId = null, analyzerVersion = TUTOR_ADAPTATION_ANALYZER_VERSION) {
+  const where = runId ? 'WHERE r.id = @runId' : '';
+  const params = runId ? { analyzerVersion, runId } : { analyzerVersion };
   return db
     .prepare(
       `
@@ -135,12 +137,12 @@ function loadRows(db, runId = null) {
       JOIN poetics_items i ON i.run_id = r.id
       LEFT JOIN poetics_scores s ON s.item_id = i.id
       LEFT JOIN poetics_tutor_adaptations a
-        ON a.item_id = i.id AND a.analyzer_version = '${TUTOR_ADAPTATION_ANALYZER_VERSION}'
+        ON a.item_id = i.id AND a.analyzer_version = @analyzerVersion
       ${where}
       ORDER BY r.id, i.repeat, i.unit_id, i.arm, i.tid, s.critic_model
     `,
     )
-    .all(...params)
+    .all(params)
     .map((row) => ({
       ...row,
       flags: decodeJson(row.flags, []),
@@ -151,7 +153,137 @@ function loadRows(db, runId = null) {
     }));
 }
 
-function summarizeRun(runId, rows) {
+function tutorMechanismMeasurement(row, analyzerVersion) {
+  const peripeteia = row.tutor_adaptation_metadata?.peripeteia || {};
+  const semanticV5 = String(analyzerVersion || '').startsWith('tutor-adaptation-v5');
+  if (!semanticV5) {
+    return {
+      mode: peripeteia.mechanism_measurement_mode || 'legacy_v4',
+      status: null,
+      value: null,
+      indeterminate: false,
+    };
+  }
+  const measurement =
+    peripeteia.tutor_adaptive_mechanism_measurement || peripeteia.adaptive_mechanism_measurement || null;
+  if (measurement?.status === 'determinate') {
+    return {
+      mode: peripeteia.mechanism_measurement_mode || 'semantic_v5',
+      status: 'determinate',
+      value: measurement.value,
+      indeterminate: false,
+    };
+  }
+  return {
+    mode: peripeteia.mechanism_measurement_mode || 'semantic_v5',
+    status: 'measurement_indeterminate',
+    value: null,
+    indeterminate: true,
+  };
+}
+
+function tutorRepresentationMeasurement(row, analyzerVersion) {
+  const peripeteia = row.tutor_adaptation_metadata?.peripeteia || {};
+  const semanticV5 = String(analyzerVersion || '').startsWith('tutor-adaptation-v5');
+  if (!semanticV5) {
+    return { mode: 'legacy_v4', status: null, value: null, indeterminate: false };
+  }
+  const tutorMechanism =
+    peripeteia.tutor_adaptive_mechanism_measurement || peripeteia.adaptive_mechanism_measurement || null;
+  const measurement =
+    peripeteia.tutor_representation_change_measurement ||
+    peripeteia.representation_change_measurement ||
+    tutorMechanism?.representation_change_measurement ||
+    null;
+  if (measurement?.status === 'determinate') {
+    return {
+      mode: peripeteia.mechanism_measurement_mode || 'semantic_v5',
+      status: 'determinate',
+      value: measurement.value,
+      indeterminate: false,
+    };
+  }
+  return {
+    mode: peripeteia.mechanism_measurement_mode || 'semantic_v5',
+    status: 'measurement_indeterminate',
+    value: null,
+    indeterminate: true,
+  };
+}
+
+function learnerRepresentationMeasurement(row, analyzerVersion) {
+  const peripeteia = row.tutor_adaptation_metadata?.peripeteia || {};
+  const semanticV5 = String(analyzerVersion || '').startsWith('tutor-adaptation-v5');
+  if (!semanticV5) {
+    return { mode: 'legacy_v4', status: null, value: null, indeterminate: false };
+  }
+  const learnerAction = peripeteia.learner_actional_change_measurement || null;
+  const measurement =
+    peripeteia.learner_representation_change_measurement || learnerAction?.representation_change_measurement || null;
+  if (measurement?.status === 'determinate') {
+    return {
+      mode: peripeteia.mechanism_measurement_mode || 'semantic_v5',
+      status: 'determinate',
+      value: measurement.value,
+      indeterminate: false,
+    };
+  }
+  return {
+    mode: peripeteia.mechanism_measurement_mode || 'semantic_v5',
+    status: 'measurement_indeterminate',
+    value: null,
+    indeterminate: true,
+  };
+}
+
+function learnerActionMeasurement(row, analyzerVersion) {
+  const peripeteia = row.tutor_adaptation_metadata?.peripeteia || {};
+  const semanticV5 = String(analyzerVersion || '').startsWith('tutor-adaptation-v5');
+  if (!semanticV5) {
+    return { mode: 'legacy_v4', status: null, value: null, indeterminate: false, representation: null };
+  }
+  const measurement = peripeteia.learner_actional_change_measurement || null;
+  if (measurement?.status === 'determinate') {
+    return {
+      mode: peripeteia.mechanism_measurement_mode || 'semantic_v5',
+      status: 'determinate',
+      value: measurement.value,
+      indeterminate: false,
+      representation: learnerRepresentationMeasurement(row, analyzerVersion),
+    };
+  }
+  return {
+    mode: peripeteia.mechanism_measurement_mode || 'semantic_v5',
+    status: 'measurement_indeterminate',
+    value: null,
+    indeterminate: true,
+    representation: learnerRepresentationMeasurement(row, analyzerVersion),
+  };
+}
+
+function scoreProtocolVersion(row, axis) {
+  const metadata = row.score_metadata || {};
+  if (axis === 'learner_action') {
+    return (
+      metadata.learner_action_measurement_protocol_version ||
+      metadata.role_measurement_protocols?.learner_actional_change?.version ||
+      'unversioned'
+    );
+  }
+  return (
+    metadata.mechanism_measurement_protocol_version ||
+    metadata.role_measurement_protocols?.tutor_adaptive_mechanism?.version ||
+    'unversioned'
+  );
+}
+
+function addProtocolObservation(buckets, version, hit) {
+  buckets[version] ||= { hits: 0, total: 0 };
+  buckets[version].total += 1;
+  if (hit) buckets[version].hits += 1;
+}
+
+function summarizeRun(runId, rows, analyzerVersion = TUTOR_ADAPTATION_ANALYZER_VERSION) {
   const itemMap = new Map();
   const scoreRows = rows.filter((row) => row.critic_model);
   for (const row of rows) {
@@ -168,14 +300,27 @@ function summarizeRun(runId, rows) {
     targetAdaptation[arm] ||= {
       total: 0,
       learnerSelfReframes: 0,
+      learnerRepresentationDeterminate: 0,
+      learnerRepresentationIndeterminate: 0,
+      learnerActionalChanges: 0,
+      learnerActionDeterminate: 0,
+      learnerActionMeasurementIndeterminate: 0,
       tutorAdaptations: 0,
       scoreSum: 0,
+      scoreCount: 0,
       uptakeDeltaSum: 0,
+      uptakeDeltaCount: 0,
       reversalPressure: 0,
       instrumentedPressure: 0,
       privateRoutes: 0,
       tutorMechanisms: 0,
+      mechanismDeterminate: 0,
+      mechanismMeasurementIndeterminate: 0,
+      tutorRepresentationChanges: 0,
+      tutorRepresentationDeterminate: 0,
+      tutorRepresentationIndeterminate: 0,
       peripeteiaScoreSum: 0,
+      peripeteiaScoreCount: 0,
       peripeteiaScored: 0,
       scored: 0,
       missing: 0,
@@ -192,19 +337,75 @@ function summarizeRun(runId, rows) {
       bucket.missing += 1;
       continue;
     }
-    bucket.scored += 1;
-    if (row.learner_self_reframe) bucket.learnerSelfReframes += 1;
-    if (row.tutor_contingent_adaptation) bucket.tutorAdaptations += 1;
-    bucket.scoreSum += row.tutor_adaptation_score || 0;
-    bucket.uptakeDeltaSum += row.uptake_delta || 0;
     const peripeteia = row.tutor_adaptation_metadata?.peripeteia || null;
+    const semanticV5 = String(analyzerVersion || '').startsWith('tutor-adaptation-v5');
+    const learnerMeasurement = learnerActionMeasurement(row, analyzerVersion);
+    const learnerRepresentation = learnerRepresentationMeasurement(row, analyzerVersion);
+    if (semanticV5 && learnerMeasurement.indeterminate) {
+      bucket.learnerActionMeasurementIndeterminate += 1;
+    } else {
+      bucket.scored += 1;
+      if (semanticV5) {
+        bucket.learnerActionDeterminate += 1;
+        if (learnerMeasurement.value) bucket.learnerActionalChanges += 1;
+      } else {
+        bucket.learnerActionDeterminate += 1;
+        if (row.learner_self_reframe) bucket.learnerSelfReframes += 1;
+      }
+      if (row.tutor_contingent_adaptation) bucket.tutorAdaptations += 1;
+      if (Number.isFinite(row.tutor_adaptation_score)) {
+        bucket.scoreSum += row.tutor_adaptation_score;
+        bucket.scoreCount += 1;
+      }
+      if (Number.isFinite(row.uptake_delta)) {
+        bucket.uptakeDeltaSum += row.uptake_delta;
+        bucket.uptakeDeltaCount += 1;
+      }
+    }
+    if (semanticV5) {
+      if (learnerRepresentation.indeterminate) {
+        bucket.learnerRepresentationIndeterminate += 1;
+      } else {
+        bucket.learnerRepresentationDeterminate += 1;
+        if (learnerRepresentation.value) bucket.learnerSelfReframes += 1;
+      }
+    } else {
+      bucket.learnerRepresentationDeterminate += 1;
+    }
     if (peripeteia) {
       bucket.peripeteiaScored += 1;
       if (peripeteia.learner_reversal_pressure) bucket.reversalPressure += 1;
       if (peripeteia.instrumented_pressure) bucket.instrumentedPressure += 1;
       if (peripeteia.private_mechanism_declared) bucket.privateRoutes += 1;
-      if (peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal) bucket.tutorMechanisms += 1;
-      bucket.peripeteiaScoreSum += peripeteia.tutor_peripeteia_score || 0;
+      const measurement = tutorMechanismMeasurement(row, analyzerVersion);
+      const tutorRepresentation = tutorRepresentationMeasurement(row, analyzerVersion);
+      if (measurement.indeterminate) {
+        bucket.mechanismMeasurementIndeterminate += 1;
+      } else {
+        bucket.mechanismDeterminate += 1;
+        if (peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal) {
+          bucket.tutorMechanisms += 1;
+        }
+        if (String(analyzerVersion || '').startsWith('tutor-adaptation-v5')) {
+          if (Number.isFinite(peripeteia.tutor_peripeteia_score)) {
+            bucket.peripeteiaScoreSum += peripeteia.tutor_peripeteia_score;
+            bucket.peripeteiaScoreCount += 1;
+          }
+        } else {
+          // Preserve the historical v4 report: a missing score contributed zero
+          // and every peripeteia row remained in the mean denominator.
+          bucket.peripeteiaScoreSum += peripeteia.tutor_peripeteia_score || 0;
+          bucket.peripeteiaScoreCount += 1;
+        }
+      }
+      if (semanticV5) {
+        if (tutorRepresentation.indeterminate) {
+          bucket.tutorRepresentationIndeterminate += 1;
+        } else {
+          bucket.tutorRepresentationDeterminate += 1;
+          if (tutorRepresentation.value) bucket.tutorRepresentationChanges += 1;
+        }
+      }
     }
     const branchValidity = row.tutor_adaptation_metadata?.branch_validity || null;
     if (branchValidity) {
@@ -227,17 +428,25 @@ function summarizeRun(runId, rows) {
       trap: 0,
       flat: 0,
       other: 0,
-      actional: 0,
-      adaptiveQuality: 0,
+      learnerActionByProtocol: {},
+      adaptiveQualityByProtocol: {},
       total: 0,
     };
     const bucket = ['recognition', 'trap', 'flat'].includes(row.form_class) ? row.form_class : 'other';
     targetByCriticArm[critic][arm][bucket] += 1;
-    if (Number(row.score_metadata?.actional_breakthrough || 0) >= 75) targetByCriticArm[critic][arm].actional += 1;
+    addProtocolObservation(
+      targetByCriticArm[critic][arm].learnerActionByProtocol,
+      scoreProtocolVersion(row, 'learner_action'),
+      Number(row.score_metadata?.actional_breakthrough || 0) >= 75,
+    );
     const adaptiveQuality =
       row.score_metadata?.adaptive_mechanism_quality ??
       row.score_metadata?.role_symmetric_scores?.tutor_adaptive_mechanism_quality?.score100;
-    if (Number(adaptiveQuality || 0) >= 75) targetByCriticArm[critic][arm].adaptiveQuality += 1;
+    addProtocolObservation(
+      targetByCriticArm[critic][arm].adaptiveQualityByProtocol,
+      scoreProtocolVersion(row, 'tutor_mechanism'),
+      Number(adaptiveQuality || 0) >= 75,
+    );
     targetByCriticArm[critic][arm].total += 1;
   }
 
@@ -303,6 +512,7 @@ function summarizeRun(runId, rows) {
   return {
     runId,
     sourceRoot: rows[0]?.source_root || null,
+    tutorAdaptationAnalyzerVersion: analyzerVersion,
     itemCount: items.length,
     scoreCount: scoreRows.length,
     labelCount,
@@ -407,16 +617,18 @@ function summarizeBaselineRisk(items, scoreRows) {
     });
 }
 
-function buildPoeticsReport(db, { runId = null } = {}) {
-  const rows = loadRows(db, runId);
+function buildPoeticsReport(db, { runId = null, analyzerVersion = TUTOR_ADAPTATION_ANALYZER_VERSION } = {}) {
+  const rows = loadRows(db, runId, analyzerVersion);
   const runIds = [...new Set(rows.map((row) => row.run_id))].sort();
   return {
     generatedAt: new Date().toISOString(),
     runFilter: runId,
+    tutorAdaptationAnalyzerVersion: analyzerVersion,
     runs: runIds.map((id) =>
       summarizeRun(
         id,
         rows.filter((row) => row.run_id === id),
+        analyzerVersion,
       ),
     ),
     rows,
@@ -427,18 +639,27 @@ function renderTargetSection(run) {
   const critics = Object.keys(run.targetByCriticArm).sort();
   if (!critics.length) return 'No target-arm scores found.';
   const lines = [
-    '| Critic | Arm | Recognitive self-reframe | Actional breakthrough | Adaptive mechanism quality | Trap | Flat | Other |',
+    '| Critic | Arm | Recognitive self-reframe | Actional breakthrough by protocol | Adaptive mechanism quality by protocol | Trap | Flat | Other |',
     '|---|---|---:|---:|---:|---:|---:|---:|',
   ];
   for (const critic of critics) {
     for (const arm of Object.keys(run.targetByCriticArm[critic]).sort()) {
       const c = run.targetByCriticArm[critic][arm];
       lines.push(
-        `| ${critic} | ${arm} | ${c.recognition}/${c.total} (${pct(c.recognition, c.total)}) | ${c.actional}/${c.total} (${pct(c.actional, c.total)}) | ${c.adaptiveQuality}/${c.total} (${pct(c.adaptiveQuality, c.total)}) | ${c.trap} | ${c.flat} | ${c.other} |`,
+        `| ${critic} | ${arm} | ${c.recognition}/${c.total} (${pct(c.recognition, c.total)}) | ${formatProtocolRates(c.learnerActionByProtocol)} | ${formatProtocolRates(c.adaptiveQualityByProtocol)} | ${c.trap} | ${c.flat} | ${c.other} |`,
       );
     }
   }
   return lines.join('\n');
+}
+
+function formatProtocolRates(buckets) {
+  return (
+    Object.entries(buckets || {})
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([version, counts]) => `${counts.hits}/${counts.total} (${pct(counts.hits, counts.total)}) [${version}]`)
+      .join('<br>') || 'n/a'
+  );
 }
 
 function renderBaselineRiskSection(run) {
@@ -515,18 +736,23 @@ function renderTutorAdaptationSection(run) {
   const lines = [
     'Primary claim: peripeteia tutor adaptation asks whether learner pressure makes the tutor ego/superego loop invent a visible new learning mechanism. Secondary claim: recognition-contingent uptake asks whether a later tutor turn takes up a learner self-reframe.',
     '',
-    '| Arm | Items | Branch valid | Reversal event used | Reframe event used | Learner pressure | Instrumented pressure | Private route | Peripeteia tutor adaptation | Mean peripeteia score | Learner self-reframes | Recognition-contingent uptake | Mean uptake score | Mean uptake delta |',
-    '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
+    '| Arm | Items | Branch valid | Reversal event used | Reframe event used | Learner pressure | Instrumented pressure | Private route | Tutor mechanism determinate | Tutor measurement indeterminate | Peripeteia tutor adaptation | Tutor representation change | Tutor representation indeterminate | Mean peripeteia score | Learner action determinate | Learner action indeterminate | Learner actional change | Learner representation change | Learner representation indeterminate | Recognition-contingent uptake | Mean uptake score | Mean uptake delta |',
+    '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
   ];
   for (const arm of arms) {
     const row = run.targetAdaptation[arm];
     const denom = row.scored || 0;
     const peripeteiaDenom = row.peripeteiaScored || 0;
-    const meanPeripeteia = peripeteiaDenom ? Math.round((10 * row.peripeteiaScoreSum) / peripeteiaDenom) / 10 : 'n/a';
-    const meanScore = denom ? Math.round((10 * row.scoreSum) / denom) / 10 : 'n/a';
-    const meanDelta = denom ? Math.round((1000 * row.uptakeDeltaSum) / denom) / 1000 : 'n/a';
+    const mechanismDenom = row.mechanismDeterminate || 0;
+    const meanPeripeteia = row.peripeteiaScoreCount
+      ? Math.round((10 * row.peripeteiaScoreSum) / row.peripeteiaScoreCount) / 10
+      : 'n/a';
+    const meanScore = row.scoreCount ? Math.round((10 * row.scoreSum) / row.scoreCount) / 10 : 'n/a';
+    const meanDelta = row.uptakeDeltaCount
+      ? Math.round((1000 * row.uptakeDeltaSum) / row.uptakeDeltaCount) / 1000
+      : 'n/a';
     lines.push(
-      `| ${arm} | ${row.total}${row.missing ? ` (${row.missing} missing)` : ''} | ${row.branchValid}/${row.branchValidityScored} | ${row.usedReversalEvents}/${row.requiredReversalEvents} | ${row.usedReframeEvents}/${row.requiredReframeEvents} | ${row.reversalPressure}/${peripeteiaDenom} | ${row.instrumentedPressure}/${peripeteiaDenom} | ${row.privateRoutes}/${peripeteiaDenom} | ${row.tutorMechanisms}/${peripeteiaDenom} | ${meanPeripeteia} | ${row.learnerSelfReframes}/${denom} | ${row.tutorAdaptations}/${denom} | ${meanScore} | ${meanDelta} |`,
+      `| ${arm} | ${row.total}${row.missing ? ` (${row.missing} missing)` : ''} | ${row.branchValid}/${row.branchValidityScored} | ${row.usedReversalEvents}/${row.requiredReversalEvents} | ${row.usedReframeEvents}/${row.requiredReframeEvents} | ${row.reversalPressure}/${peripeteiaDenom} | ${row.instrumentedPressure}/${peripeteiaDenom} | ${row.privateRoutes}/${peripeteiaDenom} | ${mechanismDenom} | ${row.mechanismMeasurementIndeterminate} | ${row.tutorMechanisms}/${mechanismDenom} | ${row.tutorRepresentationChanges}/${row.tutorRepresentationDeterminate} | ${row.tutorRepresentationIndeterminate} | ${meanPeripeteia} | ${row.learnerActionDeterminate} | ${row.learnerActionMeasurementIndeterminate} | ${row.learnerActionalChanges}/${row.learnerActionDeterminate} | ${row.learnerSelfReframes}/${row.learnerRepresentationDeterminate} | ${row.learnerRepresentationIndeterminate} | ${row.tutorAdaptations}/${denom} | ${meanScore} | ${meanDelta} |`,
     );
   }
   return lines.join('\n');
@@ -624,6 +850,17 @@ function renderCsv(report) {
     'private_mechanism_declared',
     'tutor_adaptive_mechanism',
     'tutor_peripeteia_score',
+    'mechanism_measurement_mode',
+    'tutor_adaptive_mechanism_measurement_status',
+    'tutor_adaptive_mechanism_value',
+    'tutor_representation_change_measurement_status',
+    'tutor_representation_change_value',
+    'tutor_mechanism_measurement_indeterminate',
+    'learner_actional_change_measurement_status',
+    'learner_actional_change_value',
+    'learner_representation_change_measurement_status',
+    'learner_representation_change_value',
+    'learner_action_measurement_indeterminate',
     'peripeteia_trigger',
     'learner_outcome_after_reversal',
     'tutor_strategy_before',
@@ -639,6 +876,9 @@ function renderCsv(report) {
   for (const row of report.rows) {
     const peripeteia = row.tutor_adaptation_metadata?.peripeteia || {};
     const branchValidity = row.tutor_adaptation_metadata?.branch_validity || {};
+    const mechanismMeasurement = tutorMechanismMeasurement(row, report.tutorAdaptationAnalyzerVersion);
+    const learnerMeasurement = learnerActionMeasurement(row, report.tutorAdaptationAnalyzerVersion);
+    const tutorRepresentation = tutorRepresentationMeasurement(row, report.tutorAdaptationAnalyzerVersion);
     const taxonomy = scenarioTaxonomy(row);
     const consensus = consensusByItem.get(row.item_id) || null;
     lines.push(
@@ -668,8 +908,8 @@ function renderCsv(report) {
           row.score_metadata?.role_symmetric_scores?.tutor_adaptive_mechanism_quality?.score100,
         row.stated_insight,
         row.pivot_learner_turn,
-        row.learner_self_reframe,
-        row.tutor_contingent_adaptation,
+        learnerMeasurement.indeterminate ? null : row.learner_self_reframe,
+        learnerMeasurement.indeterminate ? null : row.tutor_contingent_adaptation,
         row.tutor_adaptation_score,
         row.uptake_delta,
         peripeteia.learner_reversal_pressure,
@@ -680,8 +920,21 @@ function renderCsv(report) {
         branchValidity.learner_reframe_event_used,
         peripeteia.instrumented_pressure,
         peripeteia.private_mechanism_declared,
-        peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal,
+        mechanismMeasurement.indeterminate
+          ? null
+          : peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal,
         peripeteia.tutor_peripeteia_score,
+        mechanismMeasurement.mode,
+        mechanismMeasurement.status,
+        mechanismMeasurement.value,
+        tutorRepresentation.status,
+        tutorRepresentation.value,
+        mechanismMeasurement.indeterminate,
+        learnerMeasurement.status,
+        learnerMeasurement.value,
+        learnerMeasurement.representation?.status,
+        learnerMeasurement.representation?.value,
+        learnerMeasurement.indeterminate,
         peripeteia.trigger_type,
         peripeteia.learner_outcome_after_reversal,
         row.tutor_strategy_before,
@@ -700,7 +953,10 @@ function main() {
   const args = parseArgs(process.argv.slice(2));
   const db = openPoeticsStore(args.dbPath || undefined);
   try {
-    const report = buildPoeticsReport(db, { runId: args.runId });
+    const report = buildPoeticsReport(db, {
+      runId: args.runId,
+      analyzerVersion: args.analyzerVersion,
+    });
     if (!args.noMarkdown) writeFile(args.out, renderMarkdown(report));
     if (!args.noCsv) writeFile(args.csv, renderCsv(report));
     if (args.json) writeFile(args.json, `${JSON.stringify(report, null, 2)}\n`);

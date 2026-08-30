@@ -1,21 +1,20 @@
 {
   "roots": {
     "agents": ".agents/skills",
-    "claude": ".claude/skills",
-    "codex": ".codex/skills"
+    "claude": ".claude/skills"
   },
   "mirrors": [
     {
       "name": "ms-workplan",
-      "source": "claude",
-      "targets": ["agents", "codex"],
-      "reason": "Workplan board commands should be visible to Claude, Codex, and shared agent contexts."
+      "source": "agents",
+      "targets": ["claude"],
+      "reason": ".agents/skills is the canonical project-skill source; keep the Claude copy aligned."
     },
     {
       "name": "ms-build-research-artifacts",
-      "source": "claude",
-      "targets": ["agents", "codex"],
-      "reason": "Research artifact build commands should stay identical across Claude, Codex, and shared agent contexts."
+      "source": "agents",
+      "targets": ["claude"],
+      "reason": ".agents/skills is the canonical project-skill source; keep the Claude copy aligned."
     }
   ]
 }

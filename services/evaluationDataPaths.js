@@ -33,6 +33,18 @@ export function resolveCanonicalEvaluationLogsRoot(env = process.env) {
   return path.join(resolveEvaluationDataHome(env), 'logs');
 }
 
+/**
+ * Where generated reports and other disposable/exportable artifacts go.
+ *
+ * Unlike DB and log data, exports stay checkout-local by default. An explicit
+ * path or EVAL_EXPORTS_DIR relocates the whole tree, with relative overrides
+ * resolved against the repository root rather than the caller's cwd.
+ */
+export function resolveEvaluationExportsRoot(rootDir, explicitPath = null, { env = process.env } = {}) {
+  if (!rootDir) throw new Error('rootDir is required');
+  return resolvePathFromRoot(rootDir, explicitPath || env.EVAL_EXPORTS_DIR) || path.join(rootDir, 'exports');
+}
+
 export function resolveEvaluationDbPath(rootDir, explicitPath = null, { env = process.env, fileSystem = fs } = {}) {
   const explicit = explicitPath || env.EVAL_DB_PATH;
   if (explicit) return resolvePathFromRoot(rootDir, explicit);

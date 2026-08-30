@@ -147,6 +147,24 @@ test('a missing archive directory resolves to null rather than a stray path', ()
   }
 });
 
+test('default archive discovery anchors to the repository root rather than the process cwd', () => {
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'archive-repo-parent-'));
+  const root = path.join(parent, 'machinespirits-eval');
+  const unrelatedCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'archive-unrelated-cwd-'));
+  const archive = path.join(parent, 'machinespirits-eval-private');
+  fs.mkdirSync(root, { recursive: true });
+  fs.mkdirSync(archive, { recursive: true });
+  try {
+    assert.equal(
+      resolveArchiveDir(null, { cwd: unrelatedCwd, repoRoot: root, env: {}, commonGitDirectory: null }),
+      archive,
+    );
+  } finally {
+    fs.rmSync(parent, { recursive: true, force: true });
+    fs.rmSync(unrelatedCwd, { recursive: true, force: true });
+  }
+});
+
 test('archive CLI keeps the no-argument tutor-stub default and accepts one explicit cohort root', () => {
   withTempCwd(({ dest }) => {
     makeRun(process.cwd(), 'pilot-1');

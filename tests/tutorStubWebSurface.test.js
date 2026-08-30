@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 
 import express from 'express';
 
+import { fallbackCatalog } from '../public/tutor/fallbackCatalog.js';
+import { loadProviders } from '../services/evalConfigLoader.js';
 import { TUTOR_STUB_PUBLIC_CATALOG_SCHEMA, buildTutorStubPublicCatalog } from '../services/tutorStubCatalog.js';
 import { mountEvalSurfaces } from '../services/evalSurfaces.js';
 
@@ -67,6 +69,25 @@ test('public tutor catalog is an explicit learner-safe projection', () => {
     );
     assert.ok(catalog.models.some((model) => model.ref === 'codex.gpt-5.6-terra'));
     assert.ok(catalog.models.every((model) => /^[a-z0-9-]+\..+/u.test(model.ref)));
+
+    const codex = loadProviders({ forceReload: true }).providers.codex;
+    const defaultAlias =
+      Object.entries(codex.models).find(([alias]) => alias === codex.default_model)?.[0] ||
+      Object.entries(codex.models).find(([, resolvedModel]) => resolvedModel === codex.default_model)?.[0];
+    const configuredDefaultRef = `codex.${defaultAlias}`;
+    assert.equal(catalog.defaults.model, configuredDefaultRef);
+    const browserFallback = fallbackCatalog();
+    assert.equal(
+      browserFallback.defaults.model,
+      configuredDefaultRef,
+      'browser emergency default must stay in parity with config/providers.yaml',
+    );
+    assert.equal(
+      browserFallback.models[0]?.ref,
+      configuredDefaultRef,
+      'browser emergency model option must stay in parity with config/providers.yaml',
+    );
+
     assert.ok(catalog.curricula.some((curriculum) => curriculum.id === 'ai_foundations_v1'));
     assert.ok(catalog.curricula.every((curriculum) => /^sha256:[a-f0-9]{64}$/u.test(curriculum.artifactHash)));
     assert.ok(catalog.curricula.every((curriculum) => curriculum.modules.length > 1));
@@ -109,14 +130,17 @@ test('shared eval surfaces serve the tutor shell and versioned public catalog', 
   assert.equal(legacyChat.status, 302);
   assert.equal(legacyChat.headers.get('location'), '/tutor?mode=research');
 
-  const [script, styles, contract, catalog] = await Promise.all([
+  const [script, fallbackScript, styles, contract, catalog] = await Promise.all([
     fetch(`${base}/tutor/app.js`),
+    fetch(`${base}/tutor/fallbackCatalog.js`),
     fetch(`${base}/tutor/styles.css`),
     fetch(`${base}/api/tutor-stub`),
     fetch(`${base}/api/tutor-stub/catalog`),
   ]);
   assert.equal(script.status, 200);
   assert.match(await script.text(), /const API = `\$\{APP_PREFIX\}\/api\/tutor-stub`/u);
+  assert.equal(fallbackScript.status, 200);
+  assert.match(await fallbackScript.text(), /export function fallbackCatalog/u);
   assert.equal(styles.status, 200);
   assert.match(await styles.text(), /prefers-reduced-motion/u);
   assert.equal(contract.status, 200);

@@ -1,0 +1,604 @@
+# Human and Interactive Sessions
+
+Read this reference for passthrough, direct, scaffold, mixed-learner, coach, voice, feedback, tuning, resume-last, or interactive CLI work.
+
+## Human Learner Session
+
+Use the mnemonic presets for common interactive checks:
+
+```bash
+npm run tutor:stub:passthrough     # pure speaker baseline; one model call per turn
+npm run tutor:stub:direct          # no DAG interpretation, human types turns
+npm run tutor:stub:direct:mixed    # no DAG interpretation, learner drafts available
+npm run tutor:stub:scaffold        # human-facing DAG scaffold, human types turns
+npm run tutor:stub:scaffold:mixed  # human-facing DAG scaffold, learner drafts available
+npm run tutor:stub:demo            # clean guided live tour plus analysis and HTML evidence
+```
+
+Inside either scaffold, `/demo` runs the same guided tour against the current
+scene and settings: three bounded automated learner-tutor turns, the latest
+plain-language analysis, the seven-view transcript HTML, and the compact
+outcome report. It then returns control without ending the session. `/demo N`
+uses `N` turns, capped at eight; `/reset` cancels safely while it is running.
+
+Use passthrough when testing the model and setup without the tutoring harness:
+
+```bash
+npm run tutor:stub:passthrough -- --world world_005_marrick
+```
+
+Type the first learner message after launch. The compact passthrough command
+surface keeps `/settings model`, `/status`, `/transcript`, `/director`, `/id`,
+`/scenario`, `/reset`, `/help`, and `/quit`; teaching-policy commands are
+rejected because their mechanisms are not active.
+
+Use when the user will type learner turns manually:
+
+```bash
+npm run tutor:stub -- \
+  --world world_005_marrick \
+  --dag \
+  --tutor-learner-dag \
+  --dag-mode defeasible_human_scaffold \
+  --register-policy field \
+  --cli-effort medium \
+  --history-turns 4 \
+  --max-tokens 4096
+```
+
+Useful variants:
+
+- Interactive sessions have three live roles. `/mode learner` makes typed
+  lines public learner speech. `/mode coach` (or `/coach`) makes
+  typed lines private, high-priority suggestions for the next tutor response;
+  `/coach <text>` switches and queues in one command. Coach guidance is never
+  added to public history, is constrained by evidence/leak/closure guards, is
+  stored on the tutor turn for audit, and invalidates stale mixed tutor
+  prefetches. In mixed mode, queue guidance and use `/use` to send the drafted
+  learner turn; in human mode, switch back with `/mode learner` and type the
+  public learner response. `/learner [profile]` is instead the short form of
+  `/character learner [profile]`.
+- `/mode auto` (or `/auto`) hands the current public transcript to the existing
+  automated learner loop and plays both roles until grounded closure or the
+  configured safety cap. `/auto 5` runs exactly five more learner-tutor turns
+  and then returns to the prior learner/coach role. It uses the active learner
+  profile and `--auto-learner-model`; it does not restart the scene or repeat an
+  existing opening. When entered while an ordinary tutor response is still in
+  flight, the command queues one handoff and starts it immediately after that
+  response commits; a later `/auto` or `/mode auto` replaces the queued turn
+  cap. `/mode learner`, `/mode coach`, `/reset`, and `/quit` cancel the queued
+  handoff. Other busy commands such as `/demo`, `/scenario`, and `/board` do not
+  queue and explicitly tell the operator to run them again.
+- Human learner mode requests optional feedback after each displayed tutor
+  opening or completed tutor response. With an empty learner prompt, press
+  Left for not helpful or Right for helpful; the rating applies immediately
+  without Enter. Once any text is present, those keys retain normal cursor
+  movement. `👍`, `👎`, `/up`, and `/down` remain available, and simply sending
+  the next learner line skips the rating. The structured
+  `tutorFeedback` envelope is copied onto every fragment in that learner turn,
+  kept out of public speech, persisted in traces/transcript HTML, and used as
+  one subjective signal in the tutor's next efficacy assessment and register
+  history. It also creates a private, one-response adaptation contract tied to
+  the exact rated response. A down-rating requires a transcript-visible change
+  in configuration or realization; an up-rating preserves useful qualities
+  while still answering the learner's new words. The result is audited and
+  stored as a `feedback-observation.v1` record that joins the rated tutor
+  response, learner reply, objective progress, and next tutor adaptation.
+  A smaller `feedback-rating-record.v1` is written immediately, so the rating
+  survives `/quit` even when no subsequent learner turn is sent; the enriched
+  observation supersedes it during prior fitting.
+  Subjective helpfulness and objective progress remain separate channels, and
+  the record explicitly makes no causal claim. Use `/feedback on|off|clear` or
+  `--no-turn-feedback`; it is on by default for human sessions and absent from
+  fully automated learner turns. When a request is visible on an otherwise
+  empty, unselected prompt, Escape disables feedback for the rest of the
+  session. Escape continues to clear an active text selection instead.
+  A rating may carry a typed reason and a short evidence comment, for example
+  `/down too_abstract Uses labels instead of the objects in the scene` or
+  `/up helpful_pacing`. `/tune reasons` lists the bounded taxonomy. The typed
+  reason guides the next one-turn adaptation and, only when tuning is on,
+  creates a tutor-version candidate; the free-form comment is retained for
+  review but never becomes an instruction.
+- Interactive TTY sessions keep a persistent editable command line beneath the
+  animated activity line while tutor, learner, analysis, clarification, or auto
+  work is running. Readline is not paused in `/auto`: commands such as
+  `/status`, `/analysis`, `/transcript`, `/field`, `/coach`, and `/quit` can be
+  entered while generation continues, and partially typed commands survive
+  activity redraws and completed model output. API text streams are displayed
+  as a completed block while this command surface is live so token writes do
+  not corrupt the input cursor; non-interactive streaming behavior is unchanged.
+- The live prompt supports ordinary terminal selection editing: Shift+Left/Right
+  selects characters; Alt/Option+Shift+Left/Right and
+  Ctrl+Shift+Left/Right select words; Shift+Home/End selects to either end of
+  the line. Alt/Option+Left/Right and Ctrl+Left/Right move by word. Typing or
+  pressing Backspace/Delete replaces or removes the selection, which remains
+  visibly highlighted across background redraws.
+- `/status` prints the current role, turn, learner profile, mixed-cache state,
+  register policy/temperature, DAG dropout, closure phase, and pending/applied
+  coach guidance. Role prompts and tutor/system output use distinct terminal
+  colors; `/help` is the compact command index.
+- Add `--resume-last` to continue the latest dialogue in the trace dir.
+- Add `--register-policy bland` for a non-dynamic-feeling baseline.
+- Add `--model` only when overriding the default speaking tutor
+  `codex.gpt-5.6-terra`; classifier and learner-record roles retain their
+  separate `codex.gpt-5.6-sol` default, while the automated learner retains
+  `codex.gpt-5.6-terra`.
+- Use `--all-models <provider.alias>` when the same model should run the tutor,
+  classifier, learner-DAG analysis, and automated/mixed learner. This launch
+  override wins over all four role-specific model settings and is recorded in
+  dry-run, trace, and transcript provenance. The live keyboard settings panel
+  mirrors this with `One model for all roles`, then exposes independent selectors
+  for `Tutor voice`, `Learner interpretation`, `Reasoning tracker`, and `Learner
+  voice`. `/settings models all <provider.alias>` changes all four together;
+  `/settings models tutor|classifier|reasoning|learner <provider.alias>` changes
+  one role and clears the live override. `/settings model <provider.alias>`
+  remains the tutor-only compatibility command. Every change records provenance,
+  persists for the next interactive session, and refreshes stale mixed caches.
+  When interpretation is combined with learner-DAG analysis, the classifier row
+  is visibly inactive and the reasoning tracker row identifies itself as the
+  owner of the combined call. Full public-history replay is already active for
+  both speakers from session start. CLI providers are
+  stateless subprocesses: the bridge flattens those ordered `user`/`assistant`
+  messages under `Conversation so far`, then appends the composite current-turn
+  prompt under `Latest message`.
+- Multiple choice is opt-in globally with `--multiple-choice`, but the human
+  scaffold may use one bounded public-safe choice after uncertainty when an
+  open question would otherwise ask the learner to invent unstaged information.
+- Codex speaking-tutor calls default to `gpt-5.6-terra` at `medium` effort; pass
+  `--cli-effort low|high|xhigh` only for an intentional override.
+- Add `--mixed-learner` for manual play with a prefetched clue-answer pair after
+  each tutor turn. Use `/clue` or `/hint` for non-revealing direction, press Tab
+  on an empty learner prompt to insert the answer for editing, or use
+  `/suggest`, `/use`, `/regen`.
+- Mixed suggestions may be questions. The ready line, `/clue`, and `/suggest`
+  label the proposed move as `ask a question` or `respond`; question clues say
+  what uncertainty to ask about without revealing the exact wording. The first
+  tutor line establishes that asking which clue or term is unclear is a valid
+  public move. Later tutor prompts name the live clue plainly and repeat that
+  permission when the learner signals difficulty or the needed evidence is not
+  yet public, rather than privately expecting the learner to infer it.
+- Mixed artifacts also carry a separate `profile_signal`: a short account of
+  how the visible draft expresses the active learner profile. The full ready
+  notice and compact profile card appear once per active profile. An
+  interactive TTY shows the scrolling scenario picker only when it has neither
+  a saved scenario nor an explicit `--world`. The repository default
+  (`world_005_marrick`) supplies the first-run highlight; Up/Down,
+  Page Up/Down, Home/End, and Enter navigate and select. The highlighted
+  scenario shows its public question, opening setting, and discipline. The
+  chosen world is applied before the system prompt, DAG, director context, and
+  opening are built. Resumed, returning, non-interactive, and non-TTY runs
+  retain their selected world without another prompt. A mixed session asks for
+  a learner profile only when it has neither a saved profile nor an explicit
+  `--auto-learner-profile`; Enter accepts `diligent` on the first run. In a TTY,
+  all built-in profiles appear in a scrolling menu: Up/Down moves the highlight
+  and Enter selects it. Beneath the menu, `does >` describes the highlighted
+  learner's recurring public behavior and `edge >` explains how it differs from
+  its declared nearest-neighbour profile. Stress entries are labeled `stress
+  probe` to make clear that they sharpen a core boundary rather than claiming
+  to be an unrelated taxonomy. The initial highlight is the launch profile
+  (`diligent` by default), and the viewport scrolls across both core and stress
+  profiles. Pipes and other non-TTY callers retain the typed-ID profile
+  fallback; there, `list`, `stress`, and `all` browse profile groups and Tab
+  completes picker commands and ids.
+  Before any clue or answer generation, the same first-run prelude asks only
+  for dialogue settings that are not already saved or explicitly supplied:
+  engagement-stance temperature when the active policy uses it (`0.15` is the
+  recommended default), accumulated DAG-fact dropout when the learner DAG is
+  enabled (`0` is the recommended reliable-memory default), and clue release
+  speed. Enter accepts the repository default. Explicit command-line overrides
+  always win. Returning, resumed, and `--no-opening` sessions skip completed
+  setup steps, so normal startup proceeds directly into the scene. A returning
+  saved scenario realizes its audited public opening locally and prints it
+  immediately, without waiting for a speaking-model call or mixed prefetch;
+  answer, clue, analysis, and tutor prefetch then warm in the background.
+  First-run opening text is buffered until
+  that first notice and card are ready. The card is printed, then the selected
+  scenario's director block is printed once as the final visible prelude
+  immediately before the first tutor line. This makes the stage directions and
+  opening speech read as one script opening while keeping the controls legible.
+  Later suggestions activate Tab
+  silently so they do not interrupt the dramatic flow. `/suggest` and `/use`
+  still expose the profile id, intended pattern, and visible expression on
+  demand; only the learner response is inserted or spoken, so this metadata
+  does not break the dramatic frame.
+- `/scenario` opens the same scrolling scenario picker on demand; `/scenario
+  <id>` selects directly in a pipe or script. Selecting one closes and reports
+  the current inquiry, then launches a fresh trace for the new world while
+  retaining the active profile and dialogue settings. At natural closure the
+  CLI writes and opens the learning summary, asks whether to do another
+  scenario, and opens this picker on `y`; Enter or `n` ends the session.
+- `/board` reads the live `workplan/items/` projection and opens a scrolling
+  workplan-card picker; `/board <item-id>` selects directly in a pipe or script.
+  Selecting one closes the current inquiry and launches a fresh non-DAG
+  reflective curriculum session while retaining the active learner profile,
+  model routing, and dialogue settings. The picker shows each card's current
+  status, essential question, and declared verification gate.
+- Learner suggestions and clarifications are kept inside the dramatic frame,
+  and tutor prompts require the same: generated speech addresses the other
+  speaker directly and does not say `the tutor`, `the learner`, `the dialogue`,
+  `the prompt`, or that a question is `pending`. Clarification restates the
+  live question directly.
+- `/explain [phrase]` and natural vocabulary questions such as `what does cupel
+  mean?` update a persistent comprehension side-state without advancing the
+  learner DAG. Unresolved terms raise `language_opacity` and
+  `compression_need`, favour plain/warm explanation, and suppress charismatic
+  or negative pressure. A successful gloss marks the term explained while
+  retaining recent clarification pressure for the next turn; unresolved and
+  explained terms survive memory compaction, traces, resumes, reports, and
+  mixed-cache regeneration. Inspect them with `/analysis` or `/analysis
+  technical`.
+- A single learner turn may adopt several already-staged public premises and
+  voice several supported intermediate conclusions. The extractor returns the
+  full warranted chain rather than truncating it after one step; unstaged or
+  underived follow-ups remain rejected. Accepted spans are recorded as
+  `learnerAdvance`, deterministically update `reasoning_span`, `learning_pace`,
+  evidence use, agency, and rubric floors, and feed the field, trajectory,
+  dynamical state, policy overlays, engagement stance, response configuration,
+  transcript, closeout, learning summary, and auto-eval reports. An accelerated
+  turn favours brisk/precise peer-level continuation and tells the tutor to
+  credit the whole chain and test only the next unresolved edge. Bland, random,
+  negative, comprehension, dropout, closure, and predeclared-pressure controls
+  retain their declared priority or non-adaptive behavior.
+- Tutor response configuration has six independent axes:
+  `engagement_stance`, `action_family`, `actorial_part`, `audience_register`,
+  `lexical_accessibility`, and `scene_immersion`. `selected_register` remains a
+  backward-compatible alias for `engagement_stance`; it must not be used to
+  derive the action family. The actorial part determines the public part the
+  speaking tutor visibly plays—scene partner, examiner, record-keeper, authored
+  clue source, advocate, skeptic, or closer—and receives only public/due
+  evidence. An authored enacted clue role takes priority on its release turn.
+  The speaking surface remains one continuous utterance: learner uptake and
+  pedagogical development are separate trace functions, not two displayed
+  paragraphs or voices. An authored clue source must speak its clue from
+  inside the role in first person and quotation marks. A role-name prefix or
+  stage direction such as `Front-desk clerk, opening the log:` describes the
+  acting and must fail the dramatic and actorial guards.
+  A hard stance override for comprehension, clue pacing, learner acceleration,
+  or a declared pressure probe also replaces the stance distribution supplied
+  to character selection with a one-hot distribution; the displaced blend is
+  retained separately for trace diagnosis. This prevents character selection
+  from acting on a stale pre-override stance.
+  `child_accessible` audience register requires an
+  explicit public age signal—ordinary confusion defaults to `adult_novice`,
+  never to child-directed speech. Every completed tutor response stores a
+  deterministic surface audit for whether each configured axis became visible
+  in the transcript.
+- `/random` toggles a session-only random-performance overlay; `/random on`,
+  `/random off`, and `/random status` are explicit forms. While enabled, the
+  harness uniformly samples the engagement stance from the safe active palette
+  and the actorial host part from the non-closure character set. It excludes
+  the immediately previous choice when alternatives exist. These two draws are
+  seeded and independent of classifier, learner-DAG, field, trajectory, pacing,
+  and pressure signals. The learner analysis still selects `action_family`,
+  audience, lexical accessibility, and scene immersion; authored evidence
+  release, licensed closure, and response safety remain authoritative. The
+  underlying register policy is preserved and resumes when the overlay is
+  disabled. Toggle changes invalidate mixed suggestion/analysis/tutor-prefetch
+  state, survive `/reset` within the session, appear in status/transcript
+  settings and the compact model line, and persist both draw audits on each
+  turn. Random mode bypasses engagement-stance/actorial-part temperature.
+- `/settings light on|off|status` configures and remembers the conditional
+  light-adaptation overlay; `/light`, `/light on`, `/light off`, and `/light
+  status` remain short forms. Unlike `/random`, it
+  draws only after the configured consecutive confusion/frustration threshold.
+  On a triggered turn, both engagement stance and host part exclude their
+  immediately previous values when possible. The trigger is assessment-led,
+  but the two seeded draws are assessment-independent and preserve authored
+  evidence, teaching action, licensed closure, and response-safety authority.
+  Triggered light adaptation outranks explicit and random performance
+  directions for those two axes only; all displaced directions remain visible
+  in the trace. The interactive app defaults it on, while dedicated research
+  controls remain opt-in so policy arms are not silently contaminated.
+- `/register <stance>` and `/character tutor <part>` explicitly direct one
+  performance axis for subsequent tutor turns. In a TTY, bare `/character
+  tutor` and `/character learner` open scrolling keyboard selectors with the
+  current choice highlighted; non-TTY callers retain current-value and choice
+  lists. `auto` (plus `clear`, `off`, or `reset`) returns
+  that axis to normal selection. An explicit direction outranks `/random` only
+  on its own axis, so the other axis may remain random or adaptive. Learner
+  analysis still selects the action family, audience, language, and scene;
+  authored clue-source enactment, licensed closeout character, evidence release,
+  and response safety retain structural priority. Changes refresh mixed
+  suggestion/analysis/tutor-prefetch state, survive `/reset` within the
+  session, autocomplete from the slash palette, and appear in status,
+  transcript settings, compact model output, and turn traces.
+  Changing to a specific tutor character after a tutor utterance is visible
+  replaces the latest public-history tutor text with a bounded restatement:
+  `Let me rephrase that.` followed by the same pedagogical intent realized in
+  the new character. It preserves the live question, quoted source text,
+  public-evidence boundary, and proof position; the trace joins the original
+  and replacement. Clearing to `auto`, changing only the learner, status
+  views, and cancelled selectors retain normal detour behavior.
+- Bare `/character` opens a learner/tutor selector in a TTY and then opens the
+  selected axis's specific profile or host-part picker. Pipes retain a read-only
+  summary of both axes. Bare `/character` and `/register` are navigation-only
+  controls and do not reprise the latest tutor utterance when they finish. Use
+  `/character learner <profile>` (or legacy `/profile <profile>`) for the mixed
+  learner and `/character tutor <part>` (or legacy `/character <part>`) for the
+  tutor. `/learner [profile]` and `/tutor [part]` are the symmetric short forms;
+  `/mode learner` remains the interaction-role switch. `--learner-character`
+  and `--tutor-character` provide symmetric
+  launch-time controls. A changed tutor character prints a short learner-facing
+  explanation of how replies will behave, the temporary clue-giver/closing-scene
+  exception, and the route back to `Tutor → Auto`; detailed precedence and
+  effective-turn state remain in technical traces. `adversarial_teacher` and
+  `exacting_schoolmaster` are
+  deliberately adversarial, explicit-only tutor parts: they never enter
+  adaptive, random, or light-adaptation draws. Both follow domain-before-
+  metaphor discipline: the active subject's objects, concepts, texts, problems,
+  methods, and standards must dominate the teaching move; legal, dramatic, or
+  philosophical metaphors remain subordinate. `cross_examiner` and
+  `opposing_counsel` remain input-only compatibility aliases and normalize to
+  the classroom-native ids.
+- In `defeasible_human_scaffold`, high-confidence adjacent ellipsis such as
+  `it will be the same` is resolved against the immediately preceding
+  single-referent public question. The strict learner-DAG may retain an audit
+  gap, but the spoken tutor must treat that local question as answered. A
+  response audit repairs or replaces drafts that merely ask the same question
+  again in different words; case-closing/join answers are not compressed this
+  way.
+- Combined learner-analysis parsing repairs only a bounded one- or two-delimiter
+  JSON truncation and promotes known `learner_record` / `register_selection`
+  fields if the missing delimiter nested them under `classification`. It still
+  rejects unterminated strings, trailing prose, and larger structural repairs.
+- Before any learner-analysis model call, the deterministic harness freezes a
+  public-only learner-DAG preflight: the prior public learner record, eligible
+  committed premise ids, retractable premise ids, and conclusions reachable
+  from current public evidence and public rules. The preflight is supplied as
+  a constraint envelope, never as evidence that the learner voiced a move. The
+  model maps free-form language to candidate updates; only the deterministic
+  postprocessor may validate and commit them. The preflight, including its
+  content hash, is stored in the trace and completed turn and appears in
+  `/analysis technical`.
+- DAG-backed dialogues have an explicit closure lifecycle. Strict grounded and
+  asserted learner-DAG closure always requires a terminal tutor act. In human
+  interactive sessions, a fully released authored tutor DAG also makes
+  conversational closure available: if the tutor states the final verdict, it
+  must explicitly close the case rather than ask another proof question. The
+  tutor may offer exactly one optional learner check-in; its response must end
+  the inquiry without another question. `no thanks` closes immediately without
+  another model call. Automated eval stopping and grounded-rate metrics remain
+  tied to strict learner-DAG closure, not conversational closure.
+- Mixed mode also pre-analyzes the exact cached answer in the background. An
+  unchanged Tab or `/use` submission reuses that result; edited text or changed
+  turn state invalidates it and runs the normal analysis path.
+- Every learner response carries
+  `machinespirits.tutor-stub.learner-response-provenance.v1`. Use
+  `authorship` (`human`, `ai`, `hybrid`, or legacy `unknown`) as the stable
+  analysis field. Terminal and voice-transcribed turns are human; automated
+  learner turns are AI; unchanged Tab and `/use` drafts are AI with
+  `humanInLoop: true`; an edited Tab draft is hybrid. Model, profile, suggestion
+  request, input method, and human/AI boolean facets are retained when
+  applicable. Each compound fragment keeps its own provenance and the turn
+  aggregates it. The record appears on the completed turn, `learnerInput`,
+  `learnerMessages`, the explicit `learner_response_provenance_recorded` trace
+  event, transcript HTML, and the final learning summary. Do not infer
+  authorship from interaction mode: an explicit first message in auto mode is
+  still human-authored.
+- After that analysis, mixed mode speculatively generates the tutor response on
+  a cloned state. It is reused only when the exact rendered classifier,
+  learner-DAG, register, scaffold, transcript, and tutor configuration context
+  still matches; otherwise the normal tutor call runs. Regeneration, clear,
+  turn invalidation, and exit abort stale Codex subprocesses.
+- Change the mixed learner interactively with `/profile <id>`. Use `/profile`
+  for the current profile, `/profile list` for the six ordinary/core choices,
+  `/profile list stress` for the twelve specialist failure modes, `/profile list
+  all` for the complete profile registry, `/profile default` to restore the
+  launch-time profile, or `/profile custom <description>` for an ad-hoc
+  behavior sketch. Switching aborts and clears the old clue, answer, analysis,
+  and prefetched tutor response before regenerating the full chain; Tab
+  activates when the replacement answer's ready message appears.
+- Visible speaker prompts use readable profile-aware names such as `A Diligent
+  Learner >` and `An Answer-Seeking Learner >`; stable profile ids remain in
+  traces, settings, reports, and commands. Automated learner output uses the
+  same label with `(auto)` appended. A running Node process does not hot-reload
+  source changes: use `/quit`, then relaunch the same command with
+  `--resume-last` to keep the transcript while loading updated UI text.
+- Use `/profile example` for a copyable custom profile. A useful custom sketch
+  names an observable recurring behavior, the situation that triggers it, and
+  the tutor support that permits progress, without adding hidden case facts.
+  For example:
+
+  ```text
+  /profile custom The learner can identify individual clues but struggles to connect them. When asked for a conclusion, they repeat the newest clue. They progress only when the tutor asks them to connect two specific public facts.
+  ```
+- `/analysis` and `/a` default to a plain policy-centered account of the latest
+  learner move, engagement-stance blend, independent action/audience/language/
+  scene configuration, main signals, tutor aim, and transcript-visible
+  realization count. Use `/analysis technical` or `/a technical` for the
+  classifier labels, learner/tutor DAGs, field metrics, stance vectors,
+  per-axis realization audit, scaffold audit, response checks, and trace path.
+- The public CLI calls the combined safety/scaffold/question/closure mechanism
+  the `response check`. A successful model rewrite appears as `response
+  revised`; a deterministic replacement appears as `safe fallback used`.
+  Never describe either one as a `leak-guard repair`: answer secrecy is only
+  one of four possible triggers. `/analysis` gives a plain trigger summary and
+  `/analysis technical` retains the exact per-check evidence and stable trace
+  schema names.
+- `/debug on` adds a short, LLM-written prose explanation after every completed
+  tutor turn. In no more than three sentences it says what the learner appears
+  to understand or need, how the interaction moved, and whether the engagement
+  stance changed or held. Use `/debug show` for one prose explanation of the
+  latest turn. The former exact diagnostic output remains available as
+  `/debug technical` for a one-off view or `/debug on technical` for persistent
+  output; `/debug on prose` returns to the default. Use `/debug off` to stop
+  all automatic debug output, including turn ids, learner classifier details,
+  learner/tutor DAGs, stance efficacy, stance distributions, and calculation
+  reasons. Quiet mode retains only the public dialogue and, when enabled, one
+  compact model line with latency, honest token availability, effort, current
+  engagement stance, action family, and the selected in-scene character (the
+  internal `actorial_part`). A second compact line breaks foreground wait into
+  learner-analysis, tutor, and local time; prefetched stages and tutor-recovery
+  latency are labeled explicitly. Both lines appear before tutor speech so
+  dialogue remains the final response content. `/details off` hides them for the session;
+  `/details on|status`, `--no-response-details`, and
+  `TUTOR_STUB_RESPONSE_DETAILS=0` provide the corresponding controls. The debug
+  mode survives `/reset`, appears with its format in
+  `/status` and transcript settings, and writes an `explanatory_debug_output`
+  trace event without changing the policy.
+- `/transcript` (alias `/html`) refreshes one run-specific, self-contained HTML
+  snapshot and opens it in the default browser. It includes raw, script,
+  swimlane, analysis, prompt, settings, and Replay JS views; all completed public turns;
+  the selected world, model, learner-profile, DAG, register, temperature,
+  dropout, memory, stream, and closure options; the full tutor and mixed-learner
+  prompts retained so far; and the learner/DAG analysis plus rationale used for
+  each register selection. Use `/transcript no-open` to write without launching
+  a browser. During a model call, the snapshot deliberately stops at the last
+  completed turn. Replay JS contains a minimal provider API request plus the
+  exact completed public `user`/`assistant` message sequence. It excludes
+  director notes, hidden prompts, DAG state, classifiers, register calculations,
+  and response-check machinery. CLI-backed runs are labeled honestly because
+  the standalone replay needs the corresponding vendor API key and model
+  access. A persistent director-notes ledger remains visible above all seven
+  views. It contains the opening directions and only director-issued scene
+  notes released through the last completed turn; future notes stay withheld.
+  The opening is labeled as an unnumbered prelude, and completed learner-to-
+  tutor exchanges begin at turn 1. Swimlanes render the learner message before
+  its tutor reply instead of placing the later reply first in the row.
+- Bare `/director` (alias `/notes`) repeats the same opening directions and
+  released director notes in the CLI, then returns to the live scene with the
+  usual tutor-utterance reprise. It never prints future or in-progress director
+  notes and records `publicTranscriptChanged: false` in the trace. `/notes` is
+  deliberately view-only.
+- `/meta <request>` and `/director <request>` create a private
+  learner-to-director request to change subsequent tutor delivery. The request
+  persists until replaced or `/meta clear`, survives `/reset`, and is restored
+  by explicit trace resume. It is stored separately from public learner speech,
+  never enters learner-DAG/object-language analysis, and cannot change public
+  facts, staged-evidence timing, proof state, learner claims, role boundaries,
+  closure, or safety. Bare `/meta` and `/meta status` show the active request.
+  This persistent tutor-change path is a deterministic private control layer;
+  mixed mode may rebuild a speculative tutor prefetch after the control changes.
+  `/director ask <question>` and `/meta ask <question>` are the separate,
+  one-shot CLI-help path. They call a private director role with only the active
+  non-secret session settings, command registry, launch recipes, tutor-character
+  catalog, and learner-profile catalog. The answer changes no setting, enters no
+  public history or learner-DAG state, and automatically returns to the prior
+  learner or coach prompt with the latest tutor utterance reprised. The director
+  receives no concealed answer, hidden proof state, future clue, or private
+  speaking-tutor prompt.
+  The transcript director ledger records private requests for provenance, while
+  Replay JS continues to contain public dialogue only.
+- Every tutor-stub conversation with at least one completed tutor turn also
+  writes `<run-id>-learning-summary.html` when it concludes, whether through
+  natural grounded closure, `/quit`, SIGINT, or the automated learner reaching
+  closure. In a real interactive terminal the report opens automatically;
+  `TUTOR_STUB_SUMMARY_OPEN=0` suppresses browser launch but still writes it.
+  The learner-centred report uses only public dialogue, public learner-record
+  evidence, and learner-visible clarification state, so an early exit does not
+  disclose unreleased premises or the concealed answer. Finalization is
+  idempotent and excludes any tutor turn still in progress.
+- In an interactive TTY, `/settings` opens a keyboard control panel rather than
+  a read-only dump. Its public labels are Tutor model, Teaching-style range,
+  Evidence-memory dropout, Clue release speed, Difficulty shift, Turn-change
+  override, Conversation override, and Override sensitivity; the commands and
+  trace schemas retain their technical
+  names. Up/Down selects one of these or the separated green
+  `Done — apply and return` action; Enter opens a model chooser or numeric
+  slider, toggles a pending overlay, or applies the panel when that action is selected.
+  Left/Right makes fine slider changes, Page Up/Down makes coarse changes, `R`
+  restores the recommended value, Enter accepts that pending edit, and Escape backs out. The panel
+  stays open for several edits; `Done — apply and return` commits all pending
+  changes, while Escape from the panel discards all of them. Pipes and non-TTY callers retain the settings
+  summary and direct command behavior.
+  Successful direct `/settings ...` commands are written immediately; panel
+  changes are written only when Done is selected, becoming the defaults for the next
+  human interactive session. The settings panel's `Forget saved defaults` row,
+  or `/settings forget`, deletes that local file without changing the current
+  session. `/settings` reports whether remembered defaults are active and where
+  they are stored.
+  `/settings model` opens the configured tutor-model chooser in a TTY and lists
+  configured choices otherwise; `/settings models` shows the complete live
+  routing. `/settings models all codex.gpt-5.6-luna` applies a single-model
+  override, while `/settings models tutor|classifier|reasoning|learner <ref>`
+  splits a role back out. Model changes are rejected during an in-flight tutor turn and
+  invalidate mixed suggestion/analysis/tutor-prefetch state before regeneration.
+  After a live change, every subsequent tutor request continues replaying all
+  prior public `user` and `assistant` messages in original order; `/reset`
+  starts a new dialogue with the same full role-history policy.
+  `/settings stance-temp` opens its slider in a TTY, while `/settings
+  stance-temp 0.4` sharpens subsequent locally selected stance
+  distributions; `/settings stance-temp 1.4` broadens them. No other response
+  axis is temperature-scaled. `/settings dropout` likewise opens its slider;
+  `/settings release-speed` opens the clue-pacing slider, while `/settings
+  release-speed 1.5` brings the remaining authored clues forward. `/settings
+  light on|off|status` controls the remembered difficulty-triggered performance
+  shift. All direct
+  forms remain available for fast or scripted changes. Interactive
+  editing and direct changes are rejected while a tutor turn is in progress so
+  each turn has one deterministic setting.
+- The TTY presentation layer uses semantic colors for tutor, learner, coach,
+  success, warning, and failure states. `/theme` previews `nocturne`, `ember`,
+  `parchment`, `high_contrast`, and `mono`; `/theme <name>`, `--theme <name>`,
+  and `/settings theme <name>` switch it. `/motion` previews `auto`, `full`,
+  `subtle`, and `off`; the corresponding command-line and settings forms also
+  work. The keyboard settings panel includes live theme and motion previews;
+  Escape restores the active appearance and Done persists it. `NO_COLOR`,
+  `--no-color`, `TERM=dumb`, non-TTY output, CI, `REDUCE_MOTION`, and
+  `NO_MOTION` degrade cleanly. Presentation changes are traced and included in
+  transcript settings but never enter the public dialogue. See
+  `docs/tutor-stub-cli.md`.
+- When `/settings` or another detour command finishes, the CLI prints the latest
+  tutor utterance again as `tutor ↻ >` immediately before restoring the
+  learner/coach prompt. This applies to help, status, debug, analysis, field,
+  visualization, transcript, clarification, report, id, and profile views. The
+  reprise is terminal-only (`publicTranscriptChanged: false`), is suppressed
+  while a tutor response is still generating, and is not added after immediate
+  learner actions such as `/clue`, `/suggest`, `/use`, or `/regen`.
+- `/reset` is the recovery command. It works while a human or automated tutor
+  turn is still generating: abort the in-flight model work, discard queued
+  learner lines and every mixed-artifact cache, reset the transcript and
+  learner/register trajectory, then reopen the same scenario. Preserve the
+  learner profile and live settings. Record both the `history_clear` boundary
+  and `interactive_dialogue_reset` provenance. `/clear` is a backward-compatible
+  alias.
+- `/settings policy add state`, `/settings policy add field`, and `/settings
+  policy add edge_timing` add live overlays without replacing the primary
+  policy. Use `/settings policy remove <state|field|edge_timing>`, `/settings
+  policy clear`, or `/settings policy threshold <0..1>` to adjust them. Changes invalidate mixed learner analysis
+  and tutor-prefetch caches, apply from the next turn, survive `/reset`, and are
+  recorded in traces, `/analysis technical`, and transcript HTML.
+- `/settings dropout 0.15` gives each eligible accumulated public premise a
+  seeded 15% per-turn chance of leaving the active learner DAG; `/settings
+  dropout 0` disables new losses. Dropout is harness-owned, not a role-play
+  instruction, and a visible lapse independently selects the
+  `reanchor_public_evidence` action family.
+- Interim waiting lines rotate labeled plain-language views such as Tutor
+  focus, Evidence pacing, Learner reading, Reasoning state, Tutor style, and
+  Clue progress. `view n/N` is a carousel position, not a score; restrained
+  color distinguishes phase, view number, and panel category. Motion remains
+  confined to the single progress glyph: full is fluid, subtle is a slow pulse,
+  and off is still.
+- Type `/` during a run to open the live slash-command palette above the
+  editable prompt. Every visible match includes a concise registry-owned
+  summary of the command's behavior; broad lists are bounded to the terminal
+  height. Keep typing to filter it and press Tab to complete; the palette
+  remains usable while tutor or learner generation continues. Commands include
+  `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/light`, `/register`, `/character`, `/theme`, `/motion`, `/details`, `/field`, `/viz`,
+  `/transcript`, `/director [request|ask <question>]`, `/notes`, `/meta [request|ask <question>|status|clear]`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/tutor [part]`, `/learner [profile]`, `/profile`,
+  `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
+- `/translate` is available in every normal tutor-stub session. Without an
+  active curriculum, bare `/translate` rewrites the latest completed public
+  tutor reply in basic contemporary standard English, replacing unnecessary
+  world-specific jargon, apparatus labels, and dramatic phrasing with literal
+  wording. A named level selects `basic`, `intermediate`, `advanced`, or
+  `proficient`; `/translate all` renders all four. In an active curriculum,
+  bare `/translate` keeps the existing contract and renders the canonical
+  module at all four levels, while `/translate <level>` renders one. Both forms
+  are temporary wording views: the public transcript, accepted tutor output,
+  canonical curriculum, and proof/dialogue state remain unchanged.
+- Natural requests to simplify, rephrase, or explain the tutor's latest words
+  use the `instructional_meta` discourse plane. That plane selects
+  `repair_explanation`, freezes learner-DAG updates and clue release for the
+  turn, outranks clue pacing, and temporarily selects the plain, unadorned
+  fellow-investigator configuration. Its compact first-draft sequence is
+  `ACKNOWLEDGE > RESTATE > optional CONTINUITY`: it omits the local proof
+  question surface and ends declaratively before returning to object language.
+  Its deterministic fallback must never treat the wording request as evidence.
+- Consecutive public learner lines entered before the tutor reply appears form
+  one compound learner turn. Each added line aborts or invalidates the current
+  analysis/tutor attempt, every assessment is regenerated from the full input,
+  and only the latest transactional state commits. The JSONL trace preserves
+  each typed fragment plus its learner-response provenance and the
+  superseded-attempt lifecycle; the public history stores one user message and
+  one completed turn with `learnerMessages`.

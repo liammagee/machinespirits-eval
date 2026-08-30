@@ -117,7 +117,7 @@ describe('callStream()', () => {
           'data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n',
           'data: {"choices":[{"delta":{"content":" world"}}]}\n\n',
           'data: [DONE]\n\n',
-        ])
+        ]),
       );
 
       const chunks = await collectChunks(
@@ -126,7 +126,7 @@ describe('callStream()', () => {
           model: 'test-org/test-model',
           systemPrompt: 'Be helpful',
           messages: [{ role: 'user', content: 'Hi' }],
-        })
+        }),
       );
 
       const deltas = chunks.filter((c) => c.type === 'text_delta');
@@ -148,7 +148,7 @@ describe('callStream()', () => {
           'data: {"choices":[{"delta":{"content":"Hi"}}]}\n\n',
           'data: {"choices":[],"usage":{"prompt_tokens":15,"completion_tokens":3}}\n\n',
           'data: [DONE]\n\n',
-        ])
+        ]),
       );
 
       const chunks = await collectChunks(
@@ -157,7 +157,7 @@ describe('callStream()', () => {
           model: 'test-org/test-model',
           systemPrompt: 'sys',
           messages: [{ role: 'user', content: 'test' }],
-        })
+        }),
       );
 
       const done = chunks.find((c) => c.type === 'done');
@@ -172,7 +172,7 @@ describe('callStream()', () => {
           'data: {"choices":[{"delta":{}}]}\n\n',
           'data: {"choices":[{"delta":{"content":"ok"}}]}\n\n',
           'data: [DONE]\n\n',
-        ])
+        ]),
       );
 
       const chunks = await collectChunks(
@@ -181,7 +181,7 @@ describe('callStream()', () => {
           model: 'test-org/test-model',
           systemPrompt: '',
           messages: [{ role: 'user', content: 'test' }],
-        })
+        }),
       );
 
       const deltas = chunks.filter((c) => c.type === 'text_delta');
@@ -195,7 +195,7 @@ describe('callStream()', () => {
           'data: not-json\n\n',
           'data: {"choices":[{"delta":{"content":"valid"}}]}\n\n',
           'data: [DONE]\n\n',
-        ])
+        ]),
       );
 
       const chunks = await collectChunks(
@@ -204,7 +204,7 @@ describe('callStream()', () => {
           model: 'test-org/test-model',
           systemPrompt: '',
           messages: [{ role: 'user', content: 'x' }],
-        })
+        }),
       );
 
       const deltas = chunks.filter((c) => c.type === 'text_delta');
@@ -214,10 +214,7 @@ describe('callStream()', () => {
 
     it('handles chunks split across byte boundaries', async () => {
       globalThis.fetch.mockResolvedValueOnce(
-        mockSSEResponse([
-          'data: {"choices":[{"del',
-          'ta":{"content":"split"}}]}\n\ndata: [DONE]\n\n',
-        ])
+        mockSSEResponse(['data: {"choices":[{"del', 'ta":{"content":"split"}}]}\n\ndata: [DONE]\n\n']),
       );
 
       const chunks = await collectChunks(
@@ -226,7 +223,7 @@ describe('callStream()', () => {
           model: 'test-org/test-model',
           systemPrompt: '',
           messages: [{ role: 'user', content: 'x' }],
-        })
+        }),
       );
 
       const done = chunks.find((c) => c.type === 'done');
@@ -247,7 +244,7 @@ describe('callStream()', () => {
           'event: content_block_delta\ndata: {"type":"content_block_delta","delta":{"text":" there"}}\n\n',
           'event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":8}}\n\n',
           'event: message_stop\ndata: {"type":"message_stop"}\n\n',
-        ])
+        ]),
       );
 
       const chunks = await collectChunks(
@@ -256,7 +253,7 @@ describe('callStream()', () => {
           model: 'claude-test',
           systemPrompt: 'sys',
           messages: [{ role: 'user', content: 'Hi' }],
-        })
+        }),
       );
 
       const deltas = chunks.filter((c) => c.type === 'text_delta');
@@ -275,7 +272,7 @@ describe('callStream()', () => {
           'event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":30}}}\n\n',
           'event: content_block_delta\ndata: {"type":"content_block_delta","delta":{"text":"ok"}}\n\n',
           'event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":12}}\n\n',
-        ])
+        ]),
       );
 
       const chunks = await collectChunks(
@@ -284,7 +281,7 @@ describe('callStream()', () => {
           model: 'claude-test',
           systemPrompt: '',
           messages: [{ role: 'user', content: 'test' }],
-        })
+        }),
       );
 
       const done = chunks.find((c) => c.type === 'done');
@@ -298,7 +295,7 @@ describe('callStream()', () => {
         mockSSEResponse([
           'event: ping\ndata: {"type":"ping"}\n\n',
           'event: content_block_delta\ndata: {"type":"content_block_delta","delta":{"text":"real"}}\n\n',
-        ])
+        ]),
       );
 
       const chunks = await collectChunks(
@@ -307,7 +304,7 @@ describe('callStream()', () => {
           model: 'claude-test',
           systemPrompt: '',
           messages: [{ role: 'user', content: 'test' }],
-        })
+        }),
       );
 
       const done = chunks.find((c) => c.type === 'done');
@@ -325,7 +322,7 @@ describe('callStream()', () => {
         mockSSEResponse([
           'data: {"candidates":[{"content":{"parts":[{"text":"Gem"}]}}]}\n\n',
           'data: {"candidates":[{"content":{"parts":[{"text":"ini"}]}}]}\n\n',
-        ])
+        ]),
       );
 
       const chunks = await collectChunks(
@@ -334,7 +331,7 @@ describe('callStream()', () => {
           model: 'gemini-test',
           systemPrompt: 'sys',
           messages: [{ role: 'user', content: 'Hi' }],
-        })
+        }),
       );
 
       const deltas = chunks.filter((c) => c.type === 'text_delta');
@@ -351,7 +348,7 @@ describe('callStream()', () => {
       globalThis.fetch.mockResolvedValueOnce(
         mockSSEResponse([
           'data: {"candidates":[{"content":{"parts":[{"text":"hi"}]}}],"usageMetadata":{"promptTokenCount":20,"candidatesTokenCount":5}}\n\n',
-        ])
+        ]),
       );
 
       const chunks = await collectChunks(
@@ -360,7 +357,7 @@ describe('callStream()', () => {
           model: 'gemini-test',
           systemPrompt: '',
           messages: [{ role: 'user', content: 'test' }],
-        })
+        }),
       );
 
       const done = chunks.find((c) => c.type === 'done');
@@ -423,10 +420,7 @@ describe('callStream()', () => {
   describe('local provider via callStream', () => {
     it('streams from local endpoint with OpenAI-compatible format', async () => {
       globalThis.fetch.mockResolvedValueOnce(
-        mockSSEResponse([
-          'data: {"choices":[{"delta":{"content":"local"}}]}\n\n',
-          'data: [DONE]\n\n',
-        ])
+        mockSSEResponse(['data: {"choices":[{"delta":{"content":"local"}}]}\n\n', 'data: [DONE]\n\n']),
       );
 
       const chunks = await collectChunks(
@@ -435,13 +429,13 @@ describe('callStream()', () => {
           model: 'my-model',
           systemPrompt: 'sys',
           messages: [{ role: 'user', content: 'Hi' }],
-        })
+        }),
       );
 
       // Verify it called the local endpoint
       expect(globalThis.fetch).toHaveBeenCalledWith(
         'http://localhost:1234/v1/chat/completions',
-        expect.objectContaining({ method: 'POST' })
+        expect.objectContaining({ method: 'POST' }),
       );
 
       const done = chunks.find((c) => c.type === 'done');
@@ -453,10 +447,7 @@ describe('callStream()', () => {
       process.env.LOCAL_AI_URL = 'http://myserver:8000';
 
       globalThis.fetch.mockResolvedValueOnce(
-        mockSSEResponse([
-          'data: {"choices":[{"delta":{"content":"ok"}}]}\n\n',
-          'data: [DONE]\n\n',
-        ])
+        mockSSEResponse(['data: {"choices":[{"delta":{"content":"ok"}}]}\n\n', 'data: [DONE]\n\n']),
       );
 
       await collectChunks(
@@ -464,23 +455,17 @@ describe('callStream()', () => {
           provider: 'local',
           systemPrompt: '',
           messages: [{ role: 'user', content: 'test' }],
-        })
+        }),
       );
 
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        'http://myserver:8000/v1/chat/completions',
-        expect.anything()
-      );
+      expect(globalThis.fetch).toHaveBeenCalledWith('http://myserver:8000/v1/chat/completions', expect.anything());
     });
 
     it('normalizes URL that already includes /v1/chat/completions', async () => {
       process.env.LOCAL_AI_URL = 'http://myserver:8000/v1/chat/completions';
 
       globalThis.fetch.mockResolvedValueOnce(
-        mockSSEResponse([
-          'data: {"choices":[{"delta":{"content":"ok"}}]}\n\n',
-          'data: [DONE]\n\n',
-        ])
+        mockSSEResponse(['data: {"choices":[{"delta":{"content":"ok"}}]}\n\n', 'data: [DONE]\n\n']),
       );
 
       await collectChunks(
@@ -488,14 +473,11 @@ describe('callStream()', () => {
           provider: 'local',
           systemPrompt: '',
           messages: [{ role: 'user', content: 'test' }],
-        })
+        }),
       );
 
       // Should NOT double-append the path
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        'http://myserver:8000/v1/chat/completions',
-        expect.anything()
-      );
+      expect(globalThis.fetch).toHaveBeenCalledWith('http://myserver:8000/v1/chat/completions', expect.anything());
     });
   });
 
@@ -506,7 +488,7 @@ describe('callStream()', () => {
   describe('preset config merging', () => {
     it('uses preset defaults when no config overrides given', async () => {
       globalThis.fetch.mockResolvedValueOnce(
-        mockSSEResponse(['data: {"choices":[{"delta":{"content":"x"}}]}\n\n', 'data: [DONE]\n\n'])
+        mockSSEResponse(['data: {"choices":[{"delta":{"content":"x"}}]}\n\n', 'data: [DONE]\n\n']),
       );
 
       await collectChunks(
@@ -516,7 +498,7 @@ describe('callStream()', () => {
           systemPrompt: '',
           messages: [{ role: 'user', content: 'test' }],
           preset: 'socratic',
-        })
+        }),
       );
 
       const callBody = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
@@ -526,7 +508,7 @@ describe('callStream()', () => {
 
     it('allows config overrides to take precedence', async () => {
       globalThis.fetch.mockResolvedValueOnce(
-        mockSSEResponse(['data: {"choices":[{"delta":{"content":"x"}}]}\n\n', 'data: [DONE]\n\n'])
+        mockSSEResponse(['data: {"choices":[{"delta":{"content":"x"}}]}\n\n', 'data: [DONE]\n\n']),
       );
 
       await collectChunks(
@@ -537,7 +519,7 @@ describe('callStream()', () => {
           messages: [{ role: 'user', content: 'test' }],
           preset: 'socratic',
           config: { temperature: 0.1, maxTokens: 50 },
-        })
+        }),
       );
 
       const callBody = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
@@ -569,7 +551,7 @@ describe('call() with local provider (non-streaming)', () => {
       mockJSONResponse({
         choices: [{ message: { content: 'Hello from local' } }],
         usage: { prompt_tokens: 10, completion_tokens: 5 },
-      })
+      }),
     );
 
     const result = await call({
@@ -588,7 +570,7 @@ describe('call() with local provider (non-streaming)', () => {
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
       'http://localhost:1234/v1/chat/completions',
-      expect.objectContaining({ method: 'POST' })
+      expect.objectContaining({ method: 'POST' }),
     );
 
     const body = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
@@ -604,7 +586,7 @@ describe('call() with local provider (non-streaming)', () => {
       mockJSONResponse({
         choices: [{ message: { content: 'ok' } }],
         usage: { prompt_tokens: 1, completion_tokens: 1 },
-      })
+      }),
     );
 
     await call({
@@ -613,10 +595,7 @@ describe('call() with local provider (non-streaming)', () => {
       messages: [{ role: 'user', content: 'test' }],
     });
 
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      'http://custom:9999/v1/chat/completions',
-      expect.anything()
-    );
+    expect(globalThis.fetch).toHaveBeenCalledWith('http://custom:9999/v1/chat/completions', expect.anything());
   });
 
   it('uses "local-model" as default when no model specified', async () => {
@@ -624,7 +603,7 @@ describe('call() with local provider (non-streaming)', () => {
       mockJSONResponse({
         choices: [{ message: { content: 'ok' } }],
         usage: {},
-      })
+      }),
     );
 
     const result = await call({
@@ -637,31 +616,78 @@ describe('call() with local provider (non-streaming)', () => {
   });
 
   it('throws on non-ok response with error message', async () => {
-    globalThis.fetch.mockResolvedValueOnce(
-      mockJSONResponse({ error: { message: 'Server error' } }, 500)
-    );
+    globalThis.fetch.mockResolvedValueOnce(mockJSONResponse({ error: { message: 'Server error' } }, 500));
 
     await expect(
       call({
         provider: 'local',
         systemPrompt: '',
         messages: [{ role: 'user', content: 'test' }],
-      })
+      }),
     ).rejects.toThrow('Local AI error: 500 - Server error');
   });
 
   it('throws specific error for "no models loaded"', async () => {
-    globalThis.fetch.mockResolvedValueOnce(
-      mockJSONResponse({ error: { message: 'No models loaded' } }, 400)
-    );
+    globalThis.fetch.mockResolvedValueOnce(mockJSONResponse({ error: { message: 'No models loaded' } }, 400));
 
     await expect(
       call({
         provider: 'local',
         systemPrompt: '',
         messages: [{ role: 'user', content: 'test' }],
-      })
+      }),
     ).rejects.toThrow(/no models loaded/i);
+  });
+});
+
+describe('call() with OpenRouter cost provenance', () => {
+  let originalFetch;
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('preserves an absent provider cost as null', async () => {
+    globalThis.fetch.mockResolvedValueOnce(
+      mockJSONResponse({
+        id: 'offline-no-cost',
+        choices: [{ message: { content: 'No cost field.' }, finish_reason: 'stop' }],
+        usage: { prompt_tokens: 10, completion_tokens: 4 },
+      }),
+    );
+
+    const result = await call({
+      provider: 'openrouter',
+      model: 'test-org/test-model',
+      systemPrompt: 'Offline test',
+      messages: [{ role: 'user', content: 'Hi' }],
+    });
+
+    expect(result.usage.cost).toBeNull();
+  });
+
+  it('preserves a provider-reported numeric zero', async () => {
+    globalThis.fetch.mockResolvedValueOnce(
+      mockJSONResponse({
+        id: 'offline-zero-cost',
+        choices: [{ message: { content: 'Zero is explicit.' }, finish_reason: 'stop' }],
+        usage: { prompt_tokens: 10, completion_tokens: 4, cost: 0 },
+      }),
+    );
+
+    const result = await call({
+      provider: 'openrouter',
+      model: 'test-org/test-model',
+      systemPrompt: 'Offline test',
+      messages: [{ role: 'user', content: 'Hi' }],
+    });
+
+    expect(result.usage.cost).toBe(0);
   });
 });
 

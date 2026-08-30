@@ -52,6 +52,15 @@ tested once in CI:
 - an append-only run ledger (commit, seed, calls, failures);
 - the sealed archive to the private repo when the run ends.
 
+New launchers use `services/paidStudyLaunchContract.js` to check the three
+standing authorities and open the create-once destination, append-only run
+ledger, and fail-before-call attempt budget before initializing a provider or
+child process. `config/paid-study-launcher-inventory.json` records adoption and
+the narrow historical/live-run exemptions; the inventory checker fails when a
+new paid launcher is not classified. The helper records ordinary git
+provenance. It does not hash source files, create an authorization schema, or
+turn the GO note into a second registration.
+
 ## What is retired for new studies
 
 Request JSONs with executable-closure digest lists; endpoint preflight

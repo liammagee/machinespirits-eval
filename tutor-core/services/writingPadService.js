@@ -67,7 +67,7 @@ export function initializeWritingPad(learnerId) {
     learnerId,
     JSON.stringify(initialConscious),
     JSON.stringify(initialPreconscious),
-    JSON.stringify(initialUnconscious)
+    JSON.stringify(initialUnconscious),
   );
 
   if (!isQuietOrTranscript()) console.log(`[WritingPad] Created pad ${id} for learner ${learnerId}`);
@@ -194,13 +194,13 @@ export function promoteToPreconscious(learnerId, pattern) {
 
   // Check if similar pattern already exists
   const existingPattern = pad.preconscious.recentPatterns.find(
-    p => p.type === pattern.type && p.signature === pattern.signature
+    (p) => p.type === pattern.type && p.signature === pattern.signature,
   );
 
   let newPatterns;
   if (existingPattern) {
     // Reinforce existing pattern
-    newPatterns = pad.preconscious.recentPatterns.map(p => {
+    newPatterns = pad.preconscious.recentPatterns.map((p) => {
       if (p === existingPattern) {
         return {
           ...p,
@@ -267,10 +267,7 @@ export function settleToUnconscious(learnerId, recognitionMoment) {
 
   const newUnconscious = {
     ...pad.unconscious,
-    permanentTraces: [
-      ...pad.unconscious.permanentTraces,
-      trace,
-    ],
+    permanentTraces: [...pad.unconscious.permanentTraces, trace],
   };
 
   const stmt = getDb().prepare(`
@@ -284,13 +281,18 @@ export function settleToUnconscious(learnerId, recognitionMoment) {
   stmt.run(JSON.stringify(newUnconscious), learnerId);
 
   // Mark recognition moment as consolidated to unconscious
-  getDb().prepare(`
+  getDb()
+    .prepare(
+      `
     UPDATE recognition_moments
     SET persistence_layer = 'unconscious', consolidated_at = CURRENT_TIMESTAMP
     WHERE id = ?
-  `).run(recognitionMoment.id);
+  `,
+    )
+    .run(recognitionMoment.id);
 
-  if (!isQuietOrTranscript()) console.log(`[WritingPad] Settled recognition moment ${recognitionMoment.id} to unconscious`);
+  if (!isQuietOrTranscript())
+    console.log(`[WritingPad] Settled recognition moment ${recognitionMoment.id} to unconscious`);
   return getWritingPad(learnerId);
 }
 
@@ -307,7 +309,7 @@ export function queryUnconscious(learnerId, contextQuery = {}) {
   const { recognitionType, maxAge, minStruggleDepth = 0, limit = 10 } = contextQuery;
 
   return pad.unconscious.permanentTraces
-    .filter(trace => {
+    .filter((trace) => {
       if (recognitionType && trace.recognitionType !== recognitionType) {
         return false;
       }
@@ -336,7 +338,7 @@ export function forgetStalePatterns(learnerId) {
   const fadeThreshold = pad.preconscious.fadeThreshold || 20;
   const now = Date.now();
 
-  const activePatterns = pad.preconscious.recentPatterns.filter(pattern => {
+  const activePatterns = pad.preconscious.recentPatterns.filter((pattern) => {
     const ageMs = now - new Date(pattern.firstObserved).getTime();
     const ageDays = ageMs / (1000 * 60 * 60 * 24);
 
@@ -360,7 +362,8 @@ export function forgetStalePatterns(learnerId) {
 
     stmt.run(JSON.stringify(newPreconscious), learnerId);
 
-    if (!isQuietOrTranscript()) console.log(`[WritingPad] Forgot ${forgottenCount} stale pattern(s) for learner ${learnerId}`);
+    if (!isQuietOrTranscript())
+      console.log(`[WritingPad] Forgot ${forgottenCount} stale pattern(s) for learner ${learnerId}`);
   }
 
   return getWritingPad(learnerId);
@@ -376,14 +379,7 @@ export function forgetStalePatterns(learnerId) {
  * @returns {object} - Created recognition moment
  */
 export function createRecognitionMoment(moment) {
-  const {
-    writingPadId,
-    sessionId = null,
-    ghostDemand,
-    learnerNeed,
-    synthesis,
-    parameters,
-  } = moment;
+  const { writingPadId, sessionId = null, ghostDemand, learnerNeed, synthesis, parameters } = moment;
 
   const id = `recog-${Date.now()}-${randomBytes(4).toString('hex')}`;
 
@@ -402,19 +398,19 @@ export function createRecognitionMoment(moment) {
     id,
     writingPadId,
     sessionId,
-    'superego',                                    // thesis_agent (ghost)
-    ghostDemand.voice || '',                       // thesis_position
-    `Principle: ${ghostDemand.principle}`,         // thesis_reasoning
-    'learner',                                      // antithesis_agent
-    learnerNeed.need || '',                         // antithesis_position
+    'superego', // thesis_agent (ghost)
+    ghostDemand.voice || '', // thesis_position
+    `Principle: ${ghostDemand.principle}`, // thesis_reasoning
+    'learner', // antithesis_agent
+    learnerNeed.need || '', // antithesis_position
     `Intensity: ${(learnerNeed.intensity ?? 0).toFixed(2)}`, // antithesis_reasoning
-    synthesis.synthesis || '',                      // synthesis_resolution
-    JSON.stringify(ghostDemand),                    // ghost_demand
-    JSON.stringify(learnerNeed),                    // learner_need
-    synthesis.synthesis,                            // synthesis_strategy
-    synthesis.transformative ? 1 : 0,              // transformative
-    JSON.stringify(parameters),                     // parameters
-    'conscious'                                     // persistence_layer (starts here)
+    synthesis.synthesis || '', // synthesis_resolution
+    JSON.stringify(ghostDemand), // ghost_demand
+    JSON.stringify(learnerNeed), // learner_need
+    synthesis.synthesis, // synthesis_strategy
+    synthesis.transformative ? 1 : 0, // transformative
+    JSON.stringify(parameters), // parameters
+    'conscious', // persistence_layer (starts here)
   );
 
   if (!isQuietOrTranscript()) console.log(`[WritingPad] Created recognition moment ${id}`);
@@ -476,7 +472,7 @@ export function getRecognitionMoments(writingPadId, options = {}) {
   const stmt = getDb().prepare(query);
   const rows = stmt.all(...params);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     id: row.id,
     writing_pad_id: row.writing_pad_id,
     session_id: row.session_id,
@@ -503,18 +499,20 @@ export function getRecognitionStats(writingPadId) {
 
   const stats = {
     totalMoments: moments.length,
-    transformativeMoments: moments.filter(m => m.transformative).length,
+    transformativeMoments: moments.filter((m) => m.transformative).length,
     synthesisStrategies: {
-      ghost_dominates: moments.filter(m => m.synthesis_strategy === 'ghost_dominates').length,
-      learner_dominates: moments.filter(m => m.synthesis_strategy === 'learner_dominates').length,
-      dialectical_synthesis: moments.filter(m => m.synthesis_strategy === 'dialectical_synthesis').length,
+      ghost_dominates: moments.filter((m) => m.synthesis_strategy === 'ghost_dominates').length,
+      learner_dominates: moments.filter((m) => m.synthesis_strategy === 'learner_dominates').length,
+      dialectical_synthesis: moments.filter((m) => m.synthesis_strategy === 'dialectical_synthesis').length,
     },
-    averageCompliance: moments.length > 0
-      ? moments.reduce((sum, m) => sum + (m.parameters.superegoCompliance || 0), 0) / moments.length
-      : 0,
-    averageRecognitionSeeking: moments.length > 0
-      ? moments.reduce((sum, m) => sum + (m.parameters.recognitionSeeking || 0), 0) / moments.length
-      : 0,
+    averageCompliance:
+      moments.length > 0
+        ? moments.reduce((sum, m) => sum + (m.parameters.superegoCompliance || 0), 0) / moments.length
+        : 0,
+    averageRecognitionSeeking:
+      moments.length > 0
+        ? moments.reduce((sum, m) => sum + (m.parameters.recognitionSeeking || 0), 0) / moments.length
+        : 0,
   };
 
   return stats;

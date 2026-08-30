@@ -16,6 +16,24 @@ meta:
   profiles:
     base: { tutor: baseline, learner: ego_superego_authentic }
     recognition: { tutor: recognition, learner: ego_superego_recognition_authentic }
+  anchor_screen:
+    version: outcome-blind-existing-evidence-v1
+    evidence_source: notes/poetics/2026-05-26-stratified-adaptation-pilot.md
+    required_repeats: 2
+    minimum_valid_critics_per_control: 4
+    control_arms: [routine, none]
+    maximum_recognition_votes_per_control: 1
+    blocking_quality_warnings_allowed: 0
+    treatment_outcomes_used_for_selection: false
+    historical_rescoring_allowed: false
+    result: no_candidate_qualified
+    note: >-
+      The existing preview supplies only one tightened repeat with one isolated
+      Codex critic. D54 and D56 also have blocking control leakage; D55 is
+      quality-clean but carries one-critic organic-risk evidence, and D57 remains
+      pending because one cheap negative-side screen cannot satisfy the frozen
+      two-repeat, four-critic rule. No candidate is promoted toward a desired
+      peripeteia outcome.
 
 dramas:
   - id: D54
@@ -58,6 +76,9 @@ dramas:
     intended_tutor_character: "Threaded, procedural, aware of hidden curriculum without revealing it too early"
     intended_lean: recognition
     dramatic_shape: "citation boxes -> field placement -> possible later pressure over why format is not credibility"
+    anchor_screen:
+      disposition: ineligible_existing_control_leakage
+      evidence: "Tightened preview v2: routine and none both carried blocking no-cue reframe leakage."
 
   - id: D55
     discipline: programming
@@ -97,6 +118,12 @@ dramas:
     intended_tutor_character: "Practical, local, using code labels before any execution-based reversal"
     intended_lean: recognition
     dramatic_shape: "code labels -> placeholder/value sort -> possible later pressure over why definition is not call"
+    anchor_screen:
+      disposition: pending_insufficient_evidence_with_control_risk
+      evidence: >-
+        Tightened preview v2 was quality-clean, but its sole critic read routine
+        as organic recognition; one repeat and one critic neither qualifies the
+        candidate nor establishes a full-panel leak.
 
   - id: D56
     discipline: drama
@@ -136,6 +163,9 @@ dramas:
     intended_tutor_character: "Theatre-literate, plain-spoken, using script marks before any Brechtian interruption"
     intended_lean: recognition
     dramatic_shape: "script markup -> spoken/action labels -> possible later pressure over why performance is not narration"
+    anchor_screen:
+      disposition: ineligible_existing_control_leakage
+      evidence: "Tightened preview v2: none carried blocking no-cue reframe leakage."
 
   - id: D57
     discipline: arithmetic
@@ -176,3 +206,8 @@ dramas:
     intended_tutor_character: "Material-led, patient, keeping the card as a naming surface before any magnitude pressure"
     intended_lean: recognition
     dramatic_shape: "fraction-card labels -> position names -> possible later pressure over why position is not importance"
+    anchor_screen:
+      disposition: pending_insufficient_evidence
+      evidence: >-
+        Tightened preview v2 kept routine and none quality-clean and negative,
+        but supplied only one repeat with one critic; no promotion is licensed.

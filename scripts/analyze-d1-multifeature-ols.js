@@ -42,11 +42,12 @@ import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { extractFeatures as extractV1Features } from './analyze-d1-structural-features.js';
 import { extractFeatures as extractV2Features } from './analyze-d1-structural-features-v2.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+const ROOT_DIR = path.resolve(__dirname, '..');
 const CACHE_PATH = path.resolve(__dirname, '..', 'exports', 'd1-embeddings-cache.json');
 
 const CANONICAL_INTERSUBJECTIVE = `That's an interesting place to start. Before I share what I'm thinking, can you tell me what your intuition says here? Try to articulate what you'd expect, even if you're not entirely sure. I'm curious what brought you to frame the question this way — sometimes the framing itself reveals what we need to examine. Let's slow down and think through it together. Notice what feels uncertain to you, and we can work outward from there. Consider what your prior reasoning suggests as a first move. What does your sense of the problem tell you to try? We can build on whatever you offer, even partial intuitions.`;
@@ -470,15 +471,17 @@ async function main() {
     runId: 'eval-2026-04-24-e9a785c0',
     judge: 'claude-code/sonnet',
     output: null,
+    db: null,
   };
   const argv = process.argv.slice(2);
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--run-id') args.runId = argv[++i];
     else if (argv[i] === '--judge') args.judge = argv[++i];
     else if (argv[i] === '--output') args.output = argv[++i];
+    else if (argv[i] === '--db') args.db = argv[++i];
   }
 
-  const db = new Database(DB_PATH, { readonly: true });
+  const db = new Database(resolveEvaluationDbPath(ROOT_DIR, args.db), { readonly: true, fileMustExist: true });
   const cache = loadCache(CACHE_PATH);
   const intersubHash = hashText(CANONICAL_INTERSUBJECTIVE);
   const transmissionHash = hashText(CANONICAL_TRANSMISSION);

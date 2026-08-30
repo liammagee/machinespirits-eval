@@ -1,6 +1,6 @@
 ---
 name: ms-build-paper
-description: Build the research paper PDF and check for issues
+description: Build and inspect only the canonical Paper 2.0 PDF. Use for paper-only builds; use ms-build-research-artifacts when the user also wants the atlas or dramatic-recognition arc.
 ---
 
 Build the research paper PDF and validate.
@@ -21,12 +21,14 @@ Build the research paper PDF and validate.
 
 3. Grep for stale cross-references — section numbers may have shifted:
    ```bash
-   grep -n 'Section [0-9]' docs/research/paper-full-2.0.md | head -20
+   rg -n 'Section [0-9]|§[0-9]' docs/research/paper-full-2.0.md | head -20
    ```
 
 4. Report:
    - Build success/failure
-   - Output filename and version (from YAML frontmatter)
+   - Output filename and version resolved from YAML frontmatter; if the matching
+     PDF is absent, report a failed/missing artifact rather than selecting the
+     newest unrelated PDF
    - Any citation warnings
    - Any obvious stale section references
 

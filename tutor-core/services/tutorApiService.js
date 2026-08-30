@@ -108,7 +108,7 @@ export async function generateSuggestions(context, config = {}) {
 
   // Determine effective profile - either explicit or from provider/model
   // If provider/model are specified without profileName, we use them to find a matching profile
-  let effectiveProfileName = profileName;
+  const effectiveProfileName = profileName;
 
   // If explicit provider/model but no profile, try to find matching profile
   // or use them directly via the dialogue engine (which falls back to active profile)
@@ -153,7 +153,7 @@ export async function generateSuggestions(context, config = {}) {
         internalHistory, // Optional internal ego/superego message transcript
         // Enable trace for transcript/expand mode to ensure complete logging
         trace: trace || dialogueEngine.isTranscriptMode() || dialogueEngine.isExpandMode(),
-      }
+      },
     );
 
     const endTime = Date.now();
@@ -228,7 +228,7 @@ function getEffectiveProvider(profileName) {
  * Get effective model from profile
  */
 function getEffectiveModel(profileName) {
-  const profile = configLoader.getActiveProfile(profileName);
+  configLoader.getActiveProfile(profileName);
   const agentConfig = configLoader.getAgentConfig('ego', profileName);
   return agentConfig?.model || 'claude-haiku-4-5';
 }

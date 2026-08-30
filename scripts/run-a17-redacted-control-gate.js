@@ -21,7 +21,7 @@ const ROOT = path.resolve(path.dirname(__filename), '..');
 const DEFAULTS = {
   root: path.join(ROOT, 'exports', 'a17-one-side-replay-replication', 'd5-redacted-control-run4'),
   spec: path.join(ROOT, 'config', 'poetics-calibration', 'oedipus-pilot-v2.yaml'),
-  envFile: '/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env',
+  envFile: path.join(ROOT, '.env'),
   scenario: 'D_OED5',
   variationKey: 'a17-d5-redacted-control-run4',
   generator: 'api',

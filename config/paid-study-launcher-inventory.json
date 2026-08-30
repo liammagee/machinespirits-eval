@@ -1,0 +1,66 @@
+{
+  "policyEffectiveAfter": "2026-08-22",
+  "discoveryMarkers": ["--accept-charges", "typed_approval_recorded_attended_launch"],
+  "launchers": [
+    {
+      "path": "scripts/run-adaptive-warrant-outcome-main-block.js",
+      "registered": "2026-08-17",
+      "disposition": "pre_policy_exemption",
+      "reason": "Predates the standing 2026-08-22 policy."
+    },
+    {
+      "path": "scripts/run-adaptive-warrant-outcome-pilot.js",
+      "registered": "2026-08-17",
+      "disposition": "pre_policy_exemption",
+      "reason": "Predates the standing 2026-08-22 policy."
+    },
+    {
+      "path": "scripts/run-adaptive-warrant-steering-decomposition.js",
+      "registered": "2026-08-17",
+      "disposition": "pre_policy_exemption",
+      "reason": "Predates the standing 2026-08-22 policy."
+    },
+    {
+      "path": "scripts/run-tutor-stub-frame-refuser-depth-calibration.js",
+      "registered": "2026-08-27",
+      "disposition": "historical_live_exemption",
+      "reason": "Used by the completed revision-4 Gate 1 calibration; preserve its attended-launch and resume semantics."
+    },
+    {
+      "path": "scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js",
+      "registered": "2026-08-29",
+      "disposition": "shared_contract",
+      "reason": "First post-policy tutor-stub calibration launcher; adopts services/paidStudyLaunchContract.js for admission, create-once state, reservations, and the append-only ledger."
+    },
+    {
+      "path": "scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js",
+      "registered": "2026-08-22",
+      "disposition": "historical_live_exemption",
+      "reason": "Produced the sealed manipulation-validation V1 result on 2026-08-22."
+    },
+    {
+      "path": "scripts/run-tutor-stub-resistance-warm-nonwarm-confirmation.js",
+      "registered": "2026-08-23",
+      "disposition": "historical_live_exemption",
+      "reason": "Produced the sealed warm/nonwarm confirmation V1 result on 2026-08-23."
+    },
+    {
+      "path": "scripts/run-tutor-stub-resistant-learner-calibration-v2.js",
+      "registered": "2026-08-24",
+      "disposition": "historical_live_exemption",
+      "reason": "Served the sealed rival-DAG Gate 1b/1c calibration sequence."
+    },
+    {
+      "path": "scripts/run-tutor-stub-resistant-learner-calibration.js",
+      "registered": "2026-08-23",
+      "disposition": "historical_live_exemption",
+      "reason": "Produced the sealed resistant-learner Gate 1 calibration attempts on 2026-08-23."
+    },
+    {
+      "path": "scripts/run-tutor-stub-resistant-learner-merged-calibration.js",
+      "registered": "2026-08-24",
+      "disposition": "historical_live_exemption",
+      "reason": "Served sealed merged calibrations and the revision-5 powered run recovery path."
+    }
+  ]
+}

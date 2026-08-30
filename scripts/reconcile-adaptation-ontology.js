@@ -91,12 +91,35 @@ function structuralOrigin(id) {
   return t.includes('ReorientationStage') ? 'none' : 'no_reorientation';
 }
 
-// Axes the bridge can derive: control_leak + action_gap from the gate booleans;
-// mechanism_not_publicly_resolved once the deliberation (trigger-consumption) is joined.
-const DERIVABLE = ['control_leak', 'action_gap', 'mechanism_not_publicly_resolved'];
+// Signals the bridge can derive. Failure-axis reproduction remains a like-for-like
+// gate comparison; correction signals are RDF types and therefore get a separate
+// structural readout rather than being smuggled into hasFailureAxis.
+const DERIVABLE_FAILURE_AXES = ['control_leak', 'action_gap', 'mechanism_not_publicly_resolved'];
+const DERIVABLE_CORRECTION_SIGNALS = [
+  'repair_stage_fired',
+  'scaffolded_repair',
+  'self_repair',
+  'repair_without_recognition_credit',
+];
+const DERIVABLE = [...DERIVABLE_FAILURE_AXES, ...DERIVABLE_CORRECTION_SIGNALS];
+
+function correctionSignals(liftedCell) {
+  const repairTypes = typeOf(`Repair_${liftedCell.id}`);
+  const eventTypes = typeOf(liftedCell.event);
+  const signals = [];
+  if (repairTypes.includes('HamartiaRepairStage')) signals.push('repair_stage_fired');
+  if (repairTypes.includes('ScaffoldedRepair')) signals.push('scaffolded_repair');
+  if (repairTypes.includes('SelfRepair')) signals.push('self_repair');
+  if (eventTypes.includes('repairWithoutRecognitionCredit')) {
+    signals.push('repair_without_recognition_credit');
+  }
+  return signals;
+}
+
 let originAgree = 0;
 let originTotal = 0;
 let axisAgree = 0;
+const correctionCounts = Object.fromEntries(DERIVABLE_CORRECTION_SIGNALS.map((signal) => [signal, 0]));
 
 const pad = (s, n) => String(s).padEnd(n);
 console.log(
@@ -111,17 +134,21 @@ console.log(
     pad('gate axes', 14) +
     '| ' +
     pad('onto axes', 14) +
+    '| ' +
+    pad('correction signals', 54) +
     '| ax?',
 );
-console.log('-'.repeat(96));
+console.log('-'.repeat(152));
 for (let i = 0; i < cells.length; i++) {
   const l = lifted[i];
   const so = structuralOrigin(l.id);
   const vo = l.votedOrigin;
   const ontoAxes = axesOf(l.event)
-    .filter((a) => DERIVABLE.includes(a))
+    .filter((a) => DERIVABLE_FAILURE_AXES.includes(a))
     .sort();
-  const gateAxes = l.gateFailures.filter((a) => DERIVABLE.includes(a)).sort();
+  const gateAxes = l.gateFailures.filter((a) => DERIVABLE_FAILURE_AXES.includes(a)).sort();
+  const repairSignals = correctionSignals(l);
+  for (const signal of repairSignals) correctionCounts[signal] += 1;
   const axisMatch = JSON.stringify(ontoAxes) === JSON.stringify(gateAxes);
   if (axisMatch) axisAgree++;
   let oMatch = '-';
@@ -144,6 +171,8 @@ for (let i = 0; i < cells.length; i++) {
       '| ' +
       pad(ontoAxes.join(',') || '-', 14) +
       '| ' +
+      pad(repairSignals.join(',') || '-', 54) +
+      '| ' +
       (axisMatch ? 'YES' : 'NO'),
   );
 }
@@ -154,16 +183,32 @@ console.log(
   `Derivable-axis reproduction (control_leak, action_gap, mechanism_not_publicly_resolved): ${axisAgree}/${cells.length} cells match the gate`,
 );
 console.log(`Structural vs critic-voted origin (peripeteia arms w/ recognition): ${originAgree}/${originTotal} agree`);
+console.log(`Derivable signal set: ${DERIVABLE.join(', ')}`);
+console.log(
+  `Correction signals (descriptive population; no required real-cell hit): ${DERIVABLE_CORRECTION_SIGNALS.map(
+    (signal) => `${signal}=${correctionCounts[signal]}`,
+  ).join(', ')}`,
+);
+const repairDispositions = Object.fromEntries(
+  ['repaired', 'not_repaired', 'indeterminate', 'not_emitted'].map((disposition) => [
+    disposition,
+    cells.filter((cell) =>
+      disposition === 'not_emitted' ? !cell.hamartiaRepair : cell.hamartiaRepair?.disposition === disposition,
+    ).length,
+  ]),
+);
+console.log(
+  `Public-text repair dispositions: repaired=${repairDispositions.repaired}, not_repaired=${repairDispositions.not_repaired}, indeterminate=${repairDispositions.indeterminate}, not_emitted=${repairDispositions.not_emitted}`,
+);
 
 const nonDerivable = {};
 for (const l of lifted)
-  for (const f of l.gateFailures) if (!DERIVABLE.includes(f)) nonDerivable[f] = (nonDerivable[f] || 0) + 1;
+  for (const f of l.gateFailures) if (!DERIVABLE_FAILURE_AXES.includes(f)) nonDerivable[f] = (nonDerivable[f] || 0) + 1;
 const ndEntries = Object.entries(nonDerivable);
 if (ndEntries.length) {
   console.log('\nGate failures OUTSIDE the v1-derivable set (expected-unreproduced — need richer signal):');
   for (const [f, n] of ndEntries) console.log(`  - ${f}: ${n} cell(s)`);
 }
 
-console.log('\nNOT populatable from the persisted gate-struct (v1 gap — the spec for what');
-console.log('the loop must additionally emit to make the correction axis operational):');
+console.log('\nSignals still requiring a joined transcript or deliberation sidecar:');
 for (const g of unpopulatableFromGateStruct()) console.log('  - ' + g);

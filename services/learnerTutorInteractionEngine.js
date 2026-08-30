@@ -20,6 +20,9 @@ import { runIdDirectedTurn } from './idDirectorEngine.js';
 import { getTutorProfile as getEvalTutorProfile } from './evalConfigLoader.js';
 import { analyzePseudoCatharsis } from './pseudoCatharsisDetector.js';
 import { callAIWithCliBridge } from './cliProviderBridge.js';
+import { BLUEPRINT_CONTRACT_TRACE_ROLE, extractContractLedger } from './blueprintActionContracts.js';
+import { appendPendingIntervention, closePendingIntervention } from './adaptiveTutor/interventionLedger.js';
+import { OUTCOME_OBSERVER_VERSION } from './adaptiveTutor/outcomeObserver.js';
 
 // ============================================================================
 // Interaction Engine Configuration
@@ -28,6 +31,21 @@ import { callAIWithCliBridge } from './cliProviderBridge.js';
 const DEFAULT_MAX_TURNS = 10;
 const API_PAYLOAD_MAX_CHARS = Number.parseInt(process.env.EVAL_CAPTURE_API_PAYLOAD_MAX_CHARS || '120000', 10);
 const STATIC_DYNAMIC_PROMPT_SPLIT_TAIL = `Prompt-split runtime contract: the next user message may contain dynamic scene, memory, policy, review, and turn-specific context for this call. Treat that context as binding for the task, but do not quote or expose hidden labels, director notes, private review text, answer keys, or policy names in public speech unless they are explicitly presented as public speech.`;
+
+export const TUTOR_STRATEGY_OUTCOME_DEFINITION = Object.freeze({
+  version: 'writing-pad-tutor-strategy-outcome.v1',
+  success: 'the next public learner turn contains renewed content-bearing work',
+  failure:
+    'the next public learner turn is shallow control evidence: mere agreement, formulaic recitation, empty rationale, verbatim tutor-rationale adoption, or an undifferentiated help request',
+  requiredEvidence: Object.freeze(['renewed content-bearing work']),
+  forbiddenEvidence: Object.freeze([
+    'mere agreement',
+    'formulaic recitation',
+    'empty rationale',
+    'verbatim adoption of tutor rationale',
+    'undifferentiated help request',
+  ]),
+});
 
 function staticDynamicPromptSplitEnabled() {
   for (const name of ['DRAMA_STATIC_DYNAMIC_PROMPTS', 'MS_STATIC_DYNAMIC_PROMPTS']) {
@@ -1570,6 +1588,11 @@ export async function runInteraction(config, llmCall, options = {}) {
       learnerReversalEvent,
       timestamp: new Date().toISOString(),
     });
+    closeTutorStrategyIntervention(interactionTrace, {
+      learnerId,
+      learnerTurn: learnerResponse.externalMessage,
+      turnIndex: phaseTurnCount,
+    });
     await emitTurn(interactionTrace.turns.at(-1));
 
     await updateLearnerWritingPad(learnerId, sessionId, learnerResponse, tutorResponse, topic);
@@ -1591,6 +1614,17 @@ export async function runInteraction(config, llmCall, options = {}) {
     if (!forceMaxTurns && (learnerResponse.suggestsEnding || learnerResponse.emotionalState === 'disengaged')) {
       interactionContinues = false;
     }
+  }
+
+  if (resumed?.nextPhase === 'tutor') {
+    // A partial trace can be flushed after the learner turn but before its
+    // observer update. Recover that one missing outcome before opening another
+    // tutor strategy; normal in-process turns close inside runLearnerPhase.
+    closeTutorStrategyIntervention(interactionTrace, {
+      learnerId,
+      learnerTurn: currentLearnerMessage.externalMessage,
+      turnIndex: turnCount,
+    });
   }
 
   while (turnCount < maxTurns && interactionContinues) {
@@ -1680,12 +1714,29 @@ export async function runInteraction(config, llmCall, options = {}) {
       learnerReversalEventCandidatesUsed: tutorResponse.learnerReversalEventCandidatesUsed || [],
       timestamp: new Date().toISOString(),
     });
+    persistClosedTutorStrategyOutcomes(interactionTrace, { learnerId, turnIndex: turnCount });
+    const pendingTutorIntervention = openTutorStrategyIntervention(interactionTrace, tutorResponse, {
+      sessionId,
+      turnIndex: turnCount,
+    });
     await emitTurn(interactionTrace.turns.at(-1));
 
     emitProgress('tutor', turnCount);
 
     // Update tutor writing pad
-    await updateTutorWritingPad(learnerId, sessionId, tutorResponse, currentLearnerMessage);
+    const writingPadIntervention = await updateTutorWritingPad(
+      learnerId,
+      sessionId,
+      tutorResponse,
+      currentLearnerMessage,
+      pendingTutorIntervention?.writing_pad_strategy_type,
+      pendingTutorIntervention?.writing_pad_intervention_id == null,
+    );
+    attachWritingPadInterventionId(
+      interactionTrace,
+      pendingTutorIntervention?.contract_id,
+      writingPadIntervention?.lastInsertRowid,
+    );
 
     // Check for natural ending (suppressed during drama generation, where we
     // always want the full maxTurns arc — see forceMaxTurns).
@@ -2526,6 +2577,212 @@ function extractTutorMessage(content) {
 // Writing Pad Updates
 // ============================================================================
 
+function contractTracePayload(entry) {
+  if (entry?.state && typeof entry.state === 'object') return entry.state;
+  if (typeof entry?.content !== 'string') return null;
+  try {
+    return JSON.parse(entry.content);
+  } catch {
+    return null;
+  }
+}
+
+function updateContractTraceLedger(trace, contractId, ledger, closedRecord = null) {
+  for (let turnIndex = (trace?.turns || []).length - 1; turnIndex >= 0; turnIndex--) {
+    const entries = trace.turns[turnIndex]?.internalDeliberation || [];
+    for (let entryIndex = entries.length - 1; entryIndex >= 0; entryIndex--) {
+      const entry = entries[entryIndex];
+      if (entry?.role !== BLUEPRINT_CONTRACT_TRACE_ROLE && entry?.agent !== BLUEPRINT_CONTRACT_TRACE_ROLE) continue;
+      const payload = contractTracePayload(entry);
+      if (!Array.isArray(payload?.ledger)) continue;
+      if (!payload.ledger.some((record) => record?.contract_id === contractId)) continue;
+
+      const nextPayload = {
+        ...payload,
+        closed_record: closedRecord
+          ? {
+              contract_id: closedRecord.contract_id,
+              outcome: closedRecord.outcome,
+              status: closedRecord.status,
+            }
+          : payload.closed_record || null,
+        ledger,
+      };
+      entry.state = nextPayload;
+      entry.content = JSON.stringify(nextPayload);
+      return entry;
+    }
+  }
+  return null;
+}
+
+function genericTutorStrategyContract({ sessionId, turnIndex, strategyType }) {
+  return {
+    contract_id: `writing-pad-${sessionId}-turn-${turnIndex}`,
+    turn_index: turnIndex,
+    state_belief: { hypotheses: [] },
+    selected_action: {
+      action_type: strategyType,
+      expected_transition: { ownership: 0.1 },
+      success_signal: {
+        required_evidence: [...TUTOR_STRATEGY_OUTCOME_DEFINITION.requiredEvidence],
+        forbidden_evidence: [...TUTOR_STRATEGY_OUTCOME_DEFINITION.forbiddenEvidence],
+      },
+    },
+  };
+}
+
+/**
+ * Open one canonical pending-intervention record for a tutor turn. Id-directed
+ * turns already provide one through their action-contract trace, so this
+ * function decorates that record instead of creating a second ledger.
+ */
+function openTutorStrategyIntervention(trace, tutorResponse, { sessionId, turnIndex } = {}) {
+  const priorLedger = extractContractLedger(trace);
+  const existingPending = priorLedger.find((record) => record?.status === 'pending') || null;
+  const strategyType =
+    existingPending?.writing_pad_strategy_type || existingPending?.action_type || tutorResponse?.strategy || 'unknown';
+
+  if (existingPending) {
+    const ledger = priorLedger.map((record) =>
+      record?.contract_id === existingPending.contract_id
+        ? {
+            ...record,
+            writing_pad_strategy_type: strategyType,
+            outcome_definition_version: record.outcome_definition_version || OUTCOME_OBSERVER_VERSION,
+          }
+        : record,
+    );
+    updateContractTraceLedger(trace, existingPending.contract_id, ledger);
+    return ledger.find((record) => record?.contract_id === existingPending.contract_id) || existingPending;
+  }
+
+  const contract = genericTutorStrategyContract({ sessionId, turnIndex, strategyType });
+  const appended = appendPendingIntervention(priorLedger, contract);
+  const pending = {
+    ...appended.pendingIntervention,
+    writing_pad_strategy_type: strategyType,
+    outcome_definition_version: TUTOR_STRATEGY_OUTCOME_DEFINITION.version,
+  };
+  const ledger = appended.ledger.map((record) => (record?.contract_id === pending.contract_id ? pending : record));
+  const payload = {
+    contract_id: pending.contract_id,
+    action_type: pending.action_type,
+    gate_allowed: null,
+    realization: null,
+    closed_record: null,
+    ledger,
+  };
+  tutorResponse.internalDeliberation = Array.isArray(tutorResponse.internalDeliberation)
+    ? tutorResponse.internalDeliberation
+    : [];
+  tutorResponse.internalDeliberation.push({
+    role: BLUEPRINT_CONTRACT_TRACE_ROLE,
+    state: payload,
+    content: JSON.stringify(payload),
+  });
+  return pending;
+}
+
+function attachWritingPadInterventionId(trace, contractId, interventionId) {
+  if (!contractId || interventionId == null) return;
+  const ledger = extractContractLedger(trace);
+  const normalizedId = Number(interventionId);
+  const nextLedger = ledger.map((record) =>
+    record?.contract_id === contractId
+      ? {
+          ...record,
+          writing_pad_intervention_id:
+            record.writing_pad_intervention_id ?? (Number.isSafeInteger(normalizedId) ? normalizedId : null),
+        }
+      : record,
+  );
+  updateContractTraceLedger(trace, contractId, nextLedger);
+}
+
+function persistTutorStrategyOutcome(trace, ledger, observed, { learnerId, turnIndex, closedRecord = null } = {}) {
+  const strategyType = observed.writing_pad_strategy_type || observed.action_type;
+  let interventionOutcomeWritten = observed.writing_pad_intervention_outcome_recorded === true;
+  if (!interventionOutcomeWritten && observed.writing_pad_intervention_id && observed.outcome) {
+    interventionOutcomeWritten = Boolean(
+      tutorWritingPad.recordInterventionOutcome(observed.writing_pad_intervention_id, observed.outcome),
+    );
+  }
+  let strategyEffectivenessWritten = observed.writing_pad_strategy_effectiveness_recorded === true;
+  if (!strategyEffectivenessWritten && (observed.outcome === 'success' || observed.outcome === 'failure')) {
+    strategyEffectivenessWritten = Boolean(
+      tutorWritingPad.recordStrategyUse(
+        learnerId,
+        strategyType,
+        observed.outcome === 'success',
+        JSON.stringify({
+          contractId: observed.contract_id,
+          outcome: observed.outcome,
+          outcomeDefinitionVersion: observed.outcome_definition_version || TUTOR_STRATEGY_OUTCOME_DEFINITION.version,
+          observedTurnIndex: turnIndex,
+        }),
+      ),
+    );
+  }
+
+  const nextLedger = ledger.map((record) =>
+    record?.contract_id === observed.contract_id
+      ? {
+          ...record,
+          writing_pad_intervention_outcome_recorded:
+            interventionOutcomeWritten || record.writing_pad_intervention_outcome_recorded === true,
+          writing_pad_strategy_effectiveness_recorded:
+            strategyEffectivenessWritten || record.writing_pad_strategy_effectiveness_recorded === true,
+        }
+      : record,
+  );
+  const recorded = nextLedger.find((record) => record?.contract_id === observed.contract_id) || observed;
+  updateContractTraceLedger(trace, observed.contract_id, nextLedger, closedRecord ? recorded : null);
+  return recorded;
+}
+
+function persistClosedTutorStrategyOutcomes(trace, { learnerId, turnIndex } = {}) {
+  let ledger = extractContractLedger(trace);
+  const unrecorded = ledger.filter(
+    (record) =>
+      record?.status === 'closed' &&
+      (record.writing_pad_intervention_outcome_recorded !== true ||
+        ((record.outcome === 'success' || record.outcome === 'failure') &&
+          record.writing_pad_strategy_effectiveness_recorded !== true)),
+  );
+  for (const record of unrecorded) {
+    persistTutorStrategyOutcome(trace, ledger, record, {
+      learnerId,
+      turnIndex: record.closed_turn_index ?? turnIndex,
+      closedRecord: record,
+    });
+    ledger = extractContractLedger(trace);
+  }
+}
+
+function closeTutorStrategyIntervention(trace, { learnerId, learnerTurn, turnIndex } = {}) {
+  const ledger = extractContractLedger(trace);
+  const pending = ledger.find((record) => record?.status === 'pending') || null;
+  if (!pending) return null;
+
+  const closed = closePendingIntervention({
+    ledger,
+    learnerTurn,
+    turnIndex,
+    // The canonical ledger only stages a partial for its existing combined
+    // proof/resistance contract. Generic Writing Pad strategies are unaffected.
+    config: { stagedCombinedClosure: true },
+  });
+  const observed = closed.closedRecord || closed.pendingIntervention;
+  if (!observed) return null;
+
+  return persistTutorStrategyOutcome(trace, closed.ledger, observed, {
+    learnerId,
+    turnIndex,
+    closedRecord: closed.closedRecord,
+  });
+}
+
 /**
  * Update learner writing pad based on turn
  */
@@ -2572,24 +2829,32 @@ async function updateLearnerWritingPad(learnerId, sessionId, learnerResponse, tu
 /**
  * Update tutor writing pad based on turn
  */
-async function updateTutorWritingPad(learnerId, sessionId, tutorResponse, learnerMessage) {
+async function updateTutorWritingPad(
+  learnerId,
+  sessionId,
+  tutorResponse,
+  learnerMessage,
+  strategyType = null,
+  recordIntervention = true,
+) {
+  const trackedStrategy = strategyType || tutorResponse.strategy;
   // Update conscious state
   tutorWritingPad.updateConsciousState(learnerId, sessionId, {
-    currentStrategy: tutorResponse.strategy,
+    currentStrategy: trackedStrategy,
     learnerPerceivedState: learnerMessage.emotionalState || 'unknown',
     immediateGoal: 'advance understanding',
   });
 
-  // Record strategy effectiveness (will be updated based on learner response)
-  if (tutorResponse.strategy) {
-    // We'll mark success/failure on the next turn based on learner response
-    // For now, just record use
-    tutorWritingPad.recordIntervention(learnerId, sessionId, {
-      interventionType: tutorResponse.strategy,
+  // Record the use now; the canonical pending-intervention ledger attaches the
+  // next public learner-turn outcome to this row.
+  if (trackedStrategy && recordIntervention) {
+    return tutorWritingPad.recordIntervention(learnerId, sessionId, {
+      interventionType: trackedStrategy,
       interventionDescription: tutorResponse.externalMessage.slice(0, 200),
       context: learnerMessage.externalMessage?.slice(0, 100),
     });
   }
+  return null;
 }
 
 // ============================================================================

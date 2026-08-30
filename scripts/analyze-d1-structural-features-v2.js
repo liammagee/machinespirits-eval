@@ -59,10 +59,11 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { pearson } from './analyze-recognition-lexicon.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 // ── Message extraction (mirrors v1) ────────────────────────────────────
 
@@ -510,19 +511,21 @@ function parseArgs(argv) {
     runId: 'eval-2026-04-24-e9a785c0',
     judge: 'claude-code/sonnet',
     output: null,
+    db: null,
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--run-id') args.runId = argv[++i];
     else if (a === '--judge') args.judge = argv[++i];
     else if (a === '--output') args.output = argv[++i];
+    else if (a === '--db') args.db = argv[++i];
   }
   return args;
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const db = new Database(DB_PATH, { readonly: true });
+  const db = new Database(resolveEvaluationDbPath(ROOT_DIR, args.db), { readonly: true, fileMustExist: true });
   const cells = [
     'cell_1_base_single_unified',
     'cell_5_recog_single_unified',

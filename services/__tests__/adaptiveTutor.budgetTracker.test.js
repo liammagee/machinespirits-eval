@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createBudgetTracker, BudgetExceededError } from '../adaptiveTutor/budgetTracker.js';
+import {
+  BudgetExceededError,
+  BudgetPersistenceError,
+  createBudgetTracker,
+  lookupRateQuote,
+} from '../adaptiveTutor/budgetTracker.js';
 
 test('createBudgetTracker rejects invalid maxUsd', () => {
   assert.throws(() => createBudgetTracker({}), /maxUsd/);
@@ -89,4 +94,208 @@ test('record() tolerates missing/null fields without exploding', () => {
   assert.doesNotThrow(() => tracker.record({ inputTokens: undefined, cost: 0.001 }));
   assert.equal(tracker.callCount, 3);
   assert.ok(Math.abs(tracker.accumulatedUsd - 0.001) < 1e-9);
+});
+
+test('rate quotes distinguish catalog estimates, unknown-model guards, and non-metered routes', () => {
+  const catalog = lookupRateQuote({
+    provider: 'openrouter',
+    model: 'anthropic/claude-sonnet-4.6',
+  });
+  assert.equal(catalog.status, 'catalog');
+  assert.deepEqual(catalog.ratesPer1k, { input: 0.003, output: 0.015 });
+  assert.equal(catalog.provenance.rateBasis, 'catalog_estimate');
+  assert.equal(catalog.provenance.provider, 'openrouter');
+  assert.equal(catalog.provenance.model, 'anthropic/claude-sonnet-4.6');
+  assert.deepEqual(catalog.provenance.ratesPer1k, { input: 0.003, output: 0.015 });
+  assert.equal(catalog.provenance.verificationStatus, 'operator_snapshot_not_runtime_verified');
+  assert.match(catalog.provenance.sourceUrl, /^https:\/\//u);
+
+  const unknown = lookupRateQuote({ provider: 'openrouter', model: 'unlisted/model' });
+  assert.equal(unknown.status, 'unknown');
+  assert.equal(unknown.ratesPer1k, null);
+  assert.deepEqual(unknown.guardRatesPer1k, { input: 0.01, output: 0.03 });
+  assert.equal(unknown.provenance.rateBasis, 'conservative_bound');
+  assert.deepEqual(unknown.provenance.guardRatesPer1k, { input: 0.01, output: 0.03 });
+  assert.match(unknown.provenance.note, /not actual spend/u);
+
+  const subscription = lookupRateQuote({ provider: 'codex', model: 'configured-default' });
+  assert.equal(subscription.status, 'not_metered_here');
+  assert.equal(subscription.ratesPer1k, null);
+  assert.equal(subscription.guardRatesPer1k, null);
+  assert.equal(subscription.provenance.provider, 'codex');
+  assert.equal(subscription.provenance.model, 'configured-default');
+});
+
+test('a provider-reported numeric zero settles distinctly from missing cost', () => {
+  const tracker = createBudgetTracker({
+    maxUsd: 1,
+    idFactory: () => 'provider-zero',
+  });
+  const reservation = tracker.reserveAttempt({
+    provider: 'openrouter',
+    model: 'anthropic/claude-sonnet-4.6',
+    role: 'tutorEgoInitial',
+    promptText: 'x'.repeat(400),
+    maxOutputTokens: 1000,
+  });
+  assert.equal(tracker.summary().pendingCount, 1);
+  assert.ok(reservation.reservedUsd > 0);
+
+  const settlement = tracker.settleAttempt(reservation, {
+    inputTokens: 100,
+    outputTokens: 20,
+    reportedCostPresent: true,
+    reportedCost: 0,
+  });
+  assert.equal(settlement.usd, 0);
+  assert.equal(settlement.basis, 'provider_reported');
+  assert.equal(tracker.summary().pendingCount, 0);
+  assert.equal(tracker.summary().providerReportedUsd, 0);
+  assert.equal(tracker.summary().ceilingExposureUsd, 0);
+});
+
+test('missing cost uses a labelled catalog estimate, never provider-reported exactness', () => {
+  const tracker = createBudgetTracker({ maxUsd: 1, idFactory: () => 'catalog-settlement' });
+  const reservation = tracker.reserveAttempt({
+    provider: 'openrouter',
+    model: 'anthropic/claude-sonnet-4.6',
+    role: 'learnerTurn',
+    promptText: 'prompt',
+    maxOutputTokens: 100,
+  });
+  const settlement = tracker.settleAttempt(reservation, {
+    inputTokens: 100,
+    outputTokens: 20,
+    reportedCostPresent: false,
+  });
+
+  assert.equal(settlement.basis, 'catalog_estimate');
+  assert.ok(settlement.usd > 0);
+  assert.equal(settlement.provenance.verificationStatus, 'operator_snapshot_not_runtime_verified');
+  assert.equal(tracker.summary().catalogEstimatedUsd, settlement.usd);
+  assert.equal(tracker.summary().providerReportedUsd, 0);
+});
+
+test('missing cost for an unknown model remains unresolved and conservatively charged', () => {
+  const tracker = createBudgetTracker({ maxUsd: 1, idFactory: () => 'unknown-rate' });
+  const reservation = tracker.reserveAttempt({
+    provider: 'openrouter',
+    model: 'unlisted/model',
+    role: 'tutorSuperego',
+    promptText: 'prompt',
+    maxOutputTokens: 100,
+  });
+  const settlement = tracker.settleAttempt(reservation, {
+    inputTokens: 10,
+    outputTokens: 5,
+    reportedCostPresent: false,
+  });
+
+  assert.equal(settlement.usd, null);
+  assert.equal(settlement.basis, 'unresolved');
+  assert.equal(settlement.ceilingExposureUsd, reservation.reservedUsd);
+  assert.equal(tracker.summary().ambiguousCount, 1);
+  assert.equal(tracker.summary().ambiguousExposureUsd, reservation.reservedUsd);
+  assert.equal(tracker.summary().ceilingExposureUsd, reservation.reservedUsd);
+});
+
+test('missing cost and token usage retains the full reservation even for a catalog model', () => {
+  const tracker = createBudgetTracker({ maxUsd: 1, idFactory: () => 'missing-usage' });
+  const reservation = tracker.reserveAttempt({
+    provider: 'openrouter',
+    model: 'anthropic/claude-sonnet-4.6',
+    role: 'tutorValidator',
+    promptText: 'prompt',
+    maxOutputTokens: 100,
+  });
+  const settlement = tracker.settleAttempt(reservation, {
+    inputTokens: 0,
+    outputTokens: 0,
+    tokenUsagePresent: false,
+    reportedCostPresent: false,
+  });
+
+  assert.equal(settlement.basis, 'unresolved');
+  assert.equal(tracker.summary().settledCount, 0);
+  assert.equal(tracker.summary().ambiguousCount, 1);
+  assert.equal(tracker.summary().ceilingExposureUsd, reservation.reservedUsd);
+});
+
+test('not-metered-here activity is durably counted without consuming dollar headroom', () => {
+  const tracker = createBudgetTracker({ maxUsd: 0.000001, idFactory: () => 'subscription-attempt' });
+  const reservation = tracker.reserveAttempt({
+    provider: 'codex',
+    model: 'gpt-5.6-luna',
+    role: 'tutorEgoInitial',
+    promptText: 'prompt',
+    maxOutputTokens: 100,
+  });
+  assert.equal(reservation.metered, false);
+  assert.equal(reservation.attemptId, 'subscription-attempt');
+  assert.equal(tracker.summary().pendingCount, 1);
+
+  const settlement = tracker.settleAttempt(reservation, {
+    inputTokens: 0,
+    outputTokens: 0,
+    tokenUsagePresent: false,
+    reportedCostPresent: false,
+  });
+  assert.equal(settlement.basis, 'not_metered_here');
+  assert.equal(tracker.summary().attemptCount, 1);
+  assert.equal(tracker.summary().settledCount, 1);
+  assert.equal(tracker.summary().notMeteredCount, 1);
+  assert.equal(tracker.summary().ceilingExposureUsd, 0);
+});
+
+test('an above-ceiling settlement is recorded before raising a terminal budget halt', () => {
+  const tracker = createBudgetTracker({ maxUsd: 0.01, idFactory: () => 'provider-overage' });
+  const reservation = tracker.reserveAttempt({
+    provider: 'openrouter',
+    model: 'anthropic/claude-sonnet-4.6',
+    role: 'learnerTurn',
+    promptText: 'short',
+    maxOutputTokens: 1,
+  });
+
+  assert.throws(
+    () =>
+      tracker.settleAttempt(reservation, {
+        inputTokens: 10,
+        outputTokens: 1,
+        reportedCostPresent: true,
+        reportedCost: 0.02,
+      }),
+    (error) => error instanceof BudgetExceededError && error.code === 'BUDGET_EXCEEDED',
+  );
+  assert.equal(tracker.summary().settledCount, 1);
+  assert.equal(tracker.summary().providerReportedUsd, 0.02);
+  assert.equal(tracker.summary().ceilingExposureUsd, 0.02);
+});
+
+test('ledger write failure is a terminal safety error at reservation time', () => {
+  const ledgerStore = {
+    initializeBudgetLedger: () => ({}),
+    reserveBudgetAttempt: () => {
+      throw new Error('offline write failure');
+    },
+    settleBudgetAttempt: () => {},
+    markBudgetAttemptAmbiguous: () => {},
+    getBudgetSummary: () => ({ attemptCount: 0, ceilingExposureUsd: 0 }),
+  };
+  const tracker = createBudgetTracker({ maxUsd: 1, ledgerStore, idFactory: () => 'never-dispatched' });
+
+  assert.throws(
+    () =>
+      tracker.reserveAttempt({
+        provider: 'openrouter',
+        model: 'anthropic/claude-sonnet-4.6',
+        role: 'tutorEgoInitial',
+        promptText: 'prompt',
+        maxOutputTokens: 100,
+      }),
+    (error) =>
+      error instanceof BudgetPersistenceError &&
+      error.code === 'BUDGET_LEDGER_PERSISTENCE' &&
+      /reservation failed/u.test(error.message),
+  );
 });

@@ -841,7 +841,15 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.match(workflow, /^concurrency:\n {2}group: .*github\.workflow.*github\.ref/mu);
   assert.match(workflow, /^ {2}test-contract:\n {4}name: Hermetic test contract\n {4}runs-on: ubuntu-latest$/mu);
   assert.match(workflow, /^ {8}run: npm run test:manifest$/mu);
-  for (const lane of ['focused', 'validator-only', 'lint', 'test', 'pty-concurrency', 'risk-coverage']) {
+  for (const lane of [
+    'focused',
+    'validator-only',
+    'ref-governance',
+    'lint',
+    'test',
+    'pty-concurrency',
+    'risk-coverage',
+  ]) {
     assert.match(
       workflow,
       new RegExp(`^ {2}${lane}:\\n(?: {4}name: [^\\n]+\\n)? {4}needs: \\[classify, test-contract\\]$`, 'mu'),
@@ -856,12 +864,35 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.doesNotMatch(workflow, /ELECTRON_/u);
   assert.match(workflow, /^ {2}focused:\n {4}name: Focused authored-metadata checks$/mu);
   assert.match(workflow, /^ {2}validator-only:\n {4}name: Focused validator checks$/mu);
+  assert.match(workflow, /^ {2}ref-governance:\n {4}name: Ref governance$/mu);
+  assert.match(workflow, /needs\.classify\.outputs\.ref_governance_required == 'true'/u);
   assert.match(workflow, /^ {6}fail-fast: false$/mu);
   assert.match(workflow, /^ {8}node-version: \[22, 24\]\n {8}shard: \[1, 2\]$/mu);
   assert.match(workflow, /npm run test:root -- --shard=\$\{\{ matrix\.shard \}\}\/2 --quiet/u);
   assert.match(workflow, /^ {8}if: matrix\.shard == 1\n {8}run: npm run test:core -- --quiet$/mu);
-  assert.equal(workflow.match(/cache: npm/gu)?.length, 5);
-  assert.equal(workflow.match(/^ {6}- run: npm ci$/gmu)?.length, 5);
+  function jobBlock(name) {
+    const marker = `  ${name}:\n`;
+    const start = workflow.indexOf(marker);
+    assert.notEqual(start, -1, name);
+    const bodyStart = start + marker.length;
+    const next = /^ {2}[a-z0-9_-]+:\n/mu.exec(workflow.slice(bodyStart));
+    return workflow.slice(start, next === null ? workflow.length : bodyStart + next.index);
+  }
+
+  for (const lane of ['test-contract', 'validator-only', 'lint', 'test', 'pty-concurrency', 'risk-coverage']) {
+    const block = jobBlock(lane);
+    assert.equal(block.match(/cache: npm/gu)?.length, 1, `${lane} must cache npm downloads`);
+    assert.equal(block.match(/^ {6}- run: npm ci$/gmu)?.length, 1, `${lane} must install locked dependencies`);
+  }
+  const contract = jobBlock('test-contract');
+  const install = contract.indexOf('run: npm ci');
+  for (const command of [
+    'run: npm run test:manifest',
+    'run: npm run skills:permissions:check',
+    'run: node --test tests/ciChangePolicy.test.js tests/localCiRunner.test.js',
+  ]) {
+    assert.ok(install < contract.indexOf(command), `test-contract npm ci must precede ${command}`);
+  }
   assert.doesNotMatch(workflow, /npm ci --omit=optional/u);
   assert.doesNotMatch(workflow, /lfs: true/u);
 

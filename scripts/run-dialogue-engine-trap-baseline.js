@@ -43,7 +43,14 @@ import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import { resolveEvalProfile } from '../services/evaluationRunner.js';
 import * as realLLM from '../services/adaptiveTutor/realLLM.js';
 import { createAdaptivePersistence } from '../services/adaptiveTutor/persistence.js';
-import { createBudgetTracker } from '../services/adaptiveTutor/budgetTracker.js';
+import {
+  bindRunLedger,
+  checkBalanceBeforeDispatch,
+  executeMeteredUnits,
+  finalizeMeteredRun,
+  resolveSpendCeiling,
+  selectPendingUnits,
+} from '../services/adaptiveTutor/meteredRunSession.js';
 import { tutorConfigLoader as tutorConfig } from '../tutor-core/index.js';
 import { learnerTurnIndexForTutorTurn } from './lib/trapTurnConvention.js';
 import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
@@ -278,8 +285,10 @@ export async function main(
   const profileName = parseFlag(args, 'profile', 'cell_114_dialogue_engine_trap_baseline');
   const scenarioFilter = parseFlag(args, 'scenarios');
   const runsPerConfig = Number(parseFlag(args, 'runs', '1'));
-  const maxCostUsdRaw = parseFlag(args, 'max-cost');
-  const maxCostUsd = maxCostUsdRaw != null ? Number(maxCostUsdRaw) : null;
+  // A malformed ceiling stops the baseline here. It used to fall through
+  // `Number('abc') > 0` and run the whole thing with no ceiling at all.
+  const maxCostUsd = resolveSpendCeiling(parseFlag(args, 'max-cost'));
+  const resumeRunId = parseFlag(args, 'resume') || null;
   const verbose = args.includes('--verbose');
 
   const profile = evalConfigLoader.getTutorProfile(profileName);
@@ -323,6 +332,59 @@ export async function main(
     async (store) => {
       const { createAdaptiveRun } = createAdaptivePersistence({ evaluationStore: store });
 
+      // The plan is fixed before any call, so a restart replays exactly the
+      // units this baseline set out to run.
+      const plannedUnits = [];
+      for (const scenario of scenarios) {
+        for (let runIndex = 0; runIndex < runsPerConfig; runIndex++) {
+          plannedUnits.push({
+            scenarioId: scenario.id,
+            runIndex,
+            unitId: runsPerConfig > 1 ? `${scenario.id}__r${runIndex}` : scenario.id,
+          });
+        }
+      }
+
+      // A durable run identity has to exist before the first metered call,
+      // because the budget ledger is keyed by run id.
+      let run;
+      if (resumeRunId) {
+        run = store.getRun(resumeRunId);
+        if (!run) throw new Error(`--resume: run not found: ${resumeRunId}`);
+        if (run.metadata?.architecture !== 'dialogue_engine') {
+          throw new Error(`--resume: run ${resumeRunId} is not a dialogue-engine trap run`);
+        }
+        if ((run.metadata?.maxCostUsd ?? null) !== maxCostUsd) {
+          throw new Error(
+            `--resume: run ${resumeRunId} was launched with ceiling ${run.metadata?.maxCostUsd ?? 'none'}; ` +
+              `pass the same --max-cost (got ${maxCostUsd ?? 'none'})`,
+          );
+        }
+      } else {
+        run = createAdaptiveRun({
+          description: `dialogue-engine trap baseline (${profileName})`,
+          totalScenarios: plannedUnits.length,
+          profileName,
+          llmMode: 'real',
+          metadata: {
+            profileName,
+            scenarioSource: profile.scenario_source || 'config/adaptive-trap-scenarios.yaml',
+            maxCostUsd,
+            architecture: 'dialogue_engine',
+            resolvedBaseProfile: resolvedProfileName,
+            runsPerConfig,
+            plannedUnits,
+          },
+        });
+      }
+      const runId = run.id;
+      const resumePlan = resumeRunId ? run.metadata?.plannedUnits || plannedUnits : plannedUnits;
+      const { completedUnitIds, pendingUnits } = selectPendingUnits({
+        evaluationStore: store,
+        runId,
+        plannedUnits: resumePlan,
+      });
+
       let tracker = null;
       try {
         // Route realLLM (both the tutor ego-execute call and the scripted learner)
@@ -335,61 +397,76 @@ export async function main(
           maxTokens: agentConfig.hyperparameters?.max_tokens,
         });
 
-        if (maxCostUsd != null && maxCostUsd > 0) {
-          tracker = createBudgetTracker({ maxUsd: maxCostUsd });
-          realLLM.setActiveBudgetTracker(tracker);
-        }
-
-        const totalScenarios = scenarios.length * runsPerConfig;
-        const run = createAdaptiveRun({
-          description: `dialogue-engine trap baseline (${profileName})`,
-          totalScenarios,
-          profileName,
-          llmMode: 'real',
-          metadata: {
-            profileName,
-            scenarioSource: profile.scenario_source || 'config/adaptive-trap-scenarios.yaml',
-            maxCostUsd,
-            architecture: 'dialogue_engine',
-            resolvedBaseProfile: resolvedProfileName,
-          },
+        tracker = bindRunLedger({
+          evaluationStore: store,
+          runId,
+          maxCostUsd,
+          verbose,
+          label: 'dialogue-engine-trap',
         });
-        const runId = run.id;
+        if (tracker) realLLM.setActiveBudgetTracker(tracker);
+
+        // Advisory unless the provider config declares the capability and a
+        // stop policy. The ledger remains the binding control.
+        await checkBalanceBeforeDispatch({
+          provider: agentConfig.provider,
+          providerConfig: evalConfigLoader.getProviderConfig(agentConfig.provider),
+          maxCostUsd,
+          alreadyExposedUsd: tracker ? tracker.summary().ceilingExposureUsd : 0,
+          policy: run.metadata?.balancePolicy || 'warn',
+          label: 'dialogue-engine-trap',
+          verbose,
+        });
 
         console.log(
           `[dialogue-engine-trap] runId=${runId} profile=${profileName} ` +
             `provider=${agentConfig.provider} model=${agentConfig.model} baseProfile=${resolvedProfileName} ` +
-            `scenarios=${scenarios.length} runsPerConfig=${runsPerConfig}`,
+            `planned=${resumePlan.length} done=${completedUnitIds.size} pending=${pendingUnits.length}`,
         );
 
-        let persisted = 0;
-        let failed = 0;
-        for (const scenario of scenarios) {
-          for (let runIndex = 0; runIndex < runsPerConfig; runIndex++) {
-            const variantId = runsPerConfig > 1 ? `${scenario.id}__r${runIndex}` : scenario.id;
-            try {
-              const out = await runScenario({
-                evaluationStore: store,
-                runId,
-                scenario: { ...scenario, id: variantId },
-                profileName,
-                agentConfig,
-                baseEgoPrompt,
-                verbose,
-              });
-              persisted++;
-              console.log(
-                `[dialogue-engine-trap]   ✓ ${variantId} (turns=${out.turns}, policies=[${out.policyActions.join(', ')}], dialogue=${out.dialogueId})`,
-              );
-            } catch (err) {
-              failed++;
-              console.error(`[dialogue-engine-trap]   ✗ ${variantId}: ${err.message}`);
-              if (verbose) console.error(err.stack);
-            }
-          }
-        }
+        const outcome = await executeMeteredUnits({
+          units: pendingUnits,
+          label: 'dialogue-engine-trap',
+          verbose,
+          execute: async (unit) => {
+            const scenario = scenarios.find((candidate) => candidate.id === unit.scenarioId);
+            if (!scenario) throw new Error(`scenario ${unit.scenarioId} is not in the scenario source`);
+            const out = await runScenario({
+              evaluationStore: store,
+              runId,
+              scenario: { ...scenario, id: unit.unitId },
+              profileName,
+              agentConfig,
+              baseEgoPrompt,
+              verbose,
+            });
+            console.log(
+              `[dialogue-engine-trap]   ✓ ${unit.unitId} (turns=${out.turns}, policies=[${out.policyActions.join(', ')}], dialogue=${out.dialogueId})`,
+            );
+          },
+        });
 
-        console.log(`[dialogue-engine-trap] runId=${runId} persisted=${persisted}/${totalScenarios} failed=${failed}`);
+        const totalTests = completedUnitIds.size + outcome.completedUnitIds.length;
+        finalizeMeteredRun({
+          evaluationStore: store,
+          runId,
+          halted: outcome.halted,
+          haltCode: outcome.haltCode,
+          totalTests,
+        });
+
+        const budget = tracker ? tracker.summary() : null;
+        console.log(
+          `[dialogue-engine-trap] runId=${runId} persisted=${totalTests}/${resumePlan.length} ` +
+            `failed=${outcome.failures.length}` +
+            (budget
+              ? ` budget=$${budget.accumulatedUsd.toFixed(4)}/$${budget.maxUsd.toFixed(2)} (${budget.utilizationPct.toFixed(1)}%)`
+              : ''),
+        );
+        if (outcome.halted) {
+          console.error(`[dialogue-engine-trap] halt reason: ${outcome.haltReason || '(unknown)'}`);
+          return 2;
+        }
         return 0;
       } finally {
         realLLM.clearActiveCellConfig();

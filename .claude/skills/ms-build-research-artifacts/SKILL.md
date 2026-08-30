@@ -25,21 +25,23 @@ Compatibility aliases remain available:
 
 ## Workflow
 
-1. Confirm the checkout and cleanliness:
+1. Confirm the checkout and snapshot pre-existing changes:
    ```bash
    git status --short --branch
    ```
-   If on `main` and clean, fast-forward first with `git pull --ff-only`.
+   A build request does not authorize a pull, switch, stash, reset, or cleanup.
+   Build the exact checkout requested and report its SHA/dirt state.
 
 2. Run the requested consolidated build command. For the usual full refresh:
    ```bash
-   npm run research:build 2>&1 | tee /tmp/research-build.log
+   build_log="$(mktemp -t machinespirits-research-build.XXXXXX.log)"
+   npm run research:build 2>&1 | tee "$build_log"
    ```
 
 3. Validate and inspect:
    ```bash
    npm run atlas:validate
-   rg -n "warning|undefined|Citation|pandoc-citeproc|not found" /tmp/research-build.log || true
+   rg -n "warning|undefined|Citation|pandoc-citeproc|not found" "$build_log" || true
    git diff --check
    git status --short --branch
    ```
@@ -57,5 +59,6 @@ Compatibility aliases remain available:
 - Paper PDFs and atlas build outputs are ignored local artifacts unless the user
   asks to publish or copy them elsewhere.
 - The arc HTML refresh can create timestamp-only or whitespace-only diffs in
-  tracked arc files. If there is no substantive content change and the user only
-  asked to build, normalize or restore those diffs so `main` stays clean.
+  tracked arc files. Report every generated change and distinguish it from the
+  pre-build snapshot. Never normalize, restore, or delete a generated diff
+  automatically; it may overlap user work.

@@ -21,7 +21,15 @@
     ],
     "compatibilityFallback": "the first legacy facade operation lazily starts the default store",
     "closeContract": "an explicit store close is idempotent and closes only a connection owned by that store",
-    "tables": ["evaluation_results", "evaluation_runs", "interaction_evaluations", "score_audit", "sqlite_sequence"]
+    "tables": [
+      "evaluation_budget_attempts",
+      "evaluation_budget_ledgers",
+      "evaluation_results",
+      "evaluation_runs",
+      "interaction_evaluations",
+      "score_audit",
+      "sqlite_sequence"
+    ]
   },
   "consumers": [
     {

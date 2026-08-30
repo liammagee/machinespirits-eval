@@ -4,7 +4,12 @@ import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import yaml from 'yaml';
-import { buildIngestPlan, persistIngestPlan } from '../scripts/ingest-poetics-artifacts.js';
+import {
+  buildIngestPlan,
+  learnerActionMeasurementProtocolForScore,
+  mechanismMeasurementProtocolForScore,
+  persistIngestPlan,
+} from '../scripts/ingest-poetics-artifacts.js';
 import { openPoeticsStore } from '../services/poeticsStore.js';
 
 function writeJson(filePath, value) {
@@ -18,6 +23,68 @@ function writeYaml(filePath, value) {
 }
 
 describe('poetics artifact ingest', () => {
+  it('preserves explicit semantic-authoritative protocol metadata and identifies unversioned clamp-era rows', () => {
+    const v2 = {
+      version: 'poetics-phase2-mechanism-measurement-v2-semantic-authoritative',
+      semanticAuthority: 'critic_semantic_score',
+      lexicalOrRegexAuthority: 'auxiliary_only',
+    };
+    assert.deepEqual(
+      mechanismMeasurementProtocolForScore({ mechanismMeasurementProtocol: v2 }, { tutorStrategicReversal: 75 }),
+      { ...v2, provenance: 'score_artifact' },
+    );
+    assert.deepEqual(
+      mechanismMeasurementProtocolForScore(
+        { mechanismMeasurementProtocol: v2 },
+        {
+          tutorStrategicReversal: 75,
+          mechanismMeasurementProtocolVersion: 'poetics-phase2-mechanism-measurement-v1-hard-regex-clamp',
+        },
+      ),
+      {
+        version: 'poetics-phase2-mechanism-measurement-v1-hard-regex-clamp',
+        semanticAuthority: 'critic_score_subject_to_regex_clamp',
+        lexicalOrRegexAuthority: 'hard_clamp',
+        exactQuoteLocationAuthority: 'hard_gate',
+        ambiguityOrJudgeDisagreement: 'not_represented',
+        historicalScorePolicy: 'preserve_without_recompute',
+        provenance: 'score_row',
+      },
+      'a preserved historical row must not inherit a newer artifact-level version',
+    );
+    const historical = mechanismMeasurementProtocolForScore({}, { tutorAdaptiveMechanism: 50 });
+    assert.equal(historical.version, 'poetics-phase2-mechanism-measurement-v1-hard-regex-clamp');
+    assert.equal(historical.lexicalOrRegexAuthority, 'hard_clamp');
+    assert.equal(historical.provenance, 'inferred_from_unversioned_historical_mechanism_axes');
+    assert.equal(mechanismMeasurementProtocolForScore({}, { formClass: 'flat' }), null);
+
+    const learnerV1 = {
+      version: 'poetics-phase2-learner-action-measurement-v1-semantic-authoritative',
+      semanticAuthority: 'critic_semantic_score',
+      lexicalOrRegexAuthority: 'none',
+    };
+    assert.deepEqual(
+      learnerActionMeasurementProtocolForScore(
+        { learnerActionMeasurementProtocol: learnerV1 },
+        {
+          actionalBreakthrough: 75,
+          learnerActionMeasurementProtocolVersion: learnerV1.version,
+        },
+      ),
+      { ...learnerV1, provenance: 'score_row' },
+    );
+    assert.deepEqual(
+      learnerActionMeasurementProtocolForScore(
+        { learnerActionMeasurementProtocol: learnerV1 },
+        { actionalBreakthrough: 75 },
+      ),
+      { ...learnerV1, provenance: 'score_artifact' },
+    );
+    const historicalLearner = learnerActionMeasurementProtocolForScore({}, { actionalBreakthrough: 50 });
+    assert.equal(historicalLearner.version, 'poetics-phase2-learner-action-measurement-v0-unversioned');
+    assert.equal(historicalLearner.historicalScorePolicy, 'preserve_without_recompute');
+  });
+
   it('persists runs, items, scores, and labels into sidecar tables', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-ingest-'));
     const dbPath = path.join(root, 'poetics.db');
@@ -70,6 +137,16 @@ describe('poetics artifact ingest', () => {
     writeJson(scorePath, {
       critic: 'anthropic/claude-sonnet-4.6',
       qualityPolicy: { key: path.relative(path.resolve('.'), keyPath) },
+      mechanismMeasurementProtocol: {
+        version: 'poetics-phase2-mechanism-measurement-v2-semantic-authoritative',
+        semanticAuthority: 'critic_semantic_score',
+        lexicalOrRegexAuthority: 'auxiliary_only',
+      },
+      learnerActionMeasurementProtocol: {
+        version: 'poetics-phase2-learner-action-measurement-v1-semantic-authoritative',
+        semanticAuthority: 'critic_semantic_score',
+        lexicalOrRegexAuthority: 'none',
+      },
       scored: [
         {
           id: 'T01',
@@ -79,6 +156,15 @@ describe('poetics artifact ingest', () => {
           rupture: 25,
           globalCoherence: 100,
           pivotLearnerTurn: 2,
+          tutorStrategicReversal: 75,
+          actionalBreakthrough: 75,
+          mechanismMeasurementProtocolVersion: 'poetics-phase2-mechanism-measurement-v2-semantic-authoritative',
+          learnerActionMeasurementProtocolVersion:
+            'poetics-phase2-learner-action-measurement-v1-semantic-authoritative',
+          auxiliaryMechanismSignals: {
+            lexical_or_regex_authority: 'none',
+            tutor_strategy_reversal: { passes: false },
+          },
           flags: [],
         },
       ],
@@ -117,6 +203,18 @@ describe('poetics artifact ingest', () => {
       assert.equal(db.prepare('SELECT COUNT(*) AS n FROM poetics_labels').get().n, 1);
       assert.equal(db.prepare('SELECT control_role FROM poetics_items').get().control_role, 'hard_trap_control');
       assert.equal(db.prepare('SELECT form_class FROM poetics_scores').get().form_class, 'trap');
+      const scoreMetadata = JSON.parse(db.prepare('SELECT metadata FROM poetics_scores').get().metadata);
+      assert.equal(
+        scoreMetadata.mechanism_measurement_protocol_version,
+        'poetics-phase2-mechanism-measurement-v2-semantic-authoritative',
+      );
+      assert.equal(scoreMetadata.mechanism_measurement_protocol.lexicalOrRegexAuthority, 'auxiliary_only');
+      assert.equal(scoreMetadata.auxiliary_mechanism_signals.lexical_or_regex_authority, 'none');
+      assert.equal(
+        scoreMetadata.learner_action_measurement_protocol_version,
+        'poetics-phase2-learner-action-measurement-v1-semantic-authoritative',
+      );
+      assert.equal(scoreMetadata.role_measurement_protocols.learner_actional_change.lexicalOrRegexAuthority, 'none');
     } finally {
       db.close();
     }

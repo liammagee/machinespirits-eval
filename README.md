@@ -254,7 +254,7 @@ To re-run evaluations from scratch (rather than reproducing from saved data), ex
 | Script | Description |
 |--------|-------------|
 | `generate-paper-tables.js` | Generate tables and validate prose against DB |
-| `validate-paper-manifest.js` | Validate paper claims against evaluation data |
+| `validate-paper-manifest.js` | Validate canonical Paper 2 evidence classes and semantic authorities (`npm run paper:manifest`); use `--target legacy` or `npm run paper:manifest:legacy` for the Paper 1 count manifest |
 | `render-sequence-diagram.js` | Render architecture sequence diagrams |
 | `validate-content.js` | Validate tutorial content files |
 

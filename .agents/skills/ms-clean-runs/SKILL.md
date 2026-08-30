@@ -1,12 +1,11 @@
 ---
 name: ms-clean-runs
-description: Identify and remove stalled, failed, or test-artifact evaluation runs from the database
-argument-hint: "[stalled | artifacts | all]"
+description: Inspect and, only after explicit confirmation, delete stalled or test-artifact evaluation runs from data/evaluations.db. Use for database cleanup; do not use to resume a run, repair scores, or remove failed attempts from a valid run record.
 ---
 
 Identify and clean up problematic evaluation runs from `data/evaluations.db`.
 
-Scope is controlled by `$ARGUMENTS`:
+Scope is controlled by the user's request:
 - `stalled` — only runs with status != "completed" (stuck in "running")
 - `artifacts` — only completed runs where ALL result rows have empty suggestions (`'[]'`) and zero scored rows
 - `all` or empty — both categories
@@ -73,36 +72,35 @@ Show the user a table of identified runs, grouped by category (stalled vs artifa
 
 If a stalled run has scored rows, **flag it** — the user may want to keep those rows or resume instead of deleting.
 
-## Step 4: Confirm and delete
+## Step 4: Preview with the repository deletion path
 
 **CRITICAL SAFETY RULES:**
-- **NEVER use LIKE or wildcard patterns in DELETE statements** — enumerate exact run IDs
-- Always show the exact SQL and affected row counts BEFORE executing
+- Never use raw SQL deletion. `evaluationStore.deleteRun()` owns the
+  transaction across run rows, results, interaction evaluations, and audit
+  rows.
+- Enumerate exact run IDs; never pass a broad text/profile/date filter for the
+  destructive invocation.
 - Ask the user to confirm which runs to delete
-- Delete from `evaluation_results` first, then `evaluation_runs`
+- Prefer resume or scientific closeout for a stalled real run with meaningful
+  attempts.
 
 ```bash
-# Count result rows that will be deleted (show to user first)
-sqlite3 data/evaluations.db "
-  SELECT run_id, COUNT(*) AS rows
-  FROM evaluation_results
-  WHERE run_id IN ('<id1>', '<id2>', '<id3>')
-  GROUP BY run_id"
+node scripts/eval-cli.js delete-runs --run-id <id1>,<id2>,<id3>
 ```
 
-Only after user confirms:
+The command is a preview unless `--force` is present. Show its exact targets and
+counts, then obtain explicit confirmation. Only after confirmation:
 
 ```bash
-sqlite3 data/evaluations.db "
-  DELETE FROM evaluation_results WHERE run_id IN ('<id1>', '<id2>', '<id3>');
-  DELETE FROM evaluation_runs WHERE id IN ('<id1>', '<id2>', '<id3>');"
+node scripts/eval-cli.js delete-runs --run-id <id1>,<id2>,<id3> --force
 ```
 
 ## Step 5: Verify
 
 ```bash
-sqlite3 data/evaluations.db "
-  SELECT COUNT(*) AS remaining_runs FROM evaluation_runs WHERE status <> 'completed';
-  SELECT COUNT(*) AS total_runs FROM evaluation_runs;
-  SELECT COUNT(*) AS total_results FROM evaluation_results;"
+node scripts/eval-cli.js runs
 ```
+
+Also verify that the deleted IDs are absent from related DB tables and report
+any external transcript/artifact directories separately. The database command
+does not imply permission to delete files on disk.

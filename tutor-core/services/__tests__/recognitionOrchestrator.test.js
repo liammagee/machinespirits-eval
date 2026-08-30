@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createTestDb, seedWritingPad, buildMockWritingPad } from './fixtures.js';
+import { createTestDb } from './fixtures.js';
 
 let testDb;
 
@@ -30,7 +30,6 @@ vi.mock('../aiService.js', () => ({
 // Import the services we'll use directly
 const writingPadService = await import('../writingPadService.js');
 const learnerIntegrationService = await import('../learnerIntegrationService.js');
-const memoryDynamicsService = await import('../memoryDynamicsService.js');
 
 // Mock recognitionGamificationService since it needs mocked writingPadService.getWritingPad
 vi.mock('../recognitionGamificationService.js', () => ({
@@ -124,9 +123,7 @@ describe('recognitionOrchestrator', () => {
       const result = processDialogueResult(learnerId, dialogueResult, learnerResponse);
 
       // Should have detected productive resistance (quick alternative action)
-      const resistanceEvents = result.phases.learnerIntegration.events.filter(
-        e => e?.eventType === 'resistance'
-      );
+      const resistanceEvents = result.phases.learnerIntegration.events.filter((e) => e?.eventType === 'resistance');
       expect(resistanceEvents.length).toBe(1);
       expect(resistanceEvents[0].resistanceInterpretation).toBe('productive');
     });
@@ -189,9 +186,7 @@ describe('recognitionOrchestrator', () => {
 
       const result = processWritingEvent(learnerId, event);
 
-      const breakthroughEvents = result.phases.learnerIntegration.events.filter(
-        e => e?.eventType === 'breakthrough'
-      );
+      const breakthroughEvents = result.phases.learnerIntegration.events.filter((e) => e?.eventType === 'breakthrough');
       expect(breakthroughEvents.length).toBe(1);
     });
 
@@ -208,9 +203,7 @@ describe('recognitionOrchestrator', () => {
 
       const result = processWritingEvent(learnerId, event);
 
-      const demandEvents = result.phases.learnerIntegration.events.filter(
-        e => e?.eventType === 'demand'
-      );
+      const demandEvents = result.phases.learnerIntegration.events.filter((e) => e?.eventType === 'demand');
       expect(demandEvents.length).toBe(1);
       expect(demandEvents[0].demandCategory).toBe('validation');
     });

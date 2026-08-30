@@ -1,10 +1,17 @@
 ---
 name: ms-drama-machine
-description: Assemble a pedagogical "drama" from a natural-language brief — "a tutor like X, a learner like Y, on topic T, with peripeteia/catharsis, learner played by me, judged by a 3-of-4 panel". Maps the brief onto the drama-machine slot model, stochastically fills the rest from priors, validates the adaptation turn_plan against the poetics ontology, emits a drama/cast/audience spec, and (optionally) lowers it to the existing generator + critic to run. Use to specify, sample, and run a tutoring drama without hand-writing a YAML.
-argument-hint: "<natural-language brief>  [--spec <file>] [--seed N] [--arms <arm,...>] [--mock] [--run]"
+description: Assemble a reproducible pedagogical-drama spec from a freeform brief and validate its slot and turn-plan design. Use for one-off drama specification; use ms-curriculum-drama for course-derived suites. Generation and judging are currently out of scope because their combined model-call ceiling is not enforced.
 ---
 
 You assemble a **drama** for the drama machine. A drama is a binding of values to slots across the six Aristotelian parts (mythos/ethos/dianoia/lexis/opsis/melos) + the audience + the cast. Your job: turn the user's brief into a *complete, valid, runnable* spec, being honest about what runs today vs what is roadmap.
+
+## Current execution boundary
+
+This skill ends after writing and validating the spec. Do not lower into a
+tracked config path, generate transcripts, or invoke either critic. The current
+generation and panel-judging chain does not expose one enforced aggregate
+model-call ceiling, and the historical `--consensus` example is not accepted by
+the graded critic. A later runtime-hardening task may re-enable those stages.
 
 **The model is the source of truth — read it first, do not invent slot values:**
 - `notes/poetics/drama-machine/TAXONOMY.md` — every slot, its value space, and WIRED/PARTIAL/TO-BUILD status
@@ -55,26 +62,38 @@ slots it does not cover.
 ## 3. Validate
 
 1. **Slot values** against the TAXONOMY enums — reject any value not in the value space (or mark it free-text where the slot allows).
-2. **turn_plan form-conflicts** via the ontology. Translate each `turn_plan` entry to ABox triples (`ms:turnN ms:targetsForm ms:<Form> ; ms:includesMove ms:<Move> .` for each target × move), concatenate with `config/ontology/poetics-core.ttl` + `poetics-rules.n3`, run through the EYE reasoner (author a tiny `.mjs` like the smoke in the repo: `import { n3reasoner } from 'eyereasoner'` → `output: 'deductive_closure'`), and **reject any turn for which `ms:hasFormConflict` is derived** (e.g. a catharsis-target turn that includes `pseudo_catharsis`). Clean up the temp file after.
+2. **turn_plan form-conflicts** via the maintained ontology sampler and
+   validator. Prefer `npm run poetics:sample-turn-plan <role> <targets> <count>
+   <architecture> <persona>` and plans returned by `sampleDramaSpec`, which
+   round-trip through `validateTurnPlan`. Do not author a temporary reasoner
+   script in the repository. Reject any turn for which the maintained validator
+   reports a form conflict.
 3. **Coherence**: every `target` should have at least one move that `aimsAtForm` it (check the closure for `ms:moveServesTarget`), else warn the target is unsupported.
 
 ## 4. Emit the spec for approval
 
-Write the unified `drama: / cast: / audience: / turn_plan:` spec to **the current directory** by default (`./<drama-id>.drama.yaml`) — or to `--out <path>` if given. Do not relocate it into a subfolder unasked. Show it inline and call out, explicitly:
+Write the unified `drama: / cast: / audience: / turn_plan:` spec to an explicit
+user path or, by default, a unique file under `exports/drama-specs/`. Never
+write generated output into `config/poetics-calibration`. Show it inline and
+call out, explicitly:
 - which blocks **RUN TODAY** vs **TO-BUILD** (per SPEC.md), and
 - any **TO-BUILD** slot the user requested (e.g. `cast.tutor: human`, `act_structure`, `learners[]`, `beat:` addressing) — say plainly it will be echoed but not yet honoured, and offer the wired fallback (e.g. `at: { turn: N }` instead of `{ beat: ... }`).
 
-Stop here unless `--run` was passed. The spec is itself a deliverable.
+Stop here. The spec is the deliverable; a request to run it requires a separate
+runtime route with enforceable generation and judging ceilings.
 
-## 5. Lower + run (only on `--run`)
+## 5. Historical lowering notes — do not execute
 
 Lower per SPEC.md §7 (you are the loader until roadmap #1 lands):
 
 1. Write the `drama:` block as a `dramas:`-list YAML the generator reads — to `config/poetics-calibration/<name>.yaml` (tell the user; this is the one place a generated file leaves cwd, because the generator + critic both read `--spec` from there). Carry `secret`, `persona`, `tutor_profile`/`learner_profile` (resolve `prompt_type`+`architecture`→ a profile name), approaches, scene, `tutor_adaptation_policy`, and any `turn_plan` (threaded onto the director plan by the generator and honoured per-turn by the engine).
 2. **Cast:**
    - all `llm:*` → `--generator <backend>` + `--role-map "tutor=<b>,learner=<b>,director=<b>"` (+ model alias).
-   - `cast.learner: human` → do **not** run the generator; hand off to `/ms-play-tutor <arm>` (Codex tutor, human learner) and stop.
-   - `cast.tutor: human` → not wired; say so and offer `/ms-play-tutor` (which makes Codex the tutor and the human the learner — the inverse) or an `llm:*` tutor.
+   - `cast.learner: human` → do **not** run the generator; hand off to
+     `$ms-play-tutor` (Codex-simulated tutor, human learner) and stop.
+   - `cast.tutor: human` → not wired; say so and offer `$ms-play-tutor` (which
+     makes Codex the tutor and the human the learner—the inverse) or an `llm:*`
+     tutor in a separately bounded runtime.
    - `--mock` or any `mock` cast → add the `--mock` flag (with any valid `--generator`) for a free plumbing check.
 3. **Generate:**
    ```bash

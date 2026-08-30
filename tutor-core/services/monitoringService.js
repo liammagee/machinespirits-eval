@@ -14,12 +14,12 @@ const alerts = [];
 
 // Alert thresholds
 const ALERT_THRESHOLDS = {
-  highLatencyMs: 30000,      // 30s per message
-  tokenBudgetWarn: 10000,    // 10k tokens warning
-  tokenBudgetCrit: 50000,    // 50k tokens critical
-  errorRatePercent: 10,      // 10% error rate
+  highLatencyMs: 30000, // 30s per message
+  tokenBudgetWarn: 10000, // 10k tokens warning
+  tokenBudgetCrit: 50000, // 50k tokens critical
+  errorRatePercent: 10, // 10% error rate
   errorRateWindowMs: 300000, // 5 minute window
-  maxRoundsWithoutApproval: 5
+  maxRoundsWithoutApproval: 5,
 };
 
 // Error tracking for rate calculation
@@ -29,11 +29,7 @@ const errorLog = [];
  * Start tracking a new tutor session
  */
 export function startSession(sessionId, options = {}) {
-  const {
-    userId = 'anonymous',
-    profileName = 'default',
-    modelId = 'unknown'
-  } = options;
+  const { userId = 'anonymous', profileName = 'default', modelId = 'unknown' } = options;
 
   const session = {
     sessionId,
@@ -50,9 +46,9 @@ export function startSession(sessionId, options = {}) {
       totalLatencyMs: 0,
       messageCount: 0,
       estimatedCost: 0,
-      errors: 0
+      errors: 0,
     },
-    dialogueTrace: []
+    dialogueTrace: [],
   };
 
   activeSessions.set(sessionId, session);
@@ -89,13 +85,13 @@ export function recordEvent(sessionId, event) {
   }
 
   const {
-    type,           // 'ego_generate', 'superego_review', 'ego_revise', etc.
+    type, // 'ego_generate', 'superego_review', 'ego_revise', etc.
     inputTokens = 0,
     outputTokens = 0,
     latencyMs = 0,
     round = 0,
     approved = null,
-    error = null
+    error = null,
   } = event;
 
   // Update metrics
@@ -120,7 +116,7 @@ export function recordEvent(sessionId, event) {
     outputTokens,
     latencyMs,
     round,
-    approved
+    approved,
   });
 
   // Handle errors
@@ -150,7 +146,7 @@ function checkAlerts(session, event) {
       sessionId: session.sessionId,
       message: `High latency: ${(latencyMs / 1000).toFixed(1)}s for single message`,
       value: latencyMs,
-      threshold: ALERT_THRESHOLDS.highLatencyMs
+      threshold: ALERT_THRESHOLDS.highLatencyMs,
     });
   }
 
@@ -163,7 +159,7 @@ function checkAlerts(session, event) {
       sessionId: session.sessionId,
       message: `Token budget critical: ${totalTokens.toLocaleString()} tokens used`,
       value: totalTokens,
-      threshold: ALERT_THRESHOLDS.tokenBudgetCrit
+      threshold: ALERT_THRESHOLDS.tokenBudgetCrit,
     });
   } else if (totalTokens > ALERT_THRESHOLDS.tokenBudgetWarn) {
     addAlert({
@@ -172,7 +168,7 @@ function checkAlerts(session, event) {
       sessionId: session.sessionId,
       message: `Token budget warning: ${totalTokens.toLocaleString()} tokens used`,
       value: totalTokens,
-      threshold: ALERT_THRESHOLDS.tokenBudgetWarn
+      threshold: ALERT_THRESHOLDS.tokenBudgetWarn,
     });
   }
 
@@ -184,7 +180,7 @@ function checkAlerts(session, event) {
       sessionId: session.sessionId,
       message: `Dialogue failed to converge after ${round} rounds`,
       value: round,
-      threshold: ALERT_THRESHOLDS.maxRoundsWithoutApproval
+      threshold: ALERT_THRESHOLDS.maxRoundsWithoutApproval,
     });
   }
 }
@@ -194,7 +190,7 @@ function checkAlerts(session, event) {
  */
 function checkErrorRate() {
   const windowStart = Date.now() - ALERT_THRESHOLDS.errorRateWindowMs;
-  const recentErrors = errorLog.filter(e => e.timestamp > windowStart);
+  const recentErrors = errorLog.filter((e) => e.timestamp > windowStart);
 
   // Get total requests in window (rough estimate)
   let totalRequests = 0;
@@ -211,7 +207,7 @@ function checkErrorRate() {
         sessionId: null,
         message: `High error rate: ${errorRate.toFixed(1)}% in last 5 minutes`,
         value: errorRate,
-        threshold: ALERT_THRESHOLDS.errorRatePercent
+        threshold: ALERT_THRESHOLDS.errorRatePercent,
       });
     }
   }
@@ -226,17 +222,15 @@ function checkErrorRate() {
  * Add an alert
  */
 function addAlert(alert) {
-  const existingIndex = alerts.findIndex(a =>
-    a.type === alert.type &&
-    a.sessionId === alert.sessionId &&
-    a.severity === alert.severity
+  const existingIndex = alerts.findIndex(
+    (a) => a.type === alert.type && a.sessionId === alert.sessionId && a.severity === alert.severity,
   );
 
   const fullAlert = {
     ...alert,
     id: `alert-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     timestamp: new Date().toISOString(),
-    acknowledged: false
+    acknowledged: false,
   };
 
   if (existingIndex >= 0) {
@@ -282,34 +276,35 @@ export function getAggregateMetrics() {
       totalOutputTokens: 0,
       totalCost: 0,
       avgLatencyMs: 0,
-      totalErrors: 0
+      totalErrors: 0,
     };
   }
 
-  const totals = sessions.reduce((acc, s) => ({
-    totalRounds: acc.totalRounds + s.metrics.rounds,
-    totalInputTokens: acc.totalInputTokens + s.metrics.inputTokens,
-    totalOutputTokens: acc.totalOutputTokens + s.metrics.outputTokens,
-    totalCost: acc.totalCost + s.metrics.estimatedCost,
-    totalLatencyMs: acc.totalLatencyMs + s.metrics.totalLatencyMs,
-    totalMessages: acc.totalMessages + s.metrics.messageCount,
-    totalErrors: acc.totalErrors + s.metrics.errors
-  }), {
-    totalRounds: 0,
-    totalInputTokens: 0,
-    totalOutputTokens: 0,
-    totalCost: 0,
-    totalLatencyMs: 0,
-    totalMessages: 0,
-    totalErrors: 0
-  });
+  const totals = sessions.reduce(
+    (acc, s) => ({
+      totalRounds: acc.totalRounds + s.metrics.rounds,
+      totalInputTokens: acc.totalInputTokens + s.metrics.inputTokens,
+      totalOutputTokens: acc.totalOutputTokens + s.metrics.outputTokens,
+      totalCost: acc.totalCost + s.metrics.estimatedCost,
+      totalLatencyMs: acc.totalLatencyMs + s.metrics.totalLatencyMs,
+      totalMessages: acc.totalMessages + s.metrics.messageCount,
+      totalErrors: acc.totalErrors + s.metrics.errors,
+    }),
+    {
+      totalRounds: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      totalCost: 0,
+      totalLatencyMs: 0,
+      totalMessages: 0,
+      totalErrors: 0,
+    },
+  );
 
   return {
     activeSessions: sessions.length,
     ...totals,
-    avgLatencyMs: totals.totalMessages > 0
-      ? Math.round(totals.totalLatencyMs / totals.totalMessages)
-      : 0
+    avgLatencyMs: totals.totalMessages > 0 ? Math.round(totals.totalLatencyMs / totals.totalMessages) : 0,
   };
 }
 
@@ -322,11 +317,11 @@ export function getAlerts(options = {}) {
   let filtered = [...alerts];
 
   if (severity) {
-    filtered = filtered.filter(a => a.severity === severity);
+    filtered = filtered.filter((a) => a.severity === severity);
   }
 
   if (acknowledged !== undefined) {
-    filtered = filtered.filter(a => a.acknowledged === acknowledged);
+    filtered = filtered.filter((a) => a.acknowledged === acknowledged);
   }
 
   // Most recent first
@@ -339,7 +334,7 @@ export function getAlerts(options = {}) {
  * Acknowledge an alert
  */
 export function acknowledgeAlert(alertId) {
-  const alert = alerts.find(a => a.id === alertId);
+  const alert = alerts.find((a) => a.id === alertId);
   if (alert) {
     alert.acknowledged = true;
     alert.acknowledgedAt = new Date().toISOString();
@@ -369,20 +364,18 @@ export function clearSessions() {
 export function getMonitoringSummary() {
   const aggregate = getAggregateMetrics();
   const unacknowledgedAlerts = getAlerts({ acknowledged: false });
-  const criticalAlerts = unacknowledgedAlerts.filter(a => a.severity === 'critical');
-  const warningAlerts = unacknowledgedAlerts.filter(a => a.severity === 'warning');
+  const criticalAlerts = unacknowledgedAlerts.filter((a) => a.severity === 'critical');
+  const warningAlerts = unacknowledgedAlerts.filter((a) => a.severity === 'warning');
 
   return {
-    status: criticalAlerts.length > 0 ? 'critical'
-          : warningAlerts.length > 0 ? 'warning'
-          : 'healthy',
+    status: criticalAlerts.length > 0 ? 'critical' : warningAlerts.length > 0 ? 'warning' : 'healthy',
     metrics: aggregate,
     alertCounts: {
       critical: criticalAlerts.length,
       warning: warningAlerts.length,
-      total: unacknowledgedAlerts.length
+      total: unacknowledgedAlerts.length,
     },
-    recentAlerts: unacknowledgedAlerts.slice(0, 5)
+    recentAlerts: unacknowledgedAlerts.slice(0, 5),
   };
 }
 
@@ -398,5 +391,5 @@ export default {
   clearAlerts,
   clearSessions,
   getMonitoringSummary,
-  ALERT_THRESHOLDS
+  ALERT_THRESHOLDS,
 };

@@ -15,7 +15,35 @@ const FOCUSED_EXACT_PATHS = new Set([
   'CLAUDE.md',
   'DOCS.md',
   'GEMINI.md',
+]);
+
+// These paths live on otherwise-authored surfaces, but runtime services or
+// skipped full-CI contracts consume their contents directly.
+const FULL_CI_EXACT_PATHS = new Set([
   'README.md',
+  'docs/pedagogical-move-contract.md',
+  'docs/ref-status.md',
+  'docs/research/human-coding-codebook.md',
+  'docs/research/paper-full-2.0.md',
+  'workplan/items/adaptive-warrant-outcome-study.md',
+  'workplan/items/guarded-learner-outcome-study.md',
+  'workplan/items/resistance-action-register-integration.md',
+]);
+
+const FULL_CI_PATH_PREFIXES = ['docs/adaptation-refinement/'];
+
+// Ref governance is a separate integrity surface. Select it for changes that
+// can alter the managed-ref contract, while letting unrelated full-CI changes
+// avoid failing on external ref drift that they did not introduce.
+const REF_GOVERNANCE_EXACT_PATHS = new Set([
+  '.github/workflows/ref-governance.yml',
+  '.github/workflows/test.yml',
+  'docs/ref-status.md',
+  'docs/tagging-and-version-protocol.md',
+  'scripts/ci-change-policy.js',
+  'scripts/ref-governance.js',
+  'tests/ciChangePolicy.test.js',
+  'tests/refGovernance.test.js',
 ]);
 
 const FOCUSED_PATH_PREFIXES = [
@@ -28,14 +56,13 @@ const FOCUSED_PATH_PREFIXES = [
   'workplan/playbook/',
 ];
 
-const STUDY_GO_METADATA_PATH = /^config\/[^/]*study-go-request[^/]*\.json$/u;
+// Historical request files are executable inputs to several distinct runtime
+// and test contracts. A filename pattern cannot safely select one validator.
+const STUDY_GO_RUNTIME_PATH = /^config\/[^/]*study-go-request[^/]*\.json$/u;
 
 const VALIDATOR_ONLY_GROUPS = [
   {
-    paths: new Set([
-      'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
-      'tests/tutorStubResistantProfileStudyGoRequest.test.js',
-    ]),
+    paths: new Set(['tests/tutorStubResistantProfileStudyGoRequest.test.js']),
     tests: ['tests/tutorStubResistantProfileStudyGoRequest.test.js'],
   },
 ];
@@ -44,12 +71,17 @@ export function fullCiClassification(reason) {
   return {
     profile: 'full',
     fullRequired: true,
+    refGovernanceRequired: true,
     validationRequired: true,
     authorizationRequired: false,
     validatorPaths: [],
     validatorTests: [],
     reason,
   };
+}
+
+export function pathRequiresRefGovernance(file) {
+  return REF_GOVERNANCE_EXACT_PATHS.has(file);
 }
 
 export function validateChangedPath(file) {
@@ -70,11 +102,14 @@ export function validateChangedFiles(changedFiles) {
 }
 
 export function pathAllowsFocusedCi(file) {
-  return (
-    FOCUSED_EXACT_PATHS.has(file) ||
-    FOCUSED_PATH_PREFIXES.some((prefix) => file.startsWith(prefix)) ||
-    STUDY_GO_METADATA_PATH.test(file)
-  );
+  if (
+    FULL_CI_EXACT_PATHS.has(file) ||
+    FULL_CI_PATH_PREFIXES.some((prefix) => file.startsWith(prefix)) ||
+    STUDY_GO_RUNTIME_PATH.test(file)
+  ) {
+    return false;
+  }
+  return FOCUSED_EXACT_PATHS.has(file) || FOCUSED_PATH_PREFIXES.some((prefix) => file.startsWith(prefix));
 }
 
 export function pathRequiresValidationFramework(file) {
@@ -112,8 +147,9 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
     return {
       profile: 'validator-only',
       fullRequired: false,
+      refGovernanceRequired: safeChangedFiles.some(pathRequiresRefGovernance),
       validationRequired: safeChangedFiles.some(pathRequiresValidationFramework),
-      authorizationRequired: safeChangedFiles.some((file) => STUDY_GO_METADATA_PATH.test(file)),
+      authorizationRequired: false,
       validatorPaths: validatorOnly.paths,
       validatorTests: validatorOnly.tests,
       reason: `allowlisted validator-only change: ${validatorOnly.paths.join(', ')}`,
@@ -125,6 +161,7 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
     return {
       profile: 'full',
       fullRequired: true,
+      refGovernanceRequired: safeChangedFiles.some(pathRequiresRefGovernance),
       validationRequired: true,
       authorizationRequired: false,
       validatorPaths: [],
@@ -136,8 +173,9 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
   return {
     profile: 'focused',
     fullRequired: false,
+    refGovernanceRequired: safeChangedFiles.some(pathRequiresRefGovernance),
     validationRequired: safeChangedFiles.some(pathRequiresValidationFramework),
-    authorizationRequired: safeChangedFiles.some((file) => STUDY_GO_METADATA_PATH.test(file)),
+    authorizationRequired: false,
     validatorPaths: [],
     validatorTests: [],
     reason: `focused authored metadata only: ${safeChangedFiles.join(', ')}`,
@@ -150,7 +188,12 @@ function git(args, projectRoot = PROJECT_ROOT, { trim = true } = {}) {
 }
 
 export function changedFilesBetween(base, head, projectRoot = PROJECT_ROOT) {
-  const output = git(['diff', '--name-only', '-z', `${base}...${head}`], projectRoot, { trim: false });
+  // Disable rename folding so both the deleted source and added destination
+  // reach the path classifier. Otherwise runtime.js -> docs/runtime.md looks
+  // like an authored-doc-only change.
+  const output = git(['diff', '--no-renames', '--name-only', '-z', `${base}...${head}`], projectRoot, {
+    trim: false,
+  });
   return output ? output.split('\0').filter(Boolean) : [];
 }
 
@@ -254,7 +297,7 @@ function main() {
   if (args.githubOutput) {
     fs.appendFileSync(
       args.githubOutput,
-      `profile=${result.profile}\nfull_required=${result.fullRequired}\nvalidation_required=${result.validationRequired}\nauthorization_required=${result.authorizationRequired}\nvalidator_required=${result.validatorTests.length > 0}\nvalidator_tests=${result.validatorTests.join(' ')}\nvalidator_paths=${result.validatorPaths.join(' ')}\n`,
+      `profile=${result.profile}\nfull_required=${result.fullRequired}\nref_governance_required=${result.refGovernanceRequired}\nvalidation_required=${result.validationRequired}\nauthorization_required=${result.authorizationRequired}\nvalidator_required=${result.validatorTests.length > 0}\nvalidator_tests=${result.validatorTests.join(' ')}\nvalidator_paths=${result.validatorPaths.join(' ')}\n`,
     );
   }
   console.log(JSON.stringify(result));

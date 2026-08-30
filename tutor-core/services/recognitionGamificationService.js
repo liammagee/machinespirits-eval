@@ -92,26 +92,25 @@ export function computeRecognitionDepth(learnerId) {
   const { dialecticalDepth, mutualTransformationScore, pedagogicalAttunement } = pad.metrics;
 
   // Compute breakthrough density from learner events
-  const breakthroughEvents = getDb().prepare(
-    `SELECT COUNT(*) as count FROM learner_recognition_events
-     WHERE learner_id = ? AND event_type = 'breakthrough'`
-  ).get(learnerId);
+  const breakthroughEvents = getDb()
+    .prepare(
+      `SELECT COUNT(*) as count FROM learner_recognition_events
+     WHERE learner_id = ? AND event_type = 'breakthrough'`,
+    )
+    .get(learnerId);
 
-  const totalEvents = getDb().prepare(
-    `SELECT COUNT(*) as count FROM learner_recognition_events
-     WHERE learner_id = ?`
-  ).get(learnerId);
+  const totalEvents = getDb()
+    .prepare(
+      `SELECT COUNT(*) as count FROM learner_recognition_events
+     WHERE learner_id = ?`,
+    )
+    .get(learnerId);
 
-  const breakthroughDensity = totalEvents.count > 0
-    ? breakthroughEvents.count / totalEvents.count
-    : 0;
+  const breakthroughDensity = totalEvents.count > 0 ? breakthroughEvents.count / totalEvents.count : 0;
 
   // Composite depth formula
   const compositeDepth =
-    (dialecticalDepth * 0.3) +
-    (mutualTransformationScore * 0.3) +
-    (pedagogicalAttunement * 0.2) +
-    (breakthroughDensity * 0.2);
+    dialecticalDepth * 0.3 + mutualTransformationScore * 0.3 + pedagogicalAttunement * 0.2 + breakthroughDensity * 0.2;
 
   // Compute trend by comparing recent sessions vs older sessions
   const trend = computeDepthTrend(learnerId, pad.id);
@@ -133,19 +132,23 @@ export function computeRecognitionDepth(learnerId) {
  * @returns {'rising'|'falling'|'stable'|'none'}
  */
 function computeDepthTrend(learnerId, writingPadId) {
-  const recentMoments = getDb().prepare(
-    `SELECT struggle_depth, mutual_acknowledgment, transformative
+  const recentMoments = getDb()
+    .prepare(
+      `SELECT struggle_depth, mutual_acknowledgment, transformative
      FROM recognition_moments
      WHERE writing_pad_id = ?
-     ORDER BY created_at DESC LIMIT 5`
-  ).all(writingPadId);
+     ORDER BY created_at DESC LIMIT 5`,
+    )
+    .all(writingPadId);
 
-  const olderMoments = getDb().prepare(
-    `SELECT struggle_depth, mutual_acknowledgment, transformative
+  const olderMoments = getDb()
+    .prepare(
+      `SELECT struggle_depth, mutual_acknowledgment, transformative
      FROM recognition_moments
      WHERE writing_pad_id = ?
-     ORDER BY created_at DESC LIMIT 5 OFFSET 5`
-  ).all(writingPadId);
+     ORDER BY created_at DESC LIMIT 5 OFFSET 5`,
+    )
+    .all(writingPadId);
 
   if (recentMoments.length < 2) return 'none';
   if (olderMoments.length < 2) return 'rising'; // Still early, assume rising
@@ -168,7 +171,7 @@ function computeDepthTrend(learnerId, writingPadId) {
 export function checkRecognitionMilestones(learnerId) {
   const pad = writingPadService.getWritingPad(learnerId);
   if (!pad) {
-    return Object.values(MILESTONE_DEFINITIONS).map(m => ({
+    return Object.values(MILESTONE_DEFINITIONS).map((m) => ({
       ...m,
       achieved: false,
       achievedAt: null,
@@ -179,11 +182,13 @@ export function checkRecognitionMilestones(learnerId) {
   const results = [];
 
   // first_negation: First recognition_type = 'existential' moment
-  const firstExistential = getDb().prepare(
-    `SELECT created_at FROM recognition_moments
+  const firstExistential = getDb()
+    .prepare(
+      `SELECT created_at FROM recognition_moments
      WHERE writing_pad_id = ? AND recognition_type = 'existential'
-     ORDER BY created_at ASC LIMIT 1`
-  ).get(pad.id);
+     ORDER BY created_at ASC LIMIT 1`,
+    )
+    .get(pad.id);
   results.push({
     ...MILESTONE_DEFINITIONS.first_negation,
     achieved: !!firstExistential,
@@ -192,11 +197,13 @@ export function checkRecognitionMilestones(learnerId) {
   });
 
   // productive_resistance: First resistance_interpretation = 'productive' event
-  const firstProductive = getDb().prepare(
-    `SELECT created_at FROM learner_recognition_events
+  const firstProductive = getDb()
+    .prepare(
+      `SELECT created_at FROM learner_recognition_events
      WHERE learner_id = ? AND resistance_interpretation = 'productive'
-     ORDER BY created_at ASC LIMIT 1`
-  ).get(learnerId);
+     ORDER BY created_at ASC LIMIT 1`,
+    )
+    .get(learnerId);
   results.push({
     ...MILESTONE_DEFINITIONS.productive_resistance,
     achieved: !!firstProductive,
@@ -205,11 +212,13 @@ export function checkRecognitionMilestones(learnerId) {
   });
 
   // mutual_transformation: First mutual_acknowledgment = TRUE moment
-  const firstMutual = getDb().prepare(
-    `SELECT created_at FROM recognition_moments
+  const firstMutual = getDb()
+    .prepare(
+      `SELECT created_at FROM recognition_moments
      WHERE writing_pad_id = ? AND mutual_acknowledgment = 1
-     ORDER BY created_at ASC LIMIT 1`
-  ).get(pad.id);
+     ORDER BY created_at ASC LIMIT 1`,
+    )
+    .get(pad.id);
   results.push({
     ...MILESTONE_DEFINITIONS.mutual_transformation,
     achieved: !!firstMutual,
@@ -218,11 +227,13 @@ export function checkRecognitionMilestones(learnerId) {
   });
 
   // memory_consolidation: First persistence_layer = 'unconscious' moment
-  const firstUnconscious = getDb().prepare(
-    `SELECT created_at, consolidated_at FROM recognition_moments
+  const firstUnconscious = getDb()
+    .prepare(
+      `SELECT created_at, consolidated_at FROM recognition_moments
      WHERE writing_pad_id = ? AND persistence_layer = 'unconscious'
-     ORDER BY consolidated_at ASC LIMIT 1`
-  ).get(pad.id);
+     ORDER BY consolidated_at ASC LIMIT 1`,
+    )
+    .get(pad.id);
   results.push({
     ...MILESTONE_DEFINITIONS.memory_consolidation,
     achieved: !!firstUnconscious,
@@ -237,16 +248,16 @@ export function checkRecognitionMilestones(learnerId) {
     ...MILESTONE_DEFINITIONS.archetype_evolution,
     achieved: archetypeEvolved,
     achievedAt: archetype?.lastUpdated || null,
-    evidence: archetypeEvolved
-      ? `Learning style identified: ${archetype.preferredLearningStyle}`
-      : null,
+    evidence: archetypeEvolved ? `Learning style identified: ${archetype.preferredLearningStyle}` : null,
   });
 
   // dialectical_mastery: dialectical_depth > 0.7 across 5+ sessions
-  const highDepthSessions = getDb().prepare(
-    `SELECT COUNT(DISTINCT session_id) as count FROM recognition_moments
-     WHERE writing_pad_id = ? AND session_id IS NOT NULL`
-  ).get(pad.id);
+  const highDepthSessions = getDb()
+    .prepare(
+      `SELECT COUNT(DISTINCT session_id) as count FROM recognition_moments
+     WHERE writing_pad_id = ? AND session_id IS NOT NULL`,
+    )
+    .get(pad.id);
   const dialecticalMastery = pad.metrics.dialecticalDepth > 0.7 && (highDepthSessions?.count || 0) >= 5;
   results.push({
     ...MILESTONE_DEFINITIONS.dialectical_mastery,
@@ -258,26 +269,28 @@ export function checkRecognitionMilestones(learnerId) {
   });
 
   // metacognitive_awakening: 3+ recognition_type = 'metacognitive' moments
-  const metacognitiveCount = getDb().prepare(
-    `SELECT COUNT(*) as count FROM recognition_moments
-     WHERE writing_pad_id = ? AND recognition_type = 'metacognitive'`
-  ).get(pad.id);
+  const metacognitiveCount = getDb()
+    .prepare(
+      `SELECT COUNT(*) as count FROM recognition_moments
+     WHERE writing_pad_id = ? AND recognition_type = 'metacognitive'`,
+    )
+    .get(pad.id);
   const metacognitiveAchieved = (metacognitiveCount?.count || 0) >= 3;
   results.push({
     ...MILESTONE_DEFINITIONS.metacognitive_awakening,
     achieved: metacognitiveAchieved,
     achievedAt: metacognitiveAchieved ? pad.updatedAt : null,
-    evidence: metacognitiveAchieved
-      ? `${metacognitiveCount.count} metacognitive recognition moments`
-      : null,
+    evidence: metacognitiveAchieved ? `${metacognitiveCount.count} metacognitive recognition moments` : null,
   });
 
   // synthesis_achieved: First synthesis_strategy = 'dialectical_synthesis'
-  const firstSynthesis = getDb().prepare(
-    `SELECT created_at FROM recognition_moments
+  const firstSynthesis = getDb()
+    .prepare(
+      `SELECT created_at FROM recognition_moments
      WHERE writing_pad_id = ? AND synthesis_strategy = 'dialectical_synthesis'
-     ORDER BY created_at ASC LIMIT 1`
-  ).get(pad.id);
+     ORDER BY created_at ASC LIMIT 1`,
+    )
+    .get(pad.id);
   results.push({
     ...MILESTONE_DEFINITIONS.synthesis_achieved,
     achieved: !!firstSynthesis,
@@ -317,25 +330,22 @@ export function getMemoryLayerProgression(learnerId) {
 
   // Preconscious layer
   const patterns = pad.preconscious.recentPatterns || [];
-  const avgConfidence = patterns.length > 0
-    ? patterns.reduce((sum, p) => sum + (p.confidence || 0), 0) / patterns.length
-    : 0;
+  const avgConfidence =
+    patterns.length > 0 ? patterns.reduce((sum, p) => sum + (p.confidence || 0), 0) / patterns.length : 0;
 
   // Count recent promotions (patterns observed in last 7 days)
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const recentPromotions = patterns.filter(
-    p => p.firstObserved && p.firstObserved >= sevenDaysAgo
-  ).length;
+  const recentPromotions = patterns.filter((p) => p.firstObserved && p.firstObserved >= sevenDaysAgo).length;
 
   // Unconscious layer
   const permanentTraces = pad.unconscious.permanentTraces?.length || 0;
   const archetype = pad.unconscious.learnerArchetype;
-  const archetypeComplete = archetype &&
+  const archetypeComplete =
+    archetype &&
     archetype.preferredLearningStyle !== null &&
     (archetype.commonStruggles?.length || 0) > 0 &&
     (archetype.breakthroughPatterns?.length || 0) > 0;
-  const conflictsResolved = (pad.unconscious.conflictPatterns || [])
-    .filter(c => c.resolved).length;
+  const conflictsResolved = (pad.unconscious.conflictPatterns || []).filter((c) => c.resolved).length;
 
   // Recent layer transitions from recognition moments
   const recentTransitions = getRecentTransitions(pad.id);
@@ -367,14 +377,16 @@ export function getMemoryLayerProgression(learnerId) {
  */
 function getRecentTransitions(writingPadId) {
   // Find moments that have been consolidated (transitioned to unconscious)
-  const consolidated = getDb().prepare(
-    `SELECT id, created_at, consolidated_at, persistence_layer, synthesis_resolution
+  const consolidated = getDb()
+    .prepare(
+      `SELECT id, created_at, consolidated_at, persistence_layer, synthesis_resolution
      FROM recognition_moments
      WHERE writing_pad_id = ? AND consolidated_at IS NOT NULL
-     ORDER BY consolidated_at DESC LIMIT 10`
-  ).all(writingPadId);
+     ORDER BY consolidated_at DESC LIMIT 10`,
+    )
+    .all(writingPadId);
 
-  return consolidated.map(m => ({
+  return consolidated.map((m) => ({
     momentId: m.id,
     from: 'preconscious',
     to: 'unconscious',
@@ -416,11 +428,13 @@ export function computeRecognitionFlow(learnerId, sessionId) {
     params.push(sessionId);
   } else {
     // Get the most recent session
-    const latestSession = getDb().prepare(
-      `SELECT session_id FROM recognition_moments
+    const latestSession = getDb()
+      .prepare(
+        `SELECT session_id FROM recognition_moments
        WHERE writing_pad_id = ? AND session_id IS NOT NULL
-       ORDER BY created_at DESC LIMIT 1`
-    ).get(pad.id);
+       ORDER BY created_at DESC LIMIT 1`,
+      )
+      .get(pad.id);
 
     if (latestSession) {
       query += ' AND session_id = ?';
@@ -429,7 +443,9 @@ export function computeRecognitionFlow(learnerId, sessionId) {
   }
 
   query += ' ORDER BY created_at ASC';
-  const moments = getDb().prepare(query).all(...params);
+  const moments = getDb()
+    .prepare(query)
+    .all(...params);
 
   if (moments.length === 0) {
     return {
@@ -446,30 +462,28 @@ export function computeRecognitionFlow(learnerId, sessionId) {
   const struggleDepthInRange = avgStruggleDepth >= 0.3 && avgStruggleDepth <= 0.7;
 
   // Synthesis balance: ratio of dialectical syntheses to total strategies
-  const synthesisMoments = moments.filter(m => m.synthesis_strategy === 'dialectical_synthesis').length;
+  const synthesisMoments = moments.filter((m) => m.synthesis_strategy === 'dialectical_synthesis').length;
   const synthesisBalance = moments.length > 0 ? synthesisMoments / moments.length : 0;
 
   // Resistance productivity from session events
-  const sessionEvents = getDb().prepare(
-    `SELECT * FROM learner_recognition_events
+  const sessionEvents = getDb()
+    .prepare(
+      `SELECT * FROM learner_recognition_events
      WHERE learner_id = ? AND event_type = 'resistance'
      ${sessionId ? 'AND session_id = ?' : ''}
-     ORDER BY created_at DESC LIMIT 20`
-  ).all(sessionId ? [learnerId, sessionId] : [learnerId]);
+     ORDER BY created_at DESC LIMIT 20`,
+    )
+    .all(sessionId ? [learnerId, sessionId] : [learnerId]);
 
-  const productiveResistance = sessionEvents.filter(
-    e => e.resistance_interpretation === 'productive'
-  ).length;
-  const resistanceProductivity = sessionEvents.length > 0
-    ? productiveResistance / sessionEvents.length
-    : 0;
+  const productiveResistance = sessionEvents.filter((e) => e.resistance_interpretation === 'productive').length;
+  const resistanceProductivity = sessionEvents.length > 0 ? productiveResistance / sessionEvents.length : 0;
 
   // Composite flow score
   const flowScore =
     (struggleDepthInRange ? 0.3 : avgStruggleDepth * 0.15) +
-    (synthesisBalance * 0.3) +
-    (resistanceProductivity * 0.2) +
-    (Math.min(moments.length / 5, 1) * 0.2); // Engagement density
+    synthesisBalance * 0.3 +
+    resistanceProductivity * 0.2 +
+    Math.min(moments.length / 5, 1) * 0.2; // Engagement density
 
   // Flow state determination
   let flowState;
@@ -512,34 +526,36 @@ export function getDialecticalContinuity(learnerId) {
   }
 
   // Get all sessions and whether they had recognition moments
-  const sessions = getDb().prepare(
-    `SELECT session_id, COUNT(*) as moment_count, MIN(created_at) as first_moment
+  const sessions = getDb()
+    .prepare(
+      `SELECT session_id, COUNT(*) as moment_count, MIN(created_at) as first_moment
      FROM recognition_moments
      WHERE writing_pad_id = ? AND session_id IS NOT NULL
      GROUP BY session_id
-     ORDER BY first_moment ASC`
-  ).all(pad.id);
+     ORDER BY first_moment ASC`,
+    )
+    .all(pad.id);
 
   const sessionsWithRecognition = sessions.length;
 
   // For sessionsWithout, we need total sessions. Estimate from events.
-  const allSessionIds = getDb().prepare(
-    `SELECT DISTINCT session_id FROM learner_recognition_events
+  const allSessionIds = getDb()
+    .prepare(
+      `SELECT DISTINCT session_id FROM learner_recognition_events
      WHERE learner_id = ? AND session_id IS NOT NULL
      UNION
      SELECT DISTINCT session_id FROM recognition_moments
-     WHERE writing_pad_id = ? AND session_id IS NOT NULL`
-  ).all(learnerId, pad.id);
+     WHERE writing_pad_id = ? AND session_id IS NOT NULL`,
+    )
+    .all(learnerId, pad.id);
 
   const totalSessions = allSessionIds.length;
   const sessionsWithout = totalSessions - sessionsWithRecognition;
 
   // Compute continuity streaks
   // Look at sessions ordered by time and check for consecutive recognition sessions
-  const sessionHasRecognition = new Set(sessions.map(s => s.session_id));
-  const orderedSessions = allSessionIds
-    .map(s => s.session_id)
-    .filter(Boolean);
+  const sessionHasRecognition = new Set(sessions.map((s) => s.session_id));
+  const orderedSessions = allSessionIds.map((s) => s.session_id).filter(Boolean);
 
   let currentContinuity = 0;
   let longestContinuity = 0;
@@ -602,13 +618,14 @@ export function getLearnerRecognitionProfile(learnerId) {
         guided: 'Careful learner who builds understanding through structured guidance',
         accelerated: 'Driven learner who seeks challenge and rapid deepening',
       };
-      archetypeDescription = styleDescriptions[archetype.preferredLearningStyle]
-        || `Learner with ${archetype.preferredLearningStyle} orientation`;
+      archetypeDescription =
+        styleDescriptions[archetype.preferredLearningStyle] ||
+        `Learner with ${archetype.preferredLearningStyle} orientation`;
     }
   }
 
   // Achieved milestone count
-  const achievedCount = milestones.filter(m => m.achieved).length;
+  const achievedCount = milestones.filter((m) => m.achieved).length;
   const totalMilestones = milestones.length;
 
   return {

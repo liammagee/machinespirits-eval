@@ -5,16 +5,16 @@
 // origins, ...} into adaptation-core TTL, transcribing the gate's stage-level
 // decisions as ms:gateFired booleans, so the ontology rules derive the HIGHER-ORDER
 // distinctions the procedural gate does NOT make: recognition-origin (organic vs
-// peripeteia_induced, structurally) and -- once a repair signal exists -- the
-// correction axis.
+// peripeteia_induced, structurally) and, when a determinate public-text repair
+// signal is present, the correction axis.
 //
 // HONEST SCOPE (v1): the persisted gate-struct is ~5 booleans + vote counts. It has
 //   - NO old-check / replacement-check naming signal (S5/S6) -> PROXIED from "recognition produced"
 //   - NO trigger-consumption detail (R6's wrong-trigger path) -> not populated
-//   - NO hamartia-repair signal at all -> the correction axis is left empty.
-// So this bridge populates: the chain -> recognition-origin, control_leak, action_gap.
-// What it cannot yet populate is the explicit unpopulatable() list below (a spec for
-// what the loop must additionally emit to make the correction axis operational).
+// So legacy summaries populate: the chain -> recognition-origin, control_leak,
+// action_gap. New summaries may additionally carry the tri-state public-text repair
+// block. Only a decisive positive adds a fired HamartiaRepairStage; negative and
+// indeterminate blocks add no RDF fact, preserving both ambiguity and legacy behavior.
 
 const ABOX_PREFIX = `@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -28,12 +28,12 @@ function localId(value) {
   );
 }
 
-// Fields the adaptation-core TBox models but the persisted gate-struct cannot supply.
+// Fields the adaptation-core TBox models but the persisted gate-struct still needs a
+// joined public transcript or deliberation sidecar to supply.
 export function unpopulatableFromGateStruct() {
   return [
     'OldCheckNamingStage / ReplacementCheckNamingStage gates (S5/S6) — NOW JOINED via detectNamingFrames (the structure-critic pressure + replacement frames re-run on the learner final turn) when a transcript is present; falls back to the "recognition produced" proxy only when no transcript is joined.',
     'Trigger-consumption detail (ms:consumesTrigger / ms:leavesUnusedCandidate) — the D53 wrong-trigger path (R6). Not in the gate booleans, but NOW JOINED from the deliberation sidecar via extractTriggerConsumption() when the reconcile is given the run dir (closes the D53 keystone).',
-    'HamartiaRepairStage gate — there is NO durable-repair signal in the gate; the entire correction axis (Scaffolded/SelfRepair, repairWithoutRecognitionCredit) needs a new signal before it is operational.',
   ];
 }
 
@@ -94,6 +94,8 @@ export function summaryToAbox(summary, opts = {}) {
   const g = summary.adaptationGate || {};
   const c = summary.consensus || {};
   const arm = summary.arm;
+  const repair = summary.hamartiaRepair || null;
+  const repairFired = repair?.disposition === 'repaired' && repair?.durableRepair === true;
   const isControl = ['routine', 'none'].includes(arm);
   const id = localId(`${summary.dramaId}_${arm}`);
   const ev = `Ev_${id}`;
@@ -145,6 +147,20 @@ export function summaryToAbox(summary, opts = {}) {
   stage(`S5_${id}`, 'OldCheckNamingStage', oldCheckFired);
   stage(`S6_${id}`, 'ReplacementCheckNamingStage', replacementFired);
   stage(`R_${id}`, 'ReorientationStage', reorientationFired);
+  // The public-text definition is a direct, opt-in gate signal. Do NOT synthesize
+  // latentRepair=true: Durable/Costume/Silent remain the stronger manifest-vs-latent
+  // axis used by probe-repair-divergence.js. Also do NOT emit gateFired=false for a
+  // negative: R1b would treat stage 8 as a broken recognition-chain stage.
+  if (repairFired) stage(`Repair_${id}`, 'HamartiaRepairStage', true);
+
+  const meta = { dramaId: summary.dramaId, arm, isControl, actionVoteCut };
+  if (repair) {
+    meta.hamartiaRepair = {
+      definition: repair.definition || null,
+      disposition: repair.disposition || 'indeterminate',
+      populated: repairFired,
+    };
+  }
 
   return {
     id,
@@ -154,7 +170,7 @@ export function summaryToAbox(summary, opts = {}) {
     votedOrigin: votedOrigin(summary.origins),
     gateFailures: Array.isArray(summary.failures) ? summary.failures : [],
     gatePass: Boolean(summary.pass),
-    meta: { dramaId: summary.dramaId, arm, isControl, actionVoteCut },
+    meta,
   };
 }
 

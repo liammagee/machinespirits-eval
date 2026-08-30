@@ -1,19 +1,22 @@
 ---
 id: course-479-externalization
 title: Tutor Lab instrument for course 479 (Fall 2026)
-status: active
+status: done
 type: content
 priority: P1
-owner: human
+owner: codex
 source: manual
 created: 2026-08-09
-updated: 2026-08-09
+updated: 2026-08-29
 verification: "A Tutor Lab chat is live on machinespirits.org before day 1: tutor-core runs behind a website route, each turn shows draft/critique/revision, students can switch critic setting (off/advisory/adversarial) and prompt stance (recognition/placebo/enhanced/naive), access is class-keyed with a per-session budget; courses/479-fall-2026 has a course page pointing at it; students need no access to this repo."
 claim_status: methods
 depends_on: []
 links:
   notes:
     - COURSE-479-PLAN.md
+  prs:
+    - https://github.com/liammagee/machinespirits/pull/53
+    - https://github.com/liammagee/machinespirits/pull/55
 tags:
   - course
   - teaching
@@ -30,8 +33,9 @@ stances — the same variants as the factorial experiments.
 
 Engine: this repo's tutor-core, mounted inside the website's Express stack
 (the seam was kept one-way for re-extraction); NOT the website's older
-ego/superego engine. Provider on fly.io is API-key based (no CLI bridges);
-never nemotron/kimi by default.
+ego/superego engine. The deployed provider plan is `codex.gpt-5.6-luna` at
+medium effort through the CLI bridge as primary and `anthropic.sonnet`
+through the API as fallback; never nemotron/kimi by default.
 
 Full plan: `COURSE-479-PLAN.md` (repo root, worktree `../ms-course-479`).
 
@@ -97,3 +101,50 @@ Verified end to end: mock loop in the browser; one real claude-CLI turn
 through the route (rounds=2, rejection then approved revision). Remaining for
 deploy is on the website card `course-479-tutor-lab`: Dockerfile CLI install
 + secrets, Sonnet-5 provider overlay, API-key fallback, seminar load check.
+
+2026-08-29 Codex: WEBSITE AND COURSE SURFACES ARE LIVE — website PRs #50 and
+#51 deployed the Tutor Lab, provider overlay, class-key gate, budgets, presets,
+and required secrets. Content PRs #8 and #9 published the course entry point,
+six-preset activity guide, and three reference deliberations, then corrected
+their canonical public links after live verification found a relative-link
+fallback. The pages explicitly identify the examples as scripted design
+material, not real-student records or evidence of learning gains; no new
+empirical claim was introduced.
+
+A real deployed two-round turn returned HTTP 200 from `claude-code.sonnet`,
+exposed the six expected trace stages, consumed one of 30 session turns, and
+made five primary model calls with no fallback. The seminar check then
+attempted 12 sessions x 2 turns at concurrency 6. It produced no aggregate
+result within 45 minutes on the one-shared-CPU Fly machine and was stopped;
+no client, Claude, or Codex process remained. Because the script buffers
+results, the exact completed-call count is unavailable and must not be
+inferred. Website PR #52 records the same blocker. Do not close this card or
+rerun the model-backed check until the owner chooses between API-primary
+serving and a queued/scaled CLI topology, then validates the selected path
+under the same 12 x 2 workload.
+
+2026-08-29 Codex: WEBSITE PR #53 SWITCHED THE LIVE ROUTE TO CODEX LUNA. The
+owner enabled device-code authorization, authenticated the production Codex
+CLI with ChatGPT on its persistent volume, and authorized the bounded serving
+check. A live one-turn smoke completed in 44.8 seconds on
+`codex.gpt-5.6-luna` at medium effort with no fallback.
+
+The registered 12-session x 2-turn check then ran at concurrency 6 with a
+300-second per-turn timeout. Luna successfully served 15 of 24 planned turns;
+3 timed out at the client boundary and 6 did not run to completion. No
+successful response used fallback. Because interrupted route requests left
+server-side CLI children running, the Fly machine was restarted to terminate
+them; it returned healthy, retained the ChatGPT login, and had no Codex worker
+left. The live surface is usable at low concurrency, but classroom readiness
+is still blocked on a topology decision: queue/backpressure on the existing
+machine or added compute, followed by a new prospective bounded load check.
+
+2026-08-29 Codex: CLASSROOM LOAD GATE PASSED. Website PR #55 deployed one
+LAX Fly machine with 4 shared CPUs, 1 GB RAM, the existing persistent volume,
+and the unchanged Codex Luna route. The single authorized 12-session x 2-turn
+check completed 24/24 Luna responses at concurrency 6 in 221.1 seconds, with
+50.5 seconds median latency, 59.9 seconds p90, and 69.7 seconds maximum. No
+turn timed out and no successful response used fallback. Public health stayed
+green, the ChatGPT login persisted, and no Codex worker remained after the
+run. Together with the already-live class-keyed Tutor Lab and course pages,
+the card's declared completion boundary is satisfied.

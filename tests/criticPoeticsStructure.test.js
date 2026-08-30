@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import yaml from 'yaml';
-import { deterministicChecks, parseTurns, run } from '../scripts/critic-poetics-structure.js';
+import { buildCriticPrompt, deterministicChecks, parseTurns, run } from '../scripts/critic-poetics-structure.js';
 
 describe('critic-poetics-structure', () => {
   it('parses public transcript turns for structural checks', () => {
@@ -92,6 +92,55 @@ describe('critic-poetics-structure', () => {
 
     assert.equal(result.pass, true);
     assert.ok(!result.violations.includes('peripeteia_arm_without_earned_reorientation'));
+    assert.ok(result.warnings.includes('peripeteia_mechanism_semantic_adjudication_pending'));
+    assert.equal(result.peripeteia.tutor_representation_change_measurement.status, 'measurement_indeterminate');
+    assert.equal(result.peripeteia.learner_representation_change_measurement.status, 'measurement_indeterminate');
+    assert.equal(result.peripeteia.auxiliary_mechanism_signals.lexical_or_regex_authority, 'none');
+  });
+
+  it('passes paired tutor and learner semantic status/value fields to the structural critic', () => {
+    const prompt = buildCriticPrompt([
+      {
+        id: 'T05',
+        item: {},
+        raw: 'LEARNER: "Try it."',
+        rule: {
+          pass: true,
+          violations: [],
+          warnings: [],
+          peripeteia: {
+            learner_reversal_pressure: true,
+            adaptive_mechanism_measurement: { status: 'determinate', value: true },
+            representation_change_measurement: { status: 'determinate', value: false },
+            learner_actional_change_measurement: { status: 'determinate', value: true },
+            learner_representation_change_measurement: {
+              status: 'measurement_indeterminate',
+              value: null,
+            },
+            auxiliary_mechanism_signals: { lexical_or_regex_authority: 'none' },
+          },
+        },
+      },
+    ]);
+    const payload = JSON.parse(prompt.slice(prompt.indexOf('TRANSCRIPTS:\n') + 'TRANSCRIPTS:\n'.length));
+    const measurement = payload[0].deterministic_rule_findings.peripeteia;
+
+    assert.deepEqual(measurement.tutor_adaptive_mechanism_measurement, {
+      status: 'determinate',
+      value: true,
+    });
+    assert.deepEqual(measurement.tutor_representation_change_measurement, {
+      status: 'determinate',
+      value: false,
+    });
+    assert.deepEqual(measurement.learner_actional_change_measurement, {
+      status: 'determinate',
+      value: true,
+    });
+    assert.deepEqual(measurement.learner_representation_change_measurement, {
+      status: 'measurement_indeterminate',
+      value: null,
+    });
   });
 
   it('runs a mock same-model structural critic over a sample directory', async () => {

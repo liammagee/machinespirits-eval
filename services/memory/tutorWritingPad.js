@@ -493,6 +493,28 @@ export function recordIntervention(learnerId, sessionId, data) {
 }
 
 /**
+ * Attach the next learner-turn outcome to an existing intervention.
+ *
+ * `learner_response` has always been nullable, so historical rows remain
+ * readable. Keeping the full categorical outcome here lets the pad retain
+ * `partial` and `inconclusive` observations without coercing either into the
+ * binary strategy-effectiveness counters.
+ */
+export function recordInterventionOutcome(interventionId, outcome) {
+  if (!db || interventionId == null || !outcome) return null;
+
+  return db
+    .prepare(
+      `
+    UPDATE intervention_history
+    SET learner_response = ?
+    WHERE id = ?
+  `,
+    )
+    .run(String(outcome), interventionId);
+}
+
+/**
  * Get recent interventions for a learner
  */
 export function getRecentInterventions(learnerId, limit = 10) {
@@ -700,6 +722,7 @@ export default {
   getRelationshipDynamics,
   // Interventions
   recordIntervention,
+  recordInterventionOutcome,
   getRecentInterventions,
   // Full pad
   getFullWritingPad,

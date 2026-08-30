@@ -82,7 +82,7 @@ const OTHER_GROUP = {
 };
 
 const TUTOR_STUB_FILE =
-  /^(?:scripts\/tutor-stub(?:[-.]|\/)|services\/tutorStub|tests\/tutorStub|services\/__tests__\/tutorStub|config\/tutor-stub|notes\/status\/.*character-generalization|docs\/tutor-stub|\.codex\/skills\/ms-tutor-stub-eval)/u;
+  /^(?:scripts\/tutor-stub(?:[-.]|\/)|services\/tutorStub|tests\/tutorStub|services\/__tests__\/tutorStub|config\/tutor-stub|notes\/status\/.*character-generalization|docs\/tutor-stub|\.agents\/skills\/ms-tutor-stub-eval)/u;
 
 export function normalizeTutorStubReleaseNotesHours(value) {
   if (value === undefined || value === null || String(value).trim() === '') {

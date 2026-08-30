@@ -25,9 +25,11 @@ including a no-index check for untracked files.
 When `auto` selects `full` (or `--profile full` is explicit), the runner:
 
 1. installs the locked root dependencies with `npm ci`;
-2. checks the hermetic test inventory and skill permissions;
-3. refreshes managed refs, then runs ref governance, ESLint, import-cycle, and
-   Prettier checks;
+2. checks the hermetic test inventory, skill permissions, and the shared
+   classifier/bootstrap contract;
+3. runs managed-ref governance when the change touches that contract (or when
+   a full profile is explicitly requested), then runs root and tutor-core
+   ESLint, import-cycle, and Prettier checks in a separate lane;
 4. runs both root shards and tutor-core under the local Node 22 runtime;
 5. runs the dedicated PTY/loopback and application-lifecycle lanes;
 6. enforces risk-coverage floors;
@@ -83,9 +85,15 @@ Use `--profile full` when policy or outage recovery requires the complete gate
 regardless of the changed paths. `--profile quick` and `--profile node-tests`
 remain explicit operator overrides; they are never selected by `auto`.
 
-`--offline` suppresses only the managed archive/tag fetch. `refs:check` still
-runs against the refs already present locally. `--no-install` reuses the
-current dependency tree instead of rebuilding it from the lockfile.
+`--offline` suppresses only the managed archive/tag fetch when the selected
+change needs the ref-governance lane. `refs:check` then runs against the refs
+already present locally. `--no-install` reuses the current dependency tree
+instead of rebuilding it from the lockfile.
+
+Hosted CI makes the same separation: relevant pull requests and every push to
+`main` select the ref-governance job independently of lint. A lightweight
+weekly and managed-tag monitor also reports external ref drift without making
+an unrelated pull request appear to have a lint failure.
 
 For a test-performance profile, retain the hermetic runner's normally temporary
 per-file timing and TAP reports under the ignored test-output root:
@@ -181,6 +189,8 @@ image requires network access the first time.
 - The local runner is sequential so failures and reports are deterministic.
 - DB-backed provenance, message-chain, and paper-manifest validators remain
   separate because GitHub deliberately lacks the private evaluation database.
+  `npm run paper:manifest` is the canonical Paper 2 check; the retained Paper 1
+  count check is explicit as `npm run paper:manifest:legacy`.
 - Paid or model-consuming commands are never part of local CI.
 - During an Actions outage, do not merge merely because no check appeared.
   Run `npm run ci:local -- --profile full`, retain its ignored report path in

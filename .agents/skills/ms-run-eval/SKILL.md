@@ -1,11 +1,10 @@
 ---
 name: ms-run-eval
-description: Run an evaluation with specified cells and handle the full generation + judging pipeline
-argument-hint: "<cell-profiles> [--runs N] [--model provider.alias]"
-disable-model-invocation: true
+description: Validate and dry-run a proposed standard eval-cli generation and judging pipeline for specified cells. Paid standard launches are blocked because this runner has no general enforced spend ceiling; use a bounded registered runner or add and test a hard cap first.
 ---
 
-Run an evaluation pipeline. The user will specify which cells and how many runs.
+Prepare and dry-run an evaluation pipeline. Do not start real generation or
+judging from this skill.
 
 ## Steps
 
@@ -15,22 +14,27 @@ Run an evaluation pipeline. The user will specify which cells and how many runs.
    - Options: `--scenario <id>`, `--cluster <name>`, `--parallelism N`, `--live`, `--transcript`
 
 2. **Pre-flight checks**:
-   - Run `node scripts/eval-cli.js validate-config`; canonical `cell_*` names are
-     derived from `config/tutor-agents.yaml`, not maintained in a second list.
+   - Run `node scripts/eval-cli.js validate-config` with temporary
+     `EVAL_DB_PATH` and `EVAL_LOGS_DIR`; the CLI initializes a store even for
+     validation. Canonical `cell_*` names are derived from
+     `config/tutor-agents.yaml`, not maintained in a second list.
    - Resolve model references from `config/providers.yaml`. For a new exploratory
      run, use a current `provider.alias`; for a reproduction, registered study, or
      resumed run, preserve the recorded model exactly even if a newer model exists.
-   - `node scripts/test-rate-limit.js <openrouter-alias>` is a small paid
-     OpenRouter availability probe. Do not use it for `codex.*`, `claude-code.*`,
-     or other providers.
-   - An explicit request that names the cells, run count, model route, and spend
-     ceiling is approval to start. Ask only when one of those boundaries is
-     missing or would require a substantive assumption.
+   - Do not run `scripts/test-rate-limit.js` automatically; it is itself a paid
+     provider request and belongs under `$ms-check-models` when explicitly asked.
+   - The standard runner has no general fail-before-call spend ceiling. A user
+     request can authorize a study but cannot make an unenforced ceiling hard.
 
-3. **Run generation** (skip rubric for speed):
+3. **Dry-run generation only**:
    ```bash
-   node scripts/eval-cli.js run --profiles <cells> --runs N --skip-rubric [--live]
+   eval_sandbox="$(mktemp -d -t machinespirits-eval-dry-run.XXXXXX)"
+   EVAL_DB_PATH="$eval_sandbox/evaluations.db" \
+   EVAL_LOGS_DIR="$eval_sandbox/logs" \
+     node scripts/eval-cli.js run --profiles <cells> --runs N --skip-rubric --dry-run
    ```
+   `--dry-run` changes model execution to mock data; the hermetic paths are what
+   keep its run/results writes out of the production DB and logs.
    Common options:
    - `--ego-model <ref>` — override tutor ego model only
    - `--superego-model <ref>` — override tutor superego model only
@@ -39,10 +43,15 @@ Run an evaluation pipeline. The user will specify which cells and how many runs.
    - `--scenario <id>` — specific scenario(s)
    - `--cluster <name>` — scenario cluster (single-turn, multi-turn, core, etc.)
    - `--parallelism N` — parallel tests (default: 2)
-   - `--live` — stream API calls in real time
+   - `--live` — changes display/streaming only; it does not distinguish mock
+     from real execution and is not a safety gate
    - `--transcript` — write play-format transcript files
 
-4. **Note the run ID** from output, then **start judging**:
+4. **Do not start real generation or judging.** To re-enable a paid standard
+   launch, the runtime must expose and test a finite fail-before-call ceiling,
+   or the request must route through an existing bounded registered runner.
+
+5. **Historical judging command (do not execute from this skill):**
    ```bash
    node scripts/eval-cli.js evaluate <runId> --follow
    ```
@@ -50,7 +59,7 @@ Run an evaluation pipeline. The user will specify which cells and how many runs.
    `--force` overwrites existing scores and is destructive to cross-judge data.
    Without `--force`, only NULL-scored rows are evaluated.
 
-5. **Report results** when complete:
+6. **For an already completed run, report stored results read-only:**
    ```bash
    sqlite3 -header -column data/evaluations.db "SELECT profile_name, judge_model, COUNT(*) n, ROUND(AVG(tutor_first_turn_score),1) mean FROM evaluation_results WHERE run_id = '<runId>' AND tutor_first_turn_score IS NOT NULL GROUP BY profile_name, judge_model"
    ```
@@ -62,7 +71,8 @@ Run an evaluation pipeline. The user will specify which cells and how many runs.
 - Multi-turn runs also have `tutor_last_turn_score` (last turn) and `tutor_development_score`.
 - Do not copy a model name from an old skill example or historical run into a new
   run. Read `config/providers.yaml` and the current run/study contract.
-- For incomplete runs, use `/ms-resume-run` or: `node scripts/eval-cli.js resume <runId>`
+- For an incomplete run, use `$ms-resume-run` to diagnose whether its original
+  stored mode and ceiling make bounded recovery possible.
 - New canonical cells are registered once in `config/tutor-agents.yaml`; the
   profile registry derives them automatically.
 - **NEVER use `--force` on runs with multiple judge models** — it silently destroys cross-judge data

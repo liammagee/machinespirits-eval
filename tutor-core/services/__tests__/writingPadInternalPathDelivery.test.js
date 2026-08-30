@@ -87,7 +87,7 @@ describe('Writing Pad internal read-path — end-to-end canonical channel (bugs 
       .mockResolvedValueOnce({
         text: JSON.stringify({
           accepts: true,
-          assessment: 'This revision respects the learner\'s own reasoning process.',
+          assessment: "This revision respects the learner's own reasoning process.",
           remaining_concerns: null,
           learning: 'The ego can be redirected toward inquiry without losing warmth.',
         }),

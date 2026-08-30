@@ -18,6 +18,9 @@ const PATH_KINDS = {
     segments: ['logs', 'tutor-dialogues'],
     replacement: 'resolveTutorDialoguesDir',
   },
+  absoluteHomePaths: {
+    replacement: 'a repository, environment, or shared artifact resolver',
+  },
 };
 
 function walkAst(node, visit) {
@@ -38,14 +41,14 @@ function literalString(node) {
   return null;
 }
 
-function isJoinCall(node) {
+function isPathConstructionCall(node) {
   if (node?.type !== 'CallExpression') return false;
-  if (node.callee?.type === 'Identifier') return node.callee.name === 'join';
+  if (node.callee?.type === 'Identifier') return ['join', 'resolve'].includes(node.callee.name);
   return (
     node.callee?.type === 'MemberExpression' &&
     !node.callee.computed &&
     node.callee.property?.type === 'Identifier' &&
-    node.callee.property.name === 'join'
+    ['join', 'resolve'].includes(node.callee.property.name)
   );
 }
 
@@ -64,9 +67,19 @@ export function findHardcodedEvaluationPaths(source, file = '<source>') {
   });
   const findings = [];
   walkAst(ast, (node) => {
-    if (!isJoinCall(node)) return;
+    const literal = literalString(node);
+    if (literal && /^\/Users\/[^/]+\//u.test(literal)) {
+      findings.push({
+        file,
+        line: node.loc.start.line,
+        kind: 'absoluteHomePaths',
+        replacement: PATH_KINDS.absoluteHomePaths.replacement,
+      });
+    }
+    if (!isPathConstructionCall(node)) return;
     const argumentsAsStrings = node.arguments.map(literalString);
     for (const [kind, rule] of Object.entries(PATH_KINDS)) {
+      if (!rule.segments) continue;
       if (!containsSequence(argumentsAsStrings, rule.segments)) continue;
       findings.push({ file, line: node.loc.start.line, kind, replacement: rule.replacement });
     }
@@ -75,14 +88,17 @@ export function findHardcodedEvaluationPaths(source, file = '<source>') {
 }
 
 export function scanEvaluationScripts(rootDir = ROOT) {
-  const scriptsDir = path.join(rootDir, 'scripts');
-  return fs
-    .readdirSync(scriptsDir, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.endsWith('.js'))
-    .flatMap((entry) => {
-      const relative = path.posix.join('scripts', entry.name);
-      return findHardcodedEvaluationPaths(fs.readFileSync(path.join(scriptsDir, entry.name), 'utf8'), relative);
-    });
+  return ['scripts', 'services'].flatMap((directory) => {
+    const sourceDir = path.join(rootDir, directory);
+    return fs
+      .readdirSync(sourceDir, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.js'))
+      .flatMap((entry) => {
+        const relative = path.posix.join(directory, entry.name);
+        if (relative === 'services/evaluationDataPaths.js') return [];
+        return findHardcodedEvaluationPaths(fs.readFileSync(path.join(sourceDir, entry.name), 'utf8'), relative);
+      });
+  });
 }
 
 function duplicateEntries(values) {

@@ -46,10 +46,11 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { resolveTutorStubArtifactArchiveDirectory } from '../services/tutorStubArtifactArchive.js';
 
-const DEFAULT_ARCHIVE = path.resolve('..', 'machinespirits-eval-private');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LEDGER_NAME = 'RUN-LEDGER.md';
 const LEDGER_SECTION = '## Auto-recorded runs';
 
@@ -96,8 +97,13 @@ export function recordRunInLedger(dest, runDir) {
 }
 
 /** The archive directory, or null when there is none to write to. */
-export function resolveArchiveDir(explicit) {
-  return resolveTutorStubArtifactArchiveDirectory(explicit, { cwd: process.cwd(), repoRoot: process.cwd() });
+export function resolveArchiveDir(explicit, options = {}) {
+  return resolveTutorStubArtifactArchiveDirectory(explicit, {
+    cwd: options.cwd || process.cwd(),
+    repoRoot: options.repoRoot || ROOT,
+    env: options.env || process.env,
+    commonGitDirectory: options.commonGitDirectory || null,
+  });
 }
 
 /** A run directory holds results.jsonl, a report, a manifest, or a traces dir. */
@@ -242,7 +248,9 @@ function main() {
   }
   const dest = resolveArchiveDir(opts.dest);
   if (!dest) {
-    console.error(`archive not found: ${path.resolve(opts.dest || process.env.EVAL_ARCHIVE_DIR || DEFAULT_ARCHIVE)}`);
+    const requested =
+      opts.dest || process.env.EVAL_ARCHIVE_DIR || path.resolve(ROOT, '..', 'machinespirits-eval-private');
+    console.error(`archive not found: ${path.resolve(requested)}`);
     console.error('set EVAL_ARCHIVE_DIR or pass --dest');
     process.exit(2);
   }

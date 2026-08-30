@@ -25,23 +25,17 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createHash, randomUUID, randomBytes } from 'crypto';
+import { resolveEvaluationDbPath } from './evaluationDataPaths.js';
 import { computeLegacyChatConfigHash } from './legacyChatConfig.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DATA_DIR = path.join(ROOT_DIR, 'data');
 
-const dbPath = process.env.EVAL_DB_PATH || path.join(DATA_DIR, 'evaluations.db');
-// Create the directory we actually use (honours EVAL_DB_PATH). Avoids mkdir on a
-// read-only location when the DB is relocated.
-fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-const db = new Database(dbPath);
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
-db.pragma('busy_timeout = 5000');
+let pilotDb = null;
 
-db.exec(`
+function migratePilotStore(db) {
+  db.exec(`
   CREATE TABLE IF NOT EXISTS pilot_sessions (
     id TEXT PRIMARY KEY,
     enrolled_at INTEGER NOT NULL,
@@ -116,13 +110,20 @@ db.exec(`
     created_at INTEGER NOT NULL,
     FOREIGN KEY (session_id) REFERENCES pilot_sessions(id) ON DELETE CASCADE
   );
-`);
+  `);
+
+  // learner_source: who produces the LEARNER turns in a session —
+  //   'human' → a real participant typing (the consented, IRB-gated path)
+  //   'llm'   → an ego/superego LLM learner driving the SAME tutor loop
+  // Both feed the same tutor loop and pilot_turns store.
+  ensureColumn(db, 'pilot_sessions', 'learner_source', "learner_source TEXT NOT NULL DEFAULT 'human'");
+}
 
 // ── Idempotent column migrations ──────────────────────────────────────────
 // The CREATE TABLE statements above only fire for a fresh DB. Existing pilot
 // DBs (engineering-complete since 2026-04-25) need additive ALTERs, guarded by
 // table_info so re-running is a no-op. Mirrors evaluationStore's migrateAddColumn.
-function ensureColumn(table, column, ddl) {
+function ensureColumn(db, table, column, ddl) {
   const cols = db.prepare(`PRAGMA table_info(${table})`).all();
   if (cols.some((c) => c.name === column)) return;
   try {
@@ -138,14 +139,20 @@ function ensureColumn(table, column, ddl) {
   }
 }
 
-// learner_source: who produces the LEARNER turns in a session —
-//   'human' → a real participant typing (the consented, IRB-gated path)
-//   'llm'   → an ego/superego LLM learner driving the SAME tutor loop
-//             synthetically (no human subject, no consent required).
-// Both feed the identical ego-superego tutor + the same pilot_turns store, so a
-// simulated session and a human session are one instrument with a swapped
-// learner source — the tutor-learner symmetry principle applied to provenance.
-ensureColumn('pilot_sessions', 'learner_source', "learner_source TEXT NOT NULL DEFAULT 'human'");
+function getDb() {
+  if (pilotDb) return pilotDb;
+  const dbPath = resolveEvaluationDbPath(ROOT_DIR);
+  // Opening the store is deliberately lazy: importing this module must not
+  // create a worktree-local database before the caller actually uses it.
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+  const db = new Database(dbPath);
+  db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
+  db.pragma('busy_timeout = 5000');
+  migratePilotStore(db);
+  pilotDb = db;
+  return pilotDb;
+}
 
 const PILOT_CONDITIONS = (process.env.PILOT_CONDITIONS || 'cell_1_base_single_unified,cell_5_recog_single_unified')
   .split(',')
@@ -215,6 +222,7 @@ function hashPid(pid) {
 // this filter, spinning up llm sessions on one cell would push real participants
 // toward the other arm.
 function pickCondition() {
+  const db = getDb();
   const counts = new Map(PILOT_CONDITIONS.map((c) => [c, 0]));
   const rows = db
     .prepare(
@@ -247,6 +255,7 @@ export function enrollSession({
   forceCondition = null,
   learnerSource = LEARNER_SOURCES.HUMAN,
 } = {}) {
+  const db = getDb();
   const source = learnerSource === LEARNER_SOURCES.LLM ? LEARNER_SOURCES.LLM : LEARNER_SOURCES.HUMAN;
 
   // Recruitment gate: PID-bearing human enrollment is the real-participant path
@@ -279,6 +288,7 @@ export function enrollSession({
 }
 
 export function getSession(id) {
+  const db = getDb();
   const row = db.prepare('SELECT * FROM pilot_sessions WHERE id = ?').get(id);
   if (!row) return null;
   if (row.intake_data) {
@@ -293,6 +303,7 @@ export function getSession(id) {
 
 export function getSessionByPid(participantPid) {
   if (!participantPid) return null;
+  const db = getDb();
   const pidHash = hashPid(participantPid);
   const row = db
     .prepare('SELECT * FROM pilot_sessions WHERE participant_pid_hash = ? ORDER BY enrolled_at DESC LIMIT 1')
@@ -384,14 +395,14 @@ function updateSessionInTransaction(id, patch) {
     if (v && typeof v === 'object') return JSON.stringify(v);
     return v;
   });
-  db.prepare(`UPDATE pilot_sessions SET ${sets}, updated_at = ? WHERE id = ?`).run(...values, nowMs(), id);
+  getDb()
+    .prepare(`UPDATE pilot_sessions SET ${sets}, updated_at = ? WHERE id = ?`)
+    .run(...values, nowMs(), id);
   return getSession(id);
 }
 
-const updateSessionTransaction = db.transaction(updateSessionInTransaction);
-
 function updateSession(id, patch) {
-  return updateSessionTransaction.immediate(id, patch);
+  return getDb().transaction(updateSessionInTransaction).immediate(id, patch);
 }
 
 export function recordConsent(id) {
@@ -427,6 +438,7 @@ export function recordTestResponses(id, { phase, form = null, responses = [] }) 
   if (!Array.isArray(responses) || responses.length === 0) {
     throw new Error('responses must be a non-empty array');
   }
+  const db = getDb();
   const stmt = db.prepare(
     `INSERT OR REPLACE INTO pilot_test_items
        (session_id, phase, form, item_id, item_position, response_value, is_correct, response_ms, created_at)
@@ -477,7 +489,9 @@ export function listTestResponses(id, phase = null) {
     ? 'SELECT * FROM pilot_test_items WHERE session_id = ? AND phase = ? ORDER BY item_position'
     : 'SELECT * FROM pilot_test_items WHERE session_id = ? ORDER BY phase, item_position';
   const params = phase ? [id, phase] : [id];
-  return db.prepare(sql).all(...params);
+  return getDb()
+    .prepare(sql)
+    .all(...params);
 }
 
 export function startTutoring(id) {
@@ -516,6 +530,7 @@ export function tutoringTimeRemainingMs(session, atMs = nowMs()) {
 }
 
 export function recordExitSurvey(id, { nasa_tlx = null, engagement_likert = null, open_ended = null } = {}) {
+  const db = getDb();
   const stmt = db.prepare(
     `INSERT OR REPLACE INTO pilot_exit_survey
        (session_id, nasa_tlx, engagement_likert, open_ended, created_at)
@@ -581,7 +596,7 @@ function computeDialogueContentHash(turns) {
 }
 
 export function listTurns(sessionId) {
-  return db.prepare('SELECT * FROM pilot_turns WHERE session_id = ? ORDER BY turn_index').all(sessionId);
+  return getDb().prepare('SELECT * FROM pilot_turns WHERE session_id = ? ORDER BY turn_index').all(sessionId);
 }
 
 export function appendTurn(sessionId, params) {
@@ -595,6 +610,7 @@ export function appendTurn(sessionId, params) {
     throw new Error('configHash is required (use computeConfigHash)');
   }
 
+  const db = getDb();
   const stmt = db.prepare(
     `INSERT INTO pilot_turns
        (session_id, turn_index, role, content, deliberation, was_revised,
@@ -641,7 +657,7 @@ export function appendTurn(sessionId, params) {
 // session (back-compat with the admin UI); `human`/`llm` subtotals let an
 // operator see how much of a cell's volume is real vs synthetic at a glance.
 export function getConditionCounts() {
-  const rows = db
+  const rows = getDb()
     .prepare(
       `SELECT condition_cell, learner_source, status, COUNT(*) AS n
        FROM pilot_sessions GROUP BY condition_cell, learner_source, status`,
@@ -665,7 +681,9 @@ export function listSessions({ limit = 100, status = null } = {}) {
     ? 'SELECT * FROM pilot_sessions WHERE status = ? ORDER BY enrolled_at DESC LIMIT ?'
     : 'SELECT * FROM pilot_sessions ORDER BY enrolled_at DESC LIMIT ?';
   const params = status ? [status, limit] : [limit];
-  return db.prepare(sql).all(...params);
+  return getDb()
+    .prepare(sql)
+    .all(...params);
 }
 
 export default {

@@ -87,7 +87,14 @@ describe('evaluation-store migration owner', () => {
     assert.deepEqual(second, first);
     assert.deepEqual(
       first.filter((entry) => entry.type === 'table').map((entry) => entry.name),
-      ['evaluation_results', 'evaluation_runs', 'interaction_evaluations', 'score_audit'],
+      [
+        'evaluation_budget_attempts',
+        'evaluation_budget_ledgers',
+        'evaluation_results',
+        'evaluation_runs',
+        'interaction_evaluations',
+        'score_audit',
+      ],
     );
     db.close();
   });

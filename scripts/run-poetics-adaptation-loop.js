@@ -4,7 +4,11 @@
  *
  * This script deliberately does not add another generator. It wraps the
  * production poetics batch runner, sidecar ingest, tutor-adaptation analyzer,
- * and sidecar report with an explicit gate:
+ * and sidecar report with an explicit, two-stage semantic workflow:
+ *
+ *   --prepare-semantic  generates, scores, and ingests every bounded iteration
+ *   independent semantic adjudication happens only after transcripts exist
+ *   --resume-prepared   analyzes the prepared items and applies the gate
  *
  *   clean routine/none controls
  *   branch-valid peripeteia-only adaptation
@@ -19,8 +23,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import yaml from 'yaml';
 import { openPoeticsStore } from '../services/poeticsStore.js';
+import { createPoeticsEvidenceBundle } from '../services/poeticsEvidenceLifecycle.js';
+import { detectPublicTextRepair, extractFinalLearnerPublicText } from '../services/ontology/hamartiaRepairDetector.js';
+import { SEMANTIC_ADJUDICATION_PACKET_SCHEMA } from './analyze-poetics-tutor-adaptation.js';
 import { classifyPoeticsConsensus } from './lib/poeticsConsensus.js';
 import { originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 
@@ -30,7 +39,7 @@ const CAL_DIR = path.join(ROOT, 'config', 'poetics-calibration');
 const EXPORTS_DIR = path.join(ROOT, 'exports');
 const DEFAULT_BATCH_PREFIX = 'phase2-adaptation-recognition-loop';
 const DEFAULT_TARGET_SPEC = path.join(CAL_DIR, 'phase2-classic-drama-adaptation-v1.yaml');
-const DEFAULT_TARGETS = ['D42', 'D50', 'D53'];
+const DEFAULT_TARGETS = [];
 const DEFAULT_ARMS = ['routine', 'none', 'peripeteia-only'];
 const DEFAULT_CRITICS = [
   'qwen/qwen3.7-max',
@@ -39,6 +48,7 @@ const DEFAULT_CRITICS = [
   'anthropic/claude-sonnet-4.6',
 ];
 const DEFAULT_ANALYZER_VERSION = 'tutor-adaptation-v4';
+const SEMANTIC_ANALYZER_VERSION = 'tutor-adaptation-v5-semantic-change';
 
 function splitCsv(value) {
   return String(value || '')
@@ -93,6 +103,11 @@ function parseArgs(argv) {
     failOnGate: true,
     originHardGate: false,
     reportPrefix: null,
+    evidenceArchiveDir: null,
+    semanticAdjudicationsPath: null,
+    analyzerVersion: DEFAULT_ANALYZER_VERSION,
+    prepareSemantic: false,
+    resumePrepared: false,
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -128,7 +143,17 @@ function parseArgs(argv) {
     else if (token === '--root-parent') args.rootParent = path.resolve(argv[++i]);
     else if (token === '--db') args.dbPath = path.resolve(argv[++i]);
     else if (token === '--report-prefix') args.reportPrefix = path.resolve(argv[++i]);
-    else if (token === '--mock') args.mock = true;
+    else if (token === '--evidence-archive') args.evidenceArchiveDir = path.resolve(argv[++i]);
+    else if (token === '--semantic-adjudications' || token === '--representation-adjudications') {
+      args.semanticAdjudicationsPath = path.resolve(argv[++i]);
+      args.analyzerVersion = SEMANTIC_ANALYZER_VERSION;
+    } else if (token === '--prepare-semantic') {
+      args.prepareSemantic = true;
+      args.analyzerVersion = SEMANTIC_ANALYZER_VERSION;
+    } else if (token === '--resume-prepared') {
+      args.resumePrepared = true;
+      args.analyzerVersion = SEMANTIC_ANALYZER_VERSION;
+    } else if (token === '--mock') args.mock = true;
     else if (token === '--dry-run') args.dryRun = true;
     else if (token === '--force') args.force = true;
     else if (token === '--skip-generate') args.skipGenerate = true;
@@ -143,7 +168,7 @@ function parseArgs(argv) {
 Options:
   --batch-prefix ID                 Default: ${DEFAULT_BATCH_PREFIX}
   --target-spec FILE                Default: ${path.relative(ROOT, DEFAULT_TARGET_SPEC)}
-  --target-only D42,D50,D53         Scenario ids to test
+  --target-only IDS                 Required once a complete clean-anchor set is registered
   --target-arms routine,none,peripeteia-only
   --critics qwen/qwen3.7-max,google/gemini-3.5-flash,deepseek/deepseek-v4-pro,anthropic/claude-sonnet-4.6
   --max-iterations N                Default: 3
@@ -152,6 +177,10 @@ Options:
   --dry-run                         Print planned commands only
   --mock                            Use mock generation/scoring
   --skip-existing-scores            Reuse existing scorer JSON where present
+  --prepare-semantic                Generate/score/ingest bounded items, then stop for judgments
+  --resume-prepared                 Analyze/gate the same prepared batches; requires a packet
+  --semantic-adjudications FILE     Create-once tutor + learner semantic judgments
+  --evidence-archive DIR            Durable private archive (default: EVAL_ARCHIVE_DIR)
   --no-fail-on-gate                 Write reports but exit 0 when gates fail`);
       process.exit(0);
     } else {
@@ -162,12 +191,55 @@ Options:
   if (!/^[a-zA-Z0-9._-]+$/.test(args.batchPrefix)) throw new Error('--batch-prefix must be path-safe');
   if (!/^[a-zA-Z0-9._-]+$/.test(args.runStamp)) throw new Error('--run-stamp must be path-safe');
   if (!fs.existsSync(args.targetSpec)) throw new Error(`--target-spec not found: ${args.targetSpec}`);
-  if (!args.targetOnly.length) throw new Error('--target-only must name at least one drama id');
+  if (args.semanticAdjudicationsPath && !fs.existsSync(args.semanticAdjudicationsPath)) {
+    throw new Error(`--semantic-adjudications not found: ${args.semanticAdjudicationsPath}`);
+  }
+  const targetSpec = yaml.parse(fs.readFileSync(args.targetSpec, 'utf8'));
+  const cleanAnchorSet = targetSpec?.meta?.clean_anchor_set || null;
+  if (!cleanAnchorSet?.claim_gate_ready || cleanAnchorSet.status !== 'complete') {
+    throw new Error(
+      'clean anchor set is incomplete: D42 is calibration-only and no D54-D57 third anchor qualified; ' +
+        'the claim loop cannot use a reduced denominator',
+    );
+  }
+  const registeredTargets = [...(cleanAnchorSet.required_core || []), cleanAnchorSet.qualified_third_anchor].filter(
+    Boolean,
+  );
+  if (!args.targetOnly.length) throw new Error(`--target-only must name ${registeredTargets.join(',')}`);
+  const registeredTargetSet = [...new Set(registeredTargets)].sort();
+  const requestedTargetSet = [...new Set(args.targetOnly)].sort();
+  if (
+    args.targetOnly.length !== requestedTargetSet.length ||
+    requestedTargetSet.length !== registeredTargetSet.length ||
+    requestedTargetSet.some((target, index) => target !== registeredTargetSet[index])
+  ) {
+    throw new Error(`--target-only must match the registered clean anchor set: ${registeredTargets.join(',')}`);
+  }
   if (!args.targetArms.length) throw new Error('--target-arms must name at least one arm');
-  if (!args.targetArms.includes('peripeteia-only')) {
-    throw new Error('--target-arms must include peripeteia-only for this gate');
+  const registeredArms = [...DEFAULT_ARMS].sort();
+  const requestedArms = [...new Set(args.targetArms)].sort();
+  if (
+    args.targetArms.length !== requestedArms.length ||
+    requestedArms.length !== registeredArms.length ||
+    requestedArms.some((arm, index) => arm !== registeredArms[index])
+  ) {
+    throw new Error(`--target-arms must match the registered matched arm set: ${DEFAULT_ARMS.join(',')}`);
   }
   if (!args.critics.length) throw new Error('--critics must name at least one critic');
+  if (args.prepareSemantic === args.resumePrepared) {
+    throw new Error(
+      'new adaptation claim loops require exactly one staged mode: ' + '--prepare-semantic or --resume-prepared',
+    );
+  }
+  if (args.prepareSemantic && args.semanticAdjudicationsPath) {
+    throw new Error('--prepare-semantic cannot accept judgments before the transcripts exist');
+  }
+  if (args.resumePrepared && !args.semanticAdjudicationsPath) {
+    throw new Error('--resume-prepared requires --semantic-adjudications and semantic v5');
+  }
+  if (args.analyzerVersion !== SEMANTIC_ANALYZER_VERSION) {
+    throw new Error('new adaptation claim loops require semantic v5');
+  }
   if (args.requiredPasses > args.maxIterations) {
     throw new Error('--required-passes cannot exceed --max-iterations');
   }
@@ -196,6 +268,233 @@ function iterationRootDir(args, batchId) {
 
 function rel(p) {
   return path.relative(ROOT, path.resolve(p));
+}
+
+function sha256File(filePath) {
+  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function workflowIdentity(args) {
+  return {
+    batchPrefix: args.batchPrefix,
+    runStamp: args.runStamp,
+    rootParent: rel(args.rootParent),
+    dbPath: args.dbPath ? rel(args.dbPath) : null,
+    targetSpec: rel(args.targetSpec),
+    targetOnly: [...args.targetOnly].sort(),
+    targetArms: [...args.targetArms].sort(),
+    critics: [...args.critics].sort(),
+    maxIterations: args.maxIterations,
+    requiredPasses: args.requiredPasses,
+    minCritics: args.minCritics,
+    recognitionVoteCut: args.recognitionVoteCut,
+    originVoteCut: args.originVoteCut,
+    originHardGate: args.originHardGate,
+    actionVoteCut: args.actionVoteCut,
+    controlMaxRecognitionVotes: args.controlMaxRecognitionVotes,
+    allowQualityWarnings: args.allowQualityWarnings,
+    generator: args.generator,
+    effort: args.effort,
+    mock: args.mock,
+    structureCritic: args.structureCritic,
+    generationConcurrency: args.generationConcurrency,
+    scoreConcurrency: args.scoreConcurrency,
+    structureCriticConcurrency: args.structureCriticConcurrency,
+    force: args.force,
+    skipGenerate: args.skipGenerate,
+    skipScore: args.skipScore,
+    skipExistingScores: args.skipExistingScores,
+    analyzerVersion: args.analyzerVersion,
+  };
+}
+
+function workflowStageName(args) {
+  return args.prepareSemantic ? 'prepare-semantic' : 'resume-prepared';
+}
+
+function summaryPrefix(args, stage = workflowStageName(args)) {
+  const base = args.reportPrefix || path.join(EXPORTS_DIR, `${args.batchPrefix}-${args.runStamp}-loop-status`);
+  return `${base}-${stage}`;
+}
+
+function summaryPaths(args, stage = workflowStageName(args)) {
+  const prefix = summaryPrefix(args, stage);
+  return { jsonPath: `${prefix}.json`, mdPath: `${prefix}.md` };
+}
+
+function writableSummaryPaths(args) {
+  const base = summaryPaths(args);
+  if (!args.resumePrepared || (!fs.existsSync(base.jsonPath) && !fs.existsSync(base.mdPath))) return base;
+  const prefix = summaryPrefix(args);
+  for (let attempt = 2; attempt < 1000; attempt++) {
+    const suffix = `-attempt-${String(attempt).padStart(2, '0')}`;
+    const candidate = { jsonPath: `${prefix}${suffix}.json`, mdPath: `${prefix}${suffix}.md` };
+    if (!fs.existsSync(candidate.jsonPath) && !fs.existsSync(candidate.mdPath)) return candidate;
+  }
+  throw new Error('no unused semantic resume summary attempt slot remains');
+}
+
+function validatePreparedSummary(args) {
+  const { jsonPath } = summaryPaths(args, 'prepare-semantic');
+  if (!fs.existsSync(jsonPath)) {
+    throw new Error(`prepared semantic summary not found: ${jsonPath}`);
+  }
+  const raw = fs.readFileSync(jsonPath, 'utf8');
+  const prepared = JSON.parse(raw);
+  if (prepared.status !== 'awaiting_semantic_adjudication') {
+    throw new Error(`prepared semantic stage is not complete: ${prepared.status || 'unknown_status'}`);
+  }
+  const expected = prepared.config?.workflowIdentity || null;
+  const actual = workflowIdentity(args);
+  if (!expected) throw new Error('prepared semantic summary lacks workflow identity');
+  const fields = [...new Set([...Object.keys(expected), ...Object.keys(actual)])].sort();
+  const drift = fields.filter((field) => JSON.stringify(expected[field]) !== JSON.stringify(actual[field]));
+  if (drift.length) {
+    throw new Error(`prepared semantic workflow configuration drift: ${drift.join(', ')}`);
+  }
+  const expectedBatchIds = Array.from({ length: args.maxIterations }, (_, index) => iterationBatchId(args, index + 1));
+  const preparedBatchIds = (prepared.iterations || []).map((iteration) => iteration.batchId);
+  if (JSON.stringify(preparedBatchIds) !== JSON.stringify(expectedBatchIds)) {
+    throw new Error('prepared semantic workflow batch identity is incomplete or changed');
+  }
+  return {
+    summary: prepared,
+    provenance: {
+      path: rel(jsonPath),
+      sha256: createHash('sha256').update(raw).digest('hex'),
+      recorded_not_enforced_as_source_authorization: true,
+    },
+  };
+}
+
+function validateResumePreflight(db, args, preparedSummary) {
+  const raw = fs.readFileSync(args.semanticAdjudicationsPath, 'utf8');
+  const packet = JSON.parse(raw);
+  if (packet?.schema !== SEMANTIC_ADJUDICATION_PACKET_SCHEMA || !packet?.items) {
+    throw new Error(`semantic adjudications must use schema ${SEMANTIC_ADJUDICATION_PACKET_SCHEMA}`);
+  }
+  const packetSha256 = createHash('sha256').update(raw).digest('hex');
+  const batchStates = {};
+  let selectedItemCount = 0;
+
+  for (const iteration of preparedSummary.iterations || []) {
+    const batchId = iteration.batchId;
+    const selected = db
+      .prepare(
+        `SELECT id, drama_id, arm
+           FROM poetics_items
+          WHERE run_id = @runId
+            AND unit_id LIKE 'target-%'
+          ORDER BY drama_id, arm, id`,
+      )
+      .all({ runId: batchId })
+      .filter((row) => args.targetOnly.includes(row.drama_id) && args.targetArms.includes(row.arm));
+    const byKey = new Map();
+    for (const row of selected) {
+      const key = expectedItemKey(row.drama_id, row.arm);
+      const rows = byKey.get(key) || [];
+      rows.push(row);
+      byKey.set(key, rows);
+    }
+    const coverageProblems = [];
+    for (const dramaId of args.targetOnly) {
+      for (const arm of args.targetArms) {
+        const key = expectedItemKey(dramaId, arm);
+        const count = byKey.get(key)?.length || 0;
+        if (count !== 1) coverageProblems.push(`${batchId}:${key}:${count}`);
+      }
+    }
+    if (coverageProblems.length) {
+      throw new Error(`prepared semantic item coverage is incomplete or duplicated: ${coverageProblems.join(', ')}`);
+    }
+
+    const expectedItemIds = selected.map((row) => row.id).sort();
+    selectedItemCount += expectedItemIds.length;
+    const incompletePacketItems = expectedItemIds.filter((itemId) => {
+      const packetItem = packet.items[itemId];
+      return (
+        !packetItem ||
+        !Array.isArray(packetItem.tutor_judgments) ||
+        packetItem.tutor_judgments.length !== 2 ||
+        !Array.isArray(packetItem.learner_judgments) ||
+        packetItem.learner_judgments.length !== 2
+      );
+    });
+    if (incompletePacketItems.length) {
+      throw new Error(
+        `semantic adjudication packet coverage is incomplete across prepared batches: ${incompletePacketItems.join(
+          ', ',
+        )}`,
+      );
+    }
+
+    const persisted = db
+      .prepare(
+        `SELECT a.item_id, a.metadata
+           FROM poetics_tutor_adaptations a
+           JOIN poetics_items i ON i.id = a.item_id
+          WHERE i.run_id = @runId
+            AND a.analyzer_version = @analyzerVersion`,
+      )
+      .all({ runId: batchId, analyzerVersion: SEMANTIC_ANALYZER_VERSION })
+      .filter((row) => expectedItemIds.includes(row.item_id));
+    if (persisted.length > 0 && persisted.length !== expectedItemIds.length) {
+      throw new Error(
+        `partial semantic v5 persistence for ${batchId}: ${persisted.length}/${expectedItemIds.length}; ` +
+          'no new analysis was started',
+      );
+    }
+    const analysisCompleted = persisted.length === expectedItemIds.length;
+    if (analysisCompleted) {
+      const persistedIds = persisted.map((row) => row.item_id).sort();
+      if (JSON.stringify(persistedIds) !== JSON.stringify(expectedItemIds)) {
+        throw new Error(`conflicting semantic v5 item coverage for ${batchId}`);
+      }
+      const conflicting = persisted.filter((row) => {
+        const metadata = decodeJson(row.metadata, {});
+        const provenance = metadata?.semantic_adjudication_provenance || {};
+        return (
+          provenance.packet_schema !== SEMANTIC_ADJUDICATION_PACKET_SCHEMA ||
+          provenance.packet_sha256 !== packetSha256 ||
+          provenance.create_once !== true ||
+          provenance.historical_recompute_allowed !== false
+        );
+      });
+      if (conflicting.length) {
+        throw new Error(
+          `conflicting semantic v5 provenance for ${batchId}: ${conflicting.map((row) => row.item_id).join(', ')}`,
+        );
+      }
+      const malformed = persisted.filter((row) => {
+        const peripeteia = decodeJson(row.metadata, {})?.peripeteia || {};
+        return ![
+          peripeteia.tutor_adaptive_mechanism_measurement || peripeteia.adaptive_mechanism_measurement,
+          peripeteia.tutor_representation_change_measurement || peripeteia.representation_change_measurement,
+          peripeteia.learner_actional_change_measurement,
+          peripeteia.learner_representation_change_measurement,
+        ].every(isValidSemanticMeasurement);
+      });
+      if (malformed.length) {
+        throw new Error(
+          `malformed semantic v5 persistence for ${batchId}: ${malformed.map((row) => row.item_id).join(', ')}`,
+        );
+      }
+    }
+    batchStates[batchId] = {
+      analysisCompleted,
+      expectedItemCount: expectedItemIds.length,
+    };
+  }
+
+  return {
+    packet: {
+      schema: packet.schema,
+      path: rel(args.semanticAdjudicationsPath),
+      sha256: packetSha256,
+    },
+    selectedItemCount,
+    batchStates,
+  };
 }
 
 function commandString(cmd) {
@@ -270,11 +569,21 @@ function buildIterationPlan(args, iteration) {
     '--json',
     path.join(EXPORTS_DIR, `${batchId}-sidecar-report.json`),
   ];
+  if (args.semanticAdjudicationsPath) {
+    adaptation.push('--semantic-adjudications', args.semanticAdjudicationsPath);
+  }
+  report.push('--analyzer-version', args.analyzerVersion);
   for (const cmd of [ingest, adaptation, report]) {
     if (args.dbPath) cmd.push('--db', args.dbPath);
   }
 
   return { iteration, batchId, rootDir, commands: { production, ingest, adaptation, report } };
+}
+
+function workflowStages(args, { analysisCompleted = false } = {}) {
+  if (args.prepareSemantic) return ['production', 'ingest'];
+  if (args.resumePrepared) return analysisCompleted ? ['report'] : ['adaptation', 'report'];
+  throw new Error('semantic workflow stage is not selected');
 }
 
 function runCommand(cmd, args) {
@@ -301,6 +610,109 @@ function decodeJson(value, fallback = null) {
   }
 }
 
+function firstTextCandidate(candidates) {
+  for (const candidate of candidates) {
+    const value = String(candidate?.value || '').trim();
+    if (value) return { value, source: candidate.source };
+  }
+  return { value: '', source: null };
+}
+
+function loadRepairInputsByDrama(targetSpec) {
+  if (!targetSpec || !fs.existsSync(targetSpec)) return {};
+  try {
+    const spec = yaml.parse(fs.readFileSync(targetSpec, 'utf8')) || {};
+    const raw = spec.dramas || spec.target || [];
+    const dramas = Array.isArray(raw) ? raw : Object.values(raw);
+    return Object.fromEntries(
+      dramas
+        .filter((drama) => drama?.id)
+        .map((drama) => [
+          drama.id,
+          {
+            hamartia: String(drama.hamartia || '').trim(),
+            correctedRule: String(drama.corrected_rule || drama.correctedRule || '').trim(),
+            learnerStartState: String(drama.learner_start_state || '').trim(),
+            lessonObjective: String(
+              drama.lesson_objective || drama.curriculum_script_notes?.curriculum?.lesson_objective || '',
+            ).trim(),
+          },
+        ]),
+    );
+  } catch {
+    return {};
+  }
+}
+
+function repairInputsForItem(item, args) {
+  const keyItem = item.metadata?.keyItem || {};
+  const notes = keyItem.curriculum_script_notes || {};
+  const registered = args.repairInputsByDrama?.[item.dramaId] || {};
+  const hamartia = firstTextCandidate([
+    { value: keyItem.hamartia, source: 'item.metadata.keyItem.hamartia' },
+    {
+      value: notes.script_lowering?.hamartia,
+      source: 'item.metadata.keyItem.curriculum_script_notes.script_lowering.hamartia',
+    },
+    { value: registered.hamartia, source: 'target_spec.hamartia' },
+    { value: keyItem.learner_start_state, source: 'item.metadata.keyItem.learner_start_state' },
+    {
+      value: notes.script_lowering?.learner_start_state,
+      source: 'item.metadata.keyItem.curriculum_script_notes.script_lowering.learner_start_state',
+    },
+    { value: registered.learnerStartState, source: 'target_spec.learner_start_state' },
+  ]);
+  const correctedRule = firstTextCandidate([
+    { value: keyItem.corrected_rule, source: 'item.metadata.keyItem.corrected_rule' },
+    { value: keyItem.correctedRule, source: 'item.metadata.keyItem.correctedRule' },
+    {
+      value: notes.curriculum?.corrected_rule,
+      source: 'item.metadata.keyItem.curriculum_script_notes.curriculum.corrected_rule',
+    },
+    { value: registered.correctedRule, source: 'target_spec.corrected_rule' },
+    { value: keyItem.lesson_objective, source: 'item.metadata.keyItem.lesson_objective' },
+    {
+      value: notes.curriculum?.lesson_objective,
+      source: 'item.metadata.keyItem.curriculum_script_notes.curriculum.lesson_objective',
+    },
+    { value: registered.lessonObjective, source: 'target_spec.lesson_objective' },
+  ]);
+  return { hamartia, correctedRule };
+}
+
+function readFinalPublicLearnerTurn(samplePath) {
+  if (!samplePath) return { status: 'missing_path', turn: null };
+  const absolute = path.isAbsolute(samplePath) ? samplePath : path.resolve(ROOT, samplePath);
+  if (!fs.existsSync(absolute)) return { status: 'file_not_found', turn: null };
+  try {
+    const turn = extractFinalLearnerPublicText(fs.readFileSync(absolute, 'utf8'));
+    return turn ? { status: 'ok', turn } : { status: 'no_public_learner_turn', turn: null };
+  } catch (error) {
+    return { status: 'read_error', turn: null, errorCode: error?.code || null };
+  }
+}
+
+function summarizeHamartiaRepair(item, args) {
+  const inputs = repairInputsForItem(item, args);
+  const publicTurn = readFinalPublicLearnerTurn(item.samplePath);
+  const finalTurn = publicTurn.turn;
+  return {
+    ...detectPublicTextRepair({
+      hamartia: inputs.hamartia.value,
+      correctedRule: inputs.correctedRule.value,
+      publicText: finalTurn?.publicText || '',
+    }),
+    source: {
+      hamartia: inputs.hamartia.source,
+      correctedRule: inputs.correctedRule.source,
+      publicText: item.samplePath || null,
+      publicTextStatus: publicTurn.status,
+      publicTextErrorCode: publicTurn.errorCode || null,
+      learnerTurnNumber: finalTurn?.turnNumber ?? null,
+    },
+  };
+}
+
 function scoreValue(...values) {
   for (const value of values) {
     const n = Number(value);
@@ -321,6 +733,46 @@ function scoreTutorMechanismValue(score) {
     scoreValue(score.metadata?.tutor_strategic_reversal, roles.tutor_strategy_reversal?.score100),
     scoreValue(score.metadata?.adaptive_mechanism_quality, roles.tutor_adaptive_mechanism_quality?.score100),
   );
+}
+
+function isValidSemanticMeasurement(measurement) {
+  return Boolean(
+    (measurement?.status === 'determinate' && typeof measurement.value === 'boolean') ||
+    (measurement?.status === 'measurement_indeterminate' && measurement.value == null),
+  );
+}
+
+function semanticMeasurementOrIndeterminate(measurement, semanticV5, axis) {
+  if (!semanticV5 || isValidSemanticMeasurement(measurement)) return measurement || null;
+  return {
+    status: 'measurement_indeterminate',
+    value: null,
+    reasons: [`missing_or_invalid_${axis}_measurement`],
+  };
+}
+
+function scoreProtocolPanel(scores, axis) {
+  const metadataKey =
+    axis === 'learner_action'
+      ? 'learner_action_measurement_protocol_version'
+      : 'mechanism_measurement_protocol_version';
+  const roleKey = axis === 'learner_action' ? 'learner_actional_change' : 'tutor_adaptive_mechanism';
+  const versions = [
+    ...new Set(
+      scores
+        .filter((score) => !score.error)
+        .map(
+          (score) =>
+            score.metadata?.[metadataKey] ||
+            score.metadata?.role_measurement_protocols?.[roleKey]?.version ||
+            'unversioned',
+        ),
+    ),
+  ].sort();
+  return {
+    status: versions.length > 1 ? 'measurement_indeterminate' : versions.length ? 'consistent' : 'no_data',
+    versions,
+  };
 }
 
 function qualityProblems(item) {
@@ -345,6 +797,7 @@ function loadGateItems(db, runId, analyzerVersion = DEFAULT_ANALYZER_VERSION) {
         i.drama_id,
         i.quality_status,
         i.quality_warnings,
+        i.sample_path,
         i.metadata AS item_metadata,
         s.critic_model,
         s.form_class,
@@ -381,6 +834,7 @@ function loadGateItems(db, runId, analyzerVersion = DEFAULT_ANALYZER_VERSION) {
         dramaId: row.drama_id,
         qualityStatus: row.quality_status,
         qualityWarnings: decodeJson(row.quality_warnings, []),
+        samplePath: row.sample_path || null,
         metadata: decodeJson(row.item_metadata, {}),
         adaptation: row.adaptation_metadata
           ? {
@@ -429,18 +883,75 @@ function summarizeItem(item, args) {
   const originInducedVotes = origins.peripeteia_induced || 0;
   // Reported secondary diagnostic, NOT a pass-gate by default (see D1 below).
   const originAmbiguous = originInducedVotes < args.originVoteCut;
-  const actionalVotes = item.scores.filter((score) => scoreActionalValue(score) >= 75).length;
-  const tutorMechanismVotes = item.scores.filter((score) => scoreTutorMechanismValue(score) >= 75).length;
+  const learnerScorePanel = scoreProtocolPanel(item.scores, 'learner_action');
+  const tutorScorePanel = scoreProtocolPanel(item.scores, 'tutor_mechanism');
+  const actionalVotes =
+    learnerScorePanel.status === 'measurement_indeterminate'
+      ? null
+      : item.scores.filter((score) => scoreActionalValue(score) >= 75).length;
+  const tutorMechanismVotes =
+    tutorScorePanel.status === 'measurement_indeterminate'
+      ? null
+      : item.scores.filter((score) => scoreTutorMechanismValue(score) >= 75).length;
   const branchValidity = item.adaptation?.metadata?.branch_validity || {};
   const peripeteia = item.adaptation?.metadata?.peripeteia || {};
+  const semanticV5 = args.analyzerVersion === SEMANTIC_ANALYZER_VERSION;
+  const tutorAdaptiveMechanismMeasurement = semanticMeasurementOrIndeterminate(
+    peripeteia.tutor_adaptive_mechanism_measurement || peripeteia.adaptive_mechanism_measurement,
+    semanticV5,
+    'tutor_adaptive_mechanism',
+  );
+  const tutorRepresentationChangeMeasurement = semanticMeasurementOrIndeterminate(
+    peripeteia.tutor_representation_change_measurement || peripeteia.representation_change_measurement,
+    semanticV5,
+    'tutor_representation_change',
+  );
+  const learnerActionalChangeMeasurement = semanticMeasurementOrIndeterminate(
+    peripeteia.learner_actional_change_measurement,
+    semanticV5,
+    'learner_actional_change',
+  );
+  const learnerRepresentationChangeMeasurement = semanticMeasurementOrIndeterminate(
+    peripeteia.learner_representation_change_measurement,
+    semanticV5,
+    'learner_representation_change',
+  );
+  const mechanismMeasurementIndeterminate =
+    tutorAdaptiveMechanismMeasurement?.status === 'measurement_indeterminate' ||
+    tutorRepresentationChangeMeasurement?.status === 'measurement_indeterminate';
+  const learnerMeasurementIndeterminate =
+    learnerActionalChangeMeasurement?.status === 'measurement_indeterminate' ||
+    learnerRepresentationChangeMeasurement?.status === 'measurement_indeterminate';
   const scoreErrors = item.scores.filter((score) => score.error).length;
   const adaptationGate = {
+    measurementAvailable: Boolean(item.adaptation),
+    analyzerVersion: args.analyzerVersion,
     branchValid: Boolean(branchValidity.valid),
     reversalEventUsed: Boolean(branchValidity.learner_reversal_event_used),
     instrumentedPressure: Boolean(peripeteia.instrumented_pressure),
-    privateRoute: Boolean(peripeteia.private_mechanism_declared),
-    publicMechanism: Boolean(peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal),
+    tutorPrivateMechanismRoute: Boolean(peripeteia.private_mechanism_declared),
+    tutorAdaptiveMechanism: mechanismMeasurementIndeterminate
+      ? null
+      : semanticV5
+        ? tutorAdaptiveMechanismMeasurement.value
+        : Boolean(peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal),
+    tutorAdaptiveMechanismStatus: tutorAdaptiveMechanismMeasurement?.status || null,
+    tutorRepresentationChange:
+      tutorRepresentationChangeMeasurement?.status === 'determinate'
+        ? tutorRepresentationChangeMeasurement.value
+        : null,
+    tutorRepresentationChangeStatus: tutorRepresentationChangeMeasurement?.status || null,
+    learnerActionalChange: learnerMeasurementIndeterminate ? null : (learnerActionalChangeMeasurement?.value ?? null),
+    learnerActionalChangeStatus: learnerActionalChangeMeasurement?.status || null,
+    learnerRepresentationChange:
+      learnerRepresentationChangeMeasurement?.status === 'determinate'
+        ? learnerRepresentationChangeMeasurement.value
+        : null,
+    learnerRepresentationChangeStatus: learnerRepresentationChangeMeasurement?.status || null,
+    learnerScorePanel,
+    tutorScorePanel,
   };
+  const hamartiaRepair = summarizeHamartiaRepair(item, args);
   const quality = qualityProblems(item);
   const failures = [];
   const isControlArm = ['routine', 'none'].includes(item.arm);
@@ -469,13 +980,29 @@ function summarizeItem(item, args) {
     if (args.originHardGate && originAmbiguous) {
       failures.push('organic_or_ambiguous_recognition');
     }
-    if (actionalVotes < args.actionVoteCut) failures.push('action_gap');
+    if (learnerMeasurementIndeterminate) {
+      failures.push('learner_measurement_indeterminate');
+    } else if (learnerActionalChangeMeasurement?.status === 'determinate') {
+      if (learnerActionalChangeMeasurement.value === false) failures.push('action_gap');
+    } else if (learnerScorePanel.status === 'measurement_indeterminate') {
+      failures.push('learner_measurement_indeterminate');
+    } else if (actionalVotes < args.actionVoteCut) {
+      failures.push('action_gap');
+    }
     if (!adaptationGate.branchValid || !adaptationGate.reversalEventUsed || !adaptationGate.instrumentedPressure) {
       failures.push('branch_invalid');
     }
-    if (adaptationGate.branchValid && adaptationGate.privateRoute && !adaptationGate.publicMechanism) {
+    if (mechanismMeasurementIndeterminate) {
+      failures.push('mechanism_measurement_indeterminate');
+    } else if (!tutorAdaptiveMechanismMeasurement && tutorScorePanel.status === 'measurement_indeterminate') {
+      failures.push('mechanism_measurement_indeterminate');
+    } else if (
+      adaptationGate.branchValid &&
+      adaptationGate.tutorPrivateMechanismRoute &&
+      !adaptationGate.tutorAdaptiveMechanism
+    ) {
       failures.push('private_only_adaptation');
-    } else if (!adaptationGate.privateRoute || !adaptationGate.publicMechanism) {
+    } else if (!adaptationGate.tutorPrivateMechanismRoute || !adaptationGate.tutorAdaptiveMechanism) {
       failures.push('mechanism_not_publicly_resolved');
     }
   }
@@ -495,12 +1022,17 @@ function summarizeItem(item, args) {
     actionalVotes,
     tutorMechanismVotes,
     adaptationGate,
+    hamartiaRepair,
     pass: failures.length === 0,
     failures: [...new Set(failures)],
   };
 }
 
 function evaluateRunGate(db, args) {
+  const summaryArgs = {
+    ...args,
+    repairInputsByDrama: args.repairInputsByDrama || loadRepairInputsByDrama(args.targetSpec),
+  };
   const items = loadGateItems(db, args.runId, args.analyzerVersion || DEFAULT_ANALYZER_VERSION);
   const selected = items.filter(
     (item) =>
@@ -514,7 +1046,7 @@ function evaluateRunGate(db, args) {
   }
   const present = new Set(selected.map((item) => expectedItemKey(item.dramaId, item.arm)));
   const missing = [...expected].filter((key) => !present.has(key));
-  const itemSummaries = selected.map((item) => summarizeItem(item, args));
+  const itemSummaries = selected.map((item) => summarizeItem(item, summaryArgs));
   for (const key of missing) {
     const [dramaId, arm] = key.split(':');
     itemSummaries.push({
@@ -530,6 +1062,7 @@ function evaluateRunGate(db, args) {
       actionalVotes: 0,
       tutorMechanismVotes: 0,
       adaptationGate: {},
+      hamartiaRepair: summarizeHamartiaRepair({ dramaId, metadata: {}, samplePath: null }, summaryArgs),
       pass: false,
       failures: ['missing_item'],
     });
@@ -562,7 +1095,13 @@ function renderMarkdown(summary) {
   lines.push('');
   lines.push(`Generated: ${summary.generatedAt}`);
   lines.push(`Status: ${summary.status}`);
-  lines.push(`Passes: ${summary.passes}/${summary.requiredPasses}`);
+  lines.push(
+    `Passes: ${
+      summary.config.workflowStage === 'prepare_semantic'
+        ? 'not evaluated; awaiting independent semantic adjudication'
+        : `${summary.passes}/${summary.requiredPasses}`
+    }`,
+  );
   lines.push('');
   lines.push(`## Gate`);
   lines.push('');
@@ -587,10 +1126,10 @@ function renderMarkdown(summary) {
       .map(([k, v]) => `${k}:${v}`)
       .join(', ');
     const stageError = iteration.stageError ? `${iteration.stageError.stage}: ${iteration.stageError.message}` : '';
+    const pass = iteration.gate ? (iteration.gate.pass ? 'yes' : 'no') : 'not evaluated';
+    const items = iteration.gate ? `${iteration.gate.passedItems}/${iteration.gate.itemCount}` : 'not evaluated';
     lines.push(
-      `| ${iteration.iteration} | ${iteration.batchId} | ${iteration.gate?.pass ? 'yes' : 'no'} | ${
-        iteration.gate?.passedItems || 0
-      }/${iteration.gate?.itemCount || 0} | ${stageError || failures || 'none'} |`,
+      `| ${iteration.iteration} | ${iteration.batchId} | ${pass} | ${items} | ${stageError || failures || 'none'} |`,
     );
   }
   for (const iteration of summary.iterations) {
@@ -598,8 +1137,8 @@ function renderMarkdown(summary) {
     lines.push('');
     lines.push(`## ${iteration.batchId}`);
     lines.push('');
-    lines.push('| drama | arm | pass | recog | origin | action | branch | failures |');
-    lines.push('|---|---|---:|---:|---|---:|---:|---|');
+    lines.push('| drama | arm | pass | recog | origin | action | branch | repair | failures |');
+    lines.push('|---|---|---:|---:|---|---:|---:|---|---|');
     for (const item of iteration.gate.items) {
       const origin = Object.entries(item.origins || {})
         .filter(([, v]) => v)
@@ -608,14 +1147,18 @@ function renderMarkdown(summary) {
       const branch =
         item.adaptationGate?.branchValid &&
         item.adaptationGate?.reversalEventUsed &&
-        item.adaptationGate?.privateRoute &&
-        item.adaptationGate?.publicMechanism
+        item.adaptationGate?.tutorPrivateMechanismRoute &&
+        item.adaptationGate?.tutorAdaptiveMechanism
           ? 'yes'
           : 'no';
       lines.push(
         `| ${item.dramaId || ''} | ${item.arm || ''} | ${item.pass ? 'yes' : 'no'} | ${
           item.consensus?.recognitionVotes || 0
-        }/${item.consensus?.totalCritics || 0} | ${origin || 'none'} | ${item.actionalVotes || 0} | ${branch} | ${
+        }/${item.consensus?.totalCritics || 0} | ${origin || 'none'} | ${
+          item.adaptationGate?.learnerScorePanel?.status === 'measurement_indeterminate'
+            ? 'measurement_indeterminate'
+            : item.actionalVotes || 0
+        } | ${branch} | ${item.hamartiaRepair?.disposition || 'indeterminate'} | ${
           item.failures.join(', ') || 'none'
         } |`,
       );
@@ -625,17 +1168,82 @@ function renderMarkdown(summary) {
   return `${lines.join('\n')}\n`;
 }
 
-function writeSummary(summary, args) {
-  const prefix = args.reportPrefix || path.join(EXPORTS_DIR, `${args.batchPrefix}-${args.runStamp}-loop-status`);
-  fs.mkdirSync(path.dirname(prefix), { recursive: true });
-  const jsonPath = `${prefix}.json`;
-  const mdPath = `${prefix}.md`;
+function writeSummary(summary, args, paths = writableSummaryPaths(args)) {
+  const { jsonPath, mdPath } = paths;
+  fs.mkdirSync(path.dirname(jsonPath), { recursive: true });
   fs.writeFileSync(jsonPath, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
   fs.writeFileSync(mdPath, renderMarkdown(summary), 'utf8');
   return { jsonPath, mdPath };
 }
 
+function loopClaimArtifacts(summary, args, written) {
+  const artifacts = [
+    { surface: 'loop_status_json', path: written.jsonPath },
+    { surface: 'loop_status_markdown', path: written.mdPath },
+    { surface: 'target_spec', path: args.targetSpec },
+  ];
+  if (args.semanticAdjudicationsPath) {
+    artifacts.push({ surface: 'semantic_adjudication_packet', path: args.semanticAdjudicationsPath });
+  }
+  for (const iteration of summary.iterations) {
+    const plan = buildIterationPlan(args, iteration.iteration);
+    artifacts.push({
+      surface: 'production_batch_plan',
+      path: path.join(plan.rootDir, 'batch-plan.json'),
+      required: false,
+      context: { runId: plan.batchId },
+    });
+    for (const [surface, filePath] of [
+      ['tutor_adaptation_report_json', path.join(EXPORTS_DIR, `${plan.batchId}-tutor-adaptation.json`)],
+      ['tutor_adaptation_report_csv', path.join(EXPORTS_DIR, `${plan.batchId}-tutor-adaptation.csv`)],
+      ['sidecar_report_json', path.join(EXPORTS_DIR, `${plan.batchId}-sidecar-report.json`)],
+      ['sidecar_report_csv', path.join(EXPORTS_DIR, `${plan.batchId}-sidecar-report.csv`)],
+      ['sidecar_report_markdown', path.join(EXPORTS_DIR, `${plan.batchId}-sidecar-report.md`)],
+    ]) {
+      artifacts.push({ surface, path: filePath, required: false, context: { runId: plan.batchId } });
+    }
+  }
+  return artifacts;
+}
+
+function archiveLoopEvidence(summary, args, written) {
+  let archiveRoot = args.evidenceArchiveDir;
+  if (!archiveRoot && args.mock) {
+    archiveRoot = path.join(path.dirname(written.jsonPath), '.private-poetics-evidence');
+    fs.mkdirSync(archiveRoot, { recursive: true });
+  }
+  const itemGateRows = summary.iterations.flatMap((iteration) =>
+    (iteration.gate?.items || []).map((item) => ({ runId: iteration.batchId, ...item })),
+  );
+  return createPoeticsEvidenceBundle({
+    bundleId: path.basename(written.jsonPath, '.json'),
+    status: summary.status,
+    runIds: summary.iterations.map((iteration) => iteration.batchId),
+    dbPath: args.dbPath || undefined,
+    archiveRoot,
+    claimArtifacts: loopClaimArtifacts(summary, args, written),
+    rawRunRoots: summary.iterations.map((iteration) => iteration.rootDir),
+    itemGateRows,
+  });
+}
+
 function runLoop(args) {
+  if (!args.dryRun && args.prepareSemantic) {
+    const existing = summaryPaths(args, 'prepare-semantic');
+    if (fs.existsSync(existing.jsonPath) || fs.existsSync(existing.mdPath)) {
+      throw new Error('prepared semantic summary already exists; use a new run stamp to preserve the prior attempt');
+    }
+  }
+  const prepared = !args.dryRun && args.resumePrepared ? validatePreparedSummary(args) : null;
+  let resumePreflight = null;
+  if (prepared) {
+    const db = openPoeticsStore(args.dbPath || undefined);
+    try {
+      resumePreflight = validateResumePreflight(db, args, prepared.summary);
+    } finally {
+      db.close();
+    }
+  }
   const summary = {
     generatedAt: new Date().toISOString(),
     status: 'running',
@@ -658,6 +1266,22 @@ function runLoop(args) {
       controlMaxRecognitionVotes: args.controlMaxRecognitionVotes,
       dryRun: args.dryRun,
       mock: args.mock,
+      analyzerVersion: args.analyzerVersion,
+      semanticAdjudicationsPath: args.semanticAdjudicationsPath ? rel(args.semanticAdjudicationsPath) : null,
+      workflowStage: args.prepareSemantic ? 'prepare_semantic' : 'resume_prepared',
+      workflowIdentity: workflowIdentity(args),
+      targetSpecProvenance: {
+        path: rel(args.targetSpec),
+        sha256: sha256File(args.targetSpec),
+        recorded_not_enforced_as_source_authorization: true,
+      },
+      preparedSummaryProvenance: prepared?.provenance || null,
+      semanticResumePreflight: resumePreflight
+        ? {
+            packet: resumePreflight.packet,
+            selectedItemCount: resumePreflight.selectedItemCount,
+          }
+        : null,
     },
     iterations: [],
   };
@@ -680,7 +1304,10 @@ function runLoop(args) {
     };
     console.log(`\n── iteration ${iteration}/${args.maxIterations}: ${plan.batchId} ──`);
     console.log(`root: ${rel(plan.rootDir)}`);
-    for (const [stage, cmd] of Object.entries(plan.commands)) {
+    const stages = workflowStages(args, resumePreflight?.batchStates?.[plan.batchId]);
+    iterationSummary.executedStages = stages;
+    for (const stage of stages) {
+      const cmd = plan.commands[stage];
       console.log(`\n# ${stage}`);
       try {
         runCommand(cmd, args);
@@ -700,7 +1327,7 @@ function runLoop(args) {
       break;
     }
 
-    if (!args.dryRun) {
+    if (!args.dryRun && args.resumePrepared) {
       const db = openPoeticsStore(args.dbPath || undefined);
       try {
         iterationSummary.gate = evaluateRunGate(db, { ...args, runId: plan.batchId });
@@ -719,16 +1346,40 @@ function runLoop(args) {
     }
 
     summary.iterations.push(iterationSummary);
-    if (!args.dryRun && summary.passes >= args.requiredPasses) {
+    if (!args.dryRun && args.resumePrepared && summary.passes >= args.requiredPasses) {
       summary.status = 'passed';
       break;
     }
   }
 
   if (args.dryRun) summary.status = 'dry_run';
+  else if (args.prepareSemantic && summary.status === 'running') summary.status = 'awaiting_semantic_adjudication';
   else if (summary.status !== 'passed') summary.status = 'failed';
 
   const written = writeSummary(summary, args);
+  if (!args.dryRun) {
+    try {
+      const archived = archiveLoopEvidence(summary, args, written);
+      summary.evidenceArchive = {
+        status: 'verified',
+        createOnce: true,
+        path: rel(archived.path),
+        manifestPath: rel(archived.manifestPath),
+        filesSha256: archived.manifest.filesSha256,
+      };
+      writeSummary(summary, args, written);
+    } catch (error) {
+      const attemptedStatus = summary.status;
+      summary.status = 'failed_evidence_archive';
+      summary.evidenceArchive = {
+        status: 'failed',
+        attemptedStatus,
+        error: error?.message || String(error),
+      };
+      writeSummary(summary, args, written);
+      throw new Error(`poetics closeout evidence archive failed: ${summary.evidenceArchive.error}`, { cause: error });
+    }
+  }
   console.log(`\nloop status json → ${rel(written.jsonPath)}`);
   console.log(`loop status md   → ${rel(written.mdPath)}`);
   return summary;
@@ -749,10 +1400,21 @@ export {
   DEFAULT_ARMS,
   DEFAULT_BATCH_PREFIX,
   DEFAULT_CRITICS,
+  DEFAULT_ANALYZER_VERSION,
   DEFAULT_TARGETS,
+  SEMANTIC_ANALYZER_VERSION,
   buildIterationPlan,
   evaluateRunGate,
+  loadRepairInputsByDrama,
   parseArgs,
+  readFinalPublicLearnerTurn,
+  repairInputsForItem,
   renderMarkdown,
   runLoop,
+  summaryPaths,
+  validatePreparedSummary,
+  validateResumePreflight,
+  writableSummaryPaths,
+  workflowIdentity,
+  workflowStages,
 };

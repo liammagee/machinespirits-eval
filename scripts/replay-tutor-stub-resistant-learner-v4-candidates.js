@@ -8,16 +8,32 @@ import { fileURLToPath } from 'node:url';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import { resolveModel } from '../services/evalConfigLoader.js';
+import { resolveTutorStubArtifactArchiveDirectory } from '../services/tutorStubArtifactArchive.js';
 import { buildTutorStubResistantLearnerFinalHorizonPacket } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
 import { dispatchTutorStubCliBridgeRequest } from '../services/tutorStubCliRequest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DEFAULT_RUN_ROOT =
-  '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-live/resistant-learner-merged-calibration-v4-2026-08-25';
-const DEFAULT_OUT =
-  '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v4-v5-candidate-replay-2026-08-26';
-const DEFAULT_V5_OUT =
-  '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-analysis/resistant-learner-v5-three-reader-opus5-panel-rehearsal-2026-08-26';
+const DEFAULT_ARCHIVE_ROOT =
+  resolveTutorStubArtifactArchiveDirectory(null, { cwd: ROOT, repoRoot: ROOT }) ||
+  path.resolve(ROOT, '..', 'machinespirits-eval-private');
+const DEFAULT_RUN_ROOT = path.join(
+  DEFAULT_ARCHIVE_ROOT,
+  'artifacts',
+  'tutor-stub-live',
+  'resistant-learner-merged-calibration-v4-2026-08-25',
+);
+const DEFAULT_OUT = path.join(
+  DEFAULT_ARCHIVE_ROOT,
+  'artifacts',
+  'tutor-stub-analysis',
+  'resistant-learner-v4-v5-candidate-replay-2026-08-26',
+);
+const DEFAULT_V5_OUT = path.join(
+  DEFAULT_ARCHIVE_ROOT,
+  'artifacts',
+  'tutor-stub-analysis',
+  'resistant-learner-v5-three-reader-opus5-panel-rehearsal-2026-08-26',
+);
 const DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v4.json';
 const V5_DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v5.json';
 const V5_REGISTRATION_PATH = 'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json';

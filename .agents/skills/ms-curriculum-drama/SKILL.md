@@ -1,7 +1,6 @@
 ---
 name: ms-curriculum-drama
-description: Compile an authored curriculum (a course → its modules) into a runnable suite of teaching dramas via the curriculum→world→drama pipeline, then generate and render them. Use when the user wants to turn the AI-Foundations (or any canonical) curriculum into dramas, "compile the curriculum to dramas/worlds", refresh `curriculum/ai-foundations.*.yaml`, run a curriculum module as a light drama, or render a curriculum-drama transcript to HTML. This is the structured, course-derived entry point; for a one-off drama from a freeform brief use /ms-drama-machine instead.
-argument-hint: "[--module AF6] [--mode mvp|all] [--from-rhetorical-plans] [--dry-run|--mock|--run] [--generator claude|codex|gemini|api] [--render]"
+description: Compile a course into world contracts and teaching-drama specs, validate or mock them, and render saved transcripts. Use for curriculum-derived dramas; use ms-drama-machine for one freeform drama. Do not launch real generation until the generator enforces an aggregate attempt ceiling.
 ---
 
 You drive the **curriculum → world → drama** pipeline: a CASE-inspired curriculum object is compiled into locked world contracts and rhetorical-dramatic plans, lowered to a drama spec, generated into transcripts, and (optionally) rendered to HTML. Your job is to run the right stretch of that chain for what the user asked, keeping the cost ladder and the artifact boundary intact.
@@ -11,7 +10,7 @@ You drive the **curriculum → world → drama** pipeline: a CASE-inspired curri
 - `curriculum/SCENARIO-DAG-GUIDE.md` — the handoff from curriculum design to a minimal, learner-legible scenario proof DAG.
 - `notes/poetics/2026-06-19-curriculum-world-adaptation-guide.html` — the canonical end-to-end walkthrough (artifact map, operational semantics, light-run cost ladder, acceptance checks).
 - `services/curriculum/curriculumCompiler.js` — the compiler the four `curriculum:*` scripts call (exports `compileCurriculumTo{WorldAdaptationSpec,RhetoricalDramaticPlans,DramaSpec}`, validators, hashers).
-- `notes/poetics/drama-machine/` — the slot/move vocabulary the compiled `turn_plan`s draw from (shared with /ms-drama-machine).
+- `notes/poetics/drama-machine/` — the slot/move vocabulary the compiled `turn_plan`s draw from (shared with `$ms-drama-machine`).
 
 ## The three artifacts (and the one boundary)
 
@@ -57,8 +56,9 @@ The builder records source ids, locations, access times, extracted-content
 hashes, and excerpts; modules/KCs cite those ids. It rejects cyclic
 prerequisites and modules without tasks, verifiers, or misconception evidence.
 `--dry-run --generate` never calls the model. Use `--check`, `--no-compile`,
-`--rhetorical`, and `--force` for validation-only, canonical-only, additional
-rhetorical artifacts, and deliberate overwrite respectively. Its
+and `--rhetorical` for validation-only, canonical-only, and additional
+rhetorical artifacts. Never add `--force` by default; choose a unique output
+path or ask before overwriting. Its
 `*.builder-report.md` is an authoring/readiness report, not an outcome evaluator.
 Its scenario-authoring handoff deliberately separates three graphs: the
 curriculum prerequisite DAG (what must be learned first), the world adaptation
@@ -104,7 +104,7 @@ node scripts/generate-pedagogical-dramas.js --dry-run \
   --spec curriculum/ai-foundations.mvp-dramas.yaml --only D_AF6_CURRICULUM --max-turns 2
 
 # (ii) mock — a real transcript artifact with no API cost (FREE)
-node scripts/generate-pedagogical-dramas.js --mock --force \
+node scripts/generate-pedagogical-dramas.js --mock \
   --spec curriculum/ai-foundations.mvp-dramas.yaml --only D_AF6_CURRICULUM --max-turns 2 \
   --out-dir exports/curriculum-light-drama/sample \
   --transcripts-dir exports/curriculum-light-drama/transcripts \
@@ -112,12 +112,9 @@ node scripts/generate-pedagogical-dramas.js --mock --force \
   --writing-pad-dir exports/curriculum-light-drama/writing-pad \
   --key exports/curriculum-light-drama/key.yaml
 
-# (iii) attended real — PAID; run in background for multi-drama.
-node scripts/generate-pedagogical-dramas.js --force \
-  --spec curriculum/ai-foundations.rhetorical-dramas.yaml --only D_AF11_CURRICULUM_ADAPTIVE \
-  --generator claude --model sonnet --claude-persistent-workers \
-  --out-dir <run>/samples --delib-dir <run>/deliberations \
-  --transcripts-dir <run>/transcripts --key <run>/key.yaml
+# (iii) real generation — currently unsupported from this skill.
+# The generator does not enforce an aggregate attempt ceiling, so a requested
+# ceiling would be descriptive rather than a hard stop. Do not launch it here.
 ```
 
 Generation flags worth knowing (verify against the arg parser, don't guess):
@@ -125,13 +122,14 @@ Generation flags worth knowing (verify against the arg parser, don't guess):
   `codex` uses `codex exec`; `gemini` uses the Gemini CLI; `api` uses the
   configured API route. Read the current parser and select by available route,
   capability, cost, and the experiment contract rather than copying an old
-  model example. `--model` is backend-specific.
+  model example. `--model` is for the Claude route; the API route uses
+  `--api-model`. Verify current parser behavior before composing a command.
 - `--claude-persistent-workers` reuses Claude workers across dramas; use
   `--role-map` only when the requested cast deliberately mixes backends.
 - `--paired-adaptation-arms <arm,...>` for contrastive arms (e.g. `routine,peripeteia`); `--affective-adaptation-policy none|procedural_sensitive` (drama spec may already set this — the flag overrides).
-- A paid run is **attended and human-gated**: an explicit request with model,
-  scope, and ceiling is the gate. Ask only for a missing boundary; prefer one
-  drama first when the request has not already fixed a larger registered slice.
+- Do not launch a paid run from this skill until the runtime exposes and tests
+  an enforced aggregate attempt ceiling. Explicit user authority is necessary
+  but cannot substitute for a missing hard stop.
 
 ## 3. Render (optional) — transcript → HTML dialog
 
@@ -166,11 +164,9 @@ Give: which compile steps ran and what they wrote (file + count, e.g. "6 rhetori
 
 ## Critical rules
 - **Compile first, then run.** Don't generate against a hand-edited drama spec when the curriculum source changed — recompile.
-- **Use each cost rung when its boundary changed.** Do not repeat a passing
-  dry-run or mock canary solely as ceremony. An explicit request that defines
-  the paid run's model, scope, and ceiling authorizes the real rung; ask only
-  when one of those boundaries is missing. Do not switch backends in a pinned
-  experiment.
+- **Use each free rung when its boundary changed.** Do not repeat a passing
+  dry-run or mock canary solely as ceremony. Do not run the real rung from this
+  skill while its aggregate attempt ceiling is unenforced.
 - **One loop at a time.** Honour §0; the live AF11 loop must not be doubled.
 - **World spec ≠ evaluator; no empirical claims here.** Independent outcome/quality analysis stays required; findings live in the paper.
 - **Keep the three graphs distinct.** Curriculum prerequisites, legal teaching actions, and answer-warranting proof edges solve different problems.

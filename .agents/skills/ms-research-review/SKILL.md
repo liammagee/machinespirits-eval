@@ -1,7 +1,6 @@
 ---
 name: ms-research-review
-description: Review recent daily research roundups, synthesize them, and produce a prioritized, project-grounded action plan
-argument-hint: "[window, e.g. 'last 7' or a date like 2026-06-09]"
+description: Synthesize recent local daily research roundups into a short, project-grounded action plan. Use for reviewing the existing roundup feed; use ms-litreview for a topic-focused review of the local PDF corpus and do not treat roundup summaries as empirical project evidence.
 ---
 
 Turn the accumulated daily research roundups into an actionable plan. The roundups
@@ -11,10 +10,16 @@ Turn the accumulated daily research roundups into an actionable plan. The roundu
 
 ## 1. Review — read the recent roundups
 
+List all matching files, parse the leading `YYYY-MM-DD`, and select files whose
+dates fall inside the requested calendar window (default: the last 14 days).
+Do not use `tail -14`: that selects fourteen files, not fourteen days.
+
 ```bash
-# the notes to review (default: all roundups from the last ~14 days)
-ls -1 notes/daily-notes/*-research-roundup.html | sort | tail -14
+rg --files notes/daily-notes | rg '/[0-9]{4}-[0-9]{2}-[0-9]{2}-research-roundup\.html$' | sort
 ```
+
+Report the requested start/end dates, newest covered date, and any dates with
+no roundup. If the user supplied a date or window, apply it literally.
 
 For each, extract the papers (title, arXiv id, UNBLOCK/WATCH flag, summary). The blocks
 are regular: `<div class="paper">` → `<h3>` title → `<div class="meta">` (`arXiv <id>`) → `<p>` summary.
@@ -41,7 +46,10 @@ positioning note, not a finding.
 
 ## 3. Write the plan
 
-Write `notes/research-plans/YYYY-MM-DD-research-plan.html` (date = today). Mirror the lightweight
+Write `notes/research-plans/YYYY-MM-DD-research-plan.html` only when the user
+asked for a plan artifact; otherwise return it in chat. If today's path already
+exists, inspect it and ask whether to revise or choose a unique suffix—never
+overwrite it silently. Mirror the lightweight
 inline-CSS HTML of the most recent roundup so it renders in email (NOT techne — techne CSS won't load
 in a mail client). First line inside `<body>`:
 `<!-- meta: date=YYYY-MM-DD reviews=<comma-separated roundup dates covered> generator=ms-research-review -->`

@@ -133,6 +133,82 @@ function warrantOpenNodes(world, derivedPath) {
   });
 }
 
+/**
+ * R2 exhibit mint (frame-refuser with a satisfiable condition,
+ * config/tutor-stub-frame-refuser-satisfiable-design.v1.json). The open nodes
+ * are the authored proof path's PREMISES in release order — exhibits the world
+ * can show and the tutor can enter into the record — where the R1 mint uses
+ * rule glosses, whose satisfaction is a derived consequent no premise
+ * witnesses. That difference is the whole point of the R2 study: the demand
+ * becomes dischargeable. B1 and R1 minting is untouched.
+ */
+function exhibitOpenNodes(world, derivedPath) {
+  const releaseTurnByPremise = new Map(world.releaseSchedule.map((entry) => [entry.premise, entry.turn]));
+  const ordered = [...derivedPath.premiseIds].sort(
+    (left, right) => releaseTurnByPremise.get(left) - releaseTurnByPremise.get(right),
+  );
+  return ordered.map((premiseId, index) => {
+    const releaseTurn = releaseTurnByPremise.get(premiseId);
+    if (!Number.isInteger(releaseTurn)) {
+      // A premise with no scheduled release can never be discharged by the
+      // record, which is the predecessor's defect all over again. Refuse.
+      throw new Error(`exhibit mint: authored-path premise ${premiseId} has no release turn in ${world.id}`);
+    }
+    const premise = world.premiseById.get(premiseId);
+    return {
+      id: `open_${index + 1}_${premiseId}`,
+      openNodeKind: 'exhibit',
+      sourcePremiseId: premiseId,
+      releaseTurn,
+      task: String(premise.surface || '').trim(),
+      status: 'open',
+    };
+  });
+}
+
+export const TUTOR_STUB_DEMANDED_EXHIBIT_RULE = 'earliest_unreleased_authored_path_premise_within_horizon';
+
+/**
+ * The registered demand selection rule for R2: the learner's standing demand
+ * names the earliest authored-path premise that is (a) not yet public at the
+ * trigger turn and (b) scheduled for release within the outcome horizon.
+ * Fails closed: a world with no qualifying premise is refused at plan build,
+ * so a run never starts with an undischargeable demand.
+ */
+export function selectTutorStubDemandedExhibit({ dag, triggerTurn, outcomeHorizonPostTriggerLearnerTurns } = {}) {
+  if (dag?.study !== 'R2') throw new Error('demanded-exhibit selection requires an R2 exhibit-minted rival DAG');
+  if (!Number.isInteger(triggerTurn) || triggerTurn < 1) {
+    throw new Error('demanded-exhibit selection needs an integer trigger turn >= 1');
+  }
+  const horizon = outcomeHorizonPostTriggerLearnerTurns;
+  if (!Number.isInteger(horizon) || horizon < 1) {
+    throw new Error('demanded-exhibit selection needs an integer outcome horizon >= 1');
+  }
+  const horizonTurn = triggerTurn + horizon;
+  const demanded =
+    dag.openNodes
+      .filter(
+        (node) => node.openNodeKind === 'exhibit' && node.releaseTurn > triggerTurn && node.releaseTurn <= horizonTurn,
+      )
+      .sort((left, right) => left.releaseTurn - right.releaseTurn)[0] || null;
+  if (!demanded) {
+    throw new Error(
+      `no authored-path premise in ${dag.rivalWorldId} is both unreleased at turn ${triggerTurn} and ` +
+        `scheduled by turn ${horizonTurn}; refuse this world (rule ${TUTOR_STUB_DEMANDED_EXHIBIT_RULE})`,
+    );
+  }
+  return {
+    schema: 'machinespirits.tutor-stub.demanded-exhibit.v1',
+    rule: TUTOR_STUB_DEMANDED_EXHIBIT_RULE,
+    triggerTurn,
+    horizonTurn,
+    demandedNodeId: demanded.id,
+    demandedPremiseId: demanded.sourcePremiseId,
+    releaseTurn: demanded.releaseTurn,
+    task: demanded.task,
+  };
+}
+
 function authoredBridges({ tutorWorld, tutorPath, openNodes }) {
   const ruleById = new Map(tutorWorld.rules.map((rule) => [rule.id, rule]));
   const rules = tutorPath.ruleIds.map((ruleId) => ruleById.get(ruleId)).filter(Boolean);
@@ -156,13 +232,22 @@ function authoredBridges({ tutorWorld, tutorPath, openNodes }) {
  */
 export function mintTutorStubRivalLearnerDag({ design, job, root = process.cwd() } = {}) {
   const study = job?.study;
-  if (!['B1', 'R1'].includes(study)) throw new Error('rival learner DAG requires a B1 or R1 job');
+  if (!['B1', 'R1', 'R2'].includes(study)) throw new Error('rival learner DAG requires a B1, R1, or R2 job');
+  if (study === 'R2' && design?.rivalDagPersona?.mint?.openNodeKind !== 'exhibit') {
+    // Fail closed both ways: an R2 job on a design that does not register the
+    // exhibit mint would silently reproduce the predecessor's warrant demands.
+    throw new Error('an R2 job needs a design whose rivalDagPersona.mint.openNodeKind is "exhibit"');
+  }
   const tutorWorldId = job.world;
   const rivalWorldId = study === 'B1' ? b1RivalWorldId({ design, tutorWorldId, jobId: job.id }) : tutorWorldId;
   const { filePath: rivalWorldPath, world: rivalWorld } = catalogWorld(root, rivalWorldId);
   const derivedPath = derivePath(rivalWorld, `${design.randomization.masterSeed}:${job.id}`);
   const openNodes =
-    study === 'B1' ? premiseOpenNodes(rivalWorld, derivedPath) : warrantOpenNodes(rivalWorld, derivedPath);
+    study === 'B1'
+      ? premiseOpenNodes(rivalWorld, derivedPath)
+      : study === 'R2'
+        ? exhibitOpenNodes(rivalWorld, derivedPath)
+        : warrantOpenNodes(rivalWorld, derivedPath);
   if (!openNodes.length || openNodes.some((node) => !node.task)) {
     throw new Error(`rival learner DAG for ${job.id} has no usable open nodes`);
   }
@@ -180,11 +265,14 @@ export function mintTutorStubRivalLearnerDag({ design, job, root = process.cwd()
     jobId: job.id,
     tutorWorldId,
     rivalWorldId,
-    relation: study === 'B1' ? 'content_rivalry' : 'standing_rivalry',
+    relation:
+      study === 'B1' ? 'content_rivalry' : study === 'R2' ? 'standing_rivalry_over_exhibits' : 'standing_rivalry',
     objective:
       study === 'B1'
         ? rivalWorld.question
-        : `Determine which public warrant in ${rivalWorld.title} must be satisfied before the tutor's answer frame has standing.`,
+        : study === 'R2'
+          ? `Determine which public exhibit in ${rivalWorld.title} must be entered in the record before the tutor's answer frame has standing.`
+          : `Determine which public warrant in ${rivalWorld.title} must be satisfied before the tutor's answer frame has standing.`,
     authoredPathId: derivedPath.id,
     authoredRuleIds: derivedPath.ruleIds,
     openNodes,
@@ -349,12 +437,17 @@ export function tutorStubRivalDagTurnDirective({ state } = {}) {
   ].join('\n');
 }
 
+const SIMULATED_PROFILE_BY_STUDY = Object.freeze({
+  B1: 'bored',
+  R1: 'frame_refuser',
+  R2: 'frame_refuser_exhibit',
+});
+
 export function tutorStubRivalLearnerDagPrompt({ design, job, root = process.cwd() } = {}) {
   const dag = mintTutorStubRivalLearnerDag({ design, job, root });
-  const b1 = job.study === 'B1';
   const contract = design.rivalDagPersona;
   return [
-    `You are simulating this automated learner profile: ${b1 ? 'bored' : 'frame_refuser'}`,
+    `You are simulating this automated learner profile: ${SIMULATED_PROFILE_BY_STUDY[job.study]}`,
     '',
     `Private rival learner DAG: ${dag.sha256}`,
     `Rival objective: ${dag.objective}`,
@@ -387,6 +480,7 @@ export default {
   buildTutorStubRivalLearnerDagTurnRecord,
   evaluateTutorStubRivalDagConcession,
   mintTutorStubRivalLearnerDag,
+  selectTutorStubDemandedExhibit,
   tutorStubRivalDagTurnDirective,
   tutorStubRivalLearnerDagPrompt,
 };

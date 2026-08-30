@@ -1,17 +1,16 @@
 ---
 name: ms-workplan
-description: Read, capture, triage and update project work on the workplan board (workplan/ folder + scripts/workplan.js)
-argument-hint: '<request, e.g. "what is active", "capture: <idea>", "what is blocked on budget">'
+description: Read, capture, triage, or update the canonical workplan in workplan/items and workplan/inbox. Use for project status and task tracking; do not write live work to TODO.md or treat generated BOARD.md and board.json as sources.
 ---
 
-Route the user's request (`$ARGUMENTS`) to the workplan board. The board lives in
+Route the user's request to the workplan board. The board lives in
 `workplan/` (see `workplan/README.md` for the full contract) and is driven by
 `scripts/workplan.js`.
 
 ## First, read the contract
 If you haven't this session, read `workplan/README.md` — it defines the item
-schema, lifecycle states, and how each surface interacts. The best-practice
-playbook is in `workplan/playbook/`.
+schema, lifecycle states, and how each surface interacts. Read only the
+playbook file relevant to the requested transition or operation.
 
 ## Common routes
 - **"what's active / what's blocked / show the board"**
@@ -24,19 +23,19 @@ playbook is in `workplan/playbook/`.
 - **"capture this idea"** → write an `inbox/` file (don't commit to `items/` yet;
   capture and commitment are separate steps):
   ```bash
-  node scripts/workplan.js add --inbox --title "<one line>" --source manual
+  node scripts/workplan.js add --inbox --title "<one line>" --source manual --no-render
   ```
 - **"triage the inbox / promote this capture"**
   ```bash
-  node scripts/workplan.js triage inbox/<file>.md
+  node scripts/workplan.js triage inbox/<file>.md --no-render
   ```
 - **"update status / pick this up"**
   ```bash
-  node scripts/workplan.js set <id> status active --owner <claude|codex|gemini> --branch <branch>
+  node scripts/workplan.js set <id> status active --owner <claude|codex|gemini> --branch <branch> --no-render
   ```
 - **"pull in TODO + daily-routine items"**
   ```bash
-  node scripts/workplan.js ingest    # TODO.md open items + notes/daily-notes actions -> inbox/
+  node scripts/workplan.js ingest --no-render    # TODO.md open items + notes/daily-notes actions -> inbox/
   ```
 - **`add`/`triage`/`set` write item sources.** Their compatibility export can
   be skipped with `--no-render`; the Scriptorium reads item sources directly.

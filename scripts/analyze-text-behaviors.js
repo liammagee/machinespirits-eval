@@ -25,14 +25,17 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
-const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 const args = process.argv.slice(2);
 const section = args.find((a, i) => args[i - 1] === '--section') || 'all';
 const jsonOutput = args.includes('--json');
 const _verbose = args.includes('--verbose');
+const explicitDbPath = args.find((a, i) => args[i - 1] === '--db') || null;
+const LOGS_DIR = resolveTutorDialoguesDir(ROOT_DIR);
 
 const RUN_IDS = ['eval-2026-03-01-aea2abfb', 'eval-2026-03-02-45163390', 'eval-2026-03-02-18027efc'];
 const MODEL_MAP = {
@@ -44,7 +47,7 @@ const MODEL_MAP = {
 // ── Helpers ─────────────────────────────────────────────────────────────
 
 function getDb() {
-  return new Database(DB_PATH, { readonly: true });
+  return new Database(resolveEvaluationDbPath(ROOT_DIR, explicitDbPath), { readonly: true, fileMustExist: true });
 }
 
 function getEpoch2Rows(db) {

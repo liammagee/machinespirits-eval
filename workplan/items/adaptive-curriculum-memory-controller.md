@@ -7,15 +7,15 @@ priority: P2
 owner: claude
 source: review
 created: 2026-07-11
-updated: 2026-08-27
+updated: 2026-08-28
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
   - tutor-stub-multiworld-policy-replication
-  - tutor-stub-transition-reward-model
 links:
   notes:
     - PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md
+    - notes/2026-08-28-memory-controller-design-rewrite.md
   items:
     - layered-task-session-adaptation
 tags:
@@ -25,6 +25,56 @@ tags:
   - transfer
 milestone: adaptive-tutor-evidence-v1
 ---
+
+Design rewritten 2026-08-28 against current evidence:
+`notes/2026-08-28-memory-controller-design-rewrite.md`. The original Phase-6
+text (implement only after cautious learned ranking passes; memory entries
+carry evidence, validity, supersession, contradiction and retrieval reasons;
+stale memory as an explicit control) is superseded and kept below as history.
+
+The killed prerequisite is dropped. This design fits no ranker and needs no
+transition dataset, because the evidence says a learned or persisted layer
+was never the missing piece.
+
+**What the memory adds.** Nothing about the learner — §6.10 settled that the
+simulated learner's interior is surface-determined and §6.13.18 that the
+policy reconstructs its strategy from context every turn. The one quantity
+absent from any single transcript is the tutor's own historical hit rate, per
+action family, per detected condition, per world. After
+`writing-pad-intervention-outcomes` (landed 2026-08-28) that raw material
+exists where it did not in July.
+
+**The shape.** Not a memory screen read before speaking; three arrivals at
+the §6.15/§6.16 boundary say a persisted advisory block does not change
+conduct however well authored. Instead a conditioned demotion: when the
+existing within-dialogue detector fires condition C, the controller demotes
+an action family in the candidate ranking for that turn only, where its
+historical rate for (C, world) is below a registered floor at registered
+minimum support. Nothing enters a prompt. The memory changes which candidates
+are available at the moment of choice — the seam §6.12.4 showed is
+load-bearing, and the one §6.16 licensed as a successor.
+
+**Controls.** Stale memory is the *first* control, not a robustness note:
+§6.15 measured that action-shaped signals get uptake even when stale, because
+compression detaches an imperative from its precondition, and a demotion is
+an imperative. Then a memory scramble (permute the condition-to-family
+association, holding schema, support and marginal rates intact — the analogue
+of `policy.state_scramble`), a contradictory-record arm, and an abstention
+floor below minimum support that must be visible in the trace.
+
+**Endpoint.** Unassisted improvement and transfer on held-out worlds, scored
+by the outcome-only machine check rather than a rubric. Assisted closure is
+not admissible.
+
+**Discriminating prediction.** Treatment beats control on held-out worlds;
+scramble does not, at a registered margin; stale and contradictory sit at or
+below control. If treatment and scramble move together the controller is a
+demotion-step artifact and the line closes. If nothing moves, that is the
+fourth independent arrival at the same boundary from the one direction not
+yet tried, and it should be written up as a general result rather than probed
+again.
+
+## Superseded Phase-6 text (history)
 
 Implement Phase 6 only after within-dialogue adaptation and cautious learned
 ranking pass. Memory entries require evidence, validity, supersession,
@@ -45,3 +95,24 @@ contradiction, and retrieval reasons; stale memory must be an explicit control.
   what signal a cross-dialogue memory would add, what would count as the
   stale/contradictory-memory control, and what endpoint would show
   unassisted improvement — before any build or run.
+- 2026-08-28: Design rewritten zero-call, no build and no run, per the
+  2026-08-27 reexamination instruction. Full note:
+  `notes/2026-08-28-memory-controller-design-rewrite.md`.
+  Answers the three questions the instruction posed. Signal: the tutor's own
+  per-condition, per-world action hit rate, which no single transcript can
+  contain, now recorded by the intervention-outcome marks that landed the same
+  day. Controls: stale first (§6.15 measured stale action-shaped uptake), then
+  scramble, contradiction, and an abstention floor. Endpoint: outcome-only
+  unassisted improvement and transfer on held-out worlds.
+  The prerequisite `tutor-stub-transition-reward-model` is dropped from
+  `depends_on` — it closed as killed, and this design needs neither a ranker
+  nor a transition dataset.
+  One uncomfortable finding is carried in the open rather than argued away:
+  §6.12.4's closure-off arm preserved strict shift, so the intervention-outcome
+  ledger already fails to change action selection inside a dialogue. A
+  cross-dialogue memory built on the same outcomes inherits that burden, which
+  is why the design is the narrowest testable shape and why the scramble margin
+  is registered in advance.
+  Still needs, before anything runs: a registration under
+  `docs/paid-study-authorization-policy.md` with arms, worlds, sizing against a
+  measured base rate, floors, ceilings and claim boundary.

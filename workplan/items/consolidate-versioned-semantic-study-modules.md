@@ -1,24 +1,27 @@
 ---
 id: consolidate-versioned-semantic-study-modules
 title: "Consolidate the copy-pasted versioned semantic study modules"
-status: triaged
+status: done
 type: maintenance
 priority: P2
 owner: codex
+branch: codex/consolidate-versioned-semantic-study-modules
 source: manual
 created: 2026-08-27
-updated: 2026-08-27
-verification: One parameterized module plus a per-version frozen-constants
-  descriptor replaces the duplicated families; every file whose bytes are
-  pinned in a sealed manifest or named in .prettierignore is unchanged
-  byte-for-byte (checked by sha256 before/after); all existing tests pass
-  unchanged; a regression test proves each historical version resolves the
-  same constants as its old file did.
+updated: 2026-08-28
+verification: The 40-module inventory records before/after SHA-256 evidence;
+  22 hard-protected and 14 deliberately preserved historical modules plus two
+  protected tests remain byte-identical; four demonstrably source-unpinned
+  pure V5-V8 builders preserve their legacy paths over one parameterized
+  builder and deeply frozen descriptors; the 62-test focused suite, manifest
+  check, cycle check, focused lint and format checks, workplan source check,
+  and diff check pass.
 claim_status: methods
 links:
+  prs:
+    - 845
   notes:
-    - services/tutorStubResistanceMeasurementValidationV6Runtime.js
-    - services/tutorStubResistanceRecoverySemanticAdjudicationV2.js
+    - notes/2026-08-27-versioned-semantic-study-module-consolidation.md
 tags:
   - tutor-stub
   - refactor
@@ -26,18 +29,39 @@ tags:
   - effort-ultra
 ---
 
-About 17,000 lines across 34 files are near-exact copies: the resistance and
-boredom semantic adjudication, validation, and measurement-validation families
-in `services/`, mirrored by per-version analyze and build scripts in
-`scripts/`. A token rename from V6 to V7 leaves a 2-line diff (a version
-integer and a frozen commit hash). The version pinning is legitimate science;
-the duplicated carrier is not.
+The broad inventory contains 40 modules: 20 directly SHA-pinned, two protected
+by `.prettierignore`, 14 historical modules deliberately preserved, and four
+demonstrably source-unpinned pure builders migrated. The initial 34-file
+near-copy estimate is the narrower subset of 18 hard-protected modules, 12
+policy-preserved historical governance carriers, and those four builders. Two
+adjacent historical tests are also protected by `.prettierignore`.
 
-The fix: one parameterized module, and a small frozen-constants table per
-version (version integer, corpus commit, instrument freeze commit, status
-string). Hard constraint: files with sha256 pins in sealed study records must
-keep their exact bytes — route only new versions and unpinned files through
-the shared module, and prove pinned files untouched.
+This is a forward-only consolidation. Every source file protected by an
+existing byte pin, sealed study record, GO closure, or `.prettierignore` remains
+byte-identical. The 12 unpinned but governance-bearing validation, report, and
+analysis carriers also remain byte-identical so the retired source- and
+digest-bound approval machinery is not re-entered through new shared code. The
+four pure heldout builders retain their legacy paths as side-effect-free
+compatibility wrappers over one parameterized builder and deeply frozen
+per-version descriptors. The evidence note records baseline and after hashes
+without turning those observations into a new source-pin gate.
 
-Suggested worker: Codex Sol at Ultra reasoning effort. The mechanical diff is
-easy; knowing which bytes are load-bearing is the hard part.
+- 2026-08-27 — Started from clean `origin/main` at `ee2f3db3` in an isolated
+  worktree; model-backed study activity remains disabled. Protection and
+  migration inventories preceded source edits.
+- 2026-08-27 — Recorded the 40-module inventory with before/after SHA-256
+  evidence. All 22 hard-protected and 14 deliberately preserved historical
+  modules plus two protected tests are byte-identical; no sealed corpus,
+  report, registration, GO record, or adjudication instrument changed.
+- 2026-08-27 — Routed only the four pure source-unpinned V5-V8 heldout builders
+  through one shared deterministic implementation with deeply frozen version
+  descriptors and preserved compatibility entrypoints. Equivalence tests
+  reproduce all four existing sealed corpora exactly.
+- 2026-08-27 — Verification passed: 62/62 focused tests, synchronized hermetic
+  manifest, zero static import cycles, focused ESLint and Prettier checks,
+  542/542 workplan items valid, and clean diff checks. Dependencies were
+  restored mechanically with `npm ci`; no model-backed or paid study ran and
+  no model calls were made.
+- 2026-08-28 — PR #845 merged with all hosted checks complete and no failed or
+  pending checks; forward-only consolidation is closed with protected history
+  byte-identical.

@@ -221,9 +221,9 @@ export function localCiLaneCatalog(
     );
   }
 
-  const lintCommands = [];
+  const refGovernanceCommands = [];
   if (!options.offline) {
-    lintCommands.push({
+    refGovernanceCommands.push({
       program: 'git',
       args: [
         'fetch',
@@ -234,7 +234,15 @@ export function localCiLaneCatalog(
       ],
     });
   }
-  lintCommands.push(npm('refs:check'), npm('lint'), npm('lint:cycles'), npm('format:check'));
+  refGovernanceCommands.push(npm('refs:check'));
+
+  const lintCommands = [
+    npm('lint'),
+    npm('lint:tutor-core'),
+    npm('lint:cycles'),
+    npm('format:check'),
+    npm('format:check:tutor-core'),
+  ];
 
   const focusedValidationArgs = [
     'scripts/ci-change-policy.js',
@@ -268,6 +276,11 @@ export function localCiLaneCatalog(
   if (classification?.validationRequired && ['focused', 'validator-only'].includes(options.profile)) {
     validationProfiles.push(options.profile);
   }
+  const refGovernanceRequired =
+    options.requestedProfile === 'full' ||
+    classification?.refGovernanceRequired === true ||
+    (!classification && options.profile === 'full');
+  const refGovernanceProfiles = refGovernanceRequired ? ['full', 'quick', 'focused', 'validator-only'] : [];
 
   return [
     lane(
@@ -279,12 +292,20 @@ export function localCiLaneCatalog(
     lane(
       'contract',
       'Hermetic test contract',
-      [npm('test:manifest'), npm('skills:permissions:check')],
+      [
+        npm('test:manifest'),
+        npm('skills:permissions:check'),
+        {
+          program: 'node',
+          args: ['--test', 'tests/ciChangePolicy.test.js', 'tests/localCiRunner.test.js'],
+        },
+      ],
       ['full', 'quick', 'focused', 'validator-only'],
     ),
     lane('focused', 'Focused authored-metadata checks', focusedCommands, ['focused']),
     lane('validator-only', 'Focused validator checks', validatorCommands, ['validator-only']),
-    lane('lint', 'Ref, lint, cycle, and format checks', lintCommands, ['full', 'quick']),
+    lane('ref-governance', 'Managed ref governance', refGovernanceCommands, refGovernanceProfiles),
+    lane('lint', 'Lint, cycle, and format checks', lintCommands, ['full', 'quick']),
     lane(
       'node-tests',
       `Root shards and tutor-core (Node ${process.versions.node})`,
@@ -336,9 +357,9 @@ function gitOutput(args, projectRoot, { trim = true } = {}) {
 
 export async function changedFilesForRange(base, head, projectRoot = PROJECT_ROOT) {
   const queries = [
-    ['range', ['diff', '--name-only', '-z', `${base}...${head}`]],
-    ['unstaged', ['diff', '--name-only', '-z']],
-    ['staged', ['diff', '--cached', '--name-only', '-z']],
+    ['range', ['diff', '--no-renames', '--name-only', '-z', `${base}...${head}`]],
+    ['unstaged', ['diff', '--no-renames', '--name-only', '-z']],
+    ['staged', ['diff', '--cached', '--no-renames', '--name-only', '-z']],
     ['untracked', ['ls-files', '--others', '--exclude-standard', '-z']],
   ];
   const results = await Promise.allSettled(queries.map(([, args]) => gitOutput(args, projectRoot, { trim: false })));
@@ -567,7 +588,7 @@ async function main() {
     collectionOk: changedFileResult.ok,
     errors: changedFileResult.errors,
   });
-  const resolvedOptions = { ...options, profile: selection.profile };
+  const resolvedOptions = { ...options, profile: selection.profile, requestedProfile: selection.requestedProfile };
   let surfaceRequired = false;
   if (options.surface === 'auto') {
     const classification = classifyLocalSurfaceRequirement({

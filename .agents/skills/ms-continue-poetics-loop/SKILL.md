@@ -1,92 +1,27 @@
 ---
 name: ms-continue-poetics-loop
-description: Run exactly one bounded poetics adaptation-recognition loop (D42/D50/D53, three iterations, two required passes) following the canonical handoff workflow. Use when continuing the poetics arc from a prior session.
-argument-hint: "[--targets D42,D50,D53] [--iterations 3] [--passes 2]"
-disable-model-invocation: true
+description: Check whether the bounded poetics adaptation-recognition loop is eligible to continue and report its current hold. The historical D42/D50/D53 launch is closed; do not start model-backed work until a new complete registration and current two-stage semantic handoff exist.
 ---
 
-Run one bounded gated adaptation-recognition loop, following the literal handoff in `notes/poetics/2026-05-27-handoff-adaptation-recognition-loop.md`. This skill has side effects (paid OpenRouter API calls and writes to the live poetics sidecar DB), so it is user-only.
+# Continue Poetics Loop: Hold Check
 
-## Defaults (do not broaden without explicit user instruction)
+This skill is read-only. The former D42/D50/D53 recipe is archived under
+`references/legacy-d42-d50-d53-workflow.md` and must not be executed.
 
-- targets: `D42,D50,D53`
-- arms: `routine,none,peripeteia-only`
-- iterations: `3`
-- required passes: `2`
+## Check
 
-The handoff is explicit: do not broaden the target set until the focused loop either passes or diagnostically saturates.
+1. Record the exact checkout SHA and dirt state. Do not pull, switch, stash, or
+   modify the worktree.
+2. Read the current target registration, adaptation-recognition handoff, and
+   latest loop-status artifact.
+3. Verify whether every registered anchor is complete and whether a valid
+   prepared-semantic artifact exists under the current requirement for exactly
+   one of `--prepare-semantic` or `--resume-prepared`.
+4. Report registered targets, completed/failed/missing iterations, model
+   activity as inactive or not verifiable, prepared-semantic state, and the
+   exact continuation blocker.
 
-## Steps
-
-### 1. Confirm no loop is currently running
-
-```bash
-ps -axo pid,ppid,stat,command | rg 'run-poetics-adaptation-loop|run-poetics-production-batch|generate-pedagogical-dramas|codex exec' | rg -v ' rg ' || echo "no loop running"
-```
-
-If a loop IS running, STOP. Tell the user and exit — do not start a parallel loop.
-
-### 2. Sync the branch and run the focused-tests gate
-
-```bash
-git pull
-git status --short --branch
-node --test tests/generatePedagogicalDramas.test.js tests/criticPoeticsStructure.test.js tests/runPoeticsAdaptationLoop.test.js
-```
-
-If tests fail, STOP and report — do not run the loop on a broken contract.
-
-### 3. Run exactly one bounded loop
-
-```bash
-npm run poetics:adaptation-loop -- --max-iterations 3 --required-passes 2 --skip-existing-scores --generator claude
-```
-
-`--generator claude` routes generation through the Claude Code CLI instead of
-`codex exec`. Preserve the backend pinned by the current handoff or
-authorization; do not translate provider names to the agent currently running
-this skill.
-
-This may take a long time (multiple iterations × generation + critic-panel scoring). Stream output. The loop writes a stamp like `phase2-adaptation-recognition-loop-<TIMESTAMP>Z` and persists status to `exports/<stamp>-loop-status.{md,json}`.
-
-### 4. Inspect status
-
-```bash
-ls -t exports/*adaptation-recognition-loop*loop-status.md | head -3
-latest=$(ls -t exports/*adaptation-recognition-loop*loop-status.md | head -1)
-sed -n '1,220p' "$latest"
-```
-
-Summarise to the user:
-- overall pass / fail
-- per-iteration pass count (e.g. "1/2 passes")
-- failure classes if any (`organic_or_ambiguous_recognition`, `quality_warning`, `critic_split`, `insufficient_scores`, `scorer_error`)
-
-### 5. If the loop passes, package each completed iteration
-
-For each iteration that passed:
-
-```bash
-npm run poetics:package-run -- --run-id <RUN_ID>
-```
-
-This archives raw artifacts to `artifacts/poetics-runs/<RUN_ID>/` (gitignored) and writes a small manifest to `config/poetics-calibration/runs/<RUN_ID>.manifest.json` (committable).
-
-Confirm with the user before committing — they may want to inspect first.
-
-### 6. If the loop fails
-
-Use the `poetics-loop-diagnostician` subagent on the failed iteration's status artifact:
-
-```text
-Agent({ subagent_type: "poetics-loop-diagnostician", prompt: "Diagnose <RUN_ID>" })
-```
-
-If the same failure class has appeared for 3 consecutive iterations, STOP and recommend mechanism / prompt surgery per the handoff termination rule — do not just rerun.
-
-## Critical rules
-
-- **Never `--force` re-run a loop that produced evidence**; package and commit the manifest first.
-- **Never broaden targets** without explicit user instruction; the gated-loop discipline is the whole point.
-- **Never claim "the mechanical adaptive tutor is complete"** based on a single passing iteration. The defensible claim is in the handoff: branch-valid tutor peripeteia can produce recognitive reframe in clean low-organic anchors; one full gated iteration passed; not yet repeat-stable.
-- **Archive payloads stay out of git**; only the manifests get committed. The user must copy `artifacts/poetics-runs/<RUN_ID>/` to durable external storage before deleting the worktree.
+Do not launch a loop, production batch, or agent fan. Re-enable execution only
+by revising this skill against a new complete registration, the current
+two-stage workflow, an explicit model route, and an enforced attempt/spend
+ceiling. This status is not study evidence.

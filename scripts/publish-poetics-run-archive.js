@@ -30,6 +30,7 @@ function parseArgs(argv) {
     dbPath: null,
     archiveDir: path.join(ROOT, 'artifacts/poetics-runs'),
     manifestDir: path.join(ROOT, 'config/poetics-calibration/runs'),
+    itemGatesPath: null,
     dryRun: false,
     noPackage: false,
     clobber: true,
@@ -48,6 +49,7 @@ function parseArgs(argv) {
     } else if (token === '--db') args.dbPath = path.resolve(argv[++i]);
     else if (token === '--archive-dir') args.archiveDir = path.resolve(argv[++i]);
     else if (token === '--manifest-dir') args.manifestDir = path.resolve(argv[++i]);
+    else if (token === '--item-gates') args.itemGatesPath = path.resolve(argv[++i]);
     else if (token === '--dry-run') args.dryRun = true;
     else if (token === '--no-package') args.noPackage = true;
     else if (token === '--no-clobber') args.clobber = false;
@@ -58,6 +60,7 @@ function parseArgs(argv) {
   node scripts/publish-poetics-run-archive.js --run-id RUN_ID[,RUN_ID...]
       [--db FILE] [--archive-dir artifacts/poetics-runs]
       [--manifest-dir config/poetics-calibration/runs]
+      --item-gates exports/item-gates-RUN_ID.jsonl
       [--dry-run] [--no-package] [--allow-public]
 
 Creates or updates GitHub releases named poetics-RUN_ID, uploading:
@@ -72,6 +75,7 @@ Public repositories require --allow-public for non-dry runs.`);
   }
   args.runIds = [...new Set(args.runIds)];
   if (!args.runIds.length) throw new Error('--run-id is required');
+  if (!args.noPackage && !args.itemGatesPath) throw new Error('--item-gates is required unless --no-package is used');
   return args;
 }
 
@@ -163,6 +167,7 @@ async function prepareRun(runId, args) {
     dbPath: args.dbPath,
     archiveDir: args.archiveDir,
     manifestDir: args.manifestDir,
+    itemGatesPath: args.itemGatesPath,
     dryRun: args.dryRun,
   });
   manifestPath = packaged.manifestPath;

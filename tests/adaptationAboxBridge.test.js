@@ -8,6 +8,7 @@ import {
   votedOrigin,
   extractTriggerConsumption,
   detectNamingFrames,
+  unpopulatableFromGateStruct,
 } from '../services/ontology/adaptationAboxBridge.js';
 
 // The population bridge (gate-struct -> adaptation-core ABox) must faithfully transcribe
@@ -109,7 +110,40 @@ const WRONG_TRIGGER_PERI = {
 // frames override the "recognition produced" proxy).
 const FRAMELESS_PERI = { ...CLEAN_PERI, dramaId: 'T6', _frames: { oldCheckFrame: false, replacementFrame: false } };
 
-const fixtures = [CLEAN_PERI, LEAK_CONTROL, ACTION_GAP_PERI, NEGATIVE_CONTROL, WRONG_TRIGGER_PERI, FRAMELESS_PERI];
+const REPAIRED = {
+  definition: 'public-text-v1',
+  disposition: 'repaired',
+  durableRepair: true,
+};
+const NOT_REPAIRED = {
+  definition: 'public-text-v1',
+  disposition: 'not_repaired',
+  durableRepair: false,
+};
+const INDETERMINATE_REPAIR = {
+  definition: 'public-text-v1',
+  disposition: 'indeterminate',
+  durableRepair: null,
+};
+const SCAFFOLDED_REPAIR = { ...CLEAN_PERI, dramaId: 'T7', hamartiaRepair: REPAIRED };
+const SELF_REPAIR = { ...WRONG_TRIGGER_PERI, dramaId: 'T8', hamartiaRepair: REPAIRED };
+const NEGATIVE_REPAIR = { ...CLEAN_PERI, dramaId: 'T9', hamartiaRepair: NOT_REPAIRED };
+const AMBIGUOUS_REPAIR = { ...CLEAN_PERI, dramaId: 'T10', hamartiaRepair: INDETERMINATE_REPAIR };
+const SCAFFOLDED_ACTION_GAP_REPAIR = { ...ACTION_GAP_PERI, dramaId: 'T11', hamartiaRepair: REPAIRED };
+
+const fixtures = [
+  CLEAN_PERI,
+  LEAK_CONTROL,
+  ACTION_GAP_PERI,
+  NEGATIVE_CONTROL,
+  WRONG_TRIGGER_PERI,
+  FRAMELESS_PERI,
+  SCAFFOLDED_REPAIR,
+  SELF_REPAIR,
+  NEGATIVE_REPAIR,
+  AMBIGUOUS_REPAIR,
+  SCAFFOLDED_ACTION_GAP_REPAIR,
+];
 let quads = [];
 
 before(async () => {
@@ -129,6 +163,10 @@ const typeOf = (s) =>
 const axesOf = (e) =>
   quads
     .filter((q) => q.subject.value === NS + e && q.predicate.value === NS + 'hasFailureAxis')
+    .map((q) => q.object.value.replace(NS, ''));
+const propOf = (s, p) =>
+  quads
+    .filter((q) => q.subject.value === NS + s && q.predicate.value === NS + p)
     .map((q) => q.object.value.replace(NS, ''));
 
 test('a clean peripeteia chain lifts to PeripeteiaInducedRecognition with no failure axis', () => {
@@ -215,4 +253,49 @@ test('real S5/S6 frames override the proxy: a frame-less peripeteia chain derive
   // FRAMELESS_PERI is a clean induced chain by the booleans, but namingFrames force S5/S6 false.
   assert.ok(typeOf('R_T6_peripeteia_only').includes('OrganicRecognition'));
   assert.ok(!typeOf('R_T6_peripeteia_only').includes('PeripeteiaInducedRecognition'));
+});
+
+test('a decisive public-text repair on a clean mechanism derives scaffolded repair', () => {
+  const repair = 'Repair_T7_peripeteia_only';
+  assert.ok(typeOf(repair).includes('HamartiaRepairStage'));
+  assert.ok(typeOf(repair).includes('ScaffoldedRepair'));
+  assert.ok(propOf(repair, 'correctionOrigin').includes('tutor_induced'));
+});
+
+test('a decisive public-text repair on the wrong-trigger failure derives self repair and the keystone', () => {
+  const repair = 'Repair_T8_peripeteia_only';
+  assert.ok(typeOf(repair).includes('SelfRepair'));
+  assert.ok(propOf(repair, 'correctionOrigin').includes('self_discovered'));
+  assert.ok(typeOf('Ev_T8_peripeteia_only').includes('repairWithoutRecognitionCredit'));
+});
+
+test('a later action gap does not make scaffolded and self repair overlap', () => {
+  const repair = 'Repair_T11_peripeteia_only';
+  assert.ok(typeOf(repair).includes('ScaffoldedRepair'));
+  assert.ok(!typeOf(repair).includes('SelfRepair'));
+  assert.deepEqual(propOf(repair, 'correctionOrigin'), ['tutor_induced']);
+  assert.ok(typeOf('Ev_T11_peripeteia_only').includes('repairWithoutRecognitionCredit'));
+});
+
+test('negative and ambiguous repair do not populate RDF or break the existing recognition chain', () => {
+  assert.deepEqual(typeOf('Repair_T9_peripeteia_only'), []);
+  assert.deepEqual(typeOf('Repair_T10_peripeteia_only'), []);
+  assert.ok(typeOf('R_T9_peripeteia_only').includes('PeripeteiaInducedRecognition'));
+  assert.ok(typeOf('R_T10_peripeteia_only').includes('PeripeteiaInducedRecognition'));
+
+  const negative = summaryToAbox(NEGATIVE_REPAIR, CUTS);
+  const ambiguous = summaryToAbox(AMBIGUOUS_REPAIR, CUTS);
+  assert.equal(negative.meta.hamartiaRepair.disposition, 'not_repaired');
+  assert.equal(negative.meta.hamartiaRepair.populated, false);
+  assert.equal(ambiguous.meta.hamartiaRepair.disposition, 'indeterminate');
+  assert.equal(ambiguous.meta.hamartiaRepair.populated, false);
+  assert.doesNotMatch(negative.ttl, /HamartiaRepairStage|Repair_T9/);
+  assert.doesNotMatch(ambiguous.ttl, /HamartiaRepairStage|Repair_T10/);
+});
+
+test('legacy summaries remain repair-free and the old correction gap is no longer reported', () => {
+  const legacy = summaryToAbox(CLEAN_PERI, CUTS);
+  assert.doesNotMatch(legacy.ttl, /HamartiaRepairStage|Repair_T1/);
+  assert.equal('hamartiaRepair' in legacy.meta, false);
+  assert.ok(!unpopulatableFromGateStruct().some((entry) => /no durable-repair signal/i.test(entry)));
 });

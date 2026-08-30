@@ -81,11 +81,15 @@ jobs:
     steps:
       - name: Require selected validation to pass
         env:
+          VALIDATION_REQUIRED: ${{ needs.classify.outputs.validation_required }}
           CLASSIFY_RESULT: ${{ needs.classify.result }}
           VALIDATE_RESULT: ${{ needs.validate.result }}
         run: |
           test "$CLASSIFY_RESULT" = "success"
-          case "$VALIDATE_RESULT" in
-            success|skipped) ;;
-            *) echo "Selected validation lane did not pass: $VALIDATE_RESULT" >&2; exit 1 ;;
+          case "$VALIDATION_REQUIRED:$VALIDATE_RESULT" in
+            true:success|false:skipped) ;;
+            *)
+              echo "Validation selection mismatch: required=${VALIDATION_REQUIRED:-<missing>} result=${VALIDATE_RESULT:-<missing>}" >&2
+              exit 1
+              ;;
           esac

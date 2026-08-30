@@ -1,22 +1,21 @@
 ---
 id: outcome-manifest-launch-hold-enforcement
 title: "Make the outcome pilot launcher read the sealed launch-hold field"
-status: triaged
+status: dropped
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-27
 updated: 2026-08-27
-verification: The warrant-outcome pilot launcher refuses a sealed manifest whose
-  launch_authorized field is not exactly true; a test plants false and the
-  launcher must refuse with a clear message; a test plants true and the
-  launcher proceeds; no new approval artifact, schema version, or re-signing
-  step is added; the change lands only while no run is live.
-claim_status: methods
+verification: "Decision recorded: the sealed manifest remains immutable,
+  launch_authorized is treated as retired historical metadata, and no new
+  manifest gate or reseal path is added; the signed GO note remains the
+  authoritative launch decision."
 links:
   notes:
     - docs/adaptation-refinement/relay/DEFECT-LEDGER.md
+    - docs/paid-study-authorization-policy.md
     - scripts/run-adaptive-warrant-outcome-pilot.js
 tags:
   - tutor-stub
@@ -25,7 +24,23 @@ tags:
   - effort-xhigh
 ---
 
-Defect 20 in the relay defect ledger, fix column OPEN, guard "none yet":
+**Dropped 2026-08-27.** The repository's standing paid-study policy makes the
+signed GO note authoritative and explicitly retires HOLD packets and
+per-manifest approval machinery. Reading `launch_authorized` as another gate
+would also require a mutation or reseal path to flip it, recreating the
+approval ceremony the policy forbids. The sealed manifests stay unchanged;
+their field is historical metadata, not live authority.
+
+The launcher already requires a committed, byte-matching GO note scoped to the
+run size, explicit `--accept-charges`, a clean checkout, and a create-once
+destination. Those are the live launch rails. Any future study uses the shared
+design-file, launch-commit, GO-note, and spend-ceiling policy rather than this
+field.
+
+## Historical report
+
+At capture time, defect 20 in the relay defect ledger had fix column OPEN and
+guard "none yet":
 every sealed outcome manifest carries a launch-hold — `launch_authorized:
 false` plus a hold sentence — and the pilot launcher reads neither field. A
 manifest sealed with the hold in place launches as readily as one without it.

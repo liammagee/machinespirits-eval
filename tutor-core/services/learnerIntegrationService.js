@@ -28,7 +28,7 @@ import { getDb } from './dbService.js';
  */
 export function detectResistance(options) {
   const {
-    learnerId,
+    learnerId: _learnerId,
     tutorSuggestion,
     learnerAction,
     timeSinceSuggestion, // milliseconds
@@ -48,12 +48,7 @@ export function detectResistance(options) {
   }
 
   // Analyze type of resistance
-  const resistanceType = analyzeResistanceType(
-    tutorSuggestion,
-    learnerAction,
-    timeSinceSuggestion,
-    context
-  );
+  const resistanceType = analyzeResistanceType(tutorSuggestion, learnerAction, timeSinceSuggestion, context);
 
   return {
     eventType: 'resistance',
@@ -126,19 +121,12 @@ function analyzeResistanceType(suggestion, action, timeSinceSuggestion, context)
  * - Rapid progression after being stuck
  */
 export function detectBreakthrough(options) {
-  const {
-    learnerId,
-    triggerEvent,
-    priorContext = {},
-    currentContext = {},
-  } = options;
+  const { learnerId: _learnerId, triggerEvent, priorContext = {}, currentContext = {} } = options;
 
   // Check for quiz breakthrough
   if (triggerEvent.type === 'quiz_complete') {
     const priorAttempts = priorContext.quizAttempts || [];
-    const recentFailures = priorAttempts.filter(
-      a => a.quizId === triggerEvent.quizId && !a.passed
-    ).length;
+    const recentFailures = priorAttempts.filter((a) => a.quizId === triggerEvent.quizId && !a.passed).length;
 
     if (recentFailures >= 2 && triggerEvent.passed) {
       return {
@@ -197,12 +185,7 @@ export function detectBreakthrough(options) {
  * - Validation: Seeks acknowledgment
  */
 export function detectDemand(options) {
-  const {
-    learnerId,
-    learnerAction,
-    context = {},
-    recentHistory = [],
-  } = options;
+  const { learnerId: _learnerId, learnerAction, context = {}, recentHistory = [] } = options;
 
   // Explicit demands (e.g., user clicks "need help" button)
   if (learnerAction.type === 'request_help') {
@@ -237,10 +220,7 @@ export function detectDemand(options) {
 
   // Scaffolding demand: Multiple failures, seeking hints, returning to basics
   if (context.multipleFailures || context.seekingHints || context.returningToBasics) {
-    const strength = Math.min(
-      1.0,
-      0.5 + (context.failureCount || 0) * 0.1 + (context.hintsRequested || 0) * 0.15
-    );
+    const strength = Math.min(1.0, 0.5 + (context.failureCount || 0) * 0.1 + (context.hintsRequested || 0) * 0.15);
 
     return {
       eventType: 'demand',
@@ -318,7 +298,7 @@ export function recordLearnerEvent(options) {
     recognitionAchieved ? 1 : 0,
     demandCategory,
     demandStrength,
-    contextSnapshot
+    contextSnapshot,
   );
 
   return getLearnerEvent(id);
@@ -381,7 +361,7 @@ export function getLearnerEvents(learnerId, options = {}) {
   const stmt = getDb().prepare(query);
   const rows = stmt.all(...params);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     id: row.id,
     learnerId: row.learner_id,
     writingPadId: row.writing_pad_id,
@@ -411,30 +391,29 @@ export function getLearnerEvents(learnerId, options = {}) {
 export function analyzeLearnerPatterns(learnerId) {
   const events = getLearnerEvents(learnerId, { limit: 100 });
 
-  const resistanceEvents = events.filter(e => e.eventType === 'resistance');
-  const breakthroughEvents = events.filter(e => e.eventType === 'breakthrough');
-  const demandEvents = events.filter(e => e.eventType === 'demand');
+  const resistanceEvents = events.filter((e) => e.eventType === 'resistance');
+  const breakthroughEvents = events.filter((e) => e.eventType === 'breakthrough');
+  const demandEvents = events.filter((e) => e.eventType === 'demand');
 
   // Resistance patterns
   const resistanceByType = {
-    productive: resistanceEvents.filter(e => e.resistanceInterpretation === 'productive').length,
-    confused: resistanceEvents.filter(e => e.resistanceInterpretation === 'confused').length,
-    disengaged: resistanceEvents.filter(e => e.resistanceInterpretation === 'disengaged').length,
+    productive: resistanceEvents.filter((e) => e.resistanceInterpretation === 'productive').length,
+    confused: resistanceEvents.filter((e) => e.resistanceInterpretation === 'confused').length,
+    disengaged: resistanceEvents.filter((e) => e.resistanceInterpretation === 'disengaged').length,
   };
 
-  const dominantResistanceType =
-    Object.entries(resistanceByType).sort((a, b) => b[1] - a[1])[0]?.[0] || 'none';
+  const dominantResistanceType = Object.entries(resistanceByType).sort((a, b) => b[1] - a[1])[0]?.[0] || 'none';
 
   // Breakthrough patterns
   const breakthroughTriggers = breakthroughEvents
-    .map(e => {
+    .map((e) => {
       try {
         return JSON.parse(e.triggerEvent);
       } catch {
         return null;
       }
     })
-    .filter(t => t !== null);
+    .filter((t) => t !== null);
 
   const breakthroughTypes = {};
   for (const trigger of breakthroughTriggers) {
@@ -443,14 +422,13 @@ export function analyzeLearnerPatterns(learnerId) {
 
   // Demand patterns
   const demandByCategory = {
-    autonomy: demandEvents.filter(e => e.demandCategory === 'autonomy').length,
-    scaffolding: demandEvents.filter(e => e.demandCategory === 'scaffolding').length,
-    challenge: demandEvents.filter(e => e.demandCategory === 'challenge').length,
-    validation: demandEvents.filter(e => e.demandCategory === 'validation').length,
+    autonomy: demandEvents.filter((e) => e.demandCategory === 'autonomy').length,
+    scaffolding: demandEvents.filter((e) => e.demandCategory === 'scaffolding').length,
+    challenge: demandEvents.filter((e) => e.demandCategory === 'challenge').length,
+    validation: demandEvents.filter((e) => e.demandCategory === 'validation').length,
   };
 
-  const dominantDemandCategory =
-    Object.entries(demandByCategory).sort((a, b) => b[1] - a[1])[0]?.[0] || 'none';
+  const dominantDemandCategory = Object.entries(demandByCategory).sort((a, b) => b[1] - a[1])[0]?.[0] || 'none';
 
   return {
     totalEvents: events.length,
@@ -460,24 +438,17 @@ export function analyzeLearnerPatterns(learnerId) {
     resistancePatterns: {
       byType: resistanceByType,
       dominantType: dominantResistanceType,
-      ratio:
-        resistanceEvents.length > 0
-          ? resistanceByType[dominantResistanceType] / resistanceEvents.length
-          : 0,
+      ratio: resistanceEvents.length > 0 ? resistanceByType[dominantResistanceType] / resistanceEvents.length : 0,
     },
     breakthroughPatterns: {
       byType: breakthroughTypes,
       totalBreakthroughs: breakthroughEvents.length,
-      breakthroughRate:
-        events.length > 0 ? breakthroughEvents.length / events.length : 0,
+      breakthroughRate: events.length > 0 ? breakthroughEvents.length / events.length : 0,
     },
     demandPatterns: {
       byCategory: demandByCategory,
       dominantCategory: dominantDemandCategory,
-      ratio:
-        demandEvents.length > 0
-          ? demandByCategory[dominantDemandCategory] / demandEvents.length
-          : 0,
+      ratio: demandEvents.length > 0 ? demandByCategory[dominantDemandCategory] / demandEvents.length : 0,
     },
   };
 }
@@ -549,12 +520,8 @@ export function evolveLearnerArchetype(learnerId) {
   // Update archetype
   const updatedArchetype = {
     preferredLearningStyle: preferredStyle,
-    commonStruggles: [
-      ...new Set([...currentArchetype.commonStruggles, ...commonStruggles]),
-    ].slice(0, 5), // Keep max 5
-    breakthroughPatterns: [
-      ...new Set([...currentArchetype.breakthroughPatterns, ...breakthroughPatterns]),
-    ].slice(0, 5), // Keep max 5
+    commonStruggles: [...new Set([...currentArchetype.commonStruggles, ...commonStruggles])].slice(0, 5), // Keep max 5
+    breakthroughPatterns: [...new Set([...currentArchetype.breakthroughPatterns, ...breakthroughPatterns])].slice(0, 5), // Keep max 5
     lastUpdated: new Date().toISOString(),
     totalEvents: patterns.totalEvents,
   };

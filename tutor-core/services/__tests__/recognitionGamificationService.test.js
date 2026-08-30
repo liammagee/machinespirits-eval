@@ -214,7 +214,7 @@ describe('recognitionGamificationService', () => {
       const result = checkRecognitionMilestones(learnerId);
 
       expect(result).toHaveLength(8);
-      result.forEach(m => {
+      result.forEach((m) => {
         expect(m.achieved).toBe(false);
         expect(m.achievedAt).toBeNull();
         expect(m.evidence).toBeNull();
@@ -229,7 +229,7 @@ describe('recognitionGamificationService', () => {
       seedRecognitionMoment(testDb, pad.id, { recognition_type: 'existential' });
 
       const result = checkRecognitionMilestones(learnerId);
-      const firstNegation = result.find(m => m.key === 'first_negation');
+      const firstNegation = result.find((m) => m.key === 'first_negation');
 
       expect(firstNegation.achieved).toBe(true);
       expect(firstNegation.achievedAt).toBeTruthy();
@@ -247,7 +247,7 @@ describe('recognitionGamificationService', () => {
       });
 
       const result = checkRecognitionMilestones(learnerId);
-      const productive = result.find(m => m.key === 'productive_resistance');
+      const productive = result.find((m) => m.key === 'productive_resistance');
 
       expect(productive.achieved).toBe(true);
       expect(productive.evidence).toBe('First productive resistance event');
@@ -261,7 +261,7 @@ describe('recognitionGamificationService', () => {
       seedRecognitionMoment(testDb, pad.id, { mutual_acknowledgment: 1 });
 
       const result = checkRecognitionMilestones(learnerId);
-      const mutual = result.find(m => m.key === 'mutual_transformation');
+      const mutual = result.find((m) => m.key === 'mutual_transformation');
 
       expect(mutual.achieved).toBe(true);
       expect(mutual.evidence).toBe('First mutually transformative moment');
@@ -278,7 +278,7 @@ describe('recognitionGamificationService', () => {
       });
 
       const result = checkRecognitionMilestones(learnerId);
-      const consolidation = result.find(m => m.key === 'memory_consolidation');
+      const consolidation = result.find((m) => m.key === 'memory_consolidation');
 
       expect(consolidation.achieved).toBe(true);
       expect(consolidation.evidence).toBe('First moment consolidated to permanent memory');
@@ -300,7 +300,7 @@ describe('recognitionGamificationService', () => {
       getWritingPad.mockReturnValue(mockPad);
 
       const result = checkRecognitionMilestones(learnerId);
-      const archetype = result.find(m => m.key === 'archetype_evolution');
+      const archetype = result.find((m) => m.key === 'archetype_evolution');
 
       expect(archetype.achieved).toBe(true);
       expect(archetype.evidence).toContain('autonomous');
@@ -320,7 +320,7 @@ describe('recognitionGamificationService', () => {
       }
 
       const result = checkRecognitionMilestones(learnerId);
-      const mastery = result.find(m => m.key === 'dialectical_mastery');
+      const mastery = result.find((m) => m.key === 'dialectical_mastery');
 
       expect(mastery.achieved).toBe(true);
       expect(mastery.evidence).toContain('0.80');
@@ -340,7 +340,7 @@ describe('recognitionGamificationService', () => {
       }
 
       const result = checkRecognitionMilestones(learnerId);
-      const mastery = result.find(m => m.key === 'dialectical_mastery');
+      const mastery = result.find((m) => m.key === 'dialectical_mastery');
 
       expect(mastery.achieved).toBe(false);
     });
@@ -355,7 +355,7 @@ describe('recognitionGamificationService', () => {
       }
 
       const result = checkRecognitionMilestones(learnerId);
-      const metacog = result.find(m => m.key === 'metacognitive_awakening');
+      const metacog = result.find((m) => m.key === 'metacognitive_awakening');
 
       expect(metacog.achieved).toBe(true);
       expect(metacog.evidence).toContain('3 metacognitive');
@@ -370,7 +370,7 @@ describe('recognitionGamificationService', () => {
       seedRecognitionMoment(testDb, pad.id, { recognition_type: 'metacognitive' });
 
       const result = checkRecognitionMilestones(learnerId);
-      const metacog = result.find(m => m.key === 'metacognitive_awakening');
+      const metacog = result.find((m) => m.key === 'metacognitive_awakening');
 
       expect(metacog.achieved).toBe(false);
     });
@@ -383,7 +383,7 @@ describe('recognitionGamificationService', () => {
       seedRecognitionMoment(testDb, pad.id, { synthesis_strategy: 'dialectical_synthesis' });
 
       const result = checkRecognitionMilestones(learnerId);
-      const synthesis = result.find(m => m.key === 'synthesis_achieved');
+      const synthesis = result.find((m) => m.key === 'synthesis_achieved');
 
       expect(synthesis.achieved).toBe(true);
       expect(synthesis.evidence).toBe('First dialectical synthesis achieved');
@@ -408,9 +408,9 @@ describe('recognitionGamificationService', () => {
       seedRecognitionMoment(testDb, pad.id, { mutual_acknowledgment: 1 });
 
       const result = checkRecognitionMilestones(learnerId);
-      const achieved = result.filter(m => m.achieved);
+      const achieved = result.filter((m) => m.achieved);
 
-      achieved.forEach(m => {
+      achieved.forEach((m) => {
         expect(m.achievedAt).toBeTruthy();
         expect(typeof m.evidence).toBe('string');
         expect(m.evidence.length).toBeGreaterThan(0);

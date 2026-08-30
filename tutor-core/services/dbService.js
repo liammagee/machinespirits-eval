@@ -38,9 +38,7 @@ export function initDb(options = {}) {
  */
 export const getDb = () => {
   if (!db) {
-    const resolvedPath = configuredPath
-      || process.env.AUTH_DB_PATH
-      || path.join(ROOT_DIR, 'data', 'lms.sqlite');
+    const resolvedPath = configuredPath || process.env.AUTH_DB_PATH || path.join(ROOT_DIR, 'data', 'lms.sqlite');
     mkdirSync(path.dirname(resolvedPath), { recursive: true });
     db = new Database(resolvedPath);
     db.pragma('foreign_keys = ON');
@@ -79,7 +77,11 @@ function runMigrations(database) {
  */
 export function closeDb() {
   if (db) {
-    try { db.close(); } catch { /* already closed */ }
+    try {
+      db.close();
+    } catch {
+      /* already closed */
+    }
     db = null;
   }
   configuredPath = null;

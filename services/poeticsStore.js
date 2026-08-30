@@ -2,14 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath } from './evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DATA_DIR = path.join(ROOT_DIR, 'data');
 
 function defaultDbPath() {
-  return process.env.EVAL_DB_PATH || path.join(DATA_DIR, 'evaluations.db');
+  return resolveEvaluationDbPath(ROOT_DIR);
 }
 
 function encodeJson(value) {
@@ -330,43 +330,27 @@ export function resolvePoeticsReviewFlag(db, flag) {
   });
 }
 
-export function upsertPoeticsTutorAdaptation(db, adaptation) {
-  db.prepare(
-    `INSERT INTO poetics_tutor_adaptations
-      (item_id, analyzer_version, source_trace_path, cue_policy, cue_turn_number,
-       pivot_learner_turn, learner_self_reframe, learner_reframe_score,
-       tutor_pre_turn, tutor_post_turn, tutor_strategy_before, tutor_strategy_after,
-       tutor_strategy_shift, pre_tutor_pivot_overlap, post_tutor_pivot_overlap,
-       uptake_delta, shared_salient_terms, tutor_contingent_adaptation,
-       tutor_adaptation_score, evidence, metadata)
-     VALUES
-      (@item_id, @analyzer_version, @source_trace_path, @cue_policy, @cue_turn_number,
-       @pivot_learner_turn, @learner_self_reframe, @learner_reframe_score,
-       @tutor_pre_turn, @tutor_post_turn, @tutor_strategy_before, @tutor_strategy_after,
-       @tutor_strategy_shift, @pre_tutor_pivot_overlap, @post_tutor_pivot_overlap,
-       @uptake_delta, @shared_salient_terms, @tutor_contingent_adaptation,
-       @tutor_adaptation_score, @evidence, @metadata)
-     ON CONFLICT(item_id, analyzer_version) DO UPDATE SET
-      source_trace_path = excluded.source_trace_path,
-      cue_policy = excluded.cue_policy,
-      cue_turn_number = excluded.cue_turn_number,
-      pivot_learner_turn = excluded.pivot_learner_turn,
-      learner_self_reframe = excluded.learner_self_reframe,
-      learner_reframe_score = excluded.learner_reframe_score,
-      tutor_pre_turn = excluded.tutor_pre_turn,
-      tutor_post_turn = excluded.tutor_post_turn,
-      tutor_strategy_before = excluded.tutor_strategy_before,
-      tutor_strategy_after = excluded.tutor_strategy_after,
-      tutor_strategy_shift = excluded.tutor_strategy_shift,
-      pre_tutor_pivot_overlap = excluded.pre_tutor_pivot_overlap,
-      post_tutor_pivot_overlap = excluded.post_tutor_pivot_overlap,
-      uptake_delta = excluded.uptake_delta,
-      shared_salient_terms = excluded.shared_salient_terms,
-      tutor_contingent_adaptation = excluded.tutor_contingent_adaptation,
-      tutor_adaptation_score = excluded.tutor_adaptation_score,
-      evidence = excluded.evidence,
-      metadata = excluded.metadata`,
-  ).run({
+const POETICS_TUTOR_ADAPTATION_INSERT = `INSERT INTO poetics_tutor_adaptations
+  (item_id, analyzer_version, source_trace_path, cue_policy, cue_turn_number,
+   pivot_learner_turn, learner_self_reframe, learner_reframe_score,
+   tutor_pre_turn, tutor_post_turn, tutor_strategy_before, tutor_strategy_after,
+   tutor_strategy_shift, pre_tutor_pivot_overlap, post_tutor_pivot_overlap,
+   uptake_delta, shared_salient_terms, tutor_contingent_adaptation,
+   tutor_adaptation_score, evidence, metadata)
+ VALUES
+  (@item_id, @analyzer_version, @source_trace_path, @cue_policy, @cue_turn_number,
+   @pivot_learner_turn, @learner_self_reframe, @learner_reframe_score,
+   @tutor_pre_turn, @tutor_post_turn, @tutor_strategy_before, @tutor_strategy_after,
+   @tutor_strategy_shift, @pre_tutor_pivot_overlap, @post_tutor_pivot_overlap,
+   @uptake_delta, @shared_salient_terms, @tutor_contingent_adaptation,
+   @tutor_adaptation_score, @evidence, @metadata)`;
+
+function poeticsTutorAdaptationParams(adaptation) {
+  // These two columns predate semantic v5 and are NOT NULL in historical sidecar
+  // databases. A v5 null therefore remains a compatibility sentinel (0) here;
+  // the authoritative tri-state lives in metadata.peripeteia.*_measurement.status,
+  // which every v5 gate and report must read before consulting these booleans.
+  return {
     item_id: adaptation.itemId,
     analyzer_version: adaptation.analyzerVersion,
     source_trace_path: adaptation.sourceTracePath ?? null,
@@ -388,5 +372,40 @@ export function upsertPoeticsTutorAdaptation(db, adaptation) {
     tutor_adaptation_score: adaptation.tutorAdaptationScore ?? null,
     evidence: adaptation.evidence ?? null,
     metadata: encodeJson(adaptation.metadata ?? null),
-  });
+  };
+}
+
+export function insertPoeticsTutorAdaptationOnce(db, adaptation) {
+  const result = db
+    .prepare(`${POETICS_TUTOR_ADAPTATION_INSERT} ON CONFLICT(item_id, analyzer_version) DO NOTHING`)
+    .run(poeticsTutorAdaptationParams(adaptation));
+  if (result.changes !== 1) {
+    throw new Error(`poetics tutor adaptation is create-once: ${adaptation.itemId} ${adaptation.analyzerVersion}`);
+  }
+}
+
+export function upsertPoeticsTutorAdaptation(db, adaptation) {
+  db.prepare(
+    `${POETICS_TUTOR_ADAPTATION_INSERT}
+     ON CONFLICT(item_id, analyzer_version) DO UPDATE SET
+      source_trace_path = excluded.source_trace_path,
+      cue_policy = excluded.cue_policy,
+      cue_turn_number = excluded.cue_turn_number,
+      pivot_learner_turn = excluded.pivot_learner_turn,
+      learner_self_reframe = excluded.learner_self_reframe,
+      learner_reframe_score = excluded.learner_reframe_score,
+      tutor_pre_turn = excluded.tutor_pre_turn,
+      tutor_post_turn = excluded.tutor_post_turn,
+      tutor_strategy_before = excluded.tutor_strategy_before,
+      tutor_strategy_after = excluded.tutor_strategy_after,
+      tutor_strategy_shift = excluded.tutor_strategy_shift,
+      pre_tutor_pivot_overlap = excluded.pre_tutor_pivot_overlap,
+      post_tutor_pivot_overlap = excluded.post_tutor_pivot_overlap,
+      uptake_delta = excluded.uptake_delta,
+      shared_salient_terms = excluded.shared_salient_terms,
+      tutor_contingent_adaptation = excluded.tutor_contingent_adaptation,
+      tutor_adaptation_score = excluded.tutor_adaptation_score,
+      evidence = excluded.evidence,
+      metadata = excluded.metadata`,
+  ).run(poeticsTutorAdaptationParams(adaptation));
 }

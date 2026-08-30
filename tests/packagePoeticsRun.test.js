@@ -42,6 +42,10 @@ function seedArchiveRun(root) {
     score: writeFile(path.join(artifactRoot, 'scores/T01-qwen.json'), '{"scored":[{"id":"T01"}]}\n'),
     label: writeFile(path.join(artifactRoot, 'labels.yaml'), 'labels:\n  T01:\n    label: recognition\n'),
     trace: writeFile(path.join(artifactRoot, 'deliberation/T01.json'), '{"turns":[]}\n'),
+    itemGates: writeFile(
+      path.join(artifactRoot, 'item-gates.jsonl'),
+      `${JSON.stringify({ runId: 'archive-test-run', itemId: 'archive-test-run:target-r01:default:T01', pass: true })}\n`,
+    ),
   };
   const db = openPoeticsStore(dbPath);
   try {
@@ -124,6 +128,7 @@ describe('package poetics run', () => {
       dbPath,
       archiveDir: path.join(root, 'artifacts/poetics-runs'),
       manifestDir: path.join(root, 'config/poetics-calibration/runs'),
+      itemGatesPath: path.join(root, 'artifact-input/item-gates.jsonl'),
     });
 
     assert.equal(result.manifest.counts.items, 1);
@@ -133,6 +138,7 @@ describe('package poetics run', () => {
     assert.equal(result.manifest.counts.tutorAdaptations, 1);
     assert.equal(result.manifest.counts.missingArtifacts, 0);
     assert.equal(result.manifest.archive.files.items.records, 1);
+    assert.equal(result.manifest.archive.files.itemGates.records, 1);
     assert.equal(result.manifest.archive.files.artifacts.records, 8);
     assert.ok(fs.existsSync(result.manifestPath));
 
@@ -147,5 +153,36 @@ describe('package poetics run', () => {
 
     const scores = readJsonlGzip(path.join(result.archiveDir, 'scores.jsonl.gz'));
     assert.equal(scores[0].metadata.recognition_origin.class, 'peripeteia_induced');
+  });
+
+  it('fails closed on missing evidence and refuses to replace an existing bundle', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'package-poetics-run-fail-closed-'));
+    const { dbPath, files } = seedArchiveRun(root);
+    const options = {
+      runId: 'archive-test-run',
+      dbPath,
+      archiveDir: path.join(root, 'artifacts/poetics-runs'),
+      manifestDir: path.join(root, 'config/poetics-calibration/runs'),
+      itemGatesPath: files.itemGates,
+    };
+    await packagePoeticsRun(options);
+    await assert.rejects(() => packagePoeticsRun(options), /create-once/u);
+
+    const secondRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'package-poetics-run-missing-'));
+    const missing = seedArchiveRun(secondRoot);
+    fs.unlinkSync(missing.files.sample);
+    await assert.rejects(
+      () =>
+        packagePoeticsRun({
+          runId: 'archive-test-run',
+          dbPath: missing.dbPath,
+          archiveDir: path.join(secondRoot, 'artifacts/poetics-runs'),
+          manifestDir: path.join(secondRoot, 'config/poetics-calibration/runs'),
+          itemGatesPath: missing.files.itemGates,
+        }),
+      /missing poetics claim evidence/u,
+    );
+    assert.equal(fs.existsSync(path.join(secondRoot, 'artifacts/poetics-runs/archive-test-run')), false);
+    assert.ok(fs.existsSync(files.sample));
   });
 });

@@ -60,6 +60,12 @@ recent arc's living log is
 `notes/2026-08-03-adaptive-causality-living-log.md`; earlier arcs live in
 their closed root plans and the paper.
 
+For adaptive tutoring specifically, three documents carry three scopes:
+`ADAPTIVE-TUTOR-KERNEL-CONTRACT.md` names the canonical kernel
+(`services/adaptiveTutor/`), its interfaces and every surface around it; the
+living log above assesses the evidence; `ADAPTIVE-TUTOR-ACTIVE-PLAN.md` is the
+closed A20 conduct-policy arc and its reopening gate.
+
 ## Web surfaces
 
 One Express route table (`services/evalSurfaces.js`), three hosts:
