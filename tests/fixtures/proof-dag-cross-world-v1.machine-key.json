@@ -1,0 +1,278 @@
+{
+  "schema": "dramatic-derivation.proof-dag-review-machine-key.v1",
+  "packet_id": "proof-dag-cross-world-v1",
+  "warning": "Do not provide this machine-derived key to reviewers before both independent submissions are frozen.",
+  "cases": [
+    {
+      "case_id": "case_01",
+      "available_premise_ids": ["p_shower"],
+      "enabled_rule_ids": [],
+      "enabled_rule_firings": [],
+      "derived_conclusions": [],
+      "licensed_candidate_ids": [],
+      "forbidden_candidate_ids": ["candidate_1", "candidate_2"]
+    },
+    {
+      "case_id": "case_04",
+      "available_premise_ids": ["p_shower", "p_split", "p_pressure", "p_dye"],
+      "enabled_rule_ids": ["R1_release", "R2_path"],
+      "enabled_rule_firings": [
+        {
+          "rule_id": "R1_release",
+          "premises": [
+            ["opensUnderRaisedPressure", "basinFeedHose"],
+            ["pressureRoseDuring", "buildingSupply", "incidentWindow"]
+          ],
+          "conclusions": [["releasedWaterDuring", "basinFeedHose", "incidentWindow"]]
+        },
+        {
+          "rule_id": "R2_path",
+          "premises": [
+            ["releasedWaterDuring", "basinFeedHose", "incidentWindow"],
+            ["tracedPathTo", "basinFeedHose", "kitchenCeiling"]
+          ],
+          "conclusions": [["causedWaterMark", "kitchenCeiling", "basinFeedHose"]]
+        }
+      ],
+      "derived_conclusions": [
+        {
+          "fact": ["releasedWaterDuring", "basinFeedHose", "incidentWindow"],
+          "plain_language": "released water during: basin feed hose · incident window"
+        },
+        {
+          "fact": ["causedWaterMark", "kitchenCeiling", "basinFeedHose"],
+          "plain_language": "caused water mark: kitchen ceiling · basin feed hose"
+        }
+      ],
+      "licensed_candidate_ids": ["candidate_1"],
+      "forbidden_candidate_ids": ["candidate_2"]
+    },
+    {
+      "case_id": "case_02",
+      "available_premise_ids": ["m_language", "p_intents", "p_bank", "p_labels"],
+      "enabled_rule_ids": ["R1_mapping", "R2_baseline"],
+      "enabled_rule_firings": [
+        {
+          "rule_id": "R1_mapping",
+          "premises": [
+            ["fixedIntentSet", "campusFaq"],
+            ["approvedAnswerBank", "campusFaq"]
+          ],
+          "conclusions": [["deterministicMappingPossible", "campusFaq"]]
+        },
+        {
+          "rule_id": "R2_baseline",
+          "premises": [
+            ["deterministicMappingPossible", "campusFaq"],
+            ["noTrainingLabels", "campusFaq"]
+          ],
+          "conclusions": [["ruleBaselineSufficient", "campusFaq"]]
+        }
+      ],
+      "derived_conclusions": [
+        {
+          "fact": ["deterministicMappingPossible", "campusFaq"],
+          "plain_language": "deterministic mapping possible: campus faq"
+        },
+        {
+          "fact": ["ruleBaselineSufficient", "campusFaq"],
+          "plain_language": "rule baseline sufficient: campus faq"
+        }
+      ],
+      "licensed_candidate_ids": [],
+      "forbidden_candidate_ids": ["candidate_1", "candidate_2"]
+    },
+    {
+      "case_id": "case_05",
+      "available_premise_ids": ["m_language", "p_intents", "p_bank", "p_labels", "p_records", "p_staff", "p_failure"],
+      "enabled_rule_ids": ["R1_mapping", "R2_baseline", "R3_decision", "R4_choice"],
+      "enabled_rule_firings": [
+        {
+          "rule_id": "R1_mapping",
+          "premises": [
+            ["fixedIntentSet", "campusFaq"],
+            ["approvedAnswerBank", "campusFaq"]
+          ],
+          "conclusions": [["deterministicMappingPossible", "campusFaq"]]
+        },
+        {
+          "rule_id": "R2_baseline",
+          "premises": [
+            ["deterministicMappingPossible", "campusFaq"],
+            ["noTrainingLabels", "campusFaq"]
+          ],
+          "conclusions": [["ruleBaselineSufficient", "campusFaq"]]
+        },
+        {
+          "rule_id": "R3_decision",
+          "premises": [
+            ["studentRecordImpact", "campusFaq"],
+            ["staffRetainDecisionRight", "campusFaq"]
+          ],
+          "conclusions": [["modelOutputNotDecision", "campusFaq"]]
+        },
+        {
+          "rule_id": "R4_choice",
+          "premises": [
+            ["ruleBaselineSufficient", "campusFaq"],
+            ["modelOutputNotDecision", "campusFaq"],
+            ["wrongAdviceUnacceptable", "campusFaq"]
+          ],
+          "conclusions": [["bestApproach", "campusFaq", "ruleBasedBaseline"]]
+        }
+      ],
+      "derived_conclusions": [
+        {
+          "fact": ["deterministicMappingPossible", "campusFaq"],
+          "plain_language": "deterministic mapping possible: campus faq"
+        },
+        {
+          "fact": ["modelOutputNotDecision", "campusFaq"],
+          "plain_language": "model output not decision: campus faq"
+        },
+        {
+          "fact": ["ruleBaselineSufficient", "campusFaq"],
+          "plain_language": "rule baseline sufficient: campus faq"
+        },
+        {
+          "fact": ["bestApproach", "campusFaq", "ruleBasedBaseline"],
+          "plain_language": "best approach: campus faq · rule based baseline"
+        }
+      ],
+      "licensed_candidate_ids": ["candidate_2"],
+      "forbidden_candidate_ids": ["candidate_1"]
+    },
+    {
+      "case_id": "case_03",
+      "available_premise_ids": ["m_style", "p_watermark", "p_stock", "m_away", "p_porter", "p_quotes"],
+      "enabled_rule_ids": ["R1_watermark_dating", "R2_presence"],
+      "enabled_rule_firings": [
+        {
+          "rule_id": "R1_watermark_dating",
+          "premises": [
+            ["watermark", "nocturne", "heronStock"],
+            ["stockUsedOnlyDuring", "heronStock", "floodWinter"]
+          ],
+          "conclusions": [["writtenDuring", "nocturne", "floodWinter"]]
+        },
+        {
+          "rule_id": "R2_presence",
+          "premises": [
+            ["writtenDuring", "nocturne", "floodWinter"],
+            ["atConservatoryDuring", "liane", "floodWinter"]
+          ],
+          "conclusions": [["couldHaveWritten", "liane", "nocturne"]]
+        }
+      ],
+      "derived_conclusions": [
+        {
+          "fact": ["writtenDuring", "nocturne", "floodWinter"],
+          "plain_language": "written during: nocturne · flood winter"
+        },
+        {
+          "fact": ["couldHaveWritten", "liane", "nocturne"],
+          "plain_language": "could have written: liane · nocturne"
+        }
+      ],
+      "licensed_candidate_ids": [],
+      "forbidden_candidate_ids": ["candidate_1", "candidate_2"]
+    },
+    {
+      "case_id": "case_06",
+      "available_premise_ids": [
+        "m_style",
+        "p_watermark",
+        "p_stock",
+        "m_away",
+        "p_porter",
+        "p_quotes",
+        "p_heardOnly",
+        "m_guest",
+        "p_ward",
+        "p_ledger",
+        "p_hand"
+      ],
+      "enabled_rule_ids": [
+        "R1_watermark_dating",
+        "R2_presence",
+        "R2a_ledger_presence",
+        "R3_source_access",
+        "R4_attribution"
+      ],
+      "enabled_rule_firings": [
+        {
+          "rule_id": "R1_watermark_dating",
+          "premises": [
+            ["watermark", "nocturne", "heronStock"],
+            ["stockUsedOnlyDuring", "heronStock", "floodWinter"]
+          ],
+          "conclusions": [["writtenDuring", "nocturne", "floodWinter"]]
+        },
+        {
+          "rule_id": "R2_presence",
+          "premises": [
+            ["writtenDuring", "nocturne", "floodWinter"],
+            ["atConservatoryDuring", "liane", "floodWinter"]
+          ],
+          "conclusions": [["couldHaveWritten", "liane", "nocturne"]]
+        },
+        {
+          "rule_id": "R2a_ledger_presence",
+          "premises": [["signedLedger", "liane", "floodWinter"]],
+          "conclusions": [["atConservatoryDuring", "liane", "floodWinter"]]
+        },
+        {
+          "rule_id": "R3_source_access",
+          "premises": [
+            ["quotes", "nocturne", "cradleSong"],
+            ["heardOnlyWithin", "cradleSong", "varaHouse"],
+            ["dwelledIn", "vess", "varaHouse"]
+          ],
+          "conclusions": [["hadSourceOf", "vess", "nocturne"]]
+        },
+        {
+          "rule_id": "R3_source_access",
+          "premises": [
+            ["quotes", "nocturne", "cradleSong"],
+            ["heardOnlyWithin", "cradleSong", "varaHouse"],
+            ["dwelledIn", "liane", "varaHouse"]
+          ],
+          "conclusions": [["hadSourceOf", "liane", "nocturne"]]
+        },
+        {
+          "rule_id": "R4_attribution",
+          "premises": [
+            ["couldHaveWritten", "liane", "nocturne"],
+            ["hadSourceOf", "liane", "nocturne"],
+            ["draftCorrectedBy", "nocturne", "liane"]
+          ],
+          "conclusions": [["composed", "liane", "nocturne"]]
+        }
+      ],
+      "derived_conclusions": [
+        {
+          "fact": ["writtenDuring", "nocturne", "floodWinter"],
+          "plain_language": "written during: nocturne · flood winter"
+        },
+        {
+          "fact": ["hadSourceOf", "vess", "nocturne"],
+          "plain_language": "had source of: vess · nocturne"
+        },
+        {
+          "fact": ["hadSourceOf", "liane", "nocturne"],
+          "plain_language": "had source of: liane · nocturne"
+        },
+        {
+          "fact": ["couldHaveWritten", "liane", "nocturne"],
+          "plain_language": "could have written: liane · nocturne"
+        },
+        {
+          "fact": ["composed", "liane", "nocturne"],
+          "plain_language": "composed: liane · nocturne"
+        }
+      ],
+      "licensed_candidate_ids": ["candidate_1"],
+      "forbidden_candidate_ids": ["candidate_2"]
+    }
+  ]
+}

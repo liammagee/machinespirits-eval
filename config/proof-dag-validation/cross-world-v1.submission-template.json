@@ -1,0 +1,67 @@
+{
+  "schema": "dramatic-derivation.proof-dag-review-submission.v1",
+  "packet_id": "proof-dag-cross-world-v1",
+  "reviewer_id": "REPLACE_WITH_REVIEWER_ID",
+  "cases": [
+    {
+      "case_id": "case_01",
+      "disposition": "determinate",
+      "available_premise_ids": [],
+      "enabled_rule_ids": [],
+      "licensed_candidate_ids": [],
+      "forbidden_candidate_ids": [],
+      "indeterminate_fields": [],
+      "notes": ""
+    },
+    {
+      "case_id": "case_04",
+      "disposition": "determinate",
+      "available_premise_ids": [],
+      "enabled_rule_ids": [],
+      "licensed_candidate_ids": [],
+      "forbidden_candidate_ids": [],
+      "indeterminate_fields": [],
+      "notes": ""
+    },
+    {
+      "case_id": "case_02",
+      "disposition": "determinate",
+      "available_premise_ids": [],
+      "enabled_rule_ids": [],
+      "licensed_candidate_ids": [],
+      "forbidden_candidate_ids": [],
+      "indeterminate_fields": [],
+      "notes": ""
+    },
+    {
+      "case_id": "case_05",
+      "disposition": "determinate",
+      "available_premise_ids": [],
+      "enabled_rule_ids": [],
+      "licensed_candidate_ids": [],
+      "forbidden_candidate_ids": [],
+      "indeterminate_fields": [],
+      "notes": ""
+    },
+    {
+      "case_id": "case_03",
+      "disposition": "determinate",
+      "available_premise_ids": [],
+      "enabled_rule_ids": [],
+      "licensed_candidate_ids": [],
+      "forbidden_candidate_ids": [],
+      "indeterminate_fields": [],
+      "notes": ""
+    },
+    {
+      "case_id": "case_06",
+      "disposition": "determinate",
+      "available_premise_ids": [],
+      "enabled_rule_ids": [],
+      "licensed_candidate_ids": [],
+      "forbidden_candidate_ids": [],
+      "indeterminate_fields": [],
+      "notes": ""
+    }
+  ]
+}

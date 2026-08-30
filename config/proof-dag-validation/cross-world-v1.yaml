@@ -1,0 +1,25 @@
+schema: dramatic-derivation.proof-dag-review-spec.v1
+packet_id: proof-dag-cross-world-v1
+
+# Six release prefixes: an early or intermediate cut and the first fully
+# licensed cut from each of three materially different authored domains.
+# Case ids are deliberately neutral; the reviewer packet contains no tutor or
+# learner output, downstream outcome, or machine-derived ruling.
+worlds:
+  - world_id: world_030_rowan_flat
+    source: config/drama-derivation/world-030-rowan-flat.yaml
+    cases:
+      - { case_id: case_01, turn: 2 }
+      - { case_id: case_04, turn: 7 }
+
+  - world_id: world_016_ai_syllabus_af1
+    source: config/drama-derivation/world-016-ai-syllabus-af1.yaml
+    cases:
+      - { case_id: case_02, turn: 8 }
+      - { case_id: case_05, turn: 16 }
+
+  - world_id: world_001_nocturne
+    source: config/drama-derivation/world-001-nocturne.yaml
+    cases:
+      - { case_id: case_03, turn: 17 }
+      - { case_id: case_06, turn: 32 }

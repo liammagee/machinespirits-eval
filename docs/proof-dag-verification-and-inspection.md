@@ -11,6 +11,7 @@ entitled to use during a tutor session.
 | Lean positive certificate | `npm run derivation:lean-cert:check` | Every authored Nocturne proof path generates a Lean theorem that type-checks from its declared premises and ground rule applications to the authored conclusion. | It does not prove prefix non-entailment, underivability, or equivalence with the JavaScript closure algorithm. |
 | Semantic-web projections | `npm run derivation:semantic-web:check` | The checked-in RDF/JSON-LD/PROV fixture is current; authored, learner, and tutor graphs conform to SHACL; public source objects pass the pre-serialization hidden-identifier audit. | It does not prove the tutor's live entitlement decision or validate an arbitrary saved session. |
 | Adversarial redaction regression | `node --test tests/dramaticDerivationProxyDagMemory.test.js` | Injecting an authored identifier such as `p_hand` makes the public SHACL and source-object checks fail. The positive fixture also contains substantive public learner facts. | It is a bounded regression test, not a general information-flow proof. |
+| Cross-world review packet | `node scripts/proof-dag-cross-world-review.js check` | The frozen six-case Rowan Flat, Campus FAQ, and Nocturne reviewer packet, separate machine key, and submission template still match their deterministic source projection. | It does not supply the two independent human judgments or establish that the authored semantics are valid. |
 
 Run both external checks before reviewing or publishing the fixture:
 
@@ -22,6 +23,11 @@ npm run derivation:semantic-web:check
 The semantic check is intentionally a stale-artifact check. If the source
 projection changes, refresh it explicitly with `npm run derivation:semantic-web`
 and review the diff before running the check again.
+
+The cross-world packet's reviewer boundary, plain-language coding terms, and
+post-review comparison command are documented in
+[`proof-dag-cross-world-review.md`](proof-dag-cross-world-review.md). Give
+reviewers the packet and separate submission copies, never the machine key.
 
 ## Use it inside tutor-stub
 
