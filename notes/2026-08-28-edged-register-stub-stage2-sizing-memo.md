@@ -360,3 +360,14 @@ Two findings stand beside the null:
 Secondary endpoints and the fidelity record are unchanged from §8 and
 the fidelity report; the sharp arm was accepted by the operator at
 479 of 480 turns read, presence 0.90 over the 0.8 floor.
+
+
+## 10. Correction to the final section's finding 1 (2026-08-29)
+
+Finding 1 above says the resistant warm arm "again read edged most often"
+in Stage 2. By rate it did not. The three warm arms read edged at nearly
+the same rate: proof_skipper 40/337 (11.9%), diligent 51/428 (11.9%),
+resistant 50/466 (10.7%). The "most often" reading compared raw counts
+across arms with different turn totals. The resistance ordering (6.6% to
+17.7%) is a Stage-1 finding. Stage 2 does not reproduce it. The paper
+(§6.29) reports both stages with their denominators.
