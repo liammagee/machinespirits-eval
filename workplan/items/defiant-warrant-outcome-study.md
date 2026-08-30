@@ -172,3 +172,7 @@ test without grounds?
   agree.
   Registration §8 records the close. No further runs; a
   scripted-withholding variant would need a fresh registration.
+- 2026-08-30: Paper landing (v3.0.297). New §6.30 reports both Gate-1
+  attempts and the stack-bound claim; new §7.16 places the result in a
+  two-class synthesis of the programme's adaptation limits (redundancy
+  vs subtraction) with six new external references. Card stays done.

@@ -135,12 +135,19 @@
     },
     {
       "id": "tutor-stub-warrant-and-resistant-learner-studies",
-      "paper_sections": ["6.25", "6.26", "6.27", "6.28", "6.29"],
-      "paper_markers": ["### 6.25 The Live Warrant Gate:", "### 6.29 The Edged Register with the Teaching Frozen:"],
+      "paper_sections": ["6.25", "6.26", "6.27", "6.28", "6.29", "6.30"],
+      "paper_markers": [
+        "### 6.25 The Live Warrant Gate:",
+        "### 6.28 One Powered Run, Two Faces of Resistance:",
+        "### 6.29 The Edged Register with the Teaching Frozen:",
+        "### 6.30 The Defiant Learner's Warrant Demand:"
+      ],
       "evidence_class": "archived-artifact-recomputable",
       "semantic_authority_ids": ["tutor-stub-resistant-learner-design", "tutor-stub-edged-register-stage2-result"],
       "substrates": [
         { "kind": "archived-artifact", "path": "config/tutor-stub-frame-refuser-depth-design.v4.json" },
+        { "kind": "archived-artifact", "path": "config/tutor-stub-defiant-warrant-outcome-pilot.v1.json" },
+        { "kind": "archived-artifact", "path": "config/tutor-stub-defiant-warrant-outcome-pilot.v2.json" },
         {
           "kind": "archived-artifact",
           "path": "config/tutor-stub-resistance-semantic-adjudication-development-evidence.v4.json"
