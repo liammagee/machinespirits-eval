@@ -1,0 +1,133 @@
+{
+  "schema": "machinespirits.tutor-stub.frame-refuser-narrowing-calibration-design.v1",
+  "studyId": "frame-refuser-narrowing-p1",
+  "status": "prospective_instrument_calibration",
+  "question": "Can independent readers apply the refusal-narrowing codebook reliably, and does the resulting report-only measure show enough treatment/reference spread to justify a fresh confirmatory registration?",
+  "source": {
+    "privateArchiveCommit": "7c8c8130e0d19431694c222af8cd9b0dd7e2a360",
+    "reportDirectories": [
+      {
+        "version": "v1",
+        "path": "artifacts/tutor-stub-live/frame-refuser-depth-gate1-2026-08-27"
+      },
+      {
+        "version": "v2",
+        "path": "artifacts/tutor-stub-live/frame-refuser-depth-gate1-v2-2026-08-27"
+      },
+      {
+        "version": "v3",
+        "path": "artifacts/tutor-stub-live/frame-refuser-depth-gate1-v3-2026-08-27"
+      },
+      {
+        "version": "v4",
+        "path": "artifacts/tutor-stub-live/frame-refuser-depth-gate1-v4-2026-08-27"
+      }
+    ],
+    "eligibleRows": "rows whose archived launcher status is exactly complete; retained substantive failures are excluded because no complete outcome-horizon public packet exists",
+    "sealedInputRule": "every selected report.json and transcript.json must be byte-identical to the named private archive commit"
+  },
+  "sample": {
+    "size": 24,
+    "masterSeed": 2026083002,
+    "versions": ["v1", "v2", "v3", "v4"],
+    "arms": ["reference", "treatment"],
+    "worlds": ["world_005_marrick", "world_030_rowan_flat"],
+    "perVersion": 6,
+    "perArm": 12,
+    "perWorld": 12,
+    "selection": "within each version-by-arm stratum, select one complete row per world by SHA-256 rank; select a second world_005 row in the four eligible strata with the lowest seeded extra-world rank and a second world_030 row in the other four strata",
+    "blindCaseIds": "assign nrw_001 through nrw_024 by an independent seeded SHA-256 rank after selection",
+    "replacement": false
+  },
+  "instrument": {
+    "codebookPath": "config/tutor-stub-frame-refuser-narrowing-codebook.v1.md",
+    "readerInstrumentPath": "config/tutor-stub-frame-refuser-narrowing-instrument.v1.md",
+    "learnerStates": "trigger and every post_N through the registered final outcome horizon",
+    "marks": {
+      "openDemands": "cumulative count; lower is narrower",
+      "boundTightness": "0-3; higher is narrower",
+      "concededSubclaims": "cumulative count; higher is narrower"
+    },
+    "combinedDirection": "narrower only when at least one final mark improves from trigger and none worsens; wider is the mirror case; mixed means improvement and worsening coexist; unchanged means no mark changes",
+    "categoricalDispositions": [
+      "persona_exit",
+      "registered_move_not_delivered",
+      "refusal_resolved",
+      "unconditional_refusal_no_open_demand",
+      "measurement_indeterminate"
+    ]
+  },
+  "readers": {
+    "seats": [
+      {
+        "id": "reader_a",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "effort": "low"
+      },
+      {
+        "id": "reader_b",
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "effort": "low"
+      },
+      {
+        "id": "reader_c",
+        "modelRef": "claude-code.opus-5",
+        "provider": "claude-code",
+        "model": "claude-opus-5",
+        "effort": "low"
+      }
+    ],
+    "visibility": "reader sees only a blinded case id, the rule-only reader instrument, and the public dialogue from trigger through final post; no arm, version, source job id, prior ladder vote, hidden learner state, or worked example",
+    "attemptsPerSeatPerRow": 1,
+    "automaticRetries": 0,
+    "invalidOutput": "retain as an ineligible seat result; never re-ask, replace, or select by content",
+    "transportFailure": "seal the failure and halt before the next call"
+  },
+  "agreementGates": {
+    "minimumEligibleRowRatePerSeat": 0.9,
+    "minimumPairwiseExactAgreement": 0.8,
+    "fields": [
+      "categorical disposition per learner state",
+      "open-demand count on jointly scored states",
+      "bound-tightness score on jointly scored states",
+      "conceded-subclaim count on jointly scored states",
+      "first-to-last combined direction per dialogue"
+    ],
+    "minimumPairwiseDirectionRows": 20,
+    "evidenceRule": "an eligible result exact-matches every cited span to the named learner source and never cites a future state"
+  },
+  "spreadGate": {
+    "minimumScorableRowsPerArm": 8,
+    "minimumDistinctFinalStateTuples": 3,
+    "minimumMovementRate": 0.25,
+    "minimumAbsoluteNarrowerRateGap": 0.15,
+    "decision": "open a fresh-study design only if every agreement gate passes and every spread floor passes; otherwise close this card with the observed no-agreement or no-spread result"
+  },
+  "attemptCeiling": {
+    "plannedCalls": 72,
+    "maximumAttempts": 72,
+    "calculation": "24 sampled rows x 3 independent reader seats x 1 attempt",
+    "role": "fail-before-call hard ceiling, not a target"
+  },
+  "dispositions": {
+    "validRowRerun": false,
+    "readerReplacement": false,
+    "outcomeSelection": false,
+    "interimOutcomeAnalysis": false,
+    "archivedRowsAreInstrumentBuildingOnly": true,
+    "freshConfirmatoryRowsRequired": true
+  },
+  "claimBoundary": "This calibration may establish only whether the narrowing instrument is readable and shows exploratory arm spread on superseded archived simulations. It cannot establish a treatment effect, learning, pedagogical quality, or any confirmatory result, and its rows can never be pooled into a fresh study.",
+  "launch": {
+    "policy": "docs/paid-study-authorization-policy.md",
+    "sharedContract": "services/paidStudyLaunchContract.js",
+    "designGrantsModelCalls": false,
+    "requirements": "merged design, clean detached launch commit containing it, and one signed GO note naming that commit, this design path, and the 72-attempt cap",
+    "destination": "create-once path under the private archive artifacts/tutor-stub-live directory",
+    "archive": "all plan, per-seat, ledger, failure, and report artifacts stay in the private archive repository"
+  }
+}
