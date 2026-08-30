@@ -15,10 +15,10 @@ import {
   tutorStubLabTraceMetadata,
 } from '../services/tutorStubLabs.js';
 
-test('v1 lab catalog exposes the ten declared labs through public-safe projections', () => {
+test('v1 lab catalog exposes the eleven declared labs through public-safe projections', () => {
   const labs = listTutorStubLabs();
   assert.equal(TUTOR_STUB_LAB_CATALOG_VERSION, 1);
-  assert.equal(labs.length, 10);
+  assert.equal(labs.length, 11);
   assert.deepEqual(
     labs.map((entry) => entry.id),
     [
@@ -30,6 +30,7 @@ test('v1 lab catalog exposes the ten declared labs through public-safe projectio
       'voice',
       'curriculum',
       'labelling',
+      'learner_role_smoke',
       'automated_eval',
       'research_controls',
     ],
@@ -148,6 +149,20 @@ test('metered research labs require and enforce finite model-call admission befo
     (error) => error.code === 'model_call_budget_exhausted',
   );
   assert.deepEqual(budget.snapshot(), { labId: 'automated_eval', used: 2, limit: 2, remaining: 0 });
+
+  const learnerRoleSmoke = resolveTutorStubLab('learner_role_smoke', {
+    overrides: { 'model-call-budget': '10' },
+  });
+  assert.notEqual(learnerRoleSmoke.cliOptions.passthrough, true);
+  assert.equal(learnerRoleSmoke.cliOptions['no-classifier'], true);
+  assert.equal(learnerRoleSmoke.cliOptions['tutor-learner-dag'], false);
+  assert.equal(learnerRoleSmoke.cliOptions['auto-learner'], true);
+  assert.equal(learnerRoleSmoke.modelCalls.minimumPerTurn, 2);
+  assert.equal(learnerRoleSmoke.modelCalls.maximumPerTurn, undefined);
+  assert.equal(
+    resolveTutorStubMeteredLabAdmission(learnerRoleSmoke, learnerRoleSmoke.cliOptions).modelCallBudget,
+    10,
+  );
 
   const research = resolveTutorStubLab('research_controls', {
     overrides: { 'model-call-budget': '6' },

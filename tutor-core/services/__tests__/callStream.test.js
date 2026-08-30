@@ -104,6 +104,8 @@ describe('callStream()', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     delete process.env.LOCAL_AI_URL;
+    delete process.env.MLX_LOCAL_AI_URL;
+    delete process.env.MLX_LOCAL_AI_MODEL;
   });
 
   // =========================================================================
@@ -479,6 +481,32 @@ describe('callStream()', () => {
       // Should NOT double-append the path
       expect(globalThis.fetch).toHaveBeenCalledWith('http://myserver:8000/v1/chat/completions', expect.anything());
     });
+
+    it('routes mlx-local through its loopback endpoint and runtime model id', async () => {
+      process.env.MLX_LOCAL_AI_URL = 'http://127.0.0.1:8080/v1';
+      process.env.MLX_LOCAL_AI_MODEL = '/models/Qwen3.8-27B-Uncensored-MLX/4-bit';
+      globalThis.fetch.mockResolvedValueOnce(
+        mockSSEResponse(['data: {"choices":[{"delta":{"content":"resistant"}}]}\n\n', 'data: [DONE]\n\n']),
+      );
+
+      const chunks = await collectChunks(
+        callStream({
+          provider: 'mlx-local',
+          model: 'qwen-abliterated-27b',
+          systemPrompt: 'Stay in character.',
+          messages: [{ role: 'user', content: 'Begin.' }],
+        }),
+      );
+
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        'http://127.0.0.1:8080/v1/chat/completions',
+        expect.anything(),
+      );
+      const body = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
+      expect(body.model).toBe('/models/Qwen3.8-27B-Uncensored-MLX/4-bit');
+      expect(body.enable_thinking).toBe(false);
+      expect(chunks.find((chunk) => chunk.type === 'done').provider).toBe('mlx-local');
+    });
   });
 
   // =========================================================================
@@ -544,6 +572,8 @@ describe('call() with local provider (non-streaming)', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     delete process.env.LOCAL_AI_URL;
+    delete process.env.MLX_LOCAL_AI_URL;
+    delete process.env.MLX_LOCAL_AI_MODEL;
   });
 
   it('calls correct endpoint with OpenAI-compatible body', async () => {
@@ -596,6 +626,57 @@ describe('call() with local provider (non-streaming)', () => {
     });
 
     expect(globalThis.fetch).toHaveBeenCalledWith('http://custom:9999/v1/chat/completions', expect.anything());
+  });
+
+  it('calls mlx-local with the discovered runtime model without leaking a machine path into config', async () => {
+    process.env.MLX_LOCAL_AI_URL = 'http://127.0.0.1:8080/v1';
+    process.env.MLX_LOCAL_AI_MODEL = '/models/Qwen3.8-27B-Uncensored-MLX/4-bit';
+    globalThis.fetch.mockResolvedValueOnce(
+      mockJSONResponse({
+        choices: [{ message: { content: 'I do not grant that premise.' } }],
+        usage: { prompt_tokens: 12, completion_tokens: 9 },
+      }),
+    );
+
+    const result = await call({
+      provider: 'mlx-local',
+      model: 'qwen-abliterated-27b',
+      systemPrompt: 'Stay in character.',
+      messages: [{ role: 'user', content: 'Begin.' }],
+    });
+
+    expect(result.provider).toBe('mlx-local');
+    expect(result.model).toBe('/models/Qwen3.8-27B-Uncensored-MLX/4-bit');
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'http://127.0.0.1:8080/v1/chat/completions',
+      expect.anything(),
+    );
+    const body = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
+    expect(body.model).toBe('/models/Qwen3.8-27B-Uncensored-MLX/4-bit');
+    expect(body.enable_thinking).toBe(false);
+  });
+
+  it('fails visibly when mlx-local spends a call but returns no public completion', async () => {
+    process.env.MLX_LOCAL_AI_URL = 'http://127.0.0.1:8080/v1';
+    process.env.MLX_LOCAL_AI_MODEL = '/models/Qwen3.8-27B-Uncensored-MLX/4-bit';
+    globalThis.fetch.mockResolvedValueOnce(
+      mockJSONResponse({
+        choices: [{ message: { content: '', reasoning_content: 'private reasoning only' } }],
+        usage: { prompt_tokens: 12, completion_tokens: 900 },
+      }),
+    );
+
+    await expect(
+      call({
+        provider: 'mlx-local',
+        model: 'qwen-abliterated-27b',
+        systemPrompt: 'Stay in character.',
+        messages: [{ role: 'user', content: 'Begin.' }],
+      }),
+    ).rejects.toMatchObject({
+      code: 'LOCAL_AI_EMPTY_COMPLETION',
+      usage: { inputTokens: 12, outputTokens: 900, totalTokens: 912 },
+    });
   });
 
   it('uses "local-model" as default when no model specified', async () => {

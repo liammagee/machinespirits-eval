@@ -139,6 +139,17 @@ providers:
       qwen-base: "qwen3.5:9b"
       qwen-tuned: "program2-sft-instruct-v2:latest"
 
+  # Loopback-only MLX OpenAI-compatible service used for large local models.
+  # The service reports the loaded checkpoint as its model id; callers may
+  # supply that runtime value through MLX_LOCAL_AI_MODEL without putting a
+  # machine-specific checkpoint path in this shared configuration.
+  mlx-local:
+    base_url: http://127.0.0.1:8080/v1/chat/completions
+    format: openai
+    default_model: qwen-abliterated-27b
+    models:
+      qwen-abliterated-27b: qwen-abliterated-27b
+
   lmstudio:
     base_url: http://127.0.0.1:1234/v1/chat/completions
     format: openai

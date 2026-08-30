@@ -9,7 +9,7 @@ export const TUTOR_STUB_LAB_MATURITY = Object.freeze(['stable', 'beta', 'experim
 export const TUTOR_STUB_METERED_LAB_ADMISSION_SCHEMA = 'machinespirits.tutor-stub.metered-lab-admission.v1';
 export const MAX_TUTOR_STUB_MODEL_CALL_BUDGET = 10_000;
 
-const METERED_LAB_IDS = new Set(['automated_eval', 'research_controls']);
+const METERED_LAB_IDS = new Set(['learner_role_smoke', 'automated_eval', 'research_controls']);
 
 function deepFreeze(value) {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
@@ -241,6 +241,39 @@ const LABS = [
     requiredOptions: ['label-dataset', 'label-coder'],
   }),
   lab({
+    id: 'learner_role_smoke',
+    title: 'Learner role smoke',
+    summary:
+      'Bounded two-speaker smoke with one raw automated-learner call and the ordinary guarded tutor path per turn; no classifier, learner DAG, or profile-repair model may alter the learner performance.',
+    audience: 'research',
+    maturity: 'experimental',
+    prerequisites: ['configured automated learner endpoint', 'explicit model-call budget'],
+    conflicts: ['human turn feedback', 'mixed drafting', 'voice', 'learner-profile repair'],
+    modelCalls: {
+      pattern: 'metered_two_speaker_loop',
+      roles: ['tutor', 'automated_learner'],
+      minimumPerTurn: 2,
+    },
+    artifacts: ['public transcript', 'technical trace'],
+    costClass: 'metered_medium',
+    transportSafety: surface({ browser: 'not_supported', voice: 'not_supported' }),
+    cliDefaults: {
+      dag: false,
+      'tutor-learner-dag': false,
+      'no-classifier': true,
+      'no-register-selection': true,
+      'no-turn-feedback': true,
+      'no-closeout-report': true,
+      'no-memory-summary': true,
+      'field-viz': false,
+      'opening-realizer': 'deterministic',
+      'auto-learner': true,
+      'auto-turns': '4',
+      'no-auto-stop-on-grounded': true,
+    },
+    requiredOptions: ['model-call-budget'],
+  }),
+  lab({
     id: 'automated_eval',
     title: 'Automated evaluation',
     summary: 'Bounded model-backed learner loop for research evaluation, never presented as a human learner session.',
@@ -369,7 +402,7 @@ function capabilityConfig(options) {
     fieldVisualization: Boolean(options['field-viz']),
     learningSummary: !options['no-closeout-report'],
     responseChecks: !passthrough,
-    evaluation: ['automated_eval', 'research_controls'].includes(options.lab),
+    evaluation: ['learner_role_smoke', 'automated_eval', 'research_controls'].includes(options.lab),
   };
 }
 
@@ -415,7 +448,7 @@ function tutorStubLabConflictViolations(entry, options = {}) {
     if (options.passthrough) add('passthrough', 'feedback_tuning requires the analyzed tutor pipeline');
   }
   if (entry.id === 'labelling' && options.voice) add('voice', 'labelling does not support voice');
-  if (['automated_eval', 'research_controls'].includes(entry.id)) {
+  if (['learner_role_smoke', 'automated_eval', 'research_controls'].includes(entry.id)) {
     if (options.voice) add('voice', `${entry.id} does not support voice`);
     if (options['mixed-learner'] || options['mixed-mode']) {
       add('mixed_drafting', `${entry.id} cannot enable mixed human drafting`);
