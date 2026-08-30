@@ -66,6 +66,11 @@ For adaptive tutoring specifically, three documents carry three scopes:
 living log above assesses the evidence; `ADAPTIVE-TUTOR-ACTIVE-PLAN.md` is the
 closed A20 conduct-policy arc and its reopening gate.
 
+Public adaptive-tutor dialogue comparisons share the contract in
+`docs/dramatic-dialogue-renderer.md`. Its documentation map distinguishes the
+frozen instrumentation A/B, free-running showcase, and registered crossed-action
+example, including the claim boundary for each.
+
 ## Web surfaces
 
 One Express route table (`services/evalSurfaces.js`), three hosts:
