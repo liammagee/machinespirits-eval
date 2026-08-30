@@ -145,3 +145,17 @@ test without grounds?
 - 2026-08-29: Operator chose the structural path: enforce withholding in
   the stub machinery (move/constraint seam), not by louder instruction.
   Design v2 + re-run to follow.
+- 2026-08-29: Design revision 2 built zero-call (registration §7). New
+  conduct gate on the private tutor candidate at the R1-gate seam
+  (`services/tutorStubDefiantWarrantConductGate.js`): deterministic
+  dispute-marker trigger, semantic adjudication by `codex.gpt-5.6-sol`
+  (not the generating model, not the reader), verbatim-quote evidence
+  contract, 2 registered repairs, then a typed never-scored stop.
+  Both arms gated symmetrically. Design v2 JSON registered with fresh
+  master seed 20260830, per-dialogue cap 72, pilot ceiling 1,296.
+  Launcher classifies gate stops as registered terminals and reports
+  per-arm gate burden; never-scored dialogues leave outcome aggregates
+  but keep their gate statistics. 21 unit tests green (8 new). Launcher
+  registered in the paid-study inventory and the artifact-lifecycle
+  builder list. Next: attended v2 Gate-1 launch on the operator's
+  standing GO.
