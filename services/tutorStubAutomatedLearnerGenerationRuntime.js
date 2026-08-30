@@ -69,6 +69,15 @@ import {
 } from './resistantLearnerObservation.js';
 import { buildTutorStubRivalLearnerDagTurnRecord, tutorStubRivalDagTurnDirective } from './tutorStubRivalLearnerDag.js';
 import { applyTutorStubR1PostInterventionRelease } from './tutorStubR1PostInterventionRelease.js';
+import {
+  TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES,
+  TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES,
+  learnerRevisionPrompt,
+  learnerSuperegoReviewPrompt,
+  learnerSuperegoSystemPrompt,
+  normalizeTutorStubLearnerDeliberationConfig,
+  progressiveResistanceSystemOverlay,
+} from './tutorStubLearnerDeliberation.js';
 export {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
   FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
@@ -104,6 +113,13 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   negativeFloorRegisters,
   resolveModel = null,
 }) {
+  const learnerDeliberationConfig = normalizeTutorStubLearnerDeliberationConfig(env);
+  if (
+    learnerDeliberationConfig.mode === TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES.egoSuperego &&
+    typeof resolveModel !== 'function'
+  ) {
+    throw new Error('learner ego-superego deliberation requires model resolution');
+  }
   const requestedObservationSemantics = String(
     env[TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV] || '',
   ).trim();
@@ -163,6 +179,10 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   function automatedLearnerSystemPrompt(profile) {
     return [
       AUTO_LEARNER_SYSTEM_PROMPT,
+      ...(learnerDeliberationConfig.systemStyle ===
+      TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES.progressiveResistanceV1
+        ? ['', progressiveResistanceSystemOverlay()]
+        : []),
       '',
       '# Private behavior brief',
       '',
@@ -449,13 +469,13 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
     const systemPrompt = automatedLearnerSystemPrompt(profile);
     const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
-    const call = () =>
+    const callLearner = ({ callPrompt = prompt, callRole = 'tutor_stub_auto_learner' } = {}) =>
       callPromptModel({
-        prompt,
+        prompt: callPrompt,
         messageHistory,
         resolved,
         systemPrompt,
-        role: 'tutor_stub_auto_learner',
+        role: callRole,
         maxTokens: 900,
         trace: state.trace,
         stream,
@@ -464,11 +484,71 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         signal,
         historyTurns: state.historyTurns,
       });
-    const raw = await call();
+    const initial = await callLearner();
+    let raw = initial;
+    let learnerDeliberation = {
+      mode: learnerDeliberationConfig.mode,
+      systemStyle: learnerDeliberationConfig.systemStyle,
+      callCount: 1,
+      finalAuthority: 'learner_ego',
+    };
+    if (learnerDeliberationConfig.mode === TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES.egoSuperego) {
+      const initialText = cleanAutomatedLearnerReply(initial.text);
+      const superegoResolved = resolveModel(learnerDeliberationConfig.superegoModelRef);
+      const review = await callPromptModel({
+        prompt: learnerSuperegoReviewPrompt({ turnNumber, initialDraft: initialText }),
+        messageHistory,
+        resolved: superegoResolved,
+        systemPrompt: learnerSuperegoSystemPrompt({
+          profile,
+          style: learnerDeliberationConfig.superegoStyle,
+        }),
+        role: 'tutor_stub_auto_learner_superego',
+        maxTokens: 500,
+        trace: state.trace,
+        stream: { enabled: false },
+        cliEffort: learnerDeliberationConfig.superegoEffort,
+        turn: turnNumber,
+        signal,
+        historyTurns: state.historyTurns,
+      });
+      raw = await callLearner({
+        callPrompt: learnerRevisionPrompt({
+          basePrompt: prompt,
+          turnNumber,
+          initialDraft: initialText,
+          review: review.text,
+        }),
+        callRole: 'tutor_stub_auto_learner_revision',
+      });
+      learnerDeliberation = {
+        ...learnerDeliberation,
+        callCount: 3,
+        superegoStyle: learnerDeliberationConfig.superegoStyle,
+        superegoModelRef: learnerDeliberationConfig.superegoModelRef,
+        superegoProvider: review.provider || superegoResolved?.provider || null,
+        superegoModel: review.model || superegoResolved?.model || null,
+      };
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_deliberation',
+        turn: turnNumber,
+        mode: learnerDeliberation.mode,
+        systemStyle: learnerDeliberation.systemStyle,
+        initialDraft: initialText,
+        privateReview: String(review.text || '').trim(),
+        finalText: cleanAutomatedLearnerReply(raw.text),
+        finalAuthority: learnerDeliberation.finalAuthority,
+        learnerProvider: raw.provider || resolved?.provider || null,
+        learnerModel: raw.model || resolved?.model || null,
+        superegoProvider: learnerDeliberation.superegoProvider,
+        superegoModel: learnerDeliberation.superegoModel,
+      });
+    }
     const text = applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(raw.text));
     return {
       ...raw,
       text,
+      learnerDeliberation,
       ...(state.privateRivalLearnerDag
         ? {
             rivalLearnerDagTurn: buildTutorStubRivalLearnerDagTurnRecord({

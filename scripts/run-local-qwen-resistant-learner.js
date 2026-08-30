@@ -12,6 +12,16 @@ import {
   learnerProfileIds,
   learnerProfilePrompt,
 } from './tutor-stub-learner-profile-contracts.js';
+import {
+  TUTOR_STUB_AUTO_LEARNER_DELIBERATION_ENV,
+  TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES,
+  TUTOR_STUB_AUTO_LEARNER_SUPEREGO_EFFORT_ENV,
+  TUTOR_STUB_AUTO_LEARNER_SUPEREGO_MODEL_ENV,
+  TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLE_ENV,
+  TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLES,
+  TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLE_ENV,
+  TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES,
+} from '../services/tutorStubLearnerDeliberation.js';
 
 export const LOCAL_LEARNER_SPEC_SCHEMA = 'machinespirits.tutor-stub.local-learner-spec.v1';
 
@@ -44,6 +54,14 @@ function positiveInt(value, label, { maximum = 100 } = {}) {
   return number;
 }
 
+function enumValue(value, label, allowed, fallback) {
+  const selected = String(value || fallback || '').trim();
+  if (!allowed.includes(selected)) {
+    throw new Error(`${label} must be one of: ${allowed.join(', ')} (got ${selected || '(empty)'})`);
+  }
+  return selected;
+}
+
 function loopbackBaseUrl(value) {
   const url = new URL(nonEmpty(value, 'local_service.base_url'));
   if (!['127.0.0.1', 'localhost', '::1'].includes(url.hostname)) {
@@ -72,8 +90,22 @@ export function normalizeLocalLearnerSpec(value, { source = 'local learner spec'
   }
   const turns = positiveInt(value.run?.turns, 'run.turns', { maximum: 12 });
   const modelCallBudget = positiveInt(value.run?.model_call_budget, 'run.model_call_budget', { maximum: 100 });
-  if (modelCallBudget < turns * 2) {
-    throw new Error(`run.model_call_budget must allow the planned ${turns * 2} tutor and learner calls`);
+  const systemPromptStyle = enumValue(
+    value.generation?.system_prompt_style,
+    'generation.system_prompt_style',
+    Object.values(TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES),
+    TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES.standard,
+  );
+  const deliberationMode = enumValue(
+    value.generation?.deliberation?.mode,
+    'generation.deliberation.mode',
+    Object.values(TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES),
+    TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES.direct,
+  );
+  const callsPerTurn = deliberationMode === TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES.egoSuperego ? 4 : 2;
+  const plannedModelCalls = turns * callsPerTurn;
+  if (modelCallBudget < plannedModelCalls) {
+    throw new Error(`run.model_call_budget must allow the planned ${plannedModelCalls} model calls`);
   }
   const maxSentences = positiveInt(value.tone?.max_sentences, 'tone.max_sentences', { maximum: 4 });
   return Object.freeze({
@@ -100,9 +132,33 @@ export function normalizeLocalLearnerSpec(value, { source = 'local learner spec'
       learner: nonEmpty(value.models?.learner, 'models.learner'),
       tutorEffort: nonEmpty(value.models?.tutor_effort || 'low', 'models.tutor_effort'),
     }),
+    generation: Object.freeze({
+      systemPromptStyle,
+      deliberation: Object.freeze(
+        deliberationMode === TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES.direct
+          ? { mode: deliberationMode, superegoModel: null, superegoPromptStyle: null, superegoEffort: null }
+          : {
+              mode: deliberationMode,
+              superegoModel: nonEmpty(
+                value.generation?.deliberation?.superego_model,
+                'generation.deliberation.superego_model',
+              ),
+              superegoPromptStyle: enumValue(
+                value.generation?.deliberation?.superego_prompt_style,
+                'generation.deliberation.superego_prompt_style',
+                Object.values(TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLES),
+              ),
+              superegoEffort: nonEmpty(
+                value.generation?.deliberation?.superego_effort || 'low',
+                'generation.deliberation.superego_effort',
+              ),
+            },
+      ),
+    }),
     run: Object.freeze({
       turns,
       modelCallBudget,
+      plannedModelCalls,
       stopOnGrounded: value.run?.stop_on_grounded === true,
     }),
     localService: Object.freeze({
@@ -112,6 +168,26 @@ export function normalizeLocalLearnerSpec(value, { source = 'local learner spec'
     }),
     claimBoundary: nonEmpty(value.claim_boundary, 'claim_boundary'),
   });
+}
+
+export function buildLocalLearnerChildEnv(spec, { baseEnv = process.env, localModelId = null } = {}) {
+  const childEnv = {
+    ...baseEnv,
+    TUTOR_STUB_TRANSCRIPT_OPEN: '0',
+    TUTOR_STUB_SUMMARY_OPEN: '0',
+    [TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLE_ENV]: spec.generation.systemPromptStyle,
+    [TUTOR_STUB_AUTO_LEARNER_DELIBERATION_ENV]: spec.generation.deliberation.mode,
+  };
+  if (localModelId) {
+    childEnv.MLX_LOCAL_AI_URL = spec.localService.baseUrl;
+    childEnv.MLX_LOCAL_AI_MODEL = localModelId;
+  }
+  if (spec.generation.deliberation.mode === TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES.egoSuperego) {
+    childEnv[TUTOR_STUB_AUTO_LEARNER_SUPEREGO_MODEL_ENV] = spec.generation.deliberation.superegoModel;
+    childEnv[TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLE_ENV] = spec.generation.deliberation.superegoPromptStyle;
+    childEnv[TUTOR_STUB_AUTO_LEARNER_SUPEREGO_EFFORT_ENV] = spec.generation.deliberation.superegoEffort;
+  }
+  return childEnv;
 }
 
 export function readLocalLearnerSpec(filePath = DEFAULT_SPEC) {
@@ -273,6 +349,7 @@ export async function main(argv = process.argv.slice(2)) {
   if (values['dry-run']) {
     const result = await runChild(process.execPath, buildTutorStubArgs(spec, { savePath, dryRun: true }), {
       cwd: ROOT,
+      env: buildLocalLearnerChildEnv(spec),
       inherit: false,
     });
     process.stdout.write(result.stdout);
@@ -303,20 +380,17 @@ export async function main(argv = process.argv.slice(2)) {
         localModel: modelId,
         tutorModel: spec.models.tutor,
         turns: spec.run.turns,
+        plannedCalls: spec.run.plannedModelCalls,
         callCeiling: spec.run.modelCallBudget,
+        systemPromptStyle: spec.generation.systemPromptStyle,
+        learnerDeliberation: spec.generation.deliberation,
         transcript: savePath,
         claimBoundary: spec.claimBoundary,
       })}\n`,
     );
     const result = await runChild(process.execPath, buildTutorStubArgs(spec, { savePath }), {
       cwd: ROOT,
-      env: {
-        ...process.env,
-        MLX_LOCAL_AI_URL: spec.localService.baseUrl,
-        MLX_LOCAL_AI_MODEL: modelId,
-        TUTOR_STUB_TRANSCRIPT_OPEN: '0',
-        TUTOR_STUB_SUMMARY_OPEN: '0',
-      },
+      env: buildLocalLearnerChildEnv(spec, { localModelId: modelId }),
     });
     return result.code;
   } finally {

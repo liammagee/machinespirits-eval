@@ -9,13 +9,16 @@ source: manual
 created: 2026-08-30
 updated: 2026-08-30
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "A bounded one-dialogue smoke uses the existing dramatic-detective tutor on Codex Luna and the loopback MLX Qwen route for the automated learner; the saved configuration separately exposes behavior profile, character, and tone; the technical trace proves the actual role routes and call ceiling; the public learner turns are reviewed for sustained, non-meta, evidence-bounded resistance before any claim is made."
+verification: "Three bounded four-turn dialogues compare direct Qwen, progression-prompted Qwen, and progression-prompted Qwen with a private Luna superego; configuration separately exposes behavior, character, tone, system-prompt style, deliberation mode, superego model/style/effort, and model-call ceiling; traces prove final public authority remained with Qwen and no learner repair or fallback altered its performance."
 claim_status: scope-bound
 links:
   config:
     - config/tutor-stub-local-learners/qwen-abliterated-frame-defiant.v1.yaml
+    - config/tutor-stub-local-learners/qwen-abliterated-frame-defiant-progressive.v1.yaml
+    - config/tutor-stub-local-learners/qwen-abliterated-frame-defiant-luna-superego.v1.yaml
   code:
     - scripts/run-local-qwen-resistant-learner.js
+    - services/tutorStubLearnerDeliberation.js
     - services/tutorStubLabs.js
     - tutor-core/services/unifiedAIProviderService.js
   items:
@@ -78,3 +81,34 @@ validity are all out of scope.
   sustain varied, developing resistance across worlds or longer dialogues.
   The earlier 65% persona/75% world transport result remains closed and is not
   changed by this smoke.
+- 2026-08-30 — Reopened locally to test whether a progression-aware learner
+  system prompt and an authenticity-preserving Luna superego can reduce the
+  semantic repetition seen in the direct-Qwen baseline. The superego is
+  advisory and private: it may diagnose stasis and name a next kind of move,
+  but it may not draft learner speech; Qwen retains final public authority.
+  The two new four-turn arms admit 24 planned model calls under an aggregate
+  26-call ceiling. This remains an engineering ladder, not a causal or
+  transportability study.
+- 2026-08-30 — Completed both new arms without resampling. The progression-only
+  arm used 8/10 admitted calls (four Qwen learner calls and four Luna tutor
+  calls). It produced a stronger opening and one useful clarification question,
+  but turns three and four returned to nearly the same town-license/metal-mark
+  objection. A system-prompt instruction against repetition was therefore not
+  enough by itself.
+- 2026-08-30 — The Luna-superego arm used 16/18 admitted calls: four Qwen
+  drafts, four private Luna critiques, four Qwen revisions, and four Luna tutor
+  replies. Luna correctly identified the repeated objection on turns two
+  through four and never drafted public learner speech. Qwen's turn-two
+  revision made a genuine new move by performing the touchstone comparison and
+  stating its evidentiary limit. Turns three and four nevertheless repeated
+  that same limit. The mechanism therefore improves participation beyond mere
+  refusal, but does not yet sustain four turns of developing resistance.
+- 2026-08-30 — Across the two new arms, 24/24 planned calls completed under the
+  aggregate 26-call ceiling with no model-call error, learner profile repair,
+  deterministic learner fallback, human intervention, or private-review
+  leakage. The tutor response checker recorded non-blocking presentation
+  findings on later tutor turns; it neither added model calls nor altered the
+  Qwen learner outputs. Technical traces and transcripts remain in the private,
+  ignored `.tutor-stub-traces/` archive. This closes the local engineering MVP
+  with a narrow positive result and an explicit remaining limitation, not a
+  learner-transport or tutoring-effectiveness claim.
