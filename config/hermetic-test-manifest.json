@@ -112,6 +112,7 @@
         "tests/adaptationAboxBridge.test.js",
         "tests/adaptationOntology.test.js",
         "tests/adaptive-mock-learner.test.js",
+        "tests/adaptiveCausalityStateMoveReview.test.js",
         "tests/adaptiveRegisterSwitching.test.js",
         "tests/adaptiveRegisterSwitchingStage2.test.js",
         "tests/adaptiveResumeAndBudgetScope.test.js",
