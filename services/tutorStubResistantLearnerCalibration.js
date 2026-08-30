@@ -199,8 +199,32 @@ const DEPTH_REVISIONS = Object.freeze({
     caseId: (armId, world, repeat) => `depth_${armId}_cal4_${world}_r${repeat}`,
     artifactSchemaVersion: 'v4',
   }),
+  // Revision 5 exists because the revision-4 calibration failed on instrument
+  // grounds, not sizing: one sealed reader seat attached evidence quotes to
+  // no-votes the contract requires to be JSON null (voiding a whole column),
+  // a second seat split the endpoint rung boundaries on 9 of 29 rows against
+  // the 0.8 pairwise floor, and both treatment bridge reads came from turns
+  // quoting the learner's standing formula, which the revision-4 own-voice
+  // carve-out passed. Revision 5 binds merged registration v6 (sharpened
+  // evidence instruction, schema restatement of the null contract, one-retry
+  // evidence-null slip tolerance, three added worked examples) and bans the
+  // formula wherever it appears in the treatment turn. Sizing, gates,
+  // floors, and ceilings do not move.
+  5: Object.freeze({
+    dialogues: 48,
+    perArm: 24,
+    masterSeed: 2026083001,
+    plannedCallsCalibration: 3072,
+    calibrationMaximumReservations: 9504,
+    authoritativeGates: DEPTH_AUTHORITATIVE_GATES_V2,
+    gateConstants: DEPTH_GATE_CONSTANTS_V2,
+    // `cal5` keeps every revision-5 case id distinct from all four archived
+    // failed calibrations, so no row can collide with or reuse them.
+    caseId: (armId, world, repeat) => `depth_${armId}_cal5_${world}_r${repeat}`,
+    artifactSchemaVersion: 'v5',
+  }),
 });
-export const TUTOR_STUB_FRAME_REFUSER_DEPTH_CURRENT_REVISION = 4;
+export const TUTOR_STUB_FRAME_REFUSER_DEPTH_CURRENT_REVISION = 5;
 
 function depthRevision(design) {
   const revision = DEPTH_REVISIONS[design?.revision];
@@ -1002,7 +1026,9 @@ function validateTutorStubFrameRefuserDepthDesignV1(design) {
   if (
     design?.measurement?.endpointField !== 'final_graded_engagement_rung' ||
     design?.measurement?.readerPanel?.protocolSource !==
-      'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json' ||
+      (design.revision >= 5
+        ? 'config/tutor-stub-resistant-learner-merged-semantic-registration.v6.json'
+        : 'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json') ||
     design?.measurement?.readerPanel?.minimumPairwiseExactAgreement !== 0.8
   ) {
     issues.push('depth measurement or reader panel drifted');
@@ -1033,6 +1059,9 @@ function validateTutorStubFrameRefuserDepthDesignV1(design) {
   }
   if (design.revision >= 4 && design?.lineage?.thirdCalibration?.rowsReused !== false) {
     issues.push('depth revision 4 must disclose the failed third calibration and refuse row reuse');
+  }
+  if (design.revision >= 5 && design?.lineage?.fourthCalibration?.rowsReused !== false) {
+    issues.push('depth revision 5 must disclose the failed fourth calibration and refuse row reuse');
   }
   const ceilings = design?.attemptCeilings || {};
   if (
@@ -1700,6 +1729,17 @@ export function tutorStubFrameRefuserDepthArmDesign(design, armId, { root = proc
       heldFixedAcrossRegisters: true,
     },
     tutorDeliveryContract,
+    // The depth design names the panel protocol revision its readers run on;
+    // the parent face carries its own sealed pointer. Identical through depth
+    // revision 4 (both name merged registration v5), amended in revision 5
+    // (the depth panel moves to v6 while the sealed parent stays on v5).
+    measurement: {
+      ...faceB.measurement,
+      readerPanel: {
+        ...faceB.measurement.readerPanel,
+        protocolSource: design.measurement.readerPanel.protocolSource,
+      },
+    },
     randomization: structuredClone(design.randomization),
     calibration: {
       ...faceB.calibration,
