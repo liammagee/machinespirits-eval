@@ -1,14 +1,15 @@
 ---
 id: rubric-v3-calibration-and-held-out-acceptance
 title: Calibrate rubric v3.0 and run held-out acceptance
-status: review
+status: blocked
 type: research
-priority: P1
+priority: P2
 owner: human
 source: manual
 created: 2026-07-27
-updated: 2026-08-05
+updated: 2026-08-30
 verification: "N/A aggregation and contextual rejudge identity tests pass; 15-item Claude/Codex development packet analyzed against predeclared gates; thresholds committed before held-out scoring; two independent human coder sheets prepared; held-out and separate instrument reports completed without promoting v3.0 before human acceptance."
+blocked_by: "No current decision to promote rubric v3.0; both independent human coder sheets remain blank, and v2.2 stays active"
 depends_on:
   - rubric-v3-prospective-measurement-suite
 links:
@@ -55,3 +56,7 @@ Running log:
   checks green. The card correctly remains in review: both independent human
   coder sheets are still blank, and promotion is explicitly gated on their
   acceptance rather than on PR state.
+- 2026-08-30: Parked at P2/blocked after the human-work review. The prepared
+  20-item human packets remain the right acceptance gate if a new measurement
+  epoch is proposed, but completing them is not a prerequisite for the current
+  adaptive-causality claim and cannot retroactively validate v2.2 evidence.
