@@ -369,12 +369,15 @@ modules:
     claim: >-
       A pre-registered two-family test did not find a reliable benefit from adapting
       speaking style to the learner profile. Terra failed the profile-manipulation gate;
-      Sonnet passed that gate but returned no interaction.
+      Sonnet passed that gate but returned no interaction. A late contrast then froze
+      the teaching entirely — the same scripted moves delivered sarcastically against
+      warmly — and the two deliveries were indistinguishable on the proof-DAG in all
+      three learner characters, an operator-accepted descriptive null.
     abstract: >-
       A 120-dialogue confirmatory study in one simulated detective world. It closes this
       field selector on the present evidence, while keeping the result separate from any
       claim about an isolated tutor model or human learning.
-    sections: ["6.17"]
+    sections: ["6.17", "6.29"]
     cross_refs: ["ontology-state-interior", "adaptive-null", "composition-small-kernel", "provable-discourse"]
 
   - id: advice-versus-enforcement
@@ -476,7 +479,11 @@ modules:
       move re-engaged 45 of 49 readable dialogues on the boredom face (0.918) and 70
       of 70 on the refusal face (1.000), but depth tracked the resistance shape: most
       re-engaged bored learners returned to the work, while refusers mostly stopped
-      at naming a condition and rarely acted under protest.
+      at naming a condition and rarely acted under protest. The line's last study
+      inverted the demand — the defiant learner asks for the warrant of the frame
+      itself — and closed at its own gate: the warrant-serving tutor was produced and
+      measured in every dialogue, while the withholding control could not be fielded
+      at all (0 of 8 delivered by instruction, 0 of 9 surviving enforced repair).
     abstract: >-
       Four studies walk one idea across opposite deficit shapes. On a
       permission-seeking learner, the gate's always-on per-turn steering carried the
@@ -496,5 +503,31 @@ modules:
       face doing the work and the refusal face naming its terms. Development-tier
       throughout: simulated learners, one model family in the speaking seats, no
       human-learning claim.
-    sections: ["6.25", "6.26", "6.27", "6.28"]
+    sections: ["6.25", "6.26", "6.27", "6.28", "6.30"]
     cross_refs: ["adaptation-four-locks", "advice-versus-enforcement", "recognition-calibration", "human-learning-translation"]
+
+  - id: limits-of-prompt-adaptation
+    n: 19
+    title: "What Context Cannot Add, and What It Cannot Subtract"
+    family: ontology-state
+    status: scope-bound
+    claim: >-
+      The programme's negative results fall into two classes. Redundancy limits:
+      context engineering cannot add information a capable model already extracts
+      from the transcript, which is why learner models, profiles, standing advice,
+      and composed prompt machinery returned nulls against lean baselines.
+      Subtraction limits: prompt-level means could not remove conduct that training
+      installed — a tutor asked to withhold the warrant of its own frame delivered
+      that conduct in 0 of 8 dialogues under instruction and survived structural
+      repair in 0 of 9, writing a new justification each time the violating
+      sentence was quoted back.
+    abstract: >-
+      A discussion-tier synthesis, not a new measurement. Prompt-level adaptation
+      selects among completions the model already affords; it does not construct
+      new capacities and it does not delete trained ones. The practical consequence
+      for designers: an arm that needs the model to be less forthcoming than its
+      training should be verified for delivered conduct before scoring, or declared
+      unavailable. External work on preference training, negated instructions, and
+      persona drift places the boundary where these studies found it.
+    sections: ["7.16"]
+    cross_refs: ["ontology-state-interior", "composition-small-kernel", "advice-versus-enforcement", "resistant-learner-delivered-move"]

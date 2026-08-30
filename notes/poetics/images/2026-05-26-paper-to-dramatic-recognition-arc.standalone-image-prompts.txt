@@ -1,7 +1,7 @@
 # Cartoon Image Prompts
 
 Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.standalone.html
-Generated at: 2026-08-27T03:38:41.214Z
+Generated at: 2026-08-30T14:24:54.922Z
 Panel count: 11
 Format: png
 House style: docs/design/machinespirits-house-style.md
@@ -12,7 +12,7 @@ Prompt lineage: each code block preserves the panel-total line from the run that
 
 Title: How a tutor learned to change course
 Description: The earlier study found no average change in how tutors adapted. This follow-up asks a more ordinary question: when a learner gets stuck, can the tutor notice, change course, and help them reach an answer that can be checked?
-Top terms: tutor, learner, rule, move, proof, answer, lesson, turn, every, hidden, change, changed, check, completed, conduct, without, panel, whether
+Top terms: tutor, learner, rule, move, proof, answer, lesson, turn, every, conduct, hidden, change, changed, check, completed, without, panel, whether
 
 Selected sections:
 - 01 #starting-point: The average stayed flat. We wanted to know what happened at the stuck point. -> notes/poetics/images/dramatic-recognition-arc-01.png
