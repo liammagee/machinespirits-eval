@@ -18,6 +18,7 @@ export const REQUIRED_ARCHIVE_BUILDERS = Object.freeze([
   'scripts/run-tutor-stub-resistance-action-register-confirmation.js',
   'scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js',
   'scripts/run-tutor-stub-resistance-warm-nonwarm-confirmation.js',
+  'scripts/run-tutor-stub-defiant-warrant-pilot.js',
   'scripts/run-tutor-stub-resistant-learner-calibration.js',
   'scripts/run-tutor-stub-abm-panel.js',
   'scripts/run-tutor-stub-auto-eval.js',
