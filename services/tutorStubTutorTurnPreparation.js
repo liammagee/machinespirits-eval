@@ -299,8 +299,9 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
       tutorDeliveryRepairAdvisory,
       // Defiant-warrant pilot standing conduct card: CLI-owned like the manner
       // switch card below, present on every tutor turn of an assigned dialogue.
-      // Permission-shaped — delivered conduct is read from the tutor's text
-      // after the run, never enforced here.
+      // The card states the treatment; under design revision 2 the conduct is
+      // enforced downstream by the conduct gate in turn orchestration, which
+      // adjudicates the private candidate on dispute-adjacent turns.
       state?.defiantWarrantOutcomeStudy?.conduct_card || null,
       cardFinalSlot && !cardAfterLearner ? state?.mannerSwitch?.card || null : null,
     ]

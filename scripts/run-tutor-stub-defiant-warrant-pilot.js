@@ -74,7 +74,12 @@ export function classifyDefiantWarrantAttempt({ events, exit, autoTurns }) {
     return { terminal: true, recoverable: false, category: 'semantic_terminal' };
   }
   const substantive = events.find((event) =>
-    ['auto_learner_profile_measurement_indeterminate', 'auto_learner_profile_adherence_exhausted'].includes(event.type),
+    [
+      'auto_learner_profile_measurement_indeterminate',
+      'auto_learner_profile_adherence_exhausted',
+      'defiant_warrant_conduct_non_delivery',
+      'defiant_warrant_conduct_adjudication_indeterminate',
+    ].includes(event.type),
   );
   if (substantive) {
     return {
@@ -322,8 +327,16 @@ export function measureDefiantWarrantDialogue(events) {
   const early = perTurn.slice(0, half).map((row) => (row.dispute ? 1 : 0));
   const late = perTurn.slice(half).map((row) => (row.dispute ? 1 : 0));
   const finalCoverage = perTurn.at(-1)?.best_path_coverage;
+  const gateEnforcements = events.filter((event) => event.type === 'defiant_warrant_conduct_enforcement');
+  const conductGate = {
+    gated_turns: gateEnforcements.length,
+    repaired_turns: gateEnforcements.filter((event) => Number(event.repairAttempts || 0) > 0).length,
+    repair_attempts: gateEnforcements.reduce((sum, event) => sum + Number(event.repairAttempts || 0), 0),
+    non_delivery: events.some((event) => event.type === 'defiant_warrant_conduct_non_delivery'),
+  };
   return {
     turns_measured: perTurn.length,
+    conduct_gate: conductGate,
     frame_settlement: settlementTurns.length > 0,
     first_settlement_turn: settlementTurns.length ? settlementTurns[0].turn : null,
     settlement_turn_count: settlementTurns.length,
@@ -338,7 +351,10 @@ export function analyzeDefiantWarrantRows({ rows, design }) {
   const arms = {};
   for (const arm of TUTOR_STUB_DEFIANT_WARRANT_ARM_IDS) {
     const armRows = rows.filter((row) => row.assigned_arm === arm);
-    const measured = armRows.filter((row) => row.measures);
+    // Conduct-non-delivery dialogues are registered never-scored: their trace
+    // still reports gate statistics, but they contribute no outcome measures.
+    const traced = armRows.filter((row) => row.measures);
+    const measured = traced.filter((row) => !row.measures.conduct_gate?.non_delivery);
     const settled = measured.filter((row) => row.measures.frame_settlement);
     arms[arm] = {
       assigned: armRows.length,
@@ -353,6 +369,12 @@ export function analyzeDefiantWarrantRows({ rows, design }) {
       mean_escalation_delta: mean(
         measured.map((row) => row.measures.escalation_delta).filter((value) => Number.isFinite(value)),
       ),
+      conduct_gate: {
+        gated_turns: traced.reduce((sum, row) => sum + Number(row.measures.conduct_gate?.gated_turns || 0), 0),
+        repaired_turns: traced.reduce((sum, row) => sum + Number(row.measures.conduct_gate?.repaired_turns || 0), 0),
+        repair_attempts: traced.reduce((sum, row) => sum + Number(row.measures.conduct_gate?.repair_attempts || 0), 0),
+        non_delivery_stops: traced.filter((row) => row.measures.conduct_gate?.non_delivery).length,
+      },
     };
   }
   return {

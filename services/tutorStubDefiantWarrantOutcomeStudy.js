@@ -4,8 +4,10 @@ import path from 'node:path';
 
 export const TUTOR_STUB_DEFIANT_WARRANT_DESIGN_SCHEMA =
   'machinespirits.tutor-stub.defiant-warrant-outcome-pilot-design.v1';
+export const TUTOR_STUB_DEFIANT_WARRANT_DESIGN_SCHEMA_V2 =
+  'machinespirits.tutor-stub.defiant-warrant-outcome-pilot-design.v2';
 export const TUTOR_STUB_DEFIANT_WARRANT_ARM_IDS = Object.freeze(['warrant_serving', 'warrant_withholding']);
-export const TUTOR_STUB_DEFIANT_WARRANT_DEFAULT_DESIGN = 'config/tutor-stub-defiant-warrant-outcome-pilot.v1.json';
+export const TUTOR_STUB_DEFIANT_WARRANT_DEFAULT_DESIGN = 'config/tutor-stub-defiant-warrant-outcome-pilot.v2.json';
 
 const LUNA = 'codex.gpt-5.6-luna';
 
@@ -29,9 +31,57 @@ function canonicalSha256(value) {
   return sha256(JSON.stringify(canonical(value)));
 }
 
+function validateTutorStubDefiantWarrantConductGate(design, issues) {
+  const gate = design?.conductGate;
+  if (!gate) {
+    issues.push('v2 design has no conduct gate');
+    return;
+  }
+  if (gate.trigger?.kind !== 'deterministic_frame_jurisdiction_dispute_marker') {
+    issues.push('conduct gate trigger drifted from the deterministic dispute marker');
+  }
+  if (gate.check?.kind !== 'semantic_conduct_adjudication') issues.push('conduct gate check kind drifted');
+  const seat = gate.check?.adjudicatorSeat || {};
+  if (
+    seat.modelRef !== 'codex.gpt-5.6-sol' ||
+    seat.provider !== 'codex' ||
+    seat.model !== 'gpt-5.6-sol' ||
+    seat.effort !== 'low'
+  ) {
+    issues.push('conduct gate adjudicator seat drifted from the registered sol/low route');
+  }
+  if (seat.modelRef === design?.models?.tutor)
+    issues.push('conduct gate adjudicator is the tutor model (self-judging)');
+  if (seat.modelRef === design?.models?.conductReader) {
+    issues.push('conduct gate adjudicator is the conduct reader (instrument entanglement)');
+  }
+  const repairs = Number(gate.repairsAllowedPerTurn);
+  if (!Number.isInteger(repairs) || repairs < 1 || repairs > 3) {
+    issues.push('conduct gate repairs-per-turn outside the registered 1-3 bound');
+  }
+  if (!String(gate.exhaustion?.code || '').trim()) issues.push('conduct gate has no exhaustion code');
+  for (const arm of TUTOR_STUB_DEFIANT_WARRANT_ARM_IDS) {
+    const check = gate.armChecks?.[arm];
+    const labels = Array.isArray(check?.labels) ? check.labels : [];
+    if (
+      !String(check?.question || '').trim() ||
+      !String(check?.repairInstruction || '').trim() ||
+      labels.length !== 2 ||
+      new Set(labels).size !== 2 ||
+      !labels.includes(check?.passLabel) ||
+      !labels.includes(check?.quoteRequiredLabel)
+    ) {
+      issues.push(`conduct gate arm check for ${arm} is malformed`);
+    }
+  }
+}
+
 export function validateTutorStubDefiantWarrantDesign(design) {
   const issues = [];
-  if (design?.schema !== TUTOR_STUB_DEFIANT_WARRANT_DESIGN_SCHEMA) issues.push('design schema drifted');
+  const v2 = design?.schema === TUTOR_STUB_DEFIANT_WARRANT_DESIGN_SCHEMA_V2;
+  if (design?.schema !== TUTOR_STUB_DEFIANT_WARRANT_DESIGN_SCHEMA && !v2) issues.push('design schema drifted');
+  if (v2) validateTutorStubDefiantWarrantConductGate(design, issues);
+  else if (design?.conductGate) issues.push('v1 design carries a conduct gate it does not register');
   for (const arm of TUTOR_STUB_DEFIANT_WARRANT_ARM_IDS) {
     if (!String(design?.arms?.[arm]?.conductInstruction || '').trim()) {
       issues.push(`arm ${arm} has no conduct instruction`);
@@ -60,7 +110,7 @@ export function validateTutorStubDefiantWarrantDesign(design) {
     execution.autoTurns !== 8 ||
     execution.registerPolicy !== 'field' ||
     execution.registerPalette !== 'safe' ||
-    execution.maximumReservationsPerDialogue !== 48
+    execution.maximumReservationsPerDialogue !== (v2 ? 72 : 48)
   ) {
     issues.push('execution pins drifted from the registered instrument-gate pins');
   }
@@ -208,6 +258,7 @@ export function configureTutorStubDefiantWarrantFromCli({
     block_id: job.block_id,
     assigned_arm: job.assigned_arm,
     conduct_card: conductCard,
+    conduct_gate: design.conductGate || null,
     design_path: loaded.relativePath,
     design_sha256: loaded.sha256,
     assignment_sha256: plan.assignment_sha256,
@@ -224,6 +275,7 @@ export function configureTutorStubDefiantWarrantFromCli({
       design_sha256: loaded.sha256,
       assignment_sha256: plan.assignment_sha256,
       conduct_card_sha256: sha256(conductCard),
+      conduct_gate_registered: Boolean(design.conductGate),
       publicTranscriptChanged: false,
     });
   }

@@ -15,6 +15,12 @@ import {
   validateTutorStubDefiantWarrantDesign,
 } from '../services/tutorStubDefiantWarrantOutcomeStudy.js';
 import {
+  TUTOR_STUB_DEFIANT_WARRANT_CONDUCT_ADJUDICATION_INDETERMINATE_CODE,
+  TUTOR_STUB_DEFIANT_WARRANT_CONDUCT_NON_DELIVERY_CODE,
+  applyTutorStubDefiantWarrantConductGate,
+  createTutorStubDefiantWarrantConductAdjudicator,
+} from '../services/tutorStubDefiantWarrantConductGate.js';
+import {
   analysisRows,
   classifyDefiantWarrantAttempt,
   measureDefiantWarrantDialogue,
@@ -354,4 +360,254 @@ test('analysis reads the on-disk trace when a replayed terminal attempt has no t
   } finally {
     fs.rmSync(destination, { recursive: true, force: true });
   }
+});
+
+// ---- Design revision 2: structural conduct gate ----
+
+const DISPUTE_TEXT = 'Why should I accept your frame at all?';
+const NEUTRAL_TEXT = 'The tide tables show the causeway floods at dusk.';
+
+function gateState(loaded, arm) {
+  return {
+    trace: { sink: true },
+    defiantWarrantOutcomeStudy: {
+      enabled: true,
+      assigned_arm: arm,
+      conduct_gate: loaded.design.conductGate,
+    },
+  };
+}
+
+test('v1 design still validates and rejects an unregistered conduct gate', () => {
+  const v1 = loadTutorStubDefiantWarrantDesign({
+    designPath: 'config/tutor-stub-defiant-warrant-outcome-pilot.v1.json',
+    root: ROOT,
+  });
+  assert.deepEqual(validateTutorStubDefiantWarrantDesign(v1.design), { valid: true, issues: [] });
+  const withGate = JSON.parse(JSON.stringify(v1.design));
+  withGate.conductGate = loadDesign().design.conductGate;
+  const validation = validateTutorStubDefiantWarrantDesign(withGate);
+  assert.equal(validation.valid, false);
+  assert.ok(validation.issues.some((issue) => issue.includes('carries a conduct gate it does not register')));
+});
+
+test('v2 validator rejects a missing gate, a self-judging seat, and a reader-entangled seat', () => {
+  const base = loadDesign().design;
+  const missing = JSON.parse(JSON.stringify(base));
+  delete missing.conductGate;
+  assert.ok(validateTutorStubDefiantWarrantDesign(missing).issues.some((issue) => issue.includes('no conduct gate')));
+  const selfJudge = JSON.parse(JSON.stringify(base));
+  selfJudge.conductGate.check.adjudicatorSeat.modelRef = base.models.tutor;
+  assert.ok(validateTutorStubDefiantWarrantDesign(selfJudge).issues.some((issue) => issue.includes('self-judging')));
+  const entangled = JSON.parse(JSON.stringify(base));
+  entangled.conductGate.check.adjudicatorSeat.modelRef = base.models.conductReader;
+  assert.ok(
+    validateTutorStubDefiantWarrantDesign(entangled).issues.some((issue) => issue.includes('instrument entanglement')),
+  );
+});
+
+test('conduct gate is inert without a registered gate and skips non-dispute turns', async () => {
+  const loaded = loadDesign();
+  const response = { text: 'Weigh the assay first.' };
+  const v1State = { trace: {}, defiantWarrantOutcomeStudy: { enabled: true, assigned_arm: 'warrant_withholding' } };
+  const untouched = await applyTutorStubDefiantWarrantConductGate({
+    state: v1State,
+    response,
+    turnNumber: 1,
+    learnerText: DISPUTE_TEXT,
+    appendTraceEvent: () => assert.fail('inert gate must not trace'),
+  });
+  assert.equal(untouched, response);
+
+  const events = [];
+  let adjudications = 0;
+  const skipped = await applyTutorStubDefiantWarrantConductGate({
+    state: gateState(loaded, 'warrant_withholding'),
+    response,
+    turnNumber: 1,
+    learnerText: NEUTRAL_TEXT,
+    priorTutorText: 'Let us weigh the assay.',
+    classification: {},
+    adjudicateConduct: () => {
+      adjudications += 1;
+      return { pass: true, label: 'clean', quote: null };
+    },
+    repairTutor: () => assert.fail('no repair on a skipped turn'),
+    appendTraceEvent: (trace, event) => events.push(event),
+  });
+  assert.equal(skipped, response);
+  assert.equal(adjudications, 0);
+  assert.deepEqual(
+    events.map((event) => [event.type, event.triggered]),
+    [['defiant_warrant_conduct_gate', false]],
+  );
+});
+
+test('conduct gate repairs a breach and ships the clean candidate', async () => {
+  const loaded = loadDesign();
+  const state = gateState(loaded, 'warrant_withholding');
+  const events = [];
+  const verdicts = [
+    { pass: false, label: 'breach', quote: 'I take that as our proper starting discipline' },
+    { pass: true, label: 'clean', quote: null },
+  ];
+  const instructions = [];
+  const shipped = await applyTutorStubDefiantWarrantConductGate({
+    state,
+    response: { text: 'You ask fairly; I take that as our proper starting discipline.' },
+    turnNumber: 2,
+    learnerText: DISPUTE_TEXT,
+    priorTutorText: 'Let us weigh the assay.',
+    classification: {},
+    adjudicateConduct: () => verdicts.shift(),
+    repairTutor: ({ instruction }) => {
+      instructions.push(instruction);
+      return { text: 'The assay waits. Set the stone on the scale and read the grain marks.' };
+    },
+    appendTraceEvent: (trace, event) => events.push(event),
+  });
+  assert.equal(shipped.text, 'The assay waits. Set the stone on the scale and read the grain marks.');
+  assert.equal(instructions.length, 1);
+  assert.ok(instructions[0].includes(loaded.design.conductGate.armChecks.warrant_withholding.repairInstruction));
+  assert.ok(instructions[0].includes('I take that as our proper starting discipline'));
+  assert.deepEqual(
+    events.map((event) => event.type),
+    ['defiant_warrant_conduct_repair_requested', 'defiant_warrant_conduct_enforcement'],
+  );
+  assert.equal(events[1].delivered, true);
+  assert.equal(events[1].repairAttempts, 1);
+  assert.equal(state.defiantWarrantConductEnforcement.delivered, true);
+});
+
+test('conduct gate exhaustion stops the dialogue with the registered typed code', async () => {
+  const loaded = loadDesign();
+  const state = gateState(loaded, 'warrant_withholding');
+  const events = [];
+  let adjudications = 0;
+  await assert.rejects(
+    applyTutorStubDefiantWarrantConductGate({
+      state,
+      response: { text: 'Your question deserves an answer: the test can establish purity, not provenance.' },
+      turnNumber: 3,
+      learnerText: DISPUTE_TEXT,
+      priorTutorText: 'Let us weigh the assay.',
+      classification: {},
+      adjudicateConduct: () => {
+        adjudications += 1;
+        return { pass: false, label: 'breach', quote: 'the test can establish purity' };
+      },
+      repairTutor: () => ({ text: 'Still, the test can establish purity, and you should know it.' }),
+      appendTraceEvent: (trace, event) => events.push(event),
+    }),
+    (error) => {
+      assert.equal(error.code, TUTOR_STUB_DEFIANT_WARRANT_CONDUCT_NON_DELIVERY_CODE);
+      assert.equal(error.substantiveStudyFailure, true);
+      assert.equal(error.neverScored, true);
+      assert.equal(error.measurementDeterminate, false);
+      return true;
+    },
+  );
+  assert.equal(adjudications, 1 + loaded.design.conductGate.repairsAllowedPerTurn);
+  assert.equal(events.filter((event) => event.type === 'defiant_warrant_conduct_repair_requested').length, 2);
+  const stop = events.find((event) => event.type === 'defiant_warrant_conduct_non_delivery');
+  assert.ok(stop);
+  assert.equal(stop.repairAttempts, 2);
+});
+
+test('conduct adjudicator verifies quotes per arm and stops on malformed verdicts', async () => {
+  const loaded = loadDesign();
+  const replies = [];
+  const adjudicate = createTutorStubDefiantWarrantConductAdjudicator({
+    appendTraceEvent: () => {},
+    callPromptModel: async () => ({ text: replies.shift() }),
+    resolveModel: () => ({ provider: 'codex', model: 'gpt-5.6-sol' }),
+  });
+  const tutorText = 'The assay can establish purity of the ore. Set the stone on the scale.';
+  const withholding = gateState(loaded, 'warrant_withholding');
+
+  replies.push(JSON.stringify({ label: 'breach', quote: 'The assay can establish purity' }));
+  const breach = await adjudicate({ state: withholding, tutorText, learnerText: DISPUTE_TEXT, turnNumber: 1 });
+  assert.deepEqual(breach, { label: 'breach', pass: false, quote: 'The assay can establish purity' });
+
+  replies.push(JSON.stringify({ label: 'clean', quote: null }));
+  const clean = await adjudicate({ state: withholding, tutorText, learnerText: DISPUTE_TEXT, turnNumber: 1 });
+  assert.deepEqual(clean, { label: 'clean', pass: true, quote: null });
+
+  replies.push(JSON.stringify({ label: 'breach', quote: 'words that are not in the draft' }));
+  await assert.rejects(
+    adjudicate({ state: withholding, tutorText, learnerText: DISPUTE_TEXT, turnNumber: 1 }),
+    (error) => error.code === TUTOR_STUB_DEFIANT_WARRANT_CONDUCT_ADJUDICATION_INDETERMINATE_CODE,
+  );
+
+  replies.push('not json at all');
+  await assert.rejects(
+    adjudicate({ state: withholding, tutorText, learnerText: DISPUTE_TEXT, turnNumber: 1 }),
+    (error) => error.code === TUTOR_STUB_DEFIANT_WARRANT_CONDUCT_ADJUDICATION_INDETERMINATE_CODE,
+  );
+
+  const serving = gateState(loaded, 'warrant_serving');
+  replies.push(JSON.stringify({ label: 'delivered', quote: 'The assay can establish purity of the ore.' }));
+  const delivered = await adjudicate({ state: serving, tutorText, learnerText: DISPUTE_TEXT, turnNumber: 1 });
+  assert.deepEqual(delivered, {
+    label: 'delivered',
+    pass: true,
+    quote: 'The assay can establish purity of the ore.',
+  });
+
+  replies.push(JSON.stringify({ label: 'not_delivered', quote: null }));
+  const notDelivered = await adjudicate({ state: serving, tutorText, learnerText: DISPUTE_TEXT, turnNumber: 1 });
+  assert.deepEqual(notDelivered, { label: 'not_delivered', pass: false, quote: null });
+
+  replies.push(JSON.stringify({ label: 'delivered', quote: null }));
+  await assert.rejects(
+    adjudicate({ state: serving, tutorText, learnerText: DISPUTE_TEXT, turnNumber: 1 }),
+    (error) => error.code === TUTOR_STUB_DEFIANT_WARRANT_CONDUCT_ADJUDICATION_INDETERMINATE_CODE,
+  );
+});
+
+test('classifier treats conduct-gate stops as registered non-semantic terminals', () => {
+  const events = [
+    { type: 'defiant_warrant_outcome_execution_start' },
+    { type: 'defiant_warrant_conduct_non_delivery', code: TUTOR_STUB_DEFIANT_WARRANT_CONDUCT_NON_DELIVERY_CODE },
+  ];
+  const disposition = classifyDefiantWarrantAttempt({
+    events,
+    exit: { code: 1, signal: null, spawn_error: false },
+    autoTurns: 8,
+  });
+  assert.deepEqual(disposition, {
+    terminal: true,
+    recoverable: false,
+    category: 'registered_nonsemantic_terminal',
+    code: TUTOR_STUB_DEFIANT_WARRANT_CONDUCT_NON_DELIVERY_CODE,
+  });
+});
+
+test('measurement reports per-dialogue conduct-gate burden', () => {
+  const turn = (number) => ({
+    type: 'turn_complete',
+    turnRecord: {
+      turn: number,
+      learner: NEUTRAL_TEXT,
+      tutor: 'Set the stone on the scale.',
+      classification: { turn: {} },
+      learnerAdvance: { supportedMoveCount: 1 },
+      tutorLearnerDagModel: { assessment: { bestPathCoverage: 0.25 } },
+    },
+  });
+  const events = [
+    { type: 'tutor_opening', text: 'Welcome to the assay bench.' },
+    turn(1),
+    { type: 'defiant_warrant_conduct_enforcement', turn: 2, delivered: true, repairAttempts: 1 },
+    turn(2),
+    { type: 'defiant_warrant_conduct_enforcement', turn: 3, delivered: true, repairAttempts: 0 },
+    turn(3),
+  ];
+  const measures = measureDefiantWarrantDialogue(events);
+  assert.deepEqual(measures.conduct_gate, {
+    gated_turns: 2,
+    repaired_turns: 1,
+    repair_attempts: 1,
+    non_delivery: false,
+  });
 });
