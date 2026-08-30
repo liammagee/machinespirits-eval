@@ -138,3 +138,18 @@ question — does a sharp delivery cost the learner anything — asked where
   held fixed by the scripted core, the manner alone moves nothing the
   endpoint can see. The Stage-1 leak ordering (resistance pulls edge
   into a warm-pinned voice) stands as the surviving finding.
+- 2026-08-29 (voided-block forensics): Counted the warm slips in the
+  voided resistant block (`qa-matrix-2026-08-28T21-41-13-718Z`) from its
+  archived traces, to weigh "the mixed delivery created the §8 effect"
+  against "lucky draw". Sarcastic arm, first 16 turns (the endpoint
+  window): 29 warm turns of 176 (16.5%). The slips were lopsided — 9 of
+  11 complete runs had 0-3 slips; one run (r4) went 14 of 16 warm and
+  scored the top mark (0.667), but three runs with a single slip scored
+  0.667 too. Within the block, more slippage does not track higher
+  coverage (pearson 0.25, spearman 0.16, n=11 — nothing). Across
+  blocks: the warm arm barely moved (0.278 voided, 0.292 clean) while
+  the fixed sarcastic arm fell 0.455 to 0.250 — suggestive, but one
+  post-hoc comparison at n=12, sd ~0.23. The clean block's pin held
+  fully: 40/40 sarcastic in all 12 runs. Verdict: no within-block
+  support for the mixed-manner story; the null stands as the record.
+  Analysis is deterministic re-count of archived events; no paid calls.
