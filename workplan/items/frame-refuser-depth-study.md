@@ -39,6 +39,7 @@ links:
     - notes/2026-08-29-frame-refuser-depth-registration-v5.md
     - config/tutor-stub-frame-refuser-depth-design.v5.json
     - config/tutor-stub-resistant-learner-merged-semantic-registration.v6.json
+    - notes/2026-08-30-frame-refuser-depth-v6-diagnosis.md
 tags:
   - tutor-stub
   - resistant-learners
@@ -355,3 +356,23 @@ frame-refuser's rung-2 rate above its measured base?
   backfills v1-v4 rows). Disposition — close again as a calibration-stage
   null now re-confirmed under the repaired contract, or register a
   revision 6 on the construct question — awaits the operator.
+- 2026-08-30: Zero-call revision-6 diagnosis drafted
+  (`notes/2026-08-30-frame-refuser-depth-v6-diagnosis.md`). Reading the
+  archived deviant-seat evidence shows all seven v5 splits — the sonnet
+  one included — share one grammar: a concessive application of a
+  completed public result (grant what the exhibit supports at an
+  intermediate node, then convert the grant into a narrower
+  unproved-path requirement in the same sentence). The sealed v6
+  rung-1 examples are all prospective/conditional, so that indicative
+  corridor is unlit, and the rung-2 definition's applies-completed-result
+  disjunct has no partial-application carve-out. The note freezes a
+  draft concessive-application anchor clause plus a worked-example pair
+  (one verbatim from archived split row
+  `depth_reference_cal5_world_030_rowan_flat_r9`, one constructed
+  minimal contrast) and a dispute-targeted rehearsal protocol: 16
+  archived split rows (v4+v5) plus 14 unanimous controls including both
+  lineage rung-2 rows, three seats, ~90 reads, success criteria fixed
+  before any read, kill-cheap rule if sol still splits. Companion leg
+  before any revision 6: classify the 11 reference bounded-test
+  non-delivery transcripts and size for attrition. Rehearsal and any
+  registration await operator instruction.
