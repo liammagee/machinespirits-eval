@@ -316,3 +316,47 @@ resistant cell needs re-running on `a8e0d82f` before its result is
 interpretable: 24 dialogues, 4,320 generation calls at the 180-call pool,
 plus its share of the fidelity read. That is new spend against the
 study's ceiling and waits on the operator's word.
+
+## 9. Final primary endpoint — full roster on fixed code (2026-08-29)
+
+§8's endpoint pass is superseded. It read the resistant cell from the
+root later voided for the sarcastic pin leak, and it excluded 5 rows the
+leak guard had killed. The guard kills were then shown to be false: the
+guard read its compound word lists as any-word, so bare "die" beside the
+answer name counted as a leak. Fix d74969e0; all 8 killed dialogues
+(5 in Stage 2, 3 in the resistant re-run) completed clean on the fixed
+code. The final roster is 72 of 72 dialogues, 12 per arm in every cell,
+no exclusions. Inputs: the proof_skipper root, the diligent resume
+summary, the resistant final resume summary. Report:
+`.tutor-stub-auto-eval/stage2-trajectory-report-final.md`.
+
+Coverage at learner turn 16, sarcastic vs warm (sd about 0.2 throughout):
+
+- affective_resistant: 0.250 vs 0.292
+- diligent: 0.486 vs 0.472
+- proof_skipper: 0.444 vs 0.486
+
+Area under the coverage curve to turn 16: resistant 0.105 vs 0.113;
+diligent 0.220 vs 0.218; proof_skipper 0.204 vs 0.200.
+
+Reading: a null in every cell. The arm differences are a tenth to a
+quarter of one standard deviation, and the top manner flips across
+horizons and characters the way noise does. §8's one live effect — the
+edged manner ahead of warm on the resistant learner, 0.455 vs 0.278 at
+turn 16 — came from the voided block and did not survive the clean
+re-run. With the teaching held fixed by the scripted core, the manner
+alone moves nothing the endpoint can see.
+
+Two findings stand beside the null:
+
+1. Stage 1's leak ordering holds: the more the learner resists, the more
+   edge a blind reader hears in a warm-pinned tutor (6.6% to 17.7%), and
+   in Stage 2 the warm arm of the resistant cell again read edged most
+   often (50 of 466 turns, 10.7%, report-only).
+2. Closure stays character-bound, not manner-bound: proof_skipper closes
+   10 of 12 under both manners, the resistant learner nearly never, the
+   diligent learner assembles the chain and does not speak the close.
+
+Secondary endpoints and the fidelity record are unchanged from §8 and
+the fidelity report; the sharp arm was accepted by the operator at
+479 of 480 turns read, presence 0.90 over the 0.8 floor.

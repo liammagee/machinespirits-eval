@@ -129,3 +129,12 @@ question — does a sharp delivery cost the learner anything — asked where
   Artifacts archived (private repo 0af1573c). Known residual: a
   negated-existential sentence joined by "but no" can still trip the
   final check; the only recorded case is in a void superseded root.
+- 2026-08-29 (endpoint): Final primary endpoint computed over the full
+  72-row roster on the fixed guard (memo §9). Null in every cell:
+  turn-16 coverage sarcastic vs warm — resistant 0.250/0.292, diligent
+  0.486/0.472, proof_skipper 0.444/0.486; area under the curve equally
+  flat. §8's resistant-cell sarcastic advantage came from the voided
+  pin-leak block and did not survive the clean re-run. With the teaching
+  held fixed by the scripted core, the manner alone moves nothing the
+  endpoint can see. The Stage-1 leak ordering (resistance pulls edge
+  into a warm-pinned voice) stands as the surviving finding.
