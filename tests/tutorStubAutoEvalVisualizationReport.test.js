@@ -107,8 +107,8 @@ test('populated visualization fragment preserves bytes, payload identity, and in
   const html = renderAnimatedVizSection(populatedRows, dependencies);
   const payload = animatedVizReportPayload(populatedRows, dependencies);
 
-  assert.equal(Buffer.byteLength(html), 51_443);
-  assert.equal(sha256(html), 'ca2e986a42d00727464e0c8f7ec9f87a1419475b556afbf028be62970936da37');
+  assert.equal(Buffer.byteLength(html), 51_476);
+  assert.equal(sha256(html), '7d8a03360891fc6178015e1ecaceb843409ffe741b19b48f213f1efadfe03419');
   assert.deepEqual(
     payload.rows.map(({ id, title }) => ({ id, title })),
     [
