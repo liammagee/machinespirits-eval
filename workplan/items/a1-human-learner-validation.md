@@ -7,18 +7,28 @@ priority: P0
 owner: human
 source: todo
 created: 2026-06-22
-updated: 2026-06-24
-verification: Phased N≈90 pilot runs end-to-end across 3 arms; pre/post MCQ +
-  immediate transfer + coded free-text explanation + 1-week retention scored;
-  the tutor-quality → learning-gains path is estimated (or shown null) in
-  exports/.
-blocked_by: IRB approval + real consent text + real item content (content/legal
-  track, not engineering)
+updated: 2026-08-30
+verification: A replacement prospective design first freezes the canonical
+  closed-loop state → action → guard → outcome tutor against a move- and
+  resource-matched non-adaptive, yoked, or fixed-policy control in one bounded
+  proof-DAG domain; after IRB approval and final consent/items, a phased human
+  pilot scores pre/post performance, immediate transfer, independently coded
+  explanation, and delayed retention, and reports the learning effect or null.
+blocked_by: Canonical-kernel human-study redesign + independent state/move and
+  proof-DAG validity + IRB approval + final consent and item content
 claim_status: future
+depends_on:
+  - adaptive-causality-human-state-move-validation
+  - adaptive-proof-dag-cross-world-validation
 links:
   paper: §8.1, §9
-  notes: notes/design-a1-human-learner-pilot.md
-  items: socratic-structured-tutoring-readings
+  notes:
+    - notes/poetics/2026-08-29-adaptive-tutor-from-null-to-control.html
+    - ADAPTIVE-TUTOR-KERNEL-CONTRACT.md
+  items:
+    - adaptive-causality-human-state-move-validation
+    - adaptive-proof-dag-cross-world-validation
+    - socratic-structured-tutoring-readings
 tags:
   - pilot
   - human-learner
@@ -26,20 +36,36 @@ tags:
 milestone: human-pilot-prep
 ---
 
-The single highest-value open question: all evaluations use simulated learners,
-so whether recognition-enhanced tutoring produces genuine learning gains with
-real humans is unestablished.
+The single highest-value open question remains whether the tutor's improved
+local causal control produces genuine learning gains with real humans.
 
-**Engineering is complete** (pilot store, routes, item bank, participant UI,
-ingestion, 15 tests) — see TODO §A1 for the build manifest and commits. The
-2026-05-18 design is a 3-arm pilot (base / recognition / behaviorist-matched
-`cell_96`).
+The participant infrastructure is reusable: pilot store, routes, item bank,
+participant UI, ingestion, and tests. It was built for the historical 2026-05
+prompt-condition design (base / recognition / behaviorist-matched `cell_96`),
+which remains historical context in TODO §A1 rather than the current launch
+design. The linked standalone runbook never existed in the tracked repository.
 
-Recruitment is gated on the content/legal track, not code: IRB, consent text,
-NAEP-derived items, NASA-TLX wording, OSF pre-registration, internal dogfood N=5,
-Prolific plumbing. Keep this item `blocked` until those clear; don't let it read
-as actionable engineering.
+The replacement study must test the canonical closed-loop kernel against a
+matched non-adaptive policy, not treat the unchanged May recognition-slope
+hypothesis as though it became positive. That redesign and the kernel-to-pilot
+adapter are not complete. Recruitment also remains gated on IRB, consent text,
+real items, pre-registration, internal dogfood, and recruitment plumbing.
 
-Do not restate the runbook here — it lives at the linked note and TODO §A1.
+Keep this item blocked until both the construct-validity dependencies and the
+content/legal gates clear. The pilot must report a null without substituting
+transcript-visible synthetic learner change for human learning.
 
 2026-06-24 Codex: Socratic-reading follow-up closed. The three readings strengthen existing A1 design instincts (explicit curriculum sequencing, student-state inference, unassisted post-test/transfer, and withhold-and-derive patterns) but do not change the immediate blocker: IRB, consent text, and real item content remain the gate before any pilot recruitment.
+
+2026-08-30 Codex: Blocker refresh confirmed that the participant consent and
+item bank are still explicitly marked as placeholders, while recruitment
+remains closed by default. The aggregate pilot store contains two sessions and
+zero completions. No IRB-approved consent or real item content was found, so
+the external dependency remains live; no participant recruitment was
+attempted.
+
+2026-08-30 Codex: Reframed after the human-work review. The durable P0 objective
+is human learning, transfer, and retention; the old prompt-condition treatment
+is no longer the primary adaptive-tutor question. Existing participant
+infrastructure remains reusable, but the current canonical-kernel contrast must
+be designed and integrated before recruitment.
