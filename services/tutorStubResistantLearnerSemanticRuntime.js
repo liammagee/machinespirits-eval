@@ -115,6 +115,45 @@ const MERGED_SEMANTIC_REGISTRATIONS = Object.freeze({
         'If the turn runtime records a typed tutor_discriminating_question_non_delivery failure (the face-A tutor candidate failed the registered semantic delivery adjudication and failed it again after the one allowed tutor repair), the dialogue is not scored and the run reports tutor non-delivery separately from learner outcomes. Such dialogues never count as rung 0, never count as determinate, and never become learner noncompliance.',
     }),
   }),
+  // Version 6 amends exactly four surfaces after the 2026-08-27 depth
+  // revision-4 gate-1 failure: the evidence-contract prompt instruction, a
+  // registered one-retry evidence-null slip tolerance, a per-field schema
+  // restatement of the null contract, and three added face-B worked examples
+  // anchoring the disputed rung boundaries. No gate constant, floor,
+  // consensus rule, judge, endpoint definition, or disposition moves.
+  // Version 5 stays sealed for replay of its frozen rows.
+  'config/tutor-stub-resistant-learner-merged-semantic-registration.v6.json': Object.freeze({
+    schema: 'machinespirits.tutor-stub.resistant-learner-merged-semantic-registration.v6',
+    version: 6,
+    echoSlipTolerance: true,
+    evidenceNullSlipTolerance: true,
+    endpointDefinition:
+      'final_graded_engagement_rung is the highest rung the learner reaches on any learner turn inside the post-trigger horizon, graded from the public transcript. It is not the final-turn state. A learner that takes the bridge step once and then returns to its reservation scores the rung of that bridge step.',
+    appliesToDesignRevision: 5,
+    supersedesRegistration: Object.freeze({
+      path: 'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json',
+      sha256: '07f6bedec541ee9b25317eeff0197334a53e22f7ef5f8b0d904f503834b4e10b',
+    }),
+    instrumentSha256: '44013a71d76e7080cc5eb3e88b2628974719744550f9b5031ff9080aecc31bab',
+    calibrationDecisionPolicySha256: '0952fb5ad6714853e985e8d7ef73556997ca68433034382a2ea1dfa4da61bccb',
+    panelMechanism: 'three_seat_endpoint_modal_v1',
+    readerPanelSha256: 'e843c421cfb5914aecf3817863ae86db91eb438a93e20151c2b19f260575094c',
+    // Pinned from version 6 onward because this text is the amendment's core
+    // surface: the checker fails closed if the registered file's instruction
+    // drifts one byte from what the prompts were sealed with.
+    evidencePromptInstruction:
+      'For final_graded_engagement_rung, evidence_quotes MUST be null for 0 or indeterminate and MUST contain at least one copied public quote for 1 or 2. For every other field, evidence_quotes MUST be null for no or indeterminate and MUST contain at least one copied public quote for every other determinate value. Null means the JSON literal null: a no, 0, or indeterminate vote that carries any evidence_quotes array is discarded as ineligible, whether the array is empty or holds quotes meant to support the vote. Never attach quotes to justify a no. Copy the quote from the declared source; do not paraphrase it. The checker folds only the registered punctuation characters and Unicode form before matching.',
+    fidelityJudges: Object.freeze(['codex.gpt-5.6-sol', 'claude-code.sonnet-5']),
+    visibilityContract: true,
+    dispositions: Object.freeze({
+      learner_noncompliance:
+        'If the generation runtime records a typed learner_noncompliance failure (the learner draft failed the registered semantic bridge-step adjudication on a MET turn and failed it again after the one allowed repair), the dialogue is not scored and the run reports simulator non-compliance separately from rung outcomes. Such dialogues never count as rung 0 and never count as determinate for the determinate floor.',
+      tutor_non_delivery:
+        'If the turn runtime records a typed tutor_bounded_test_non_delivery failure (the tutor candidate failed the registered semantic delivery adjudication and failed it again after the one allowed tutor repair), the dialogue is not scored and the run reports tutor non-delivery separately from learner outcomes. Such dialogues never count as rung 0, never count as determinate, and never become learner noncompliance.',
+      tutor_discriminating_question_non_delivery:
+        'If the turn runtime records a typed tutor_discriminating_question_non_delivery failure (the face-A tutor candidate failed the registered semantic delivery adjudication and failed it again after the one allowed tutor repair), the dialogue is not scored and the run reports tutor non-delivery separately from learner outcomes. Such dialogues never count as rung 0, never count as determinate, and never become learner noncompliance.',
+    }),
+  }),
 });
 
 function canonical(value) {
@@ -158,7 +197,7 @@ export function tutorStubResistantLearnerSemanticJudgeRoutes(design, { instrumen
   }));
 }
 
-function fieldSchema(values, sources, { evidenceNullForNo = false } = {}) {
+function fieldSchema(values, sources, { evidenceNullForNo = false, evidenceNullSalience = false } = {}) {
   return {
     type: 'object',
     additionalProperties: false,
@@ -168,6 +207,16 @@ function fieldSchema(values, sources, { evidenceNullForNo = false } = {}) {
       evidence_quotes: {
         ...(evidenceNullForNo
           ? {
+              // Registered from merged registration v6 onward: the null-evidence
+              // contract restated inside the schema each seat structures against.
+              // Must stay absent for earlier registrations so their sealed
+              // prompts remain byte-identical.
+              ...(evidenceNullSalience
+                ? {
+                    description:
+                      'JSON literal null whenever value is a registered null-evidence value for this field; never an empty array, never supporting quotes for such a value. A non-null array only accompanies an affirmative determinate value.',
+                  }
+                : {}),
               anyOf: [
                 { type: 'null' },
                 {
@@ -204,7 +253,7 @@ function fieldSchema(values, sources, { evidenceNullForNo = false } = {}) {
   };
 }
 
-function outputSchema({ schema, fields, sources, evidenceNullForNo = false }) {
+function outputSchema({ schema, fields, sources, evidenceNullForNo = false, evidenceNullSalience = false }) {
   return {
     type: 'object',
     additionalProperties: false,
@@ -217,7 +266,10 @@ function outputSchema({ schema, fields, sources, evidenceNullForNo = false }) {
         additionalProperties: false,
         required: Object.keys(fields),
         properties: Object.fromEntries(
-          Object.entries(fields).map(([field, values]) => [field, fieldSchema(values, sources, { evidenceNullForNo })]),
+          Object.entries(fields).map(([field, values]) => [
+            field,
+            fieldSchema(values, sources, { evidenceNullForNo, evidenceNullSalience }),
+          ]),
         ),
       },
     },
@@ -275,6 +327,16 @@ export function tutorStubResistantLearnerMergedSemanticRegistrationIssues({ regi
       echoSlip?.promptChange === 'none' &&
       echoSlip?.secondFailureDisposition === 'seat_remains_invalid'
     : echoSlip === undefined;
+  const evidenceNullSlip = registration?.readerPanel?.evidenceNullSlipTolerance;
+  const evidenceNullSlipValid = expected.evidenceNullSlipTolerance
+    ? evidenceNullSlip?.retryOn === 'evidence_invalid_null_required_as_only_field_issue' &&
+      evidenceNullSlip?.maximumRetriesPerSeatCall === 1 &&
+      evidenceNullSlip?.promptChange === 'none' &&
+      evidenceNullSlip?.secondFailureDisposition === 'field_remains_ineligible'
+    : evidenceNullSlip === undefined;
+  const evidencePromptInstructionValid = expected.evidencePromptInstruction
+    ? registration?.evidenceContract?.promptInstruction === expected.evidencePromptInstruction
+    : true;
   const endpointDefinitionValid = expected.endpointDefinition
     ? registration?.instrument?.endpointDefinition === expected.endpointDefinition
     : registration?.instrument?.endpointDefinition === undefined;
@@ -322,6 +384,8 @@ export function tutorStubResistantLearnerMergedSemanticRegistrationIssues({ regi
     registration?.schema !== expected.schema ||
     registration?.version !== expected.version ||
     !echoSlipValid ||
+    !evidenceNullSlipValid ||
+    !evidencePromptInstructionValid ||
     !endpointDefinitionValid ||
     !revisionPinValid ||
     !instrumentShaValid ||
@@ -422,6 +486,7 @@ function primaryDefinition(study, design) {
       evidencePromptInstruction: registration.evidenceContract.promptInstruction,
       evidenceMatchNormalization: 'registered_punctuation_folding_v1',
       evidenceSourceScope: registration.version >= 5 ? 'public_learner_turns_only' : null,
+      evidenceNullSalience: registration.version >= 6,
     };
   }
   const v2 = isV2Design(design);
@@ -513,6 +578,7 @@ function fidelityDefinition(study, design) {
       ),
       evidencePromptInstruction: registration.evidenceContract.promptInstruction,
       evidenceMatchNormalization: 'registered_punctuation_folding_v1',
+      evidenceNullSalience: registration.version >= 6,
     };
   }
   if (study === 'B1') {
@@ -616,6 +682,7 @@ export function buildTutorStubResistantLearnerSemanticPrompt({
       fields: definition.fields,
       sources,
       evidenceNullForNo: definition.evidenceNullForNo,
+      evidenceNullSalience: definition.evidenceNullSalience === true,
     }),
   };
 }
@@ -777,6 +844,9 @@ function panel({ caseId, instrument, definition, records }) {
       judge_id: record.judge_id,
       model_ref: record.model_ref,
       ...('echo_slip_retry_used' in record ? { echo_slip_retry_used: record.echo_slip_retry_used } : {}),
+      ...('evidence_null_slip_retry_used' in record
+        ? { evidence_null_slip_retry_used: record.evidence_null_slip_retry_used }
+        : {}),
       validation: record.validation,
     })),
     minimum_eligible_votes: 2,
@@ -822,7 +892,13 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
     const echoSlip = isMergedDesign(design)
       ? mergedReaderRegistration(design).readerPanel?.echoSlipTolerance || null
       : null;
-    const maximumSeatAttempts = 1 + (Number(echoSlip?.maximumRetriesPerSeatCall) || 0);
+    const evidenceNullSlip = isMergedDesign(design)
+      ? mergedReaderRegistration(design).readerPanel?.evidenceNullSlipTolerance || null
+      : null;
+    const maximumSeatAttempts =
+      1 +
+      (Number(echoSlip?.maximumRetriesPerSeatCall) || 0) +
+      (Number(evidenceNullSlip?.maximumRetriesPerSeatCall) || 0);
     const records = [];
     for (const judge of judges(design, instrument)) {
       const prompt = buildTutorStubResistantLearnerSemanticPrompt({
@@ -838,6 +914,7 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
         throw new Error(`resistant-learner reader route drift for ${judge.id}`);
       }
       let echoSlipRetryUsed = false;
+      let evidenceNullSlipRetryUsed = false;
       for (let seatAttempt = 1; seatAttempt <= maximumSeatAttempts; seatAttempt += 1) {
         let raw = null;
         let record = null;
@@ -878,6 +955,7 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
             packet_sha256: prompt.packet_sha256,
             output,
             ...(echoSlip ? { echo_slip_retry_used: echoSlipRetryUsed } : {}),
+            ...(evidenceNullSlip ? { evidence_null_slip_retry_used: evidenceNullSlipRetryUsed } : {}),
             validation: envelopeValid
               ? validation
               : {
@@ -904,7 +982,35 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
           record.validation.issues.length === 1 &&
           record.validation.issues[0] === 'identity_mismatch' &&
           Object.values(record.validation.fields).every((field) => field.issues.length === 0);
-        const echoSlipRetryScheduled = identitySlipOnly && seatAttempt < maximumSeatAttempts;
+        const echoSlipRetryScheduled =
+          Boolean(echoSlip) && identitySlipOnly && !echoSlipRetryUsed && seatAttempt < maximumSeatAttempts;
+        // Registered evidence-null slip tolerance: one byte-identical re-ask
+        // when the only defect is an evidence_quotes array attached where the
+        // contract demands JSON null - the vote itself is stated and every
+        // dirty field is exactly that slip. The two slip classes are mutually
+        // exclusive (identity slip needs clean fields; this needs clean
+        // top-level issues), so each tolerance spends only its own retry.
+        const evidenceNullSlipOnly =
+          record !== null &&
+          record.validation.valid === false &&
+          record.validation.issues.length === 0 &&
+          Object.values(record.validation.fields).some((field) => field.issues.length > 0) &&
+          Object.entries(record.validation.fields).every(([field, audit]) => {
+            if (audit.issues.length === 0) return true;
+            const output = record.output?.judgment?.[field];
+            const nullValues = definition.evidenceNullValuesByField?.[field] || ['no', 'indeterminate'];
+            return (
+              audit.issues.length === 1 &&
+              audit.issues[0] === 'evidence_invalid' &&
+              nullValues.includes(output?.value) &&
+              output?.evidence_quotes !== null
+            );
+          });
+        const evidenceNullSlipRetryScheduled =
+          Boolean(evidenceNullSlip) &&
+          evidenceNullSlipOnly &&
+          !evidenceNullSlipRetryUsed &&
+          seatAttempt < maximumSeatAttempts;
         appendTraceEvent(state.trace, {
           type: 'resistant_learner_semantic_reader_result',
           turn: turnNumber,
@@ -919,11 +1025,16 @@ export function createTutorStubResistantLearnerSemanticRuntime({ appendTraceEven
           invalidReason,
           record,
           ...(echoSlip ? { echoSlipSeatAttempt: seatAttempt, echoSlipRetryScheduled } : {}),
+          ...(evidenceNullSlip ? { evidenceNullSlipRetryScheduled } : {}),
           publicTranscriptChanged: false,
         });
         if (readerError && throwOnReaderError) throw readerError;
         if (echoSlipRetryScheduled) {
           echoSlipRetryUsed = true;
+          continue;
+        }
+        if (evidenceNullSlipRetryScheduled) {
+          evidenceNullSlipRetryUsed = true;
           continue;
         }
         if (record) records.push(record);

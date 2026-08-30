@@ -1,13 +1,13 @@
 ---
 id: frame-refuser-depth-study
 title: Test whether any tutor move lifts the frame-refuser above naming a condition
-status: done
+status: active
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-26
-updated: 2026-08-27
+updated: 2026-08-30
 verification: >-
   A fresh registration fixes one move contrast, an engagement endpoint of
   rung 2 or higher on the sealed ladder, registered interpretability floors,
@@ -36,6 +36,9 @@ links:
     - config/tutor-stub-frame-refuser-depth-design.v3.json
     - notes/2026-08-27-frame-refuser-depth-registration-v4.md
     - config/tutor-stub-frame-refuser-depth-design.v4.json
+    - notes/2026-08-29-frame-refuser-depth-registration-v5.md
+    - config/tutor-stub-frame-refuser-depth-design.v5.json
+    - config/tutor-stub-resistant-learner-merged-semantic-registration.v6.json
 tags:
   - tutor-stub
   - resistant-learners
@@ -292,3 +295,33 @@ frame-refuser's rung-2 rate above its measured base?
   new card (resistance-action register line). Paper fold-in pending: one
   bounded paragraph in the resistant-learner section under its claim
   discipline. All four runs archived in the private archive repo.
+- 2026-08-30: REOPENED (done → active) for a fifth, instrument-repaired
+  calibration. Revision 5 registered zero-call
+  (`notes/2026-08-29-frame-refuser-depth-registration-v5.md`,
+  `config/tutor-stub-frame-refuser-depth-design.v5.json`; PR #871). The
+  archived-trace attribution of the three v4 gate failures is
+  instrument-side, none in the tutor or persona: (1) the sonnet seat
+  attached evidence quotes to no-votes where the contract demands JSON
+  null, voiding 29/29 `whole_frame_compliance` votes in both arms and
+  4/14 treatment fidelity votes; (2) the sol seat split rung boundaries
+  on 9/29 rows, bidirectional, every failing pair involving sol
+  (sonnet-opus pairs 0.857/0.933); (3) both bridge reads came from
+  treatment turns quoting the learner's standing formula, passed under
+  revision 4's own-voice carve-out. Fixes: merged semantic registration
+  v6 (`config/tutor-stub-resistant-learner-merged-semantic-registration.v6.json`)
+  amends exactly four surfaces — outright evidence-null instruction, a
+  registered one-retry evidence-null slip tolerance, per-field schema
+  restatement, and three worked examples anchoring the disputed rung
+  boundaries — and the revision-5 treatment instruction plus
+  adjudication question fail delivery on the standing formula wherever
+  it appears in the turn (own voice, quotation marks, or attributed
+  words). No gate constant, floor, ceiling, sizing rule, or disposition
+  moves; no archived row is reused. Fresh seed 2026083001, `cal5` stem,
+  48 dialogues (24 per arm); ceilings unchanged (3,072 planned calls,
+  9,504 reservations). Zero-call dry run passes all 14 preflight
+  checks; depth suite 18/18, registration suites 6/6 (v6) and 11/11
+  (v5). The 2026-08-27 pooled calibration-stage null stands as recorded
+  in its own scope; the fifth calibration tests whether it survives the
+  repaired instrument. Gate 1 waits on attended TTY-typed
+  `APPROVE CALIBRATION 9504`; the launch preflight refuses all four
+  superseded designs.
