@@ -2343,6 +2343,11 @@ export function configureTutorStubResistantLearnerCalibrationFromCli({
   const executionLoaded = { ...loaded, design: executionDesign };
   const expectedTurns = job.maximum_trigger_turn + job.outcome_horizon_learner_turns;
   const expectedObservation = executionDesign.models.triggerObservation.semantics;
+  const expectedAutoLearnerProfileId = isSatisfiableDesign(loaded.design)
+    ? 'frame_refuser_exhibit'
+    : b1
+      ? 'bored'
+      : 'frame_refuser';
   const budget = Number(args['model-call-budget']);
   if (
     !state ||
@@ -2359,7 +2364,7 @@ export function configureTutorStubResistantLearnerCalibrationFromCli({
     args['auto-learner-model'] !== 'codex.gpt-5.6-luna' ||
     args['cli-effort'] !== 'low' ||
     args.world !== job.world ||
-    autoLearnerProfileId !== (b1 ? 'bored' : 'frame_refuser') ||
+    autoLearnerProfileId !== expectedAutoLearnerProfileId ||
     Number(args['run-seed']) !== job.run_seed ||
     Number(args['eval-repeat']) !== job.assignment_index ||
     args['eval-job-id'] !== job.id ||

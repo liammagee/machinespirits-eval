@@ -172,7 +172,7 @@ test('the production CLI configuration projects the selected arm before executio
       state,
       root: REPO_ROOT,
       autoLearnerEnabled: true,
-      autoLearnerProfileId: 'frame_refuser',
+      autoLearnerProfileId: 'frame_refuser_exhibit',
       autoTurns: job.maximum_trigger_turn + job.outcome_horizon_learner_turns,
       appendTraceEvent(target, event) {
         target.push(event);
