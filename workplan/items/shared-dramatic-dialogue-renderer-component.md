@@ -22,6 +22,7 @@ links:
     - tutor-instrumentation-ab-harness
     - tutor-instrumentation-showcase
     - adaptive-tutor-instrumentation-contrast-gallery
+    - adaptive-tutor-capability-showcase-brief
 branch: codex/shared-dramatic-dialogue-renderer-component
 ---
 
@@ -52,6 +53,9 @@ Techne visual identity. Do not delay current research reports on this refactor.
 
 ## Log
 
+- 2026-08-30 — Linked the renderer contract into the adaptive-tutor capability
+  brief and comparison documentation. The shared layouts now carry an explicit
+  warning that presentation geometry does not determine causal status.
 - 2026-08-30 — PR #875 merged as `bd580859`; the final PR tree is
   byte-identical to the merged `main` tree. The shared component is now the
   maintained rendering seam for the migrated transcript surfaces.
