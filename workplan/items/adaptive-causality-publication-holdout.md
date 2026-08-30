@@ -13,6 +13,7 @@ blocked_by: "The prospective learner-profile/world deconfound failed its 80% tra
 claim_status: future
 depends_on:
   - adaptive-causality-human-state-move-validation
+  - adaptive-learner-substrate-transport-recovery
 links:
   notes:
     - notes/2026-08-03-adaptive-causality-living-log.md
@@ -23,6 +24,8 @@ links:
     - adaptive-causality-repertoire
     - learner-profile-world-deconfound
     - adaptive-causality-human-state-move-validation
+    - adaptive-learner-substrate-transport-recovery
+    - adaptive-causality-move-transfer-validation
 tags:
   - adaptive-causality
   - publication-closeout
