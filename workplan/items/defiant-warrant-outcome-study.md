@@ -122,3 +122,26 @@ test without grounds?
   conduct codebook, 10 unit tests green. Wiring smoke: preflight passed
   zero-call; a deliberately drifted stub launch failed closed naming
   every drifted pin before any model call. Next: attended Gate-1 launch.
+- 2026-08-29: Gate-1 pilot ran to completion (destination
+  `.tutor-stub-auto-eval/defiant-warrant-gate1-2026-08-29-r3`, archived).
+  Three launches: two died on zero-cost launch-guard defects (eval-repeat
+  base, host-rewritten profile arg, equality budget pin on recovery
+  attempts — all fixed with tests, commits 6cabdb7d/0789d6ce/a7c3392f);
+  one was killed from outside as a session-tied background task. Rebuilt
+  as a detached launcher with a death-note log and a --resume mode that
+  replays the spend ledger and adopts orphaned attempts. Final state:
+  16/18 dialogues terminal, 527/864 reservations, 2 unresolved (budgets
+  consumed by interruptions, not resampled). Ledger-replayed dialogues
+  now measured from on-disk traces (a2760afc).
+- 2026-08-29: Sonnet conduct-reader pass ran per the codebook: 110/110
+  turns coded, 0 reader errors, 110/400 calls. Delivered-conduct
+  fidelity: warrant_serving 8/8; warrant_withholding 0/8 (7 delivered as
+  serving, 1 mixed). The withholding conduct card was injected but the
+  tutor model takes the standing question up anyway — instruction cannot
+  subtract the model's default warrant-serving conduct. Gate 1 therefore
+  STOPS: no threshold freeze, no main block on these numbers. Endpoint
+  direction (settlement 2/8 vs 1/8; coverage 0.042 vs 0.021) is
+  uninterpretable without a delivered contrast.
+- 2026-08-29: Operator chose the structural path: enforce withholding in
+  the stub machinery (move/constraint seam), not by louder instruction.
+  Design v2 + re-run to follow.
