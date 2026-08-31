@@ -95,4 +95,8 @@ transcripts) was required only before a revision 6 and is moot. The
 re-confirmed under the repaired contract by v5 and now bounded by this
 finding: the zero is real at the resolution this ladder has. No paid
 call in this line is authorized; any successor work runs on the
-successor cards.
+successor cards. (Recorded 2026-08-31: the designated successor
+`frame-refuser-satisfiable-condition` closed 2026-08-30 by its own
+substantive-failure rule, and `frame-refuser-refusal-narrowing` closed
+the same day at failed_agreement — the budget handoff is moot, and any
+continuation in this line needs a fresh card and its own registration.)

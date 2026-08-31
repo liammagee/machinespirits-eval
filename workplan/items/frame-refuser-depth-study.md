@@ -406,4 +406,10 @@ frame-refuser's rung-2 rate above its measured base?
   Budget moves to `frame-refuser-satisfiable-condition`; the finer-
   endpoint question stays with `frame-refuser-refusal-narrowing`. The
   2026-08-27 pooled calibration-stage null stands in scope, now bounded
-  by this finding. claim_status stays scope-bound.
+  by this finding. claim_status stays scope-bound. Recorded 2026-08-31:
+  the designated successor `frame-refuser-satisfiable-condition` closed
+  2026-08-30 by its own substantive-failure rule (0/48 units produced
+  the jurisdictional trigger), and `frame-refuser-refusal-narrowing`
+  closed the same day at failed_agreement — the budget handoff is moot,
+  and any continuation in this line needs a fresh card and its own
+  registration.
