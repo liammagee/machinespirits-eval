@@ -495,6 +495,18 @@ function publicIdentifierPresent(identifier, publicText) {
 
 const ADAPTIVE_WARRANT_QUOTE_PUNCTUATION_PATTERN = /[\u2018\u2019\u201c\u201d]/gu;
 
+export const ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES = Object.freeze({
+  HISTORICAL: 'punctuation_only',
+  CASE_INSENSITIVE: 'punctuation_and_case',
+});
+
+export function validateAdaptiveWarrantSemanticQuoteMode(quoteMatchMode) {
+  if (!Object.values(ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES).includes(quoteMatchMode)) {
+    throw new Error(`unsupported semantic quote matching mode: ${String(quoteMatchMode)}`);
+  }
+  return quoteMatchMode;
+}
+
 export function normalizeAdaptiveWarrantSemanticQuotePunctuation(value) {
   return String(value || '').replace(ADAPTIVE_WARRANT_QUOTE_PUNCTUATION_PATTERN, (character) =>
     character === '\u2018' || character === '\u2019' ? "'" : '"',
@@ -504,9 +516,15 @@ export function normalizeAdaptiveWarrantSemanticQuotePunctuation(value) {
 /**
  * Convert the model's only span judgment — one literal quote — into the
  * internal UTF-16 interval. Numeric offsets are deliberately never trusted
- * from a model response.
+ * from a model response. Unmarked historical callers retain punctuation-only
+ * matching; new live reads and reader collections explicitly select case folding.
  */
-export function deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, suppliedSpan) {
+export function deriveAdaptiveWarrantSemanticEvidenceSpan(
+  learnerText,
+  suppliedSpan,
+  { quoteMatchMode = ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.HISTORICAL } = {},
+) {
+  validateAdaptiveWarrantSemanticQuoteMode(quoteMatchMode);
   const sourceText = String(learnerText || '');
   const suppliedText =
     typeof suppliedSpan === 'string'
@@ -516,7 +534,20 @@ export function deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, suppliedS
         : '';
   const normalizedSourceText = normalizeAdaptiveWarrantSemanticQuotePunctuation(sourceText);
   const normalizedSuppliedText = normalizeAdaptiveWarrantSemanticQuotePunctuation(suppliedText);
-  const start = normalizedSuppliedText ? normalizedSourceText.indexOf(normalizedSuppliedText) : -1;
+  let start = normalizedSuppliedText ? normalizedSourceText.indexOf(normalizedSuppliedText) : -1;
+  let end = start + normalizedSuppliedText.length;
+  let nonUnique = start >= 0 && normalizedSourceText.indexOf(normalizedSuppliedText, start + 1) >= 0;
+  if (normalizedSuppliedText && quoteMatchMode === ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE) {
+    // Unicode simple case folding preserves match offsets in the source. Do not
+    // lowercase the source: e.g. U+0130 expands and shifts every later offset.
+    // Escape the quote as literal text; lookahead also finds overlapping spans.
+    const escapedQuote = normalizedSuppliedText.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+    const matches = normalizedSourceText.matchAll(new RegExp(`(?=(${escapedQuote}))`, 'giu'));
+    const first = matches.next().value;
+    start = first?.index ?? -1;
+    end = first ? start + first[1].length : null;
+    nonUnique = first !== undefined && !matches.next().done;
+  }
   if (start < 0) {
     return {
       evidence_span: { text: suppliedText, start: null, end: null },
@@ -524,14 +555,13 @@ export function deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, suppliedS
       issues: ['not_literal'],
     };
   }
-  if (normalizedSourceText.indexOf(normalizedSuppliedText, start + 1) >= 0) {
+  if (nonUnique) {
     return {
       evidence_span: { text: suppliedText, start: null, end: null },
       status: 'non_unique_literal',
       issues: ['non_unique_literal'],
     };
   }
-  const end = start + normalizedSuppliedText.length;
   return {
     evidence_span: { text: sourceText.slice(start, end), start, end },
     status: 'derived_unique_literal',
@@ -545,8 +575,15 @@ export function deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, suppliedS
  */
 export function validateAdaptiveWarrantSemanticExtraction(
   candidate,
-  { learnerText = '', publicText = '', turn = null, rawResponseText = null } = {},
+  {
+    learnerText = '',
+    publicText = '',
+    turn = null,
+    rawResponseText = null,
+    quoteMatchMode = ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.HISTORICAL,
+  } = {},
 ) {
+  validateAdaptiveWarrantSemanticQuoteMode(quoteMatchMode);
   const source = candidate && typeof candidate === 'object' && !Array.isArray(candidate) ? candidate : {};
   const sourceText = String(learnerText || '');
   const envelopeIssues = [];
@@ -586,7 +623,9 @@ export function validateAdaptiveWarrantSemanticExtraction(
     if (REQUEST_SPEECH_ACTS.has(event.speech_act) && action?.executor === 'learner') {
       issues.push(`events[${eventIndex}].requested_or_proposed_action:executor_matches_request_speaker`);
     }
-    const spanDerivation = deriveAdaptiveWarrantSemanticEvidenceSpan(sourceText, event.evidence_span);
+    const spanDerivation = deriveAdaptiveWarrantSemanticEvidenceSpan(sourceText, event.evidence_span, {
+      quoteMatchMode,
+    });
     const { text, start, end } = spanDerivation.evidence_span;
     if (spanDerivation.status === 'not_literal') {
       issues.push(`events[${eventIndex}].evidence_span:not_literal`);

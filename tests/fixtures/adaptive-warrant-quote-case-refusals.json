@@ -1,0 +1,601 @@
+{
+  "run_id": "guarded-learner-main-block-2026-08-15",
+  "cases": [
+    {
+      "source": {
+        "trace": "dialogues/outcome-pilot-22-world_102_marigold_archive_box-s657-gated/2026-08-15T15-16-37-363Z.jsonl",
+        "line": 317,
+        "trace_sha256": "c7732998a030da8999377702f9c3acfd3ddedba4a1938ba99d801b35e91e5ac2",
+        "response_sha256": "0df2bf6520c23c1b92be14be4c03ab20e7d7bb480da10262fd6e60b5b5d04d27"
+      },
+      "turn": 8,
+      "learner_text": "That settles it: the Osprey crew took Nadia’s box—their job number is on the lost-property entry and its shelf photo.",
+      "public_identifiers_in_reader_prompt": ["p_tag"],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "learner_overclaim_assertion",
+            "target": {
+              "state": "catalog",
+              "kind": "record_entry",
+              "target_id": "archive_box_lost_property_entry",
+              "public_identifier_ids": ["p_tag"],
+              "requested_value_types": ["match_status"],
+              "component_ids": ["osprey_job_number"]
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The Osprey crew took Nadia’s box—their job number is on the lost-property entry and its shelf photo.",
+            "confidence": "medium",
+            "uncertainty": ["insufficient_context"]
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    },
+    {
+      "source": {
+        "trace": "dialogues/outcome-pilot-28-world_102_marigold_archive_box-s658-bare/2026-08-15T15-53-43-184Z.jsonl",
+        "line": 316,
+        "trace_sha256": "bb905c197fd36f5b2c8442272e184bacd54a079f92a6f29e1295da689b960961",
+        "response_sha256": "ae120fb7b5a0a87a59713bce470e5ec70abb32daec9aab832d60a823c8016b19"
+      },
+      "turn": 8,
+      "learner_text": "That settles it—the Osprey crew took Nadia’s box and logged it at 12:14, which rules Felix out as the taker.",
+      "public_identifiers_in_reader_prompt": ["felix", "p_tag"],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "learner_overclaim_assertion",
+            "target": {
+              "state": "catalog",
+              "kind": "material_or_assay_result",
+              "target_id": "archive_box",
+              "public_identifier_ids": ["nadia_labelled_archive_box"],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The Osprey crew took Nadia’s box",
+            "confidence": "high",
+            "uncertainty": []
+          },
+          {
+            "speech_act": "learner_overclaim_assertion",
+            "target": {
+              "state": "catalog",
+              "kind": "comparison_result",
+              "target_id": "felix_taker_status",
+              "public_identifier_ids": ["felix"],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "which rules Felix out as the taker",
+            "confidence": "high",
+            "uncertainty": []
+          },
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "catalog",
+              "kind": "record_entry",
+              "target_id": "lost_property_ledger_entry",
+              "public_identifier_ids": ["p_tag"],
+              "requested_value_types": ["time", "record_text"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "logged it at 12:14",
+            "confidence": "high",
+            "uncertainty": []
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal", "events[0].target.identifiers:not_public"],
+      "prospective_issues": ["events[0].target.identifiers:not_public"]
+    },
+    {
+      "source": {
+        "trace": "dialogues/outcome-pilot-33-world_101_kestrel_signal_lamp-s659-bare/2026-08-15T16-26-59-032Z.jsonl",
+        "line": 277,
+        "trace_sha256": "f280db2c9cbd6a55bce0771f6a863097a5d3421c91806d740ac959b7e94ab265",
+        "response_sha256": "50eaac45f50b02c6f7cc5a49b51f46739088a5feac3b4fec01f4e8cae172d82e"
+      },
+      "turn": 7,
+      "learner_text": "Fine—the key and docking marks prove Kite could reach the core, but until you show a different signature, Kite is still my culprit.",
+      "public_identifiers_in_reader_prompt": [],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "catalog",
+              "kind": "other",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": [],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The key and docking marks prove Kite could reach the core",
+            "confidence": "high",
+            "uncertainty": []
+          },
+          {
+            "speech_act": "learner_overclaim_assertion",
+            "target": {
+              "state": "catalog",
+              "kind": "other",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": [],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "Kite is still my culprit",
+            "confidence": "high",
+            "uncertainty": []
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    },
+    {
+      "source": {
+        "trace": "dialogues/outcome-pilot-33-world_101_kestrel_signal_lamp-s659-bare/2026-08-15T16-26-59-032Z.jsonl",
+        "line": 284,
+        "trace_sha256": "f280db2c9cbd6a55bce0771f6a863097a5d3421c91806d740ac959b7e94ab265",
+        "response_sha256": "b22c2719cec003b52f015eb8a91d4ec98fbad3b6692ac835f2720f7508a24cba"
+      },
+      "turn": 7,
+      "learner_text": "Fine—the key and docking marks prove Kite could reach the core, but until you show a different signature, Kite is still my culprit.",
+      "public_identifiers_in_reader_prompt": [],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "catalog",
+              "kind": "material_or_assay_result",
+              "target_id": "signal_lamp_message_core",
+              "public_identifier_ids": [],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The key and docking marks prove Kite could reach the core",
+            "confidence": "high",
+            "uncertainty": []
+          },
+          {
+            "speech_act": "learner_overclaim_assertion",
+            "target": {
+              "state": "catalog",
+              "kind": "material_or_assay_result",
+              "target_id": "signal_lamp_message_core",
+              "public_identifier_ids": [],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "Kite is still my culprit",
+            "confidence": "high",
+            "uncertainty": []
+          },
+          {
+            "speech_act": "criterion_question",
+            "target": {
+              "state": "catalog",
+              "kind": "material_or_assay_result",
+              "target_id": "signal_lamp_message_core",
+              "public_identifier_ids": [],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "until you show a different signature",
+            "confidence": "high",
+            "uncertainty": []
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    },
+    {
+      "source": {
+        "trace": "dialogues/outcome-pilot-34-world_102_marigold_archive_box-s659-standing_permission/2026-08-15T22-08-26-958Z.jsonl",
+        "line": 316,
+        "trace_sha256": "7475f5f1843cdd871111fcc9349fbcbc89653f3a87772daca37de03a77eed032",
+        "response_sha256": "49714d7ada5cde46ed57178d99c97046a07076f1b99e89170feadf2624510497"
+      },
+      "turn": 8,
+      "learner_text": "Yes—the Osprey job number and shelf photo tie them to Nadia’s box, so Osprey is the taker unless you have counter-evidence.",
+      "public_identifiers_in_reader_prompt": [],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "catalog",
+              "kind": "record_entry",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["record_text"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The Osprey job number and shelf photo tie them to Nadia's box",
+            "confidence": "medium",
+            "uncertainty": ["ambiguous_target"]
+          },
+          {
+            "speech_act": "learner_overclaim_assertion",
+            "target": {
+              "state": "catalog",
+              "kind": "other",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "Osprey is the taker unless you have counter-evidence",
+            "confidence": "medium",
+            "uncertainty": ["ambiguous_target"]
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    },
+    {
+      "source": {
+        "trace": "dialogues/outcome-pilot-34-world_102_marigold_archive_box-s659-standing_permission/2026-08-15T22-08-26-958Z.jsonl",
+        "line": 323,
+        "trace_sha256": "7475f5f1843cdd871111fcc9349fbcbc89653f3a87772daca37de03a77eed032",
+        "response_sha256": "4b9bfd6a017b711257734edaed9ec354845d3a9ff6731ff94bbe3a38a04a93ac"
+      },
+      "turn": 8,
+      "learner_text": "Yes—the Osprey job number and shelf photo tie them to Nadia’s box, so Osprey is the taker unless you have counter-evidence.",
+      "public_identifiers_in_reader_prompt": [],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "catalog",
+              "kind": "material_or_assay_result",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The Osprey job number and shelf photo tie them to Nadia’s box, so Osprey is the taker unless you have counter-evidence.",
+            "confidence": "medium",
+            "uncertainty": ["insufficient_context"]
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    },
+    {
+      "source": {
+        "trace": "dialogues/outcome-pilot-34-world_102_marigold_archive_box-s659-standing_permission/2026-08-15T22-08-26-958Z.jsonl",
+        "line": 330,
+        "trace_sha256": "7475f5f1843cdd871111fcc9349fbcbc89653f3a87772daca37de03a77eed032",
+        "response_sha256": "ad6a606eae0646b4cd549e3c662ca1a807793f789ef2e0793a3e4a011aa122ef"
+      },
+      "turn": 8,
+      "learner_text": "Yes—the Osprey job number and shelf photo tie them to Nadia’s box, so Osprey is the taker unless you have counter-evidence.",
+      "public_identifiers_in_reader_prompt": [],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "catalog",
+              "kind": "record_entry",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["record_text"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The Osprey job number and shelf photo tie them to Nadia’s box",
+            "confidence": "medium",
+            "uncertainty": ["ambiguous_target"]
+          },
+          {
+            "speech_act": "learner_overclaim_assertion",
+            "target": {
+              "state": "catalog",
+              "kind": "record_entry",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "so Osprey is the taker",
+            "confidence": "medium",
+            "uncertainty": ["ambiguous_target"]
+          },
+          {
+            "speech_act": "learner_evidence_demand",
+            "target": {
+              "state": "catalog",
+              "kind": "record_entry",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["record_text"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "catalog",
+              "mode": "requested",
+              "executor": "tutor",
+              "action": "supply_public_result",
+              "action_object_id": "unspecified"
+            },
+            "evidence_span": "unless you have counter-evidence",
+            "confidence": "medium",
+            "uncertainty": ["ambiguous_target"]
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    },
+    {
+      "source": {
+        "trace": "dialogues/outcome-pilot-36-world_102_marigold_archive_box-s659-gated/2026-08-15T16-46-58-841Z.jsonl",
+        "line": 328,
+        "trace_sha256": "105acdd33f7f8790acd8b427f0851401c118186c76a146b9cb7141eba1b9c143",
+        "response_sha256": "c5f0ed6a2fe548629ac94c150fcbd7993f728167e46e96af3690da254210b020"
+      },
+      "turn": 8,
+      "learner_text": "Fine—the tagged lost-property record ties Osprey to Nadia’s box, so Osprey took it; Felix and WF-11 were only present.",
+      "public_identifiers_in_reader_prompt": [],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "none"
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The tagged lost-property record ties Osprey to Nadia’s box",
+            "confidence": "high",
+            "uncertainty": []
+          },
+          {
+            "speech_act": "learner_overclaim_assertion",
+            "target": {
+              "state": "none"
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "so Osprey took it",
+            "confidence": "high",
+            "uncertainty": []
+          },
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "none"
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "Felix and WF-11 were only present",
+            "confidence": "high",
+            "uncertainty": []
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    },
+    {
+      "source": {
+        "trace": "dialogues/outcome-pilot-67-world_101_kestrel_signal_lamp-s665-gated/2026-08-15T20-07-00-646Z.jsonl",
+        "line": 68,
+        "trace_sha256": "dc232fa60b0fe9c33b47ed551554b01b64c3f8631b831e5372765a2882776d6f",
+        "response_sha256": "3e46ad3170744ff7a0ac115872f82b2c293a5fc057d49d25f621dcb1265a56e3"
+      },
+      "turn": 2,
+      "learner_text": "Fine—the core may show how it was wiped, but Runa was there all evening and hated drill, so she’s still the obvious culprit. What would show whose hand touched it?",
+      "public_identifiers_in_reader_prompt": [],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "catalog",
+              "kind": "material_or_assay_result",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["other"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The core may show how it was wiped",
+            "confidence": "high",
+            "uncertainty": []
+          },
+          {
+            "speech_act": "learner_overclaim_assertion",
+            "target": {
+              "state": "catalog",
+              "kind": "other",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "Runa was there all evening and hated drill, so she’s still the obvious culprit",
+            "confidence": "high",
+            "uncertainty": []
+          },
+          {
+            "speech_act": "criterion_question",
+            "target": {
+              "state": "catalog",
+              "kind": "material_or_assay_result",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["match_status", "record_text"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "What would show whose hand touched it?",
+            "confidence": "high",
+            "uncertainty": []
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    },
+    {
+      "source": {
+        "trace": "quarantine/outcome-pilot-34-world_102_marigold_archive_box-s659-standing_permission-attempt-1/2026-08-15T16-34-02-731Z.jsonl",
+        "line": 316,
+        "trace_sha256": "e5877b9bed21b2c96f68b20dc21525381b137fa60c1a8a85297f5eb9bb345beb",
+        "response_sha256": "707c2a820e1ac7e4356d183de384361cbe11ad32647bbf8055ba031a054b48bf"
+      },
+      "turn": 8,
+      "learner_text": "That settles it—the Osprey crew took Nadia’s box during the authorized clearing and logged it to lost property at 12:14.",
+      "public_identifiers_in_reader_prompt": [],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "none"
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The Osprey crew took Nadia’s box during the authorized clearing and logged it to lost property at 12:14.",
+            "confidence": "high",
+            "uncertainty": []
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    },
+    {
+      "source": {
+        "trace": "quarantine/outcome-pilot-34-world_102_marigold_archive_box-s659-standing_permission-attempt-1/2026-08-15T16-34-02-731Z.jsonl",
+        "line": 323,
+        "trace_sha256": "e5877b9bed21b2c96f68b20dc21525381b137fa60c1a8a85297f5eb9bb345beb",
+        "response_sha256": "e6d131a8fa8b2825d90ec082af16e5044df5fb1f49379375a2687bae38ea76c8"
+      },
+      "turn": 8,
+      "learner_text": "That settles it—the Osprey crew took Nadia’s box during the authorized clearing and logged it to lost property at 12:14.",
+      "public_identifiers_in_reader_prompt": [],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "learner_overclaim_assertion",
+            "target": {
+              "state": "catalog",
+              "kind": "material_or_assay_result",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The Osprey crew took Nadia's box during the authorized clearing and logged it to lost property at 12:14.",
+            "confidence": "medium",
+            "uncertainty": ["ambiguous_target"]
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    },
+    {
+      "source": {
+        "trace": "quarantine/outcome-pilot-34-world_102_marigold_archive_box-s659-standing_permission-attempt-1/2026-08-15T16-34-02-731Z.jsonl",
+        "line": 330,
+        "trace_sha256": "e5877b9bed21b2c96f68b20dc21525381b137fa60c1a8a85297f5eb9bb345beb",
+        "response_sha256": "4299ff1d0cb70b3b9894a6b701f4e72a220ecdf8a7b07409bd37e94f9118308d"
+      },
+      "turn": 8,
+      "learner_text": "That settles it—the Osprey crew took Nadia’s box during the authorized clearing and logged it to lost property at 12:14.",
+      "public_identifiers_in_reader_prompt": [],
+      "semantic_events": {
+        "events": [
+          {
+            "speech_act": "analytic_contribution",
+            "target": {
+              "state": "catalog",
+              "kind": "material_or_assay_result",
+              "target_id": "unspecified",
+              "public_identifier_ids": [],
+              "requested_value_types": ["match_status"],
+              "component_ids": []
+            },
+            "requested_or_proposed_action": {
+              "state": "none"
+            },
+            "evidence_span": "The Osprey crew took Nadia's box during the authorized clearing and logged it to lost property at 12:14.",
+            "confidence": "medium",
+            "uncertainty": ["insufficient_context"]
+          }
+        ]
+      },
+      "historical_issues": ["events[0].evidence_span:not_literal"],
+      "prospective_issues": []
+    }
+  ]
+}

@@ -853,6 +853,14 @@
       "removalSlice": "extract a pure post-binding manifest validator if these historical assertions need to execute again"
     },
     {
+      "id": "guarded-warrant-historical-semantic-source-pin-drift",
+      "suite": "root",
+      "reasonPattern": "^historical guarded manifest retains frozen semantic source pins after prospective quote matching changed$",
+      "owner": "warrant-quote-rule-letter-case",
+      "reason": "The consumed guarded manifests retain their original semantic-source digests. Historical reseal tests whose later assertions require current source bytes to match those frozen digests are explicitly skipped rather than repinning sealed artifacts.",
+      "removalSlice": "port the historical semantic sources into an isolated fixture if the old reseal mechanics need revalidation"
+    },
+    {
       "id": "guarded-learner-smoke-c-private-archive",
       "suite": "root",
       "reasonPattern": "^smoke C run absent \\(.+\\); archived in the private repo$",
