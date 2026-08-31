@@ -1,0 +1,372 @@
+{
+  "schema": "adaptive-causality.state-move-review-submission.v1",
+  "packet_id": "adaptive-state-move-crossed-v1",
+  "packet_sha256": "38c151eed0c80b0602f3803c5a3bda2e94c127c933d9d07a6c3c4804bd573fcd",
+  "coder_id": "coder_b",
+  "independence_attestation": {
+    "worked_without_other_coder": false,
+    "did_not_access_machine_key": false
+  },
+  "cases": [
+    {
+      "case_id": "case_023",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_010",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_014",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_003",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_001",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_020",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_008",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_021",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_002",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_019",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_018",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_007",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_011",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_022",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_016",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_012",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_005",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_015",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_013",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_006",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_024",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_004",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_017",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "case_009",
+      "state": {
+        "disposition": "determinate",
+        "label": null,
+        "evidence": "",
+        "notes": ""
+      },
+      "move": {
+        "disposition": "determinate",
+        "labels": [],
+        "evidence": "",
+        "notes": ""
+      }
+    }
+  ]
+}
