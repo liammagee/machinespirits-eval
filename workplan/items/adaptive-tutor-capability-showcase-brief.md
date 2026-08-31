@@ -1,13 +1,13 @@
 ---
 id: adaptive-tutor-capability-showcase-brief
 title: "Adaptive tutor capability showcase and marketing brief"
-status: active
+status: done
 type: content
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-30
-updated: 2026-08-30
+updated: 2026-08-31
 verification: "A claim-audited brief identifies the investor audience, commercial wedge, customer, call to action, business model, defensibility thesis, traction and economics gaps, milestone-based funding ask, and supporting demo; maps every public-facing capability to canonical evidence; demonstrates at least three transcript-level affordances; separates controlled frozen-turn evidence from free-running illustration; and makes the simulated-conduct and human-learning boundaries unavoidable."
 branch: codex/adaptive-tutor-showcase-brief
 claim_status: scope-bound
@@ -78,3 +78,16 @@ into a human-learning claim.
   and this brief. Layout is now explicitly separated from causal status.
 - 2026-08-30 Codex: Claim audit caught and corrected one delivery-status term:
   frozen A/B outputs are generated candidate tutor replies, not delivered turns.
+- 2026-08-31 Claude: DONE on operator review instruction. PR #888 merged
+  2026-08-30 with the brief at
+  `notes/marketing/2026-08-30-adaptive-tutor-capability-showcase-brief.md`.
+  Reviewed against the verification list: the investor audience, commercial
+  wedge, customer, call to action, business model, defensibility thesis,
+  traction and economics gaps, and the milestone-based ask are all present
+  (Investor translation onward); the hero demonstration plus the four-piece
+  supporting set cover more than three transcript-level affordances; pillar 6
+  separates controlled frozen-turn evidence from free-running illustration;
+  the investor-safe language section carries the simulated-conduct and
+  human-learning boundaries. Commercial-shape, wedge and defensibility
+  statements remain labelled hypotheses, not results — the card closes as a
+  brief, not as evidence of traction.

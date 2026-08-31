@@ -7,7 +7,7 @@ priority: P3
 owner: unassigned
 source: manual
 created: 2026-08-30
-updated: 2026-08-30
+updated: 2026-08-31
 verification: >-
   A zero-call construct review either rejects refusal narrowing as a separately
   measurable outcome or produces a prospective validation plan with observable
@@ -24,6 +24,8 @@ links:
     - frame-refuser-depth-study
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/878
+  notes:
+    - notes/2026-08-30-frame-refuser-depth-construct-finding.md
 tags:
   - draft
   - under-review
@@ -94,3 +96,26 @@ The zero-call review ends in one of two dispositions:
   reference, new sealed validation set, eligibility and agreement floors,
   ambiguity rules, estimated calls, and maximum ceiling. Any paid validation
   remains a separate prospective study requiring the user to say GO.
+
+## Standing after the depth-line close (2026-08-31)
+
+The depth study has now closed on a construct finding
+(`notes/2026-08-30-frame-refuser-depth-construct-finding.md`): a
+zero-call anchor rehearsal resolved the v5 split attributions (15/16 to
+the archived modal) but demoted the lineage's only two unanimous rung-2
+exemplars 3–0, so a consistent rung-1/2 boundary either legitimizes the
+splits or leaves zero unambiguous rung-2 events across five
+calibrations. That is direct evidence for this card's premise — the
+persona's genuine movement is graded, evidence-integrating concession
+below the binary ladder's resolution — and it bears on review
+question 1: narrowing is not only a diagnostic for a flat ladder; on
+current evidence it is the only place the behaviour of interest is
+visible at all.
+
+This card remains deliberately **parked at `triaged`**. It is a
+separate future question, not a continuation of the closed studies: it
+inherits no budget, no roster, no anchor text, and no verdict from
+`frame-refuser-depth-study`, `frame-refuser-refusal-narrowing`, or
+`frame-refuser-satisfiable-condition`, all closed. Promotion is a fresh
+human decision at the decision gate above, and any study it licenses
+needs its own card-level registration.
