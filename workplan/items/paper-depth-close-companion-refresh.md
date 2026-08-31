@@ -1,7 +1,7 @@
 ---
 id: paper-depth-close-companion-refresh
 title: Fold the depth-line construct close into the companion documents and republish
-status: active
+status: done
 type: paper
 priority: P1
 owner: claude
@@ -72,3 +72,17 @@ and `docs/ref-status.md` (regenerated, never hand-edited).
   spine and 19 module markdown builds reproduce; both site publishes pass
   `--dry-run` against the isolated staging target. Live publication still
   awaits the operator's explicit authorization.
+- 2026-08-31: DONE — published live on the operator's explicit "publish".
+  Staged from the eval checkout at merged main (1cef61d4, PRs #893/#894 in);
+  both stagers dry-ran clean against the content-philosophy checkout, which
+  was fast-forwarded to origin/master (513cdb8) and verified clean first.
+  The planned isolated content worktree was dropped: `./publish` pushes the
+  current branch and cannot run detached, and the clean tree plus the
+  script's allowlist staging gave the same isolation. Exactly four files
+  changed (both pages and their .md stubs; the 11 arc images were
+  byte-identical). Content commit 3013725 pushed; the immediate deploy
+  dispatch failed closed (revision had no successful validation workflow
+  yet — dispatched too early), and the site's scheduled drift check
+  deployed the revision one minute later. Live pages verified by content,
+  not HTTP status: tutor-blueprint.html and dramatic-recognition-arc.html
+  both serve v3.0.299 stamps only, no v3.0.298 remnant.
