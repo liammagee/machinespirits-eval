@@ -1,21 +1,18 @@
 ---
 id: warrant-quote-rule-letter-case
 title: Let the frozen literal-quote rule ignore letter case
-status: blocked
+status: triaged
 type: infra
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-16
-updated: 2026-08-16
+updated: 2026-08-31
 verification: The relaxed rule reproduces every frozen run's accepted
   readings byte for byte, and the 12 refusals in the guarded main block
   that were letter case only now pass. Focused tests hold the uniqueness
   check and refuse a real misquote. No paid call.
 claim_status: methods
-blocked_by: The rule file is one of the 15 the guarded main block's
-  instrument freeze pins by hash. Changing it while that run is open would
-  break the run's own bindings, so the change lands after the block closes.
 depends_on:
   - guarded-learner-outcome-study
 links:
@@ -50,6 +47,14 @@ would break the run's own bindings. For this run the relaxation is a
 committed reviewer ruling applied by the parent
 (`services/adaptiveWarrantTypographicQuoteRuling.js`), which leaves the
 frozen rule untouched.
+
+**Unblocked 2026-08-31.** `guarded-learner-outcome-study` is closed, so the
+instrument freeze no longer binds this file and the blocker above is
+historical. Status moves to `triaged`: the change is ready to land per the
+plan below — fold case in the evidence-span derivation, lift the normaliser
+from the ruling service and retire it, re-hash the instrument fingerprints,
+and replay every frozen run's accepted readings with the
+refusals-may-only-become-passes guard. Frozen runs keep their old seals.
 
 **The change, when it lands:** fold case in
 `deriveAdaptiveWarrantSemanticEvidenceSpan` alongside the punctuation fold
