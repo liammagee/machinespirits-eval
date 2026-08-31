@@ -86,3 +86,17 @@ and `docs/ref-status.md` (regenerated, never hand-edited).
   deployed the revision one minute later. Live pages verified by content,
   not HTTP status: tutor-blueprint.html and dramatic-recognition-arc.html
   both serve v3.0.299 stamps only, no v3.0.298 remnant.
+- 2026-08-31: Publication gap found and closed. The first pass ran only the
+  two poetics stagers and missed the third publisher,
+  `scripts/publish-atlas-to-site.js`, which carries the atlas hub, the
+  spine plus 19 module PDFs, and the consolidated paper PDF. The live hub
+  was still serving v3.0.298 and no v3.0.299 paper PDF existed on the
+  site; the artifacts themselves were current (atlas.yaml 08:19, every PDF
+  built 08:20–08:22). Staged (hub verified at v3.0.299 before push, 20
+  refreshed PDFs, paper-2.0-v3.0.299.pdf new) and pushed as content commit
+  41868f1. Deploy dispatched only after the content repo's validation
+  workflow reported success — the earlier dispatch failed closed for
+  exactly that reason. Verified live by content: geist-atlas.html serves
+  v3.0.299 only; paper-2.0-v3.0.299.pdf, atlas/spine.pdf and a spot-checked
+  module PDF all serve. Standing lesson for this card's successors: the
+  companion bundle has three publishers, not two.
