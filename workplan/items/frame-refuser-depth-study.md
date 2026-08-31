@@ -1,13 +1,13 @@
 ---
 id: frame-refuser-depth-study
 title: Test whether any tutor move lifts the frame-refuser above naming a condition
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-26
-updated: 2026-08-30
+updated: 2026-08-31
 verification: >-
   A fresh registration fixes one move contrast, an engagement endpoint of
   rung 2 or higher on the sealed ladder, registered interpretability floors,
@@ -40,6 +40,7 @@ links:
     - config/tutor-stub-frame-refuser-depth-design.v5.json
     - config/tutor-stub-resistant-learner-merged-semantic-registration.v6.json
     - notes/2026-08-30-frame-refuser-depth-v6-diagnosis.md
+    - notes/2026-08-30-frame-refuser-depth-construct-finding.md
 tags:
   - tutor-stub
   - resistant-learners
@@ -376,3 +377,33 @@ frame-refuser's rung-2 rate above its measured base?
   before any revision 6: classify the 11 reference bounded-test
   non-delivery transcripts and size for attrition. Rehearsal and any
   registration await operator instruction.
+- 2026-08-30: The anchor rehearsal ran (operator-approved, unregistered,
+  archived transcripts only — 90 reads over the frozen 30-row roster,
+  harness `scripts/rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js`,
+  seed 2026083002, 0 transport failures, 3 non-decisive evidence-format
+  invalids) and returned the pre-registered verdict
+  `kill_no_revision_6_construct_finding`. Resolution PASSED: the deviant
+  seat voted the archived modal on 15/16 splits (floor 13; 16/16
+  semantically), 6/6 v5 sol-high (floor 5). Stability FAILED: 11/14
+  controls kept (floor 12; one break quote-format-only), and both
+  lineage rung-2 controls (`…cal5_world_005_marrick_r11`,
+  `…cal4_world_030_rowan_flat_r10`) were demoted to rung 1 by all three
+  seats against the no-demotion clause. The archived rung-2 evidence
+  turns share the splits' concessive-application grammar, so a
+  consistent boundary leaves zero unambiguous rung-2 events across five
+  calibrations (registered alternative 0.35). Sealed in the private
+  archive repo at
+  `artifacts/tutor-stub-analysis/frame-refuser-depth-v6-anchor-rehearsal-2026-08-30`
+  (run commit adcc8ae15, ledger a78845b8f).
+- 2026-08-31: CLOSED (active → done) on the construct finding, per the
+  diagnosis note's pre-fixed decision rule: no revision 6, no merged
+  registration v7, no further paid call in this line. The persona's
+  genuine movement sits below the ladder's resolution at the
+  concede-bounds-while-withholding seam — a generator/construct result,
+  not a seat or anchoring defect. Closing note
+  `notes/2026-08-30-frame-refuser-depth-construct-finding.md`. The
+  attrition companion leg is moot (required only before a revision 6).
+  Budget moves to `frame-refuser-satisfiable-condition`; the finer-
+  endpoint question stays with `frame-refuser-refusal-narrowing`. The
+  2026-08-27 pooled calibration-stage null stands in scope, now bounded
+  by this finding. claim_status stays scope-bound.
