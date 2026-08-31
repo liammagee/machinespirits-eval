@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES } from '../services/adaptiveWarrantSemanticEvents.js';
 
 import {
   ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA,
@@ -264,6 +265,7 @@ test('semantic collection freezes exact packets and derives only unique literal 
     batchSize: 4,
     maximumCalls: 4,
     preflightMode: true,
+    quoteMatchMode: ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.HISTORICAL,
   });
   assert.equal(prepared.manifest.size_audit.maximum_response_bytes, 14000);
   assert.equal(prepared.manifest.size_audit.maximum_packet_bytes, 60000);
@@ -396,6 +398,127 @@ test('semantic collection freezes exact packets and derives only unique literal 
     ),
     true,
   );
+});
+
+test('new reader collections match case prospectively and unmarked historical collections keep exact-case assembly', (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-case-assembly-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const corpus = fixture(1);
+  const original = 'I’d like the bay-1 access time.';
+  corpus.cases[0].current_learner_turn.learner = `😀 İ—${original}`;
+  const corpusPath = path.join(root, 'corpus.json');
+  const handbookPath = path.join(root, 'handbook.md');
+  fs.writeFileSync(corpusPath, JSON.stringify(corpus));
+  fs.writeFileSync(handbookPath, '# Synthetic semantic handbook\n');
+  const prepared = prepareAdaptiveWarrantSemanticAnnotationBatches({
+    corpusPath,
+    handbookPath,
+    outputDir: path.join(root, 'collection'),
+    corpusRole: 'targeted_challenge',
+    preflightMode: true,
+  });
+  assert.equal(prepared.manifest.quote_match_mode, ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE);
+  const reader = prepared.manifest.readers[0];
+  const batch = reader.batches[0];
+  const packet = JSON.parse(fs.readFileSync(batch.packet_path, 'utf8'));
+  const response = packet.response_template;
+  const event = readerEvent(corpus.cases[0].kind, original, 1);
+  event.evidence_span = "I'D LIKE THE BAY-1 ACCESS TIME.";
+  response.cases_by_sample_id['sample-1'] = {
+    genuinely_ambiguous: false,
+    ambiguity_reason: 'none',
+    events: [event],
+    note: 'A public access-time request.',
+  };
+  const responseDir = path.join(root, 'responses');
+  fs.mkdirSync(responseDir);
+  const responsePath = path.join(responseDir, batch.expected_response_filename);
+  fs.writeFileSync(responsePath, JSON.stringify(response));
+  const before = fs.readFileSync(responsePath);
+  const assemble = (manifestPath, name) =>
+    assembleAdaptiveWarrantSemanticAnnotationResponse({
+      manifestPath,
+      readerId: reader.reader_id,
+      annotationRunId: 'synthetic-case-reader',
+      responseDir,
+      outputPath: path.join(root, name),
+    });
+  const current = assemble(prepared.manifestPath, 'current.json');
+  const span = current.response.cases[0].events[0].evidence_span;
+  const text = corpus.cases[0].current_learner_turn.learner;
+  assert.deepEqual(span, { text: original, start: text.indexOf(original), end: text.length });
+  assert.deepEqual(fs.readFileSync(responsePath), before, 'assembly must not rewrite the reader response');
+  const audit = JSON.parse(fs.readFileSync(current.auditPath));
+  assert.match(audit.normalization, /punctuation_and_case_normalized/u);
+  assert.equal(
+    audit.canonicalizations[0].operation,
+    'derive_punctuation_and_case_normalized_unique_literal_utf16_offsets',
+  );
+
+  const historical = { ...prepared.manifest };
+  delete historical.quote_match_mode;
+  const historicalPath = path.join(root, 'historical-manifest.json');
+  fs.writeFileSync(historicalPath, JSON.stringify(historical));
+  assert.throws(() => assemble(historicalPath, 'refused.json'), /span is not literal/u);
+  assert.equal(fs.existsSync(path.join(root, 'refused.json')), false);
+  event.evidence_span = original.replace('’', "'");
+  fs.writeFileSync(responsePath, JSON.stringify(response));
+  const legacy = assemble(historicalPath, 'legacy.json');
+  assert.deepEqual(legacy.response, current.response);
+  const legacyAudit = JSON.parse(fs.readFileSync(legacy.auditPath));
+  assert.equal(
+    legacyAudit.normalization,
+    'schema_declared_punctuation_normalized_literal_span_and_event_order_derivation',
+  );
+  assert.equal(
+    legacyAudit.canonicalizations[0].operation,
+    'derive_punctuation_normalized_unique_literal_utf16_offsets',
+  );
+  for (const badMode of ['unknown', '', null]) {
+    fs.writeFileSync(historicalPath, JSON.stringify({ ...historical, quote_match_mode: badMode }));
+    assert.throws(() => assemble(historicalPath, 'invalid-mode.json'), /unsupported semantic quote matching mode/u);
+  }
+});
+
+test('reader assembly rejects two quote occurrences that differ only in case', (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-case-duplicate-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const corpus = fixture(1);
+  corpus.cases[0].current_learner_turn.learner = 'Show the access time. show the access time.';
+  const corpusPath = path.join(root, 'corpus.json');
+  const handbookPath = path.join(root, 'handbook.md');
+  fs.writeFileSync(corpusPath, JSON.stringify(corpus));
+  fs.writeFileSync(handbookPath, '# Synthetic semantic handbook\n');
+  const prepared = prepareAdaptiveWarrantSemanticAnnotationBatches({
+    corpusPath,
+    handbookPath,
+    outputDir: path.join(root, 'collection'),
+    corpusRole: 'targeted_challenge',
+    preflightMode: true,
+  });
+  const reader = prepared.manifest.readers[0];
+  const batch = reader.batches[0];
+  const response = JSON.parse(fs.readFileSync(batch.packet_path)).response_template;
+  const event = readerEvent(corpus.cases[0].kind, 'Show the access time.', 1);
+  event.evidence_span = event.evidence_span.text;
+  response.cases_by_sample_id['sample-1'] = {
+    genuinely_ambiguous: false,
+    ambiguity_reason: 'none',
+    events: [event],
+    note: 'A public access-time request.',
+  };
+  const responseDir = path.join(root, 'responses');
+  fs.mkdirSync(responseDir);
+  fs.writeFileSync(path.join(responseDir, batch.expected_response_filename), JSON.stringify(response));
+  const result = assembleAdaptiveWarrantSemanticAnnotationResponse({
+    manifestPath: prepared.manifestPath,
+    readerId: reader.reader_id,
+    annotationRunId: 'synthetic-duplicate-reader',
+    responseDir,
+    outputPath: path.join(root, 'result.json'),
+  });
+  assert.deepEqual(result.response.cases[0].events, []);
+  assert.equal(result.response.cases[0].assembly_rejection.code, 'non_unique_literal_span');
 });
 
 test('reader event materialization derives mechanical fields and enforces request executor asymmetry', () => {

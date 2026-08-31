@@ -716,13 +716,14 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     canonicalizes_only_declared_quote_code_points:
       semanticEventSource.includes('ADAPTIVE_WARRANT_QUOTE_PUNCTUATION_PATTERN') &&
       semanticEventSource.includes('\\u2018\\u2019\\u201c\\u201d'),
-    live_seat_uses_shared_derivation: semanticEventSource.includes(
-      'deriveAdaptiveWarrantSemanticEvidenceSpan(sourceText, event.evidence_span)',
-    ),
+    live_seat_uses_shared_derivation:
+      /deriveAdaptiveWarrantSemanticEvidenceSpan\(sourceText, event\.evidence_span, \{\s*quoteMatchMode,?\s*\}\)/u.test(
+        semanticEventSource,
+      ),
     reader_seat_imports_shared_derivation:
-      readerAssemblySource.includes(
-        "import { deriveAdaptiveWarrantSemanticEvidenceSpan } from '../services/adaptiveWarrantSemanticEvents.js'",
-      ) && readerAssemblySource.includes('deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text)'),
+      readerAssemblySource.includes('  deriveAdaptiveWarrantSemanticEvidenceSpan,') &&
+      readerAssemblySource.includes("from '../services/adaptiveWarrantSemanticEvents.js'") &&
+      readerAssemblySource.includes('deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text, { quoteMatchMode })'),
   };
   const modelFacingSchemaText = JSON.stringify([
     ...schemas,

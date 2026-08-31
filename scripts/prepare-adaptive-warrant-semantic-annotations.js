@@ -22,7 +22,11 @@ import {
   validateAdaptiveWarrantSemanticPreflightArtifact,
   validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
 } from '../services/adaptiveWarrantSemanticPreflight.js';
-import { deriveAdaptiveWarrantSemanticEvidenceSpan } from '../services/adaptiveWarrantSemanticEvents.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES,
+  deriveAdaptiveWarrantSemanticEvidenceSpan,
+  validateAdaptiveWarrantSemanticQuoteMode,
+} from '../services/adaptiveWarrantSemanticEvents.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v6';
@@ -126,7 +130,9 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
   preflightPath = null,
   schemaAcceptancePath = null,
   preflightMode = false,
+  quoteMatchMode = ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE,
 } = {}) {
+  validateAdaptiveWarrantSemanticQuoteMode(quoteMatchMode);
   if (!['targeted_challenge', 'natural_prevalence'].includes(corpusRole)) {
     throw new Error('semantic annotation corpus role must be targeted_challenge or natural_prevalence');
   }
@@ -264,6 +270,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
     study_id: corpus.study_id,
     source_commit: sourceCommit,
     corpus_role: corpusRole,
+    quote_match_mode: quoteMatchMode,
     gate_eligible: corpusRole === 'natural_prevalence',
     corpus: { path: resolvedCorpus, sha256: corpusSha256, cases: sampleIds.length },
     handbook: { path: resolvedHandbook, sha256: handbookSha256 },
@@ -354,6 +361,10 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
   if (!reader) throw new Error(`unknown semantic reader ${readerId}`);
   const corpus = readJson(manifest.corpus.path);
   const semanticCatalog = corpus.semantic_annotation_catalog;
+  const quoteMatchMode = Object.hasOwn(manifest, 'quote_match_mode')
+    ? manifest.quote_match_mode
+    : ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.HISTORICAL;
+  validateAdaptiveWarrantSemanticQuoteMode(quoteMatchMode);
   validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   const order = new Map(corpus.cases.map((row, index) => [row.sample_id, index]));
   const corpusById = new Map(corpus.cases.map((row) => [row.sample_id, row]));
@@ -448,7 +459,7 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
         if (typeof text !== 'string' || !text.length || text.length > 240) {
           throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span text is invalid`);
         }
-        const derivation = deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text);
+        const derivation = deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text, { quoteMatchMode });
         if (derivation.status === 'not_literal') {
           throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span is not literal`);
         }
@@ -470,12 +481,15 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
         if (typeof text !== 'string' || !text.length || text.length > 240) {
           throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span text is invalid`);
         }
-        const derivation = deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text);
+        const derivation = deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text, { quoteMatchMode });
         const { text: sourceText, start, end } = derivation.evidence_span;
         canonicalizations.push({
           sample_id: sampleId,
           event_index: eventIndex,
-          operation: 'derive_punctuation_normalized_unique_literal_utf16_offsets',
+          operation:
+            quoteMatchMode === ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE
+              ? 'derive_punctuation_and_case_normalized_unique_literal_utf16_offsets'
+              : 'derive_punctuation_normalized_unique_literal_utf16_offsets',
           start,
           end,
         });
@@ -537,7 +551,10 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
     manifest: { path: resolvedManifest, sha256: fileSha256(resolvedManifest) },
     reader_id: readerId,
     annotation_run_id: annotationRunId,
-    normalization: 'schema_declared_punctuation_normalized_literal_span_and_event_order_derivation',
+    normalization:
+      quoteMatchMode === ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE
+        ? 'schema_declared_punctuation_and_case_normalized_literal_span_and_event_order_derivation'
+        : 'schema_declared_punctuation_normalized_literal_span_and_event_order_derivation',
     edit_count: canonicalizations.length,
     canonicalizations,
     input_batches: inputs,

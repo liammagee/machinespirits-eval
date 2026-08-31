@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import {
   buildAdaptiveWarrantDecisionInputSnapshot,
@@ -24,6 +25,7 @@ import {
 import { recommendRepairPolicy } from '../services/adaptiveWarrantPolicy.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+  ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES,
   ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS,
@@ -31,6 +33,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA,
   adaptiveWarrantSemanticSourceHash,
   compileAdaptiveWarrantSemanticSignal,
+  deriveAdaptiveWarrantSemanticEvidenceSpan,
   validateAdaptiveWarrantSemanticExtraction,
 } from '../services/adaptiveWarrantSemanticEvents.js';
 import { buildAdaptiveWarrantObligationDirective } from '../services/adaptiveWarrantPolicy.js';
@@ -99,6 +102,95 @@ function semanticEvent({
     uncertainty,
   };
 }
+
+test('prospective case-only quotes retain original UTF-16 spans, including Unicode and literal regex characters', () => {
+  const options = { quoteMatchMode: ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE };
+  for (const [source, quote, original] of [
+    ['Yes—the “clue” is Nadia’s.', 'The "clue" is Nadia\'s.', 'the “clue” is Nadia’s.'],
+    ['İ clue here', 'CLUE', 'clue'],
+    ['İ clue here', 'İ CLUE', 'İ clue'],
+    ['😀 clue here', 'CLUE', 'clue'],
+    ['ΟΣ clue', 'οσ', 'ΟΣ'],
+    ['𐐀 clue', '𐐨 CLUE', '𐐀 clue'],
+    ['[clue].* is here', '[CLUE].*', '[clue].*'],
+  ]) {
+    const result = deriveAdaptiveWarrantSemanticEvidenceSpan(source, { text: quote, start: 999, end: 1000 }, options);
+    assert.equal(result.status, 'derived_unique_literal', quote);
+    assert.deepEqual(result.evidence_span, {
+      text: original,
+      start: source.indexOf(original),
+      end: source.indexOf(original) + original.length,
+    });
+  }
+  for (const [source, quote] of [
+    ['the clue is here', 'the clue was here'],
+    ['the clue is here', 'the  clue is here'],
+    ['clue!', 'CLUE.'],
+    ['ß clue', 'SS CLUE'],
+    ['the clue is here', ''],
+  ]) {
+    assert.equal(deriveAdaptiveWarrantSemanticEvidenceSpan(source, quote, options).status, 'not_literal');
+  }
+  assert.throws(
+    () => deriveAdaptiveWarrantSemanticEvidenceSpan('clue', 'clue', { quoteMatchMode: 'unknown' }),
+    /unsupported semantic quote matching mode/u,
+  );
+});
+
+test('prospective uniqueness includes case variants and overlapping matches while historical matching is unchanged', () => {
+  const options = { quoteMatchMode: ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE };
+  for (const [source, quote] of [
+    ['the box is here. The box is here.', 'the box is here'],
+    ['AaA', 'AA'],
+    ['𐐀𐐨𐐀', '𐐨𐐨'],
+    ["I’ll compare it, then i'll compare it.", "I'll compare it"],
+  ]) {
+    assert.equal(deriveAdaptiveWarrantSemanticEvidenceSpan(source, quote, options).status, 'non_unique_literal');
+  }
+  assert.equal(
+    deriveAdaptiveWarrantSemanticEvidenceSpan('the box is here. The box is here.', 'the box is here').status,
+    'derived_unique_literal',
+  );
+  assert.equal(deriveAdaptiveWarrantSemanticEvidenceSpan('the box is here', 'The box is here').status, 'not_literal');
+});
+
+test('the 12 guarded case-only quotations pass prospectively without forgiving the non-public identifier', () => {
+  const fixture = JSON.parse(
+    readFileSync(new URL('./fixtures/adaptive-warrant-quote-case-refusals.json', import.meta.url)),
+  );
+  assert.equal(fixture.cases.length, 12);
+  let validAttempts = 0;
+  for (const row of fixture.cases) {
+    const options = {
+      learnerText: row.learner_text,
+      publicText: row.public_identifiers_in_reader_prompt.join('\n'),
+      turn: row.turn,
+    };
+    const historical = validateAdaptiveWarrantSemanticExtraction(row.semantic_events, options);
+    const prospective = validateAdaptiveWarrantSemanticExtraction(row.semantic_events, {
+      ...options,
+      quoteMatchMode: ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE,
+    });
+    const issues = (result) => [
+      ...result.envelope_issues,
+      ...result.events.flatMap((event) => event.validation.issues),
+    ];
+    assert.deepEqual(issues(historical), row.historical_issues, row.source.trace);
+    assert.deepEqual(issues(prospective), row.prospective_issues, row.source.trace);
+    if (!issues(prospective).length) validAttempts += 1;
+    prospective.events.forEach((event, index) => {
+      assert.equal(event.evidence_span_derivation.status, 'derived_unique_literal');
+      const { text, start, end } = event.evidence_span;
+      assert.equal(row.learner_text.slice(start, end), text);
+      assert.equal(event.confidence, historical.events[index].confidence);
+      assert.deepEqual(event.uncertainty, historical.events[index].uncertainty);
+      if (historical.events[index].evidence_span_derivation.status === 'derived_unique_literal') {
+        assert.deepEqual(event.evidence_span, historical.events[index].evidence_span);
+      }
+    });
+  }
+  assert.equal(validAttempts, 11);
+});
 
 test('semantic evidence spans derive UTF-16 offsets only from one unique literal quote', () => {
   const uniqueText = 'A “quoted” clue sits here.';

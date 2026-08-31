@@ -6,7 +6,10 @@ import { describe, it } from 'node:test';
 import { loadWorld } from '../dramaticDerivation/world.js';
 import { tutorStubLearnerDagGrounded } from '../tutorStubDialogueClosure.js';
 import { auditAdaptiveWarrantLiveSemanticSchemaTotality } from '../adaptiveWarrantSemanticAnnotation.js';
-import { ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE } from '../adaptiveWarrantSemanticEvents.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES,
+  ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
+} from '../adaptiveWarrantSemanticEvents.js';
 import {
   TUTOR_STUB_EVIDENCE_USE_RUBRICS,
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
@@ -748,6 +751,101 @@ describe('strict public learner analysis', () => {
     });
     assert.deepEqual(retractionSplit.learnerRecordUpdate.retract, []);
     assert.equal(retractionSplit.benchmarkTransitionEvent.family, 'retract');
+  });
+
+  it('new semantic reads tolerate case and carry their matching mode into deterministic postprocessing', async () => {
+    const world = smokeWorld();
+    const learnerText = '😀 İ—the mark is public.';
+    const analysis = validAnalysis({
+      root: {
+        semantic_events: {
+          events: [
+            {
+              speech_act: 'analytic_contribution',
+              target: { state: 'none' },
+              requested_or_proposed_action: { state: 'none' },
+              evidence_span: 'The mark is public.',
+              confidence: 'high',
+              uncertainty: [],
+            },
+          ],
+        },
+      },
+    });
+    let calls = 0;
+    const raw = await extractTutorStubPublicLearnerAnalysis({
+      learnerText,
+      world,
+      tutorTurn: 1,
+      includeSemanticEvents: true,
+      callModel: async () => {
+        calls += 1;
+        return modelResponse(analysis);
+      },
+    });
+    assert.equal(calls, 1);
+    assert.equal(raw.semanticQuoteMatchMode, ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE);
+    assert.equal(raw.rawText, JSON.stringify(analysis));
+    assert.equal(raw.parsed.semantic_events.events[0].evidence_span, 'The mark is public.');
+    const result = postprocessTutorStubPublicLearnerAnalysis({
+      rawAnalysis: raw,
+      learnerText,
+      world,
+      tutorTurn: 1,
+      includeSemanticEvents: true,
+    });
+    assert.deepEqual(result.semanticEventExtraction, raw.semanticEventExtraction);
+    assert.deepEqual(result.semanticEventExtraction.events[0].evidence_span, {
+      text: 'the mark is public.',
+      start: learnerText.indexOf('the'),
+      end: learnerText.length,
+    });
+    assert.doesNotThrow(() =>
+      splitTutorStubPublicLearnerAnalysis(raw, {
+        strict: true,
+        includeSemanticEvents: true,
+        benchmarkLearnerText: learnerText,
+        tutorTurn: 1,
+      }),
+    );
+    const historical = { ...raw };
+    delete historical.semanticQuoteMatchMode;
+    assert.throws(
+      () =>
+        postprocessTutorStubPublicLearnerAnalysis({
+          rawAnalysis: historical,
+          learnerText,
+          world,
+          tutorTurn: 1,
+          includeSemanticEvents: true,
+        }),
+      /evidence_span:not_literal/u,
+    );
+    assert.throws(
+      () =>
+        splitTutorStubPublicLearnerAnalysis(
+          { ...raw, semanticQuoteMatchMode: null },
+          {
+            strict: true,
+            includeSemanticEvents: true,
+            benchmarkLearnerText: learnerText,
+            tutorTurn: 1,
+          },
+        ),
+      /unsupported semantic quote matching mode/u,
+    );
+    await assert.rejects(
+      extractTutorStubPublicLearnerAnalysis({
+        includeSemanticEvents: true,
+        semanticQuoteMatchMode: 'unknown',
+        callModel: async () => {
+          calls += 1;
+          return modelResponse(analysis);
+        },
+      }),
+      /unsupported semantic quote matching mode/u,
+    );
+    assert.equal(calls, 1, 'invalid matching mode must not dispatch a model call');
   });
 
   it('pins one structured call while preserving exact input, output, hashes, and bridge metadata', async () => {
