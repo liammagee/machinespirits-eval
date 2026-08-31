@@ -91,9 +91,13 @@ on the construct finding, and the budget belongs to
 learner is asked to do, not how the panel reads it. The attrition
 companion leg (classifying the 11 reference bounded-test non-delivery
 transcripts) was required only before a revision 6 and is moot. The
-2026-08-27 pooled calibration-stage null stands in its own scope,
-re-confirmed under the repaired contract by v5 and now bounded by this
-finding: the zero is real at the resolution this ladder has. No paid
+2026-08-27 pooled calibration-stage null stands in its own scope —
+v1–v4 only; v5 is not pooled with it and, per the canonical paper,
+licenses neither a powered comparison nor a re-confirmed null — and is
+now bounded by this finding: the zero is real at the resolution this
+ladder has. (Corrected 2026-08-31: an earlier wording here said the
+null was re-confirmed under the repaired contract by v5; it was not —
+v5 failed its registered agreement gate and re-confirms nothing.) No paid
 call in this line is authorized; any successor work runs on the
 successor cards. (Recorded 2026-08-31: the designated successor
 `frame-refuser-satisfiable-condition` closed 2026-08-30 by its own

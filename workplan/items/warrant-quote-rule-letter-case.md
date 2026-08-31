@@ -51,6 +51,10 @@ under the new one. Historical replay preserves the old result; prospective
 matching rejects that ambiguity. Available historical valid spans are also
 replayed as a regression check, without rewriting their artifacts.
 
+2026-08-31: unblocked when `guarded-learner-outcome-study` closed, as recorded
+in PR #893. Implementation below supersedes the earlier triaged plan; the
+historical ruling service and seals are retained for the reasons above.
+
 2026-08-31: implemented and verified on the branch above. The 12
 retained case-mismatched quotations are now source-linked test fixtures;
 11 attempts validate, while dialogue 28's additional non-public identifier

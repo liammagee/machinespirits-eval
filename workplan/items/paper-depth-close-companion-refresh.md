@@ -1,0 +1,74 @@
+---
+id: paper-depth-close-companion-refresh
+title: Fold the depth-line construct close into the companion documents and republish
+status: active
+type: paper
+priority: P1
+owner: claude
+source: manual
+created: 2026-08-31
+updated: 2026-08-31
+verification: >-
+  Atlas, arc (plus its standalone build), blueprint, the HOW-TO reading note
+  and docs/ref-status.md inherit paper v3.0.299 and record the depth-line
+  construct close with its claim discipline (calibration-lineage scope; the
+  powered 0.114 base unexamined at the seam). Atlas validation, blueprint
+  provenance refs, workplan validation and formatting checks pass; rebuilt
+  artifacts reproduce; publication dry-runs target an isolated content
+  worktree; live pages are verified by content, not HTTP status, after the
+  operator authorizes the outward publish.
+claim_status: methods
+depends_on:
+  - frame-refuser-depth-study
+links:
+  items:
+    - frame-refuser-depth-study
+    - paper-frame-refuser-closeout-publication
+  paper:
+    - docs/research/paper-full-2.0.md
+  notes:
+    - notes/2026-08-30-frame-refuser-depth-construct-finding.md
+    - notes/poetics/ideal-tutor-blueprint.html
+    - notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
+tags:
+  - paper
+  - publishing
+  - tutor-stub
+  - frame-refusal
+---
+
+## Scope
+
+Paper v3.0.299 (merged in PR #892) closed the frame-refuser depth line on a
+construct finding. The companion surfaces still reflect v3.0.298, where the
+depth question is described as open at the instrument's resolution. Carry
+the close into each surface, rebuild, and republish under the existing
+human publication gate. No new study, no historical rescoring, no treatment
+claim, no abstract or headline-N change.
+
+Surfaces: `docs/research/atlas/atlas.yaml` (resistant-learner-delivered-move
+caveat, methodological map, abstract), the recognition-arc HTML and its
+generated standalone, `notes/poetics/ideal-tutor-blueprint.html` (§6.28
+lesson bullet, version stamp), `HOW-TO-BUILD-A-TUTOR.md` (reading note),
+and `docs/ref-status.md` (regenerated, never hand-edited).
+
+## Log
+
+- 2026-08-31: Card opened after PR #892 merged (paper v3.0.299). Live check
+  confirmed the previously published bundle serves v3.0.298.
+- 2026-08-31: All five surfaces refreshed. Atlas: the
+  resistant-learner-delivered-move caveat, the methodological map and the
+  §6.25–§6.30 abstract now record the construct close; validation 19
+  modules, 0 errors, 0 warnings. Arc: one new close paragraph after the
+  successor-designs paragraph, claim cut restamped v3.0.299 in the TOC
+  meta and colophon, standalone regenerated. Blueprint: hero rune
+  restamped (v3.0.299, commit f0446729), the §6.28 lesson bullet and the
+  timing-and-typing "Why" paragraph carry the close;
+  `refresh-blueprint.js --check` reports provenance current, 16/16
+  data-refs resolve. HOW-TO reading note: restamped, and the close added
+  as a fourth build rule (construct limit — close the scale, do not
+  re-anchor again). `docs/ref-status.md` regenerated (canonical paper
+  anchor 3.0.299). Workplan validates 575/575; prettier clean; atlas
+  spine and 19 module markdown builds reproduce; both site publishes pass
+  `--dry-run` against the isolated staging target. Live publication still
+  awaits the operator's explicit authorization.
