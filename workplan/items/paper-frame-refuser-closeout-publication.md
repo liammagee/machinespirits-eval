@@ -1,13 +1,13 @@
 ---
 id: paper-frame-refuser-closeout-publication
 title: Publish the frame-refuser closeouts across paper and companion documents
-status: review
+status: done
 type: paper
 priority: P1
 owner: codex
 source: review
 created: 2026-08-30
-updated: 2026-08-30
+updated: 2026-08-31
 verification: >-
   Paper v3.0.298 records the fresh v5 result, both successor calibration failures and the cross-session budget
   incident from sealed reports; atlas, arc and build guides inherit those limits.
@@ -20,6 +20,7 @@ links:
     - frame-refuser-refusal-narrowing
     - frame-refuser-satisfiable-condition
     - paid-study-cross-session-budget-lease
+    - paper-depth-close-companion-refresh
   paper:
     - docs/research/paper-full-2.0.md
   atlas:
@@ -71,3 +72,12 @@ historical rescoring, treatment claim, abstract change or headline-N change.
   worktree. Live staging/deployment awaits the post-dry-run confirmation required
   by the publishing skill; the shared content checkout's course edits remain
   untouched. Live verification remains open until publication is authorized.
+- 2026-08-31: DONE on operator review instruction. The v3.0.298 bundle is
+  live, verified by page content rather than HTTP status:
+  `https://machinespirits.org/content/articles/ai-tutor/tutor-blueprint.html`
+  and
+  `https://machinespirits.org/content/articles/ai-tutor/dramatic-recognition-arc.html`
+  both serve pages stamped v3.0.298 (checked 2026-08-31). The paper has
+  since moved to v3.0.299 (depth-line construct close, PR #892); carrying
+  that into these companions is successor work tracked on
+  `paper-depth-close-companion-refresh`, not an open item on this card.
