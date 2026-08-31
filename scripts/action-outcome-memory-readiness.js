@@ -239,7 +239,15 @@ export async function buildActionOutcomeMemoryReadiness(input, { inputDirectory 
     replay: replay.summary,
     gaps,
   };
-  return { report, memory, replay };
+  return {
+    report,
+    memory,
+    replay,
+    // Kept out of every readiness artifact because these rows contain exact
+    // public dialogue text. The separate blind-review packet builder consumes
+    // them in memory and writes them only to its private review artifacts.
+    reviewCandidates: memorySources.flatMap((source) => source.extracted.reviewCandidates),
+  };
 }
 
 function cloneForReport(value) {

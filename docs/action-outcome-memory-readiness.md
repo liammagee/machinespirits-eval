@@ -110,6 +110,12 @@ and disagreement with either auxiliary remain indeterminate. Partial and
 inconclusive outcomes remain categorical. Human confirmation is still uptake
 measurement, not an independent learning endpoint.
 
+For prospective compatible traces, `docs/action-outcome-human-review.md`
+describes the zero-call packet builder, two independent coder templates, and
+comparison command that writes this exact review format. Ordinary readiness
+artifacts remain free of public dialogue text; only the separate private review
+packet contains it.
+
 ## Configure offline comparisons
 
 To produce conditioned records, add `conditions`, each with the same four

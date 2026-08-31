@@ -100,6 +100,7 @@
         "tests/acquiredAbox.test.js",
         "tests/actionOutcomeMemory.test.js",
         "tests/actionOutcomeMemoryReadiness.test.js",
+        "tests/actionOutcomeReviewPacket.test.js",
         "tests/adaptation-belief-calibration.test.js",
         "tests/adaptation-closed-loop.test.js",
         "tests/adaptation-contract.test.js",

@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-08-31
-branch: codex/action-outcome-memory-readiness
+branch: codex/action-outcome-review-packet
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -19,8 +19,10 @@ links:
     - notes/2026-08-28-memory-controller-design-rewrite.md
     - docs/action-outcome-memory.md
     - docs/action-outcome-memory-readiness.md
+    - docs/action-outcome-human-review.md
   prs:
     - 895
+    - 898
   items:
     - layered-task-session-adaptation
 tags:
@@ -86,6 +88,30 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-08-31: After PR #898 merged, continued with the next zero-call
+  prerequisite in a fresh worktree: a prospective auxiliary-blind human-review
+  packet and exact importer handoff. The create-once builder admits only
+  structurally joined typed-action records under explicit conditions, keeps
+  source/run/world/condition and auxiliary labels in a private key, and gives
+  two independent coders differently ordered public three-turn cases with the
+  requested action and its saved pre-response success criterion. Comparison
+  preserves uncertainty, coder disagreement, unconfirmed delivery, and
+  auxiliary/human disagreement as measurement-indeterminate; it writes the
+  exact review schema already consumed by the readiness importer. This is joint
+  immediate-uptake review, not action-blind delivery coding and not the required
+  independent unassisted/transfer endpoint. No study launch, live enablement,
+  source-data change, threshold choice, or model call. The existing 156 traces
+  still cannot produce a real packet; compatible prospective collection remains
+  necessary.
+  Verification: 62 focused memory, readiness, review-packet, intervention-ledger,
+  and typed-action adapter tests passed, including the trace-to-packet-to-review
+  importer round trip, public/private separation, saved all/any evidence logic,
+  timestamp and data-drift rejection, and indeterminate disagreement handling.
+  Test manifest synchronized; source check 575/575, targeted lint, formatting,
+  and diff checks passed. No package, lockfile, workflow, runtime-selection, or
+  browser-surface changes. Paid tutor benchmark is out of scope for this
+  offline-only slice; normal lint and selected CI remain enabled.
 
 - 2026-08-31: After PR #895 merged, user authorized the next zero-call
   readiness slice in a fresh worktree. Added a strict trace-to-memory adapter,
