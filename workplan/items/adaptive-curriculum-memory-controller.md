@@ -4,10 +4,11 @@ title: Evidence-anchored memory and curriculum adaptation controller
 status: active
 type: research
 priority: P2
-owner: claude
+owner: codex
 source: review
 created: 2026-07-11
-updated: 2026-08-28
+updated: 2026-08-31
+branch: codex/adaptive-action-outcome-memory
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -16,6 +17,7 @@ links:
   notes:
     - PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md
     - notes/2026-08-28-memory-controller-design-rewrite.md
+    - docs/action-outcome-memory.md
   items:
     - layered-task-session-adaptation
 tags:
@@ -81,6 +83,32 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-08-31: User authorized the bounded zero-call engineering slice in a
+  separate worktree, based on the read-only scope review. Implemented a
+  supplied, default-off action-outcome evidence view and typed-action demotion
+  hook; no database ingestion, live enablement, curriculum scheduling, or model
+  calls. Scope and interfaces: `docs/action-outcome-memory.md`. The August
+  rewrite's populated-data and independent-endpoint assumptions are not met by
+  the current default Writing Pad store or the single-world Step-2 artifacts.
+  Exact-world lookup abstains on unseen worlds; held-out pooling is explicit,
+  preserves world disagreement, and cannot consume evaluation-world records.
+  Thresholds are caller-supplied test settings, not measured or registered
+  study criteria. This card remains active/planned: engineering acceptance
+  does not complete its independent-improvement/transfer verification.
+  Verification after rebasing onto current main: 197 focused tests passed
+  across the memory, adaptation-policy,
+  intervention-ledger, scaffold, typed-action, response-context, warrant, and
+  turn-orchestration boundaries; targeted ESLint/Prettier, import-cycle check,
+  test-manifest check, source check (575/575), and diff check passed. Mock
+  delivery displacement cancels outcome credit; measurement disagreement
+  remains indeterminate and stops the affected lookup. Real model calls: 0.
+  Full CI is selected for the PR; no browser surface lane is selected.
+  User then asked to continue through the branch/PR handoff. Final review
+  tightened canonical action identity checks so inherited object names cannot
+  enter evidence or penalty maps. The live tutor benchmark is not run:
+  this remains a default-off, dependency-only zero-call slice with no change
+  enabled in existing callers. Research acceptance remains open.
 
 - 2026-08-27: Reopened for reexamination on operator instruction. The card
   was blocked on a killed prerequisite (the learned transition-ranking
