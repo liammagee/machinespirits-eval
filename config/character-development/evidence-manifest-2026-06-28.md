@@ -9,6 +9,32 @@ repo's normal artifact boundary: generated transcripts, score JSON, and raw run
 payloads stay under ignored `exports/`, while the source, scorer, rubric, tests,
 paper prose, and this manifest are tracked.
 
+## 2026-08-31 recovery audit
+
+A read-only recovery scan searched accessible user storage, mounted volumes,
+temporary directories, Spotlight, Git refs and stashes, Codex and Claude
+session records, and the local private archive bundles. The original 75-file
+package was not found. Two reports were reconstructed from complete line-numbered
+copies in the 2026-06-28 Codex audit transcript; their bytes match the hashes
+recorded below: `CAPACITY-REPORT.md` and `PILOT-REPORT.md`.
+
+The recovered reports and a provenance note are preserved in the private bundle
+`~/.machinespirits-data/archives/character-development-reports-recovered-2026-08-31.tar.gz`
+(SHA-256 `949af5d953f48baecd8fb4307e88116863a7407deb09460f2d81e73d7f35b86c`).
+
+The nine score JSON files and sixteen episode directories were not recovered.
+The reports preserve the contemporaneous interpretation but cannot recreate
+the judge outputs or transcripts. Per the user's 2026-08-31 disposition, the
+missing primary artifacts are treated as unrecoverable and this research line
+is closed. The historical pilot licenses no current empirical claim; no
+replication is planned. This is an evidence-loss disposition, not a failed
+replication or a finding that the structural hypothesis is false.
+
+macOS denied access to privacy-protected app data, Trash, and some system-owned
+temporary directories. No external backup disk was mounted; the listed local
+APFS snapshots were OS-update snapshots only. No stronger claim of forensic
+exhaustiveness is made.
+
 ## Scope
 
 Intentional source/config/test changes:
@@ -32,8 +58,8 @@ Local evidence package:
 - Path: `exports/character-development/`
 - Files: 75
 - Bytes: 12,584,140
-- Status: ignored by `.gitignore`, retained locally; hashes below support
-  reconstruction/checking without force-adding the raw bundle.
+- Status: ignored by `.gitignore` and no longer present. Only the two reports
+  were hash-recovered from session records; the remaining 73 files were not.
 
 Out of scope for this package:
 
@@ -42,10 +68,12 @@ Out of scope for this package:
 - `.claude/settings.local.json`, `data/evaluations.db`, `tutor-core/data/`,
   `tutor-core/logs/`, and other ignored local runtime state.
 
-## Claim summary
+## Historical claim summary
 
-These are scoped pilot claims for Appendix E only. They are not Paper 2.0 body
-claims, not `evaluation_results` rows, and not human-learning evidence.
+These are the contemporaneous interpretations, retained for provenance only.
+The primary data are unavailable, so they no longer license an empirical claim.
+They were never Paper 2.0 body claims, `evaluation_results` rows, or evidence of
+human learning.
 
 - Instrument gate: the character-development rubric passed the Phase-0
   construct-validity gate under both Sonnet and GPT critics. Earned exemplars
@@ -64,9 +92,10 @@ claims, not `evaluation_results` rows, and not human-learning evidence.
   commitment. In this final slice, L3 moved from 1.0 to 3.0 under Sonnet and
   from 1.5 to 4.5 under GPT. In the aggregate capacity table, elicitation alone
   did not move GPT L3 (2.5 -> 2.5) and only weakly moved Sonnet L3.
-- Guardrail: the defensible paper claim is the L3-specific directional contrast
-  above. Absolute overall magnitude is judge-sensitive and should not be cited
-  as a robust effect size.
+- Historical guardrail: only the L3-specific direction was retained, because
+  overall magnitude was judge-sensitive. The 2026-08-31 recovery disposition
+  supersedes that license: neither direction nor magnitude is now independently
+  auditable from primary data.
 
 ## Primary evidence hashes
 
@@ -84,10 +113,10 @@ b57b0dde049180945266b06bac83cdceb9972a53c949d9accd651bd0c8828b53  exports/charac
 16d2e79416a19dbf03abc52beb32fe3367a6708fe5ce067ca9ae30aa1762b191  exports/character-development/tutor-pilot-scores.json
 ```
 
-## Local raw run directories
+## Unrecovered raw run directories
 
-These directories contain ignored `diagnosis.json`, `live.json`, `result.json`,
-and `transcript.md` files for the pilot episodes:
+These directories originally contained ignored `diagnosis.json`, `live.json`,
+`result.json`, and `transcript.md` files. None was recovered:
 
 - `exports/character-development/pilot/marrick-arcoff-r1/`
 - `exports/character-development/pilot/marrick-arcoff-r2/`
