@@ -46,7 +46,21 @@ export function createTutorStubTypedActionPlanningRuntime({
 }) {
   const outcomeMemory = actionOutcomeMemory ? jsonClone(actionOutcomeMemory) : null;
 
-  function memoryPlanForTurn({ state, classification, tutorLearnerDag, selection }) {
+  function memoryObservationForTurn({ state, classification, tutorLearnerDag }) {
+    const system = buildDynamicalSystemState({ state, classification, tutorLearnerDag });
+    const quantities = {
+      stagnation: system.state_vector.stagnation,
+      fieldVelocity: system.derivative_vector.field_velocity,
+      dagVelocity: system.derivative_vector.dag_velocity,
+    };
+    return {
+      quantities,
+      observed:
+        Boolean(classification?.turn && tutorLearnerDag?.model) && Object.values(quantities).every(Number.isFinite),
+    };
+  }
+
+  function memoryPlanForTurn({ state, memoryObservation, selection }) {
     if (outcomeMemory?.policy?.enabled !== true) return null;
     const condition = outcomeMemory.condition;
     if (
@@ -61,14 +75,7 @@ export function createTutorStubTypedActionPlanningRuntime({
     ) {
       throw new Error('action outcome memory requires an explicit bounded stagnation/velocity condition');
     }
-    const system = buildDynamicalSystemState({ state, classification, tutorLearnerDag });
-    const quantities = {
-      stagnation: system.state_vector.stagnation,
-      fieldVelocity: system.derivative_vector.field_velocity,
-      dagVelocity: system.derivative_vector.dag_velocity,
-    };
-    const observed =
-      Boolean(classification?.turn && tutorLearnerDag?.model) && Object.values(quantities).every(Number.isFinite);
+    const { quantities, observed } = memoryObservation;
     const detected =
       observed &&
       quantities.stagnation >= condition.stagnationAtLeast &&
@@ -476,7 +483,8 @@ export function createTutorStubTypedActionPlanningRuntime({
     };
     let selection = selectPedagogicalAction(selectionInput);
     const baselineActionType = selection.selectedAction.action_type;
-    const memoryPlan = memoryPlanForTurn({ state, classification, tutorLearnerDag, selection });
+    const memoryObservation = memoryObservationForTurn({ state, classification, tutorLearnerDag });
+    const memoryPlan = memoryPlanForTurn({ state, memoryObservation, selection });
     if (memoryPlan?.disposition === 'demote') {
       selection = selectPedagogicalAction({
         ...selectionInput,
@@ -554,6 +562,10 @@ export function createTutorStubTypedActionPlanningRuntime({
           : 'typed_action_precise_fallback',
         support_axis_source:
           state.typedActions.config.supportLevel === null ? 'action_default' : 'explicit_typed_action_config',
+        // Record the actual pre-output inputs for zero-call replay. Historical
+        // traces without these fields must not have missing inputs invented.
+        selection_input: jsonClone(selectionInput),
+        memory_observation: jsonClone(memoryObservation),
         scaffold_lifecycle_gate: {
           phase: lifecycleGate.phase,
           allowed_move_families: lifecycleGate.allowedMoveFamilies,

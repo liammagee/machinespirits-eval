@@ -518,6 +518,13 @@ test('typed runtime is unchanged with memory disabled and keeps all memory mater
   const disabled = runPlanner(runtimeInput(), controller(snapshot, { policy: policy({ enabled: false }) }));
   assert.deepEqual(disabled.result, baseline.result);
   assert.deepEqual(disabled.events, baseline.events);
+  const replayInput = baseline.result.decision.decision_provenance.selection_input;
+  const replay = selectPedagogicalAction(replayInput);
+  assert.equal(replay.selectedAction.action_type, baseline.result.decision.chosen_action.action_type);
+  assert.equal(baseline.result.decision.decision_provenance.memory_observation.observed, true);
+  assert.ok(
+    replayInput.interventionLedger.every((record) => record.contract_id !== baseline.result.decision.contract_id),
+  );
 
   const active = runPlanner(runtimeInput(), controller(snapshot));
   const audit = active.events.find((event) => event.type === 'tutor_action_outcome_memory');
@@ -527,7 +534,7 @@ test('typed runtime is unchanged with memory disabled and keeps all memory mater
   const prompt = projectTutorStubResponsePolicyContext(active.result.registerSelection);
   assert.doesNotMatch(
     prompt,
-    /PRIVATE_MEMORY_SENTINEL|observer-v1|action_memory_penalty|supported_low_rate|successFloor/u,
+    /PRIVATE_MEMORY_SENTINEL|observer-v1|action_memory_penalty|supported_low_rate|successFloor|selection_input|memory_observation/u,
   );
   assert.equal(active.result.decision.chosen_action.support_level, 1);
   assert.equal(active.result.decision.chosen_action.task_id, 'task-v1');

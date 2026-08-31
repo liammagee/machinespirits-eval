@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-08-31
-branch: codex/adaptive-action-outcome-memory
+branch: codex/action-outcome-memory-readiness
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -18,6 +18,9 @@ links:
     - PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md
     - notes/2026-08-28-memory-controller-design-rewrite.md
     - docs/action-outcome-memory.md
+    - docs/action-outcome-memory-readiness.md
+  prs:
+    - 895
   items:
     - layered-task-session-adaptation
 tags:
@@ -83,6 +86,37 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-08-31: After PR #895 merged, user authorized the next zero-call
+  readiness slice in a fresh worktree. Added a strict trace-to-memory adapter,
+  private create-once coverage report, and disabled/current/stale/scrambled
+  selector replay. Typed decisions now record their actual pre-output selector
+  input and condition quantities without enabling memory or making a call.
+  Auxiliary outcome/delivery checks remain auxiliary: without a matching saved
+  human review the exported outcome is measurement-indeterminate; disagreement
+  stays indeterminate. Missing historical fields are reported, never backfilled.
+  Source inventory: 36 local default JSONL traces (8,148 events) and the exact
+  120 final-selected register-confirmatory traces (53,446 events), with both
+  sealed archive data hashes verified. Neither set contains typed-action
+  decisions or closed typed-action outcomes; no usable memory records or real
+  replay comparisons result. Six local resume/history-clear files require
+  complete lineage; archive inventory has no quarantined files. Private reports
+  are under the readiness worktree's `.test-tmp/readiness-local-default-traces/`
+  and `.test-tmp/readiness-step2-complete-report/`. The initial Terra-only
+  inventory is retained separately; the completed report includes both families.
+  No model calls, source-data changes, study registration, or live enablement.
+  Research acceptance remains open; prospective compatible collection and
+  independent unassisted/transfer endpoints are still required.
+  Verification: 212 focused tests passed across memory readiness, memory,
+  adaptation policy, intervention ledger, scaffold lifecycle, typed-action
+  adapter/restoration, response context, warrant, and turn orchestration.
+  After final strict-join and ledger-timing validation changes, the 37 memory
+  and readiness tests passed again. Targeted ESLint, test-manifest, source
+  check (575/575), and diff checks passed. The live tutor benchmark is not
+  run: this slice only records additional pre-action provenance and performs
+  offline analysis; existing callers still do not enable memory. The scoped
+  benchmark-hook exception preserves this zero-call boundary; ordinary lint
+  and CI checks remain enabled.
 
 - 2026-08-31: User authorized the bounded zero-call engineering slice in a
   separate worktree, based on the read-only scope review. Implemented a
