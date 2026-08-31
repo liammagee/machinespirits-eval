@@ -1445,6 +1445,18 @@ function buildCandidateTypes(stateBelief, interventionLedger = []) {
 
 export function scoreCandidateAction(actionType, stateBelief, interventionLedger = [], config = {}) {
   const merged = { ...DEFAULT_ADAPTIVE_POLICY_CONFIG, ...config };
+  const penalties = merged.actionUtilityPenalties;
+  if (
+    penalties !== undefined &&
+    (!penalties ||
+      typeof penalties !== 'object' ||
+      Array.isArray(penalties) ||
+      Object.entries(penalties).some(
+        ([type, value]) => !Object.hasOwn(ADAPTATION_ACTION_BY_TYPE, type) || !Number.isFinite(value) || value < 0,
+      ))
+  )
+    throw new Error('actionUtilityPenalties must contain known actions and finite nonnegative penalties');
+  const memoryPenalty = penalties?.[actionType] ?? 0;
   const worldSpec = normalizeWorldAdaptationSpec(merged);
   const def = getActionDefinition(actionType);
   const fit = actionFitScore(def, stateBelief?.hypotheses || []);
@@ -1468,7 +1480,8 @@ export function scoreCandidateAction(actionType, stateBelief, interventionLedger
     mismatchRisk;
   return {
     action_type: actionType,
-    utility: Number(utility.toFixed(6)),
+    utility: Number((utility - memoryPenalty).toFixed(6)),
+    ...(memoryPenalty > 0 ? { base_utility: Number(utility.toFixed(6)), action_memory_penalty: memoryPenalty } : {}),
     expected_state_gain: Number(expectedStateGain(def).toFixed(6)),
     state_action_fit: Number(fit.toFixed(6)),
     dominant_preferred_action_bonus: Number(preferredAction.toFixed(6)),
@@ -1554,6 +1567,7 @@ export function selectPedagogicalAction({
     if (
       recentDiagnosticNonSuccess(stateBelief, interventionLedger) &&
       preferredRow &&
+      !preferredRow.action_memory_penalty &&
       preferredRow.action_type !== 'diagnose_with_discriminating_question'
     ) {
       selectedRow = preferredRow;
@@ -1563,7 +1577,7 @@ export function selectPedagogicalAction({
       if (!selectedRow) {
         selectedRow =
           preferredRow &&
-          (recentDiagnosticNonSuccess(stateBelief, interventionLedger) ||
+          ((recentDiagnosticNonSuccess(stateBelief, interventionLedger) && !preferredRow.action_memory_penalty) ||
             bestUtility - preferredRow.utility <= merged.utilityTieEpsilon)
             ? preferredRow
             : candidates[0];
@@ -1581,7 +1595,9 @@ export function selectPedagogicalAction({
     applyWorldAdaptationToAction(
       withActionDefaults(selectedDef, {
         id: `action-turn-${stateBelief?.turn_index ?? 0}`,
-        rationale: `Dominant hypothesis ${dominantHypothesis(stateBelief)}; utility ${selectedRow.utility}; fit ${selectedRow.state_action_fit}.`,
+        // Historical memory is trace-only. The normal action description must
+        // not smuggle its penalty or evidence into a realization prompt.
+        rationale: `Dominant hypothesis ${dominantHypothesis(stateBelief)}; utility ${selectedRow.base_utility ?? selectedRow.utility}; fit ${selectedRow.state_action_fit}.`,
       }),
       merged,
     ),
