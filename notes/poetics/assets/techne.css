@@ -448,7 +448,8 @@
   .diag + .diag { margin-top: 1em; }
 
   @media (max-width: 60rem) {
-    .diag { grid-template-columns: 1fr; }
+    .diag { grid-template-columns: minmax(0, 1fr); }
+    .diag > .body, .diag > .ml, .diag > .mr { grid-column: 1; min-width: 0; }
     .diag > .ml, .diag > .mr {
       border-left: 2px solid var(--rule);
       padding-left: 0.9em;
@@ -766,6 +767,7 @@
   }
   .gl-term[data-gloss]::after {
     content: attr(data-gloss);
+    display: none; /* Hidden glosses must not widen narrow pages. */
     position: absolute;
     bottom: calc(100% + 0.6em);
     left: 50%;
@@ -803,6 +805,7 @@
   }
   .gl-term:hover::after, .gl-term:focus::after,
   .gl-term:hover::before, .gl-term:focus::before {
+    display: block;
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
@@ -810,7 +813,7 @@
   /* ═══════ claim/counter pairs ═══════ */
   .claim {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: 0.8em 1.4em;
     align-items: baseline;
     margin: 0 0 2.4em;

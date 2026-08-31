@@ -105,8 +105,11 @@ atlas:
       caveat: >-
         What the move wins depends on the shape of the resistance: bored learners went
         back to the work, while frame-refusers mostly stopped at naming a condition
-        rather than acting on it. Whether any move converts that naming into doing is
-        the line's open question — and all of it is simulated-learner evidence.
+        rather than acting on it. A fresh fifth depth calibration still failed reader
+        agreement. Two successor calibrations did not answer whether
+        any move converts that naming into doing: one finer endpoint failed reader
+        agreement, and one satisfiable-demand persona never produced its registered
+        trigger. The question remains open, and all of it is simulated-learner evidence.
 
   maps:
     methodological: |
@@ -230,11 +233,14 @@ modules:
     status: methods
     claim: >-
       Keeping drafts, critiques, revisions, evidence links, and automatic claim checks
-      together is a reusable research method, not just background engineering.
+      together is a reusable research method, not just background engineering. Cost
+      ceilings also need one shared owner per study: a counter attached only to one
+      process or destination cannot bound concurrent sessions.
     abstract: >-
       A tour of the audit trail: how critiques are classified, how important numbers are
-      checked against stored evidence, and how a result can be reproduced from source to claim.
-    sections: ["5.3", "5.9", "5.11", "7.4"]
+      checked against stored evidence, how a result can be reproduced from source to
+      claim, and why a study-wide lease and ledger are part of the empirical runtime.
+    sections: ["5.3", "5.9", "5.11", "7.4", "7.15"]
     cross_refs: ["rubrics-as-instruments"]
 
   - id: drama-machine
@@ -479,11 +485,18 @@ modules:
       move re-engaged 45 of 49 readable dialogues on the boredom face (0.918) and 70
       of 70 on the refusal face (1.000), but depth tracked the resistance shape: most
       re-engaged bored learners returned to the work, while refusers mostly stopped
-      at naming a condition and rarely acted under protest. The line's last study
+      at naming a condition and rarely acted under protest. A parallel study
       inverted the demand — the defiant learner asks for the warrant of the frame
       itself — and closed at its own gate: the warrant-serving tutor was produced and
       measured in every dialogue, while the withholding control could not be fielded
       at all (0 of 8 delivered by instruction, 0 of 9 surviving enforced repair).
+      A fresh fifth depth calibration reached rung 2 in 1/18 completed treatment
+      dialogues versus 0/8 reference dialogues, but still failed reader agreement;
+      it is not pooled with the earlier four-calibration block. Two successor
+      calibrations also left the depth question open rather than returning
+      a treatment result: the finer refusal-narrowing measure failed reader agreement
+      in two duplicate executions, and the satisfiable-demand persona failed to emit
+      its registered challenge in all 48 planned dialogues.
     abstract: >-
       Four studies walk one idea across opposite deficit shapes. On a
       permission-seeking learner, the gate's always-on per-turn steering carried the
@@ -500,9 +513,16 @@ modules:
       could not be reached, then a contrast that was not delivered — and closed as a
       measurement result. The powered two-face run then held delivery to exhaustive
       checks and found re-engagement near ceiling on both faces, with the boredom
-      face doing the work and the refusal face naming its terms. Development-tier
-      throughout: simulated learners, one model family in the speaking seats, no
-      human-learning claim.
+      face doing the work and the refusal face naming its terms. A fresh fifth depth
+      calibration repaired the output contract but still failed endpoint agreement,
+      so its one treatment rung-2 case is descriptive rather than a treatment result.
+      A separate
+      24-dialogue reader calibration failed agreement twice, so its conflicting arm
+      spreads were not pooled; a separate 48-dialogue calibration produced zero
+      determinate endpoint rows because the intended learner challenge never appeared.
+      These are instrument and persona-trigger failures, not evidence of an effect or
+      a null. Development-tier throughout: simulated learners, one model family in the
+      speaking seats, no human-learning claim.
     sections: ["6.25", "6.26", "6.27", "6.28", "6.30"]
     cross_refs: ["adaptation-four-locks", "advice-versus-enforcement", "recognition-calibration", "human-learning-translation"]
 

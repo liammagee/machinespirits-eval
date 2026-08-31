@@ -1,7 +1,7 @@
 {
   "schema": "paper2-evidence-manifest/v1",
   "version": "1.0.0",
-  "generated": "2026-08-28",
+  "generated": "2026-08-30",
   "paper": "docs/research/paper-full-2.0.md",
   "description": "Paper 2.0 empirical claim-family inventory. This manifest classifies evidence availability; it does not create, replace, or revise empirical results.",
   "semantic_authorities": [
@@ -11,7 +11,7 @@
       "locator": "config/provable-discourse-mechanisms.yaml",
       "format": "yaml-claims",
       "claim_id_prefixes": ["paper2."],
-      "semantic_sha256": "e8e698d7ac3311731c212adf220e6132b23841b969c88fcf71495fec3bc7188d"
+      "semantic_sha256": "5a137e800275905aee266502f2069aafed0d4b31085b52449bde7646007078f6"
     },
     {
       "id": "paper2-program2-claims",
@@ -36,6 +36,14 @@
       "format": "json-document",
       "semantic_paths": ["$"],
       "semantic_sha256": "14b9ad873e431c2735350eb7288d5c725b4b1490a2fa1bfd7e28e0d40d2cd432"
+    },
+    {
+      "id": "tutor-stub-frame-refuser-closeouts",
+      "module_id": "tutor-stub.frame-refuser.closeouts-2026-08-30",
+      "locator": "config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json",
+      "format": "json-document",
+      "semantic_paths": ["depth_v5", "narrowing", "satisfiable", "budget_incident"],
+      "semantic_sha256": "961e2c4f9a7ef3573f2d882538baae56a856d7029472cbeea498d2b2b1138fdd"
     },
     {
       "id": "tutor-stub-edged-register-stage2-result",
@@ -143,9 +151,17 @@
         "### 6.30 The Defiant Learner's Warrant Demand:"
       ],
       "evidence_class": "archived-artifact-recomputable",
-      "semantic_authority_ids": ["tutor-stub-resistant-learner-design", "tutor-stub-edged-register-stage2-result"],
+      "semantic_authority_ids": [
+        "tutor-stub-resistant-learner-design",
+        "tutor-stub-frame-refuser-closeouts",
+        "tutor-stub-edged-register-stage2-result"
+      ],
       "substrates": [
         { "kind": "archived-artifact", "path": "config/tutor-stub-frame-refuser-depth-design.v4.json" },
+        {
+          "kind": "archived-artifact",
+          "path": "config/adaptive-tutor-evidence/frame-refuser-closeouts-2026-08-30.json"
+        },
         { "kind": "archived-artifact", "path": "config/tutor-stub-defiant-warrant-outcome-pilot.v1.json" },
         { "kind": "archived-artifact", "path": "config/tutor-stub-defiant-warrant-outcome-pilot.v2.json" },
         {
