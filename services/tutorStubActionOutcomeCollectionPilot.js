@@ -312,6 +312,15 @@ export async function runTutorStubActionOutcomeCollectionPreflight({
   recovery = false,
   destinationExists = fs.existsSync,
   resolveArchive = resolveTutorStubArtifactArchiveDirectory,
+  archiveIsWritable = (directory) => {
+    if (!directory) return false;
+    try {
+      fs.accessSync(directory, fs.constants.W_OK);
+      return true;
+    } catch {
+      return false;
+    }
+  },
   probeRoute = probeTutorStubResistantLearnerCliRoute,
   smokeRole = smokeTutorStubResistantLearnerProtocolV2Role,
 } = {}) {
@@ -333,6 +342,7 @@ export async function runTutorStubActionOutcomeCollectionPreflight({
     Object.entries(destinations).map(([key, value]) => [key, !destinationExists(value)]),
   );
   const archiveDirectory = resolveArchive(null, { cwd: loaded.root, repoRoot: loaded.root });
+  const archiveWritable = archiveIsWritable(archiveDirectory);
   const checks = {
     design_loaded: loaded.design.studyId === TUTOR_STUB_ACTION_OUTCOME_COLLECTION_STUDY_ID,
     full_plan_job_count: plan.jobs.length === loaded.design.design.dialogues,
@@ -350,6 +360,7 @@ export async function runTutorStubActionOutcomeCollectionPreflight({
     route_probes_passed: routeProbes.every((probe) => probe.status === 'passed_zero_call'),
     role_smokes_passed: roleSmokes.every((smoke) => smoke.status === 'passed_zero_call_stub'),
     private_archive_available: Boolean(archiveDirectory),
+    private_archive_writable: archiveWritable,
     all_registered_destinations_absent: Object.values(destinationAvailability).every(Boolean),
     selected_destination_absent: !destinationExists(path.resolve(destination)),
     planned_calls_match_design: plan.planned_model_calls === loaded.design.attemptCeiling.plannedCalls,
