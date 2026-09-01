@@ -9,7 +9,7 @@ source: manual
 created: 2026-08-31
 updated: 2026-09-01
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "Both eight-exchange arms and three valid Opus assessments remain preserved at 39/48 aggregate attempts; the five unresolved assessments are represented by seven registered split packets attempted once without rerunning accepted output, aggregate use stays at or below 48, and either all eight original assessments complete through validated packet unions or the first new failure is preserved as the terminal disposition."
+verification: "Both eight-exchange arms and three valid Opus assessments remain preserved at 40/48 aggregate attempts; the five unresolved assessments are represented by seven registered split packets attempted once through schema-bound transport without rerunning accepted output, aggregate use stays at or below 48, and either all eight original assessments complete through validated packet unions or the first new failure is preserved as the terminal disposition."
 claim_status: planned
 links:
   notes:
@@ -121,3 +121,11 @@ with Sol, no superegos, using one fresh dialogue per arm.
   model call. The card stops when the five original assessments resolve through
   validated packet unions or the recovery encounters its first new substantive
   or technical failure.
+- 2026-09-01: The first split A quality-summary call returned a complete
+  5,771-character provider result, but it appended Markdown commentary and a
+  second JSON object after the requested object. The packet remains failed and
+  no apparent content is accepted, taking the immutable chain to 40/48. The
+  next correction keeps the smaller split prompts and schemas unchanged but
+  sends those two packet types through the existing schema-bound output tool.
+  Seven missing calls fit under the eight attempts left; full completion would
+  end at 47/48 without rerunning a dialogue or accepted assessment.
