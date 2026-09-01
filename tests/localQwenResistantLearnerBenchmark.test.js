@@ -475,6 +475,14 @@ test('extra rubric judgments and malformed envelopes are not silently accepted o
   assert.equal(JSON.stringify(extra), before);
   assert.throws(() => parseBenchmarkScore('quality', '{"scores":', 8), SyntaxError);
   assert.throws(() => parseBenchmarkScore('tutor', 'null', 8), /no assessment object/u);
+  const extraTopLevel = { ...fixtureScore('dialogue'), a: 'forbidden transport field' };
+  assert.throws(
+    () =>
+      parseBenchmarkScore('dialogue', JSON.stringify(extraTopLevel), 8, {
+        outputSchema: buildBenchmarkOutputSchema('dialogue', 8),
+      }),
+    /\$\.a:additional_property/u,
+  );
 });
 
 test('benchmark passes schemas through the real bridge, archives envelopes and makes exactly one child call per job', async () => {

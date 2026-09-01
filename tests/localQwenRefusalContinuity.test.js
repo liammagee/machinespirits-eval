@@ -33,13 +33,16 @@ import {
   configuredServiceModel,
   generationRecoveryContract,
   investedRivalDeliveredSourceContext,
+  investedRivalJudgeCallOptions,
   linkedAssessmentRecoveryContract,
   localModelRouteRecoveryContract,
   main as runInvestedRival,
+  qualityJsonTransportRecoveryContract,
   readArmBoundaryRecovery,
   readGenerationRecovery,
   readLinkedAssessmentRecovery,
   readLocalModelRouteRecovery,
+  readQualityJsonTransportRecovery,
   runtimeServiceArm,
   technicalRecoveryEligible,
 } from '../scripts/run-local-qwen-invested-rival.js';
@@ -91,6 +94,157 @@ function schemaFixture(schema, key = '', index = 0) {
     );
   }
   throw new Error(`unsupported fixture schema at ${key}`);
+}
+
+function createLinkedAssessmentRecoveryFixture() {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-linked-assessment-test-'));
+  const evaluationDir = path.join(sourceDir, 'evaluation');
+  fs.mkdirSync(evaluationDir);
+  const releasedPremiseIds = rivalPlan.world.premises.map((premise) => premise.id);
+  const turns = Array.from({ length: rivalPlan.max_exchanges }, (_, index) => ({
+    turn: index + 1,
+    learner: `Learner fixture ${index + 1}`,
+    tutor: rivalPlan.world.premises[index]?.surface || `Tutor fixture ${index + 1}`,
+  }));
+  const arms = rivalPlan.arms.map((arm) => ({
+    ...arm,
+    snapshot: { turns, proofControl: { releasedPremiseIds } },
+    opening: rivalPlan.world.opening_frame.authored_text,
+    transcript: turns.map((turn) => `Learner: ${turn.learner}\nTutor: ${turn.tutor}`).join('\n'),
+  }));
+  fs.writeFileSync(
+    path.join(sourceDir, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v3`,
+        linkedRecoveryAttemptCeiling: 31,
+        priorAttemptCount: 17,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'stopped.json'),
+    JSON.stringify({
+      error:
+        'claude CLI structured response classified as response_free_error (result_error_without_structured_output)',
+      budget: { used: 37, limit: 48 },
+      armsCompleted: 2,
+      recoveryPermitted: false,
+    }),
+  );
+  fs.writeFileSync(path.join(sourceDir, 'arms.json'), JSON.stringify(arms));
+  fs.writeFileSync(
+    path.join(sourceDir, 'run-ledger.jsonl'),
+    `${Array.from({ length: 20 }, () => JSON.stringify({ type: 'model_attempt_reserved', count: 1 })).join('\n')}\n${JSON.stringify(
+      {
+        type: 'run_sealed',
+        status: 'failed',
+        reserved_attempts: 20,
+      },
+    )}\n`,
+  );
+  const judgeEvents = [
+    { event: 'reserved', arm: 'A', kind: 'tutor' },
+    { event: 'completed', arm: 'A', kind: 'tutor' },
+    { event: 'reserved', arm: 'A', kind: 'learner' },
+    { event: 'completed', arm: 'A', kind: 'learner' },
+    { event: 'reserved', arm: 'A', kind: 'dialogue' },
+    { event: 'completed', arm: 'A', kind: 'dialogue' },
+    { event: 'reserved', arm: 'A', kind: 'quality' },
+    { event: 'failed', arm: 'A', kind: 'quality' },
+  ];
+  fs.writeFileSync(
+    path.join(evaluationDir, 'judge-ledger.jsonl'),
+    `${judgeEvents.map((event) => JSON.stringify(event)).join('\n')}\n`,
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'A-quality.error.json'),
+    JSON.stringify({
+      message:
+        'claude CLI structured response classified as response_free_error (result_error_without_structured_output)',
+      code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
+      classification: 'response_free_error',
+      reason: 'result_error_without_structured_output',
+    }),
+  );
+  const publicSourceContextByArm = Object.fromEntries(
+    arms.map((arm) => [arm.id, investedRivalDeliveredSourceContext(rivalPlan, arm)]),
+  );
+  const failedJob = buildBenchmarkJobs(arms, {
+    extendedQuality: true,
+    assessmentContext: rivalPlan.assessmentContext,
+    publicSourceContextByArm,
+  }).find((job) => job.arm === 'A' && job.kind === 'quality');
+  fs.writeFileSync(path.join(evaluationDir, 'A-quality.prompt.txt'), failedJob.prompt);
+  fs.writeFileSync(path.join(evaluationDir, 'A-quality.schema.json'), JSON.stringify(failedJob.outputSchema));
+  for (const kind of ['tutor', 'learner', 'dialogue']) {
+    fs.writeFileSync(
+      path.join(evaluationDir, `A-${kind}.json`),
+      JSON.stringify(schemaFixture(buildBenchmarkOutputSchema(kind, rivalPlan.max_exchanges))),
+    );
+  }
+  return { sourceDir, arms, failedJob };
+}
+
+function createQualityTransportRecoveryFixture() {
+  const prior = createLinkedAssessmentRecoveryFixture();
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-quality-transport-test-'));
+  const evaluationDir = path.join(sourceDir, 'evaluation');
+  fs.mkdirSync(evaluationDir);
+  fs.writeFileSync(
+    path.join(sourceDir, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v4`,
+        linkedRecoveryAttemptCeiling: 11,
+        priorAttemptCount: 37,
+        reusedCompletedAssessments: ['A/tutor', 'A/learner', 'A/dialogue'],
+        recoverySource: prior.sourceDir,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'stopped.json'),
+    JSON.stringify({
+      error:
+        'claude CLI structured response classified as response_free_error (result_error_without_structured_output)',
+      budget: { used: 38, limit: 48 },
+    }),
+  );
+  fs.writeFileSync(path.join(sourceDir, 'arms.json'), JSON.stringify(prior.arms));
+  fs.writeFileSync(
+    path.join(sourceDir, 'run-ledger.jsonl'),
+    `${JSON.stringify({ type: 'model_attempt_reserved', count: 1 })}\n${JSON.stringify({
+      type: 'run_sealed',
+      status: 'failed',
+      reserved_attempts: 1,
+    })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'judge-ledger.jsonl'),
+    `${JSON.stringify({ event: 'reserved', arm: 'A', kind: 'quality' })}\n${JSON.stringify({
+      event: 'failed',
+      arm: 'A',
+      kind: 'quality',
+    })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'A-quality.error.json'),
+    JSON.stringify({
+      message:
+        'claude CLI structured response classified as response_free_error (result_error_without_structured_output)',
+      code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
+      classification: 'response_free_error',
+      reason: 'result_error_without_structured_output',
+    }),
+  );
+  fs.writeFileSync(path.join(evaluationDir, 'A-quality.prompt.txt'), prior.failedJob.prompt);
+  fs.writeFileSync(path.join(evaluationDir, 'A-quality.schema.json'), JSON.stringify(prior.failedJob.outputSchema));
+  return { sourceDir, prior };
 }
 
 test('invested rival plan is a direct matched pair with an enforced 32 + 8 + 8 ceiling', () => {
@@ -467,95 +621,7 @@ test('invested rival local-route recovery charges the failed lookup and starts a
 });
 
 test('invested rival linked assessment recovery preserves 37 attempts and retries only unresolved judge packets', () => {
-  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-linked-assessment-test-'));
-  const evaluationDir = path.join(sourceDir, 'evaluation');
-  fs.mkdirSync(evaluationDir);
-  const releasedPremiseIds = rivalPlan.world.premises.map((premise) => premise.id);
-  const turns = Array.from({ length: rivalPlan.max_exchanges }, (_, index) => ({
-    turn: index + 1,
-    learner: `Learner fixture ${index + 1}`,
-    tutor: rivalPlan.world.premises[index]?.surface || `Tutor fixture ${index + 1}`,
-  }));
-  const arms = rivalPlan.arms.map((arm) => ({
-    ...arm,
-    snapshot: { turns, proofControl: { releasedPremiseIds } },
-    opening: rivalPlan.world.opening_frame.authored_text,
-    transcript: turns.map((turn) => `Learner: ${turn.learner}\nTutor: ${turn.tutor}`).join('\n'),
-  }));
-  fs.writeFileSync(
-    path.join(sourceDir, 'plan.json'),
-    JSON.stringify({
-      id: rivalPlan.id,
-      provenance: {
-        recovery: true,
-        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v3`,
-        linkedRecoveryAttemptCeiling: 31,
-        priorAttemptCount: 17,
-      },
-    }),
-  );
-  fs.writeFileSync(
-    path.join(sourceDir, 'stopped.json'),
-    JSON.stringify({
-      error:
-        'claude CLI structured response classified as response_free_error (result_error_without_structured_output)',
-      budget: { used: 37, limit: 48 },
-      armsCompleted: 2,
-      recoveryPermitted: false,
-    }),
-  );
-  fs.writeFileSync(path.join(sourceDir, 'arms.json'), JSON.stringify(arms));
-  fs.writeFileSync(
-    path.join(sourceDir, 'run-ledger.jsonl'),
-    `${Array.from({ length: 20 }, () => JSON.stringify({ type: 'model_attempt_reserved', count: 1 })).join('\n')}\n${JSON.stringify(
-      {
-        type: 'run_sealed',
-        status: 'failed',
-        reserved_attempts: 20,
-      },
-    )}\n`,
-  );
-  const judgeEvents = [
-    { event: 'reserved', arm: 'A', kind: 'tutor' },
-    { event: 'completed', arm: 'A', kind: 'tutor' },
-    { event: 'reserved', arm: 'A', kind: 'learner' },
-    { event: 'completed', arm: 'A', kind: 'learner' },
-    { event: 'reserved', arm: 'A', kind: 'dialogue' },
-    { event: 'completed', arm: 'A', kind: 'dialogue' },
-    { event: 'reserved', arm: 'A', kind: 'quality' },
-    { event: 'failed', arm: 'A', kind: 'quality' },
-  ];
-  fs.writeFileSync(
-    path.join(evaluationDir, 'judge-ledger.jsonl'),
-    `${judgeEvents.map((event) => JSON.stringify(event)).join('\n')}\n`,
-  );
-  fs.writeFileSync(
-    path.join(evaluationDir, 'A-quality.error.json'),
-    JSON.stringify({
-      message:
-        'claude CLI structured response classified as response_free_error (result_error_without_structured_output)',
-      code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
-      classification: 'response_free_error',
-      reason: 'result_error_without_structured_output',
-    }),
-  );
-  const publicSourceContextByArm = Object.fromEntries(
-    arms.map((arm) => [arm.id, investedRivalDeliveredSourceContext(rivalPlan, arm)]),
-  );
-  const failedJob = buildBenchmarkJobs(arms, {
-    extendedQuality: true,
-    assessmentContext: rivalPlan.assessmentContext,
-    publicSourceContextByArm,
-  }).find((job) => job.arm === 'A' && job.kind === 'quality');
-  fs.writeFileSync(path.join(evaluationDir, 'A-quality.prompt.txt'), failedJob.prompt);
-  fs.writeFileSync(path.join(evaluationDir, 'A-quality.schema.json'), JSON.stringify(failedJob.outputSchema));
-  for (const kind of ['tutor', 'learner', 'dialogue']) {
-    fs.writeFileSync(
-      path.join(evaluationDir, `A-${kind}.json`),
-      JSON.stringify(schemaFixture(buildBenchmarkOutputSchema(kind, rivalPlan.max_exchanges))),
-    );
-  }
-
+  const { sourceDir } = createLinkedAssessmentRecoveryFixture();
   const recovery = readLinkedAssessmentRecovery(rivalPlan, sourceDir);
   assert.deepEqual(
     recovery.priorScores.map((score) => `${score.arm}/${score.kind}`),
@@ -568,6 +634,32 @@ test('invested rival linked assessment recovery preserves 37 attempts and retrie
   });
   fs.writeFileSync(path.join(sourceDir, 'completed.json'), '{}');
   assert.throws(() => readLinkedAssessmentRecovery(rivalPlan, sourceDir), /completed output/u);
+});
+
+test('invested rival quality transport recovery preserves 38 attempts and bypasses only the quality schema tool', () => {
+  const { sourceDir } = createQualityTransportRecoveryFixture();
+  const recovery = readQualityJsonTransportRecovery(rivalPlan, sourceDir);
+  assert.equal(recovery.plainJsonQuality, true);
+  assert.equal(recovery.eligibility.priorAttempts, 5);
+  assert.deepEqual(
+    recovery.priorScores.map((score) => `${score.arm}/${score.kind}`),
+    ['A/tutor', 'A/learner', 'A/dialogue'],
+  );
+  assert.deepEqual(qualityJsonTransportRecoveryContract(rivalPlan, recovery), {
+    studyId: 'qwen-invested-rival-theorist-v1-generation-recovery-v5',
+    spendCap: 10,
+    priorAttemptCount: 38,
+  });
+  assert.equal(
+    investedRivalJudgeCallOptions('local-qwen-benchmark-quality', { singleAttempt: true }, true).singleAttemptJsonText,
+    true,
+  );
+  assert.equal(
+    investedRivalJudgeCallOptions('local-qwen-benchmark-tutor', { singleAttempt: true }, true).singleAttemptJsonText,
+    false,
+  );
+  fs.writeFileSync(path.join(sourceDir, 'completed.json'), '{}');
+  assert.throws(() => readQualityJsonTransportRecovery(rivalPlan, sourceDir), /completed output/u);
 });
 
 test('bilateral plan inherits the unchanged actor and proof controller with an explicit 100-attempt ceiling', () => {

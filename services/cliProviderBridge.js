@@ -451,7 +451,10 @@ const CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA = 'machinespirits.cli-provider.claude-j
  * provider events may include ambient metadata or model text and must not be
  * copied into persisted error telemetry.
  */
-export function parseClaudeJsonResultEnvelope(stdoutText, { singleAttemptModel = null } = {}) {
+export function parseClaudeJsonResultEnvelope(
+  stdoutText,
+  { singleAttemptModel = null, singleAttemptJsonText = false } = {},
+) {
   let events;
   try {
     events = JSON.parse(String(stdoutText || ''));
@@ -561,6 +564,56 @@ export function parseClaudeJsonResultEnvelope(stdoutText, { singleAttemptModel =
     };
   }
   const hasStructuredOutput = Object.hasOwn(result, 'structured_output') && result.structured_output !== undefined;
+  if (
+    singleAttemptJsonText &&
+    singleAttemptModel &&
+    result.is_error === false &&
+    !hasStructuredOutput &&
+    typeof result.result === 'string'
+  ) {
+    const toolUseCount = events
+      .filter((event) => event?.type === 'assistant')
+      .flatMap((event) => event.message?.content || [])
+      .filter((block) => block.type === 'tool_use').length;
+    if (toolUseCount) {
+      return {
+        schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+        classification: 'indeterminate',
+        reason: 'json_result_text_with_tool_use',
+        event_count: events.length,
+        result_event_count: 1,
+      };
+    }
+    try {
+      const value = JSON.parse(result.result);
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        return {
+          schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+          classification: 'structured_success',
+          reason: 'single_json_result_text',
+          event_count: events.length,
+          result_event_count: 1,
+          structured_output: value,
+          num_turns: Number.isSafeInteger(result.num_turns) ? result.num_turns : null,
+          ...(attemptAudit ? { attemptAudit } : {}),
+          wrapperRecovery: {
+            field: 'result.result',
+            judgmentsChanged: false,
+            providerValidated: false,
+          },
+        };
+      }
+    } catch (_) {
+      /* exact invalid JSON remains a failed response */
+    }
+    return {
+      schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+      classification: 'indeterminate',
+      reason: 'invalid_json_result_text',
+      event_count: events.length,
+      result_event_count: 1,
+    };
+  }
   if (result.is_error === false && hasStructuredOutput) {
     return {
       schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
@@ -779,6 +832,7 @@ async function callClaudeCli({
   rawUserPrompt = false,
   executable = null,
   singleAttempt = false,
+  singleAttemptJsonText = false,
   onRawOutput = null,
 }) {
   if (signal?.aborted) throw abortError(role);
@@ -795,6 +849,9 @@ async function callClaudeCli({
   const schema = normalizedOutputSchema(outputSchema);
   if (singleAttempt && !schema) throw new Error('Claude singleAttempt requires structured output for turn accounting');
   if (singleAttempt && !model) throw new Error('Claude singleAttempt requires an explicit model');
+  if (singleAttemptJsonText && !singleAttempt) {
+    throw new Error('Claude singleAttemptJsonText requires singleAttempt');
+  }
 
   // Every claude call — schema or not — runs context-isolated (see
   // CLAUDE_CLI_ISOLATION_ARGS above). Before 2026-07-17 only outputSchema
@@ -808,7 +865,7 @@ async function callClaudeCli({
       args.push(...isolation.args);
       if (model) args.push('--model', model);
       if (effectiveEffort && effectiveEffort !== 'config') args.push('--effort', effectiveEffort);
-      if (schema) {
+      if (schema && !singleAttemptJsonText) {
         args.push('--json-schema', JSON.stringify(schema));
       }
       const env = buildCliProviderEnv('claude-code');
@@ -888,7 +945,10 @@ async function callClaudeCli({
         }
         if (outputExceeded) return;
         if (schema) {
-          const envelope = parseClaudeJsonResultEnvelope(out, { singleAttemptModel: singleAttempt ? model : null });
+          const envelope = parseClaudeJsonResultEnvelope(out, {
+            singleAttemptModel: singleAttempt ? model : null,
+            singleAttemptJsonText,
+          });
           if (
             singleAttempt &&
             envelope.classification === 'structured_success' &&
@@ -920,6 +980,9 @@ async function callClaudeCli({
                 ? { attemptControls: { maxTurns: 1, apiRetries: 0, schemaRetries: 0, observedTurns: envelope.num_turns, observedModelResponses: envelope.attemptAudit.responseCount } }
                 : {}),
               ...(envelope.wrapperRecovery ? { structuredOutputRecovery: envelope.wrapperRecovery } : {}),
+              ...(singleAttemptJsonText
+                ? { structuredOutputTransport: 'single_json_result_text_local_schema' }
+                : {}),
               contextIsolation: CLAUDE_CLI_CONTEXT_ISOLATION,
               structuredEventAudit: {
                 event_type_counts: { result: 1 },
@@ -1526,6 +1589,7 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       rawUserPrompt: opts?.rawUserPrompt === true,
       executable: opts?.executable,
       singleAttempt: opts?.singleAttempt === true,
+      singleAttemptJsonText: opts?.singleAttemptJsonText === true,
       onRawOutput: opts?.onRawOutput,
     });
   }
