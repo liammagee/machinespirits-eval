@@ -52,19 +52,19 @@ export function investedRivalDeliveredSourceContext(plan, arm) {
   ].join('\n');
 }
 
-function paidStudyBudget(admission, limit) {
+function paidStudyBudget(admission, limit, priorAttemptCount = 0) {
   return {
     reserve(detail = {}) {
       const reservation = admission.reserveModelAttempts(1, detail);
       return {
-        call: reservation.study_reserved,
+        call: priorAttemptCount + reservation.study_reserved,
         limit,
         remaining: reservation.remaining,
-        studyReserved: reservation.study_reserved,
+        studyReserved: priorAttemptCount + reservation.study_reserved,
       };
     },
     snapshot() {
-      return { used: admission.studyReserved, limit };
+      return { used: priorAttemptCount + admission.studyReserved, limit };
     },
   };
 }
@@ -313,7 +313,8 @@ async function scoreArms({ plan, arms, outDir, budget, priorScores = [], priorAt
 }
 
 async function runFresh(plan, outDir, admission, generationRecovery = null) {
-  const budget = paidStudyBudget(admission, plan.total_attempt_ceiling);
+  const priorAttemptCount = generationRecovery?.stop.budget.used || 0;
+  const budget = paidStudyBudget(admission, plan.total_attempt_ceiling, priorAttemptCount);
   const arms = [];
   try {
     const provenance = sourceProvenance(plan, {
@@ -329,7 +330,9 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
         ? {
             recoverySource: generationRecovery.sourceDir,
             recoveredGeneration: generationRecovery.failure,
-            priorAttemptCount: generationRecovery.stop.budget.used,
+            priorAttemptCount,
+            linkedRecoveryStudyId: admission.study_id,
+            linkedRecoveryAttemptCeiling: admission.spend_cap,
             privateLedgerPolicy: 'drop_unsupported_quote_rows_preserve_public_speech',
           }
         : {}),
@@ -465,6 +468,22 @@ export function readGenerationRecovery(plan, sourceDir) {
   };
 }
 
+export function generationRecoveryContract(plan, recovery) {
+  const priorAttemptCount = recovery?.stop?.budget?.used;
+  if (
+    !Number.isInteger(priorAttemptCount) ||
+    priorAttemptCount < 1 ||
+    priorAttemptCount >= plan.total_attempt_ceiling
+  ) {
+    throw new Error('generation recovery requires a positive preserved attempt count below the study ceiling');
+  }
+  return {
+    studyId: `${plan.id}-generation-recovery-v1`,
+    spendCap: plan.total_attempt_ceiling - priorAttemptCount,
+    priorAttemptCount,
+  };
+}
+
 function readPriorScores(sourceDir, arms) {
   const evaluationDir = path.join(sourceDir, 'evaluation');
   const rows = [];
@@ -583,7 +602,7 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
   }
 }
 
-function admitLiveRun(plan, values, outDir, recoveryFrom = null) {
+function admitLiveRun(plan, values, outDir, recoveryFrom = null, contractOverride = {}) {
   if (!values['accept-charges'] || !values['launch-commit'] || !values['go-note-commit'] || !values['go-note-path']) {
     throw new Error('paid launch requires --accept-charges, --launch-commit, --go-note-commit, and --go-note-path');
   }
@@ -593,9 +612,9 @@ function admitLiveRun(plan, values, outDir, recoveryFrom = null) {
     launchCommit: values['launch-commit'],
     goNoteCommit: values['go-note-commit'],
     goNotePath: values['go-note-path'],
-    spendCap: plan.total_attempt_ceiling,
+    spendCap: contractOverride.spendCap || plan.total_attempt_ceiling,
     destination: outDir,
-    studyId: plan.id,
+    studyId: contractOverride.studyId || plan.id,
     studyStateRoot: path.resolve(ROOT, values['study-state-root'] || '.tutor-stub-traces/.paid-study-state'),
     ...(recoveryFrom ? { recoveryFrom } : {}),
   });
@@ -626,15 +645,23 @@ export async function main(argv = process.argv.slice(2)) {
     const sourceDir = path.resolve(ROOT, values.from);
     const outDir = path.resolve(ROOT, values.output || `${sourceDir}-generation-recovery-v1`);
     const recovery = readGenerationRecovery(plan, sourceDir);
-    const admission = admitLiveRun(plan, values, outDir, sourceDir);
-    if (admission.studyReserved !== recovery.stop.budget.used) {
+    const recoveryContract = generationRecoveryContract(plan, recovery);
+    const admission = admitLiveRun(plan, values, outDir, null, recoveryContract);
+    admission.record({
+      type: 'linked_generation_recovery',
+      recovery_from: sourceDir,
+      prior_attempts_preserved: recoveryContract.priorAttemptCount,
+      aggregate_attempt_ceiling: plan.total_attempt_ceiling,
+      recovery_attempt_ceiling: recoveryContract.spendCap,
+    });
+    if (admission.studyReserved !== 0) {
       admission.close({
         type: 'run_sealed',
         status: 'failed',
-        error: 'study-wide attempt ledger differs from the preserved predecessor',
+        error: 'linked recovery ledger was not empty at launch',
         recovery_from: sourceDir,
       });
-      throw new Error('study-wide attempt ledger differs from the preserved predecessor');
+      throw new Error('linked recovery ledger was not empty at launch');
     }
     return runFresh(plan, outDir, admission, recovery);
   }

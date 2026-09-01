@@ -25,6 +25,7 @@ import { learnerProfileContract } from '../scripts/tutor-stub-learner-profile-co
 import { renderContinuityReport } from '../services/localQwenRefusalContinuityReport.js';
 import {
   buildInvestedRivalPlan,
+  generationRecoveryContract,
   main as runInvestedRival,
   readGenerationRecovery,
   technicalRecoveryEligible,
@@ -188,6 +189,11 @@ test('invested rival generation recovery reuses only the preserved first reply',
     ),
   );
   const recovery = readGenerationRecovery(rivalPlan, sourceDir);
+  assert.deepEqual(generationRecoveryContract(rivalPlan, recovery), {
+    studyId: 'qwen-invested-rival-theorist-v1-generation-recovery-v1',
+    spendCap: 47,
+    priorAttemptCount: 1,
+  });
   assert.equal(recovery.firstLearnerReply.response.text.includes(speech), true);
   assert.equal(recovery.firstLearnerReply.parsedSpeech, speech);
   assert.deepEqual(recovery.failure.droppedPrivateLedgerRows, [
@@ -198,6 +204,10 @@ test('invested rival generation recovery reuses only the preserved first reply',
   ]);
   fs.writeFileSync(path.join(sourceDir, 'A', 'checkpoint-1.json'), '{}');
   assert.throws(() => readGenerationRecovery(rivalPlan, sourceDir), /accepted downstream output/u);
+  assert.throws(
+    () => generationRecoveryContract(rivalPlan, { stop: { budget: { used: 48 } } }),
+    /below the study ceiling/u,
+  );
 });
 
 test('bilateral plan inherits the unchanged actor and proof controller with an explicit 100-attempt ceiling', () => {
