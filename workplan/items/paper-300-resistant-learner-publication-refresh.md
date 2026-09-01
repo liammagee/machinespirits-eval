@@ -1,7 +1,7 @@
 ---
 id: paper-300-resistant-learner-publication-refresh
 title: Refresh and publish the complete resistant-learner synthesis at Paper 2.0 v3.0.300
-status: active
+status: done
 type: paper
 priority: P1
 owner: codex
@@ -76,3 +76,11 @@ defiant withholding arm (§6.30), together with their synthesis in §§7.16 and
   discourse and `git diff --check` passed. All three publishers completed clean
   dry-runs against an isolated clone and named only the intended blueprint,
   arc, images, atlas hub, paper PDF, spine and 19 module PDFs. Model calls: 0.
+- 2026-09-01: PR #921 merged as `9df1145b`. Published the three companion
+  surfaces from an isolated clean content clone as content commit `220b090`,
+  leaving the saved content checkout and its unrelated course work untouched.
+  Immediate website deployment run `33560025262` completed successfully. Live
+  atlas, blueprint and dramatic-recognition arc all expose the v3.0.300 scope,
+  planned denominators and attrition; desktop atlas and mobile arc rendering
+  were visually checked. Downloaded the public paper, spine and 19 module PDFs:
+  21/21 SHA-256 hashes match the committed content bytes. Model calls: 0.
