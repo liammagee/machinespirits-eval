@@ -137,6 +137,7 @@ test('zero-call preflight compiles the full plan, probes one transport, and gran
     loaded,
     destinationExists: () => false,
     resolveArchive: () => '/private/fixture-archive',
+    archiveIsWritable: () => true,
     probeRoute(route) {
       probes.push(route);
       return { status: 'passed_zero_call', modelRef: route.modelRef, model_calls: 0 };
@@ -167,6 +168,7 @@ test('any occupied registered destination fails the zero-call preflight', async 
     loaded,
     destinationExists: (candidate) => candidate === occupied,
     resolveArchive: () => '/private/fixture-archive',
+    archiveIsWritable: () => true,
     probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
     smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', model_calls: 0 }),
   });
@@ -174,6 +176,23 @@ test('any occupied registered destination fails the zero-call preflight', async 
   assert.equal(result.status, 'failed');
   assert.equal(result.destination_availability.comparisonRoot, false);
   assert.equal(result.checks.all_registered_destinations_absent, false);
+});
+
+test('zero-call preflight rejects an archive that exists but is not writable', async () => {
+  const loaded = load();
+  const result = await runTutorStubActionOutcomeCollectionPreflight({
+    loaded,
+    destinationExists: () => false,
+    resolveArchive: () => '/private/read-only-archive',
+    archiveIsWritable: () => false,
+    probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
+    smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', model_calls: 0 }),
+  });
+
+  assert.equal(result.status, 'failed');
+  assert.equal(result.checks.private_archive_available, true);
+  assert.equal(result.checks.private_archive_writable, false);
+  assert.equal(result.production_writes, 0);
 });
 
 test('trace extraction requires the complete eight-turn, seven-outcome contract', (t) => {
@@ -526,4 +545,21 @@ test('CLI dry-run returns before admission, while live wiring passes the registe
   assert.equal(admitted.studyId, 'tutor-stub-action-outcome-collection-pilot-v1');
   assert.equal(admitted.designPath, DESIGN_PATH);
   assert.equal(executed, true);
+});
+
+test('CLI reports the exact failed zero-call checks before admission', async () => {
+  let admissionCalls = 0;
+  await assert.rejects(
+    collectionLauncherMain(['--dry-run'], {
+      runPreflight: async () => ({
+        status: 'failed',
+        checks: { private_archive_available: true, private_archive_writable: false },
+      }),
+      admit() {
+        admissionCalls += 1;
+      },
+    }),
+    /zero-call preflight failed: private_archive_writable/u,
+  );
+  assert.equal(admissionCalls, 0);
 });
