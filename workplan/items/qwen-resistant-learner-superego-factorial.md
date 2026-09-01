@@ -1,14 +1,13 @@
 ---
 id: qwen-resistant-learner-superego-factorial
 title: "Test Luna superego with normal and abliterated Qwen learners"
-status: review
+status: done
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-08-30
-updated: 2026-08-30
-branch: codex/local-qwen-resistant-learner-mvp
+updated: 2026-09-01
 verification: "All four eight-turn dialogues complete; 112/112 attempts used (96 generation, 16 Opus). User-approved index-only repair reused the original A learner reply; 14 remaining assessments attempted once. Fifteen assessments fully accepted; final D quality reply lacks eight reopened-objection labels. All requested quality scores and v2.2 rubrics are available; D reopening and combined novelty counts remain missing, never imputed. Updated private Techne comparison includes exact swimlanes, ordinal scores, timings, original reasoning and analyst caveats. Sixteen focused tests, lint and diff checks passed. No push/publication."
 claim_status: exploratory
 links:
@@ -110,7 +109,8 @@ authors the final learner turn after at most one private Luna critique.
   Adjacent `report-data.json`, `public-dialogues.json`, `observations.json`,
   corrected-index derivative, recovery provenance, all new prompts/replies and
   append-only ledger preserve the continuation. The original partial report is
-  unchanged. Card stays under review; no commit, push, publication or new study.
+  unchanged. The card was left under review pending board reconciliation; no
+  commit, push, publication or new study followed from the result.
 
 ## Boundary
 
@@ -134,3 +134,12 @@ bundles Luna advice with an extra Qwen revision pass.
 - 2026-08-30 — Browser preflight found and fixed an inline-script closing-tag
   packaging defect. The corrected self-contained report uses no remote assets.
   Synthetic preview is not study evidence; live output directory remains unused.
+
+## Board reconciliation — 2026-09-01
+
+Closed as a bounded exploratory result. All 112 authorized attempts are used,
+the four dialogues and requested aggregate quality scores are present, and 15
+of 16 assessments are fully accepted. The absent D reopening labels and combined
+novelty endpoint remain measurement-indeterminate rather than pending work; no
+further inference is authorized under this cap. No model calls were made during
+reconciliation.

@@ -1,7 +1,7 @@
 ---
 id: qwen-invested-rival-theorist
 title: "Test Qwen as an invested rival theorist"
-status: review
+status: active
 type: experiment
 priority: P2
 owner: codex
@@ -9,7 +9,7 @@ source: manual
 created: 2026-08-31
 updated: 2026-09-01
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "The two eight-exchange arms and three valid Opus assessments are preserved at 39/48 aggregate attempts. A third A-quality attempt produced a tool-free but 13,000-character incomplete JSON result. The prospective split packages each remaining quality judgment as independently validated summary and turn packets, plans seven new calls, and exposes no more than the nine attempts left under the unchanged ceiling."
+verification: "Both eight-exchange arms and three valid Opus assessments remain preserved at 39/48 aggregate attempts; the five unresolved assessments are represented by seven registered split packets attempted once without rerunning accepted output, aggregate use stays at or below 48, and either all eight original assessments complete through validated packet unions or the first new failure is preserved as the terminal disposition."
 claim_status: planned
 links:
   notes:
@@ -112,3 +112,12 @@ with Sol, no superegos, using one fresh dialogue per arm.
   validates both separately, then mechanically checks their union against the
   original schema. The remaining plan is seven calls under a nine-attempt cap,
   with no rerun of either dialogue or the three accepted assessments.
+
+- 2026-09-01: Board reconciliation keeps this card active rather than falsely
+  closing it. Both dialogues and three assessments are preserved, but five
+  original assessments remain unresolved; after the merged split-packet
+  correction they require seven planned calls and cannot exceed the nine
+  attempts left under the unchanged study ceiling. Conflict resolution made no
+  model call. The card stops when the five original assessments resolve through
+  validated packet unions or the recovery encounters its first new substantive
+  or technical failure.

@@ -1,14 +1,13 @@
 ---
 id: qwen-hostile-refusal-comparison
 title: "Compare normal and abliterated Qwen as an aggressive refusing tenant"
-status: review
+status: done
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-08-30
-updated: 2026-08-31
-branch: codex/local-qwen-resistant-learner-mvp
+updated: 2026-09-01
 verification: "Both eight-turn dialogues and all eight assessments complete. Fresh four-call allowance used exactly four observed Opus responses, no helper usage observed; original dialogues and accepted normal scores unchanged. Full output schemas and rubric checks pass, 59 focused tests pass, private report preview has 34 public messages and 32 assessment expanders. Historical call total remains unverified; no push or publication."
 claim_status: exploratory
 links:
@@ -186,5 +185,13 @@ ladder objection. The unchanged broad learner rubric reverses the direction
 (34.1/41.1), so this is not an across-instrument winner or a general model ranking.
 The ledger records 41 intended study invocations and at least 42 model calls when
 the known earlier helper is included; the exact historical total is unverified.
-All requested execution is finished. Status is review for the private result,
-not a new budget hold. Nothing pushed or published.
+All requested execution is finished. The private result was held in review for
+board reconciliation, not as a new budget hold. Nothing pushed or published.
+
+## Board reconciliation — 2026-09-01
+
+Closed as a bounded exploratory result. Both dialogues, all eight assessments,
+the private report, and the focused validation named above are complete. The
+unverified historical helper-call total and the disagreement between instruments
+remain explicit limitations; neither is unfinished execution or a license for a
+general checkpoint ranking. No model calls were made during reconciliation.
