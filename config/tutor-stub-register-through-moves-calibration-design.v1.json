@@ -1,0 +1,313 @@
+{
+  "schema": "machinespirits.tutor-stub.register-through-moves-calibration-design.v1",
+  "revision": 1,
+  "studyId": "register-through-moves-calibration-v1",
+  "label": "Warm versus sarcastic rendering crossed with baseline versus pressing proof-warrant moves",
+  "status": "prospective_zero_call_design_pending_implementation_and_go",
+  "workplanItem": "register-through-moves-design",
+  "authorizationPolicy": "docs/paid-study-authorization-policy.md",
+  "designSource": "workplan/items/register-through-moves-design.md",
+  "question": "On the scripted-core proof-DAG tutor, does a deterministic pressing move pack become observably different in its learner-conduct consequences when it is rendered sarcastically rather than warmly, beyond the manner-only and move-only effects measured in the same randomized batch?",
+  "purpose": {
+    "primary": "Establish that register and move policy can be randomized independently, delivered distinctly, and measured with enough trigger prevalence, endpoint spread, reader coverage, and reader agreement to justify a separately registered confirmatory interaction study.",
+    "secondary": "Estimate calibration-only arm means and variance for strict proof-DAG area under the coverage curve through learner turn 16, without making a positive, null, or causal outcome claim.",
+    "notThisStudy": [
+      "This calibration is not a confirmatory test of a register effect, a move effect, or their interaction.",
+      "It does not allow register to choose the move policy; the two factors are assigned independently so their contributions remain identifiable.",
+      "It does not reuse or pool any dialogue from the closed manner-only, resistance-action, or edged-register studies.",
+      "It does not establish human learning, durable learning, deployment efficacy, transfer, or the safety or general value of sarcasm."
+    ]
+  },
+  "callAuthority": {
+    "grantsModelCalls": false,
+    "grantsLaunch": false,
+    "statement": "This file is a zero-call prospective design. A future launch additionally requires this design merged to main, a clean detached launch commit containing it, a separate signed GO note naming that commit and the 6240-attempt cap, and an implemented launcher admitted by services/paidStudyLaunchContract.js."
+  },
+  "lineage": {
+    "developmentSubstrate": "notes/2026-08-28-edged-register-stub-stage2-sizing-memo.md",
+    "paperFinding": "docs/research/paper-full-2.0.md section 6.29 and section 8.9",
+    "carriedForward": [
+      "world_005_marrick",
+      "proof_skipper automated learner profile",
+      "strict_dag proof measurement",
+      "scripted-core ownership of teaching moves",
+      "codex.gpt-5.6-luna in all generating seats",
+      "40 learner-turn safety cap",
+      "180 generation-attempt reservations per dialogue",
+      "fixed-horizon coverage and trapezoidal AUC through learner turn 16"
+    ],
+    "priorRowsReused": false,
+    "priorOutcomesPooled": false,
+    "priorReaderLabelsReused": false,
+    "priorRole": "design and sizing context only"
+  },
+  "population": {
+    "world": "world_005_marrick",
+    "automatedLearnerProfile": "proof_skipper",
+    "independentUnit": "one freshly seeded simulated tutor-learner dialogue",
+    "dagMode": "strict_dag",
+    "turnCap": 40,
+    "autoStopOnGrounded": true,
+    "selectionReason": "In the completed section 6.29 block this character produced a usable middle-range turn-16 endpoint (0.444 sarcastic, 0.486 warm) and grounded 10 of 12 dialogues in each arm, avoiding both the bored floor and the diligent closure floor. This is a development-tier design choice, not a general learner claim."
+  },
+  "factors": {
+    "renderingRegister": {
+      "levels": ["fixed_warm", "fixed_sarcastic"],
+      "role": "The speaking model renders the already-selected public move in the assigned manner. Register never supplies evidence, changes the proof path, changes release pacing, changes trigger eligibility, or sees private proof identifiers.",
+      "assignmentFrozenForDialogue": true
+    },
+    "movePolicy": {
+      "levels": ["scripted_core_baseline", "press_missing_warrant_v1"],
+      "role": "The harness selects conduct. The speaking model may word the selected conduct but may not choose or replace it.",
+      "assignmentFrozenForDialogue": true
+    }
+  },
+  "arms": {
+    "W0": {
+      "renderingRegister": "fixed_warm",
+      "movePolicy": "scripted_core_baseline",
+      "meaning": "Warm rendering of the unchanged section 6.29 scripted-core teaching policy."
+    },
+    "S0": {
+      "renderingRegister": "fixed_sarcastic",
+      "movePolicy": "scripted_core_baseline",
+      "meaning": "Sarcastic rendering of the same unchanged baseline policy; this is the within-batch manner-only seam."
+    },
+    "W1": {
+      "renderingRegister": "fixed_warm",
+      "movePolicy": "press_missing_warrant_v1",
+      "meaning": "Warm rendering of the deterministic pressing move pack."
+    },
+    "S1": {
+      "renderingRegister": "fixed_sarcastic",
+      "movePolicy": "press_missing_warrant_v1",
+      "meaning": "Sarcastic rendering of the identical deterministic pressing move pack."
+    }
+  },
+  "trigger": {
+    "id": "warrant_skip_v2_bridge_voiced",
+    "source": "the maintained point-of-action warrant_skip route",
+    "eligibility": "Learner turn 3 through 24; not near closure; no close_inquiry action; no unresolved glossary item; public learner-analysis evidence_use under v2_bridge_voiced is omits_warrant or overleaps_evidence.",
+    "precedence": "If the maintained stagnant_repeat trigger co-fires, the turn is not eligible for this move pack because stagnant_repeat keeps its existing higher priority.",
+    "treatmentBlind": true,
+    "registerBlind": true,
+    "note": "The semantic evidence_use classification is model-produced before treatment; the subsequent eligibility and routing rule is deterministic and identical in all four arms. Its label and rubric version must be persisted."
+  },
+  "pressingMovePack": {
+    "id": "press_missing_warrant_v1",
+    "firstTutorTurn": {
+      "actionFamily": "answer_accountably",
+      "conduct": "Refuse to treat the learner's premature conclusion as settled. Release no new premise. Ask exactly one focused question, in public scene language, that names the missing evidential relation and connects the learner's claim to an already-public exhibit, test, record, fact, or rule.",
+      "forbidden": [
+        "stating or hinting at the answer",
+        "releasing a future premise",
+        "naming a private premise id, rule id, path, coverage value, DAG state, profile, trigger, arm, or score",
+        "attacking or belittling the learner as a person"
+      ]
+    },
+    "holdTutorTurn": {
+      "condition": "On the next tutor turn after the learner replies, the same v2_bridge_voiced public analysis still labels the turn omits_warrant or overleaps_evidence.",
+      "conduct": "Keep the same missing evidential relation live for this one further turn. Do not advance the proof, substitute a different question, or concede the premature close. Restate the demand once in ordinary public language, with no more than one focused question.",
+      "maximumHoldTurns": 1,
+      "afterHold": "Return to the ordinary scripted-core policy whether or not the learner has supplied the warrant. A later fresh eligible trigger may start a new pack."
+    },
+    "ifResolvedImmediately": "If the next learner turn voices the missing bridge or retreats from the overleap, cancel the hold and return to baseline.",
+    "safetyPriority": "The existing evidence-release, private-conclusion, person-attack, and prompt-audit guards remain authoritative and may stop rather than rewrite the treatment.",
+    "illustrativePlainLanguageOnly": {
+      "learnerLeap": "The assay mark settles it; Verrell struck the coins.",
+      "warmPress": "The mark is evidence, but it does not yet connect Verrell to the striking. Which public record supplies that connection?",
+      "sarcasticPress": "A mark is not a verdict. Which public record actually connects Verrell to the striking?",
+      "note": "These examples illustrate the intended difference between move and manner. They are not prompt templates, may not be copied into a run, and supply no hidden fact."
+    }
+  },
+  "randomization": {
+    "masterSeed": 2026090102,
+    "algorithm": "six balanced blocks; within each block sort W0, S0, W1, S1 by sha256 of '<masterSeed>|<blockIndex>|<armId>', breaking an impossible hash tie by arm id",
+    "blocks": 6,
+    "dialoguesPerBlock": 4,
+    "assignmentsPerArmPerBlock": 1,
+    "dialogues": 24,
+    "dialoguesPerArm": 6,
+    "freshSeeds": "Each job seed is sha256-derived from the master seed, block index, arm id, and registered job id. No prior section 6.29 seed or dialogue is reused.",
+    "validUnitRerun": false,
+    "outcomeDependentTopUp": false
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "automatedLearner": "codex.gpt-5.6-luna",
+    "learnerAnalysis": "codex.gpt-5.6-luna",
+    "cliEffort": "low",
+    "blindReaders": ["codex.gpt-5.6-sol", "claude-code.sonnet-5"],
+    "readerEffort": "low where the route exposes effort",
+    "generatorExcludedFromReading": true,
+    "readerIndependence": "Each reader receives the same sealed public context independently and never sees the other reader's verdict, assignment label, outcome, DAG values, trigger label, or private trace."
+  },
+  "readerInstrument": {
+    "unit": "one fixed-policy tutor turn with the minimum preceding public context needed to interpret its conduct",
+    "oneCallPerReaderPerUnit": true,
+    "fields": {
+      "renderedRegister": ["warm", "sharp_or_sarcastic", "neither", "measurement_indeterminate"],
+      "visibleMove": ["full_press", "partial_press", "no_press", "measurement_indeterminate"],
+      "personAttack": ["present", "absent", "measurement_indeterminate"],
+      "quotedEvidence": "A positive sharp_or_sarcastic, full_press, partial_press, or personAttack verdict requires one exact public-tutor substring."
+    },
+    "fullPressDefinition": "The tutor visibly refuses the premature close or marks the claim as not yet settled, names the missing public evidential relation, and asks or restates one focused warrant demand without supplying the answer or a new premise.",
+    "partialPressDefinition": "Some but not all full_press elements are visible.",
+    "regexRole": "Auxiliary transport and safety checks only; never the final authority on register or move meaning.",
+    "disagreement": "Retain both labels. No third-reader tie-break, regex vote, adjudication, recoding, or outcome-conditioned exclusion is allowed."
+  },
+  "measurement": {
+    "calibrationOutcome": {
+      "name": "strict_proof_dag_auc_to_learner_turn_16",
+      "source": "scripts/analyze-tutor-stub-trajectories.js maintained strict-DAG trajectory projection",
+      "calculation": "Trapezoidal area over observed strict bestPathCoverage values through learner turn 16, normalized by the span from the first observation to turn 16; an early clean ending carries its final state flat to the horizon.",
+      "missingness": "A row with fewer than two valid trajectory observations is retained as endpoint-unreadable and never replaced or imputed.",
+      "role": "Calibration spread and variance only; no hypothesis test and no positive or null claim."
+    },
+    "descriptive": [
+      "strict bestPathCoverage at learner turns 8, 12, and 16",
+      "grounded closure and grounding turn",
+      "eligible warrant_skip trigger count",
+      "first-turn press selection and delivery",
+      "hold eligibility, selection, and delivery",
+      "new-premise suppression on press turns",
+      "register delivery by arm and reader",
+      "guard stops, reader refusals, and all typed failures"
+    ],
+    "futureConfirmatoryEstimand": {
+      "primary": "The interaction (S1 - W1) - (S0 - W0) on dialogue-level strict proof-DAG AUC through learner turn 16.",
+      "predictedDirection": "greater_than_zero: sarcastic rendering increases the incremental effect of the pressing policy relative to warm rendering.",
+      "coPrimaryDescriptive": "Strict bestPathCoverage at learner turn 16 in all four arms.",
+      "interpretation": {
+        "positiveInteraction": "Eligible only for a separately registered one-world, one-character, one-stack register-by-move interaction claim if every delivery and measurement gate also passes.",
+        "moveMainEffectWithoutInteraction": "The pressing moves help irrespective of register; this does not support register through moves.",
+        "mannerMainEffectWithoutInteraction": "A batch-bounded manner difference; it does not establish that register changes or works through moves.",
+        "neither": "No separation at the separately registered powered size; the conclusion must stay inside that design's power boundary."
+      }
+    }
+  },
+  "calibrationGates": {
+    "execution": {
+      "minimumEndpointReadableDialoguesPerArm": 5,
+      "allAttemptAccountingBalances": true,
+      "allJobsRegisteredExactlyOnce": true,
+      "maximumSubstantiveOrTechnicalLossesPerArm": 1
+    },
+    "eligibility": {
+      "minimumDialoguesWithAtLeastOneEligibleTriggerPerPressingArm": 5,
+      "minimumTotalEligibleTriggersPerPressingArm": 6,
+      "noTurn16FloorOrCeiling": "Each arm must contain at least two endpoint-readable dialogues strictly between 0 and 1 at learner turn 16."
+    },
+    "moveDelivery": {
+      "selectionTraceCompleteness": 1.0,
+      "minimumFullPressRateOnEligibleFirstTurnsPerPressingArmPerReader": 0.9,
+      "minimumHoldSelectionTraceCompleteness": 1.0,
+      "minimumFullOrPartialHoldRateOnEligibleHoldTurnsPerPressingArmPerReader": 0.9,
+      "maximumFullPressContaminationRateOnEligibleBaselineTurnsPerBaselineArmPerReader": 0.1,
+      "maximumAbsoluteFullPressDeliveryRateDifferenceBetweenW1AndS1PerReader": 0.1,
+      "minimumPairwiseKappaOnFullPressAmongCoClassifiedEligibleTurns": 0.6
+    },
+    "registerDelivery": {
+      "minimumSharpPresenceRateInS0PerReader": 0.8,
+      "minimumSharpPresenceRateInS1PerReader": 0.8,
+      "maximumSharpPresenceRateInW0PerReader": 0.2,
+      "maximumSharpPresenceRateInW1PerReader": 0.2,
+      "minimumSharpMinusWarmSeparationWithinEachMovePolicyPerReader": 0.6,
+      "minimumPairwiseKappaOnSharpPresenceAmongCoClassifiedTurns": 0.6,
+      "minimumClassifiableRatePerReaderPerArm": 0.98,
+      "rateDenominator": "Every scheduled reader unit; measurement_indeterminate counts as not-present for presence floors and remains visible separately."
+    },
+    "safety": {
+      "maximumConfirmedUnreleasedProofLeaks": 0,
+      "maximumConfirmedPersonAttacks": 0,
+      "maximumPrivateIdentifierLeaks": 0
+    },
+    "decision": "Pass licenses only a separately authored confirmatory design. Any failed gate records calibration_failure or measurement_indeterminate as appropriate and closes this calibration without top-up, threshold relaxation, reader replacement, recoding, or an outcome claim."
+  },
+  "launchConfiguration": {
+    "implementationStatus": "not_implemented",
+    "requiredCommonArguments": [
+      "--all-models codex.gpt-5.6-luna",
+      "--cli-effort low",
+      "--auto-learner",
+      "--auto-learner-profile proof_skipper",
+      "--auto-turns 40",
+      "--dag",
+      "--dag-mode strict_dag",
+      "--tutor-learner-dag",
+      "--register-policy <fixed_warm|fixed_sarcastic>",
+      "--safe-registers",
+      "--loop-mode strict",
+      "--no-training-reuse",
+      "--acknowledge-research-use",
+      "--model-call-budget 180"
+    ],
+    "requiredImplementation": [
+      "A study-local deterministic press_missing_warrant_v1 policy that compiles the trigger turn and one conditional hold turn without changing baseline-arm behavior.",
+      "A plan builder that emits exactly 24 balanced jobs from the registered seed and persists register assignment separately from move-policy assignment.",
+      "A trace contract that separately records learner-analysis rubric/version, trigger eligibility, assigned move policy, selected move, hold state, register assignment, rendered public turn, proof release delta, guard outcome, and endpoint trajectory.",
+      "A blinded two-reader pass that uses one call per reader per tutor-turn packet and writes both original verdicts without adjudication.",
+      "A zero-call analyzer that reports every registered gate and computes the maintained AUC without altering historical artifacts.",
+      "A launcher using services/paidStudyLaunchContract.js, a create-once destination, fail-before-call aggregate budgeting, and the append-only attempt ledger.",
+      "Registration of the launcher in config/paid-study-launcher-inventory.json and focused tests for arm separation, private-proof redaction, reader blinding, job count, ceiling arithmetic, and dry-run/provider isolation."
+    ],
+    "preflightRule": "The future launcher must first pass a zero-call dry-run proving the exact 24-job plan, route pins, reader plan, absent destination, and 6240-attempt ceiling. A passing dry-run is not call authority."
+  },
+  "attemptCeiling": {
+    "generation": {
+      "dialogues": 24,
+      "maximumReservationsPerDialogue": 180,
+      "hardMaximumReservations": 4320,
+      "arithmetic": "24 * 180 = 4320"
+    },
+    "blindReading": {
+      "maximumTutorTurnsPerDialogue": 40,
+      "readers": 2,
+      "hardMaximumReservations": 1920,
+      "arithmetic": "24 * 40 * 2 = 1920"
+    },
+    "aggregateHardMaximumReservations": 6240,
+    "aggregateArithmetic": "4320 + 1920 = 6240",
+    "role": "Fail-before-call programme ceiling for this calibration, not a target or estimate.",
+    "spendCap": "6240 model-call reservations on the registered Codex CLI and Claude Code routes; no separate dollar estimate is claimed for subscription-backed routes.",
+    "ledger": "Every provider attempt consumes one reservation before dispatch. Generation and reader reservations share the one study-wide ceiling and are never restored after a failure."
+  },
+  "destinations": {
+    "liveRoot": ".tutor-stub-auto-eval/register-through-moves-calibration-v1-2026-09-01",
+    "readerRoot": ".tutor-stub-auto-eval/register-through-moves-calibration-v1-2026-09-01-readers",
+    "reportRoot": ".tutor-stub-auto-eval/register-through-moves-calibration-v1-2026-09-01-report",
+    "createOnce": true,
+    "privateArchive": "Archive the complete plan, ledger, traces, reader inputs and original verdicts, deterministic analysis, failures, report, and seal to the maintained private study archive when the block ends."
+  },
+  "dispositions": {
+    "validUnit": "Preserve once; never rerun, replace, or select among valid outputs.",
+    "measurementIndeterminate": "Retain and report; never recode, regex-vote, adjudicate, replace, or silently drop. It cannot support a positive or null outcome claim.",
+    "triggerAbsent": "Retain as a valid randomized dialogue with zero treatment opportunities. Do not top up or replace; apply the registered eligibility gate.",
+    "moveNonDelivery": "Retain, stop the affected unit if the harness-selected move did not become public, and do not score it as baseline delivery. No rerun or replacement.",
+    "readerFailure": "Retain the unread unit as measurement_indeterminate. Do not substitute a reader after outcomes are visible or ask a third reader to break a tie.",
+    "safetyOrLeakBreach": "Stop the affected unit, preserve the public and private evidence, mark it substantively failed, and do not score or replace it. A repeated or systemic breach stops the block.",
+    "technicalFailure": "Preserve the failed attempt and halt before another new unit. Standing bounded technical recovery may run only the missing or failed unit under the unchanged design, launch commit, routes, seed, job id, arm, horizon, and global ceiling into a fresh nonoverwriting destination. Never rerun a valid unit or choose among outputs. A repeated failure or suspected instrument defect stops for human review.",
+    "ceilingReached": "Fail before the next call, preserve all artifacts, and report incomplete. No extra reservations or replacement block.",
+    "configurationDrift": "Stop before the next call. Any change to the question, factors, population, routes, trigger, move pack, measurement, seed, thresholds, destination, or ceiling requires a prospective design amendment merged before a fresh GO note."
+  },
+  "confirmatorySuccessor": {
+    "authorizedByThisDesign": false,
+    "calibrationRowsExcluded": true,
+    "maximumDialogues": 72,
+    "maximumDialoguesPerArm": 18,
+    "requirements": [
+      "Every calibration gate passes without amendment.",
+      "A separate design freezes the confirmatory sample size, analysis model, interval/test, missing-data rule, and exact interaction decision threshold before any confirmatory call.",
+      "The separately registered size must demonstrate useful power for the interaction at or below 18 dialogues per arm; otherwise the line closes as infeasible at the existing programme ceiling.",
+      "A separate merged design, clean detached launch commit, and signed GO note are required."
+    ],
+    "programmeMaximumIfSeparatelyRegistered": {
+      "generationReservations": 12960,
+      "readerReservations": 5760,
+      "aggregateReservations": 18720,
+      "note": "These are successor planning maxima only. They are not part of this calibration's 6240-attempt authority and cannot be borrowed or launched from this file."
+    }
+  },
+  "claimBoundary": "This calibration can establish only whether a four-arm register-by-move manipulation is operationally separable and measurable for the simulated proof_skipper learner on world_005_marrick, the scripted-core tutor stub, and the pinned Luna generation stack with the two named blind readers. Its outcome summaries are calibration data, not evidence for a positive, null, or causal register-through-moves claim. It cannot establish improved human learning, durable change, transfer, deployed safety, a general benefit of sarcasm, or that register autonomously chooses a move. The paper's completed manner-only boundary remains unchanged.",
+  "stoppingRule": "Stop after the 24 registered jobs and all scheduled reader units are dispositioned, or earlier on a repeated technical failure, suspected instrument defect, systemic safety breach, configuration drift, or global ceiling. Report every gate exactly as registered. No calibration result itself authorizes a confirmatory run."
+}
