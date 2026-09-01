@@ -118,3 +118,19 @@ low-trust scepticism, false memory, and the fused stake as plants) with
 repair gold from the profile repair models and the move cards. A fresh
 Rowan Flat pair was also recorded so the studied scenario has a full
 swimlane beside its counted evidence, clearly labelled as illustration.
+
+## Phase 4 (2026-09-01): rulings on the recordings, and why the gap is small
+
+All 24 planted replies on world-035 and world-037 (plus the fresh world-030
+pair as an appendix) were ruled hit/partial/miss against the schedule gold by
+the model that built the page, as a draft for the author to ratify:
+`notes/poetics/hero-demo-runs/2026-09-01-adjudication-draft.md`. Counts sit on
+the two scenario tabs with the caveat (single-author gold, draft ruling, k=1).
+Ghost 2/6 vs 3/6, fraction 3/6 vs 3/6, fresh Rowan 3/6 vs 3/6.
+
+The small gap has three named causes, now on the method tab: the live v6
+trigger is lexical and was built from one inquiry world, so it fired 1/6 on
+the lesson; the Sonnet learner-sim resolves its own planted state inside the
+planted line in about half the turns (5/12 realized on the fresh Rowan pair),
+where the counted runs used a codex learner; and the whole-stack Rowan effect
+(10/24 vs 15/29) is about one hit per ten plants, below what six plants show.
