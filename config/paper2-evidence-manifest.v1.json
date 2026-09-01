@@ -11,7 +11,7 @@
       "locator": "config/provable-discourse-mechanisms.yaml",
       "format": "yaml-claims",
       "claim_id_prefixes": ["paper2."],
-      "semantic_sha256": "5a137e800275905aee266502f2069aafed0d4b31085b52449bde7646007078f6"
+      "semantic_sha256": "382939922b5a9381b7946e8be72600dc6a933e10abfeed3468f7a930cadaf871"
     },
     {
       "id": "paper2-program2-claims",
