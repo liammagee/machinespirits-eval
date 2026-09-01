@@ -1,7 +1,7 @@
 ---
 id: warrant-quote-rule-letter-case
 title: Accept case-only quotes prospectively while preserving historical replay
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -72,3 +72,7 @@ validator on all 1,716 parsed calls, and the prospective rule preserves all
 1,532 previously valid call results and all 5,370 checked spans. All 206
 available trace-seal hashes match (two early traces have no seal entry).
 The original ruling still admits dialogue 34 while excluding turn 8.
+
+2026-08-31: DONE after PR #894 merged as `1cef61d4` with the full hosted CI
+result green. The prospective case-folded matcher is live for new evaluations;
+historical rules, rulings, sealed evidence, and scores remain unchanged.
