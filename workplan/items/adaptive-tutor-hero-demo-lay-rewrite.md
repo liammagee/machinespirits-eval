@@ -9,12 +9,13 @@ source: manual
 created: 2026-09-01
 updated: 2026-09-01
 verification: "A single techne note tells the hero-demo story for a lay
-  reader: one recorded stuck moment, the wrong and right delivered replies
-  with their 0/6 and 5/6 human-ruled tallies, the three-step mechanism, the
-  four-state repertoire, the forced-wrong-move test, and an unavoidable
-  simulated-conduct boundary. Every quoted line is verbatim from the
-  2026-08-29 research note; the lost-thread state is presented as handled
-  natively, not causally claimed."
+  reader: one recorded stuck moment with both delivered replies (0/6 vs
+  5/6), a why-it-matters section, the three-step mechanism, a five-state
+  repertoire shown as forced wrong-move versus right-move pairs with the
+  ruled tallies (wrong sides summarized from the ruled records, right
+  sides verbatim), the measurement-cuts-both-ways failures, and an
+  unavoidable simulated-conduct boundary. The lost-thread state is
+  presented as handled natively, not causally claimed."
 depends_on:
   - adaptive-tutor-capability-showcase-brief
 links:
