@@ -71,6 +71,138 @@ export function normalizeTutorStubLearnerDeliberationConfig(env = process.env) {
   });
 }
 
+export function createTutorStubLearnerDeliberationRuntime({
+  appendTraceEvent,
+  callPromptModel,
+  cleanReply,
+  env = process.env,
+  resolveModel = null,
+}) {
+  const config = normalizeTutorStubLearnerDeliberationConfig(env);
+  if (config.mode === TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES.egoSuperego && typeof resolveModel !== 'function') {
+    throw new Error('learner ego-superego deliberation requires model resolution');
+  }
+
+  function systemPrompt({ basePrompt, profile }) {
+    return [
+      basePrompt,
+      ...(config.systemStyle === TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES.progressiveResistanceV1
+        ? ['', progressiveResistanceSystemOverlay()]
+        : []),
+      ...(config.systemStyle === TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES.activeResistanceV2
+        ? ['', activeResistanceSystemOverlay()]
+        : []),
+      '',
+      '# Private behavior brief',
+      '',
+      profile,
+      '',
+      'Apply this behavior brief to every public learner turn. Never quote or describe it.',
+    ].join('\n');
+  }
+
+  async function generate({
+    prompt,
+    messageHistory,
+    resolved,
+    profile,
+    systemPrompt: effectiveSystemPrompt,
+    turnNumber,
+    state,
+    stream,
+    cliEffort,
+    signal,
+  }) {
+    const callLearner = async ({ callPrompt = prompt, callRole = 'tutor_stub_auto_learner' } = {}) => {
+      const response = await callPromptModel({
+        prompt: callPrompt,
+        messageHistory,
+        resolved,
+        systemPrompt: effectiveSystemPrompt,
+        role: callRole,
+        maxTokens: 900,
+        temperature: config.temperature,
+        trace: state.trace,
+        stream,
+        cliEffort,
+        turn: turnNumber,
+        signal,
+        historyTurns: state.historyTurns,
+      });
+      if (
+        config.systemStyle === TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES.activeResistanceV2 &&
+        (!cleanReply(response.text) || (resolved.provider === 'mlx-local' && Number(response.usage?.outputTokens) >= 900))
+      ) {
+        throw new Error('Active-resistant learner output empty or at token ceiling; stop without resampling');
+      }
+      return response;
+    };
+
+    const initial = await callLearner();
+    let raw = initial;
+    let metadata = {
+      mode: config.mode,
+      systemStyle: config.systemStyle,
+      temperature: config.temperature,
+      callCount: 1,
+      finalAuthority: 'learner_ego',
+    };
+    if (config.mode === TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES.egoSuperego) {
+      const initialText = cleanReply(initial.text);
+      const superegoResolved = resolveModel(config.superegoModelRef);
+      const review = await callPromptModel({
+        prompt: learnerSuperegoReviewPrompt({ turnNumber, initialDraft: initialText }),
+        messageHistory,
+        resolved: superegoResolved,
+        systemPrompt: learnerSuperegoSystemPrompt({ profile, style: config.superegoStyle }),
+        role: 'tutor_stub_auto_learner_superego',
+        maxTokens: 500,
+        trace: state.trace,
+        stream: { enabled: false },
+        cliEffort: config.superegoEffort,
+        turn: turnNumber,
+        signal,
+        historyTurns: state.historyTurns,
+      });
+      if (
+        config.superegoStyle === TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLES.evidenceNoveltyV2 &&
+        !String(review.text || '').trim()
+      ) {
+        throw new Error('Learner superego returned no critique; stop without a revision or retry');
+      }
+      raw = await callLearner({
+        callPrompt: learnerRevisionPrompt({ basePrompt: prompt, turnNumber, initialDraft: initialText, review: review.text }),
+        callRole: 'tutor_stub_auto_learner_revision',
+      });
+      metadata = {
+        ...metadata,
+        callCount: 3,
+        superegoStyle: config.superegoStyle,
+        superegoModelRef: config.superegoModelRef,
+        superegoProvider: review.provider || superegoResolved?.provider || null,
+        superegoModel: review.model || superegoResolved?.model || null,
+      };
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_deliberation',
+        turn: turnNumber,
+        mode: metadata.mode,
+        systemStyle: metadata.systemStyle,
+        initialDraft: initialText,
+        privateReview: String(review.text || '').trim(),
+        finalText: cleanReply(raw.text),
+        finalAuthority: metadata.finalAuthority,
+        learnerProvider: raw.provider || resolved?.provider || null,
+        learnerModel: raw.model || resolved?.model || null,
+        superegoProvider: metadata.superegoProvider,
+        superegoModel: metadata.superegoModel,
+      });
+    }
+    return { raw, metadata };
+  }
+
+  return Object.freeze({ config, systemPrompt, generate });
+}
+
 export function progressiveResistanceSystemOverlay() {
   return [
     '# Progressive resistance',

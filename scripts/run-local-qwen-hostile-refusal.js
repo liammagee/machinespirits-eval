@@ -37,7 +37,7 @@ export function buildRefusalPlan(
     raw.local_service.model_id_contains =
       arm.variant === 'normal'
         ? 'mlx-community/Qwen3.8-27B-4bit'
-        : '/Users/lmagee/Dev/mlx-qwen/models/Qwen3.8-27B-Uncensored-MLX/4-bit';
+        : 'Qwen3.8-27B-Uncensored-MLX/4-bit';
     const spec = normalizeLocalLearnerSpec(raw);
     if (
       spec.profile !== 'frame_refuser' ||

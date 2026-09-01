@@ -44,7 +44,7 @@ export function loadContinuityPlan(
       variant: 'abliterated',
       mode: 'direct',
       profile: 'uncensored',
-      model: '/Users/lmagee/Dev/mlx-qwen/models/Qwen3.8-27B-Uncensored-MLX/4-bit',
+      model: 'Qwen3.8-27B-Uncensored-MLX/4-bit',
     },
   ];
   const arms = config.arms

@@ -37,7 +37,7 @@ export function buildFactorialPlan(config = readYaml(DEFAULT_PLAN)) {
     raw.local_service.model_id_contains =
       arm.variant === 'normal'
         ? 'mlx-community/Qwen3.8-27B-4bit'
-        : '/Users/lmagee/Dev/mlx-qwen/models/Qwen3.8-27B-Uncensored-MLX/4-bit';
+        : 'Qwen3.8-27B-Uncensored-MLX/4-bit';
     raw.generation.system_prompt_style = config.system_prompt_style;
     raw.generation.deliberation = {
       mode: arm.mode,

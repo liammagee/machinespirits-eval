@@ -20,6 +20,7 @@ import {
   TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES,
   TUTOR_STUB_AUTO_LEARNER_TEMPERATURE_ENV,
 } from '../services/tutorStubLearnerDeliberation.js';
+import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 
 export const LOCAL_LEARNER_SPEC_SCHEMA = 'machinespirits.tutor-stub.local-learner-spec.v1';
 
@@ -250,6 +251,7 @@ export function buildTutorStubArgs(spec, { savePath, dryRun = false } = {}) {
     spec.models.tutorEffort,
     '--no-stream',
     '--no-remember-settings',
+    ...requiredTutorStubArtifactArchiveArgs(),
   ];
   if (!spec.run.stopOnGrounded) args.push('--no-auto-stop-on-grounded');
   if (savePath) args.push('--save', savePath);
