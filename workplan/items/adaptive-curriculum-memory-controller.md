@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-01
-branch: codex/action-outcome-collection-launcher
+branch: codex/action-outcome-collection-go
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -24,6 +24,7 @@ links:
     - config/tutor-stub-action-outcome-collection-pilot-design.v1.json
     - services/tutorStubActionOutcomeCollectionPilot.js
     - scripts/run-tutor-stub-action-outcome-collection-pilot.js
+    - notes/2026-09-01-tutor-stub-action-outcome-collection-pilot-go.md
   prs:
     - 895
     - 898
@@ -31,6 +32,7 @@ links:
     - 901
     - 902
     - 903
+    - 905
   items:
     - layered-task-session-adaptation
 tags:
@@ -96,6 +98,17 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-01: After PR #903 merged and the exact reviewed tree was prepared as
+  clean detached launch commit
+  `7f289563c7aa6e7917a81b2e1ea0569f69bf3cfc`, the operator sent the direct
+  instruction `GO`. Added the separate signed GO note for exactly one initial
+  launch of the registered 24-dialogue collection pilot under the shared paid
+  study contract and the fixed 1,944-reservation fail-before-call ceiling. The
+  note preserves the feasibility-only claim boundary and does not authorize
+  human coding, memory enablement, or the later held-out controller study. The
+  launch remains pending this note's merge; real model calls and production
+  writes remain 0.
 
 - 2026-09-01: After PR #902 merged, added the zero-call collection launcher
   for the registered 24-dialogue action-outcome pilot. It compiles only the
