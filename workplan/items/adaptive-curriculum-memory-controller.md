@@ -89,6 +89,36 @@ contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
 
+- 2026-08-31: After PR #899 merged, continued in a fresh worktree with the
+  zero-call prospective-collection seam. The ordinary typed-action selector was
+  deterministic with propensity one, so family hit rates would have inherited
+  policy-selection confounding. Added a default-off seeded assignment mode that
+  samples uniformly across policy-eligible move families and then within the
+  selected family, while preserving mandatory diagnostic/escalation authority
+  and requiring fixed support. Traces record baseline choice, eligible families
+  and actions, both draws, family/action propensities, and seed material.
+  Readiness replays and validates the assignment, rejects corrupt provenance,
+  and labels deterministic/historical cases; the standard human packet admits
+  only seeded family assignments. Nonrandomized or mandatory cases remain
+  visible but measurement-indeterminate even if a direct review is supplied.
+  Contract and remaining paid-design fields:
+  `docs/action-outcome-prospective-collection.md`. No model-backed collection,
+  conditions, thresholds, routes, worlds, sizing, spend ceiling, GO note, live
+  memory enablement, or benefit claim. Real model calls: 0. Research acceptance
+  remains open; the next step is a complete bounded collection-pilot design,
+  followed later by independent unassisted/transfer evaluation.
+  Verification: 134 focused tests passed across action memory/readiness/review,
+  policy/outcome closure, typed-action assignment/adapter/restoration, turn
+  orchestration, CLI help, and entrypoint facades. The real CLI path was exercised
+  with a fake local executable; invalid collection flags failed before model
+  dispatch. Targeted ESLint, Prettier, import-cycle check, test-manifest check,
+  workplan source check (575/575), and diff checks passed. Symmetry review found
+  no unmatched learner trace or scoring change: this is a tutor treatment
+  assignment, while the existing next-public-learner outcome lane is unchanged.
+  The paid tutor benchmark is not run because the new mode is default-off and a
+  real benchmark would violate this slice's zero-call boundary; ordinary lint and
+  CI remain enabled.
+
 - 2026-08-31: After PR #898 merged, continued with the next zero-call
   prerequisite in a fresh worktree: a prospective auxiliary-blind human-review
   packet and exact importer handoff. The create-once builder admits only

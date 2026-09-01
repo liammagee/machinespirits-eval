@@ -10,7 +10,10 @@ learning, transfer, or causal benefit.
 
 The current 156-trace inventory cannot produce a packet because those traces
 contain no typed-action decisions. Use this only after a prospective collection
-has recorded the fields described in `docs/action-outcome-memory-readiness.md`.
+has recorded seeded eligible-family assignments and the fields described in
+`docs/action-outcome-memory-readiness.md`. Packet preparation omits and reports
+deterministic, mandatory-policy, and historical selections; corrupt assignment
+provenance is excluded by readiness.
 
 ## Prepare a packet
 

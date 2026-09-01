@@ -775,6 +775,7 @@
         "tests/tutorStubTutorPromptContext.test.js",
         "tests/tutorStubTutorTurnPipeline.test.js",
         "tests/tutorStubTypedActionAdapter.test.js",
+        "tests/tutorStubTypedActionAssignment.test.js",
         "tests/tutorStubTypedActionRestoration.test.js",
         "tests/tutorStubTypedCompositeAdvocateCalibration.test.js",
         "tests/tutorStubUptakeGuardLinkage.test.js",

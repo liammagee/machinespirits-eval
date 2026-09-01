@@ -60,6 +60,7 @@ export function parseTutorStubCliArguments({
       'eval-job-id': { type: 'string', default: '' },
       'loop-mode': { type: 'string', default: 'strict' },
       'typed-actions': { type: 'boolean', default: stub.typedActions },
+      'typed-action-assignment': { type: 'string', default: stub.typedActionAssignment },
       'typed-action-task-id': { type: 'string', default: stub.typedActionTaskId },
       'typed-action-knowledge-component': { type: 'string', default: stub.typedActionKnowledgeComponent },
       'typed-action-prerequisites': { type: 'string', default: stub.typedActionPrerequisites },

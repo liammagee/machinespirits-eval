@@ -76,6 +76,17 @@ or change selection. Earlier traces without these fields remain earlier traces;
 their absence is a data gap, not an invitation to infer the fields from a later
 response or rerun an updated observer.
 
+Prospective collection should also use
+`--typed-action-assignment uniform_family_eligible` with an explicit fixed
+support level. This seeded mode samples an eligible move family uniformly, then
+an eligible action within that family, while preserving mandatory diagnostic and
+escalation authority. Readiness replays both draws and validates the family and
+action propensities. It reports assignment status in each evidence row and
+rejects corrupt assignment provenance. The standard human-review packet admits
+only seeded family assignments; deterministic, mandatory, and historical
+selection cannot become binary memory evidence through the importer. Full
+contract: `docs/action-outcome-prospective-collection.md`.
+
 The existing outcome observer and response-configuration visibility audit are
 pattern-based auxiliaries. An auxiliary success/failure alone exports as
 `measurement_indeterminate`, with its original label retained separately.
@@ -171,7 +182,7 @@ studies' outcomes, and it is not an exhaustive search of every project archive.
 
 Consequently this slice has a real gap report and synthetic replay validation,
 but no real-data memory comparison. The next data collection must prospectively
-record typed actions, pre-action condition and selector inputs, actual delivery,
-the next public learner response, and a valid measurement review. Independent
-unassisted and transfer assessments remain separate work before any benefit
-claim or model-backed study.
+record seeded eligible-family assignments, typed actions, pre-action condition
+and selector inputs, actual delivery, the next public learner response, and a
+valid measurement review. Independent unassisted and transfer assessments remain
+separate work before any benefit claim or model-backed study.
