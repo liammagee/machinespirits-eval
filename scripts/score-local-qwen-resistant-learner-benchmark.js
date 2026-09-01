@@ -422,6 +422,55 @@ export function buildBenchmarkOutputSchema(kind, turnCount, { extendedQuality = 
   });
 }
 
+export function benchmarkOutputSchemaIssues(value, schema, fieldPath = '$') {
+  if (!schema || typeof schema !== 'object') return [`${fieldPath}:missing_schema`];
+  if (Array.isArray(schema.anyOf)) {
+    const branches = schema.anyOf.map((branch) => benchmarkOutputSchemaIssues(value, branch, fieldPath));
+    return branches.some((issues) => issues.length === 0) ? [] : [`${fieldPath}:no_anyOf_branch`];
+  }
+  if (Object.hasOwn(schema, 'const') && !Object.is(value, schema.const)) return [`${fieldPath}:const`];
+  const actualType = value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;
+  if (schema.type === 'integer' && !Number.isInteger(value)) return [`${fieldPath}:type_${actualType}`];
+  if (schema.type && schema.type !== 'integer' && actualType !== schema.type) {
+    return [`${fieldPath}:type_${actualType}`];
+  }
+  const issues = [];
+  if (Array.isArray(schema.enum) && !schema.enum.some((entry) => Object.is(entry, value))) {
+    issues.push(`${fieldPath}:enum`);
+  }
+  if (actualType === 'object') {
+    const properties = schema.properties || {};
+    for (const key of schema.required || []) {
+      if (!Object.hasOwn(value, key)) issues.push(`${fieldPath}.${key}:required`);
+    }
+    for (const [key, child] of Object.entries(value)) {
+      if (!Object.hasOwn(properties, key)) {
+        if (schema.additionalProperties === false) issues.push(`${fieldPath}.${key}:additional_property`);
+      } else {
+        issues.push(...benchmarkOutputSchemaIssues(child, properties[key], `${fieldPath}.${key}`));
+      }
+    }
+  }
+  if (actualType === 'array') {
+    if (Number.isInteger(schema.minItems) && value.length < schema.minItems) issues.push(`${fieldPath}:minItems`);
+    if (Number.isInteger(schema.maxItems) && value.length > schema.maxItems) issues.push(`${fieldPath}:maxItems`);
+    if (schema.items) {
+      value.forEach((child, index) => {
+        issues.push(...benchmarkOutputSchemaIssues(child, schema.items, `${fieldPath}[${index}]`));
+      });
+    }
+  }
+  if (actualType === 'string') {
+    if (Number.isInteger(schema.minLength) && value.length < schema.minLength) issues.push(`${fieldPath}:minLength`);
+    if (Number.isInteger(schema.maxLength) && value.length > schema.maxLength) issues.push(`${fieldPath}:maxLength`);
+  }
+  if (actualType === 'number') {
+    if (Number.isFinite(schema.minimum) && value < schema.minimum) issues.push(`${fieldPath}:minimum`);
+    if (Number.isFinite(schema.maximum) && value > schema.maximum) issues.push(`${fieldPath}:maximum`);
+  }
+  return issues;
+}
+
 export function assertCompleteScore(kind, parsed, turnCount, { extendedQuality = false } = {}) {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
     throw new Error(`${kind} judge returned no assessment object`);
@@ -506,7 +555,12 @@ export function assertCompleteScore(kind, parsed, turnCount, { extendedQuality =
 
 // An index-base conversion is lossless only for a complete, ordered sequence.
 // It never repairs missing/duplicate/mixed indices or changes a score/reason.
-export function parseBenchmarkScore(kind, text, turnCount, { allowOneBasedIndices = false, ...options } = {}) {
+export function parseBenchmarkScore(
+  kind,
+  text,
+  turnCount,
+  { allowOneBasedIndices = false, outputSchema = null, ...options } = {},
+) {
   let parsed = strictJson(text);
   let indexNormalization = null;
   const key = kind === 'tutor' ? 'turn_index' : kind === 'learner' ? 'learner_turn_index' : null;
@@ -518,6 +572,11 @@ export function parseBenchmarkScore(kind, text, turnCount, { allowOneBasedIndice
   ) {
     parsed = { ...parsed, turns: parsed.turns.map((row, index) => ({ ...row, [key]: index })) };
     indexNormalization = { field: key, from: '1-based', to: '0-based', rows: turnCount, contentChanged: false };
+  }
+  if (outputSchema) {
+    const issues = benchmarkOutputSchemaIssues(parsed, outputSchema);
+    if (issues.length)
+      throw new Error(`${kind} judge response failed its output schema: ${issues.slice(0, 8).join(', ')}`);
   }
   assertCompleteScore(kind, parsed, turnCount, options);
   return { parsed, indexNormalization };
@@ -632,7 +691,7 @@ export async function scoreBenchmarkArms(
         job.kind,
         response.text,
         arms.find((arm) => arm.id === job.arm).snapshot.turns.length,
-        { extendedQuality, allowOneBasedIndices },
+        { extendedQuality, allowOneBasedIndices, outputSchema: job.outputSchema },
       );
       const scored = normalizeScores(job.kind, parsed);
       if (!Number.isFinite(scored.overall)) throw new Error('judge returned no usable aggregate');

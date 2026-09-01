@@ -9,7 +9,7 @@ source: manual
 created: 2026-08-31
 updated: 2026-09-01
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "The two eight-exchange arms are preserved and three of eight Opus assessments are complete at 37/48 aggregate attempts; focused tests admit only the exact response-free A-quality failure into an 11-attempt linked recovery that reuses every accepted generation and assessment output."
+verification: "The two eight-exchange arms and three valid Opus assessments are preserved at 38/48 aggregate attempts; the repeated A-quality schema-tool failures are exact-packet technical failures, and a tested 10-attempt linked recovery keeps the prompt, rubric and one-response Opus route fixed while validating quality JSON locally against the unchanged schema."
 claim_status: planned
 links:
   notes:
@@ -94,3 +94,12 @@ with Sol, no superegos, using one fresh dialogue per arm.
   dialogues and all three valid scores, retries only the five unresolved
   packets, preserves the failed attempt and enforces the remaining 11-attempt
   ceiling.
+- 2026-09-01: The exact A quality packet failed a second time through Claude's
+  structured-output tool and stopped at 38/48. The prompt and schema hashes were
+  unchanged. The first attempt produced malformed tool JSON; the second added
+  one forbidden top-level field, so neither is accepted. The next correction is
+  transport-only: quality packets keep the same prompt, schema, rubric, Opus
+  route and single-response rule, but return plain JSON for strict local schema
+  validation. Tutor, learner and dialogue assessments retain the existing
+  provider schema tool. A fifth linked ledger preserves all 38 attempts and
+  exposes only the remaining 10.

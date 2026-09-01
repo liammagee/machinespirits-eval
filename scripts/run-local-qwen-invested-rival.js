@@ -311,7 +311,23 @@ function publicSourceContexts(plan, arms) {
   return Object.fromEntries(arms.map((arm) => [arm.id, investedRivalDeliveredSourceContext(plan, arm)]));
 }
 
-async function scoreArms({ plan, arms, outDir, budget, priorScores = [], priorAttempts = 0, ceiling = 8 }) {
+export function investedRivalJudgeCallOptions(role, options, plainJsonQuality = false) {
+  return {
+    ...options,
+    singleAttemptJsonText: plainJsonQuality && role === 'local-qwen-benchmark-quality',
+  };
+}
+
+async function scoreArms({
+  plan,
+  arms,
+  outDir,
+  budget,
+  priorScores = [],
+  priorAttempts = 0,
+  ceiling = 8,
+  plainJsonQuality = false,
+}) {
   return scoreBenchmarkArms(arms, path.join(outDir, 'evaluation'), {
     ceiling,
     extendedQuality: true,
@@ -323,7 +339,14 @@ async function scoreArms({ plan, arms, outDir, budget, priorScores = [], priorAt
     callJudge: async (...args) => {
       const reservation = budget.reserve({ role: args[3] });
       fs.appendFileSync(path.join(outDir, 'attempts.jsonl'), `${JSON.stringify(reservation)}\n`);
-      return callAIWithCliBridge(...args);
+      const [agent, systemPrompt, userPrompt, role, options] = args;
+      return callAIWithCliBridge(
+        agent,
+        systemPrompt,
+        userPrompt,
+        role,
+        investedRivalJudgeCallOptions(role, options, plainJsonQuality),
+      );
     },
   });
 }
@@ -834,6 +857,109 @@ export function linkedAssessmentRecoveryContract(plan, recovery) {
   };
 }
 
+export function readQualityJsonTransportRecovery(plan, sourceDir) {
+  const sourcePlan = JSON.parse(fs.readFileSync(path.join(sourceDir, 'plan.json'), 'utf8'));
+  const provenance = sourcePlan.provenance || {};
+  if (
+    sourcePlan.id !== plan.id ||
+    provenance.recovery !== true ||
+    provenance.linkedRecoveryStudyId !== `${plan.id}-generation-recovery-v4` ||
+    provenance.linkedRecoveryAttemptCeiling !== 11 ||
+    provenance.priorAttemptCount !== 37 ||
+    provenance.reusedCompletedAssessments?.join(',') !== 'A/tutor,A/learner,A/dialogue'
+  ) {
+    throw new Error('quality transport recovery must start from the linked assessment recovery');
+  }
+  const stop = JSON.parse(fs.readFileSync(path.join(sourceDir, 'stopped.json'), 'utf8'));
+  const arms = JSON.parse(fs.readFileSync(path.join(sourceDir, 'arms.json'), 'utf8'));
+  if (
+    stop.budget?.used !== 38 ||
+    stop.budget?.limit !== plan.total_attempt_ceiling ||
+    arms.map((arm) => arm.id).join(',') !== 'A,B' ||
+    arms.some((arm) => arm.snapshot?.turns?.length !== plan.max_exchanges)
+  ) {
+    throw new Error('quality transport recovery requires both preserved arms at 38/48 attempts');
+  }
+  const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
+  const runReserved = runEvents
+    .filter((event) => event.type === 'model_attempt_reserved')
+    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const runSeal = runEvents.findLast((event) => event.type === 'run_sealed');
+  if (
+    runReserved !== 1 ||
+    provenance.priorAttemptCount + runReserved !== stop.budget.used ||
+    runSeal?.status !== 'failed' ||
+    runSeal?.reserved_attempts !== runReserved
+  ) {
+    throw new Error('quality transport recovery accounting differs from the preserved predecessor');
+  }
+  const latestEligibility = technicalRecoveryEligible(sourceDir);
+  if (
+    latestEligibility.priorAttempts !== 1 ||
+    latestEligibility.failure.arm !== 'A' ||
+    latestEligibility.failure.kind !== 'quality'
+  ) {
+    throw new Error('quality transport recovery requires the repeated A quality structured-output failure');
+  }
+  const prior = readLinkedAssessmentRecovery(plan, provenance.recoverySource);
+  if (JSON.stringify(arms) !== JSON.stringify(prior.arms)) {
+    throw new Error('quality transport recovery arm archive differs from the preserved predecessor');
+  }
+  const expectedJob = buildBenchmarkJobs(arms, {
+    extendedQuality: true,
+    assessmentContext: plan.assessmentContext,
+    publicSourceContextByArm: publicSourceContexts(plan, arms),
+  }).find((job) => job.arm === 'A' && job.kind === 'quality');
+  const failedBase = path.join(sourceDir, 'evaluation', 'A-quality');
+  const priorFailedBase = path.join(provenance.recoverySource, 'evaluation', 'A-quality');
+  if (
+    fs.readFileSync(`${failedBase}.prompt.txt`, 'utf8') !== expectedJob.prompt ||
+    fs.readFileSync(`${failedBase}.prompt.txt`, 'utf8') !== fs.readFileSync(`${priorFailedBase}.prompt.txt`, 'utf8') ||
+    JSON.stringify(JSON.parse(fs.readFileSync(`${failedBase}.schema.json`, 'utf8'))) !==
+      JSON.stringify(expectedJob.outputSchema) ||
+    JSON.stringify(JSON.parse(fs.readFileSync(`${failedBase}.schema.json`, 'utf8'))) !==
+      JSON.stringify(JSON.parse(fs.readFileSync(`${priorFailedBase}.schema.json`, 'utf8')))
+  ) {
+    throw new Error('quality transport recovery packet differs from the repeated failed packet');
+  }
+  for (const forbidden of [
+    path.join(sourceDir, 'completed.json'),
+    path.join(sourceDir, 'report-data.json'),
+    path.join(sourceDir, 'report.html'),
+    path.join(sourceDir, 'evaluation', 'scores.json'),
+  ]) {
+    if (fs.existsSync(forbidden)) throw new Error('quality transport recovery source contains completed output');
+  }
+  return {
+    sourcePlan,
+    stop,
+    arms,
+    eligibility: {
+      priorAttempts: prior.eligibility.priorAttempts + latestEligibility.priorAttempts,
+      failure: latestEligibility.failure,
+    },
+    priorScores: prior.priorScores,
+    linked: true,
+    plainJsonQuality: true,
+  };
+}
+
+export function qualityJsonTransportRecoveryContract(plan, recovery) {
+  const priorAttemptCount = recovery?.stop?.budget?.used;
+  if (
+    !Number.isInteger(priorAttemptCount) ||
+    priorAttemptCount < 1 ||
+    priorAttemptCount >= plan.total_attempt_ceiling
+  ) {
+    throw new Error('quality transport recovery requires preserved attempts below the study ceiling');
+  }
+  return {
+    studyId: `${plan.id}-generation-recovery-v5`,
+    spendCap: plan.total_attempt_ceiling - priorAttemptCount,
+    priorAttemptCount,
+  };
+}
+
 async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) {
   const { stop, arms, eligibility, priorScores } = recovery;
   const priorAttemptCount = recovery.linked ? stop.budget.used : 0;
@@ -873,6 +999,7 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
       priorScores,
       priorAttempts: eligibility.priorAttempts,
       ceiling: plan.judge_calls + plan.recovery_attempt_reserve,
+      plainJsonQuality: recovery.plainJsonQuality === true,
     });
     const finalProvenance = { ...provenance, budget: budget.snapshot() };
     reportResult({ outDir, plan, arms, evaluation, provenance: finalProvenance });
@@ -936,6 +1063,7 @@ export async function main(argv = process.argv.slice(2)) {
       'recover-arm-boundary': { type: 'boolean', default: false },
       'recover-local-model-route': { type: 'boolean', default: false },
       'recover-linked-assessments': { type: 'boolean', default: false },
+      'recover-quality-json-transport': { type: 'boolean', default: false },
       from: { type: 'string' },
       'accept-charges': { type: 'boolean', default: false },
       'launch-commit': { type: 'string' },
@@ -945,6 +1073,44 @@ export async function main(argv = process.argv.slice(2)) {
     },
   });
   const plan = buildInvestedRivalPlan(ROOT, values.config || DEFAULT_CONFIG);
+  if (values['recover-quality-json-transport']) {
+    if (
+      !values.live ||
+      !values.from ||
+      values['recover-generation'] ||
+      values['recover-arm-boundary'] ||
+      values['recover-local-model-route'] ||
+      values['recover-linked-assessments'] ||
+      values['recover-assessments']
+    ) {
+      throw new Error('--recover-quality-json-transport requires --live and --from, without another recovery mode');
+    }
+    const sourceDir = path.resolve(ROOT, values.from);
+    const outDir = path.resolve(ROOT, values.output || `${sourceDir}-quality-json-transport-recovery-v1`);
+    const recovery = readQualityJsonTransportRecovery(plan, sourceDir);
+    const recoveryContract = qualityJsonTransportRecoveryContract(plan, recovery);
+    const admission = admitLiveRun(plan, values, outDir, null, recoveryContract);
+    admission.record({
+      type: 'quality_json_transport_recovery',
+      recovery_from: sourceDir,
+      prior_attempts_preserved: recoveryContract.priorAttemptCount,
+      reused_completed_arms: recovery.arms.map((arm) => arm.id),
+      reused_completed_assessments: recovery.priorScores.map((score) => `${score.arm}/${score.kind}`),
+      aggregate_attempt_ceiling: plan.total_attempt_ceiling,
+      recovery_attempt_ceiling: recoveryContract.spendCap,
+      quality_transport: 'single_json_result_text_local_schema',
+    });
+    if (admission.studyReserved !== 0) {
+      admission.close({
+        type: 'run_sealed',
+        status: 'failed',
+        error: 'quality transport recovery ledger was not empty at launch',
+        recovery_from: sourceDir,
+      });
+      throw new Error('quality transport recovery ledger was not empty at launch');
+    }
+    return recoverAssessments(plan, sourceDir, outDir, admission, recovery);
+  }
   if (values['recover-linked-assessments']) {
     if (
       !values.live ||
