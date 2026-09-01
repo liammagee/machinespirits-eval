@@ -21,6 +21,12 @@
       "reason": "Predates the standing 2026-08-22 policy."
     },
     {
+      "path": "scripts/run-tutor-stub-action-outcome-collection-pilot.js",
+      "registered": "2026-09-01",
+      "disposition": "shared_contract",
+      "reason": "Post-policy prospective action-outcome collection launcher; adopts services/paidStudyLaunchContract.js for admission, create-once state, per-dialogue reservations, and the append-only ledger."
+    },
+    {
       "path": "scripts/run-tutor-stub-defiant-warrant-pilot.js",
       "registered": "2026-08-29",
       "disposition": "historical_live_exemption",

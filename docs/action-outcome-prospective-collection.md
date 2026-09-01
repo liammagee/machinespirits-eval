@@ -111,11 +111,22 @@ their seed schedule, two private human-coder seats, feasibility thresholds,
 create-once destinations, technical dispositions, and a hard ceiling of 1,944
 model-call reservations.
 
-The design is not launch authority. Under
-`docs/paid-study-authorization-policy.md`, it must first merge to `main`; a later
-launcher must use the shared paid-study contract from a clean detached launch
-commit, and a separate signed GO note must name that commit, design path, and
-ceiling. No GO note or launcher is part of this slice.
+The design is not launch authority. The zero-call collection launcher is
+`scripts/run-tutor-stub-action-outcome-collection-pilot.js`. Its dry run compiles
+all 24 commands, probes the local Codex CLI version, exercises the three model
+roles with local stubs, and verifies the private archive plus all four
+create-once destinations:
+
+```bash
+node scripts/run-tutor-stub-action-outcome-collection-pilot.js --dry-run
+```
+
+The paid path uses `services/paidStudyLaunchContract.js`. Under
+`docs/paid-study-authorization-policy.md`, the launcher must merge to `main`; a
+clean detached launch commit must contain the design and launcher, and a separate
+signed GO note must name that commit, design path, and 1,944-reservation ceiling.
+No GO note is part of this slice, and a passing dry run grants no launch or
+model-call authority.
 
 The collection pilot must report mandatory versus assigned turns, eligible-family
 sets, family and action propensities, delivered/displaced actions, conditions,
