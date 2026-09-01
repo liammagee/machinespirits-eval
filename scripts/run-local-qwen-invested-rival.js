@@ -23,6 +23,7 @@ import { loadDialogueRubric } from '../services/rubricEvaluator.js';
 import {
   buildBenchmarkJobs,
   normalizeScores,
+  parseSplitQualityScore,
   readBenchmarkArm,
   scoreBenchmarkArms,
 } from './score-local-qwen-resistant-learner-benchmark.js';
@@ -99,11 +100,15 @@ export function buildInvestedRivalPlan(root = ROOT, configPath = DEFAULT_CONFIG)
     plan.id !== 'qwen-invested-rival-theorist-v1' ||
     plan.total_attempt_ceiling !== 48 ||
     plan.recovery_attempt_reserve !== 8 ||
+    plan.completion_attempt_ceiling !== 50 ||
+    plan.completion_recovery_attempt_ceiling !== 2 ||
     plan.generationCap !== 32 ||
     plan.judge_calls !== 8 ||
     plan.tutor_control !== 'public_proof_dag'
   ) {
-    throw new Error('invested-rival plan differs from the proposed 32 + 8 + 8 attempt design');
+    throw new Error(
+      'invested-rival plan differs from the registered 48-attempt design plus bounded completion amendment',
+    );
   }
   if (
     plan.arms.length !== 2 ||
@@ -318,6 +323,39 @@ export function investedRivalJudgeCallOptions(role, options, plainJsonQuality = 
   };
 }
 
+export function allowUnknownRootOutputFields(outputSchema) {
+  if (outputSchema?.type !== 'object' || !outputSchema.properties) {
+    throw new Error('root-field projection requires an object output schema');
+  }
+  return { ...structuredClone(outputSchema), additionalProperties: true };
+}
+
+export function projectRegisteredRootOutput(text, outputSchema) {
+  const parsed = JSON.parse(text);
+  if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
+    throw new Error('root-field projection requires one JSON object');
+  }
+  const registeredKeys = Object.keys(outputSchema?.properties || {});
+  if (!registeredKeys.length) throw new Error('root-field projection requires registered properties');
+  const projected = Object.fromEntries(
+    registeredKeys.filter((key) => Object.hasOwn(parsed, key)).map((key) => [key, parsed[key]]),
+  );
+  return {
+    text: JSON.stringify(projected),
+    discardedRootKeys: Object.keys(parsed)
+      .filter((key) => !registeredKeys.includes(key))
+      .sort(),
+  };
+}
+
+function retryableCompletionTransportError(error) {
+  return (
+    error?.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR' &&
+    error?.classification === 'response_free_error' &&
+    error?.reason === 'result_error_without_structured_output'
+  );
+}
+
 async function scoreArms({
   plan,
   arms,
@@ -328,29 +366,89 @@ async function scoreArms({
   ceiling = 8,
   plainJsonQuality = false,
   splitQuality = false,
+  priorSplitQualityParts = [],
+  completionRootProjection = false,
+  completionTechnicalAttemptLimit = 1,
 }) {
-  return scoreBenchmarkArms(arms, path.join(outDir, 'evaluation'), {
+  let newPhysicalAttempts = 0;
+  const evaluation = await scoreBenchmarkArms(arms, path.join(outDir, 'evaluation'), {
     ceiling,
     extendedQuality: true,
     allowOneBasedIndices: true,
     assessmentContext: plan.assessmentContext,
     publicSourceContextByArm: publicSourceContexts(plan, arms),
     priorScores,
+    priorSplitQualityParts,
     priorAttempts,
     splitQuality,
     callJudge: async (...args) => {
-      const reservation = budget.reserve({ role: args[3] });
-      fs.appendFileSync(path.join(outDir, 'attempts.jsonl'), `${JSON.stringify(reservation)}\n`);
       const [agent, systemPrompt, userPrompt, role, options] = args;
-      return callAIWithCliBridge(
-        agent,
-        systemPrompt,
-        userPrompt,
-        role,
-        investedRivalJudgeCallOptions(role, options, plainJsonQuality),
-      );
+      const projectionActive = completionRootProjection && role === 'local-qwen-benchmark-quality-turns';
+      const attemptLimit = projectionActive ? completionTechnicalAttemptLimit : 1;
+      const technicalFailures = [];
+      for (let attempt = 1; attempt <= attemptLimit; attempt += 1) {
+        const reservation = budget.reserve({ role });
+        newPhysicalAttempts += 1;
+        fs.appendFileSync(path.join(outDir, 'attempts.jsonl'), `${JSON.stringify(reservation)}\n`);
+        let rawOutput;
+        try {
+          const callOptions = investedRivalJudgeCallOptions(role, options, plainJsonQuality);
+          const response = await callAIWithCliBridge(agent, systemPrompt, userPrompt, role, {
+            ...callOptions,
+            ...(projectionActive
+              ? {
+                  outputSchema: allowUnknownRootOutputFields(options.outputSchema),
+                  onRawOutput: (output) => {
+                    rawOutput = output;
+                  },
+                }
+              : {}),
+          });
+          if (!projectionActive) return response;
+          options.onRawOutput(rawOutput);
+          const projection = projectRegisteredRootOutput(response.text, options.outputSchema);
+          return {
+            ...response,
+            text: projection.text,
+            outputProjection: {
+              rule: 'registered_root_fields_only_then_original_strict_schema',
+              discardedRootKeys: projection.discardedRootKeys,
+              registeredValuesChanged: false,
+            },
+            technicalFailures,
+          };
+        } catch (error) {
+          if (projectionActive) {
+            const retryBase = path.join(outDir, 'evaluation', `B-quality-turns-technical-attempt-${attempt}`);
+            if (rawOutput !== undefined) writeJson(`${retryBase}.transport.json`, rawOutput);
+            writeJson(`${retryBase}.error.json`, {
+              message: error.message,
+              code: error.code,
+              classification: error.classification,
+              reason: error.reason,
+            });
+          }
+          if (!projectionActive || attempt >= attemptLimit || !retryableCompletionTransportError(error)) throw error;
+          technicalFailures.push({
+            attempt,
+            message: error.message,
+            code: error.code,
+            classification: error.classification,
+            reason: error.reason,
+          });
+        }
+      }
+      throw new Error('completion transport exhausted without a result');
     },
   });
+  return {
+    ...evaluation,
+    physicalAttempts: {
+      prior: priorAttempts,
+      new: newPhysicalAttempts,
+      used: priorAttempts + newPhysicalAttempts,
+    },
+  };
 }
 
 async function runFresh(plan, outDir, admission, generationRecovery = null) {
@@ -1208,7 +1306,7 @@ export function qualitySplitStructuredRecoveryContract(plan, recovery) {
   };
 }
 
-function readStructuredAdditionalPropertyFailure(sourceDir, packet) {
+function readStructuredAdditionalPropertyFailure(sourceDir, packet, expectedUnexpectedProperties) {
   const base = path.join(sourceDir, 'evaluation', packet);
   const error = JSON.parse(fs.readFileSync(`${base}.error.json`, 'utf8'));
   if (
@@ -1228,14 +1326,17 @@ function readStructuredAdditionalPropertyFailure(sourceDir, packet) {
     (event.message?.content || []).filter((content) => content.type === 'tool_result' && content.is_error === true),
   );
   const result = events.findLast((event) => event.type === 'result');
+  const outputSchema = JSON.parse(fs.readFileSync(`${base}.schema.json`, 'utf8'));
+  const registeredProperties = Object.keys(outputSchema.properties || {});
   const unexpectedProperties = toolUses
     .flatMap((toolUse) => Object.keys(toolUse.input || {}))
-    .filter((key) => key === 'reasoning_effort');
+    .filter((key) => !registeredProperties.includes(key))
+    .sort();
   if (
     transport.exitCode !== 1 ||
     toolUses.length !== 1 ||
     toolUses[0].name !== 'StructuredOutput' ||
-    unexpectedProperties.join(',') !== 'reasoning_effort' ||
+    unexpectedProperties.join(',') !== [...expectedUnexpectedProperties].sort().join(',') ||
     toolErrors.length !== 1 ||
     !/must NOT have additional properties/u.test(String(toolErrors[0].content || '')) ||
     result?.subtype !== 'error_max_structured_output_retries' ||
@@ -1295,7 +1396,7 @@ export function readFinalQualityRecovery(plan, sourceDir) {
   ) {
     throw new Error('final quality recovery requires seven accepted assessments and the failed B quality summary');
   }
-  const failedTransport = readStructuredAdditionalPropertyFailure(sourceDir, 'B-quality-summary');
+  const failedTransport = readStructuredAdditionalPropertyFailure(sourceDir, 'B-quality-summary', ['reasoning_effort']);
   const prior = readQualitySplitStructuredRecovery(plan, provenance.recoverySource);
   if (JSON.stringify(arms) !== JSON.stringify(prior.arms)) {
     throw new Error('final quality recovery arm archive differs from the preserved predecessor');
@@ -1361,10 +1462,136 @@ export function finalQualityRecoveryContract(plan, recovery) {
   };
 }
 
+export function readFinalCompletionRecovery(plan, sourceDir) {
+  const sourcePlan = JSON.parse(fs.readFileSync(path.join(sourceDir, 'plan.json'), 'utf8'));
+  const provenance = sourcePlan.provenance || {};
+  if (
+    sourcePlan.id !== plan.id ||
+    provenance.recovery !== true ||
+    provenance.linkedRecoveryStudyId !== `${plan.id}-generation-recovery-v8` ||
+    provenance.linkedRecoveryAttemptCeiling !== 2 ||
+    provenance.priorAttemptCount !== 46 ||
+    provenance.reusedCompletedAssessments?.join(',') !==
+      'A/tutor,A/learner,A/dialogue,A/quality,B/tutor,B/learner,B/dialogue'
+  ) {
+    throw new Error('final completion recovery must start from the terminal quality recovery');
+  }
+  const stop = JSON.parse(fs.readFileSync(path.join(sourceDir, 'stopped.json'), 'utf8'));
+  const arms = JSON.parse(fs.readFileSync(path.join(sourceDir, 'arms.json'), 'utf8'));
+  if (
+    stop.budget?.used !== 48 ||
+    stop.budget?.limit !== plan.total_attempt_ceiling ||
+    arms.map((arm) => arm.id).join(',') !== 'A,B' ||
+    arms.some((arm) => arm.snapshot?.turns?.length !== plan.max_exchanges)
+  ) {
+    throw new Error('final completion recovery requires both preserved arms at the original 48-attempt ceiling');
+  }
+  const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
+  const runReserved = runEvents
+    .filter((event) => event.type === 'model_attempt_reserved')
+    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const runSeal = runEvents.findLast((event) => event.type === 'run_sealed');
+  if (
+    runReserved !== 2 ||
+    provenance.priorAttemptCount + runReserved !== stop.budget.used ||
+    runSeal?.status !== 'failed' ||
+    runSeal?.reserved_attempts !== runReserved
+  ) {
+    throw new Error('final completion recovery accounting differs from the preserved predecessor');
+  }
+  const judgeEvents = readJsonLines(path.join(sourceDir, 'evaluation', 'judge-ledger.jsonl'));
+  const eventKeys = judgeEvents.map((event) => `${event.event}/${event.arm}/${event.kind}`);
+  if (
+    eventKeys.join(',') !==
+    'reserved/B/quality-summary,completed/B/quality-summary,reserved/B/quality-turns,failed/B/quality-turns'
+  ) {
+    throw new Error('final completion recovery requires the accepted B summary followed by the failed B turns packet');
+  }
+  const failedTransport = readStructuredAdditionalPropertyFailure(sourceDir, 'B-quality-turns', ['turns']);
+  const prior = readFinalQualityRecovery(plan, provenance.recoverySource);
+  if (JSON.stringify(arms) !== JSON.stringify(prior.arms)) {
+    throw new Error('final completion recovery arm archive differs from the preserved predecessor');
+  }
+  const jobs = buildBenchmarkJobs(arms, {
+    extendedQuality: true,
+    assessmentContext: plan.assessmentContext,
+    publicSourceContextByArm: publicSourceContexts(plan, arms),
+    splitQuality: true,
+  });
+  const summaryJob = jobs.find((job) => job.arm === 'B' && job.kind === 'quality-summary');
+  const turnsJob = jobs.find((job) => job.arm === 'B' && job.kind === 'quality-turns');
+  const summaryBase = path.join(sourceDir, 'evaluation', 'B-quality-summary');
+  const turnsBase = path.join(sourceDir, 'evaluation', 'B-quality-turns');
+  if (
+    fs.readFileSync(`${summaryBase}.prompt.txt`, 'utf8') !== summaryJob.prompt ||
+    JSON.stringify(JSON.parse(fs.readFileSync(`${summaryBase}.schema.json`, 'utf8'))) !==
+      JSON.stringify(summaryJob.outputSchema) ||
+    fs.readFileSync(`${turnsBase}.prompt.txt`, 'utf8') !== turnsJob.prompt ||
+    JSON.stringify(JSON.parse(fs.readFileSync(`${turnsBase}.schema.json`, 'utf8'))) !==
+      JSON.stringify(turnsJob.outputSchema)
+  ) {
+    throw new Error('final completion recovery packets differ from the registered split assessment');
+  }
+  const summaryRaw = JSON.parse(fs.readFileSync(`${summaryBase}.json`, 'utf8'));
+  parseSplitQualityScore('summary', JSON.stringify(summaryRaw), plan.max_exchanges, summaryJob.outputSchema);
+  for (const forbidden of [
+    `${turnsBase}.response.txt`,
+    `${turnsBase}.json`,
+    path.join(sourceDir, 'evaluation', 'B-quality.json'),
+    path.join(sourceDir, 'completed.json'),
+    path.join(sourceDir, 'report-data.json'),
+    path.join(sourceDir, 'report.html'),
+    path.join(sourceDir, 'evaluation', 'scores.json'),
+  ]) {
+    if (fs.existsSync(forbidden)) throw new Error('final completion recovery source contains completed output');
+  }
+  return {
+    sourcePlan,
+    stop,
+    arms,
+    eligibility: {
+      priorAttempts: prior.eligibility.priorAttempts + 2,
+      failure: {
+        arm: 'B',
+        kind: 'quality-turns',
+        error: JSON.parse(fs.readFileSync(`${turnsBase}.error.json`, 'utf8')),
+      },
+    },
+    priorScores: prior.priorScores,
+    priorSplitQualityParts: [{ arm: 'B', part: 'summary', raw: summaryRaw }],
+    linked: true,
+    plainJsonQuality: false,
+    splitQuality: true,
+    finalCompletionRecovery: true,
+    effectiveAttemptCeiling: plan.completion_attempt_ceiling,
+    completionTechnicalAttemptLimit: plan.completion_recovery_attempt_ceiling,
+    failedTransport,
+  };
+}
+
+export function finalCompletionRecoveryContract(plan, recovery) {
+  const priorAttemptCount = recovery?.stop?.budget?.used;
+  const spendCap = plan.completion_attempt_ceiling - priorAttemptCount;
+  if (
+    priorAttemptCount !== 48 ||
+    plan.completion_attempt_ceiling !== 50 ||
+    plan.completion_recovery_attempt_ceiling !== 2 ||
+    spendCap !== 2
+  ) {
+    throw new Error('final completion recovery requires exactly two bounded attempts beyond the original ceiling');
+  }
+  return {
+    studyId: `${plan.id}-generation-recovery-v9`,
+    spendCap,
+    priorAttemptCount,
+  };
+}
+
 async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) {
   const { stop, arms, eligibility, priorScores } = recovery;
   const priorAttemptCount = recovery.linked ? stop.budget.used : 0;
-  const budget = paidStudyBudget(admission, plan.total_attempt_ceiling, priorAttemptCount);
+  const effectiveAttemptCeiling = recovery.effectiveAttemptCeiling || plan.total_attempt_ceiling;
+  const budget = paidStudyBudget(admission, effectiveAttemptCeiling, priorAttemptCount);
   try {
     if (admission.studyReserved !== (recovery.linked ? 0 : stop.budget.used)) {
       throw new Error('study-wide attempt ledger differs from the preserved predecessor');
@@ -1377,6 +1604,10 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
       mainRef: admission.source.main_ref,
       mainCommit: admission.source.main_commit,
       authorization: admission.authorization,
+      totalAttemptCeiling: effectiveAttemptCeiling,
+      technicalRecoveryReserve:
+        plan.recovery_attempt_reserve +
+        (recovery.finalCompletionRecovery ? plan.completion_recovery_attempt_ceiling : 0),
       recovery: true,
       recoverySource: sourceDir,
       recoveredPacket: eligibility.failure,
@@ -1398,10 +1629,16 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
       outDir,
       budget,
       priorScores,
+      priorSplitQualityParts: recovery.priorSplitQualityParts || [],
       priorAttempts: eligibility.priorAttempts,
-      ceiling: plan.judge_calls + plan.recovery_attempt_reserve,
+      ceiling:
+        plan.judge_calls +
+        plan.recovery_attempt_reserve +
+        (recovery.finalCompletionRecovery ? plan.completion_recovery_attempt_ceiling : 0),
       plainJsonQuality: recovery.plainJsonQuality === true,
       splitQuality: recovery.splitQuality === true,
+      completionRootProjection: recovery.finalCompletionRecovery === true,
+      completionTechnicalAttemptLimit: recovery.completionTechnicalAttemptLimit || 1,
     });
     const finalProvenance = { ...provenance, budget: budget.snapshot() };
     reportResult({ outDir, plan, arms, evaluation, provenance: finalProvenance });
@@ -1469,6 +1706,7 @@ export async function main(argv = process.argv.slice(2)) {
       'recover-quality-split': { type: 'boolean', default: false },
       'recover-quality-split-structured': { type: 'boolean', default: false },
       'recover-final-quality': { type: 'boolean', default: false },
+      'recover-final-completion': { type: 'boolean', default: false },
       from: { type: 'string' },
       'accept-charges': { type: 'boolean', default: false },
       'launch-commit': { type: 'string' },
@@ -1478,6 +1716,58 @@ export async function main(argv = process.argv.slice(2)) {
     },
   });
   const plan = buildInvestedRivalPlan(ROOT, values.config || DEFAULT_CONFIG);
+  if (values['recover-final-completion']) {
+    if (
+      !values.live ||
+      !values.from ||
+      values['recover-generation'] ||
+      values['recover-arm-boundary'] ||
+      values['recover-local-model-route'] ||
+      values['recover-linked-assessments'] ||
+      values['recover-quality-json-transport'] ||
+      values['recover-quality-split'] ||
+      values['recover-quality-split-structured'] ||
+      values['recover-final-quality'] ||
+      values['recover-assessments']
+    ) {
+      throw new Error('--recover-final-completion requires --live and --from, without another recovery mode');
+    }
+    const sourceDir = path.resolve(ROOT, values.from);
+    const outDir = path.resolve(ROOT, values.output || `${sourceDir}-final-completion-recovery-v1`);
+    const recovery = readFinalCompletionRecovery(plan, sourceDir);
+    const recoveryContract = finalCompletionRecoveryContract(plan, recovery);
+    const admission = admitLiveRun(plan, values, outDir, null, recoveryContract);
+    admission.record({
+      type: 'final_completion_recovery',
+      recovery_from: sourceDir,
+      prior_attempts_preserved: recoveryContract.priorAttemptCount,
+      reused_completed_arms: recovery.arms.map((arm) => arm.id),
+      reused_completed_assessments: recovery.priorScores.map((score) => `${score.arm}/${score.kind}`),
+      reused_completed_split_packets: recovery.priorSplitQualityParts.map(
+        (packet) => `${packet.arm}/quality-${packet.part}`,
+      ),
+      aggregate_attempt_ceiling: plan.completion_attempt_ceiling,
+      recovery_attempt_ceiling: recoveryContract.spendCap,
+      planned_recovery_packets: 1,
+      maximum_physical_attempts: recovery.completionTechnicalAttemptLimit,
+      provider_transport: 'required_registered_values_with_unknown_root_fields_allowed',
+      local_acceptance: 'project_registered_root_fields_then_validate_unchanged_strict_schema',
+      failed_extra_properties: recovery.failedTransport.unexpectedProperties,
+      prior_rejected_output_reused: false,
+      score_or_value_repair: false,
+      valid_output_resampling: false,
+    });
+    if (admission.studyReserved !== 0) {
+      admission.close({
+        type: 'run_sealed',
+        status: 'failed',
+        error: 'final completion recovery ledger was not empty at launch',
+        recovery_from: sourceDir,
+      });
+      throw new Error('final completion recovery ledger was not empty at launch');
+    }
+    return recoverAssessments(plan, sourceDir, outDir, admission, recovery);
+  }
   if (values['recover-final-quality']) {
     if (
       !values.live ||

@@ -22,6 +22,7 @@ import {
   buildBenchmarkJobs,
   buildBenchmarkOutputSchema,
   readBenchmarkArm,
+  scoreBenchmarkArms,
 } from '../scripts/score-local-qwen-resistant-learner-benchmark.js';
 import { deliveredSourceContext } from '../scripts/run-local-qwen-bilateral-superego.js';
 import { buildFactorialInterchange } from '../services/localQwenFactorialReport.js';
@@ -33,8 +34,11 @@ import {
   configuredServiceModel,
   generationRecoveryContract,
   finalQualityRecoveryContract,
+  finalCompletionRecoveryContract,
   investedRivalDeliveredSourceContext,
   investedRivalJudgeCallOptions,
+  allowUnknownRootOutputFields,
+  projectRegisteredRootOutput,
   linkedAssessmentRecoveryContract,
   localModelRouteRecoveryContract,
   main as runInvestedRival,
@@ -44,6 +48,7 @@ import {
   readArmBoundaryRecovery,
   readGenerationRecovery,
   readFinalQualityRecovery,
+  readFinalCompletionRecovery,
   readLinkedAssessmentRecovery,
   readLocalModelRouteRecovery,
   readQualityJsonTransportRecovery,
@@ -527,11 +532,130 @@ function createFinalQualityRecoveryFixture() {
   return { sourceDir, previous };
 }
 
-test('invested rival plan is a direct matched pair with an enforced 32 + 8 + 8 ceiling', () => {
+function createFinalCompletionRecoveryFixture() {
+  const previous = createFinalQualityRecoveryFixture();
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-final-completion-test-'));
+  const evaluationDir = path.join(sourceDir, 'evaluation');
+  fs.mkdirSync(evaluationDir);
+  const arms = JSON.parse(fs.readFileSync(path.join(previous.sourceDir, 'arms.json'), 'utf8'));
+  fs.writeFileSync(
+    path.join(sourceDir, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v8`,
+        linkedRecoveryAttemptCeiling: 2,
+        priorAttemptCount: 46,
+        reusedCompletedAssessments: [
+          'A/tutor',
+          'A/learner',
+          'A/dialogue',
+          'A/quality',
+          'B/tutor',
+          'B/learner',
+          'B/dialogue',
+        ],
+        recoverySource: previous.sourceDir,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'stopped.json'),
+    JSON.stringify({
+      error: 'claude CLI structured response classified as response_free_error',
+      budget: { used: 48, limit: 48 },
+    }),
+  );
+  fs.writeFileSync(path.join(sourceDir, 'arms.json'), JSON.stringify(arms));
+  fs.writeFileSync(
+    path.join(sourceDir, 'run-ledger.jsonl'),
+    `${Array.from({ length: 2 }, () => JSON.stringify({ type: 'model_attempt_reserved', count: 1 })).join('\n')}\n${JSON.stringify(
+      { type: 'run_sealed', status: 'failed', reserved_attempts: 2 },
+    )}\n`,
+  );
+  const judgeEvents = [
+    { event: 'reserved', arm: 'B', kind: 'quality-summary' },
+    { event: 'completed', arm: 'B', kind: 'quality-summary' },
+    { event: 'reserved', arm: 'B', kind: 'quality-turns' },
+    { event: 'failed', arm: 'B', kind: 'quality-turns' },
+  ];
+  fs.writeFileSync(
+    path.join(evaluationDir, 'judge-ledger.jsonl'),
+    `${judgeEvents.map((event) => JSON.stringify(event)).join('\n')}\n`,
+  );
+  const jobs = buildBenchmarkJobs(arms, {
+    extendedQuality: true,
+    assessmentContext: rivalPlan.assessmentContext,
+    publicSourceContextByArm: Object.fromEntries(
+      arms.map((arm) => [arm.id, investedRivalDeliveredSourceContext(rivalPlan, arm)]),
+    ),
+    splitQuality: true,
+  });
+  const summaryJob = jobs.find((job) => job.arm === 'B' && job.kind === 'quality-summary');
+  const turnsJob = jobs.find((job) => job.arm === 'B' && job.kind === 'quality-turns');
+  fs.writeFileSync(path.join(evaluationDir, 'B-quality-summary.prompt.txt'), summaryJob.prompt);
+  fs.writeFileSync(path.join(evaluationDir, 'B-quality-summary.schema.json'), JSON.stringify(summaryJob.outputSchema));
+  fs.writeFileSync(
+    path.join(evaluationDir, 'B-quality-summary.json'),
+    JSON.stringify(schemaFixture(summaryJob.outputSchema)),
+  );
+  fs.writeFileSync(path.join(evaluationDir, 'B-quality-turns.prompt.txt'), turnsJob.prompt);
+  fs.writeFileSync(path.join(evaluationDir, 'B-quality-turns.schema.json'), JSON.stringify(turnsJob.outputSchema));
+  fs.writeFileSync(
+    path.join(evaluationDir, 'B-quality-turns.error.json'),
+    JSON.stringify({
+      message: 'claude CLI structured response classified as response_free_error',
+      code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
+      classification: 'response_free_error',
+      reason: 'result_error_without_structured_output',
+    }),
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'B-quality-turns.transport.json'),
+    JSON.stringify({
+      stdout: JSON.stringify([
+        { type: 'system', subtype: 'init' },
+        {
+          type: 'assistant',
+          message: {
+            content: [
+              {
+                type: 'tool_use',
+                name: 'StructuredOutput',
+                input: { turns: '[]', ...schemaFixture(turnsJob.outputSchema) },
+              },
+            ],
+          },
+        },
+        {
+          type: 'user',
+          message: {
+            content: [
+              {
+                type: 'tool_result',
+                is_error: true,
+                content: 'Output does not match required schema: root: must NOT have additional properties',
+              },
+            ],
+          },
+        },
+        { type: 'result', subtype: 'error_max_structured_output_retries', is_error: true },
+      ]),
+      stderr: '',
+      exitCode: 1,
+    }),
+  );
+  return { sourceDir, previous, arms, summaryJob, turnsJob };
+}
+
+test('invested rival plan preserves the original ceiling and adds only the bounded completion amendment', () => {
   assert.equal(rivalPlan.total_attempt_ceiling, 48);
   assert.equal(rivalPlan.generationCap, 32);
   assert.equal(rivalPlan.judge_calls, 8);
   assert.equal(rivalPlan.recovery_attempt_reserve, 8);
+  assert.equal(rivalPlan.completion_attempt_ceiling, 50);
+  assert.equal(rivalPlan.completion_recovery_attempt_ceiling, 2);
   assert.equal(rivalPlan.tutor_control, 'public_proof_dag');
   assert.deepEqual(
     rivalPlan.arms.map((arm) => [arm.id, arm.variant, arm.mode, arm.tutorMode || 'direct']),
@@ -1012,6 +1136,73 @@ test('invested rival final quality recovery preserves 46 attempts and exposes ex
   });
   fs.writeFileSync(path.join(sourceDir, 'completed.json'), '{}');
   assert.throws(() => readFinalQualityRecovery(rivalPlan, sourceDir), /completed output/u);
+});
+
+test('completion transport drops only surplus root fields and preserves every registered value', () => {
+  const { turnsJob } = createFinalCompletionRecoveryFixture();
+  const registered = schemaFixture(turnsJob.outputSchema);
+  const relaxed = allowUnknownRootOutputFields(turnsJob.outputSchema);
+  assert.equal(relaxed.additionalProperties, true);
+  assert.equal(relaxed.properties.learner_turns.items.additionalProperties, false);
+  const projected = projectRegisteredRootOutput(
+    JSON.stringify({ turns: '[]', diagnostic: 'ignored', ...registered }),
+    turnsJob.outputSchema,
+  );
+  assert.deepEqual(projected.discardedRootKeys, ['diagnostic', 'turns']);
+  assert.deepEqual(JSON.parse(projected.text), registered);
+});
+
+test('final completion recovery preserves 48 attempts and exposes only the missing B turns packet', async () => {
+  const { sourceDir } = createFinalCompletionRecoveryFixture();
+  const recovery = readFinalCompletionRecovery(rivalPlan, sourceDir);
+  assert.equal(recovery.finalCompletionRecovery, true);
+  assert.equal(recovery.effectiveAttemptCeiling, 50);
+  assert.equal(recovery.completionTechnicalAttemptLimit, 2);
+  assert.equal(recovery.eligibility.priorAttempts, 15);
+  assert.deepEqual(recovery.eligibility.failure.arm, 'B');
+  assert.deepEqual(recovery.eligibility.failure.kind, 'quality-turns');
+  assert.deepEqual(recovery.failedTransport.unexpectedProperties, ['turns']);
+  assert.deepEqual(
+    recovery.priorScores.map((score) => `${score.arm}/${score.kind}`),
+    ['A/tutor', 'A/learner', 'A/dialogue', 'A/quality', 'B/tutor', 'B/learner', 'B/dialogue'],
+  );
+  assert.deepEqual(
+    recovery.priorSplitQualityParts.map((packet) => `${packet.arm}/quality-${packet.part}`),
+    ['B/quality-summary'],
+  );
+  assert.deepEqual(finalCompletionRecoveryContract(rivalPlan, recovery), {
+    studyId: 'qwen-invested-rival-theorist-v1-generation-recovery-v9',
+    spendCap: 2,
+    priorAttemptCount: 48,
+  });
+
+  const outDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-final-completion-score-test-')), 'evaluation');
+  const called = [];
+  const evaluation = await scoreBenchmarkArms(recovery.arms, outDir, {
+    ceiling: 18,
+    extendedQuality: true,
+    allowOneBasedIndices: true,
+    assessmentContext: rivalPlan.assessmentContext,
+    publicSourceContextByArm: Object.fromEntries(
+      recovery.arms.map((arm) => [arm.id, investedRivalDeliveredSourceContext(rivalPlan, arm)]),
+    ),
+    priorScores: recovery.priorScores,
+    priorSplitQualityParts: recovery.priorSplitQualityParts,
+    priorAttempts: recovery.eligibility.priorAttempts,
+    splitQuality: true,
+    callJudge: async (_agent, _systemPrompt, _userPrompt, role, options) => {
+      called.push(role);
+      options.onRawOutput({ mock: true });
+      return { text: JSON.stringify(schemaFixture(options.outputSchema)), mock: true };
+    },
+  });
+  assert.deepEqual(called, ['local-qwen-benchmark-quality-turns']);
+  assert.equal(evaluation.scores.length, 8);
+  assert.equal(evaluation.newAttempts, 1);
+  assert.ok(fs.existsSync(path.join(outDir, 'B-quality.json')));
+
+  fs.writeFileSync(path.join(sourceDir, 'completed.json'), '{}');
+  assert.throws(() => readFinalCompletionRecovery(rivalPlan, sourceDir), /completed output/u);
 });
 
 test('bilateral plan inherits the unchanged actor and proof controller with an explicit 100-attempt ceiling', () => {

@@ -264,6 +264,40 @@ study incomplete; there is no further recovery path. Two successful packets
 complete the eighth original assessment and finish exactly at the unchanged
 48-attempt ceiling.
 
+### Prospective completion amendment after attempt 48
+
+The terminal recovery accepted the unchanged B quality-summary packet, then
+the B quality-turns packet reached the schema tool with all four registered
+root fields plus one surplus root field named `turns`. The provider rejected
+the whole tool call. The rejected payload is preserved as attempt 48; none of
+its apparent scores, annotations or prose is accepted or copied into the
+completion result. Diagnosis exposed the payload while locating the structural
+failure, so the completion result must be described as post-registration
+technical completion rather than pristine confirmatory evidence.
+
+At the user's explicit direction, a fresh completion recovery may make the one
+missing B quality-turns judgment with at most two new physical Opus attempts,
+raising the aggregate ceiling from 48 to 50. The second attempt is available
+only if the first ends before a locally valid candidate exists. A candidate
+that reaches local validation is never resampled, whether it validates,
+fails the unchanged schema, or declares the measurement indeterminate.
+
+The prompt, Opus route and effort, required root fields, field types, nested
+schemas, transcript, character brief, rubrics, public-source provenance,
+measurement rules and deterministic quality merge remain unchanged. At the
+provider boundary only, surplus root fields are permitted so the CLI can
+return the candidate instead of discarding it. The runner then deterministically
+projects the candidate onto the four registered root fields and validates that
+projection against the original strict schema. It records discarded field
+names, does not alter any registered value, does not repair missing or malformed
+registered fields, and does not reuse the rejected attempt-48 payload.
+
+Success mechanically joins the already accepted B summary to the new valid B
+turn packet, completes the original eighth assessment, and renders the private
+report. Exhausting both physical attempts without a valid packet remains an
+incomplete technical result. The original descriptive claim boundary is
+unchanged.
+
 Proposed private create-once destination:
 `.tutor-stub-traces/qwen-invested-rival-theorist-v1/`.
 No production ingestion, push or publication. Keep the existing Techne/swimlane
