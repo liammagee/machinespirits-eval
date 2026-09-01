@@ -1,7 +1,7 @@
 ---
 id: hero-demo-ghost-world-examples
-title: "Record chatty with/without examples on a new demo world for the hero brief"
-status: review
+title: "Record with/without examples on new demo worlds and build the tabbed hero-demo app"
+status: active
 type: content
 priority: P2
 owner: claude
@@ -22,6 +22,7 @@ depends_on:
 links:
   notes:
     - notes/poetics/2026-09-01-adaptive-tutor-hero-demo.html
+    - notes/poetics/2026-09-01-adaptive-tutor-demo-app.html
   items:
     - adaptation-planted-stress-bench
     - adaptive-causality-repertoire
@@ -79,3 +80,18 @@ Everything from this card is free-running illustration on an unratified
 schedule: no new tallies, no pooling with the crossed-effects numbers, the
 boundary stated on the page beside the examples. Improvement is shown by
 quoting the learner's own early and late lines, not by scoring them.
+
+## Phase 2 (2026-09-01): the tabbed app and a K-12 world
+
+`notes/poetics/2026-09-01-adaptive-tutor-demo-app.html` turns the linear
+note into a tabbed walk-through: start-here intro, a works/didn't ledger
+(every number from the 29 August note and Paper 2.0 §6.3, §6.23–§6.24),
+Rowan Flat as the counted evidence with a moment selector, and one tab per
+recorded scenario with a full side-by-side transcript reader driven by
+embedded JSON (learner line, tutor line, planted state, detector reading).
+
+`config/drama-derivation/world-036-class-plant.yaml` + its demo-tier
+schedule: a Year 6 class-plant mystery in an eleven-year-old's voice, same
+proof shape. Recorded with the same two arms as world-035; traces under
+`notes/poetics/hero-demo-runs/world-036/`. Same claim discipline: the
+recordings are illustration, never pooled with the crossed-effects tallies.
