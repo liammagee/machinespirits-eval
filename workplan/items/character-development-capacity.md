@@ -7,10 +7,10 @@ priority: P2
 owner: codex
 source: manual
 created: 2026-06-27
-updated: 2026-07-01
+updated: 2026-08-31
 branch: worktree-character-development
-claim_status: scope-bound
-verification: "2026-07-01 closeout: characterArc test 5/5; world-018 plotLint PASS and Oedipus screen scoped out of accepted evidence; lint/format pass; paper manifest, atlas, provable-discourse, integrity, and workplan validators have 0 failures; Appendix E.7 claim passes against tracked evidence manifest."
+claim_status: killed
+verification: "2026-08-31 recovery closeout: filesystem, archive, index, Git/stash, and session-record checks found only two hash-recoverable reports; primary score JSON and episode transcripts remain unavailable. Empirical claim withdrawn; no replication planned."
 links:
   paper: docs/research/paper-full-2.0.md#e7-character-desire-the-script-outline-as-a-source-of-desire
   notes:
@@ -28,6 +28,14 @@ bearers (learner and tutor), report on it, and plan deficits. Builds on the
 merged character-desire leg (Appendix E.7–E.8; `characterDesire.js`,
 `BELIEF-DESIRE-DAG.md`, `CHARACTER-DESIRE.md`). Lands as a new sub-§ extending
 Appendix E.7 — single-paper discipline, no spin-off.
+
+**Current disposition (2026-08-31): closed after primary-evidence loss.** The
+historical log below records the original work, not an active empirical claim.
+Only the two summary reports were recovered, matching their recorded hashes;
+score JSON and episode transcripts are treated as unrecoverable after the
+requested scan. Appendix E.7 retains provenance only. No further experiment,
+exact reproduction, or claim promotion is planned. `claim_status: killed`
+withdraws the evidence claim; it does not mean a replication falsified it.
 
 Frame (load-bearing): this measures the **dramaturgical form** of character
 development legible to a transcript-only critic — never real interior change
@@ -104,3 +112,22 @@ Closeout notes (2026-07-01, Codex): no further paid generation required. The acc
 claim is scope-bound to Appendix E.7 and passes provable-discourse against
 `config/character-development/evidence-manifest-2026-06-28.md`; the raw ignored
 `exports/character-development/` bundle is not assumed present in every checkout.
+
+Recovery closeout (2026-08-31, Codex): accessible user storage, mounted volumes,
+temporary directories, Spotlight, local archive bundles, Git refs/stashes, and
+agent session records were searched. `CAPACITY-REPORT.md` and `PILOT-REPORT.md`
+were reconstructed byte-for-byte from the original Codex audit transcript;
+their SHA-256 hashes match the tracked manifest. The nine score JSON files and
+sixteen episode directories were not recovered. The user directed that missing
+artifacts be treated as unrecoverable and the line closed. The source apparatus
+is retained, but the summary-matching provable-discourse entry is removed and
+Appendix E.7 no longer licenses an empirical result. See the evidence manifest
+for scan limits and recovery provenance.
+
+Closeout verification: workplan source validation passed (581/581), the deep
+Paper 2 evidence manifest passed (9/9), provable discourse reported 165 pass /
+27 advisory warnings / 0 failures, formatting and diff checks passed, ref
+status passed, and Paper 2 v3.0.300 built. The legacy Paper 1 bug audit retains
+three unrelated source-guard failures in conversation-history and multi-turn
+selection checks; those runtime files were not changed. No model-backed
+generation or scoring was performed during recovery.

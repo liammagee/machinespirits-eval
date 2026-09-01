@@ -413,3 +413,111 @@ test('a sealed technical predecessor hands its remaining study budget to one rec
   );
   assert.equal(studyLedger.filter((event) => event.type === 'study_launch_admitted').length, 2);
 });
+
+test('one recovery may continue after a sealed pre-provider startup failure', (t) => {
+  const value = fixture(t, { cap: 3, noteCap: '3' });
+  const initialDestination = path.join(value.base, 'zero-call-initial');
+  const initial = admitPaidStudyLaunch({ ...value.contract, destination: initialDestination });
+  initial.reserveModelAttempts(1, { unit: 'initial-unit' });
+  initial.close({ type: 'run_sealed', status: 'technical_failure', recovery_permitted: true });
+
+  const failedRecoveryDestination = path.join(value.base, 'zero-call-recovery');
+  const failedRecovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: failedRecoveryDestination,
+    recoveryFrom: initialDestination,
+  });
+  failedRecovery.reserveModelAttempts(1, { unit: 'startup-failure-unit' });
+  failedRecovery.record({
+    type: 'unit_complete',
+    job_id: 'startup-failure-unit',
+    status: 'technical_failure',
+    child_reserved_attempts: 0,
+    child_completed_attempts: 0,
+    child_failed_attempts: 0,
+    shared_reserved_attempts: 1,
+  });
+  failedRecovery.close({ type: 'run_sealed', status: 'technical_failure', reserved_attempts: 1 });
+
+  const finalRecovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'zero-call-final-recovery'),
+    recoveryFrom: failedRecoveryDestination,
+  });
+  assert.equal(finalRecovery.studyReserved, 2);
+  finalRecovery.reserveModelAttempts(1, { unit: 'remaining-unit' });
+  finalRecovery.close({ type: 'run_sealed', status: 'complete' });
+});
+
+test('a recovery with any child model attempt cannot use the startup exception', (t) => {
+  const value = fixture(t, { cap: 3, noteCap: '3' });
+  const initialDestination = path.join(value.base, 'child-call-initial');
+  const initial = admitPaidStudyLaunch({ ...value.contract, destination: initialDestination });
+  initial.reserveModelAttempts(1, { unit: 'initial-unit' });
+  initial.close({ type: 'run_sealed', status: 'technical_failure', recovery_permitted: true });
+
+  const failedRecoveryDestination = path.join(value.base, 'child-call-recovery');
+  const failedRecovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: failedRecoveryDestination,
+    recoveryFrom: initialDestination,
+  });
+  failedRecovery.reserveModelAttempts(1, { unit: 'child-call-unit' });
+  failedRecovery.record({
+    type: 'unit_complete',
+    job_id: 'child-call-unit',
+    status: 'technical_failure',
+    child_reserved_attempts: 1,
+    child_completed_attempts: 1,
+    child_failed_attempts: 0,
+    shared_reserved_attempts: 1,
+  });
+  failedRecovery.close({ type: 'run_sealed', status: 'technical_failure', reserved_attempts: 1 });
+
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        destination: path.join(value.base, 'child-call-final-recovery'),
+        recoveryFrom: failedRecoveryDestination,
+      }),
+    /sealed technical predecessor/u,
+  );
+});
+
+test('a repeated pre-provider startup failure cannot open another recovery', (t) => {
+  const value = fixture(t, { cap: 4, noteCap: '4' });
+  const initialDestination = path.join(value.base, 'repeated-zero-call-initial');
+  const initial = admitPaidStudyLaunch({ ...value.contract, destination: initialDestination });
+  initial.reserveModelAttempts(1, { unit: 'initial-unit' });
+  initial.close({ type: 'run_sealed', status: 'technical_failure', recovery_permitted: true });
+
+  const sealZeroCallFailure = (destination, recoveryFrom, unit) => {
+    const launch = admitPaidStudyLaunch({ ...value.contract, destination, recoveryFrom });
+    launch.reserveModelAttempts(1, { unit });
+    launch.record({
+      type: 'unit_complete',
+      job_id: unit,
+      status: 'technical_failure',
+      child_reserved_attempts: 0,
+      child_completed_attempts: 0,
+      child_failed_attempts: 0,
+      shared_reserved_attempts: 1,
+    });
+    launch.close({ type: 'run_sealed', status: 'technical_failure', reserved_attempts: 1 });
+  };
+  const firstRecovery = path.join(value.base, 'repeated-zero-call-recovery-1');
+  sealZeroCallFailure(firstRecovery, initialDestination, 'startup-failure-1');
+  const secondRecovery = path.join(value.base, 'repeated-zero-call-recovery-2');
+  sealZeroCallFailure(secondRecovery, firstRecovery, 'startup-failure-2');
+
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        destination: path.join(value.base, 'repeated-zero-call-recovery-3'),
+        recoveryFrom: secondRecovery,
+      }),
+    /sealed technical predecessor/u,
+  );
+});
