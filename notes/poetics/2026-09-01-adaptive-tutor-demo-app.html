@@ -14,7 +14,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
-<title>The Tutor That Knows Why You're Stuck</title>
+<title>The Right Move at the Stuck Moment</title>
 <meta name="description" content="A guided walk-through of the adaptive tutor: how it reads a stuck learner, what has been shown to help, and three recorded scenarios tutored twice." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -203,12 +203,13 @@
 
   <section class="hero">
     <div class="hero__rune"><span>§</span> Machine Spirits · a guided walk-through · updated 2026-09-01</div>
-    <h1 class="hero__h1">The tutor that knows <span class="em">why</span> you're stuck</h1>
-    <p class="hero__subtitle">A tutoring system that first names the kind of difficulty a learner is in, then chooses a move to match, and records what it said so the choice can be checked. This page explains the approach and lets you read three scenarios, each tutored twice.</p>
+    <h1 class="hero__h1">The right move at the <span class="em">stuck</span> moment</h1>
+    <p class="hero__subtitle">A tutoring system built to name the kind of difficulty a learner is in, choose a move to match, and record what it said so the choice can be checked. What has been shown is the second step: given the moment, the matched move helps. Finding the moment on its own is shown only on the scenarios the detector was built from. This page explains the approach and lets you read three scenarios, each tutored twice.</p>
     <div class="hero__verdict">
-      <div class="v-good"><strong>5 of 6</strong><span>At the studied moment, the reply that addressed the learner's real obstacle helped in five of six recorded runs.</span></div>
-      <div class="v-bad"><strong>0 of 6</strong><span>The reply that re-explained the material — accurate and fluent — helped in none of six.</span></div>
+      <div class="v-good"><strong>5 of 6</strong><span>At the studied moment, with the matched instruction card put in front of the tutor, the reply addressed the learner's real obstacle in five of six recorded runs.</span></div>
+      <div class="v-bad"><strong>0 of 6</strong><span>With a plausible wrong card at the same moment, the reply re-explained the material — accurate and fluent — and helped in none of six.</span></div>
     </div>
+    <p class="hero__subtitle" style="margin-top:0.8rem; font-size:0.92em;">In these counts the experimenter chose the moment and the card; the tutor wrote the reply. The live detector that would choose for itself is tested separately, and it has only been shown to work on the scenarios its word lists came from.</p>
   </section>
 
   <div class="tabs" role="tablist" aria-label="Sections">
@@ -235,7 +236,7 @@
           <p>Language-model tutors are fluent explainers, and at these moments explaining is usually the wrong move: it answers a question the learner has already stopped asking. This project treats adaptation as a decision the system makes in the open. Before each reply it classifies the learner's state, selects a concrete move for that state from a small, tested set, and keeps the detected state, the chosen move, the delivered words and the learner's next turn as separate records. That makes the decision inspectable, and it makes it testable: the same moment can be replayed with a deliberately wrong move to see whether the right one was doing anything.</p>
 
           <div class="steps">
-            <div class="step"><div><h3>Read the state, not the sentence.</h3><p>A detector labels each learner turn — for example deadline demand, mockery, grievance, false memory, a fused social stake, confusion, or switched-off flatness. The label is recorded before the tutor writes.</p></div></div>
+            <div class="step"><div><h3>Read the state, not the sentence.</h3><p>A detector labels each learner turn — for example deadline demand, mockery, grievance, false memory, a fused social stake, confusion, or switched-off flatness. The label is recorded before the tutor writes. This is the weakest part of the system today: the detector is a set of word lists compiled from two scenarios, and it goes quiet on a new one. The ledger says what that costs.</p></div></div>
             <div class="step"><div><h3>Choose a move that fits.</h3><p>Each state has a short instruction card naming one move: accept the deadline and narrow the check; keep the content but change the register; credit what the learner has already done before correcting; reopen the record rather than assert; separate the finding from what it costs the learner to accept it.</p></div></div>
             <div class="step"><div><h3>Keep the records apart.</h3><p>The draft, any repair, the delivered reply and the learner's response are logged separately. A mismatch between what was intended and what was delivered is visible rather than absorbed into fluent prose.</p></div></div>
           </div>
@@ -245,7 +246,7 @@
           <div class="next-tab"><button type="button" data-goto="works">Next · What works, what doesn't →</button></div>
         </div>
         <div class="mr">
-          <p class="note note--moss"><span class="note__lbl">The claim in one sentence</span> At a named kind of stuck moment, the move matched to that state helps and a plausible mismatched move does not — shown by forcing each at the same moment and ruling the delivered replies on conduct.</p>
+          <p class="note note--moss"><span class="note__lbl">The claim in one sentence</span> At a named kind of stuck moment, with the matched move handed to the tutor, that move helps and a plausible mismatched move does not — shown by forcing each at the same moment and ruling the delivered replies on conduct.</p>
           <p class="note note--ochre"><span class="note__lbl">Scope</span> Simulated learners. Tutor conduct, not measured human learning. A bounded set of states and moves.</p>
         </div>
       </div>
@@ -262,15 +263,16 @@
           <div class="ledger">
             <div class="ledger__col ledger__col--yes">
               <h3>Shown to help — kept</h3>
-              <div class="ledger__item"><b>Classifying the learner's state each turn</b><p>A detector reads the learner's turn for deadline demand, mockery, grievance, false memory, a fused social stake, confusion and switched-off flatness, and records its reading before the tutor replies.</p><span class="ev">recorded per turn · visible as labels in the transcript readers</span></div>
-              <div class="ledger__item"><b>Six state-matched moves</b><p>Accept the deadline and narrow the check · change the register, keep the content · credit first, then test · reopen the record on a false memory · separate the finding from the stake · one short concrete question for a switched-off learner. Each was forced at its planted moment against a plausible wrong move, and each did better.</p><span class="ev">5/6 vs 1/6 · 6/6 vs 2/6 · 6/6 vs 2/6 · 5/6 vs 0/6 (stake) · 5/5 vs 0/5 (flat) · two scenarios, human-ruled</span></div>
-              <div class="ledger__item"><b>Forcing the wrong move as a control</b><p>The test design rather than a mechanism. Making the mismatched move available at the same moment is what separates a move that helps from a tutor that merely sounds responsive.</p><span class="ev">crossed design · Paper 2.0 §6.24</span></div>
-              <div class="ledger__item"><b>Recording the delivered reply separately from the draft</b><p>Keeping the draft, the repair and the delivered turn as distinct records. This is how a safety filter was found to be rewriting most turns before delivery.</p><span class="ev">strict guard authored 62% of turns before the change</span></div>
-              <div class="ledger__item"><b>One line naming the clue that has just become available</b><p>The smallest information-bearing addition did better than both the bare tutor and a full per-turn instruction script.</p><span class="ev">9/11 decided clue turns vs bare · 23/30 vs the script · Paper 2.0 §6.23</span></div>
+              <div class="ledger__item"><b>Six state-matched moves</b><p>Accept the deadline and narrow the check · change the register, keep the content · credit first, then test · reopen the record on a false memory · separate the finding from the stake · one short concrete question for a switched-off learner. Each was forced at its planted moment against a plausible wrong move, and each did better. The tutor did not choose the moment or the move; it wrote the reply.</p><span class="ev">forced card · 5/6 vs 1/6 · 6/6 vs 2/6 · 6/6 vs 2/6 · 5/6 vs 0/6 (stake) · 5/5 vs 0/5 (flat) · two scenarios, human-ruled</span></div>
+              <div class="ledger__item"><b>Forcing the wrong move as a control</b><p>The test design rather than a mechanism. Making the mismatched move available at the same moment is what separates a move that helps from a tutor that merely sounds responsive.</p><span class="ev">forced card · crossed design · Paper 2.0 §6.24</span></div>
+              <div class="ledger__item"><b>Recording the delivered reply separately from the draft</b><p>Keeping the draft, the repair and the delivered turn as distinct records. This is how a safety filter was found to be rewriting most turns before delivery.</p><span class="ev">live runs · strict guard authored 62% of turns before the change</span></div>
+              <div class="ledger__item"><b>One line naming the clue that has just become available</b><p>The smallest information-bearing addition did better than both the bare tutor and a full per-turn instruction script.</p><span class="ev">frozen replay · 9/11 decided clue turns vs bare · 23/30 vs the script · Paper 2.0 §6.23</span></div>
             </div>
             <div class="ledger__col ledger__col--no">
               <h3>Not shown to help — dropped or bounded</h3>
-              <div class="ledger__item"><b>Describing the case to the tutor in more detail</b><p>Continuity notes, evidence windows, a learner classifier summary, a learner graph, a discourse scaffold: each stayed within noise of the bare tutor, and all six together did not improve repairs at planted moments. The model already sees this material.</p><span class="ev">each block within ±0.17 broken rules/turn · 6/28 vs 6/24 live repairs</span></div>
+              <div class="ledger__item"><b>The live detector, beyond the scenarios it was built from</b><p>The detector that reads the learner's state is a cascade of word patterns, word bags and a small classifier. The word bags were compiled from the planted learner lines of two scenarios, Rowan Flat among them, so on Rowan it had been handed the words in advance. On the fraction lesson on this page it fired at one planted turn in six; on the ghost, four in six with one wrong state. Where it is silent the adaptive tutor is the plain tutor.</p><span class="ev">live · offline 17/20 on Rowan · 1/6 on the lesson · card state-detection-without-word-lists</span></div>
+              <div class="ledger__item"><b>The whole stack choosing for itself</b><p>With the detector picking the card, the adaptive tutor beat the plain tutor on Rowan Flat by about one repair in ten plants. On the two new scenarios on this page, ruled the same way, it is one repair ahead in twelve. That is the only measurement of adaptation as such, and it rests on the detector above.</p><span class="ev">live · Rowan 15/29 vs 10/24 · this page 6/12 vs 5/12 (draft ruling)</span></div>
+              <div class="ledger__item"><b>Describing the case to the tutor in more detail</b><p>Continuity notes, evidence windows, a learner classifier summary, a learner graph, a discourse scaffold: each stayed within noise of the bare tutor, and all six together did not improve repairs at planted moments. The model already sees this material.</p><span class="ev">frozen replay, then live · each block within ±0.17 broken rules/turn · 6/28 vs 6/24 live repairs</span></div>
               <div class="ledger__item"><b>A full per-turn instruction script</b><p>Fewer broken rules, but learners closed the case properly half as often, and a blind judge rarely preferred it. The payload helped; the wrapping cost more than it gave.</p><span class="ev">closure 12/36 vs 24/36 · preferred 10/68</span></div>
               <div class="ledger__item"><b>A small model writing the tutor's question</b><p>The main model's own choice of question was preferred in nearly every judged disagreement; where only the small model wanted a question, silence was preferred.</p><span class="ev">10/11 · silence 5/5</span></div>
               <div class="ledger__item"><b>Changing manner without a concrete move</b><p>A shift in the tutor's persona with no action attached drew attention away from the learner's material. A card that carried an actual move did somewhat better.</p><span class="ev">shifted manner 5/20 · move card 11/21</span></div>
@@ -283,7 +285,8 @@
           <div class="next-tab"><button type="button" data-goto="rowan">Next · Rowan Flat, the studied case →</button></div>
         </div>
         <div class="mr">
-          <p class="note"><span class="note__lbl">The pattern</span> Additions helped only when they supplied something the model could not already see, or bound an action to the state in which it is useful. Everything in the right column fails one of those two conditions.</p>
+          <p class="note"><span class="note__lbl">The pattern</span> Additions helped only when they supplied something the model could not already see, or bound an action to the state in which it is useful. Everything in the right column fails one of those two conditions, or, for the detector, has not yet been tested away from its source scenarios.</p>
+          <p class="note note--ochre"><span class="note__lbl">Reading the tags</span> <em>forced card</em>: the experimenter chose the moment and the move, the tutor wrote the reply. <em>live</em>: the tutor's own detector chose. <em>frozen replay</em>: recorded dialogues replayed past tutor variants that differ in one block.</p>
           <p class="note note--ochre"><span class="note__lbl">Sources</span> Every number here comes from the 29 August research note and Paper 2.0 §6.3, §6.23–§6.24. Nothing was re-counted for this page.</p>
         </div>
       </div>
@@ -381,7 +384,7 @@
             </div>
           </details>
 
-          <p class="provenance" style="margin-top:1.4rem;"><strong>How the tallies were made.</strong> Each state ran the same experiment: the same planted moment, the matched move forced six times, a plausible wrong move forced six times, a human ruling each delivered reply on conduct, pooled across two scenarios (the switched-off state: one scenario, five each). Learner lines and matched-move quotes are verbatim; the wrong-move descriptions summarise the ruled records, whose full transcripts are archived.</p>
+          <p class="provenance" style="margin-top:1.4rem;"><strong>How the tallies were made.</strong> Each state ran the same experiment: the same planted moment, the matched move forced six times, a plausible wrong move forced six times, a human ruling each delivered reply on conduct, pooled across two scenarios. The tutor did not detect the moment or pick the move in these runs; the experimenter did, and the tutor wrote the reply (the switched-off state: one scenario, five each). Learner lines and matched-move quotes are verbatim; the wrong-move descriptions summarise the ruled records, whose full transcripts are archived.</p>
           <div class="next-tab"><button type="button" data-goto="ghost">Next · The Nine O'Clock Ghost, recorded whole →</button></div>
         </div>
         <div class="mr">
