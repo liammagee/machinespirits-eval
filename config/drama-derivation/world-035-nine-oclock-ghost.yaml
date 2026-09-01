@@ -47,8 +47,8 @@ secret:
     - id: plug_kills_wifi
       all_of:
         - ["plug", "timer", "heater"]
-        - ["kills", "knocks out", "drowns", "jams", "chokes", "causes", "is behind", "explains"]
-        - ["wifi", "the network", "the internet", "the signal"]
+        - ["kills", "killed", "killing", "knocks out", "drowns", "drowning", "jams", "jamming", "chokes", "choked", "choking", "causes", "caused", "causing", "culprit", "interference", "is behind", "doing it", "did it", "explains"]
+        - ["wifi", "the network", "the internet", "the signal", "the channel", "the line", "noise wall", "wall of noise", "outage", "the drop"]
       none_of:
         - "did not kill"
         - "didn't kill"
