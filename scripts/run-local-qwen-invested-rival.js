@@ -77,6 +77,14 @@ export function configuredServiceModel(service, arm) {
   return target.trim();
 }
 
+export function runtimeServiceArm(service, arm, loadedModel) {
+  const target = configuredServiceModel(service, arm);
+  if (loadedModel !== target) {
+    throw new Error('loaded model does not exactly match the configured service target');
+  }
+  return { ...arm, model: target };
+}
+
 function requiredStrings(record, keys, label) {
   for (const key of keys) {
     if (typeof record?.[key] !== 'string' || !record[key].trim()) {
@@ -360,12 +368,10 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
         await manageServer(plan.mtp_chat_root, arm.profile, 'start', servicePath);
         ownsServer = true;
         const loaded = await discoverLoadedModel(plan.base_url, { modelIdContains: arm.model });
-        if (loaded !== configuredServiceModel(service, arm)) {
-          throw new Error('loaded model does not exactly match the configured service target');
-        }
+        const runtimeArm = runtimeServiceArm(service, arm, loaded);
         await runContinuityArm({
           plan,
-          arm,
+          arm: runtimeArm,
           outDir: path.join(outDir, arm.id),
           budget,
           ...(generationRecovery ? { unsupportedQuotationPolicy: 'drop' } : {}),
@@ -592,6 +598,90 @@ export function armBoundaryRecoveryContract(plan, recovery) {
   };
 }
 
+export function readLocalModelRouteRecovery(plan, sourceDir) {
+  const sourcePlan = JSON.parse(fs.readFileSync(path.join(sourceDir, 'plan.json'), 'utf8'));
+  const provenance = sourcePlan.provenance || {};
+  if (
+    sourcePlan.id !== plan.id ||
+    provenance.recovery !== true ||
+    provenance.linkedRecoveryStudyId !== `${plan.id}-generation-recovery-v2` ||
+    provenance.priorAttemptCount !== 16 ||
+    provenance.reusedCompletedArms?.join(',') !== 'A'
+  ) {
+    throw new Error('local-route recovery must start from the second linked generation recovery');
+  }
+  const stop = JSON.parse(fs.readFileSync(path.join(sourceDir, 'stopped.json'), 'utf8'));
+  if (stop.error !== 'Qwen HTTP 400' || stop.armsCompleted !== 1 || stop.budget?.used !== 17) {
+    throw new Error('local-route recovery requires the preserved first abliterated request failure');
+  }
+  const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
+  const reserved = runEvents
+    .filter((event) => event.type === 'model_attempt_reserved')
+    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  if (reserved !== 1 || reserved + provenance.priorAttemptCount !== stop.budget.used) {
+    throw new Error('local-route recovery accounting differs from the preserved predecessor');
+  }
+  const armStop = JSON.parse(fs.readFileSync(path.join(sourceDir, 'B', 'stopped.json'), 'utf8'));
+  const traceEvents = readJsonLines(path.join(sourceDir, 'B', 'trace.jsonl'));
+  const transport = traceEvents.find((event) => event.type === 'provider_event')?.event;
+  const request = JSON.parse(fs.readFileSync(path.join(sourceDir, 'B', '1-learner.request.json'), 'utf8'));
+  const expectedRequest = buildContinuityRequest({
+    plan,
+    speaker: 'learner',
+    turn: 1,
+    history: [{ role: 'assistant', content: plan.world.opening_frame.authored_text }],
+  });
+  if (
+    armStop.error !== 'Qwen HTTP 400' ||
+    armStop.turns?.length !== 0 ||
+    armStop.partialTurn?.turn !== 1 ||
+    transport?.status !== 400 ||
+    !/Repository Not Found[\s\S]*Qwen3\.8-27B-Uncensored-MLX\/4-bit/iu.test(String(transport.body || '')) ||
+    request.systemPrompt !== expectedRequest.systemPrompt ||
+    request.prompt !== expectedRequest.prompt ||
+    JSON.stringify(request.messageHistory) !== JSON.stringify(expectedRequest.messageHistory)
+  ) {
+    throw new Error('local-route recovery requires the saved repository-lookup transport failure');
+  }
+  for (const forbidden of [
+    path.join(sourceDir, 'B', '1-learner.response.json'),
+    path.join(sourceDir, 'B', 'dialogue.json'),
+    path.join(sourceDir, 'arms.json'),
+    path.join(sourceDir, 'evaluation'),
+    path.join(sourceDir, 'completed.json'),
+  ]) {
+    if (fs.existsSync(forbidden)) throw new Error('local-route recovery source contains downstream output');
+  }
+  const prior = readArmBoundaryRecovery(plan, provenance.recoverySource);
+  return {
+    sourceDir,
+    sourcePlan,
+    stop,
+    failure: {
+      error: stop.error,
+      boundary: 'first_arm_B_learner_request',
+      transport: { status: transport.status, body: transport.body },
+    },
+    priorArms: prior.priorArms,
+  };
+}
+
+export function localModelRouteRecoveryContract(plan, recovery) {
+  const priorAttemptCount = recovery?.stop?.budget?.used;
+  if (
+    !Number.isInteger(priorAttemptCount) ||
+    priorAttemptCount < 1 ||
+    priorAttemptCount >= plan.total_attempt_ceiling
+  ) {
+    throw new Error('local-route recovery requires a positive preserved attempt count below the study ceiling');
+  }
+  return {
+    studyId: `${plan.id}-generation-recovery-v3`,
+    spendCap: plan.total_attempt_ceiling - priorAttemptCount,
+    priorAttemptCount,
+  };
+}
+
 function readPriorScores(sourceDir, arms) {
   const evaluationDir = path.join(sourceDir, 'evaluation');
   const rows = [];
@@ -738,6 +828,7 @@ export async function main(argv = process.argv.slice(2)) {
       'recover-assessments': { type: 'boolean', default: false },
       'recover-generation': { type: 'boolean', default: false },
       'recover-arm-boundary': { type: 'boolean', default: false },
+      'recover-local-model-route': { type: 'boolean', default: false },
       from: { type: 'string' },
       'accept-charges': { type: 'boolean', default: false },
       'launch-commit': { type: 'string' },
@@ -747,8 +838,48 @@ export async function main(argv = process.argv.slice(2)) {
     },
   });
   const plan = buildInvestedRivalPlan(ROOT, values.config || DEFAULT_CONFIG);
+  if (values['recover-local-model-route']) {
+    if (
+      !values.live ||
+      !values.from ||
+      values['recover-generation'] ||
+      values['recover-arm-boundary'] ||
+      values['recover-assessments']
+    ) {
+      throw new Error('--recover-local-model-route requires --live and --from, without another recovery mode');
+    }
+    const sourceDir = path.resolve(ROOT, values.from);
+    const outDir = path.resolve(ROOT, values.output || `${sourceDir}-local-model-route-recovery-v1`);
+    const recovery = readLocalModelRouteRecovery(plan, sourceDir);
+    const recoveryContract = localModelRouteRecoveryContract(plan, recovery);
+    const admission = admitLiveRun(plan, values, outDir, null, recoveryContract);
+    admission.record({
+      type: 'linked_local_model_route_recovery',
+      recovery_from: sourceDir,
+      prior_attempts_preserved: recoveryContract.priorAttemptCount,
+      reused_completed_arms: recovery.priorArms.map((arm) => arm.id),
+      aggregate_attempt_ceiling: plan.total_attempt_ceiling,
+      recovery_attempt_ceiling: recoveryContract.spendCap,
+    });
+    if (admission.studyReserved !== 0) {
+      admission.close({
+        type: 'run_sealed',
+        status: 'failed',
+        error: 'linked local-route recovery ledger was not empty at launch',
+        recovery_from: sourceDir,
+      });
+      throw new Error('linked local-route recovery ledger was not empty at launch');
+    }
+    return runFresh(plan, outDir, admission, recovery);
+  }
   if (values['recover-arm-boundary']) {
-    if (!values.live || !values.from || values['recover-generation'] || values['recover-assessments']) {
+    if (
+      !values.live ||
+      !values.from ||
+      values['recover-generation'] ||
+      values['recover-local-model-route'] ||
+      values['recover-assessments']
+    ) {
       throw new Error('--recover-arm-boundary requires --live and --from, without another recovery mode');
     }
     const sourceDir = path.resolve(ROOT, values.from);

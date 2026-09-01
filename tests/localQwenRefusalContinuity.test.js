@@ -28,9 +28,12 @@ import {
   buildInvestedRivalPlan,
   configuredServiceModel,
   generationRecoveryContract,
+  localModelRouteRecoveryContract,
   main as runInvestedRival,
   readArmBoundaryRecovery,
   readGenerationRecovery,
+  readLocalModelRouteRecovery,
+  runtimeServiceArm,
   technicalRecoveryEligible,
 } from '../scripts/run-local-qwen-invested-rival.js';
 
@@ -227,6 +230,17 @@ test('invested rival validates the loaded checkpoint against the exact configure
     configuredServiceModel(service, rivalPlan.arms[1]),
     '/Users/example/models/Qwen3.8-27B-Uncensored-MLX/4-bit',
   );
+  const runtimeArm = runtimeServiceArm(
+    service,
+    rivalPlan.arms[1],
+    '/Users/example/models/Qwen3.8-27B-Uncensored-MLX/4-bit',
+  );
+  assert.equal(runtimeArm.model, '/Users/example/models/Qwen3.8-27B-Uncensored-MLX/4-bit');
+  assert.equal(rivalPlan.arms[1].model, 'Qwen3.8-27B-Uncensored-MLX/4-bit');
+  assert.throws(
+    () => runtimeServiceArm(service, rivalPlan.arms[1], rivalPlan.arms[1].model),
+    /configured service target/u,
+  );
   assert.throws(() => configuredServiceModel({ profiles: {} }, rivalPlan.arms[1]), /service target required/u);
 });
 
@@ -290,6 +304,114 @@ test('invested rival arm-boundary recovery preserves the completed normal arm an
   });
   fs.mkdirSync(path.join(sourceDir, 'B'));
   assert.throws(() => readArmBoundaryRecovery(rivalPlan, sourceDir), /downstream output/u);
+});
+
+test('invested rival local-route recovery charges the failed lookup and starts arm B with 31 attempts remaining', () => {
+  const firstSource = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-route-first-source-test-'));
+  const firstArm = path.join(firstSource, 'A');
+  fs.mkdirSync(firstArm);
+  fs.writeFileSync(
+    path.join(firstSource, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v1`,
+        priorAttemptCount: 1,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(firstSource, 'stopped.json'),
+    JSON.stringify({
+      error: 'loaded model does not exactly match the planned arm',
+      budget: { used: 16, limit: 48 },
+      armsCompleted: 1,
+    }),
+  );
+  fs.writeFileSync(
+    path.join(firstSource, 'run-ledger.jsonl'),
+    `${Array.from({ length: 15 }, () => JSON.stringify({ type: 'model_attempt_reserved', count: 1 })).join('\n')}\n`,
+  );
+  const firstTrace = path.join(firstArm, 'trace.jsonl');
+  fs.writeFileSync(
+    firstTrace,
+    `${JSON.stringify({ at: '2026-09-01T00:00:00.000Z', type: 'tutor_opening', text: 'Opening' })}\n${JSON.stringify({ at: '2026-09-01T00:04:00.000Z', type: 'continuity_state' })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(firstArm, 'dialogue.json'),
+    JSON.stringify({
+      turns: Array.from({ length: 8 }, (_, index) => ({
+        turn: index + 1,
+        learner: `Learner ${index + 1}`,
+        tutor: `Tutor ${index + 1}`,
+      })),
+      trace: firstTrace,
+      disposition: 'learner_exit',
+      proofControl: { releasedPremiseIds: [] },
+    }),
+  );
+
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-route-recovery-test-'));
+  const armDir = path.join(sourceDir, 'B');
+  fs.mkdirSync(armDir);
+  fs.writeFileSync(
+    path.join(sourceDir, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v2`,
+        priorAttemptCount: 16,
+        reusedCompletedArms: ['A'],
+        recoverySource: firstSource,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'stopped.json'),
+    JSON.stringify({ error: 'Qwen HTTP 400', budget: { used: 17, limit: 48 }, armsCompleted: 1 }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'run-ledger.jsonl'),
+    `${JSON.stringify({ type: 'model_attempt_reserved', count: 1 })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(armDir, 'stopped.json'),
+    JSON.stringify({ error: 'Qwen HTTP 400', turns: [], partialTurn: { turn: 1 } }),
+  );
+  fs.writeFileSync(
+    path.join(armDir, '1-learner.request.json'),
+    JSON.stringify(
+      buildContinuityRequest({
+        plan: rivalPlan,
+        speaker: 'learner',
+        turn: 1,
+        history: [{ role: 'assistant', content: rivalPlan.world.opening_frame.authored_text }],
+      }),
+    ),
+  );
+  fs.writeFileSync(
+    path.join(armDir, 'trace.jsonl'),
+    `${JSON.stringify({
+      type: 'provider_event',
+      event: {
+        type: 'local_transport',
+        status: 400,
+        body: 'Repository Not Found for Qwen3.8-27B-Uncensored-MLX/4-bit',
+      },
+    })}\n${JSON.stringify({ type: 'model_call_failed', turn: 1 })}\n`,
+  );
+  const recovery = readLocalModelRouteRecovery(rivalPlan, sourceDir);
+  assert.equal(recovery.priorArms[0].id, 'A');
+  assert.equal(recovery.priorArms[0].snapshot.turns.length, 8);
+  assert.deepEqual(localModelRouteRecoveryContract(rivalPlan, recovery), {
+    studyId: 'qwen-invested-rival-theorist-v1-generation-recovery-v3',
+    spendCap: 31,
+    priorAttemptCount: 17,
+  });
+  fs.writeFileSync(path.join(armDir, '1-learner.response.json'), '{}');
+  assert.throws(() => readLocalModelRouteRecovery(rivalPlan, sourceDir), /downstream output/u);
 });
 
 test('bilateral plan inherits the unchanged actor and proof controller with an explicit 100-attempt ceiling', () => {
