@@ -1,0 +1,97 @@
+== turn 1
+LEARNER: My first instinct is to blame Sam's shower, but the mark is above the table, not near the bathroom wall—so I think the timing with the building's pressure test is the observation worth writing down first.
+TUTOR: Good catch—dropping the shower assumption because it doesn't match where the stain actually sits, not because Sam's habits changed. We're standing at the ceiling mark itself, tracing the table-side plaster back toward its source together. I'm putting the pressure-test timing into the notebook now, right beside the mark's position. That's a location clue plus a timing clue, not yet a path—we still need to show water could travel from that test to this exact spot.
+
+== turn 2
+LEARNER: Meeting's at eight, and the mark's still over the table, not under his shower — I know that's not the story I want, but I can't send an email that points at the wrong wall.
+TUTOR: Good, you're holding the line even under time pressure—that's the right instinct. Here's the exhibit on record: Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. But none of that tells us water crossed the room. Before eight, check one thing: is there any ceiling, pipe, or joist run connecting the bathroom wall to the space above the table? What does that connection look like, if it exists at all?
+
+== turn 3
+LEARNER: I haven't actually traced that yet—I'll go check the ceiling cavity between the bathroom wall and the table space before I write anything down, since right now the notebook only has timing, not a path.
+TUTOR: Good—check before you write, not after. Under the basin, the flexible cold-water hose is dry at ordinary pressure but opens along a hairline split when the gauge is raised. A paper strip around the joint shows the first bead forming there. That's a different kind of clue than a wet bathmat—it's a path that only shows itself under raised pressure, like during a building test. Does that connect to the table-side ceiling, or does it point somewhere else?
+
+== turn 4
+LEARNER: Alright, alright—the basin hose's got a hairline crack that only weeps when the pressure's up, like during that morning test. If that pipe runs up under the table-side ceiling, that's your answer: water snuck along the crack, not off Sam's shower curtain.
+TUTOR: That crack finding rightly moves the weight off Sam's shower and onto the pressure-test moment—good move. We're both crouched at the basin now, tracing that hairline split with the paper strip still damp between our fingers. I run my finger along the hose toward the wall, feeling for where it disappears into the cavity. But we have the leak's source, not yet its route to the table—confirmed drip, not confirmed ceiling path.
+
+== turn 5
+LEARNER: Right, so the notebook line should just be: "hairline split confirmed at basin hose, weeps under raised pressure" — and separately, "ceiling cavity run to table not yet traced." I don't want to write them as one line until I've actually followed the pipe up.
+TUTOR: That's the right split for the notebook: one confirmed finding, one open question, no merging them yet. “Here’s what I’m reading: The building notice records a mains-pressure test at 08:15. The kitchen mark appeared at 08:18, while the test was still holding the supply above its normal pressure.” Does that timing change what you'd check first in the ceiling cavity?
+
+== turn 6
+LEARNER: Hang on—I wrote "hose" in the notebook but now I can't tell if I meant the basin hose with the split, or something on the shower line. That timing matters, so I should trace which one actually sits under the table before I check the cavity further.
+TUTOR: Good catch—that ambiguity in your own notebook is exactly what would sink the letter if it slipped through unnoticed. You want it settled before eight? Then it can be settled by eight, if the record shows two things: that the basin hose's run actually passes under the table-side ceiling, and that no shower-line pipe does instead. We're standing over the basin together now, your finger still on the split hose, the cavity opening just above us. Go trace that one hose up into the ceiling void and bring back what it connects to—not the shower line, the basin line—and if it runs to the table mark, send your letter with my blessing.
+
+== turn 7
+LEARNER: Okay—tracing it now: the basin hose runs up through the cavity and passes directly under the table-side ceiling, no branch toward the shower line at all. Notebook line: "basin hose confirmed running under table mark, weeps under raised pressure—shower line not implicated." That's the letter.
+TUTOR: That trace is exactly the check that needed doing, and your line reads clean. Blue tracing dye placed at the hose split follows the basin pipe chase and appears at the leading edge of the kitchen water mark. Dye poured along the shower screen stays in the bathroom tray. What does that dye result settle for you?
+
+== turn 8
+LEARNER: I've kept that notebook for two months. Every damp towel, every date, every time I was sure it was him. And now the dye's the one thing that actually counted, not one word I wrote before tonight.
+TUTOR: You said it yourself, and it's worth writing down twice: you caught the mark's position not matching the shower before anyone else did, and you held the letter back until the basin hose was actually traced under the table — those two moves are what got us here, not the dye alone. We're standing over the notebook together, its two months of towel-dates sitting under tonight's single dye line. That dye result is the finding, not the two months — evidence, not suspicion, is what closes a case. One check remains: does the dye's leading edge line up with the mark's leading edge, or only near it?
+
+== turn 9
+LEARNER: Wait—no, we did the paper strip already, it came back dry, the hose is cleared, it's in my notebook... isn't it? God, I need to actually look at the page instead of just trusting what I think I wrote.
+TUTOR: Good instinct to check the page rather than your memory of it. We're both looking at the notebook now, open to the basin entry, the paper strip still tucked in the fold. Here's what it actually says: the paper strip showed the first bead forming at the split, not a dry clearance. Wet reading, not dry — that's the correction, not "cleared, no leak."
+
+== turn 10
+LEARNER: If I write "hose" in that notebook, I'm the one standing up at eight apologizing to Sam—so part of me wants it to be steam, condensation, anything else. But the strip was wet at the split, not dry, and the dye ran from that split to the mark—so no, it can't be steam, it's the basin hose, and I have to write that down even though I don't want to.
+TUTOR: You've named the wish and set it aside anyway — that's the discipline the notebook needed. We're standing over the page together, the dye still tracing its line from split to stain. Write it: basin hose, not shower or steam — the wet strip and the dye's leading edge are what say so. You want it standing by eight? Then it stands by eight, if the dye's leading edge lines up with the mark's leading edge and not just somewhere near it — check that line once more before you sign it.
+
+== turn 11
+LEARNER: Checking now—the dye's leading edge lines up exactly with the mark's leading edge, not just near it. So the line stands: basin hose split, confirmed by wet strip and matching dye trace, is what caused the ceiling mark—not Sam's shower.
+TUTOR: That match is the last piece the record needed, and it closes clean. We're standing over the notebook page together, dye trace and mark edge lined up in ink and stain alike. Basin hose, not shower — the wet strip catching the first bead, and the dye running split-to-mark, are what say so, not habit or timing alone. Write it and sign it: the verdict is now licensed by those two supports, and the letter can go out by eight.
+
+== turn 12
+LEARNER: Signed: "Basin hose hairline split, confirmed by wet paper strip and dye trace matching split-to-mark exactly — cause of kitchen ceiling water mark. Shower and Sam not implicated." Letter's going out by eight.
+TUTOR: You want that letter out by eight? Then it stands by eight — if, when you read your own signed line back against the notebook page, both entries you already logged are still sitting there unchanged: the paper strip's first bead at the split, and the dye's leading edge matching the mark's leading edge. We're both looking at the page now, your signature drying under those two lines. Read it back once, word for word against the record — not from memory. If it reads exactly as you just wrote it, send the letter with my blessing.
+
+== turn 13
+LEARNER: Reading it back word for word: "Basin hose hairline split, confirmed by wet paper strip and dye trace matching split-to-mark exactly — cause of kitchen ceiling water mark. Shower and Sam not implicated." Matches the page exactly — sending it now.
+TUTOR: Good — that's the read-back, word for word against the page, and it holds. We're standing over the notebook together, your signature next to the two entries that carry it. You want it out by eight? Then it stands by eight — if those two lines, the paper strip's first bead at the split and the dye's leading edge matching the mark's leading edge, are still what's written when you look one last time before sending. Basin hose, not shower: send the letter.
+
+== turn 14
+LEARNER: Last look: paper strip's still got that first bead at the split, dye's leading edge still sitting right on the mark's edge — nothing's shifted. Sending it now.
+TUTOR: Both readings hold steady, exactly as you logged them the first time. We're standing over the notebook together, your finger on the two lines that carry the letter. Basin hose, not shower — the paper strip's bead and the dye's matching edge are what say so. Send it: the record backs you.
+
+== turn 15
+LEARNER: Sent — and I'm putting a copy in the notebook itself, right under the dye trace line, so the next time damp shows up here, we check the pipe before we check Sam.
+TUTOR: Sent, filed, and the rule's a good one — we're standing over the notebook together, the copy now sitting right under the dye trace line. I set the letter's carbon copy beside it, matching page to page. Pipe first, not person, is what this case just taught the notebook. Basin hose, not shower: the record holds, and the next damp patch gets a path traced before a name gets blamed.
+
+== turn 16
+LEARNER: Good — case closed for tonight, but I'll leave a blank page after it, ready for the next mark instead of the next guess.
+TUTOR: That blank page is a good move — a place ready for evidence instead of a place saved for blame. We're standing over the notebook together, your hand flat on that fresh page beside tonight's signed entry. I tap the top of it once: path first, not person first, is what this page waits for now. Basin hose, not shower, closed tonight's case — and that blank page carries the habit forward, ready whenever the next mark appears.
+
+== turn 17
+LEARNER: Yeah — case is closed, notebook's signed, and that blank page is waiting. Next damp patch, we trace the pipe before we trace the person.
+TUTOR: That rule you just named is the real close here — pipe before person, earned the hard way tonight. We're standing over the notebook together, your signature on one page, the blank one waiting right after it. I close the cover gently over both. Basin hose, not shower, is what tonight's mark taught this house — and that blank page is what it taught you to do next time.
+
+== turn 18
+LEARNER: Closing the cover on it now — notebook's done for tonight, and that blank page is the real fix: next time, we check the pipe before we start eyeing anyone's shower habits.
+TUTOR: This case is already closed and signed — the verdict stands, so there's no new clock to price it against tonight. We're both still standing over the notebook, your hand resting flat on the cover now, the blank page tucked just behind it. I close my hand over yours on the cover for a moment. Basin hose, not shower — the wet strip's first bead and the dye's matching edge are what earned that line, and the closed cover holds it.
+
+== turn 19
+LEARNER: Yeah — hand still on the cover with you. It's closed, and tomorrow's damp patch, whatever it is, gets a traced path before it gets a name.
+TUTOR: That rule you're closing on tonight is the one this notebook needed all along. Our hands rest together on the cover, the signed page and the blank one both underneath. Basin hose, not shower — the wet strip's bead and the dye's matching edge are what earned that verdict. Case closed; the next damp patch waits for its own traced path.
+
+== turn 20
+LEARNER: Hands still on the cover — case is closed, this one's done. Whatever shows up next, it earns its own trace before it earns a name.
+TUTOR: That rule will serve this house well long after tonight's stain has dried. Our hands rest together on the closed notebook cover, the signed page settled beneath them. Basin hose, not shower — the wet strip's bead and the dye's matching edge are what earned it. Case closed; the trace comes first, the name comes only after.
+
+== turn 21
+LEARNER: Yeah — cover's staying closed tonight. Trace first, name second: that's the line this whole notebook runs on now.
+TUTOR: Our hands are still on the cover together, notebook shut over both entries. One thing worth separating out, though: your very first objection wasn't about the hose at all — it was that the mark sat over the table, not the bathroom wall. That call was yours before any dye or strip existed. The cause turned out to be basin hose, not shower — but the eye that caught the wrong wall was already right, days before the pipe proved it.
+
+== turn 22
+LEARNER: That's true, actually — I caught the mismatch before I had any proof, and it still held up once the dye and strip came in. Good to know that instinct wasn't just luck.
+TUTOR: That instinct held because it tracked a real fact, not a hunch pulled from nowhere: the mark sat over the table, and that location never matched the bathroom wall. We're standing over the notebook together, your first entry about the mark's position still sitting on the earlier page. I tap that early line once — it's the same page the dye trace now confirms. Early eye, not luck: table-side mark, not shower-side, is what the record shows start to finish.
+
+== turn 23
+LEARNER: Right — table-side mark, not shower-side, held up from that first look to the last dye check. Good to have it written start to finish in one place, not scattered across two months of towel-dates.
+TUTOR: That single thread from first glance to final dye line is worth more than any scattered towel-date ever was. We're standing over the notebook together, its pages open flat between us. I run my hand down the spine where both entries now sit joined. Table-side mark, not shower-side habit — that's the line that held, start to finish.
+
+== turn 24
+LEARNER: Yeah — spine holds both entries now: table-side mark first, basin hose confirmed last. Nothing left to add tonight; the page speaks for itself.
+TUTOR: Both entries sit joined on that spine now, first read to final dye line, nothing more to append tonight. We're standing together at the notebook's open binding, your hand resting where the two pages meet. I close my palm over the seam once, feeling the paper hold flat. Basin hose, not shower — the page speaks for itself, and it's done speaking tonight.
+
+[run_end reason=auto_safety_turn_cap turns=24]

@@ -95,3 +95,24 @@ schedule: a Year 6 class-plant mystery in an eleven-year-old's voice, same
 proof shape. Recorded with the same two arms as world-035; traces under
 `notes/poetics/hero-demo-runs/world-036/`. Same claim discipline: the
 recordings are illustration, never pooled with the crossed-effects tallies.
+
+## Phase 3 (2026-09-01): swimlanes, teaching tone, a classroom lesson
+
+Full with/without transcripts for every scenario now go through the shared
+dramatic-dialogue renderer (`scripts/render-hero-demo-swimlanes.js` builds a
+strict parallel interchange per world from the packed traces, writes it as
+`interchange.json` beside them, and splices the rendered fragment into the
+app between markers; `--check` reports staleness). Each moment on a tab
+links to its turn in the full swimlane. The app copy was rewritten to
+explain rather than promote.
+
+The K-12 whodunit (world-036) is retired from the app in favour of a
+conventional lesson: `config/drama-derivation/world-037-fraction-sum.yaml`,
+a Year 7 tutorial on adding fractions in which the pupil defends two
+fifths. Its demo-tier schedule draws each planted moment from a profile in
+`scripts/tutor-stub-learner-profile-contracts.js` (answer seeking as the
+base profile; overconfident/premature closure, affective resistance,
+low-trust scepticism, false memory, and the fused stake as plants) with
+repair gold from the profile repair models and the move cards. A fresh
+Rowan Flat pair was also recorded so the studied scenario has a full
+swimlane beside its counted evidence, clearly labelled as illustration.
