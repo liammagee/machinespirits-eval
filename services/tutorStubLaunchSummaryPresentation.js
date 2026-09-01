@@ -169,7 +169,7 @@ export function createTutorStubLaunchSummaryPresentation({
             typedActionTask.knowledgeComponent
           } | difficulty ${typedActionTask.itemDifficulty} | support ${
             typedActionSupportLevel === null ? 'action default' : typedActionSupportLevel
-          }${C.reset}`,
+          } | assignment ${typedActionConfig.assignmentMode}${C.reset}`,
         );
       }
       if (registerSelectionEnabled) {

@@ -92,6 +92,7 @@ const STUB = {
   releaseSpeed: process.env.TUTOR_STUB_RELEASE_SPEED || String(DEFAULT_TUTOR_STUB_RELEASE_SPEED),
   runSeed: process.env.TUTOR_STUB_RUN_SEED || '1',
   typedActions: process.env.TUTOR_STUB_TYPED_ACTIONS === '1',
+  typedActionAssignment: process.env.TUTOR_STUB_TYPED_ACTION_ASSIGNMENT || 'policy',
   typedActionTaskId: process.env.TUTOR_STUB_TYPED_ACTION_TASK_ID || 'tutor-stub-public-reasoning',
   typedActionKnowledgeComponent:
     process.env.TUTOR_STUB_TYPED_ACTION_KNOWLEDGE_COMPONENT || 'public-evidence-to-warrant-linkage',

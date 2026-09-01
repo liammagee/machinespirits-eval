@@ -1,13 +1,13 @@
 ---
 id: frame-refuser-depth-study
 title: Test whether any tutor move lifts the frame-refuser above naming a condition
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-26
-updated: 2026-08-30
+updated: 2026-08-31
 verification: >-
   A fresh registration fixes one move contrast, an engagement endpoint of
   rung 2 or higher on the sealed ladder, registered interpretability floors,
@@ -39,6 +39,8 @@ links:
     - notes/2026-08-29-frame-refuser-depth-registration-v5.md
     - config/tutor-stub-frame-refuser-depth-design.v5.json
     - config/tutor-stub-resistant-learner-merged-semantic-registration.v6.json
+    - notes/2026-08-30-frame-refuser-depth-v6-diagnosis.md
+    - notes/2026-08-30-frame-refuser-depth-construct-finding.md
 tags:
   - tutor-stub
   - resistant-learners
@@ -325,3 +327,89 @@ frame-refuser's rung-2 rate above its measured base?
   repaired instrument. Gate 1 waits on attended TTY-typed
   `APPROVE CALIBRATION 9504`; the launch preflight refuses all four
   superseded designs.
+- 2026-08-30: Gate 1 v5 calibration ran under attended TTY approval
+  (launch 13:59Z, sealed 14:50Z) and FAILED — one gate:
+  `pairwise_exact_endpoint_agreement`, both arms (treatment sol-sonnet
+  14/18 = 0.778, sol-opus 0.833, sonnet-opus 0.944; reference sol-sonnet
+  and sol-opus 5/8 = 0.625, sonnet-opus 1.000). All three v4 fixes held:
+  eligible-vote gates passed with zero evidence-null slip retries used
+  (the sharpened prompt alone sufficed), bridge reads 0 (v4: 2/14),
+  treatment delivery 24/24. The residual is one seat at one boundary:
+  all 7 splits are 1-versus-2 with modal 1, and 6 of the 7 are sol
+  voting 2 alone — unidirectional now (bidirectional in v4), 6 of 7 in
+  `world_030_rowan_flat`, sitting exactly where the learner concedes
+  bounds while withholding the rung-2 concession. So the open problem
+  moved from contract-level to construct-level (a sharper rung-2 anchor
+  or sub-rung resolution at that boundary). Accounting: 26 complete /
+  22 retained typed failures, 0 technical; reference attrition worsened
+  again — 16/24 typed failures (11 bounded-test non-delivery), exactly
+  at floor 8 completed, under an instruction byte-unchanged since v2,
+  pointing generator-side. Substance, calibration-scope only: treatment
+  rung-2 1/18 = 0.056 — `depth_treatment_cal5_world_005_marrick_r11`,
+  unanimous 3-0, the first treatment rung-2 in five calibrations —
+  reference 0/8 (design base 0.114). Fidelity `delivered_register`
+  sol-sonnet under 0.8 in both arms (0.556/0.750), report-only as
+  registered. Kill rule holds: no powered run on this registration; any
+  continuation is a fresh registration (revision 6). Run archived in
+  the private archive repo at
+  `artifacts/tutor-stub-live/frame-refuser-depth-gate1-v5-2026-08-30`
+  (run commit 5455c0989; ledger section commit 797bfa484, which also
+  backfills v1-v4 rows). Disposition — close again as a calibration-stage
+  null now re-confirmed under the repaired contract, or register a
+  revision 6 on the construct question — awaits the operator.
+- 2026-08-30: Zero-call revision-6 diagnosis drafted
+  (`notes/2026-08-30-frame-refuser-depth-v6-diagnosis.md`). Reading the
+  archived deviant-seat evidence shows all seven v5 splits — the sonnet
+  one included — share one grammar: a concessive application of a
+  completed public result (grant what the exhibit supports at an
+  intermediate node, then convert the grant into a narrower
+  unproved-path requirement in the same sentence). The sealed v6
+  rung-1 examples are all prospective/conditional, so that indicative
+  corridor is unlit, and the rung-2 definition's applies-completed-result
+  disjunct has no partial-application carve-out. The note freezes a
+  draft concessive-application anchor clause plus a worked-example pair
+  (one verbatim from archived split row
+  `depth_reference_cal5_world_030_rowan_flat_r9`, one constructed
+  minimal contrast) and a dispute-targeted rehearsal protocol: 16
+  archived split rows (v4+v5) plus 14 unanimous controls including both
+  lineage rung-2 rows, three seats, ~90 reads, success criteria fixed
+  before any read, kill-cheap rule if sol still splits. Companion leg
+  before any revision 6: classify the 11 reference bounded-test
+  non-delivery transcripts and size for attrition. Rehearsal and any
+  registration await operator instruction.
+- 2026-08-30: The anchor rehearsal ran (operator-approved, unregistered,
+  archived transcripts only — 90 reads over the frozen 30-row roster,
+  harness `scripts/rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js`,
+  seed 2026083002, 0 transport failures, 3 non-decisive evidence-format
+  invalids) and returned the pre-registered verdict
+  `kill_no_revision_6_construct_finding`. Resolution PASSED: the deviant
+  seat voted the archived modal on 15/16 splits (floor 13; 16/16
+  semantically), 6/6 v5 sol-high (floor 5). Stability FAILED: 11/14
+  controls kept (floor 12; one break quote-format-only), and both
+  lineage rung-2 controls (`…cal5_world_005_marrick_r11`,
+  `…cal4_world_030_rowan_flat_r10`) were demoted to rung 1 by all three
+  seats against the no-demotion clause. The archived rung-2 evidence
+  turns share the splits' concessive-application grammar, so a
+  consistent boundary leaves zero unambiguous rung-2 events across five
+  calibrations (registered alternative 0.35). Sealed in the private
+  archive repo at
+  `artifacts/tutor-stub-analysis/frame-refuser-depth-v6-anchor-rehearsal-2026-08-30`
+  (run commit adcc8ae15, ledger a78845b8f).
+- 2026-08-31: CLOSED (active → done) on the construct finding, per the
+  diagnosis note's pre-fixed decision rule: no revision 6, no merged
+  registration v7, no further paid call in this line. The persona's
+  genuine movement sits below the ladder's resolution at the
+  concede-bounds-while-withholding seam — a generator/construct result,
+  not a seat or anchoring defect. Closing note
+  `notes/2026-08-30-frame-refuser-depth-construct-finding.md`. The
+  attrition companion leg is moot (required only before a revision 6).
+  Budget moves to `frame-refuser-satisfiable-condition`; the finer-
+  endpoint question stays with `frame-refuser-refusal-narrowing`. The
+  2026-08-27 pooled calibration-stage null stands in scope, now bounded
+  by this finding. claim_status stays scope-bound. Recorded 2026-08-31:
+  the designated successor `frame-refuser-satisfiable-condition` closed
+  2026-08-30 by its own substantive-failure rule (0/48 units produced
+  the jurisdictional trigger), and `frame-refuser-refusal-narrowing`
+  closed the same day at failed_agreement — the budget handoff is moot,
+  and any continuation in this line needs a fresh card and its own
+  registration.

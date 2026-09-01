@@ -9,7 +9,7 @@ source: review
 created: 2026-08-29
 updated: 2026-08-30
 verification: "Two independent human coders complete a frozen, arm-blinded stratified packet from sealed adaptive-causality traces; agreement, disagreements, state confusion, and move-realization fidelity are reported overall and by arm; ambiguous or discordant cases remain indeterminate; the adaptive mechanism claim is either retained within those measured bounds or narrowed without post-hoc relabelling."
-blocked_by: "The zero-call blinded packet must first be prepared and frozen; two independent human coders are then required"
+blocked_by: "Two independent human coders must complete and freeze the prepared packet before unblinding"
 claim_status: planned
 depends_on:
   - adaptive-causality-human-state-move-packet-prep
@@ -60,3 +60,12 @@ remains central but the named frozen packet does not yet exist. Added the
 zero-call packet-preparation dependency rather than treating this card as
 immediately ready for coders. This card continues to own only the independent
 human rulings and claim-bound comparison after that packet freezes.
+
+2026-08-30 Codex: The preparation dependency is complete. The 24-case packet,
+plain-language codebook, two independently ordered coder templates, separate
+machine key, hash manifest, and fail-closed comparison tool are frozen under
+`config/adaptive-causality-validation/`, with the organizer-only key under
+`tests/fixtures/`. This card is now ready for external coding; its only remaining
+blocker is the absence of two independent human coders. Do not provide the spec,
+hash manifest, source traces, other coder's file, or machine key before both
+submissions are frozen.

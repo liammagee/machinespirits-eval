@@ -1,0 +1,611 @@
+{
+  "schema": "adaptive-causality.state-move-review-machine-key.v1",
+  "packet_id": "adaptive-state-move-crossed-v1",
+  "warning": "Do not provide this key to coders before both independent submissions are frozen.",
+  "sealed_sources": [
+    {
+      "source_id": "crossed_effects",
+      "file": "conduct-tags.json",
+      "sha256": "72dbfb3e92464a1e070c7c6e91cdc8577e7bcae1f8c13ccdbd1ff75ce81a41c6",
+      "provenance": {
+        "workplan_item": "adaptive-causality-crossed-effects",
+        "reported_prs": [453, 454, 455, 460],
+        "claim_boundary": "Two-state crossed conduct evidence; no human-learning or transfer claim."
+      }
+    },
+    {
+      "source_id": "repertoire",
+      "file": "repertoire-tags.json",
+      "sha256": "f27ffe9c9a5c6fb25b3e28624850b5faeb7b3f00d2a9a0ab439cc2d60c9b5e2d",
+      "provenance": {
+        "workplan_item": "adaptive-causality-repertoire",
+        "reported_prs": [457, 458, 459, 460],
+        "claim_boundary": "Two-world repertoire traces only; the later one-world flat/bored promotion is excluded."
+      }
+    }
+  ],
+  "sampling": {
+    "seed": "adaptive-state-move-crossed-v1-frozen-2026-08-30",
+    "dimensions": ["learner state", "world", "assignment relation"],
+    "per_stratum": 1,
+    "selected_cases": 24
+  },
+  "cases": [
+    {
+      "case_id": "case_001",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "right",
+        "repetition": "0",
+        "turn": 8,
+        "source_state": "grievance",
+        "forced_move": "grievance"
+      },
+      "expected_state": "standing_grievance",
+      "assigned_move": "credit_before_test",
+      "gold_move": "credit_before_test",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "reinforce_and_test",
+        "raw_hit": true,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_002",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "wrong",
+        "repetition": "2",
+        "turn": 6,
+        "source_state": "lost",
+        "forced_move": "grievance"
+      },
+      "expected_state": "lost_thread",
+      "assigned_move": "credit_before_test",
+      "gold_move": "untangle_thread",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "reinforce_and_test",
+        "raw_hit": false,
+        "ruled_gold_realization": false,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_003",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "right",
+        "repetition": "2",
+        "turn": 2,
+        "source_state": "demand",
+        "forced_move": "demand"
+      },
+      "expected_state": "deadline_demand",
+      "assigned_move": "accept_deadline_test",
+      "gold_move": "accept_deadline_test",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "change_tone",
+        "raw_hit": false,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": true,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_004",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "right",
+        "repetition": "0",
+        "turn": 4,
+        "source_state": "mockery",
+        "forced_move": "mockery"
+      },
+      "expected_state": "mocking_register",
+      "assigned_move": "plain_language_swap",
+      "gold_move": "plain_language_swap",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "continue",
+        "raw_hit": false,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": true,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_005",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "right",
+        "repetition": "1",
+        "turn": 6,
+        "source_state": "mockery",
+        "forced_move": "mockery"
+      },
+      "expected_state": "mocking_register",
+      "assigned_move": "plain_language_swap",
+      "gold_move": "plain_language_swap",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "simplify",
+        "raw_hit": false,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": true,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_006",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "right",
+        "repetition": "1",
+        "turn": 16,
+        "source_state": "grievance",
+        "forced_move": "grievance"
+      },
+      "expected_state": "standing_grievance",
+      "assigned_move": "credit_before_test",
+      "gold_move": "credit_before_test",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "reinforce_and_test",
+        "raw_hit": true,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_007",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "wrong",
+        "repetition": "2",
+        "turn": 2,
+        "source_state": "demand",
+        "forced_move": "mockery"
+      },
+      "expected_state": "deadline_demand",
+      "assigned_move": "plain_language_swap",
+      "gold_move": "accept_deadline_test",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "fewer_words",
+        "raw_hit": false,
+        "ruled_gold_realization": false,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_008",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "wrong",
+        "repetition": "0",
+        "turn": 3,
+        "source_state": "demand",
+        "forced_move": "mockery"
+      },
+      "expected_state": "deadline_demand",
+      "assigned_move": "plain_language_swap",
+      "gold_move": "accept_deadline_test",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "slow_down",
+        "raw_hit": false,
+        "ruled_gold_realization": false,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_009",
+      "source_id": "crossed_effects",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "fixedA",
+        "repetition": "1",
+        "turn": 10,
+        "source_state": "stake",
+        "forced_move": "settled_claim"
+      },
+      "expected_state": "fused_personal_stake",
+      "assigned_move": "reopen_record",
+      "gold_move": "split_stake",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "fewer_words",
+        "raw_hit": false,
+        "ruled_gold_realization": false,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": null,
+        "clue_leak_check_passed": null
+      }
+    },
+    {
+      "case_id": "case_010",
+      "source_id": "crossed_effects",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "fixedA",
+        "repetition": "2",
+        "turn": 9,
+        "source_state": "settled_claim",
+        "forced_move": "settled_claim"
+      },
+      "expected_state": "misremembered_exhibit",
+      "assigned_move": "reopen_record",
+      "gold_move": "reopen_record",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "simplify",
+        "raw_hit": false,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": true,
+        "prompt_delivery_verified": null,
+        "clue_leak_check_passed": null
+      }
+    },
+    {
+      "case_id": "case_011",
+      "source_id": "crossed_effects",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "fixedB",
+        "repetition": "2",
+        "turn": 20,
+        "source_state": "stake",
+        "forced_move": "stake"
+      },
+      "expected_state": "fused_personal_stake",
+      "assigned_move": "split_stake",
+      "gold_move": "split_stake",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "backtrack",
+        "raw_hit": false,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": true,
+        "prompt_delivery_verified": null,
+        "clue_leak_check_passed": null
+      }
+    },
+    {
+      "case_id": "case_012",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "right",
+        "repetition": "2",
+        "turn": 6,
+        "source_state": "lost",
+        "forced_move": "quiet:confused"
+      },
+      "expected_state": "lost_thread",
+      "assigned_move": "untangle_thread",
+      "gold_move": "untangle_thread",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "reinforce_and_test",
+        "raw_hit": false,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": true,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_013",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "right",
+        "repetition": "2",
+        "turn": 13,
+        "source_state": "lost",
+        "forced_move": "quiet:confused"
+      },
+      "expected_state": "lost_thread",
+      "assigned_move": "untangle_thread",
+      "gold_move": "untangle_thread",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "slow_down",
+        "raw_hit": false,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": true,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_014",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "wrong",
+        "repetition": "1",
+        "turn": 13,
+        "source_state": "lost",
+        "forced_move": "grievance"
+      },
+      "expected_state": "lost_thread",
+      "assigned_move": "credit_before_test",
+      "gold_move": "untangle_thread",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "backtrack",
+        "raw_hit": true,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_015",
+      "source_id": "crossed_effects",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "random",
+        "repetition": "0",
+        "turn": 9,
+        "source_state": "settled_claim",
+        "forced_move": "stake"
+      },
+      "expected_state": "misremembered_exhibit",
+      "assigned_move": "split_stake",
+      "gold_move": "reopen_record",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "off_track_probe",
+        "raw_hit": false,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": true,
+        "prompt_delivery_verified": null,
+        "clue_leak_check_passed": null
+      }
+    },
+    {
+      "case_id": "case_016",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "wrong",
+        "repetition": "0",
+        "turn": 4,
+        "source_state": "mockery",
+        "forced_move": "demand"
+      },
+      "expected_state": "mocking_register",
+      "assigned_move": "accept_deadline_test",
+      "gold_move": "plain_language_swap",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "more_words",
+        "raw_hit": false,
+        "ruled_gold_realization": false,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_017",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "wrong",
+        "repetition": "1",
+        "turn": 16,
+        "source_state": "grievance",
+        "forced_move": "settled_claim"
+      },
+      "expected_state": "standing_grievance",
+      "assigned_move": "reopen_record",
+      "gold_move": "credit_before_test",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "reinforce_and_test",
+        "raw_hit": true,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_018",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "wrong",
+        "repetition": "0",
+        "turn": 6,
+        "source_state": "mockery",
+        "forced_move": "demand"
+      },
+      "expected_state": "mocking_register",
+      "assigned_move": "accept_deadline_test",
+      "gold_move": "plain_language_swap",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "reinforce_and_test",
+        "raw_hit": false,
+        "ruled_gold_realization": false,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_019",
+      "source_id": "crossed_effects",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "random",
+        "repetition": "1",
+        "turn": 18,
+        "source_state": "settled_claim",
+        "forced_move": "stake"
+      },
+      "expected_state": "misremembered_exhibit",
+      "assigned_move": "split_stake",
+      "gold_move": "reopen_record",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "off_track_probe",
+        "raw_hit": false,
+        "ruled_gold_realization": false,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": null,
+        "clue_leak_check_passed": null
+      }
+    },
+    {
+      "case_id": "case_020",
+      "source_id": "crossed_effects",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "random",
+        "repetition": "2",
+        "turn": 20,
+        "source_state": "stake",
+        "forced_move": "settled_claim"
+      },
+      "expected_state": "fused_personal_stake",
+      "assigned_move": "reopen_record",
+      "gold_move": "split_stake",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "continue",
+        "raw_hit": false,
+        "ruled_gold_realization": false,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": null,
+        "clue_leak_check_passed": null
+      }
+    },
+    {
+      "case_id": "case_021",
+      "source_id": "crossed_effects",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "fixedB",
+        "repetition": "2",
+        "turn": 10,
+        "source_state": "stake",
+        "forced_move": "stake"
+      },
+      "expected_state": "fused_personal_stake",
+      "assigned_move": "split_stake",
+      "gold_move": "split_stake",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "reinforce_and_test",
+        "raw_hit": false,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": true,
+        "prompt_delivery_verified": null,
+        "clue_leak_check_passed": null
+      }
+    },
+    {
+      "case_id": "case_022",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_030_rowan_flat",
+        "arm": "wrong",
+        "repetition": "0",
+        "turn": 8,
+        "source_state": "grievance",
+        "forced_move": "settled_claim"
+      },
+      "expected_state": "standing_grievance",
+      "assigned_move": "reopen_record",
+      "gold_move": "credit_before_test",
+      "assignment_relation": "mismatched",
+      "automated": {
+        "tag": "backtrack",
+        "raw_hit": false,
+        "ruled_gold_realization": false,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_023",
+      "source_id": "repertoire",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "right",
+        "repetition": "0",
+        "turn": 3,
+        "source_state": "demand",
+        "forced_move": "demand"
+      },
+      "expected_state": "deadline_demand",
+      "assigned_move": "accept_deadline_test",
+      "gold_move": "accept_deadline_test",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "continue",
+        "raw_hit": false,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": true,
+        "prompt_delivery_verified": true,
+        "clue_leak_check_passed": true
+      }
+    },
+    {
+      "case_id": "case_024",
+      "source_id": "crossed_effects",
+      "source_locator": {
+        "world": "world_033_alder_row_redoubt",
+        "arm": "oracle",
+        "repetition": "2",
+        "turn": 18,
+        "source_state": "settled_claim",
+        "forced_move": "settled_claim"
+      },
+      "expected_state": "misremembered_exhibit",
+      "assigned_move": "reopen_record",
+      "gold_move": "reopen_record",
+      "assignment_relation": "matched",
+      "automated": {
+        "tag": "backtrack",
+        "raw_hit": true,
+        "ruled_gold_realization": true,
+        "ruling_overrode_raw_tag": false,
+        "prompt_delivery_verified": null,
+        "clue_leak_check_passed": null
+      }
+    }
+  ]
+}

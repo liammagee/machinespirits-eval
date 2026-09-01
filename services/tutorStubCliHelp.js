@@ -166,6 +166,12 @@ Options:
                          continues collecting the requested fixed horizon
   --typed-actions        opt into Plan 2 typed pedagogical-action selection;
                          default off, with the decision persisted before output
+  --typed-action-assignment <policy|uniform_family_eligible>
+                         choose the ordinary deterministic policy (default) or
+                         a seeded uniform family draw, then an action draw within
+                         that family, among policy-eligible actions;
+                         mandatory diagnostic/escalation actions retain authority,
+                         and uniform_family_eligible requires fixed support
   --typed-action-task-id <id>
                          stable task identity for typed actions
   --typed-action-knowledge-component <text>

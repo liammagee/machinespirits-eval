@@ -56,6 +56,7 @@ const DECLARED_KERNEL_CALLERS = [
   // Adapters: they call the kernel and add only lowering or transport.
   'services/blueprintActionContracts.js',
   'services/learnerTutorInteractionEngine.js',
+  'services/tutorStubTypedActionAssignment.js',
   'services/tutorStubTypedActionPlanningRuntime.js',
   'services/tutorStubTypedActionRestoration.js',
   // Offline analysis over kernel functions; no policy of their own.

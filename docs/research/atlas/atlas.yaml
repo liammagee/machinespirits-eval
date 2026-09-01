@@ -105,8 +105,17 @@ atlas:
       caveat: >-
         What the move wins depends on the shape of the resistance: bored learners went
         back to the work, while frame-refusers mostly stopped at naming a condition
-        rather than acting on it. Whether any move converts that naming into doing is
-        the line's open question — and all of it is simulated-learner evidence.
+        rather than acting on it. A fresh fifth depth calibration still failed reader
+        agreement. Two successor calibrations did not answer whether
+        any move converts that naming into doing: one finer endpoint failed reader
+        agreement, and one satisfiable-demand persona never produced its registered
+        trigger. A closing zero-call anchor rehearsal then located the repeated
+        failure in the construct itself: re-anchored readers resolved the disputed
+        votes but demoted the lineage's only unanimous rung-2 exemplars by the same
+        logic, so the line closed — at this ladder's resolution the refuser's
+        movement is graded concession, not a countable crossing. The naming-to-doing
+        question is closed at this instrument, unmeasured beyond it, and all of it
+        is simulated-learner evidence.
 
   maps:
     methodological: |
@@ -230,11 +239,14 @@ modules:
     status: methods
     claim: >-
       Keeping drafts, critiques, revisions, evidence links, and automatic claim checks
-      together is a reusable research method, not just background engineering.
+      together is a reusable research method, not just background engineering. Cost
+      ceilings also need one shared owner per study: a counter attached only to one
+      process or destination cannot bound concurrent sessions.
     abstract: >-
       A tour of the audit trail: how critiques are classified, how important numbers are
-      checked against stored evidence, and how a result can be reproduced from source to claim.
-    sections: ["5.3", "5.9", "5.11", "7.4"]
+      checked against stored evidence, how a result can be reproduced from source to
+      claim, and why a study-wide lease and ledger are part of the empirical runtime.
+    sections: ["5.3", "5.9", "5.11", "7.4", "7.15"]
     cross_refs: ["rubrics-as-instruments"]
 
   - id: drama-machine
@@ -369,12 +381,15 @@ modules:
     claim: >-
       A pre-registered two-family test did not find a reliable benefit from adapting
       speaking style to the learner profile. Terra failed the profile-manipulation gate;
-      Sonnet passed that gate but returned no interaction.
+      Sonnet passed that gate but returned no interaction. A late contrast then froze
+      the teaching entirely — the same scripted moves delivered sarcastically against
+      warmly — and the two deliveries were indistinguishable on the proof-DAG in all
+      three learner characters, an operator-accepted descriptive null.
     abstract: >-
       A 120-dialogue confirmatory study in one simulated detective world. It closes this
       field selector on the present evidence, while keeping the result separate from any
       claim about an isolated tutor model or human learning.
-    sections: ["6.17"]
+    sections: ["6.17", "6.29"]
     cross_refs: ["ontology-state-interior", "adaptive-null", "composition-small-kernel", "provable-discourse"]
 
   - id: advice-versus-enforcement
@@ -476,7 +491,24 @@ modules:
       move re-engaged 45 of 49 readable dialogues on the boredom face (0.918) and 70
       of 70 on the refusal face (1.000), but depth tracked the resistance shape: most
       re-engaged bored learners returned to the work, while refusers mostly stopped
-      at naming a condition and rarely acted under protest.
+      at naming a condition and rarely acted under protest. A parallel study
+      inverted the demand — the defiant learner asks for the warrant of the frame
+      itself — and closed at its own gate: the warrant-serving tutor was produced and
+      measured in every dialogue, while the withholding control could not be fielded
+      at all (0 of 8 delivered by instruction, 0 of 9 surviving enforced repair).
+      A fresh fifth depth calibration reached rung 2 in 1/18 completed treatment
+      dialogues versus 0/8 reference dialogues, but still failed reader agreement;
+      it is not pooled with the earlier four-calibration block. Two successor
+      calibrations also left the depth question open rather than returning
+      a treatment result: the finer refusal-narrowing measure failed reader agreement
+      in two duplicate executions, and the satisfiable-demand persona failed to emit
+      its registered challenge in all 48 planned dialogues. A zero-call anchor
+      rehearsal then closed the depth line as a construct finding: the re-anchored
+      panel resolved the v5 split attributions (15/16 to the archived modal) but
+      demoted the lineage's only two unanimous rung-2 cases 3–0, so a consistent
+      rung-1/2 boundary either legitimizes the old splits or empties the category.
+      The refuser's movement is graded concession below the ladder's resolution,
+      and no further paid call runs in that line.
     abstract: >-
       Four studies walk one idea across opposite deficit shapes. On a
       permission-seeking learner, the gate's always-on per-turn steering carried the
@@ -493,8 +525,45 @@ modules:
       could not be reached, then a contrast that was not delivered — and closed as a
       measurement result. The powered two-face run then held delivery to exhaustive
       checks and found re-engagement near ceiling on both faces, with the boredom
-      face doing the work and the refusal face naming its terms. Development-tier
-      throughout: simulated learners, one model family in the speaking seats, no
-      human-learning claim.
-    sections: ["6.25", "6.26", "6.27", "6.28"]
+      face doing the work and the refusal face naming its terms. A fresh fifth depth
+      calibration repaired the output contract but still failed endpoint agreement,
+      so its one treatment rung-2 case is descriptive rather than a treatment result.
+      A separate
+      24-dialogue reader calibration failed agreement twice, so its conflicting arm
+      spreads were not pooled; a separate 48-dialogue calibration produced zero
+      determinate endpoint rows because the intended learner challenge never appeared.
+      A closing zero-call anchor rehearsal located those repeated agreement failures
+      in the construct itself and closed the depth line: the refuser's genuine
+      movement is graded concession below the binary ladder's resolution, and the
+      powered run's descriptive depth split stands as recorded.
+      These are instrument and persona-trigger failures, not evidence of an effect or
+      a null. Development-tier throughout: simulated learners, one model family in the
+      speaking seats, no human-learning claim.
+    sections: ["6.25", "6.26", "6.27", "6.28", "6.30"]
     cross_refs: ["adaptation-four-locks", "advice-versus-enforcement", "recognition-calibration", "human-learning-translation"]
+
+  - id: limits-of-prompt-adaptation
+    n: 19
+    title: "What Context Cannot Add, and What It Cannot Subtract"
+    family: ontology-state
+    status: scope-bound
+    claim: >-
+      The programme's negative results fall into two classes. Redundancy limits:
+      context engineering cannot add information a capable model already extracts
+      from the transcript, which is why learner models, profiles, standing advice,
+      and composed prompt machinery returned nulls against lean baselines.
+      Subtraction limits: prompt-level means could not remove conduct that training
+      installed — a tutor asked to withhold the warrant of its own frame delivered
+      that conduct in 0 of 8 dialogues under instruction and survived structural
+      repair in 0 of 9, writing a new justification each time the violating
+      sentence was quoted back.
+    abstract: >-
+      A discussion-tier synthesis, not a new measurement. Prompt-level adaptation
+      selects among completions the model already affords; it does not construct
+      new capacities and it does not delete trained ones. The practical consequence
+      for designers: an arm that needs the model to be less forthcoming than its
+      training should be verified for delivered conduct before scoring, or declared
+      unavailable. External work on preference training, negated instructions, and
+      persona drift places the boundary where these studies found it.
+    sections: ["7.16"]
+    cross_refs: ["ontology-state-interior", "composition-small-kernel", "advice-versus-enforcement", "resistant-learner-delivered-move"]

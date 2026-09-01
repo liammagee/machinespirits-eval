@@ -1445,6 +1445,18 @@ function buildCandidateTypes(stateBelief, interventionLedger = []) {
 
 export function scoreCandidateAction(actionType, stateBelief, interventionLedger = [], config = {}) {
   const merged = { ...DEFAULT_ADAPTIVE_POLICY_CONFIG, ...config };
+  const penalties = merged.actionUtilityPenalties;
+  if (
+    penalties !== undefined &&
+    (!penalties ||
+      typeof penalties !== 'object' ||
+      Array.isArray(penalties) ||
+      Object.entries(penalties).some(
+        ([type, value]) => !Object.hasOwn(ADAPTATION_ACTION_BY_TYPE, type) || !Number.isFinite(value) || value < 0,
+      ))
+  )
+    throw new Error('actionUtilityPenalties must contain known actions and finite nonnegative penalties');
+  const memoryPenalty = penalties?.[actionType] ?? 0;
   const worldSpec = normalizeWorldAdaptationSpec(merged);
   const def = getActionDefinition(actionType);
   const fit = actionFitScore(def, stateBelief?.hypotheses || []);
@@ -1468,7 +1480,8 @@ export function scoreCandidateAction(actionType, stateBelief, interventionLedger
     mismatchRisk;
   return {
     action_type: actionType,
-    utility: Number(utility.toFixed(6)),
+    utility: Number((utility - memoryPenalty).toFixed(6)),
+    ...(memoryPenalty > 0 ? { base_utility: Number(utility.toFixed(6)), action_memory_penalty: memoryPenalty } : {}),
     expected_state_gain: Number(expectedStateGain(def).toFixed(6)),
     state_action_fit: Number(fit.toFixed(6)),
     dominant_preferred_action_bonus: Number(preferredAction.toFixed(6)),
@@ -1538,14 +1551,29 @@ export function selectPedagogicalAction({
     diagnosticStillRequired(stateBelief, interventionLedger) &&
     !escalationRequired &&
     actionPermittedByWorldSpec('diagnose_with_discriminating_question', worldSpec);
+  let selectionAuthority = null;
   let selectedRow = escalationRequired
     ? candidates.find((c) => c.action_type === 'explain_principle') ||
       candidates.find((c) => c.action_type === 'model_worked_example')
     : null;
+  if (selectedRow) {
+    selectionAuthority = {
+      kind: 'mandatory_escalation',
+      assignable: false,
+      reason: 'A prior non-successful hint requires an escalation action.',
+    };
+  }
   if (!selectedRow) {
     selectedRow = diagnosticRequired
       ? candidates.find((c) => c.action_type === 'diagnose_with_discriminating_question')
       : null;
+    if (selectedRow) {
+      selectionAuthority = {
+        kind: 'mandatory_diagnostic',
+        assignable: false,
+        reason: 'The public state still requires a discriminating diagnostic action.',
+      };
+    }
   }
   if (!selectedRow) {
     const dominant = dominantHypothesis(stateBelief);
@@ -1554,19 +1582,33 @@ export function selectPedagogicalAction({
     if (
       recentDiagnosticNonSuccess(stateBelief, interventionLedger) &&
       preferredRow &&
+      !preferredRow.action_memory_penalty &&
       preferredRow.action_type !== 'diagnose_with_discriminating_question'
     ) {
       selectedRow = preferredRow;
+      selectionAuthority = {
+        kind: 'post_diagnostic_preference',
+        assignable: true,
+        reason: 'A recent non-successful diagnostic makes the dominant-hypothesis action preferable.',
+      };
     }
     if (ACTIONABLE_UNDER_UNCERTAINTY.has(dominant)) {
       const bestUtility = Math.max(...candidates.map((c) => c.utility));
       if (!selectedRow) {
         selectedRow =
           preferredRow &&
-          (recentDiagnosticNonSuccess(stateBelief, interventionLedger) ||
+          ((recentDiagnosticNonSuccess(stateBelief, interventionLedger) && !preferredRow.action_memory_penalty) ||
             bestUtility - preferredRow.utility <= merged.utilityTieEpsilon)
             ? preferredRow
             : candidates[0];
+        selectionAuthority = {
+          kind: selectedRow === preferredRow ? 'dominant_hypothesis_preference' : 'utility_argmax',
+          assignable: true,
+          reason:
+            selectedRow === preferredRow
+              ? 'The dominant-hypothesis action is within the utility tie band.'
+              : 'The highest-utility policy candidate wins.',
+        };
       }
     } else if (!selectedRow) {
       const bestUtility = Math.max(...candidates.map((c) => c.utility));
@@ -1574,20 +1616,14 @@ export function selectPedagogicalAction({
         .filter((c) => bestUtility - c.utility <= merged.utilityTieEpsilon)
         .sort((a, b) => a.control_cost - b.control_cost || b.information_gain - a.information_gain);
       selectedRow = nearTied[0] || candidates[0];
+      selectionAuthority = {
+        kind: 'utility_tie_break',
+        assignable: true,
+        reason: 'The lowest-control-cost candidate wins within the utility tie band.',
+      };
     }
   }
-  const selectedDef = getActionDefinition(selectedRow.action_type);
-  const selectedAction = applyAdaptationPolicyLayerToAction(
-    applyWorldAdaptationToAction(
-      withActionDefaults(selectedDef, {
-        id: `action-turn-${stateBelief?.turn_index ?? 0}`,
-        rationale: `Dominant hypothesis ${dominantHypothesis(stateBelief)}; utility ${selectedRow.utility}; fit ${selectedRow.state_action_fit}.`,
-      }),
-      merged,
-    ),
-    stateBelief,
-    merged,
-  );
+  const selectedAction = buildSelectedPedagogicalAction({ selectedRow, stateBelief, config: merged });
 
   return {
     mode,
@@ -1596,6 +1632,50 @@ export function selectPedagogicalAction({
     registryVersion: ADAPTATION_ACTION_REGISTRY_VERSION,
     worldAdaptationSpec: summarizeWorldAdaptationSpec(worldSpec),
     adaptationPolicyLayer: deriveAdaptationPolicyLayer({ stateBelief, config: merged }),
+    selectionAuthority,
+  };
+}
+
+function buildSelectedPedagogicalAction({ selectedRow, stateBelief, config }) {
+  const selectedDef = getActionDefinition(selectedRow.action_type);
+  return applyAdaptationPolicyLayerToAction(
+    applyWorldAdaptationToAction(
+      withActionDefaults(selectedDef, {
+        id: `action-turn-${stateBelief?.turn_index ?? 0}`,
+        // Historical memory is trace-only. The normal action description must
+        // not smuggle its penalty or evidence into a realization prompt.
+        rationale: `Dominant hypothesis ${dominantHypothesis(stateBelief)}; utility ${selectedRow.base_utility ?? selectedRow.utility}; fit ${selectedRow.state_action_fit}.`,
+      }),
+      config,
+    ),
+    stateBelief,
+    config,
+  );
+}
+
+/**
+ * Replace an ordinary policy choice with a prospectively assigned action that
+ * was already admitted by the same state, world, and scaffold gates.
+ * Mandatory diagnostics and escalations cannot be replaced.
+ */
+export function assignPedagogicalActionSelection({ selection, actionType, stateBelief, config = {} } = {}) {
+  if (!selection || typeof selection !== 'object') throw new Error('pedagogical action selection is required');
+  if (selection.selectionAuthority?.assignable !== true) {
+    throw new Error('mandatory pedagogical action selections cannot be experimentally reassigned');
+  }
+  const selectedRow = selection.candidateActions?.find((candidate) => candidate.action_type === actionType);
+  if (!selectedRow) throw new Error(`assigned action ${actionType || '(empty)'} is not an eligible policy candidate`);
+  const merged = { ...DEFAULT_ADAPTIVE_POLICY_CONFIG, ...config, mode: selection.mode || 'closed_loop' };
+  return {
+    ...selection,
+    selectedAction: buildSelectedPedagogicalAction({ selectedRow, stateBelief, config: merged }),
+    selectionAuthority: {
+      kind: 'prospective_uniform_family_eligible_assignment',
+      assignable: true,
+      baseline_kind: selection.selectionAuthority.kind,
+      assigned_action_type: actionType,
+      reason: 'A seeded prospective collection draw selected among the policy-eligible candidates.',
+    },
   };
 }
 
