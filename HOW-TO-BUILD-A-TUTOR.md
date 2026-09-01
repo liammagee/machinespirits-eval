@@ -13,7 +13,7 @@ Evidence pointers: `workplan/items/adaptation-planted-stress-bench.md`,
 
 The dated working synthesis below is retained as research history. For the current
 public build sequence, use `notes/poetics/ideal-tutor-blueprint.html`, which inherits
-the canonical paper at **v3.0.299**. The paper, not this provisional note, decides
+the canonical paper at **v3.0.300**. The paper, not this provisional note, decides
 which findings are licensed; an old item described below as open or in flight is
 not a current status report.
 
@@ -52,6 +52,41 @@ the task) rather than re-anchoring again. The refuser's genuine movement
 is graded concession below a binary ladder's resolution; the sealed
 powered run's depth split stands as recorded and was not re-read at that
 seam.
+
+The completed resistant-learner line adds a fifth build rule: **diagnose the
+shape of the resistance and measure the channel it can actually move**
+(§§6.24–6.30). These are development-tier studies of simulated learners on
+narrow, named model stacks and worlds; none establishes human learning. A
+permission-seeking learner changed conduct under always-on
+steering (19/24 deference breaks, against 10/24 bare and 11/24 with the same
+permission left as standing wording), while the timed challenge paid mainly in
+decision correctness. An overconfident learner kept its guarded voice but more
+than doubled the share of commitment shifts carrying a warrant under the live
+gate (40.8% against 17.8% bare) in a registered post-hoc re-analysis; its
+challenge-window endpoint was only a late, directional close and should not be
+read as an effect-size result. A bored
+learner whose rival objective was interrupted by a delivered discriminating
+question re-engaged in 45/49 determinate completed dialogues, and 29 of those 45
+returned to the evidential work — but only 49/108 planned units reached that
+denominator, with 58 retained typed failures. A frame-refuser named a condition
+in 70/70 determinate completed dialogues but acted under protest in only 8/70;
+that denominator was 70/108 planned units, alongside 36 retained typed failures
+and two technical losses. Repeated follow-ups closed on a construct limit rather
+than a deeper-move effect. The defiant inversion exposed an unavailable control:
+warrant-withholding was delivered in 0/8 dialogues by instruction and survived
+in 0/9 under gated repair. Finally, warm and sarcastic wordings of the same
+scripted moves were indistinguishable on the proof-DAG across all three tested
+learner characters in an operator-accepted descriptive pattern, not a
+pre-registered null; that result is bounded to one world, one stack, simulated
+learners, one blind reader, and one unread sharp turn.
+
+The engineering consequence is narrower than a general adaptive-tutor claim.
+Choose a state-specific move, verify that it reached the shipped prompt and the
+public reply, and score the corresponding conduct or proof-state consequence.
+Do not use voice as a proxy for epistemic movement, re-engagement as a proxy for
+doing, or in-dialogue conduct as a proxy for learning. Register is worth another
+test only where it is allowed to change move selection or timing; manner with the
+moves frozen is a closed line (§6.29; §8.9).
 
 ## What you are building against
 
