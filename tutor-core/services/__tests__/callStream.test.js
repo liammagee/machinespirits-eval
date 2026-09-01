@@ -498,10 +498,7 @@ describe('callStream()', () => {
         }),
       );
 
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        'http://127.0.0.1:8080/v1/chat/completions',
-        expect.anything(),
-      );
+      expect(globalThis.fetch).toHaveBeenCalledWith('http://127.0.0.1:8080/v1/chat/completions', expect.anything());
       const body = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
       expect(body.model).toBe('/models/Qwen3.8-27B-Uncensored-MLX/4-bit');
       expect(body.enable_thinking).toBe(false);
@@ -647,10 +644,7 @@ describe('call() with local provider (non-streaming)', () => {
 
     expect(result.provider).toBe('mlx-local');
     expect(result.model).toBe('/models/Qwen3.8-27B-Uncensored-MLX/4-bit');
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      'http://127.0.0.1:8080/v1/chat/completions',
-      expect.anything(),
-    );
+    expect(globalThis.fetch).toHaveBeenCalledWith('http://127.0.0.1:8080/v1/chat/completions', expect.anything());
     const body = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
     expect(body.model).toBe('/models/Qwen3.8-27B-Uncensored-MLX/4-bit');
     expect(body.enable_thinking).toBe(false);
