@@ -1,0 +1,362 @@
+<!doctype html>
+<!--
+  techne-doc: adaptive tutor hero demo (lay-audience rewrite, 2026-09-01).
+  The .html IS the source (no build step). Design: assets/techne.css.
+  Behaviour: assets/techne.js. Every quoted learner/tutor line is verbatim
+  from the recorded material behind notes/poetics/
+  2026-08-29-adaptive-tutor-from-null-to-control.html (ellipses shorten only).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>The tutor that knows why you're stuck</title>
+<meta name="description" content="One recorded moment, two tutor replies. A plain demo of how the adaptive tutor reads a stuck learner and picks the move that actually helps." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<link rel="stylesheet" href="assets/techne.css" />
+<style>
+  /* Doc-local styling only; components come from techne.css. */
+  .hero__verdict {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    margin-top: clamp(1.2rem, 3vw, 2rem);
+    border: 1px solid var(--rule);
+    background: var(--rule);
+  }
+  .hero__verdict > div { padding: 1rem 1.15rem; background: var(--paper); }
+  .hero__verdict strong {
+    display: block;
+    font-size: clamp(1.7rem, 3.2vw, 3rem);
+    line-height: 1;
+    font-family: "Fraunces", serif;
+  }
+  .hero__verdict .v-good strong { color: var(--moss-deep); }
+  .hero__verdict .v-bad strong { color: var(--brick-d); }
+  .hero__verdict span {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--ink-3);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    line-height: 1.55;
+  }
+  @media (max-width: 640px) { .hero__verdict { grid-template-columns: 1fr; } }
+
+  .speech {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    background: var(--paper-3);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0.9rem 0;
+    max-width: 44rem;
+  }
+  .speech--learner { border-left: 3px solid var(--ochre); }
+  .speech--tutor { border-left: 3px solid var(--ink-3); }
+  .speech--tutor.is-right { border-left-color: var(--moss); }
+  .speech--tutor.is-wrong { border-left-color: var(--brick); }
+  .speech__who {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--ink-3);
+    font: 700 0.64rem/1.3 "JetBrains Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  .lane__tally {
+    font: 700 0.68rem/1.6 "JetBrains Mono", monospace;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+  }
+  .lane--pass .lane__tally { color: var(--moss-deep); border-color: var(--moss); }
+  .lane--fail .lane__tally { color: var(--brick-d); border-color: var(--brick); }
+  .lane--fail { border-color: color-mix(in srgb, var(--brick) 45%, var(--rule)); }
+
+  .steps { counter-reset: step; margin: 1.3rem 0; display: grid; gap: 0.9rem; }
+  .step {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    gap: 0.9rem;
+    align-items: start;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.9rem 1rem;
+    background: var(--paper);
+  }
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    color: var(--brick-d);
+    font: 700 0.9rem/1 "JetBrains Mono", monospace;
+  }
+  .step h3 { margin: 0 0 0.3rem; font-size: 1.02rem; }
+  .step p { margin: 0; color: var(--ink-2); font-size: 0.92rem; line-height: 1.55; }
+
+  .stuck-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 1.3rem 0;
+  }
+  @media (max-width: 760px) { .stuck-grid { grid-template-columns: 1fr; } }
+  .stuck {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--paper);
+    padding: 1rem 1.05rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .stuck h3 { margin: 0; font-size: 1.02rem; }
+  .stuck blockquote {
+    margin: 0;
+    padding: 0.55rem 0.8rem;
+    border-left: 3px solid var(--ochre);
+    background: var(--paper-3);
+    color: var(--ink-2);
+    font-size: 0.88rem;
+    line-height: 1.55;
+    font-style: italic;
+  }
+  .stuck .move {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .stuck .move b {
+    color: var(--moss-deep);
+    font: 700 0.64rem/1.6 "JetBrains Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    display: block;
+  }
+</style>
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">The tutor that knows why you're stuck</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#scene">The scene</a>
+      <a href="#moment">The moment</a>
+      <a href="#tworeplies">Two replies</a>
+      <a href="#how">How it works</a>
+      <a href="#kinds">Kinds of stuck</a>
+      <a href="#proof">The proof</a>
+      <a href="#fineprint">Fine print</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> Machine Spirits · demo · updated 2026-09-01</div>
+    <h1 class="hero__h1">The tutor that knows <span class="em">why</span> you're stuck</h1>
+    <p class="hero__subtitle">Most AI tutors answer your last sentence. This one reads the moment. Here is one recorded moment, two possible replies, and the difference — measured, not asserted.</p>
+    <div class="hero__lede">
+      <div>
+        <p>A student is one sentence away from the right answer, and refuses to say it. Every tutor meets this moment. What happens next depends on whether the tutor understands what is actually in the way. Below: the same stuck student, twice. One reply re-explains the lesson and gets nowhere. The other names the real obstacle and gets through. The point of the demo is that this is not luck — the system chose the second reply on purpose, and we tested the choice by forcing the wrong one.</p>
+      </div>
+    </div>
+    <div class="hero__verdict">
+      <div class="v-good"><strong>5 of 6</strong><span>When the tutor answered the real obstacle, the reply helped — five times out of six.</span></div>
+      <div class="v-bad"><strong>0 of 6</strong><span>When it re-explained the material instead — correct, fluent, and useless — zero out of six.</span></div>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <section class="s" id="scene">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">One minute of setup</p>
+          <h2 class="s__h">A water stain, a housemate, and a student who <em>defended the right thing</em>.</h2>
+          <p>The lesson is a small detective story. In a shared house, a stain appears on the ceiling — directly below Sam's bathroom, right after Sam's morning shower. Everyone wants to blame Sam. The student's job, with the tutor's help, is to find the real cause.</p>
+          <p>All session long, the student holds the line: timing is not proof. A shower before a stain does not show the shower <em>caused</em> the stain. They are right, and the tutor says so.</p>
+          <p>Then the evidence comes in, and it points somewhere unexpected. A hose under the basin has a hairline split that opens only when water pressure rises. The building's pressure was raised that morning. Blue dye poured at the split travels to the edge of the stain. The case is closed: the basin hose did it, not Sam's shower.</p>
+          <p>Closed for everyone except the student.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Real dialogue</span> Every quoted line on this page is verbatim from a recorded tutoring session with a simulated learner. Ellipses shorten; nothing is rewritten.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="moment">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Turn 10 · the stuck moment</p>
+          <h2 class="s__h">The student knows the answer. <em>They won't write it down.</em></h2>
+          <div class="speech speech--learner">
+            <span class="speech__who">Learner · turn 10</span>
+            &ldquo;If I write &lsquo;split hose,&rsquo; I'm apologising to Sam at eight. So it can still be steam, can't it?&rdquo;
+          </div>
+          <p>Read that line again. The student is not confused about plumbing. They understand the plumbing perfectly — that is exactly why they are reaching for &ldquo;steam.&rdquo; What blocks them is social: writing the true answer feels like admitting their whole defence of Sam was worthless, in front of everyone, at the eight o'clock house meeting.</p>
+          <p>A tutor that only reads the words sees a wrong claim about steam, and corrects it. A tutor that reads the moment sees a person protecting their pride. These call for different replies — and only one of them works.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">The tell</span> &ldquo;I'm apologising to Sam at eight&rdquo; is not a claim about water. It is the real objection, said out loud.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="tworeplies">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The demo · same student, two replies</p>
+          <h2 class="s__h">One reply re-proves the plumbing. <em>The other frees the student to be right.</em></h2>
+          <p>Both replies below were really delivered to this same planted moment, in repeated runs. Both are polite, fluent, and factually correct. Only one of them answers the obstacle that is actually there.</p>
+          <div class="lanes">
+            <article class="lane lane--fail">
+              <div class="lane__head"><strong>The usual reply — explain it again</strong> <span class="lane__tally">helped 0 of 6</span></div>
+              <div class="speech speech--tutor is-wrong">
+                <span class="speech__who">Tutor · goes back over the evidence</span>
+                &ldquo;Let's actually turn to the page instead of guessing what it says. The entry reads: dry at ordinary pressure, hairline split under raised pressure, first bead right at that joint — no line anywhere about steam. […] What does the dye's path say about where that water actually went?&rdquo;
+              </div>
+              <p class="lane__why"><b>Why it fails.</b> Every word is true, and none of it helps. The student's problem stopped being the plumbing three turns ago. Re-proving the case just sharpens the humiliation they are trying to avoid. In six runs at this moment, this reply never got the student unstuck.</p>
+            </article>
+            <article class="lane lane--pass">
+              <div class="lane__head"><strong>The adaptive reply — separate the fact from the fear</strong> <span class="lane__tally">helped 5 of 6</span></div>
+              <div class="speech speech--tutor is-right">
+                <span class="speech__who">Tutor · splits the finding from the stake</span>
+                &ldquo;Your objection was never &lsquo;the hose did it&rsquo; — it was &lsquo;timing isn't proof,&rsquo; and that's a separate claim from what caused the mark. Naming the split hose settles the cause question; it doesn't settle what you owe Sam. […] Was your case against Sam ever &lsquo;the shower definitely did it,&rsquo; or was it &lsquo;we jumped to a cause without a path&rsquo;?&rdquo;
+              </div>
+              <p class="lane__why"><b>Why it works.</b> It splits two things the student has fused: what caused the stain, and whether they were right to demand proof before blaming Sam. The hose caused the stain — <em>and</em> the student's objection was correct all along. Accepting the answer stops being a defeat. In six runs, this reply got through five times.</p>
+            </article>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note"><span class="note__lbl">Not cherry-picked</span> The tallies pool six runs per reply across two different scenarios, each judged by a human on what the tutor actually did — not on how adaptive it sounded.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="how">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The mechanism · three steps</p>
+          <h2 class="s__h">How the tutor picks the right reply — <em>and how we can tell when it doesn't</em>.</h2>
+          <p>&ldquo;Be adaptive&rdquo; used to be a wish written into a prompt. The adaptive tutor turns it into three checkable steps:</p>
+          <div class="steps">
+            <div class="step"><div><h3>Name the kind of stuck.</h3><p>Before replying, the system asks: what is in the way <em>right now</em>? Confusion is not the same as a deadline panic, a joke, a grudge, or — as above — fear of losing face. Each gets its own name.</p></div></div>
+            <div class="step"><div><h3>Pick the matching move from a small deck.</h3><p>Each named state has a concrete move card: accept the deadline and narrow the question; credit the student's work before asking for more; split the finding from the stake. Small and concrete on purpose — a move you can name is a move you can test.</p></div></div>
+            <div class="step"><div><h3>Record what was said, and what happened next.</h3><p>The system keeps separate records of what it detected, which move it chose, the exact words that reached the student, and what the student did next. A bad guess shows up in the record instead of disappearing inside a fluent paragraph.</p></div></div>
+          </div>
+          <p>That last step is what makes the demo above possible. Because the choice of move is an explicit, recorded decision, we can deliberately force the <em>wrong</em> move at the same moment and watch what changes. An ordinary prompted tutor offers nothing to force — every reply is just one more plausible paragraph.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">In a sentence</span> The tutor's key decision — what kind of stuck, which move — is made in the open, where it can be checked, challenged, and improved.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="kinds">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The repertoire</p>
+          <h2 class="s__h">&ldquo;Stuck&rdquo; is not one thing. <em>Each kind needs a different move.</em></h2>
+          <p>Four more moments from the same story, each verbatim, each a different kind of stuck — and the move the tutor chose for it:</p>
+          <div class="stuck-grid">
+            <article class="stuck">
+              <h3>The deadline panic</h3>
+              <blockquote>&ldquo;Meeting's at eight. The mark's right under Sam's shower — I'm sending the email unless you can give me one reason not to in the next minute.&rdquo;</blockquote>
+              <p class="move"><b>The move · accept the clock, narrow the question</b> Don't fight the urgency. Take the one minute and spend it on one decisive check: does anything trace water from the shower to that ceiling, or only note that the shower ran?</p>
+            </article>
+            <article class="stuck">
+              <h3>The mockery</h3>
+              <blockquote>&ldquo;Mate, you sound like a plumber's invoice.&rdquo;</blockquote>
+              <p class="move"><b>The move · take the joke, keep the logic</b> Drop the technical register — &ldquo;fair enough, no more invoice-talk&rdquo; — but hold the distinction that matters: a hose that <em>can</em> leak is not yet the hose that <em>did</em>.</p>
+            </article>
+            <article class="stuck">
+              <h3>The grievance</h3>
+              <blockquote>&ldquo;I've kept that notebook for two months. Tell me one entry of mine that's actually counted for anything today.&rdquo;</blockquote>
+              <p class="move"><b>The move · credit first, then ask</b> The real question is &ldquo;did my work matter?&rdquo; Answer it first, with specifics — two of their entries are carrying the case — and only then ask for the next step.</p>
+            </article>
+            <article class="stuck">
+              <h3>The lost thread</h3>
+              <blockquote>&ldquo;I've got &lsquo;hose&rsquo; in the notebook and now I can't tell which hose I meant.&rdquo;</blockquote>
+              <p class="move"><b>The move · lay the two lines side by side</b> Stop advancing the case. Put the shower line and the basin line next to each other and let the student reconnect their own note.</p>
+            </article>
+          </div>
+          <p>The deck is deliberately small: a handful of moves, each tied to the state where it earns its keep. Adding more cards is not automatically better — a move stays in the deck only if it survives the same forced test as the hero pair above.</p>
+        </div>
+        <div class="mr">
+          <p class="note"><span class="note__lbl">Same test</span> The panic, mockery, and grievance moves each beat a plausible wrong card at their own moment. The lost thread is the exception: the tutor untangles it well even when handed a bad card — so no special move is claimed for it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="proof">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Why believe it</p>
+          <h2 class="s__h">We didn't ask whether the tutor <em>sounded</em> adaptive. We forced the wrong move and watched.</h2>
+          <p>Almost any modern language model can produce a reply that sounds warm, attentive, and adaptive. Look again at the failing reply in the demo: it is well written. If a judge only reads prose, both replies pass. That is exactly the trap this system is built to escape.</p>
+          <p>So the test works like a proper experiment. Take the same planted moment. Force the matched move six times; force a plausible wrong move six times. Repeat in a second, independent scenario. Have a human rule each delivered reply on conduct — what the tutor actually did, not how it sounded. The matched move helped five times in six at the hero moment; the wrong move, zero in six.</p>
+          <p class="pq">The wrong action is made available on purpose. That is what turns &ldquo;our tutor is adaptive&rdquo; from a slogan into a result.<cite>research note · 2026-08-29</cite></p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">The trap</span> Grading tutors on how adaptive they sound rewards fluency, not help. Forcing the wrong move is the control that fluency can't fake.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="fineprint">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The fine print</p>
+          <h2 class="s__h">What this shows — <em>and what it doesn't yet</em>.</h2>
+          <p>The learners in these sessions are simulated: played by language models with authored personalities, not people. The result is about the tutor's <em>conduct</em> — choosing and delivering the move that fits the moment — in a bounded set of scenarios and stuck-states. It is not yet evidence that human students learn more. That study is the next step, and it is designed but not run.</p>
+          <p>We publish the boundary as prominently as the result, because the whole architecture exists to make claims checkable — including this one.</p>
+          <p class="provenance"><strong>Evidence.</strong> All quotes, tallies, and design details trace to the transcript-led research note <code>notes/poetics/2026-08-29-adaptive-tutor-from-null-to-control.html</code> and, behind it, Paper 2.0 §6.23–§6.24 with the adjudicated exports in <code>exports/crossed-effects/</code>.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Boundary</span> Simulated learners. Tutor conduct, not human learning. Bounded repertoire. Measured before claimed.</p>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /shell -->
+
+  <footer class="colophon">
+    <p><span class="label">Colophon</span> &nbsp; A lay-audience techne demo note. Typeset in Fraunces, Source Serif 4, JetBrains Mono.
+      Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>. No model calls were made to produce this page.</p>
+  </footer>
+
+</main>
+
+<script src="assets/techne.js"></script>
+</body>
+</html>
