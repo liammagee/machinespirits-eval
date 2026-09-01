@@ -70,3 +70,10 @@ with Sol, no superegos, using one fresh dialogue per arm.
   aggregate 48-attempt count. This avoids retroactive seal changes while still
   making the original failure plus all possible recovery calls fail closed at
   the authorized ceiling.
+- 2026-09-01: The linked recovery completed all eight normal-Qwen exchanges,
+  then stopped before the first abliterated-Qwen call because the server reports
+  that local checkpoint by its absolute configured path while the arm metadata
+  uses a repository-relative label. The 16/48 aggregate attempts and completed
+  arm remain immutable. The correction validates the server against the exact
+  service target and admits a second linked recovery with only the remaining
+  32-attempt ceiling, reusing arm A without regenerating it.

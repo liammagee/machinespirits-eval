@@ -69,6 +69,14 @@ function paidStudyBudget(admission, limit, priorAttemptCount = 0) {
   };
 }
 
+export function configuredServiceModel(service, arm) {
+  const target = service?.profiles?.[arm?.profile]?.model?.target;
+  if (typeof target !== 'string' || !target.trim()) {
+    throw new Error(`service target required for arm ${arm?.id || 'unknown'}`);
+  }
+  return target.trim();
+}
+
 function requiredStrings(record, keys, label) {
   for (const key of keys) {
     if (typeof record?.[key] !== 'string' || !record[key].trim()) {
@@ -315,7 +323,7 @@ async function scoreArms({ plan, arms, outDir, budget, priorScores = [], priorAt
 async function runFresh(plan, outDir, admission, generationRecovery = null) {
   const priorAttemptCount = generationRecovery?.stop.budget.used || 0;
   const budget = paidStudyBudget(admission, plan.total_attempt_ceiling, priorAttemptCount);
-  const arms = [];
+  const arms = [...(generationRecovery?.priorArms || [])];
   try {
     const provenance = sourceProvenance(plan, {
       commit: admission.source.commit,
@@ -334,6 +342,7 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
             linkedRecoveryStudyId: admission.study_id,
             linkedRecoveryAttemptCeiling: admission.spend_cap,
             privateLedgerPolicy: 'drop_unsupported_quote_rows_preserve_public_speech',
+            reusedCompletedArms: arms.map((arm) => arm.id),
           }
         : {}),
     });
@@ -344,20 +353,23 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
     const servicePath = path.join(outDir, 'service.yaml');
     fs.writeFileSync(servicePath, yaml.stringify(service), { flag: 'wx' });
     for (const arm of plan.arms) {
+      if (arms.some((completed) => completed.id === arm.id)) continue;
       const started = Date.now();
       let ownsServer = false;
       try {
         await manageServer(plan.mtp_chat_root, arm.profile, 'start', servicePath);
         ownsServer = true;
         const loaded = await discoverLoadedModel(plan.base_url, { modelIdContains: arm.model });
-        if (loaded !== arm.model) throw new Error('loaded model does not exactly match the planned arm');
+        if (loaded !== configuredServiceModel(service, arm)) {
+          throw new Error('loaded model does not exactly match the configured service target');
+        }
         await runContinuityArm({
           plan,
           arm,
           outDir: path.join(outDir, arm.id),
           budget,
           ...(generationRecovery ? { unsupportedQuotationPolicy: 'drop' } : {}),
-          ...(generationRecovery && arm.id === 'A'
+          ...(generationRecovery?.firstLearnerReply && arm.id === 'A'
             ? {
                 firstLearnerReply: generationRecovery.firstLearnerReply,
               }
@@ -479,6 +491,102 @@ export function generationRecoveryContract(plan, recovery) {
   }
   return {
     studyId: `${plan.id}-generation-recovery-v1`,
+    spendCap: plan.total_attempt_ceiling - priorAttemptCount,
+    priorAttemptCount,
+  };
+}
+
+function readJsonLines(file) {
+  return fs
+    .readFileSync(file, 'utf8')
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+}
+
+function recoveredArmElapsedMs(snapshot, sourceDir) {
+  const tracePath = path.isAbsolute(snapshot.trace) ? snapshot.trace : path.resolve(ROOT, snapshot.trace);
+  const timestamps = readJsonLines(tracePath)
+    .map((event) => Date.parse(event.at))
+    .filter(Number.isFinite);
+  if (!timestamps.length) return 0;
+  const timingPath = path.join(sourceDir, 'service-timings.jsonl');
+  const ready = fs.existsSync(timingPath)
+    ? readJsonLines(timingPath).find(
+        (event) => event.event === 'server_ready' && Number.isFinite(Date.parse(event.timestamp)),
+      )
+    : null;
+  const startedAt = ready ? Date.parse(ready.timestamp) - Number(ready.seconds || 0) * 1000 : Math.min(...timestamps);
+  return Math.max(0, Math.max(...timestamps) - startedAt);
+}
+
+export function readArmBoundaryRecovery(plan, sourceDir) {
+  const sourcePlan = JSON.parse(fs.readFileSync(path.join(sourceDir, 'plan.json'), 'utf8'));
+  const provenance = sourcePlan.provenance || {};
+  if (
+    sourcePlan.id !== plan.id ||
+    provenance.recovery !== true ||
+    provenance.linkedRecoveryStudyId !== `${plan.id}-generation-recovery-v1` ||
+    provenance.priorAttemptCount !== 1
+  ) {
+    throw new Error('arm-boundary recovery must start from the first linked generation recovery');
+  }
+  const stop = JSON.parse(fs.readFileSync(path.join(sourceDir, 'stopped.json'), 'utf8'));
+  const expectedAttempts = plan.max_exchanges * 2;
+  if (
+    stop.error !== 'loaded model does not exactly match the planned arm' ||
+    stop.armsCompleted !== 1 ||
+    stop.budget?.used !== expectedAttempts
+  ) {
+    throw new Error('arm-boundary recovery requires the preserved configured-model identity failure');
+  }
+  const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
+  const reserved = runEvents
+    .filter((event) => event.type === 'model_attempt_reserved')
+    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  if (reserved + provenance.priorAttemptCount !== stop.budget.used) {
+    throw new Error('arm-boundary recovery accounting differs from the preserved predecessor');
+  }
+  for (const forbidden of [
+    path.join(sourceDir, 'B'),
+    path.join(sourceDir, 'arms.json'),
+    path.join(sourceDir, 'evaluation'),
+    path.join(sourceDir, 'completed.json'),
+  ]) {
+    if (fs.existsSync(forbidden)) throw new Error('arm-boundary recovery source contains downstream output');
+  }
+  const arm = plan.arms[0];
+  const snapshotPath = path.join(sourceDir, arm.id, 'dialogue.json');
+  const snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
+  if (snapshot.turns?.length !== plan.max_exchanges) {
+    throw new Error('arm-boundary recovery requires the complete first arm');
+  }
+  const priorArm = readBenchmarkArm({
+    ...arm,
+    path: snapshotPath,
+    wallTimeMs: recoveredArmElapsedMs(snapshot, sourceDir),
+  });
+  return {
+    sourceDir,
+    sourcePlan,
+    stop,
+    failure: { error: stop.error, boundary: 'before_arm_B_dispatch' },
+    priorArms: [priorArm],
+  };
+}
+
+export function armBoundaryRecoveryContract(plan, recovery) {
+  const priorAttemptCount = recovery?.stop?.budget?.used;
+  if (
+    !Number.isInteger(priorAttemptCount) ||
+    priorAttemptCount < 1 ||
+    priorAttemptCount >= plan.total_attempt_ceiling
+  ) {
+    throw new Error('arm-boundary recovery requires a positive preserved attempt count below the study ceiling');
+  }
+  return {
+    studyId: `${plan.id}-generation-recovery-v2`,
     spendCap: plan.total_attempt_ceiling - priorAttemptCount,
     priorAttemptCount,
   };
@@ -629,6 +737,7 @@ export async function main(argv = process.argv.slice(2)) {
       output: { type: 'string' },
       'recover-assessments': { type: 'boolean', default: false },
       'recover-generation': { type: 'boolean', default: false },
+      'recover-arm-boundary': { type: 'boolean', default: false },
       from: { type: 'string' },
       'accept-charges': { type: 'boolean', default: false },
       'launch-commit': { type: 'string' },
@@ -638,6 +747,34 @@ export async function main(argv = process.argv.slice(2)) {
     },
   });
   const plan = buildInvestedRivalPlan(ROOT, values.config || DEFAULT_CONFIG);
+  if (values['recover-arm-boundary']) {
+    if (!values.live || !values.from || values['recover-generation'] || values['recover-assessments']) {
+      throw new Error('--recover-arm-boundary requires --live and --from, without another recovery mode');
+    }
+    const sourceDir = path.resolve(ROOT, values.from);
+    const outDir = path.resolve(ROOT, values.output || `${sourceDir}-arm-boundary-recovery-v1`);
+    const recovery = readArmBoundaryRecovery(plan, sourceDir);
+    const recoveryContract = armBoundaryRecoveryContract(plan, recovery);
+    const admission = admitLiveRun(plan, values, outDir, null, recoveryContract);
+    admission.record({
+      type: 'linked_arm_boundary_recovery',
+      recovery_from: sourceDir,
+      prior_attempts_preserved: recoveryContract.priorAttemptCount,
+      reused_completed_arms: recovery.priorArms.map((arm) => arm.id),
+      aggregate_attempt_ceiling: plan.total_attempt_ceiling,
+      recovery_attempt_ceiling: recoveryContract.spendCap,
+    });
+    if (admission.studyReserved !== 0) {
+      admission.close({
+        type: 'run_sealed',
+        status: 'failed',
+        error: 'linked arm-boundary recovery ledger was not empty at launch',
+        recovery_from: sourceDir,
+      });
+      throw new Error('linked arm-boundary recovery ledger was not empty at launch');
+    }
+    return runFresh(plan, outDir, admission, recovery);
+  }
   if (values['recover-generation']) {
     if (!values.live || !values.from || values['recover-assessments']) {
       throw new Error('--recover-generation requires --live and --from, without --recover-assessments');
