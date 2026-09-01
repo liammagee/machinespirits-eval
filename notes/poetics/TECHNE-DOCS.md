@@ -73,6 +73,25 @@ Git checkout, so it is safe to run from a linked worktree. Use
 `--dest-repo <path>` (or `MACHINESPIRITS_CONTENT_REPO`) only to override that
 canonical destination deliberately.
 
+## Publish the human-validation field guide
+
+The human-validation guide has a dedicated publisher with the same
+self-contained HTML plus backdated-index-stub convention. Dry-run first; the
+default action stages into the content repository without deploying, and the
+live deployment remains explicit:
+
+```bash
+node notes/poetics/publish-human-validation-guide-to-site.js --dry-run
+node notes/poetics/publish-human-validation-guide-to-site.js
+node notes/poetics/publish-human-validation-guide-to-site.js --publish
+```
+
+The default public URL is
+`https://machinespirits.org/content/articles/ai-tutor/human-validation-field-guide.html`.
+Use `--dest-repo <path>` (or `MACHINESPIRITS_CONTENT_REPO`) to select a
+non-default content checkout, and `--slug <name>` only when a different public
+basename is intentional.
+
 ## Component vocabulary (CSS classes in techne.css)
 
 - **Layout**: `section.s` (a numbered section) → `.diag` grid of `.ml` (the giant `.s__num`), `.body`, `.mr` (a marginal `.note`). `.shell` wraps the sections; `.hero` is the masthead.
