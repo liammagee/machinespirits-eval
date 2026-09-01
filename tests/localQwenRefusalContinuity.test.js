@@ -18,16 +18,29 @@ import {
   buildContinuityRevisionRequest,
   parseContinuityReview,
 } from '../services/localQwenRefusalContinuity.js';
-import { buildBenchmarkJobs, readBenchmarkArm } from '../scripts/score-local-qwen-resistant-learner-benchmark.js';
+import {
+  buildBenchmarkJobs,
+  buildBenchmarkOutputSchema,
+  readBenchmarkArm,
+} from '../scripts/score-local-qwen-resistant-learner-benchmark.js';
 import { deliveredSourceContext } from '../scripts/run-local-qwen-bilateral-superego.js';
 import { buildFactorialInterchange } from '../services/localQwenFactorialReport.js';
 import { learnerProfileContract } from '../scripts/tutor-stub-learner-profile-contracts.js';
 import { renderContinuityReport } from '../services/localQwenRefusalContinuityReport.js';
 import {
+  armBoundaryRecoveryContract,
   buildInvestedRivalPlan,
+  configuredServiceModel,
   generationRecoveryContract,
+  investedRivalDeliveredSourceContext,
+  linkedAssessmentRecoveryContract,
+  localModelRouteRecoveryContract,
   main as runInvestedRival,
+  readArmBoundaryRecovery,
   readGenerationRecovery,
+  readLinkedAssessmentRecovery,
+  readLocalModelRouteRecovery,
+  runtimeServiceArm,
   technicalRecoveryEligible,
 } from '../scripts/run-local-qwen-invested-rival.js';
 
@@ -56,6 +69,29 @@ const reviewFixture = {
   next_move: 'Keep a useful boundary.',
   evidence_boundary: 'No new facts.',
 };
+
+function schemaFixture(schema, key = '', index = 0) {
+  if (Object.hasOwn(schema, 'const')) return schema.const;
+  if (schema.anyOf) return schemaFixture(schema.anyOf[0], key, index);
+  if (schema.type === 'null') return null;
+  if (schema.type === 'string') return 'fixture';
+  if (schema.type === 'boolean') return false;
+  if (schema.type === 'number') return schema.minimum ?? 3;
+  if (schema.type === 'integer') {
+    if (key === 'turn') return index + 1;
+    if (key.endsWith('_index')) return index;
+    return schema.minimum ?? 0;
+  }
+  if (schema.type === 'array') {
+    return Array.from({ length: schema.minItems || 0 }, (_, row) => schemaFixture(schema.items, key, row));
+  }
+  if (schema.type === 'object') {
+    return Object.fromEntries(
+      (schema.required || []).map((child) => [child, schemaFixture(schema.properties[child], child, index)]),
+    );
+  }
+  throw new Error(`unsupported fixture schema at ${key}`);
+}
 
 test('invested rival plan is a direct matched pair with an enforced 32 + 8 + 8 ceiling', () => {
   assert.equal(rivalPlan.total_attempt_ceiling, 48);
@@ -148,6 +184,28 @@ test('invested rival recovery admits one empty technical packet and rejects none
   fs.writeFileSync(path.join(evaluationDir, 'A-tutor.response.txt'), '{"nonempty":"malformed"}');
   assert.throws(() => technicalRecoveryEligible(sourceDir), /nonempty or substantive/u);
 
+  const responseFreeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-response-free-recovery-test-'));
+  const responseFreeEvaluation = path.join(responseFreeDir, 'evaluation');
+  fs.mkdirSync(responseFreeEvaluation);
+  fs.writeFileSync(
+    path.join(responseFreeEvaluation, 'judge-ledger.jsonl'),
+    `${JSON.stringify({ event: 'reserved', arm: 'A', kind: 'quality' })}\n${JSON.stringify({
+      event: 'failed',
+      arm: 'A',
+      kind: 'quality',
+    })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(responseFreeEvaluation, 'A-quality.error.json'),
+    JSON.stringify({
+      message: 'claude CLI structured response classified as response_free_error',
+      code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
+      classification: 'response_free_error',
+      reason: 'result_error_without_structured_output',
+    }),
+  );
+  assert.equal(technicalRecoveryEligible(responseFreeDir).failure.kind, 'quality');
+
   const budget = continuityBudget(48, rivalPlan.id);
   for (let index = 0; index < 48; index += 1) budget.reserve({ role: 'fixture', index });
   assert.throws(() => budget.reserve({ role: 'blocked' }), /budget/u);
@@ -208,6 +266,308 @@ test('invested rival generation recovery reuses only the preserved first reply',
     () => generationRecoveryContract(rivalPlan, { stop: { budget: { used: 48 } } }),
     /below the study ceiling/u,
   );
+});
+
+test('invested rival validates the loaded checkpoint against the exact configured service target', () => {
+  const service = {
+    profiles: {
+      regular: { model: { target: 'mlx-community/Qwen3.8-27B-4bit' } },
+      uncensored: {
+        model: { target: '/Users/example/models/Qwen3.8-27B-Uncensored-MLX/4-bit' },
+      },
+    },
+  };
+  assert.equal(configuredServiceModel(service, rivalPlan.arms[0]), 'mlx-community/Qwen3.8-27B-4bit');
+  assert.equal(
+    configuredServiceModel(service, rivalPlan.arms[1]),
+    '/Users/example/models/Qwen3.8-27B-Uncensored-MLX/4-bit',
+  );
+  const runtimeArm = runtimeServiceArm(
+    service,
+    rivalPlan.arms[1],
+    '/Users/example/models/Qwen3.8-27B-Uncensored-MLX/4-bit',
+  );
+  assert.equal(runtimeArm.model, '/Users/example/models/Qwen3.8-27B-Uncensored-MLX/4-bit');
+  assert.equal(rivalPlan.arms[1].model, 'Qwen3.8-27B-Uncensored-MLX/4-bit');
+  assert.throws(
+    () => runtimeServiceArm(service, rivalPlan.arms[1], rivalPlan.arms[1].model),
+    /configured service target/u,
+  );
+  assert.throws(() => configuredServiceModel({ profiles: {} }, rivalPlan.arms[1]), /service target required/u);
+});
+
+test('invested rival arm-boundary recovery preserves the completed normal arm and only the remaining 32 attempts', () => {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-arm-boundary-recovery-test-'));
+  const armDir = path.join(sourceDir, 'A');
+  fs.mkdirSync(armDir);
+  fs.writeFileSync(
+    path.join(sourceDir, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v1`,
+        priorAttemptCount: 1,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'stopped.json'),
+    JSON.stringify({
+      error: 'loaded model does not exactly match the planned arm',
+      budget: { used: 16, limit: 48 },
+      armsCompleted: 1,
+      recoveryPermitted: false,
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'run-ledger.jsonl'),
+    `${Array.from({ length: 15 }, (_, index) =>
+      JSON.stringify({ type: 'model_attempt_reserved', count: 1, reserved: index + 1 }),
+    ).join('\n')}\n`,
+  );
+  const tracePath = path.join(armDir, 'trace.jsonl');
+  fs.writeFileSync(
+    tracePath,
+    `${JSON.stringify({ at: '2026-09-01T00:00:00.000Z', type: 'tutor_opening', text: 'Opening' })}\n${JSON.stringify({ at: '2026-09-01T00:04:00.000Z', type: 'continuity_state' })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(armDir, 'dialogue.json'),
+    JSON.stringify({
+      turns: Array.from({ length: 8 }, (_, index) => ({
+        turn: index + 1,
+        learner: `Learner ${index + 1}`,
+        tutor: `Tutor ${index + 1}`,
+      })),
+      trace: tracePath,
+      disposition: 'learner_exit',
+      proofControl: { releasedPremiseIds: [] },
+    }),
+  );
+  const recovery = readArmBoundaryRecovery(rivalPlan, sourceDir);
+  assert.equal(recovery.priorArms.length, 1);
+  assert.equal(recovery.priorArms[0].id, 'A');
+  assert.equal(recovery.priorArms[0].snapshot.turns.length, 8);
+  assert.equal(recovery.priorArms[0].wallTimeMs, 240_000);
+  assert.deepEqual(armBoundaryRecoveryContract(rivalPlan, recovery), {
+    studyId: 'qwen-invested-rival-theorist-v1-generation-recovery-v2',
+    spendCap: 32,
+    priorAttemptCount: 16,
+  });
+  fs.mkdirSync(path.join(sourceDir, 'B'));
+  assert.throws(() => readArmBoundaryRecovery(rivalPlan, sourceDir), /downstream output/u);
+});
+
+test('invested rival local-route recovery charges the failed lookup and starts arm B with 31 attempts remaining', () => {
+  const firstSource = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-route-first-source-test-'));
+  const firstArm = path.join(firstSource, 'A');
+  fs.mkdirSync(firstArm);
+  fs.writeFileSync(
+    path.join(firstSource, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v1`,
+        priorAttemptCount: 1,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(firstSource, 'stopped.json'),
+    JSON.stringify({
+      error: 'loaded model does not exactly match the planned arm',
+      budget: { used: 16, limit: 48 },
+      armsCompleted: 1,
+    }),
+  );
+  fs.writeFileSync(
+    path.join(firstSource, 'run-ledger.jsonl'),
+    `${Array.from({ length: 15 }, () => JSON.stringify({ type: 'model_attempt_reserved', count: 1 })).join('\n')}\n`,
+  );
+  const firstTrace = path.join(firstArm, 'trace.jsonl');
+  fs.writeFileSync(
+    firstTrace,
+    `${JSON.stringify({ at: '2026-09-01T00:00:00.000Z', type: 'tutor_opening', text: 'Opening' })}\n${JSON.stringify({ at: '2026-09-01T00:04:00.000Z', type: 'continuity_state' })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(firstArm, 'dialogue.json'),
+    JSON.stringify({
+      turns: Array.from({ length: 8 }, (_, index) => ({
+        turn: index + 1,
+        learner: `Learner ${index + 1}`,
+        tutor: `Tutor ${index + 1}`,
+      })),
+      trace: firstTrace,
+      disposition: 'learner_exit',
+      proofControl: { releasedPremiseIds: [] },
+    }),
+  );
+
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-route-recovery-test-'));
+  const armDir = path.join(sourceDir, 'B');
+  fs.mkdirSync(armDir);
+  fs.writeFileSync(
+    path.join(sourceDir, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v2`,
+        priorAttemptCount: 16,
+        reusedCompletedArms: ['A'],
+        recoverySource: firstSource,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'stopped.json'),
+    JSON.stringify({ error: 'Qwen HTTP 400', budget: { used: 17, limit: 48 }, armsCompleted: 1 }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'run-ledger.jsonl'),
+    `${JSON.stringify({ type: 'model_attempt_reserved', count: 1 })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(armDir, 'stopped.json'),
+    JSON.stringify({ error: 'Qwen HTTP 400', turns: [], partialTurn: { turn: 1 } }),
+  );
+  fs.writeFileSync(
+    path.join(armDir, '1-learner.request.json'),
+    JSON.stringify(
+      buildContinuityRequest({
+        plan: rivalPlan,
+        speaker: 'learner',
+        turn: 1,
+        history: [{ role: 'assistant', content: rivalPlan.world.opening_frame.authored_text }],
+      }),
+    ),
+  );
+  fs.writeFileSync(
+    path.join(armDir, 'trace.jsonl'),
+    `${JSON.stringify({
+      type: 'provider_event',
+      event: {
+        type: 'local_transport',
+        status: 400,
+        body: 'Repository Not Found for Qwen3.8-27B-Uncensored-MLX/4-bit',
+      },
+    })}\n${JSON.stringify({ type: 'model_call_failed', turn: 1 })}\n`,
+  );
+  const recovery = readLocalModelRouteRecovery(rivalPlan, sourceDir);
+  assert.equal(recovery.priorArms[0].id, 'A');
+  assert.equal(recovery.priorArms[0].snapshot.turns.length, 8);
+  assert.deepEqual(localModelRouteRecoveryContract(rivalPlan, recovery), {
+    studyId: 'qwen-invested-rival-theorist-v1-generation-recovery-v3',
+    spendCap: 31,
+    priorAttemptCount: 17,
+  });
+  fs.writeFileSync(path.join(armDir, '1-learner.response.json'), '{}');
+  assert.throws(() => readLocalModelRouteRecovery(rivalPlan, sourceDir), /downstream output/u);
+});
+
+test('invested rival linked assessment recovery preserves 37 attempts and retries only unresolved judge packets', () => {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-linked-assessment-test-'));
+  const evaluationDir = path.join(sourceDir, 'evaluation');
+  fs.mkdirSync(evaluationDir);
+  const releasedPremiseIds = rivalPlan.world.premises.map((premise) => premise.id);
+  const turns = Array.from({ length: rivalPlan.max_exchanges }, (_, index) => ({
+    turn: index + 1,
+    learner: `Learner fixture ${index + 1}`,
+    tutor: rivalPlan.world.premises[index]?.surface || `Tutor fixture ${index + 1}`,
+  }));
+  const arms = rivalPlan.arms.map((arm) => ({
+    ...arm,
+    snapshot: { turns, proofControl: { releasedPremiseIds } },
+    opening: rivalPlan.world.opening_frame.authored_text,
+    transcript: turns.map((turn) => `Learner: ${turn.learner}\nTutor: ${turn.tutor}`).join('\n'),
+  }));
+  fs.writeFileSync(
+    path.join(sourceDir, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v3`,
+        linkedRecoveryAttemptCeiling: 31,
+        priorAttemptCount: 17,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'stopped.json'),
+    JSON.stringify({
+      error:
+        'claude CLI structured response classified as response_free_error (result_error_without_structured_output)',
+      budget: { used: 37, limit: 48 },
+      armsCompleted: 2,
+      recoveryPermitted: false,
+    }),
+  );
+  fs.writeFileSync(path.join(sourceDir, 'arms.json'), JSON.stringify(arms));
+  fs.writeFileSync(
+    path.join(sourceDir, 'run-ledger.jsonl'),
+    `${Array.from({ length: 20 }, () => JSON.stringify({ type: 'model_attempt_reserved', count: 1 })).join('\n')}\n${JSON.stringify(
+      {
+        type: 'run_sealed',
+        status: 'failed',
+        reserved_attempts: 20,
+      },
+    )}\n`,
+  );
+  const judgeEvents = [
+    { event: 'reserved', arm: 'A', kind: 'tutor' },
+    { event: 'completed', arm: 'A', kind: 'tutor' },
+    { event: 'reserved', arm: 'A', kind: 'learner' },
+    { event: 'completed', arm: 'A', kind: 'learner' },
+    { event: 'reserved', arm: 'A', kind: 'dialogue' },
+    { event: 'completed', arm: 'A', kind: 'dialogue' },
+    { event: 'reserved', arm: 'A', kind: 'quality' },
+    { event: 'failed', arm: 'A', kind: 'quality' },
+  ];
+  fs.writeFileSync(
+    path.join(evaluationDir, 'judge-ledger.jsonl'),
+    `${judgeEvents.map((event) => JSON.stringify(event)).join('\n')}\n`,
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'A-quality.error.json'),
+    JSON.stringify({
+      message:
+        'claude CLI structured response classified as response_free_error (result_error_without_structured_output)',
+      code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
+      classification: 'response_free_error',
+      reason: 'result_error_without_structured_output',
+    }),
+  );
+  const publicSourceContextByArm = Object.fromEntries(
+    arms.map((arm) => [arm.id, investedRivalDeliveredSourceContext(rivalPlan, arm)]),
+  );
+  const failedJob = buildBenchmarkJobs(arms, {
+    extendedQuality: true,
+    assessmentContext: rivalPlan.assessmentContext,
+    publicSourceContextByArm,
+  }).find((job) => job.arm === 'A' && job.kind === 'quality');
+  fs.writeFileSync(path.join(evaluationDir, 'A-quality.prompt.txt'), failedJob.prompt);
+  fs.writeFileSync(path.join(evaluationDir, 'A-quality.schema.json'), JSON.stringify(failedJob.outputSchema));
+  for (const kind of ['tutor', 'learner', 'dialogue']) {
+    fs.writeFileSync(
+      path.join(evaluationDir, `A-${kind}.json`),
+      JSON.stringify(schemaFixture(buildBenchmarkOutputSchema(kind, rivalPlan.max_exchanges))),
+    );
+  }
+
+  const recovery = readLinkedAssessmentRecovery(rivalPlan, sourceDir);
+  assert.deepEqual(
+    recovery.priorScores.map((score) => `${score.arm}/${score.kind}`),
+    ['A/tutor', 'A/learner', 'A/dialogue'],
+  );
+  assert.deepEqual(linkedAssessmentRecoveryContract(rivalPlan, recovery), {
+    studyId: 'qwen-invested-rival-theorist-v1-generation-recovery-v4',
+    spendCap: 11,
+    priorAttemptCount: 37,
+  });
+  fs.writeFileSync(path.join(sourceDir, 'completed.json'), '{}');
+  assert.throws(() => readLinkedAssessmentRecovery(rivalPlan, sourceDir), /completed output/u);
 });
 
 test('bilateral plan inherits the unchanged actor and proof controller with an explicit 100-attempt ceiling', () => {
