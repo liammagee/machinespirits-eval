@@ -710,9 +710,15 @@ export function technicalRecoveryEligible(sourceDir) {
   const base = path.join(sourceDir, 'evaluation', `${failure.arm}-${failure.kind}`);
   const response = fs.existsSync(`${base}.response.txt`) ? fs.readFileSync(`${base}.response.txt`, 'utf8') : '';
   const error = JSON.parse(fs.readFileSync(`${base}.error.json`, 'utf8'));
-  const technical = /empty|transport|timeout|timed out|network|ECONN|exit code|temporarily unavailable/iu.test(
-    [error.message, error.code, error.classification, error.reason].filter(Boolean).join(' '),
-  );
+  const responseFreeStructuredFailure =
+    error.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR' &&
+    error.classification === 'response_free_error' &&
+    error.reason === 'result_error_without_structured_output';
+  const technical =
+    responseFreeStructuredFailure ||
+    /empty|transport|timeout|timed out|network|ECONN|exit code|temporarily unavailable/iu.test(
+      [error.message, error.code, error.classification, error.reason].filter(Boolean).join(' '),
+    );
   if (response.trim() || !technical) {
     throw new Error('nonempty or substantive assessment failure is not eligible for recovery');
   }
@@ -737,11 +743,103 @@ function readAssessmentRecovery(plan, sourceDir) {
   return { sourcePlan, stop, arms, eligibility, priorScores };
 }
 
+export function readLinkedAssessmentRecovery(plan, sourceDir) {
+  const sourcePlan = JSON.parse(fs.readFileSync(path.join(sourceDir, 'plan.json'), 'utf8'));
+  const provenance = sourcePlan.provenance || {};
+  if (
+    sourcePlan.id !== plan.id ||
+    provenance.recovery !== true ||
+    provenance.linkedRecoveryStudyId !== `${plan.id}-generation-recovery-v3` ||
+    provenance.linkedRecoveryAttemptCeiling !== 31 ||
+    provenance.priorAttemptCount !== 17
+  ) {
+    throw new Error('linked assessment recovery must start from the local-route generation recovery');
+  }
+  const stop = JSON.parse(fs.readFileSync(path.join(sourceDir, 'stopped.json'), 'utf8'));
+  const arms = JSON.parse(fs.readFileSync(path.join(sourceDir, 'arms.json'), 'utf8'));
+  if (
+    stop.armsCompleted !== 2 ||
+    stop.budget?.used !== 37 ||
+    stop.budget?.limit !== plan.total_attempt_ceiling ||
+    arms.map((arm) => arm.id).join(',') !== 'A,B' ||
+    arms.some((arm) => arm.snapshot?.turns?.length !== plan.max_exchanges)
+  ) {
+    throw new Error('linked assessment recovery requires both preserved eight-exchange arms at 37/48 attempts');
+  }
+  const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
+  const runReserved = runEvents
+    .filter((event) => event.type === 'model_attempt_reserved')
+    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const runSeal = runEvents.findLast((event) => event.type === 'run_sealed');
+  if (
+    runReserved !== 20 ||
+    provenance.priorAttemptCount + runReserved !== stop.budget.used ||
+    runSeal?.status !== 'failed' ||
+    runSeal?.reserved_attempts !== runReserved
+  ) {
+    throw new Error('linked assessment recovery accounting differs from the preserved predecessor');
+  }
+  const eligibility = technicalRecoveryEligible(sourceDir);
+  const judgeEvents = readJsonLines(path.join(sourceDir, 'evaluation', 'judge-ledger.jsonl'));
+  const completed = judgeEvents.filter((event) => event.event === 'completed');
+  if (
+    eligibility.priorAttempts !== 4 ||
+    eligibility.failure.arm !== 'A' ||
+    eligibility.failure.kind !== 'quality' ||
+    completed.map((event) => `${event.arm}/${event.kind}`).join(',') !== 'A/tutor,A/learner,A/dialogue'
+  ) {
+    throw new Error('linked assessment recovery requires three accepted A assessments and one failed A quality packet');
+  }
+  const expectedJob = buildBenchmarkJobs(arms, {
+    extendedQuality: true,
+    assessmentContext: plan.assessmentContext,
+    publicSourceContextByArm: publicSourceContexts(plan, arms),
+  }).find((job) => job.arm === eligibility.failure.arm && job.kind === eligibility.failure.kind);
+  const failedBase = path.join(sourceDir, 'evaluation', `${eligibility.failure.arm}-${eligibility.failure.kind}`);
+  if (
+    fs.readFileSync(`${failedBase}.prompt.txt`, 'utf8') !== expectedJob.prompt ||
+    JSON.stringify(JSON.parse(fs.readFileSync(`${failedBase}.schema.json`, 'utf8'))) !==
+      JSON.stringify(expectedJob.outputSchema)
+  ) {
+    throw new Error('linked assessment recovery packet differs from the current transcript and rubric');
+  }
+  for (const forbidden of [
+    path.join(sourceDir, 'completed.json'),
+    path.join(sourceDir, 'report-data.json'),
+    path.join(sourceDir, 'report.html'),
+    path.join(sourceDir, 'evaluation', 'scores.json'),
+  ]) {
+    if (fs.existsSync(forbidden)) throw new Error('linked assessment recovery source contains completed output');
+  }
+  const priorScores = readPriorScores(sourceDir, arms);
+  if (priorScores.map((score) => `${score.arm}/${score.kind}`).join(',') !== 'A/tutor,A/learner,A/dialogue') {
+    throw new Error('linked assessment recovery accepted-score set differs from the judge ledger');
+  }
+  return { sourcePlan, stop, arms, eligibility, priorScores, linked: true };
+}
+
+export function linkedAssessmentRecoveryContract(plan, recovery) {
+  const priorAttemptCount = recovery?.stop?.budget?.used;
+  if (
+    !Number.isInteger(priorAttemptCount) ||
+    priorAttemptCount < 1 ||
+    priorAttemptCount >= plan.total_attempt_ceiling
+  ) {
+    throw new Error('linked assessment recovery requires preserved attempts below the study ceiling');
+  }
+  return {
+    studyId: `${plan.id}-generation-recovery-v4`,
+    spendCap: plan.total_attempt_ceiling - priorAttemptCount,
+    priorAttemptCount,
+  };
+}
+
 async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) {
   const { stop, arms, eligibility, priorScores } = recovery;
-  const budget = paidStudyBudget(admission, plan.total_attempt_ceiling);
+  const priorAttemptCount = recovery.linked ? stop.budget.used : 0;
+  const budget = paidStudyBudget(admission, plan.total_attempt_ceiling, priorAttemptCount);
   try {
-    if (admission.studyReserved !== stop.budget.used) {
+    if (admission.studyReserved !== (recovery.linked ? 0 : stop.budget.used)) {
       throw new Error('study-wide attempt ledger differs from the preserved predecessor');
     }
     const provenance = sourceProvenance(plan, {
@@ -756,6 +854,14 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
       recoverySource: sourceDir,
       recoveredPacket: eligibility.failure,
       priorAttemptCount: stop.budget.used,
+      ...(recovery.linked
+        ? {
+            linkedRecoveryStudyId: admission.study_id,
+            linkedRecoveryAttemptCeiling: admission.spend_cap,
+            reusedCompletedArms: arms.map((arm) => arm.id),
+            reusedCompletedAssessments: priorScores.map((score) => `${score.arm}/${score.kind}`),
+          }
+        : {}),
     });
     writeJson(path.join(outDir, 'plan.json'), { ...plan, provenance });
     writeJson(path.join(outDir, 'arms.json'), arms);
@@ -829,6 +935,7 @@ export async function main(argv = process.argv.slice(2)) {
       'recover-generation': { type: 'boolean', default: false },
       'recover-arm-boundary': { type: 'boolean', default: false },
       'recover-local-model-route': { type: 'boolean', default: false },
+      'recover-linked-assessments': { type: 'boolean', default: false },
       from: { type: 'string' },
       'accept-charges': { type: 'boolean', default: false },
       'launch-commit': { type: 'string' },
@@ -838,12 +945,49 @@ export async function main(argv = process.argv.slice(2)) {
     },
   });
   const plan = buildInvestedRivalPlan(ROOT, values.config || DEFAULT_CONFIG);
+  if (values['recover-linked-assessments']) {
+    if (
+      !values.live ||
+      !values.from ||
+      values['recover-generation'] ||
+      values['recover-arm-boundary'] ||
+      values['recover-local-model-route'] ||
+      values['recover-assessments']
+    ) {
+      throw new Error('--recover-linked-assessments requires --live and --from, without another recovery mode');
+    }
+    const sourceDir = path.resolve(ROOT, values.from);
+    const outDir = path.resolve(ROOT, values.output || `${sourceDir}-linked-assessment-recovery-v1`);
+    const recovery = readLinkedAssessmentRecovery(plan, sourceDir);
+    const recoveryContract = linkedAssessmentRecoveryContract(plan, recovery);
+    const admission = admitLiveRun(plan, values, outDir, null, recoveryContract);
+    admission.record({
+      type: 'linked_assessment_recovery',
+      recovery_from: sourceDir,
+      prior_attempts_preserved: recoveryContract.priorAttemptCount,
+      reused_completed_arms: recovery.arms.map((arm) => arm.id),
+      reused_completed_assessments: recovery.priorScores.map((score) => `${score.arm}/${score.kind}`),
+      aggregate_attempt_ceiling: plan.total_attempt_ceiling,
+      recovery_attempt_ceiling: recoveryContract.spendCap,
+    });
+    if (admission.studyReserved !== 0) {
+      admission.close({
+        type: 'run_sealed',
+        status: 'failed',
+        error: 'linked assessment recovery ledger was not empty at launch',
+        recovery_from: sourceDir,
+      });
+      throw new Error('linked assessment recovery ledger was not empty at launch');
+    }
+    return recoverAssessments(plan, sourceDir, outDir, admission, recovery);
+  }
   if (values['recover-local-model-route']) {
     if (
       !values.live ||
       !values.from ||
       values['recover-generation'] ||
       values['recover-arm-boundary'] ||
+      values['recover-linked-assessments'] ||
       values['recover-assessments']
     ) {
       throw new Error('--recover-local-model-route requires --live and --from, without another recovery mode');
@@ -878,6 +1022,7 @@ export async function main(argv = process.argv.slice(2)) {
       !values.from ||
       values['recover-generation'] ||
       values['recover-local-model-route'] ||
+      values['recover-linked-assessments'] ||
       values['recover-assessments']
     ) {
       throw new Error('--recover-arm-boundary requires --live and --from, without another recovery mode');
@@ -907,7 +1052,7 @@ export async function main(argv = process.argv.slice(2)) {
     return runFresh(plan, outDir, admission, recovery);
   }
   if (values['recover-generation']) {
-    if (!values.live || !values.from || values['recover-assessments']) {
+    if (!values.live || !values.from || values['recover-linked-assessments'] || values['recover-assessments']) {
       throw new Error('--recover-generation requires --live and --from, without --recover-assessments');
     }
     const sourceDir = path.resolve(ROOT, values.from);
