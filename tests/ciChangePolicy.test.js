@@ -22,6 +22,15 @@ function git(projectRoot, args) {
   return execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8' }).trim();
 }
 
+function removeTestTree(projectRoot) {
+  fs.rmSync(projectRoot, {
+    recursive: true,
+    force: true,
+    maxRetries: 5,
+    retryDelay: 50,
+  });
+}
+
 function createGitFixture() {
   const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-change-policy-git-'));
   git(projectRoot, ['init', '--quiet']);
@@ -190,7 +199,7 @@ test('classifier preserves a committed leading-whitespace path and fails closed'
     assert.match(result.reason, / docs\/runtime\.md/u);
     assert.throws(() => execFileSync(process.execPath, [...args, '--validate-focused']), /changed path/u);
   } finally {
-    fs.rmSync(projectRoot, { recursive: true, force: true });
+    removeTestTree(projectRoot);
   }
 });
 
@@ -212,7 +221,7 @@ test('a runtime file renamed into focused docs preserves both paths and requires
     assert.equal(result.profile, 'full');
     assert.match(result.reason, /services\/runtime\.js/u);
   } finally {
-    fs.rmSync(projectRoot, { recursive: true, force: true });
+    removeTestTree(projectRoot);
   }
 });
 
@@ -233,7 +242,7 @@ test('a deleted test retains its old path and requires full CI', () => {
     assert.deepEqual(changedFilesBetween(base, head, projectRoot), ['tests/deleted.test.js']);
     assert.equal(classifyCiRange({ base, head, projectRoot }).profile, 'full');
   } finally {
-    fs.rmSync(projectRoot, { recursive: true, force: true });
+    removeTestTree(projectRoot);
   }
 });
 
@@ -281,7 +290,7 @@ test('focused validation parses changed JSON and rejects malformed or widened ch
       /focused validation refused/u,
     );
   } finally {
-    fs.rmSync(projectRoot, { recursive: true, force: true });
+    removeTestTree(projectRoot);
   }
 });
 
@@ -369,7 +378,7 @@ test('classifier CLI unions the committed range with supplemental paths and fail
       );
     }
   } finally {
-    fs.rmSync(projectRoot, { recursive: true, force: true });
+    removeTestTree(projectRoot);
   }
 });
 
@@ -392,7 +401,7 @@ test('focused validation checks whitespace in staged, unstaged, and untracked pa
         state,
       );
     } finally {
-      fs.rmSync(projectRoot, { recursive: true, force: true });
+      removeTestTree(projectRoot);
     }
   }
 });
