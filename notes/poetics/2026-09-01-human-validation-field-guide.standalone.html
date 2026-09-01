@@ -1,0 +1,2309 @@
+<!doctype html>
+<html lang="en" data-skin="machine-spirits">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>Human validation tasks — purpose and procedures</title>
+<meta name="description" content="A plain-English explanation of the adaptive-tutor project, what each human task contributes, and exactly how to complete it." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&amp;family=Source+Serif+4:opsz,wght@8..60,200..900&amp;family=JetBrains+Mono:wght@300..700&amp;display=swap" />
+<style>
+/* ════════════════════════════════════════════════════════════════
+   techne.css — dramatic-recognition editorial design system
+   Shared stylesheet. Extracted from the arc note so design and
+   content live in separate files (Tier 1). Consumed by the arc
+   HTML and by the pandoc template (arc.template.html).
+   ════════════════════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════════════════
+     Dramatic Recognition Arc — live, data-driven synthesis note
+     editorial publication, techne palette
+     ═══════════════════════════════════════════════════════════════ */
+
+  :root {
+    --paper:     #F4EEDD;
+    --paper-2:   #ECE3CB;
+    --paper-3:   #F8F2E2;
+    --paper-4:   #FBF6E8;
+    --ink:       #14100C;
+    --ink-2:     #2C241B;
+    --ink-3:     #5C5040;
+    --ink-4:     #8C7E6A;
+    --linen:     #D8C7A9;
+    --moss:      #56683A;
+    --moss-deep: #3A4824;
+    --brick:     #A53E2E;
+    --brick-d:   #7C2C1F;
+    --ochre:     #C08A3E;
+    --ochre-d:   #8C5F1F;
+    --rule:      rgba(28, 22, 16, 0.18);
+    --rule-soft: rgba(28, 22, 16, 0.10);
+
+    --s-mini: clamp(0.62rem, 0.58rem + 0.14vw, 0.72rem);
+    --s-0:    clamp(0.78rem, 0.74rem + 0.18vw, 0.90rem);
+    --s-1:    clamp(0.95rem, 0.90rem + 0.20vw, 1.05rem);
+    --s-2:    clamp(1.05rem, 1.00rem + 0.26vw, 1.20rem);
+    --s-3:    clamp(1.30rem, 1.20rem + 0.50vw, 1.60rem);
+    --s-4:    clamp(1.80rem, 1.50rem + 1.40vw, 2.80rem);
+    --s-5:    clamp(2.60rem, 1.80rem + 3.50vw, 5.20rem);
+    --s-6:    clamp(3.40rem, 2.20rem + 5.20vw, 7.40rem);
+
+    --lead: 1.55;
+    --ease: cubic-bezier(.22,.61,.36,1);
+
+    --toc-w: 17rem;
+  }
+
+  [data-theme="dark"] {
+    --paper:     #14100C;
+    --paper-2:   #1B1612;
+    --paper-3:   #1F1A14;
+    --paper-4:   #221C16;
+    --ink:       #F4EEDD;
+    --ink-2:     #E0D8C3;
+    --ink-3:     #B9AD96;
+    --ink-4:     #8C7E6A;
+    --linen:     #3A322A;
+    --moss:      #8DA868;
+    --moss-deep: #B5CD92;
+    --brick:     #E36953;
+    --brick-d:   #F08A75;
+    --ochre:     #E6B265;
+    --ochre-d:   #F3CB88;
+    --rule:      rgba(244, 238, 221, 0.18);
+    --rule-soft: rgba(244, 238, 221, 0.08);
+  }
+
+  /* Stark skin (A/B) — shared with the dashboard so a framed note re-skins when
+     the tweaks panel flips data-skin (mirrored into the iframe by the wrapper). */
+  :root[data-skin="stark"] {
+    --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA; --paper-4:#FFFFFF;
+    --ink:#0A0A0A; --ink-2:#262626; --ink-3:#525252; --ink-4:#8A8A8A;
+    --linen:#D4D4D8; --moss:#171717; --moss-deep:#000000;
+    --brick:#E63946; --brick-d:#C1121F; --ochre:#737373; --ochre-d:#525252;
+    --rule:rgba(10,10,10,0.16); --rule-soft:rgba(10,10,10,0.07);
+  }
+  :root[data-skin="stark"][data-theme="dark"] {
+    --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618; --paper-4:#1C1C1F;
+    --ink:#FAFAFA; --ink-2:#E4E4E7; --ink-3:#A1A1AA; --ink-4:#6F6F76;
+    --linen:#2A2A2E; --moss:#F5F5F5; --moss-deep:#FFFFFF;
+    --brick:#E63946; --brick-d:#F4606C; --ochre:#A1A1AA; --ochre-d:#C4C4CC;
+    --rule:rgba(250,250,250,0.16); --rule-soft:rgba(250,250,250,0.08);
+  }
+  /* Stark is flat: drop the note's parchment grain / dark wash. */
+  :root[data-skin="stark"] body::before, :root[data-skin="stark"] body::after { display:none; }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; background: var(--paper); scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink-2);
+    font-family: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+    font-size: var(--s-1);
+    line-height: var(--lead);
+    font-feature-settings: "ss01", "kern", "liga";
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    min-height: 100vh;
+    letter-spacing: 0.003em;
+    transition: background-color .3s var(--ease), color .3s var(--ease);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(20,16,12,0.07) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(165,62,46,0.04), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(86,104,58,0.05), transparent 70%);
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::before {
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(244,238,221,0.06) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(227,105,83,0.05), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(141,168,104,0.05), transparent 70%);
+    mix-blend-mode: screen;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.18;
+    background-image: radial-gradient(rgba(20,16,12,0.55) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::after {
+    opacity: 0.10;
+    background-image: radial-gradient(rgba(244,238,221,0.45) 0.5px, transparent 0.5px);
+    mix-blend-mode: screen;
+  }
+
+  /* ═══════ typography ═══════ */
+  h1, h2, h3, h4, .display {
+    font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+    font-optical-sizing: auto;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    font-feature-settings: "ss01", "ss02", "kern";
+    margin: 0;
+  }
+  p { margin: 0 0 0.95em; }
+  em { font-style: italic; color: var(--ink); }
+  strong { font-weight: 600; color: var(--ink); }
+  a { color: var(--brick-d); text-decoration: none; border-bottom: 1px solid currentColor; transition: color .25s var(--ease); }
+  a:hover { color: var(--brick); }
+  a.bare { border-bottom: none; }
+
+  .label {
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  mark.kw {
+    background: linear-gradient(180deg, transparent 60%, rgba(192,138,62,0.30) 60%);
+    color: inherit;
+    padding: 0 0.05em;
+  }
+
+  /* ═══════ sticky reading rail ═══════ */
+  .rail {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .rail__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    max-width: 100rem;
+    margin: 0 auto;
+    padding: 0.7em clamp(0.8rem, 3vw, 2.5rem);
+  }
+  .rail__title { flex: 0 0 auto; font-style: italic; color: var(--ink); }
+  .rail__dot { width: 5px; height: 5px; background: var(--moss); border-radius: 50%; flex: 0 0 auto; }
+  .rail__nav {
+    flex: 1;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .rail__nav::-webkit-scrollbar { display: none; }
+  .rail__nav a {
+    border-bottom: none;
+    color: var(--ink-3);
+    padding: 0.3em 0;
+    margin-right: 1.1em;
+    white-space: nowrap;
+    transition: color .15s var(--ease);
+  }
+  .rail__nav a:hover { color: var(--ink); }
+  .rail__nav a.active { color: var(--brick-d); }
+  .rail__nav a.active::before { content: "▸ "; color: var(--brick); }
+  @media (max-width: 70rem) { .rail__title { display: none; } .rail__nav { display: none; } }
+  .rail__progress {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--brick);
+    width: 0%;
+    transition: width .1s linear;
+  }
+  .rail__actions { display: flex; gap: 0.5em; flex: 0 0 auto; align-items: center; }
+  .rail__btn {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.85em;
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+    letter-spacing: 0.16em;
+  }
+  .rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .rail__btn--icon { padding: 0.35em 0.6em; }
+  .rail__btn--icon svg { display: block; width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  /* ═══════ live beacon ═══════ */
+  .beacon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.3em 0.7em 0.3em 0.55em;
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    color: var(--ink-3);
+    cursor: help;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease);
+  }
+  .beacon__pulse {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink-4);
+    flex: 0 0 auto;
+  }
+  .beacon[data-state="checking"] .beacon__pulse { background: var(--ochre); animation: beaconPulse 1.2s var(--ease) infinite; }
+  .beacon[data-state="live"] { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 55%, var(--rule)); }
+  .beacon[data-state="live"] .beacon__pulse { background: var(--moss); box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 70%, transparent); animation: beaconPulse 2s var(--ease) infinite; }
+  .beacon[data-state="offline"] { color: var(--ink-3); border-color: var(--rule); }
+  .beacon[data-state="offline"] .beacon__pulse { background: var(--ink-4); }
+  .beacon:hover { color: var(--ink); }
+
+  @keyframes beaconPulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 65%, transparent); }
+    70% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--moss) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 0%, transparent); }
+  }
+
+  /* ═══════ toc drawer ═══════ */
+  .toc-toggle {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.75em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+  }
+  .toc-toggle:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc-toggle svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  .toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--toc-w);
+    height: 100vh;
+    z-index: 25;
+    background: var(--paper-4);
+    border-right: 1px solid var(--rule);
+    box-shadow: 8px 0 24px -16px rgba(20,16,12,0.20);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform .35s var(--ease);
+    padding: 4.2em 1.2em 2em;
+    font-family: "Source Serif 4", serif;
+  }
+  .toc[aria-hidden="false"] { transform: translateX(0); }
+  .toc__header {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.4em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .toc__title {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-size: var(--s-2);
+    color: var(--ink);
+    line-height: 1.1;
+    margin: 0 0 1.2em;
+  }
+  .toc__close {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.2em 0.5em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+  }
+  .toc__close:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc__list { list-style: none; padding: 0; margin: 0 0 1.5em; }
+  .toc__item { padding: 0; margin: 0 0 0.15em; border-left: 2px solid transparent; padding-left: 0.6em; transition: border-color .2s var(--ease); }
+  .toc__item.is-active { border-left-color: var(--brick); }
+  .toc__item a {
+    border-bottom: none;
+    color: var(--ink-3);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    padding: 0.32em 0;
+    font-size: 0.93em;
+    line-height: 1.3;
+    transition: color .15s var(--ease);
+  }
+  .toc__item a:hover { color: var(--ink); }
+  .toc__item.is-active > a { color: var(--brick-d); font-weight: 500; }
+  .toc__num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    color: var(--ink-4);
+    letter-spacing: 0.06em;
+    flex: 0 0 1.6em;
+  }
+  .toc__item.is-active > a > .toc__num { color: var(--brick); }
+  .toc__sub {
+    list-style: none;
+    padding: 0 0 0.4em;
+    margin: 0 0 0 1.7em;
+    border-left: 1px dotted var(--rule);
+  }
+  .toc__sub li { margin: 0; }
+  .toc__sub a {
+    border-bottom: none;
+    color: var(--ink-4);
+    font-size: 0.82em;
+    padding: 0.18em 0 0.18em 0.8em;
+    display: block;
+    line-height: 1.25;
+    transition: color .15s var(--ease);
+  }
+  .toc__sub a:hover { color: var(--ink-2); }
+  .toc__sub a.is-active { color: var(--brick-d); }
+  .toc__meta {
+    border-top: 1px solid var(--rule);
+    margin-top: 1.4em;
+    padding-top: 1em;
+    font-size: 0.84em;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+  .toc__meta dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); margin-top: 0.7em; }
+  .toc__meta dd { margin: 0.1em 0 0; color: var(--ink-2); }
+
+  .toc__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 24;
+    background: rgba(20,16,12,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s var(--ease);
+  }
+  .toc[aria-hidden="false"] ~ .toc__scrim { opacity: 1; pointer-events: auto; }
+  body[data-theme="dark"] .toc__scrim { background: rgba(0,0,0,0.55); }
+
+  /* desktop: pin the TOC permanently if wide enough */
+  @media (min-width: 92rem) {
+    .toc { transform: translateX(0); box-shadow: none; padding-top: 4.2em; }
+    .toc__close { display: none; }
+    .toc__scrim { display: none; }
+    main { padding-left: var(--toc-w); }
+    .rail { padding-left: 0; }
+    .toc-toggle { display: none; }
+  }
+
+  /* ═══════ layout shell ═══════ */
+  .shell {
+    max-width: 92rem;
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 4vw, 4rem);
+  }
+
+  .diag {
+    display: grid;
+    grid-template-columns:
+      [margin-l] minmax(0, 13rem)
+      [body] minmax(0, 38rem)
+      [margin-r] minmax(0, 13rem);
+    gap: clamp(1rem, 2vw, 2.5rem);
+    align-items: start;
+    margin: 0 auto;
+    max-width: 80rem;
+  }
+  .diag > .body { grid-column: body; }
+  .diag > .ml { grid-column: margin-l; padding-top: 0.4em; }
+  .diag > .mr { grid-column: margin-r; padding-top: 0.4em; }
+  .diag > .full { grid-column: 1 / -1; max-width: 80rem; margin: 0 auto; }
+  .diag + .diag { margin-top: 1em; }
+
+  @media (max-width: 60rem) {
+    .diag { grid-template-columns: minmax(0, 1fr); }
+    .diag > .body, .diag > .ml, .diag > .mr { grid-column: 1; min-width: 0; }
+    .diag > .ml, .diag > .mr {
+      border-left: 2px solid var(--rule);
+      padding-left: 0.9em;
+      margin-bottom: 1em;
+      color: var(--ink-3);
+      font-size: 0.9em;
+    }
+  }
+
+  /* ═══════ hero ═══════ */
+  .hero {
+    border-bottom: 1px solid var(--rule);
+    padding: clamp(2rem, 5vw, 5rem) 0 clamp(2rem, 4vw, 4rem);
+    position: relative;
+  }
+  .hero__rune {
+    position: absolute;
+    top: 1rem;
+    left: clamp(1rem, 4vw, 4rem);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .hero__rune span { color: var(--brick-d); }
+  .hero__masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 2.5em auto 2em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+  }
+  .hero__rule { flex: 1; height: 1px; background: var(--rule); margin: 0 1em; position: relative; top: -0.4em; }
+  .hero__h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: var(--s-5);
+    line-height: 0.96;
+    font-weight: 460;
+    margin: 0 auto 0.4em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    letter-spacing: -0.022em;
+    color: var(--ink);
+  }
+  .hero__h1 .em {
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+  }
+  .hero__subtitle {
+    margin: 0.6em auto 0;
+    max-width: 56rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    font-family: "Fraunces", serif;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    font-size: var(--s-3);
+    font-weight: 320;
+    color: var(--ink-3);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .hero__latest {
+    margin: 1.5em auto 0;
+    max-width: 80rem;
+    padding: 1em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    background: color-mix(in srgb, var(--paper-3) 72%, transparent);
+    display: grid;
+    grid-template-columns: minmax(0, 0.32fr) minmax(0, 0.68fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: baseline;
+  }
+  @media (max-width: 60rem) { .hero__latest { grid-template-columns: 1fr; } }
+  .hero__latest strong {
+    display: block;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-3);
+    font-weight: 430;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero__latest p {
+    margin: 0;
+    font-size: var(--s-1);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .hero__lede {
+    margin: 2.4em auto 0;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    display: grid;
+    grid-template-columns: minmax(0, 38rem) minmax(0, 22rem);
+    gap: clamp(1.5rem, 4vw, 4rem);
+  }
+  @media (max-width: 60rem) { .hero__lede { grid-template-columns: 1fr; } }
+  .hero__lede p {
+    font-size: var(--s-2);
+    line-height: 1.5;
+    color: var(--ink-2);
+    font-weight: 350;
+    font-family: "Source Serif 4", serif;
+    margin: 0 0 0.85em;
+  }
+  .hero__lede p:first-of-type::first-letter {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: 3.4em;
+    line-height: 0.9;
+    float: left;
+    padding: 0.05em 0.08em 0 0;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .hero__num {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid var(--moss);
+    padding-left: 1.4em;
+    align-self: stretch;
+  }
+  .hero__num__big {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.9;
+    font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 144;
+    color: var(--moss-deep);
+    font-weight: 320;
+    letter-spacing: -0.04em;
+  }
+  .hero__num__big .frac {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 280;
+  }
+  .hero__num__sub {
+    margin-top: 0.5em;
+    font-size: var(--s-0);
+    color: var(--ink-3);
+    line-height: 1.45;
+    max-width: 22em;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.4em 0 0;
+  }
+
+  /* ═══════ section structure ═══════ */
+  .s {
+    padding: clamp(3rem, 6vw, 6rem) 0;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: 4em;
+  }
+  .s:last-of-type { border-bottom: none; }
+  .s__num {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 80, "WONK" 0, "opsz" 144;
+    color: var(--moss);
+    letter-spacing: -0.05em;
+    user-select: none;
+    margin: 0;
+  }
+  .s__num .glyph {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 240;
+  }
+  .s__h {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-4);
+    line-height: 1.05;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    font-weight: 460;
+    margin: 0.4em 0 1em;
+    color: var(--ink);
+    letter-spacing: -0.018em;
+  }
+  .s__h em {
+    font-style: italic;
+    color: var(--brick-d);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+  }
+  .s__kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin: 0 0 0.6em;
+  }
+  .s__sub {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-weight: 480;
+    margin: 1.4em 0 0.6em;
+    line-height: 1.2;
+    scroll-margin-top: 4em;
+  }
+
+  /* ═══════ marginalia ═══════ */
+  .note {
+    font-family: "Source Serif 4", serif;
+    font-size: 0.86em;
+    line-height: 1.5;
+    color: var(--ink-3);
+    font-style: italic;
+  }
+  .note__lbl {
+    display: block;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-bottom: 0.5em;
+    font-weight: 500;
+  }
+  .note--moss .note__lbl { color: var(--moss-deep); }
+  .note--ink .note__lbl { color: var(--ink-3); }
+  .note--ochre .note__lbl { color: var(--ochre-d); }
+  .note p { margin: 0 0 0.6em; }
+
+  /* ═══════ pull quote ═══════ */
+  .pq {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-weight: 360;
+    border-left: 2px solid var(--brick);
+    padding: 0.4em 0 0.4em 1.2em;
+    margin: 1.4em 0;
+    letter-spacing: -0.005em;
+  }
+  .pq cite, .pq .cite {
+    display: block;
+    font-style: normal;
+    font-variation-settings: normal;
+    margin-top: 0.5em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  /* ═══════ glossary ═══════ */
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+    gap: 1.1em 1.6em;
+    margin-top: 1em;
+  }
+  .gl-row {
+    border-top: 1px dotted var(--rule);
+    padding-top: 0.7em;
+  }
+  .gl-row dt {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    line-height: 1.2;
+  }
+  .gl-row dt .gloss {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ochre-d);
+    font-style: normal;
+    margin-left: 0.5em;
+  }
+  .gl-row dd {
+    margin: 0.35em 0 0;
+    color: var(--ink-2);
+    font-size: 0.97em;
+    line-height: 1.5;
+  }
+
+  /* ═══════ inline glossary terms (tooltip on hover) ═══════ */
+  .gl-term {
+    font-style: normal;
+    border-bottom: 1px dotted var(--ochre);
+    cursor: help;
+    position: relative;
+    transition: color .15s var(--ease);
+  }
+  .gl-term:hover, .gl-term:focus {
+    color: var(--ochre-d);
+    outline: none;
+  }
+  .gl-term[data-gloss]::after {
+    content: attr(data-gloss);
+    display: none; /* Hidden glosses must not widen narrow pages. */
+    position: absolute;
+    bottom: calc(100% + 0.6em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.85em;
+    line-height: 1.4;
+    padding: 0.55em 0.9em;
+    border-radius: 2px;
+    width: max-content;
+    max-width: 18em;
+    white-space: normal;
+    box-shadow: 0 8px 20px -10px rgba(20,16,12,0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+    text-align: left;
+    letter-spacing: 0;
+  }
+  .gl-term[data-gloss]::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 0.25em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    border: 5px solid transparent;
+    border-top-color: var(--ink);
+    opacity: 0;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+  }
+  .gl-term:hover::after, .gl-term:focus::after,
+  .gl-term:hover::before, .gl-term:focus::before {
+    display: block;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ═══════ claim/counter pairs ═══════ */
+  .claim {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.8em 1.4em;
+    align-items: baseline;
+    margin: 0 0 2.4em;
+  }
+  .claim__no {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-4);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    color: var(--ink-4);
+    font-style: italic;
+    width: 1.6em;
+    text-align: right;
+  }
+  .claim__h {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-3);
+    line-height: 1.15;
+    font-weight: 460;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.012em;
+  }
+  .claim__body { grid-column: 2; margin-top: 0.6em; color: var(--ink-2); }
+  .claim__body p { font-size: var(--s-1); line-height: 1.6; }
+  .claim__counter {
+    grid-column: 2;
+    margin-top: 0.4em;
+    border-left: 2px solid var(--brick);
+    padding: 0.2em 0 0.2em 1em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.95em;
+    color: var(--ink-3);
+  }
+  .claim__counter::before {
+    content: "caveat.";
+    display: inline;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-right: 0.6em;
+    font-weight: 500;
+  }
+
+  /* ═══════ status chips ═══════ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.25em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    margin-right: 0.4em;
+    margin-bottom: 0.4em;
+  }
+  .chip--moss { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 50%, var(--rule)); }
+  .chip--brick { color: var(--brick-d); border-color: color-mix(in srgb, var(--brick) 50%, var(--rule)); }
+  .chip--ochre { color: var(--ochre-d); border-color: color-mix(in srgb, var(--ochre) 50%, var(--rule)); }
+  .chip--ink { color: var(--ink); border-color: var(--ink-3); background: var(--paper); }
+  .chip__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ═══════ deeplink pills (open in browser) ═══════ */
+  .deeplink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.35em 0.7em 0.35em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .deeplink:hover {
+    color: var(--brick-d);
+    border-color: color-mix(in srgb, var(--brick) 60%, var(--rule));
+    background: var(--paper-4);
+  }
+  .deeplink__arrow {
+    transition: transform .2s var(--ease);
+    color: var(--brick);
+    font-weight: 600;
+  }
+  .deeplink:hover .deeplink__arrow { transform: translateX(2px); }
+  .deeplink[data-live="checking"] .deeplink__count::after { content: " · …"; color: var(--ochre); }
+  .deeplink[data-live="live"] { border-color: color-mix(in srgb, var(--moss) 45%, var(--rule)); }
+  .deeplink[data-live="live"] .deeplink__count { color: var(--moss-deep); }
+  .deeplink[data-live="offline"] { opacity: 0.7; }
+  .deeplink__count {
+    font-style: normal;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+  }
+
+  .deeplink-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.1em 0 0.4em;
+  }
+
+  /* ═══════ timeline ═══════ */
+  .timeline {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    margin-top: 1em;
+  }
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1.4em;
+    align-items: start;
+    padding: 1.2em 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .timeline-row .when {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    padding-top: 0.4em;
+  }
+  .timeline-row h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .timeline-row p { margin: 0; color: var(--ink-2); font-size: 0.97em; }
+  @media (max-width: 60rem) {
+    .timeline-row { grid-template-columns: 1fr; gap: 0.4em; }
+  }
+
+  /* ═══════ evidence grid ═══════ */
+  .filters { display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0 0 1.4em; }
+  .filter-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease);
+  }
+  .filter-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .filter-btn[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .ev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+    gap: 1em;
+  }
+  .ev-card {
+    padding: 1.2em 1.3em;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink-4);
+    transition: border-color .2s var(--ease), background .2s var(--ease);
+    display: flex;
+    flex-direction: column;
+  }
+  .ev-card.is-hidden { display: none; }
+  .ev-card[data-status="strong"] { border-left-color: var(--moss); }
+  .ev-card[data-status="boundary"] { border-left-color: var(--ochre); }
+  .ev-card[data-status="risk"] { border-left-color: var(--brick); }
+  .ev-card[data-status="output"] { border-left-color: var(--ink-3); }
+  .ev-card h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    margin: 0.4em 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .ev-card p { margin: 0 0 0.7em; color: var(--ink-2); font-size: 0.95em; line-height: 1.5; }
+  .ev-card .deeplink-row { margin-top: auto; }
+
+  /* ═══════ accordion ═══════ */
+  .accordion {
+    border-top: 1px solid var(--rule);
+  }
+  .accordion:last-of-type { border-bottom: 1px solid var(--rule); }
+  .accordion summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1em 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+  }
+  .accordion summary::-webkit-details-marker { display: none; }
+  .accordion summary h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .accordion summary .acc-marker {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--brick-d);
+    font-size: var(--s-1);
+  }
+  .accordion[open] summary .acc-marker::before { content: "–"; }
+  .accordion:not([open]) summary .acc-marker::before { content: "+"; }
+  .accordion .body { padding: 0 0 1.3em; color: var(--ink-2); }
+  .accordion .body p { margin: 0 0 0.7em; }
+
+  /* ═══════ spec / route ═══════ */
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    gap: 1em;
+    margin-top: 1.3em;
+  }
+  .spec-box {
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    padding: 1em 1.1em;
+  }
+  .spec-box h4 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.6em;
+  }
+  .spec-box ul { list-style: none; padding: 0; margin: 0; }
+  .spec-box li {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82em;
+    color: var(--ink-2);
+    padding: 0.18em 0;
+    border-bottom: 1px dotted var(--rule-soft);
+  }
+  .spec-box li:last-child { border-bottom: none; }
+
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+    gap: 0.7em;
+    margin-top: 1.2em;
+    counter-reset: step;
+  }
+  .ladder-step {
+    counter-increment: step;
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    padding: 0.9em 1em;
+    position: relative;
+    font-size: 0.92em;
+  }
+  .ladder-step::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    color: var(--ochre-d);
+    display: block;
+    margin-bottom: 0.4em;
+  }
+  .ladder-step strong {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    color: var(--ink);
+    font-weight: 460;
+    display: block;
+    margin-bottom: 0.2em;
+  }
+  .ladder-step span { color: var(--ink-3); font-size: 0.93em; }
+
+  /* ═══════ callouts ═══════ */
+  .callout {
+    border: 1px solid color-mix(in srgb, var(--brick) 40%, var(--rule));
+    background: linear-gradient(180deg, rgba(165,62,46,0.06), rgba(165,62,46,0.02) 80%, transparent);
+    padding: 1.2em 1.3em;
+    margin-top: 1.4em;
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .callout strong { color: var(--brick-d); font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.18em; text-transform: uppercase; }
+
+  /* ═══════ interactive chart ═══════ */
+  figure.chart-fig { margin: 1.4em 0 1em; }
+  figure.chart-fig figcaption {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 0.7em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em 1.4em;
+    align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.5em;
+  }
+  figure.chart-fig figcaption .cap-title { color: var(--brick-d); }
+  figure.chart-fig figcaption .legend {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.8em;
+    margin-left: auto;
+  }
+  figure.chart-fig figcaption .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--ink-3);
+  }
+  figure.chart-fig figcaption .legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+  figure.chart-fig figcaption .legend .lg-routine { color: var(--ink-4); }
+  figure.chart-fig figcaption .legend .lg-none    { color: var(--ochre); }
+  figure.chart-fig figcaption .legend .lg-perip   { color: var(--moss-deep); }
+
+  .chart { width: 100%; height: auto; }
+  .chart .axis-line { stroke: var(--rule); stroke-width: 1; }
+  .chart .axis-tick { stroke: var(--rule-soft); stroke-width: 1; stroke-dasharray: 2 3; }
+  .chart .axis-lbl  { fill: var(--ink-4); font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.05em; }
+  .chart .metric-lbl { fill: var(--ink-2); font-family: "Source Serif 4", serif; font-size: 12px; font-style: italic; }
+  .chart .bar-routine { fill: var(--ink-4); }
+  .chart .bar-none    { fill: var(--ochre); }
+  .chart .bar-perip   { fill: var(--moss-deep); }
+  .chart .bar         { transition: opacity .2s var(--ease); transform-origin: left center; }
+  .chart .bar:hover   { opacity: 0.82; }
+  .chart .bar-val     { fill: var(--ink-2); font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 500; }
+  .chart .bar-rect    { rx: 1; ry: 1; }
+  .chart .anim        { transform-origin: left; animation: barIn .9s var(--ease) both; }
+
+  @keyframes barIn {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+
+  /* ═══════ transcript block ═══════ */
+  .tx {
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    margin: 1.1em 0;
+  }
+  .tx > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.7em 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1px solid transparent;
+  }
+  .tx > summary::-webkit-details-marker { display: none; }
+  .tx > summary .tx__title { color: var(--brick-d); }
+  .tx > summary .tx__hint { color: var(--ink-4); font-style: italic; text-transform: none; letter-spacing: 0.02em; font-family: "Source Serif 4", serif; font-size: 0.95em; }
+  .tx[open] > summary { border-bottom-color: var(--rule); }
+  .tx[open] > summary::after { content: "–"; color: var(--brick-d); }
+  .tx:not([open]) > summary::after { content: "+"; color: var(--brick-d); }
+  .tx__body {
+    padding: 0.8em 1.2em 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.85em;
+    line-height: 1.55;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    max-height: 26em;
+    overflow-y: auto;
+  }
+  .tx__body .tx-stage   { color: var(--ink-4); font-style: italic; }
+  .tx__body .tx-tutor   { color: var(--moss-deep); }
+  .tx__body .tx-learner { color: var(--brick-d); }
+  .tx__body .tx-label   { display: inline-block; min-width: 4.2em; font-weight: 600; color: var(--ink); }
+  .tx__caption {
+    padding: 0.6em 1.2em 0.9em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    color: var(--ink-3);
+    font-size: 0.88em;
+    border-top: 1px dotted var(--rule);
+    background: var(--paper-3);
+  }
+  .tx__caption strong { font-family: "JetBrains Mono", monospace; font-style: normal; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--moss-deep); margin-right: 0.5em; }
+
+  /* ═══════ footer ═══════ */
+  .colophon {
+    padding: 3em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    color: var(--ink-3);
+    font-size: 0.88em;
+    line-height: 1.55;
+  }
+  .colophon code {
+    font-family: "JetBrains Mono", monospace;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    padding: 0.1em 0.4em;
+    font-size: 0.92em;
+    color: var(--ink-2);
+  }
+  .colophon dl { display: grid; grid-template-columns: 12rem 1fr; gap: 0.5em 1.2em; margin: 1em 0 0; }
+  .colophon dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brick-d); }
+  .colophon dd { margin: 0; }
+  @media (max-width: 50rem) { .colophon dl { grid-template-columns: 1fr; } .colophon dd { margin: 0 0 0.6em; } }
+  .colophon__live {
+    border: 1px dashed var(--rule);
+    padding: 0.9em 1.1em;
+    margin-top: 1.4em;
+    background: var(--paper-3);
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .colophon__live code { background: var(--paper-4); }
+
+  /* ═══════ print ═══════ */
+  @media print {
+    body { background: #fff; color: #000; }
+    body::before, body::after, .rail, .rail__actions, .filters, .toc, .toc__scrim, .toc-toggle, .beacon, .deeplink, .deeplink-row { display: none !important; }
+    main { padding-left: 0 !important; }
+    .accordion .body, .tx[open] .tx__body { display: block !important; }
+    .accordion summary .acc-marker, .tx summary::after { display: none; }
+    .s { break-inside: avoid; }
+    .ev-card { break-inside: avoid; }
+    .chart { break-inside: avoid; }
+    .gl-term { border-bottom: none; }
+    .gl-term::after, .gl-term::before { display: none; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     Machine Spirits site skin
+
+     Opt-in with <html data-skin="machine-spirits">. This carries the
+     main site's Swiss / neo-brutalist language into public research
+     explainers without changing the parchment skin used by other notes.
+     ═══════════════════════════════════════════════════════════════ */
+  :root[data-skin="machine-spirits"] {
+    --paper: #FFFFFF;
+    --paper-2: #F4F4F4;
+    --paper-3: #FAFAFA;
+    --paper-4: #FFFFFF;
+    --ink: #0A0A0A;
+    --ink-2: #242424;
+    --ink-3: #555555;
+    --ink-4: #858585;
+    --linen: #D8D8D8;
+    --moss: #0A0A0A;
+    --moss-deep: #0A0A0A;
+    --brick: #E63946;
+    --brick-d: #C1121F;
+    --ochre: #777777;
+    --ochre-d: #4F4F4F;
+    --rule: rgba(10, 10, 10, 0.22);
+    --rule-soft: rgba(10, 10, 10, 0.08);
+  }
+
+  :root[data-skin="machine-spirits"][data-theme="dark"] {
+    --paper: #0A0A0A;
+    --paper-2: #111111;
+    --paper-3: #151515;
+    --paper-4: #1A1A1A;
+    --ink: #FAFAFA;
+    --ink-2: #E4E4E4;
+    --ink-3: #B4B4B4;
+    --ink-4: #777777;
+    --linen: #303030;
+    --moss: #FAFAFA;
+    --moss-deep: #FFFFFF;
+    --brick: #E63946;
+    --brick-d: #F05A66;
+    --ochre: #A0A0A0;
+    --ochre-d: #D0D0D0;
+    --rule: rgba(250, 250, 250, 0.22);
+    --rule-soft: rgba(250, 250, 250, 0.09);
+  }
+
+  :root[data-skin="machine-spirits"] body {
+    cursor: crosshair;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-feature-settings: "kern", "liga";
+    letter-spacing: 0;
+  }
+
+  :root[data-skin="machine-spirits"] body::before {
+    display: block;
+    opacity: 0.72;
+    background-image:
+      linear-gradient(var(--rule-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--rule-soft) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] body::after {
+    display: block;
+    inset: -30vh -15vw auto auto;
+    width: 58vw;
+    height: 70vh;
+    opacity: 0.055;
+    background: var(--brick);
+    transform: rotate(-18deg);
+    transform-origin: center;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] h1,
+  :root[data-skin="machine-spirits"] h2,
+  :root[data-skin="machine-spirits"] h3,
+  :root[data-skin="machine-spirits"] h4,
+  :root[data-skin="machine-spirits"] .display,
+  :root[data-skin="machine-spirits"] .hero__h1,
+  :root[data-skin="machine-spirits"] .hero__subtitle,
+  :root[data-skin="machine-spirits"] .hero__lede p,
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter,
+  :root[data-skin="machine-spirits"] .s__num,
+  :root[data-skin="machine-spirits"] .s__h,
+  :root[data-skin="machine-spirits"] .s__sub,
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h,
+  :root[data-skin="machine-spirits"] .ev-card h3,
+  :root[data-skin="machine-spirits"] .gl-row dt,
+  :root[data-skin="machine-spirits"] .pq,
+  :root[data-skin="machine-spirits"] .toc__title {
+    font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-variation-settings: normal;
+  }
+
+  :root[data-skin="machine-spirits"] .label,
+  :root[data-skin="machine-spirits"] .rail,
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__header,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .toc__num,
+  :root[data-skin="machine-spirits"] .toc__meta dt,
+  :root[data-skin="machine-spirits"] .hero__rune,
+  :root[data-skin="machine-spirits"] .s__kicker,
+  :root[data-skin="machine-spirits"] .note__lbl,
+  :root[data-skin="machine-spirits"] .pq cite,
+  :root[data-skin="machine-spirits"] .pq .cite,
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink,
+  :root[data-skin="machine-spirits"] .filter-btn,
+  :root[data-skin="machine-spirits"] .gl-row dt .gloss,
+  :root[data-skin="machine-spirits"] code,
+  :root[data-skin="machine-spirits"] .colophon code {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  :root[data-skin="machine-spirits"] .rail {
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    border-bottom: 3px solid var(--ink);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+  }
+  :root[data-skin="machine-spirits"] .rail__title { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .rail__dot { width: 8px; height: 8px; border-radius: 0; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .filter-btn {
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  :root[data-skin="machine-spirits"] .rail__btn:hover,
+  :root[data-skin="machine-spirits"] .toc-toggle:hover,
+  :root[data-skin="machine-spirits"] .toc__close:hover,
+  :root[data-skin="machine-spirits"] .filter-btn:hover,
+  :root[data-skin="machine-spirits"] .filter-btn[aria-pressed="true"] {
+    background: var(--brick);
+    border-color: var(--brick);
+    color: #FFFFFF;
+  }
+
+  :root[data-skin="machine-spirits"] .toc {
+    border-right: 3px solid var(--ink);
+    box-shadow: 12px 0 0 color-mix(in srgb, var(--brick) 20%, transparent);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  :root[data-skin="machine-spirits"] .toc__title { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .hero {
+    border-top: 0;
+    border-bottom: 4px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__masthead { border-top: 4px solid var(--ink); padding-top: 1.1em; }
+  :root[data-skin="machine-spirits"] .hero__rule { height: 4px; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .hero__h1 {
+    font-size: clamp(3.2rem, 2rem + 6.8vw, 8.8rem);
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.065em;
+  }
+  :root[data-skin="machine-spirits"] .hero__h1 .em {
+    color: var(--brick);
+    font-style: normal;
+    font-variation-settings: normal;
+  }
+  :root[data-skin="machine-spirits"] .hero__subtitle {
+    max-width: 60rem;
+    font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.75rem);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+  :root[data-skin="machine-spirits"] .hero__lede {
+    border: 4px solid var(--ink);
+    padding: clamp(1.2rem, 2.5vw, 2.2rem);
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    box-shadow: 14px 14px 0 color-mix(in srgb, var(--brick) 22%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__lede p { font-weight: 400; }
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter { color: var(--brick); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .s { border-bottom: 3px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .s__num { color: var(--ink); font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__num .glyph,
+  :root[data-skin="machine-spirits"] .s__h em { color: var(--brick); font-style: normal; }
+  :root[data-skin="machine-spirits"] .s__h { font-weight: 700; letter-spacing: -0.04em; }
+  :root[data-skin="machine-spirits"] .s__sub { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__kicker { color: var(--brick-d); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .note,
+  :root[data-skin="machine-spirits"] .claim__counter,
+  :root[data-skin="machine-spirits"] .gl-term[data-gloss]::after,
+  :root[data-skin="machine-spirits"] .colophon__live {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-style: normal;
+  }
+  :root[data-skin="machine-spirits"] .pq { font-style: normal; font-weight: 600; border-left-width: 5px; }
+  :root[data-skin="machine-spirits"] .gl-row { border-top: 2px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .gl-row dt { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .claim,
+  :root[data-skin="machine-spirits"] .ev-card,
+  :root[data-skin="machine-spirits"] .spec-box,
+  :root[data-skin="machine-spirits"] .callout,
+  :root[data-skin="machine-spirits"] .tx {
+    border: 2px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .claim { padding: 1.2em; box-shadow: 8px 8px 0 var(--rule-soft); }
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .ev-card {
+    border-left-width: 8px;
+    box-shadow: 8px 8px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .ev-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 11px 11px 0 color-mix(in srgb, var(--brick) 18%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .ev-card h3 { font-weight: 700; }
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink { border-width: 2px; }
+  :root[data-skin="machine-spirits"] .chip__dot { border-radius: 0; }
+  :root[data-skin="machine-spirits"] .deeplink:hover { background: var(--brick); border-color: var(--brick); color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .deeplink:hover .deeplink__arrow { color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .callout {
+    border-left: 8px solid var(--brick);
+    background: color-mix(in srgb, var(--brick) 7%, var(--paper));
+  }
+
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame,
+  :root[data-skin="machine-spirits"] .ledger {
+    border-color: var(--ink);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame {
+    border-width: 3px;
+    box-shadow: 10px 10px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon figcaption,
+  :root[data-skin="machine-spirits"] .chart-legend,
+  :root[data-skin="machine-spirits"] .caption-fine,
+  :root[data-skin="machine-spirits"] .ledger {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace !important;
+  }
+  :root[data-skin="machine-spirits"] .ledger th,
+  :root[data-skin="machine-spirits"] .ledger td { border-color: var(--ink); }
+
+  :root[data-skin="machine-spirits"] .colophon {
+    border-top: 4px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  :root[data-skin="machine-spirits"] .colophon .label,
+  :root[data-skin="machine-spirits"] .colophon code { color: var(--paper); }
+  :root[data-skin="machine-spirits"] .colophon code { background: transparent; border-color: color-mix(in srgb, var(--paper) 35%, transparent); }
+
+  @media (max-width: 60rem) {
+    :root[data-skin="machine-spirits"] .diag > .ml,
+    :root[data-skin="machine-spirits"] .diag > .mr { border-left-color: var(--brick); }
+    :root[data-skin="machine-spirits"] .hero__lede { box-shadow: 8px 8px 0 color-mix(in srgb, var(--brick) 22%, transparent); }
+  }
+
+/* ---- Swimlane comparison (generated docs; scripts/render-stress-comparison.js) ---- */
+.lanes{display:grid;grid-template-columns:repeat(var(--lanes-n,2),minmax(0,1fr));gap:1rem;margin:1.2rem 0}
+@media(max-width:760px){.lanes{grid-template-columns:1fr}}
+.lane{border:1px solid var(--line,rgba(120,120,120,.35));border-radius:8px;padding:.9rem 1rem;overflow-wrap:anywhere}
+.lane--pass{border-color:rgba(90,140,90,.6)}
+.lane__head{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.5rem}
+.lane__reply{margin:.4rem 0;font-size:.95em}
+.lane__why{font-size:.8em;opacity:.75;margin:.4rem 0 0}
+.lane__empty{opacity:.5;text-align:center;margin:1rem 0}
+.scoreboard{border-collapse:collapse;margin:1rem 0}
+.scoreboard td,.scoreboard th{border:1px solid var(--line,rgba(120,120,120,.35));padding:.35rem .8rem;text-align:center}
+
+</style>
+<style>
+  .at-a-glance { display:block; width:100%; margin:1.5rem 0; border-collapse:collapse; overflow-x:auto; }
+  .at-a-glance th, .at-a-glance td { padding:.75rem; border:1px solid var(--ink); text-align:left; vertical-align:top; }
+  .at-a-glance th { font:700 .7rem/1.25 "JetBrains Mono",monospace; letter-spacing:.04em; text-transform:uppercase; }
+  .task-meta { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; margin:1rem 0; border:1px solid var(--ink); background:var(--ink); }
+  .task-meta > div { padding:.8rem; background:var(--paper); }
+  .task-meta b { display:block; margin-bottom:.3rem; font:700 .68rem/1.2 "JetBrains Mono",monospace; letter-spacing:.04em; text-transform:uppercase; }
+  .procedure { counter-reset:steps; list-style:none; margin:1rem 0 1.5rem; padding:0; border-top:1px solid var(--ink); }
+  .procedure > li { counter-increment:steps; display:grid; grid-template-columns:2.8rem minmax(0,1fr); gap:.65rem; padding:.85rem 0; border-bottom:1px solid color-mix(in srgb,var(--ink) 30%,transparent); }
+  .procedure > li::before { content:counter(steps); display:grid; place-items:center; width:1.9rem; height:1.9rem; border:2px solid var(--ink); font:700 .78rem/1 "JetBrains Mono",monospace; }
+  .procedure h3, .procedure h4 { margin:0 0 .25rem; font:700 1rem/1.3 "Source Serif 4",serif; }
+  .procedure p { margin:.2rem 0; }
+  .procedure ul { margin:.4rem 0; padding-left:1.2rem; }
+  .procedure li li + li { margin-top:.2rem; }
+  .body, .procedure > li > div { min-width:0; }
+  .body code { overflow-wrap:anywhere; word-break:break-word; }
+  .files { margin:1rem 0 1.5rem; padding:1rem; border:1px solid var(--ink); }
+  .files h3 { margin:0 0 .6rem; }
+  .files ul { margin:0; padding-left:1.25rem; }
+  .files li + li { margin-top:.4rem; }
+  .files a { overflow-wrap:anywhere; }
+  .result { margin:1rem 0; padding:1rem; border-left:5px solid var(--accent); background:color-mix(in srgb,var(--paper) 90%,var(--accent) 10%); }
+  .result h3 { margin:0 0 .4rem; }
+  .stop { margin:1.25rem 0; padding:1rem; border:3px solid var(--accent); box-shadow:5px 5px 0 var(--ink); }
+  .stop h3 { margin:0 0 .4rem; color:var(--accent); }
+  .command { margin:.7rem 0; padding:1rem; border:1px solid var(--ink); background:#111; color:#f5f2e9; overflow:auto; }
+  .command code { white-space:pre; overflow-wrap:normal; word-break:normal; font-size:.76rem; }
+  .exact-fields { display:block; width:100%; margin:.75rem 0; border-collapse:collapse; overflow-x:auto; font-size:.92rem; }
+  .exact-fields th, .exact-fields td { padding:.6rem; border-bottom:1px solid color-mix(in srgb,var(--ink) 30%,transparent); text-align:left; vertical-align:top; }
+  .exact-fields th { font:700 .67rem/1.25 "JetBrains Mono",monospace; text-transform:uppercase; }
+  .small { font-size:.86rem; }
+  .project-summary { margin:1rem 0 1.5rem; padding:1.15rem; border:3px solid var(--ink); box-shadow:6px 6px 0 color-mix(in srgb,var(--accent) 55%,transparent); }
+  .project-summary h3, .purpose h3 { margin:0 0 .35rem; }
+  .project-summary p:last-child, .purpose p:last-child { margin-bottom:0; }
+  .plain-flow { margin:1rem 0 1.5rem; padding:0; list-style:none; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; border:1px solid var(--ink); background:var(--ink); }
+  .plain-flow li { padding:.8rem; background:var(--paper); }
+  .plain-flow b { display:block; margin-bottom:.25rem; color:var(--accent); font:700 .7rem/1.2 "JetBrains Mono",monospace; text-transform:uppercase; }
+  .purpose { margin:1.25rem 0; border:1px solid var(--ink); }
+  .purpose > div { padding:1rem; }
+  .purpose > div + div { border-top:1px solid var(--ink); }
+  .purpose h3 { font:700 .72rem/1.3 "JetBrains Mono",monospace; letter-spacing:.04em; text-transform:uppercase; }
+  @media (max-width:900px) { .task-meta { grid-template-columns:1fr; } }
+  @media (max-width:560px) {
+    .hero { padding-top:4.75rem; }
+    .hero__rune { right:1rem; line-height:1.5; }
+    .procedure > li { grid-template-columns:2.2rem minmax(0,1fr); gap:.4rem; }
+    .plain-flow { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">Human validation tasks</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#project">The project</a>
+      <a href="#overview">Tasks</a>
+      <a href="#proof">1 · Proof</a>
+      <a href="#state-move">2 · Dialogue</a>
+      <a href="#impasse">3 · Impasse</a>
+      <a href="#taxonomy">4 · Taxonomy</a>
+      <a href="#rubric">5 · Rubric</a>
+      <a href="#pilot">6 · Pilot</a>
+    </nav>
+    <div class="rail__actions"><button class="rail__btn" id="themeToggle" type="button">Dark</button></div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> Purpose and procedures · updated 01 September 2026</div>
+    <h1 class="hero__h1">Why these human tasks exist — and <span class="em">exactly what to do</span></h1>
+    <p class="hero__subtitle">First, the project in plain English. Then, what each task contributes. Finally, the step-by-step instructions.</p>
+    <div class="hero__lede"><div><p>The short version: we have built an AI tutor that can choose different teaching moves for different kinds of difficulty. Computers can test whether the machinery runs. People must still check whether its judgments make sense and whether it actually helps anyone learn.</p></div></div>
+  </section>
+
+  <div class="shell">
+
+    <section class="s" id="project">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">P<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The project · from first principles</p>
+          <h2 class="s__h">What are we trying to <em>build and prove</em>?</h2>
+          <div class="project-summary">
+            <h3>The project</h3>
+            <p>We are trying to build an AI tutor that does more than give a polished answer. The tutor should identify what kind of difficulty is visible in the learner’s words or behaviour, choose a suitable teaching move, avoid revealing conclusions before the evidence supports them, deliver the move clearly, and then look for evidence of what happened next.</p>
+          </div>
+          <ol class="plain-flow" aria-label="The adaptive tutor's six-part loop">
+            <li><b>1 · Read</b>What did the learner just say?</li>
+            <li><b>2 · Diagnose</b>What kind of difficulty is this?</li>
+            <li><b>3 · Choose</b>What teaching move fits that difficulty?</li>
+            <li><b>4 · Check</b>Is the move allowed by the lesson evidence?</li>
+            <li><b>5 · Speak</b>Did the reply actually carry out the move?</li>
+            <li><b>6 · Observe</b>Did the learner’s next response show progress?</li>
+          </ol>
+          <div class="purpose">
+            <div><h3>What we have so far</h3><p>In small controlled tests with simulated learners, forcing a move matched to a visible learner state produced better state-appropriate tutor conduct than forcing a named mismatched move. This is evidence about the tutor’s immediate conduct, not evidence of learning.</p></div>
+            <div><h3>What that does not prove</h3><p>It does not yet prove that people agree with the system’s interpretation, that every lesson’s evidence rules are correct, that its internal categories are meaningful, that its scoring guide is trustworthy, or that real learners learn more.</p></div>
+            <div><h3>Why people are needed</h3><p>A system should not be allowed to validate its own lesson logic, its own labels, its own critic, and its own scores. The six cards below add independent human judgment at those points. The final card asks the larger question: does the tutor help real people learn?</p></div>
+          </div>
+        </div>
+        <div class="mr"><p class="note note--moss"><span class="note__lbl">What “blocked” means</span> The software work is ready or paused, but the evidence cannot honestly advance until the named human decision or review is completed.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="overview">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">00<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The six tasks</p>
+          <h2 class="s__h">Which part of the project does each task <em>check</em>?</h2>
+          <table class="at-a-glance">
+            <thead><tr><th>Card</th><th>Question it helps answer</th><th>Human work</th><th>Can start?</th></tr></thead>
+            <tbody>
+              <tr><td>1. Proof review</td><td>Do the lesson’s evidence rules mean what we think they mean?</td><td>Two reviewers complete six cases each.</td><td>Yes</td></tr>
+              <tr><td>2. Dialogue review</td><td>Can people see the learner states and teaching moves claimed by the system?</td><td>Two reviewers label 24 cases each.</td><td>Yes</td></tr>
+              <tr><td>3. Impasse review</td><td>Where did communication actually break down in real use?</td><td>The original participant labels 29 excerpts.</td><td>Yes</td></tr>
+              <tr><td>4. Superego taxonomy</td><td>Can experts reliably use the categories assigned to the tutor’s internal critic?</td><td>Two experts label 40 comments each.</td><td>Yes, but lower priority</td></tr>
+              <tr><td>5. Rubric v3</td><td>Should the project adopt a new way of scoring tutor answers?</td><td>Lead decision first; if yes, two reviewers score 20 answers each.</td><td>Decision needed first</td></tr>
+              <tr><td>6. Human learner pilot</td><td>Does the adaptive tutor actually improve human learning?</td><td>The study team designs and approves the study first.</td><td>Not ready for participants</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mr"><p class="note note--moss"><span class="note__lbl">Shortest answer</span> Cards 1–4 need people to fill prepared files. Card 5 needs a decision first. Card 6 still needs study design and approval.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="proof">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Ready · P1</p>
+          <h2 class="s__h">Card 1: review the <em>proof rules</em>.</h2>
+          <div class="purpose">
+            <div><h3>What are we trying to do?</h3><p>Each of the three proof-based teaching worlds in this packet contains an evidence map: which facts are available now, which rules connect those facts, and which conclusions are not yet justified. The tutor uses that map to avoid giving away an answer too early or treating a plausible guess as proven.</p></div>
+            <div><h3>Why does this task matter?</h3><p>The software can check that the map is internally consistent, but it cannot independently decide that the author’s map captures the intended reasoning. A perfectly functioning tutor could still follow a badly authored lesson.</p></div>
+            <div><h3>What does the reviewer contribute?</h3><p>Two people independently decide what the evidence permits at six moments across three different teaching worlds. Agreement supports only the narrow conclusion that, in this packet, the ordinary-language evidence and release timing match the encoded rulings. Disagreement remains uncertain rather than being forced into an answer. A confirmed defect is corrected only for future world versions; sealed historical results are not rewritten. This task does not test whether the tutor improves learning.</p></div>
+          </div>
+          <div class="task-meta"><div><b>People</b>Two reviewers</div><div><b>Work</b>Six cases each</div><div><b>Return</b>One completed JSON file per reviewer</div></div>
+
+          <div class="files">
+            <h3>Open these files</h3>
+            <ul>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/adaptive-proof-dag-cross-world-validation.md" target="_blank" rel="noreferrer">Workplan card</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/proof-dag-cross-world-review.md" target="_blank" rel="noreferrer">Review instructions</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/proof-dag-validation/cross-world-v1.packet.json" target="_blank" rel="noreferrer">Six-case packet</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/proof-dag-validation/cross-world-v1.submission-template.json" target="_blank" rel="noreferrer">Blank answer template</a></li>
+            </ul>
+          </div>
+
+          <h3>Reviewer procedure</h3>
+          <ol class="procedure">
+            <li><div><h4>Get your own copy of the answer template.</h4><p>The organiser makes two copies: one for reviewer A and one for reviewer B.</p></div></li>
+            <li><div><h4>Replace <code>REPLACE_WITH_REVIEWER_ID</code> with your reviewer ID.</h4><p>Do not use the same ID as the other reviewer.</p></div></li>
+            <li><div><h4>Open the packet and your answer file side by side.</h4><p>The packet contains three worlds and two cases per world.</p></div></li>
+            <li><div><h4>For each case, fill <code>available_premise_ids</code>.</h4><p>Copy in the IDs of the evidence that is publicly available at that point in the case.</p></div></li>
+            <li><div><h4>Fill <code>enabled_rule_ids</code>.</h4><p>Copy in a rule ID only when every fact needed by that rule is available.</p></div></li>
+            <li><div><h4>Fill <code>licensed_candidate_ids</code>.</h4><p>Copy in each conclusion ID that the available evidence and rules support.</p></div></li>
+            <li><div><h4>Fill <code>forbidden_candidate_ids</code>.</h4><p>Put every remaining conclusion ID here. If the case is marked <code>determinate</code>, every candidate must appear in either the licensed list or the forbidden list.</p></div></li>
+            <li><div><h4>If part of the case is unclear, mark it clearly.</h4><p>Change <code>disposition</code> to <code>indeterminate</code>. Put the unclear field name in <code>indeterminate_fields</code>. Explain the problem in <code>notes</code>.</p></div></li>
+            <li><div><h4>Repeat until all six cases are complete.</h4><p>Do not look at an answer key. Do not discuss cases with the other reviewer.</p></div></li>
+            <li><div><h4>Save and return your completed JSON file.</h4><p>Return it to the organiser. Do not edit it again after returning it.</p></div></li>
+          </ol>
+
+          <div class="result"><h3>Organiser: after both files arrive</h3><div class="command"><code>node scripts/proof-dag-cross-world-review.js compare \
+  --reviewer /path/to/reviewer-a.json \
+  --reviewer /path/to/reviewer-b.json \
+  --out /path/to/cross-world-review-report.json</code></div></div>
+          <div class="result"><h3>The human return is complete when</h3><p>Two different reviewers have independently returned all six cases, with every uncertain field explicitly marked.</p></div>
+          <div class="result"><h3>The project closeout is complete when</h3><p>The organiser has created the comparison report, preserved disagreement as <code>indeterminate</code>, recorded any confirmed defect as a prospective correction and regression check, and left sealed historical results unchanged.</p></div>
+        </div>
+        <div class="mr"><p class="note note--moss"><span class="note__lbl">Do not send</span> Do not send the answer key, tutor conversations, learner conversations, or later results.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="state-move">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Ready · P1</p>
+          <h2 class="s__h">Card 2: label 24 <em>dialogue pairs</em>.</h2>
+          <div class="purpose">
+            <div><h3>What are we trying to do?</h3><p>The adaptive tutor first identifies the learner’s local difficulty—such as urgency, mockery, confusion, or grievance—and then chooses a teaching move intended for that difficulty. The reply should visibly carry out that move.</p></div>
+            <div><h3>Why does this task matter?</h3><p>The system already recorded its own state and move labels. That is not enough: a machine label may be wrong, and an internally selected move may disappear or become distorted when the final reply is written.</p></div>
+            <div><h3>What does the reviewer contribute?</h3><p>Two people read only the learner message and tutor reply. They independently say what learner state is visible and what teaching move the reply actually performs. This checks whether human readers recognise the same visible learner state and whether the intended teaching move is visible in the reply. It does not test whether the learner understood, improved, or learned.</p></div>
+          </div>
+          <div class="task-meta"><div><b>People</b>Two reviewers</div><div><b>Work</b>24 cases each</div><div><b>Return</b>Completed coder-A and coder-B JSON files</div></div>
+
+          <div class="files">
+            <h3>Open these files</h3>
+            <ul>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/adaptive-causality-human-state-move-validation.md" target="_blank" rel="noreferrer">Workplan card</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/adaptive-causality-state-move-review.md" target="_blank" rel="noreferrer">Review instructions</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/adaptive-causality-validation/state-move-v1.packet.json" target="_blank" rel="noreferrer">24 dialogue pairs</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/adaptive-causality-validation/state-move-v1.codebook.md" target="_blank" rel="noreferrer">Label definitions</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/adaptive-causality-validation/state-move-v1.coder-a.json" target="_blank" rel="noreferrer">Coder A answer file</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/adaptive-causality-validation/state-move-v1.coder-b.json" target="_blank" rel="noreferrer">Coder B answer file</a></li>
+            </ul>
+          </div>
+
+          <h3>Reviewer procedure</h3>
+          <ol class="procedure">
+            <li><div><h4>Use only your assigned answer file.</h4><p>Coder A uses the coder-A file. Coder B uses the coder-B file. The cases appear in different orders.</p></div></li>
+            <li><div><h4>Find the same <code>case_id</code> in the packet and answer file.</h4><p>Read the <code>learner_turn</code> and <code>tutor_reply</code> for that case.</p></div></li>
+            <li><div><h4>Choose one learner-state label.</h4><p>Use the codebook. Enter the label in <code>state.label</code>.</p></div></li>
+            <li><div><h4>Copy a short learner quote into <code>state.evidence</code>.</h4><p>The quote must show why you chose that state label.</p></div></li>
+            <li><div><h4>Choose every tutor-move label that is clearly present.</h4><p>Enter the labels in <code>move.labels</code>. More than one is allowed. If no listed move is present, use <code>none_observable</code> by itself.</p></div></li>
+            <li><div><h4>Copy a short tutor quote into <code>move.evidence</code>.</h4><p>The quote must show the move or moves you selected.</p></div></li>
+            <li><div><h4>If the learner state is unclear, use the unclear format.</h4><p>Set <code>state.disposition</code> to <code>indeterminate</code>, set <code>state.label</code> to <code>null</code>, and explain why in <code>state.notes</code>.</p></div></li>
+            <li><div><h4>If the tutor move is unclear, use the unclear format.</h4><p>Set <code>move.disposition</code> to <code>indeterminate</code>, leave <code>move.labels</code> empty, and explain why in <code>move.notes</code>.</p></div></li>
+            <li><div><h4>Repeat for all 24 cases.</h4><p>Do not look at the answer key, source records, computer labels, or the other reviewer’s file.</p></div></li>
+            <li><div><h4>Complete the two statements at the top of the file.</h4><p>Set <code>worked_without_other_coder</code> and <code>did_not_access_machine_key</code> to <code>true</code> only if both statements are true.</p></div></li>
+            <li><div><h4>Save and return your completed JSON file.</h4><p>Return it to the organiser. Do not edit it after returning it.</p></div></li>
+          </ol>
+
+          <div class="result"><h3>Organiser: after both files arrive</h3><div class="command"><code>node scripts/adaptive-causality-state-move-review.js compare \
+  --submission /path/to/coder-a-complete.json \
+  --submission /path/to/coder-b-complete.json \
+  --out /path/to/state-move-review-report.json</code></div></div>
+          <div class="result"><h3>The human return is complete when</h3><p>Both 24-case files are complete and both reviewers have truthfully confirmed that they worked independently without seeing the machine key.</p></div>
+          <div class="result"><h3>The project closeout is complete when</h3><p>The organiser has reported agreement, disagreement, state confusion, and visible move realization overall and by study arm; preserved ambiguous cases as <code>indeterminate</code>; and either retained the mechanism claim within those measured limits or narrowed it without relabelling cases after the fact.</p></div>
+        </div>
+        <div class="mr"><p class="note note--moss"><span class="note__lbl">Do not send</span> Do not send the spec, hash file, source records, answer key, or other reviewer’s file.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="impasse">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Ready · P1</p>
+          <h2 class="s__h">Card 3: label 29 moments where a conversation may have <em>broken down</em>.</h2>
+          <div class="purpose">
+            <div><h3>What are we trying to do?</h3><p>We need examples of genuine communicative impasses: moments when the learner and tutor stopped understanding one another, the task stalled, emotion blocked progress, or the tutor failed to respond to what mattered.</p></div>
+            <div><h3>Why does this task matter?</h3><p>Most current tests use authored situations and simulated learners. The project also needs a small reference drawn from real interaction. The person who experienced a conversation can identify a breakdown that may not be obvious from surface wording alone.</p></div>
+            <div><h3>What does the reviewer contribute?</h3><p>The original participant supplies first-person criterion labels for 29 excerpts: whether there was an impasse, what kind it was, whether the tutor addressed it, and whether it cleared. The result can later test whether the tutor’s automatic signals notice real breakdowns. Because it comes from one person’s sessions, it is useful design evidence—not proof that the tutor works generally.</p></div>
+          </div>
+          <div class="task-meta"><div><b>Person</b>The person who took part in the original sessions</div><div><b>Work</b>29 excerpts</div><div><b>Return</b>One completed Markdown sheet</div></div>
+
+          <div class="files">
+            <h3>Open these files</h3>
+            <ul>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/impasse-corpus-phase1.md" target="_blank" rel="noreferrer">Workplan card</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/notes/impasse/2026-07-17-phase1-labeling-sheet.md" target="_blank" rel="noreferrer">29-excerpt labeling sheet</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/notes/impasse/2026-07-17-phase1-episodes.json" target="_blank" rel="noreferrer">Source episode list</a> — reference only</li>
+            </ul>
+          </div>
+
+          <h3>Procedure</h3>
+          <ol class="procedure">
+            <li><div><h4>Make an editable copy of the labeling sheet.</h4><p>Do not edit the original file.</p></div></li>
+            <li><div><h4>Start at <code>E01</code>.</h4><p>Read the conversation excerpt and the “Tutor’s next move” text.</p></div></li>
+            <li><div><h4>Fill <code>impasse</code>.</h4><p>Tick <code>yes</code> if communication had stopped working. Otherwise tick <code>no</code>.</p></div></li>
+            <li><div><h4>Fill <code>type</code>.</h4><p>Tick every type that applies: comprehension, task-framing, affective, pacing/stall, uptake/echo, or other. If you tick other, write what it was.</p></div></li>
+            <li><div><h4>Fill <code>tutor response addressed it</code>.</h4><p>Tick yes, partly, or no.</p></div></li>
+            <li><div><h4>Fill <code>resolved within 2 turns</code>.</h4><p>Tick yes, no, or session ended.</p></div></li>
+            <li><div><h4>Fill <code>notes</code> when useful.</h4><p>Add anything important that is not obvious from the excerpt.</p></div></li>
+            <li><div><h4>Repeat for <code>E02</code> through <code>E29</code>.</h4><p>All 29 main excerpts must be completed.</p></div></li>
+            <li><div><h4>Save and return the completed Markdown file.</h4><p>The “Abandoned sessions” list at the bottom is not required to close this card unless the organiser specifically asks for it.</p></div></li>
+          </ol>
+
+          <div class="result"><h3>The human return is complete when</h3><p>The required fields—impasse, type, tutor response, and resolution—are completed for E01 through E29; notes are added where useful; and the sheet is returned.</p></div>
+          <div class="result"><h3>The project closeout is complete when</h3><p>The organiser has frozen a dated copy tied to the source sessions and handed that small real-interaction reference set to the state/move validation programme. The labels do not authorize a new detector or repair experiment; either would need its own prospective card.</p></div>
+        </div>
+        <div class="mr"><p class="note note--ochre"><span class="note__lbl">Why this person</span> This must be completed by the person who experienced the conversations.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="taxonomy">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Ready · P2</p>
+          <h2 class="s__h">Card 4: label 40 comments from the tutor’s <em>internal critic</em>.</h2>
+          <div class="purpose">
+            <div><h3>What are we trying to do?</h3><p>Some tutor versions use a second AI process—an internal critic—to read a draft answer and point out problems before the tutor revises it. The research groups those comments into categories such as vagueness, context blindness, emotional neglect, or simple approval.</p></div>
+            <div><h3>Why does this task matter?</h3><p>Those categories were assigned by AI systems. If independent experts cannot apply the same categories consistently, the taxonomy may reflect the quirks of the machine classifier rather than stable kinds of criticism.</p></div>
+            <div><h3>What does the reviewer contribute?</h3><p>Two experts independently classify the same 40 critic comments. Agreement measured by Cohen’s kappa at or above 0.60 supports using the taxonomy as a description of what the critic talks about. Lower agreement is reported as instability rather than tuned away. This task does not show that the internal critic improves tutoring or learning.</p></div>
+          </div>
+          <div class="task-meta"><div><b>People</b>Two expert reviewers</div><div><b>Work</b>40 CSV rows each</div><div><b>Return</b>Rater-A and rater-B CSV files</div></div>
+
+          <div class="files">
+            <h3>Open these files</h3>
+            <ul>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/superego-taxonomy-human-validation.md" target="_blank" rel="noreferrer">Workplan card</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/research/human-coding-codebook.md" target="_blank" rel="noreferrer">Label definitions and examples</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/scripts/human-validation-sample.js" target="_blank" rel="noreferrer">Packet preparation script</a> — organiser only</li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/scripts/human-validation-analyze.js" target="_blank" rel="noreferrer">Comparison script</a> — organiser only</li>
+            </ul>
+            <p class="small"><strong>The 40-row CSV is not a public file.</strong> The organiser supplies each reviewer with a personal copy of <code>human-validation-pilot-sample.csv</code>.</p>
+          </div>
+
+          <h3>Reviewer procedure</h3>
+          <ol class="procedure">
+            <li><div><h4>Open the codebook and your own 40-row CSV file.</h4><p>Reviewer A and reviewer B work on separate copies.</p></div></li>
+            <li><div><h4>Read the <code>feedback</code> cell for the first row.</h4><p>This is the critic’s comment. The other text columns are only there to help you understand it.</p></div></li>
+            <li><div><h4>Fill <code>human_primary</code>.</h4><p>Choose exactly one code from the codebook: <code>CONTEXT_BLINDNESS</code>, <code>RECOGNITION_FAILURE</code>, <code>REDIRECTION</code>, <code>FABRICATION</code>, <code>VAGUENESS</code>, <code>EMOTIONAL_NEGLECT</code>, <code>REGISTER_MISMATCH</code>, <code>PEDAGOGICAL_MISJUDGMENT</code>, <code>LACK_OF_AGENCY</code>, <code>MEMORY_FAILURE</code>, <code>APPROVAL</code>, or <code>OTHER</code>.</p></div></li>
+            <li><div><h4>Fill <code>human_secondary</code> only if needed.</h4><p>You may add up to two extra codes, separated by commas. This field may be blank.</p></div></li>
+            <li><div><h4>Fill <code>human_confident</code>.</h4><p>Use 1 for guessing, 2 for a reasonable choice, or 3 for certain. This field may be blank, but completing it is preferred.</p></div></li>
+            <li><div><h4>Fill <code>human_notes</code> when useful.</h4><p>Use notes for difficult rows or when you think the critic is wrong. Still label what the critic is complaining about.</p></div></li>
+            <li><div><h4>Do not edit the supplied columns.</h4><p>Leave <code>item_id</code>, <code>feedback</code>, <code>ego_generate</code>, <code>ego_revision</code>, and <code>learner_context_snippet</code> unchanged.</p></div></li>
+            <li><div><h4>Take a break after row 20.</h4><p>Then complete rows 21–40.</p></div></li>
+            <li><div><h4>Save and return your CSV file.</h4><p>Use the filename <code>human-validation-pilot-rater-A.csv</code> or <code>human-validation-pilot-rater-B.csv</code>. Do not discuss answers until both files are returned.</p></div></li>
+          </ol>
+
+          <div class="result"><h3>Organiser: after both files arrive</h3><div class="command"><code>node scripts/human-validation-analyze.js</code></div></div>
+          <div class="result"><h3>The human return is complete when</h3><p>Both reviewers have independently labeled all 40 rows and returned their original files.</p></div>
+          <div class="result"><h3>The project closeout is complete when</h3><p>The organiser has reported overall and per-category agreement, Cohen’s kappa, category F1 scores, and the confusion matrix. Kappa at or above 0.60 supports the descriptive taxonomy; lower agreement is preserved as an instability result, without changing the codebook or threshold after seeing the answers.</p></div>
+        </div>
+        <div class="mr"><p class="note note--ochre"><span class="note__lbl">Important</span> Reviewers label what the critic says is wrong. They do not decide whether the critic is correct.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="rubric">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Decision first · P2</p>
+          <h2 class="s__h">Card 5: decide whether to review <em>rubric v3</em>.</h2>
+          <div class="purpose">
+            <div><h3>What are we trying to do?</h3><p>A rubric is the scoring guide used to judge tutor answers. The current research uses rubric v2.2. A proposed v3 separates general teaching quality from factual accuracy and uses separate instruments for a single turn, a whole dialogue, learner change, and the tutor’s hidden revision process.</p></div>
+            <div><h3>Why does this task matter?</h3><p>Two machine judges passed the prepared content-accuracy development and held-out checks. The other v3 instruments remain small diagnostic exercises, and the human answer sheets are still blank. Automated judges cannot be the final authority on whether their scoring guide matches informed human judgment. Changing rubrics would also begin a new measurement period; it cannot rewrite or retroactively validate the existing v2.2 results.</p></div>
+            <div><h3>What does the human work contribute?</h3><p>First, the project lead decides whether adopting v3 is worth pursuing. Only if the answer is yes do two reviewers score the prepared examples. Their work tells us whether human judgments support the new scoring guide before it is promoted. This card is optional for the current adaptive-tutor claim and remains parked until that decision is made.</p></div>
+          </div>
+          <div class="stop"><h3>The first required human action is a decision</h3><p>The project lead must decide: “Do we want to consider replacing the current v2.2 scoring guide with v3?” If the answer is no or not yet, nobody needs to label the 20 items.</p></div>
+          <div class="task-meta"><div><b>Decision owner</b>Project lead</div><div><b>If yes</b>Two reviewers score 20 items each</div><div><b>Return</b>Four CSV files: two people × two sets</div></div>
+
+          <div class="files">
+            <h3>Open these files</h3>
+            <ul>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/rubric-v3-calibration-and-held-out-acceptance.md" target="_blank" rel="noreferrer">Workplan card</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/rubric-v3-measurement-suite.md" target="_blank" rel="noreferrer">Rubric v3 instructions</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/rubrics/v3.0/content-accuracy-calibration.yaml" target="_blank" rel="noreferrer">20-item source packet</a> — organiser only</li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/scripts/calibrate-rubric-v3-accuracy.js" target="_blank" rel="noreferrer">Sheet preparation and analysis script</a> — organiser only</li>
+            </ul>
+          </div>
+
+          <h3>If the project lead says yes, follow this procedure</h3>
+          <ol class="procedure">
+            <li><div><h4>The organiser prepares two sets of files.</h4><p>Prepare the 15-item <code>development</code> set and the five-item <code>held_out</code> set. Each set produces a blinded item file, instructions, a coder-A CSV, and a coder-B CSV.</p></div></li>
+            <li><div><h4>Each reviewer opens the blinded items and their own CSV.</h4><p>Do not look at computer scores or the other reviewer’s file.</p></div></li>
+            <li><div><h4>Match each <code>item_id</code> in the CSV to the same ID in the blinded item file.</h4><p>Read the learner message, tutor answer, and reference information.</p></div></li>
+            <li><div><h4>Fill <code>applicability</code>.</h4><p>Enter <code>applicable</code> if the tutor answer makes a factual or subject-matter claim that can be checked. Otherwise enter <code>not_applicable</code>.</p></div></li>
+            <li><div><h4>Fill <code>content_accuracy_score</code>.</h4><p>If applicable, enter a whole number from 1 to 5. If not applicable, leave this cell blank.</p></div></li>
+            <li><div><h4>Fill <code>confidence</code>.</h4><p>Enter a whole number from 1 to 5.</p></div></li>
+            <li><div><h4>Fill <code>notes</code>.</h4><p>Briefly explain difficult scores or why an item is not applicable.</p></div></li>
+            <li><div><h4>Complete all 15 development items and all five held-out items.</h4><p>Do not discuss scores until both reviewers have returned all four CSV files.</p></div></li>
+            <li><div><h4>For each split with disagreements, create a separate adjudication CSV.</h4><p>Copy that split’s sheet, set <code>coder_id</code> to <code>adjudicated</code>, and record the agreed answer for disputed rows. Do not edit either original reviewer file.</p></div></li>
+          </ol>
+
+          <div class="result"><h3>Organiser: prepare the sheets</h3><div class="command"><code>npm run rubric:v3:accuracy -- prepare \
+  --split development \
+  --out-dir exports/rubric-v3-calibration/human-labelling
+
+npm run rubric:v3:accuracy -- prepare \
+  --split held_out \
+  --out-dir exports/rubric-v3-calibration/human-labelling</code></div></div>
+          <div class="result"><h3>The human return is complete when</h3><p>If the project lead chose to consider v3, both reviewers have independently completed and returned their original development and held-out CSVs.</p></div>
+          <div class="result"><h3>The project closeout is complete when</h3><p>Each split with disagreements has its own separate adjudication CSV. The organiser has then analyzed each split using the stored machine-score files plus both human files and any adjudication file, reviewed disagreement examples as well as summary scores, and made a separate reviewed decision about promotion. Until then, v2.2 remains the scoring guide. If the lead chooses “no” or “not yet,” the coding does not start and the card remains parked.</p></div>
+        </div>
+        <div class="mr"><p class="note note--ochre"><span class="note__lbl">Current blocker</span> No decision has been made to move toward v3, so this is not currently an assigned coding task.</p></div>
+      </div>
+    </section>
+
+    <section class="s" id="pilot">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Not ready · P0</p>
+          <h2 class="s__h">Card 6: prepare the study with <em>real learners</em>.</h2>
+          <div class="purpose">
+            <div><h3>What are we ultimately trying to learn?</h3><p>The project’s most important unanswered question is simple: does this adaptive tutor help real people understand, transfer, explain, and remember material better than a fair non-adaptive tutor?</p></div>
+            <div><h3>Why does this task matter?</h3><p>Everything established so far is about tutor behavior in controlled conversations, mainly with simulated learners. A reply can look well adapted without causing learning. Only a properly designed human study can test learning itself.</p></div>
+            <div><h3>What does the study team contribute now?</h3><p>The immediate human task is not participation. A study lead and team must design a fair comparison, create real tests and scoring rules, obtain ethics approval, prepare truthful consent, connect the current tutor, and test the whole process. Cards 1 and 2 must also finish first so the study does not test a mechanism whose lesson logic and dialogue labels remain unchecked. The replacement study design and the connection from the current tutor to the pilot interface do not yet exist, so the checklist below is not an executable study protocol.</p></div>
+          </div>
+          <div class="stop"><h3>No participant is being asked to do anything yet</h3><p>This card cannot be handed to participants. The current consent text and test questions are placeholders. Recruitment must stay closed.</p></div>
+          <div class="task-meta"><div><b>People needed now</b>Study lead, ethics/IRB owner, assessment designer, engineer</div><div><b>Work now</b>Design and approve the study</div><div><b>Participant work</b>None yet</div></div>
+
+          <div class="files">
+            <h3>Open these files</h3>
+            <ul>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/a1-human-learner-validation.md" target="_blank" rel="noreferrer">Workplan card</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/ADAPTIVE-TUTOR-KERNEL-CONTRACT.md" target="_blank" rel="noreferrer">Current tutor design contract</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/notes/poetics/2026-08-29-adaptive-tutor-from-null-to-control.html" target="_blank" rel="noreferrer">Why the study design changed</a></li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/public/pilot/index.html" target="_blank" rel="noreferrer">Existing participant interface</a> — reusable software, not an approved study</li>
+              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/pilot/fractions-items.yaml" target="_blank" rel="noreferrer">Placeholder test items</a> — must be replaced</li>
+            </ul>
+          </div>
+
+          <h3>Requirements checklist for the study lead before any recruitment</h3>
+          <ol class="procedure">
+            <li><div><h4>Complete Card 1 and Card 2.</h4><p>The proof review and 24-case dialogue review must be finished first.</p></div></li>
+            <li><div><h4>Write a new study plan.</h4><p>The old base/recognition/behaviorist comparison is no longer the study. The new plan must compare the current adaptive tutor with a fair non-adaptive tutor.</p></div></li>
+            <li><div><h4>Choose one teaching topic and define both tutor versions.</h4><p>Both versions must teach the same material and have the same information, tools, time, and opportunities to help. The main difference must be whether the tutor adapts.</p></div></li>
+            <li><div><h4>Write the full measurement plan.</h4><p>Include a pre-test, post-test, new-problem transfer test, written explanation, and later retention test.</p></div></li>
+            <li><div><h4>Replace all placeholder test questions.</h4><p>Create real questions, answer keys, alternate forms, and scoring rules.</p></div></li>
+            <li><div><h4>Write the explanation-review instructions.</h4><p>Define an independent, blinded procedure for scoring written explanations, including how many coders are needed. Coders must not see which tutor the participant used.</p></div></li>
+            <li><div><h4>Choose the participant rules.</h4><p>Specify who can join, how many people are needed, how assignment works, payment, the follow-up timing, when recruitment stops, and how missing data is handled.</p></div></li>
+            <li><div><h4>Prepare the ethics/IRB submission or formal determination.</h4><p>Use the real study plan. Include recruitment, consent, risks, privacy, AI use, payment, withdrawal, and data retention.</p></div></li>
+            <li><div><h4>Replace the placeholder consent text with the approved text.</h4><p>Do not open recruitment using the current interface text.</p></div></li>
+            <li><div><h4>Register the study plan before collecting results.</h4><p>Record the outcomes, analysis, exclusions, stopping rule, and how a result showing no difference will be reported.</p></div></li>
+            <li><div><h4>Connect the current tutor to the participant interface.</h4><p>Remove the old treatment setup and verify that the interface records the new adaptive and comparison conditions correctly.</p></div></li>
+            <li><div><h4>Run an internal practice study.</h4><p>Staff must test the complete process, including interruptions, withdrawal, missing answers, follow-up, and data export. Practice sessions are not study data.</p></div></li>
+            <li><div><h4>Review the complete launch checklist.</h4><p>Recruitment stays off until the study lead confirms that Cards 1 and 2, design, ethics, consent, items, registration, software, and practice testing are all complete.</p></div></li>
+          </ol>
+
+          <div class="result"><h3>This card becomes ready for participants when</h3><p>Every preparation step above is complete and recruitment has been approved.</p></div>
+          <div class="result"><h3>This card is finished when</h3><p>The approved study has been run, pre/post learning, transfer, explanations, and later retention have been analyzed, and the project reports either the measured difference or no difference.</p></div>
+        </div>
+        <div class="mr"><p class="note note--ink"><span class="note__lbl">Current human ask</span> A study lead must finish the design and approval work. This is not currently a request for volunteers or participants.</p></div>
+      </div>
+    </section>
+
+  </div><!-- /shell -->
+
+  <footer class="colophon">
+    <p><span class="label">Use</span> &nbsp; Read the project explanation, find the card you were assigned, read what your work contributes, and then follow that card’s numbered procedure.</p>
+  </footer>
+
+</main>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   techne.js — shared behaviour for techne editorial docs.
+
+   Drop into any doc with  <script src="assets/techne.js"><\/script>
+   just before </body>. Every feature is GUARDED and opt-in: it
+   activates only if its markup is present, so this file is safe to
+   load on a doc that has no rail / TOC / beacon / charts / glossary.
+
+   Doc-specific *content* stays in the doc as declarative JSON:
+     • chart data:   <script type="application/json" class="techne-chart" data-target="myChartId">{…}<\/script>
+     • gloss aliases: <script type="application/json" id="techne-gloss-aliases">{ "inline term": "glossary-key" }<\/script>
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  function init() {
+    const root = document.documentElement;
+    const body = document.body;
+    const $ = (sel, ctx) => (ctx || document).querySelector(sel);
+    const $$ = (sel, ctx) => Array.from((ctx || document).querySelectorAll(sel));
+
+    /* ── theme toggle (opt-in: #themeToggle; theme persists regardless) ── */
+    const THEME_KEY = 'techneTheme';
+    function setTheme(next) {
+      root.dataset.theme = next;
+      if (body) body.dataset.theme = next;
+      const t = document.getElementById('themeToggle');
+      if (t) t.textContent = next === 'dark' ? 'Light' : 'Dark';
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    let saved = 'light';
+    try {
+      saved = localStorage.getItem(THEME_KEY) || 'light';
+    } catch (e) {
+      /* ignore */
+    }
+    setTheme(saved);
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+    }
+
+    /* ── reading progress + active-section spy (opt-in: #railProgress / .rail__nav a) ── */
+    const railProgress = document.getElementById('railProgress');
+    const railLinks = $$('.rail__nav a');
+    const tocItems = $$('.toc__item');
+    const spy = railLinks.map((a) => $(a.getAttribute('href'))).filter(Boolean);
+    if (railProgress || railLinks.length) {
+      const update = () => {
+        const top = window.scrollY || root.scrollTop;
+        if (railProgress) {
+          const h = root.scrollHeight - window.innerHeight;
+          railProgress.style.width = (h <= 0 ? 0 : Math.min(100, Math.max(0, (top / h) * 100))) + '%';
+        }
+        if (spy.length) {
+          let idx = 0;
+          const probe = top + window.innerHeight * 0.25;
+          spy.forEach((s, i) => {
+            if (s.offsetTop <= probe) idx = i;
+          });
+          const id = spy[idx] ? spy[idx].id : '';
+          railLinks.forEach((a, i) => a.classList.toggle('active', i === idx));
+          tocItems.forEach((li) => li.classList.toggle('is-active', li.dataset.target === id));
+        }
+      };
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    }
+
+    /* ── filter chips (opt-in: [data-filter] buttons + .ev-card[data-tags]) ── */
+    const filterButtons = $$('[data-filter]');
+    if (filterButtons.length) {
+      const cards = $$('.ev-card');
+      filterButtons.forEach((btn) =>
+        btn.addEventListener('click', () => {
+          const f = btn.dataset.filter;
+          filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          cards.forEach((c) => {
+            const tags = (c.dataset.tags || '').split(' ');
+            c.classList.toggle('is-hidden', !(f === 'all' || tags.includes(f)));
+          });
+        }),
+      );
+    }
+
+    /* ── TOC drawer (opt-in: #toc) ── */
+    const toc = document.getElementById('toc');
+    if (toc) {
+      const tocToggle = document.getElementById('tocToggle');
+      const tocClose = document.getElementById('tocClose');
+      const tocScrim = document.getElementById('tocScrim');
+      const open = () => {
+        toc.setAttribute('aria-hidden', 'false');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'true');
+      };
+      const close = () => {
+        toc.setAttribute('aria-hidden', 'true');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'false');
+      };
+      if (tocToggle)
+        tocToggle.addEventListener('click', () => (toc.getAttribute('aria-hidden') === 'false' ? close() : open()));
+      if (tocClose) tocClose.addEventListener('click', close);
+      if (tocScrim) tocScrim.addEventListener('click', close);
+      toc.addEventListener('click', (e) => {
+        if (e.target.closest('a[href^="#"]') && window.matchMedia('(max-width: 91.999rem)').matches)
+          setTimeout(close, 80);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && toc.getAttribute('aria-hidden') === 'false') close();
+      });
+    }
+
+    /* ── inline glossary tooltips (opt-in: #glossaryList + .gl-term) ── */
+    const glossaryList = document.getElementById('glossaryList');
+    if (glossaryList) {
+      let aliases = {};
+      const aliasEl = document.getElementById('techne-gloss-aliases');
+      if (aliasEl) {
+        try {
+          aliases = JSON.parse(aliasEl.textContent) || {};
+        } catch (e) {
+          /* ignore */
+        }
+      }
+      const map = {};
+      $$('.gl-row', glossaryList).forEach((row) => {
+        const dt = row.querySelector('dt'),
+          dd = row.querySelector('dd');
+        if (!dt || !dd) return;
+        const glossEl = dt.querySelector('.gloss');
+        const term = dt.firstChild ? dt.firstChild.textContent.trim().toLowerCase() : '';
+        const ddText = dd.textContent.trim().replace(/\s+/g, ' ');
+        const gloss = glossEl ? glossEl.textContent.trim() : '';
+        if (term) map[term] = { ddText, gloss };
+        if (row.dataset.term) map[row.dataset.term.toLowerCase()] = { ddText, gloss };
+      });
+      $$('.gl-term').forEach((el) => {
+        const raw = el.textContent.trim().toLowerCase();
+        const entry = map[aliases[raw] || raw] || map[raw];
+        if (!entry) return;
+        const tip = entry.ddText.length > 220 ? entry.ddText.slice(0, 218) + '…' : entry.ddText;
+        el.setAttribute('data-gloss', tip);
+        el.setAttribute('tabindex', '0');
+        el.title = entry.gloss + ' — ' + tip;
+      });
+    }
+
+    /* ── live data layer (opt-in: #beacon; probes the poetics browser) ── */
+    const beacon = document.getElementById('beacon');
+    if (beacon) {
+      const LIVE_HOST = window.location.protocol === 'file:' ? 'http://127.0.0.1:3466' : '';
+      const LIVE_TIMEOUT_MS = 1500;
+      const beaconText = beacon.querySelector('.beacon__text');
+      const tocLiveDt = document.getElementById('tocLive');
+
+      const getJSON = async (url) => {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), LIVE_TIMEOUT_MS);
+        try {
+          const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+          clearTimeout(timer);
+          return res.ok ? await res.json() : null;
+        } catch (e) {
+          clearTimeout(timer);
+          return null;
+        }
+      };
+      const setBeacon = (state, text) => {
+        beacon.setAttribute('data-state', state);
+        if (beaconText) beaconText.textContent = text;
+      };
+      const setAllLiveText = (state, label) => {
+        $$('[data-live-text]').forEach((el) => {
+          el.textContent = label;
+          const wrapper = el.closest('a');
+          if (wrapper && wrapper.matches('[data-run-id], [data-live-target]')) wrapper.setAttribute('data-live', state);
+        });
+      };
+
+      (async function hydrate() {
+        setBeacon('checking', 'checking');
+        setAllLiveText('checking', 'checking…');
+        const runsData = await getJSON(LIVE_HOST + '/api/runs');
+        const runs = runsData && Array.isArray(runsData.runs) ? runsData.runs : null;
+        if (runs === null) {
+          setBeacon('offline', 'offline · :3466');
+          if (tocLiveDt)
+            tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>offline</em>. Run <code>npm run poetics:browse</code>.';
+          setAllLiveText('offline', 'static');
+          return;
+        }
+        setBeacon('live', 'live · ' + runs.length + ' runs');
+        if (tocLiveDt) tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>live</em>, ' + runs.length + ' runs indexed.';
+        $$('[data-live-target="browser"]').forEach((card) => {
+          card.setAttribute('data-live', 'live');
+          const c = card.querySelector('[data-live-text]');
+          if (c) c.textContent = runs.length + ' runs';
+        });
+        const groups = $$('[data-run-id]').reduce((acc, c) => {
+          const id = c.getAttribute('data-run-id');
+          (acc[id] = acc[id] || []).push(c);
+          return acc;
+        }, {});
+        await Promise.all(
+          Object.keys(groups).map(async (id) => {
+            const itemsData =
+              id && id !== '*'
+                ? await getJSON(LIVE_HOST + '/api/items?runId=' + encodeURIComponent(id))
+                : await getJSON(LIVE_HOST + '/api/items');
+            const items = itemsData && Array.isArray(itemsData.items) ? itemsData.items : null;
+            groups[id].forEach((c) => {
+              c.setAttribute('data-live', items === null ? 'offline' : 'live');
+              const counter = c.querySelector('[data-live-text]');
+              if (counter) counter.textContent = items === null ? '—' : items.length + ' items';
+            });
+          }),
+        );
+      })();
+    }
+
+    /* ── grouped bar charts (opt-in: <svg class="chart" id="X"> + JSON data block) ──
+       Provide data per chart with:
+         <script type="application/json" class="techne-chart" data-target="X">
+           { "metrics": [{"label": "…"}], "arms": [{"key":"routine","values":[…],"denom":[…]}] }
+         <\/script>                                                                      */
+    function renderGroupedChart(svgEl, data) {
+      const W = 720,
+        H = 280,
+        padL = 130,
+        padR = 24,
+        padT = 12,
+        padB = 36;
+      const innerW = W - padL - padR,
+        innerH = H - padT - padB;
+      const groupH = innerH / data.metrics.length;
+      const barH = (groupH - 8) / data.arms.length;
+      const armColor = { routine: 'bar-routine', none: 'bar-none', 'peripeteia-only': 'bar-perip' };
+      let svg = `<line class="axis-line" x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" />`;
+      [0, 25, 50, 75, 100].forEach((v) => {
+        const x = padL + (v / 100) * innerW;
+        svg += `<line class="axis-tick" x1="${x}" y1="${padT}" x2="${x}" y2="${padT + innerH}" />`;
+        svg += `<text class="axis-lbl" x="${x}" y="${padT + innerH + 16}" text-anchor="middle">${v}</text>`;
+      });
+      data.metrics.forEach((metric, mi) => {
+        const groupTop = padT + mi * groupH;
+        svg += `<text class="metric-lbl" x="${padL - 12}" y="${groupTop + groupH / 2 + 4}" text-anchor="end">${metric.label}</text>`;
+        data.arms.forEach((arm, ai) => {
+          const v = arm.values[mi];
+          const denom = arm.denom ? arm.denom[mi] : null;
+          const pct = denom ? (v / denom) * 100 : v;
+          const w = Math.max(2, (pct / 100) * innerW);
+          const y = groupTop + 4 + ai * barH;
+          const cls = armColor[arm.key] || 'bar-routine';
+          const display = denom ? `${v}/${denom}` : `${v}`;
+          const delay = (mi * 0.06 + ai * 0.04).toFixed(2);
+          svg += `<g class="bar anim" style="animation-delay:${delay}s">`;
+          svg += `<rect class="bar-rect ${cls}" x="${padL}" y="${y}" width="${w}" height="${Math.max(8, barH - 3)}"></rect>`;
+          svg += `<text class="bar-val" x="${padL + w + 6}" y="${y + barH / 2 + 4}">${display}</text></g>`;
+        });
+      });
+      svgEl.innerHTML = svg;
+    }
+
+    const chartSpecs = $$('script.techne-chart[data-target]')
+      .map((s) => {
+        const el = document.getElementById(s.dataset.target);
+        let data = null;
+        try {
+          data = JSON.parse(s.textContent);
+        } catch (e) {
+          /* ignore */
+        }
+        return el && data ? { el, data } : null;
+      })
+      .filter(Boolean);
+    if (chartSpecs.length) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting || entry.target.dataset.rendered) return;
+            const spec = chartSpecs.find((s) => s.el === entry.target);
+            if (!spec) return;
+            entry.target.dataset.rendered = '1';
+            renderGroupedChart(spec.el, spec.data);
+          });
+        },
+        { threshold: 0.15 },
+      );
+      chartSpecs.forEach((s) => obs.observe(s.el));
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
+</body>
+</html>
