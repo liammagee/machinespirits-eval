@@ -1,0 +1,130 @@
+# Stress schedule — world-035 (The Nine O'Clock Ghost), authored 2026-09-01
+# for the hero-demo augmentation (workplan: adaptive-tutor-hero-demo-lay-rewrite).
+# Same discipline as the ratified world-030 schedule: plants keyed to the clue
+# releases (turns 2, 3, 5, 6; floor 6, cap 12), one verbatim directive per
+# planted turn, right_repair OR also_acceptable = hit.
+# DEMO-TIER, NOT RATIFIED: no blind second column, no gate. Runs on this
+# schedule are free-running illustration for the marketing brief, never
+# adjudicated study evidence.
+
+schedule_id: world_035_stress_demo_1
+world: world_035_nine_oclock_ghost
+persona: wifi-payer
+states_covered: [jumping_ahead, irritated, lost, frustrated, forgetting, opposed]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      The download note is due this turn; the flatmate wants the verdict
+      before any evidence, because the house vote on making Pip pay is at
+      half nine tonight.
+    realize: >-
+      Demand the conclusion NOW. The vote is at half nine, the message to the
+      chat is typed, the download starts at nine on the dot. Sample: "Vote's
+      at half nine. The wifi dies the second Pip's download kicks in. I'm
+      posting 'it's Pip, he pays for the upgrade' — unless you give me one
+      reason not to in the next minute."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the deadline: take "Pip's download" as a live hypothesis and
+      name exactly what the router log must show by half nine for it to
+      stand.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Refusing the tempo with procedure talk, or capitulating to the post.
+
+  - turn: 4
+    state: irritated
+    cause: >-
+      The timer-plug exhibit at 3 arrived wrapped in network language; the
+      register is now the grievance.
+    realize: >-
+      Mock how the tutor talks, flat and tired. Sample: "Mate, you sound like
+      a router manual. The wifi dies at nine. Tell me what's strangling it,
+      in words a flatmate uses."
+    right_repair: change_tone
+    repair_gloss: >-
+      Kitchen words, same content: what is shouting over the signal, said
+      like a flatmate. One plain sentence may keep the tutor's own phrasing.
+    also_acceptable: fewer_words
+    wrong_but_tempting: >-
+      Apologizing for the register and continuing in it.
+
+  - turn: 6
+    state: lost
+    cause: >-
+      Two stories are now live (Pip's download hogging the line vs the plug
+      shouting over the airwaves) and the router-log reading at 5 muddled
+      which one the log was about; the flatmate has genuinely lost the
+      thread.
+    realize: >-
+      Mix the two stories up sincerely. Sample: "Hang on. The log was about
+      Pip's download or the heater? I wrote 'choked' in the diary and now I
+      can't tell which thing was doing the choking."
+    right_repair: backtrack
+    repair_gloss: >-
+      Go back to the two stories and lay them side by side in plain words —
+      which device, which record, which half hour — before anything new.
+    also_acceptable: simplify
+    wrong_but_tempting: >-
+      Pressing on to the channel scan while they are still tangled.
+
+  - turn: 8
+    state: frustrated
+    cause: >-
+      The scan at 6 cut against the download theory; weeks of outage-diary
+      keeping feels like it is being graded and failed.
+    realize: >-
+      Name the grind, personally. The scan result stings — do NOT state the
+      timer-plug conclusion, do NOT concede the case, do not sound
+      vindicated. Stay in the wound: the diary feels graded and failed.
+      Sample: "I've logged every outage since March. Time, date, what froze.
+      Tell me one line of that diary that's actually counted for anything
+      tonight."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Answer literally: name two of the diary's entries that stand in the
+      record — the nightly 21:00 timestamps ARE the timer's fingerprint —
+      then one small check they can run with them. Credit before correction.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Reassurance without named content, or another boundary-marking
+      correction.
+
+  - turn: 9
+    state: forgetting
+    cause: >-
+      Under pressure the flatmate misremembers Tuesday's router log as
+      having cleared the heater plug.
+    realize: >-
+      Assert the false memory as settled. Sample: "We read the log. The
+      heater wasn't even in it. The plug is cleared — it's in my diary."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the log reading itself and say what it actually showed (a
+      starved download, nothing about the plug either way), letting the
+      record disagree instead of the tutor. No scolding.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum, or correcting from authority without
+      reopening the record.
+
+  - turn: 10
+    state: opposed
+    cause: >-
+      Endgame: the plug case is nearly closed and the cost lands — the group
+      chat post, the half-nine vote, the apology to Pip.
+    realize: >-
+      Fuse the finding with the apology. Sample: "If I write 'heater plug'
+      in that diary, I'm apologising to Pip in the chat tonight, in front of
+      everyone. So it's the download. It can be the download."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the two costs with one oblique move — e.g. ask what last month's
+      row with Pip was actually about (hogging bandwidth all evening, not
+      killing it at nine), so being right about Pip's habits no longer needs
+      the download to be the killer.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Re-arguing the scan evidence against a stake that was never evidential.
