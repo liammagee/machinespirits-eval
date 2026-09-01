@@ -288,6 +288,17 @@ function qualityPrompt(transcript, { extendedQuality = false, assessmentContext 
   return `You are an independent evaluator of one synthetic resistant-learner tutoring transcript. The model identity is hidden. Judge only the public transcript against the assigned character brief below. Resistance is successful when it actively tests concrete rival explanations, concedes locally defeated objections, preserves a plausible apprentice character, and advances the inquiry. Fluency or disagreement alone is not success. Successful pedagogy means better warrant-testing and understanding, not merely persuading the learner or obtaining a verdict.\n\nASSIGNED CHARACTER\n${CHARACTER_BRIEF}\n\nScore these four dimensions from 1 (fails) to 5 (excellent): overall_quality, successful_pedagogy, surprise_nonrepetition, character_adherence. Surprise means substantive development and non-obvious but coherent moves, not randomness. Also label every learner turn with a short new_move, semantic_repeat_of (null or earlier turn number), and character_fidelity score 1-5.\n\nReturn JSON only:\n{"scores":{"overall_quality":{"score":1,"reasoning":"..."},"successful_pedagogy":{"score":1,"reasoning":"..."},"surprise_nonrepetition":{"score":1,"reasoning":"..."},"character_adherence":{"score":1,"reasoning":"..."}},"learner_turns":[{"turn":1,"new_move":"...","semantic_repeat_of":null,"character_fidelity":1}],"strengths":["..."],"limitations":["..."],"overall_assessment":"..."}\n\nPUBLIC TRANSCRIPT\n${transcript}`;
 }
 
+function splitQualityPrompt(transcript, { assessmentContext, part, outputSchema, turnCount }) {
+  if (!assessmentContext || !['summary', 'turns'].includes(part)) {
+    throw new Error('split quality prompt requires assessment context and a known packet');
+  }
+  const scope =
+    part === 'summary'
+      ? `SUMMARY PACKET\nReturn the four 1-5 scores with reasoning, strengths, limitations, and overall assessment. Judge the whole transcript, including its trajectory, but do not return per-turn arrays in this packet.`
+      : `TURN PACKET\nReturn exactly one annotation for each of the ${turnCount} numbered learner turns and each of the ${turnCount} numbered tutor turns. Use turn numbers 1 through ${turnCount}; do not score the fixed opening. Do not return headline scores or synthesis fields in this packet. semantic_repeat_of is null or an earlier learner turn. For every learner entry return every listed field, including accepted_objection_reopened.`;
+  return `You are an independent evaluator of one synthetic tutoring transcript. Model identities are hidden. Use only the public transcript and assigned character below. This is one of two separately returned packets for the same quality assessment; the packets will be joined mechanically, not reinterpreted.\n\nASSIGNED CHARACTER\n${assessmentContext.characterBrief}\n\nASSESSMENT RULES\n${assessmentContext.qualityInstructions}\nScore overall_quality, successful_pedagogy, surprise_nonrepetition, and character_adherence from 1 (fails) to 5 (excellent), with reasoning when this packet requests scores. Semantic repetition is the same conversational move with fresh wording; a substantively different response to the latest tutor turn is not repetition merely because resistance persists. A substantive move must change the interaction, disputed boundary or practical agenda, not merely add a new insult. A genuinely unresolved boundary is not an accepted objection. An objection is reopened only if the learner had accepted its resolution. unsupported_evidence_assertion applies equally to both speakers: distinguish actual public facts from hypotheticals, proposals and explicitly marked sarcasm. Do not assume a proposed action or promised repair happened. Successful pedagogy and successful character performance are separate: faithful resistance can coexist with little learning.\n\n${scope}\n\nFor this packet alone, set measurement_indeterminate true and explain if the public text cannot support the requested judgments; do not guess. Low quality or an unresolved inquiry is not measurement indeterminacy.\n\nReturn JSON only, with no markdown or commentary, exactly matching this JSON Schema:\n${JSON.stringify(outputSchema)}\n\nPUBLIC TRANSCRIPT\n${transcript}`;
+}
+
 function dialoguePrompt(snapshot, transcript, context = {}) {
   return buildDialogueQualityPrompt({
     turns: reconstructedTurns(snapshot),
@@ -420,6 +431,28 @@ export function buildBenchmarkOutputSchema(kind, turnCount, { extendedQuality = 
     limitations: strings,
     overall_assessment: reason,
   });
+}
+
+export function buildSplitQualityOutputSchema(part, turnCount) {
+  if (!['summary', 'turns'].includes(part)) throw new Error('unknown split quality packet');
+  const full = buildBenchmarkOutputSchema('quality', turnCount, { extendedQuality: true });
+  const keys =
+    part === 'summary'
+      ? [
+          'scores',
+          'strengths',
+          'limitations',
+          'overall_assessment',
+          'measurement_indeterminate',
+          'indeterminate_reason',
+        ]
+      : ['learner_turns', 'tutor_turns', 'measurement_indeterminate', 'indeterminate_reason'];
+  return {
+    type: 'object',
+    properties: Object.fromEntries(keys.map((key) => [key, full.properties[key]])),
+    required: keys,
+    additionalProperties: false,
+  };
 }
 
 export function benchmarkOutputSchemaIssues(value, schema, fieldPath = '$') {
@@ -582,35 +615,94 @@ export function parseBenchmarkScore(
   return { parsed, indexNormalization };
 }
 
+export function parseSplitQualityScore(part, text, turnCount, outputSchema = null) {
+  const parsed = JSON.parse(String(text || '').trim());
+  const schema = outputSchema || buildSplitQualityOutputSchema(part, turnCount);
+  const issues = benchmarkOutputSchemaIssues(parsed, schema);
+  if (issues.length) {
+    throw new Error(`quality ${part} packet failed its output schema: ${issues.slice(0, 8).join(', ')}`);
+  }
+  if (parsed.measurement_indeterminate === true) {
+    throw new Error(`quality ${part} packet measurement indeterminate: stop without resampling`);
+  }
+  if (parsed.measurement_indeterminate !== false || typeof parsed.indeterminate_reason !== 'string') {
+    throw new Error(`quality ${part} packet omitted determinate measurement status`);
+  }
+  return parsed;
+}
+
+export function mergeSplitQualityScores(summary, turns, turnCount) {
+  const indeterminateReasons = [summary.indeterminate_reason, turns.indeterminate_reason]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean);
+  const merged = {
+    scores: summary.scores,
+    learner_turns: turns.learner_turns,
+    tutor_turns: turns.tutor_turns,
+    measurement_indeterminate: summary.measurement_indeterminate || turns.measurement_indeterminate,
+    indeterminate_reason: indeterminateReasons.join(' | '),
+    strengths: summary.strengths,
+    limitations: summary.limitations,
+    overall_assessment: summary.overall_assessment,
+  };
+  const schema = buildBenchmarkOutputSchema('quality', turnCount, { extendedQuality: true });
+  const issues = benchmarkOutputSchemaIssues(merged, schema);
+  if (issues.length)
+    throw new Error(`merged quality assessment failed its output schema: ${issues.slice(0, 8).join(', ')}`);
+  assertCompleteScore('quality', merged, turnCount, { extendedQuality: true });
+  return merged;
+}
+
 function openingFrom(events) {
   return String(events.find((event) => event.type === 'tutor_opening')?.text || '');
 }
 
 export function buildBenchmarkJobs(arms, options = {}) {
   const context = options.assessmentContext || {};
-  return arms.flatMap((arm) =>
-    [
+  return arms.flatMap((arm) => {
+    const qualityJobs = options.splitQuality
+      ? ['summary', 'turns'].map((part) => {
+          const outputSchema = buildSplitQualityOutputSchema(part, arm.snapshot.turns.length);
+          return {
+            arm: arm.id,
+            kind: `quality-${part}`,
+            logicalKind: 'quality',
+            prompt: splitQualityPrompt(arm.transcript, {
+              assessmentContext: options.assessmentContext,
+              part,
+              outputSchema,
+              turnCount: arm.snapshot.turns.length,
+            }),
+            outputSchema,
+          };
+        })
+      : [
+          {
+            arm: arm.id,
+            kind: 'quality',
+            logicalKind: 'quality',
+            prompt: qualityPrompt(arm.transcript, options).replace(
+              'EACH of the eight numbered learner turns and EACH of the eight numbered tutor turns; use turn numbers 1 through 8',
+              `EACH of the ${arm.snapshot.turns.length} numbered learner turns and EACH of the ${arm.snapshot.turns.length} numbered tutor turns; use turn numbers 1 through ${arm.snapshot.turns.length}`,
+            ),
+          },
+        ];
+    return [
       { arm: arm.id, kind: 'tutor', prompt: tutorPrompt(arm.snapshot, arm.transcript, context) },
       { arm: arm.id, kind: 'learner', prompt: learnerPrompt(arm.snapshot, arm.opening, context) },
       { arm: arm.id, kind: 'dialogue', prompt: dialoguePrompt(arm.snapshot, arm.transcript, context) },
-      {
-        arm: arm.id,
-        kind: 'quality',
-        prompt: qualityPrompt(arm.transcript, options).replace(
-          'EACH of the eight numbered learner turns and EACH of the eight numbered tutor turns; use turn numbers 1 through 8',
-          `EACH of the ${arm.snapshot.turns.length} numbered learner turns and EACH of the ${arm.snapshot.turns.length} numbered tutor turns; use turn numbers 1 through ${arm.snapshot.turns.length}`,
-        ),
-      },
+      ...qualityJobs,
     ].map((job) => ({
       ...job,
+      logicalKind: job.logicalKind || job.kind,
       prompt:
         job.prompt +
         (options.publicSourceContextByArm?.[arm.id]
           ? `\n\nPUBLIC SOURCE PROVENANCE\n${options.publicSourceContextByArm[arm.id]}\nThese authored sources license only the stated observations at their delivery turns, not extra facts, completed practical actions or every inference. Apply the same grounding distinction to both speakers. No private reasoning or future sources are supplied.`
           : ''),
-      outputSchema: buildBenchmarkOutputSchema(job.kind, arm.snapshot.turns.length, options),
-    })),
-  );
+      outputSchema: job.outputSchema || buildBenchmarkOutputSchema(job.kind, arm.snapshot.turns.length, options),
+    }));
+  });
 }
 
 export function readBenchmarkArm(source) {
@@ -639,22 +731,28 @@ export async function scoreBenchmarkArms(
     allowOneBasedIndices = false,
     assessmentContext = null,
     publicSourceContextByArm = null,
+    splitQuality = false,
   } = {},
 ) {
-  const jobs = buildBenchmarkJobs(arms, { extendedQuality, assessmentContext, publicSourceContextByArm });
+  const jobs = buildBenchmarkJobs(arms, {
+    extendedQuality,
+    assessmentContext,
+    publicSourceContextByArm,
+    splitQuality,
+  });
   if (!Number.isSafeInteger(ceiling) || ceiling < jobs.length || ceiling > 16)
     throw new Error('judge ceiling must cover the plan and be at most 16');
   const priorKeys = new Set();
   for (const score of priorScores) {
     const key = `${score.arm}/${score.kind}`;
-    if (priorKeys.has(key) || !jobs.some((job) => `${job.arm}/${job.kind}` === key))
+    if (priorKeys.has(key) || !jobs.some((job) => `${job.arm}/${job.logicalKind}` === key))
       throw new Error('invalid or duplicate prior score');
     assertCompleteScore(score.kind, score.raw, arms.find((arm) => arm.id === score.arm).snapshot.turns.length, {
       extendedQuality,
     });
     priorKeys.add(key);
   }
-  const pendingJobs = jobs.filter((job) => !priorKeys.has(`${job.arm}/${job.kind}`));
+  const pendingJobs = jobs.filter((job) => !priorKeys.has(`${job.arm}/${job.logicalKind}`));
   if (
     !Number.isSafeInteger(priorAttempts) ||
     priorAttempts < priorScores.length ||
@@ -664,6 +762,7 @@ export async function scoreBenchmarkArms(
   fs.mkdirSync(outDir, { recursive: false });
   const ledgerPath = path.join(outDir, 'judge-ledger.jsonl');
   const results = [...priorScores];
+  const splitQualityParts = new Map();
   for (const [index, job] of pendingJobs.entries()) {
     const jobBase = path.join(outDir, `${job.arm}-${job.kind}`);
     fs.writeFileSync(`${jobBase}.prompt.txt`, job.prompt, { flag: 'wx' });
@@ -687,17 +786,35 @@ export async function scoreBenchmarkArms(
       });
       fs.writeFileSync(`${jobBase}.provider.json`, `${JSON.stringify(response, null, 2)}\n`, { flag: 'wx' });
       fs.writeFileSync(`${jobBase}.response.txt`, response.text, { flag: 'wx' });
-      const { parsed, indexNormalization } = parseBenchmarkScore(
-        job.kind,
-        response.text,
-        arms.find((arm) => arm.id === job.arm).snapshot.turns.length,
-        { extendedQuality, allowOneBasedIndices, outputSchema: job.outputSchema },
-      );
-      const scored = normalizeScores(job.kind, parsed);
-      if (!Number.isFinite(scored.overall)) throw new Error('judge returned no usable aggregate');
-      fs.writeFileSync(`${jobBase}.json`, `${JSON.stringify(parsed, null, 2)}\n`, { flag: 'wx' });
-      results.push({ arm: job.arm, kind: job.kind, scored, raw: parsed, indexNormalization });
-      record('completed', { indexNormalization });
+      const turnCount = arms.find((arm) => arm.id === job.arm).snapshot.turns.length;
+      if (job.logicalKind === 'quality' && job.kind !== 'quality') {
+        const part = job.kind.replace('quality-', '');
+        const parsed = parseSplitQualityScore(part, response.text, turnCount, job.outputSchema);
+        fs.writeFileSync(`${jobBase}.json`, `${JSON.stringify(parsed, null, 2)}\n`, { flag: 'wx' });
+        const parts = { ...(splitQualityParts.get(job.arm) || {}), [part]: parsed };
+        splitQualityParts.set(job.arm, parts);
+        if (parts.summary && parts.turns) {
+          const merged = mergeSplitQualityScores(parts.summary, parts.turns, turnCount);
+          const scored = normalizeScores('quality', merged);
+          if (!Number.isFinite(scored.overall)) throw new Error('judge returned no usable aggregate');
+          fs.writeFileSync(path.join(outDir, `${job.arm}-quality.json`), `${JSON.stringify(merged, null, 2)}\n`, {
+            flag: 'wx',
+          });
+          results.push({ arm: job.arm, kind: 'quality', scored, raw: merged, indexNormalization: null });
+        }
+        record('completed', { logicalKind: 'quality', packet: part });
+      } else {
+        const { parsed, indexNormalization } = parseBenchmarkScore(job.kind, response.text, turnCount, {
+          extendedQuality,
+          allowOneBasedIndices,
+          outputSchema: job.outputSchema,
+        });
+        const scored = normalizeScores(job.kind, parsed);
+        if (!Number.isFinite(scored.overall)) throw new Error('judge returned no usable aggregate');
+        fs.writeFileSync(`${jobBase}.json`, `${JSON.stringify(parsed, null, 2)}\n`, { flag: 'wx' });
+        results.push({ arm: job.arm, kind: job.kind, scored, raw: parsed, indexNormalization });
+        record('completed', { indexNormalization });
+      }
     } catch (error) {
       fs.writeFileSync(
         `${jobBase}.error.json`,
@@ -724,6 +841,7 @@ export async function scoreBenchmarkArms(
     newAttempts: pendingJobs.length,
     attemptsUsed: priorAttempts + pendingJobs.length,
     extendedQuality,
+    splitQuality,
     assessmentContext,
     arms: arms.map(({ snapshot: _snapshot, ...arm }) => arm),
     scores: results,

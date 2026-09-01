@@ -1,14 +1,13 @@
 ---
 id: qwen-resistant-learner-model-benchmark
 title: "Compare normal and abliterated Qwen as active-resistant learners"
-status: review
+status: done
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-08-30
-updated: 2026-08-30
-branch: codex/local-qwen-resistant-learner-mvp
+updated: 2026-09-01
 verification: "Two eight-turn direct-learner dialogues completed with matched settings and Sol; deterministic speed/repetition plus provisional whole-transcript analyst use of v2.2 dimensions and requested quality axes in exact public Techne swimlanes. Counts, quotes and calculations verified. External Opus judging and browser visual preview remain unavailable."
 claim_status: exploratory
 links:
@@ -54,3 +53,11 @@ differences describe these two dialogues rather than a causal ablation effect.
   quality advantage: both sustain resistance, but both repeat, and the
   abliterated arm adds dubious hypothetical physical traces that Sol treats as
   findings. No causal model/profile claim, paper amendment, commit or push.
+
+- 2026-09-01 — Board reconciliation closes this as the descriptive local
+  engineering benchmark it actually completed. The declared dialogue, timing,
+  repetition, report, and source-audit checks passed. External Opus scoring was
+  never authorized for this payload and is not retroactively added; the later
+  separately designed hostile-refusal and factorial cards supply independent
+  judgments without changing this evidence. No model calls were made during
+  reconciliation.

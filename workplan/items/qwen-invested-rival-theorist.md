@@ -1,7 +1,7 @@
 ---
 id: qwen-invested-rival-theorist
 title: "Test Qwen as an invested rival theorist"
-status: review
+status: active
 type: experiment
 priority: P2
 owner: codex
@@ -9,7 +9,7 @@ source: manual
 created: 2026-08-31
 updated: 2026-09-01
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "The two eight-exchange arms and three valid Opus assessments are preserved at 38/48 aggregate attempts; the repeated A-quality schema-tool failures are exact-packet technical failures, and a tested 10-attempt linked recovery keeps the prompt, rubric and one-response Opus route fixed while validating quality JSON locally against the unchanged schema."
+verification: "Both eight-exchange arms and seven valid Opus assessments remain preserved at 46/48 aggregate attempts; the final recovery reattempts only the rejected B quality-summary packet and, if valid, runs B quality-turns once, never exceeds 48, and either completes the eighth original assessment or preserves the first final failure as terminal."
 claim_status: planned
 links:
   notes:
@@ -103,3 +103,37 @@ with Sol, no superegos, using one fresh dialogue per arm.
   validation. Tutor, learner and dialogue assessments retain the existing
   provider schema tool. A fifth linked ledger preserves all 38 attempts and
   exposes only the remaining 10.
+- 2026-09-01: The third A quality attempt used the registered plain-JSON route
+  and produced one successful, tool-free Opus response, but the archived result
+  ended at exactly 13,000 characters before the JSON object closed. It remains
+  failed evidence, taking the study to 39/48; no visible score or annotation in
+  that incomplete object is accepted. The prospective amendment splits only
+  the oversized quality transport into a summary packet and a per-turn packet,
+  validates both separately, then mechanically checks their union against the
+  original schema. The remaining plan is seven calls under a nine-attempt cap,
+  with no rerun of either dialogue or the three accepted assessments.
+
+- 2026-09-01: Board reconciliation keeps this card active rather than falsely
+  closing it. Both dialogues and three assessments are preserved, but five
+  original assessments remain unresolved; after the merged split-packet
+  correction they require seven planned calls and cannot exceed the nine
+  attempts left under the unchanged study ceiling. Conflict resolution made no
+  model call. The card stops when the five original assessments resolve through
+  validated packet unions or the recovery encounters its first new substantive
+  or technical failure.
+- 2026-09-01: The first split A quality-summary call returned a complete
+  5,771-character provider result, but it appended Markdown commentary and a
+  second JSON object after the requested object. The packet remains failed and
+  no apparent content is accepted, taking the immutable chain to 40/48. The
+  next correction keeps the smaller split prompts and schemas unchanged but
+  sends those two packet types through the existing schema-bound output tool.
+  Seven missing calls fit under the eight attempts left; full completion would
+  end at 47/48 without rerunning a dialogue or accepted assessment.
+- 2026-09-01: The structured split recovery completed A quality plus B tutor,
+  learner and dialogue, leaving seven of eight assessments valid. B
+  quality-summary then added the forbidden top-level field
+  `reasoning_effort`; the schema tool rejected it and the run stopped at
+  46/48 without accepting its content. At the user's explicit direction, a
+  terminal recovery may reattempt only that unchanged summary and, if it
+  validates, run B quality-turns. Those two calls exhaust the ceiling; either
+  failure ends the study incomplete with no further recovery.

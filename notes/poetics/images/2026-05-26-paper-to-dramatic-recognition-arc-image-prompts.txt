@@ -1,7 +1,7 @@
 # Cartoon Image Prompts
 
 Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
-Generated at: 2026-08-30T21:02:49.462Z
+Generated at: 2026-09-01T20:49:06.410Z
 Panel count: 11
 Format: png
 House style: docs/design/machinespirits-house-style.md
@@ -12,7 +12,7 @@ Prompt lineage: each code block preserves the panel-total line from the run that
 
 Title: How a tutor learned to change course
 Description: The earlier study found no average change in how tutors adapted. This follow-up asks a more ordinary question: when a learner gets stuck, can the tutor notice, change course, and help them reach an answer that can be checked?
-Top terms: tutor, learner, rule, move, proof, answer, turn, lesson, every, completed, conduct, hidden, change, changed, check, without, panel, still
+Top terms: tutor, learner, rule, move, proof, answer, turn, lesson, completed, conduct, hidden, change, changed, check, every, without, panel, still
 
 Selected sections:
 - 01 #starting-point: The average stayed flat. We wanted to know what happened at the stuck point. -> notes/poetics/images/dramatic-recognition-arc-01.png
@@ -572,7 +572,7 @@ Machine Spirits editorial illustration: the editorial Techne layer translated th
 - The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
 
 Textual context to complement:
-We turned the experiment around: could a tutor move, actually delivered, reach a learner built to push back? The arc so far asked whether the tutor could change its own course. We built learners who resist — one who asks permission for every move, one who overclaims and defends, one who goes bored mid-proof, one who refuses the tutor's whole frame — and asked whether a specific tutor move, issued by machinery at the detected moment, changes what the learner does next. Handing the tutor a standing permission — the exact wording of the move, pasted into its instructions — produced zero uses of it in twenty-four dialogues.
+We turned the experiment around: could a tutor move, actually delivered, reach a learner built to push back? The arc so far asked whether the tutor could change its own course. We built learners who resist — one who asks permission for every move, one who overclaims and defends, one who goes bored mid-proof, one who refuses the tutor's whole frame — and asked whether a specific tutor move, issued by machinery at the detected moment, changes what the learner does next. All of the results below are development-tier studies of simulated learners on narrow, named model stacks and worlds; none establishes human learning.
 
 Image concept:
 a two-door threshold contrast on an off-white 60px Swiss grid: at the left door the registered rule sits on a faded standing sign while the learner walks past unread; at the right door a gatekeeper hands the same rule to the learner exactly at the threshold and a signature-red -18-degree slash marks the delivered action; beside the right door, a second learner holds a small TERMS placard at a marked line, naming a condition but remaining one rung short of stepping through
