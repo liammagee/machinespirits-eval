@@ -54,3 +54,13 @@ with Sol, no superegos, using one fresh dialogue per arm.
   gates, manifest check, 35-world audit and 576-item workplan check pass. The
   design still has to reach `main` before the clean detached launch can begin;
   no model attempt has been dispatched.
+- 2026-09-01: The merged study launched from `75356f762`, but normal Qwen's
+  first reply paired usable public speech with one paraphrased private-ledger
+  quotation. The strict parser stopped before accepting a turn; 1/48 attempts
+  was preserved and no Sol or Opus call ran. After a fresh user GO, a local
+  recovery correction now drops and traces only unsupported private-ledger
+  rows, preserves the original public speech unchanged, reuses that response
+  without another call, and leaves every other envelope failure strict. The
+  same private-ledger rule applies symmetrically to both speakers and study
+  arms during recovery. Focused recovery and shared-ceiling tests pass; the
+  recovery itself has not launched.

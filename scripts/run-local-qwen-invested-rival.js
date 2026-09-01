@@ -11,6 +11,7 @@ import {
   buildContinuityProofPlan,
   buildContinuityRequest,
   loadContinuityPlan,
+  parseContinuityReply,
   runContinuityArm,
 } from '../services/localQwenRefusalContinuity.js';
 import { renderContinuityReport } from '../services/localQwenRefusalContinuityReport.js';
@@ -311,7 +312,7 @@ async function scoreArms({ plan, arms, outDir, budget, priorScores = [], priorAt
   });
 }
 
-async function runFresh(plan, outDir, admission) {
+async function runFresh(plan, outDir, admission, generationRecovery = null) {
   const budget = paidStudyBudget(admission, plan.total_attempt_ceiling);
   const arms = [];
   try {
@@ -323,7 +324,15 @@ async function runFresh(plan, outDir, admission) {
       mainRef: admission.source.main_ref,
       mainCommit: admission.source.main_commit,
       authorization: admission.authorization,
-      recovery: false,
+      recovery: Boolean(generationRecovery),
+      ...(generationRecovery
+        ? {
+            recoverySource: generationRecovery.sourceDir,
+            recoveredGeneration: generationRecovery.failure,
+            priorAttemptCount: generationRecovery.stop.budget.used,
+            privateLedgerPolicy: 'drop_unsupported_quote_rows_preserve_public_speech',
+          }
+        : {}),
     });
     writePreparation(outDir, plan, provenance);
     const service = yaml.parse(fs.readFileSync(path.join(ROOT, plan.service_config), 'utf8'));
@@ -339,7 +348,18 @@ async function runFresh(plan, outDir, admission) {
         ownsServer = true;
         const loaded = await discoverLoadedModel(plan.base_url, { modelIdContains: arm.model });
         if (loaded !== arm.model) throw new Error('loaded model does not exactly match the planned arm');
-        await runContinuityArm({ plan, arm, outDir: path.join(outDir, arm.id), budget });
+        await runContinuityArm({
+          plan,
+          arm,
+          outDir: path.join(outDir, arm.id),
+          budget,
+          ...(generationRecovery ? { unsupportedQuotationPolicy: 'drop' } : {}),
+          ...(generationRecovery && arm.id === 'A'
+            ? {
+                firstLearnerReply: generationRecovery.firstLearnerReply,
+              }
+            : {}),
+        });
       } finally {
         if (ownsServer) await manageServer(plan.mtp_chat_root, arm.profile, 'stop', servicePath);
       }
@@ -370,6 +390,7 @@ async function runFresh(plan, outDir, admission) {
       completed_arms: arms.length,
       completed_assessments: evaluation.scores.length,
       reserved_attempts: admission.reserved,
+      ...(generationRecovery ? { recovery_from: generationRecovery.sourceDir } : {}),
     });
     return { outDir, dryRun: false, attempts: budget.snapshot().used };
   } catch (error) {
@@ -394,10 +415,54 @@ async function runFresh(plan, outDir, admission) {
       error: error.message,
       completed_arms: arms.length,
       reserved_attempts: admission.reserved,
+      ...(generationRecovery ? { recovery_from: generationRecovery.sourceDir } : {}),
       ...(recoveryPermitted ? { recovery_permitted: true } : {}),
     });
     throw error;
   }
+}
+
+export function readGenerationRecovery(plan, sourceDir) {
+  const sourcePlan = JSON.parse(fs.readFileSync(path.join(sourceDir, 'plan.json'), 'utf8'));
+  if (sourcePlan.id !== plan.id || sourcePlan.provenance?.recovery) {
+    throw new Error('generation recovery must start from the original invested-rival run');
+  }
+  const stop = JSON.parse(fs.readFileSync(path.join(sourceDir, 'stopped.json'), 'utf8'));
+  if (
+    stop.armsCompleted !== 0 ||
+    stop.budget?.used !== 1 ||
+    !/^unsupported (?:open|settled) quotation$/u.test(stop.error || '')
+  ) {
+    throw new Error('generation recovery requires the preserved first-turn private-ledger quotation failure');
+  }
+  for (const forbidden of [
+    path.join(sourceDir, 'A', 'dialogue.json'),
+    path.join(sourceDir, 'A', 'checkpoint-1.json'),
+    path.join(sourceDir, 'B'),
+    path.join(sourceDir, 'evaluation'),
+  ]) {
+    if (fs.existsSync(forbidden)) throw new Error('generation recovery source contains accepted downstream output');
+  }
+  const request = JSON.parse(fs.readFileSync(path.join(sourceDir, 'A', '1-learner.request.json'), 'utf8'));
+  const response = JSON.parse(fs.readFileSync(path.join(sourceDir, 'A', '1-learner.response.json'), 'utf8'));
+  const dropped = [];
+  const parsed = parseContinuityReply(response.text, request.messageHistory, {
+    unsupportedQuotationPolicy: 'drop',
+    onUnsupportedQuotation: (row) => dropped.push(row),
+  });
+  if (!dropped.length) throw new Error('generation recovery source has no unsupported private ledger quotation');
+  return {
+    sourceDir,
+    sourcePlan,
+    stop,
+    failure: { error: stop.error, droppedPrivateLedgerRows: dropped },
+    firstLearnerReply: {
+      source: path.join(sourceDir, 'A', '1-learner.response.json'),
+      request,
+      response,
+      parsedSpeech: parsed.speech,
+    },
+  };
 }
 
 function readPriorScores(sourceDir, arms) {
@@ -544,6 +609,7 @@ export async function main(argv = process.argv.slice(2)) {
       config: { type: 'string' },
       output: { type: 'string' },
       'recover-assessments': { type: 'boolean', default: false },
+      'recover-generation': { type: 'boolean', default: false },
       from: { type: 'string' },
       'accept-charges': { type: 'boolean', default: false },
       'launch-commit': { type: 'string' },
@@ -553,6 +619,25 @@ export async function main(argv = process.argv.slice(2)) {
     },
   });
   const plan = buildInvestedRivalPlan(ROOT, values.config || DEFAULT_CONFIG);
+  if (values['recover-generation']) {
+    if (!values.live || !values.from || values['recover-assessments']) {
+      throw new Error('--recover-generation requires --live and --from, without --recover-assessments');
+    }
+    const sourceDir = path.resolve(ROOT, values.from);
+    const outDir = path.resolve(ROOT, values.output || `${sourceDir}-generation-recovery-v1`);
+    const recovery = readGenerationRecovery(plan, sourceDir);
+    const admission = admitLiveRun(plan, values, outDir, sourceDir);
+    if (admission.studyReserved !== recovery.stop.budget.used) {
+      admission.close({
+        type: 'run_sealed',
+        status: 'failed',
+        error: 'study-wide attempt ledger differs from the preserved predecessor',
+        recovery_from: sourceDir,
+      });
+      throw new Error('study-wide attempt ledger differs from the preserved predecessor');
+    }
+    return runFresh(plan, outDir, admission, recovery);
+  }
   if (values['recover-assessments']) {
     if (!values.live || !values.from) {
       throw new Error('--recover-assessments requires --live and --from');
