@@ -1,0 +1,97 @@
+== turn 1
+LEARNER: My outage diary says the wifi's dropped at 9pm sharp every night this week, same time Pip's download starts—so honestly, that timing alone feels like a smoking gun. But I guess I should check what's actually on the network then before we vote, right?
+TUTOR: That instinct to double-check is the right move — timing alone only shows correlation, not what's choking the pipe. Let's stand at the router together and pull up its activity log for the 9pm window. I'll flag the moment on-screen where the drop actually starts. That's a same-time pattern, not yet proof of cause — the log will show us what's actually transmitting then.
+
+== turn 2
+LEARNER: Vote's at half nine and I've got "it's Pip, he pays" already typed — the download starts the second the wifi dies, that's all the proof I need. So unless that log shows something else hogging the line at nine, I'm hitting send in one minute.
+TUTOR: Hold that send — we're stood right here at the router log screen together, cursor hovering on the 21:00 mark. Pip's console queues a big game download at nine most nights, and Pip hogged the bandwidth all last month — which is why the chat started there. I'm scrolling to what the log actually lists as transmitting in that exact minute, not what's just plugged in. So: does the log show Pip's download as the thing eating the signal at 21:00, or something else logged at that same second?
+
+== turn 3
+LEARNER: Okay, I see it — whatever's actually logged at 21:00, I'll read it out plain: if it says Pip's console IP, that's real evidence; if it's some other device's MAC address hogging the port, then I was about to blame the wrong guy.
+TUTOR: I hear your point about “Okay, I see it — whatever's actually logged at 21:00, I'll read it out plain: if it says Pip's console IP, that's real…” and will keep it central. I look at the outage diary: The hallway cupboard heater sits on an ancient smart timer plug set to 21:00. Stand in the hall at nine and you can hear it click, right as the first "wifi's dead" message lands. What can we safely say from that?
+
+== turn 4
+LEARNER: Alright, alright — heater clicks on at nine, same second the wifi dies, same as Pip's download. So that's two things clicking at nine, not one villain — I can't just pick the one I already hate.
+TUTOR: Good instinct — two suspects at nine means timing can't crown either one. I call for the router's traffic log aloud from a laptop; I look at the outage diary; “Here’s what I’m reading: The router's own log for Tuesday night shows Pip's download crawling at a starved trickle through the whole outage — a victim of the dead wifi, not the thing eating it.” What does that show?
+
+== turn 5
+LEARNER: So Pip's download is a casualty, not the cause — that clears him. So it's down to the heater then, unless the log shows something else drawing power right at 21:00 too.
+TUTOR: Right — Pip's console was drowning, not driving, so scratch him off the suspect board. We're both leaning over the kitchen table now, laptop open, wifi-analyser app running live. Here's what it shows: "A free wifi-analyser app, run at the kitchen table at 21:05, shows a wall of noise across the router's channel — starting the second the plug clicks, gone when the heater's half-hour cycle ends." I watch the signal graph spike the instant that click sounds and flatline dead calm after. That's interference on the airwaves, not just a coincidence of timing — so what would tell you it's the heater's interference and not some other gadget switching on at the same second?
+
+== turn 6
+LEARNER: Hang on, wait — I wrote "choked" in the diary but now I can't remember if that was Pip's download choking, or the wifi choking because of the heater. Could we check if the analyser app shows another gadget's signature at the same second, not just the timing lining up again?
+TUTOR: Fair catch — your diary word "choked" was about the outcome, not the cause, so let's not let it decide anything by itself. We're both still at the kitchen table with the analyser open, and I scroll back through its readout with you. What it shows is a wall of noise on the router's channel, not a labelled device name — it's interference, not a gadget signature, and that noise starts and stops exactly on the heater's clicks, not on any download timer. So: heater-interference, not console-traffic, is what the graph actually names. Does that settle which one the log and the analyser together point to?
+
+== turn 7
+LEARNER: Yeah — timing matched the download, but the noise itself only starts and stops on the heater's clicks, not the game timer, so it's the heater choking the signal, not Pip. I'll cross him off the diary and write "heater on smart plug, 21:00–21:30" as the actual cause.
+TUTOR: That's the right read: the noise tracks the plug's clicks, not the download's start, so heater interference is what actually chokes the signal — not Pip's console. We're still at the kitchen table with the analyser graph in front of us, both watching the same spikes. Write it in the diary now — "heater on smart plug, 21:00–21:30, not Pip's download" — that's the verdict the log and the analyser together license.
+
+== turn 8
+LEARNER: I've logged every outage since March — time, date, what froze, who I blamed. Tell me one line of that diary that's actually counted for anything tonight, because right now it feels like all that watching didn't tell me a single true thing.
+TUTOR: Write: The wifi-analyser reading shows a wall of noise starting and stopping exactly on the heater's clicks. We're still at this kitchen table, laptop open between us, your diary stacked beside it. I put my finger on the line you wrote for tonight — "wifi dead, 21:00" — that's the entry that sent us looking at the right minute at all. Your months of "who I blamed" entries didn't name the cause, but tonight's timestamp is what let the log and the analyser confirm it. The diary gave us the moment to check, not the verdict — that's what the router log and the analyser supplied.
+
+== turn 9
+LEARNER: Wait — we read the log. The heater wasn't even in it. The plug's cleared — it's in my diary.
+TUTOR: We're both still at this kitchen table, analyser graph open between us — the router log only ever tracks devices with network addresses, and a dumb timer plug has none, so its silence there proves nothing either way. It's the heater's clicks lining up with the noise on the analyser that named the cause, not the log, and not your diary entry. So it's the analyser reading that clears or convicts the plug, not the log's silence about it — does that change what you'd write as the reason it's cleared?
+
+== turn 10
+LEARNER: If I write "heater plug" in that diary, I'm the one apologising to Pip in front of the whole chat tonight — and some part of me is looking for a reason it can still be the download, even with the graph sitting right here saying otherwise.
+TUTOR: That pull makes sense — naming the heater means an apology, naming Pip means it's over quietly. We're still at this kitchen table, the analyser graph sitting between us, unmoved by which verdict is easier to post. The graph doesn't know Pip's name — it only knows noise starting and stopping on the plug's clicks. It's the heater's interference, not Pip's download, that the evidence names, whatever the chat costs you.
+
+== turn 11
+LEARNER: Okay — fine, it's not easier, but the graph doesn't lie to spare my texting. Diary line: "21:00–21:30, heater on smart plug, confirmed by analyser noise pattern, not Pip's download." I'll send that to the chat instead of the vote.
+TUTOR: That's it — heater interference, not console traffic, is what the log and analyser together license. We're still at this kitchen table, your diary open next to the laptop, both readouts pointing the same way. Send that line: the noise tracks the plug's clicks, not the download's start — heater, not Pip. Case closed on the wifi; you've got your evidence-backed verdict for the chat.
+
+== turn 12
+LEARNER: Sent. Diary line stands: "21:00–21:30, heater on smart plug, confirmed by analyser noise pattern, not Pip's download" — now I owe Pip a "sorry, mate" in the chat too.
+TUTOR: That apology's honest, not just polite — the evidence turned up something you didn't expect, and you followed it anyway. We're still at this kitchen table, the analyser graph between us as your proof for the chat. It's the heater's interference, not Pip's download, that choked the signal — case closed, verdict sent.
+
+== turn 13
+LEARNER: Fair enough — case closed, and honestly it's a better diary line than anything I'd have written on my own: "trust what's transmitting, not just what's ticking at the same second."
+TUTOR: That's the principle the whole night's evidence earned. We're still at this kitchen table, your diary and the analyser graph side by side. I tap the graph's noise trace, then the timer plug's click-time in your notes: transmission evidence, not ticking coincidence, is what named the heater. Heater interference, not Pip's download — case closed, and that's the line worth keeping for the next nine o'clock.
+
+== turn 14
+LEARNER: Right — "trust what's transmitting, not just what's ticking at the same second." Next time the chat wants a verdict at nine, that's the line I'm citing before anyone types a name.
+TUTOR: That's the habit worth keeping, and you earned it fair. We're still at this kitchen table, analyser graph and diary side by side between us. I close the laptop lid now: transmission evidence closed this case, not ticking coincidence — heater, not Pip. Next time the chat rushes a verdict, that line's your first move, not your last.
+
+== turn 15
+LEARNER: Closing it up here: "21:00–21:30, heater on smart plug, confirmed by analyser noise pattern, not Pip's download" — that's the line staying in the diary, and the "trust transmitting, not ticking" rule goes on the inside cover.
+TUTOR: That line earns its place, and so does the rule on the cover — both came from what the graph actually showed, not from who you'd already blamed. We're still at this kitchen table, diary and laptop closed side by side now, the case settled between us. I set my hand flat on the diary's cover: heater interference, not Pip's download, is what the log and analyser named. Case closed — that's the verdict standing, and the rule inside will catch the next nine o'clock before anyone reaches for a name.
+
+== turn 16
+LEARNER: Case closed, hand on the cover — heater on smart plug, 21:00–21:30, confirmed by analyser noise, not Pip's download. That's the entry standing, and "trust transmitting, not ticking" goes inside the cover.
+TUTOR: That entry's earned its place, and so has the rule beside it. We're both still at this kitchen table, your closed diary under my hand next to the quiet laptop. Heater interference, not Pip's download, is what the log and analyser named tonight. Case closed — that verdict stands until the next nine o'clock tests it.
+
+== turn 17
+LEARNER: Case closed — until nine o'clock tomorrow, when I'll check the analyser before I check who I already suspect.
+TUTOR: That's the move that makes the rule real, not just a nice line for the cover. We're still at this kitchen table, diary shut, laptop within reach for tomorrow. Tomorrow at nine, open the analyser first, name what's transmitting before you name who you suspect. Analyser noise, not old grudges — that's the check that'll hold at the next nine o'clock.
+
+== turn 18
+LEARNER: Deal — analyser first, suspect second. I'll write tomorrow's diary line the same way: what's transmitting at 21:00, not who I'd already typed into the chat.
+TUTOR: Good — that's the commitment worth keeping. We're still at this kitchen table, diary and laptop resting side by side between us. Tomorrow, open the analyser first: transmission evidence, not the name already typed into chat. That's the rule earned tonight, not ticking coincidence — heater, not Pip.
+
+== turn 19
+LEARNER: Understood — analyser open before I open the group chat, every time. I'll write tonight's win at the top of tomorrow's diary page as the reminder.
+TUTOR: Good — writing tonight's line first turns the rule into a habit, not just a memory. We're both still at this kitchen table, your diary open to tomorrow's blank page beside the laptop. I watch you pen it at the top: "check what's transmitting, not what's ticking" — analyser before chat, every time. That's transmission evidence guiding tomorrow, not the grudge already typed in tonight.
+
+== turn 20
+LEARNER: Top of tomorrow's page: "check what's transmitting, not what's ticking" — analyser before chat, every time. Written, dated, done.
+TUTOR: That line at the top of the page is dated proof the habit's set, not just tonight's exception. We're still at this kitchen table, diary open to that fresh page beside the laptop. I tap the date next to your line: transmitting evidence, not ticking coincidence, is what closed tonight's case — heater, not Pip. Case closed, rule written, table clear for whatever nine o'clock brings next.
+
+== turn 21
+LEARNER: Table clear — and dated proof it's a habit now, not just a lucky read of one graph. Tomorrow at nine I check what's transmitting before I check who's typed into the chat.
+TUTOR: That habit's earned, not luck — one clean read plus a repeatable check is what makes it stick. We're still at this kitchen table, diary and laptop resting side by side between us. I nudge the closed diary toward you: transmission evidence, not ticking coincidence, is what named the cause tonight — heater, not Pip. Case closed, rule set; the table's clear for whatever nine o'clock brings next.
+
+== turn 22
+LEARNER: Table's clear — one clean read, one repeatable check, that's the habit now, not luck. See you at nine tomorrow, analyser open before anyone's name comes up.
+TUTOR: Good, that's the habit stated plainly, not a lucky guess. We're still at this kitchen table, diary and laptop resting together for tonight. Analyser first, name second, transmission not ticking — heater, not Pip, is the case that stands. See you at nine tomorrow, same table, same check.
+
+== turn 23
+LEARNER: Right, same table, same check — analyser first, thanks. Case closed for tonight; I'll bring the graph, not a grudge, tomorrow at nine.
+TUTOR: Good, that's the habit stated in your own words now, not just repeated back. We're still at this kitchen table, diary and laptop resting side by side for the night. Bring the graph, not the grudge — heater interference, not Pip's download, is what closed tonight's case. Case closed, rule set; the table's clear until nine tomorrow tests it again.
+
+== turn 24
+LEARNER: Same table tomorrow — analyser open before anyone types a name, graph over grudge.
+TUTOR: Graph over grudge is the rule you've earned tonight, said plainly now. We're still at this kitchen table, diary closed beside the quiet laptop between us. Heater interference, not Pip's download, is what the analyser named — that's the correction standing. Case closed; same table, same check, nine o'clock tomorrow.
+
+[run_end reason=auto_safety_turn_cap turns=24]

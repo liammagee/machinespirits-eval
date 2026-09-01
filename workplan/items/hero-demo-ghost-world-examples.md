@@ -1,7 +1,7 @@
 ---
 id: hero-demo-ghost-world-examples
 title: "Record chatty with/without examples on a new demo world for the hero brief"
-status: active
+status: review
 type: content
 priority: P2
 owner: claude
