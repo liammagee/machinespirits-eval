@@ -1,0 +1,73 @@
+---
+id: human-validation-field-guide
+title: "Publishable field guide for the remaining human validation work"
+status: review
+type: content
+priority: P1
+owner: codex
+source: manual
+created: 2026-09-01
+updated: 2026-09-01
+verification: "A self-contained Techne HTML guide first explains the adaptive-tutor project and evidence gap, then explains the purpose, contribution, roles, inputs, blinding, case-level procedures, stop conditions, outputs, and claim boundary for all six human-work streams; desktop and mobile renders are inspected; the dedicated machinespirits.org publisher packages the page and passes a no-write dry run."
+links:
+  notes:
+    - notes/poetics/2026-09-01-human-validation-field-guide.html
+    - notes/poetics/2026-09-01-human-validation-field-guide.standalone.html
+    - notes/poetics/TECHNE-DOCS.md
+  items:
+    - adaptive-causality-human-state-move-validation
+    - adaptive-proof-dag-cross-world-validation
+    - impasse-corpus-phase1
+    - superego-taxonomy-human-validation
+    - rubric-v3-calibration-and-held-out-acceptance
+    - a1-human-learner-validation
+  code:
+    - notes/poetics/publish-human-validation-guide-to-site.js
+tags:
+  - human-validation
+  - operations
+  - techne
+  - publication
+milestone: adaptive-tutor-evidence-v1
+---
+
+Create one public, operationally precise guide to the human judgment still
+required by the adaptive-tutor research programme. The page must distinguish
+ready coding packets from the later human-subject study; preserve independent
+coding, blinding, uncertainty, privacy, and claim boundaries; and provide a
+rehearsable publication path without deploying or disclosing protected inputs.
+
+2026-09-01 Codex: Drafted the guide from the six live human-owned or
+human-blocked workplan cards and their committed packets/codebooks. Added a
+dedicated standalone packaging and content-repository staging script whose
+default modes do not deploy. Live publication remains a separate explicit
+human action.
+
+2026-09-01 Codex: Verified all eight navigation targets, six activity panels,
+96 itemized procedural steps, theme switching, and zero browser errors. Desktop
+and 390px mobile inspection passed after correcting long-code wrapping; the
+standalone artifact has no local CSS/JS dependencies or horizontal overflow.
+The workplan source check passed 584/584, the publisher dry run wrote nothing,
+and a stage-only smoke test produced the expected self-contained HTML plus the
+older metadata stub in a temporary destination.
+
+2026-09-01 Codex: Rewrote the page for direct sharing with human reviewers.
+Removed the research-operations tone, replaced specialist terms with short
+plain-English explanations, moved file paths and commands into organiser-only
+details, and recast every activity as a simple numbered procedure. The guide
+still preserves the original task counts, review rules, stop points, and claim
+limits.
+
+2026-09-01 Codex: Rebuilt the page again as six card-specific assignment
+sheets. Each sheet now says who acts, which linked files to open, exactly what
+to enter, what to return, and what makes the task complete. It also makes the
+status distinction explicit: four cards can be assigned now, rubric v3 first
+needs a project-lead decision, and the human-learner pilot currently requires
+study preparation rather than participant activity.
+
+2026-09-01 Codex: Added the missing explanatory layer from first principles.
+The guide now starts with the adaptive tutor's read → diagnose → choose → check
+→ speak → observe loop, separates established simulated conduct from unproven
+human validity and learning, and precedes every procedure with the question the
+card addresses, why human judgment is needed, and what the returned work adds
+to the project.
