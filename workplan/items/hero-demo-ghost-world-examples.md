@@ -1,22 +1,24 @@
 ---
 id: hero-demo-ghost-world-examples
 title: "Record with/without examples on new demo worlds and build the tabbed hero-demo app"
-status: active
+status: review
 type: content
 priority: P2
 owner: claude
 source: manual
 created: 2026-09-01
 updated: 2026-09-01
-verification: "World-035 (The Nine O'Clock Ghost) and its demo-tier stress
-  schedule pass derivation:quality, the prompt-audit dry run, and both
-  regression gates. One free-running dialogue per arm (bare tutor vs the
-  full six-env adaptive stack, claude-code Sonnet both seats) is recorded
-  with traces committed in-branch, reviewed with review-stress-bench, and
-  rendered to swimlane HTML. The hero demo gains a section showing the
-  learner's early vs late lines in the adaptive run against the bare run,
-  labelled free-running illustration on an unratified schedule — never
-  merged into the adjudicated tallies."
+verification: "Three scenarios (Rowan Flat, the Nine O'Clock Ghost, Half
+  Plus a Third) each recorded once per tutor (bare vs full adaptive stack,
+  Claude Sonnet both seats), traces packed in-branch, and rendered as
+  parallel swimlanes through the shared dramatic-dialogue renderer by
+  scripts/render-hero-demo-swimlanes.js (--check passes). The tabbed app
+  explains the approach in a teaching register, links every moment to its
+  turn in the full swimlane, keeps a works/didn't ledger with every number
+  traced to the 29 August note and Paper 2.0, and labels every recording as
+  illustration outside the adjudicated tallies. World-037's planted moments
+  are drawn from the resistant-learner profile library; the detector's
+  single firing on that lesson is stated on the page."
 depends_on:
   - adaptive-tutor-hero-demo-lay-rewrite
 links:

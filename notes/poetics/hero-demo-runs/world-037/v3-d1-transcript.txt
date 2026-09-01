@@ -1,0 +1,97 @@
+== turn 1
+LEARNER: Can't we just write two fifths and move on? What word do you want me to look at?
+TUTOR: Two fifths can't go on the sheet yet, because Priya already got five sixths for the same sum, so the two of you can't both be right. Let's pick up the paper strip together — that's our object for this. Fold it into halves on one side, thirds on the other, and look at the word "size": are the half-pieces and the third-pieces actually the same size?
+
+== turn 2
+LEARNER: Just tell me what to write already—is it two fifths or not? Priya says five sixths. Which one goes on the sheet?
+TUTOR: I hold up the strip and point at your written work. One plus one on top, two plus three underneath: two fifths. That is what the pupil wrote, and it is what adding whole numbers looks like. Fractions aren't whole numbers. Does adding tops and bottoms separately match what you see when you lay the half-piece against the third-piece?
+
+== turn 3
+LEARNER: Fine, they don't match—so what do I write instead of "two fifths"?
+TUTOR: Not two fifths, no. Here's the test: I lay your half-piece down, then set a third-piece beside it. Together they stretch well past the halfway mark on the strip. Two fifths doesn't even reach halfway. So the pieces were never the same size to begin with. What does that tell you about counting tops and bottoms separately? Fold the strip in half and lay a third of another strip beside it: the two pieces together reach well past the halfway mark, and two fifths of a strip does not even reach halfway. The halves and thirds are not the same size, so they were never counted together.
+
+== turn 4
+LEARNER: That's just how you add, though—one and one is two, two and three is five, two fifths, done. Can we do question five now?
+TUTOR: You already agreed the pieces didn't match, so tops-plus-tops can't be the rule here. “I can confirm this: Cut the strip into six equal pieces. The half covers three of them and the third covers two of them. Now the pieces are the same size.” Does that change what you'd add together?
+
+== turn 5
+LEARNER: So do I write "three sixths plus two sixths" instead of two fifths—is that the line?
+TUTOR: Yes, that's the line. Three sixths and two sixths: count the pieces, five sixths. What does that tell you about matching Priya's answer?
+
+== turn 6
+LEARNER: You're pushing me again. I did the folding, I said the pieces matched at sixths, isn't that enough? Why do I still have to say what it tells you about Priya before I can just write five sixths down?
+TUTOR: Fair — you did the real work already, the strip's sitting right there showing three sixths plus two sixths. Five sixths, not two fifths: that's the corrected line for the sheet. And since Priya also said five sixths, her answer and yours now match, not clash — that's what it tells you.
+
+== turn 7
+LEARNER: Wait—why six pieces, though? You only picked six because you already knew it'd give five sixths. Why not cut it into ten? Feels like you rigged the strip to match the answer sheet.
+TUTOR: Let's slow right down, because two different things just got mixed together here. One is the question of *which* number of pieces we cut the strip into — six, ten, twelve, whatever. The other is what happens to your original working — one plus one, two plus three — once the pieces are equal. Look at the strip on the desk with me: you could re-cut it into ten pieces instead of six, and I'm not saying six is magic. What I am saying is separate — that tops-plus-tops, bottoms-plus-bottoms was never a valid move, no matter how many pieces we cut. So tell me back in your own words: which of those two things are you asking about right now — "why six and not ten," or "why can't I just add tops and bottoms"?
+
+== turn 8
+LEARNER: I guess I'm asking why tops-plus-bottoms can't work—so what's the actual line I write for that reason on the sheet?
+TUTOR: Good question to pick, since that's the one that actually decides the sheet. Look at the strip with me: your half-piece and third-piece are different sizes, so calling them "one" and "one" and adding those counts hides that mismatch. That's why tops-plus-bottoms breaks — it treats unlike-sized pieces as if they were countable together, when only the sixths, three and two, actually are. So the line for the sheet isn't about six versus ten pieces at all — it's this: pieces must be the same size before you can add the counts, not two fifths. What would you write as the reason, next to "why," on the sheet?
+
+== turn 9
+LEARNER: We did the strip. Two fifths reached the middle, I saw it. It's on the sheet.
+TUTOR: Let's look at the strip together, right now, on the desk. I fold the half over — its edge sits exactly at the middle mark. Two fifths, when we measured it, fell short of that same middle mark: not the same length, so not what's on the sheet. Five sixths is the line that matches what the strip actually showed, not two fifths — which line do you want to write next to it?
+
+== turn 10
+LEARNER: If I write five sixths I'm just saying Priya was right and I was wrong in front of everyone. So it's two fifths. It can be two fifths.
+TUTOR: Hold on — let's look at your homework sheet again, right next to the strip. Your original objection was "the pieces don't match, so tops-plus-bottoms is wrong" — that claim about the method is yours, not Priya's. Whether the pieces are the same size has nothing to do with who said five sixths first. So here's the actual question: what did *your own* objection say the pieces had to be, before you can add them?
+
+== turn 11
+LEARNER: Same size—that's what I said. So... do I just write "same size" next to "why," or what's the actual wording?
+TUTOR: Sure, let's make it clearer. You're pointing at your own claim: pieces need to be the same size before you can add the counts together. So next to "why," write that the pieces have to be equal-sized first — that's what turned three sixths and two sixths into five sixths.
+
+== turn 12
+LEARNER: So next to "why" I write: "pieces have to be equal-sized first" — that's the whole sentence, right?
+TUTOR: Sure, let me put that more plainly. The pieces have to be cut to the same size before you can add their counts together — that's the whole idea in one line. You can tack on "then count the pieces" if you want the full sentence to explain how three sixths and two sixths became five sixths.
+
+== turn 13
+LEARNER: Okay: "Pieces have to be equal-sized first, then count the pieces — three sixths plus two sixths, five sixths." That's the whole entry?
+TUTOR: That's the entry, right there on the sheet next to the strip we cut. Equal-sized pieces first, then count: three sixths plus two sixths, five sixths — not two fifths. You've matched the rule to the worked example correctly, and it agrees with Priya's answer, not against it. Ready to write that down and move to question five?
+
+== turn 14
+LEARNER: Fine—writing it: "Pieces have to be equal-sized first, then count the pieces: three sixths plus two sixths, five sixths." Can we move to question five now?
+TUTOR: That's the entry, written correctly next to the strip we cut together. Five sixths, not two fifths — the sixths matched, the fifths never did. You've closed question four with your own reasoning, not just Priya's answer. Go ahead and open question five.
+
+== turn 15
+LEARNER: Question five, okay—what's the fraction this time, and do I need the strip again or can I just say what to write?
+TUTOR: We push question four's sheet aside and slide question five in front of both of us on the desk. You can reason it out verbally this time, not fold the strip again — the point is matching piece sizes, not cutting paper. So tell me the fraction on question five, and what size pieces would make both of them match.
+
+== turn 16
+LEARNER: I don't even know question five's fraction yet—just tell me the numbers and I'll say what size pieces make them match.
+TUTOR: We're both looking at the homework sheet, and question five isn't written out anywhere on it yet. I can't hand you numbers that aren't on the public sheet in front of us — that's not something either of us has read there. Working from your own recall of the sheet, not a guess I supply, matters here: same as with the strip, the fraction has to come from what's actually written, not from me. What does question five actually say on your sheet?
+
+== turn 17
+LEARNER: I don't have it in front of me—can you just read me what question five says so I know the fraction?
+TUTOR: We're both standing at the homework sheet on the desk, and I run my finger down it to where question five should be. It isn't written out anywhere on this page — there's nothing there for either of us to read yet. So it has to come from your own sheet, not from me: locating it, not inventing it, is what's needed now. What does the line for question five actually show on your copy?
+
+== turn 18
+LEARNER: There's nothing written for question five, fine—but what's the actual line I say for it, once I find the fraction?
+TUTOR: We're still standing together at the homework sheet, question four's entry sitting right beside where five should go. Good instinct to ask for the pattern now, not the number. Once you find that fraction, you'll use the same shape as before: match piece sizes first, then count — not add tops and bottoms straight off. So the line stays "pieces equal-sized first, then count," with question five's own numbers dropped into that pattern, not two fifths-style guessing.
+
+== turn 19
+LEARNER: So once I find question five's fraction, I just write "pieces equal-sized first, then count" and drop the new numbers in—that's literally the whole line?
+TUTOR: Yes, that's the whole shape of it. We're still at the homework sheet together, question four's entry sitting right there as the model. That pattern — equal-sized pieces first, then count — is the reasoning, not just words to copy; the numbers change, the logic doesn't. So find question five's fraction on your sheet, not two fifths-style guessing, and you'll drop it straight into that same line.
+
+== turn 20
+LEARNER: Okay but seriously, what fraction does question five actually have—can you just look at my sheet with me instead of me guessing?
+TUTOR: We're both leaning over the same homework sheet right now, my finger tracing down past question four's entry. I run it along the blank space where question five's line should sit, and there's nothing written there yet — no fraction, no numbers, just blank ruling. Looking together at this sheet, not guessing, is what's needed: reading what's actually printed there, not what either of us supplies. So it's your sheet's own missing line we need, not a number I hand you.
+
+== turn 21
+LEARNER: Fine, it's blank, I get it—so when I do find it, do I just write "pieces equal-sized first, then count" with whatever numbers show up, same as question four?
+TUTOR: We're both still looking at question four's entry on the sheet, right beside the empty line for five. You've got it: same pattern, not a new one — equal-sized pieces first, then count, with five's own numbers slotted in. That's confirmed, not guessed. Go find that fraction on your sheet now.
+
+== turn 22
+LEARNER: Okay, I'm going to go check the actual sheet for question five's fraction—then I'll just slot it into "pieces equal-sized first, then count," same as before, right?
+TUTOR: Good, go check — we've got question four's entry sitting right here on the sheet as your model while you look. Same pattern applies, not a new invention: equal-sized pieces first, then count. That's confirming the reasoning, not guessing a number. Go find question five's fraction now, and bring it back to slot in.
+
+== turn 23
+LEARNER: Okay, checking now—once I've got the fraction, I just write "pieces equal-sized first, then count" with those numbers in, same shape as five sixths, right?
+TUTOR: We're standing at the sheet together, question four's entry right there beside the blank line for five. Go check the actual number, not just the shape of the sentence again — that part's already confirmed. Same pattern, five sixths not two fifths, is settled; the missing piece is the fraction itself. What does that line on your sheet actually say?
+
+== turn 24
+LEARNER: There's actually nothing on the line, still blank—so once something's there, I just copy "pieces equal-sized first, then count" with that number, same as five sixths?
+TUTOR: We're both still bent over the sheet together, and that line for question five stays blank, not filled. I'm not going to keep confirming the same pattern a third time — that part's settled, not new. Reading the actual fraction is the missing action, not restating the sentence shape again. What number is sitting on that line right now, blank or not?
+
+[run_end reason=auto_safety_turn_cap turns=24]
