@@ -962,8 +962,8 @@ export function qualityJsonTransportRecoveryContract(plan, recovery) {
   };
 }
 
-function readTruncatedPlainJsonQualityAttempt(sourceDir) {
-  const base = path.join(sourceDir, 'evaluation', 'A-quality');
+function readInvalidPlainJsonQualityAttempt(sourceDir, packet = 'A-quality') {
+  const base = path.join(sourceDir, 'evaluation', packet);
   const error = JSON.parse(fs.readFileSync(`${base}.error.json`, 'utf8'));
   if (
     error.code !== 'CLI_PROVIDER_AMBIGUOUS_OUTPUT' ||
@@ -1043,7 +1043,7 @@ export function readQualitySplitRecovery(plan, sourceDir) {
   ) {
     throw new Error('quality split recovery requires exactly the failed A quality packet');
   }
-  const failedTransport = readTruncatedPlainJsonQualityAttempt(sourceDir);
+  const failedTransport = readInvalidPlainJsonQualityAttempt(sourceDir);
   const prior = readQualityJsonTransportRecovery(plan, provenance.recoverySource);
   if (JSON.stringify(arms) !== JSON.stringify(prior.arms)) {
     throw new Error('quality split recovery arm archive differs from the preserved predecessor');
@@ -1097,6 +1097,112 @@ export function qualitySplitRecoveryContract(plan, recovery) {
   }
   return {
     studyId: `${plan.id}-generation-recovery-v6`,
+    spendCap,
+    priorAttemptCount,
+  };
+}
+
+export function readQualitySplitStructuredRecovery(plan, sourceDir) {
+  const sourcePlan = JSON.parse(fs.readFileSync(path.join(sourceDir, 'plan.json'), 'utf8'));
+  const provenance = sourcePlan.provenance || {};
+  if (
+    sourcePlan.id !== plan.id ||
+    provenance.recovery !== true ||
+    provenance.linkedRecoveryStudyId !== `${plan.id}-generation-recovery-v6` ||
+    provenance.linkedRecoveryAttemptCeiling !== 9 ||
+    provenance.priorAttemptCount !== 39 ||
+    provenance.reusedCompletedAssessments?.join(',') !== 'A/tutor,A/learner,A/dialogue'
+  ) {
+    throw new Error('structured split-quality recovery must start from the split plain-JSON recovery');
+  }
+  const stop = JSON.parse(fs.readFileSync(path.join(sourceDir, 'stopped.json'), 'utf8'));
+  const arms = JSON.parse(fs.readFileSync(path.join(sourceDir, 'arms.json'), 'utf8'));
+  if (
+    stop.budget?.used !== 40 ||
+    stop.budget?.limit !== plan.total_attempt_ceiling ||
+    arms.map((arm) => arm.id).join(',') !== 'A,B' ||
+    arms.some((arm) => arm.snapshot?.turns?.length !== plan.max_exchanges)
+  ) {
+    throw new Error('structured split-quality recovery requires both preserved arms at 40/48 attempts');
+  }
+  const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
+  const runReserved = runEvents
+    .filter((event) => event.type === 'model_attempt_reserved')
+    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const runSeal = runEvents.findLast((event) => event.type === 'run_sealed');
+  if (
+    runReserved !== 1 ||
+    provenance.priorAttemptCount + runReserved !== stop.budget.used ||
+    runSeal?.status !== 'failed' ||
+    runSeal?.reserved_attempts !== runReserved
+  ) {
+    throw new Error('structured split-quality recovery accounting differs from the preserved predecessor');
+  }
+  const judgeEvents = readJsonLines(path.join(sourceDir, 'evaluation', 'judge-ledger.jsonl'));
+  if (
+    judgeEvents.filter((event) => event.event === 'reserved').length !== 1 ||
+    judgeEvents.filter((event) => event.event === 'failed').length !== 1 ||
+    judgeEvents.find((event) => event.event === 'failed')?.arm !== 'A' ||
+    judgeEvents.find((event) => event.event === 'failed')?.kind !== 'quality-summary'
+  ) {
+    throw new Error('structured split-quality recovery requires exactly the failed A quality-summary packet');
+  }
+  const failedTransport = readInvalidPlainJsonQualityAttempt(sourceDir, 'A-quality-summary');
+  const prior = readQualitySplitRecovery(plan, provenance.recoverySource);
+  if (JSON.stringify(arms) !== JSON.stringify(prior.arms)) {
+    throw new Error('structured split-quality recovery arm archive differs from the preserved predecessor');
+  }
+  const expectedJob = buildBenchmarkJobs(arms, {
+    extendedQuality: true,
+    assessmentContext: plan.assessmentContext,
+    publicSourceContextByArm: publicSourceContexts(plan, arms),
+    splitQuality: true,
+  }).find((job) => job.arm === 'A' && job.kind === 'quality-summary');
+  const failedBase = path.join(sourceDir, 'evaluation', 'A-quality-summary');
+  if (
+    fs.readFileSync(`${failedBase}.prompt.txt`, 'utf8') !== expectedJob.prompt ||
+    JSON.stringify(JSON.parse(fs.readFileSync(`${failedBase}.schema.json`, 'utf8'))) !==
+      JSON.stringify(expectedJob.outputSchema)
+  ) {
+    throw new Error('structured split-quality recovery source packet differs from the registered split assessment');
+  }
+  for (const forbidden of [
+    path.join(sourceDir, 'completed.json'),
+    path.join(sourceDir, 'report-data.json'),
+    path.join(sourceDir, 'report.html'),
+    path.join(sourceDir, 'evaluation', 'scores.json'),
+  ]) {
+    if (fs.existsSync(forbidden)) throw new Error('structured split-quality recovery source contains completed output');
+  }
+  return {
+    sourcePlan,
+    stop,
+    arms,
+    eligibility: {
+      priorAttempts: prior.eligibility.priorAttempts + 1,
+      failure: {
+        arm: 'A',
+        kind: 'quality-summary',
+        error: JSON.parse(fs.readFileSync(`${failedBase}.error.json`, 'utf8')),
+      },
+    },
+    priorScores: prior.priorScores,
+    linked: true,
+    plainJsonQuality: false,
+    splitQuality: true,
+    structuredSplitQuality: true,
+    failedTransport,
+  };
+}
+
+export function qualitySplitStructuredRecoveryContract(plan, recovery) {
+  const priorAttemptCount = recovery?.stop?.budget?.used;
+  const spendCap = plan.total_attempt_ceiling - priorAttemptCount;
+  if (priorAttemptCount !== 40 || spendCap !== 8) {
+    throw new Error('structured split-quality recovery requires exactly eight remaining study attempts');
+  }
+  return {
+    studyId: `${plan.id}-generation-recovery-v7`,
     spendCap,
     priorAttemptCount,
   };
@@ -1208,6 +1314,7 @@ export async function main(argv = process.argv.slice(2)) {
       'recover-linked-assessments': { type: 'boolean', default: false },
       'recover-quality-json-transport': { type: 'boolean', default: false },
       'recover-quality-split': { type: 'boolean', default: false },
+      'recover-quality-split-structured': { type: 'boolean', default: false },
       from: { type: 'string' },
       'accept-charges': { type: 'boolean', default: false },
       'launch-commit': { type: 'string' },
@@ -1217,6 +1324,48 @@ export async function main(argv = process.argv.slice(2)) {
     },
   });
   const plan = buildInvestedRivalPlan(ROOT, values.config || DEFAULT_CONFIG);
+  if (values['recover-quality-split-structured']) {
+    if (
+      !values.live ||
+      !values.from ||
+      values['recover-generation'] ||
+      values['recover-arm-boundary'] ||
+      values['recover-local-model-route'] ||
+      values['recover-linked-assessments'] ||
+      values['recover-quality-json-transport'] ||
+      values['recover-quality-split'] ||
+      values['recover-assessments']
+    ) {
+      throw new Error('--recover-quality-split-structured requires --live and --from, without another recovery mode');
+    }
+    const sourceDir = path.resolve(ROOT, values.from);
+    const outDir = path.resolve(ROOT, values.output || `${sourceDir}-quality-split-structured-recovery-v1`);
+    const recovery = readQualitySplitStructuredRecovery(plan, sourceDir);
+    const recoveryContract = qualitySplitStructuredRecoveryContract(plan, recovery);
+    const admission = admitLiveRun(plan, values, outDir, null, recoveryContract);
+    admission.record({
+      type: 'quality_split_structured_recovery',
+      recovery_from: sourceDir,
+      prior_attempts_preserved: recoveryContract.priorAttemptCount,
+      reused_completed_arms: recovery.arms.map((arm) => arm.id),
+      reused_completed_assessments: recovery.priorScores.map((score) => `${score.arm}/${score.kind}`),
+      aggregate_attempt_ceiling: plan.total_attempt_ceiling,
+      recovery_attempt_ceiling: recoveryContract.spendCap,
+      planned_recovery_attempts: 7,
+      quality_transport: 'structured_output_schema_tool_per_split_packet',
+      failed_plain_json_length: recovery.failedTransport.textLength,
+    });
+    if (admission.studyReserved !== 0) {
+      admission.close({
+        type: 'run_sealed',
+        status: 'failed',
+        error: 'structured split-quality recovery ledger was not empty at launch',
+        recovery_from: sourceDir,
+      });
+      throw new Error('structured split-quality recovery ledger was not empty at launch');
+    }
+    return recoverAssessments(plan, sourceDir, outDir, admission, recovery);
+  }
   if (values['recover-quality-split']) {
     if (
       !values.live ||

@@ -210,6 +210,37 @@ at most the nine study-wide attempts still available, leaving two unplanned;
 the ceiling is not a target. Any failed or malformed new packet stops without
 resampling, and no accepted dialogue or assessment is rerun.
 
+### Prospective transport correction after attempt 40
+
+The first split A quality-summary call returned 5,771 characters rather than
+ending at the earlier 13,000-character transport boundary. It nevertheless
+was not one JSON object: the result appended Markdown commentary and a second
+JSON object after the requested object. The complete response is preserved as
+a failed attempt, and none of its apparent scores or prose is accepted.
+
+The split packet prompts, smaller schemas, full transcript, character brief,
+public-source provenance, Opus route and effort, rubric fields, measurement
+rules and claim boundary remain unchanged. Only the two split quality packets'
+provider transport changes: each again uses the existing schema-bound
+`StructuredOutput` tool. The previous two structured-output failures involved
+the much larger monolithic quality schema and do not establish that these two
+smaller, independently validated schemas will fail in the same way. Tutor,
+learner and dialogue packets already retain this transport.
+
+There is no parser repair, fence removal, fragment completion, extra-field
+acceptance or retry. Each split packet must validate independently against its
+registered schema. The full quality judgment exists only after both valid
+halves are joined mechanically and their union validates against the unchanged
+original quality schema; the first malformed or indeterminate packet stops the
+run.
+
+The immutable chain now contains 40/48 attempts. The seven missing physical
+calls remain A quality summary and turns; B tutor, learner and dialogue; and B
+quality summary and turns. A fresh linked recovery exposes at most the eight
+study-wide attempts remaining. Full completion would therefore end at 47/48,
+with one attempt deliberately unused; the ceiling remains a ceiling, not a
+target.
+
 Proposed private create-once destination:
 `.tutor-stub-traces/qwen-invested-rival-theorist-v1/`.
 No production ingestion, push or publication. Keep the existing Techne/swimlane
