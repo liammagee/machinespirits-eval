@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import {
   admitPaidStudyLaunch,
   paidStudyGoNoteIssues,
+  sealInterruptedPaidStudyLaunch,
   verifyPaidStudyLaunchContract,
 } from '../services/paidStudyLaunchContract.js';
 
@@ -112,9 +113,8 @@ test('standing contract accepts a clean detached launch and separator-tolerant c
   assert.equal(verified.spend_cap, 1200);
   assert.deepEqual(
     paidStudyGoNoteIssues({
-      text: `\nGO\nconfig/study.json\n${value.launchCommit}\n1_200\n`,
+      text: '\nGO\nconfig/study.json\n1_200\n',
       designPath: 'config/study.json',
-      launchCommit: value.launchCommit,
       spendCap: 1200,
     }),
     [],
@@ -145,14 +145,35 @@ test('standing contract rejects branch, dirt, changed design bytes, ancestry, GO
   const wrongCap = fixture(t, { cap: 1201 });
   assert.throws(() => verifyPaidStudyLaunchContract(wrongCap.contract), /spend_cap/u);
 
-  const unrelated = fixture(t);
-  const sibling = git(unrelated.root, 'commit-tree', `${unrelated.launchCommit}^{tree}`, '-m', 'sibling');
-  assert.throws(() => verifyPaidStudyLaunchContract({ ...unrelated.contract, goNoteCommit: sibling }), /must descend/u);
+  const missingNote = fixture(t);
+  const sibling = git(missingNote.root, 'commit-tree', `${missingNote.launchCommit}^{tree}`, '-m', 'sibling');
+  assert.throws(
+    () => verifyPaidStudyLaunchContract({ ...missingNote.contract, goNoteCommit: sibling }),
+    /does not contain/u,
+  );
 
   const unmerged = fixture(t);
   const unmergedMain = git(unmerged.root, 'commit-tree', `${unmerged.launchCommit}^{tree}`, '-m', 'unrelated main');
   git(unmerged.root, 'update-ref', 'refs/remotes/origin/main', unmergedMain);
   assert.throws(() => verifyPaidStudyLaunchContract(unmerged.contract), /must be merged/u);
+});
+
+test('the original study GO remains valid after a merged technical code fix', (t) => {
+  const value = fixture(t, { cap: 3, noteCap: '3' });
+  git(value.root, 'checkout', '--detach', '-q', value.goNoteCommit);
+  fs.writeFileSync(path.join(value.root, 'recovery-fix.txt'), 'mechanical fix\n');
+  git(value.root, 'add', 'recovery-fix.txt');
+  git(value.root, 'commit', '-qm', 'technical recovery fix');
+  const recoveryCommit = git(value.root, 'rev-parse', 'HEAD');
+  git(value.root, 'update-ref', 'refs/remotes/origin/main', recoveryCommit);
+
+  const verified = verifyPaidStudyLaunchContract({
+    ...value.contract,
+    launchCommit: recoveryCommit,
+  });
+  assert.equal(verified.source.commit, recoveryCommit);
+  assert.equal(verified.authorization.commit, value.goNoteCommit);
+  assert.equal(verified.authorization.path, 'notes/go.md');
 });
 
 test('admission creates the destination and append-only budget ledger before calls', (t) => {
@@ -246,6 +267,75 @@ test('a recovery cannot reserve beyond the remaining aggregate study ceiling', (
   assert.equal(recovery.reserved, 0);
   assert.equal(recovery.studyReserved, 2);
   recovery.close({ type: 'run_sealed', status: 'failed' });
+});
+
+test('a dead interrupted launcher can be sealed once without rewriting its ledgers', (t) => {
+  const value = fixture(t, { cap: 3, noteCap: '3' });
+  const destination = path.join(value.base, 'interrupted-run');
+  const initial = admitPaidStudyLaunch({ ...value.contract, destination });
+  initial.reserveModelAttempts(2, { unit: 'interrupted-unit' });
+  const leasePath = path.join(value.contract.studyStateRoot, 'fixture-study', 'active-lease', 'lease.json');
+
+  assert.throws(
+    () =>
+      sealInterruptedPaidStudyLaunch({
+        studyId: 'fixture-study',
+        studyStateRoot: value.contract.studyStateRoot,
+        destination,
+        reason: 'fixture interrupt',
+        isProcessAlive: () => true,
+      }),
+    /still active/u,
+  );
+  assert.equal(fs.existsSync(leasePath), true);
+
+  const sealed = sealInterruptedPaidStudyLaunch({
+    studyId: 'fixture-study',
+    studyStateRoot: value.contract.studyStateRoot,
+    destination,
+    reason: 'fixture interrupt',
+    isProcessAlive: () => false,
+  });
+  assert.equal(sealed.status, 'technical_failure');
+  assert.equal(sealed.recovery_permitted, true);
+  assert.equal(sealed.reserved_in_run, 2);
+  assert.equal(sealed.study_reserved, 2);
+  assert.equal(fs.existsSync(leasePath), false);
+
+  const runEvents = fs.readFileSync(initial.ledger_path, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.deepEqual(
+    runEvents.map((event) => event.type),
+    ['launch_admitted', 'model_attempt_reserved', 'run_sealed'],
+  );
+  assert.equal(runEvents.at(-1).reason, 'fixture interrupt');
+  const studyEvents = fs
+    .readFileSync(path.join(value.contract.studyStateRoot, 'fixture-study', 'study-ledger.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map(JSON.parse);
+  assert.equal(studyEvents.at(-1).type, 'study_run_sealed');
+  assert.equal(studyEvents.at(-1).reason, 'fixture interrupt');
+
+  assert.throws(
+    () =>
+      sealInterruptedPaidStudyLaunch({
+        studyId: 'fixture-study',
+        studyStateRoot: value.contract.studyStateRoot,
+        destination,
+        reason: 'duplicate closeout',
+        isProcessAlive: () => false,
+      }),
+    /no active launch/u,
+  );
+
+  const recovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'interrupted-recovery'),
+    recoveryFrom: destination,
+  });
+  assert.equal(recovery.studyReserved, 2);
+  recovery.reserveModelAttempts(1, { unit: 'remaining-unit' });
+  recovery.close({ type: 'run_sealed', status: 'complete' });
 });
 
 test('a sealed technical predecessor hands its remaining study budget to one recovery', async (t) => {

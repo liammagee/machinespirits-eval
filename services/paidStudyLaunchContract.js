@@ -32,14 +32,13 @@ function numericTokens(text) {
   );
 }
 
-export function paidStudyGoNoteIssues({ text, designPath, launchCommit, spendCap }) {
+export function paidStudyGoNoteIssues({ text, designPath, spendCap }) {
   const issues = [];
   const firstNonblank = String(text)
     .split(/\r?\n/u)
     .find((line) => line.trim());
   if (firstNonblank?.trim() !== 'GO') issues.push('go_token');
   if (!String(text).includes(designPath)) issues.push('design_path');
-  if (!String(text).includes(launchCommit)) issues.push('launch_commit');
   if (!numericTokens(String(text)).some((value) => value === spendCap)) issues.push('spend_cap');
   return issues;
 }
@@ -93,11 +92,6 @@ export function verifyPaidStudyLaunchContract({
   }
 
   const resolvedGoNoteCommit = resolveCommit(repositoryRoot, goNoteCommit, 'GO note commit');
-  try {
-    git(repositoryRoot, ['merge-base', '--is-ancestor', resolvedLaunchCommit, resolvedGoNoteCommit]);
-  } catch {
-    throw new Error('GO note commit must descend from the launch commit');
-  }
   let goNoteText;
   try {
     goNoteText = git(repositoryRoot, ['show', `${resolvedGoNoteCommit}:${note.relative}`]);
@@ -107,7 +101,6 @@ export function verifyPaidStudyLaunchContract({
   const issues = paidStudyGoNoteIssues({
     text: goNoteText,
     designPath: design.relative,
-    launchCommit: resolvedLaunchCommit,
     spendCap,
   });
   if (issues.length) throw new Error(`signed GO note does not satisfy the standing contract: ${issues.join(', ')}`);
@@ -207,6 +200,151 @@ function releaseStudyLease(lease) {
   if (recorded.token !== lease.token) throw new Error('paid study lease ownership drift');
   fs.unlinkSync(lease.leasePath);
   fs.rmdirSync(lease.leaseDirectory);
+}
+
+function processIsAlive(pid) {
+  if (!Number.isInteger(pid) || pid < 1) throw new Error('paid study lease has an invalid process id');
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error?.code === 'ESRCH') return false;
+    if (error?.code === 'EPERM') return true;
+    throw error;
+  }
+}
+
+export function sealInterruptedPaidStudyLaunch({
+  studyId,
+  studyStateRoot,
+  destination,
+  reason,
+  isProcessAlive = processIsAlive,
+} = {}) {
+  validateStudyIdentity({ studyId, studyStateRoot });
+  if (!destination || !path.isAbsolute(destination)) throw new Error('interrupted destination must be absolute');
+  if (!String(reason || '').trim()) throw new Error('interrupted launch seal requires a reason');
+
+  const resolvedStateRoot = path.resolve(studyStateRoot);
+  const resolvedDestination = path.resolve(destination);
+  const studyDirectory = path.join(resolvedStateRoot, studyId);
+  const activeLeaseDirectory = path.join(studyDirectory, 'active-lease');
+  const activeLeasePath = path.join(activeLeaseDirectory, 'lease.json');
+  if (!fs.existsSync(activeLeasePath)) throw new Error(`paid study ${studyId} has no active launch to seal`);
+
+  const recorded = JSON.parse(fs.readFileSync(activeLeasePath, 'utf8'));
+  if (
+    recorded.schema !== 'machinespirits.paid-study-active-lease.v1' ||
+    recorded.study_id !== studyId ||
+    path.resolve(recorded.destination || '') !== resolvedDestination ||
+    !recorded.token
+  ) {
+    throw new Error('interrupted paid study lease identity drift');
+  }
+  if (isProcessAlive(recorded.pid)) {
+    throw new Error(`paid study ${studyId} launch process ${recorded.pid} is still active`);
+  }
+
+  const claimedLeaseDirectory = path.join(studyDirectory, `interrupted-lease-${recorded.token}`);
+  fs.renameSync(activeLeaseDirectory, claimedLeaseDirectory);
+  const claimedLeasePath = path.join(claimedLeaseDirectory, 'lease.json');
+  const studyLedgerPath = path.join(studyDirectory, 'study-ledger.jsonl');
+  let runLedger;
+  let studyLedger;
+  let appendStarted = false;
+  try {
+    const studyEvents = readJsonLines(studyLedgerPath, 'paid study ledger');
+    const launchIndex = studyEvents.findLastIndex((event) => event.type === 'study_launch_admitted');
+    const launch = studyEvents[launchIndex];
+    const sealIndex = studyEvents.findLastIndex((event) => event.type === 'study_run_sealed');
+    if (
+      launchIndex < 0 ||
+      sealIndex > launchIndex ||
+      launch?.study_id !== studyId ||
+      path.resolve(launch?.destination || '') !== resolvedDestination ||
+      !path.isAbsolute(launch?.run_ledger || '')
+    ) {
+      throw new Error('interrupted launch does not match the latest unsealed study run');
+    }
+
+    const runLedgerPath = path.resolve(launch.run_ledger);
+    if (path.dirname(runLedgerPath) !== resolvedDestination) {
+      throw new Error('interrupted run ledger is outside its destination');
+    }
+    const runEvents = readJsonLines(runLedgerPath, 'interrupted run ledger');
+    const runLaunch = runEvents.find((event) => event.type === 'launch_admitted');
+    if (!runLaunch || runLaunch.study_id !== studyId || runEvents.some((event) => event.type === 'run_sealed')) {
+      throw new Error('interrupted run ledger is not one open launch');
+    }
+    const reservedInRun = runEvents
+      .filter((event) => event.type === 'model_attempt_reserved')
+      .reduce((sum, event) => sum + Number(event.count || 0), 0);
+    const studyReserved = studyReservedAttempts(studyEvents);
+    const created = studyEvents.find((event) => event.type === 'study_created');
+    if (
+      !Number.isInteger(reservedInRun) ||
+      reservedInRun < 0 ||
+      !Number.isInteger(studyReserved) ||
+      studyReserved < reservedInRun ||
+      created?.study_id !== studyId ||
+      created?.model_attempt_ceiling !== runLaunch.spend_cap
+    ) {
+      throw new Error('interrupted launch attempt accounting drift');
+    }
+
+    runLedger = fs.openSync(runLedgerPath, 'a');
+    studyLedger = fs.openSync(studyLedgerPath, 'a');
+    appendStarted = true;
+    appendJsonLine(runLedger, {
+      type: 'run_sealed',
+      status: 'technical_failure',
+      recovery_permitted: true,
+      reason: String(reason).trim(),
+      interrupted_pid: recorded.pid,
+      reserved_attempts: reservedInRun,
+      study_reserved: studyReserved,
+    });
+    appendJsonLine(studyLedger, {
+      type: 'study_run_sealed',
+      destination: resolvedDestination,
+      run_ledger: runLedgerPath,
+      run_event_type: 'run_sealed',
+      status: 'technical_failure',
+      recovery_permitted: true,
+      reserved_in_run: reservedInRun,
+      study_reserved: studyReserved,
+      model_attempt_ceiling: created.model_attempt_ceiling,
+      reason: String(reason).trim(),
+      interrupted_pid: recorded.pid,
+    });
+    fs.closeSync(runLedger);
+    runLedger = undefined;
+    fs.closeSync(studyLedger);
+    studyLedger = undefined;
+    releaseStudyLease({
+      token: recorded.token,
+      leaseDirectory: claimedLeaseDirectory,
+      leasePath: claimedLeasePath,
+    });
+    return {
+      study_id: studyId,
+      destination: resolvedDestination,
+      run_ledger: runLedgerPath,
+      study_ledger: studyLedgerPath,
+      status: 'technical_failure',
+      recovery_permitted: true,
+      reserved_in_run: reservedInRun,
+      study_reserved: studyReserved,
+      model_attempt_ceiling: created.model_attempt_ceiling,
+    };
+  } catch (error) {
+    if (runLedger !== undefined) fs.closeSync(runLedger);
+    if (studyLedger !== undefined) fs.closeSync(studyLedger);
+    if (!appendStarted && fs.existsSync(claimedLeaseDirectory) && !fs.existsSync(activeLeaseDirectory)) {
+      fs.renameSync(claimedLeaseDirectory, activeLeaseDirectory);
+    }
+    throw error;
+  }
 }
 
 function validateStudyLedger({ events, studyId, spendCap, recoveryFrom }) {
