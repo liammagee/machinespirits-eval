@@ -77,3 +77,10 @@ with Sol, no superegos, using one fresh dialogue per arm.
   arm remain immutable. The correction validates the server against the exact
   service target and admits a second linked recovery with only the remaining
   32-attempt ceiling, reusing arm A without regenerating it.
+- 2026-09-01: The second linked recovery reached the first abliterated-Qwen
+  request, then received HTTP 400 before any output because the request sent the
+  arm's relative metadata label instead of the already-loaded absolute service
+  target; the server attempted a nonexistent Hugging Face repository lookup.
+  That failed request is preserved and charged at 17/48. The request correction
+  uses the exact loaded target, and a third linked recovery reuses arm A, starts
+  arm B from its empty first turn and exposes only the remaining 31 attempts.
