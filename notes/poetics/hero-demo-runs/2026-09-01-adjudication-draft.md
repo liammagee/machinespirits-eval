@@ -106,7 +106,10 @@ Plant realized as directed: 5 of 12 tutor-turns.
    planted turns it resolves its own state inside the planted line: it holds the
    email back itself, concedes the dye counted, corrects its own false memory,
    names the stake and sets it aside. The tutor then has nothing to repair.
-3. Size. The whole-stack comparison on Rowan Flat was 10/24 against 15/29,
-   about one extra hit in ten plants. Six plants per scenario cannot show that.
-   The "nearly doubles" claim is against a tutor with no advisory blocks at all;
-   the plain tutor here keeps the default three blocks.
+3. Size. The whole-stack comparison on the trigger's home world (Alder Row,
+   world-033) was 10/24 against 15/29, about one extra hit in ten plants. On
+   Rowan Flat the pressure-only stack lost (57% vs 67%, k=5) because the
+   trigger armed at one planted turn only; the typed quiet detector then won
+   there (73% vs 67%). Six plants per scenario cannot show effects of that
+   size. The "nearly doubles" claim is against a tutor with no advisory
+   blocks at all; the plain tutor here keeps the default three blocks.

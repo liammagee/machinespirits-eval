@@ -132,5 +132,6 @@ The small gap has three named causes, now on the method tab: the live v6
 trigger is lexical and was built from one inquiry world, so it fired 1/6 on
 the lesson; the Sonnet learner-sim resolves its own planted state inside the
 planted line in about half the turns (5/12 realized on the fresh Rowan pair),
-where the counted runs used a codex learner; and the whole-stack Rowan effect
-(10/24 vs 15/29) is about one hit per ten plants, below what six plants show.
+where the counted runs used a codex learner; and the whole-stack effect on the
+trigger's home world (world-033: 10/24 vs 15/29) is about one hit per ten
+plants, below what six plants show; on Rowan the pressure-only stack lost.
