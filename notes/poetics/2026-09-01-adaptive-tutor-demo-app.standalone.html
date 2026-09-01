@@ -19,7 +19,1572 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
-<link rel="stylesheet" href="assets/techne.css" />
+<style>
+/* ════════════════════════════════════════════════════════════════
+   techne.css — dramatic-recognition editorial design system
+   Shared stylesheet. Extracted from the arc note so design and
+   content live in separate files (Tier 1). Consumed by the arc
+   HTML and by the pandoc template (arc.template.html).
+   ════════════════════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════════════════
+     Dramatic Recognition Arc — live, data-driven synthesis note
+     editorial publication, techne palette
+     ═══════════════════════════════════════════════════════════════ */
+
+  :root {
+    --paper:     #F4EEDD;
+    --paper-2:   #ECE3CB;
+    --paper-3:   #F8F2E2;
+    --paper-4:   #FBF6E8;
+    --ink:       #14100C;
+    --ink-2:     #2C241B;
+    --ink-3:     #5C5040;
+    --ink-4:     #8C7E6A;
+    --linen:     #D8C7A9;
+    --moss:      #56683A;
+    --moss-deep: #3A4824;
+    --brick:     #A53E2E;
+    --brick-d:   #7C2C1F;
+    --ochre:     #C08A3E;
+    --ochre-d:   #8C5F1F;
+    --rule:      rgba(28, 22, 16, 0.18);
+    --rule-soft: rgba(28, 22, 16, 0.10);
+
+    --s-mini: clamp(0.62rem, 0.58rem + 0.14vw, 0.72rem);
+    --s-0:    clamp(0.78rem, 0.74rem + 0.18vw, 0.90rem);
+    --s-1:    clamp(0.95rem, 0.90rem + 0.20vw, 1.05rem);
+    --s-2:    clamp(1.05rem, 1.00rem + 0.26vw, 1.20rem);
+    --s-3:    clamp(1.30rem, 1.20rem + 0.50vw, 1.60rem);
+    --s-4:    clamp(1.80rem, 1.50rem + 1.40vw, 2.80rem);
+    --s-5:    clamp(2.60rem, 1.80rem + 3.50vw, 5.20rem);
+    --s-6:    clamp(3.40rem, 2.20rem + 5.20vw, 7.40rem);
+
+    --lead: 1.55;
+    --ease: cubic-bezier(.22,.61,.36,1);
+
+    --toc-w: 17rem;
+  }
+
+  [data-theme="dark"] {
+    --paper:     #14100C;
+    --paper-2:   #1B1612;
+    --paper-3:   #1F1A14;
+    --paper-4:   #221C16;
+    --ink:       #F4EEDD;
+    --ink-2:     #E0D8C3;
+    --ink-3:     #B9AD96;
+    --ink-4:     #8C7E6A;
+    --linen:     #3A322A;
+    --moss:      #8DA868;
+    --moss-deep: #B5CD92;
+    --brick:     #E36953;
+    --brick-d:   #F08A75;
+    --ochre:     #E6B265;
+    --ochre-d:   #F3CB88;
+    --rule:      rgba(244, 238, 221, 0.18);
+    --rule-soft: rgba(244, 238, 221, 0.08);
+  }
+
+  /* Stark skin (A/B) — shared with the dashboard so a framed note re-skins when
+     the tweaks panel flips data-skin (mirrored into the iframe by the wrapper). */
+  :root[data-skin="stark"] {
+    --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA; --paper-4:#FFFFFF;
+    --ink:#0A0A0A; --ink-2:#262626; --ink-3:#525252; --ink-4:#8A8A8A;
+    --linen:#D4D4D8; --moss:#171717; --moss-deep:#000000;
+    --brick:#E63946; --brick-d:#C1121F; --ochre:#737373; --ochre-d:#525252;
+    --rule:rgba(10,10,10,0.16); --rule-soft:rgba(10,10,10,0.07);
+  }
+  :root[data-skin="stark"][data-theme="dark"] {
+    --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618; --paper-4:#1C1C1F;
+    --ink:#FAFAFA; --ink-2:#E4E4E7; --ink-3:#A1A1AA; --ink-4:#6F6F76;
+    --linen:#2A2A2E; --moss:#F5F5F5; --moss-deep:#FFFFFF;
+    --brick:#E63946; --brick-d:#F4606C; --ochre:#A1A1AA; --ochre-d:#C4C4CC;
+    --rule:rgba(250,250,250,0.16); --rule-soft:rgba(250,250,250,0.08);
+  }
+  /* Stark is flat: drop the note's parchment grain / dark wash. */
+  :root[data-skin="stark"] body::before, :root[data-skin="stark"] body::after { display:none; }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; background: var(--paper); scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink-2);
+    font-family: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+    font-size: var(--s-1);
+    line-height: var(--lead);
+    font-feature-settings: "ss01", "kern", "liga";
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    min-height: 100vh;
+    letter-spacing: 0.003em;
+    transition: background-color .3s var(--ease), color .3s var(--ease);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(20,16,12,0.07) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(165,62,46,0.04), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(86,104,58,0.05), transparent 70%);
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::before {
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(244,238,221,0.06) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(227,105,83,0.05), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(141,168,104,0.05), transparent 70%);
+    mix-blend-mode: screen;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.18;
+    background-image: radial-gradient(rgba(20,16,12,0.55) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::after {
+    opacity: 0.10;
+    background-image: radial-gradient(rgba(244,238,221,0.45) 0.5px, transparent 0.5px);
+    mix-blend-mode: screen;
+  }
+
+  /* ═══════ typography ═══════ */
+  h1, h2, h3, h4, .display {
+    font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+    font-optical-sizing: auto;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    font-feature-settings: "ss01", "ss02", "kern";
+    margin: 0;
+  }
+  p { margin: 0 0 0.95em; }
+  em { font-style: italic; color: var(--ink); }
+  strong { font-weight: 600; color: var(--ink); }
+  a { color: var(--brick-d); text-decoration: none; border-bottom: 1px solid currentColor; transition: color .25s var(--ease); }
+  a:hover { color: var(--brick); }
+  a.bare { border-bottom: none; }
+
+  .label {
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  mark.kw {
+    background: linear-gradient(180deg, transparent 60%, rgba(192,138,62,0.30) 60%);
+    color: inherit;
+    padding: 0 0.05em;
+  }
+
+  /* ═══════ sticky reading rail ═══════ */
+  .rail {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .rail__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    max-width: 100rem;
+    margin: 0 auto;
+    padding: 0.7em clamp(0.8rem, 3vw, 2.5rem);
+  }
+  .rail__title { flex: 0 0 auto; font-style: italic; color: var(--ink); }
+  .rail__dot { width: 5px; height: 5px; background: var(--moss); border-radius: 50%; flex: 0 0 auto; }
+  .rail__nav {
+    flex: 1;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .rail__nav::-webkit-scrollbar { display: none; }
+  .rail__nav a {
+    border-bottom: none;
+    color: var(--ink-3);
+    padding: 0.3em 0;
+    margin-right: 1.1em;
+    white-space: nowrap;
+    transition: color .15s var(--ease);
+  }
+  .rail__nav a:hover { color: var(--ink); }
+  .rail__nav a.active { color: var(--brick-d); }
+  .rail__nav a.active::before { content: "▸ "; color: var(--brick); }
+  @media (max-width: 70rem) { .rail__title { display: none; } .rail__nav { display: none; } }
+  .rail__progress {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--brick);
+    width: 0%;
+    transition: width .1s linear;
+  }
+  .rail__actions { display: flex; gap: 0.5em; flex: 0 0 auto; align-items: center; }
+  .rail__btn {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.85em;
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+    letter-spacing: 0.16em;
+  }
+  .rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .rail__btn--icon { padding: 0.35em 0.6em; }
+  .rail__btn--icon svg { display: block; width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  /* ═══════ live beacon ═══════ */
+  .beacon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.3em 0.7em 0.3em 0.55em;
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    color: var(--ink-3);
+    cursor: help;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease);
+  }
+  .beacon__pulse {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink-4);
+    flex: 0 0 auto;
+  }
+  .beacon[data-state="checking"] .beacon__pulse { background: var(--ochre); animation: beaconPulse 1.2s var(--ease) infinite; }
+  .beacon[data-state="live"] { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 55%, var(--rule)); }
+  .beacon[data-state="live"] .beacon__pulse { background: var(--moss); box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 70%, transparent); animation: beaconPulse 2s var(--ease) infinite; }
+  .beacon[data-state="offline"] { color: var(--ink-3); border-color: var(--rule); }
+  .beacon[data-state="offline"] .beacon__pulse { background: var(--ink-4); }
+  .beacon:hover { color: var(--ink); }
+
+  @keyframes beaconPulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 65%, transparent); }
+    70% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--moss) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 0%, transparent); }
+  }
+
+  /* ═══════ toc drawer ═══════ */
+  .toc-toggle {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.75em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+  }
+  .toc-toggle:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc-toggle svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  .toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--toc-w);
+    height: 100vh;
+    z-index: 25;
+    background: var(--paper-4);
+    border-right: 1px solid var(--rule);
+    box-shadow: 8px 0 24px -16px rgba(20,16,12,0.20);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform .35s var(--ease);
+    padding: 4.2em 1.2em 2em;
+    font-family: "Source Serif 4", serif;
+  }
+  .toc[aria-hidden="false"] { transform: translateX(0); }
+  .toc__header {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.4em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .toc__title {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-size: var(--s-2);
+    color: var(--ink);
+    line-height: 1.1;
+    margin: 0 0 1.2em;
+  }
+  .toc__close {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.2em 0.5em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+  }
+  .toc__close:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc__list { list-style: none; padding: 0; margin: 0 0 1.5em; }
+  .toc__item { padding: 0; margin: 0 0 0.15em; border-left: 2px solid transparent; padding-left: 0.6em; transition: border-color .2s var(--ease); }
+  .toc__item.is-active { border-left-color: var(--brick); }
+  .toc__item a {
+    border-bottom: none;
+    color: var(--ink-3);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    padding: 0.32em 0;
+    font-size: 0.93em;
+    line-height: 1.3;
+    transition: color .15s var(--ease);
+  }
+  .toc__item a:hover { color: var(--ink); }
+  .toc__item.is-active > a { color: var(--brick-d); font-weight: 500; }
+  .toc__num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    color: var(--ink-4);
+    letter-spacing: 0.06em;
+    flex: 0 0 1.6em;
+  }
+  .toc__item.is-active > a > .toc__num { color: var(--brick); }
+  .toc__sub {
+    list-style: none;
+    padding: 0 0 0.4em;
+    margin: 0 0 0 1.7em;
+    border-left: 1px dotted var(--rule);
+  }
+  .toc__sub li { margin: 0; }
+  .toc__sub a {
+    border-bottom: none;
+    color: var(--ink-4);
+    font-size: 0.82em;
+    padding: 0.18em 0 0.18em 0.8em;
+    display: block;
+    line-height: 1.25;
+    transition: color .15s var(--ease);
+  }
+  .toc__sub a:hover { color: var(--ink-2); }
+  .toc__sub a.is-active { color: var(--brick-d); }
+  .toc__meta {
+    border-top: 1px solid var(--rule);
+    margin-top: 1.4em;
+    padding-top: 1em;
+    font-size: 0.84em;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+  .toc__meta dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); margin-top: 0.7em; }
+  .toc__meta dd { margin: 0.1em 0 0; color: var(--ink-2); }
+
+  .toc__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 24;
+    background: rgba(20,16,12,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s var(--ease);
+  }
+  .toc[aria-hidden="false"] ~ .toc__scrim { opacity: 1; pointer-events: auto; }
+  body[data-theme="dark"] .toc__scrim { background: rgba(0,0,0,0.55); }
+
+  /* desktop: pin the TOC permanently if wide enough */
+  @media (min-width: 92rem) {
+    .toc { transform: translateX(0); box-shadow: none; padding-top: 4.2em; }
+    .toc__close { display: none; }
+    .toc__scrim { display: none; }
+    main { padding-left: var(--toc-w); }
+    .rail { padding-left: 0; }
+    .toc-toggle { display: none; }
+  }
+
+  /* ═══════ layout shell ═══════ */
+  .shell {
+    max-width: 92rem;
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 4vw, 4rem);
+  }
+
+  .diag {
+    display: grid;
+    grid-template-columns:
+      [margin-l] minmax(0, 13rem)
+      [body] minmax(0, 38rem)
+      [margin-r] minmax(0, 13rem);
+    gap: clamp(1rem, 2vw, 2.5rem);
+    align-items: start;
+    margin: 0 auto;
+    max-width: 80rem;
+  }
+  .diag > .body { grid-column: body; }
+  .diag > .ml { grid-column: margin-l; padding-top: 0.4em; }
+  .diag > .mr { grid-column: margin-r; padding-top: 0.4em; }
+  .diag > .full { grid-column: 1 / -1; max-width: 80rem; margin: 0 auto; }
+  .diag + .diag { margin-top: 1em; }
+
+  @media (max-width: 60rem) {
+    .diag { grid-template-columns: minmax(0, 1fr); }
+    .diag > .body, .diag > .ml, .diag > .mr { grid-column: 1; min-width: 0; }
+    .diag > .ml, .diag > .mr {
+      border-left: 2px solid var(--rule);
+      padding-left: 0.9em;
+      margin-bottom: 1em;
+      color: var(--ink-3);
+      font-size: 0.9em;
+    }
+  }
+
+  /* ═══════ hero ═══════ */
+  .hero {
+    border-bottom: 1px solid var(--rule);
+    padding: clamp(2rem, 5vw, 5rem) 0 clamp(2rem, 4vw, 4rem);
+    position: relative;
+  }
+  .hero__rune {
+    position: absolute;
+    top: 1rem;
+    left: clamp(1rem, 4vw, 4rem);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .hero__rune span { color: var(--brick-d); }
+  .hero__masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 2.5em auto 2em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+  }
+  .hero__rule { flex: 1; height: 1px; background: var(--rule); margin: 0 1em; position: relative; top: -0.4em; }
+  .hero__h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: var(--s-5);
+    line-height: 0.96;
+    font-weight: 460;
+    margin: 0 auto 0.4em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    letter-spacing: -0.022em;
+    color: var(--ink);
+  }
+  .hero__h1 .em {
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+  }
+  .hero__subtitle {
+    margin: 0.6em auto 0;
+    max-width: 56rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    font-family: "Fraunces", serif;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    font-size: var(--s-3);
+    font-weight: 320;
+    color: var(--ink-3);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .hero__latest {
+    margin: 1.5em auto 0;
+    max-width: 80rem;
+    padding: 1em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    background: color-mix(in srgb, var(--paper-3) 72%, transparent);
+    display: grid;
+    grid-template-columns: minmax(0, 0.32fr) minmax(0, 0.68fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: baseline;
+  }
+  @media (max-width: 60rem) { .hero__latest { grid-template-columns: 1fr; } }
+  .hero__latest strong {
+    display: block;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-3);
+    font-weight: 430;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero__latest p {
+    margin: 0;
+    font-size: var(--s-1);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .hero__lede {
+    margin: 2.4em auto 0;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    display: grid;
+    grid-template-columns: minmax(0, 38rem) minmax(0, 22rem);
+    gap: clamp(1.5rem, 4vw, 4rem);
+  }
+  @media (max-width: 60rem) { .hero__lede { grid-template-columns: 1fr; } }
+  .hero__lede p {
+    font-size: var(--s-2);
+    line-height: 1.5;
+    color: var(--ink-2);
+    font-weight: 350;
+    font-family: "Source Serif 4", serif;
+    margin: 0 0 0.85em;
+  }
+  .hero__lede p:first-of-type::first-letter {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: 3.4em;
+    line-height: 0.9;
+    float: left;
+    padding: 0.05em 0.08em 0 0;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .hero__num {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid var(--moss);
+    padding-left: 1.4em;
+    align-self: stretch;
+  }
+  .hero__num__big {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.9;
+    font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 144;
+    color: var(--moss-deep);
+    font-weight: 320;
+    letter-spacing: -0.04em;
+  }
+  .hero__num__big .frac {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 280;
+  }
+  .hero__num__sub {
+    margin-top: 0.5em;
+    font-size: var(--s-0);
+    color: var(--ink-3);
+    line-height: 1.45;
+    max-width: 22em;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.4em 0 0;
+  }
+
+  /* ═══════ section structure ═══════ */
+  .s {
+    padding: clamp(3rem, 6vw, 6rem) 0;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: 4em;
+  }
+  .s:last-of-type { border-bottom: none; }
+  .s__num {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 80, "WONK" 0, "opsz" 144;
+    color: var(--moss);
+    letter-spacing: -0.05em;
+    user-select: none;
+    margin: 0;
+  }
+  .s__num .glyph {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 240;
+  }
+  .s__h {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-4);
+    line-height: 1.05;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    font-weight: 460;
+    margin: 0.4em 0 1em;
+    color: var(--ink);
+    letter-spacing: -0.018em;
+  }
+  .s__h em {
+    font-style: italic;
+    color: var(--brick-d);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+  }
+  .s__kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin: 0 0 0.6em;
+  }
+  .s__sub {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-weight: 480;
+    margin: 1.4em 0 0.6em;
+    line-height: 1.2;
+    scroll-margin-top: 4em;
+  }
+
+  /* ═══════ marginalia ═══════ */
+  .note {
+    font-family: "Source Serif 4", serif;
+    font-size: 0.86em;
+    line-height: 1.5;
+    color: var(--ink-3);
+    font-style: italic;
+  }
+  .note__lbl {
+    display: block;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-bottom: 0.5em;
+    font-weight: 500;
+  }
+  .note--moss .note__lbl { color: var(--moss-deep); }
+  .note--ink .note__lbl { color: var(--ink-3); }
+  .note--ochre .note__lbl { color: var(--ochre-d); }
+  .note p { margin: 0 0 0.6em; }
+
+  /* ═══════ pull quote ═══════ */
+  .pq {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-weight: 360;
+    border-left: 2px solid var(--brick);
+    padding: 0.4em 0 0.4em 1.2em;
+    margin: 1.4em 0;
+    letter-spacing: -0.005em;
+  }
+  .pq cite, .pq .cite {
+    display: block;
+    font-style: normal;
+    font-variation-settings: normal;
+    margin-top: 0.5em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  /* ═══════ glossary ═══════ */
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+    gap: 1.1em 1.6em;
+    margin-top: 1em;
+  }
+  .gl-row {
+    border-top: 1px dotted var(--rule);
+    padding-top: 0.7em;
+  }
+  .gl-row dt {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    line-height: 1.2;
+  }
+  .gl-row dt .gloss {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ochre-d);
+    font-style: normal;
+    margin-left: 0.5em;
+  }
+  .gl-row dd {
+    margin: 0.35em 0 0;
+    color: var(--ink-2);
+    font-size: 0.97em;
+    line-height: 1.5;
+  }
+
+  /* ═══════ inline glossary terms (tooltip on hover) ═══════ */
+  .gl-term {
+    font-style: normal;
+    border-bottom: 1px dotted var(--ochre);
+    cursor: help;
+    position: relative;
+    transition: color .15s var(--ease);
+  }
+  .gl-term:hover, .gl-term:focus {
+    color: var(--ochre-d);
+    outline: none;
+  }
+  .gl-term[data-gloss]::after {
+    content: attr(data-gloss);
+    display: none; /* Hidden glosses must not widen narrow pages. */
+    position: absolute;
+    bottom: calc(100% + 0.6em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.85em;
+    line-height: 1.4;
+    padding: 0.55em 0.9em;
+    border-radius: 2px;
+    width: max-content;
+    max-width: 18em;
+    white-space: normal;
+    box-shadow: 0 8px 20px -10px rgba(20,16,12,0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+    text-align: left;
+    letter-spacing: 0;
+  }
+  .gl-term[data-gloss]::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 0.25em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    border: 5px solid transparent;
+    border-top-color: var(--ink);
+    opacity: 0;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+  }
+  .gl-term:hover::after, .gl-term:focus::after,
+  .gl-term:hover::before, .gl-term:focus::before {
+    display: block;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ═══════ claim/counter pairs ═══════ */
+  .claim {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.8em 1.4em;
+    align-items: baseline;
+    margin: 0 0 2.4em;
+  }
+  .claim__no {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-4);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    color: var(--ink-4);
+    font-style: italic;
+    width: 1.6em;
+    text-align: right;
+  }
+  .claim__h {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-3);
+    line-height: 1.15;
+    font-weight: 460;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.012em;
+  }
+  .claim__body { grid-column: 2; margin-top: 0.6em; color: var(--ink-2); }
+  .claim__body p { font-size: var(--s-1); line-height: 1.6; }
+  .claim__counter {
+    grid-column: 2;
+    margin-top: 0.4em;
+    border-left: 2px solid var(--brick);
+    padding: 0.2em 0 0.2em 1em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.95em;
+    color: var(--ink-3);
+  }
+  .claim__counter::before {
+    content: "caveat.";
+    display: inline;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-right: 0.6em;
+    font-weight: 500;
+  }
+
+  /* ═══════ status chips ═══════ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.25em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    margin-right: 0.4em;
+    margin-bottom: 0.4em;
+  }
+  .chip--moss { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 50%, var(--rule)); }
+  .chip--brick { color: var(--brick-d); border-color: color-mix(in srgb, var(--brick) 50%, var(--rule)); }
+  .chip--ochre { color: var(--ochre-d); border-color: color-mix(in srgb, var(--ochre) 50%, var(--rule)); }
+  .chip--ink { color: var(--ink); border-color: var(--ink-3); background: var(--paper); }
+  .chip__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ═══════ deeplink pills (open in browser) ═══════ */
+  .deeplink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.35em 0.7em 0.35em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .deeplink:hover {
+    color: var(--brick-d);
+    border-color: color-mix(in srgb, var(--brick) 60%, var(--rule));
+    background: var(--paper-4);
+  }
+  .deeplink__arrow {
+    transition: transform .2s var(--ease);
+    color: var(--brick);
+    font-weight: 600;
+  }
+  .deeplink:hover .deeplink__arrow { transform: translateX(2px); }
+  .deeplink[data-live="checking"] .deeplink__count::after { content: " · …"; color: var(--ochre); }
+  .deeplink[data-live="live"] { border-color: color-mix(in srgb, var(--moss) 45%, var(--rule)); }
+  .deeplink[data-live="live"] .deeplink__count { color: var(--moss-deep); }
+  .deeplink[data-live="offline"] { opacity: 0.7; }
+  .deeplink__count {
+    font-style: normal;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+  }
+
+  .deeplink-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.1em 0 0.4em;
+  }
+
+  /* ═══════ timeline ═══════ */
+  .timeline {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    margin-top: 1em;
+  }
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1.4em;
+    align-items: start;
+    padding: 1.2em 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .timeline-row .when {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    padding-top: 0.4em;
+  }
+  .timeline-row h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .timeline-row p { margin: 0; color: var(--ink-2); font-size: 0.97em; }
+  @media (max-width: 60rem) {
+    .timeline-row { grid-template-columns: 1fr; gap: 0.4em; }
+  }
+
+  /* ═══════ evidence grid ═══════ */
+  .filters { display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0 0 1.4em; }
+  .filter-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease);
+  }
+  .filter-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .filter-btn[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .ev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+    gap: 1em;
+  }
+  .ev-card {
+    padding: 1.2em 1.3em;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink-4);
+    transition: border-color .2s var(--ease), background .2s var(--ease);
+    display: flex;
+    flex-direction: column;
+  }
+  .ev-card.is-hidden { display: none; }
+  .ev-card[data-status="strong"] { border-left-color: var(--moss); }
+  .ev-card[data-status="boundary"] { border-left-color: var(--ochre); }
+  .ev-card[data-status="risk"] { border-left-color: var(--brick); }
+  .ev-card[data-status="output"] { border-left-color: var(--ink-3); }
+  .ev-card h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    margin: 0.4em 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .ev-card p { margin: 0 0 0.7em; color: var(--ink-2); font-size: 0.95em; line-height: 1.5; }
+  .ev-card .deeplink-row { margin-top: auto; }
+
+  /* ═══════ accordion ═══════ */
+  .accordion {
+    border-top: 1px solid var(--rule);
+  }
+  .accordion:last-of-type { border-bottom: 1px solid var(--rule); }
+  .accordion summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1em 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+  }
+  .accordion summary::-webkit-details-marker { display: none; }
+  .accordion summary h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .accordion summary .acc-marker {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--brick-d);
+    font-size: var(--s-1);
+  }
+  .accordion[open] summary .acc-marker::before { content: "–"; }
+  .accordion:not([open]) summary .acc-marker::before { content: "+"; }
+  .accordion .body { padding: 0 0 1.3em; color: var(--ink-2); }
+  .accordion .body p { margin: 0 0 0.7em; }
+
+  /* ═══════ spec / route ═══════ */
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    gap: 1em;
+    margin-top: 1.3em;
+  }
+  .spec-box {
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    padding: 1em 1.1em;
+  }
+  .spec-box h4 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.6em;
+  }
+  .spec-box ul { list-style: none; padding: 0; margin: 0; }
+  .spec-box li {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82em;
+    color: var(--ink-2);
+    padding: 0.18em 0;
+    border-bottom: 1px dotted var(--rule-soft);
+  }
+  .spec-box li:last-child { border-bottom: none; }
+
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+    gap: 0.7em;
+    margin-top: 1.2em;
+    counter-reset: step;
+  }
+  .ladder-step {
+    counter-increment: step;
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    padding: 0.9em 1em;
+    position: relative;
+    font-size: 0.92em;
+  }
+  .ladder-step::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    color: var(--ochre-d);
+    display: block;
+    margin-bottom: 0.4em;
+  }
+  .ladder-step strong {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    color: var(--ink);
+    font-weight: 460;
+    display: block;
+    margin-bottom: 0.2em;
+  }
+  .ladder-step span { color: var(--ink-3); font-size: 0.93em; }
+
+  /* ═══════ callouts ═══════ */
+  .callout {
+    border: 1px solid color-mix(in srgb, var(--brick) 40%, var(--rule));
+    background: linear-gradient(180deg, rgba(165,62,46,0.06), rgba(165,62,46,0.02) 80%, transparent);
+    padding: 1.2em 1.3em;
+    margin-top: 1.4em;
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .callout strong { color: var(--brick-d); font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.18em; text-transform: uppercase; }
+
+  /* ═══════ interactive chart ═══════ */
+  figure.chart-fig { margin: 1.4em 0 1em; }
+  figure.chart-fig figcaption {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 0.7em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em 1.4em;
+    align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.5em;
+  }
+  figure.chart-fig figcaption .cap-title { color: var(--brick-d); }
+  figure.chart-fig figcaption .legend {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.8em;
+    margin-left: auto;
+  }
+  figure.chart-fig figcaption .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--ink-3);
+  }
+  figure.chart-fig figcaption .legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+  figure.chart-fig figcaption .legend .lg-routine { color: var(--ink-4); }
+  figure.chart-fig figcaption .legend .lg-none    { color: var(--ochre); }
+  figure.chart-fig figcaption .legend .lg-perip   { color: var(--moss-deep); }
+
+  .chart { width: 100%; height: auto; }
+  .chart .axis-line { stroke: var(--rule); stroke-width: 1; }
+  .chart .axis-tick { stroke: var(--rule-soft); stroke-width: 1; stroke-dasharray: 2 3; }
+  .chart .axis-lbl  { fill: var(--ink-4); font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.05em; }
+  .chart .metric-lbl { fill: var(--ink-2); font-family: "Source Serif 4", serif; font-size: 12px; font-style: italic; }
+  .chart .bar-routine { fill: var(--ink-4); }
+  .chart .bar-none    { fill: var(--ochre); }
+  .chart .bar-perip   { fill: var(--moss-deep); }
+  .chart .bar         { transition: opacity .2s var(--ease); transform-origin: left center; }
+  .chart .bar:hover   { opacity: 0.82; }
+  .chart .bar-val     { fill: var(--ink-2); font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 500; }
+  .chart .bar-rect    { rx: 1; ry: 1; }
+  .chart .anim        { transform-origin: left; animation: barIn .9s var(--ease) both; }
+
+  @keyframes barIn {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+
+  /* ═══════ transcript block ═══════ */
+  .tx {
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    margin: 1.1em 0;
+  }
+  .tx > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.7em 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1px solid transparent;
+  }
+  .tx > summary::-webkit-details-marker { display: none; }
+  .tx > summary .tx__title { color: var(--brick-d); }
+  .tx > summary .tx__hint { color: var(--ink-4); font-style: italic; text-transform: none; letter-spacing: 0.02em; font-family: "Source Serif 4", serif; font-size: 0.95em; }
+  .tx[open] > summary { border-bottom-color: var(--rule); }
+  .tx[open] > summary::after { content: "–"; color: var(--brick-d); }
+  .tx:not([open]) > summary::after { content: "+"; color: var(--brick-d); }
+  .tx__body {
+    padding: 0.8em 1.2em 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.85em;
+    line-height: 1.55;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    max-height: 26em;
+    overflow-y: auto;
+  }
+  .tx__body .tx-stage   { color: var(--ink-4); font-style: italic; }
+  .tx__body .tx-tutor   { color: var(--moss-deep); }
+  .tx__body .tx-learner { color: var(--brick-d); }
+  .tx__body .tx-label   { display: inline-block; min-width: 4.2em; font-weight: 600; color: var(--ink); }
+  .tx__caption {
+    padding: 0.6em 1.2em 0.9em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    color: var(--ink-3);
+    font-size: 0.88em;
+    border-top: 1px dotted var(--rule);
+    background: var(--paper-3);
+  }
+  .tx__caption strong { font-family: "JetBrains Mono", monospace; font-style: normal; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--moss-deep); margin-right: 0.5em; }
+
+  /* ═══════ footer ═══════ */
+  .colophon {
+    padding: 3em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    color: var(--ink-3);
+    font-size: 0.88em;
+    line-height: 1.55;
+  }
+  .colophon code {
+    font-family: "JetBrains Mono", monospace;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    padding: 0.1em 0.4em;
+    font-size: 0.92em;
+    color: var(--ink-2);
+  }
+  .colophon dl { display: grid; grid-template-columns: 12rem 1fr; gap: 0.5em 1.2em; margin: 1em 0 0; }
+  .colophon dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brick-d); }
+  .colophon dd { margin: 0; }
+  @media (max-width: 50rem) { .colophon dl { grid-template-columns: 1fr; } .colophon dd { margin: 0 0 0.6em; } }
+  .colophon__live {
+    border: 1px dashed var(--rule);
+    padding: 0.9em 1.1em;
+    margin-top: 1.4em;
+    background: var(--paper-3);
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .colophon__live code { background: var(--paper-4); }
+
+  /* ═══════ print ═══════ */
+  @media print {
+    body { background: #fff; color: #000; }
+    body::before, body::after, .rail, .rail__actions, .filters, .toc, .toc__scrim, .toc-toggle, .beacon, .deeplink, .deeplink-row { display: none !important; }
+    main { padding-left: 0 !important; }
+    .accordion .body, .tx[open] .tx__body { display: block !important; }
+    .accordion summary .acc-marker, .tx summary::after { display: none; }
+    .s { break-inside: avoid; }
+    .ev-card { break-inside: avoid; }
+    .chart { break-inside: avoid; }
+    .gl-term { border-bottom: none; }
+    .gl-term::after, .gl-term::before { display: none; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     Machine Spirits site skin
+
+     Opt-in with <html data-skin="machine-spirits">. This carries the
+     main site's Swiss / neo-brutalist language into public research
+     explainers without changing the parchment skin used by other notes.
+     ═══════════════════════════════════════════════════════════════ */
+  :root[data-skin="machine-spirits"] {
+    --paper: #FFFFFF;
+    --paper-2: #F4F4F4;
+    --paper-3: #FAFAFA;
+    --paper-4: #FFFFFF;
+    --ink: #0A0A0A;
+    --ink-2: #242424;
+    --ink-3: #555555;
+    --ink-4: #858585;
+    --linen: #D8D8D8;
+    --moss: #0A0A0A;
+    --moss-deep: #0A0A0A;
+    --brick: #E63946;
+    --brick-d: #C1121F;
+    --ochre: #777777;
+    --ochre-d: #4F4F4F;
+    --rule: rgba(10, 10, 10, 0.22);
+    --rule-soft: rgba(10, 10, 10, 0.08);
+  }
+
+  :root[data-skin="machine-spirits"][data-theme="dark"] {
+    --paper: #0A0A0A;
+    --paper-2: #111111;
+    --paper-3: #151515;
+    --paper-4: #1A1A1A;
+    --ink: #FAFAFA;
+    --ink-2: #E4E4E4;
+    --ink-3: #B4B4B4;
+    --ink-4: #777777;
+    --linen: #303030;
+    --moss: #FAFAFA;
+    --moss-deep: #FFFFFF;
+    --brick: #E63946;
+    --brick-d: #F05A66;
+    --ochre: #A0A0A0;
+    --ochre-d: #D0D0D0;
+    --rule: rgba(250, 250, 250, 0.22);
+    --rule-soft: rgba(250, 250, 250, 0.09);
+  }
+
+  :root[data-skin="machine-spirits"] body {
+    cursor: crosshair;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-feature-settings: "kern", "liga";
+    letter-spacing: 0;
+  }
+
+  :root[data-skin="machine-spirits"] body::before {
+    display: block;
+    opacity: 0.72;
+    background-image:
+      linear-gradient(var(--rule-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--rule-soft) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] body::after {
+    display: block;
+    inset: -30vh -15vw auto auto;
+    width: 58vw;
+    height: 70vh;
+    opacity: 0.055;
+    background: var(--brick);
+    transform: rotate(-18deg);
+    transform-origin: center;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] h1,
+  :root[data-skin="machine-spirits"] h2,
+  :root[data-skin="machine-spirits"] h3,
+  :root[data-skin="machine-spirits"] h4,
+  :root[data-skin="machine-spirits"] .display,
+  :root[data-skin="machine-spirits"] .hero__h1,
+  :root[data-skin="machine-spirits"] .hero__subtitle,
+  :root[data-skin="machine-spirits"] .hero__lede p,
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter,
+  :root[data-skin="machine-spirits"] .s__num,
+  :root[data-skin="machine-spirits"] .s__h,
+  :root[data-skin="machine-spirits"] .s__sub,
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h,
+  :root[data-skin="machine-spirits"] .ev-card h3,
+  :root[data-skin="machine-spirits"] .gl-row dt,
+  :root[data-skin="machine-spirits"] .pq,
+  :root[data-skin="machine-spirits"] .toc__title {
+    font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-variation-settings: normal;
+  }
+
+  :root[data-skin="machine-spirits"] .label,
+  :root[data-skin="machine-spirits"] .rail,
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__header,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .toc__num,
+  :root[data-skin="machine-spirits"] .toc__meta dt,
+  :root[data-skin="machine-spirits"] .hero__rune,
+  :root[data-skin="machine-spirits"] .s__kicker,
+  :root[data-skin="machine-spirits"] .note__lbl,
+  :root[data-skin="machine-spirits"] .pq cite,
+  :root[data-skin="machine-spirits"] .pq .cite,
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink,
+  :root[data-skin="machine-spirits"] .filter-btn,
+  :root[data-skin="machine-spirits"] .gl-row dt .gloss,
+  :root[data-skin="machine-spirits"] code,
+  :root[data-skin="machine-spirits"] .colophon code {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  :root[data-skin="machine-spirits"] .rail {
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    border-bottom: 3px solid var(--ink);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+  }
+  :root[data-skin="machine-spirits"] .rail__title { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .rail__dot { width: 8px; height: 8px; border-radius: 0; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .filter-btn {
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  :root[data-skin="machine-spirits"] .rail__btn:hover,
+  :root[data-skin="machine-spirits"] .toc-toggle:hover,
+  :root[data-skin="machine-spirits"] .toc__close:hover,
+  :root[data-skin="machine-spirits"] .filter-btn:hover,
+  :root[data-skin="machine-spirits"] .filter-btn[aria-pressed="true"] {
+    background: var(--brick);
+    border-color: var(--brick);
+    color: #FFFFFF;
+  }
+
+  :root[data-skin="machine-spirits"] .toc {
+    border-right: 3px solid var(--ink);
+    box-shadow: 12px 0 0 color-mix(in srgb, var(--brick) 20%, transparent);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  :root[data-skin="machine-spirits"] .toc__title { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .hero {
+    border-top: 0;
+    border-bottom: 4px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__masthead { border-top: 4px solid var(--ink); padding-top: 1.1em; }
+  :root[data-skin="machine-spirits"] .hero__rule { height: 4px; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .hero__h1 {
+    font-size: clamp(3.2rem, 2rem + 6.8vw, 8.8rem);
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.065em;
+  }
+  :root[data-skin="machine-spirits"] .hero__h1 .em {
+    color: var(--brick);
+    font-style: normal;
+    font-variation-settings: normal;
+  }
+  :root[data-skin="machine-spirits"] .hero__subtitle {
+    max-width: 60rem;
+    font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.75rem);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+  :root[data-skin="machine-spirits"] .hero__lede {
+    border: 4px solid var(--ink);
+    padding: clamp(1.2rem, 2.5vw, 2.2rem);
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    box-shadow: 14px 14px 0 color-mix(in srgb, var(--brick) 22%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__lede p { font-weight: 400; }
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter { color: var(--brick); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .s { border-bottom: 3px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .s__num { color: var(--ink); font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__num .glyph,
+  :root[data-skin="machine-spirits"] .s__h em { color: var(--brick); font-style: normal; }
+  :root[data-skin="machine-spirits"] .s__h { font-weight: 700; letter-spacing: -0.04em; }
+  :root[data-skin="machine-spirits"] .s__sub { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__kicker { color: var(--brick-d); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .note,
+  :root[data-skin="machine-spirits"] .claim__counter,
+  :root[data-skin="machine-spirits"] .gl-term[data-gloss]::after,
+  :root[data-skin="machine-spirits"] .colophon__live {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-style: normal;
+  }
+  :root[data-skin="machine-spirits"] .pq { font-style: normal; font-weight: 600; border-left-width: 5px; }
+  :root[data-skin="machine-spirits"] .gl-row { border-top: 2px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .gl-row dt { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .claim,
+  :root[data-skin="machine-spirits"] .ev-card,
+  :root[data-skin="machine-spirits"] .spec-box,
+  :root[data-skin="machine-spirits"] .callout,
+  :root[data-skin="machine-spirits"] .tx {
+    border: 2px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .claim { padding: 1.2em; box-shadow: 8px 8px 0 var(--rule-soft); }
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .ev-card {
+    border-left-width: 8px;
+    box-shadow: 8px 8px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .ev-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 11px 11px 0 color-mix(in srgb, var(--brick) 18%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .ev-card h3 { font-weight: 700; }
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink { border-width: 2px; }
+  :root[data-skin="machine-spirits"] .chip__dot { border-radius: 0; }
+  :root[data-skin="machine-spirits"] .deeplink:hover { background: var(--brick); border-color: var(--brick); color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .deeplink:hover .deeplink__arrow { color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .callout {
+    border-left: 8px solid var(--brick);
+    background: color-mix(in srgb, var(--brick) 7%, var(--paper));
+  }
+
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame,
+  :root[data-skin="machine-spirits"] .ledger {
+    border-color: var(--ink);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame {
+    border-width: 3px;
+    box-shadow: 10px 10px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon figcaption,
+  :root[data-skin="machine-spirits"] .chart-legend,
+  :root[data-skin="machine-spirits"] .caption-fine,
+  :root[data-skin="machine-spirits"] .ledger {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace !important;
+  }
+  :root[data-skin="machine-spirits"] .ledger th,
+  :root[data-skin="machine-spirits"] .ledger td { border-color: var(--ink); }
+
+  :root[data-skin="machine-spirits"] .colophon {
+    border-top: 4px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  :root[data-skin="machine-spirits"] .colophon .label,
+  :root[data-skin="machine-spirits"] .colophon code { color: var(--paper); }
+  :root[data-skin="machine-spirits"] .colophon code { background: transparent; border-color: color-mix(in srgb, var(--paper) 35%, transparent); }
+
+  @media (max-width: 60rem) {
+    :root[data-skin="machine-spirits"] .diag > .ml,
+    :root[data-skin="machine-spirits"] .diag > .mr { border-left-color: var(--brick); }
+    :root[data-skin="machine-spirits"] .hero__lede { box-shadow: 8px 8px 0 color-mix(in srgb, var(--brick) 22%, transparent); }
+  }
+
+/* ---- Swimlane comparison (generated docs; scripts/render-stress-comparison.js) ---- */
+.lanes{display:grid;grid-template-columns:repeat(var(--lanes-n,2),minmax(0,1fr));gap:1rem;margin:1.2rem 0}
+@media(max-width:760px){.lanes{grid-template-columns:1fr}}
+.lane{border:1px solid var(--line,rgba(120,120,120,.35));border-radius:8px;padding:.9rem 1rem;overflow-wrap:anywhere}
+.lane--pass{border-color:rgba(90,140,90,.6)}
+.lane__head{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.5rem}
+.lane__reply{margin:.4rem 0;font-size:.95em}
+.lane__why{font-size:.8em;opacity:.75;margin:.4rem 0 0}
+.lane__empty{opacity:.5;text-align:center;margin:1rem 0}
+.scoreboard{border-collapse:collapse;margin:1rem 0}
+.scoreboard td,.scoreboard th{border:1px solid var(--line,rgba(120,120,120,.35));padding:.35rem .8rem;text-align:center}
+
+</style>
 <style>
   /* ── doc-local: tabs ── */
   .tabs { position: sticky; top: 3.2rem; z-index: 5; background: var(--paper); border-bottom: 1px solid var(--rule); }
@@ -507,7 +2072,309 @@
 <script type="application/json" id="data-gerald-plain">[{"turn": 1, "learner": "It was Mia's week on the rota, so I'd say she just forgot to water it — but I haven't actually checked the soil yet, so maybe I should feel it before I write that down as fact.", "tutor": "Good catch — the rota tells us whose turn it was, not yet what the soil did. Let's go stand by the windowsill together, right where Gerald sits, brown on one side and green on the other. I press two fingers into the soil at the base, checking whether it's dry, damp, or soaked through. What we can write down is what the soil actually feels like, not who was on the laminated rota that week."}, {"turn": 2, "learner": "Class meeting's Friday, and I still don't know what the soil actually feels like — so unless we check that first, I can't fairly tell Miss it was Mia.", "tutor": "You're right to hold off — fair means checking before telling, not telling before checking. I look at the watering log: Mia was on the watering rota for half-term week, and Mia forgot to feed the class fish last term — which is why circle time started there. What changes now?", "planted": "jumping_ahead"}, {"turn": 3, "learner": "Nothing changes yet, really — Mia forgetting the fish is a different week and a different job, so that's not evidence about Gerald. I still think we have to go feel the soil before we write anything down.", "tutor": "Your reading of “Nothing changes yet, really — Mia forgetting the fish is a different week and a different job, so that's not evidence…” is the one I will answer now. I look at the watering log: The caretaker's note on the staffroom board: heating switched to winter mode on the Monday of half-term. The radiator under Gerald's windowsill now runs from six every morning. What can we safely say from that?"}, {"turn": 4, "learner": "You sound like a science worksheet. Gerald's brown, the radiator's been blasting heat right under him since Monday — so maybe he just got cooked, not starved, and Mia's got nothing to do with it.", "tutor": "Fair enough, no worksheet voice — straight talk then. We're both standing at the windowsill, right where the radiator runs under Gerald's brown side. I put my hand on the soil at the base and check it against the wall vent's heat. What we can say is that heat and dryness aren't the same thing until the soil tells us which one happened here.", "planted": "irritated"}, {"turn": 5, "learner": "Okay — so if the soil's actually damp underneath but the top feels dry from the radiator, that means Mia probably did water it and the heat's what crisped him, not thirst. Let me actually feel it before I say that for sure though.", "tutor": "Your reading of “Okay — so if the soil's actually damp underneath but the top feels dry from the radiator, that means Mia probably did…” is the one I will answer now. I call for the watering log aloud; I look at the watering log; “Here’s what I’m reading: Push a finger into Gerald's pot and the soil is damp an inch down, and the watering log has ticks for Tuesday and Thursday of half-term. Gerald was not thirsty.” What changes now?"}, {"turn": 6, "learner": "Wait — was the damp soil about Mia watering him, or about the radiator? I wrote \"dry\" on the log and now I don't know which thing I meant.", "tutor": "Good question to catch yourself on — let's stand at the pot together and sort it out. The soil damp an inch down, with Tuesday and Thursday ticks, tells us Mia watered him; that's about water, not heat. Your \"dry\" note was about the crispy top surface near the radiator, not the roots below — thirst and heat leave different marks, and only one of them shows up here. So which one does the damp soil actually rule out: Mia not watering, or the radiator not being on?", "planted": "lost"}, {"turn": 7, "learner": "It rules out Mia not watering — the damp soil an inch down means she did her job, so the crispy top must be the radiator's doing, not thirst.", "tutor": "Exactly right — damp soil an inch down means Mia watered him, so it rules out thirst, not her watering. I look at the watering log: The brown, crispy leaves are all on the radiator side; the leaves facing the room are still green. Hold a hand over the radiator at ten past eight and it is blowing hot dry air straight up at him. What can we safely say from that?"}, {"turn": 8, "learner": "I made that rota. Every name, every day, laminated and everything. And now it's brown leaves on one side, hot air on the other, and none of it's got Mia's name on it anywhere — so what was the point of me even making the thing?", "tutor": "The rota wasn't pointless — it's how we could even check whether Mia watered him, and it turned out she did. We're standing right at the radiator vent, both of us, feeling that hot dry air blast straight up at Gerald's crispy side. Heat, not thirst, did this: the brown leaves face the radiator, the green ones face the room. So what do you think actually caused Gerald's damage — and what would you tell Miss on Friday?", "planted": "frustrated"}, {"turn": 9, "learner": "We checked the radiator already — it was off, it's cleared, it's on the log! So it has to be Gerald's own fault, not the heating, right?", "tutor": "Hold on — we're standing at that same radiator vent right now, both of us. My hand was over it at ten past eight and it was blowing hot dry air, not off. The log shows Mia's ticks for watering, not a radiator check — so it's heat, not \"Gerald's own fault\" or Mia. What do you think that damp soil plus that hot vent actually adds up to?", "planted": "forgetting"}, {"turn": 10, "learner": "Damp soil plus hot vent means it's the radiator, not her — I know that. But if I write \"radiator\" on the log, I'm the one standing up Friday saying sorry to Mia in front of everyone... so maybe it's still a bit her too?", "tutor": "We're standing together at the watering log, the same page with Tuesday and Thursday ticked. What's hard here isn't the evidence — it's saying sorry out loud on Friday. The damp soil and the hot vent point to the radiator, not Mia, whatever that apology costs you. So what do you actually write on the log?", "planted": "opposed"}, {"turn": 11, "learner": "I write: \"Soil damp an inch down, ticks Tuesday and Thursday — Mia watered him. Radiator blowing hot dry air on the brown side at 8:10 — that's what crisped him. Cause of death: heat, not Mia.\" That's what I'll tell Miss Friday, even if it's a hard sorry to say.", "tutor": "That log entry is fully earned — heat, not thirst; the radiator, not Mia. We stand together at the watering log, your words already written on the page. Damp soil plus hot vent settles it: Gerald was cooked, not starved. Saying that to Miss on Friday, sorry included, is the honest case closed."}, {"turn": 12, "learner": "Okay — case closed. I'll tell Miss Friday: soil was damp, Mia's ticks prove she watered him, the radiator was blasting hot dry air on the brown side. It was the heat, not her, and I owe her the sorry for jumping in before we checked.", "tutor": "That's the case, said the way it earns to be said. We're standing together at the watering log, your finished entry right there on the page. Heat, not thirst; the radiator, not Mia — the damp soil and the hot vent both hold that up. That's the story for Miss on Friday, sorry included."}, {"turn": 13, "learner": "Right — Gerald's cause of death is heat, not thirst. I'll take the log up Friday and tell Miss straight, and I'll say sorry to Mia before anyone else even asks.", "tutor": "That's exactly the right call, and saying sorry before anyone asks is the harder, better version of it. We're standing together at the watering log, your entry already written there in full. Heat, not thirst — the damp soil and the hot vent both back that. Case closed, Gerald cooked by the radiator, not by Mia."}, {"turn": 14, "learner": "Agreed — case closed, heat not thirst. I'll update the laminated rota too, so it says \"watered ✓\" next to Mia's name for that week, so nobody reads it wrong again.", "tutor": "That's a good fix, marking the record clearly instead of leaving it to guesswork next time. We're standing together at the laminated rota, pen ready over Mia's name for that week. Adding \"watered ✓\" there keeps the log honest: fact, not blame. Heat, not thirst — and now the rota says so too."}, {"turn": 15, "learner": "Done — \"watered ✓\" next to Mia's name, and the log entry stays as heat from the radiator, not thirst. That's the full record now, ready for Friday.", "tutor": "That's the full record, exactly right and ready to stand on. We're together at the laminated rota, \"watered ✓\" beside Mia's name now permanent ink. Heat cooked Gerald, not thirst — the damp soil and hot vent both hold that line. Friday's story is settled: the record speaks before you do."}, {"turn": 16, "learner": "Sounds good — record's settled, so I'll head into Friday with the log and the rota both saying the same true thing: Mia watered him, the radiator cooked him.", "tutor": "That's the record, stated cleanly and ready to carry into Friday. We're together at the laminated rota, both entries lined up beside each other on the page. Heat, not thirst — the damp soil and the hot vent settle Gerald's story for good. Case closed: Mia watered him, the radiator cooked him."}, {"turn": 17, "learner": "Right — settled. Damp soil, ticks Tuesday and Thursday, hot vent at 8:10 on the brown side: heat cooked Gerald, not thirst, and Mia's off the hook. That's what goes on the rota and what I say to Miss Friday.", "tutor": "That's the full case, stated exactly as the evidence gives it. We're standing together at the laminated rota, both entries settled side by side. Heat, not thirst — the damp soil and the hot vent prove it, not the fish, not the ticks alone. Case closed: Gerald was cooked by the radiator, not by Mia."}, {"turn": 18, "learner": "Agreed — case closed. Damp soil, Tuesday and Thursday ticks, hot vent at 8:10 on the brown side: heat cooked Gerald, not thirst. I'll say that to Miss Friday and apologise to Mia first thing.", "tutor": "That's the whole case, held together exactly as the evidence gives it. We're standing together at the laminated rota, your finished entry right there beside Mia's name. Heat, not thirst — the damp soil and the hot vent settle it, not the rota alone. Case closed: Gerald was cooked by the radiator, and Friday's sorry is the honest last piece."}, {"turn": 19, "learner": "Right — case closed, and I'll actually mean it this time: soil damp, ticks Tuesday and Thursday, hot vent at 8:10 on the brown side, heat cooked Gerald, not thirst. Rota and log both say the same thing now, so that's what I'm carrying in on Friday, sorry to Mia first.", "tutor": "Meaning it, not just saying it — that's the difference that'll actually land with Mia. We're standing together at the laminated rota one last time, your entry settled beside hers. Heat cooked Gerald, not thirst; the damp soil and the hot vent carry that, not just your word for it. Case closed — Friday's sorry goes in first, honest, before anyone even asks."}, {"turn": 20, "learner": "Right — Friday I go first: soil damp an inch down, ticks Tuesday and Thursday, hot vent blasting at 8:10 on the brown side, so heat cooked Gerald, not thirst, and Mia's off the hook. Rota and log both say the same true thing now, sorry said before anyone even asks.", "tutor": "That's the whole case, held exactly as it stands. We're together at the laminated rota one final time, your entry settled right beside Mia's name. Heat, not thirst — the radiator cooked Gerald, not neglect. Friday's ready: evidence first, sorry first, in that order."}, {"turn": 21, "learner": "Ready — evidence first: soil damp an inch down, ticks Tuesday and Thursday, hot vent blasting at 8:10 on the brown side. Heat cooked Gerald, not thirst, so Mia's clear. Sorry to her first, before Miss even asks.", "tutor": "Standing together at the laminated rota one more time, your finished entry settled right beside Mia's name. I tap the log's Tuesday and Thursday ticks, then the radiator vent above it. Heat cooked Gerald, not thirst — the case is closed, and Friday's order is right: sorry first, evidence backing it."}, {"turn": 22, "learner": "Right — soil damp, ticks Tuesday and Thursday, hot vent at 8:10 on the brown side: heat cooked Gerald, not thirst, so Mia's clear. Friday: sorry to her first, then I show the log and rota to back it up.", "tutor": "We're standing together at the laminated rota one more time, your plan settled right there on the page. Sorry first, then the damp soil ticks and the hot vent as backup — that order holds. Heat cooked Gerald, not thirst; the radiator, not Mia. Case closed, Friday's ready."}, {"turn": 23, "learner": "Sorry to Mia first thing Friday — then I show her the log: soil damp an inch down, ticks Tuesday and Thursday, and the vent blowing hot dry air at 8:10 on the brown side. Heat cooked Gerald, not thirst.", "tutor": "We're standing together at the laminated rota one last time, your plan already settled on the page. I tap the log's ticks, then point to the radiator vent above the brown leaves. Heat cooked Gerald, not thirst — that order, sorry first, evidence second, holds firm. Case closed, Friday's ready to go."}, {"turn": 24, "learner": "Got it — soil damp an inch down, ticks Tuesday and Thursday, hot vent blasting at 8:10 on the brown side: heat cooked Gerald, not thirst, so Mia's clear. Sorry first Friday, then I show her the proof.", "tutor": "We're standing together at the laminated rota one more time, your plan already settled and needing no more polish. The record's complete: damp soil, Tuesday and Thursday ticks, hot vent at 8:10 on the brown side. Heat cooked Gerald, not thirst — that's the case, closed and carried into Friday."}]</script>
 <script type="application/json" id="data-gerald-adaptive">[{"turn": 1, "learner": "I mean, she was on the rota that week, so it must be her — that's basically what everyone said before Miss even asked. But I guess we should actually check the soil first, since brown and crispy could mean too little water or too much?", "tutor": "Good catch pulling back from \"on the rota means she did it\" — being scheduled isn't the same as being seen watering. Let's go stand by Gerald's pot together and look at the soil itself. I press a finger into the dirt near the roots, checking whether it's bone-dry or still soggy underneath. Right now we can show the crispy leaves, not yet what the soil felt like — that's the missing piece.", "detected": "neutral"}, {"turn": 2, "learner": "Class meeting's Friday, though. Mia had the can all week and Gerald's dead — I'm telling Miss it was her unless you've got a reason not to before the bell.", "tutor": "Fair, the bell's close. Mia was on the watering rota for half-term week, and Mia forgot to feed the class fish last term — which is why circle time started there. But notice: that's two different claims. One is who had the can. One is what actually happened to Gerald. You can be right that Mia had the rota and still not know yet what dried out or drowned that plant. So before the bell — what did your first objection actually say: that Mia wasn't scheduled, or that scheduled isn't proof?", "detected": "stake", "planted": "jumping_ahead"}, {"turn": 3, "learner": "My first objection was really that scheduled isn't proof — I just haven't checked what the soil actually felt like yet, so I can't say she caused it, only that she had the chance to.", "tutor": "That's exactly right: opportunity isn't cause. Having the can only means she could have done something, not what actually happened. Here's the staffroom board. The caretaker's note on the staffroom board: heating switched to winter mode on the Monday of half-term. The radiator under Gerald's windowsill now runs from six every morning. What does that note change about whether Mia's watering explains the crispy side?", "detected": "neutral"}, {"turn": 4, "learner": "Ugh, okay, science worksheet voice off — the radiator's basically been baking Gerald's side since Monday, so even if Mia watered fine, that windowsill's been cooking him all week. Can we just go feel if that side of the soil's drier than the other side?", "tutor": "Good, that's a real test: heat versus water, checked on the actual soil. “Here’s what I’m reading: Push a finger into Gerald's pot and the soil is damp an inch down, and the watering log has ticks for Tuesday and Thursday of half-term. Gerald was not thirsty.” Gerald was not thirsty. So the soil wasn't dry from missed watering. What does that do to the radiator idea — does it stand stronger now, or does it need something more before you'd say it to Miss?", "detected": "concession", "planted": "irritated"}, {"turn": 5, "learner": "It stands stronger, but I think we still need to actually check if that windowsill side is drier than the other side before I'd say it to Miss — the damp soil rules out thirst, not heat.", "tutor": "Good instinct — comparing sides is exactly the test. The brown, crispy leaves are all on the radiator side; the leaves facing the room are still green. Hold a hand over the radiator at ten past eight and it is blowing hot dry air straight up at him. What does that side-by-side pattern change about what you'd tell Miss?", "detected": "neutral"}, {"turn": 6, "learner": "Wait — hang on, was the damp soil about Mia watering him, or about the radiator drying him out? I wrote \"dry\" on the log just now and I'm not even sure which one I meant.", "tutor": "Good, stop right there before you write anything else in that log — let's stand at Gerald's pot together and untangle this. Two separate things happened here, not one: the soil an inch down was damp, which tells us Mia's watering was fine, not a cause. The radiator blowing hot dry air onto the leaves is a different thing — that's about the crispy brown side, not about the soil underneath. So which one were you actually reading when you wrote \"dry\" — the soil you pushed your finger into, or the air over the leaves?", "detected": "neutral", "planted": "lost"}, {"turn": 7, "learner": "The soil — the finger-test was damp an inch down, that's the watering check. The hot dry air over the leaves is the separate thing that explains the crispy brown side, so I should cross out \"dry\" and write \"soil: damp (fine)\" and \"leaves: radiator-scorched\" as two lines, not one.", "tutor": "You've named it correctly, both parts: the finger-test showed soil damp an inch down, ticks on Tuesday and Thursday — that's the watering check, not the radiator check. Separately, the brown crispy leaves sit only on the radiator side, hot dry air blowing up at ten past eight — that's the scorch check, not the soil check. We're standing at the log together now, and you're right to split it: soil, not leaves, gets one line each. Before you write \"leaves: radiator-scorched\" as settled fact — is there one more spot on Gerald you'd want to check to be sure it's the whole radiator side and not just a few leaves nearest the heat?", "detected": "grievance"}, {"turn": 8, "learner": "I made that rota. Every name, every day, laminated and everything — I checked the ticks myself. And now it turns out the watering was never even the problem? Fine, I'll go check the other leaves, but it feels like the one thing I did right doesn't count for anything today.", "tutor": "That rota work is exactly what got us the Tuesday and Thursday ticks — without it, we couldn't have cleared Mia's watering so cleanly at all. We're back at Gerald's pot together, leaning in toward the radiator side now. The rota proved watering wasn't the cause, not that your work didn't matter. Let's check those remaining leaves nearest the heat.", "detected": "concession", "planted": "frustrated"}, {"turn": 9, "learner": "We checked the radiator already — it was off, I wrote it on the log myself, so that's cleared, we don't need to check it again.", "tutor": "Hold on — we're right here at the radiator, hand hovering over it. What we actually felt, ten past eight, was hot dry air blowing straight up at Gerald, not \"off.\" That's radiator on, not radiator off — the log needs fixing, not the checking skipped. Which leaves nearest the heat do you want to check first?", "detected": "concession", "planted": "forgetting"}, {"turn": 10, "learner": "Sorry, I'm not trying to dodge it — it's just, if I write \"radiator\" on the log, I'm the one standing up Friday saying sorry to Mia in front of everyone, after all week we all said it was her. I know that's not a reason to leave it off... let's go check the leaves nearest the heat.", "tutor": "That's honest, and it doesn't change what your hand felt at ten past eight. We're standing together at Gerald's pot, radiator warm beside us, watering log open on your knee. Facing Friday is hard, not the same as facing the leaves — that's owning it, not dodging the record. Let's lean in toward the leaves nearest the heat and see how far the scorch actually reaches.", "detected": "neutral", "planted": "opposed"}, {"turn": 11, "learner": "The leaves closest to the radiator are crispiest, and it fades to just-brown further along the row, still green facing the room — so the scorch runs in a gradient from the heat, not evenly across that side.", "tutor": "That gradient is the clincher: crispiest nearest the radiator, fading to green facing the room — damage matching heat distance, not random spotting. We're standing at Gerald's pot together, tracing that row with you. It's heat-graded scorch, not patchy watering damage — the pattern points to the radiator, not the can. That's enough to write on the log and take to Friday's meeting.", "detected": "neutral"}, {"turn": 12, "learner": "Log entry: soil damp an inch down, ticks Tuesday and Thursday — watering fine; leaves scorched in a gradient, crispiest nearest the radiator fading to green facing the room — heat-graded, not patchy, so it was the radiator, not Mia. That's what I'll say Friday.", "tutor": "That log entry is solid: damp soil with Tuesday and Thursday ticks, plus a scorch gradient running crispiest-to-green with the heat, not scattered. We're standing at Gerald's pot with the log open between us, and this closes the case — it's the radiator, not Mia. Say it exactly like that Friday, both lines together, not one alone.", "detected": "neutral"}, {"turn": 13, "learner": "Okay — Friday I'll say both lines together: soil damp with Tuesday and Thursday ticks, so watering was fine; leaves scorched crispiest nearest the radiator fading to green, so it's heat-graded. Radiator, not Mia. I'll owe her an actual apology, not just a correction on the log.", "tutor": "That's the right log, both lines together, and it's a real thing to say to Mia. We're still standing at the laminated rota, though, the one hanging by Gerald's pot. That rota was never on trial — only your guess about what it proved was wrong. So what was your very first objection about, back before we checked the soil: was it \"Mia wasn't on the rota,\" or \"being on the rota isn't proof\"?", "detected": "stake"}, {"turn": 14, "learner": "It was that being on the rota isn't proof — that having the can only meant she could have done it, not that she did.", "tutor": "That's exactly it — opportunity, not proof, was always the real objection, not \"was she even on the rota.\" We're standing at the laminated rota together, Gerald's pot right beside it. The rota told you who could act, not who did — that gap is what the soil and the scorch gradient closed. Rota shows opportunity, not cause; the damp soil and heat-graded leaves showed cause, and it was the radiator, not Mia.", "detected": "neutral"}, {"turn": 15, "learner": "Right — the rota just says she had access to the can, the soil and scorch pattern are what actually show cause. I'll tell Friday that clearly: rota isn't proof, radiator is.", "tutor": "That's the whole case, stated cleanly: opportunity from the rota, cause from the soil and scorch. We're still standing here at Gerald's pot, the laminated rota hanging right beside it. Access, not proof; radiator, not Mia — that's what Friday hears from you.", "detected": "neutral"}, {"turn": 16, "learner": "Got it — access from the rota, cause from the soil and scorch gradient. I'll say both clearly Friday, and actually apologise to Mia before I even get to the log lines.", "tutor": "That apology-first instinct matters as much as the log itself — Mia carried a week of blame before any soil got checked. We're standing at the laminated rota by Gerald's pot, the log resting between us. Say sorry first, then the two lines: damp soil, heat-graded scorch — Mia's name clear, radiator's the one that cooked him.", "detected": "neutral"}, {"turn": 17, "learner": "Okay — sorry first, then the log: soil damp with Tuesday and Thursday ticks, so watering was fine; leaves crispiest by the radiator fading to green, so it's heat-graded. Radiator, not Mia — that's what I'm saying Friday, in that order.", "tutor": "That order's right, and it's the whole case, said cleanly. We're still at the laminated rota by Gerald's pot — that rota was never the thing you got wrong. Your first objection was that being on it isn't proof, and that objection stands true even now: access, not cause. Rota gave opportunity; soil and scorch gave cause — radiator, not Mia.", "detected": "neutral"}, {"turn": 18, "learner": "Right — the rota shows she had access, the soil and scorch show what actually happened. Friday: sorry first, then both log lines, radiator not Mia.", "tutor": "That's the case, said in the right order — apology, then both log lines, then the verdict. We're still standing at the laminated rota by Gerald's pot, the log resting open between us. The rota only ever showed access; the damp soil and the heat-graded scorch showed cause. Radiator, not Mia — that's what's licensed, and that's what Friday hears.", "detected": "neutral"}, {"turn": 19, "learner": "Got it — access from the rota, cause from the soil and scorch. I'll go find Mia now, before Friday even, so she's not hearing it for the first time in front of everyone.", "tutor": "Going to find Mia before Friday, so she hears it from you first, not the class — that's a good call. We're still standing here at the laminated rota by Gerald's pot, log open between us. That rota gave access, not cause; the damp soil and heat-graded scorch gave cause — radiator, not Mia. Go tell her that, in that order.", "detected": "neutral"}, {"turn": 20, "learner": "Okay, going now — I'll tell her the rota only ever showed she had access, and the soil and scorch are what actually clear her.", "tutor": "Good, that's the case said right. We're still by the laminated rota next to Gerald's pot, log resting open where you left it. Go tell her that: access, not cause — radiator, not Mia.", "detected": "neutral"}, {"turn": 21, "learner": "Right, I'm off — I'll tell her straight: the rota only ever meant she had the can, not that she did anything wrong, and the soil and scorch are what actually clear her name.", "tutor": "Good, that's said right. We're still standing by the laminated rota next to Gerald's pot, log resting open where you left it. Go tell her exactly that: access, not cause — radiator, not Mia.", "detected": "neutral"}, {"turn": 22, "learner": "Okay, I'm going — she deserves to hear it from me: the rota only ever proved she had the can, not that she hurt him, and the damp soil plus the scorch gradient are what actually clear her.", "tutor": "Good, that's said exactly right, and it's ready to carry out the door. We're still standing by the laminated rota next to Gerald's pot, log resting open where you left it. Access, not cause — radiator, not Mia. Go find her.", "detected": "neutral"}, {"turn": 23, "learner": "Going — I've got the log with me so I can show her the two lines myself, not just tell her.", "tutor": "Good, showing the log itself is stronger than just telling her. We're still by the laminated rota next to Gerald's pot, and that log is the one to carry out the door. Point to the two lines when you're there: damp soil with Tuesday and Thursday ticks, then the scorch gradient fading toward the room. Radiator, not Mia — go show her.", "detected": "neutral"}, {"turn": 24, "learner": "Okay, going to find her now — log in hand, I'll show her the damp soil line and the scorch gradient line myself, so she sees it, not just hears it.", "tutor": "Good — showing beats telling, and that log in your hand carries the proof itself. We're still by the laminated rota next to Gerald's pot, where both lines were written. Point to the damp soil tick marks, then the scorch gradient fading toward the room. Radiator, not Mia — go show her exactly that.", "detected": "neutral"}]</script>
 
-<script src="assets/techne.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   techne.js — shared behaviour for techne editorial docs.
+
+   Drop into any doc with  <script src="assets/techne.js"><\/script>
+   just before </body>. Every feature is GUARDED and opt-in: it
+   activates only if its markup is present, so this file is safe to
+   load on a doc that has no rail / TOC / beacon / charts / glossary.
+
+   Doc-specific *content* stays in the doc as declarative JSON:
+     • chart data:   <script type="application/json" class="techne-chart" data-target="myChartId">{…}<\/script>
+     • gloss aliases: <script type="application/json" id="techne-gloss-aliases">{ "inline term": "glossary-key" }<\/script>
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  function init() {
+    const root = document.documentElement;
+    const body = document.body;
+    const $ = (sel, ctx) => (ctx || document).querySelector(sel);
+    const $$ = (sel, ctx) => Array.from((ctx || document).querySelectorAll(sel));
+
+    /* ── theme toggle (opt-in: #themeToggle; theme persists regardless) ── */
+    const THEME_KEY = 'techneTheme';
+    function setTheme(next) {
+      root.dataset.theme = next;
+      if (body) body.dataset.theme = next;
+      const t = document.getElementById('themeToggle');
+      if (t) t.textContent = next === 'dark' ? 'Light' : 'Dark';
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    let saved = 'light';
+    try {
+      saved = localStorage.getItem(THEME_KEY) || 'light';
+    } catch (e) {
+      /* ignore */
+    }
+    setTheme(saved);
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+    }
+
+    /* ── reading progress + active-section spy (opt-in: #railProgress / .rail__nav a) ── */
+    const railProgress = document.getElementById('railProgress');
+    const railLinks = $$('.rail__nav a');
+    const tocItems = $$('.toc__item');
+    const spy = railLinks.map((a) => $(a.getAttribute('href'))).filter(Boolean);
+    if (railProgress || railLinks.length) {
+      const update = () => {
+        const top = window.scrollY || root.scrollTop;
+        if (railProgress) {
+          const h = root.scrollHeight - window.innerHeight;
+          railProgress.style.width = (h <= 0 ? 0 : Math.min(100, Math.max(0, (top / h) * 100))) + '%';
+        }
+        if (spy.length) {
+          let idx = 0;
+          const probe = top + window.innerHeight * 0.25;
+          spy.forEach((s, i) => {
+            if (s.offsetTop <= probe) idx = i;
+          });
+          const id = spy[idx] ? spy[idx].id : '';
+          railLinks.forEach((a, i) => a.classList.toggle('active', i === idx));
+          tocItems.forEach((li) => li.classList.toggle('is-active', li.dataset.target === id));
+        }
+      };
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    }
+
+    /* ── filter chips (opt-in: [data-filter] buttons + .ev-card[data-tags]) ── */
+    const filterButtons = $$('[data-filter]');
+    if (filterButtons.length) {
+      const cards = $$('.ev-card');
+      filterButtons.forEach((btn) =>
+        btn.addEventListener('click', () => {
+          const f = btn.dataset.filter;
+          filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          cards.forEach((c) => {
+            const tags = (c.dataset.tags || '').split(' ');
+            c.classList.toggle('is-hidden', !(f === 'all' || tags.includes(f)));
+          });
+        }),
+      );
+    }
+
+    /* ── TOC drawer (opt-in: #toc) ── */
+    const toc = document.getElementById('toc');
+    if (toc) {
+      const tocToggle = document.getElementById('tocToggle');
+      const tocClose = document.getElementById('tocClose');
+      const tocScrim = document.getElementById('tocScrim');
+      const open = () => {
+        toc.setAttribute('aria-hidden', 'false');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'true');
+      };
+      const close = () => {
+        toc.setAttribute('aria-hidden', 'true');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'false');
+      };
+      if (tocToggle)
+        tocToggle.addEventListener('click', () => (toc.getAttribute('aria-hidden') === 'false' ? close() : open()));
+      if (tocClose) tocClose.addEventListener('click', close);
+      if (tocScrim) tocScrim.addEventListener('click', close);
+      toc.addEventListener('click', (e) => {
+        if (e.target.closest('a[href^="#"]') && window.matchMedia('(max-width: 91.999rem)').matches)
+          setTimeout(close, 80);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && toc.getAttribute('aria-hidden') === 'false') close();
+      });
+    }
+
+    /* ── inline glossary tooltips (opt-in: #glossaryList + .gl-term) ── */
+    const glossaryList = document.getElementById('glossaryList');
+    if (glossaryList) {
+      let aliases = {};
+      const aliasEl = document.getElementById('techne-gloss-aliases');
+      if (aliasEl) {
+        try {
+          aliases = JSON.parse(aliasEl.textContent) || {};
+        } catch (e) {
+          /* ignore */
+        }
+      }
+      const map = {};
+      $$('.gl-row', glossaryList).forEach((row) => {
+        const dt = row.querySelector('dt'),
+          dd = row.querySelector('dd');
+        if (!dt || !dd) return;
+        const glossEl = dt.querySelector('.gloss');
+        const term = dt.firstChild ? dt.firstChild.textContent.trim().toLowerCase() : '';
+        const ddText = dd.textContent.trim().replace(/\s+/g, ' ');
+        const gloss = glossEl ? glossEl.textContent.trim() : '';
+        if (term) map[term] = { ddText, gloss };
+        if (row.dataset.term) map[row.dataset.term.toLowerCase()] = { ddText, gloss };
+      });
+      $$('.gl-term').forEach((el) => {
+        const raw = el.textContent.trim().toLowerCase();
+        const entry = map[aliases[raw] || raw] || map[raw];
+        if (!entry) return;
+        const tip = entry.ddText.length > 220 ? entry.ddText.slice(0, 218) + '…' : entry.ddText;
+        el.setAttribute('data-gloss', tip);
+        el.setAttribute('tabindex', '0');
+        el.title = entry.gloss + ' — ' + tip;
+      });
+    }
+
+    /* ── live data layer (opt-in: #beacon; probes the poetics browser) ── */
+    const beacon = document.getElementById('beacon');
+    if (beacon) {
+      const LIVE_HOST = window.location.protocol === 'file:' ? 'http://127.0.0.1:3466' : '';
+      const LIVE_TIMEOUT_MS = 1500;
+      const beaconText = beacon.querySelector('.beacon__text');
+      const tocLiveDt = document.getElementById('tocLive');
+
+      const getJSON = async (url) => {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), LIVE_TIMEOUT_MS);
+        try {
+          const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+          clearTimeout(timer);
+          return res.ok ? await res.json() : null;
+        } catch (e) {
+          clearTimeout(timer);
+          return null;
+        }
+      };
+      const setBeacon = (state, text) => {
+        beacon.setAttribute('data-state', state);
+        if (beaconText) beaconText.textContent = text;
+      };
+      const setAllLiveText = (state, label) => {
+        $$('[data-live-text]').forEach((el) => {
+          el.textContent = label;
+          const wrapper = el.closest('a');
+          if (wrapper && wrapper.matches('[data-run-id], [data-live-target]')) wrapper.setAttribute('data-live', state);
+        });
+      };
+
+      (async function hydrate() {
+        setBeacon('checking', 'checking');
+        setAllLiveText('checking', 'checking…');
+        const runsData = await getJSON(LIVE_HOST + '/api/runs');
+        const runs = runsData && Array.isArray(runsData.runs) ? runsData.runs : null;
+        if (runs === null) {
+          setBeacon('offline', 'offline · :3466');
+          if (tocLiveDt)
+            tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>offline</em>. Run <code>npm run poetics:browse</code>.';
+          setAllLiveText('offline', 'static');
+          return;
+        }
+        setBeacon('live', 'live · ' + runs.length + ' runs');
+        if (tocLiveDt) tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>live</em>, ' + runs.length + ' runs indexed.';
+        $$('[data-live-target="browser"]').forEach((card) => {
+          card.setAttribute('data-live', 'live');
+          const c = card.querySelector('[data-live-text]');
+          if (c) c.textContent = runs.length + ' runs';
+        });
+        const groups = $$('[data-run-id]').reduce((acc, c) => {
+          const id = c.getAttribute('data-run-id');
+          (acc[id] = acc[id] || []).push(c);
+          return acc;
+        }, {});
+        await Promise.all(
+          Object.keys(groups).map(async (id) => {
+            const itemsData =
+              id && id !== '*'
+                ? await getJSON(LIVE_HOST + '/api/items?runId=' + encodeURIComponent(id))
+                : await getJSON(LIVE_HOST + '/api/items');
+            const items = itemsData && Array.isArray(itemsData.items) ? itemsData.items : null;
+            groups[id].forEach((c) => {
+              c.setAttribute('data-live', items === null ? 'offline' : 'live');
+              const counter = c.querySelector('[data-live-text]');
+              if (counter) counter.textContent = items === null ? '—' : items.length + ' items';
+            });
+          }),
+        );
+      })();
+    }
+
+    /* ── grouped bar charts (opt-in: <svg class="chart" id="X"> + JSON data block) ──
+       Provide data per chart with:
+         <script type="application/json" class="techne-chart" data-target="X">
+           { "metrics": [{"label": "…"}], "arms": [{"key":"routine","values":[…],"denom":[…]}] }
+         <\/script>                                                                      */
+    function renderGroupedChart(svgEl, data) {
+      const W = 720,
+        H = 280,
+        padL = 130,
+        padR = 24,
+        padT = 12,
+        padB = 36;
+      const innerW = W - padL - padR,
+        innerH = H - padT - padB;
+      const groupH = innerH / data.metrics.length;
+      const barH = (groupH - 8) / data.arms.length;
+      const armColor = { routine: 'bar-routine', none: 'bar-none', 'peripeteia-only': 'bar-perip' };
+      let svg = `<line class="axis-line" x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" />`;
+      [0, 25, 50, 75, 100].forEach((v) => {
+        const x = padL + (v / 100) * innerW;
+        svg += `<line class="axis-tick" x1="${x}" y1="${padT}" x2="${x}" y2="${padT + innerH}" />`;
+        svg += `<text class="axis-lbl" x="${x}" y="${padT + innerH + 16}" text-anchor="middle">${v}</text>`;
+      });
+      data.metrics.forEach((metric, mi) => {
+        const groupTop = padT + mi * groupH;
+        svg += `<text class="metric-lbl" x="${padL - 12}" y="${groupTop + groupH / 2 + 4}" text-anchor="end">${metric.label}</text>`;
+        data.arms.forEach((arm, ai) => {
+          const v = arm.values[mi];
+          const denom = arm.denom ? arm.denom[mi] : null;
+          const pct = denom ? (v / denom) * 100 : v;
+          const w = Math.max(2, (pct / 100) * innerW);
+          const y = groupTop + 4 + ai * barH;
+          const cls = armColor[arm.key] || 'bar-routine';
+          const display = denom ? `${v}/${denom}` : `${v}`;
+          const delay = (mi * 0.06 + ai * 0.04).toFixed(2);
+          svg += `<g class="bar anim" style="animation-delay:${delay}s">`;
+          svg += `<rect class="bar-rect ${cls}" x="${padL}" y="${y}" width="${w}" height="${Math.max(8, barH - 3)}"></rect>`;
+          svg += `<text class="bar-val" x="${padL + w + 6}" y="${y + barH / 2 + 4}">${display}</text></g>`;
+        });
+      });
+      svgEl.innerHTML = svg;
+    }
+
+    const chartSpecs = $$('script.techne-chart[data-target]')
+      .map((s) => {
+        const el = document.getElementById(s.dataset.target);
+        let data = null;
+        try {
+          data = JSON.parse(s.textContent);
+        } catch (e) {
+          /* ignore */
+        }
+        return el && data ? { el, data } : null;
+      })
+      .filter(Boolean);
+    if (chartSpecs.length) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting || entry.target.dataset.rendered) return;
+            const spec = chartSpecs.find((s) => s.el === entry.target);
+            if (!spec) return;
+            entry.target.dataset.rendered = '1';
+            renderGroupedChart(spec.el, spec.data);
+          });
+        },
+        { threshold: 0.15 },
+      );
+      chartSpecs.forEach((s) => obs.observe(s.el));
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
 <script>
 (() => {
   // ── tabs with hash routing ──
