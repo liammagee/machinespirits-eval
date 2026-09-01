@@ -195,8 +195,8 @@ const SWIM_STYLES = `
   .swim-label.learner { color: var(--ochre-d); border-bottom-color: var(--ochre-d); text-align: right; }
   .swim-label.spine { border-bottom: 0; }
   .swim-row { display: grid; grid-template-columns: 1fr 44px 1fr; gap: 14px; align-items: stretch; scroll-margin-top: 8.5rem; }
-  .swim-row .lane { min-width: 0; align-self: start; }
-  .swim-row .lane.empty { border: 0; }
+  .swim-row .swim-lane { min-width: 0; align-self: start; }
+  .swim-row .swim-lane.empty { border: 0; }
   .swim-row.is-linked .scene-card { outline: 2px solid var(--ochre); outline-offset: 3px; }
   .swim-spine { position: relative; min-height: 30px; }
   .swim-spine::before { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; transform: translateX(-50%); background: var(--rule); }
@@ -210,11 +210,11 @@ const SWIM_STYLES = `
   .scene-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 8px; flex-wrap: wrap; }
   .speaker { font-family: "JetBrains Mono", monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); }
   .turn-num { font-family: "JetBrains Mono", monospace; color: var(--ink-3); font-size: 10.5px; letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
-  .scene-card .speech { margin: 0; }
+  .scene-card .swim-speech { margin: 0; }
   .swim-pill { display: inline-block; margin-left: 0.4rem; padding: 0 0.4rem; border: 1px solid var(--rule); font: 700 9.5px/1.7 "JetBrains Mono", monospace; letter-spacing: 0.06em; text-transform: uppercase; }
   .swim-pill--planted { border-color: var(--ochre); color: var(--ochre-d); }
   .swim-pill--detected { border-color: var(--moss); color: var(--moss-deep); }
-  @media (max-width: 760px) { .swim-head, .swim-row { grid-template-columns: 1fr; gap: 6px; } .swim-spine, .swim-label.spine { display: none; } .swim-row .lane.empty { display: none; } .swim-label.learner { text-align: left; } }
+  @media (max-width: 760px) { .swim-head, .swim-row { grid-template-columns: 1fr; gap: 6px; } .swim-spine, .swim-label.spine { display: none; } .swim-row .swim-lane.empty { display: none; } .swim-label.learner { text-align: left; } }
 `;
 
 const escapeHtml = (value) =>
@@ -232,13 +232,13 @@ function sceneCard(type, message) {
     .join('');
   return (
     `<section class="scene-card ${type}"><div class="scene-head"><span class="speaker">${type}${pills}</span>` +
-    `<span class="turn-num">turn ${escapeHtml(message.turn)}</span></div><p class="speech">${escapeHtml(message.text)}</p></section>`
+    `<span class="turn-num">turn ${escapeHtml(message.turn)}</span></div><p class="swim-speech">${escapeHtml(message.text)}</p></section>`
   );
 }
 
 /** One arm as a swimlane: learner row (bead = turn number) then tutor row (bead ↳), per turn. */
 function renderArmSwimlane(dialogue, armId) {
-  const empty = '<div class="lane empty" aria-hidden="true"></div>';
+  const empty = '<div class="swim-lane empty" aria-hidden="true"></div>';
   const rows = [];
   for (const turn of dialogue.turns) {
     const learner = turn.messages.find((m) => m.arm === armId && m.speaker === 'learner');
@@ -248,12 +248,12 @@ function renderArmSwimlane(dialogue, armId) {
       rows.push(
         `<div class="swim-row" data-side="learner" data-turn="${escapeHtml(turn.turn)}">${empty}` +
           `<div class="swim-spine"><span class="swim-bead">${escapeHtml(turn.turn)}</span></div>` +
-          `<div class="lane">${sceneCard('learner', learner)}</div></div>`,
+          `<div class="swim-lane">${sceneCard('learner', learner)}</div></div>`,
       );
     }
     if (tutor) {
       rows.push(
-        `<div class="swim-row" data-side="tutor" data-turn="${escapeHtml(turn.turn)}"><div class="lane">${sceneCard('tutor', tutor)}</div>` +
+        `<div class="swim-row" data-side="tutor" data-turn="${escapeHtml(turn.turn)}"><div class="swim-lane">${sceneCard('tutor', tutor)}</div>` +
           `<div class="swim-spine"><span class="swim-bead">&#8627;</span></div>${empty}</div>`,
       );
     }
