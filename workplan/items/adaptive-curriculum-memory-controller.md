@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-01
-branch: codex/action-outcome-collection-pilot-design
+branch: codex/action-outcome-collection-launcher
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -22,12 +22,15 @@ links:
     - docs/action-outcome-human-review.md
     - docs/action-outcome-prospective-collection.md
     - config/tutor-stub-action-outcome-collection-pilot-design.v1.json
+    - services/tutorStubActionOutcomeCollectionPilot.js
+    - scripts/run-tutor-stub-action-outcome-collection-pilot.js
   prs:
     - 895
     - 898
     - 899
     - 901
     - 902
+    - 903
   items:
     - layered-task-session-adaptation
 tags:
@@ -93,6 +96,23 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-01: After PR #902 merged, added the zero-call collection launcher
+  for the registered 24-dialogue action-outcome pilot. It compiles only the
+  fixed four-world by six-repeat schedule, holds every tutor and learner role
+  to `codex.gpt-5.6-luna` at low effort, keeps the memory controller disabled,
+  requires the private artifact archive, and verifies the live, packet,
+  comparison, and readiness destinations are all unused. The paid path calls
+  the shared standing launch contract directly, reserves the registered
+  fail-before-call ceiling per dialogue, stops on the first incomplete unit,
+  preserves technical failures for bounded recovery, and cannot run without a
+  merged clean detached launch commit plus a separate signed GO note. The real
+  dry run passed: 24 dialogues, 192 turns, 600 planned calls, 1,944 maximum
+  reservations, one local Codex CLI 0.148.0 version probe, three local role
+  smokes, all create-once destinations absent, private archive available, 0
+  model calls, and 0 production writes. No GO note, paid launch, human packet,
+  coder comparison, memory enablement, or controller study is included here.
+  Research acceptance remains open.
 
 - 2026-09-01: After PR #901 merged, registered the complete bounded prospective
   collection-pilot design in a fresh worktree. The fixed 24-dialogue block uses

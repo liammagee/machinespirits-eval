@@ -528,6 +528,7 @@
         "tests/tutorStubAbHarness.test.js",
         "tests/tutorStubAbmPanel.test.js",
         "tests/tutorStubActionBeforeRegisterShadow.test.js",
+        "tests/tutorStubActionOutcomeCollectionPilot.test.js",
         "tests/tutorStubArtifactArchive.test.js",
         "tests/tutorStubArtifactArchiveCoverage.test.js",
         "tests/tutorStubAutoEvalEvidence.test.js",
