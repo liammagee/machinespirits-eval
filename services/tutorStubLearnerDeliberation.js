@@ -131,7 +131,8 @@ export function createTutorStubLearnerDeliberationRuntime({
       });
       if (
         config.systemStyle === TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES.activeResistanceV2 &&
-        (!cleanReply(response.text) || (resolved.provider === 'mlx-local' && Number(response.usage?.outputTokens) >= 900))
+        (!cleanReply(response.text) ||
+          (resolved.provider === 'mlx-local' && Number(response.usage?.outputTokens) >= 900))
       ) {
         throw new Error('Active-resistant learner output empty or at token ceiling; stop without resampling');
       }
@@ -171,7 +172,12 @@ export function createTutorStubLearnerDeliberationRuntime({
         throw new Error('Learner superego returned no critique; stop without a revision or retry');
       }
       raw = await callLearner({
-        callPrompt: learnerRevisionPrompt({ basePrompt: prompt, turnNumber, initialDraft: initialText, review: review.text }),
+        callPrompt: learnerRevisionPrompt({
+          basePrompt: prompt,
+          turnNumber,
+          initialDraft: initialText,
+          review: review.text,
+        }),
         callRole: 'tutor_stub_auto_learner_revision',
       });
       metadata = {

@@ -35,9 +35,7 @@ export function buildFactorialPlan(config = readYaml(DEFAULT_PLAN)) {
     raw.models.learner = arm.variant === 'normal' ? 'mlx-local.qwen-normal-27b' : 'mlx-local.qwen-abliterated-27b';
     raw.local_service.profile = arm.variant === 'normal' ? 'regular' : 'uncensored';
     raw.local_service.model_id_contains =
-      arm.variant === 'normal'
-        ? 'mlx-community/Qwen3.8-27B-4bit'
-        : 'Qwen3.8-27B-Uncensored-MLX/4-bit';
+      arm.variant === 'normal' ? 'mlx-community/Qwen3.8-27B-4bit' : 'Qwen3.8-27B-Uncensored-MLX/4-bit';
     raw.generation.system_prompt_style = config.system_prompt_style;
     raw.generation.deliberation = {
       mode: arm.mode,
