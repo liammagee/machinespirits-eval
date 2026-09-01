@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-01
-branch: codex/action-outcome-preprovider-recovery
+branch: codex/action-outcome-zero-provider-recovery
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -98,6 +98,22 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-01: After PR #908 merged, the operator explicitly instructed,
+  "continue the 22 untouched jobs." Added one narrow linked-recovery path for
+  the sealed recovery that failed before any child model-attempt reservation.
+  It validates the full predecessor chain, preserves both failed rows, carries
+  forward the aggregate 162 reservations, selects exactly the 22 never-started
+  jobs beginning with `aocp1_foxtrot_jukebox_r03`, and closes at the original
+  1,944 ceiling. The shared contract permits this exception only when the
+  latest recovery has one technical-failure unit with zero child reserved,
+  completed, and failed attempts; a repeated zero-provider startup failure is
+  rejected. The original study GO, design, models, seeds, claim boundary, and
+  ceiling remain unchanged, and no new GO artifact is created. A real
+  zero-call dry run against the sealed artifacts and private archive passed all
+  checks with the archive writable, 22 recovery units, 1,782 remaining
+  reservations, 0 provider calls, and 0 production writes. Model activity
+  remains stopped pending merge of this source change.
 
 - 2026-09-01: After PR #906 merged, the interrupted launch was sealed and its
   zero-call recovery preflight passed. The recovery then stopped on

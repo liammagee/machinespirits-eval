@@ -242,7 +242,19 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
 
   const ledger = readJsonLines(sourceLedgerPath, 'action-outcome predecessor ledger');
   const launchEvents = ledger.filter((event) => event.type === 'launch_admitted');
+  const reservationEvents = ledger.filter((event) => event.type === 'model_attempt_reserved');
+  const completedEvents = ledger.filter((event) => event.type === 'unit_complete');
   const seal = ledger.at(-1);
+  const linkedRecovery = Boolean(sourcePlan.recovery);
+  const zeroProviderStartupFailure =
+    linkedRecovery &&
+    reservationEvents.length === 1 &&
+    completedEvents.length === 1 &&
+    reservationEvents[0].unit === completedEvents[0].job_id &&
+    completedEvents[0].status === 'technical_failure' &&
+    Number(completedEvents[0].child_reserved_attempts) === 0 &&
+    Number(completedEvents[0].child_completed_attempts) === 0 &&
+    Number(completedEvents[0].child_failed_attempts) === 0;
   if (
     launchEvents.length !== 1 ||
     launchEvents[0].study_id !== loaded.design.studyId ||
@@ -251,13 +263,12 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
     launchEvents[0].spend_cap !== preflight.plan.model_attempt_ceiling ||
     seal?.type !== 'run_sealed' ||
     seal?.status !== 'technical_failure' ||
-    seal?.recovery_permitted !== true
+    (seal?.recovery_permitted !== true && !zeroProviderStartupFailure)
   ) {
     throw new Error('action-outcome recovery requires one sealed technical predecessor');
   }
-  const reservationEvents = ledger.filter((event) => event.type === 'model_attempt_reserved');
   const reservedJobIds = reservationEvents.map((event) => event.unit);
-  const priorReservedAttempts = reservationEvents.reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const reservedInSourceRun = reservationEvents.reduce((sum, event) => sum + Number(event.count || 0), 0);
   const plannedById = new Map(sourceFullPlan.jobs.map((job) => [job.id, job]));
   if (
     reservationEvents.length < 1 ||
@@ -267,43 +278,93 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
         !plannedById.has(event.unit) ||
         Number(event.count) !== loaded.design.attemptCeiling.maximumReservationsPerDialogue,
     ) ||
-    priorReservedAttempts !== Number(seal.reserved_attempts)
+    reservedInSourceRun !== Number(seal.reserved_attempts)
   ) {
     throw new Error('action-outcome recovery reservation accounting drift');
   }
 
-  const completedEvents = ledger.filter((event) => event.type === 'unit_complete');
   const checkpointPath = path.join(sourceRoot, 'checkpoint.json');
   const checkpointRows = fs.existsSync(checkpointPath)
     ? readJson(checkpointPath, 'action-outcome predecessor checkpoint').rows || []
     : [];
-  const completeJobIds = new Set(
-    completedEvents.filter((event) => event.status === 'complete').map((event) => event.job_id),
-  );
-  if (
-    checkpointRows.some((row) => row.status !== 'complete' || !completeJobIds.has(row.job_id)) ||
-    completeJobIds.size !== checkpointRows.length
-  ) {
-    throw new Error('action-outcome recovery completed-unit checkpoint drift');
+  let priorReservedAttempts = reservedInSourceRun;
+  let priorCompletedUnits;
+  let failedJobIds;
+  let priorRows;
+  if (!linkedRecovery) {
+    const completeJobIds = new Set(
+      completedEvents.filter((event) => event.status === 'complete').map((event) => event.job_id),
+    );
+    if (
+      checkpointRows.some((row) => row.status !== 'complete' || !completeJobIds.has(row.job_id)) ||
+      completeJobIds.size !== checkpointRows.length
+    ) {
+      throw new Error('action-outcome recovery completed-unit checkpoint drift');
+    }
+    failedJobIds = reservedJobIds.filter((jobId) => !completeJobIds.has(jobId));
+    if (failedJobIds.length !== 1) {
+      throw new Error('interrupted action-outcome recovery requires exactly one failed active unit');
+    }
+    const failedJob = plannedById.get(failedJobIds[0]);
+    const failedRow = extractTutorStubActionOutcomeCollectionRow({
+      job: failedJob,
+      exit: { code: null, signal: 'SIGINT', spawn_error: null },
+      destination: sourceRoot,
+    });
+    if (failedRow.status !== 'technical_failure') {
+      throw new Error('interrupted action-outcome unit does not reconstruct as a technical failure');
+    }
+    priorRows = [
+      ...checkpointRows.map((row) => ({ ...row, artifact_root: sourceRoot })),
+      { ...failedRow, artifact_root: sourceRoot, interruption_reason: seal.reason || null },
+    ];
+    priorCompletedUnits = checkpointRows.length;
+  } else {
+    const sourceReport = readJson(path.join(sourceRoot, 'report.json'), 'action-outcome predecessor report');
+    const reportRows = Array.isArray(sourceReport.rows) ? sourceReport.rows : [];
+    const reportJobIds = reportRows.map((row) => row.job_id);
+    const inheritedRecovery = loadTutorStubActionOutcomeCollectionRecovery({
+      loaded,
+      preflight: { plan: sourceFullPlan },
+      recoveryFrom: path.resolve(sourcePlan.recovery.source_root || ''),
+    });
+    const inheritedRows = inheritedRecovery.priorRows;
+    const currentRows = reportRows.slice(inheritedRows.length);
+    if (
+      !zeroProviderStartupFailure ||
+      sourceReport.schema !== 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1' ||
+      sourceReport.study_id !== loaded.design.studyId ||
+      sourceReport.status !== 'technical_failure' ||
+      sourceReport.source?.commit !== sourcePlan.source?.commit ||
+      path.resolve(sourceReport.recovery?.source_root || '') !== path.resolve(sourcePlan.recovery.source_root || '') ||
+      sourceReport.execution?.model_attempts?.reserved_in_current_run !== reservedInSourceRun ||
+      sourceReport.execution?.model_attempts?.hard_ceiling !== preflight.plan.model_attempt_ceiling ||
+      !Number.isInteger(sourceReport.execution?.model_attempts?.reserved_by_shared_study_ledger) ||
+      sourceReport.execution.model_attempts.reserved_by_shared_study_ledger < reservedInSourceRun ||
+      sourcePlan.recovery.prior_reserved_attempts !== inheritedRecovery.prior_reserved_attempts ||
+      sourcePlan.recovery.prior_completed_units !== inheritedRecovery.prior_completed_units ||
+      JSON.stringify(sourcePlan.recovery.failed_job_ids) !== JSON.stringify(inheritedRecovery.failed_job_ids) ||
+      JSON.stringify(sourcePlan.execution_job_ids) !==
+        JSON.stringify(inheritedRecovery.executionJobs.map((job) => job.id)) ||
+      JSON.stringify(checkpointRows) !== JSON.stringify(reportRows) ||
+      JSON.stringify(reportRows.slice(0, inheritedRows.length)) !== JSON.stringify(inheritedRows) ||
+      new Set(reportJobIds).size !== reportJobIds.length ||
+      reportRows.some(
+        (row) => !plannedById.has(row.job_id) || !['complete', 'technical_failure'].includes(row.status),
+      ) ||
+      currentRows.length !== completedEvents.length ||
+      currentRows.some(
+        (row, index) => row.job_id !== completedEvents[index].job_id || row.status !== completedEvents[index].status,
+      )
+    ) {
+      throw new Error('action-outcome linked recovery predecessor drift');
+    }
+    priorReservedAttempts = sourceReport.execution.model_attempts.reserved_by_shared_study_ledger;
+    priorRows = reportRows.map((row) => ({ ...row, artifact_root: row.artifact_root || sourceRoot }));
+    priorCompletedUnits = priorRows.filter((row) => row.status === 'complete').length;
+    failedJobIds = priorRows.filter((row) => row.status === 'technical_failure').map((row) => row.job_id);
   }
-  const failedJobIds = reservedJobIds.filter((jobId) => !completeJobIds.has(jobId));
-  if (failedJobIds.length !== 1) {
-    throw new Error('interrupted action-outcome recovery requires exactly one failed active unit');
-  }
-  const failedJob = plannedById.get(failedJobIds[0]);
-  const failedRow = extractTutorStubActionOutcomeCollectionRow({
-    job: failedJob,
-    exit: { code: null, signal: 'SIGINT', spawn_error: null },
-    destination: sourceRoot,
-  });
-  if (failedRow.status !== 'technical_failure') {
-    throw new Error('interrupted action-outcome unit does not reconstruct as a technical failure');
-  }
-  const priorRows = [
-    ...checkpointRows.map((row) => ({ ...row, artifact_root: sourceRoot })),
-    { ...failedRow, artifact_root: sourceRoot, interruption_reason: seal.reason || null },
-  ];
-  const dispositionedJobIds = new Set(reservedJobIds);
+  const dispositionedJobIds = new Set(priorRows.map((row) => row.job_id));
   const executionJobs = preflight.plan.jobs.filter((job) => !dispositionedJobIds.has(job.id));
   if (
     priorReservedAttempts + executionJobs.length * loaded.design.attemptCeiling.maximumReservationsPerDialogue !==
@@ -313,14 +374,17 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
   }
 
   const studyLedgerPath = path.resolve(launchEvents[0].study_ledger || '');
+  const firstSourceRoot = linkedRecovery ? path.resolve(sourcePlan.recovery.source_root) : sourceRoot;
   const expectedStudyLedgerPath = path.join(
-    path.dirname(sourceRoot),
+    path.dirname(firstSourceRoot),
     '.paid-study-state',
     loaded.design.studyId,
     'study-ledger.jsonl',
   );
   const studyLedger = readJsonLines(studyLedgerPath, 'action-outcome study ledger');
-  const studySeal = studyLedger.at(-1);
+  const studySeal = studyLedger.findLast(
+    (event) => event.type === 'study_run_sealed' && path.resolve(event.destination || '') === path.resolve(sourceRoot),
+  );
   const studyReservationEvents = studyLedger.filter(
     (event) => event.type === 'study_model_attempt_reserved' && path.resolve(event.destination || '') === sourceRoot,
   );
@@ -331,7 +395,8 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
     studySeal?.type !== 'study_run_sealed' ||
     path.resolve(studySeal.destination || '') !== sourceRoot ||
     studySeal.status !== 'technical_failure' ||
-    studySeal.recovery_permitted !== true ||
+    (studySeal.recovery_permitted !== true && !zeroProviderStartupFailure) ||
+    Number(studySeal.reserved_in_run) !== reservedInSourceRun ||
     Number(studySeal.study_reserved) !== priorReservedAttempts ||
     Number(studySeal.model_attempt_ceiling) !== preflight.plan.model_attempt_ceiling
   ) {
@@ -343,7 +408,7 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
     source_ledger: sourceLedgerPath,
     study_state_root: path.dirname(path.dirname(studyLedgerPath)),
     prior_reserved_attempts: priorReservedAttempts,
-    prior_completed_units: checkpointRows.length,
+    prior_completed_units: priorCompletedUnits,
     failed_job_ids: failedJobIds,
     executionJobs,
     priorRows,

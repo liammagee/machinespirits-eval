@@ -148,6 +148,42 @@ function validateStudyIdentity({ studyId, studyStateRoot, recoveryFrom }) {
   if (recoveryFrom && !path.isAbsolute(recoveryFrom)) throw new Error('recovery predecessor must be absolute');
 }
 
+function isSealedZeroProviderStartupFailure(event) {
+  if (
+    event?.type !== 'study_run_sealed' ||
+    event.status !== 'technical_failure' ||
+    event.recovery_permitted === true ||
+    !path.isAbsolute(event.destination || '') ||
+    !path.isAbsolute(event.run_ledger || '') ||
+    path.dirname(path.resolve(event.run_ledger)) !== path.resolve(event.destination)
+  ) {
+    return false;
+  }
+  const runEvents = readJsonLines(path.resolve(event.run_ledger), 'zero-provider startup run ledger');
+  const launch = runEvents.find((candidate) => candidate.type === 'launch_admitted');
+  const reservations = runEvents.filter((candidate) => candidate.type === 'model_attempt_reserved');
+  const units = runEvents.filter((candidate) => candidate.type === 'unit_complete');
+  const seal = runEvents.at(-1);
+  const reservedInRun = reservations.reduce((sum, candidate) => sum + Number(candidate.count || 0), 0);
+  return (
+    launch?.launch_kind === 'recovery' &&
+    reservations.length === 1 &&
+    units.length === 1 &&
+    reservations[0].unit === units[0].job_id &&
+    units[0].status === 'technical_failure' &&
+    Number(units[0].child_reserved_attempts) === 0 &&
+    Number(units[0].child_completed_attempts) === 0 &&
+    Number(units[0].child_failed_attempts) === 0 &&
+    Number.isInteger(reservedInRun) &&
+    reservedInRun > 0 &&
+    Number(units[0].shared_reserved_attempts) === reservedInRun &&
+    Number(event.reserved_in_run) === reservedInRun &&
+    seal?.type === 'run_sealed' &&
+    seal.status === 'technical_failure' &&
+    Number(seal.reserved_attempts) === reservedInRun
+  );
+}
+
 function writeDurableJsonOnce(filePath, value) {
   const descriptor = fs.openSync(filePath, 'wx');
   try {
@@ -366,7 +402,14 @@ function validateStudyLedger({ events, studyId, spendCap, recoveryFrom }) {
   const lastLaunchIndex = events.findLastIndex((event) => event.type === 'study_launch_admitted');
   const lastSealIndex = events.findLastIndex((event) => event.type === 'study_run_sealed');
   const seal = events[lastSealIndex];
-  if (lastSealIndex < lastLaunchIndex || seal?.destination !== recoveryFrom || seal?.recovery_permitted !== true) {
+  const ordinaryRecovery = seal?.recovery_permitted === true;
+  const zeroProviderStartupRecovery = isSealedZeroProviderStartupFailure(seal);
+  const zeroProviderStartupFailures = events.filter(isSealedZeroProviderStartupFailure).length;
+  if (
+    lastSealIndex < lastLaunchIndex ||
+    seal?.destination !== recoveryFrom ||
+    (!ordinaryRecovery && (!zeroProviderStartupRecovery || zeroProviderStartupFailures !== 1))
+  ) {
     throw new Error('recovery requires the latest run to be a sealed technical predecessor');
   }
 }
