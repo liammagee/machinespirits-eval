@@ -1,7 +1,7 @@
 ---
 id: qwen-invested-rival-theorist
 title: "Test Qwen as an invested rival theorist"
-status: review
+status: active
 type: experiment
 priority: P2
 owner: codex
@@ -9,7 +9,7 @@ source: manual
 created: 2026-08-31
 updated: 2026-09-01
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "The two eight-exchange arms and three valid Opus assessments are preserved at 38/48 aggregate attempts; the repeated A-quality schema-tool failures are exact-packet technical failures, and a tested 10-attempt linked recovery keeps the prompt, rubric and one-response Opus route fixed while validating quality JSON locally against the unchanged schema."
+verification: "Both eight-exchange arms and three valid Opus assessments remain preserved; the five unresolved packets are attempted once through the tested 10-attempt linked recovery without rerunning accepted output, aggregate use stays at or below 48 attempts, and either all eight assessments complete or the first new failure is preserved as the terminal disposition."
 claim_status: planned
 links:
   notes:
@@ -103,3 +103,11 @@ with Sol, no superegos, using one fresh dialogue per arm.
   validation. Tutor, learner and dialogue assessments retain the existing
   provider schema tool. A fifth linked ledger preserves all 38 attempts and
   exposes only the remaining 10.
+
+- 2026-09-01: Board reconciliation returns this card to active rather than
+  falsely closing it. Both dialogues and three assessments are preserved, but
+  five registered assessments remain unresolved. The exact response-free
+  failure now has a merged, bounded same-packet recovery path that reuses every
+  accepted output and cannot exceed the remaining 10 attempts. Reconciliation
+  made no model call; the card stops when those five packets resolve or the
+  recovery encounters its first new substantive or technical failure.
