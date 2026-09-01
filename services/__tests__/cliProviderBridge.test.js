@@ -876,6 +876,59 @@ describe('cliProviderBridge', () => {
     });
   });
 
+  it('single-attempt Claude JSON-text mode bypasses the schema tool but preserves one-response auditing', async () => {
+    const payload = { scores: { fixture: { score: 3, reasoning: 'Fixture only.' } } };
+    const raw = JSON.stringify({
+      type: 'result',
+      is_error: false,
+      num_turns: 1,
+      result: JSON.stringify(payload),
+      modelUsage: {},
+    });
+    const result = await callAIWithCliBridge(
+      { provider: 'claude-code', model: 'claude-test' },
+      '',
+      'fixture',
+      'judge',
+      {
+        outputSchema: { type: 'object' },
+        singleAttempt: true,
+        singleAttemptJsonText: true,
+        timeoutMs: 1000,
+        spawnImpl(_command, args, options) {
+          assert.equal(args.includes('--json-schema'), false);
+          assert.equal(args[args.indexOf('--output-format') + 1], 'json');
+          assert.equal(args[args.indexOf('--max-turns') + 1], '1');
+          assert.equal(options.env.CLAUDE_CODE_MAX_RETRIES, '0');
+          assert.equal(options.env.MAX_STRUCTURED_OUTPUT_RETRIES, '0');
+          return fakeChild({ stdoutText: raw });
+        },
+      },
+    );
+    assert.deepEqual(JSON.parse(result.text), payload);
+    assert.equal(result.structuredOutputTransport, 'single_json_result_text_local_schema');
+    assert.equal(result.structuredOutputRecovery.providerValidated, false);
+    assert.deepEqual(result.attemptControls, {
+      maxTurns: 1,
+      apiRetries: 0,
+      schemaRetries: 0,
+      observedTurns: 1,
+      observedModelResponses: 1,
+    });
+    const fenced = parseClaudeJsonResultEnvelope(
+      JSON.stringify({
+        type: 'result',
+        is_error: false,
+        num_turns: 1,
+        result: '```json\n{"scores":{}}\n```',
+        modelUsage: {},
+      }),
+      { singleAttemptModel: 'claude-test', singleAttemptJsonText: true },
+    );
+    assert.equal(fenced.classification, 'indeterminate');
+    assert.equal(fenced.reason, 'invalid_json_result_text');
+  });
+
   it('counts one split assistant response once, recovers only its JSON wrapper, and rejects hidden helper use', () => {
     const payload = { scores: { fixture: { score: 3, reasoning: 'Fixture only.' } } };
     const events = [

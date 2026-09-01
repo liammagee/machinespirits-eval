@@ -151,7 +151,7 @@ test('missing novelty judgments remain failed evidence in the scoring runner, wi
         return { text: response };
       },
     }),
-    /turn 2: accepted_objection_reopened/u,
+    /quality judge response failed its output schema: .*accepted_objection_reopened:required/u,
   );
   assert.equal(calls, 1);
   assert.equal(fs.readFileSync(path.join(out, 'A-quality.response.txt'), 'utf8'), response);
