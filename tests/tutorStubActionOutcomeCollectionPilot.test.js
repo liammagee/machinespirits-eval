@@ -14,6 +14,7 @@ import {
 import {
   executeTutorStubActionOutcomeCollection,
   extractTutorStubActionOutcomeCollectionRow,
+  loadTutorStubActionOutcomeCollectionRecovery,
   main as collectionLauncherMain,
 } from '../scripts/run-tutor-stub-action-outcome-collection-pilot.js';
 
@@ -44,6 +45,9 @@ function executionFixture(t) {
     source: { commit: 'fixture-commit', tree: 'fixture-tree' },
     authorization: { path: 'notes/fixture-go.md' },
     reserved: 0,
+    get studyReserved() {
+      return this.reserved;
+    },
     reserveModelAttempts(count, detail) {
       this.reserved += count;
       events.push({ type: 'reserve', count, detail });
@@ -78,7 +82,8 @@ function completeRow(job) {
       failed: 0,
       budget_exhausted: false,
       accounting_balanced: true,
-      planned_successful: 25,
+      normal_planned_successful: 25,
+      successful_at_or_above_normal_plan: true,
       per_dialogue_ceiling: 81,
     },
   };
@@ -132,6 +137,7 @@ test('zero-call preflight compiles the full plan, probes one transport, and gran
     loaded,
     destinationExists: () => false,
     resolveArchive: () => '/private/fixture-archive',
+    archiveIsWritable: () => true,
     probeRoute(route) {
       probes.push(route);
       return { status: 'passed_zero_call', modelRef: route.modelRef, model_calls: 0 };
@@ -162,6 +168,7 @@ test('any occupied registered destination fails the zero-call preflight', async 
     loaded,
     destinationExists: (candidate) => candidate === occupied,
     resolveArchive: () => '/private/fixture-archive',
+    archiveIsWritable: () => true,
     probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
     smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', model_calls: 0 }),
   });
@@ -169,6 +176,23 @@ test('any occupied registered destination fails the zero-call preflight', async 
   assert.equal(result.status, 'failed');
   assert.equal(result.destination_availability.comparisonRoot, false);
   assert.equal(result.checks.all_registered_destinations_absent, false);
+});
+
+test('zero-call preflight rejects an archive that exists but is not writable', async () => {
+  const loaded = load();
+  const result = await runTutorStubActionOutcomeCollectionPreflight({
+    loaded,
+    destinationExists: () => false,
+    resolveArchive: () => '/private/read-only-archive',
+    archiveIsWritable: () => false,
+    probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
+    smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', model_calls: 0 }),
+  });
+
+  assert.equal(result.status, 'failed');
+  assert.equal(result.checks.private_archive_available, true);
+  assert.equal(result.checks.private_archive_writable, false);
+  assert.equal(result.production_writes, 0);
 });
 
 test('trace extraction requires the complete eight-turn, seven-outcome contract', (t) => {
@@ -212,9 +236,27 @@ test('trace extraction requires the complete eight-turn, seven-outcome contract'
     failed: 0,
     budget_exhausted: false,
     accounting_balanced: true,
-    planned_successful: 25,
+    normal_planned_successful: 25,
+    successful_at_or_above_normal_plan: true,
     per_dialogue_ceiling: 81,
   });
+
+  const repairedEvents = [
+    ...events,
+    { type: 'model_call_budget_reserved', role: 'tutor_stub_auto_learner', turn: 3 },
+    { type: 'model_call', role: 'tutor_stub_auto_learner', turn: 3 },
+    { type: 'model_call_budget_reserved', role: 'tutor_stub_learner_analysis', turn: 3 },
+    { type: 'model_call', role: 'tutor_stub_learner_analysis', turn: 3 },
+  ];
+  fs.writeFileSync(path.join(traceDir, 'trace.jsonl'), `${repairedEvents.map(JSON.stringify).join('\n')}\n`);
+  const repaired = extractTutorStubActionOutcomeCollectionRow({
+    job,
+    exit: { code: 0, signal: null, spawn_error: null },
+    destination: base,
+  });
+  assert.equal(repaired.status, 'complete');
+  assert.equal(repaired.model_attempts.completed, 27);
+  assert.equal(repaired.model_attempts.successful_at_or_above_normal_plan, true);
 
   fs.writeFileSync(
     path.join(traceDir, 'trace.jsonl'),
@@ -248,7 +290,7 @@ test('execution accounts for all 24 jobs and seals the complete generation block
   assert.equal(report.execution.missing_units, 0);
   assert.equal(report.execution.completed_turns, 192);
   assert.equal(report.execution.model_attempts.completed, 600);
-  assert.equal(report.execution.model_attempts.reserved_by_shared_ledger, 1944);
+  assert.equal(report.execution.model_attempts.reserved_by_shared_study_ledger, 1944);
   assert.equal(value.admission.closed.status, 'generation_complete');
   assert.equal(fs.existsSync(path.join(value.destination, 'plan.json')), true);
   assert.equal(fs.existsSync(path.join(value.destination, 'checkpoint.json')), true);
@@ -272,7 +314,8 @@ test('a technical failure stops before the next job and preserves bounded recove
         failed: 1,
         budget_exhausted: false,
         accounting_balanced: true,
-        planned_successful: 25,
+        normal_planned_successful: 25,
+        successful_at_or_above_normal_plan: false,
         per_dialogue_ceiling: 81,
       },
     }),
@@ -284,6 +327,174 @@ test('a technical failure stops before the next job and preserves bounded recove
   assert.equal(report.execution.missing_units, 23);
   assert.equal(value.admission.reserved, 81);
   assert.equal(value.admission.closed.recovery_permitted, true);
+});
+
+function interruptedRecoveryFixture(t) {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'action-outcome-collection-recovery-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const source = load();
+  const design = {
+    ...source.design,
+    destinations: { ...source.design.destinations, liveRoot: '.tutor-stub-auto-eval/fixture-initial' },
+  };
+  const loaded = { ...source, root: base, design };
+  const sourceRoot = path.join(base, '.tutor-stub-auto-eval', 'fixture-initial');
+  const recoveryDestination = path.join(base, '.tutor-stub-auto-eval', 'fixture-initial-recovery-1');
+  const sourcePlan = buildTutorStubActionOutcomeCollectionPlan({ loaded, destination: sourceRoot });
+  const recoveryPlan = buildTutorStubActionOutcomeCollectionPlan({
+    loaded,
+    destination: recoveryDestination,
+    recovery: true,
+  });
+  fs.mkdirSync(sourceRoot, { recursive: true });
+  fs.writeFileSync(
+    path.join(sourceRoot, 'plan.json'),
+    `${JSON.stringify({
+      status: 'admitted_under_shared_paid_study_launch_contract',
+      source: { commit: 'fixture-launch' },
+      design: { path: loaded.relativePath },
+      model_attempt_ceiling: 1944,
+      preflight: { plan: sourcePlan },
+    })}\n`,
+  );
+  const failedJob = sourcePlan.jobs[0];
+  fs.mkdirSync(failedJob.trace_dir, { recursive: true });
+  const traceEvents = [
+    ...Array.from({ length: 31 }, () => ({ type: 'model_call_budget_reserved' })),
+    ...Array.from({ length: 30 }, () => ({ type: 'model_call' })),
+    ...Array.from({ length: 5 }, (_, index) => ({ type: 'turn_complete', turnRecord: { turn: index + 1 } })),
+    ...Array.from({ length: 5 }, () => ({ type: 'tutor_typed_action_decision' })),
+    ...Array.from({ length: 4 }, () => ({ type: 'tutor_typed_action_outcome_closed' })),
+  ];
+  fs.writeFileSync(path.join(failedJob.trace_dir, 'trace.jsonl'), `${traceEvents.map(JSON.stringify).join('\n')}\n`);
+  const studyStateRoot = path.join(base, '.tutor-stub-auto-eval', '.paid-study-state');
+  const studyDirectory = path.join(studyStateRoot, loaded.design.studyId);
+  fs.mkdirSync(studyDirectory, { recursive: true });
+  const studyLedgerPath = path.join(studyDirectory, 'study-ledger.jsonl');
+  const runLedger = [
+    {
+      type: 'launch_admitted',
+      study_id: loaded.design.studyId,
+      source_commit: 'fixture-launch',
+      design_path: loaded.relativePath,
+      spend_cap: 1944,
+      study_ledger: studyLedgerPath,
+    },
+    { type: 'model_attempt_reserved', unit: failedJob.id, count: 81 },
+    {
+      type: 'run_sealed',
+      status: 'technical_failure',
+      recovery_permitted: true,
+      reserved_attempts: 81,
+      reason: 'fixture interrupted launcher',
+    },
+  ];
+  fs.writeFileSync(path.join(sourceRoot, 'run-ledger.jsonl'), `${runLedger.map(JSON.stringify).join('\n')}\n`);
+  const studyLedger = [
+    { type: 'study_created', study_id: loaded.design.studyId, model_attempt_ceiling: 1944 },
+    {
+      type: 'study_launch_admitted',
+      study_id: loaded.design.studyId,
+      destination: sourceRoot,
+      run_ledger: path.join(sourceRoot, 'run-ledger.jsonl'),
+    },
+    {
+      type: 'study_model_attempt_reserved',
+      destination: sourceRoot,
+      unit: failedJob.id,
+      count: 81,
+      study_reserved: 81,
+      model_attempt_ceiling: 1944,
+    },
+    {
+      type: 'study_run_sealed',
+      destination: sourceRoot,
+      status: 'technical_failure',
+      recovery_permitted: true,
+      study_reserved: 81,
+      model_attempt_ceiling: 1944,
+    },
+  ];
+  fs.writeFileSync(studyLedgerPath, `${studyLedger.map(JSON.stringify).join('\n')}\n`);
+  const preflight = { destination: recoveryDestination, plan: recoveryPlan };
+  return { loaded, sourceRoot, recoveryDestination, preflight, failedJob };
+}
+
+test('recovery validates the sealed predecessor and selects only 23 never-attempted jobs', (t) => {
+  const value = interruptedRecoveryFixture(t);
+  const recovery = loadTutorStubActionOutcomeCollectionRecovery({
+    loaded: value.loaded,
+    preflight: value.preflight,
+    recoveryFrom: value.sourceRoot,
+  });
+  assert.equal(recovery.prior_reserved_attempts, 81);
+  assert.equal(recovery.prior_completed_units, 0);
+  assert.deepEqual(recovery.failed_job_ids, [value.failedJob.id]);
+  assert.equal(recovery.priorRows.length, 1);
+  assert.equal(recovery.priorRows[0].status, 'technical_failure');
+  assert.equal(recovery.priorRows[0].turns, 5);
+  assert.equal(recovery.priorRows[0].model_attempts.reserved, 31);
+  assert.equal(recovery.priorRows[0].model_attempts.completed, 30);
+  assert.equal(recovery.executionJobs.length, 23);
+  assert.equal(
+    recovery.executionJobs.some((job) => job.id === value.failedJob.id),
+    false,
+  );
+  assert.equal(81 + recovery.executionJobs.length * 81, 1944);
+});
+
+test('missing-only recovery preserves the failed unit and seals after the other 23 jobs', async (t) => {
+  const value = interruptedRecoveryFixture(t);
+  const recovery = loadTutorStubActionOutcomeCollectionRecovery({
+    loaded: value.loaded,
+    preflight: value.preflight,
+    recoveryFrom: value.sourceRoot,
+  });
+  fs.mkdirSync(value.recoveryDestination, { recursive: true });
+  const events = [];
+  const admission = {
+    source: { commit: 'fixture-recovery', tree: 'fixture-tree' },
+    authorization: { path: 'notes/fixture-recovery-go.md' },
+    reserved: 0,
+    get studyReserved() {
+      return 81 + this.reserved;
+    },
+    reserveModelAttempts(count, detail) {
+      this.reserved += count;
+      events.push({ type: 'reserve', count, detail });
+    },
+    record(event) {
+      events.push(event);
+    },
+    close(event) {
+      this.closed = event;
+      events.push(event);
+    },
+  };
+  const report = await executeTutorStubActionOutcomeCollection({
+    loaded: value.loaded,
+    preflight: { ...value.preflight, recovery, executionJobs: recovery.executionJobs },
+    admission,
+    childSpec: ({ job }) => job,
+    runChild: async () => ({ code: 0, signal: null, spawn_error: null }),
+    extractRow: ({ job }) => completeRow(job),
+    progress: () => {},
+  });
+
+  assert.equal(report.status, 'generation_complete_with_technical_failure');
+  assert.equal(report.execution.complete_units, 23);
+  assert.equal(report.execution.technical_failure_units, 1);
+  assert.equal(report.execution.missing_units, 0);
+  assert.equal(report.execution.model_attempts.reserved_in_predecessor, 81);
+  assert.equal(report.execution.model_attempts.reserved_in_current_run, 1863);
+  assert.equal(report.execution.model_attempts.reserved_by_shared_study_ledger, 1944);
+  assert.equal(admission.closed.status, 'generation_complete_with_technical_failure');
+  assert.equal(admission.closed.recovery_permitted, undefined);
+  assert.equal(events.filter((event) => event.type === 'reserve').length, 23);
+  assert.equal(
+    events.some((event) => event.type === 'reserve' && event.detail.unit === value.failedJob.id),
+    false,
+  );
 });
 
 test('CLI dry-run returns before admission, while live wiring passes the registered ceiling', async () => {
@@ -334,4 +545,21 @@ test('CLI dry-run returns before admission, while live wiring passes the registe
   assert.equal(admitted.studyId, 'tutor-stub-action-outcome-collection-pilot-v1');
   assert.equal(admitted.designPath, DESIGN_PATH);
   assert.equal(executed, true);
+});
+
+test('CLI reports the exact failed zero-call checks before admission', async () => {
+  let admissionCalls = 0;
+  await assert.rejects(
+    collectionLauncherMain(['--dry-run'], {
+      runPreflight: async () => ({
+        status: 'failed',
+        checks: { private_archive_available: true, private_archive_writable: false },
+      }),
+      admit() {
+        admissionCalls += 1;
+      },
+    }),
+    /zero-call preflight failed: private_archive_writable/u,
+  );
+  assert.equal(admissionCalls, 0);
 });

@@ -27,6 +27,15 @@ export const TUTOR_STUB_ACTION_OUTCOME_COLLECTION_USAGE = `Usage:
     --go-note-path notes/<signed-go-note>.md \
     --accept-charges
 
+  node scripts/run-tutor-stub-action-outcome-collection-pilot.js \
+    --design config/tutor-stub-action-outcome-collection-pilot-design.v1.json \
+    --recovery-from /absolute/path/to/sealed-technical-predecessor \
+    --destination /absolute/path/to/fresh-recovery-destination \
+    --launch-commit <merged-detached-recovery-commit> \
+    --go-note-commit <commit-containing-study-go-note> \
+    --go-note-path notes/<signed-study-go-note>.md \
+    --accept-charges
+
 --dry-run compiles all 24 registered jobs, probes the local CLI version, exercises
 the three role transports with local stubs, verifies the private archive and all
 create-once destinations, and writes nothing. It executes no provider call.
@@ -35,7 +44,9 @@ The paid path is unreachable without the shared standing launch contract: the
 merged design, a clean detached launch commit, a signed GO note, create-once state,
 the append-only ledger, and the registered 1,944-attempt hard ceiling. This launcher
 collects the corpus only. It does not prepare or compare human codes, enable memory,
-or authorize the later controller study.`;
+or authorize the later controller study. Recovery preserves and skips every prior
+completed or failed unit, runs only never-attempted jobs, and remains inside the
+original study-wide ceiling.`;
 
 function writeOnce(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
@@ -53,6 +64,26 @@ function readTrace(filePath) {
     .split(/\r?\n/u)
     .filter(Boolean)
     .map((line) => JSON.parse(line));
+}
+
+function readJson(filePath, label) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (error) {
+    throw new Error(`${label} is not valid JSON: ${error.message}`);
+  }
+}
+
+function readJsonLines(filePath, label) {
+  try {
+    return fs
+      .readFileSync(filePath, 'utf8')
+      .split(/\r?\n/u)
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+  } catch (error) {
+    throw new Error(`${label} is not valid JSONL: ${error.message}`);
+  }
 }
 
 function traceFiles(directory) {
@@ -111,7 +142,7 @@ export function extractTutorStubActionOutcomeCollectionRow({ job, exit, destinat
   ).length;
   const budgetExhausted = events.some((event) => event?.type === 'model_call_budget_exhausted');
   const attemptAccountingBalanced = reservedAttempts === completedAttempts + failedAttempts;
-  const successfulCallPlanComplete = completedAttempts === job.planned_model_calls;
+  const successfulCallPlanComplete = completedAttempts >= job.planned_model_calls;
   const complete =
     exit.code === 0 &&
     exit.signal === null &&
@@ -159,9 +190,163 @@ export function extractTutorStubActionOutcomeCollectionRow({ job, exit, destinat
       failed: failedAttempts,
       budget_exhausted: budgetExhausted,
       accounting_balanced: attemptAccountingBalanced,
-      planned_successful: job.planned_model_calls,
+      normal_planned_successful: job.planned_model_calls,
+      successful_at_or_above_normal_plan: successfulCallPlanComplete,
       per_dialogue_ceiling: job.model_attempt_ceiling,
     },
+  };
+}
+
+function comparableRecoveryJob(job) {
+  const args = [...job.args];
+  for (const option of ['--trace-dir', '--save']) {
+    const index = args.indexOf(option);
+    if (index < 0 || index + 1 >= args.length) throw new Error(`recovery job ${job.id} is missing ${option}`);
+    args[index + 1] = `<${option.slice(2)}>`;
+  }
+  return {
+    id: job.id,
+    world_id: job.world_id,
+    repeat: job.repeat,
+    run_seed: job.run_seed,
+    task_id: job.task_id,
+    planned_model_calls: job.planned_model_calls,
+    model_attempt_ceiling: job.model_attempt_ceiling,
+    args,
+  };
+}
+
+export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight, recoveryFrom } = {}) {
+  if (!recoveryFrom || !path.isAbsolute(recoveryFrom)) throw new Error('recovery predecessor must be absolute');
+  const sourceRoot = path.resolve(recoveryFrom);
+  const sourcePlanPath = path.join(sourceRoot, 'plan.json');
+  const sourceLedgerPath = path.join(sourceRoot, 'run-ledger.jsonl');
+  const sourcePlan = readJson(sourcePlanPath, 'action-outcome predecessor plan');
+  const sourceFullPlan = sourcePlan.preflight?.plan;
+  if (
+    sourcePlan.status !== 'admitted_under_shared_paid_study_launch_contract' ||
+    sourcePlan.design?.path !== loaded.relativePath ||
+    sourcePlan.model_attempt_ceiling !== preflight.plan.model_attempt_ceiling ||
+    sourceFullPlan?.study_id !== loaded.design.studyId ||
+    path.resolve(sourceFullPlan?.destination || '') !== sourceRoot ||
+    sourceFullPlan?.jobs?.length !== preflight.plan.jobs.length
+  ) {
+    throw new Error('action-outcome recovery predecessor plan drift');
+  }
+  if (
+    JSON.stringify(sourceFullPlan.jobs.map(comparableRecoveryJob)) !==
+    JSON.stringify(preflight.plan.jobs.map(comparableRecoveryJob))
+  ) {
+    throw new Error('action-outcome recovery job plan drift');
+  }
+
+  const ledger = readJsonLines(sourceLedgerPath, 'action-outcome predecessor ledger');
+  const launchEvents = ledger.filter((event) => event.type === 'launch_admitted');
+  const seal = ledger.at(-1);
+  if (
+    launchEvents.length !== 1 ||
+    launchEvents[0].study_id !== loaded.design.studyId ||
+    launchEvents[0].source_commit !== sourcePlan.source?.commit ||
+    launchEvents[0].design_path !== loaded.relativePath ||
+    launchEvents[0].spend_cap !== preflight.plan.model_attempt_ceiling ||
+    seal?.type !== 'run_sealed' ||
+    seal?.status !== 'technical_failure' ||
+    seal?.recovery_permitted !== true
+  ) {
+    throw new Error('action-outcome recovery requires one sealed technical predecessor');
+  }
+  const reservationEvents = ledger.filter((event) => event.type === 'model_attempt_reserved');
+  const reservedJobIds = reservationEvents.map((event) => event.unit);
+  const priorReservedAttempts = reservationEvents.reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const plannedById = new Map(sourceFullPlan.jobs.map((job) => [job.id, job]));
+  if (
+    reservationEvents.length < 1 ||
+    new Set(reservedJobIds).size !== reservedJobIds.length ||
+    reservationEvents.some(
+      (event) =>
+        !plannedById.has(event.unit) ||
+        Number(event.count) !== loaded.design.attemptCeiling.maximumReservationsPerDialogue,
+    ) ||
+    priorReservedAttempts !== Number(seal.reserved_attempts)
+  ) {
+    throw new Error('action-outcome recovery reservation accounting drift');
+  }
+
+  const completedEvents = ledger.filter((event) => event.type === 'unit_complete');
+  const checkpointPath = path.join(sourceRoot, 'checkpoint.json');
+  const checkpointRows = fs.existsSync(checkpointPath)
+    ? readJson(checkpointPath, 'action-outcome predecessor checkpoint').rows || []
+    : [];
+  const completeJobIds = new Set(
+    completedEvents.filter((event) => event.status === 'complete').map((event) => event.job_id),
+  );
+  if (
+    checkpointRows.some((row) => row.status !== 'complete' || !completeJobIds.has(row.job_id)) ||
+    completeJobIds.size !== checkpointRows.length
+  ) {
+    throw new Error('action-outcome recovery completed-unit checkpoint drift');
+  }
+  const failedJobIds = reservedJobIds.filter((jobId) => !completeJobIds.has(jobId));
+  if (failedJobIds.length !== 1) {
+    throw new Error('interrupted action-outcome recovery requires exactly one failed active unit');
+  }
+  const failedJob = plannedById.get(failedJobIds[0]);
+  const failedRow = extractTutorStubActionOutcomeCollectionRow({
+    job: failedJob,
+    exit: { code: null, signal: 'SIGINT', spawn_error: null },
+    destination: sourceRoot,
+  });
+  if (failedRow.status !== 'technical_failure') {
+    throw new Error('interrupted action-outcome unit does not reconstruct as a technical failure');
+  }
+  const priorRows = [
+    ...checkpointRows.map((row) => ({ ...row, artifact_root: sourceRoot })),
+    { ...failedRow, artifact_root: sourceRoot, interruption_reason: seal.reason || null },
+  ];
+  const dispositionedJobIds = new Set(reservedJobIds);
+  const executionJobs = preflight.plan.jobs.filter((job) => !dispositionedJobIds.has(job.id));
+  if (
+    priorReservedAttempts + executionJobs.length * loaded.design.attemptCeiling.maximumReservationsPerDialogue !==
+    preflight.plan.model_attempt_ceiling
+  ) {
+    throw new Error('action-outcome recovery jobs do not close to the remaining aggregate ceiling');
+  }
+
+  const studyLedgerPath = path.resolve(launchEvents[0].study_ledger || '');
+  const expectedStudyLedgerPath = path.join(
+    path.dirname(sourceRoot),
+    '.paid-study-state',
+    loaded.design.studyId,
+    'study-ledger.jsonl',
+  );
+  const studyLedger = readJsonLines(studyLedgerPath, 'action-outcome study ledger');
+  const studySeal = studyLedger.at(-1);
+  const studyReservationEvents = studyLedger.filter(
+    (event) => event.type === 'study_model_attempt_reserved' && path.resolve(event.destination || '') === sourceRoot,
+  );
+  if (
+    studyLedgerPath !== expectedStudyLedgerPath ||
+    JSON.stringify(studyReservationEvents.map((event) => [event.unit, Number(event.count)])) !==
+      JSON.stringify(reservationEvents.map((event) => [event.unit, Number(event.count)])) ||
+    studySeal?.type !== 'study_run_sealed' ||
+    path.resolve(studySeal.destination || '') !== sourceRoot ||
+    studySeal.status !== 'technical_failure' ||
+    studySeal.recovery_permitted !== true ||
+    Number(studySeal.study_reserved) !== priorReservedAttempts ||
+    Number(studySeal.model_attempt_ceiling) !== preflight.plan.model_attempt_ceiling
+  ) {
+    throw new Error('action-outcome study ledger is not sealed at the predecessor');
+  }
+  return {
+    source_root: sourceRoot,
+    source_plan: sourcePlanPath,
+    source_ledger: sourceLedgerPath,
+    study_state_root: path.dirname(path.dirname(studyLedgerPath)),
+    prior_reserved_attempts: priorReservedAttempts,
+    prior_completed_units: checkpointRows.length,
+    failed_job_ids: failedJobIds,
+    executionJobs,
+    priorRows,
   };
 }
 
@@ -170,16 +355,31 @@ function reportForRows({ loaded, preflight, admission, rows, halt }) {
   const observedJobIds = new Set(rows.map((row) => row.job_id));
   const count = (status) => rows.filter((row) => row.status === status).length;
   const sums = (field) => rows.reduce((sum, row) => sum + row.model_attempts[field], 0);
+  const priorReservedAttempts = preflight.recovery?.prior_reserved_attempts || 0;
+  const recoveredWithPriorFailure = !halt && preflight.recovery?.failed_job_ids?.length > 0;
   return {
     schema: 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1',
     study_id: loaded.design.studyId,
-    status: halt?.status || 'generation_complete',
+    status:
+      halt?.status ||
+      (recoveredWithPriorFailure ? 'generation_complete_with_technical_failure' : 'generation_complete'),
     halt_reason: halt?.reason || null,
     source: admission.source,
     design: { path: loaded.relativePath },
     authorization: admission.authorization,
     claim_boundary: loaded.design.claimBoundary,
     memory_controller_enabled: false,
+    recovery: preflight.recovery
+      ? {
+          source_root: preflight.recovery.source_root,
+          source_plan: preflight.recovery.source_plan,
+          source_ledger: preflight.recovery.source_ledger,
+          prior_reserved_attempts: priorReservedAttempts,
+          prior_completed_units: preflight.recovery.prior_completed_units,
+          failed_job_ids: preflight.recovery.failed_job_ids,
+          policy: 'preserve and skip every prior completed or failed unit; execute only never-attempted jobs',
+        }
+      : null,
     execution: {
       planned_units: plannedJobIds.length,
       complete_units: count('complete'),
@@ -194,7 +394,9 @@ function reportForRows({ loaded, preflight, admission, rows, halt }) {
         reserved_by_children: sums('reserved'),
         completed: sums('completed'),
         failed: sums('failed'),
-        reserved_by_shared_ledger: admission.reserved,
+        reserved_in_predecessor: priorReservedAttempts,
+        reserved_in_current_run: admission.reserved,
+        reserved_by_shared_study_ledger: admission.studyReserved ?? priorReservedAttempts + admission.reserved,
         hard_ceiling: preflight.plan.model_attempt_ceiling,
       },
     },
@@ -217,8 +419,10 @@ export async function executeTutorStubActionOutcomeCollection({
 } = {}) {
   const { destination } = preflight;
   const perDialogueCeiling = loaded.design.attemptCeiling.maximumReservationsPerDialogue;
-  if (perDialogueCeiling * preflight.plan.jobs.length !== preflight.plan.model_attempt_ceiling) {
-    throw new Error('per-dialogue reservations do not close to the registered study ceiling');
+  const executionJobs = preflight.executionJobs || preflight.plan.jobs;
+  const priorReservedAttempts = preflight.recovery?.prior_reserved_attempts || 0;
+  if (priorReservedAttempts + perDialogueCeiling * executionJobs.length !== preflight.plan.model_attempt_ceiling) {
+    throw new Error('current and predecessor reservations do not close to the registered study ceiling');
   }
   fs.mkdirSync(path.join(destination, 'jobs'), { recursive: false });
   writeOnce(path.join(destination, 'plan.json'), {
@@ -227,13 +431,25 @@ export async function executeTutorStubActionOutcomeCollection({
     design: { path: loaded.relativePath },
     authorization: admission.authorization,
     model_attempt_ceiling: preflight.plan.model_attempt_ceiling,
+    recovery: preflight.recovery
+      ? {
+          source_root: preflight.recovery.source_root,
+          source_plan: preflight.recovery.source_plan,
+          source_ledger: preflight.recovery.source_ledger,
+          prior_reserved_attempts: priorReservedAttempts,
+          prior_completed_units: preflight.recovery.prior_completed_units,
+          failed_job_ids: preflight.recovery.failed_job_ids,
+          policy: 'preserve and skip every prior completed or failed unit; execute only never-attempted jobs',
+        }
+      : null,
+    execution_job_ids: executionJobs.map((job) => job.id),
     preflight,
   });
 
-  const rows = [];
+  const rows = [...(preflight.recovery?.priorRows || [])];
   let halt = null;
   try {
-    for (const job of preflight.plan.jobs) {
+    for (const job of executionJobs) {
       if (halt) break;
       admission.reserveModelAttempts(perDialogueCeiling, {
         unit: job.id,
@@ -265,12 +481,14 @@ export async function executeTutorStubActionOutcomeCollection({
         study_id: loaded.design.studyId,
         status: halt?.status || 'generation_running',
         rows,
-        missing_job_ids: preflight.plan.jobs.slice(rows.length).map((candidate) => candidate.id),
+        missing_job_ids: preflight.plan.jobs
+          .filter((candidate) => !rows.some((row) => row.job_id === candidate.id))
+          .map((candidate) => candidate.id),
         shared_reserved_attempts: admission.reserved,
         hard_ceiling: preflight.plan.model_attempt_ceiling,
       });
       progress(
-        `completed ${rows.length}/${preflight.plan.jobs.length}; turns ${rows.reduce((sum, candidate) => sum + candidate.turns, 0)}/${preflight.plan.planned_turns}; child calls ${rows.reduce((sum, candidate) => sum + candidate.model_attempts.completed, 0)}; reserved ${admission.reserved}/${preflight.plan.model_attempt_ceiling}${halt ? `; halted: ${halt.reason}` : ''}`,
+        `dispositioned ${rows.length}/${preflight.plan.jobs.length}; turns ${rows.reduce((sum, candidate) => sum + candidate.turns, 0)}/${preflight.plan.planned_turns}; child calls ${rows.reduce((sum, candidate) => sum + candidate.model_attempts.completed, 0)}; study reserved ${admission.studyReserved ?? priorReservedAttempts + admission.reserved}/${preflight.plan.model_attempt_ceiling}${halt ? `; halted: ${halt.reason}` : ''}`,
       );
     }
     const report = reportForRows({ loaded, preflight, admission, rows, halt });
@@ -286,7 +504,7 @@ export async function executeTutorStubActionOutcomeCollection({
       missing_units: report.execution.missing_units,
       observed_attempts: report.execution.model_attempts.completed + report.execution.model_attempts.failed,
       reserved_attempts: admission.reserved,
-      ...(report.status === 'technical_failure' ? { recovery_permitted: true } : {}),
+      ...(report.status === 'technical_failure' && !preflight.recovery ? { recovery_permitted: true } : {}),
     });
     progress(`${report.status}: ${path.join(destination, 'report.json')}`);
     return report;
@@ -306,6 +524,8 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     args: argv,
     options: {
       design: { type: 'string', default: TUTOR_STUB_ACTION_OUTCOME_COLLECTION_DESIGN_PATH },
+      destination: { type: 'string' },
+      'recovery-from': { type: 'string' },
       'launch-commit': { type: 'string' },
       'go-note-commit': { type: 'string' },
       'go-note-path': { type: 'string' },
@@ -320,15 +540,52 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     return null;
   }
   const loaded = loadTutorStubActionOutcomeCollectionDesign({ root: ROOT, designPath: values.design });
-  const preflight = await (overrides.runPreflight || runTutorStubActionOutcomeCollectionPreflight)({
+  if (values['recovery-from'] && !values.destination) {
+    throw new Error('action-outcome recovery requires --destination');
+  }
+  let preflight = await (overrides.runPreflight || runTutorStubActionOutcomeCollectionPreflight)({
     loaded,
+    ...(values.destination ? { destination: path.resolve(values.destination) } : {}),
+    recovery: Boolean(values['recovery-from']),
     ...(overrides.destinationExists ? { destinationExists: overrides.destinationExists } : {}),
     ...(overrides.resolveArchive ? { resolveArchive: overrides.resolveArchive } : {}),
     ...(overrides.probeRoute ? { probeRoute: overrides.probeRoute } : {}),
     ...(overrides.smokeRole ? { smokeRole: overrides.smokeRole } : {}),
   });
-  process.stdout.write(`${JSON.stringify(preflight, null, 2)}\n`);
-  if (preflight.status !== 'passed_zero_call') throw new Error('action-outcome collection zero-call preflight failed');
+  if (preflight.status !== 'passed_zero_call') {
+    const failedChecks = Object.entries(preflight.checks || {})
+      .filter(([, passed]) => !passed)
+      .map(([name]) => name);
+    throw new Error(
+      `action-outcome collection zero-call preflight failed${failedChecks.length ? `: ${failedChecks.join(', ')}` : ''}`,
+    );
+  }
+  if (values['recovery-from']) {
+    const recovery = (overrides.loadRecovery || loadTutorStubActionOutcomeCollectionRecovery)({
+      loaded,
+      preflight,
+      recoveryFrom: path.resolve(values['recovery-from']),
+    });
+    preflight = { ...preflight, recovery, executionJobs: recovery.executionJobs };
+  }
+  const printablePreflight = preflight.recovery
+    ? {
+        ...preflight,
+        recovery: {
+          source_root: preflight.recovery.source_root,
+          source_plan: preflight.recovery.source_plan,
+          source_ledger: preflight.recovery.source_ledger,
+          prior_reserved_attempts: preflight.recovery.prior_reserved_attempts,
+          prior_completed_units: preflight.recovery.prior_completed_units,
+          failed_job_ids: preflight.recovery.failed_job_ids,
+          recovery_units: preflight.recovery.executionJobs.length,
+          remaining_study_reservations:
+            preflight.recovery.executionJobs.length * loaded.design.attemptCeiling.maximumReservationsPerDialogue,
+        },
+        executionJobs: preflight.executionJobs.map((job) => job.id),
+      }
+    : preflight;
+  process.stdout.write(`${JSON.stringify(printablePreflight, null, 2)}\n`);
   if (values['dry-run']) return preflight;
   if (!values['accept-charges'] || !values['launch-commit'] || !values['go-note-commit'] || !values['go-note-path']) {
     throw new Error('paid launch requires --accept-charges, --launch-commit, --go-note-commit, and --go-note-path');
@@ -342,7 +599,9 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     spendCap: loaded.design.attemptCeiling.hardMaximumReservations,
     destination: preflight.destination,
     studyId: loaded.design.studyId,
-    studyStateRoot: path.join(path.dirname(preflight.destination), '.paid-study-state'),
+    studyStateRoot:
+      preflight.recovery?.study_state_root || path.join(path.dirname(preflight.destination), '.paid-study-state'),
+    ...(preflight.recovery ? { recoveryFrom: preflight.recovery.source_root } : {}),
   });
   return (overrides.execute || executeTutorStubActionOutcomeCollection)({ loaded, preflight, admission });
 }
