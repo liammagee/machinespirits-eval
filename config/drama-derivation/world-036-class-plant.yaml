@@ -1,0 +1,181 @@
+# WORLD-036 — a K-12 classroom inquiry about the class plant that died over
+# half-term. Same proof shape as world-030/034/035 (blamed classmate vs traced
+# cause; being on the rota is not the same as drying the soil out). The
+# presentation test is whether the tutor can talk with an eleven-year-old
+# without worksheet diction. Authored 2026-09-01 for the hero-demo app
+# (workplan: hero-demo-ghost-world-examples). Demo-tier: schedule not
+# ratified; runs on it are illustration, not gate evidence.
+
+id: world_036_class_plant
+title: Who Cooked Gerald?
+discipline: "Everyday reasoning in a Year 6 classroom (a class-plant mystery)"
+
+question: "What killed the class plant?"
+question_pattern: [killedPlant, classPlant, "?x"]
+
+opening_frame:
+  situation: >-
+    Gerald, the class fern, came back from half-term brown and crispy, Mia was
+    on watering duty that week, and the whole class has already decided.
+  authored_text: >-
+    Gerald went brown and crispy over half-term, Mia had the watering can that
+    week, and everyone at circle time said "it was Mia" before Miss even asked.
+    What killed the class plant? What should we look at first?
+
+setting: >-
+  A Year 6 classroom. Gerald, the enormous fern on the windowsill, was green
+  and bushy on the Friday before half-term and came back brown, curled and
+  crispy on one side. Mia was on the watering rota for half-term week, and
+  Mia forgot to feed the class fish last term, so the class has its answer.
+  You are the plant monitor: you made the laminated rota, you told everyone
+  at circle time it was Mia, and Miss will ask what happened at Friday's
+  class meeting. Miss's rule is the awkward part: say what you can show, not
+  who you already blame.
+
+learner_voice: >-
+  The plant monitor, eleven years old: proud of the laminated rota, cross with
+  Mia since the fish, and sure that "on the rota" means "did it". Still able
+  to slow down when the soil turns out damp.
+
+secret:
+  fact: [killedPlant, classPlant, radiator]
+  recognition_patterns:
+    - id: radiator_killed_plant
+      all_of:
+        - ["radiator", "heater", "the heating"]
+        - ["killed", "cooked", "dried out", "dried", "scorched", "burnt", "burned", "fried", "roasted", "did it", "doing it", "culprit", "caused", "causes", "is behind", "explains"]
+        - ["gerald", "the plant", "the fern", "the leaves", "him"]
+      none_of:
+        - "did not kill"
+        - "didn't kill"
+        - "not the radiator"
+        - "rule out the radiator"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    The radiator under the windowsill killed Gerald. The caretaker switched
+    the heating to winter mode on the Monday of half-term, so the radiator
+    blew hot dry air straight up at him from six every morning; the brown,
+    crispy leaves are all on the radiator side, and the ones facing the room
+    are still green.
+
+mirror:
+  fact: [killedPlant, classPlant, miaDuty]
+
+rules:
+  - id: R1_change
+    gloss: >-
+      Something killed the plant when it changed during half-term week and
+      the damage pattern points at it.
+    if:
+      - [changedDuring, "?x", halfTerm]
+      - [damageMatches, "?x", plantLeaves]
+    then:
+      - [killedPlant, classPlant, "?x"]
+  - id: R2_neglect
+    gloss: >-
+      Forgetting to water killed the plant only if the soil shows it dried
+      out. Being on the rota is not the same as drying the soil.
+    if:
+      - [onDutyDuring, "?x", halfTerm]
+      - [soilShowsDry, "?x", plantSoil]
+    then:
+      - [killedPlant, classPlant, "?x"]
+
+premises:
+  - id: p_duty
+    evidence_role: mirror
+    fact: [onDutyDuring, miaDuty, halfTerm]
+    surface: >-
+      Mia was on the watering rota for half-term week, and Mia forgot to feed
+      the class fish last term — which is why circle time started there.
+  - id: p_heating
+    fact: [changedDuring, radiator, halfTerm]
+    surface: >-
+      The caretaker's note on the staffroom board: heating switched to winter
+      mode on the Monday of half-term. The radiator under Gerald's windowsill
+      now runs from six every morning.
+  - id: p_soil
+    evidence_role: corroboration
+    fact: [soilShowsDry, miaDuty, nothingDry]
+    surface: >-
+      Push a finger into Gerald's pot and the soil is damp an inch down, and
+      the watering log has ticks for Tuesday and Thursday of half-term. Gerald
+      was not thirsty.
+  - id: p_scorch
+    fact: [damageMatches, radiator, plantLeaves]
+    surface: >-
+      The brown, crispy leaves are all on the radiator side; the leaves facing
+      the room are still green. Hold a hand over the radiator at ten past
+      eight and it is blowing hot dry air straight up at him.
+
+background:
+  - [keepsRota, plantMonitor, classPlant]
+
+incompatible:
+  - [[killedPlant, classPlant, radiator], [killedPlant, classPlant, miaDuty]]
+
+proof_paths:
+  - premises: [p_heating, p_scorch]
+
+release_schedule:
+  - { turn: 2, premise: p_duty, via: tutor }
+  - turn: 3
+    premise: p_heating
+    via: director
+    presentation: { mode: presented_exhibit, cue: "A photo of the caretaker's note on the staffroom board is passed across the table." }
+  - turn: 5
+    premise: p_soil
+    via: director
+    presentation: { mode: enacted_role, role: classmate pushing a finger into the pot and reading the watering log aloud }
+  - { turn: 6, premise: p_scorch, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Half-Term Week
+      turns: [1, 4]
+      intent: >-
+        Mia's rota week supplies a plausible coincidence, while the caretaker's
+        note introduces a rival cause that changed the same week.
+    - act: II
+      title: Feel the Soil
+      turns: [5, 8]
+      intent: >-
+        Damp soil and the one-sided scorch turn a circle-time verdict into a
+        shown answer. The learner should distinguish a classmate's old
+        mistakes from the thing that actually cooked the plant.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: miaDuty
+      mirror_pull: high
+    second_order:
+      from: class_teacher
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      The teaching assistant who loves a science mystery: warm about the
+      worry, unwilling to referee who is friends with whom, and happiest when
+      a finger in the soil settles what circle time could not.
+
+presentation:
+  family: class-plant
+  temporal_frame: contemporary
+  scene_ecology: "a Year 6 classroom, a crispy fern on the windowsill, the radiator underneath, a laminated watering rota on the wall"
+  narrative_diction: "classroom chatter, eleven years old"
+  ledger_term: watering log
+  summary: A K-12 classroom inquiry that traces a dead class plant to the radiator under its windowsill rather than the classmate everyone already blames.

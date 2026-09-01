@@ -36,7 +36,9 @@ const WORLD_DIR = path.join(ROOT, 'config', 'drama-derivation');
 // 22nd world: world_035_nine_oclock_ghost (hero-demo illustration) declares
 // the same block and runs on the tutor-stub stress path, which reads it —
 // same route as world-030/034.
-const WORLDS_DECLARING_LEARNER_MOTIVATION = 22;
+// 23rd world: world_036_class_plant (hero-demo K-12 illustration) declares the
+// same block and runs on the tutor-stub stress path, which reads it.
+const WORLDS_DECLARING_LEARNER_MOTIVATION = 23;
 
 function allWorlds() {
   return fs
