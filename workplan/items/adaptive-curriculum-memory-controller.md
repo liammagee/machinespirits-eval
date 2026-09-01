@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-01
-branch: codex/action-outcome-collection-recovery-fix
+branch: codex/action-outcome-preprovider-recovery
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -98,6 +98,21 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-01: After PR #906 merged, the interrupted launch was sealed and its
+  zero-call recovery preflight passed. The recovery then stopped on
+  `aocp1_foxtrot_jukebox_r02` before any provider call because the local
+  sandbox denied creation of the required private artifact-archive directory.
+  The failed recovery unit has 0 turns and 0 child attempt reservations; its
+  full 81-attempt shared reservation remains consumed. Across both preserved
+  failures the study now has 5/192 turns, 30 completed provider calls, 0
+  provider-call failures, 162/1,944 shared reservations, and 22 untouched
+  jobs. The recovery run is sealed with further recovery disabled. Added a
+  zero-write archive-access check so dry-run fails when the resolved archive
+  exists but is not writable in the launch environment. Model activity is
+  stopped. Continuing the 22 missing jobs would require an explicit human
+  decision and a separately reviewed change to the one-recovery rule; no such
+  execution is authorized by this source-only repair.
 
 - 2026-09-01: The authorized initial collection launch exposed a mechanical
   completion-accounting defect during its first job and was stopped before a

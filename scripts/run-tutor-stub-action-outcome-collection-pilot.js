@@ -552,7 +552,14 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     ...(overrides.probeRoute ? { probeRoute: overrides.probeRoute } : {}),
     ...(overrides.smokeRole ? { smokeRole: overrides.smokeRole } : {}),
   });
-  if (preflight.status !== 'passed_zero_call') throw new Error('action-outcome collection zero-call preflight failed');
+  if (preflight.status !== 'passed_zero_call') {
+    const failedChecks = Object.entries(preflight.checks || {})
+      .filter(([, passed]) => !passed)
+      .map(([name]) => name);
+    throw new Error(
+      `action-outcome collection zero-call preflight failed${failedChecks.length ? `: ${failedChecks.join(', ')}` : ''}`,
+    );
+  }
   if (values['recovery-from']) {
     const recovery = (overrides.loadRecovery || loadTutorStubActionOutcomeCollectionRecovery)({
       loaded,

@@ -397,7 +397,11 @@ export function buildContinuityRequest({
   return { systemPrompt, prompt, messageHistory, audit, privilege, ...(proofPlan ? { proofPlan } : {}) };
 }
 
-export function parseContinuityReply(text, history) {
+export function parseContinuityReply(text, history, options = {}) {
+  const unsupportedQuotationPolicy = options.unsupportedQuotationPolicy || 'error';
+  if (!['error', 'drop'].includes(unsupportedQuotationPolicy)) {
+    throw new Error('unsupported quotation policy');
+  }
   const value = JSON.parse(
     String(text)
       .trim()
@@ -413,6 +417,7 @@ export function parseContinuityReply(text, history) {
     throw new Error('invalid continuity reply envelope');
   for (const field of ['settled', 'open']) {
     if (!Array.isArray(value[field]) || value[field].length > 4) throw new Error(`invalid ${field} ledger`);
+    const supportedRows = [];
     for (const row of value[field]) {
       if (
         Object.keys(row).sort().join(',') !== 'point,quote' ||
@@ -421,13 +426,20 @@ export function parseContinuityReply(text, history) {
         typeof row.quote !== 'string' ||
         !row.quote.trim() ||
         row.point.length > 240 ||
-        row.quote.length > 240 ||
-        ![value.speech, ...history.map((message) => message.content)].some((speech) =>
-          normalizeQuotationTypography(speech).includes(normalizeQuotationTypography(row.quote)),
-        )
+        row.quote.length > 240
       )
-        throw new Error(`unsupported ${field} quotation`);
+        throw new Error(`invalid ${field} ledger row`);
+      const quotationSupported = [value.speech, ...history.map((message) => message.content)].some((speech) =>
+        normalizeQuotationTypography(speech).includes(normalizeQuotationTypography(row.quote)),
+      );
+      if (!quotationSupported) {
+        if (unsupportedQuotationPolicy === 'error') throw new Error(`unsupported ${field} quotation`);
+        options.onUnsupportedQuotation?.({ field, row: structuredClone(row) });
+        continue;
+      }
+      supportedRows.push(row);
     }
+    value[field] = supportedRows;
   }
   return value;
 }
@@ -505,6 +517,7 @@ export async function runContinuityArm({
   callReview = callContinuityReview,
   firstLearnerReply = null,
   savedReplies = {},
+  unsupportedQuotationPolicy = 'error',
 }) {
   const imports = { ...savedReplies, ...(firstLearnerReply ? { '1-learner': firstLearnerReply } : {}) };
   if (budget.snapshot().used < Object.keys(imports).length)
@@ -567,7 +580,21 @@ export async function runContinuityArm({
             onEvent: (event) => trace({ type: 'provider_event', speaker, turn, event }),
           }));
         write(`${turn}-${speaker}${deliberates ? '-draft' : ''}.response.json`, response);
-        let parsed = parseContinuityReply(response.text, history);
+        const parseReply = (text) =>
+          parseContinuityReply(text, history, {
+            unsupportedQuotationPolicy,
+            onUnsupportedQuotation: ({ field, row }) =>
+              trace({
+                type: 'continuity_ledger_row_dropped',
+                speaker,
+                turn,
+                field,
+                row,
+                reason: 'quote_not_found_in_current_or_prior_public_speech',
+                publicSpeechPreserved: true,
+              }),
+          });
+        let parsed = parseReply(response.text);
         if (deliberates) {
           trace({
             type: 'model_call',
@@ -630,7 +657,7 @@ export async function runContinuityArm({
             onEvent: (event) => trace({ type: 'provider_event', speaker, stage: 'revision', turn, event }),
           });
           write(`${turn}-${speaker}.response.json`, response);
-          parsed = parseContinuityReply(response.text, history);
+          parsed = parseReply(response.text);
           const deliberation = {
             speaker,
             turn,

@@ -11,6 +11,7 @@ import {
   buildContinuityProofPlan,
   buildContinuityRequest,
   loadContinuityPlan,
+  parseContinuityReply,
   runContinuityArm,
 } from '../services/localQwenRefusalContinuity.js';
 import { renderContinuityReport } from '../services/localQwenRefusalContinuityReport.js';
@@ -51,19 +52,19 @@ export function investedRivalDeliveredSourceContext(plan, arm) {
   ].join('\n');
 }
 
-function paidStudyBudget(admission, limit) {
+function paidStudyBudget(admission, limit, priorAttemptCount = 0) {
   return {
     reserve(detail = {}) {
       const reservation = admission.reserveModelAttempts(1, detail);
       return {
-        call: reservation.study_reserved,
+        call: priorAttemptCount + reservation.study_reserved,
         limit,
         remaining: reservation.remaining,
-        studyReserved: reservation.study_reserved,
+        studyReserved: priorAttemptCount + reservation.study_reserved,
       };
     },
     snapshot() {
-      return { used: admission.studyReserved, limit };
+      return { used: priorAttemptCount + admission.studyReserved, limit };
     },
   };
 }
@@ -311,8 +312,9 @@ async function scoreArms({ plan, arms, outDir, budget, priorScores = [], priorAt
   });
 }
 
-async function runFresh(plan, outDir, admission) {
-  const budget = paidStudyBudget(admission, plan.total_attempt_ceiling);
+async function runFresh(plan, outDir, admission, generationRecovery = null) {
+  const priorAttemptCount = generationRecovery?.stop.budget.used || 0;
+  const budget = paidStudyBudget(admission, plan.total_attempt_ceiling, priorAttemptCount);
   const arms = [];
   try {
     const provenance = sourceProvenance(plan, {
@@ -323,7 +325,17 @@ async function runFresh(plan, outDir, admission) {
       mainRef: admission.source.main_ref,
       mainCommit: admission.source.main_commit,
       authorization: admission.authorization,
-      recovery: false,
+      recovery: Boolean(generationRecovery),
+      ...(generationRecovery
+        ? {
+            recoverySource: generationRecovery.sourceDir,
+            recoveredGeneration: generationRecovery.failure,
+            priorAttemptCount,
+            linkedRecoveryStudyId: admission.study_id,
+            linkedRecoveryAttemptCeiling: admission.spend_cap,
+            privateLedgerPolicy: 'drop_unsupported_quote_rows_preserve_public_speech',
+          }
+        : {}),
     });
     writePreparation(outDir, plan, provenance);
     const service = yaml.parse(fs.readFileSync(path.join(ROOT, plan.service_config), 'utf8'));
@@ -339,7 +351,18 @@ async function runFresh(plan, outDir, admission) {
         ownsServer = true;
         const loaded = await discoverLoadedModel(plan.base_url, { modelIdContains: arm.model });
         if (loaded !== arm.model) throw new Error('loaded model does not exactly match the planned arm');
-        await runContinuityArm({ plan, arm, outDir: path.join(outDir, arm.id), budget });
+        await runContinuityArm({
+          plan,
+          arm,
+          outDir: path.join(outDir, arm.id),
+          budget,
+          ...(generationRecovery ? { unsupportedQuotationPolicy: 'drop' } : {}),
+          ...(generationRecovery && arm.id === 'A'
+            ? {
+                firstLearnerReply: generationRecovery.firstLearnerReply,
+              }
+            : {}),
+        });
       } finally {
         if (ownsServer) await manageServer(plan.mtp_chat_root, arm.profile, 'stop', servicePath);
       }
@@ -370,6 +393,7 @@ async function runFresh(plan, outDir, admission) {
       completed_arms: arms.length,
       completed_assessments: evaluation.scores.length,
       reserved_attempts: admission.reserved,
+      ...(generationRecovery ? { recovery_from: generationRecovery.sourceDir } : {}),
     });
     return { outDir, dryRun: false, attempts: budget.snapshot().used };
   } catch (error) {
@@ -394,10 +418,70 @@ async function runFresh(plan, outDir, admission) {
       error: error.message,
       completed_arms: arms.length,
       reserved_attempts: admission.reserved,
+      ...(generationRecovery ? { recovery_from: generationRecovery.sourceDir } : {}),
       ...(recoveryPermitted ? { recovery_permitted: true } : {}),
     });
     throw error;
   }
+}
+
+export function readGenerationRecovery(plan, sourceDir) {
+  const sourcePlan = JSON.parse(fs.readFileSync(path.join(sourceDir, 'plan.json'), 'utf8'));
+  if (sourcePlan.id !== plan.id || sourcePlan.provenance?.recovery) {
+    throw new Error('generation recovery must start from the original invested-rival run');
+  }
+  const stop = JSON.parse(fs.readFileSync(path.join(sourceDir, 'stopped.json'), 'utf8'));
+  if (
+    stop.armsCompleted !== 0 ||
+    stop.budget?.used !== 1 ||
+    !/^unsupported (?:open|settled) quotation$/u.test(stop.error || '')
+  ) {
+    throw new Error('generation recovery requires the preserved first-turn private-ledger quotation failure');
+  }
+  for (const forbidden of [
+    path.join(sourceDir, 'A', 'dialogue.json'),
+    path.join(sourceDir, 'A', 'checkpoint-1.json'),
+    path.join(sourceDir, 'B'),
+    path.join(sourceDir, 'evaluation'),
+  ]) {
+    if (fs.existsSync(forbidden)) throw new Error('generation recovery source contains accepted downstream output');
+  }
+  const request = JSON.parse(fs.readFileSync(path.join(sourceDir, 'A', '1-learner.request.json'), 'utf8'));
+  const response = JSON.parse(fs.readFileSync(path.join(sourceDir, 'A', '1-learner.response.json'), 'utf8'));
+  const dropped = [];
+  const parsed = parseContinuityReply(response.text, request.messageHistory, {
+    unsupportedQuotationPolicy: 'drop',
+    onUnsupportedQuotation: (row) => dropped.push(row),
+  });
+  if (!dropped.length) throw new Error('generation recovery source has no unsupported private ledger quotation');
+  return {
+    sourceDir,
+    sourcePlan,
+    stop,
+    failure: { error: stop.error, droppedPrivateLedgerRows: dropped },
+    firstLearnerReply: {
+      source: path.join(sourceDir, 'A', '1-learner.response.json'),
+      request,
+      response,
+      parsedSpeech: parsed.speech,
+    },
+  };
+}
+
+export function generationRecoveryContract(plan, recovery) {
+  const priorAttemptCount = recovery?.stop?.budget?.used;
+  if (
+    !Number.isInteger(priorAttemptCount) ||
+    priorAttemptCount < 1 ||
+    priorAttemptCount >= plan.total_attempt_ceiling
+  ) {
+    throw new Error('generation recovery requires a positive preserved attempt count below the study ceiling');
+  }
+  return {
+    studyId: `${plan.id}-generation-recovery-v1`,
+    spendCap: plan.total_attempt_ceiling - priorAttemptCount,
+    priorAttemptCount,
+  };
 }
 
 function readPriorScores(sourceDir, arms) {
@@ -518,7 +602,7 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
   }
 }
 
-function admitLiveRun(plan, values, outDir, recoveryFrom = null) {
+function admitLiveRun(plan, values, outDir, recoveryFrom = null, contractOverride = {}) {
   if (!values['accept-charges'] || !values['launch-commit'] || !values['go-note-commit'] || !values['go-note-path']) {
     throw new Error('paid launch requires --accept-charges, --launch-commit, --go-note-commit, and --go-note-path');
   }
@@ -528,9 +612,9 @@ function admitLiveRun(plan, values, outDir, recoveryFrom = null) {
     launchCommit: values['launch-commit'],
     goNoteCommit: values['go-note-commit'],
     goNotePath: values['go-note-path'],
-    spendCap: plan.total_attempt_ceiling,
+    spendCap: contractOverride.spendCap || plan.total_attempt_ceiling,
     destination: outDir,
-    studyId: plan.id,
+    studyId: contractOverride.studyId || plan.id,
     studyStateRoot: path.resolve(ROOT, values['study-state-root'] || '.tutor-stub-traces/.paid-study-state'),
     ...(recoveryFrom ? { recoveryFrom } : {}),
   });
@@ -544,6 +628,7 @@ export async function main(argv = process.argv.slice(2)) {
       config: { type: 'string' },
       output: { type: 'string' },
       'recover-assessments': { type: 'boolean', default: false },
+      'recover-generation': { type: 'boolean', default: false },
       from: { type: 'string' },
       'accept-charges': { type: 'boolean', default: false },
       'launch-commit': { type: 'string' },
@@ -553,6 +638,33 @@ export async function main(argv = process.argv.slice(2)) {
     },
   });
   const plan = buildInvestedRivalPlan(ROOT, values.config || DEFAULT_CONFIG);
+  if (values['recover-generation']) {
+    if (!values.live || !values.from || values['recover-assessments']) {
+      throw new Error('--recover-generation requires --live and --from, without --recover-assessments');
+    }
+    const sourceDir = path.resolve(ROOT, values.from);
+    const outDir = path.resolve(ROOT, values.output || `${sourceDir}-generation-recovery-v1`);
+    const recovery = readGenerationRecovery(plan, sourceDir);
+    const recoveryContract = generationRecoveryContract(plan, recovery);
+    const admission = admitLiveRun(plan, values, outDir, null, recoveryContract);
+    admission.record({
+      type: 'linked_generation_recovery',
+      recovery_from: sourceDir,
+      prior_attempts_preserved: recoveryContract.priorAttemptCount,
+      aggregate_attempt_ceiling: plan.total_attempt_ceiling,
+      recovery_attempt_ceiling: recoveryContract.spendCap,
+    });
+    if (admission.studyReserved !== 0) {
+      admission.close({
+        type: 'run_sealed',
+        status: 'failed',
+        error: 'linked recovery ledger was not empty at launch',
+        recovery_from: sourceDir,
+      });
+      throw new Error('linked recovery ledger was not empty at launch');
+    }
+    return runFresh(plan, outDir, admission, recovery);
+  }
   if (values['recover-assessments']) {
     if (!values.live || !values.from) {
       throw new Error('--recover-assessments requires --live and --from');
