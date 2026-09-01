@@ -38,11 +38,13 @@ import {
   localModelRouteRecoveryContract,
   main as runInvestedRival,
   qualityJsonTransportRecoveryContract,
+  qualitySplitRecoveryContract,
   readArmBoundaryRecovery,
   readGenerationRecovery,
   readLinkedAssessmentRecovery,
   readLocalModelRouteRecovery,
   readQualityJsonTransportRecovery,
+  readQualitySplitRecovery,
   runtimeServiceArm,
   technicalRecoveryEligible,
 } from '../scripts/run-local-qwen-invested-rival.js';
@@ -245,6 +247,78 @@ function createQualityTransportRecoveryFixture() {
   fs.writeFileSync(path.join(evaluationDir, 'A-quality.prompt.txt'), prior.failedJob.prompt);
   fs.writeFileSync(path.join(evaluationDir, 'A-quality.schema.json'), JSON.stringify(prior.failedJob.outputSchema));
   return { sourceDir, prior };
+}
+
+function createQualitySplitRecoveryFixture() {
+  const previous = createQualityTransportRecoveryFixture();
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-quality-split-test-'));
+  const evaluationDir = path.join(sourceDir, 'evaluation');
+  fs.mkdirSync(evaluationDir);
+  fs.writeFileSync(
+    path.join(sourceDir, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v5`,
+        linkedRecoveryAttemptCeiling: 10,
+        priorAttemptCount: 38,
+        reusedCompletedAssessments: ['A/tutor', 'A/learner', 'A/dialogue'],
+        recoverySource: previous.sourceDir,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'stopped.json'),
+    JSON.stringify({
+      error: 'claude CLI structured response classified as indeterminate (invalid_json_result_text)',
+      budget: { used: 39, limit: 48 },
+    }),
+  );
+  fs.writeFileSync(path.join(sourceDir, 'arms.json'), JSON.stringify(previous.prior.arms));
+  fs.writeFileSync(
+    path.join(sourceDir, 'run-ledger.jsonl'),
+    `${JSON.stringify({ type: 'model_attempt_reserved', count: 1 })}\n${JSON.stringify({
+      type: 'run_sealed',
+      status: 'failed',
+      reserved_attempts: 1,
+    })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'judge-ledger.jsonl'),
+    `${JSON.stringify({ event: 'reserved', arm: 'A', kind: 'quality' })}\n${JSON.stringify({
+      event: 'failed',
+      arm: 'A',
+      kind: 'quality',
+    })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'A-quality.error.json'),
+    JSON.stringify({
+      message: 'claude CLI structured response classified as indeterminate (invalid_json_result_text)',
+      code: 'CLI_PROVIDER_AMBIGUOUS_OUTPUT',
+      classification: 'indeterminate',
+      reason: 'invalid_json_result_text',
+    }),
+  );
+  fs.writeFileSync(path.join(evaluationDir, 'A-quality.prompt.txt'), previous.prior.failedJob.prompt);
+  fs.writeFileSync(
+    path.join(evaluationDir, 'A-quality.schema.json'),
+    JSON.stringify(previous.prior.failedJob.outputSchema),
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'A-quality.transport.json'),
+    JSON.stringify({
+      stdout: JSON.stringify([
+        { type: 'system', subtype: 'init', tools: [] },
+        { type: 'assistant', message: { content: [{ type: 'text', text: '{"scores":' }] } },
+        { type: 'result', is_error: false, subtype: 'success', num_turns: 1, result: '{"scores":' },
+      ]),
+      stderr: '',
+      exitCode: 0,
+    }),
+  );
+  return { sourceDir, previous };
 }
 
 test('invested rival plan is a direct matched pair with an enforced 32 + 8 + 8 ceiling', () => {
@@ -660,6 +734,31 @@ test('invested rival quality transport recovery preserves 38 attempts and bypass
   );
   fs.writeFileSync(path.join(sourceDir, 'completed.json'), '{}');
   assert.throws(() => readQualityJsonTransportRecovery(rivalPlan, sourceDir), /completed output/u);
+});
+
+test('invested rival quality split recovery preserves 39 attempts and plans seven calls under the remaining nine', () => {
+  const { sourceDir } = createQualitySplitRecoveryFixture();
+  const recovery = readQualitySplitRecovery(rivalPlan, sourceDir);
+  assert.equal(recovery.plainJsonQuality, true);
+  assert.equal(recovery.splitQuality, true);
+  assert.equal(recovery.eligibility.priorAttempts, 6);
+  assert.equal(recovery.failedTransport.parseable, false);
+  assert.deepEqual(
+    recovery.priorScores.map((score) => `${score.arm}/${score.kind}`),
+    ['A/tutor', 'A/learner', 'A/dialogue'],
+  );
+  assert.deepEqual(qualitySplitRecoveryContract(rivalPlan, recovery), {
+    studyId: 'qwen-invested-rival-theorist-v1-generation-recovery-v6',
+    spendCap: 9,
+    priorAttemptCount: 39,
+  });
+  assert.equal(
+    investedRivalJudgeCallOptions('local-qwen-benchmark-quality-summary', { singleAttempt: true }, true)
+      .singleAttemptJsonText,
+    true,
+  );
+  fs.writeFileSync(path.join(sourceDir, 'completed.json'), '{}');
+  assert.throws(() => readQualitySplitRecovery(rivalPlan, sourceDir), /completed output/u);
 });
 
 test('bilateral plan inherits the unchanged actor and proof controller with an explicit 100-attempt ceiling', () => {

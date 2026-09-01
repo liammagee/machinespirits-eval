@@ -9,7 +9,7 @@ source: manual
 created: 2026-08-31
 updated: 2026-09-01
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "The two eight-exchange arms and three valid Opus assessments are preserved at 38/48 aggregate attempts; the repeated A-quality schema-tool failures are exact-packet technical failures, and a tested 10-attempt linked recovery keeps the prompt, rubric and one-response Opus route fixed while validating quality JSON locally against the unchanged schema."
+verification: "The two eight-exchange arms and three valid Opus assessments are preserved at 39/48 aggregate attempts. A third A-quality attempt produced a tool-free but 13,000-character incomplete JSON result. The prospective split packages each remaining quality judgment as independently validated summary and turn packets, plans seven new calls, and exposes no more than the nine attempts left under the unchanged ceiling."
 claim_status: planned
 links:
   notes:
@@ -103,3 +103,12 @@ with Sol, no superegos, using one fresh dialogue per arm.
   validation. Tutor, learner and dialogue assessments retain the existing
   provider schema tool. A fifth linked ledger preserves all 38 attempts and
   exposes only the remaining 10.
+- 2026-09-01: The third A quality attempt used the registered plain-JSON route
+  and produced one successful, tool-free Opus response, but the archived result
+  ended at exactly 13,000 characters before the JSON object closed. It remains
+  failed evidence, taking the study to 39/48; no visible score or annotation in
+  that incomplete object is accepted. The prospective amendment splits only
+  the oversized quality transport into a summary packet and a per-turn packet,
+  validates both separately, then mechanically checks their union against the
+  original schema. The remaining plan is seven calls under a nine-attempt cap,
+  with no rerun of either dialogue or the three accepted assessments.
