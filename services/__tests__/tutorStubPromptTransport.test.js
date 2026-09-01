@@ -25,7 +25,7 @@ function failedTurnError() {
   });
 }
 
-function transportWith(callAIWithCliBridge, counters, trace) {
+function transportWith(callAIWithCliBridge, counters, trace, overrides = {}) {
   return createTutorStubPromptTransport({
     C: {},
     appendTraceEvent(_target, event) {
@@ -78,10 +78,36 @@ function transportWith(callAIWithCliBridge, counters, trace) {
       counters.delays.push(delayMs);
     },
     write() {},
+    ...overrides,
   });
 }
 
 describe('tutor-stub prompt transport', () => {
+  it('passes a requested direct-provider temperature while retaining the historical default', async () => {
+    const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
+    const requests = [];
+    const transport = transportWith(null, counters, [], {
+      isCliProvider: () => false,
+      effectiveTemperatureForModel: (_resolved, requested) => requested,
+      async callAI(request) {
+        requests.push(request);
+        return { content: 'Could another hand have used the graver?', usage: {} };
+      },
+    });
+    const request = {
+      prompt: 'Test the public evidence.',
+      systemPrompt: 'Play the apprentice.',
+      role: 'tutor_stub_auto_learner',
+      resolved: { provider: 'mlx-local', model: 'qwen' },
+      trace: [],
+      turn: 1,
+    };
+    await transport.callPromptModel({ ...request, temperature: 0.6 });
+    await transport.callPromptModel(request);
+    assert.equal(requests[0].config.temperature, 0.6);
+    assert.equal(requests[1].config.temperature, 0.1);
+  });
+
   it('uses the shared CLI request path for a strict schema and preserves bridge provenance', async () => {
     const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
     const trace = [];

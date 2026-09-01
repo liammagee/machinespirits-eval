@@ -45,6 +45,12 @@
       "reason": "First post-policy tutor-stub calibration launcher; adopts services/paidStudyLaunchContract.js for admission, create-once state, reservations, and the append-only ledger."
     },
     {
+      "path": "scripts/run-local-qwen-invested-rival.js",
+      "registered": "2026-09-01",
+      "disposition": "shared_contract",
+      "reason": "Post-policy local-Qwen learner study; adopts services/paidStudyLaunchContract.js for merged-design admission, create-once state, study-wide reservations, and append-only ledgers."
+    },
+    {
       "path": "scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js",
       "registered": "2026-08-22",
       "disposition": "historical_live_exemption",

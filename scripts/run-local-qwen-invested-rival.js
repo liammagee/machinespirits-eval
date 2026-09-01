@@ -1,0 +1,595 @@
+#!/usr/bin/env node
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { parseArgs } from 'node:util';
+import yaml from 'yaml';
+
+import {
+  buildContinuityProofPlan,
+  buildContinuityRequest,
+  loadContinuityPlan,
+  runContinuityArm,
+} from '../services/localQwenRefusalContinuity.js';
+import { renderContinuityReport } from '../services/localQwenRefusalContinuityReport.js';
+import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { loadRubric } from '../services/evalConfigLoader.js';
+import { loadLearnerRubric } from '../services/learnerRubricEvaluator.js';
+import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
+import { loadDialogueRubric } from '../services/rubricEvaluator.js';
+import {
+  buildBenchmarkJobs,
+  normalizeScores,
+  readBenchmarkArm,
+  scoreBenchmarkArms,
+} from './score-local-qwen-resistant-learner-benchmark.js';
+import { discoverLoadedModel, manageServer } from './run-local-qwen-resistant-learner.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const DEFAULT_CONFIG = 'config/tutor-stub-local-learners/qwen-invested-rival-theorist.v1.yaml';
+const writeJson = (file, value) => fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
+
+function normalized(text) {
+  return String(text || '')
+    .normalize('NFC')
+    .replace(/[‘’]/gu, "'");
+}
+
+export function investedRivalDeliveredSourceContext(plan, arm) {
+  const records = arm.snapshot.proofControl.releasedPremiseIds.map((id) => {
+    const source = plan.world.premises.find((premise) => premise.id === id);
+    const turn = arm.snapshot.turns.find((row) => normalized(row.tutor).includes(normalized(source.surface)));
+    if (!turn) throw new Error('committed source is absent from the final public transcript');
+    return `Delivered in housemate turn ${turn.turn}: ${source.surface}`;
+  });
+  return [
+    `Public opening situation supplied to both speakers: ${plan.world.opening_frame.situation}`,
+    'The housemate is authorized to introduce these authored observations. New disclosed scene evidence is not automatically an invented assertion.',
+    ...records,
+  ].join('\n');
+}
+
+function paidStudyBudget(admission, limit) {
+  return {
+    reserve(detail = {}) {
+      const reservation = admission.reserveModelAttempts(1, detail);
+      return {
+        call: reservation.study_reserved,
+        limit,
+        remaining: reservation.remaining,
+        studyReserved: reservation.study_reserved,
+      };
+    },
+    snapshot() {
+      return { used: admission.studyReserved, limit };
+    },
+  };
+}
+
+function requiredStrings(record, keys, label) {
+  for (const key of keys) {
+    if (typeof record?.[key] !== 'string' || !record[key].trim()) {
+      throw new Error(`${label} ${key} required`);
+    }
+  }
+}
+
+export function buildInvestedRivalPlan(root = ROOT, configPath = DEFAULT_CONFIG) {
+  const plan = loadContinuityPlan(root, configPath);
+  if (
+    plan.id !== 'qwen-invested-rival-theorist-v1' ||
+    plan.total_attempt_ceiling !== 48 ||
+    plan.recovery_attempt_reserve !== 8 ||
+    plan.generationCap !== 32 ||
+    plan.judge_calls !== 8 ||
+    plan.tutor_control !== 'public_proof_dag'
+  ) {
+    throw new Error('invested-rival plan differs from the proposed 32 + 8 + 8 attempt design');
+  }
+  if (
+    plan.arms.length !== 2 ||
+    plan.arms.some((arm) => arm.mode !== 'direct' || (arm.tutorMode || 'direct') !== 'direct') ||
+    plan.arms.map((arm) => arm.variant).join(',') !== 'normal,abliterated'
+  ) {
+    throw new Error('invested-rival plan requires normal then abliterated direct arms with no superego');
+  }
+  requiredStrings(
+    plan.assessment,
+    ['scenario_name', 'scenario_description', 'topic', 'profile_id', 'expected_behavior', 'quality_instructions'],
+    'assessment',
+  );
+  requiredStrings(
+    plan.report,
+    [
+      'page_title',
+      'rail_title',
+      'headline',
+      'subtitle',
+      'interchange_label',
+      'setup_title',
+      'setup_description',
+      'quality_description',
+      'comparison_description',
+      'rubric_description',
+      'transcript_description',
+      'proof_description',
+      'scope_description',
+    ],
+    'report',
+  );
+  for (const rubric of [loadRubric(), loadLearnerRubric(), loadDialogueRubric()]) {
+    if (String(rubric.version) !== '2.2') throw new Error('active rubric changed from registered v2.2');
+  }
+  return {
+    ...plan,
+    assessmentContext: {
+      scenarioName: plan.assessment.scenario_name,
+      scenarioDescription: plan.assessment.scenario_description,
+      topic: plan.assessment.topic,
+      profileId: plan.assessment.profile_id,
+      characterBrief: plan.characterBrief,
+      expectedBehavior: plan.assessment.expected_behavior,
+      qualityInstructions: plan.assessment.quality_instructions,
+    },
+    reportMeta: Object.fromEntries(
+      Object.entries(plan.report).map(([key, value]) => [
+        key.replace(/_([a-z])/gu, (_match, letter) => letter.toUpperCase()),
+        value,
+      ]),
+    ),
+  };
+}
+
+function sourceProvenance(plan, extra = {}) {
+  return {
+    commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(),
+    dirty: execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' }).trim(),
+    createdAt: new Date().toISOString(),
+    sourceRoot: ROOT,
+    studyId: plan.id,
+    totalAttemptCeiling: plan.total_attempt_ceiling,
+    generationAttemptMaximum: plan.generationCap,
+    plannedAssessmentAttempts: plan.judge_calls,
+    technicalRecoveryReserve: plan.recovery_attempt_reserve,
+    noteQuotationScope: 'prior_or_current_public_speech',
+    configuredModels: {
+      learner: Object.fromEntries(plan.arms.map((arm) => [arm.id, arm.model])),
+      tutor: 'codex.gpt-5.6-sol',
+      judge: 'claude-code.claude-opus-5',
+    },
+    ...extra,
+  };
+}
+
+function syntheticArms(plan) {
+  return plan.arms.map((arm) => {
+    let releasedPremiseIds = [];
+    const turns = [];
+    for (let turn = 1; turn <= plan.max_exchanges; turn += 1) {
+      const proof = buildContinuityProofPlan({ plan, turn, releasedPremiseIds });
+      releasedPremiseIds = [...releasedPremiseIds, ...proof.requiredReleases.map((row) => row.premise)];
+      turns.push({
+        turn,
+        learner: `Synthetic learner turn ${turn}; layout and packet fixture, not model output.`,
+        tutor:
+          proof.sources.map((source) => source.text).join(' ') ||
+          `Synthetic tutor turn ${turn}; layout and packet fixture, not model output.`,
+      });
+    }
+    return {
+      ...arm,
+      opening: plan.world.opening_frame.authored_text,
+      transcript: [
+        `Opening: ${plan.world.opening_frame.authored_text}`,
+        ...turns.flatMap((row) => [`Learner ${row.turn}: ${row.learner}`, `Tutor ${row.turn}: ${row.tutor}`]),
+      ].join('\n'),
+      wallTimeMs: 0,
+      repetition: { meanLexicalSurpriseAfterOpening: null },
+      technical: {
+        learnerMechanism: { calls: 0, medianLatencyMs: null, totalLatencyMs: 0 },
+        learnerFinal: { calls: 0, meanEndToEndOutputTokensPerSecond: null },
+        tutor: { calls: 0, totalLatencyMs: 0 },
+      },
+      snapshot: {
+        turns,
+        ledgers: { learner: { settled: [], open: [] }, tutor: { settled: [], open: [] } },
+        maxExchanges: plan.max_exchanges,
+        disposition: 'exchange_cap',
+        proofControl: {
+          releasedPremiseIds,
+          scheduledPremises: plan.world.premises.length,
+          publicProofEntailed: true,
+          inquiryDisposition: 'public_evidence_sufficient_learner_understanding_unassessed',
+        },
+      },
+    };
+  });
+}
+
+function writePreparation(outDir, plan, provenance) {
+  writeJson(path.join(outDir, 'plan.json'), { ...plan, provenance });
+  const opening = [{ role: 'assistant', content: plan.world.opening_frame.authored_text }];
+  for (const speaker of ['learner', 'tutor']) {
+    writeJson(
+      path.join(outDir, `${speaker}-preflight.json`),
+      buildContinuityRequest({ plan, speaker, turn: 1, history: opening }),
+    );
+  }
+  let releasedPremiseIds = [];
+  const proofPreflight = [];
+  for (let turn = 1; turn <= plan.max_exchanges; turn += 1) {
+    const request = buildContinuityRequest({
+      plan,
+      speaker: 'tutor',
+      turn,
+      history: opening,
+      releasedPremiseIds,
+    });
+    proofPreflight.push(request);
+    releasedPremiseIds = [...releasedPremiseIds, ...request.proofPlan.requiredReleases.map((row) => row.premise)];
+  }
+  writeJson(path.join(outDir, 'proof-preflight.json'), proofPreflight);
+
+  const previewArms = syntheticArms(plan);
+  const sourceContexts = Object.fromEntries(
+    previewArms.map((arm) => [arm.id, investedRivalDeliveredSourceContext(plan, arm)]),
+  );
+  const packets = buildBenchmarkJobs(previewArms, {
+    extendedQuality: true,
+    assessmentContext: plan.assessmentContext,
+    publicSourceContextByArm: sourceContexts,
+  });
+  writeJson(path.join(outDir, 'judge-packet-preflight.json'), {
+    synthetic: true,
+    modelCalls: 0,
+    packets,
+  });
+  const preview = renderContinuityReport({
+    arms: previewArms,
+    evaluation: { scores: [], attemptsUsed: 0 },
+    provenance: { ...provenance, budget: { used: 0, limit: plan.total_attempt_ceiling } },
+    characterBrief: plan.characterBrief,
+    proofControl: true,
+    comparisonLabel: 'Claim boundary',
+    corrections: [
+      'The character wants a defensible answer and begins with a public rival explanation.',
+      'Answered objections should be conceded rather than renamed or reopened.',
+      'Sol remains responsible for due public evidence and the live inference.',
+      'Acting, teaching, repetition and character fidelity remain separate readings.',
+    ],
+    reportMeta: plan.reportMeta,
+    mock: true,
+  });
+  fs.writeFileSync(path.join(outDir, 'report-preview.html'), preview.html, { flag: 'wx' });
+  writeJson(path.join(outDir, 'public-preview.json'), preview.interchange);
+  fs.copyFileSync(path.join(ROOT, plan.design), path.join(outDir, 'design.md'), fs.constants.COPYFILE_EXCL);
+  return { packets: packets.length, preview: path.join(outDir, 'report-preview.html') };
+}
+
+function reportResult({ outDir, plan, arms, evaluation, provenance }) {
+  const result = {
+    arms,
+    evaluation,
+    provenance,
+    characterBrief: plan.characterBrief,
+    proofControl: true,
+    comparisonLabel: 'Claim boundary',
+    corrections: [
+      'The same character, public opening, proof schedule, Sol route and settings apply to both arms.',
+      'The learner brief contains no hidden answer, future clue, recurrence target or score threshold.',
+      'A repair offer does not answer the causal rival; a defeated objection should be acknowledged.',
+      'The two checkpoint packages may differ beyond abliteration, so results are descriptive.',
+    ],
+    reportMeta: plan.reportMeta,
+  };
+  writeJson(path.join(outDir, 'report-data.json'), result);
+  const rendered = renderContinuityReport(result);
+  fs.writeFileSync(path.join(outDir, 'report.html'), rendered.html, { flag: 'wx' });
+  writeJson(path.join(outDir, 'public-dialogues.json'), rendered.interchange);
+}
+
+function publicSourceContexts(plan, arms) {
+  return Object.fromEntries(arms.map((arm) => [arm.id, investedRivalDeliveredSourceContext(plan, arm)]));
+}
+
+async function scoreArms({ plan, arms, outDir, budget, priorScores = [], priorAttempts = 0, ceiling = 8 }) {
+  return scoreBenchmarkArms(arms, path.join(outDir, 'evaluation'), {
+    ceiling,
+    extendedQuality: true,
+    allowOneBasedIndices: true,
+    assessmentContext: plan.assessmentContext,
+    publicSourceContextByArm: publicSourceContexts(plan, arms),
+    priorScores,
+    priorAttempts,
+    callJudge: async (...args) => {
+      const reservation = budget.reserve({ role: args[3] });
+      fs.appendFileSync(path.join(outDir, 'attempts.jsonl'), `${JSON.stringify(reservation)}\n`);
+      return callAIWithCliBridge(...args);
+    },
+  });
+}
+
+async function runFresh(plan, outDir, admission) {
+  const budget = paidStudyBudget(admission, plan.total_attempt_ceiling);
+  const arms = [];
+  try {
+    const provenance = sourceProvenance(plan, {
+      commit: admission.source.commit,
+      tree: admission.source.tree,
+      dirty: false,
+      detached: true,
+      mainRef: admission.source.main_ref,
+      mainCommit: admission.source.main_commit,
+      authorization: admission.authorization,
+      recovery: false,
+    });
+    writePreparation(outDir, plan, provenance);
+    const service = yaml.parse(fs.readFileSync(path.join(ROOT, plan.service_config), 'utf8'));
+    service.workspace.path = plan.mtp_chat_root;
+    service.timing.jsonl_path = path.join(outDir, 'service-timings.jsonl');
+    const servicePath = path.join(outDir, 'service.yaml');
+    fs.writeFileSync(servicePath, yaml.stringify(service), { flag: 'wx' });
+    for (const arm of plan.arms) {
+      const started = Date.now();
+      let ownsServer = false;
+      try {
+        await manageServer(plan.mtp_chat_root, arm.profile, 'start', servicePath);
+        ownsServer = true;
+        const loaded = await discoverLoadedModel(plan.base_url, { modelIdContains: arm.model });
+        if (loaded !== arm.model) throw new Error('loaded model does not exactly match the planned arm');
+        await runContinuityArm({ plan, arm, outDir: path.join(outDir, arm.id), budget });
+      } finally {
+        if (ownsServer) await manageServer(plan.mtp_chat_root, arm.profile, 'stop', servicePath);
+      }
+      arms.push(
+        readBenchmarkArm({
+          ...arm,
+          path: path.join(outDir, arm.id, 'dialogue.json'),
+          wallTimeMs: Date.now() - started,
+        }),
+      );
+    }
+    writeJson(path.join(outDir, 'arms.json'), arms);
+    const evaluation = await scoreArms({ plan, arms, outDir, budget });
+    const finalProvenance = { ...provenance, budget: budget.snapshot() };
+    reportResult({ outDir, plan, arms, evaluation, provenance: finalProvenance });
+    writeJson(path.join(outDir, 'completed.json'), {
+      budget: budget.snapshot(),
+      arms: arms.map((arm) => ({
+        id: arm.id,
+        exchanges: arm.snapshot.turns.length,
+        disposition: arm.snapshot.disposition,
+      })),
+      assessments: evaluation.scores.length,
+    });
+    admission.close({
+      type: 'run_sealed',
+      status: 'complete',
+      completed_arms: arms.length,
+      completed_assessments: evaluation.scores.length,
+      reserved_attempts: admission.reserved,
+    });
+    return { outDir, dryRun: false, attempts: budget.snapshot().used };
+  } catch (error) {
+    let recoveryPermitted = false;
+    if (arms.length === 2) {
+      try {
+        technicalRecoveryEligible(outDir);
+        recoveryPermitted = true;
+      } catch {
+        recoveryPermitted = false;
+      }
+    }
+    writeJson(path.join(outDir, 'stopped.json'), {
+      error: error.message,
+      budget: budget.snapshot(),
+      armsCompleted: arms.length,
+      recoveryPermitted,
+    });
+    admission.close({
+      type: 'run_sealed',
+      status: recoveryPermitted ? 'technical_failure' : 'failed',
+      error: error.message,
+      completed_arms: arms.length,
+      reserved_attempts: admission.reserved,
+      ...(recoveryPermitted ? { recovery_permitted: true } : {}),
+    });
+    throw error;
+  }
+}
+
+function readPriorScores(sourceDir, arms) {
+  const evaluationDir = path.join(sourceDir, 'evaluation');
+  const rows = [];
+  for (const arm of arms) {
+    for (const kind of ['tutor', 'learner', 'dialogue', 'quality']) {
+      const file = path.join(evaluationDir, `${arm.id}-${kind}.json`);
+      if (!fs.existsSync(file)) continue;
+      const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+      rows.push({ arm: arm.id, kind, raw, scored: normalizeScores(kind, raw) });
+    }
+  }
+  return rows;
+}
+
+export function technicalRecoveryEligible(sourceDir) {
+  const ledger = path.join(sourceDir, 'evaluation', 'judge-ledger.jsonl');
+  const events = fs
+    .readFileSync(ledger, 'utf8')
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  const failures = events.filter((event) => event.event === 'failed');
+  if (failures.length !== 1) throw new Error('assessment recovery requires exactly one failed packet');
+  const failure = failures[0];
+  const base = path.join(sourceDir, 'evaluation', `${failure.arm}-${failure.kind}`);
+  const response = fs.existsSync(`${base}.response.txt`) ? fs.readFileSync(`${base}.response.txt`, 'utf8') : '';
+  const error = JSON.parse(fs.readFileSync(`${base}.error.json`, 'utf8'));
+  const technical = /empty|transport|timeout|timed out|network|ECONN|exit code|temporarily unavailable/iu.test(
+    [error.message, error.code, error.classification, error.reason].filter(Boolean).join(' '),
+  );
+  if (response.trim() || !technical) {
+    throw new Error('nonempty or substantive assessment failure is not eligible for recovery');
+  }
+  return {
+    priorAttempts: events.filter((event) => event.event === 'reserved').length,
+    failure: { arm: failure.arm, kind: failure.kind, error },
+  };
+}
+
+function readAssessmentRecovery(plan, sourceDir) {
+  const sourcePlan = JSON.parse(fs.readFileSync(path.join(sourceDir, 'plan.json'), 'utf8'));
+  if (sourcePlan.id !== plan.id || sourcePlan.provenance?.recovery) {
+    throw new Error('assessment recovery must start from the original invested-rival run');
+  }
+  const stop = JSON.parse(fs.readFileSync(path.join(sourceDir, 'stopped.json'), 'utf8'));
+  const arms = JSON.parse(fs.readFileSync(path.join(sourceDir, 'arms.json'), 'utf8'));
+  if (arms.length !== 2 || stop.armsCompleted !== 2) {
+    throw new Error('generation failure is not eligible for replacement recovery');
+  }
+  const eligibility = technicalRecoveryEligible(sourceDir);
+  const priorScores = readPriorScores(sourceDir, arms);
+  return { sourcePlan, stop, arms, eligibility, priorScores };
+}
+
+async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) {
+  const { stop, arms, eligibility, priorScores } = recovery;
+  const budget = paidStudyBudget(admission, plan.total_attempt_ceiling);
+  try {
+    if (admission.studyReserved !== stop.budget.used) {
+      throw new Error('study-wide attempt ledger differs from the preserved predecessor');
+    }
+    const provenance = sourceProvenance(plan, {
+      commit: admission.source.commit,
+      tree: admission.source.tree,
+      dirty: false,
+      detached: true,
+      mainRef: admission.source.main_ref,
+      mainCommit: admission.source.main_commit,
+      authorization: admission.authorization,
+      recovery: true,
+      recoverySource: sourceDir,
+      recoveredPacket: eligibility.failure,
+      priorAttemptCount: stop.budget.used,
+    });
+    writeJson(path.join(outDir, 'plan.json'), { ...plan, provenance });
+    writeJson(path.join(outDir, 'arms.json'), arms);
+    const evaluation = await scoreArms({
+      plan,
+      arms,
+      outDir,
+      budget,
+      priorScores,
+      priorAttempts: eligibility.priorAttempts,
+      ceiling: plan.judge_calls + plan.recovery_attempt_reserve,
+    });
+    const finalProvenance = { ...provenance, budget: budget.snapshot() };
+    reportResult({ outDir, plan, arms, evaluation, provenance: finalProvenance });
+    writeJson(path.join(outDir, 'completed.json'), {
+      budget: budget.snapshot(),
+      assessments: evaluation.scores.length,
+      recovery: eligibility.failure,
+    });
+    admission.close({
+      type: 'run_sealed',
+      status: 'complete',
+      completed_assessments: evaluation.scores.length,
+      reserved_attempts: admission.reserved,
+      recovery_from: sourceDir,
+    });
+    return { outDir, dryRun: false, recovery: true, attempts: budget.snapshot().used };
+  } catch (error) {
+    writeJson(path.join(outDir, 'stopped.json'), {
+      error: error.message,
+      budget: budget.snapshot(),
+      recovery: eligibility.failure,
+    });
+    admission.close({
+      type: 'run_sealed',
+      status: 'failed',
+      error: error.message,
+      reserved_attempts: admission.reserved,
+      recovery_from: sourceDir,
+    });
+    throw error;
+  }
+}
+
+function admitLiveRun(plan, values, outDir, recoveryFrom = null) {
+  if (
+    !values['accept-charges'] ||
+    !values['launch-commit'] ||
+    !values['go-note-commit'] ||
+    !values['go-note-path']
+  ) {
+    throw new Error(
+      'paid launch requires --accept-charges, --launch-commit, --go-note-commit, and --go-note-path',
+    );
+  }
+  return admitPaidStudyLaunch({
+    root: ROOT,
+    designPath: plan.design,
+    launchCommit: values['launch-commit'],
+    goNoteCommit: values['go-note-commit'],
+    goNotePath: values['go-note-path'],
+    spendCap: plan.total_attempt_ceiling,
+    destination: outDir,
+    studyId: plan.id,
+    studyStateRoot: path.resolve(ROOT, values['study-state-root'] || '.tutor-stub-traces/.paid-study-state'),
+    ...(recoveryFrom ? { recoveryFrom } : {}),
+  });
+}
+
+export async function main(argv = process.argv.slice(2)) {
+  const { values } = parseArgs({
+    args: argv,
+    options: {
+      live: { type: 'boolean', default: false },
+      config: { type: 'string' },
+      output: { type: 'string' },
+      'recover-assessments': { type: 'boolean', default: false },
+      from: { type: 'string' },
+      'accept-charges': { type: 'boolean', default: false },
+      'launch-commit': { type: 'string' },
+      'go-note-commit': { type: 'string' },
+      'go-note-path': { type: 'string' },
+      'study-state-root': { type: 'string' },
+    },
+  });
+  const plan = buildInvestedRivalPlan(ROOT, values.config || DEFAULT_CONFIG);
+  if (values['recover-assessments']) {
+    if (!values.live || !values.from) {
+      throw new Error('--recover-assessments requires --live and --from');
+    }
+    const sourceDir = path.resolve(ROOT, values.from);
+    const outDir = path.resolve(ROOT, values.output || `${sourceDir}-assessment-recovery-v1`);
+    const recovery = readAssessmentRecovery(plan, sourceDir);
+    const admission = admitLiveRun(plan, values, outDir, sourceDir);
+    return recoverAssessments(plan, sourceDir, outDir, admission, recovery);
+  }
+  const outDir = values.live
+    ? path.resolve(ROOT, values.output || plan.output)
+    : values.output
+      ? path.resolve(ROOT, values.output)
+      : path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-invested-rival-')), 'dry-run');
+  if (values.live) {
+    const admission = admitLiveRun(plan, values, outDir);
+    return runFresh(plan, outDir, admission);
+  }
+  fs.mkdirSync(outDir, { recursive: false });
+  const provenance = sourceProvenance(plan, { recovery: false, modelCalls: 0, dryRun: true });
+  const preparation = writePreparation(outDir, plan, provenance);
+  return { outDir, dryRun: true, attempts: 0, ...preparation };
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {
+  main()
+    .then((result) => console.log(JSON.stringify(result)))
+    .catch((error) => {
+      console.error(error.stack || error.message);
+      process.exitCode = 1;
+    });
+}

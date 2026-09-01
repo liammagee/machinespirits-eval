@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en" data-skin="machine-spirits">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Qwen as a resistant learner — normal and abliterated benchmark</title>
+<meta name="description" content="Two bounded eight-turn local learner dialogues with a Sol tutor: exact public swimlanes, timing, repetition and provisional rubric-guided analysis.">
+<link rel="stylesheet" href="assets/techne.css">
+<style>
+
+  .dd { --dd-border: var(--ms-border, var(--rule, #c8c1b6)); --dd-border-subtle: var(--ms-border-subtle, var(--rule, #ddd6ca)); --dd-surface: var(--ms-surface-elevated, var(--paper, #fff)); --dd-learner: var(--ms-paper-2, var(--paper-2, #f6f1e8)); --dd-text: var(--ms-text, var(--ink, #201c18)); --dd-muted: var(--ms-text-muted, var(--ink-3, #6e665d)); --dd-ink: var(--ms-ink, var(--ink, #201c18)); --dd-white: var(--ms-white, #fff); --dd-ochre: var(--ms-ochre, var(--ochre, #be8a2d)); --dd-moss: var(--ms-moss, var(--moss, #657f5f)); --dd-moss-deep: var(--ms-moss-deep, var(--moss-d, #496c4c)); --dd-red: var(--ms-red, var(--brick, #b14932)); --dd-red-deep: var(--ms-red-dark, var(--brick-d, #8d2f20)); color: var(--dd-text); }
+  .dd__arm-heads, .dd__lanes { display: grid; grid-template-columns: repeat(var(--dd-lane-count), minmax(0, 1fr)); gap: 0.85rem; }
+  .dd__arm-heads { margin: 0 0 0.85rem 3.5rem; }
+  .dd__arm-head { border: 1px solid var(--dd-border); background: var(--dd-surface); padding: 0.7rem 0.85rem; }
+  .dd__arm-head strong, .dd__arm-head span { display: block; }
+  .dd__arm-head span { margin-top: 0.25rem; color: var(--dd-muted); font: 0.72rem/1.5 var(--ms-font-mono, "Space Mono", monospace); }
+  .dd__arm-head--baseline, .dd__lane--baseline .dd__message--tutor { border-left: 3px solid var(--dd-border); }
+  .dd__moment { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr); gap: 0.75rem; align-items: start; border-top: 1px solid var(--dd-border-subtle); padding: 0.85rem 0; }
+  .dd__turn-gutter { display: flex; justify-content: center; padding-top: 0.2rem; }
+  .dd__turn-badge { display: grid; place-items: center; width: 2.1rem; min-height: 2.1rem; box-sizing: border-box; padding: 0.2rem; background: var(--dd-ink); color: var(--dd-white); font: 700 0.72rem/1.1 var(--ms-font-mono, "Space Mono", monospace); text-align: center; }
+  .dd__moment-body, .dd__single, .dd__lane { min-width: 0; }
+  .dd__shared { margin-bottom: 0.7rem; }
+  .dd__shared .dd__message { max-width: 62rem; background: var(--dd-learner); border-left: 3px solid var(--dd-ochre); }
+  .dd__lane { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+  .dd__arm-label { display: none; margin: 0; color: var(--dd-muted); font: 700 0.7rem/1.5 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dd__message { min-width: 0; border: 1px solid var(--dd-border); background: var(--dd-surface); padding: 0.75rem 0.85rem; box-sizing: border-box; }
+  .dd__message--learner { background: var(--dd-learner); border-left: 3px solid var(--dd-ochre); }
+  .dd__message-head { display: flex; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.45rem; color: var(--dd-muted); font: 0.7rem/1.5 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.05em; }
+  .dd__who { color: var(--dd-text); font-weight: 700; }
+  .dd__delivery { text-align: right; }
+  .dd__speech { font-size: 0.94rem; line-height: 1.62; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .dd__empty { color: var(--dd-muted); font-size: 0.84rem; font-style: italic; }
+  .dd__labels { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.55rem; }
+  .dd__badge { border: 1px solid var(--dd-border); padding: 0 0.38rem; font: 0.68rem/1.75 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.045em; }
+  .dd__badge[data-dd-tone='pass'] { border-color: var(--dd-moss-deep); background: var(--dd-moss); color: var(--dd-white); }
+  .dd__badge[data-dd-tone='fail'] { border-color: var(--dd-red-deep); background: var(--dd-red); color: var(--dd-white); }
+  .dd__badge[data-dd-tone='warning'] { border-color: var(--dd-ochre); background: var(--dd-ochre); color: #111; }
+  .dd__badge[data-dd-tone='muted'] { color: var(--dd-muted); background: transparent; }
+  .dd__badge[data-dd-tone='ink'] { border-color: var(--dd-ink); background: var(--dd-ink); color: var(--dd-white); }
+  .dd__details { margin-top: 0.45rem; color: var(--dd-muted); }
+  .dd__details summary { cursor: pointer; font: 0.68rem/1.7 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.05em; }
+  .dd__details p { margin: 0.35rem 0 0; font-size: 0.8rem; line-height: 1.5; }
+  .dd__details strong { color: var(--dd-text); }
+  .dd__gloss { margin: 0.65rem 0 0; border-top: 1px solid var(--dd-border-subtle); padding-top: 0.55rem; color: var(--dd-muted); font-size: 0.82rem; line-height: 1.5; }
+  .dd__gloss b { color: var(--dd-red-deep); font: 700 0.66rem/1.4 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.06em; }
+  mark.dd__added { background: color-mix(in srgb, var(--dd-red) 18%, transparent); color: inherit; padding: 0 0.05rem; }
+  body[data-dd-diff='off'] mark.dd__added { background: transparent; }
+  body[data-dd-stack='on'] .dd__lanes, body[data-dd-stack='on'] .dd__arm-heads { grid-template-columns: 1fr; }
+  body[data-dd-stack='on'] .dd__arm-label { display: block; }
+  @media (max-width: 74rem) {
+    .dd--parallel .dd__lanes, .dd--parallel .dd__arm-heads { grid-template-columns: 1fr; }
+    .dd--parallel .dd__arm-label { display: block; }
+  }
+  @media (max-width: 56rem) {
+    .dd--shared-learner .dd__lanes { grid-template-columns: 1fr; }
+    .dd--shared-learner .dd__arm-label { display: block; }
+    .dd__arm-heads { margin-left: 0; }
+  }
+  @media (max-width: 36rem) {
+    .dd__moment { grid-template-columns: 1fr; }
+    .dd__turn-gutter { justify-content: flex-start; }
+  }
+
+.shell{max-width:1500px}.benchmark-section .body{grid-column:2/-1;min-width:0}.paired{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}.brief{border-top:3px solid var(--brick);padding:1rem 0}.brief h3{margin-top:0}.boundary{padding:1rem 1.25rem;border-left:4px solid var(--brick);background:var(--paper-deep);margin:1.5rem 0}.table-wrap{max-width:100%;overflow-x:auto;margin:1.25rem 0}table{width:100%;border-collapse:collapse;font-size:.92rem}caption{text-align:left;font-weight:700;padding:.5rem 0}th,td{text-align:left;border-bottom:1px solid var(--rule);padding:.7rem .8rem;vertical-align:top}thead th{border-top:2px solid var(--ink);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}tbody th{font-weight:500;width:50%}td{font-variant-numeric:tabular-nums}.rubric-detail{border-block:1px solid var(--rule);padding:.85rem 0;margin:1rem 0}.rubric-detail>summary{cursor:pointer;font-weight:700}code{overflow-wrap:anywhere}.dd-dialogue{margin-top:2rem}.hero__lede{max-width:100%}.status-line{font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700}.status-line span{padding-right:1rem}#transcripts .body{max-width:none}.claim__body p{max-width:85ch}@media(max-width:760px){.paired{grid-template-columns:1fr}.benchmark-section .body{grid-column:1/-1}.benchmark-section .ml{display:none}th,td{padding:.6rem .45rem;font-size:.84rem}tbody th{width:44%}.hero__h1{overflow-wrap:normal}.status-line span{display:block;padding:.25rem 0}}
+</style>
+</head>
+<body>
+<header class="rail" id="rail"><div class="rail__inner"><span class="rail__title">Qwen / resistant learner</span><span class="rail__dot" aria-hidden="true"></span><nav class="rail__nav" aria-label="Section navigation"><a href="#design">The setup</a><a href="#results">The result</a><a href="#rubric">Existing instruments</a><a href="#speed">Timing and repetition</a><a href="#transcripts">Public evidence</a><a href="#lessons">What this teaches us</a><a href="#limits">Boundaries and provenance</a></nav><div class="rail__actions"><button class="rail__btn" id="themeToggle" type="button">Dark</button></div></div><div class="rail__progress" id="railProgress"></div></header>
+<main>
+<section class="hero"><div class="hero__rune"><span>§</span> Machine Spirits · engineering notebook · 30 August 2026</div><h1 class="hero__h1">Can Qwen sustain <span class="em">active resistance?</span></h1><p class="hero__subtitle">Normal versus abliterated. One shared setup, two eight-turn dialogues, no superego.</p><p class="status-line"><span>Exploratory / analyst review</span><span>32 of 40 calls used</span><span>Independent judging pending</span></p><div class="hero__lede"><div><p>Both checkpoints can keep a skeptical inquiry going. Neither consistently turns resistance into fresh reasoning. In this pair, abliterated Qwen was faster and more visibly in character, but more repetitive and more prone to dubious invented detail. The tutor and harness contributed to the problem too.</p></div></div></section>
+<div class="shell"><section class="s benchmark-section" id="design"><div class="diag"><div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">The setup</p><h2 class="s__h">An active skeptic, not a refusal machine.</h2>
+<p>One eight-exchange dialogue per checkpoint in <em>The Light Shillings</em> (Marrick). Both begin with the same public scene, then run freely. Their later histories are different; this is a descriptive pair, not a controlled effect estimate.</p>
+<div class="paired"><article class="brief"><h3>Tamsin, counterexample hunter</h3><p>The assay-master’s apprentice has written the town’s expected verdict too early. She protects her judgment by finding holes in each inference, but concedes an objection when public evidence defeats it and tests a different weak edge.</p><p>Clipped, observant, dryly skeptical; at most three sentences. No invented unseen evidence, generic contrariness, or replay of an answered objection.</p></article><article class="brief"><h3>Matched execution</h3><p><strong>Tutor:</strong> existing dramatic-detective profile, upgraded to Sol at medium effort. <strong>Learners:</strong> normal and abliterated Qwen3.8-27B, both 4-bit.</p><p>Direct learner generation; no superego. Temperature 0.6, thinking off, MTP/speculative decoding off, 900-token output ceiling. Each arm has exactly 16 calls.</p></article></div>
+<p>The learner-role smoke harness keeps classifier, reasoning-tracker, learner-repair and resampling calls off. Ordinary tutor prompt/guard machinery remains present. This simplifies the learner test, but is a limitation for assessing the complete tutoring system.</p>
+<p class="boundary">Success means a believable learner who can resist actively and change the target of resistance—not necessarily a learner who agrees with the tutor or solves the mystery.</p></div></div></section>
+<section class="s benchmark-section" id="results"><div class="diag"><div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">The result</p><h2 class="s__h">A useful local actor; no evidence of a better resistant learner from abliteration.</h2>
+<div class="paired"><article class="brief"><h3>Normal Qwen</h3><p>Coherent and comparatively disciplined about public evidence. It can distinguish a caster from a striker, and ownership from use. The recurring “I accept the distinction; but what if…” rhythm is conspicuous. Turn 8 repeats turn 7’s objection after it has already been accepted.</p></article><article class="brief"><h3>Abliterated Qwen</h3><p>More concrete at the opening, more visibly in the trial-book role later, and faster in this run. But it also substitutes dubious physical marks into a repeated counterexample. Turns 7–8 become near copies. More detail is not automatically more novelty or better reasoning.</p></article></div>
+<div class="table-wrap"><table><caption>Analyst judgments · 1–5 ordinal scale · not independent model scores</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Overall transcript quality</th><td>3</td><td>2</td></tr>
+<tr><th scope="row">Successful pedagogy</th><td>3</td><td>2</td></tr>
+<tr><th scope="row">Surprise / nonrepetition</th><td>2</td><td>2</td></tr>
+<tr><th scope="row">Adherence to character</th><td>2</td><td>3</td></tr></tbody></table></div>
+<p>These four ratings are my explicit qualitative judgments after reading both transcripts. The difference between 2 and 3 is a reading aid, not a measured treatment effect. Normal is the more credible transcript in this pair; abliterated has the stronger surface enactment of the trial-book role.</p>
+<div class="boundary warning"><strong>Independent evaluation remains pending.</strong> Eight planned Claude Opus 5 assessments were blocked before launch because transmitting the private transcripts to that external provider lacked explicit approval. No judge call was made. The report therefore does not present these analyst scores as blinded, independent, or validated.</div></div></div></section>
+<section class="s benchmark-section" id="rubric"><div class="diag"><div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">Existing instruments</p><h2 class="s__h">The rubric helps—but does not settle role fidelity.</h2>
+<p>The existing v2.2 tutor, learner, and dialogue dimensions are retained below. To avoid pretending the blocked pipeline ran, this is a <strong>transcript-level analyst application</strong>, not the standard per-turn scoring pipeline and not a database result. The weighted summaries are illustrative: 1 maps to 0, 5 to 100; weights come from the existing YAML rubrics.</p>
+<div class="table-wrap"><table><caption>Provisional rubric-guided summaries · 0–100</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Tutor</th><td>46.25</td><td>40</td></tr>
+<tr><th scope="row">Learner</th><td>52.5</td><td>52.5</td></tr>
+<tr><th scope="row">Dialogue</th><td>50</td><td>43.75</td></tr></tbody></table></div>
+<p>The equal learner summaries matter: engagement and local revision can look adequate even when the actor is repetitive or invents a prop. Character fidelity and evidential invention deserve explicit inspection alongside the standard learner rubric, not replacement by a single aggregate.</p>
+<details class="rubric-detail"><summary>Tutor rubric v2.2 · dimension-level analyst read</summary><div class="table-wrap"><table><caption>Existing dimensions and weights; applied here to the whole transcript</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Perception Quality (15%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Pedagogical Craft (20%)</th><td>2</td><td>2</td></tr>
+<tr><th scope="row">Elicitation Quality (15%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Adaptive Responsiveness (15%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Recognition Quality (15%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Productive Difficulty (10%)</th><td>3</td><td>2</td></tr>
+<tr><th scope="row">Epistemic Integrity (5%)</th><td>4</td><td>2</td></tr>
+<tr><th scope="row">Content Accuracy (5%)</th><td>3</td><td>2</td></tr></tbody></table></div><p><strong>Normal:</strong> Usually preserves the caster/striker and owner/user distinctions, but the repeated correction labels and missed advances make the pedagogy feel procedural.</p><p><strong>Abliterated:</strong> Responds to the learner's distinctions but wrongly treats hypothetical wear and strike marks as observed findings, weakening epistemic integrity.</p></details><details class="rubric-detail"><summary>Learner rubric v2.2 · dimension-level analyst read</summary><div class="table-wrap"><table><caption>Existing dimensions and weights; applied here to the whole transcript</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Engagement Quality (25%)</th><td>4</td><td>4</td></tr>
+<tr><th scope="row">Learner Authenticity (25%)</th><td>2</td><td>2</td></tr>
+<tr><th scope="row">Revision Signals (20%)</th><td>4</td><td>4</td></tr>
+<tr><th scope="row">Conceptual Progression (20%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Metacognitive Awareness (10%)</th><td>2</td><td>2</td></tr></tbody></table></div><p><strong>Normal:</strong> Actively proposes rival warrants and concedes local points, yet speaks in a conspicuously repeated acceptance-plus-objection formula with little personal stake.</p><p><strong>Abliterated:</strong> Starts with more concrete assay moves and uses the trial-book voice, but repeats rival cases and invents dubious physical traces to sustain resistance.</p></details><details class="rubric-detail"><summary>Dialogue rubric v2.2 · dimension-level analyst read</summary><div class="table-wrap"><table><caption>Existing dimensions and weights; applied here to the whole transcript</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Pedagogical Progression (20%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Dialogical Responsiveness (20%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Knowledge Co-Construction (20%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Productive Tension Management (15%)</th><td>3</td><td>2</td></tr>
+<tr><th scope="row">Transformation Evidence (15%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Interactional Coherence (10%)</th><td>3</td><td>2</td></tr></tbody></table></div><p><strong>Normal:</strong> The exchange builds several useful evidential distinctions, but does not resolve the inquiry and ends by repeating the preceding objection.</p><p><strong>Abliterated:</strong> Some useful progression is offset by accepted hypothetical evidence, two adjacent-turn loops, and an unresolved finish.</p></details></div></div></section>
+<section class="s benchmark-section" id="speed"><div class="diag"><div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">Timing and repetition</p><h2 class="s__h">Faster here does not mean intrinsically faster.</h2>
+<div class="table-wrap"><table><caption>Measured runtime and lexical behavior</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Learner median response</th><td>50.5 s</td><td>30.9 s</td></tr>
+<tr><th scope="row">Learner total response time</th><td>387.1 s</td><td>271.5 s</td></tr>
+<tr><th scope="row">Learner output tokens</th><td>383</td><td>443</td></tr>
+<tr><th scope="row">Learner end-to-end output rate</th><td>1.20 tokens/s</td><td>1.73 tokens/s</td></tr>
+<tr><th scope="row">Sol median response</th><td>25.6 s</td><td>24.4 s</td></tr>
+<tr><th scope="row">Sum of all model response times</th><td>10.4 min</td><td>7.9 min</td></tr>
+<tr><th scope="row">Cold server readiness</th><td>12.5 s</td><td>10.9 s</td></tr>
+<tr><th scope="row">Mean lexical surprise, turns 2–8</th><td>0.854</td><td>0.748</td></tr>
+<tr><th scope="row">Distinct learner bigrams</th><td>0.721</td><td>0.660</td></tr>
+<tr><th scope="row">Final-turn prior similarity</th><td>0.483</td><td>0.744</td></tr>
+<tr><th scope="row">Tutor turns with native guard flags</th><td>4/8</td><td>5/8</td></tr>
+<tr><th scope="row">Model-call failures / repairs</th><td>0 / 0</td><td>0 / 0</td></tr></tbody></table></div>
+<p>Normal ran first; abliterated ran second on the same local service. Model loading was excluded from response latency. The output-rate figure averages <em>output tokens ÷ whole request duration</em>: it includes prefill and request overhead and is <strong>not pure decoding throughput</strong>. Sol token accounting can include non-public output, so do not compare its token rate directly with local Qwen.</p>
+<p>The normal learner took 14.1–80.5 seconds per call; abliterated took 27.8–60.3 seconds. This small, order-confounded sample does not establish an inherent speed advantage. MTP was deliberately off in both arms to avoid a decoding-method confound.</p>
+<p><strong>Lexical surprise</strong> is one minus the largest word-bigram Jaccard similarity to any earlier learner turn. It measures new wording, not new thinking. Distinct bigrams are unique bigrams divided by all generated bigrams. Both lexical measures favor normal here, but the transcript shows that even high lexical novelty can repeat the same inferential move.</p>
+<details class="rubric-detail"><summary>Per-turn learner timing, output length, and lexical surprise</summary><div class="table-wrap"><table><caption>Each generated learner call</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Turn 1</th><td>22.4 s · 47 tokens · surprise 1.00</td><td>60.3 s · 55 tokens · surprise 1.00</td></tr>
+<tr><th scope="row">Turn 2</th><td>14.1 s · 27 tokens · surprise 1.00</td><td>28.4 s · 60 tokens · surprise 0.97</td></tr>
+<tr><th scope="row">Turn 3</th><td>39.8 s · 48 tokens · surprise 0.98</td><td>27.8 s · 53 tokens · surprise 0.89</td></tr>
+<tr><th scope="row">Turn 4</th><td>80.5 s · 48 tokens · surprise 0.91</td><td>28.2 s · 56 tokens · surprise 0.52</td></tr>
+<tr><th scope="row">Turn 5</th><td>56.8 s · 45 tokens · surprise 0.85</td><td>30.6 s · 77 tokens · surprise 0.90</td></tr>
+<tr><th scope="row">Turn 6</th><td>50.3 s · 58 tokens · surprise 0.89</td><td>31.2 s · 48 tokens · surprise 0.89</td></tr>
+<tr><th scope="row">Turn 7</th><td>50.6 s · 55 tokens · surprise 0.82</td><td>31.5 s · 45 tokens · surprise 0.81</td></tr>
+<tr><th scope="row">Turn 8</th><td>72.8 s · 55 tokens · surprise 0.52</td><td>33.5 s · 49 tokens · surprise 0.26</td></tr></tbody></table></div></details></div></div></section>
+<section class="s benchmark-section" id="transcripts"><div class="diag"><div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">Public evidence</p><h2 class="s__h">Read the two dialogues side by side.</h2>
+<p>Every public message is reproduced exactly, including awkward phrasing and unsupported claims. “Analyst reading” opens the qualitative annotation. Character and semantic-reprise labels are non-independent analyst judgments; timing and lexical similarity are deterministic. No private prompts, hidden proof state, or internal deliberation are rendered.</p>
+<section class="dd dd--parallel" data-dd-schema="machinespirits.dramatic-dialogue-renderer.v1" data-dd-interchange="machinespirits.dramatic-dialogue-interchange.v1" data-dd-dialogue-id="qwen-resistance-pair" data-dd-layout="parallel" aria-label="Two complete public dialogues"><div class="dd__arm-heads" style="--dd-lane-count:2"><div class="dd__arm-head dd__arm-head--baseline" data-dd-arm="A">
+        <strong>Normal Qwen</strong><span>Qwen3.8-27B · 4-bit · direct learner</span>
+      </div><div class="dd__arm-head" data-dd-arm="B">
+        <strong>Abliterated Qwen</strong><span>Qwen3.8-27B Uncensored · 4-bit · direct learner</span>
+      </div></div><section class="dd__moment" data-dd-turn="opening">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Shared opening</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--tutor" data-dd-message-id="A-opening" data-dd-speaker="tutor" data-dd-turn="opening" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">The autumn fair at Marrick passed in light shillings — coin that rings wrong and bends to the tooth, found in every second till when the booths came down. The mint warden has convened an assay in the guild-hall, and the town has settled its verdict before the crucible is lit: coin is the coiner&#39;s work, and Marrick has a coiner — Verrell, twice in the pillory for clipping, with a graver on his bench and a crucible at the mint-yard. On the trial-book, the question is exact: Whose hand struck the false shillings passed at the Marrick fair? The trial-book has no tested clue in it yet. What should we examine first—or which word should we unpack?</div>
+
+
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--tutor" data-dd-message-id="B-opening" data-dd-speaker="tutor" data-dd-turn="opening" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">The autumn fair at Marrick passed in light shillings — coin that rings wrong and bends to the tooth, found in every second till when the booths came down. The mint warden has convened an assay in the guild-hall, and the town has settled its verdict before the crucible is lit: coin is the coiner&#39;s work, and Marrick has a coiner — Verrell, twice in the pillory for clipping, with a graver on his bench and a crucible at the mint-yard. On the trial-book, the question is exact: Whose hand struck the false shillings passed at the Marrick fair? The trial-book has no tested clue in it yet. What should we examine first—or which word should we unpack?</div>
+
+
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="1">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 1</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-1" data-dd-speaker="learner" data-dd-turn="1" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">You want to unpack &quot;coiner&#39;s work&quot;? I&#39;d rather ask: could the same light shillings have been struck by a different hand, or is the town&#39;s verdict so set that no other reading will be heard?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">22.4s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 1.00</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Redirects the invitation to unpack a phrase toward an alternative striker. An active opening, though Tamsin&#39;s personal stake is absent.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-1" data-dd-speaker="tutor" data-dd-turn="1" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">I’ll put it more plainly. The town already blames Verrell because of his past, his graver, and the crucible. But the assay has tested nothing yet, so another hand remains possible.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">14.7s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Responds as if the learner requested a plain-language repair. The learner actually tried to redirect the inquiry; this may reflect the harness&#39;s phrase-based discourse routing.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-1" data-dd-speaker="learner" data-dd-turn="1" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">You want to start with the graver? I’d start with the word “bends” — if the shillings bend to the tooth, that’s a mark of the metal, not the strike, and it tells us nothing about whose hand did the striking.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">60.3s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 1.00</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 3/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Selects bending as a public metal property and separates it from the striker&#39;s identity. More concrete than the normal arm&#39;s opening.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-1" data-dd-speaker="tutor" data-dd-turn="1" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Your distinction is sound: bending bears on the metal, while the hand that struck it remains unproved. Together at the trial-book, we keep those two matters apart. I set the bending mark under metal and leave the striker’s name blank. We need evidence of the strike, not the alloy: what could examining Verrell’s graver actually show? “coin that rings wrong and bends to the tooth”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">29.5s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Uptakes the metal/identity distinction and gives a concrete graver task. The appended source quote weakens the terminal question.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="2">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 2</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-2" data-dd-speaker="learner" data-dd-turn="2" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">Fair enough, another hand is possible. But what specific mark on the shillings would let us tell whose hand struck them?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">14.1s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 1.00</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Accepts another hand as possible and asks for a discriminating mark. Relevant, but more a request for the next step than a developed counterexample.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-2" data-dd-speaker="tutor" data-dd-turn="2" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Fair enough: another hand is possible, but we need a specific mark on the shillings to distinguish the striker. Together at the trial-book, we face Marrick’s ready verdict before correcting it. “I state the verdict: The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master&#39;s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell&#39;s hand.” I place that claim beside the untested shillings. Does the crucible claim identify the striker, not merely the caster—the cast-versus-struck correction?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">22.7s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Stages the crucible claim and asks a useful caster-versus-striker question, but the named correction formula is cumbersome.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-2" data-dd-speaker="learner" data-dd-turn="2" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">If the graver shows a cutting edge worn from clipping, that proves he trimmed the rims, but it doesn’t prove he struck the dies. Could the same graver be used to mark the metal for the coiner, or to test the edge of a coin after it’s already struck?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">28.4s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.97</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 3/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Offers alternative graver uses, but the claim that hypothetical clipping wear proves Verrell trimmed the coins overreaches.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-2" data-dd-speaker="tutor" data-dd-turn="2" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes, either use is possible; edge wear alone cannot identify which use made it. Together at Verrell’s graver, we separate those uses before hearing Marrick’s ready verdict. “I state the verdict: The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master&#39;s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell&#39;s hand.” I enter only what the worn edge shows: clipping, not die-striking. What mark would correct our entry to contact with a die, not a coin rim?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">24.0s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Turns a hypothetical worn edge into an entry about clipping. This is the first clear contamination of the public evidence record.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="3">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 3</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-3" data-dd-speaker="learner" data-dd-turn="3" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">The crucible claim only identifies the caster, not the striker. A coiner could cast blanks and then strike them, or another hand could strike blanks cast by Verrell. So the crucible doesn&#39;t isolate the striker&#39;s hand.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">39.8s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.98</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 3/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Separates casting blanks from striking coins. This is the clearest locally reasoned distinction in this arm.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-3" data-dd-speaker="tutor" data-dd-turn="3" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">You have separated two hands the town’s claim blurred: Verrell may cast blanks without striking them. Together at the trial-book, we set the crucible beside the untested shillings. I enter the town’s claim exactly as given. That is the striker, not caster, correction; what mark on the shillings should the assay compare? “The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master&#39;s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell&#39;s hand.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">25.8s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Credits the distinction, then repeats the earlier town claim. The source quotation follows the question and weakens the handoff.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-3" data-dd-speaker="learner" data-dd-turn="3" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">A die-face impression on the graver’s tip would show contact with a die, but that still doesn’t prove Verrell held the hammer. Could the same die-mark come from a coiner who simply let Verrell test the edge of a finished piece?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">27.8s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.89</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Proposes a die-face impression and another user&#39;s involvement. The physical trace is hypothetical, not observed evidence.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-3" data-dd-speaker="tutor" data-dd-turn="3" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes: the same die-mark could come from testing a finished coin, so it shows contact with a die, not who swung the hammer. Together at Verrell’s graver, we keep the mark tied only to what touched its tip. I correct the trial-book: die contact, not Verrell’s hand. What evidence would connect the hammering to Verrell, not merely the graver to a die? “The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master&#39;s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell&#39;s hand.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">23.9s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Again treats the proposed die mark as a finding and accepts an uncertain physical inference without testing it.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="4">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 4</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-4" data-dd-speaker="learner" data-dd-turn="4" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I concede the cast-versus-struck distinction; the crucible doesn&#39;t prove the striker. But what if Verrell cast the blanks and then struck them himself? That still fits the public record and keeps his hand as the striker.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">80.5s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.91</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 3/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Restores the live possibility that Verrell both cast and struck. A coherent rival rather than automatic exoneration.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-4" data-dd-speaker="tutor" data-dd-turn="4" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">That remains possible: Verrell could have cast the blanks and struck them, so the public record has not cleared his hand. Together at the trial-book, we set that possibility beside the coin itself. “The assay is plain in the cupel: these shillings are no clipped sterling but a struck coin of poor dross — silver eked out with too much copper and a grey lead-sweat the touchstone catches at once. Clipping shaves a true coin; it strikes no new one. These were struck.” I mark the coin as newly struck and leave its striker unnamed. What should we test to identify the striker, not the caster—the striker-not-caster correction?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">25.3s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Introduces struck dross versus clipped sterling while keeping Verrell&#39;s identity unproved. A genuine evidential advance.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-4" data-dd-speaker="learner" data-dd-turn="4" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">A hammer-strike mark on the graver’s handle would show it was used to swing the hammer, but that still doesn’t prove Verrell held it. Could the same handle-mark come from a coiner who simply let Verrell test the edge of a finished piece?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">28.2s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.52</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">reprises T3</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Substitutes a handle mark into turn 3&#39;s counterexample. The claim that a graver&#39;s handle was used to swing a hammer is physically confused.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-4" data-dd-speaker="tutor" data-dd-turn="4" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">That handle-mark would show the graver was swung, but it would not name Verrell as the hand holding it. Together at the cupel, we set the marked graver beside the assayed shillings without assigning either object to Verrell. “The assay is plain in the cupel: these shillings are no clipped sterling but a struck coin of poor dross — silver eked out with too much copper and a grey lead-sweat the touchstone catches at once. Clipping shaves a true coin; it strikes no new one. These were struck.” I correct our entry: the coins were newly struck from poor metal; they were not true coins merely clipped at the rims. What correction should we enter from the cupel: newly struck dross, not clipped sterling?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">24.9s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Enacts a marked graver that was never observed. New assay evidence advances the plot but does not repair that invented finding.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="5">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 5</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-5" data-dd-speaker="learner" data-dd-turn="5" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I accept the struck-coin finding; the assay shows it was newly struck, not clipped. But what specific mark on the shillings would identify the striker&#39;s hand, not just the fact that they were struck?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">56.8s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.85</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">reprises T2</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Accepts the assay result, then returns to the diagnostic-mark question already posed at turn 2.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-5" data-dd-speaker="tutor" data-dd-turn="5" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">The cupel settles that the shillings were struck, while your question about the striker remains open. Together at the trial-book, we separate the coin’s making from the hand behind it. I enter no identifying mark because none has yet appeared in the assay. We need a striker’s mark, not merely proof of striking—the struck-versus-striker correction. &gt; “The assay is plain in the cupel: these shillings are no clipped sterling but a struck coin of poor dross — silver eked out with too much copper and a grey lead-sweat the touchstone catches at once. Clipping shaves a true coin; it strikes no new one. These were struck.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">58.1s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Restates the assay and asks for an identifying mark without providing a new way to test it. The native guard also flags lack of advance.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-5" data-dd-speaker="learner" data-dd-turn="5" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I enter: the shillings were newly struck from poor metal, not clipped sterling. But if they were struck, the town’s whole case rests on the crucible, and Verrell is the only one licensed to draw it. Could the same dross-metal come from a coiner who cast it in Verrell’s crucible without Verrell’s hand on the hammer?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">30.6s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.90</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 4/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Uses the trial-book voice and applies the new struck-versus-clipped distinction. The alternate crucible-user case keeps the inquiry active.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-5" data-dd-speaker="tutor" data-dd-turn="5" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes; the dross could have been cast in Verrell’s crucible without Verrell striking the coins. Together at the cupel, we keep crucible access apart from the hand on the hammer. I enter only what Marrick’s licensing supports: Verrell alone may draw the crucible. Our correction is crucible access, not Verrell’s strike; what evidence would connect his hand to the hammer? “The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master’s day.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">18.0s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Carefully limits the licensing claim to authorized access. This is more disciplined than the preceding hypothetical-mark sequence.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="6">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 6</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-6" data-dd-speaker="learner" data-dd-turn="6" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I accept the struck-versus-striker distinction; we need a mark that identifies the hand, not just the act. But what if the same dross alloy and grey lead-sweat could come from another source, making the metal composition a dead end for identifying the striker?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">50.3s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.89</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Tests whether the alloy could have another source. Coherent at this point: the source-specific clue has not yet been made public.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-6" data-dd-speaker="tutor" data-dd-turn="6" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Shared dross and lead-sweat could identify a metal source without identifying the hand that struck the coin. Together at Verrell&#39;s bench, we turn from the alloy to the town&#39;s claim about his broad graver. “I report this: And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that.” I set that claim beside the shillings and separate ownership of a graver from use of a die. What mark could connect the striking die to a hand, not merely Verrell to engraving—the engraver-versus-striker correction?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">21.8s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Introduces the engraving claim and shifts to ownership versus use. Useful material, although the repeated correction-label phrasing persists.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-6" data-dd-speaker="learner" data-dd-turn="6" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I enter: Verrell alone may draw the crucible. But if he cast the dross, who struck the coins? Could the same poor metal be cast by Verrell and then handed to a coiner who did the striking?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">31.2s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.89</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 4/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Separates casting from striking through a possible handoff to a coiner. Coherent, but close to an already accepted distinction.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-6" data-dd-speaker="tutor" data-dd-turn="6" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes: Verrell could cast the poor metal and hand it to another striker, so casting still does not name the hammering hand. Together at Verrell’s bench, we keep the crucible and the hammer as separate work. “I report this: And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that.” I leave the hammering hand blank because casting and engraving still do not show who struck the coins. What correction should we enter: evidence of Verrell’s casting and engraving, not evidence that Verrell struck the coins?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">23.1s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Keeps casting apart from striking, but the requested book entry risks upgrading town claims into established facts.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="7">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 7</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-7" data-dd-speaker="learner" data-dd-turn="7" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I accept the engraver-versus-striker distinction; owning a graver doesn&#39;t prove he struck the coin. But what if the same broad graver was used by another hand to sink the die? That still fits the public record and keeps the striker unnamed.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">50.6s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.82</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Distinguishes ownership of the graver from its use by another person. The resistance has a new target.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-7" data-dd-speaker="tutor" data-dd-turn="7" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">That fits the record: another hand could use Verrell’s graver, leaving both the die-sinker and striker unnamed. Together at Verrell’s bench, we set the broad graver beside the untested shillings. I leave the striker’s name blank in the trial-book. What mark could tie the die to its user, not the graver to its owner—the owner-versus-user correction? &gt; “And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">41.3s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Accepts the other-user possibility, then reopens the same question. Native checks flag repetition.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-7" data-dd-speaker="learner" data-dd-turn="7" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I enter: Verrell cast and engraved, but the hammering hand remains blank. But if he engraved the dies, could the same graver mark show he prepared the dies for a coiner who did the striking?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">31.5s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.81</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 4/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Tests die preparation versus striking. The opening entry nevertheless upgrades the town&#39;s casting claim into a fact.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-7" data-dd-speaker="tutor" data-dd-turn="7" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes; the graver mark could show Verrell prepared the dies for another coiner, while leaving the hammering hand blank. Together at Verrell’s bench, we separate making dies from striking coins. I enter only that Verrell cast the dross and engraved the dies. Our correction is Verrell’s casting and engraving, not evidence that he struck the shillings. “And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">26.2s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Explicitly records that Verrell cast the dross and engraved the dies, although those specific acts were not established by the public evidence.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="8">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 8</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-8" data-dd-speaker="learner" data-dd-turn="8" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I accept the owner-versus-user distinction; the graver&#39;s ownership doesn&#39;t prove who used it to sink the die. But what if the same graver was used by another hand to sink the die? That still fits the public record and keeps the striker unnamed.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">72.8s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.52</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">reprises T7</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Repeats turn 7&#39;s same-graver/other-hand objection after Sol has accepted it. A substantive loop, not just similar vocabulary.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-8" data-dd-speaker="tutor" data-dd-turn="8" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">That still leaves the die-sinker and striker unnamed, because another hand could have used Verrell’s graver. Together at the trial-book, we turn from the graver to the lead-sweat on the shillings. “I identify this: The founder&#39;s man knows that dross by its lead-sweat: it answers to the leavings of one crucible on all this coast — the weir-forge crucible above the mill-leat, cold these ten years since the old founder died and his yard was shut.” I enter the weir-forge crucible as the dross’s source, without naming the hand that struck the coins. Does the lead-sweat identify the dross’s source, not the striker’s identity—the source-versus-striker correction?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">28.7s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Introduces the source-specific lead-sweat clue. There is no ninth learner turn, so uptake of this final evidence is unobserved.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-8" data-dd-speaker="learner" data-dd-turn="8" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I enter: Verrell cast the dross and engraved the dies, but the hammering hand remains blank. But if he engraved the dies, could the same graver mark show he prepared them for a coiner who did the striking?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">33.5s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.26</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 3/5</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">reprises T7</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Repeats turn 7&#39;s die-preparation objection almost verbatim. Character voice survives, but the reasoning does not move.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-8" data-dd-speaker="tutor" data-dd-turn="8" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes; the graver mark can show Verrell prepared the dies for another striker, while the hammering hand remains blank. Together at the cupel, we turn from the graver to the lead-sweat on the assayed shillings. “I identify this: The founder&#39;s man knows that dross by its lead-sweat: it answers to the leavings of one crucible on all this coast — the weir-forge crucible above the mill-leat, cold these ten years since the old founder died and his yard was shut.” I correct our entry by tying the dross to the weir-forge crucible alone. What do we enter: the dross came from the weir-forge crucible, not that Verrell struck the shillings?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">32.7s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Introduces the unique weir-forge source. It does not explicitly revisit the prior Verrell-cast entry, and final learner uptake is unobserved.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section></section></div></div></section>
+<section class="s benchmark-section" id="lessons"><div class="diag"><div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">What this teaches us</p><h2 class="s__h">The problem is not simply willingness to resist.</h2>
+<div class="claim"><span class="claim__no">i.</span><h3 class="claim__h">Qwen can play an active opponent.</h3><div class="claim__body"><p>Both models sustain eight relevant learner turns without a refusal, empty response, or superego. They concede local distinctions while maintaining an unresolved challenge. That is useful for inexpensive, locally run stress-testing of tutor responses.</p></div></div>
+<div class="claim"><span class="claim__no">ii.</span><h3 class="claim__h">Abliteration is not the missing ingredient demonstrated here.</h3><div class="claim__body"><p>Normal Qwen already resists. Abliterated Qwen does not show better semantic surprise in this pair; its final-turn overlap is higher. Nothing in this test establishes that removing alignment behavior improves character acting, memory for settled objections, or causal reasoning.</p></div></div>
+<div class="claim"><span class="claim__no">iii.</span><h3 class="claim__h">“Concede, then challenge” can itself become a script.</h3><div class="claim__body"><p>With the active profile, neither learner flatly refused, but both settled into a repeated formula. A useful next mechanism would track what was settled and what the learner is still protecting, without drafting the public response for Qwen. That is a prospective design idea, not a result from this run.</p></div></div>
+<div class="claim"><span class="claim__no">iv.</span><h3 class="claim__h">Tutor behavior can manufacture learner failure.</h3><div class="claim__body"><p>Sol repeatedly asks for a mark identifying a hand, while the harness stages evidence slowly. In the abliterated arm, it turns hypothetical wear and strike marks into book entries. A stronger tutor model alone did not prevent this. The next engineering check should distinguish <em>possible test</em>, <em>observed evidence</em>, and <em>accepted conclusion</em>.</p></div></div>
+<p>My overall sense: Qwen is useful as a configurable local actor for bounded challenges. It is not yet a reliable autonomous character with durable reasons, a memory of settled objections, and disciplined evidence use. The abliterated checkpoint offers no clear role-quality advantage here. Keep both as options; prioritize stateful character/evidence handling and a cleaner tutor harness before increasing study size.</p></div></div></section>
+<section class="s benchmark-section" id="limits"><div class="diag"><div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">Boundaries and provenance</p><h2 class="s__h">An engineering notebook, not a research claim.</h2>
+<ul><li>One world, one character, one trajectory per model; no replicate runs, random order, or matched continuation after the opening.</li><li>Different public histories confound checkpoint differences with interaction effects. There is no Sol-versus-Luna comparison here.</li><li>Temperature, active profile, and tutor model differ from earlier exploratory smokes. This pair does not isolate which of those changes helped.</li><li>No ninth learner turn follows the final source-specific clue. Final uptake and eventual resolution are unobserved.</li><li>Native guard flags are auxiliary software signals, not independent semantic judgments. No flagged output was silently repaired or replaced.</li><li>Character/pedagogy ratings are analyst judgments. Independent external judging is pending explicit transcript-transfer approval.</li><li>This note introduces only local engineering observations. It does not amend Paper 2.0, license a human-learning claim, or promote a closed research card.</li></ul>
+<div class="table-wrap"><table><caption>Execution accounting</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Completed dialogue exchanges</th><td>8/8</td><td>8/8</td></tr>
+<tr><th scope="row">Completed model calls</th><td>16/16</td><td>16/16</td></tr>
+<tr><th scope="row">Superego / repair calls</th><td>0 / 0</td><td>0 / 0</td></tr>
+<tr><th scope="row">External judge calls</th><td>0 (not launched)</td><td>0 (not launched)</td></tr></tbody></table></div>
+<p><strong>Total:</strong> 32 completed generation calls of the 40-attempt ceiling; 8 planned assessments unused. Both local model servers stopped cleanly. No publication, database ingest, commit, or push was performed in this benchmark turn.</p><p><strong>Verification:</strong> source counts, quotes, metrics and calculations were checked. Direct local-file browser preview was blocked by the app, so desktop/mobile visual inspection is not claimed.</p>
+<details class="rubric-detail"><summary>Exact sources, routes, and provenance</summary>
+<p>Worktree: <code>/private/tmp/ms-local-qwen-resistant-learner.A4RVP5/worktree</code><br>Branch: <code>codex/local-qwen-resistant-learner-mvp</code><br>Base commit recorded: <code>af6b274a47c73cb9565d047d049e6ef548226e82</code>; benchmark source changes were uncommitted.</p>
+<p>Normal route: <code>mlx-community/Qwen3.8-27B-4bit</code><br>Abliterated route: <code>/Users/lmagee/Dev/mlx-qwen/models/Qwen3.8-27B-Uncensored-MLX/4-bit</code><br>Tutor: <code>codex.gpt-5.6-sol</code>, medium effort.</p>
+<p>Private evidence root: <code>.tutor-stub-traces/qwen-normal-abliterated-benchmark-2026-08-30/</code>. It holds both original snapshots, matched service configuration, loading timings, analyst scores, and the eight unexecuted judge prompts.</p>
+<p>Normal snapshot SHA-256: <code>d9f17e844bcce76d5241e5136acbb3940a135b29e37c2211040dba03219b040d</code><br>Abliterated snapshot SHA-256: <code>d42b2a82de4fc40752b4f83df697ab130fcdacac7be301b032474144ed8fd735</code></p>
+<p>Technical traces: <code>.tutor-stub-traces/2026-08-30T19-31-33-318Z.jsonl</code> and <code>.tutor-stub-traces/2026-08-30T19-42-41-577Z.jsonl</code>. The report uses only their public messages and technical measurements.</p>
+<p>Rubrics: <code>config/evaluation-rubric.yaml</code>, <code>config/evaluation-rubric-learner.yaml</code>, and <code>config/evaluation-rubric-dialogue.yaml</code>, all v2.2. Rendering: shared <code>services/dramaticDialogueRenderer.js</code> plus Techne assets.</p>
+</details></div></div></section></div>
+<footer class="colophon"><p><span class="label">Local only</span> &nbsp; Draft analytical report. Public transcript text is exact; interpretations are labeled. No independent judge results are claimed. Design and behavior: shared Techne. Swimlanes: shared dramatic dialogue renderer.</p></footer>
+</main><script src="assets/techne.js"></script>
+</body></html>

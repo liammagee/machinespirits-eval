@@ -5,6 +5,7 @@ import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tu
 import {
   learnerRevisionPrompt,
   learnerSuperegoSystemPrompt,
+  activeResistanceSystemOverlay,
   normalizeTutorStubLearnerDeliberationConfig,
   progressiveResistanceSystemOverlay,
 } from '../services/tutorStubLearnerDeliberation.js';
@@ -34,14 +35,31 @@ test('progressive resistance changes the move without weakening the resistant ro
   assert.match(revision, /Output only the final public learner speech/u);
 });
 
+test('active resistance distinguishes hypotheses from observations and rejects formulaic novelty', () => {
+  const overlay = activeResistanceSystemOverlay();
+  assert.match(overlay, /Proposing a test does not perform it/u);
+  assert.match(overlay, /Renaming a prop or paraphrasing the same doubt is not a new challenge/u);
+  assert.match(overlay, /acknowledge a local result or an unresolved limit/u);
+  assert.match(overlay, /acceptance-then-objection template/u);
+  const system = learnerSuperegoSystemPrompt({ profile: 'Active skeptical apprentice.', style: 'evidence_novelty_v2' });
+  assert.match(system, /Separate a proposed test from an observed result/u);
+  assert.match(system, /Do not insist on novelty for its own sake/u);
+  assert.match(system, /do not draft, quote, or rewrite/iu);
+});
+
 test('learner deliberation config defaults to direct and rejects incomplete superego setup', () => {
   assert.deepEqual(normalizeTutorStubLearnerDeliberationConfig({}), {
     systemStyle: 'standard',
     mode: 'direct',
+    temperature: 0.1,
     superegoModelRef: null,
     superegoStyle: null,
     superegoEffort: null,
   });
+  assert.throws(
+    () => normalizeTutorStubLearnerDeliberationConfig({ TUTOR_STUB_AUTO_LEARNER_TEMPERATURE: 'bad' }),
+    /temperature/u,
+  );
   assert.throws(
     () => normalizeTutorStubLearnerDeliberationConfig({ TUTOR_STUB_AUTO_LEARNER_DELIBERATION: 'ego_superego' }),
     /TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLE must be one of/u,
@@ -80,10 +98,10 @@ test('Luna may critique privately while the learner ego authors the final public
     },
     classificationFromCombinedAnalysis() {},
     env: {
-      TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLE: 'progressive_resistance_v1',
+      TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLE: 'active_resistance_v2',
       TUTOR_STUB_AUTO_LEARNER_DELIBERATION: 'ego_superego',
       TUTOR_STUB_AUTO_LEARNER_SUPEREGO_MODEL: 'codex.gpt-5.6-luna',
-      TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLE: 'authenticity_progress_v1',
+      TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLE: 'evidence_novelty_v2',
       TUTOR_STUB_AUTO_LEARNER_SUPEREGO_EFFORT: 'low',
     },
     extractCombinedLearnerAnalysis() {},
@@ -118,10 +136,15 @@ test('Luna may critique privately while the learner ego authors the final public
     calls.map((call) => call.role),
     ['tutor_stub_auto_learner', 'tutor_stub_auto_learner_superego', 'tutor_stub_auto_learner_revision'],
   );
-  assert.equal(generated.text, 'I will compare the ring against the trial weight; a match clears only that mark, not your whole verdict.');
+  assert.equal(
+    generated.text,
+    'I will compare the ring against the trial weight; a match clears only that mark, not your whole verdict.',
+  );
   assert.equal(generated.provider, 'mlx-local');
   assert.equal(generated.learnerDeliberation.finalAuthority, 'learner_ego');
   assert.equal(generated.learnerDeliberation.callCount, 3);
+  assert.match(calls[0].systemPrompt, /Proposing a test does not perform it/u);
+  assert.match(calls[1].systemPrompt, /Separate a proposed test from an observed result/u);
   assert.equal(events.filter((event) => event.type === 'auto_learner_deliberation').length, 1);
   assert.doesNotMatch(generated.text, /ROLE_FIDELITY|STASIS|superego/u);
 });

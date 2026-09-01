@@ -8,10 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import yaml from 'yaml';
 
-import {
-  learnerProfileIds,
-  learnerProfilePrompt,
-} from './tutor-stub-learner-profile-contracts.js';
+import { learnerProfileIds, learnerProfilePrompt } from './tutor-stub-learner-profile-contracts.js';
 import {
   TUTOR_STUB_AUTO_LEARNER_DELIBERATION_ENV,
   TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES,
@@ -21,17 +18,13 @@ import {
   TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLES,
   TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLE_ENV,
   TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES,
+  TUTOR_STUB_AUTO_LEARNER_TEMPERATURE_ENV,
 } from '../services/tutorStubLearnerDeliberation.js';
 
 export const LOCAL_LEARNER_SPEC_SCHEMA = 'machinespirits.tutor-stub.local-learner-spec.v1';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DEFAULT_SPEC = path.join(
-  ROOT,
-  'config',
-  'tutor-stub-local-learners',
-  'qwen-abliterated-frame-defiant.v1.yaml',
-);
+const DEFAULT_SPEC = path.join(ROOT, 'config', 'tutor-stub-local-learners', 'qwen-abliterated-frame-defiant.v1.yaml');
 
 function nonEmpty(value, label) {
   const text = String(value || '').trim();
@@ -108,10 +101,15 @@ export function normalizeLocalLearnerSpec(value, { source = 'local learner spec'
     throw new Error(`run.model_call_budget must allow the planned ${plannedModelCalls} model calls`);
   }
   const maxSentences = positiveInt(value.tone?.max_sentences, 'tone.max_sentences', { maximum: 4 });
+  const learnerTemperature = Number(value.generation?.temperature ?? 0.1);
+  if (!Number.isFinite(learnerTemperature) || learnerTemperature < 0 || learnerTemperature > 2) {
+    throw new Error('generation.temperature must be between 0 and 2');
+  }
   return Object.freeze({
     schema: LOCAL_LEARNER_SPEC_SCHEMA,
     id: nonEmpty(value.id, 'id'),
     profile,
+    behaviorPromptOverride: value.behavior_prompt == null ? null : nonEmpty(value.behavior_prompt, 'behavior_prompt'),
     character: Object.freeze({
       name: nonEmpty(value.character?.name, 'character.name'),
       role: nonEmpty(value.character?.role, 'character.role'),
@@ -134,6 +132,7 @@ export function normalizeLocalLearnerSpec(value, { source = 'local learner spec'
     }),
     generation: Object.freeze({
       systemPromptStyle,
+      temperature: learnerTemperature,
       deliberation: Object.freeze(
         deliberationMode === TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES.direct
           ? { mode: deliberationMode, superegoModel: null, superegoPromptStyle: null, superegoEffort: null }
@@ -176,6 +175,7 @@ export function buildLocalLearnerChildEnv(spec, { baseEnv = process.env, localMo
     TUTOR_STUB_TRANSCRIPT_OPEN: '0',
     TUTOR_STUB_SUMMARY_OPEN: '0',
     [TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLE_ENV]: spec.generation.systemPromptStyle,
+    [TUTOR_STUB_AUTO_LEARNER_TEMPERATURE_ENV]: String(spec.generation.temperature),
     [TUTOR_STUB_AUTO_LEARNER_DELIBERATION_ENV]: spec.generation.deliberation.mode,
   };
   if (localModelId) {
@@ -206,7 +206,7 @@ export function buildLocalLearnerBehaviorPrompt(spec) {
   return [
     `You are simulating this automated learner profile: ${spec.profile}`,
     '',
-    learnerProfilePrompt(spec.profile),
+    spec.behaviorPromptOverride || learnerProfilePrompt(spec.profile),
     '',
     '# Character',
     '',
@@ -303,25 +303,32 @@ function runChild(command, args, { cwd, env = process.env, inherit = true } = {}
   });
 }
 
-async function manageServer(mtpChatRoot, profile, action) {
+export async function manageServer(mtpChatRoot, profile, action, configPath = null) {
   const runScript = path.join(mtpChatRoot, 'run.sh');
   if (!fs.existsSync(runScript)) throw new Error(`MTP chat runner not found: ${runScript}`);
   const args = action === 'start' ? ['--serve', '--profile', profile] : ['--server-stop'];
+  if (configPath) args.push('--config', configPath);
   const result = await runChild(runScript, args, { cwd: mtpChatRoot });
   if (result.code !== 0) throw new Error(`MTP chat server ${action} failed with exit ${result.code}`);
 }
 
 function safeTimestamp(date = new Date()) {
-  return date.toISOString().replaceAll(':', '-').replace(/\.\d{3}Z$/u, 'Z');
+  return date
+    .toISOString()
+    .replaceAll(':', '-')
+    .replace(/\.\d{3}Z$/u, 'Z');
 }
 
 function usage() {
-  return `Usage: node scripts/run-local-qwen-resistant-learner.js [options]\n\n` +
+  return (
+    `Usage: node scripts/run-local-qwen-resistant-learner.js [options]\n\n` +
     `  --spec <yaml>           learner profile, character, tone, models, and bounds\n` +
     `  --mtp-chat-root <path>  checkout containing run.sh (or set MTP_CHAT_ROOT)\n` +
+    `  --mtp-config <yaml>     optional service config (e.g. matched decoding benchmark)\n` +
     `  --no-manage-server      use an already-running loopback service\n` +
     `  --save <json>           transcript destination\n` +
-    `  --dry-run               resolve the full tutor-stub plan with zero model calls\n`;
+    `  --dry-run               resolve the full tutor-stub plan with zero model calls\n`
+  );
 }
 
 export async function main(argv = process.argv.slice(2)) {
@@ -330,6 +337,7 @@ export async function main(argv = process.argv.slice(2)) {
     options: {
       spec: { type: 'string', default: DEFAULT_SPEC },
       'mtp-chat-root': { type: 'string', default: process.env.MTP_CHAT_ROOT || '' },
+      'mtp-config': { type: 'string' },
       'no-manage-server': { type: 'boolean', default: false },
       save: { type: 'string' },
       'dry-run': { type: 'boolean', default: false },
@@ -358,13 +366,15 @@ export async function main(argv = process.argv.slice(2)) {
   }
 
   const manage = !values['no-manage-server'];
+  if (fs.existsSync(savePath)) throw new Error(`refusing to overwrite transcript: ${savePath}`);
   const mtpChatRoot = values['mtp-chat-root'] ? path.resolve(values['mtp-chat-root']) : '';
+  const mtpConfigPath = values['mtp-config'] ? path.resolve(values['mtp-config']) : null;
   if (manage && !mtpChatRoot) throw new Error('--mtp-chat-root or MTP_CHAT_ROOT is required to manage the service');
 
   let serverStarted = false;
   try {
     if (manage) {
-      await manageServer(mtpChatRoot, spec.localService.profile, 'start');
+      await manageServer(mtpChatRoot, spec.localService.profile, 'start', mtpConfigPath);
       serverStarted = true;
     }
     const modelId = await discoverLoadedModel(spec.localService.baseUrl, {
@@ -383,6 +393,7 @@ export async function main(argv = process.argv.slice(2)) {
         plannedCalls: spec.run.plannedModelCalls,
         callCeiling: spec.run.modelCallBudget,
         systemPromptStyle: spec.generation.systemPromptStyle,
+        learnerTemperature: spec.generation.temperature,
         learnerDeliberation: spec.generation.deliberation,
         transcript: savePath,
         claimBoundary: spec.claimBoundary,
@@ -394,7 +405,7 @@ export async function main(argv = process.argv.slice(2)) {
     });
     return result.code;
   } finally {
-    if (serverStarted) await manageServer(mtpChatRoot, spec.localService.profile, 'stop');
+    if (serverStarted) await manageServer(mtpChatRoot, spec.localService.profile, 'stop', mtpConfigPath);
   }
 }
 

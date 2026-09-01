@@ -832,6 +832,174 @@ describe('cliProviderBridge', () => {
     assert.equal(proseSuccess.reason, 'success_without_structured_output');
   });
 
+  it('accepts only a typed result object in non-verbose Claude JSON mode', () => {
+    const envelope = parseClaudeJsonResultEnvelope(
+      JSON.stringify({ type: 'result', is_error: false, num_turns: 1, structured_output: { n: 3 } }),
+    );
+    assert.equal(envelope.classification, 'structured_success');
+    assert.equal(envelope.num_turns, 1);
+    assert.deepEqual(envelope.structured_output, { n: 3 });
+    assert.equal(parseClaudeJsonResultEnvelope('{"scores":{}}').classification, 'indeterminate');
+  });
+
+  it('single-attempt Claude mode disables both retry layers and archives raw output before validation', async () => {
+    const raw = JSON.stringify({ type: 'result', is_error: false, num_turns: 1, structured_output: { n: 3 } });
+    const captured = [];
+    const result = await callAIWithCliBridge(
+      { provider: 'claude-code', model: 'claude-test' },
+      '',
+      'fixture',
+      'judge',
+      {
+        outputSchema: { type: 'object' },
+        singleAttempt: true,
+        timeoutMs: 1000,
+        onRawOutput: (output) => captured.push(output),
+        spawnImpl(_command, args, options) {
+          assert.equal(args[args.indexOf('--max-turns') + 1], '1');
+          assert.equal(options.env.CLAUDE_CODE_MAX_RETRIES, '0');
+          assert.equal(options.env.MAX_STRUCTURED_OUTPUT_RETRIES, '0');
+          assert.equal(options.env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE, '1');
+          assert.equal(options.env.CLAUDE_CODE_DISABLE_NONSTREAMING_FALLBACK, '1');
+          return fakeChild({ stdoutText: raw });
+        },
+      },
+    );
+    assert.equal(captured.length, 1);
+    assert.equal(captured[0].stdout, raw);
+    assert.deepEqual(result.attemptControls, {
+      maxTurns: 1,
+      apiRetries: 0,
+      schemaRetries: 0,
+      observedTurns: 1,
+      observedModelResponses: 1,
+    });
+  });
+
+  it('counts one split assistant response once, recovers only its JSON wrapper, and rejects hidden helper use', () => {
+    const payload = { scores: { fixture: { score: 3, reasoning: 'Fixture only.' } } };
+    const events = [
+      { type: 'assistant', message: { id: 'fixture-id', model: 'claude-test', content: [{ type: 'thinking' }] } },
+      {
+        type: 'assistant',
+        message: {
+          id: 'fixture-id',
+          model: 'claude-test',
+          content: [{ type: 'tool_use', name: 'StructuredOutput', input: { values: JSON.stringify(payload) } }],
+        },
+      },
+      {
+        type: 'result',
+        is_error: true,
+        num_turns: 2,
+        terminal_reason: 'structured_output_retry_exhausted',
+        modelUsage: {},
+      },
+    ];
+    const read = () => parseClaudeJsonResultEnvelope(JSON.stringify(events), { singleAttemptModel: 'claude-test' });
+    assert.equal(read().classification, 'structured_success');
+    assert.deepEqual(read().structured_output, payload);
+    assert.equal(read().attemptAudit.responseCount, 1);
+    assert.equal(read().wrapperRecovery.judgmentsChanged, false);
+    events[1].message.content[0].input = { in: JSON.stringify(payload) };
+    assert.deepEqual(read().structured_output, payload);
+    assert.equal(read().wrapperRecovery.field, 'StructuredOutput.input.in');
+    events[1].message.content[0].input.extra = JSON.stringify(payload);
+    assert.notEqual(read().classification, 'structured_success');
+    delete events[1].message.content[0].input.extra;
+    events[2].modelUsage.haiku = { inputTokens: 300, outputTokens: 10 };
+    assert.equal(read().reason, 'unexpected_auxiliary_model_usage');
+    delete events[2].modelUsage.haiku;
+    events[1].message.id = 'another-response';
+    assert.equal(read().reason, 'single_attempt_response_count_unverified');
+  });
+
+  it('recovers a single complete JSON text response without selecting fragments or permitting extra calls', () => {
+    const payload = { turns: [{ score: 2, reasoning: 'An unchanged judgment.' }] };
+    const events = [
+      { type: 'assistant', message: { id: 'one-response', model: 'claude-test', content: [{ type: 'thinking' }] } },
+      {
+        type: 'assistant',
+        message: {
+          id: 'one-response',
+          model: 'claude-test',
+          content: [{ type: 'text', text: '```json\n' + JSON.stringify(payload) + '\n```' }],
+        },
+      },
+      {
+        type: 'result',
+        is_error: true,
+        terminal_reason: 'structured_output_retry_exhausted',
+        num_turns: 2,
+        modelUsage: { 'claude-test': { outputTokens: 50 } },
+      },
+    ];
+    const read = () => parseClaudeJsonResultEnvelope(JSON.stringify(events), { singleAttemptModel: 'claude-test' });
+    assert.deepEqual(read().structured_output, payload);
+    assert.equal(read().wrapperRecovery.judgmentsChanged, false);
+    assert.equal(read().attemptAudit.responseCount, 1);
+    assert.notEqual(parseClaudeJsonResultEnvelope(JSON.stringify(events)).classification, 'structured_success');
+    const block = events[1].message.content[0];
+    block.text = JSON.stringify(payload);
+    assert.deepEqual(read().structured_output, payload);
+    for (const text of [
+      'Here is the result: ' + JSON.stringify(payload),
+      '{"turns":',
+      '[]',
+      JSON.stringify(payload) + JSON.stringify(payload),
+    ]) {
+      block.text = text;
+      assert.notEqual(read().classification, 'structured_success');
+    }
+    block.text = JSON.stringify(payload);
+    events[2].modelUsage.haiku = { outputTokens: 1 };
+    assert.equal(read().reason, 'unexpected_auxiliary_model_usage');
+    delete events[2].modelUsage.haiku;
+    events[1].message.id = 'second-response';
+    assert.equal(read().reason, 'single_attempt_response_count_unverified');
+  });
+
+  it('single-attempt Claude mode fails closed on malformed, missing or multi-turn results without retries', async () => {
+    for (const [stdoutText, exitCode] of [
+      ['malformed output', 0],
+      [JSON.stringify({ type: 'result', is_error: false, structured_output: {} }), 0],
+      [JSON.stringify({ type: 'result', is_error: false, num_turns: 2, structured_output: {} }), 0],
+      [JSON.stringify({ type: 'result', is_error: false, num_turns: 1, structured_output: {} }), 1],
+      [JSON.stringify({ type: 'result', is_error: true, num_turns: 1 }), 1],
+    ]) {
+      let calls = 0;
+      let captured;
+      await assert.rejects(
+        callAIWithCliBridge({ provider: 'claude-code', model: 'claude-test' }, '', 'fixture', 'judge', {
+          outputSchema: { type: 'object' },
+          singleAttempt: true,
+          timeoutMs: 1000,
+          onRawOutput: (output) => {
+            captured = output;
+          },
+          spawnImpl() {
+            calls += 1;
+            return fakeChild({ stdoutText, exitCode });
+          },
+        }),
+      );
+      assert.equal(calls, 1);
+      assert.equal(captured.stdout, stdoutText);
+      assert.equal(captured.exitCode, exitCode);
+    }
+    let calls = 0;
+    await assert.rejects(
+      callAIWithCliBridge({ provider: 'claude-code', model: 'claude-test' }, '', 'fixture', 'judge', {
+        singleAttempt: true,
+        spawnImpl() {
+          calls += 1;
+        },
+      }),
+      /requires structured output/u,
+    );
+    assert.equal(calls, 0);
+  });
+
   it('attaches capped diagnostics at the bridge boundary for response-free Claude errors', async () => {
     const secretCanary = 'SECRET-CLAUDE-ERROR-CANARY';
     await assert.rejects(

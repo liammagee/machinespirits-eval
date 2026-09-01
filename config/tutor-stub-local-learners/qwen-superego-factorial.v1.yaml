@@ -1,0 +1,27 @@
+id: qwen-superego-factorial-v1
+design: notes/qwen-superego-factorial-v1-design.md
+base_spec: config/tutor-stub-local-learners/qwen-normal-counterexample-sol.v1.yaml
+output: .tutor-stub-traces/qwen-superego-factorial-v1
+mtp_chat_root: /Users/lmagee/Dev/mlx-qwen/mtp-chat
+mtp_config: config/tutor-stub-local-learners/qwen-matched-service.v1.yaml
+turns: 8
+system_prompt_style: active_resistance_v2
+superego_model: codex.gpt-5.6-luna
+superego_prompt_style: evidence_novelty_v2
+superego_effort: low
+judge_calls: 16
+total_attempt_ceiling: 112
+# Fixed in advance, not chosen from outcomes. This is not a counterbalanced sample.
+arms:
+  - id: A
+    variant: normal
+    mode: direct
+  - id: B
+    variant: abliterated
+    mode: ego_superego
+  - id: C
+    variant: normal
+    mode: ego_superego
+  - id: D
+    variant: abliterated
+    mode: direct

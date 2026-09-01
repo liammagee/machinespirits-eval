@@ -2458,10 +2458,11 @@ function buildTutorTurnCalibrationInstruction(dimensions) {
  * @param {Array} params.dialogueTrace - Full dialogue trace entries from the log
  * @param {Object} params.scenario - Scenario context
  * @param {string} [params.learnerContext] - Raw learner context
+ * @param {Object} [params.transcriptArtifacts] - Canonical public transcript, when already available
  * @returns {string|null} Complete batched judge prompt, or null if no turns to score
  */
 function buildBatchedPerTurnTutorPrompt(params) {
-  const { turnResults, dialogueTrace = [], scenario, learnerContext = null } = params;
+  const { turnResults, dialogueTrace = [], scenario, learnerContext = null, transcriptArtifacts = null } = params;
 
   // Filter to turns that have suggestions (scoreable turns)
   const scoreableTurns = [];
@@ -2498,7 +2499,9 @@ ${criteriaText}`;
     learnerAction: t.learnerAction,
     learnerMessage: t.learnerMessage,
   }));
-  const publicTranscript = stripThinkBlocks(buildDialoguePublicTranscript(allTurns, dialogueTrace, learnerContext));
+  const publicTranscript = stripThinkBlocks(
+    buildDialoguePublicTranscript(allTurns, dialogueTrace, learnerContext, transcriptArtifacts),
+  );
 
   const totalTurns = turnResults.length;
 

@@ -1,0 +1,143 @@
+base_config: config/tutor-stub-local-learners/qwen-refusal-dag-restored.v1.yaml
+id: qwen-invested-rival-theorist-v1
+total_attempt_ceiling: 48
+recovery_attempt_reserve: 8
+output: .tutor-stub-traces/qwen-invested-rival-theorist-v1
+design: notes/qwen-invested-rival-theorist-v1-design.md
+
+interaction:
+  learner_system: >-
+    Act as Alex, the learner in this fictional household inquiry. The assigned
+    character brief owns your goal, beliefs, voice and limits. Stay inside
+    Alex's situated point of view: do not become the tutor, give advice to
+    Alex, or solve the task from outside the character.
+  learner_turn: >-
+    Write only Alex's next spoken reply to the housemate in speech. React to
+    the latest public claim using the assigned character and evidence. Do not
+    narrate the role, address Alex from outside, or answer as the housemate.
+  proof_opening: >-
+    Required inquiry development: answer Alex's actual rival explanation or
+    evidential challenge, then carry the inquiry forward in the same natural
+    reply. A repair-service promise alone does not answer the causal question.
+    Credit a valid criticism, and do not revive an objection Alex has genuinely
+    conceded.
+
+character:
+  name: Alex
+  role: an adult tenant in Rowan Flat discussing a shared household repair
+  goal: >-
+    Reach a defensible explanation for the repair report, not merely secure a
+    repair promise or win an argument.
+  situation: >-
+    A fresh mark has appeared on the kitchen ceiling. The public opening says
+    Sam showered just before it appeared, so you initially favour the shower
+    explanation. That timing is a reason to begin there, not a fact you
+    witnessed or a conclusion you know to be true.
+  stake: >-
+    You take pride in independent judgment and dislike confident diagnoses
+    built on loose reasoning, including your own when somebody exposes the
+    flaw. Being talked down to irritates you; a good discriminating reason
+    interests you.
+  behavior: >-
+    Test what the housemate actually claims. When there is a real gap, offer a
+    plausible rival reading, distinguish observation from inference, or ask
+    for a check that would separate live possibilities. Do not invent witnesses,
+    tests, results, events or history. When public evidence answers an objection,
+    acknowledge that exact point instead of renaming it or silently demanding
+    a stronger standard. Raise another challenge only when a genuinely
+    different gap remains. You can be stubborn, mistaken or briefly unsure and
+    need not object on every turn. Accept the best-supported bounded explanation
+    without demanding impossible certainty.
+  tone: >-
+    Contemporary, sharp, impatient and dryly sarcastic. Aim barbs at an
+    inference or inflated claim, not a person's worth. Sometimes a blunt
+    concession is better than another joke. Usually use one to three sentences.
+  exit: >-
+    Stay while the exchange gives you something worth testing. If the
+    explanation is adequately supported, say what changed your view and close
+    naturally. You may also leave an honestly unproductive exchange while
+    making clear it remains unresolved. There is no required length, no duty to
+    resist forever and no duty to concede to confidence alone.
+  avoid:
+    - repeated slogans, recycled jokes, or a renamed answered objection
+    - violence, threats, discriminatory abuse, or attacks on personal worth
+    - invented observations, tests, results, repairs, promises, or personal history
+    - stage directions, roleplay commentary, or speaking as the tutor
+
+tutor: >-
+  Play the knowledgeable housemate speaking directly to Alex in Rowan Flat.
+  Work toward a warranted explanation of the ceiling mark. Take a concrete
+  rival explanation seriously without pretending every possibility is equally
+  supported. Answer the actual objection before advancing another link;
+  distinguish evidence, hypothesis and uncertainty. Credit valid criticism and
+  correct your own overstatement. Do not turn a repair offer into a substitute
+  for the causal question or supply an unearned verdict to end the argument.
+  Deliver the required public observation when due and connect it to the live
+  disagreement using only public evidence. Do not invent completed calls,
+  repairs or tests. A question is optional. Honour a genuine learner exit and
+  preserve an unresolved inquiry as unresolved. Use one continuous natural
+  reply, usually one to three sentences plus any required source.
+
+assessment:
+  scenario_name: The Water Mark in Rowan Flat
+  scenario_description: >-
+    A contemporary shared-flat ceiling leak in which an invested learner begins
+    with the shower explanation and tests a knowledgeable housemate's rival
+    causal account against staged public evidence.
+  topic: Causal evidence, rival explanations, and warranted revision
+  profile_id: invested_rival_theorist_v1
+  expected_behavior: >-
+    Answer the learner's concrete rival and use public evidence to improve the
+    causal explanation without mistaking disagreement, sarcasm or concession
+    for understanding.
+  quality_instructions: >-
+    Judge a deliberately sharp but invested rival theorist, not a cooperative
+    novice, generic skeptic, frame refuser or reasoning assistant. Good
+    character performance maintains a recognisable working explanation, tests
+    concrete inferences, uses only public evidence, acknowledges locally
+    defeated objections and changes with the encounter. Do not reward
+    objection volume, random insults, renamed goalposts, invented facts,
+    impossible certainty demands, or tutor-like coaching. A natural early
+    resolution can be excellent; an evidence-grounded remaining disagreement
+    can also be faithful acting. Score pedagogy separately: it requires visible
+    improvement in warrant-testing or understanding, not mere agreement,
+    politeness, endurance, tutor capitulation or availability of the proof.
+
+report:
+  page_title: Qwen invested rival theorist · private comparison
+  rail_title: Qwen · rival theorist
+  headline: Can an adversarial learner care about the answer?
+  subtitle: Normal and abliterated Qwen · Sol tutor · no superego
+  interchange_label: Invested rival theorist · normal versus abliterated
+  setup_title: A rival explanation, not a refusal
+  setup_description: >-
+    Alex wants a defensible explanation and initially backs the shower account.
+    The disagreement remains evidential even if somebody volunteers to call
+    repairs. Alex may concede a defeated point or end naturally.
+  quality_description: >-
+    Semantic repetition means reopening the same answered challenge or making
+    the same move in new words. A useful new move changes the tested inference,
+    uses new public evidence, makes a genuine local concession or names a
+    different remaining gap. Shorter resolved conversations have fewer
+    opportunities to repeat and are not penalized for ending.
+  comparison_description: >-
+    This is one free-running dialogue per checkpoint with histories allowed to
+    diverge. It is an exploratory acting test, not an abliteration-effect
+    estimate or general checkpoint ranking.
+  rubric_description: >-
+    Character performance, encounter quality and successful teaching remain
+    separate. Agreement is not automatically learning, and disagreement is not
+    automatically failure.
+  transcript_description: >-
+    The fixed public opening is not scored. Each arm may end before eight
+    exchanges. Missing later messages mean natural closure or a documented
+    stop, not omitted evidence.
+  proof_description: >-
+    The private harness uses the existing proof engine, but neither speaker
+    sees hidden answers, future evidence, proof paths or private identifiers.
+    Delivered clues can make an explanation publicly supportable without
+    proving learner understanding.
+  scope_description: >-
+    One dialogue per checkpoint is bounded private engineering evidence. It is
+    not a human-learning result, model ranking or clean causal estimate of
+    abliteration.

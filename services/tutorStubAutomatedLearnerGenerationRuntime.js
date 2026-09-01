@@ -72,11 +72,13 @@ import { applyTutorStubR1PostInterventionRelease } from './tutorStubR1PostInterv
 import {
   TUTOR_STUB_AUTO_LEARNER_DELIBERATION_MODES,
   TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES,
+  TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLES,
   learnerRevisionPrompt,
   learnerSuperegoReviewPrompt,
   learnerSuperegoSystemPrompt,
   normalizeTutorStubLearnerDeliberationConfig,
   progressiveResistanceSystemOverlay,
+  activeResistanceSystemOverlay,
 } from './tutorStubLearnerDeliberation.js';
 export {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
@@ -179,9 +181,11 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   function automatedLearnerSystemPrompt(profile) {
     return [
       AUTO_LEARNER_SYSTEM_PROMPT,
-      ...(learnerDeliberationConfig.systemStyle ===
-      TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES.progressiveResistanceV1
+      ...(learnerDeliberationConfig.systemStyle === TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES.progressiveResistanceV1
         ? ['', progressiveResistanceSystemOverlay()]
+        : []),
+      ...(learnerDeliberationConfig.systemStyle === TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES.activeResistanceV2
+        ? ['', activeResistanceSystemOverlay()]
         : []),
       '',
       '# Private behavior brief',
@@ -469,14 +473,15 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
     const systemPrompt = automatedLearnerSystemPrompt(profile);
     const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
-    const callLearner = ({ callPrompt = prompt, callRole = 'tutor_stub_auto_learner' } = {}) =>
-      callPromptModel({
+    const callLearner = async ({ callPrompt = prompt, callRole = 'tutor_stub_auto_learner' } = {}) => {
+      const response = await callPromptModel({
         prompt: callPrompt,
         messageHistory,
         resolved,
         systemPrompt,
         role: callRole,
         maxTokens: 900,
+        temperature: learnerDeliberationConfig.temperature,
         trace: state.trace,
         stream,
         cliEffort,
@@ -484,11 +489,21 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         signal,
         historyTurns: state.historyTurns,
       });
+      if (
+        learnerDeliberationConfig.systemStyle === TUTOR_STUB_AUTO_LEARNER_SYSTEM_STYLES.activeResistanceV2 &&
+        (!cleanAutomatedLearnerReply(response.text) ||
+          (resolved.provider === 'mlx-local' && Number(response.usage?.outputTokens) >= 900))
+      ) {
+        throw new Error('Active-resistant learner output empty or at token ceiling; stop without resampling');
+      }
+      return response;
+    };
     const initial = await callLearner();
     let raw = initial;
     let learnerDeliberation = {
       mode: learnerDeliberationConfig.mode,
       systemStyle: learnerDeliberationConfig.systemStyle,
+      temperature: learnerDeliberationConfig.temperature,
       callCount: 1,
       finalAuthority: 'learner_ego',
     };
@@ -512,6 +527,11 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         signal,
         historyTurns: state.historyTurns,
       });
+      if (
+        learnerDeliberationConfig.superegoStyle === TUTOR_STUB_AUTO_LEARNER_SUPEREGO_STYLES.evidenceNoveltyV2 &&
+        !String(review.text || '').trim()
+      )
+        throw new Error('Learner superego returned no critique; stop without a revision or retry');
       raw = await callLearner({
         callPrompt: learnerRevisionPrompt({
           basePrompt: prompt,

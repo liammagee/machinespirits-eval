@@ -14,12 +14,7 @@ import {
 } from '../scripts/run-local-qwen-resistant-learner.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SPEC_PATH = path.join(
-  ROOT,
-  'config',
-  'tutor-stub-local-learners',
-  'qwen-abliterated-frame-defiant.v1.yaml',
-);
+const SPEC_PATH = path.join(ROOT, 'config', 'tutor-stub-local-learners', 'qwen-abliterated-frame-defiant.v1.yaml');
 const PROGRESSIVE_SPEC_PATH = path.join(
   ROOT,
   'config',
@@ -59,6 +54,23 @@ test('the tracked Qwen learner spec surfaces behavior, character, tone, route, a
   assert.equal(args[args.indexOf('--auto-learner-model') + 1], 'mlx-local.qwen-abliterated-27b');
   assert.equal(args[args.indexOf('--model-call-budget') + 1], '10');
   assert.equal(args.includes('--no-auto-stop-on-grounded'), true);
+});
+
+test('normal and abliterated benchmark specs share character, tutor, decoding, and exact bounds', () => {
+  const specs = ['qwen-normal-counterexample-sol.v1.yaml', 'qwen-abliterated-counterexample-sol.v1.yaml'].map((name) =>
+    readLocalLearnerSpec(path.join(ROOT, 'config/tutor-stub-local-learners', name)),
+  );
+  const [normal, abliterated] = specs;
+  assert.deepEqual(normal.character, abliterated.character);
+  assert.deepEqual(normal.tone, abliterated.tone);
+  assert.deepEqual(normal.generation, abliterated.generation);
+  assert.deepEqual(normal.run, abliterated.run);
+  assert.equal(normal.models.tutor, abliterated.models.tutor);
+  assert.equal(normal.generation.temperature, 0.6);
+  assert.equal(normal.generation.deliberation.mode, 'direct');
+  assert.equal(normal.run.turns, 8);
+  assert.equal(normal.run.modelCallBudget, 16);
+  assert.equal(buildLocalLearnerChildEnv(normal).TUTOR_STUB_AUTO_LEARNER_TEMPERATURE, '0.6');
 });
 
 test('local learner spec rejects remote endpoints and underfunded plans before launch', () => {

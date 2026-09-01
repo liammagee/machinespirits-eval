@@ -59,6 +59,7 @@ export function createTutorStubPromptTransport(dependencies) {
     systemPrompt: systemPromptInput,
     role,
     maxTokens = 700,
+    temperature: requestedTemperature = null,
     trace = null,
     stream = null,
     cliEffort = null,
@@ -387,7 +388,7 @@ export function createTutorStubPromptTransport(dependencies) {
           modelIndependentlyAttested: result.modelIndependentlyAttested === true,
         };
       } else if (shouldStream) {
-        const temperature = effectiveTemperatureForModel(resolved, 0.1);
+        const temperature = effectiveTemperatureForModel(resolved, requestedTemperature ?? 0.1);
         const sink = createConsoleTokenSink(role, stream?.interim);
         let final = null;
         for await (const chunk of streamAI({
@@ -414,7 +415,7 @@ export function createTutorStubPromptTransport(dependencies) {
           streamed,
         };
       } else {
-        const temperature = effectiveTemperatureForModel(resolved, 0.1);
+        const temperature = effectiveTemperatureForModel(resolved, requestedTemperature ?? 0.1);
         const result = await callAI({
           provider: resolved.provider,
           model: resolved.model,
