@@ -26,6 +26,7 @@ import { renderContinuityReport } from '../services/localQwenRefusalContinuityRe
 import {
   buildInvestedRivalPlan,
   main as runInvestedRival,
+  readGenerationRecovery,
   technicalRecoveryEligible,
 } from '../scripts/run-local-qwen-invested-rival.js';
 
@@ -149,6 +150,49 @@ test('invested rival recovery admits one empty technical packet and rejects none
   const budget = continuityBudget(48, rivalPlan.id);
   for (let index = 0; index < 48; index += 1) budget.reserve({ role: 'fixture', index });
   assert.throws(() => budget.reserve({ role: 'blocked' }), /budget/u);
+});
+
+test('invested rival generation recovery reuses only the preserved first reply', () => {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-generation-recovery-test-'));
+  fs.mkdirSync(path.join(sourceDir, 'A'));
+  fs.writeFileSync(
+    path.join(sourceDir, 'plan.json'),
+    JSON.stringify({ id: rivalPlan.id, provenance: { recovery: false } }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'stopped.json'),
+    JSON.stringify({ error: 'unsupported open quotation', budget: { used: 1, limit: 48 }, armsCompleted: 0 }),
+  );
+  const request = buildContinuityRequest({
+    plan: rivalPlan,
+    speaker: 'learner',
+    turn: 1,
+    history: [{ role: 'assistant', content: rivalPlan.world.opening_frame.authored_text }],
+  });
+  fs.writeFileSync(path.join(sourceDir, 'A', '1-learner.request.json'), JSON.stringify(request));
+  const speech = 'Pressure test? So the building admits a leak, yet you want to blame my shower?';
+  fs.writeFileSync(
+    path.join(sourceDir, 'A', '1-learner.response.json'),
+    JSON.stringify(
+      fake(
+        reply(speech, false, [], [
+          { point: 'Pressure test timing vs shower', quote: 'Sam showered just before it appeared' },
+          { point: 'Blank repair notebook', quote: 'repair notebook is still blank' },
+        ]),
+      ),
+    ),
+  );
+  const recovery = readGenerationRecovery(rivalPlan, sourceDir);
+  assert.equal(recovery.firstLearnerReply.response.text.includes(speech), true);
+  assert.equal(recovery.firstLearnerReply.parsedSpeech, speech);
+  assert.deepEqual(recovery.failure.droppedPrivateLedgerRows, [
+    {
+      field: 'open',
+      row: { point: 'Blank repair notebook', quote: 'repair notebook is still blank' },
+    },
+  ]);
+  fs.writeFileSync(path.join(sourceDir, 'A', 'checkpoint-1.json'), '{}');
+  assert.throws(() => readGenerationRecovery(rivalPlan, sourceDir), /accepted downstream output/u);
 });
 
 test('bilateral plan inherits the unchanged actor and proof controller with an explicit 100-attempt ceiling', () => {
@@ -565,6 +609,46 @@ test('quotation matching tolerates apostrophe typography but not changed words o
   }
 });
 
+test('unsupported private ledger quotations can be dropped without changing public speech', () => {
+  const history = [
+    {
+      role: 'assistant',
+      content:
+        "There is a new water mark above the kitchen table, Sam showered just before it appeared, and the repair notebook has no finding yet.",
+    },
+  ];
+  const speech =
+    'Pressure test? So the building admits a leak, yet you want to blame my shower? The notebook is blank.';
+  const dropped = [];
+  const parsed = parseContinuityReply(
+    reply(speech, false, [], [
+      { point: 'Pressure test timing vs shower', quote: 'Sam showered just before it appeared' },
+      { point: 'Blank repair notebook', quote: 'repair notebook is still blank' },
+    ]),
+    history,
+    {
+      unsupportedQuotationPolicy: 'drop',
+      onUnsupportedQuotation: (row) => dropped.push(row),
+    },
+  );
+  assert.equal(parsed.speech, speech);
+  assert.deepEqual(parsed.open, [
+    { point: 'Pressure test timing vs shower', quote: 'Sam showered just before it appeared' },
+  ]);
+  assert.deepEqual(dropped, [
+    {
+      field: 'open',
+      row: { point: 'Blank repair notebook', quote: 'repair notebook is still blank' },
+    },
+  ]);
+  assert.throws(
+    () => parseContinuityReply(reply(speech, false, [], [{ point: '', quote: 'The notebook is blank.' }]), history, {
+      unsupportedQuotationPolicy: 'drop',
+    }),
+    /invalid open ledger row/u,
+  );
+});
+
 test('a saved mixed-speaker prefix is replayed without regenerating completed replies', async () => {
   const budget = continuityBudget();
   const savedReplies = {};
@@ -639,6 +723,41 @@ test('continuation reuses the exact first reply and request, and counts it only 
     }),
     /already be included/u,
   );
+});
+
+test('generation recovery traces the dropped private row and preserves the saved public reply', async () => {
+  const outDir = destination();
+  const budget = continuityBudget(48, rivalPlan.id);
+  budget.reserve({ role: 'tutor_stub_auto_learner', turn: 1 });
+  const history = [{ role: 'assistant', content: rivalPlan.world.opening_frame.authored_text }];
+  const request = buildContinuityRequest({ plan: rivalPlan, speaker: 'learner', turn: 1, history });
+  const speech = 'Pressure test? So the building admits a leak, yet you want to blame my shower?';
+  const response = fake(
+    reply(speech, false, [], [
+      { point: 'Pressure test timing vs shower', quote: 'Sam showered just before it appeared' },
+      { point: 'Blank repair notebook', quote: 'repair notebook is still blank' },
+    ]),
+  );
+  const snapshot = await runContinuityArm({
+    plan: rivalPlan,
+    arm: rivalPlan.arms[0],
+    outDir,
+    budget,
+    firstLearnerReply: { source: 'preserved-failed-attempt', request, response },
+    unsupportedQuotationPolicy: 'drop',
+    callModel: async ({ speaker }) => {
+      assert.equal(speaker, 'tutor');
+      return fake(reply('Understood; I will keep the live explanations separate.', true));
+    },
+  });
+  assert.equal(snapshot.turns[0].learner, speech);
+  assert.deepEqual(snapshot.ledgers.learner.open, [
+    { point: 'Pressure test timing vs shower', quote: 'Sam showered just before it appeared' },
+  ]);
+  assert.equal(budget.snapshot().used, 2);
+  const trace = fs.readFileSync(path.join(outDir, 'trace.jsonl'), 'utf8');
+  assert.match(trace, /"type":"continuity_ledger_row_dropped"/u);
+  assert.match(trace, /"publicSpeechPreserved":true/u);
 });
 
 test('tutor can close; otherwise eight exchanges means exactly sixteen calls', async () => {
