@@ -58,10 +58,11 @@ secret:
         - "can't conclude"
         - "not yet"
   surface: >-
-    The hallway heater's ancient timer plug kills the wifi. It clicks on at
-    21:00 sharp and sprays radio noise across the exact channel the router
-    uses; the scan shows the wall of noise starting the moment it clicks,
-    and the wifi comes back when its half-hour cycle ends.
+    The heater plug in the hallway cupboard kills the wifi. Its ancient
+    timer clicks it on at 21:00 sharp and it sprays radio noise across the
+    exact channel the router uses; the scan shows the wall of noise starting
+    the moment it clicks, and the wifi comes back when its half-hour cycle
+    ends.
 
 mirror:
   fact: [killsWifi, flatNetwork, pipDownload]
