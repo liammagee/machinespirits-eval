@@ -100,27 +100,25 @@ This proves the collection plumbing. The fake dialogue does not establish real
 condition prevalence, delivery fidelity, outcome rates, coder agreement, usable
 support per family, or expected cost.
 
-## What must be fixed before any model-backed collection
+## Registered pilot design
 
-A paid collection still needs one complete design file under
-`docs/paid-study-authorization-policy.md`, merged before a GO note. That design
-must name:
+The complete prospective design is
+`config/tutor-stub-action-outcome-collection-pilot-design.v1.json`. It fixes one
+nonoverlapping stalled-state condition, the four collection worlds and two later
+evaluation worlds, the maintained `bored` learner population, the Luna model
+stack, an eight-turn horizon, fixed support and register, 24 job identities and
+their seed schedule, two private human-coder seats, feasibility thresholds,
+create-once destinations, technical dispositions, and a hard ceiling of 1,944
+model-call reservations.
 
-- the conditions and non-overlap rule, fixed before looking at outcomes;
-- the tutor, learner, classifier, and learner-record routes;
-- worlds, learner profiles, turn horizon, task identity, knowledge component,
-  support level, seed schedule, and job identities;
-- a pilot size or precision rule for estimating assignable-turn prevalence,
-  per-family overlap, delivery, indeterminacy, and coder workload;
-- create-once destinations, attempt and spend ceilings, and technical failure
-  dispositions;
-- the two independent human coders and packet handoff;
-- explicit separation between collection worlds and later held-out evaluation
-  worlds; and
-- the claim boundary: immediate reviewed uptake records can populate memory but
-  do not establish learning, transfer, or causal benefit of the controller.
+The design is not launch authority. Under
+`docs/paid-study-authorization-policy.md`, it must first merge to `main`; a later
+launcher must use the shared paid-study contract from a clean detached launch
+commit, and a separate signed GO note must name that commit, design path, and
+ceiling. No GO note or launcher is part of this slice.
 
 The collection pilot must report mandatory versus assigned turns, eligible-family
 sets, family and action propensities, delivered/displaced actions, conditions,
 review dispositions, and usable binary records. Its outputs may size a later
-controller study. They are not that study's outcome.
+controller study. They are not that study's outcome, and the action-outcome
+memory controller remains disabled throughout collection.
