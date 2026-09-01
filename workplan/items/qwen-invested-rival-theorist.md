@@ -64,3 +64,9 @@ with Sol, no superegos, using one fresh dialogue per arm.
   same private-ledger rule applies symmetrically to both speakers and study
   arms during recovery. Focused recovery and shared-ceiling tests pass; the
   recovery itself has not launched.
+- 2026-09-01: The original failed ledger remains immutable. Recovery accounting
+  uses a separate linked study id with an enforced 47-attempt ceiling, records
+  the preserved 1-attempt predecessor in the fresh run ledger and reports the
+  aggregate 48-attempt count. This avoids retroactive seal changes while still
+  making the original failure plus all possible recovery calls fail closed at
+  the authorized ceiling.
