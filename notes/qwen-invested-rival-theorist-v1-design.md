@@ -241,6 +241,29 @@ study-wide attempts remaining. Full completion would therefore end at 47/48,
 with one attempt deliberately unused; the ceiling remains a ceiling, not a
 target.
 
+### Final prospective recovery after attempt 46
+
+The structured split recovery completed both A quality packets and the B tutor,
+learner and dialogue packets. The B quality-summary call then reached the
+schema tool with one forbidden extra top-level property,
+`reasoning_effort`; the tool rejected it and returned no valid structured
+output. Only the structural field name and validation error were inspected.
+No apparent scores or prose from the rejected input are accepted.
+
+Seven of the eight original assessments are now complete and immutable at
+46/48 aggregate attempts. The user explicitly directed the final recovery on
+2026-09-01. It may make exactly two calls in a fresh destination: one
+outcome-blind reattempt of the unchanged B quality-summary packet and, only if
+that validates, the unchanged B quality-turns packet. The Opus route and
+effort, prompts, schemas, transcript, character brief, rubrics, public-source
+provenance, measurement rules and deterministic merge remain unchanged.
+
+No field is stripped or repaired, no prior output is rescored, and no accepted
+packet is rerun. A failure or indeterminate result in either call ends the
+study incomplete; there is no further recovery path. Two successful packets
+complete the eighth original assessment and finish exactly at the unchanged
+48-attempt ceiling.
+
 Proposed private create-once destination:
 `.tutor-stub-traces/qwen-invested-rival-theorist-v1/`.
 No production ingestion, push or publication. Keep the existing Techne/swimlane
