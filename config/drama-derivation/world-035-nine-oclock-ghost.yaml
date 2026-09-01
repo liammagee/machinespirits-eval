@@ -1,0 +1,186 @@
+# WORLD-035 — a contemporary flat-share inquiry about the wifi that dies at
+# nine every night. Same proof shape as world-030/034 (blamed housemate vs
+# traced cause; a clock coincidence without a traced path is not enough).
+# The presentation test is whether the tutor can speak flat-share banter
+# without importing network-engineer diction. Authored 2026-09-01 for the
+# hero-demo augmentation (workplan: adaptive-tutor-hero-demo-lay-rewrite).
+# Demo-tier: schedule not ratified; runs on it are illustration, not gate
+# evidence.
+
+id: world_035_nine_oclock_ghost
+title: The Nine O'Clock Ghost
+discipline: "Everyday reasoning about a shared network (a flat-share dispute)"
+
+question: "What kills the flat's wifi at nine every night?"
+question_pattern: [killsWifi, flatNetwork, "?x"]
+
+opening_frame:
+  situation: >-
+    Every night at nine the flat's wifi collapses for half an hour, the group
+    chat has already picked its culprit, and tonight there is a vote about
+    making Pip pay for the upgrade.
+  authored_text: >-
+    Nine o'clock, on the dot, the wifi dies — and Pip's giant game download
+    starts at nine, so the group chat has voted with its thumbs already.
+    What kills the flat's wifi at nine every night? What should we look at
+    first?
+
+setting: >-
+  Four flatmates share one router and one group chat. Every night at 21:00
+  the wifi drops for half an hour: calls freeze, the smart TV buffers, and
+  the chat fills with rage. Pip's game console queues a huge download at
+  nine most nights, and Pip hogged the bandwidth all last month, so the
+  verdict feels obvious. You pay the broadband bill and keep the outage
+  diary, and you would like this settled before the half-nine house vote.
+  The awkward house rule: the router keeps a log and a phone can scan the
+  airwaves, so say what actually chokes the signal, not who is annoying at
+  nine.
+
+learner_voice: >-
+  The flatmate who pays for the broadband: proud of the outage diary, already
+  fed up with Pip, and inclined to treat the nine o'clock coincidence as
+  proof. Still able to slow down when the scan points somewhere else.
+
+secret:
+  fact: [killsWifi, flatNetwork, heaterPlug]
+  recognition_patterns:
+    - id: plug_kills_wifi
+      all_of:
+        - ["plug", "timer", "heater"]
+        - ["kills", "knocks out", "drowns", "jams", "chokes", "causes", "is behind", "explains"]
+        - ["wifi", "the network", "the internet", "the signal"]
+      none_of:
+        - "did not kill"
+        - "didn't kill"
+        - "not the plug"
+        - "rule out the plug"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    The hallway heater's ancient timer plug kills the wifi. It clicks on at
+    21:00 sharp and sprays radio noise across the exact channel the router
+    uses; the scan shows the wall of noise starting the moment it clicks,
+    and the wifi comes back when its half-hour cycle ends.
+
+mirror:
+  fact: [killsWifi, flatNetwork, pipDownload]
+
+rules:
+  - id: R1_noise
+    gloss: >-
+      A device kills the wifi when it switches on in the nine o'clock window
+      and a scan shows it flooding the channel the router uses.
+    if:
+      - [switchesDuring, "?x", nineWindow]
+      - [scanShowsFlooding, "?x", wifiChannel]
+    then:
+      - [killsWifi, flatNetwork, "?x"]
+  - id: R2_load
+    gloss: >-
+      A download kills the wifi only if the router's log shows it saturating
+      the line. Starting at the same time is not choking the signal.
+    if:
+      - [runsDuring, "?x", nineWindow]
+      - [logShowsSaturation, "?x", flatLine]
+    then:
+      - [killsWifi, flatNetwork, "?x"]
+
+premises:
+  - id: p_download
+    evidence_role: mirror
+    fact: [runsDuring, pipDownload, nineWindow]
+    surface: >-
+      Pip's console queues a big game download at nine most nights, and Pip
+      hogged the bandwidth all last month — which is why the chat started
+      there.
+  - id: p_timer
+    fact: [switchesDuring, heaterPlug, nineWindow]
+    surface: >-
+      The hallway cupboard heater sits on an ancient smart timer plug set to
+      21:00. Stand in the hall at nine and you can hear it click, right as
+      the first "wifi's dead" message lands.
+  - id: p_log
+    evidence_role: corroboration
+    fact: [logShowsSaturation, pipDownload, nothingRecorded]
+    surface: >-
+      The router's own log for Tuesday night shows Pip's download crawling at
+      a starved trickle through the whole outage — a victim of the dead wifi,
+      not the thing eating it.
+  - id: p_scan
+    fact: [scanShowsFlooding, heaterPlug, wifiChannel]
+    surface: >-
+      A free wifi-analyser app, run at the kitchen table at 21:05, shows a
+      wall of noise across the router's channel — starting the second the
+      plug clicks, gone when the heater's half-hour cycle ends.
+
+background:
+  - [paysBroadband, flatmate, flatNetwork]
+
+incompatible:
+  - [[killsWifi, flatNetwork, heaterPlug], [killsWifi, flatNetwork, pipDownload]]
+
+proof_paths:
+  - premises: [p_timer, p_scan]
+
+release_schedule:
+  - { turn: 2, premise: p_download, via: tutor }
+  - turn: 3
+    premise: p_timer
+    via: director
+    presentation: { mode: presented_exhibit, cue: "The hallway cupboard is opened; the heater's timer plug shows its faded dial pointing at 21:00." }
+  - turn: 5
+    premise: p_log
+    via: director
+    presentation: { mode: enacted_role, role: flatmate reading the router's traffic log aloud from a laptop }
+  - { turn: 6, premise: p_scan, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Nine on the Dot
+      turns: [1, 4]
+      intent: >-
+        Pip's download supplies a plausible clock coincidence, while the
+        timer plug introduces a rival cause with an audible click.
+    - act: II
+      title: Listen for the Click
+      turns: [5, 8]
+      intent: >-
+        The starved-download log and the channel scan turn a group-chat
+        verdict into a recorded answer. The learner should distinguish a
+        flatmate's annoying habits from the device that actually chokes the
+        signal.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: pipDownload
+      mirror_pull: high
+    second_order:
+      from: flat_vote
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      The friend who used to set up routers for a living: sympathetic to the
+      rage, unwilling to referee flatmate politics, and happiest when the
+      scan shows what is actually shouting over the signal.
+
+presentation:
+  family: nine-oclock-ghost
+  temporal_frame: contemporary
+  scene_ecology: "kitchen table, a phone running a wifi-analyser app, the heater cupboard down the hall"
+  narrative_diction: "flat-share banter"
+  ledger_term: outage diary
+  summary: A contemporary flat-share inquiry that traces a nightly wifi outage to an ancient heater timer plug rather than the housemate everyone already blames.
