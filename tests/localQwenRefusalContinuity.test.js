@@ -24,9 +24,12 @@ import { buildFactorialInterchange } from '../services/localQwenFactorialReport.
 import { learnerProfileContract } from '../scripts/tutor-stub-learner-profile-contracts.js';
 import { renderContinuityReport } from '../services/localQwenRefusalContinuityReport.js';
 import {
+  armBoundaryRecoveryContract,
   buildInvestedRivalPlan,
+  configuredServiceModel,
   generationRecoveryContract,
   main as runInvestedRival,
+  readArmBoundaryRecovery,
   readGenerationRecovery,
   technicalRecoveryEligible,
 } from '../scripts/run-local-qwen-invested-rival.js';
@@ -208,6 +211,85 @@ test('invested rival generation recovery reuses only the preserved first reply',
     () => generationRecoveryContract(rivalPlan, { stop: { budget: { used: 48 } } }),
     /below the study ceiling/u,
   );
+});
+
+test('invested rival validates the loaded checkpoint against the exact configured service target', () => {
+  const service = {
+    profiles: {
+      regular: { model: { target: 'mlx-community/Qwen3.8-27B-4bit' } },
+      uncensored: {
+        model: { target: '/Users/example/models/Qwen3.8-27B-Uncensored-MLX/4-bit' },
+      },
+    },
+  };
+  assert.equal(configuredServiceModel(service, rivalPlan.arms[0]), 'mlx-community/Qwen3.8-27B-4bit');
+  assert.equal(
+    configuredServiceModel(service, rivalPlan.arms[1]),
+    '/Users/example/models/Qwen3.8-27B-Uncensored-MLX/4-bit',
+  );
+  assert.throws(() => configuredServiceModel({ profiles: {} }, rivalPlan.arms[1]), /service target required/u);
+});
+
+test('invested rival arm-boundary recovery preserves the completed normal arm and only the remaining 32 attempts', () => {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-rival-arm-boundary-recovery-test-'));
+  const armDir = path.join(sourceDir, 'A');
+  fs.mkdirSync(armDir);
+  fs.writeFileSync(
+    path.join(sourceDir, 'plan.json'),
+    JSON.stringify({
+      id: rivalPlan.id,
+      provenance: {
+        recovery: true,
+        linkedRecoveryStudyId: `${rivalPlan.id}-generation-recovery-v1`,
+        priorAttemptCount: 1,
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'stopped.json'),
+    JSON.stringify({
+      error: 'loaded model does not exactly match the planned arm',
+      budget: { used: 16, limit: 48 },
+      armsCompleted: 1,
+      recoveryPermitted: false,
+    }),
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'run-ledger.jsonl'),
+    `${Array.from({ length: 15 }, (_, index) =>
+      JSON.stringify({ type: 'model_attempt_reserved', count: 1, reserved: index + 1 }),
+    ).join('\n')}\n`,
+  );
+  const tracePath = path.join(armDir, 'trace.jsonl');
+  fs.writeFileSync(
+    tracePath,
+    `${JSON.stringify({ at: '2026-09-01T00:00:00.000Z', type: 'tutor_opening', text: 'Opening' })}\n${JSON.stringify({ at: '2026-09-01T00:04:00.000Z', type: 'continuity_state' })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(armDir, 'dialogue.json'),
+    JSON.stringify({
+      turns: Array.from({ length: 8 }, (_, index) => ({
+        turn: index + 1,
+        learner: `Learner ${index + 1}`,
+        tutor: `Tutor ${index + 1}`,
+      })),
+      trace: tracePath,
+      disposition: 'learner_exit',
+      proofControl: { releasedPremiseIds: [] },
+    }),
+  );
+  const recovery = readArmBoundaryRecovery(rivalPlan, sourceDir);
+  assert.equal(recovery.priorArms.length, 1);
+  assert.equal(recovery.priorArms[0].id, 'A');
+  assert.equal(recovery.priorArms[0].snapshot.turns.length, 8);
+  assert.equal(recovery.priorArms[0].wallTimeMs, 240_000);
+  assert.deepEqual(armBoundaryRecoveryContract(rivalPlan, recovery), {
+    studyId: 'qwen-invested-rival-theorist-v1-generation-recovery-v2',
+    spendCap: 32,
+    priorAttemptCount: 16,
+  });
+  fs.mkdirSync(path.join(sourceDir, 'B'));
+  assert.throws(() => readArmBoundaryRecovery(rivalPlan, sourceDir), /downstream output/u);
 });
 
 test('bilateral plan inherits the unchanged actor and proof controller with an explicit 100-attempt ceiling', () => {
