@@ -519,15 +519,8 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
 }
 
 function admitLiveRun(plan, values, outDir, recoveryFrom = null) {
-  if (
-    !values['accept-charges'] ||
-    !values['launch-commit'] ||
-    !values['go-note-commit'] ||
-    !values['go-note-path']
-  ) {
-    throw new Error(
-      'paid launch requires --accept-charges, --launch-commit, --go-note-commit, and --go-note-path',
-    );
+  if (!values['accept-charges'] || !values['launch-commit'] || !values['go-note-commit'] || !values['go-note-path']) {
+    throw new Error('paid launch requires --accept-charges, --launch-commit, --go-note-commit, and --go-note-path');
   }
   return admitPaidStudyLaunch({
     root: ROOT,

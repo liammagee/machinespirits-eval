@@ -159,15 +159,8 @@ test('metered research labs require and enforce finite model-call admission befo
   assert.equal(learnerRoleSmoke.cliOptions['auto-learner'], true);
   assert.equal(learnerRoleSmoke.modelCalls.minimumPerTurn, 2);
   assert.equal(learnerRoleSmoke.modelCalls.maximumPerTurn, 4);
-  assert.deepEqual(learnerRoleSmoke.modelCalls.roles, [
-    'tutor',
-    'automated_learner',
-    'optional_learner_superego',
-  ]);
-  assert.equal(
-    resolveTutorStubMeteredLabAdmission(learnerRoleSmoke, learnerRoleSmoke.cliOptions).modelCallBudget,
-    10,
-  );
+  assert.deepEqual(learnerRoleSmoke.modelCalls.roles, ['tutor', 'automated_learner', 'optional_learner_superego']);
+  assert.equal(resolveTutorStubMeteredLabAdmission(learnerRoleSmoke, learnerRoleSmoke.cliOptions).modelCallBudget, 10);
 
   const research = resolveTutorStubLab('research_controls', {
     overrides: { 'model-call-budget': '6' },
