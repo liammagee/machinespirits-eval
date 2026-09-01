@@ -202,12 +202,16 @@ function sourceRecords() {
 }
 
 test('extracts only a complete delivered next-turn join and preserves source provenance', () => {
-  const result = extract(traceFixture());
+  const fixture = traceFixture();
+  const result = extract(fixture);
   assert.equal(result.records.length, 1);
   assert.equal(result.records[0].outcome, 'failure');
   assert.equal(result.records[0].conditionId, 'high-stagnation');
   assert.equal(result.rows[0].measurementStatus, 'human_confirmed');
   assert.deepEqual(result.rows[0].sourceSequence, { decision: 2, outcome: 4 });
+  assert.equal(result.reviewCandidates[0].tutorText, fixture.review.tutorText);
+  assert.equal(result.reviewCandidates[0].learnerText, fixture.review.learnerText);
+  assert.equal(result.reviewCandidates[0].auxiliaryOutcome, 'failure');
 });
 
 test('auxiliary-only outcomes and human/auxiliary disagreements stay indeterminate', () => {

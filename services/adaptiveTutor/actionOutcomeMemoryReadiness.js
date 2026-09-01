@@ -197,6 +197,7 @@ function deliveredJoin({ decisionEvent, decisionTurn, outcomeEvent, observationT
   return {
     action,
     closed,
+    learnerBefore: decisionTurn.learner,
     tutorText: decisionTurn.tutor,
     learnerText: observationTurn.learner,
     auxiliaryDeliveryVisible:
@@ -225,6 +226,7 @@ export function extractActionOutcomeMemoryEvidence({
   const exclusions = [];
   const records = [];
   const rows = [];
+  const reviewCandidates = [];
   const exclude = (decisionEvent, reason, details = {}) => {
     recordReason(exclusionCounts, reason);
     exclusions.push({
@@ -243,6 +245,7 @@ export function extractActionOutcomeMemoryEvidence({
       inventory: { events: events.length, decisions: index.decisions.length, outcomes: index.outcomes.length },
       records,
       rows,
+      reviewCandidates,
       exclusions: index.malformed.map((reason) => ({ runId: index.runId, contractId: null, reason })),
       exclusionCounts,
     };
@@ -338,6 +341,24 @@ export function extractActionOutcomeMemoryEvidence({
       supersedes: [],
     };
     records.push(record);
+    reviewCandidates.push({
+      recordId: record.id,
+      source,
+      runId: index.runId,
+      contractId,
+      worldId,
+      contextKey,
+      conditionId: conditionResult.condition.id,
+      decisionTurn: decisionEvent.turn,
+      observationTurn: matchingOutcomes[0].turn,
+      observedAt: matchingOutcomes[0].ts,
+      action: clone(joined.action),
+      learnerBefore: joined.learnerBefore,
+      tutorText: joined.tutorText,
+      learnerText: joined.learnerText,
+      auxiliaryOutcome: joined.closed.outcome,
+      auxiliaryDeliveryVisible: joined.auxiliaryDeliveryVisible,
+    });
     rows.push({
       recordId: record.id,
       source,
@@ -353,6 +374,7 @@ export function extractActionOutcomeMemoryEvidence({
   }
   records.sort((left, right) => left.id.localeCompare(right.id));
   rows.sort((left, right) => left.recordId.localeCompare(right.recordId));
+  reviewCandidates.sort((left, right) => left.recordId.localeCompare(right.recordId));
   return {
     source,
     runId: index.runId,
@@ -360,6 +382,7 @@ export function extractActionOutcomeMemoryEvidence({
     inventory: { events: events.length, decisions: index.decisions.length, outcomes: index.outcomes.length },
     records,
     rows,
+    reviewCandidates,
     exclusions,
     exclusionCounts,
   };
