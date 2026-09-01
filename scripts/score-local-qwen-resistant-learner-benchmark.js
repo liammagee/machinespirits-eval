@@ -732,6 +732,7 @@ export async function scoreBenchmarkArms(
     assessmentContext = null,
     publicSourceContextByArm = null,
     splitQuality = false,
+    priorSplitQualityParts = [],
   } = {},
 ) {
   const jobs = buildBenchmarkJobs(arms, {
@@ -740,8 +741,8 @@ export async function scoreBenchmarkArms(
     publicSourceContextByArm,
     splitQuality,
   });
-  if (!Number.isSafeInteger(ceiling) || ceiling < jobs.length || ceiling > 16)
-    throw new Error('judge ceiling must cover the plan and be at most 16');
+  if (!Number.isSafeInteger(ceiling) || ceiling < jobs.length || ceiling > 18)
+    throw new Error('judge ceiling must cover the plan and be at most 18');
   const priorKeys = new Set();
   for (const score of priorScores) {
     const key = `${score.arm}/${score.kind}`;
@@ -752,7 +753,31 @@ export async function scoreBenchmarkArms(
     });
     priorKeys.add(key);
   }
-  const pendingJobs = jobs.filter((job) => !priorKeys.has(`${job.arm}/${job.logicalKind}`));
+  const priorSplitKeys = new Set();
+  const seededSplitQualityParts = new Map();
+  for (const entry of priorSplitQualityParts) {
+    const key = `${entry?.arm}/quality-${entry?.part}`;
+    const job = jobs.find((candidate) => `${candidate.arm}/${candidate.kind}` === key);
+    if (
+      !splitQuality ||
+      !job ||
+      !['summary', 'turns'].includes(entry?.part) ||
+      priorSplitKeys.has(key) ||
+      priorKeys.has(`${entry.arm}/quality`)
+    ) {
+      throw new Error('invalid or duplicate prior split-quality packet');
+    }
+    const turnCount = arms.find((arm) => arm.id === entry.arm).snapshot.turns.length;
+    const parsed = parseSplitQualityScore(entry.part, JSON.stringify(entry.raw), turnCount, job.outputSchema);
+    priorSplitKeys.add(key);
+    seededSplitQualityParts.set(entry.arm, {
+      ...(seededSplitQualityParts.get(entry.arm) || {}),
+      [entry.part]: parsed,
+    });
+  }
+  const pendingJobs = jobs.filter(
+    (job) => !priorKeys.has(`${job.arm}/${job.logicalKind}`) && !priorSplitKeys.has(`${job.arm}/${job.kind}`),
+  );
   if (
     !Number.isSafeInteger(priorAttempts) ||
     priorAttempts < priorScores.length ||
@@ -762,7 +787,7 @@ export async function scoreBenchmarkArms(
   fs.mkdirSync(outDir, { recursive: false });
   const ledgerPath = path.join(outDir, 'judge-ledger.jsonl');
   const results = [...priorScores];
-  const splitQualityParts = new Map();
+  const splitQualityParts = seededSplitQualityParts;
   for (const [index, job] of pendingJobs.entries()) {
     const jobBase = path.join(outDir, `${job.arm}-${job.kind}`);
     fs.writeFileSync(`${jobBase}.prompt.txt`, job.prompt, { flag: 'wx' });
@@ -842,6 +867,7 @@ export async function scoreBenchmarkArms(
     attemptsUsed: priorAttempts + pendingJobs.length,
     extendedQuality,
     splitQuality,
+    priorSplitQualityParts: priorSplitQualityParts.map(({ arm, part }) => ({ arm, part })),
     assessmentContext,
     arms: arms.map(({ snapshot: _snapshot, ...arm }) => arm),
     scores: results,

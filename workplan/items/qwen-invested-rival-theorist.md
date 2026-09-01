@@ -137,3 +137,13 @@ with Sol, no superegos, using one fresh dialogue per arm.
   terminal recovery may reattempt only that unchanged summary and, if it
   validates, run B quality-turns. Those two calls exhaust the ceiling; either
   failure ends the study incomplete with no further recovery.
+- 2026-09-01: The terminal recovery accepted B quality-summary, then B
+  quality-turns supplied every registered field plus the surplus root field
+  `turns`; the provider schema rejected the packet and sealed the chain at
+  48/48. The user directed actual completion before the broader failure audit.
+  A prospective transport-only amendment therefore exposes the one missing
+  packet under at most two new Opus attempts and a 50-attempt aggregate cap.
+  The provider may return surplus root fields; the runner projects only the
+  four registered fields and validates them against the unchanged strict
+  schema. It never changes registered values, reuses no rejected content, and
+  never resamples a locally returned candidate.
