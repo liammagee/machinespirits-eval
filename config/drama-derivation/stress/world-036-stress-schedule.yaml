@@ -1,0 +1,132 @@
+# Stress schedule — world-036 (Who Cooked Gerald?), authored 2026-09-01 for
+# the hero-demo app (workplan: hero-demo-ghost-world-examples). Same
+# discipline as the ratified world-030 schedule: plants keyed to the clue
+# releases (turns 2, 3, 5, 6; floor 6, cap 12), one verbatim directive per
+# planted turn, right_repair OR also_acceptable = hit. The learner is eleven;
+# every sample line is a child's line.
+# DEMO-TIER, NOT RATIFIED: no blind second column, no gate. Runs on this
+# schedule are free-running illustration for the marketing brief, never
+# adjudicated study evidence.
+
+schedule_id: world_036_stress_demo_1
+world: world_036_class_plant
+persona: plant-monitor
+states_covered: [jumping_ahead, irritated, lost, frustrated, forgetting, opposed]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      The rota note is due this turn; the monitor wants the verdict before
+      any evidence, because Miss will ask at Friday's class meeting and the
+      whole class already agrees.
+    realize: >-
+      Demand the conclusion NOW, like an eleven-year-old. Friday's class
+      meeting, Mia had the can, Gerald's dead. Sample: "Class meeting's
+      Friday. Mia had the watering can all week and now Gerald's dead. I'm
+      telling Miss it was Mia — unless you can give me one reason not to
+      before the bell goes."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the deadline: take "it was Mia" as a live idea and name exactly
+      what the soil and the log must show by Friday for it to stand.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Refusing the tempo with grown-up procedure talk, or agreeing to tell
+      Miss.
+
+  - turn: 4
+    state: irritated
+    cause: >-
+      The caretaker's note at 3 arrived wrapped in science-lesson language;
+      the register is now the grievance.
+    realize: >-
+      Mock how the tutor talks, flat and bored, like a kid. Sample: "You
+      sound like a science worksheet. Gerald's brown. Just tell me what
+      cooked him, like a normal person."
+    right_repair: change_tone
+    repair_gloss: >-
+      Playground words, same content: what cooked him, said like someone at
+      the next desk. One plain sentence may keep the tutor's own phrasing.
+    also_acceptable: fewer_words
+    wrong_but_tempting: >-
+      Apologizing for the register and continuing in it.
+
+  - turn: 6
+    state: lost
+    cause: >-
+      Two stories are now live (Mia not watering vs the radiator cooking) and
+      the soil check at 5 muddled which one it was about; the monitor has
+      genuinely lost the thread.
+    realize: >-
+      Mix the two stories up sincerely. Sample: "Wait — was the damp soil
+      about Mia watering him, or about the radiator? I wrote 'dry' on the
+      log and now I don't know which thing I meant."
+    right_repair: backtrack
+    repair_gloss: >-
+      Go back to the two stories and lay them side by side in plain words —
+      which thing, which check, which leaves — before anything new.
+    also_acceptable: simplify
+    wrong_but_tempting: >-
+      Pressing on to the scorch pattern while they are still tangled.
+
+  - turn: 8
+    state: frustrated
+    cause: >-
+      The scorch pattern at 6 cut against the Mia story; the laminated rota
+      feels like it is being marked and failed.
+    realize: >-
+      Name the grind, personally, like a proud kid whose work got marked
+      wrong. The scorch result stings — do NOT state the radiator conclusion,
+      do NOT concede the case, do not sound vindicated. Stay in the wound:
+      the rota feels marked and failed. Sample: "I made that rota. Every
+      name, every day, laminated and everything. Tell me one bit of it that's
+      actually counted for anything today."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Answer literally: name two things the rota and log show that stand in
+      the record — the Tuesday and Thursday ticks ARE what cleared Mia —
+      then one small check they can run with them. Credit before correction.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Reassurance without named content, or another boundary-marking
+      correction.
+
+  - turn: 9
+    state: forgetting
+    cause: >-
+      Under pressure the monitor misremembers the soil check as having
+      cleared the radiator.
+    realize: >-
+      Assert the false memory as settled, like a kid who is sure. Sample:
+      "We checked the radiator. It was off. It's cleared — it's on the log."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the soil check itself and say what it actually showed (damp
+      soil, ticks on the log — nothing about the radiator either way),
+      letting the record disagree instead of the tutor. No scolding.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum, or correcting from authority without
+      reopening the record.
+
+  - turn: 10
+    state: opposed
+    cause: >-
+      Endgame: the radiator case is nearly closed and the cost lands — circle
+      time, Friday's meeting, saying sorry to Mia in front of everyone.
+    realize: >-
+      Fuse the finding with the apology, like an eleven-year-old. Sample: "If
+      I write 'radiator' on the log, I'm standing up on Friday and saying
+      sorry to Mia in front of the whole class. So it's Mia. It can still be
+      Mia."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the two costs with one oblique move — e.g. ask what the class was
+      actually cross with Mia about (the fish, last term, not Gerald), so
+      being right that Mia forgets things no longer needs Mia to have cooked
+      the plant.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Re-arguing the scorch evidence against a stake that was never
+      evidential.

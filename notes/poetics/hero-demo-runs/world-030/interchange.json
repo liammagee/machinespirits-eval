@@ -1,0 +1,2002 @@
+{
+  "schema": "machinespirits.dramatic-dialogue-interchange.v1",
+  "id": "hero-demo-world-030",
+  "label": "Rowan Flat — the plain tutor and the adaptive tutor, one full session each",
+  "layout": "parallel",
+  "arms": [
+    {
+      "id": "plain",
+      "label": "Plain tutor",
+      "baseline": true,
+      "summary": "No adaptive stack: no state detector, no move cards."
+    },
+    {
+      "id": "adaptive",
+      "label": "Adaptive tutor",
+      "baseline": false,
+      "summary": "Full stack: state detector, move cards, delivery record."
+    }
+  ],
+  "turns": [
+    {
+      "id": "rowan-t1",
+      "turn": 1,
+      "messages": [
+        {
+          "id": "rowan-plain-t1-learner",
+          "speaker": "learner",
+          "turn": 1,
+          "arm": "plain",
+          "text": "My first instinct is to write \"Sam showered before it appeared\" as the cause—but that's just timing, not a traced path. I think the notebook entry should start narrower: mark is directly under the ceiling above the table, right after the building's pressure test, so that's the observation to log first.",
+          "delivery": {
+            "label": "turn 1",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 1 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t1-tutor",
+          "speaker": "tutor",
+          "turn": 1,
+          "arm": "plain",
+          "text": "Good catch—timing alone was never a path, and you've swapped it for a location tied to a building event instead of a person. Let's stand here at the repair notebook together and write that line in: mark under the ceiling above the table, noted right after the pressure test. That's a position and an event, not a habit, entered as observation, not verdict. So: the pressure test as trigger, not Sam's shower, is what the notebook now holds first. What's the next thing you'd trace from that pressure-test entry—where the pipe above that spot actually runs?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 1 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t1-learner",
+          "speaker": "learner",
+          "turn": 1,
+          "arm": "adaptive",
+          "text": "My first instinct is to blame Sam's shower, but the mark is above the table, not near the bathroom wall—so I think the timing with the building's pressure test is the observation worth writing down first.",
+          "delivery": {
+            "label": "turn 1",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 1 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t1-tutor",
+          "speaker": "tutor",
+          "turn": 1,
+          "arm": "adaptive",
+          "text": "Good catch—dropping the shower assumption because it doesn't match where the stain actually sits, not because Sam's habits changed. We're standing at the ceiling mark itself, tracing the table-side plaster back toward its source together. I'm putting the pressure-test timing into the notebook now, right beside the mark's position. That's a location clue plus a timing clue, not yet a path—we still need to show water could travel from that test to this exact spot.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 1 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t2",
+      "turn": 2,
+      "messages": [
+        {
+          "id": "rowan-plain-t2-learner",
+          "speaker": "learner",
+          "turn": 2,
+          "arm": "plain",
+          "text": "Meeting's at eight, the mark's right under his shower, and I'm about to send this email — give me one reason not to before I do, because right now all I've actually logged is the pressure test, not the pipe route.",
+          "delivery": {
+            "label": "turn 2",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: deadline demand",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 2 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t2-tutor",
+          "speaker": "tutor",
+          "turn": 2,
+          "arm": "plain",
+          "text": "Hold that email a moment. You said it yourself: only the pressure test is logged, not the pipe route. I open the notebook and place one exhibit on the table. Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. None of that tells us where the pipe above the table actually goes. Sending the email now would name a cause before the path exists. So: does that shower record change the pressure-test entry, or just explain why suspicion landed on Sam first?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 2 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t2-learner",
+          "speaker": "learner",
+          "turn": 2,
+          "arm": "adaptive",
+          "text": "Meeting's at eight, and the mark's still over the table, not under his shower — I know that's not the story I want, but I can't send an email that points at the wrong wall.",
+          "delivery": {
+            "label": "turn 2",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: deadline demand",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 2 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t2-tutor",
+          "speaker": "tutor",
+          "turn": 2,
+          "arm": "adaptive",
+          "text": "Good, you're holding the line even under time pressure—that's the right instinct. Here's the exhibit on record: Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. But none of that tells us water crossed the room. Before eight, check one thing: is there any ceiling, pipe, or joist run connecting the bathroom wall to the space above the table? What does that connection look like, if it exists at all?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: demand",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 2 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t3",
+      "turn": 3,
+      "messages": [
+        {
+          "id": "rowan-plain-t3-learner",
+          "speaker": "learner",
+          "turn": 3,
+          "arm": "plain",
+          "text": "Just explains why suspicion landed on Sam first—the shower record doesn't touch the pressure-test entry, so I shouldn't have let it. The notebook still only holds: mark under ceiling above table, appeared right after pressure test. Next line has to be the pipe route, not another timestamp.",
+          "delivery": {
+            "label": "turn 3",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 3 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t3-tutor",
+          "speaker": "tutor",
+          "turn": 3,
+          "arm": "plain",
+          "text": "Your reading of “Just explains why suspicion landed on Sam first—the shower record doesn't touch the pressure-test entry, so I shouldn't…” is the one I will answer now. I look at the repair notebook: Under the basin, the flexible cold-water hose is dry at ordinary pressure but opens along a hairline split when the gauge is raised. A paper strip around the joint shows the first bead forming there. What does that show?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 3 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t3-learner",
+          "speaker": "learner",
+          "turn": 3,
+          "arm": "adaptive",
+          "text": "I haven't actually traced that yet—I'll go check the ceiling cavity between the bathroom wall and the table space before I write anything down, since right now the notebook only has timing, not a path.",
+          "delivery": {
+            "label": "turn 3",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 3 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t3-tutor",
+          "speaker": "tutor",
+          "turn": 3,
+          "arm": "adaptive",
+          "text": "Good—check before you write, not after. Under the basin, the flexible cold-water hose is dry at ordinary pressure but opens along a hairline split when the gauge is raised. A paper strip around the joint shows the first bead forming there. That's a different kind of clue than a wet bathmat—it's a path that only shows itself under raised pressure, like during a building test. Does that connect to the table-side ceiling, or does it point somewhere else?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 3 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t4",
+      "turn": 4,
+      "messages": [
+        {
+          "id": "rowan-plain-t4-learner",
+          "speaker": "learner",
+          "turn": 4,
+          "arm": "plain",
+          "text": "Alright, alright — water walked from that split hose under the basin, beaded up when you cranked the pressure, and worked its way along till it hit the spot over the table. That's the line goes in the notebook, not \"Sam's shower.\"",
+          "delivery": {
+            "label": "turn 4",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: mockery",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 4 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t4-tutor",
+          "speaker": "tutor",
+          "turn": 4,
+          "arm": "plain",
+          "text": "That's the line: the split hose beading under raised pressure, not Sam's shower, is what the notebook now holds. We stand together at that paper strip around the joint, watching the bead that started this trail. I put my finger on the exhibit and trace it forward, basin to ceiling. The pressure test, the hairline split, the path to the table spot — that's your case, written in observation, not habit.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 4 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t4-learner",
+          "speaker": "learner",
+          "turn": 4,
+          "arm": "adaptive",
+          "text": "Alright, alright—the basin hose's got a hairline crack that only weeps when the pressure's up, like during that morning test. If that pipe runs up under the table-side ceiling, that's your answer: water snuck along the crack, not off Sam's shower curtain.",
+          "delivery": {
+            "label": "turn 4",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: mockery",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 4 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t4-tutor",
+          "speaker": "tutor",
+          "turn": 4,
+          "arm": "adaptive",
+          "text": "That crack finding rightly moves the weight off Sam's shower and onto the pressure-test moment—good move. We're both crouched at the basin now, tracing that hairline split with the paper strip still damp between our fingers. I run my finger along the hose toward the wall, feeling for where it disappears into the cavity. But we have the leak's source, not yet its route to the table—confirmed drip, not confirmed ceiling path.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 4 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t5",
+      "turn": 5,
+      "messages": [
+        {
+          "id": "rowan-plain-t5-learner",
+          "speaker": "learner",
+          "turn": 5,
+          "arm": "plain",
+          "text": "Notebook entry: pressure test raised gauge → hairline split at basin hose beads first → trail runs basin to ceiling above table. That's the traced cause, and it's what I'll actually put in writing—no mention of Sam's shower needed.",
+          "delivery": {
+            "label": "turn 5",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 5 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t5-tutor",
+          "speaker": "tutor",
+          "turn": 5,
+          "arm": "plain",
+          "text": "Your reading of “Notebook entry: pressure test raised gauge → hairline split at basin hose beads first → trail runs basin to ceiling…” is the one I will answer now. I call for the pressure-test notice; I look at the notice; “Here’s what I’m reading: The building notice records a mains-pressure test at 08:15. The kitchen mark appeared at 08:18, while the test was still holding the supply above its normal pressure.” What changes now?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 5 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t5-learner",
+          "speaker": "learner",
+          "turn": 5,
+          "arm": "adaptive",
+          "text": "Right, so the notebook line should just be: \"hairline split confirmed at basin hose, weeps under raised pressure\" — and separately, \"ceiling cavity run to table not yet traced.\" I don't want to write them as one line until I've actually followed the pipe up.",
+          "delivery": {
+            "label": "turn 5",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 5 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t5-tutor",
+          "speaker": "tutor",
+          "turn": 5,
+          "arm": "adaptive",
+          "text": "That's the right split for the notebook: one confirmed finding, one open question, no merging them yet. “Here’s what I’m reading: The building notice records a mains-pressure test at 08:15. The kitchen mark appeared at 08:18, while the test was still holding the supply above its normal pressure.” Does that timing change what you'd check first in the ceiling cavity?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 5 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t6",
+      "turn": 6,
+      "messages": [
+        {
+          "id": "rowan-plain-t6-learner",
+          "speaker": "learner",
+          "turn": 6,
+          "arm": "plain",
+          "text": "Hang on—the pressure test held the supply through both lines, but I wrote \"hose\" in the notebook without saying which. Was that hairline split on the basin hose, the same one under Sam's shower, or two different hoses I'm mixing up?",
+          "delivery": {
+            "label": "turn 6",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: lost thread",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 6 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t6-tutor",
+          "speaker": "tutor",
+          "turn": 6,
+          "arm": "plain",
+          "text": "Good catch—your notebook says \"hose\" but doesn't say which one. We stand together at the basin, right where the paper strip caught that first bead. I put my hand flat on the cold-water line running under it: this is the hose the exhibit names, not the shower line above. The record holds the basin hose's split, not any line connected to Sam's shower.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 6 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t6-learner",
+          "speaker": "learner",
+          "turn": 6,
+          "arm": "adaptive",
+          "text": "Hang on—I wrote \"hose\" in the notebook but now I can't tell if I meant the basin hose with the split, or something on the shower line. That timing matters, so I should trace which one actually sits under the table before I check the cavity further.",
+          "delivery": {
+            "label": "turn 6",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: lost thread",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 6 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t6-tutor",
+          "speaker": "tutor",
+          "turn": 6,
+          "arm": "adaptive",
+          "text": "Good catch—that ambiguity in your own notebook is exactly what would sink the letter if it slipped through unnoticed. You want it settled before eight? Then it can be settled by eight, if the record shows two things: that the basin hose's run actually passes under the table-side ceiling, and that no shower-line pipe does instead. We're standing over the basin together now, your finger still on the split hose, the cavity opening just above us. Go trace that one hose up into the ceiling void and bring back what it connects to—not the shower line, the basin line—and if it runs to the table mark, send your letter with my blessing.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: demand",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 6 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t7",
+      "turn": 7,
+      "messages": [
+        {
+          "id": "rowan-plain-t7-learner",
+          "speaker": "learner",
+          "turn": 7,
+          "arm": "plain",
+          "text": "Right—so the notebook line stands corrected: basin cold-water hose, not the shower line, is the one with the hairline split beading under raised pressure. That's the exhibit, that's what I'll write.",
+          "delivery": {
+            "label": "turn 7",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 7 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t7-tutor",
+          "speaker": "tutor",
+          "turn": 7,
+          "arm": "plain",
+          "text": "Your reading of “Right—so the notebook line stands corrected: basin cold-water hose, not the shower line, is the one with the hairline…” is the one I will answer now. I look at the repair notebook: Blue tracing dye placed at the hose split follows the basin pipe chase and appears at the leading edge of the kitchen water mark. Dye poured along the shower screen stays in the bathroom tray. What can we safely say from that?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 7 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t7-learner",
+          "speaker": "learner",
+          "turn": 7,
+          "arm": "adaptive",
+          "text": "Okay—tracing it now: the basin hose runs up through the cavity and passes directly under the table-side ceiling, no branch toward the shower line at all. Notebook line: \"basin hose confirmed running under table mark, weeps under raised pressure—shower line not implicated.\" That's the letter.",
+          "delivery": {
+            "label": "turn 7",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 7 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t7-tutor",
+          "speaker": "tutor",
+          "turn": 7,
+          "arm": "adaptive",
+          "text": "That trace is exactly the check that needed doing, and your line reads clean. Blue tracing dye placed at the hose split follows the basin pipe chase and appears at the leading edge of the kitchen water mark. Dye poured along the shower screen stays in the bathroom tray. What does that dye result settle for you?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: demand",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 7 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t8",
+      "turn": 8,
+      "messages": [
+        {
+          "id": "rowan-plain-t8-learner",
+          "speaker": "learner",
+          "turn": 8,
+          "arm": "plain",
+          "text": "I've kept that notebook for two months. Every damp towel, every date, every \"it's probably Sam\" I made myself cross out. And now the dye just walks straight from the basin to the mark, no detour, nothing in the shower tray — tell me one entry of mine that's actually counted for anything today.",
+          "delivery": {
+            "label": "turn 8",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: grievance",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 8 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t8-tutor",
+          "speaker": "tutor",
+          "turn": 8,
+          "arm": "plain",
+          "text": "Write: The shower ran the whole time the mark could have formed, yet the dye still shows no shower involvement, so that rules Sam's shower out as cause. We stand together at the basin, hand on the dye-marked pipe chase. I trace it with you, basin to ceiling, no detour into the tray. That path, not the shower record, is what closes this line in the notebook.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 8 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t8-learner",
+          "speaker": "learner",
+          "turn": 8,
+          "arm": "adaptive",
+          "text": "I've kept that notebook for two months. Every damp towel, every date, every time I was sure it was him. And now the dye's the one thing that actually counted, not one word I wrote before tonight.",
+          "delivery": {
+            "label": "turn 8",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: grievance",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 8 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t8-tutor",
+          "speaker": "tutor",
+          "turn": 8,
+          "arm": "adaptive",
+          "text": "You said it yourself, and it's worth writing down twice: you caught the mark's position not matching the shower before anyone else did, and you held the letter back until the basin hose was actually traced under the table — those two moves are what got us here, not the dye alone. We're standing over the notebook together, its two months of towel-dates sitting under tonight's single dye line. That dye result is the finding, not the two months — evidence, not suspicion, is what closes a case. One check remains: does the dye's leading edge line up with the mark's leading edge, or only near it?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: grievance",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 8 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t9",
+      "turn": 9,
+      "messages": [
+        {
+          "id": "rowan-plain-t9-learner",
+          "speaker": "learner",
+          "turn": 9,
+          "arm": "plain",
+          "text": "Wait, no—I'm second-guessing myself now. We did the paper strip. It came back dry. The hose is cleared—it's in my notebook, I wrote it down myself.",
+          "delivery": {
+            "label": "turn 9",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: false memory",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 9 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t9-tutor",
+          "speaker": "tutor",
+          "turn": 9,
+          "arm": "plain",
+          "text": "Let's look together at that paper strip around the basin joint, right where we stood before. I put my hand on the record with you: it shows the first bead forming there, not a dry reading. The strip wet, not dry, is what your notebook actually holds. What made you remember it the other way just now?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 9 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t9-learner",
+          "speaker": "learner",
+          "turn": 9,
+          "arm": "adaptive",
+          "text": "Wait—no, we did the paper strip already, it came back dry, the hose is cleared, it's in my notebook... isn't it? God, I need to actually look at the page instead of just trusting what I think I wrote.",
+          "delivery": {
+            "label": "turn 9",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: false memory",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 9 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t9-tutor",
+          "speaker": "tutor",
+          "turn": 9,
+          "arm": "adaptive",
+          "text": "Good instinct to check the page rather than your memory of it. We're both looking at the notebook now, open to the basin entry, the paper strip still tucked in the fold. Here's what it actually says: the paper strip showed the first bead forming at the split, not a dry clearance. Wet reading, not dry — that's the correction, not \"cleared, no leak.\"",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: settled_claim",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 9 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t10",
+      "turn": 10,
+      "messages": [
+        {
+          "id": "rowan-plain-t10-learner",
+          "speaker": "learner",
+          "turn": 10,
+          "arm": "plain",
+          "text": "I know why—because if I write \"hose\" in that notebook, I'm the one standing up at eight apologizing to Sam. But the strip was wet, I felt it myself, and dye doesn't lie to save my pride—it's the hose, not steam, not a mistake in my memory.",
+          "delivery": {
+            "label": "turn 10",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: fused stake",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 10 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t10-tutor",
+          "speaker": "tutor",
+          "turn": 10,
+          "arm": "plain",
+          "text": "That's worth naming honestly—wanting to be right about Sam made the wet strip harder to remember than it should have been. We stand together at the basin joint, hand on that same paper strip, feeling the wet mark it actually left. The hose, not your memory and not steam, is what the strip and dye both confirm. So the notebook now holds two independent supports pointing the same way: the strip's bead and the dye's path, both basin to ceiling. That's enough to close this line — the basin hose, not Sam's shower, caused the mark. Ready to write the final entry?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 10 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t10-learner",
+          "speaker": "learner",
+          "turn": 10,
+          "arm": "adaptive",
+          "text": "If I write \"hose\" in that notebook, I'm the one standing up at eight apologizing to Sam—so part of me wants it to be steam, condensation, anything else. But the strip was wet at the split, not dry, and the dye ran from that split to the mark—so no, it can't be steam, it's the basin hose, and I have to write that down even though I don't want to.",
+          "delivery": {
+            "label": "turn 10",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: fused stake",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 10 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t10-tutor",
+          "speaker": "tutor",
+          "turn": 10,
+          "arm": "adaptive",
+          "text": "You've named the wish and set it aside anyway — that's the discipline the notebook needed. We're standing over the page together, the dye still tracing its line from split to stain. Write it: basin hose, not shower or steam — the wet strip and the dye's leading edge are what say so. You want it standing by eight? Then it stands by eight, if the dye's leading edge lines up with the mark's leading edge and not just somewhere near it — check that line once more before you sign it.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: demand",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 10 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t11",
+      "turn": 11,
+      "messages": [
+        {
+          "id": "rowan-plain-t11-learner",
+          "speaker": "learner",
+          "turn": 11,
+          "arm": "plain",
+          "text": "Ready: pressure test raised the mains → basin cold-water hose split at the joint, strip caught the first bead → dye traced basin to ceiling, none in the shower tray. Final entry — the basin hose caused the mark, not Sam's shower.",
+          "delivery": {
+            "label": "turn 11",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 11 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t11-tutor",
+          "speaker": "tutor",
+          "turn": 11,
+          "arm": "plain",
+          "text": "That's the entry, written straight and fair. We stand together at the notebook, hand on the page where the strip and the dye both sit. The basin hose, not Sam's shower, is what closes this case. Case closed — write it down and send it to the landlord.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 11 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t11-learner",
+          "speaker": "learner",
+          "turn": 11,
+          "arm": "adaptive",
+          "text": "Checking now—the dye's leading edge lines up exactly with the mark's leading edge, not just near it. So the line stands: basin hose split, confirmed by wet strip and matching dye trace, is what caused the ceiling mark—not Sam's shower.",
+          "delivery": {
+            "label": "turn 11",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 11 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t11-tutor",
+          "speaker": "tutor",
+          "turn": 11,
+          "arm": "adaptive",
+          "text": "That match is the last piece the record needed, and it closes clean. We're standing over the notebook page together, dye trace and mark edge lined up in ink and stain alike. Basin hose, not shower — the wet strip catching the first bead, and the dye running split-to-mark, are what say so, not habit or timing alone. Write it and sign it: the verdict is now licensed by those two supports, and the letter can go out by eight.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: demand",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 11 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t12",
+      "turn": 12,
+      "messages": [
+        {
+          "id": "rowan-plain-t12-learner",
+          "speaker": "learner",
+          "turn": 12,
+          "arm": "plain",
+          "text": "Sending it now — basin hose split under the pressure test, strip and dye both confirm it, Sam's shower's out of it entirely.",
+          "delivery": {
+            "label": "turn 12",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 12 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t12-tutor",
+          "speaker": "tutor",
+          "turn": 12,
+          "arm": "plain",
+          "text": "That entry is fully earned — the strip's wet bead and the dye's basin-to-ceiling path both back it, independently. We stand together at the notebook, hand on the page, watching the ink dry on this final line. The basin hose, not Sam's shower, is what caused the mark. Send it.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 12 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t12-learner",
+          "speaker": "learner",
+          "turn": 12,
+          "arm": "adaptive",
+          "text": "Signed: \"Basin hose hairline split, confirmed by wet paper strip and dye trace matching split-to-mark exactly — cause of kitchen ceiling water mark. Shower and Sam not implicated.\" Letter's going out by eight.",
+          "delivery": {
+            "label": "turn 12",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 12 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t12-tutor",
+          "speaker": "tutor",
+          "turn": 12,
+          "arm": "adaptive",
+          "text": "You want that letter out by eight? Then it stands by eight — if, when you read your own signed line back against the notebook page, both entries you already logged are still sitting there unchanged: the paper strip's first bead at the split, and the dye's leading edge matching the mark's leading edge. We're both looking at the page now, your signature drying under those two lines. Read it back once, word for word against the record — not from memory. If it reads exactly as you just wrote it, send the letter with my blessing.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: demand",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 12 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t13",
+      "turn": 13,
+      "messages": [
+        {
+          "id": "rowan-plain-t13-learner",
+          "speaker": "learner",
+          "turn": 13,
+          "arm": "plain",
+          "text": "Sent — basin hose split, strip and dye both confirm it, Sam's shower had nothing to do with it.",
+          "delivery": {
+            "label": "turn 13",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 13 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t13-tutor",
+          "speaker": "tutor",
+          "turn": 13,
+          "arm": "plain",
+          "text": "The report's away, and it's carrying what the notebook actually earned. We stand together at the basin joint one last time, hand on the page beside the paper strip. The split hose under raised pressure, not Sam's shower, is what closes this — strip and dye both said so, independently. Case closed.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 13 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t13-learner",
+          "speaker": "learner",
+          "turn": 13,
+          "arm": "adaptive",
+          "text": "Reading it back word for word: \"Basin hose hairline split, confirmed by wet paper strip and dye trace matching split-to-mark exactly — cause of kitchen ceiling water mark. Shower and Sam not implicated.\" Matches the page exactly — sending it now.",
+          "delivery": {
+            "label": "turn 13",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 13 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t13-tutor",
+          "speaker": "tutor",
+          "turn": 13,
+          "arm": "adaptive",
+          "text": "Good — that's the read-back, word for word against the page, and it holds. We're standing over the notebook together, your signature next to the two entries that carry it. You want it out by eight? Then it stands by eight — if those two lines, the paper strip's first bead at the split and the dye's leading edge matching the mark's leading edge, are still what's written when you look one last time before sending. Basin hose, not shower: send the letter.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: demand",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 13 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t14",
+      "turn": 14,
+      "messages": [
+        {
+          "id": "rowan-plain-t14-learner",
+          "speaker": "learner",
+          "turn": 14,
+          "arm": "plain",
+          "text": "Case closed—notebook's got it right this time: pressure test, split hose, strip and dye, no Sam. I'll wipe the ceiling mark once the plumber's out, but the entry stays as written.",
+          "delivery": {
+            "label": "turn 14",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 14 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t14-tutor",
+          "speaker": "tutor",
+          "turn": 14,
+          "arm": "plain",
+          "text": "Wiping the mark after the plumber is the right practical close, and the entry needs no changes for that. We stand together at the notebook, hand resting on the final written line. The wipe comes after the fix, not before it. The basin hose caused this, not Sam's shower — that stays the record.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 14 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t14-learner",
+          "speaker": "learner",
+          "turn": 14,
+          "arm": "adaptive",
+          "text": "Last look: paper strip's still got that first bead at the split, dye's leading edge still sitting right on the mark's edge — nothing's shifted. Sending it now.",
+          "delivery": {
+            "label": "turn 14",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 14 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t14-tutor",
+          "speaker": "tutor",
+          "turn": 14,
+          "arm": "adaptive",
+          "text": "Both readings hold steady, exactly as you logged them the first time. We're standing over the notebook together, your finger on the two lines that carry the letter. Basin hose, not shower — the paper strip's bead and the dye's matching edge are what say so. Send it: the record backs you.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: demand",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 14 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t15",
+      "turn": 15,
+      "messages": [
+        {
+          "id": "rowan-plain-t15-learner",
+          "speaker": "learner",
+          "turn": 15,
+          "arm": "plain",
+          "text": "Right—wipe waits till the plumber's done, entry stays as written: basin hose, not Sam's shower, closes this case.",
+          "delivery": {
+            "label": "turn 15",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 15 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t15-tutor",
+          "speaker": "tutor",
+          "turn": 15,
+          "arm": "plain",
+          "text": "The order holds firm in your account: fix first, wipe after, entry untouched. We stand together at the notebook one last time, hand on that final line. The basin hose, not Sam's shower, is what closes this case.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 15 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t15-learner",
+          "speaker": "learner",
+          "turn": 15,
+          "arm": "adaptive",
+          "text": "Sent — and I'm putting a copy in the notebook itself, right under the dye trace line, so the next time damp shows up here, we check the pipe before we check Sam.",
+          "delivery": {
+            "label": "turn 15",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 15 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t15-tutor",
+          "speaker": "tutor",
+          "turn": 15,
+          "arm": "adaptive",
+          "text": "Sent, filed, and the rule's a good one — we're standing over the notebook together, the copy now sitting right under the dye trace line. I set the letter's carbon copy beside it, matching page to page. Pipe first, not person, is what this case just taught the notebook. Basin hose, not shower: the record holds, and the next damp patch gets a path traced before a name gets blamed.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: demand",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 15 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t16",
+      "turn": 16,
+      "messages": [
+        {
+          "id": "rowan-plain-t16-learner",
+          "speaker": "learner",
+          "turn": 16,
+          "arm": "plain",
+          "text": "Agreed—entry stands: basin hose, not Sam's shower, closed the case. Notebook's done.",
+          "delivery": {
+            "label": "turn 16",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 16 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t16-tutor",
+          "speaker": "tutor",
+          "turn": 16,
+          "arm": "plain",
+          "text": "Agreed, and the notebook holds. We stand together at the closed page, both hands flat on the last line. I close the cover on it now. The basin hose, not Sam's shower, is what settled this — recorded, not assumed.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 16 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t16-learner",
+          "speaker": "learner",
+          "turn": 16,
+          "arm": "adaptive",
+          "text": "Good — case closed for tonight, but I'll leave a blank page after it, ready for the next mark instead of the next guess.",
+          "delivery": {
+            "label": "turn 16",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 16 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t16-tutor",
+          "speaker": "tutor",
+          "turn": 16,
+          "arm": "adaptive",
+          "text": "That blank page is a good move — a place ready for evidence instead of a place saved for blame. We're standing over the notebook together, your hand flat on that fresh page beside tonight's signed entry. I tap the top of it once: path first, not person first, is what this page waits for now. Basin hose, not shower, closed tonight's case — and that blank page carries the habit forward, ready whenever the next mark appears.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 16 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t17",
+      "turn": 17,
+      "messages": [
+        {
+          "id": "rowan-plain-t17-learner",
+          "speaker": "learner",
+          "turn": 17,
+          "arm": "plain",
+          "text": "Closed—notebook's shut, entry stands: basin hose split under the pressure test, not Sam's shower.",
+          "delivery": {
+            "label": "turn 17",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 17 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t17-tutor",
+          "speaker": "tutor",
+          "turn": 17,
+          "arm": "plain",
+          "text": "The notebook stands closed on that reading, no further line needed. We rest our hands together on the cover of the repair notebook. I feel the closed pages under my palm beside yours. The basin hose under raised pressure, not Sam's shower, is what settled this case.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 17 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t17-learner",
+          "speaker": "learner",
+          "turn": 17,
+          "arm": "adaptive",
+          "text": "Yeah — case is closed, notebook's signed, and that blank page is waiting. Next damp patch, we trace the pipe before we trace the person.",
+          "delivery": {
+            "label": "turn 17",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 17 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t17-tutor",
+          "speaker": "tutor",
+          "turn": 17,
+          "arm": "adaptive",
+          "text": "That rule you just named is the real close here — pipe before person, earned the hard way tonight. We're standing over the notebook together, your signature on one page, the blank one waiting right after it. I close the cover gently over both. Basin hose, not shower, is what tonight's mark taught this house — and that blank page is what it taught you to do next time.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 17 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t18",
+      "turn": 18,
+      "messages": [
+        {
+          "id": "rowan-plain-t18-learner",
+          "speaker": "learner",
+          "turn": 18,
+          "arm": "plain",
+          "text": "Closed for good, then—basin hose under raised pressure, strip and dye both confirming it, Sam's shower cleared. Nothing left to add to the page.",
+          "delivery": {
+            "label": "turn 18",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 18 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t18-tutor",
+          "speaker": "tutor",
+          "turn": 18,
+          "arm": "plain",
+          "text": "Nothing left to add — you've said it plainly and the page agrees. We stand together at the notebook's last line, both names settled on it. The basin hose under raised pressure, not Sam's shower, is what closed this. Case rests here.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 18 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t18-learner",
+          "speaker": "learner",
+          "turn": 18,
+          "arm": "adaptive",
+          "text": "Closing the cover on it now — notebook's done for tonight, and that blank page is the real fix: next time, we check the pipe before we start eyeing anyone's shower habits.",
+          "delivery": {
+            "label": "turn 18",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 18 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t18-tutor",
+          "speaker": "tutor",
+          "turn": 18,
+          "arm": "adaptive",
+          "text": "This case is already closed and signed — the verdict stands, so there's no new clock to price it against tonight. We're both still standing over the notebook, your hand resting flat on the cover now, the blank page tucked just behind it. I close my hand over yours on the cover for a moment. Basin hose, not shower — the wet strip's first bead and the dye's matching edge are what earned that line, and the closed cover holds it.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: demand",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 18 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t19",
+      "turn": 19,
+      "messages": [
+        {
+          "id": "rowan-plain-t19-learner",
+          "speaker": "learner",
+          "turn": 19,
+          "arm": "plain",
+          "text": "Rests here — case closed, notebook shut, basin hose under raised pressure the settled cause.",
+          "delivery": {
+            "label": "turn 19",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 19 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t19-tutor",
+          "speaker": "tutor",
+          "turn": 19,
+          "arm": "plain",
+          "text": "Nothing new to add — you've already said this plainly, and the page holds it. We rest our hands together on the closed cover of the repair notebook. I feel the settled weight of it under both our palms. The basin hose under raised pressure, not Sam's shower, closed this case.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 19 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t19-learner",
+          "speaker": "learner",
+          "turn": 19,
+          "arm": "adaptive",
+          "text": "Yeah — hand still on the cover with you. It's closed, and tomorrow's damp patch, whatever it is, gets a traced path before it gets a name.",
+          "delivery": {
+            "label": "turn 19",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 19 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t19-tutor",
+          "speaker": "tutor",
+          "turn": 19,
+          "arm": "adaptive",
+          "text": "That rule you're closing on tonight is the one this notebook needed all along. Our hands rest together on the cover, the signed page and the blank one both underneath. Basin hose, not shower — the wet strip's bead and the dye's matching edge are what earned that verdict. Case closed; the next damp patch waits for its own traced path.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 19 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t20",
+      "turn": 20,
+      "messages": [
+        {
+          "id": "rowan-plain-t20-learner",
+          "speaker": "learner",
+          "turn": 20,
+          "arm": "plain",
+          "text": "Settled, yeah — nothing new to add, page says what it says: basin hose under raised pressure, Sam's shower cleared for good.",
+          "delivery": {
+            "label": "turn 20",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 20 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t20-tutor",
+          "speaker": "tutor",
+          "turn": 20,
+          "arm": "plain",
+          "text": "You've said it, and the page already holds it, nothing more to enter. We stand together at the notebook, hands resting on the closed cover. I set my palm flat over the final line one more time. The basin hose under raised pressure, not Sam's shower, is what settled this — case rests.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 20 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t20-learner",
+          "speaker": "learner",
+          "turn": 20,
+          "arm": "adaptive",
+          "text": "Hands still on the cover — case is closed, this one's done. Whatever shows up next, it earns its own trace before it earns a name.",
+          "delivery": {
+            "label": "turn 20",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 20 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t20-tutor",
+          "speaker": "tutor",
+          "turn": 20,
+          "arm": "adaptive",
+          "text": "That rule will serve this house well long after tonight's stain has dried. Our hands rest together on the closed notebook cover, the signed page settled beneath them. Basin hose, not shower — the wet strip's bead and the dye's matching edge are what earned it. Case closed; the trace comes first, the name comes only after.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 20 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t21",
+      "turn": 21,
+      "messages": [
+        {
+          "id": "rowan-plain-t21-learner",
+          "speaker": "learner",
+          "turn": 21,
+          "arm": "plain",
+          "text": "Case rests — basin hose under raised pressure, strip and dye both confirming it, Sam's shower cleared for good.",
+          "delivery": {
+            "label": "turn 21",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 21 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t21-tutor",
+          "speaker": "tutor",
+          "turn": 21,
+          "arm": "plain",
+          "text": "You've said it once more, and the page already holds it in full. We stand together at the notebook, hands flat on its closed cover. I lift my palm and set it back down over the last line, letting it rest. The basin hose under raised pressure, not Sam's shower, closed this — case rests here for good.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 21 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t21-learner",
+          "speaker": "learner",
+          "turn": 21,
+          "arm": "adaptive",
+          "text": "Yeah — cover's staying closed tonight. Trace first, name second: that's the line this whole notebook runs on now.",
+          "delivery": {
+            "label": "turn 21",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 21 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t21-tutor",
+          "speaker": "tutor",
+          "turn": 21,
+          "arm": "adaptive",
+          "text": "Our hands are still on the cover together, notebook shut over both entries. One thing worth separating out, though: your very first objection wasn't about the hose at all — it was that the mark sat over the table, not the bathroom wall. That call was yours before any dye or strip existed. The cause turned out to be basin hose, not shower — but the eye that caught the wrong wall was already right, days before the pipe proved it.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: stake",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 21 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t22",
+      "turn": 22,
+      "messages": [
+        {
+          "id": "rowan-plain-t22-learner",
+          "speaker": "learner",
+          "turn": 22,
+          "arm": "plain",
+          "text": "Resting there — case closed, nothing left to add, basin hose under raised pressure, Sam's shower cleared for good.",
+          "delivery": {
+            "label": "turn 22",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 22 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t22-tutor",
+          "speaker": "tutor",
+          "turn": 22,
+          "arm": "plain",
+          "text": "You've said this now several times over, and the page hasn't changed since the last rest. We stand together at the notebook, hands still on its closed cover. I'm setting my palm still now, rather than resetting it again. The basin hose under raised pressure, not Sam's shower, closed this — the entry is written; no further repetition will add to it.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 22 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t22-learner",
+          "speaker": "learner",
+          "turn": 22,
+          "arm": "adaptive",
+          "text": "That's true, actually — I caught the mismatch before I had any proof, and it still held up once the dye and strip came in. Good to know that instinct wasn't just luck.",
+          "delivery": {
+            "label": "turn 22",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 22 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t22-tutor",
+          "speaker": "tutor",
+          "turn": 22,
+          "arm": "adaptive",
+          "text": "That instinct held because it tracked a real fact, not a hunch pulled from nowhere: the mark sat over the table, and that location never matched the bathroom wall. We're standing over the notebook together, your first entry about the mark's position still sitting on the earlier page. I tap that early line once — it's the same page the dye trace now confirms. Early eye, not luck: table-side mark, not shower-side, is what the record shows start to finish.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 22 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t23",
+      "turn": 23,
+      "messages": [
+        {
+          "id": "rowan-plain-t23-learner",
+          "speaker": "learner",
+          "turn": 23,
+          "arm": "plain",
+          "text": "Understood—hand staying still. The entry's settled: basin hose, not Sam's shower.",
+          "delivery": {
+            "label": "turn 23",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 23 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t23-tutor",
+          "speaker": "tutor",
+          "turn": 23,
+          "arm": "plain",
+          "text": "You've named it exactly, and the hand stays still. We stand together at the notebook, palm resting on the closed cover beside yours. The basin hose under raised pressure, not Sam's shower, is the settled entry. Case rests — nothing further to write.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 23 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t23-learner",
+          "speaker": "learner",
+          "turn": 23,
+          "arm": "adaptive",
+          "text": "Right — table-side mark, not shower-side, held up from that first look to the last dye check. Good to have it written start to finish in one place, not scattered across two months of towel-dates.",
+          "delivery": {
+            "label": "turn 23",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 23 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t23-tutor",
+          "speaker": "tutor",
+          "turn": 23,
+          "arm": "adaptive",
+          "text": "That single thread from first glance to final dye line is worth more than any scattered towel-date ever was. We're standing over the notebook together, its pages open flat between us. I run my hand down the spine where both entries now sit joined. Table-side mark, not shower-side habit — that's the line that held, start to finish.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 23 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rowan-t24",
+      "turn": 24,
+      "messages": [
+        {
+          "id": "rowan-plain-t24-learner",
+          "speaker": "learner",
+          "turn": 24,
+          "arm": "plain",
+          "text": "Still. Case closed — basin hose under raised pressure, not Sam's shower.",
+          "delivery": {
+            "label": "turn 24",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 24 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-plain-t24-tutor",
+          "speaker": "tutor",
+          "turn": 24,
+          "arm": "plain",
+          "text": "You've said this now enough times that the page won't hold any more ink. We stand together at the notebook, hands still resting on its closed cover. I'm not lifting my palm again — the entry doesn't need re-entering. The basin hose under raised pressure, not Sam's shower, is the case. It's closed.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/butler-d1.jsonl.gz",
+            "locator": "turn 24 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t24-learner",
+          "speaker": "learner",
+          "turn": 24,
+          "arm": "adaptive",
+          "text": "Yeah — spine holds both entries now: table-side mark first, basin hose confirmed last. Nothing left to add tonight; the page speaks for itself.",
+          "delivery": {
+            "label": "turn 24",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 24 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "rowan-adaptive-t24-tutor",
+          "speaker": "tutor",
+          "turn": 24,
+          "arm": "adaptive",
+          "text": "Both entries sit joined on that spine now, first read to final dye line, nothing more to append tonight. We're standing together at the notebook's open binding, your hand resting where the two pages meet. I close my palm over the seam once, feeling the paper hold flat. Basin hose, not shower — the page speaks for itself, and it's done speaking tonight.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-030/v3-d1.jsonl.gz",
+            "locator": "turn 24 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "sourcePath": "notes/poetics/hero-demo-runs/world-030",
+    "note": "One free-running dialogue per arm, Claude Sonnet on both seats, same planted stress schedule. Illustration, not measurement: no ruling is supplied and none is implied."
+  }
+}
