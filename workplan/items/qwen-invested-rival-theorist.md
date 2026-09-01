@@ -9,7 +9,7 @@ source: manual
 created: 2026-08-31
 updated: 2026-09-01
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "Both eight-exchange arms and three valid Opus assessments remain preserved; the five unresolved packets are attempted once through the tested 10-attempt linked recovery without rerunning accepted output, aggregate use stays at or below 48 attempts, and either all eight assessments complete or the first new failure is preserved as the terminal disposition."
+verification: "Both eight-exchange arms and three valid Opus assessments remain preserved at 39/48 aggregate attempts; the five unresolved assessments are represented by seven registered split packets attempted once without rerunning accepted output, aggregate use stays at or below 48, and either all eight original assessments complete through validated packet unions or the first new failure is preserved as the terminal disposition."
 claim_status: planned
 links:
   notes:
@@ -103,11 +103,21 @@ with Sol, no superegos, using one fresh dialogue per arm.
   validation. Tutor, learner and dialogue assessments retain the existing
   provider schema tool. A fifth linked ledger preserves all 38 attempts and
   exposes only the remaining 10.
+- 2026-09-01: The third A quality attempt used the registered plain-JSON route
+  and produced one successful, tool-free Opus response, but the archived result
+  ended at exactly 13,000 characters before the JSON object closed. It remains
+  failed evidence, taking the study to 39/48; no visible score or annotation in
+  that incomplete object is accepted. The prospective amendment splits only
+  the oversized quality transport into a summary packet and a per-turn packet,
+  validates both separately, then mechanically checks their union against the
+  original schema. The remaining plan is seven calls under a nine-attempt cap,
+  with no rerun of either dialogue or the three accepted assessments.
 
-- 2026-09-01: Board reconciliation returns this card to active rather than
-  falsely closing it. Both dialogues and three assessments are preserved, but
-  five registered assessments remain unresolved. The exact response-free
-  failure now has a merged, bounded same-packet recovery path that reuses every
-  accepted output and cannot exceed the remaining 10 attempts. Reconciliation
-  made no model call; the card stops when those five packets resolve or the
-  recovery encounters its first new substantive or technical failure.
+- 2026-09-01: Board reconciliation keeps this card active rather than falsely
+  closing it. Both dialogues and three assessments are preserved, but five
+  original assessments remain unresolved; after the merged split-packet
+  correction they require seven planned calls and cannot exceed the nine
+  attempts left under the unchanged study ceiling. Conflict resolution made no
+  model call. The card stops when the five original assessments resolve through
+  validated packet unions or the recovery encounters its first new substantive
+  or technical failure.

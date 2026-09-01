@@ -9,11 +9,14 @@ import { PassThrough } from 'node:stream';
 import {
   buildBenchmarkJobs,
   buildBenchmarkOutputSchema,
+  buildSplitQualityOutputSchema,
+  mergeSplitQualityScores,
   repetitionMetrics,
   technicalMetrics,
   scoreBenchmarkArms,
   assertCompleteScore,
   parseBenchmarkScore,
+  parseSplitQualityScore,
 } from '../scripts/score-local-qwen-resistant-learner-benchmark.js';
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import { getRubricDimensions } from '../services/evalConfigLoader.js';
@@ -44,6 +47,28 @@ function completeBilateralFixture(kind) {
     );
   }
   return value;
+}
+
+function splitQualityFixture(part) {
+  const quality = completeBilateralFixture('quality');
+  if (part === 'summary') {
+    return Object.fromEntries(
+      [
+        'scores',
+        'strengths',
+        'limitations',
+        'overall_assessment',
+        'measurement_indeterminate',
+        'indeterminate_reason',
+      ].map((key) => [key, quality[key]]),
+    );
+  }
+  return Object.fromEntries(
+    ['learner_turns', 'tutor_turns', 'measurement_indeterminate', 'indeterminate_reason'].map((key) => [
+      key,
+      quality[key],
+    ]),
+  );
 }
 
 const bilateralFixtureArm = () => ({
@@ -195,6 +220,125 @@ test('bilateral nonempty malformed wrapper stops without resampling and retains 
     JSON.parse(fs.readFileSync(path.join(outDir, 'C-quality-attempt-1.transport.json'), 'utf8')),
     transport,
   );
+});
+
+test('split quality packets preserve the full schema and merge only after both validate', () => {
+  const summarySchema = buildSplitQualityOutputSchema('summary', 8);
+  const turnsSchema = buildSplitQualityOutputSchema('turns', 8);
+  assert.deepEqual(Object.keys(summarySchema.properties), [
+    'scores',
+    'strengths',
+    'limitations',
+    'overall_assessment',
+    'measurement_indeterminate',
+    'indeterminate_reason',
+  ]);
+  assert.deepEqual(Object.keys(turnsSchema.properties), [
+    'learner_turns',
+    'tutor_turns',
+    'measurement_indeterminate',
+    'indeterminate_reason',
+  ]);
+  const summary = parseSplitQualityScore('summary', JSON.stringify(splitQualityFixture('summary')), 8);
+  const turns = parseSplitQualityScore('turns', JSON.stringify(splitQualityFixture('turns')), 8);
+  const merged = mergeSplitQualityScores(summary, turns, 8);
+  assert.deepEqual(merged, completeBilateralFixture('quality'));
+  const indeterminate = splitQualityFixture('summary');
+  indeterminate.measurement_indeterminate = true;
+  assert.throws(
+    () => parseSplitQualityScore('summary', JSON.stringify(indeterminate), 8),
+    /measurement indeterminate/u,
+  );
+  assert.throws(
+    () => parseSplitQualityScore('summary', `\`\`\`json\n${JSON.stringify(summary)}\n\`\`\``, 8),
+    SyntaxError,
+  );
+});
+
+test('split quality scoring uses seven fresh calls after three preserved assessments', async () => {
+  const arms = [
+    { ...bilateralFixtureArm(), id: 'A' },
+    { ...bilateralFixtureArm(), id: 'B' },
+  ];
+  const priorScores = ['tutor', 'learner', 'dialogue'].map((kind) => {
+    const raw = completeBilateralFixture(kind);
+    return { arm: 'A', kind, raw, scored: { overall: 50 } };
+  });
+  const outDir = bilateralDestination();
+  const calls = [];
+  const result = await scoreBenchmarkArms(arms, outDir, {
+    ceiling: 16,
+    extendedQuality: true,
+    splitQuality: true,
+    assessmentContext: {
+      characterBrief: 'Fixture character.',
+      qualityInstructions: 'Fixture quality rules.',
+    },
+    priorScores,
+    priorAttempts: 6,
+    callJudge: async (_model, _system, _prompt, role) => {
+      calls.push(role);
+      const kind = role.replace('local-qwen-benchmark-', '');
+      if (kind === 'quality-summary') return { text: JSON.stringify(splitQualityFixture('summary')) };
+      if (kind === 'quality-turns') return { text: JSON.stringify(splitQualityFixture('turns')) };
+      return { text: JSON.stringify(completeBilateralFixture(kind)) };
+    },
+  });
+  assert.deepEqual(calls, [
+    'local-qwen-benchmark-quality-summary',
+    'local-qwen-benchmark-quality-turns',
+    'local-qwen-benchmark-tutor',
+    'local-qwen-benchmark-learner',
+    'local-qwen-benchmark-dialogue',
+    'local-qwen-benchmark-quality-summary',
+    'local-qwen-benchmark-quality-turns',
+  ]);
+  assert.equal(result.scores.length, 8);
+  assert.equal(result.newAttempts, 7);
+  assert.equal(result.attemptsUsed, 13);
+  assert.equal(result.splitQuality, true);
+  assert.ok(fs.existsSync(path.join(outDir, 'A-quality-summary.json')));
+  assert.ok(fs.existsSync(path.join(outDir, 'A-quality-turns.json')));
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(outDir, 'A-quality.json'), 'utf8')),
+    completeBilateralFixture('quality'),
+  );
+});
+
+test('one valid quality half never becomes a score when the other half is indeterminate', async () => {
+  const arm = { ...bilateralFixtureArm(), id: 'A' };
+  const priorScores = ['tutor', 'learner', 'dialogue'].map((kind) => ({
+    arm: 'A',
+    kind,
+    raw: completeBilateralFixture(kind),
+    scored: { overall: 50 },
+  }));
+  const outDir = bilateralDestination();
+  let calls = 0;
+  await assert.rejects(
+    scoreBenchmarkArms([arm], outDir, {
+      ceiling: 16,
+      extendedQuality: true,
+      splitQuality: true,
+      assessmentContext: {
+        characterBrief: 'Fixture character.',
+        qualityInstructions: 'Fixture quality rules.',
+      },
+      priorScores,
+      priorAttempts: 6,
+      callJudge: async (_model, _system, _prompt, role) => {
+        calls += 1;
+        const part = role.endsWith('summary') ? 'summary' : 'turns';
+        const value = splitQualityFixture(part);
+        if (part === 'turns') value.measurement_indeterminate = true;
+        return { text: JSON.stringify(value) };
+      },
+    }),
+    /measurement indeterminate/u,
+  );
+  assert.equal(calls, 2);
+  assert.ok(fs.existsSync(path.join(outDir, 'A-quality-summary.json')));
+  assert.equal(fs.existsSync(path.join(outDir, 'A-quality.json')), false);
 });
 
 function fixtureScore(kind) {
