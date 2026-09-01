@@ -1,0 +1,274 @@
+{
+  "documentType": "prospective_paid_study_design",
+  "revision": 1,
+  "studyId": "tutor-stub-action-outcome-collection-pilot-v1",
+  "title": "Prospective randomized eligible-family action-outcome collection pilot",
+  "status": "prospective_design_only_no_call_authority",
+  "workplanItem": "adaptive-curriculum-memory-controller",
+  "registeredQuestion": "Can the typed-action tutor produce enough valid, exchangeable, independently reviewed next-turn action-outcome records under one predeclared stalled-state condition to justify designing a later held-out action-outcome memory-controller study?",
+  "purpose": {
+    "primary": "Estimate condition prevalence, assignable-turn prevalence, eligible-family overlap, delivery fidelity, human-review agreement, indeterminacy, usable binary-record yield, and coder workload under the prospective collection path.",
+    "secondary": "Describe immediate next-public-learner uptake by assigned move family within the eligible-family sets that generated each draw, without treating raw family rates as estimates of learning or controller benefit.",
+    "notThisStudy": [
+      "The action-outcome memory controller is not enabled.",
+      "No learned ranking, demotion threshold, success-rate floor, minimum memory support, pooling rule, age window, or later controller treatment is chosen from this pilot.",
+      "No unassisted-work or transfer endpoint is run.",
+      "No historical or ordinary deterministic-policy trace can become binary memory evidence."
+    ]
+  },
+  "callAuthority": {
+    "grantsModelCalls": false,
+    "grantsLaunch": false,
+    "statement": "This merged design is only the first standing authority. A launch additionally requires a clean detached launch commit containing this exact design and a separate signed GO note under docs/paid-study-authorization-policy.md."
+  },
+  "design": {
+    "kind": "fixed_size_feasibility_and_precision_pilot",
+    "dialogues": 24,
+    "turnHorizon": 8,
+    "fixedHorizon": true,
+    "maximumExchangeableClosedAssignmentsPerDialogue": 7,
+    "ordinaryExpectedMaximumExchangeableClosedAssignmentsPerDialogue": 6,
+    "why": "An eight-turn dialogue has no next learner observation after decision turn 8, so no more than seven decisions can close against a next learner turn. Decision turn 1 ordinarily preserves mandatory diagnostic authority, which would leave six exchangeable closures; mandatory decisions remain audit rows rather than exchangeable assignments.",
+    "noOutcomeDependentEnlargement": true,
+    "noReplacementOfValidOrSubstantiveUnits": true,
+    "unit": "one independently seeded tutor-stub dialogue",
+    "interventionUnit": "one nonmandatory tutor decision sampled uniformly first across represented eligible move families and then across eligible actions within the selected family",
+    "outcomeUnit": "the immediate next public learner turn after a visibly delivered assigned action"
+  },
+  "population": {
+    "learnerProfile": "bored",
+    "profileMeaning": "the maintained built-in effort-withholding boredom profile",
+    "taskClass": "causal detective proof-DAG inquiry using public evidence and rules",
+    "collectionWorlds": [
+      "world_022_foxtrot_jukebox",
+      "world_026_skyway_bakery",
+      "world_028_larkspur_fridge",
+      "world_029_riverside_clinic"
+    ],
+    "laterEvaluationWorldsExcludedFromCollectionAndMemory": ["world_030_rowan_flat", "world_031_tideway_makerspace"],
+    "holdoutMeaning": "These two worlds are held out from this collection and from every memory view built from it. They may have prior repository history; this design does not claim they are globally unseen. They are reserved only for a separately designed and authorized controller evaluation.",
+    "crossWorldPoolingInThisPilot": "Allowed only for descriptive feasibility totals. Every record retains world identity, and all family yields are also reported by world."
+  },
+  "condition": {
+    "conditions": [
+      {
+        "id": "stalled_low_velocity_v1",
+        "stagnationAtLeast": 0.6,
+        "fieldVelocityAtMost": 0.02,
+        "dagVelocityAtMost": 0.2
+      }
+    ],
+    "matchRule": "stagnation >= 0.6 AND abs(fieldVelocity) <= 0.02 AND abs(dagVelocity) <= 0.2",
+    "nonOverlapRule": "Exactly one condition is registered, so a structurally valid observation can match zero or one condition, never more than one.",
+    "provenance": "The stagnation boundary is the maintained Program-2 stall detector boundary. The velocity bounds are the existing low-velocity terms used by buildDynamicalSystemState when constructing stagnation. Historical traces missing these current quantities are never reconstructed.",
+    "outcomeBlindRule": "The condition and all thresholds are fixed before collection. Condition matching may be inspected for feasibility after collection, but it cannot trigger top-up, replacement, threshold relaxation, or selective packet inclusion."
+  },
+  "typedActionAssignment": {
+    "mode": "uniform_family_eligible",
+    "moveFamilies": [
+      "diagnose_elicit",
+      "minimal_support",
+      "explain_model",
+      "request_self_explanation",
+      "fade_transfer"
+    ],
+    "familyDraw": "uniform among represented policy-eligible move families",
+    "withinFamilyDraw": "uniform among policy-eligible actions in the selected family",
+    "mandatoryAuthority": "Mandatory diagnostic and escalation decisions retain probability one and are retained for audit only.",
+    "fixedSupportLevel": 1,
+    "registerPolicy": "bland",
+    "safeRegisters": true,
+    "lightAdaptation": false,
+    "memoryControllerEnabled": false,
+    "deliveryRule": "A guard displacement or configuration mismatch cancels the requested intervention before delivery. The next learner turn cannot be credited to the requested action.",
+    "propensityRule": "Save and replay both the family propensity and the conditional action propensity. Raw family hit rates must never be compared without their eligible-family-set and propensity provenance."
+  },
+  "taskContract": {
+    "taskIdRule": "action-outcome-collection-v1-<world-id>",
+    "knowledgeComponent": "causal_inference_from_public_evidence_and_rules",
+    "prerequisitePath": ["identify_public_evidence", "apply_public_rule", "state_bounded_causal_inference"],
+    "itemDifficulty": 0.5,
+    "contextKey": "action-outcome-collection-pilot.v1|bored|causal-detective-proof-dag|support-1|codex.gpt-5.6-luna-stack",
+    "contextKeyRule": "Every exported record uses this exact key; task id, world id, support level, action type, family, condition, dialogue, and contract remain separate fields."
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "automatedLearner": "codex.gpt-5.6-luna",
+    "learnerClassifier": "codex.gpt-5.6-luna",
+    "learnerRecordAndDag": "codex.gpt-5.6-luna",
+    "learnerAnalysisTransport": "one combined classifier-plus-learner-record/DAG call per learner turn",
+    "cliEffort": "low",
+    "modelOutcomeJudges": [],
+    "outcomeAuthority": "two independent human coders; the saved auxiliary outcome and delivery checks can only agree or force measurement indeterminacy"
+  },
+  "launchConfiguration": {
+    "requiredCommonArguments": [
+      "--all-models codex.gpt-5.6-luna",
+      "--cli-effort low",
+      "--auto-learner",
+      "--auto-learner-profile bored",
+      "--auto-turns 8",
+      "--no-auto-stop-on-grounded",
+      "--dag",
+      "--dag-mode strict_dag",
+      "--tutor-learner-dag",
+      "--typed-actions",
+      "--typed-action-assignment uniform_family_eligible",
+      "--typed-action-knowledge-component causal_inference_from_public_evidence_and_rules",
+      "--typed-action-prerequisites identify_public_evidence,apply_public_rule,state_bounded_causal_inference",
+      "--typed-action-item-difficulty 0.5",
+      "--typed-action-support-level 1",
+      "--register-policy bland",
+      "--safe-registers",
+      "--no-light-adaptation",
+      "--loop-mode strict",
+      "--no-training-reuse",
+      "--acknowledge-research-use",
+      "--model-call-budget 81",
+      "--run-seed 2026090101"
+    ],
+    "perJobArguments": [
+      "--world <world-id>",
+      "--typed-action-task-id action-outcome-collection-v1-<world-id>",
+      "--eval-repeat <1..6>",
+      "--eval-job-id <registered-job-id>"
+    ],
+    "preflightRule": "A future launcher must compile the exact 24 jobs below, verify the fixed common arguments and create-once destinations, and pass the shared paid-study launch contract before provider initialization. Passing a dry-run is not call authority."
+  },
+  "randomization": {
+    "masterSeed": 2026090101,
+    "algorithm": "the runtime's deterministic uniform_family_eligible draw keyed by run seed, learner profile, world, repeat, turn, and job identity",
+    "jobs": [
+      { "jobId": "aocp1_foxtrot_jukebox_r01", "worldId": "world_022_foxtrot_jukebox", "repeat": 1 },
+      { "jobId": "aocp1_foxtrot_jukebox_r02", "worldId": "world_022_foxtrot_jukebox", "repeat": 2 },
+      { "jobId": "aocp1_foxtrot_jukebox_r03", "worldId": "world_022_foxtrot_jukebox", "repeat": 3 },
+      { "jobId": "aocp1_foxtrot_jukebox_r04", "worldId": "world_022_foxtrot_jukebox", "repeat": 4 },
+      { "jobId": "aocp1_foxtrot_jukebox_r05", "worldId": "world_022_foxtrot_jukebox", "repeat": 5 },
+      { "jobId": "aocp1_foxtrot_jukebox_r06", "worldId": "world_022_foxtrot_jukebox", "repeat": 6 },
+      { "jobId": "aocp1_skyway_bakery_r01", "worldId": "world_026_skyway_bakery", "repeat": 1 },
+      { "jobId": "aocp1_skyway_bakery_r02", "worldId": "world_026_skyway_bakery", "repeat": 2 },
+      { "jobId": "aocp1_skyway_bakery_r03", "worldId": "world_026_skyway_bakery", "repeat": 3 },
+      { "jobId": "aocp1_skyway_bakery_r04", "worldId": "world_026_skyway_bakery", "repeat": 4 },
+      { "jobId": "aocp1_skyway_bakery_r05", "worldId": "world_026_skyway_bakery", "repeat": 5 },
+      { "jobId": "aocp1_skyway_bakery_r06", "worldId": "world_026_skyway_bakery", "repeat": 6 },
+      { "jobId": "aocp1_larkspur_fridge_r01", "worldId": "world_028_larkspur_fridge", "repeat": 1 },
+      { "jobId": "aocp1_larkspur_fridge_r02", "worldId": "world_028_larkspur_fridge", "repeat": 2 },
+      { "jobId": "aocp1_larkspur_fridge_r03", "worldId": "world_028_larkspur_fridge", "repeat": 3 },
+      { "jobId": "aocp1_larkspur_fridge_r04", "worldId": "world_028_larkspur_fridge", "repeat": 4 },
+      { "jobId": "aocp1_larkspur_fridge_r05", "worldId": "world_028_larkspur_fridge", "repeat": 5 },
+      { "jobId": "aocp1_larkspur_fridge_r06", "worldId": "world_028_larkspur_fridge", "repeat": 6 },
+      { "jobId": "aocp1_riverside_clinic_r01", "worldId": "world_029_riverside_clinic", "repeat": 1 },
+      { "jobId": "aocp1_riverside_clinic_r02", "worldId": "world_029_riverside_clinic", "repeat": 2 },
+      { "jobId": "aocp1_riverside_clinic_r03", "worldId": "world_029_riverside_clinic", "repeat": 3 },
+      { "jobId": "aocp1_riverside_clinic_r04", "worldId": "world_029_riverside_clinic", "repeat": 4 },
+      { "jobId": "aocp1_riverside_clinic_r05", "worldId": "world_029_riverside_clinic", "repeat": 5 },
+      { "jobId": "aocp1_riverside_clinic_r06", "worldId": "world_029_riverside_clinic", "repeat": 6 }
+    ],
+    "noResampling": "Every registered job runs at most once as a valid unit. No seed, repeat, job identity, family draw, or valid dialogue is replaced after any outcome is visible."
+  },
+  "humanReview": {
+    "requiredCoders": ["human:coder-a", "human:coder-b"],
+    "identityBinding": "Before packet access, two different people are bound to these fixed seat ids in the private handoff record. Their personal identities are not committed to the public repository.",
+    "independence": "Coders work independently and without a model, machine key, auxiliary labels, trace files, readiness report, other submission, or outcome summary.",
+    "packet": "Use scripts/action-outcome-review-packet.js after the complete source corpus is frozen. Give each coder only packet.json, codebook.md, and that coder's differently ordered template.",
+    "caseInclusion": "Include every structurally valid, condition-matched seeded_uniform_family_assignment that has a joined next public learner turn. Do not sample, rank, top up, or omit a case based on tutor text, learner text, auxiliary outcome, family yield, or anticipated label.",
+    "labels": ["success", "failure", "partial", "inconclusive", "measurement_indeterminate"],
+    "binaryMemoryAdmission": "Only exact two-coder agreement on visible delivery and on success or failure, followed by agreement with the saved auxiliary checks, can enter binary memory evidence. Uncertainty or any disagreement remains measurement_indeterminate; there is no adjudication or tie-break.",
+    "asOfRule": "Record one cutoff after the last preserved source attempt and before packet preparation. The packet, comparison, and readiness import use that same cutoff and create-once destinations."
+  },
+  "feasibilityEndpoints": {
+    "reportedForAllScheduledUnits": [
+      "complete, technically failed, substantively failed, and missing dialogues",
+      "planned, reserved, completed, failed, and unresolved model attempts",
+      "total turns and closed next-turn opportunities",
+      "mandatory-policy, seeded assigned, deterministic, invalid, and unrecorded decisions",
+      "condition observed, matched, unmatched, malformed, and overlapping counts",
+      "eligible-family sets and family/action propensities",
+      "assigned, delivered, displaced, and mismatched actions by family and world",
+      "coder delivery and outcome labels, exact agreement, indeterminacy, and coder minutes",
+      "auxiliary-human agreement and final usable binary records by family and world"
+    ],
+    "authoritativeGates": {
+      "execution": {
+        "minimumCompleteDialogues": 20,
+        "minimumCompleteDialoguesPerCollectionWorld": 4,
+        "allAttemptAccountingBalances": true,
+        "noUnregisteredOrDuplicateJob": true
+      },
+      "exchangeabilityAndCoverage": {
+        "minimumConditionMatchedSeededClosedAssignments": 48,
+        "minimumContributingDialogues": 16,
+        "minimumContributingCollectionWorlds": 4,
+        "everyMoveFamilyAssignedAndDelivered": true,
+        "minimumDeliveredCasesPerMoveFamily": 6,
+        "minimumIndependentDialoguesPerMoveFamily": 4,
+        "minimumCollectionWorldsPerMoveFamily": 3,
+        "minimumVisibleDeliveryRateAmongConditionMatchedAssignments": 0.9
+      },
+      "review": {
+        "bothOriginalCoderSubmissionsComplete": true,
+        "minimumJointDeliveryAndOutcomeExactAgreement": 0.8,
+        "maximumMeasurementIndeterminateRate": 0.2,
+        "minimumFinalUsableBinaryRecords": 30,
+        "minimumFinalUsableBinaryRecordsPerMoveFamily": 4
+      }
+    },
+    "decision": "Pass licenses only a new design for a separately authorized held-out controller study. Failure reports the registered bottleneck and closes this pilot without top-up, threshold relaxation, recoding, family deletion, world deletion, or controller launch.",
+    "precisionMeaning": "The fixed pilot is sized to demand at least two condition-matched exchangeable cases per scheduled dialogue and at least six delivered observations per family for feasibility. These are operational yield floors, not power calculations or final memory support thresholds."
+  },
+  "analysis": {
+    "primary": "A disposition table against every authoritative feasibility gate.",
+    "descriptive": [
+      "condition and assignable-turn prevalence with Wilson 95% intervals",
+      "delivery and indeterminacy rates with Wilson 95% intervals",
+      "family allocation and usable binary yield by eligible-family set and world",
+      "immediate reviewed success/failure counts by assigned family, eligible-family set, and world"
+    ],
+    "forbidden": [
+      "null-hypothesis testing or powered causal claims",
+      "raw family-rate ranking that ignores eligibility and propensity",
+      "outcome-conditioned exclusion, top-up, recoding, or threshold change",
+      "using held-out evaluation worlds in collection, review, readiness, or memory",
+      "choosing a final controller demotion rule from these pilot outcomes"
+    ]
+  },
+  "attemptCeiling": {
+    "normalPlannedCallsPerDialogue": 25,
+    "callPlanPerDialogue": {
+      "opening": 1,
+      "automatedLearner": 8,
+      "combinedLearnerAnalysis": 8,
+      "tutor": 8
+    },
+    "plannedCalls": 600,
+    "maximumReservationsPerPlannedCall": 3,
+    "perDialogueTechnicalHeadroomReservations": 6,
+    "maximumReservationsPerDialogue": 81,
+    "hardMaximumReservations": 1944,
+    "arithmetic": "24 * ((25 * 3) + 6) = 1944",
+    "role": "fail-before-call ceiling, not a target",
+    "ledger": "The future launcher must use services/paidStudyLaunchContract.js and the shared append-only attempt ledger. Every attempted provider call consumes one reservation before dispatch. Reservations are never moved between studies or restored after failure.",
+    "spendCap": "1944 model-call reservations on the registered Codex CLI route; no separate dollar budget is claimed for this subscription-backed route"
+  },
+  "destinations": {
+    "liveRoot": ".tutor-stub-auto-eval/action-outcome-collection-pilot-v1-2026-09-01",
+    "packetRoot": ".tutor-stub-auto-eval/action-outcome-collection-pilot-v1-2026-09-01-human-packet",
+    "comparisonRoot": ".tutor-stub-auto-eval/action-outcome-collection-pilot-v1-2026-09-01-human-comparison",
+    "readinessRoot": ".tutor-stub-auto-eval/action-outcome-collection-pilot-v1-2026-09-01-readiness",
+    "createOnce": true,
+    "privateArchive": "Archive the complete run ledger, all traces and attempts, packet, coder originals, private identity binding, machine key, comparison, and readiness outputs to the maintained private study archive when the block ends. Public summaries contain no private identity mapping."
+  },
+  "dispositions": {
+    "validDialogue": "Preserve once; never rerun or replace.",
+    "measurementIndeterminate": "Retain and report; never recode, adjudicate, replace, or treat as failure. It contributes no binary memory evidence.",
+    "mandatoryOrNonrandomizedAssignment": "Retain for audit; exclude from family evidence regardless of any direct human review.",
+    "guardDisplacementOrNonDelivery": "Retain and report; do not credit the requested action or its next learner turn; no replacement.",
+    "substantiveFailure": "Stop the affected unit, preserve it, and do not rerun or replace it.",
+    "technicalFailure": "Preserve the failed attempt and stop before another new unit. Standing bounded technical recovery may run only the missing or failed unit under the unchanged design, launch commit, routes, world, profile, seed, job id, horizon, and global ceiling into a fresh nonoverwriting recovery destination. Never rerun a valid unit or choose among outputs. A repeated failure or suspected instrument defect stops the study for human review.",
+    "ceilingReached": "Fail before the next call, preserve all artifacts, and report incomplete. No extra reservations or replacement block.",
+    "configurationDrift": "Stop before the next call. Any change to the study question, population, worlds, routes, condition, assignment, horizon, measurement, seed, destinations, or ceiling requires a prospective design amendment merged before a fresh GO note.",
+    "humanCoderUnavailable": "Do not substitute after packet access. Preserve the uncoded packet and stop; a prospective amendment is required before a replacement coder sees it."
+  },
+  "claimBoundary": "This pilot can establish only the operational feasibility and descriptive yield of prospective seeded eligible-family collection, plus descriptive immediate next-turn uptake associations for the maintained simulated bored learner on the four named collection worlds. It cannot establish learning, durable change, transfer, action-family superiority, a causal family effect outside the realized eligible sets, memory-controller benefit, human-learner benefit, or any result on the two reserved evaluation worlds.",
+  "stoppingRule": "Stop after the 24 registered jobs and their original two-coder packet are dispositioned, or earlier on a repeated technical failure, suspected instrument defect, configuration drift, or global ceiling. Report every gate exactly as registered. No result in this pilot itself authorizes a controller run."
+}

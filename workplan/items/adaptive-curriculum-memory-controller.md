@@ -7,8 +7,8 @@ priority: P2
 owner: codex
 source: review
 created: 2026-07-11
-updated: 2026-08-31
-branch: codex/action-outcome-review-packet
+updated: 2026-09-01
+branch: codex/action-outcome-collection-pilot-design
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -20,9 +20,13 @@ links:
     - docs/action-outcome-memory.md
     - docs/action-outcome-memory-readiness.md
     - docs/action-outcome-human-review.md
+    - docs/action-outcome-prospective-collection.md
+    - config/tutor-stub-action-outcome-collection-pilot-design.v1.json
   prs:
     - 895
     - 898
+    - 899
+    - 901
   items:
     - layered-task-session-adaptation
 tags:
@@ -88,6 +92,28 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-01: After PR #901 merged, registered the complete bounded prospective
+  collection-pilot design in a fresh worktree. The fixed 24-dialogue block uses
+  four collection worlds, six repetitions each, the maintained `bored`
+  simulated learner, an eight-turn horizon, a single code-grounded stalled-state
+  condition, fixed support level 1, a bland register, and seeded uniform
+  eligible-family assignment. Rowan Flat and Tideway Makerspace are excluded
+  from collection and memory for a later separately designed held-out controller
+  evaluation. The design fixes all job ids, routes, task identities, packet
+  handoff, two independent private coder seats, feasibility gates, create-once
+  destinations, failure dispositions, and a fail-before-call ceiling of 1,944
+  reservations: 600 planned calls, at most three reservations per planned call,
+  plus six technical-headroom reservations per dialogue. Human uncertainty,
+  coder disagreement, auxiliary disagreement, nonrandomized decisions, and
+  displaced actions remain measurement-indeterminate or audit-only; there is no
+  adjudication, top-up, threshold relaxation, or valid-unit replacement. The
+  controller stays disabled. This design grants no launch or model-call
+  authority; a clean detached launch commit and separate signed GO note are
+  still required, and no launcher or GO note is included here. Real model calls:
+  0. Research acceptance remains open; even a passing collection pilot can only
+  license a new held-out controller-study design, not establish learning,
+  transfer, family superiority, or controller benefit.
 
 - 2026-08-31: After PR #899 merged, continued in a fresh worktree with the
   zero-call prospective-collection seam. The ordinary typed-action selector was
