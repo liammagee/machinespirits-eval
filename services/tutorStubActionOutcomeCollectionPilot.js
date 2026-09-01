@@ -216,14 +216,35 @@ function commonArgs(design) {
   return design.launchConfiguration.requiredCommonArguments.flatMap(argumentTokens);
 }
 
-export function compileTutorStubActionOutcomeCollectionJob({ loaded, job, destination }) {
+function assertCollectionDestination({ loaded, destination, recovery }) {
+  const resolvedDestination = path.resolve(destination);
+  const registeredDestination = path.resolve(loaded.root, loaded.design.destinations.liveRoot);
+  if (!recovery) {
+    if (resolvedDestination !== registeredDestination) {
+      throw new Error(`collection destination must equal registered live root ${registeredDestination}`);
+    }
+    return resolvedDestination;
+  }
+  const outputRoot = path.resolve(loaded.root, '.tutor-stub-auto-eval');
+  const relative = path.relative(outputRoot, resolvedDestination);
+  const registeredName = path.basename(registeredDestination);
+  if (
+    !relative ||
+    relative.startsWith('..') ||
+    path.isAbsolute(relative) ||
+    relative.includes(path.sep) ||
+    !path.basename(resolvedDestination).startsWith(`${registeredName}-recovery-`)
+  ) {
+    throw new Error(`recovery destination must be a fresh ${registeredName}-recovery-* child of ${outputRoot}`);
+  }
+  return resolvedDestination;
+}
+
+export function compileTutorStubActionOutcomeCollectionJob({ loaded, job, destination, recovery = false }) {
   const { design, root } = loaded;
   if (!path.isAbsolute(destination)) throw new Error('collection destination must be absolute');
-  const registeredDestination = path.resolve(root, design.destinations.liveRoot);
-  if (path.resolve(destination) !== registeredDestination) {
-    throw new Error(`collection destination must equal registered live root ${registeredDestination}`);
-  }
-  const jobRoot = path.join(registeredDestination, 'jobs', job.jobId);
+  const runDestination = assertCollectionDestination({ loaded, destination, recovery });
+  const jobRoot = path.join(runDestination, 'jobs', job.jobId);
   const traceDir = path.join(jobRoot, 'traces');
   const transcript = path.join(jobRoot, 'transcript.json');
   const relativeTrace = path.relative(root, traceDir);
@@ -266,9 +287,9 @@ export function compileTutorStubActionOutcomeCollectionJob({ loaded, job, destin
   };
 }
 
-export function buildTutorStubActionOutcomeCollectionPlan({ loaded, destination } = {}) {
+export function buildTutorStubActionOutcomeCollectionPlan({ loaded, destination, recovery = false } = {}) {
   const jobs = loaded.design.randomization.jobs.map((job) =>
-    compileTutorStubActionOutcomeCollectionJob({ loaded, job, destination }),
+    compileTutorStubActionOutcomeCollectionJob({ loaded, job, destination, recovery }),
   );
   return {
     schema: TUTOR_STUB_ACTION_OUTCOME_COLLECTION_PLAN_SCHEMA,
@@ -288,12 +309,13 @@ export function buildTutorStubActionOutcomeCollectionPlan({ loaded, destination 
 export async function runTutorStubActionOutcomeCollectionPreflight({
   loaded,
   destination = path.resolve(loaded.root, loaded.design.destinations.liveRoot),
+  recovery = false,
   destinationExists = fs.existsSync,
   resolveArchive = resolveTutorStubArtifactArchiveDirectory,
   probeRoute = probeTutorStubResistantLearnerCliRoute,
   smokeRole = smokeTutorStubResistantLearnerProtocolV2Role,
 } = {}) {
-  const plan = buildTutorStubActionOutcomeCollectionPlan({ loaded, destination });
+  const plan = buildTutorStubActionOutcomeCollectionPlan({ loaded, destination, recovery });
   const routeTable = tutorStubActionOutcomeCollectionRouteTable(loaded.design);
   const uniqueProbeRoutes = [
     ...new Map(routeTable.map((route) => [`${route.provider}:${route.model}:${route.effort}`, route])).values(),
@@ -329,6 +351,7 @@ export async function runTutorStubActionOutcomeCollectionPreflight({
     role_smokes_passed: roleSmokes.every((smoke) => smoke.status === 'passed_zero_call_stub'),
     private_archive_available: Boolean(archiveDirectory),
     all_registered_destinations_absent: Object.values(destinationAvailability).every(Boolean),
+    selected_destination_absent: !destinationExists(path.resolve(destination)),
     planned_calls_match_design: plan.planned_model_calls === loaded.design.attemptCeiling.plannedCalls,
     attempt_ceiling_matches_design: plan.model_attempt_ceiling === loaded.design.attemptCeiling.hardMaximumReservations,
     memory_controller_disabled:

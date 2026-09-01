@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-01
-branch: codex/action-outcome-collection-go
+branch: codex/action-outcome-collection-recovery-fix
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -98,6 +98,29 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-01: The authorized initial collection launch exposed a mechanical
+  completion-accounting defect during its first job and was stopped before a
+  second job began. The maintained bored-learner repair path produced valid
+  extra learner and analysis calls, while the launcher incorrectly required
+  exactly the 25-call normal plan. The interrupted job is preserved with 5/8
+  completed turns, 31 child reservations, 30 completed provider calls, no
+  provider error, and one interrupted sixth-turn learner-analysis attempt; its
+  full 81-attempt shared reservation remains consumed. Added a tested zero-call
+  dead-process lease sealer and a missing-only recovery path. The corrected
+  completion contract accepts successful repair calls above 25 only with the
+  full eight-turn/seven-outcome structure, balanced attempt accounting, no
+  budget exhaustion, and the unchanged 81-attempt dialogue ceiling. Recovery
+  validates the sealed predecessor, preserves and skips the failed job, selects
+  only the 23 never-attempted jobs, and closes exactly to the original 1,944
+  study ceiling: 81 prior plus at most 1,863 recovery reservations. A second
+  failure cannot authorize another retry. The original direct GO remains the
+  study-level authorization; no new commit-bound approval artifact is created,
+  and the repaired source commit is recorded only as launch provenance. Real
+  model activity is stopped; no repair or recovery call has run. Verification:
+  19 focused launcher/contract tests pass, along with targeted ESLint and
+  Prettier, paid-launcher inventory, static import-cycle, hermetic manifest,
+  workplan source, diff checks, and a real zero-call 24-job dry run.
 
 - 2026-09-01: After PR #903 merged and the exact reviewed tree was prepared as
   clean detached launch commit
