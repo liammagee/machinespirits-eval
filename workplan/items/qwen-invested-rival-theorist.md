@@ -9,7 +9,7 @@ source: manual
 created: 2026-08-31
 updated: 2026-09-01
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "A configurable two-arm plan, prompt/world audits, judge packets, 48-attempt ceiling and private synthetic report preview pass focused zero-call tests; no model call, push or publication occurs before a separate GO."
+verification: "The two eight-exchange arms are preserved and three of eight Opus assessments are complete at 37/48 aggregate attempts; focused tests admit only the exact response-free A-quality failure into an 11-attempt linked recovery that reuses every accepted generation and assessment output."
 claim_status: planned
 links:
   notes:
@@ -84,3 +84,13 @@ with Sol, no superegos, using one fresh dialogue per arm.
   That failed request is preserved and charged at 17/48. The request correction
   uses the exact loaded target, and a third linked recovery reuses arm A, starts
   arm B from its empty first turn and exposes only the remaining 31 attempts.
+- 2026-09-01: The third linked recovery completed the eight-exchange
+  abliterated arm, giving two complete dialogues at 33/48 attempts. The local
+  server stopped before judging; A tutor, learner and dialogue assessments then
+  completed. The A quality packet returned no valid structured output and
+  stopped the run at 37/48. Its transport contains only a 2,048-byte diagnostic
+  prefix of an 11,271-byte malformed tool input, so none of that partial
+  judgment is accepted. The linked assessment-recovery correction reuses both
+  dialogues and all three valid scores, retries only the five unresolved
+  packets, preserves the failed attempt and enforces the remaining 11-attempt
+  ceiling.
