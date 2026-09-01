@@ -97,6 +97,7 @@ policy on purpose; each divergence is named here so it stays a choice.
 
 | Surface | Uses |
 |---|---|
+| `services/tutorStubTypedActionAssignment.js` | Policy-eligible action support, then prospective family-first assignment among those eligible actions |
 | `services/tutorStubTypedActionPlanningRuntime.js` | The main tutor-stub bridge: state, action, contract, ledger, both adapter builders |
 | `services/tutorStubTypedActionRestoration.js` | Ledger only, to restore a session |
 | `services/learnerTutorInteractionEngine.js` | Ledger only, plus the observer version stamp |

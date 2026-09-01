@@ -6,6 +6,7 @@ import test from 'node:test';
 
 import { estimateLearnerStateBelief, selectPedagogicalAction } from '../services/adaptiveTutor/actionPolicy.js';
 import { buildTutorStubTypedActionDecision } from '../services/adaptiveTutor/tutorStubActionAdapter.js';
+import { assignTutorStubTypedAction } from '../services/tutorStubTypedActionAssignment.js';
 import {
   actionOutcomeReviewCodebook,
   buildActionOutcomeReviewPacket,
@@ -205,18 +206,42 @@ function trace() {
       dialogue: [{ role: 'learner', content: "I don't get it." }],
       turnIndex: 2,
     }),
-    interventionLedger: [],
+    interventionLedger: [
+      {
+        contract_id: 'prospective-previous',
+        turn_index: 1,
+        closed_turn_index: 2,
+        status: 'closed',
+        outcome: 'success',
+        action_type: 'diagnose_with_discriminating_question',
+        hypothesis_ids: ['missing_prerequisite', 'low_confidence'],
+      },
+    ],
     mode: 'closed_loop',
     config: {},
   };
-  const selection = selectPedagogicalAction(selectionInput);
+  const baselineSelection = selectPedagogicalAction(selectionInput);
+  const assignment = assignTutorStubTypedAction({
+    mode: 'uniform_family_eligible',
+    selection: baselineSelection,
+    selectionInput,
+    samplingContext: {
+      runSeed: 31,
+      profile: 'diligent',
+      repeat: 1,
+      learnerTurn: 2,
+      decisionKind: 'typed_action_assignment',
+      jobId: runId,
+    },
+  });
+  const selection = assignment.selection;
   const decision = buildTutorStubTypedActionDecision({
     selection,
     stateBelief: selectionInput.stateBelief,
     task: { taskId: 'task-a', knowledgeComponent: 'evidence', prerequisitePath: [], itemDifficulty: 0.5 },
     register: 'precise',
     supportLevel: 1,
-    selectionProbability: 1,
+    selectionProbability: assignment.probability,
   });
   decision.contract_id = contractId;
   decision.decision_provenance = {
@@ -224,6 +249,13 @@ function trace() {
     support_axis_source: 'explicit_typed_action_config',
     selection_input: selectionInput,
     memory_observation: { observed: true, quantities: { stagnation: 0.9, fieldVelocity: 0.1, dagVelocity: 0.1 } },
+    selection_method: 'seeded_uniform_family_eligible',
+    propensity: {
+      selected_action_probability: assignment.probability,
+      selected_family_probability: assignment.familyProbability,
+      method: 'seeded_uniform_family_eligible',
+    },
+    prospective_assignment: assignment.audit,
   };
   const closed = {
     contract_id: contractId,

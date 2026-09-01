@@ -41,6 +41,7 @@ export const TUTOR_STUB_RECIPE_OPTION_KEYS = Object.freeze([
   'eval-job-id',
   'loop-mode',
   'typed-actions',
+  'typed-action-assignment',
   'typed-action-task-id',
   'typed-action-knowledge-component',
   'typed-action-prerequisites',

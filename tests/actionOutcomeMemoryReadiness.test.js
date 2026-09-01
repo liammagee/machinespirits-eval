@@ -12,6 +12,7 @@ import {
   selectPedagogicalAction,
 } from '../services/adaptiveTutor/actionPolicy.js';
 import { buildTutorStubTypedActionDecision } from '../services/adaptiveTutor/tutorStubActionAdapter.js';
+import { assignTutorStubTypedAction } from '../services/tutorStubTypedActionAssignment.js';
 import {
   extractActionOutcomeMemoryEvidence,
   replayActionOutcomeMemoryDecisions,
@@ -33,6 +34,8 @@ function traceFixture({
   worldId = 'world-a',
   date = '2026-08-04T00:00:00.000Z',
   outcome = 'failure',
+  assignmentMode = 'uniform_family_eligible',
+  assignmentSeed = 31,
 } = {}) {
   const base = Date.parse(date);
   const stamp = (seconds) => new Date(base + seconds * 1000).toISOString();
@@ -56,14 +59,30 @@ function traceFixture({
     mode: 'closed_loop',
     config: { maxActionCandidates: ADAPTATION_ACTIONS.length },
   };
-  const selection = selectPedagogicalAction(selectionInput);
+  const baselineSelection = selectPedagogicalAction(selectionInput);
+  const assignment = assignmentMode
+    ? assignTutorStubTypedAction({
+        mode: assignmentMode,
+        selection: baselineSelection,
+        selectionInput,
+        samplingContext: {
+          runSeed: assignmentSeed,
+          profile: 'diligent',
+          repeat: 1,
+          learnerTurn: 2,
+          decisionKind: 'typed_action_assignment',
+          jobId: runId,
+        },
+      })
+    : null;
+  const selection = assignment?.selection || baselineSelection;
   const decision = buildTutorStubTypedActionDecision({
     selection,
     stateBelief: selectionInput.stateBelief,
     task: { taskId: 'task-a', knowledgeComponent: 'public-evidence', prerequisitePath: [], itemDifficulty: 0.5 },
     register: 'precise',
     supportLevel: 1,
-    selectionProbability: 1,
+    selectionProbability: assignment?.probability || 1,
   });
   decision.contract_id = contractId;
   decision.decision_provenance = {
@@ -71,6 +90,23 @@ function traceFixture({
     support_axis_source: 'explicit_typed_action_config',
     selection_input: selectionInput,
     memory_observation: { observed: true, quantities: { stagnation: 0.9, fieldVelocity: 0.1, dagVelocity: 0.1 } },
+    ...(assignment
+      ? {
+          selection_method:
+            assignment.audit.disposition === 'seeded_uniform_family_assignment'
+              ? 'seeded_uniform_family_eligible'
+              : 'deterministic_closed_loop_argmax',
+          propensity: {
+            selected_action_probability: assignment.probability,
+            selected_family_probability: assignment.familyProbability ?? 1,
+            method:
+              assignment.audit.disposition === 'seeded_uniform_family_assignment'
+                ? 'seeded_uniform_family_eligible'
+                : 'deterministic_policy',
+          },
+          prospective_assignment: assignment.audit,
+        }
+      : {}),
   };
   const tutorText = 'PRIVATE_TUTOR_TEXT: Start with the public date and compare the two marks.';
   const learnerText = 'PRIVATE_LEARNER_TEXT: I still need you to tell me the answer.';
@@ -164,7 +200,12 @@ function policy(overrides = {}) {
 
 function replay(
   records,
-  evaluation = traceFixture({ runId: 'evaluation', worldId: 'world-held-out', date: '2026-08-10T00:00:00.000Z' }),
+  evaluation = traceFixture({
+    runId: 'evaluation',
+    worldId: 'world-held-out',
+    date: '2026-08-10T00:00:00.000Z',
+    assignmentMode: null,
+  }),
   overrides = {},
 ) {
   return replayActionOutcomeMemoryDecisions({
@@ -187,7 +228,10 @@ function replay(
 }
 
 function sourceRecords() {
-  const records = ['a', 'b'].flatMap((id) => extract(traceFixture({ runId: id })).records);
+  const records = [
+    { runId: 'a', assignmentSeed: 18 },
+    { runId: 'b', assignmentSeed: 4 },
+  ].flatMap((options) => extract(traceFixture(options)).records);
   records.push(
     ...records.map((record) => ({
       ...record,
@@ -212,6 +256,28 @@ test('extracts only a complete delivered next-turn join and preserves source pro
   assert.equal(result.reviewCandidates[0].tutorText, fixture.review.tutorText);
   assert.equal(result.reviewCandidates[0].learnerText, fixture.review.learnerText);
   assert.equal(result.reviewCandidates[0].auxiliaryOutcome, 'failure');
+  assert.equal(result.rows[0].assignmentStatus, 'seeded_uniform_family_assignment');
+});
+
+test('prospective family assignment is replayed and corrupt assignment provenance is excluded', () => {
+  const fixture = traceFixture({ assignmentMode: 'uniform_family_eligible' });
+  const result = extract(fixture);
+  assert.equal(result.records.length, 1);
+  assert.equal(result.rows[0].assignmentStatus, 'seeded_uniform_family_assignment');
+  assert.equal(result.rows[0].prospectiveAssignment.selected_action_type, fixture.decision.chosen_action.action_type);
+
+  fixture.events[1].decision.decision_provenance.prospective_assignment.family_draw.selectedValue = 'wrong-family';
+  const corrupt = extract(fixture);
+  assert.equal(corrupt.records.length, 0);
+  assert.equal(corrupt.exclusionCounts.invalid_prospective_assignment, 1);
+});
+
+test('nonrandomized reviewed outcomes remain visible but cannot become binary memory evidence', () => {
+  const result = extract(traceFixture({ assignmentMode: null }));
+  assert.equal(result.records.length, 1);
+  assert.equal(result.rows[0].assignmentStatus, 'not_recorded');
+  assert.equal(result.rows[0].measurementStatus, 'nonrandomized_assignment');
+  assert.equal(result.records[0].outcome, 'measurement_indeterminate');
 });
 
 test('auxiliary-only outcomes and human/auxiliary disagreements stay indeterminate', () => {
@@ -306,8 +372,18 @@ test('choice replay changes the current arm while stale and scrambled controls p
 });
 
 test('replay excludes all held-out worlds and the current dialogue, not just the current world', () => {
-  const evaluation = traceFixture({ runId: 'evaluation', worldId: 'world-held-out', date: '2026-08-10T00:00:00.000Z' });
-  const other = traceFixture({ runId: 'other-evaluation', worldId: 'world-a', date: '2026-08-10T00:00:00.000Z' });
+  const evaluation = traceFixture({
+    runId: 'evaluation',
+    worldId: 'world-held-out',
+    date: '2026-08-10T00:00:00.000Z',
+    assignmentMode: null,
+  });
+  const other = traceFixture({
+    runId: 'other-evaluation',
+    worldId: 'world-a',
+    date: '2026-08-10T00:00:00.000Z',
+    assignmentMode: null,
+  });
   const result = replay(sourceRecords(), evaluation, {
     evaluationSources: [evaluation, other].map((fixture) => ({
       source: fixture.runId,
@@ -323,7 +399,11 @@ test('replay excludes all held-out worlds and the current dialogue, not just the
 });
 
 test('exact-world mode allows other dialogues from the same world but never future evidence', () => {
-  const evaluation = traceFixture({ runId: 'evaluation', date: '2026-08-10T00:00:00.000Z' });
+  const evaluation = traceFixture({
+    runId: 'evaluation',
+    date: '2026-08-10T00:00:00.000Z',
+    assignmentMode: null,
+  });
   assert.equal(
     replay(sourceRecords(), evaluation, { policy: policy({ scope: 'exact_world' }) }).summary.currentChanged,
     1,
@@ -383,7 +463,12 @@ test('replay refuses changed baseline, hidden support changes, invalid ledger ti
     ],
   ];
   for (const [change, reason] of changes) {
-    const fixture = traceFixture({ runId: 'evaluation', worldId: 'world-held-out', date: '2026-08-10T00:00:00.000Z' });
+    const fixture = traceFixture({
+      runId: 'evaluation',
+      worldId: 'world-held-out',
+      date: '2026-08-10T00:00:00.000Z',
+      assignmentMode: null,
+    });
     change(fixture);
     const result = replay(sourceRecords(), fixture);
     assert.equal(result.exclusionCounts[reason], 1);

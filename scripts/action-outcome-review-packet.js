@@ -49,7 +49,14 @@ export async function prepareActionOutcomeReview({ inputPath, outputPath, packet
     throw new Error('packet preparation accepts memory-role sources only');
   }
   const readiness = await buildActionOutcomeMemoryReadiness(input, { inputDirectory: path.dirname(resolvedInput) });
-  const artifacts = buildActionOutcomeReviewPacket({ candidates: readiness.reviewCandidates, packetId, coderIds });
+  const incompatible = readiness.reviewCandidates.filter(
+    (candidate) => candidate.assignmentStatus !== 'seeded_uniform_family_assignment',
+  );
+  const assignedCandidates = readiness.reviewCandidates.filter(
+    (candidate) => candidate.assignmentStatus === 'seeded_uniform_family_assignment',
+  );
+  if (!assignedCandidates.length) throw new Error('packet preparation found no seeded uniform family assignments');
+  const artifacts = buildActionOutcomeReviewPacket({ candidates: assignedCandidates, packetId, coderIds });
   const packetBytes = reviewJson(artifacts.packet);
   const keyBytes = reviewJson(artifacts.machineKey);
   const codebook = actionOutcomeReviewCodebook();
@@ -63,7 +70,10 @@ export async function prepareActionOutcomeReview({ inputPath, outputPath, packet
     modelCalls: 0,
     claimBoundary: artifacts.packet.claimBoundary,
     sources: readiness.report.sources,
-    exclusions: readiness.report.exclusionCounts,
+    exclusions: {
+      ...readiness.report.exclusionCounts,
+      ...(incompatible.length ? { non_seeded_family_assignment: incompatible.length } : {}),
+    },
     eligibleCases: artifacts.packet.cases.length,
     artifactDataHashes: {
       packet: reviewDataHash(packetBytes),

@@ -84,7 +84,7 @@ function fixtureTask() {
   };
 }
 
-function tutorStubRuntimeEvents({ typedActions = false, turns = 1 } = {}) {
+function tutorStubRuntimeEvents({ typedActions = false, turns = 1, assignment = 'policy' } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `tutor-stub-typed-runtime-${typedActions ? 'on' : 'off'}-`));
   const fakeCodex = path.join(tmp, 'codex');
   fs.writeFileSync(
@@ -146,6 +146,7 @@ process.stdin.on('end', () => {
       '--typed-action-support-level',
       '3',
     );
+    if (assignment !== 'policy') args.push('--typed-action-assignment', assignment);
   }
   const result = spawnSync(process.execPath, args, {
     cwd: ROOT,
@@ -174,6 +175,25 @@ process.stdin.on('end', () => {
     .map((line) => JSON.parse(line));
   fs.rmSync(tmp, { recursive: true, force: true });
   return events;
+}
+
+function invalidAssignmentLaunch(extraArgs) {
+  return spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--once',
+      'A public learner turn.',
+      '--world',
+      'world_005_marrick',
+      '--no-opening',
+      '--no-stream',
+      '--no-interim-animation',
+      '--no-closeout-report',
+      ...extraArgs,
+    ],
+    { cwd: ROOT, encoding: 'utf8', timeout: 15_000 },
+  );
 }
 
 test('every canonical action maps into one of the five experimental move families', () => {
@@ -394,6 +414,64 @@ test('the next public learner observation closes the prior typed action outcome'
   assert.equal(outcomeEvent.outcome.scaffold_lifecycle_transition.from, 'diagnose');
   assert.equal(outcomeEvent.outcome.scaffold_lifecycle_transition.to, 'support');
   assert.deepEqual(secondTurn.typedActionPriorOutcome, outcomeEvent.outcome);
+});
+
+test('uniform family collection assignment is persisted through the real CLI trace path', () => {
+  const events = tutorStubRuntimeEvents({
+    typedActions: true,
+    turns: 3,
+    assignment: 'uniform_family_eligible',
+  });
+  const decisions = events.filter((event) => event.type === 'tutor_typed_action_decision');
+  assert.equal(decisions.length, 3);
+  assert.ok(
+    decisions.every(
+      (event) => event.decision.decision_provenance.prospective_assignment.mode === 'uniform_family_eligible',
+    ),
+  );
+  const assigned = decisions.find(
+    (event) =>
+      event.decision.decision_provenance.prospective_assignment.disposition === 'seeded_uniform_family_assignment',
+  );
+  assert.ok(assigned, 'at least one non-mandatory turn must exercise the seeded collection draw');
+  const provenance = assigned.decision.decision_provenance;
+  const audit = provenance.prospective_assignment;
+  assert.equal(provenance.selection_method, 'seeded_uniform_family_eligible');
+  assert.equal(provenance.propensity.method, 'seeded_uniform_family_eligible');
+  assert.equal(provenance.propensity.selected_family_probability, audit.selected_family_probability);
+  assert.equal(
+    provenance.propensity.selected_action_probability,
+    audit.selected_family_probability * audit.selected_action_within_family_probability,
+  );
+  assert.equal(audit.action_draw.selectedValue, assigned.decision.chosen_action.action_type);
+  assert.equal(assigned.decision.selection_probability, provenance.propensity.selected_action_probability);
+});
+
+test('collection assignment fails before model dispatch without typed actions or fixed support', () => {
+  const withoutTypedActions = invalidAssignmentLaunch(['--typed-action-assignment', 'uniform_family_eligible']);
+  assert.notEqual(withoutTypedActions.status, 0);
+  assert.match(
+    withoutTypedActions.stderr,
+    /--typed-action-assignment uniform_family_eligible requires --typed-actions/u,
+  );
+
+  const withoutFixedSupport = invalidAssignmentLaunch([
+    '--typed-actions',
+    '--typed-action-assignment',
+    'uniform_family_eligible',
+    '--typed-action-task-id',
+    'task-a',
+    '--typed-action-knowledge-component',
+    'public-evidence',
+  ]);
+  assert.notEqual(withoutFixedSupport.status, 0);
+  assert.match(
+    withoutFixedSupport.stderr,
+    /uniform_family_eligible requires an explicit --typed-action-support-level/u,
+  );
+  for (const result of [withoutTypedActions, withoutFixedSupport]) {
+    assert.doesNotMatch(result.stdout, /model_call|tutor >/u);
+  }
 });
 
 test('--resume-last restores the pending typed action and its scaffold lifecycle before the next turn', () => {

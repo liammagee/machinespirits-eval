@@ -22,6 +22,7 @@ import { getEngagementStanceDefinition } from './engagementRegisterRegistry.js';
 import { sampleTutorStubPolicyDistribution } from './tutorStubPolicySampler.js';
 import { planActionMemoryDemotions } from './adaptiveTutor/actionOutcomeMemory.js';
 import { buildDynamicalSystemState } from './tutorStubRegisterPolicy.js';
+import { assignTutorStubTypedAction } from './tutorStubTypedActionAssignment.js';
 
 const TUTOR_TYPED_ACTION_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.typed-action-outcome.v1';
 
@@ -481,16 +482,27 @@ export function createTutorStubTypedActionPlanningRuntime({
         worldAdaptationSpec: lifecycleGate.policySpec,
       },
     };
-    let selection = selectPedagogicalAction(selectionInput);
+    let effectiveSelectionInput = selectionInput;
+    let selection = selectPedagogicalAction(effectiveSelectionInput);
     const baselineActionType = selection.selectedAction.action_type;
     const memoryObservation = memoryObservationForTurn({ state, classification, tutorLearnerDag });
     const memoryPlan = memoryPlanForTurn({ state, memoryObservation, selection });
     if (memoryPlan?.disposition === 'demote') {
-      selection = selectPedagogicalAction({
+      effectiveSelectionInput = {
         ...selectionInput,
         config: { ...selectionInput.config, actionUtilityPenalties: memoryPlan.penalties },
-      });
+      };
+      selection = selectPedagogicalAction(effectiveSelectionInput);
     }
+    const assignment = assignTutorStubTypedAction({
+      mode: state.typedActions.config.assignmentMode || 'policy',
+      selection,
+      selectionInput: effectiveSelectionInput,
+      samplingContext: policySamplingContext(state, 'typed_action_assignment', {
+        policy: state.typedActions.config.assignmentMode || 'policy',
+      }),
+    });
+    selection = assignment.selection;
     const considered = new Set(selection.candidateActions.map((candidate) => candidate.action_type));
     const vetoes = ADAPTATION_ACTIONS.filter((action) => !considered.has(action.action_type)).map((action) => {
       const moveFamily = tutorStubMoveFamilyForAction(action.action_type);
@@ -512,7 +524,7 @@ export function createTutorStubTypedActionPlanningRuntime({
       task: state.typedActions.config.task,
       register,
       supportLevel: state.typedActions.config.supportLevel,
-      selectionProbability: 1,
+      selectionProbability: assignment.probability,
       vetoes,
       modelVersion: 'programmatic/adaptive-action-policy',
     });
@@ -548,11 +560,19 @@ export function createTutorStubTypedActionPlanningRuntime({
         timing: 'after_current_public_learner_observation_before_tutor_output',
         public_observation_schema: stateObservation.schema,
         public_only: true,
-        selection_method: 'deterministic_closed_loop_argmax',
+        selection_method:
+          assignment.audit.disposition === 'seeded_uniform_family_assignment'
+            ? 'seeded_uniform_family_eligible'
+            : 'deterministic_closed_loop_argmax',
         propensity: {
-          selected_action_probability: 1,
-          method: 'deterministic_policy',
+          selected_action_probability: assignment.probability,
+          selected_family_probability: assignment.familyProbability ?? 1,
+          method:
+            assignment.audit.disposition === 'seeded_uniform_family_assignment'
+              ? 'seeded_uniform_family_eligible'
+              : 'deterministic_policy',
         },
+        prospective_assignment: jsonClone(assignment.audit),
         candidate_universe: ADAPTATION_ACTIONS.map((action) => action.action_type),
         considered_candidates: selection.candidateActions.map((candidate) => candidate.action_type),
         vetoed_or_not_considered: vetoes.map((row) => row.action_type),
@@ -564,7 +584,7 @@ export function createTutorStubTypedActionPlanningRuntime({
           state.typedActions.config.supportLevel === null ? 'action_default' : 'explicit_typed_action_config',
         // Record the actual pre-output inputs for zero-call replay. Historical
         // traces without these fields must not have missing inputs invented.
-        selection_input: jsonClone(selectionInput),
+        selection_input: jsonClone(effectiveSelectionInput),
         memory_observation: jsonClone(memoryObservation),
         scaffold_lifecycle_gate: {
           phase: lifecycleGate.phase,

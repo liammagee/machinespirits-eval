@@ -6,6 +6,7 @@ import {
 import { ADAPTATION_ACTION_BY_TYPE, selectPedagogicalAction } from './actionPolicy.js';
 import { tutorStubMoveFamilyForAction } from './tutorStubActionAdapter.js';
 import { tutorStubTypedActionDecisionFromTurn } from '../tutorStubTypedActionRestoration.js';
+import { replayDeterministicChoice } from '../deterministicExperimentSampler.js';
 
 export const ACTION_OUTCOME_MEMORY_READINESS_VERSION = 'action-outcome-memory-readiness.v1';
 
@@ -205,6 +206,82 @@ function deliveredJoin({ decisionEvent, decisionTurn, outcomeEvent, observationT
   };
 }
 
+function nearlyEqual(left, right) {
+  return Number.isFinite(left) && Number.isFinite(right) && Math.abs(left - right) <= 1e-12;
+}
+
+function prospectiveAssignmentForDecision(decision) {
+  const provenance = decision?.decision_provenance || {};
+  const audit = provenance.prospective_assignment;
+  if (!audit) return { status: 'not_recorded', audit: null };
+  const selectedActionType = decision?.chosen_action?.action_type;
+  if (!selectedActionType || audit.selected_action_type !== selectedActionType) {
+    return { reason: 'invalid_prospective_assignment' };
+  }
+  if (audit.disposition === 'policy_selected') {
+    if (
+      audit.mode !== 'policy' ||
+      audit.baseline_action_type !== selectedActionType ||
+      decision.selection_probability !== 1 ||
+      provenance.propensity?.selected_action_probability !== 1
+    ) {
+      return { reason: 'invalid_prospective_assignment' };
+    }
+    return { status: 'policy_selected', audit: clone(audit) };
+  }
+  if (audit.disposition === 'mandatory_policy_authority_preserved') {
+    if (
+      audit.mode !== 'uniform_family_eligible' ||
+      audit.baseline_action_type !== selectedActionType ||
+      audit.authority?.assignable !== false ||
+      decision.selection_probability !== 1 ||
+      provenance.propensity?.selected_action_probability !== 1 ||
+      provenance.propensity?.selected_family_probability !== 1
+    ) {
+      return { reason: 'invalid_prospective_assignment' };
+    }
+    return { status: 'mandatory_policy_authority_preserved', audit: clone(audit) };
+  }
+  if (audit.disposition !== 'seeded_uniform_family_assignment' || audit.mode !== 'uniform_family_eligible') {
+    return { reason: 'invalid_prospective_assignment' };
+  }
+  const candidateTypes = (decision.full_candidate_set || []).map((candidate) => candidate.action_type);
+  const auditedTypes = audit.eligible_action_types || [];
+  const familyRows = audit.eligible_move_families || [];
+  const flattenedTypes = familyRows.flatMap((row) => row.action_types || []);
+  const selectedFamily = tutorStubMoveFamilyForAction(selectedActionType);
+  const familyRow = familyRows.find((row) => row.family === selectedFamily);
+  const familyReplay = replayDeterministicChoice(audit.family_draw || {}).matches;
+  const actionReplay = replayDeterministicChoice(audit.action_draw || {}).matches;
+  const expectedFamilyProbability = 1 / familyRows.length;
+  const expectedWithinFamilyProbability = 1 / (familyRow?.action_types?.length || 0);
+  const expectedActionProbability = expectedFamilyProbability * expectedWithinFamilyProbability;
+  if (
+    !candidateTypes.length ||
+    new Set(candidateTypes).size !== candidateTypes.length ||
+    JSON.stringify(candidateTypes) !== JSON.stringify(auditedTypes) ||
+    JSON.stringify([...flattenedTypes].sort()) !== JSON.stringify([...candidateTypes].sort()) ||
+    new Set(familyRows.map((row) => row.family)).size !== familyRows.length ||
+    familyRows.some((row) =>
+      (row.action_types || []).some((actionType) => tutorStubMoveFamilyForAction(actionType) !== row.family),
+    ) ||
+    !familyRow?.action_types?.includes(selectedActionType) ||
+    audit.selected_move_family !== selectedFamily ||
+    !familyReplay ||
+    !actionReplay ||
+    audit.family_draw.selectedValue !== selectedFamily ||
+    audit.action_draw.selectedValue !== selectedActionType ||
+    !nearlyEqual(audit.selected_family_probability, expectedFamilyProbability) ||
+    !nearlyEqual(audit.selected_action_within_family_probability, expectedWithinFamilyProbability) ||
+    !nearlyEqual(decision.selection_probability, expectedActionProbability) ||
+    !nearlyEqual(provenance.propensity?.selected_family_probability, expectedFamilyProbability) ||
+    !nearlyEqual(provenance.propensity?.selected_action_probability, expectedActionProbability)
+  ) {
+    return { reason: 'invalid_prospective_assignment' };
+  }
+  return { status: 'seeded_uniform_family_assignment', audit: clone(audit) };
+}
+
 export function extractActionOutcomeMemoryEvidence({
   events,
   source,
@@ -295,6 +372,16 @@ export function extractActionOutcomeMemoryEvidence({
       exclude(decisionEvent, joined.reason);
       continue;
     }
+    let assignment;
+    try {
+      assignment = prospectiveAssignmentForDecision(decision);
+    } catch {
+      assignment = { reason: 'invalid_prospective_assignment' };
+    }
+    if (assignment.reason) {
+      exclude(decisionEvent, assignment.reason);
+      continue;
+    }
     const conditionResult = conditionForObservation(decision.decision_provenance?.memory_observation, conditions);
     if (conditionResult.reason) {
       exclude(decisionEvent, conditionResult.reason);
@@ -306,7 +393,9 @@ export function extractActionOutcomeMemoryEvidence({
     let recordedAt = matchingOutcomes[0].ts;
     if (review) {
       recordedAt = new Date(Math.max(timestamp(review.recordedAt), timestamp(recordedAt))).toISOString();
-      if (timestamp(review.recordedAt) < timestamp(matchingOutcomes[0].ts)) {
+      if (assignment.status !== 'seeded_uniform_family_assignment') {
+        measurementStatus = 'nonrandomized_assignment';
+      } else if (timestamp(review.recordedAt) < timestamp(matchingOutcomes[0].ts)) {
         measurementStatus = 'review_before_observation';
       } else if (
         review.tutorText !== joined.tutorText ||
@@ -358,6 +447,8 @@ export function extractActionOutcomeMemoryEvidence({
       learnerText: joined.learnerText,
       auxiliaryOutcome: joined.closed.outcome,
       auxiliaryDeliveryVisible: joined.auxiliaryDeliveryVisible,
+      assignmentStatus: assignment.status,
+      prospectiveAssignment: assignment.audit,
     });
     rows.push({
       recordId: record.id,
@@ -370,6 +461,8 @@ export function extractActionOutcomeMemoryEvidence({
       measurementStatus,
       reviewer: review ? { method: review.method, reviewer: review.reviewer, source: review.source } : null,
       selectorReplayInputPresent: Boolean(decision.decision_provenance?.selection_input),
+      assignmentStatus: assignment.status,
+      prospectiveAssignment: assignment.audit,
     });
   }
   records.sort((left, right) => left.id.localeCompare(right.id));
