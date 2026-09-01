@@ -384,7 +384,7 @@ ${css}
         <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
         <div class="body">
           <p class="s__kicker">The findings</p>
-          <h2 class="s__h">Three broad answers — including the <em>negative ones</em>.</h2>
+          <h2 class="s__h">The broad answers — including the <em>negative ones</em>.</h2>
           ${familiesIntro}
           ${familyPanelHtml}
           ${findingsHtml}

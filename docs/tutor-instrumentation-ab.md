@@ -8,6 +8,18 @@ context buy?
 
 It is a visual and regression instrument. It says nothing about human learning.
 
+## Shared presentation contract
+
+`buildTutorStubAbDramaticDialogue()` projects the public A/B artifact into
+`machinespirits.dramatic-dialogue-interchange.v1` and the shared renderer's
+`shared-learner` layout. The historical output filename remains
+`swimlane-diff.html`, but its maintained presentation contract is documented in
+`docs/dramatic-dialogue-renderer.md`.
+
+The renderer preserves the frozen learner message and labels the candidate
+tutor replies. It does not infer that an arm caused an effect; that narrow
+attribution comes from the harness controls described below.
+
 ## What is held frozen
 
 Every arm replays the same recorded turns. Frozen across arms:

@@ -65,7 +65,7 @@ test('launch help projection is byte-stable and uses every supplied runtime defa
 
   assert.equal(
     createHash('sha256').update(help).digest('hex'),
-    'ac516cd06462d4226e2c67b27711f24f62346680e41750c7e10f8c457bfcc30b',
+    'baf79ac31cffe2c535c6b96d852099d826e11aa9982489b3e69f53a2eee4f4dd',
   );
   assert.match(help, /^Usage:\n {2}npm run tutor:stub -- \[options\]/u);
   assert.match(help, /fixture-tutor@v9/u);

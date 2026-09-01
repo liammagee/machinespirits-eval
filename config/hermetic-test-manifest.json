@@ -98,6 +98,9 @@
         "tests/a19HumanAdjudication.test.js",
         "tests/a19RoleSeparatedEval.test.js",
         "tests/acquiredAbox.test.js",
+        "tests/actionOutcomeMemory.test.js",
+        "tests/actionOutcomeMemoryReadiness.test.js",
+        "tests/actionOutcomeReviewPacket.test.js",
         "tests/adaptation-belief-calibration.test.js",
         "tests/adaptation-closed-loop.test.js",
         "tests/adaptation-contract.test.js",
@@ -112,6 +115,7 @@
         "tests/adaptationAboxBridge.test.js",
         "tests/adaptationOntology.test.js",
         "tests/adaptive-mock-learner.test.js",
+        "tests/adaptiveCausalityStateMoveReview.test.js",
         "tests/adaptiveRegisterSwitching.test.js",
         "tests/adaptiveRegisterSwitchingStage2.test.js",
         "tests/adaptiveResumeAndBudgetScope.test.js",
@@ -529,6 +533,7 @@
         "tests/tutorStubAbHarness.test.js",
         "tests/tutorStubAbmPanel.test.js",
         "tests/tutorStubActionBeforeRegisterShadow.test.js",
+        "tests/tutorStubActionOutcomeCollectionPilot.test.js",
         "tests/tutorStubArtifactArchive.test.js",
         "tests/tutorStubArtifactArchiveCoverage.test.js",
         "tests/tutorStubAutoEvalEvidence.test.js",
@@ -777,6 +782,7 @@
         "tests/tutorStubTutorPromptContext.test.js",
         "tests/tutorStubTutorTurnPipeline.test.js",
         "tests/tutorStubTypedActionAdapter.test.js",
+        "tests/tutorStubTypedActionAssignment.test.js",
         "tests/tutorStubTypedActionRestoration.test.js",
         "tests/tutorStubTypedCompositeAdvocateCalibration.test.js",
         "tests/tutorStubUptakeGuardLinkage.test.js",
@@ -856,6 +862,14 @@
       "owner": "adaptive-warrant-outcome-study",
       "reason": "The consumed outcome manifests retain their original first-draft source digest. Tests whose later assertion is unreachable after that prospective source changed are explicitly accounted for instead of re-pinning historical study artifacts.",
       "removalSlice": "extract a pure post-binding manifest validator if these historical assertions need to execute again"
+    },
+    {
+      "id": "guarded-warrant-historical-semantic-source-pin-drift",
+      "suite": "root",
+      "reasonPattern": "^historical guarded manifest retains frozen semantic source pins after prospective quote matching changed$",
+      "owner": "warrant-quote-rule-letter-case",
+      "reason": "The consumed guarded manifests retain their original semantic-source digests. Historical reseal tests whose later assertions require current source bytes to match those frozen digests are explicitly skipped rather than repinning sealed artifacts.",
+      "removalSlice": "port the historical semantic sources into an isolated fixture if the old reseal mechanics need revalidation"
     },
     {
       "id": "guarded-learner-smoke-c-private-archive",

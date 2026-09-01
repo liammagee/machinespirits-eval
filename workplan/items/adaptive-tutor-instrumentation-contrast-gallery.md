@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-30
 verification: "Completed and extended 2026-08-29: the report contains the original 3 shared Tallow moments × 6 single-block instruments (18 switchable pairs; 21/21 candidates exact to source) plus a 9-row pricing atlas spanning five visible-record blocks, contract, due-line, tuned mini critic, light/radical character shifts, live full stack, state-timed move cards, and typed quiet-state detection. Every row names frozen-turn vs live-bench and reader/rule class; the quiet detector carries its 16/27 long-world non-transfer bound. Desktop 1440×1000 and mobile 390×844 browser QA passed with zero overflow or console errors. Paper-claim-auditor PASS after canonical §6.23–§6.24 alignment; inline JS, exact-source, pricing-row, git diff, and wp source checks passed. No model calls or paid runs."
 claim_status: scope-bound
 depends_on:
@@ -15,9 +15,11 @@ depends_on:
   - tutor-instrumentation-ab-harness
 links:
   items:
+    - shared-dramatic-dialogue-renderer-component
     - tutor-instrumentation-showcase
     - transcript-render-standard
   notes:
+    - docs/dramatic-dialogue-renderer.md
     - docs/tutor-instrumentation-ab.md
 ---
 
@@ -50,3 +52,11 @@ block changes.
 ## Deliverable
 
 Update `notes/poetics/2026-08-29-adaptive-tutor-from-null-to-control.html`.
+
+## Post-closeout integration
+
+The gallery keeps its switchable frozen-context interactions, while the
+crossed endgame dialogue now uses the shared renderer. The central renderer
+guide maps the gallery's frozen `shared-learner` comparisons, the showcase's
+free-running `parallel` dialogues, and the crossed-action `parallel` example
+without treating their common visual grammar as a common evidence class.

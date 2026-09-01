@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-30
 verification: "PASS: Techne HTML uses adjudicated transcript excerpts with explicit selection rules and labelled plain-language glosses; the interactive proof view reproduces both authored AND-joins and the invalid shortcut; desktop 1440x1000 and mobile 390x844 browser QA showed no horizontal overflow and working switches; paper-claim-auditor PASS; inline JS syntax, git diff --check, and wp:source-check passed."
 claim_status: scope-bound
 links:
@@ -15,6 +15,7 @@ links:
     - adaptive-causality-crossed-effects
     - adaptive-causality-repertoire
     - adaptive-tutor-canonical-kernel-contract
+    - shared-dramatic-dialogue-renderer-component
     - transcript-render-standard
 ---
 
@@ -52,3 +53,10 @@ card. Its central distinction is explicit: the May null concerns trajectory
 modulation, while the later crossed experiments identify a forced-action effect
 on delivered tutor conduct at planted simulated states. Transfer and human
 learning remain separate, open questions.
+
+## Post-closeout integration
+
+After PR #875, the crossed endgame example is supplied by the managed public
+fixture and shared `parallel` renderer documented in
+`docs/dramatic-dialogue-renderer.md`. The crossed registration and human ruling,
+not the layout, remain the authority for the bounded conduct claim.

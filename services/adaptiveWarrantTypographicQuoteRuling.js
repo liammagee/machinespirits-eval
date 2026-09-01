@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 
 import {
+  ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES,
   normalizeAdaptiveWarrantSemanticQuotePunctuation,
   validateAdaptiveWarrantSemanticExtraction,
 } from './adaptiveWarrantSemanticEvents.js';
@@ -20,6 +21,9 @@ export const FORGIVEN_ISSUE_CODE = 'evidence_span:not_literal';
  * contains or their order, and the uniqueness test below is the frozen rule's
  * own: a quote that passes here still picks out exactly one place in the
  * learner's own words.
+ *
+ * Retained for replay of the 2026-08-16 ruling. New reads use the offset-safe
+ * CASE_INSENSITIVE mode of deriveAdaptiveWarrantSemanticEvidenceSpan instead.
  */
 export function deriveQuoteIgnoringLetterCase(learnerText, suppliedSpan) {
   const fold = (value) => normalizeAdaptiveWarrantSemanticQuotePunctuation(value).toLowerCase();
@@ -85,6 +89,9 @@ export function classifyUnreadTurnUnderTypographicRuling({ events = [], turn } =
       return { turn, qualifies: false, reason: `${label} reply is not one JSON object` };
     }
     const result = validateAdaptiveWarrantSemanticExtraction(parsed.semantic_events, {
+      // This ruling must reproduce the original refusal, even after new reads
+      // adopt case-insensitive matching. The unread turn remains excluded.
+      quoteMatchMode: ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.HISTORICAL,
       learnerText,
       publicText: attempt.request?.prompt ?? learnerText,
       turn: Number(turn),

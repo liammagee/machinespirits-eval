@@ -1,3 +1,5 @@
+import { normalizeTutorStubTypedActionAssignmentMode } from './tutorStubTypedActionAssignment.js';
+
 /**
  * Resolve the launch-time application context shared by every tutor-stub host.
  *
@@ -289,6 +291,7 @@ export async function createTutorStubLaunchApplicationContext({
   });
   const experimentRepeat = parsePositiveInt(args['eval-repeat'], '--eval-repeat');
   const typedActionsEnabled = Boolean(args['typed-actions']);
+  const typedActionAssignmentMode = normalizeTutorStubTypedActionAssignmentMode(args['typed-action-assignment']);
   const typedActionSupportLevel = parseOptionalBoundedInt(
     args['typed-action-support-level'],
     '--typed-action-support-level',
@@ -306,6 +309,14 @@ export async function createTutorStubLaunchApplicationContext({
   if (typedActionsEnabled && (!typedActionTask.taskId || !typedActionTask.knowledgeComponent)) {
     throw new Error('--typed-actions requires non-empty task id and knowledge component');
   }
+  if (!typedActionsEnabled && typedActionAssignmentMode !== 'policy') {
+    throw new Error('--typed-action-assignment uniform_family_eligible requires --typed-actions');
+  }
+  if (typedActionAssignmentMode === 'uniform_family_eligible' && typedActionSupportLevel === null) {
+    throw new Error(
+      '--typed-action-assignment uniform_family_eligible requires an explicit --typed-action-support-level',
+    );
+  }
   const typedActionConfig = {
     schema: TUTOR_TYPED_ACTION_CONFIG_SCHEMA,
     enabled: typedActionsEnabled,
@@ -313,8 +324,12 @@ export async function createTutorStubLaunchApplicationContext({
     policyMode: 'closed_loop',
     decisionTiming: 'after_current_public_learner_observation_before_tutor_output',
     outcomeHorizon: 'next_public_learner_observation',
-    selectionMethod: 'deterministic_closed_loop_argmax',
-    selectionProbability: 1,
+    assignmentMode: typedActionAssignmentMode,
+    selectionMethod:
+      typedActionAssignmentMode === 'uniform_family_eligible'
+        ? 'seeded_uniform_family_eligible'
+        : 'deterministic_closed_loop_argmax',
+    selectionProbability: typedActionAssignmentMode === 'uniform_family_eligible' ? null : 1,
     scaffoldLifecycle: {
       enabled: typedActionsEnabled,
       schema: SCAFFOLD_LIFECYCLE_SCHEMA,

@@ -176,3 +176,11 @@ test without grounds?
   attempts and the stack-bound claim; new §7.16 places the result in a
   two-class synthesis of the programme's adaptation limits (redundancy
   vs subtraction) with six new external references. Card stays done.
+- 2026-08-30: Docs fold after the paper landing. Atlas: module 13 gains
+  the §6.29 tone-versus-moves null, module 18 gains the §6.30 close, and
+  new module 19 carries the §7.16 two-class synthesis. Arc guide: panel
+  11 gains the closing paragraph; claim cut re-stamped v3.0.297.
+  Blueprint: two new not-worth-building items (§6.29·§8.9, §6.30·§7.16);
+  provenance re-stamped v3.0.297. Claim audit PASS over all three diffs
+  (every number traced, no new claims). Staged to the content repo for
+  the site deploy.

@@ -23,6 +23,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES,
   ADAPTIVE_WARRANT_SEMANTIC_ACTIONS,
   ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE,
+  ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES,
   ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS,
@@ -30,6 +31,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS,
   ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
   validateAdaptiveWarrantSemanticExtraction,
+  validateAdaptiveWarrantSemanticQuoteMode,
 } from './adaptiveWarrantSemanticEvents.js';
 
 export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_SYSTEM_PROMPT = [
@@ -1889,6 +1891,7 @@ function validateStrictAnalysis(
     benchmarkLearnerText = null,
     tutorTurn = null,
     semanticPublicText = null,
+    semanticQuoteMatchMode = ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.HISTORICAL,
   } = {},
 ) {
   const root = requireObject(parsed, '$');
@@ -2101,6 +2104,7 @@ function validateStrictAnalysis(
       learnerText: benchmarkLearnerText,
       publicText: semanticPublicText ?? benchmarkLearnerText,
       turn: tutorTurn,
+      quoteMatchMode: semanticQuoteMatchMode,
     });
     const eventIssues = semantic.events.flatMap((event) => event.validation.issues);
     if (semantic.envelope_issues.length || eventIssues.length) {
@@ -2154,6 +2158,7 @@ function analysisParts(
     benchmarkLearnerText = null,
     tutorTurn = null,
     semanticPublicText = null,
+    semanticQuoteMatchMode = raw?.semanticQuoteMatchMode,
   } = {},
 ) {
   const parsed = raw?.parsed || raw || {};
@@ -2179,6 +2184,7 @@ function analysisParts(
       benchmarkLearnerText,
       tutorTurn,
       semanticPublicText,
+      semanticQuoteMatchMode,
     });
   }
   return { classification, learnerRecord, registerSelection, benchmarkTransition, semanticEvents };
@@ -2275,6 +2281,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
   priorPublicLearnerState = null,
   includeBenchmarkTransitionEvent = false,
   includeSemanticEvents = false,
+  semanticQuoteMatchMode = ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE,
   callModel,
   parseMode = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK,
   role = 'tutor_stub_public_learner_analysis',
@@ -2285,6 +2292,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
   evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   modelCallOptions = {},
 } = {}) {
+  if (includeSemanticEvents) validateAdaptiveWarrantSemanticQuoteMode(semanticQuoteMatchMode);
   const strict = parseMode === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK;
   const effectiveRole = strict ? strictRole || 'tutor_stub_public_learner_analysis' : role;
   if (
@@ -2544,6 +2552,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
           benchmarkLearnerText: learnerText,
           tutorTurn,
           semanticPublicText: analysisPrompt,
+          semanticQuoteMatchMode,
         })
       : parseTutorStubPublicLearnerAnalysisInteractive(rawText);
   } catch (error) {
@@ -2566,6 +2575,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
         publicText: analysisPrompt,
         turn: tutorTurn,
         rawResponseText: rawText,
+        quoteMatchMode: semanticQuoteMatchMode,
       })
     : null;
   if (
@@ -2621,6 +2631,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
     callMetadata,
     call_metadata,
     semanticEventExtraction,
+    ...(includeSemanticEvents ? { semanticQuoteMatchMode } : {}),
     provenance: {
       model_input_public_only: true,
       public_world_projection: true,
@@ -3032,6 +3043,11 @@ export function postprocessTutorStubPublicLearnerAnalysis({
         { code: 'missing_analysis_output' },
       );
     }
+    // Raw historical envelopes have no mode stamp. New extraction envelopes
+    // carry their matching mode through this deterministic replay step.
+    const semanticQuoteMatchMode = Object.hasOwn(rawAnalysis, 'semanticQuoteMatchMode')
+      ? rawAnalysis.semanticQuoteMatchMode
+      : ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.HISTORICAL;
     const strict = parseMode === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK;
     const registerPolicy = String(promptContext.registerPolicy || '').trim();
     const includeRegisterSelection = Boolean(
@@ -3054,6 +3070,7 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       benchmarkLearnerText: learnerText,
       tutorTurn,
       semanticPublicText: rawAnalysis.prompt || learnerText,
+      semanticQuoteMatchMode,
     });
     if (!rawClassification || !learnerRecordUpdate) {
       throw new TutorStubPublicLearnerAnalysisError(
@@ -3068,6 +3085,7 @@ export function postprocessTutorStubPublicLearnerAnalysis({
           publicText: rawAnalysis.prompt || learnerText,
           turn: tutorTurn,
           rawResponseText: rawAnalysis.rawText || null,
+          quoteMatchMode: semanticQuoteMatchMode,
         })
       : null;
     const tutorLearnerDag = applyTutorStubPublicLearnerRecordUpdate({

@@ -1,0 +1,220 @@
+{
+  "schema": "adaptive-causality.state-move-review-spec.v1",
+  "packet_id": "adaptive-state-move-crossed-v1",
+  "codebook_id": "adaptive-state-move-codebook-v1",
+  "seed": "adaptive-state-move-crossed-v1-frozen-2026-08-30",
+  "worlds": ["world_030_rowan_flat", "world_033_alder_row_redoubt"],
+  "per_stratum": 1,
+  "sources": [
+    {
+      "source_id": "crossed_effects",
+      "file": "conduct-tags.json",
+      "sha256": "72dbfb3e92464a1e070c7c6e91cdc8577e7bcae1f8c13ccdbd1ff75ce81a41c6",
+      "arm_field": "policy",
+      "forced_move_field": "forcedCard",
+      "state_field": "state",
+      "provenance": {
+        "workplan_item": "adaptive-causality-crossed-effects",
+        "reported_prs": [453, 454, 455, 460],
+        "claim_boundary": "Two-state crossed conduct evidence; no human-learning or transfer claim."
+      }
+    },
+    {
+      "source_id": "repertoire",
+      "file": "repertoire-tags.json",
+      "sha256": "f27ffe9c9a5c6fb25b3e28624850b5faeb7b3f00d2a9a0ab439cc2d60c9b5e2d",
+      "arm_field": "arm",
+      "forced_move_field": "forced",
+      "state_field": "state",
+      "provenance": {
+        "workplan_item": "adaptive-causality-repertoire",
+        "reported_prs": [457, 458, 459, 460],
+        "claim_boundary": "Two-world repertoire traces only; the later one-world flat/bored promotion is excluded."
+      }
+    }
+  ],
+  "states": [
+    {
+      "code": "misremembered_exhibit",
+      "label": "Misremembered exhibit",
+      "source_id": "crossed_effects",
+      "source_value": "settled_claim",
+      "gold_move": "reopen_record",
+      "definition": "The learner treats a public exhibit as saying something materially different from what it recorded.",
+      "include": [
+        "The learner says a test was dry, clear, absent, or otherwise exculpatory when the displayed record says the contrary.",
+        "The mistaken recollection is doing argumentative work in the current turn."
+      ],
+      "exclude": [
+        "A learner who remembers the exhibit correctly but disputes its relevance.",
+        "A learner who is merely unsure which exhibit is under discussion."
+      ]
+    },
+    {
+      "code": "fused_personal_stake",
+      "label": "Finding fused with a personal stake",
+      "source_id": "crossed_effects",
+      "source_value": "stake",
+      "gold_move": "split_stake",
+      "definition": "The learner resists a finding because accepting it feels inseparable from apology, loss of standing, or another personal cost.",
+      "include": [
+        "The learner links naming the finding to humiliation, blame, apology, or loss.",
+        "An alternative conclusion is kept alive because it avoids that cost."
+      ],
+      "exclude": [
+        "A purely evidential objection with no personal or social cost.",
+        "A general grievance about not being heard."
+      ]
+    },
+    {
+      "code": "deadline_demand",
+      "label": "Deadline demand",
+      "source_id": "repertoire",
+      "source_value": "demand",
+      "gold_move": "accept_deadline_test",
+      "definition": "The learner imposes a near-term decision deadline and demands a decisive reason or test before acting.",
+      "include": [
+        "A clear time pressure or imminent action is named.",
+        "The tutor is challenged to supply one reason, check, or warrant within that constraint."
+      ],
+      "exclude": [
+        "Ordinary impatience without a decision demand.",
+        "Mockery that contains no concrete deadline or requested test."
+      ]
+    },
+    {
+      "code": "mocking_register",
+      "label": "Mocking the tutor's register",
+      "source_id": "repertoire",
+      "source_value": "mockery",
+      "gold_move": "plain_language_swap",
+      "definition": "The learner ridicules or punctures the tutor's style, jargon, formality, or manner of speaking.",
+      "include": [
+        "The learner compares the tutor's language to bureaucratic, technical, pompous, or otherwise misplaced speech.",
+        "The complaint targets how the tutor is speaking, even if it also advances content."
+      ],
+      "exclude": [
+        "A substantive disagreement stated plainly.",
+        "A grievance about credit or standing that does not target register."
+      ]
+    },
+    {
+      "code": "lost_thread",
+      "label": "Lost thread",
+      "source_id": "repertoire",
+      "source_value": "lost",
+      "gold_move": "untangle_thread",
+      "definition": "The learner can no longer keep two exhibits, lines, or references distinct and asks which is which.",
+      "include": [
+        "The learner explicitly says they cannot tell which object, line, or test a note refers to.",
+        "The confusion is about maintaining the thread, not rejecting the evidence."
+      ],
+      "exclude": [
+        "A confident but false memory of one exhibit.",
+        "A request for extra detail when the existing distinctions remain clear."
+      ]
+    },
+    {
+      "code": "standing_grievance",
+      "label": "Standing grievance",
+      "source_id": "repertoire",
+      "source_value": "grievance",
+      "gold_move": "credit_before_test",
+      "definition": "The learner says their prior work, care, evidence, or standing has not counted in the exchange.",
+      "include": [
+        "The learner asks what their contribution has counted for.",
+        "The complaint is about recognition or credit before further correction."
+      ],
+      "exclude": [
+        "A personal cost attached to accepting a particular finding.",
+        "A simple request to repeat an explanation."
+      ]
+    }
+  ],
+  "moves": [
+    {
+      "code": "reopen_record",
+      "label": "Reopen the record",
+      "source_values": ["settled_claim"],
+      "definition": "Return to the concrete public exhibit and correct the learner's recollection against what it actually records.",
+      "include": [
+        "Names the exhibit and contrasts the learner's memory with its recorded result.",
+        "Invites or performs a fresh reading of the same record."
+      ],
+      "exclude": [
+        "Merely repeats the conclusion or introduces a different exhibit.",
+        "Credits the learner without correcting the record."
+      ]
+    },
+    {
+      "code": "split_stake",
+      "label": "Split the finding from the stake",
+      "source_values": ["stake"],
+      "definition": "Separate what the evidence supports from the apology, blame, status, or other cost the learner attaches to accepting it.",
+      "include": [
+        "Explicitly says the finding and the personal consequence are different questions.",
+        "Preserves something the learner was right about while allowing the causal finding to change."
+      ],
+      "exclude": [
+        "Only reassures the learner or re-argues the evidence.",
+        "Treats the personal cost as irrelevant without separating it."
+      ]
+    },
+    {
+      "code": "accept_deadline_test",
+      "label": "Accept the deadline and set a test",
+      "source_values": ["demand"],
+      "definition": "Acknowledge the learner's time constraint and convert it into one concrete check that can bear the decision.",
+      "include": [
+        "Takes the deadline seriously rather than resisting it.",
+        "Names a bounded, decision-relevant check."
+      ],
+      "exclude": [
+        "General calming language with no test.",
+        "A long evidential lecture that ignores the learner's decision constraint."
+      ]
+    },
+    {
+      "code": "plain_language_swap",
+      "label": "Switch to plain language",
+      "source_values": ["mockery"],
+      "definition": "Accept the register criticism and restate the live distinction in shorter, ordinary language.",
+      "include": [
+        "Explicitly drops or lightens the criticized style.",
+        "Uses a compact everyday contrast that preserves the reasoning."
+      ],
+      "exclude": [
+        "Continues in the same ornate or technical register.",
+        "Only apologizes for style without making the content plainer."
+      ]
+    },
+    {
+      "code": "untangle_thread",
+      "label": "Untangle the thread",
+      "source_values": ["quiet:confused"],
+      "definition": "Put the confused exhibits or lines side by side, distinguish their roles, and restore a usable thread before pressing on.",
+      "include": [
+        "Names both items separately and says what each does or does not establish.",
+        "Checks which item the learner meant after clarifying the distinction."
+      ],
+      "exclude": [
+        "Adds another test without resolving the confusion.",
+        "Corrects one fact but leaves the two referenced items conflated."
+      ]
+    },
+    {
+      "code": "credit_before_test",
+      "label": "Give credit before the next test",
+      "source_values": ["grievance"],
+      "definition": "Name specific contributions that counted before returning to correction or the next evidential check.",
+      "include": [
+        "Identifies concrete learner entries, cautions, or distinctions that changed the inquiry.",
+        "Places that recognition before the next challenge or test."
+      ],
+      "exclude": [
+        "Generic praise with no named contribution.",
+        "Moves directly to correction while ignoring the grievance."
+      ]
+    }
+  ]
+}

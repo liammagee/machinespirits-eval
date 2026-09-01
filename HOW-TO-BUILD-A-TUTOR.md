@@ -9,6 +9,50 @@ Evidence pointers: `workplan/items/adaptation-planted-stress-bench.md`,
 `workplan/items/misconception-world-outcome-gate.md`,
 `docs/tutor-stub-guard-catalog.md`, runs under `exports/tutor-stub-outcome/`.
 
+## Current reading note — 2026-08-31
+
+The dated working synthesis below is retained as research history. For the current
+public build sequence, use `notes/poetics/ideal-tutor-blueprint.html`, which inherits
+the canonical paper at **v3.0.299**. The paper, not this provisional note, decides
+which findings are licensed; an old item described below as open or in flight is
+not a current status report.
+
+The latest closeouts add three build rules (§6.28 and §7.15):
+
+1. Calibrate a reader-defined endpoint before using it to compare treatments. The
+   refusal-narrowing measure failed agreement in both duplicate executions over
+   the same archived rows; neither execution can be selected or pooled into a result.
+2. Check that the authored learner actually produces the state the experiment
+   needs. Making a demand satisfiable did not make the learner voice it: all 48
+   planned dialogues stopped on the missing registered trigger, leaving no
+   determinate endpoint rows. That is a persona/trigger failure, not a treatment null.
+3. Own the spend ceiling once per study, across sessions and recovery attempts.
+   Two local 72-attempt counters admitted 144 attempts in total. The shared runtime
+   now acquires a study-wide lease and charges one ledger before provider startup;
+  offline concurrency tests cover the repair, without another paid run.
+
+A fifth, fresh depth calibration is now also recorded in §6.28. It delivered
+the treatment in all 24 assigned dialogues and observed one rung-2 outcome
+among 18 completed treatment dialogues, versus none among eight reference
+dialogues. Endpoint-reader agreement still failed, so no powered comparison
+was authorized. Keep the earlier 0/38 summary confined to the first four
+calibrations; neither overwrite it nor turn it into a universal zero.
+
+The depth line has since closed (v3.0.299), and the close adds a fourth
+build rule. A zero-call anchor rehearsal re-read the disputed rows with a
+worked anchor from the lineage's own strongest case: it resolved the split
+attributions (15/16 to the archived modal) but demoted the lineage's only
+two unanimous rung-2 exemplars 3–0. Both sit at the same
+concede-bounds-while-withholding seam as the splits, so a consistent
+boundary either legitimizes the disagreement or empties the category. The
+rule: when every defensible reading of a boundary either revives the
+disagreement or removes the event class, the construct — not the readers —
+is the instrument's limit; close the scale and redesign the measure (or
+the task) rather than re-anchoring again. The refuser's genuine movement
+is graded concession below a binary ladder's resolution; the sealed
+powered run's depth split stands as recorded and was not re-read at that
+seam.
+
 ## What you are building against
 
 A month of instrumentation experiments kept losing to the bare frontier

@@ -1,0 +1,146 @@
+{
+  "schema": "adaptive-causality.state-move-review-packet.v1",
+  "packet_id": "adaptive-state-move-crossed-v1",
+  "codebook_id": "adaptive-state-move-codebook-v1",
+  "purpose": "Independent review of the learner state expressed in a public turn and the pedagogical move visibly realized in the following tutor reply.",
+  "claim_boundary": "This packet checks construct recognition and visible tutor conduct. It does not measure learning, transfer, tutor efficacy, or generalization beyond the sampled traces.",
+  "blinding": {
+    "excludes": [
+      "source world and turn",
+      "experimental arm or policy",
+      "assigned and gold moves",
+      "automated tags and rulings",
+      "downstream outcomes"
+    ],
+    "neutral_case_order": true
+  },
+  "coding_instructions": [
+    "Use only the learner turn and tutor reply printed for the case.",
+    "Code the learner state expressed in the learner turn, not the state you think the experiment intended to plant.",
+    "Code every pedagogical move clearly visible in the tutor reply; do not infer a hidden instruction or arm.",
+    "Use an indeterminate disposition whenever the public wording does not support a confident label.",
+    "Work independently and do not consult the machine key or another coder before freezing the submission."
+  ],
+  "cases": [
+    {
+      "case_id": "case_001",
+      "learner_turn": "I’ve kept that notebook for two months. Every damp towel, every date. Tell me one entry of mine that’s actually counted for anything today.",
+      "tutor_reply": "Two entries of yours are doing real work right now: you wrote \"basin line, hairline split, opening under raised pressure\" — that's what let us line the hose up against the pressure test at all. And you wrote \"no water route from screen to ceiling\" — that's what kept us from closing the case on Sam before the evidence was in. Neither of those was guesswork; both are sitting in the record. My case is this: the dye followed the basin split straight to the leading edge of your kitchen mark, while dye at the shower screen never left the tray. That's a traced path for the basin line — something Sam's shower still doesn't have. It doesn't yet tell us whether the pressure test itself opened that split at the right moment, or just found it already open. So here's the check you're equipped to run: does the timing you already logged — hose dry normally, split opens under raised pressure, test running 08:15, mark at 08:18 — put the split's opening inside the pressure test's window?"
+    },
+    {
+      "case_id": "case_002",
+      "learner_turn": "Hang on—the pressure test was on the shower line or the basin line? I wrote “hose” in the notebook and now I can’t tell which hose I meant.",
+      "tutor_reply": "You've nailed two real things: the hose stays dry until pressure rises, and the split starts right there at the joint — those are yours, on the record. You also caught the notice: test ran 08:15, mark showed 08:18, timing overlaps. Fair confusion though — I never said \"shower hose,\" I said the flexible cold-water hose under the basin. Go stand at the basin now and check: does that split hose have any pipe run leading toward the table-end ceiling, or does it dead-end somewhere else?"
+    },
+    {
+      "case_id": "case_003",
+      "learner_turn": "Meeting’s at eight. The mark’s right under Sam’s shower—I’m sending the email unless you give me one reason not to in the next minute.",
+      "tutor_reply": "You want it settled before eight? Fine—here's the check that settles it. Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. But wet and running aren't the same as connected. Being under the bathroom isn't a path. Go find where the wet trail actually leads from that screen. If it reaches the stain, send your email with my blessing. So: does the record show the water travelling from the screen to the ceiling, or just that Sam was careless?"
+    },
+    {
+      "case_id": "case_004",
+      "learner_turn": "Mate, you sound like a plumber’s invoice. The hose only opens when pressure’s raised, so that’s where the water may have started—not Sam’s shower.",
+      "tutor_reply": "Fair enough — no more invoice-talk. The hose bit's a real find: it stays dry normally, but that hairline split opens and beads water when pressure climbs, and the paper strip caught it doing exactly that. That's good for saying \"this thing can leak under pressure,\" not for saying \"this is where Wednesday's water came from.\" I've got it written in the notebook as a live suspect, not a proven source — still need it tied to the actual mark, same as Sam's shower needed a path, not just timing."
+    },
+    {
+      "case_id": "case_005",
+      "learner_turn": "“Timing without a matching mark on the metal”—who talks like that? A tank split: water froze or that machine shook it; say it plain.",
+      "tutor_reply": "Fair, plain then: a tank cracks two ways. Frozen water splits it right at the top, where the water sits full. Shaking from a machine splits it lower down, where the tank bolts to its frame. I'm standing at Tank One now, looking straight at its crack line. Where does it run — top or bottom?"
+    },
+    {
+      "case_id": "case_006",
+      "learner_turn": "I’ve given you three careful answers and you’ve sanded every one down. Tell me one thing I’ve said today that survived contact with you.",
+      "tutor_reply": "Two things you said stand in the record just as you said them: you refused to guess Tank One's crack line before your own eye was on it, and you kept \"pump\" written down until the brim proves it wrong instead of striking it early. My case is: those two moves, plus the valve's overnight fullness now on record, give brim-ice its needed condition — but nothing yet says the pump's hum has ever left a mark at any mount or bolt. We're still crouched at the same crack, and the row's own sight glass sits beside us, full to the same line every evening. The limit stands exactly where it did — Tank One's crack has not yet spoken its own line, top or bottom."
+    },
+    {
+      "case_id": "case_007",
+      "learner_turn": "Meeting’s at eight. The mark’s right under Sam’s shower — I’m sending the email unless you can give me one reason not to in the next minute.",
+      "tutor_reply": "Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. But timing alone doesn't prove a path from that screen to the ceiling mark. What in the flat would actually show water travelling from the shower to that spot above the table?"
+    },
+    {
+      "case_id": "case_008",
+      "learner_turn": "Thursday. The minutes go out Thursday—write “pump” now and amend it later if you must.",
+      "tutor_reply": "My case is: the crack's still nowhere near the bolts I just checked. That doesn't clear the pump, but it doesn't write it into the minutes either. I'm not putting my hand on wet metal and calling it settled before I know what it says. Thursday's not here yet — go look at where this split actually runs before you send anything to print."
+    },
+    {
+      "case_id": "case_009",
+      "learner_turn": "If I write “hose” in that notebook, I’m apologising to Sam at eight. So it’s steam. It can be steam.",
+      "tutor_reply": "Steam wasn't measured anywhere in this notebook — no fogged mirror, no kettle noted, nothing on record. Let's stand at the basin together and read the actual strip result one more time before you write anything. That strip shows the first bead forming at the joint under raised pressure, which supports the hose weeping — it doesn't establish steam, and steam has no entry to point to at all. The dye trace is the check that's already sitting there: it followed hose to ceiling, none from the shower. So — does the notebook you're holding have one line of evidence for steam, or does it only have the hose's dye trail?"
+    },
+    {
+      "case_id": "case_010",
+      "learner_turn": "We did the paper strip. It came back dry — hose is cleared, it’s in my notebook.",
+      "tutor_reply": "Hold on — I go back to the strip itself, not to what got written about it. My case is: the record on that joint says the first bead formed there under raised pressure, which is the opposite of dry. That paper strip doesn't clear the basin hose; it's the very thing that first caught it beading. So the notebook entry needs correcting against the record, not the record against the notebook. Given that the strip shows a bead, not dryness, does the basin hose still stand cleared in your notebook, or does that entry need rewriting?"
+    },
+    {
+      "case_id": "case_011",
+      "learner_turn": "Understand what you’re asking me to write: if it isn’t the pump, then I was wrong in October and the seven who outvoted me were right—so it’s the pump.",
+      "tutor_reply": "Stand with me at the ledger's front page, where your October objection is written down plain. Read what it actually says: spend money without proof, and something in the row would answer for it. That objection never claimed \"the pump will vibrate the tanks apart\" — it claimed the vote was reckless, made before the mechanism was known. The frost, the valve, three winters of splits answering for an unproven purchase — that's exactly what you warned them of. Being right that the vote was hasty and being right about which mechanism split the shells are two different findings; you can hold the first without the second."
+    },
+    {
+      "case_id": "case_012",
+      "learner_turn": "Hang on—the pressure test was on the shower line or the basin line? I wrote “hose” down and now I can’t tell which hose I meant.",
+      "tutor_reply": "Good catch to stop there rather than plough on. Two separate exhibits sit on the table: the basin's cold-water hose with its hairline split and paper-strip bead, and the building notice recording a mains-pressure test at 08:15 with the mark appearing at 08:18. Neither exhibit says the word \"shower\" — the shower entry is only the earlier timing note about Sam. So tell me plainly: when you wrote \"hose,\" did you mean the basin hose with the split, or were you thinking of the shower line?"
+    },
+    {
+      "case_id": "case_013",
+      "learner_turn": "Hold on—the pump came in that first winter week, or was that the top-up line? My notes have the two muddled, but the thing humming is still the pump.",
+      "tutor_reply": "Good, let's untangle it — two separate exhibits, easy to cross wires on. One: the pump went into the shed the first week of winter, and its hum reaches the shared frame — that's the pump entry. Two: the supply line tops the row up each evening, so by dark every tank reads the same level on the sight glass — that's the top-up entry, about fullness, not about the pump at all. So which one were you reaching for — the pump's arrival and hum, or the evening top-up that fills the row?"
+    },
+    {
+      "case_id": "case_014",
+      "learner_turn": "Hold on—the valve came with the pump, or the pump with the valve? Which one raised the water? My notes contradict themselves.",
+      "tutor_reply": "Good question to catch yourself on. Your notes hold two facts: the pump arrived first week of winter, and the sight glass now reads the same full level every evening. Both are true entries, but they don't yet say which one raised the line. Check the overflow valve setting itself — was it moved when the pump went in, or has it sat unchanged since before?"
+    },
+    {
+      "case_id": "case_015",
+      "learner_turn": "We did the paper strip. It came back dry—the hose is cleared, it’s in my notebook.",
+      "tutor_reply": "My case is this: the paper strip and the dye trail are two separate checks, and they don't agree by accident. The strip caught the first bead where the split opens, and the dye ran that same route straight to the ceiling mark, while shower dye stayed in the tray — that's what settles the source and the path. What it doesn't touch is your original objection about the vote at the table this morning, before any of this testing began. So here's the split worth making: was your case against Sam's shower ever really about proving the cause, or about refusing to let the household convict on habits before anyone checked? Which one were you actually arguing?"
+    },
+    {
+      "case_id": "case_016",
+      "learner_turn": "Mate, you sound like a plumber’s invoice. Tell me where the water walked—if the pressure test made that hose bead, how does it get from the basin to the kitchen ceiling?",
+      "tutor_reply": "Right — that hairline split proves the hose can weep water under pressure, not that it wept water onto your ceiling. If you want the verdict before your meeting, here's the exact check the record must pass: does anything trace a wet path from that basin joint up through the flat to the mark over the table — a stain, a soaked cavity, a drip line, anything physical between the two points? Find that connecting trace by your deadline and the hose case stands on its own; without it, you've got a source with an opening but no route. What's under that basin besides the paper strip — anything showing where the bead actually went?"
+    },
+    {
+      "case_id": "case_017",
+      "learner_turn": "I’ve given you three careful answers and you’ve rubbed every one out. Tell me what in my notes survives with you.",
+      "tutor_reply": "My case is this: the record kept, not erased, holds three things standing together on the page right now. The frame test shows the mount sitting still, so the pump's shake never reached the tanks. The sight glass and the work order together show the valve reset raised every tank to brim-full overnight, from the week the pump arrived. What that page does not yet establish is what actually breaks the metal once cold settles onto a line that no longer draws down. So here's what survives: valve reset, not vibration, is what's carried forward — the cause of the brim-full condition, not yet the cause of the crack itself."
+    },
+    {
+      "case_id": "case_018",
+      "learner_turn": "“Verdict column,” you say. Just say the thing: I’m following the crack to the brim.",
+      "tutor_reply": "Good — you're following it to the brim, and Thursday is the clock you set, not me. Here's the exact test: if that crack runs right along the full waterline, brim-ice explains it — the tank stood full through frost and split at the rim, and the pump's hum has no bearing there. If it stops short of the brim, or wanders somewhere the waterline doesn't reach, \"pump\" still hasn't earned its place, but neither has \"frost.\" I'm not entering either word in the ledger until the crack itself says where it runs. So — does it reach the brim, or not?"
+    },
+    {
+      "case_id": "case_019",
+      "learner_turn": "We settled this: the valve was reset because the new pump needed water kept up to it—that’s in your ledger.",
+      "tutor_reply": "You're right, that entry stands as given. But let me ask you something separate from all this shell-reading: when you spoke against the pump at the vote, what exactly did you say would go wrong? Because that's worth checking against what's actually happened. If your objection was about cost, or upkeep, or the society rushing a decision — that's a different claim from \"the pump will crack the tanks,\" and it doesn't need this crack line to be true. The vote and the cause are two separate ledgers. What was the objection, in your own words?"
+    },
+    {
+      "case_id": "case_020",
+      "learner_turn": "If it isn’t the pump, then I was wrong about the vote—and the seven who outvoted me were right. So I’m not ready to let the pump go.",
+      "tutor_reply": "Let's stand at the ledger together, open to the split-day column, where every entry actually sits. That page pairs each split morning with a night the frost held past dawn, and shows mild nights with no new splits despite the pump running the same as ever. This supports the frost's grip on brim-full water, not the pump's vibration acting through the frame — and it says nothing at all about whether you were right or wrong to speak against the purchase. The ledger only carries what happened to the tanks; it was never asked to rule on the vote."
+    },
+    {
+      "case_id": "case_021",
+      "learner_turn": "If I write “hose” in that notebook, I’m apologising to Sam at eight—so it’s steam. It can be steam.",
+      "tutor_reply": "Let's stand at the notebook together, both entries open in front of us. Calling for the pressure test was the right move regardless of what it found — that's not on trial here. What was your actual objection when you first pushed for the test: that Sam's shower caused the mark, or that nobody had traced water anywhere yet? Check the dye result again before you write \"steam\" — did it name a path, or just give you a way to avoid one?"
+    },
+    {
+      "case_id": "case_022",
+      "learner_turn": "I've kept that notebook for two months. Every damp towel, every date — tell me one entry of mine that's actually counted for anything today.",
+      "tutor_reply": "Write: Sam's shower ran during the window, but the mark still traced to a different source entirely — so the shower's timing doesn't cause anything here. My case is this: your notebook entries on the hose split and the pressure-test window are exactly what stand today — those are the two you named that the dye traced. The basin joint is the object doing the work now, not the bathmat or screen you logged out of habit. Go back and reread your own hose-split entry: it says \"under raised pressure,\" not \"during Sam's shower.\" What does that line actually claim, in your words?"
+    },
+    {
+      "case_id": "case_023",
+      "learner_turn": "Thursday. The minutes go out Thursday. Write “pump” now and amend it later if you must.",
+      "tutor_reply": "Thursday it is, then — and Thursday can carry a verdict if the evidence carries it first. My hand is still on this frame, and it's telling me nothing yet: no looseness, no fresh scuff, no bright metal where a bolt has been working against wood. Before I write \"pump\" in that margin, I need this frame to show disturbance, not just proximity to the hum. Go run your own hand along the next split tank's mounts before Thursday — if it shows the same nothing, the pump hasn't earned the word yet."
+    },
+    {
+      "case_id": "case_024",
+      "learner_turn": "We settled it: the work order showed the pump needed that extra water, which is why the valve was reset.",
+      "tutor_reply": "You said \"settled,\" but the entry doesn't read that way — let me put the work order flat on the shed shelf again. It says the valve was re-set two hands above the old draw line the same week the pump arrived; it doesn't say the pump needed the water, only that the change let the pump always find some. That line supports \"the row has stood brim-full every night since that week\" — it does not establish \"the pump required this\" as a settled fact. So which claim do you actually want standing in the ledger: what the valve's new setting caused, or what you're inferring the pump needed?"
+    }
+  ]
+}
