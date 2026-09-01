@@ -171,6 +171,45 @@ content is supplied. Generation failures stop without replacement sampling.
 Changing this recovery policy would be a prospective design decision, not a
 reason to overwrite the preceding experiment.
 
+### Prospective assessment-packaging amendment after attempt 39
+
+The third A-quality attempt returned one tool-free Opus response through the
+plain-JSON route, but the archived result ended at 13,000 characters before the
+closing JSON delimiters. It is preserved as a failed attempt. None of its
+apparent scores, annotations or prose is accepted or used to shape this
+amendment. The technical observation is only that the monolithic response did
+not fit through the result-text transport as complete JSON.
+
+The scientific question, arms, transcripts, character brief, public source
+context, Opus route, rubric fields, endpoints, claim boundary and 48-attempt
+study ceiling remain unchanged. The remaining extended quality judgments are
+now packaged as two smaller calls per transcript along existing top-level
+schema boundaries:
+
+1. a summary packet containing the four scores and reasons, strengths,
+   limitations and overall assessment; and
+2. a turn packet containing all eight learner annotations and all eight tutor
+   evidence annotations.
+
+Each packet receives the same complete public transcript, character brief,
+quality instructions and delivered-source provenance. Each independently
+returns `measurement_indeterminate` and `indeterminate_reason`; either
+indeterminate packet stops the study. Both use one tool-free, single-response
+Opus call, plain JSON and strict local validation with no retries, completion,
+fence recovery or extra fields. Only after both packets validate are their
+disjoint requested fields joined mechanically and the resulting object checked
+against the original full quality schema. A valid half-packet is archived but
+does not become a quality score by itself.
+
+At amendment time the immutable chain contains 39/48 attempts: 16 normal-arm
+generation calls, 17 abliterated-arm generation calls, three accepted A
+assessments and three failed A-quality attempts. Seven new calls are planned:
+A quality summary and turns; B tutor, learner and dialogue; and B quality
+summary and turns. Success would therefore finish at 46/48. The launch exposes
+at most the nine study-wide attempts still available, leaving two unplanned;
+the ceiling is not a target. Any failed or malformed new packet stops without
+resampling, and no accepted dialogue or assessment is rerun.
+
 Proposed private create-once destination:
 `.tutor-stub-traces/qwen-invested-rival-theorist-v1/`.
 No production ingestion, push or publication. Keep the existing Techne/swimlane
