@@ -33,7 +33,10 @@ const WORLD_DIR = path.join(ROOT, 'config', 'drama-derivation');
 // as world-030.
 // block for the minimal pair; on the tutor-stub outcome path it is UNREAD, and
 // the authored voice is carried by `--learner-profile contradiction_keeper`.
-const WORLDS_DECLARING_LEARNER_MOTIVATION = 21;
+// 22nd world: world_035_nine_oclock_ghost (hero-demo illustration) declares
+// the same block and runs on the tutor-stub stress path, which reads it —
+// same route as world-030/034.
+const WORLDS_DECLARING_LEARNER_MOTIVATION = 22;
 
 function allWorlds() {
   return fs

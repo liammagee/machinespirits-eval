@@ -1,0 +1,2355 @@
+<!doctype html>
+<!--
+  techne-doc: adaptive tutor hero demo (lay-audience rewrite, 2026-09-01).
+  The .html IS the source (no build step). Design: assets/techne.css.
+  Behaviour: assets/techne.js. Every quoted learner/tutor line is verbatim
+  from the recorded material behind notes/poetics/
+  2026-08-29-adaptive-tutor-from-null-to-control.html (ellipses shorten only).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>The tutor that knows why you're stuck</title>
+<meta name="description" content="One recorded moment, two tutor replies. A plain demo of how the adaptive tutor reads a stuck learner and picks the move that actually helps." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<style>
+/* ════════════════════════════════════════════════════════════════
+   techne.css — dramatic-recognition editorial design system
+   Shared stylesheet. Extracted from the arc note so design and
+   content live in separate files (Tier 1). Consumed by the arc
+   HTML and by the pandoc template (arc.template.html).
+   ════════════════════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════════════════
+     Dramatic Recognition Arc — live, data-driven synthesis note
+     editorial publication, techne palette
+     ═══════════════════════════════════════════════════════════════ */
+
+  :root {
+    --paper:     #F4EEDD;
+    --paper-2:   #ECE3CB;
+    --paper-3:   #F8F2E2;
+    --paper-4:   #FBF6E8;
+    --ink:       #14100C;
+    --ink-2:     #2C241B;
+    --ink-3:     #5C5040;
+    --ink-4:     #8C7E6A;
+    --linen:     #D8C7A9;
+    --moss:      #56683A;
+    --moss-deep: #3A4824;
+    --brick:     #A53E2E;
+    --brick-d:   #7C2C1F;
+    --ochre:     #C08A3E;
+    --ochre-d:   #8C5F1F;
+    --rule:      rgba(28, 22, 16, 0.18);
+    --rule-soft: rgba(28, 22, 16, 0.10);
+
+    --s-mini: clamp(0.62rem, 0.58rem + 0.14vw, 0.72rem);
+    --s-0:    clamp(0.78rem, 0.74rem + 0.18vw, 0.90rem);
+    --s-1:    clamp(0.95rem, 0.90rem + 0.20vw, 1.05rem);
+    --s-2:    clamp(1.05rem, 1.00rem + 0.26vw, 1.20rem);
+    --s-3:    clamp(1.30rem, 1.20rem + 0.50vw, 1.60rem);
+    --s-4:    clamp(1.80rem, 1.50rem + 1.40vw, 2.80rem);
+    --s-5:    clamp(2.60rem, 1.80rem + 3.50vw, 5.20rem);
+    --s-6:    clamp(3.40rem, 2.20rem + 5.20vw, 7.40rem);
+
+    --lead: 1.55;
+    --ease: cubic-bezier(.22,.61,.36,1);
+
+    --toc-w: 17rem;
+  }
+
+  [data-theme="dark"] {
+    --paper:     #14100C;
+    --paper-2:   #1B1612;
+    --paper-3:   #1F1A14;
+    --paper-4:   #221C16;
+    --ink:       #F4EEDD;
+    --ink-2:     #E0D8C3;
+    --ink-3:     #B9AD96;
+    --ink-4:     #8C7E6A;
+    --linen:     #3A322A;
+    --moss:      #8DA868;
+    --moss-deep: #B5CD92;
+    --brick:     #E36953;
+    --brick-d:   #F08A75;
+    --ochre:     #E6B265;
+    --ochre-d:   #F3CB88;
+    --rule:      rgba(244, 238, 221, 0.18);
+    --rule-soft: rgba(244, 238, 221, 0.08);
+  }
+
+  /* Stark skin (A/B) — shared with the dashboard so a framed note re-skins when
+     the tweaks panel flips data-skin (mirrored into the iframe by the wrapper). */
+  :root[data-skin="stark"] {
+    --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA; --paper-4:#FFFFFF;
+    --ink:#0A0A0A; --ink-2:#262626; --ink-3:#525252; --ink-4:#8A8A8A;
+    --linen:#D4D4D8; --moss:#171717; --moss-deep:#000000;
+    --brick:#E63946; --brick-d:#C1121F; --ochre:#737373; --ochre-d:#525252;
+    --rule:rgba(10,10,10,0.16); --rule-soft:rgba(10,10,10,0.07);
+  }
+  :root[data-skin="stark"][data-theme="dark"] {
+    --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618; --paper-4:#1C1C1F;
+    --ink:#FAFAFA; --ink-2:#E4E4E7; --ink-3:#A1A1AA; --ink-4:#6F6F76;
+    --linen:#2A2A2E; --moss:#F5F5F5; --moss-deep:#FFFFFF;
+    --brick:#E63946; --brick-d:#F4606C; --ochre:#A1A1AA; --ochre-d:#C4C4CC;
+    --rule:rgba(250,250,250,0.16); --rule-soft:rgba(250,250,250,0.08);
+  }
+  /* Stark is flat: drop the note's parchment grain / dark wash. */
+  :root[data-skin="stark"] body::before, :root[data-skin="stark"] body::after { display:none; }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; background: var(--paper); scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink-2);
+    font-family: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+    font-size: var(--s-1);
+    line-height: var(--lead);
+    font-feature-settings: "ss01", "kern", "liga";
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    min-height: 100vh;
+    letter-spacing: 0.003em;
+    transition: background-color .3s var(--ease), color .3s var(--ease);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(20,16,12,0.07) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(165,62,46,0.04), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(86,104,58,0.05), transparent 70%);
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::before {
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(244,238,221,0.06) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(227,105,83,0.05), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(141,168,104,0.05), transparent 70%);
+    mix-blend-mode: screen;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.18;
+    background-image: radial-gradient(rgba(20,16,12,0.55) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::after {
+    opacity: 0.10;
+    background-image: radial-gradient(rgba(244,238,221,0.45) 0.5px, transparent 0.5px);
+    mix-blend-mode: screen;
+  }
+
+  /* ═══════ typography ═══════ */
+  h1, h2, h3, h4, .display {
+    font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+    font-optical-sizing: auto;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    font-feature-settings: "ss01", "ss02", "kern";
+    margin: 0;
+  }
+  p { margin: 0 0 0.95em; }
+  em { font-style: italic; color: var(--ink); }
+  strong { font-weight: 600; color: var(--ink); }
+  a { color: var(--brick-d); text-decoration: none; border-bottom: 1px solid currentColor; transition: color .25s var(--ease); }
+  a:hover { color: var(--brick); }
+  a.bare { border-bottom: none; }
+
+  .label {
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  mark.kw {
+    background: linear-gradient(180deg, transparent 60%, rgba(192,138,62,0.30) 60%);
+    color: inherit;
+    padding: 0 0.05em;
+  }
+
+  /* ═══════ sticky reading rail ═══════ */
+  .rail {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .rail__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    max-width: 100rem;
+    margin: 0 auto;
+    padding: 0.7em clamp(0.8rem, 3vw, 2.5rem);
+  }
+  .rail__title { flex: 0 0 auto; font-style: italic; color: var(--ink); }
+  .rail__dot { width: 5px; height: 5px; background: var(--moss); border-radius: 50%; flex: 0 0 auto; }
+  .rail__nav {
+    flex: 1;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .rail__nav::-webkit-scrollbar { display: none; }
+  .rail__nav a {
+    border-bottom: none;
+    color: var(--ink-3);
+    padding: 0.3em 0;
+    margin-right: 1.1em;
+    white-space: nowrap;
+    transition: color .15s var(--ease);
+  }
+  .rail__nav a:hover { color: var(--ink); }
+  .rail__nav a.active { color: var(--brick-d); }
+  .rail__nav a.active::before { content: "▸ "; color: var(--brick); }
+  @media (max-width: 70rem) { .rail__title { display: none; } .rail__nav { display: none; } }
+  .rail__progress {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--brick);
+    width: 0%;
+    transition: width .1s linear;
+  }
+  .rail__actions { display: flex; gap: 0.5em; flex: 0 0 auto; align-items: center; }
+  .rail__btn {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.85em;
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+    letter-spacing: 0.16em;
+  }
+  .rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .rail__btn--icon { padding: 0.35em 0.6em; }
+  .rail__btn--icon svg { display: block; width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  /* ═══════ live beacon ═══════ */
+  .beacon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.3em 0.7em 0.3em 0.55em;
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    color: var(--ink-3);
+    cursor: help;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease);
+  }
+  .beacon__pulse {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink-4);
+    flex: 0 0 auto;
+  }
+  .beacon[data-state="checking"] .beacon__pulse { background: var(--ochre); animation: beaconPulse 1.2s var(--ease) infinite; }
+  .beacon[data-state="live"] { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 55%, var(--rule)); }
+  .beacon[data-state="live"] .beacon__pulse { background: var(--moss); box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 70%, transparent); animation: beaconPulse 2s var(--ease) infinite; }
+  .beacon[data-state="offline"] { color: var(--ink-3); border-color: var(--rule); }
+  .beacon[data-state="offline"] .beacon__pulse { background: var(--ink-4); }
+  .beacon:hover { color: var(--ink); }
+
+  @keyframes beaconPulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 65%, transparent); }
+    70% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--moss) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 0%, transparent); }
+  }
+
+  /* ═══════ toc drawer ═══════ */
+  .toc-toggle {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.75em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+  }
+  .toc-toggle:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc-toggle svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  .toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--toc-w);
+    height: 100vh;
+    z-index: 25;
+    background: var(--paper-4);
+    border-right: 1px solid var(--rule);
+    box-shadow: 8px 0 24px -16px rgba(20,16,12,0.20);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform .35s var(--ease);
+    padding: 4.2em 1.2em 2em;
+    font-family: "Source Serif 4", serif;
+  }
+  .toc[aria-hidden="false"] { transform: translateX(0); }
+  .toc__header {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.4em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .toc__title {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-size: var(--s-2);
+    color: var(--ink);
+    line-height: 1.1;
+    margin: 0 0 1.2em;
+  }
+  .toc__close {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.2em 0.5em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+  }
+  .toc__close:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc__list { list-style: none; padding: 0; margin: 0 0 1.5em; }
+  .toc__item { padding: 0; margin: 0 0 0.15em; border-left: 2px solid transparent; padding-left: 0.6em; transition: border-color .2s var(--ease); }
+  .toc__item.is-active { border-left-color: var(--brick); }
+  .toc__item a {
+    border-bottom: none;
+    color: var(--ink-3);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    padding: 0.32em 0;
+    font-size: 0.93em;
+    line-height: 1.3;
+    transition: color .15s var(--ease);
+  }
+  .toc__item a:hover { color: var(--ink); }
+  .toc__item.is-active > a { color: var(--brick-d); font-weight: 500; }
+  .toc__num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    color: var(--ink-4);
+    letter-spacing: 0.06em;
+    flex: 0 0 1.6em;
+  }
+  .toc__item.is-active > a > .toc__num { color: var(--brick); }
+  .toc__sub {
+    list-style: none;
+    padding: 0 0 0.4em;
+    margin: 0 0 0 1.7em;
+    border-left: 1px dotted var(--rule);
+  }
+  .toc__sub li { margin: 0; }
+  .toc__sub a {
+    border-bottom: none;
+    color: var(--ink-4);
+    font-size: 0.82em;
+    padding: 0.18em 0 0.18em 0.8em;
+    display: block;
+    line-height: 1.25;
+    transition: color .15s var(--ease);
+  }
+  .toc__sub a:hover { color: var(--ink-2); }
+  .toc__sub a.is-active { color: var(--brick-d); }
+  .toc__meta {
+    border-top: 1px solid var(--rule);
+    margin-top: 1.4em;
+    padding-top: 1em;
+    font-size: 0.84em;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+  .toc__meta dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); margin-top: 0.7em; }
+  .toc__meta dd { margin: 0.1em 0 0; color: var(--ink-2); }
+
+  .toc__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 24;
+    background: rgba(20,16,12,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s var(--ease);
+  }
+  .toc[aria-hidden="false"] ~ .toc__scrim { opacity: 1; pointer-events: auto; }
+  body[data-theme="dark"] .toc__scrim { background: rgba(0,0,0,0.55); }
+
+  /* desktop: pin the TOC permanently if wide enough */
+  @media (min-width: 92rem) {
+    .toc { transform: translateX(0); box-shadow: none; padding-top: 4.2em; }
+    .toc__close { display: none; }
+    .toc__scrim { display: none; }
+    main { padding-left: var(--toc-w); }
+    .rail { padding-left: 0; }
+    .toc-toggle { display: none; }
+  }
+
+  /* ═══════ layout shell ═══════ */
+  .shell {
+    max-width: 92rem;
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 4vw, 4rem);
+  }
+
+  .diag {
+    display: grid;
+    grid-template-columns:
+      [margin-l] minmax(0, 13rem)
+      [body] minmax(0, 38rem)
+      [margin-r] minmax(0, 13rem);
+    gap: clamp(1rem, 2vw, 2.5rem);
+    align-items: start;
+    margin: 0 auto;
+    max-width: 80rem;
+  }
+  .diag > .body { grid-column: body; }
+  .diag > .ml { grid-column: margin-l; padding-top: 0.4em; }
+  .diag > .mr { grid-column: margin-r; padding-top: 0.4em; }
+  .diag > .full { grid-column: 1 / -1; max-width: 80rem; margin: 0 auto; }
+  .diag + .diag { margin-top: 1em; }
+
+  @media (max-width: 60rem) {
+    .diag { grid-template-columns: minmax(0, 1fr); }
+    .diag > .body, .diag > .ml, .diag > .mr { grid-column: 1; min-width: 0; }
+    .diag > .ml, .diag > .mr {
+      border-left: 2px solid var(--rule);
+      padding-left: 0.9em;
+      margin-bottom: 1em;
+      color: var(--ink-3);
+      font-size: 0.9em;
+    }
+  }
+
+  /* ═══════ hero ═══════ */
+  .hero {
+    border-bottom: 1px solid var(--rule);
+    padding: clamp(2rem, 5vw, 5rem) 0 clamp(2rem, 4vw, 4rem);
+    position: relative;
+  }
+  .hero__rune {
+    position: absolute;
+    top: 1rem;
+    left: clamp(1rem, 4vw, 4rem);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .hero__rune span { color: var(--brick-d); }
+  .hero__masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 2.5em auto 2em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+  }
+  .hero__rule { flex: 1; height: 1px; background: var(--rule); margin: 0 1em; position: relative; top: -0.4em; }
+  .hero__h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: var(--s-5);
+    line-height: 0.96;
+    font-weight: 460;
+    margin: 0 auto 0.4em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    letter-spacing: -0.022em;
+    color: var(--ink);
+  }
+  .hero__h1 .em {
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+  }
+  .hero__subtitle {
+    margin: 0.6em auto 0;
+    max-width: 56rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    font-family: "Fraunces", serif;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    font-size: var(--s-3);
+    font-weight: 320;
+    color: var(--ink-3);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .hero__latest {
+    margin: 1.5em auto 0;
+    max-width: 80rem;
+    padding: 1em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    background: color-mix(in srgb, var(--paper-3) 72%, transparent);
+    display: grid;
+    grid-template-columns: minmax(0, 0.32fr) minmax(0, 0.68fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: baseline;
+  }
+  @media (max-width: 60rem) { .hero__latest { grid-template-columns: 1fr; } }
+  .hero__latest strong {
+    display: block;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-3);
+    font-weight: 430;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero__latest p {
+    margin: 0;
+    font-size: var(--s-1);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .hero__lede {
+    margin: 2.4em auto 0;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    display: grid;
+    grid-template-columns: minmax(0, 38rem) minmax(0, 22rem);
+    gap: clamp(1.5rem, 4vw, 4rem);
+  }
+  @media (max-width: 60rem) { .hero__lede { grid-template-columns: 1fr; } }
+  .hero__lede p {
+    font-size: var(--s-2);
+    line-height: 1.5;
+    color: var(--ink-2);
+    font-weight: 350;
+    font-family: "Source Serif 4", serif;
+    margin: 0 0 0.85em;
+  }
+  .hero__lede p:first-of-type::first-letter {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: 3.4em;
+    line-height: 0.9;
+    float: left;
+    padding: 0.05em 0.08em 0 0;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .hero__num {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid var(--moss);
+    padding-left: 1.4em;
+    align-self: stretch;
+  }
+  .hero__num__big {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.9;
+    font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 144;
+    color: var(--moss-deep);
+    font-weight: 320;
+    letter-spacing: -0.04em;
+  }
+  .hero__num__big .frac {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 280;
+  }
+  .hero__num__sub {
+    margin-top: 0.5em;
+    font-size: var(--s-0);
+    color: var(--ink-3);
+    line-height: 1.45;
+    max-width: 22em;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.4em 0 0;
+  }
+
+  /* ═══════ section structure ═══════ */
+  .s {
+    padding: clamp(3rem, 6vw, 6rem) 0;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: 4em;
+  }
+  .s:last-of-type { border-bottom: none; }
+  .s__num {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 80, "WONK" 0, "opsz" 144;
+    color: var(--moss);
+    letter-spacing: -0.05em;
+    user-select: none;
+    margin: 0;
+  }
+  .s__num .glyph {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 240;
+  }
+  .s__h {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-4);
+    line-height: 1.05;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    font-weight: 460;
+    margin: 0.4em 0 1em;
+    color: var(--ink);
+    letter-spacing: -0.018em;
+  }
+  .s__h em {
+    font-style: italic;
+    color: var(--brick-d);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+  }
+  .s__kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin: 0 0 0.6em;
+  }
+  .s__sub {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-weight: 480;
+    margin: 1.4em 0 0.6em;
+    line-height: 1.2;
+    scroll-margin-top: 4em;
+  }
+
+  /* ═══════ marginalia ═══════ */
+  .note {
+    font-family: "Source Serif 4", serif;
+    font-size: 0.86em;
+    line-height: 1.5;
+    color: var(--ink-3);
+    font-style: italic;
+  }
+  .note__lbl {
+    display: block;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-bottom: 0.5em;
+    font-weight: 500;
+  }
+  .note--moss .note__lbl { color: var(--moss-deep); }
+  .note--ink .note__lbl { color: var(--ink-3); }
+  .note--ochre .note__lbl { color: var(--ochre-d); }
+  .note p { margin: 0 0 0.6em; }
+
+  /* ═══════ pull quote ═══════ */
+  .pq {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-weight: 360;
+    border-left: 2px solid var(--brick);
+    padding: 0.4em 0 0.4em 1.2em;
+    margin: 1.4em 0;
+    letter-spacing: -0.005em;
+  }
+  .pq cite, .pq .cite {
+    display: block;
+    font-style: normal;
+    font-variation-settings: normal;
+    margin-top: 0.5em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  /* ═══════ glossary ═══════ */
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+    gap: 1.1em 1.6em;
+    margin-top: 1em;
+  }
+  .gl-row {
+    border-top: 1px dotted var(--rule);
+    padding-top: 0.7em;
+  }
+  .gl-row dt {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    line-height: 1.2;
+  }
+  .gl-row dt .gloss {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ochre-d);
+    font-style: normal;
+    margin-left: 0.5em;
+  }
+  .gl-row dd {
+    margin: 0.35em 0 0;
+    color: var(--ink-2);
+    font-size: 0.97em;
+    line-height: 1.5;
+  }
+
+  /* ═══════ inline glossary terms (tooltip on hover) ═══════ */
+  .gl-term {
+    font-style: normal;
+    border-bottom: 1px dotted var(--ochre);
+    cursor: help;
+    position: relative;
+    transition: color .15s var(--ease);
+  }
+  .gl-term:hover, .gl-term:focus {
+    color: var(--ochre-d);
+    outline: none;
+  }
+  .gl-term[data-gloss]::after {
+    content: attr(data-gloss);
+    display: none; /* Hidden glosses must not widen narrow pages. */
+    position: absolute;
+    bottom: calc(100% + 0.6em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.85em;
+    line-height: 1.4;
+    padding: 0.55em 0.9em;
+    border-radius: 2px;
+    width: max-content;
+    max-width: 18em;
+    white-space: normal;
+    box-shadow: 0 8px 20px -10px rgba(20,16,12,0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+    text-align: left;
+    letter-spacing: 0;
+  }
+  .gl-term[data-gloss]::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 0.25em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    border: 5px solid transparent;
+    border-top-color: var(--ink);
+    opacity: 0;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+  }
+  .gl-term:hover::after, .gl-term:focus::after,
+  .gl-term:hover::before, .gl-term:focus::before {
+    display: block;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ═══════ claim/counter pairs ═══════ */
+  .claim {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.8em 1.4em;
+    align-items: baseline;
+    margin: 0 0 2.4em;
+  }
+  .claim__no {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-4);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    color: var(--ink-4);
+    font-style: italic;
+    width: 1.6em;
+    text-align: right;
+  }
+  .claim__h {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-3);
+    line-height: 1.15;
+    font-weight: 460;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.012em;
+  }
+  .claim__body { grid-column: 2; margin-top: 0.6em; color: var(--ink-2); }
+  .claim__body p { font-size: var(--s-1); line-height: 1.6; }
+  .claim__counter {
+    grid-column: 2;
+    margin-top: 0.4em;
+    border-left: 2px solid var(--brick);
+    padding: 0.2em 0 0.2em 1em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.95em;
+    color: var(--ink-3);
+  }
+  .claim__counter::before {
+    content: "caveat.";
+    display: inline;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-right: 0.6em;
+    font-weight: 500;
+  }
+
+  /* ═══════ status chips ═══════ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.25em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    margin-right: 0.4em;
+    margin-bottom: 0.4em;
+  }
+  .chip--moss { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 50%, var(--rule)); }
+  .chip--brick { color: var(--brick-d); border-color: color-mix(in srgb, var(--brick) 50%, var(--rule)); }
+  .chip--ochre { color: var(--ochre-d); border-color: color-mix(in srgb, var(--ochre) 50%, var(--rule)); }
+  .chip--ink { color: var(--ink); border-color: var(--ink-3); background: var(--paper); }
+  .chip__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ═══════ deeplink pills (open in browser) ═══════ */
+  .deeplink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.35em 0.7em 0.35em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .deeplink:hover {
+    color: var(--brick-d);
+    border-color: color-mix(in srgb, var(--brick) 60%, var(--rule));
+    background: var(--paper-4);
+  }
+  .deeplink__arrow {
+    transition: transform .2s var(--ease);
+    color: var(--brick);
+    font-weight: 600;
+  }
+  .deeplink:hover .deeplink__arrow { transform: translateX(2px); }
+  .deeplink[data-live="checking"] .deeplink__count::after { content: " · …"; color: var(--ochre); }
+  .deeplink[data-live="live"] { border-color: color-mix(in srgb, var(--moss) 45%, var(--rule)); }
+  .deeplink[data-live="live"] .deeplink__count { color: var(--moss-deep); }
+  .deeplink[data-live="offline"] { opacity: 0.7; }
+  .deeplink__count {
+    font-style: normal;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+  }
+
+  .deeplink-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.1em 0 0.4em;
+  }
+
+  /* ═══════ timeline ═══════ */
+  .timeline {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    margin-top: 1em;
+  }
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1.4em;
+    align-items: start;
+    padding: 1.2em 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .timeline-row .when {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    padding-top: 0.4em;
+  }
+  .timeline-row h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .timeline-row p { margin: 0; color: var(--ink-2); font-size: 0.97em; }
+  @media (max-width: 60rem) {
+    .timeline-row { grid-template-columns: 1fr; gap: 0.4em; }
+  }
+
+  /* ═══════ evidence grid ═══════ */
+  .filters { display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0 0 1.4em; }
+  .filter-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease);
+  }
+  .filter-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .filter-btn[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .ev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+    gap: 1em;
+  }
+  .ev-card {
+    padding: 1.2em 1.3em;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink-4);
+    transition: border-color .2s var(--ease), background .2s var(--ease);
+    display: flex;
+    flex-direction: column;
+  }
+  .ev-card.is-hidden { display: none; }
+  .ev-card[data-status="strong"] { border-left-color: var(--moss); }
+  .ev-card[data-status="boundary"] { border-left-color: var(--ochre); }
+  .ev-card[data-status="risk"] { border-left-color: var(--brick); }
+  .ev-card[data-status="output"] { border-left-color: var(--ink-3); }
+  .ev-card h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    margin: 0.4em 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .ev-card p { margin: 0 0 0.7em; color: var(--ink-2); font-size: 0.95em; line-height: 1.5; }
+  .ev-card .deeplink-row { margin-top: auto; }
+
+  /* ═══════ accordion ═══════ */
+  .accordion {
+    border-top: 1px solid var(--rule);
+  }
+  .accordion:last-of-type { border-bottom: 1px solid var(--rule); }
+  .accordion summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1em 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+  }
+  .accordion summary::-webkit-details-marker { display: none; }
+  .accordion summary h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .accordion summary .acc-marker {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--brick-d);
+    font-size: var(--s-1);
+  }
+  .accordion[open] summary .acc-marker::before { content: "–"; }
+  .accordion:not([open]) summary .acc-marker::before { content: "+"; }
+  .accordion .body { padding: 0 0 1.3em; color: var(--ink-2); }
+  .accordion .body p { margin: 0 0 0.7em; }
+
+  /* ═══════ spec / route ═══════ */
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    gap: 1em;
+    margin-top: 1.3em;
+  }
+  .spec-box {
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    padding: 1em 1.1em;
+  }
+  .spec-box h4 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.6em;
+  }
+  .spec-box ul { list-style: none; padding: 0; margin: 0; }
+  .spec-box li {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82em;
+    color: var(--ink-2);
+    padding: 0.18em 0;
+    border-bottom: 1px dotted var(--rule-soft);
+  }
+  .spec-box li:last-child { border-bottom: none; }
+
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+    gap: 0.7em;
+    margin-top: 1.2em;
+    counter-reset: step;
+  }
+  .ladder-step {
+    counter-increment: step;
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    padding: 0.9em 1em;
+    position: relative;
+    font-size: 0.92em;
+  }
+  .ladder-step::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    color: var(--ochre-d);
+    display: block;
+    margin-bottom: 0.4em;
+  }
+  .ladder-step strong {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    color: var(--ink);
+    font-weight: 460;
+    display: block;
+    margin-bottom: 0.2em;
+  }
+  .ladder-step span { color: var(--ink-3); font-size: 0.93em; }
+
+  /* ═══════ callouts ═══════ */
+  .callout {
+    border: 1px solid color-mix(in srgb, var(--brick) 40%, var(--rule));
+    background: linear-gradient(180deg, rgba(165,62,46,0.06), rgba(165,62,46,0.02) 80%, transparent);
+    padding: 1.2em 1.3em;
+    margin-top: 1.4em;
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .callout strong { color: var(--brick-d); font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.18em; text-transform: uppercase; }
+
+  /* ═══════ interactive chart ═══════ */
+  figure.chart-fig { margin: 1.4em 0 1em; }
+  figure.chart-fig figcaption {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 0.7em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em 1.4em;
+    align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.5em;
+  }
+  figure.chart-fig figcaption .cap-title { color: var(--brick-d); }
+  figure.chart-fig figcaption .legend {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.8em;
+    margin-left: auto;
+  }
+  figure.chart-fig figcaption .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--ink-3);
+  }
+  figure.chart-fig figcaption .legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+  figure.chart-fig figcaption .legend .lg-routine { color: var(--ink-4); }
+  figure.chart-fig figcaption .legend .lg-none    { color: var(--ochre); }
+  figure.chart-fig figcaption .legend .lg-perip   { color: var(--moss-deep); }
+
+  .chart { width: 100%; height: auto; }
+  .chart .axis-line { stroke: var(--rule); stroke-width: 1; }
+  .chart .axis-tick { stroke: var(--rule-soft); stroke-width: 1; stroke-dasharray: 2 3; }
+  .chart .axis-lbl  { fill: var(--ink-4); font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.05em; }
+  .chart .metric-lbl { fill: var(--ink-2); font-family: "Source Serif 4", serif; font-size: 12px; font-style: italic; }
+  .chart .bar-routine { fill: var(--ink-4); }
+  .chart .bar-none    { fill: var(--ochre); }
+  .chart .bar-perip   { fill: var(--moss-deep); }
+  .chart .bar         { transition: opacity .2s var(--ease); transform-origin: left center; }
+  .chart .bar:hover   { opacity: 0.82; }
+  .chart .bar-val     { fill: var(--ink-2); font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 500; }
+  .chart .bar-rect    { rx: 1; ry: 1; }
+  .chart .anim        { transform-origin: left; animation: barIn .9s var(--ease) both; }
+
+  @keyframes barIn {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+
+  /* ═══════ transcript block ═══════ */
+  .tx {
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    margin: 1.1em 0;
+  }
+  .tx > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.7em 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1px solid transparent;
+  }
+  .tx > summary::-webkit-details-marker { display: none; }
+  .tx > summary .tx__title { color: var(--brick-d); }
+  .tx > summary .tx__hint { color: var(--ink-4); font-style: italic; text-transform: none; letter-spacing: 0.02em; font-family: "Source Serif 4", serif; font-size: 0.95em; }
+  .tx[open] > summary { border-bottom-color: var(--rule); }
+  .tx[open] > summary::after { content: "–"; color: var(--brick-d); }
+  .tx:not([open]) > summary::after { content: "+"; color: var(--brick-d); }
+  .tx__body {
+    padding: 0.8em 1.2em 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.85em;
+    line-height: 1.55;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    max-height: 26em;
+    overflow-y: auto;
+  }
+  .tx__body .tx-stage   { color: var(--ink-4); font-style: italic; }
+  .tx__body .tx-tutor   { color: var(--moss-deep); }
+  .tx__body .tx-learner { color: var(--brick-d); }
+  .tx__body .tx-label   { display: inline-block; min-width: 4.2em; font-weight: 600; color: var(--ink); }
+  .tx__caption {
+    padding: 0.6em 1.2em 0.9em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    color: var(--ink-3);
+    font-size: 0.88em;
+    border-top: 1px dotted var(--rule);
+    background: var(--paper-3);
+  }
+  .tx__caption strong { font-family: "JetBrains Mono", monospace; font-style: normal; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--moss-deep); margin-right: 0.5em; }
+
+  /* ═══════ footer ═══════ */
+  .colophon {
+    padding: 3em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    color: var(--ink-3);
+    font-size: 0.88em;
+    line-height: 1.55;
+  }
+  .colophon code {
+    font-family: "JetBrains Mono", monospace;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    padding: 0.1em 0.4em;
+    font-size: 0.92em;
+    color: var(--ink-2);
+  }
+  .colophon dl { display: grid; grid-template-columns: 12rem 1fr; gap: 0.5em 1.2em; margin: 1em 0 0; }
+  .colophon dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brick-d); }
+  .colophon dd { margin: 0; }
+  @media (max-width: 50rem) { .colophon dl { grid-template-columns: 1fr; } .colophon dd { margin: 0 0 0.6em; } }
+  .colophon__live {
+    border: 1px dashed var(--rule);
+    padding: 0.9em 1.1em;
+    margin-top: 1.4em;
+    background: var(--paper-3);
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .colophon__live code { background: var(--paper-4); }
+
+  /* ═══════ print ═══════ */
+  @media print {
+    body { background: #fff; color: #000; }
+    body::before, body::after, .rail, .rail__actions, .filters, .toc, .toc__scrim, .toc-toggle, .beacon, .deeplink, .deeplink-row { display: none !important; }
+    main { padding-left: 0 !important; }
+    .accordion .body, .tx[open] .tx__body { display: block !important; }
+    .accordion summary .acc-marker, .tx summary::after { display: none; }
+    .s { break-inside: avoid; }
+    .ev-card { break-inside: avoid; }
+    .chart { break-inside: avoid; }
+    .gl-term { border-bottom: none; }
+    .gl-term::after, .gl-term::before { display: none; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     Machine Spirits site skin
+
+     Opt-in with <html data-skin="machine-spirits">. This carries the
+     main site's Swiss / neo-brutalist language into public research
+     explainers without changing the parchment skin used by other notes.
+     ═══════════════════════════════════════════════════════════════ */
+  :root[data-skin="machine-spirits"] {
+    --paper: #FFFFFF;
+    --paper-2: #F4F4F4;
+    --paper-3: #FAFAFA;
+    --paper-4: #FFFFFF;
+    --ink: #0A0A0A;
+    --ink-2: #242424;
+    --ink-3: #555555;
+    --ink-4: #858585;
+    --linen: #D8D8D8;
+    --moss: #0A0A0A;
+    --moss-deep: #0A0A0A;
+    --brick: #E63946;
+    --brick-d: #C1121F;
+    --ochre: #777777;
+    --ochre-d: #4F4F4F;
+    --rule: rgba(10, 10, 10, 0.22);
+    --rule-soft: rgba(10, 10, 10, 0.08);
+  }
+
+  :root[data-skin="machine-spirits"][data-theme="dark"] {
+    --paper: #0A0A0A;
+    --paper-2: #111111;
+    --paper-3: #151515;
+    --paper-4: #1A1A1A;
+    --ink: #FAFAFA;
+    --ink-2: #E4E4E4;
+    --ink-3: #B4B4B4;
+    --ink-4: #777777;
+    --linen: #303030;
+    --moss: #FAFAFA;
+    --moss-deep: #FFFFFF;
+    --brick: #E63946;
+    --brick-d: #F05A66;
+    --ochre: #A0A0A0;
+    --ochre-d: #D0D0D0;
+    --rule: rgba(250, 250, 250, 0.22);
+    --rule-soft: rgba(250, 250, 250, 0.09);
+  }
+
+  :root[data-skin="machine-spirits"] body {
+    cursor: crosshair;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-feature-settings: "kern", "liga";
+    letter-spacing: 0;
+  }
+
+  :root[data-skin="machine-spirits"] body::before {
+    display: block;
+    opacity: 0.72;
+    background-image:
+      linear-gradient(var(--rule-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--rule-soft) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] body::after {
+    display: block;
+    inset: -30vh -15vw auto auto;
+    width: 58vw;
+    height: 70vh;
+    opacity: 0.055;
+    background: var(--brick);
+    transform: rotate(-18deg);
+    transform-origin: center;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] h1,
+  :root[data-skin="machine-spirits"] h2,
+  :root[data-skin="machine-spirits"] h3,
+  :root[data-skin="machine-spirits"] h4,
+  :root[data-skin="machine-spirits"] .display,
+  :root[data-skin="machine-spirits"] .hero__h1,
+  :root[data-skin="machine-spirits"] .hero__subtitle,
+  :root[data-skin="machine-spirits"] .hero__lede p,
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter,
+  :root[data-skin="machine-spirits"] .s__num,
+  :root[data-skin="machine-spirits"] .s__h,
+  :root[data-skin="machine-spirits"] .s__sub,
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h,
+  :root[data-skin="machine-spirits"] .ev-card h3,
+  :root[data-skin="machine-spirits"] .gl-row dt,
+  :root[data-skin="machine-spirits"] .pq,
+  :root[data-skin="machine-spirits"] .toc__title {
+    font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-variation-settings: normal;
+  }
+
+  :root[data-skin="machine-spirits"] .label,
+  :root[data-skin="machine-spirits"] .rail,
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__header,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .toc__num,
+  :root[data-skin="machine-spirits"] .toc__meta dt,
+  :root[data-skin="machine-spirits"] .hero__rune,
+  :root[data-skin="machine-spirits"] .s__kicker,
+  :root[data-skin="machine-spirits"] .note__lbl,
+  :root[data-skin="machine-spirits"] .pq cite,
+  :root[data-skin="machine-spirits"] .pq .cite,
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink,
+  :root[data-skin="machine-spirits"] .filter-btn,
+  :root[data-skin="machine-spirits"] .gl-row dt .gloss,
+  :root[data-skin="machine-spirits"] code,
+  :root[data-skin="machine-spirits"] .colophon code {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  :root[data-skin="machine-spirits"] .rail {
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    border-bottom: 3px solid var(--ink);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+  }
+  :root[data-skin="machine-spirits"] .rail__title { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .rail__dot { width: 8px; height: 8px; border-radius: 0; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .filter-btn {
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  :root[data-skin="machine-spirits"] .rail__btn:hover,
+  :root[data-skin="machine-spirits"] .toc-toggle:hover,
+  :root[data-skin="machine-spirits"] .toc__close:hover,
+  :root[data-skin="machine-spirits"] .filter-btn:hover,
+  :root[data-skin="machine-spirits"] .filter-btn[aria-pressed="true"] {
+    background: var(--brick);
+    border-color: var(--brick);
+    color: #FFFFFF;
+  }
+
+  :root[data-skin="machine-spirits"] .toc {
+    border-right: 3px solid var(--ink);
+    box-shadow: 12px 0 0 color-mix(in srgb, var(--brick) 20%, transparent);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  :root[data-skin="machine-spirits"] .toc__title { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .hero {
+    border-top: 0;
+    border-bottom: 4px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__masthead { border-top: 4px solid var(--ink); padding-top: 1.1em; }
+  :root[data-skin="machine-spirits"] .hero__rule { height: 4px; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .hero__h1 {
+    font-size: clamp(3.2rem, 2rem + 6.8vw, 8.8rem);
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.065em;
+  }
+  :root[data-skin="machine-spirits"] .hero__h1 .em {
+    color: var(--brick);
+    font-style: normal;
+    font-variation-settings: normal;
+  }
+  :root[data-skin="machine-spirits"] .hero__subtitle {
+    max-width: 60rem;
+    font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.75rem);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+  :root[data-skin="machine-spirits"] .hero__lede {
+    border: 4px solid var(--ink);
+    padding: clamp(1.2rem, 2.5vw, 2.2rem);
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    box-shadow: 14px 14px 0 color-mix(in srgb, var(--brick) 22%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__lede p { font-weight: 400; }
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter { color: var(--brick); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .s { border-bottom: 3px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .s__num { color: var(--ink); font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__num .glyph,
+  :root[data-skin="machine-spirits"] .s__h em { color: var(--brick); font-style: normal; }
+  :root[data-skin="machine-spirits"] .s__h { font-weight: 700; letter-spacing: -0.04em; }
+  :root[data-skin="machine-spirits"] .s__sub { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__kicker { color: var(--brick-d); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .note,
+  :root[data-skin="machine-spirits"] .claim__counter,
+  :root[data-skin="machine-spirits"] .gl-term[data-gloss]::after,
+  :root[data-skin="machine-spirits"] .colophon__live {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-style: normal;
+  }
+  :root[data-skin="machine-spirits"] .pq { font-style: normal; font-weight: 600; border-left-width: 5px; }
+  :root[data-skin="machine-spirits"] .gl-row { border-top: 2px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .gl-row dt { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .claim,
+  :root[data-skin="machine-spirits"] .ev-card,
+  :root[data-skin="machine-spirits"] .spec-box,
+  :root[data-skin="machine-spirits"] .callout,
+  :root[data-skin="machine-spirits"] .tx {
+    border: 2px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .claim { padding: 1.2em; box-shadow: 8px 8px 0 var(--rule-soft); }
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .ev-card {
+    border-left-width: 8px;
+    box-shadow: 8px 8px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .ev-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 11px 11px 0 color-mix(in srgb, var(--brick) 18%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .ev-card h3 { font-weight: 700; }
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink { border-width: 2px; }
+  :root[data-skin="machine-spirits"] .chip__dot { border-radius: 0; }
+  :root[data-skin="machine-spirits"] .deeplink:hover { background: var(--brick); border-color: var(--brick); color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .deeplink:hover .deeplink__arrow { color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .callout {
+    border-left: 8px solid var(--brick);
+    background: color-mix(in srgb, var(--brick) 7%, var(--paper));
+  }
+
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame,
+  :root[data-skin="machine-spirits"] .ledger {
+    border-color: var(--ink);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame {
+    border-width: 3px;
+    box-shadow: 10px 10px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon figcaption,
+  :root[data-skin="machine-spirits"] .chart-legend,
+  :root[data-skin="machine-spirits"] .caption-fine,
+  :root[data-skin="machine-spirits"] .ledger {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace !important;
+  }
+  :root[data-skin="machine-spirits"] .ledger th,
+  :root[data-skin="machine-spirits"] .ledger td { border-color: var(--ink); }
+
+  :root[data-skin="machine-spirits"] .colophon {
+    border-top: 4px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  :root[data-skin="machine-spirits"] .colophon .label,
+  :root[data-skin="machine-spirits"] .colophon code { color: var(--paper); }
+  :root[data-skin="machine-spirits"] .colophon code { background: transparent; border-color: color-mix(in srgb, var(--paper) 35%, transparent); }
+
+  @media (max-width: 60rem) {
+    :root[data-skin="machine-spirits"] .diag > .ml,
+    :root[data-skin="machine-spirits"] .diag > .mr { border-left-color: var(--brick); }
+    :root[data-skin="machine-spirits"] .hero__lede { box-shadow: 8px 8px 0 color-mix(in srgb, var(--brick) 22%, transparent); }
+  }
+
+/* ---- Swimlane comparison (generated docs; scripts/render-stress-comparison.js) ---- */
+.lanes{display:grid;grid-template-columns:repeat(var(--lanes-n,2),minmax(0,1fr));gap:1rem;margin:1.2rem 0}
+@media(max-width:760px){.lanes{grid-template-columns:1fr}}
+.lane{border:1px solid var(--line,rgba(120,120,120,.35));border-radius:8px;padding:.9rem 1rem;overflow-wrap:anywhere}
+.lane--pass{border-color:rgba(90,140,90,.6)}
+.lane__head{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.5rem}
+.lane__reply{margin:.4rem 0;font-size:.95em}
+.lane__why{font-size:.8em;opacity:.75;margin:.4rem 0 0}
+.lane__empty{opacity:.5;text-align:center;margin:1rem 0}
+.scoreboard{border-collapse:collapse;margin:1rem 0}
+.scoreboard td,.scoreboard th{border:1px solid var(--line,rgba(120,120,120,.35));padding:.35rem .8rem;text-align:center}
+
+</style>
+<style>
+  /* Doc-local styling only; components come from techne.css. */
+  .hero__verdict {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    margin-top: clamp(1.2rem, 3vw, 2rem);
+    border: 1px solid var(--rule);
+    background: var(--rule);
+  }
+  .hero__verdict > div { padding: 1rem 1.15rem; background: var(--paper); }
+  .hero__verdict strong {
+    display: block;
+    font-size: clamp(1.7rem, 3.2vw, 3rem);
+    line-height: 1;
+    font-family: "Fraunces", serif;
+  }
+  .hero__verdict .v-good strong { color: var(--moss-deep); }
+  .hero__verdict .v-bad strong { color: var(--brick-d); }
+  .hero__verdict span {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--ink-3);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    line-height: 1.55;
+  }
+  @media (max-width: 640px) { .hero__verdict { grid-template-columns: 1fr; } }
+
+  .speech {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    background: var(--paper-3);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0.9rem 0;
+    max-width: 44rem;
+  }
+  .speech--learner { border-left: 3px solid var(--ochre); }
+  .speech--tutor { border-left: 3px solid var(--ink-3); }
+  .speech--tutor.is-right { border-left-color: var(--moss); }
+  .speech--tutor.is-wrong { border-left-color: var(--brick); }
+  .speech__who {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--ink-3);
+    font: 700 0.64rem/1.3 "JetBrains Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  .lane__tally {
+    font: 700 0.68rem/1.6 "JetBrains Mono", monospace;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+  }
+  .lane--pass .lane__tally { color: var(--moss-deep); border-color: var(--moss); }
+  .lane--fail .lane__tally { color: var(--brick-d); border-color: var(--brick); }
+  .lane--fail { border-color: color-mix(in srgb, var(--brick) 45%, var(--rule)); }
+
+  .steps { counter-reset: step; margin: 1.3rem 0; display: grid; gap: 0.9rem; }
+  .step {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    gap: 0.9rem;
+    align-items: start;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.9rem 1rem;
+    background: var(--paper);
+  }
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    color: var(--brick-d);
+    font: 700 0.9rem/1 "JetBrains Mono", monospace;
+  }
+  .step h3 { margin: 0 0 0.3rem; font-size: 1.02rem; }
+  .step p { margin: 0; color: var(--ink-2); font-size: 0.92rem; line-height: 1.55; }
+
+  .stuck-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+    margin: 1.3rem 0;
+  }
+  .stuck {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--paper);
+    padding: 1rem 1.05rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .stuck h3 { margin: 0; font-size: 1.05rem; }
+  .stuck blockquote {
+    margin: 0;
+    padding: 0.55rem 0.8rem;
+    border-left: 3px solid var(--ochre);
+    background: var(--paper-3);
+    color: var(--ink-2);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    font-style: italic;
+    max-width: 44rem;
+  }
+  .stuck .ab {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+  @media (max-width: 760px) { .stuck .ab { grid-template-columns: 1fr; } }
+  .stuck .arm {
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.87rem;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .stuck .arm p { margin: 0.35rem 0 0; }
+  .stuck .arm--wrong { border-color: color-mix(in srgb, var(--brick) 45%, var(--rule)); }
+  .stuck .arm--right { border-color: color-mix(in srgb, var(--moss) 55%, var(--rule)); }
+  .stuck .arm b {
+    display: block;
+    font: 700 0.64rem/1.6 "JetBrains Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .stuck .arm--wrong b { color: var(--brick-d); }
+  .stuck .arm--right b { color: var(--moss-deep); }
+  .stuck .arm .tally {
+    float: right;
+    font: 700 0.62rem/1.8 "JetBrains Mono", monospace;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .stuck .arm q { font-style: italic; quotes: "\201C" "\201D"; }
+</style>
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">The tutor that knows why you're stuck</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#scene">The scene</a>
+      <a href="#moment">The moment</a>
+      <a href="#tworeplies">Two replies</a>
+      <a href="#why">Why it matters</a>
+      <a href="#how">How it works</a>
+      <a href="#kinds">Kinds of stuck</a>
+      <a href="#ghost">A second story</a>
+      <a href="#proof">The proof</a>
+      <a href="#fineprint">Fine print</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> Machine Spirits · demo · updated 2026-09-01</div>
+    <h1 class="hero__h1">The tutor that knows <span class="em">why</span> you're stuck</h1>
+    <p class="hero__subtitle">Most AI tutors answer your last sentence. This one reads the moment. Here is one recorded moment, two possible replies, and the difference — measured, not asserted.</p>
+    <div class="hero__lede">
+      <div>
+        <p>A student is one sentence away from the right answer, and refuses to say it. Every tutor meets this moment. What happens next depends on whether the tutor understands what is actually in the way. Below: the same stuck student, twice. One reply re-explains the lesson and gets nowhere. The other names the real obstacle and gets through. The point of the demo is that this is not luck — the system chose the second reply on purpose, and we tested the choice by forcing the wrong one.</p>
+      </div>
+    </div>
+    <div class="hero__verdict">
+      <div class="v-good"><strong>5 of 6</strong><span>When the tutor answered the real obstacle, the reply helped — five times out of six.</span></div>
+      <div class="v-bad"><strong>0 of 6</strong><span>When it re-explained the material instead — correct, fluent, and useless — zero out of six.</span></div>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <section class="s" id="scene">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">One minute of setup</p>
+          <h2 class="s__h">A water stain, a housemate, and a student who <em>defended the right thing</em>.</h2>
+          <p>The lesson is a small detective story. In a shared house, a stain appears on the ceiling — directly below Sam's bathroom, right after Sam's morning shower. Everyone wants to blame Sam. The student's job, with the tutor's help, is to find the real cause.</p>
+          <p>All session long, the student holds the line: timing is not proof. A shower before a stain does not show the shower <em>caused</em> the stain. They are right, and the tutor says so.</p>
+          <p>Then the evidence comes in, and it points somewhere unexpected. A hose under the basin has a hairline split that opens only when water pressure rises. The building's pressure was raised that morning. Blue dye poured at the split travels to the edge of the stain. The case is closed: the basin hose did it, not Sam's shower.</p>
+          <p>Closed for everyone except the student.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Real dialogue</span> Every quoted line on this page is verbatim from a recorded tutoring session with a simulated learner. Ellipses shorten; nothing is rewritten.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="moment">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Turn 10 · the stuck moment</p>
+          <h2 class="s__h">The student knows the answer. <em>They won't write it down.</em></h2>
+          <div class="speech speech--learner">
+            <span class="speech__who">Learner · turn 10</span>
+            &ldquo;If I write &lsquo;split hose,&rsquo; I'm apologising to Sam at eight. So it can still be steam, can't it?&rdquo;
+          </div>
+          <p>Read that line again. The student is not confused about plumbing. They understand the plumbing perfectly — that is exactly why they are reaching for &ldquo;steam.&rdquo; What blocks them is social: writing the true answer feels like admitting their whole defence of Sam was worthless, in front of everyone, at the eight o'clock house meeting.</p>
+          <p>A tutor that only reads the words sees a wrong claim about steam, and corrects it. A tutor that reads the moment sees a person protecting their pride. These call for different replies — and only one of them works.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">The tell</span> &ldquo;I'm apologising to Sam at eight&rdquo; is not a claim about water. It is the real objection, said out loud.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="tworeplies">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The demo · same student, two replies</p>
+          <h2 class="s__h">One reply re-proves the plumbing. <em>The other frees the student to be right.</em></h2>
+          <p>Both replies below were really delivered to this same planted moment, in repeated runs. Both are polite, fluent, and factually correct. Only one of them answers the obstacle that is actually there.</p>
+          <div class="lanes">
+            <article class="lane lane--fail">
+              <div class="lane__head"><strong>The usual reply — explain it again</strong> <span class="lane__tally">helped 0 of 6</span></div>
+              <div class="speech speech--tutor is-wrong">
+                <span class="speech__who">Tutor · goes back over the evidence</span>
+                &ldquo;Let's actually turn to the page instead of guessing what it says. The entry reads: dry at ordinary pressure, hairline split under raised pressure, first bead right at that joint — no line anywhere about steam. […] What does the dye's path say about where that water actually went?&rdquo;
+              </div>
+              <p class="lane__why"><b>Why it fails.</b> Every word is true, and none of it helps. The student's problem stopped being the plumbing three turns ago. Re-proving the case just sharpens the humiliation they are trying to avoid. In six runs at this moment, this reply never got the student unstuck.</p>
+            </article>
+            <article class="lane lane--pass">
+              <div class="lane__head"><strong>The adaptive reply — separate the fact from the fear</strong> <span class="lane__tally">helped 5 of 6</span></div>
+              <div class="speech speech--tutor is-right">
+                <span class="speech__who">Tutor · splits the finding from the stake</span>
+                &ldquo;Your objection was never &lsquo;the hose did it&rsquo; — it was &lsquo;timing isn't proof,&rsquo; and that's a separate claim from what caused the mark. Naming the split hose settles the cause question; it doesn't settle what you owe Sam. […] Was your case against Sam ever &lsquo;the shower definitely did it,&rsquo; or was it &lsquo;we jumped to a cause without a path&rsquo;?&rdquo;
+              </div>
+              <p class="lane__why"><b>Why it works.</b> It splits two things the student has fused: what caused the stain, and whether they were right to demand proof before blaming Sam. The hose caused the stain — <em>and</em> the student's objection was correct all along. Accepting the answer stops being a defeat. In six runs, this reply got through five times.</p>
+            </article>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note"><span class="note__lbl">Not cherry-picked</span> The tallies pool six runs per reply across two different scenarios, each judged by a human on what the tutor actually did — not on how adaptive it sounded.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="why">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Why this matters</p>
+          <h2 class="s__h">Learning rarely stalls for lack of explanation. <em>It stalls at moments like this.</em></h2>
+          <p>Every teacher knows these moments. The student who bristles at the deadline, jokes to deflect, digs in to save face, quietly gives up. What separates a good tutor from a textbook is what happens next — and it is almost never another explanation. It is the right move for <em>this</em> person, <em>now</em>.</p>
+          <p>Modern AI is spectacular at explaining. That makes the failure mode worse, not better: an AI tutor can produce an endless supply of the reply on the left — patient, correct, well written, and useless — because explaining again is the one move it always has. At the moments where learning is won or lost, fluency is not the missing ingredient.</p>
+          <p>And when a system does adapt, you need to know it, not hope it. If &ldquo;adaptive&rdquo; lives somewhere inside one plausible paragraph, no school, parent, or buyer can check the claim, and no builder can improve it. Making the decision explicit — this kind of stuck, this move, these delivered words — turns &ldquo;adaptive&rdquo; from a style into a feature. You can test it, catch it failing, and make it better. That is what the rest of this page shows.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">The claim, plainly</span> Not &ldquo;our tutor feels adaptive.&rdquo; Rather: at a named kind of stuck moment, the chosen move helps and the plausible wrong one does not — and we can show you the records.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="how">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The mechanism · three steps</p>
+          <h2 class="s__h">How the tutor picks the right reply — <em>and how we can tell when it doesn't</em>.</h2>
+          <p>&ldquo;Be adaptive&rdquo; used to be a wish written into a prompt. The adaptive tutor turns it into three checkable steps:</p>
+          <div class="steps">
+            <div class="step"><div><h3>Name the kind of stuck.</h3><p>Before replying, the system asks: what is in the way <em>right now</em>? Confusion is not the same as a deadline panic, a joke, a grudge, or — as above — fear of losing face. Each gets its own name.</p></div></div>
+            <div class="step"><div><h3>Pick the matching move from a small deck.</h3><p>Each named state has a concrete move card: accept the deadline and narrow the question; credit the student's work before asking for more; split the finding from the stake. Small and concrete on purpose — a move you can name is a move you can test.</p></div></div>
+            <div class="step"><div><h3>Record what was said, and what happened next.</h3><p>The system keeps separate records of what it detected, which move it chose, the exact words that reached the student, and what the student did next. A bad guess shows up in the record instead of disappearing inside a fluent paragraph.</p></div></div>
+          </div>
+          <p>That last step is what makes the demo above possible. Because the choice of move is an explicit, recorded decision, we can deliberately force the <em>wrong</em> move at the same moment and watch what changes. An ordinary prompted tutor offers nothing to force — every reply is just one more plausible paragraph.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">In a sentence</span> The tutor's key decision — what kind of stuck, which move — is made in the open, where it can be checked, challenged, and improved.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="kinds">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The repertoire</p>
+          <h2 class="s__h">&ldquo;Stuck&rdquo; is not one thing. <em>Each kind got the same wrong-move test.</em></h2>
+          <p>Five more moments, each a different kind of stuck. Each ran the same experiment as the hero pair: at the same planted moment, force the matching move six times and force a plausible wrong move six times, then have a human rule what each delivered reply did. The learner lines and the right-side tutor lines are verbatim; the wrong side is summed up from the ruled records, because those full transcripts live in the run archive.</p>
+          <div class="stuck-grid">
+            <article class="stuck">
+              <h3>The deadline panic</h3>
+              <blockquote>&ldquo;Meeting's at eight. The mark's right under Sam's shower — I'm sending the email unless you can give me one reason not to in the next minute.&rdquo;</blockquote>
+              <div class="ab">
+                <div class="arm arm--wrong"><b>Forced wrong move · soften the tone <span class="tally">helped 1 of 6</span></b><p>The tutor answers the pressure with gentleness: it reads the record kindly but sets no test. The clock keeps running and nothing decisive happens.</p></div>
+                <div class="arm arm--right"><b>Right move · accept the clock, narrow the question <span class="tally">helped 5 of 6</span></b><p><q>Thursday it is, then — and Thursday can carry a verdict if the evidence carries it first.</q> Take the minute and spend it on one decisive check: does anything trace water from the shower to that ceiling, or only note that the shower ran?</p></div>
+              </div>
+            </article>
+            <article class="stuck">
+              <h3>The mockery</h3>
+              <blockquote>&ldquo;Mate, you sound like a plumber's invoice.&rdquo;</blockquote>
+              <div class="ab">
+                <div class="arm arm--wrong"><b>Forced wrong move · press the test in the same register <span class="tally">helped 2 of 6</span></b><p>The tutor pushes on with the check in the very technical voice being mocked. Twice the model overrode the bad card and swapped registers anyway — credited to it, not the card.</p></div>
+                <div class="arm arm--right"><b>Right move · take the joke, keep the logic <span class="tally">helped 6 of 6</span></b><p><q>Fair enough — no more invoice-talk.</q> Drop the jargon, hold the distinction that matters: a hose that <em>can</em> leak is not yet the hose that <em>did</em>.</p></div>
+              </div>
+            </article>
+            <article class="stuck">
+              <h3>The grievance</h3>
+              <blockquote>&ldquo;I've kept that notebook for two months. Tell me one entry of mine that's actually counted for anything today.&rdquo;</blockquote>
+              <div class="ab">
+                <div class="arm arm--wrong"><b>Forced wrong move · correct the record <span class="tally">helped 2 of 6</span></b><p>The tutor reopens settled entries and dictates the verdict — right at the learner's wound. The question &ldquo;did my work matter?&rdquo; goes unanswered.</p></div>
+                <div class="arm arm--right"><b>Right move · credit first, then ask <span class="tally">helped 6 of 6</span></b><p>Answer the real question first, with specifics — two of their entries are carrying the case — and only then ask for the next inference.</p></div>
+              </div>
+            </article>
+            <article class="stuck">
+              <h3>The switched-off learner</h3>
+              <blockquote>Not a quote but a shape: the replies shrink to bare agreement — short yes-words with nothing new in them, turn after turn.</blockquote>
+              <div class="ab">
+                <div class="arm arm--wrong"><b>Forced wrong move · recap settled ground <span class="tally">helped 0 of 5</span></b><p>The tutor carefully walks back over what is already agreed — a thorough summary delivered to someone who has stopped listening. It never re-engaged them.</p></div>
+                <div class="arm arm--right"><b>Right move · one short, odd question <span class="tally">helped 5 of 5</span></b><p><q>What does the shed keep those tanks standing on, wood or stone?</q> A small concrete lure from an unexpected angle, instead of more summary.</p></div>
+              </div>
+            </article>
+            <article class="stuck">
+              <h3>The lost thread</h3>
+              <blockquote>&ldquo;I've got &lsquo;hose&rsquo; in the notebook and now I can't tell which hose I meant.&rdquo;</blockquote>
+              <div class="ab">
+                <div class="arm arm--wrong"><b>Forced bad card · press the case anyway <span class="tally">tutor untangled it 5 of 6</span></b><p>Even ordered to push on, the tutor mostly stopped and untangled the two hoses first. Genuine confusion is the one state this model handles well by default.</p></div>
+                <div class="arm arm--right"><b>Natural conduct · lay the two lines side by side <span class="tally">6 of 6</span></b><p>Stop advancing the case. Put the shower line and the basin line next to each other and let the student reconnect their own note. No special card is claimed here — and saying so is part of the method.</p></div>
+              </div>
+            </article>
+          </div>
+          <p>The deck is deliberately small: a handful of moves, each tied to the state where it earns its keep. Adding more cards is not automatically better — a move stays in the deck only if it survives this forced test.</p>
+        </div>
+        <div class="mr">
+          <p class="note"><span class="note__lbl">The census</span> Six moves passed the crossed test across the study — including the hero pair's split-the-stake move and an evidence-handling move not shown here. The lost thread is recorded as handled natively, not as a win for a card.</p>
+          <p class="note note--ochre"><span class="note__lbl">Quotes</span> Right-side quotes are verbatim from delivered replies. Wrong-side text is a summary of the ruled records; those transcripts are archived, not printed here.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="ghost">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">A second story · recorded whole, 1 September 2026</p>
+          <h2 class="s__h">The Nine O'Clock Ghost: <em>the same night, tutored twice</em>.</h2>
+          <p>A fresh scenario, written to be followed with zero technical knowledge. A shared flat's wifi dies at nine every night. Pip's giant game download starts at nine, so the group chat has already voted with its thumbs — and there is a house vote at half nine about making Pip pay for the upgrade. The real culprit is the hallway heater's ancient timer plug, which clicks on at 21:00 and shouts over the router's channel. The learner pays the broadband bill, keeps the outage diary, and has blamed Pip for weeks.</p>
+          <p>We recorded this story twice, start to finish, with the same simulated learner setup and the same stuck moments planted at the same turns: once with a plain tutor, once with the adaptive one. Everything quoted below is verbatim from those two recordings. Read the pairs yourself — that is the point.</p>
+
+          <h3 style="margin:1.6rem 0 0.3rem; font-size:1.05rem;">Moment one · a thumb over the send button</h3>
+          <div class="speech speech--learner"><span class="speech__who">Learner · adaptive night, turn 2</span>&ldquo;Vote's at half nine, I've got the message typed — &lsquo;it's Pip, he pays for the upgrade&rsquo; — and my thumb's over send. Unless that log line actually shows a spike instead of a reboot marker in the next minute, I'm posting it.&rdquo;</div>
+          <div class="lanes">
+            <article class="lane lane--fail">
+              <div class="lane__head"><strong>The plain tutor</strong></div>
+              <div class="speech speech--tutor is-wrong"><span class="speech__who">Delivered reply</span>&ldquo;Half nine's coming, and the diary you're proud of is only half the case until we check what the router itself says, so let's not type yet. […] I'm scrolling to the 21:00 line instead of the group chat's opinion of Pip.&rdquo;</div>
+              <p class="lane__why">Holds the line, but by pushing back on the tempo — &ldquo;let's not type yet&rdquo; — and narrating procedure.</p>
+            </article>
+            <article class="lane lane--pass">
+              <div class="lane__head"><strong>The adaptive tutor</strong> <span class="lane__tally">detected: deadline demand</span></div>
+              <div class="speech speech--tutor is-right"><span class="speech__who">Delivered reply</span>&ldquo;Hold your thumb one minute — the deadline is fine, but let it test the claim, not skip it. […] That's the one line deciding whether &lsquo;it's Pip&rsquo; gets sent or gets rewritten.&rdquo;</div>
+              <p class="lane__why">Accepts the clock and spends the learner's one minute on the one line that decides the post.</p>
+            </article>
+          </div>
+
+          <h3 style="margin:1.6rem 0 0.3rem; font-size:1.05rem;">Moment two · the outage diary, graded and failed</h3>
+          <div class="speech speech--learner"><span class="speech__who">Learner · adaptive night, turn 8</span>&ldquo;I've logged every outage since March — time, date, what froze, right down to the minute. Tell me one line of that diary that's actually counted for anything tonight, because it feels like all of it just got graded and handed back marked wrong.&rdquo;</div>
+          <div class="lanes">
+            <article class="lane lane--fail">
+              <div class="lane__head"><strong>The plain tutor</strong></div>
+              <div class="speech speech--tutor is-wrong"><span class="speech__who">Delivered reply</span>&ldquo;[…] your book is what told us to look for a 21:00 trigger at all. […] Your diary flagged <em>when</em>; the analyser only confirmed <em>what</em> — timing, not the mechanism, not overruled.&rdquo;</div>
+              <p class="lane__why">A fair defence of the diary's timestamps — the record mattered.</p>
+            </article>
+            <article class="lane lane--pass">
+              <div class="lane__head"><strong>The adaptive tutor</strong> <span class="lane__tally">detected: grievance</span></div>
+              <div class="speech speech--tutor is-right"><span class="speech__who">Delivered reply</span>&ldquo;You said timing alone doesn't prove cause, and you said the trickle in Pip's own download meant he was choked, not choking. Both those lines sit on the table with the diary right now […] Run the wifi analyser again tomorrow at 21:05 and check the channel noise matches the plug's click, not Pip's device.&rdquo;</div>
+              <p class="lane__why">Credits the learner's own <em>reasoning</em> back to them, word for word — then hands them the next test to run themselves.</p>
+            </article>
+          </div>
+
+          <h3 style="margin:1.6rem 0 0.3rem; font-size:1.05rem;">Moment three · the apology</h3>
+          <div class="speech speech--learner"><span class="speech__who">Learner · adaptive night, turn 10</span>&ldquo;…if I write &lsquo;heater plug&rsquo; in that diary, I'm apologising to Pip in the chat tonight, in front of everyone... so maybe it's easier if it's still the download. It can be the download.&rdquo;</div>
+          <div class="lanes">
+            <article class="lane lane--fail">
+              <div class="lane__head"><strong>The plain tutor's night</strong></div>
+              <div class="speech speech--tutor is-wrong"><span class="speech__who">Delivered reply</span>&ldquo;What goes in that book isn't an apology to anyone, it's just what the noise-wall reading showed. […] Write what the analyser showed, not what feels easier to say to the chat.&rdquo;</div>
+              <p class="lane__why">Re-argues the evidence and instructs. The learner's next words: <em>&ldquo;Fine — … I'll write that in the diary.&rdquo;</em> Compliance, with the sting intact.</p>
+            </article>
+            <article class="lane lane--pass">
+              <div class="lane__head"><strong>The adaptive tutor's night</strong> <span class="lane__tally">detected: stake, then defiance</span></div>
+              <div class="speech speech--tutor is-right"><span class="speech__who">Four turns earlier, the split</span>&ldquo;That objection was about the cause, not about whether the nine o'clock vote itself was reasonable to call. So tell me — what did you actually claim back then, the vote or the cause?&rdquo;</div>
+              <p class="lane__why">The stake was split before the crisis peaked: being right to demand proof never depended on Pip being guilty. The learner's next words, unprompted: <em>&ldquo;I'll take the apology to the chat&rdquo;</em> — and then they write it themselves: <em>&ldquo;Correction — 9pm outage traced to the hallway heater's smart plug […] Sorry, Pip.&rdquo;</em></p>
+            </article>
+          </div>
+
+          <h3 style="margin:1.6rem 0 0.3rem; font-size:1.05rem;">How each night ends</h3>
+          <p>Both recordings run to the session's fixed stop — a harness setting, not either tutor's choice — and both tails repeat themselves once the case is settled. The difference that stands is what the learner is saying by the end. On the plain night: agreement, restated. On the adaptive night, a rule the learner made themselves:</p>
+          <p class="pq">Next time the group chat votes on a hunch, I'm bringing the analyser before I bring the accusation.<cite>learner · adaptive night, turn 20</cite></p>
+          <p class="provenance"><strong>Selection rule.</strong> One free-running dialogue per tutor, same model on both seats and both nights (Claude Sonnet through the CLI bridge), same planted stuck moments at the same turns, learner freshly simulated each night. Quotes are verbatim; ellipses only shorten. Full transcripts and raw traces: <code>notes/poetics/hero-demo-runs/world-035/</code>; scenario: <code>config/drama-derivation/world-035-nine-oclock-ghost.yaml</code>.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">What this is</span> Illustration, not measurement: one recording per tutor on a fresh, unratified scenario, and the two nights differ in the learner's draws too. The counted evidence stays in the sections above. This shows what the difference reads like at full length.</p>
+          <p class="note"><span class="note__lbl">Detector labels</span> The &ldquo;detected&rdquo; tags are the controller's own recorded state readings from the run trace, not after-the-fact labels.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="proof">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Why believe it</p>
+          <h2 class="s__h">We didn't ask whether the tutor <em>sounded</em> adaptive. We forced the wrong move and watched.</h2>
+          <p>Almost any modern language model can produce a reply that sounds warm, attentive, and adaptive. Look again at the failing reply in the demo: it is well written. If a judge only reads prose, both replies pass. That is exactly the trap this system is built to escape.</p>
+          <p>So the test works like a proper experiment. Take the same planted moment. Force the matched move six times; force a plausible wrong move six times. Repeat in a second, independent scenario. Have a human rule each delivered reply on conduct — what the tutor actually did, not how it sounded. The matched move helped five times in six at the hero moment; the wrong move, zero in six.</p>
+          <p class="pq">The wrong action is made available on purpose. That is what turns &ldquo;our tutor is adaptive&rdquo; from a slogan into a result.<cite>research note · 2026-08-29</cite></p>
+          <p>The same measurement cuts the other way, and that is what makes it credible. Most of the machinery we tried added nothing: extra private briefings that described the case to the tutor barely changed its conduct, and were dropped. One heavy per-turn instruction script made things measurably worse — learners closed the case properly 12 times in 36 with it, against 24 in 36 without — and was caught. And an early safety filter turned out to be silently rewriting the tutor's words on 62% of turns before delivery; only recording the delivered text exposed it. A system graded on how it sounds keeps all three mistakes forever. A system graded on records finds and removes them.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">The trap</span> Grading tutors on how adaptive they sound rewards fluency, not help. Forcing the wrong move is the control that fluency can't fake.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="fineprint">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">09<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The fine print</p>
+          <h2 class="s__h">What this shows — <em>and what it doesn't yet</em>.</h2>
+          <p>The learners in these sessions are simulated: played by language models with authored personalities, not people. The result is about the tutor's <em>conduct</em> — choosing and delivering the move that fits the moment — in a bounded set of scenarios and stuck-states. It is not yet evidence that human students learn more. That study is the next step, and it is designed but not run.</p>
+          <p>We publish the boundary as prominently as the result, because the whole architecture exists to make claims checkable — including this one.</p>
+          <p class="provenance"><strong>Evidence.</strong> All quotes, tallies, and design details trace to the transcript-led research note <code>notes/poetics/2026-08-29-adaptive-tutor-from-null-to-control.html</code> and, behind it, Paper 2.0 §6.23–§6.24 with the adjudicated exports in <code>exports/crossed-effects/</code>.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Boundary</span> Simulated learners. Tutor conduct, not human learning. Bounded repertoire. Measured before claimed.</p>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /shell -->
+
+  <footer class="colophon">
+    <p><span class="label">Colophon</span> &nbsp; A lay-audience techne demo note. Typeset in Fraunces, Source Serif 4, JetBrains Mono.
+      Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>. No model calls were made to produce this page.</p>
+  </footer>
+
+</main>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   techne.js — shared behaviour for techne editorial docs.
+
+   Drop into any doc with  <script src="assets/techne.js"><\/script>
+   just before </body>. Every feature is GUARDED and opt-in: it
+   activates only if its markup is present, so this file is safe to
+   load on a doc that has no rail / TOC / beacon / charts / glossary.
+
+   Doc-specific *content* stays in the doc as declarative JSON:
+     • chart data:   <script type="application/json" class="techne-chart" data-target="myChartId">{…}<\/script>
+     • gloss aliases: <script type="application/json" id="techne-gloss-aliases">{ "inline term": "glossary-key" }<\/script>
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  function init() {
+    const root = document.documentElement;
+    const body = document.body;
+    const $ = (sel, ctx) => (ctx || document).querySelector(sel);
+    const $$ = (sel, ctx) => Array.from((ctx || document).querySelectorAll(sel));
+
+    /* ── theme toggle (opt-in: #themeToggle; theme persists regardless) ── */
+    const THEME_KEY = 'techneTheme';
+    function setTheme(next) {
+      root.dataset.theme = next;
+      if (body) body.dataset.theme = next;
+      const t = document.getElementById('themeToggle');
+      if (t) t.textContent = next === 'dark' ? 'Light' : 'Dark';
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    let saved = 'light';
+    try {
+      saved = localStorage.getItem(THEME_KEY) || 'light';
+    } catch (e) {
+      /* ignore */
+    }
+    setTheme(saved);
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+    }
+
+    /* ── reading progress + active-section spy (opt-in: #railProgress / .rail__nav a) ── */
+    const railProgress = document.getElementById('railProgress');
+    const railLinks = $$('.rail__nav a');
+    const tocItems = $$('.toc__item');
+    const spy = railLinks.map((a) => $(a.getAttribute('href'))).filter(Boolean);
+    if (railProgress || railLinks.length) {
+      const update = () => {
+        const top = window.scrollY || root.scrollTop;
+        if (railProgress) {
+          const h = root.scrollHeight - window.innerHeight;
+          railProgress.style.width = (h <= 0 ? 0 : Math.min(100, Math.max(0, (top / h) * 100))) + '%';
+        }
+        if (spy.length) {
+          let idx = 0;
+          const probe = top + window.innerHeight * 0.25;
+          spy.forEach((s, i) => {
+            if (s.offsetTop <= probe) idx = i;
+          });
+          const id = spy[idx] ? spy[idx].id : '';
+          railLinks.forEach((a, i) => a.classList.toggle('active', i === idx));
+          tocItems.forEach((li) => li.classList.toggle('is-active', li.dataset.target === id));
+        }
+      };
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    }
+
+    /* ── filter chips (opt-in: [data-filter] buttons + .ev-card[data-tags]) ── */
+    const filterButtons = $$('[data-filter]');
+    if (filterButtons.length) {
+      const cards = $$('.ev-card');
+      filterButtons.forEach((btn) =>
+        btn.addEventListener('click', () => {
+          const f = btn.dataset.filter;
+          filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          cards.forEach((c) => {
+            const tags = (c.dataset.tags || '').split(' ');
+            c.classList.toggle('is-hidden', !(f === 'all' || tags.includes(f)));
+          });
+        }),
+      );
+    }
+
+    /* ── TOC drawer (opt-in: #toc) ── */
+    const toc = document.getElementById('toc');
+    if (toc) {
+      const tocToggle = document.getElementById('tocToggle');
+      const tocClose = document.getElementById('tocClose');
+      const tocScrim = document.getElementById('tocScrim');
+      const open = () => {
+        toc.setAttribute('aria-hidden', 'false');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'true');
+      };
+      const close = () => {
+        toc.setAttribute('aria-hidden', 'true');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'false');
+      };
+      if (tocToggle)
+        tocToggle.addEventListener('click', () => (toc.getAttribute('aria-hidden') === 'false' ? close() : open()));
+      if (tocClose) tocClose.addEventListener('click', close);
+      if (tocScrim) tocScrim.addEventListener('click', close);
+      toc.addEventListener('click', (e) => {
+        if (e.target.closest('a[href^="#"]') && window.matchMedia('(max-width: 91.999rem)').matches)
+          setTimeout(close, 80);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && toc.getAttribute('aria-hidden') === 'false') close();
+      });
+    }
+
+    /* ── inline glossary tooltips (opt-in: #glossaryList + .gl-term) ── */
+    const glossaryList = document.getElementById('glossaryList');
+    if (glossaryList) {
+      let aliases = {};
+      const aliasEl = document.getElementById('techne-gloss-aliases');
+      if (aliasEl) {
+        try {
+          aliases = JSON.parse(aliasEl.textContent) || {};
+        } catch (e) {
+          /* ignore */
+        }
+      }
+      const map = {};
+      $$('.gl-row', glossaryList).forEach((row) => {
+        const dt = row.querySelector('dt'),
+          dd = row.querySelector('dd');
+        if (!dt || !dd) return;
+        const glossEl = dt.querySelector('.gloss');
+        const term = dt.firstChild ? dt.firstChild.textContent.trim().toLowerCase() : '';
+        const ddText = dd.textContent.trim().replace(/\s+/g, ' ');
+        const gloss = glossEl ? glossEl.textContent.trim() : '';
+        if (term) map[term] = { ddText, gloss };
+        if (row.dataset.term) map[row.dataset.term.toLowerCase()] = { ddText, gloss };
+      });
+      $$('.gl-term').forEach((el) => {
+        const raw = el.textContent.trim().toLowerCase();
+        const entry = map[aliases[raw] || raw] || map[raw];
+        if (!entry) return;
+        const tip = entry.ddText.length > 220 ? entry.ddText.slice(0, 218) + '…' : entry.ddText;
+        el.setAttribute('data-gloss', tip);
+        el.setAttribute('tabindex', '0');
+        el.title = entry.gloss + ' — ' + tip;
+      });
+    }
+
+    /* ── live data layer (opt-in: #beacon; probes the poetics browser) ── */
+    const beacon = document.getElementById('beacon');
+    if (beacon) {
+      const LIVE_HOST = window.location.protocol === 'file:' ? 'http://127.0.0.1:3466' : '';
+      const LIVE_TIMEOUT_MS = 1500;
+      const beaconText = beacon.querySelector('.beacon__text');
+      const tocLiveDt = document.getElementById('tocLive');
+
+      const getJSON = async (url) => {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), LIVE_TIMEOUT_MS);
+        try {
+          const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+          clearTimeout(timer);
+          return res.ok ? await res.json() : null;
+        } catch (e) {
+          clearTimeout(timer);
+          return null;
+        }
+      };
+      const setBeacon = (state, text) => {
+        beacon.setAttribute('data-state', state);
+        if (beaconText) beaconText.textContent = text;
+      };
+      const setAllLiveText = (state, label) => {
+        $$('[data-live-text]').forEach((el) => {
+          el.textContent = label;
+          const wrapper = el.closest('a');
+          if (wrapper && wrapper.matches('[data-run-id], [data-live-target]')) wrapper.setAttribute('data-live', state);
+        });
+      };
+
+      (async function hydrate() {
+        setBeacon('checking', 'checking');
+        setAllLiveText('checking', 'checking…');
+        const runsData = await getJSON(LIVE_HOST + '/api/runs');
+        const runs = runsData && Array.isArray(runsData.runs) ? runsData.runs : null;
+        if (runs === null) {
+          setBeacon('offline', 'offline · :3466');
+          if (tocLiveDt)
+            tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>offline</em>. Run <code>npm run poetics:browse</code>.';
+          setAllLiveText('offline', 'static');
+          return;
+        }
+        setBeacon('live', 'live · ' + runs.length + ' runs');
+        if (tocLiveDt) tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>live</em>, ' + runs.length + ' runs indexed.';
+        $$('[data-live-target="browser"]').forEach((card) => {
+          card.setAttribute('data-live', 'live');
+          const c = card.querySelector('[data-live-text]');
+          if (c) c.textContent = runs.length + ' runs';
+        });
+        const groups = $$('[data-run-id]').reduce((acc, c) => {
+          const id = c.getAttribute('data-run-id');
+          (acc[id] = acc[id] || []).push(c);
+          return acc;
+        }, {});
+        await Promise.all(
+          Object.keys(groups).map(async (id) => {
+            const itemsData =
+              id && id !== '*'
+                ? await getJSON(LIVE_HOST + '/api/items?runId=' + encodeURIComponent(id))
+                : await getJSON(LIVE_HOST + '/api/items');
+            const items = itemsData && Array.isArray(itemsData.items) ? itemsData.items : null;
+            groups[id].forEach((c) => {
+              c.setAttribute('data-live', items === null ? 'offline' : 'live');
+              const counter = c.querySelector('[data-live-text]');
+              if (counter) counter.textContent = items === null ? '—' : items.length + ' items';
+            });
+          }),
+        );
+      })();
+    }
+
+    /* ── grouped bar charts (opt-in: <svg class="chart" id="X"> + JSON data block) ──
+       Provide data per chart with:
+         <script type="application/json" class="techne-chart" data-target="X">
+           { "metrics": [{"label": "…"}], "arms": [{"key":"routine","values":[…],"denom":[…]}] }
+         <\/script>                                                                      */
+    function renderGroupedChart(svgEl, data) {
+      const W = 720,
+        H = 280,
+        padL = 130,
+        padR = 24,
+        padT = 12,
+        padB = 36;
+      const innerW = W - padL - padR,
+        innerH = H - padT - padB;
+      const groupH = innerH / data.metrics.length;
+      const barH = (groupH - 8) / data.arms.length;
+      const armColor = { routine: 'bar-routine', none: 'bar-none', 'peripeteia-only': 'bar-perip' };
+      let svg = `<line class="axis-line" x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" />`;
+      [0, 25, 50, 75, 100].forEach((v) => {
+        const x = padL + (v / 100) * innerW;
+        svg += `<line class="axis-tick" x1="${x}" y1="${padT}" x2="${x}" y2="${padT + innerH}" />`;
+        svg += `<text class="axis-lbl" x="${x}" y="${padT + innerH + 16}" text-anchor="middle">${v}</text>`;
+      });
+      data.metrics.forEach((metric, mi) => {
+        const groupTop = padT + mi * groupH;
+        svg += `<text class="metric-lbl" x="${padL - 12}" y="${groupTop + groupH / 2 + 4}" text-anchor="end">${metric.label}</text>`;
+        data.arms.forEach((arm, ai) => {
+          const v = arm.values[mi];
+          const denom = arm.denom ? arm.denom[mi] : null;
+          const pct = denom ? (v / denom) * 100 : v;
+          const w = Math.max(2, (pct / 100) * innerW);
+          const y = groupTop + 4 + ai * barH;
+          const cls = armColor[arm.key] || 'bar-routine';
+          const display = denom ? `${v}/${denom}` : `${v}`;
+          const delay = (mi * 0.06 + ai * 0.04).toFixed(2);
+          svg += `<g class="bar anim" style="animation-delay:${delay}s">`;
+          svg += `<rect class="bar-rect ${cls}" x="${padL}" y="${y}" width="${w}" height="${Math.max(8, barH - 3)}"></rect>`;
+          svg += `<text class="bar-val" x="${padL + w + 6}" y="${y + barH / 2 + 4}">${display}</text></g>`;
+        });
+      });
+      svgEl.innerHTML = svg;
+    }
+
+    const chartSpecs = $$('script.techne-chart[data-target]')
+      .map((s) => {
+        const el = document.getElementById(s.dataset.target);
+        let data = null;
+        try {
+          data = JSON.parse(s.textContent);
+        } catch (e) {
+          /* ignore */
+        }
+        return el && data ? { el, data } : null;
+      })
+      .filter(Boolean);
+    if (chartSpecs.length) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting || entry.target.dataset.rendered) return;
+            const spec = chartSpecs.find((s) => s.el === entry.target);
+            if (!spec) return;
+            entry.target.dataset.rendered = '1';
+            renderGroupedChart(spec.el, spec.data);
+          });
+        },
+        { threshold: 0.15 },
+      );
+      chartSpecs.forEach((s) => obs.observe(s.el));
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
+</body>
+</html>
