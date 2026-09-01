@@ -1,14 +1,13 @@
 ---
 id: qwen-refusal-continuity-retest
 title: "Let hostile Qwen refusal evolve after concessions and re-test"
-status: review
+status: done
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-08-31
-updated: 2026-08-31
-branch: codex/local-qwen-resistant-learner-mvp
+updated: 2026-09-01
 verification: "Abliterated learner/bilateral superego follow-up: 24 generation + 8 Opus = 32/100; both dialogues complete, 7/8 valid assessments, final malformed nonempty judgment preserved without resampling. All seven public drafts and exit flags unchanged after review. Private report browser-checked in light/dark desktop modes. 62 preflight tests and 15 post-failure scoring tests pass. No push or publication."
 claim_status: exploratory
 links:
@@ -273,3 +272,12 @@ ended on reply 3. Continuation-v1 stopped at 5/40 because its raw `I'll` quote
 matched Sol's raw `I’ll` except for apostrophe typography. Apply narrow NFC +
 straight/curly-apostrophe equivalence, preserve all five replies, and continue
 at Sol turn 3 in continuation-v2. No new sample or semantic match is inferred.
+
+## Board reconciliation — 2026-09-01
+
+Closed as a terminal bounded result under the card's declared
+complete-or-preserve-failure rule. Both final follow-up dialogues completed,
+seven of eight assessments are usable, and the malformed final judgment remains
+missing rather than imputed or resampled. The evidence supports the recorded
+negative conclusion—no demonstrated public-review benefit—not another recovery
+or experiment under this card. No model calls were made during reconciliation.

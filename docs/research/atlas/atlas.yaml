@@ -94,18 +94,23 @@ atlas:
       verdict: scope-bound
       body: |
         A late line of studies built learners that resist — deferring every move,
-        overclaiming, bored, or refusing the tutor's frame — and tested moves issued
-        by machinery at detected moments. Delivery is the hinge: on the
-        permission-seeking learner the same permission pasted into the standing
-        prompt was never used once, while machinery issuing it at the moment changed
-        the learner's conduct; on the overconfident learner the standing wording
-        landed part-way, and the delivered gate still beat it. In the line's powered
-        run, a delivered, state-matched move re-engaged almost every resistant
-        learner.
+        overclaiming, bored, or refusing the tutor's frame — and tested systems that
+        put specific moves into the tutor's live turn. Delivery is the hinge, but the
+        machinery's parts do different work: on the permission-seeking learner the
+        same permission pasted into the standing prompt was never used once; the
+        always-on per-turn steering carried the conduct change, while the sensor-timed
+        challenge protected decision correctness. On the overconfident learner the
+        standing wording landed part-way, and the delivered gate still beat it. In the line's powered
+        run, conditional re-engagement was high after a delivered, state-matched
+        move: 45 of 49 determinate completed boredom dialogues and 70 of 70 refusal
+        dialogues, from 108 planned units per face.
       caveat: >-
-        What the move wins depends on the shape of the resistance: bored learners went
-        back to the work, while frame-refusers mostly stopped at naming a condition
-        rather than acting on it. A fresh fifth depth calibration still failed reader
+        Attrition is part of the result: the boredom face retained 58 typed failures,
+        while the refusal face retained 36 typed failures plus two technical losses.
+        Among the determinate completed dialogues, what the move wins depends on the
+        shape of the resistance: bored learners went back to the work, while
+        frame-refusers mostly stopped at naming a condition rather than acting on it.
+        A fresh fifth depth calibration still failed reader
         agreement. Two successor calibrations did not answer whether
         any move converts that naming into doing: one finer endpoint failed reader
         agreement, and one satisfiable-demand persona never produced its registered
@@ -483,15 +488,21 @@ modules:
     status: scope-bound
     claim: >-
       Against simulated learners built to resist — deferential, overconfident, bored,
-      or refusing the tutor's frame — a move the machinery actually delivers at a
-      detected moment changes conduct more than the same wording as a standing
-      instruction: on the permission-seeking learner the standing wording was never
-      used at all, and on the overconfident learner it landed only part-way between
-      no instruction and the delivered gate. In the line's powered run, a delivered, state-matched
-      move re-engaged 45 of 49 readable dialogues on the boredom face (0.918) and 70
-      of 70 on the refusal face (1.000), but depth tracked the resistance shape: most
-      re-engaged bored learners returned to the work, while refusers mostly stopped
-      at naming a condition and rarely acted under protest. A parallel study
+      or refusing the tutor's frame — live-turn delivery outperformed the same wording
+      as a standing instruction, but not every timed component carried the same effect.
+      On the permission-seeking learner the standing wording was never used at all;
+      always-on per-turn steering carried the conduct change, while the sensor-timed
+      challenge protected decision correctness. On the overconfident learner the
+      standing wording landed only part-way between no instruction and the delivered
+      gate. In the line's powered run, conditional
+      re-engagement after a delivered, state-matched move was 45 of 49 determinate
+      completed dialogues on the boredom face (0.918) and 70 of 70 on the refusal
+      face (1.000), from 108 planned units per face. Attrition is part of the result:
+      58 retained typed failures on the boredom face, and 36 retained typed failures
+      plus two technical losses on the refusal face. Among retained dialogues, depth
+      tracked the resistance shape: most re-engaged bored learners returned to the
+      work, while refusers mostly stopped at naming a condition and rarely acted under
+      protest. A parallel study
       inverted the demand — the defiant learner asks for the warrant of the frame
       itself — and closed at its own gate: the warrant-serving tutor was produced and
       measured in every dialogue, while the withholding control could not be fielded
@@ -524,8 +535,10 @@ modules:
       registered studies on a bored learner returned no move claim — a window that
       could not be reached, then a contrast that was not delivered — and closed as a
       measurement result. The powered two-face run then held delivery to exhaustive
-      checks and found re-engagement near ceiling on both faces, with the boredom
-      face doing the work and the refusal face naming its terms. A fresh fifth depth
+      checks and found conditional re-engagement near ceiling among the retained
+      dialogues (49/108 planned boredom units; 70/108 planned refusal units), with the
+      boredom face doing the work and the refusal face naming its terms; the heavy,
+      face-asymmetric attrition remains part of that finding. A fresh fifth depth
       calibration repaired the output contract but still failed endpoint agreement,
       so its one treatment rung-2 case is descriptive rather than a treatment result.
       A separate
