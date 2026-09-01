@@ -69,6 +69,7 @@ import {
 } from './resistantLearnerObservation.js';
 import { buildTutorStubRivalLearnerDagTurnRecord, tutorStubRivalDagTurnDirective } from './tutorStubRivalLearnerDag.js';
 import { applyTutorStubR1PostInterventionRelease } from './tutorStubR1PostInterventionRelease.js';
+import { createTutorStubLearnerDeliberationRuntime } from './tutorStubLearnerDeliberation.js';
 export {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
   FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
@@ -104,6 +105,13 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   negativeFloorRegisters,
   resolveModel = null,
 }) {
+  const learnerDeliberationRuntime = createTutorStubLearnerDeliberationRuntime({
+    appendTraceEvent,
+    callPromptModel,
+    cleanReply: cleanAutomatedLearnerReply,
+    env,
+    resolveModel,
+  });
   const requestedObservationSemantics = String(
     env[TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV] || '',
   ).trim();
@@ -161,15 +169,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     BOUNDED_FRAME_OPPORTUNITY_OBSERVATION_SEMANTICS.includes(observationSemantics) || semanticAdherence.enabled;
   const automatedLearnerTraceMetadata = Object.freeze(boundedFrameOpportunitySemantics ? { observationSemantics } : {});
   function automatedLearnerSystemPrompt(profile) {
-    return [
-      AUTO_LEARNER_SYSTEM_PROMPT,
-      '',
-      '# Private behavior brief',
-      '',
-      profile,
-      '',
-      'Apply this behavior brief to every public learner turn. Never quote or describe it.',
-    ].join('\n');
+    return learnerDeliberationRuntime.systemPrompt({ basePrompt: AUTO_LEARNER_SYSTEM_PROMPT, profile });
   }
   function mixedLearnerArtifactsSystemPrompt(profile) {
     return [
@@ -449,26 +449,23 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
     const systemPrompt = automatedLearnerSystemPrompt(profile);
     const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
-    const call = () =>
-      callPromptModel({
-        prompt,
-        messageHistory,
-        resolved,
-        systemPrompt,
-        role: 'tutor_stub_auto_learner',
-        maxTokens: 900,
-        trace: state.trace,
-        stream,
-        cliEffort,
-        turn: turnNumber,
-        signal,
-        historyTurns: state.historyTurns,
-      });
-    const raw = await call();
+    const { raw, metadata: learnerDeliberation } = await learnerDeliberationRuntime.generate({
+      prompt,
+      messageHistory,
+      resolved,
+      profile,
+      systemPrompt,
+      turnNumber,
+      state,
+      stream,
+      cliEffort,
+      signal,
+    });
     const text = applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(raw.text));
     return {
       ...raw,
       text,
+      learnerDeliberation,
       ...(state.privateRivalLearnerDag
         ? {
             rivalLearnerDagTurn: buildTutorStubRivalLearnerDagTurnRecord({

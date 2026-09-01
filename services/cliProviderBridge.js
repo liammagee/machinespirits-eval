@@ -451,7 +451,7 @@ const CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA = 'machinespirits.cli-provider.claude-j
  * provider events may include ambient metadata or model text and must not be
  * copied into persisted error telemetry.
  */
-export function parseClaudeJsonResultEnvelope(stdoutText) {
+export function parseClaudeJsonResultEnvelope(stdoutText, { singleAttemptModel = null } = {}) {
   let events;
   try {
     events = JSON.parse(String(stdoutText || ''));
@@ -464,6 +464,9 @@ export function parseClaudeJsonResultEnvelope(stdoutText) {
       result_event_count: 0,
     };
   }
+  // Non-verbose print mode emits the result object directly; verbose mode
+  // emits an event array. Never mistake a bare assessment for an envelope.
+  if (events && !Array.isArray(events) && events.type === 'result') events = [events];
   if (!Array.isArray(events)) {
     return {
       schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
@@ -484,6 +487,70 @@ export function parseClaudeJsonResultEnvelope(stdoutText) {
     };
   }
   const result = resultEvents[0];
+  let attemptAudit = null;
+  if (singleAttemptModel) {
+    const messages = events.filter((event) => event?.type === 'assistant').map((event) => event.message);
+    const ids = new Set(messages.map((message) => message?.id).filter(Boolean));
+    const unexpectedModels = Object.keys(result.modelUsage || {}).filter((name) => name !== singleAttemptModel);
+    // Claude counts the tool-result handoff as another num_turns, even when
+    // its thinking and tool blocks share ONE assistant message / API response.
+    // Audit response IDs, not that agent-loop counter. Never ignore helper use.
+    const responseCount = messages.length ? ids.size : result.num_turns;
+    const validMessages = messages.every((message) => message?.id && message.model === singleAttemptModel);
+    attemptAudit = { responseCount, unexpectedModels, cliTurns: result.num_turns };
+    if (responseCount !== 1 || !validMessages || unexpectedModels.length) {
+      return {
+        schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+        classification: 'indeterminate',
+        reason: unexpectedModels.length ? 'unexpected_auxiliary_model_usage' : 'single_attempt_response_count_unverified',
+        event_count: events.length,
+        result_event_count: 1,
+      };
+    }
+    // A known lossless wrapper mismatch, not a retry or semantic repair.
+    // The caller must still validate the complete assessment against its rubric.
+    const toolCalls = messages.flatMap((message) => (message.content || []).filter((block) => block.type === 'tool_use'));
+    const tool = toolCalls[0];
+    const wrapperKeys = Object.keys(tool?.input || {});
+    const wrapperKey = wrapperKeys.length === 1 ? wrapperKeys[0] : null;
+    if (
+      result.is_error === true && result.terminal_reason === 'structured_output_retry_exhausted' &&
+      !Object.hasOwn(result, 'structured_output') && toolCalls.length === 1 && tool.name === 'StructuredOutput' &&
+      wrapperKey !== null && typeof tool.input[wrapperKey] === 'string'
+    ) {
+      try {
+        const value = JSON.parse(tool.input[wrapperKey]);
+        if (value && typeof value === 'object' && !Array.isArray(value)) return {
+          schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+          classification: 'structured_success', reason: 'single_structured_output_values_wrapper',
+          event_count: events.length, result_event_count: 1, structured_output: value,
+          num_turns: result.num_turns, attemptAudit,
+          wrapperRecovery: { field: `StructuredOutput.input.${wrapperKey}`, judgmentsChanged: false, providerValidated: false },
+        };
+      } catch (_) { /* malformed content remains a failed response */ }
+    }
+    // The model can return the requested JSON as text instead of calling the
+    // CLI's formatting tool. Decode only one complete JSON object from the
+    // same audited response; never extract fragments or ask for another reply.
+    const textBlocks = messages.flatMap((message) => (message.content || []).filter((block) => block.type === 'text'));
+    if (
+      result.is_error === true && result.terminal_reason === 'structured_output_retry_exhausted' &&
+      !Object.hasOwn(result, 'structured_output') && toolCalls.length === 0 && textBlocks.length === 1
+    ) {
+      const text = String(textBlocks[0].text || '').trim();
+      const fenced = /^```(?:json)?\s*([\s\S]*?)\s*```$/u.exec(text);
+      try {
+        const value = JSON.parse(fenced ? fenced[1] : text);
+        if (value && typeof value === 'object' && !Array.isArray(value)) return {
+          schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+          classification: 'structured_success', reason: 'single_assistant_json_text',
+          event_count: events.length, result_event_count: 1, structured_output: value,
+          num_turns: result.num_turns, attemptAudit,
+          wrapperRecovery: { field: 'assistant.content.text', judgmentsChanged: false, providerValidated: false },
+        };
+      } catch (_) { /* incomplete JSON or surrounding prose is not repaired */ }
+    }
+  }
   if (typeof result.is_error !== 'boolean') {
     return {
       schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
@@ -502,6 +569,8 @@ export function parseClaudeJsonResultEnvelope(stdoutText) {
       event_count: events.length,
       result_event_count: 1,
       structured_output: result.structured_output,
+      num_turns: Number.isSafeInteger(result.num_turns) ? result.num_turns : null,
+      ...(attemptAudit ? { attemptAudit } : {}),
     };
   }
   if (result.is_error === true && !hasStructuredOutput) {
@@ -709,6 +778,8 @@ async function callClaudeCli({
   preserveDefaultSystemPrompt = false,
   rawUserPrompt = false,
   executable = null,
+  singleAttempt = false,
+  onRawOutput = null,
 }) {
   if (signal?.aborted) throw abortError(role);
   if (rawUserPrompt && (String(systemPrompt || '') || (Array.isArray(messageHistory) && messageHistory.length > 0))) {
@@ -722,6 +793,8 @@ async function callClaudeCli({
   const stdoutLimit = positiveLimit(maxStdoutBytes, DEFAULT_CLI_MAX_STDOUT_BYTES);
   const stderrLimit = positiveLimit(maxStderrBytes, DEFAULT_CLI_MAX_STDERR_BYTES);
   const schema = normalizedOutputSchema(outputSchema);
+  if (singleAttempt && !schema) throw new Error('Claude singleAttempt requires structured output for turn accounting');
+  if (singleAttempt && !model) throw new Error('Claude singleAttempt requires an explicit model');
 
   // Every claude call — schema or not — runs context-isolated (see
   // CLAUDE_CLI_ISOLATION_ARGS above). Before 2026-07-17 only outputSchema
@@ -739,6 +812,17 @@ async function callClaudeCli({
         args.push('--json-schema', JSON.stringify(schema));
       }
       const env = buildCliProviderEnv('claude-code');
+      if (singleAttempt) {
+        // Claude's schema mode can otherwise re-prompt internally. One
+        // reserved benchmark attempt must not fund those hidden retries.
+        args.push('--max-turns', '1');
+        env.CLAUDE_CODE_MAX_RETRIES = '0';
+        env.MAX_STRUCTURED_OUTPUT_RETRIES = '0';
+        // Print mode otherwise makes a separate small-model title request,
+        // even with ordinary tools disabled. It is not a judge assessment.
+        env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE = '1';
+        env.CLAUDE_CODE_DISABLE_NONSTREAMING_FALLBACK = '1';
+      }
       const child = spawnImpl(command, args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: isolation.cwd });
       let out = '';
       let err = '';
@@ -794,9 +878,34 @@ async function callClaudeCli({
       child.on('close', (code) => {
         clearTimeout(cliTimeout);
         signal?.removeEventListener('abort', onAbort);
+        try {
+          // Explicit private-archive sink only; never add raw envelopes to
+          // shared telemetry or error messages. Runs before any parsing.
+          onRawOutput?.({ stdout: out, stderr: err, exitCode: code });
+        } catch (error) {
+          reject(error);
+          return;
+        }
         if (outputExceeded) return;
         if (schema) {
-          const envelope = parseClaudeJsonResultEnvelope(out);
+          const envelope = parseClaudeJsonResultEnvelope(out, { singleAttemptModel: singleAttempt ? model : null });
+          if (
+            singleAttempt &&
+            envelope.classification === 'structured_success' &&
+            (code !== 0 && !envelope.wrapperRecovery)
+          ) {
+            reject(
+              claudeJsonEnvelopeError({
+                classification: 'indeterminate',
+                reason: code !== 0 ? 'nonzero_exit_with_structured_output' : 'single_attempt_turn_count_unverified',
+                code: 'CLI_PROVIDER_AMBIGUOUS_OUTPUT',
+                exitCode: code,
+                stdout: out,
+                stderr: err,
+              }),
+            );
+            return;
+          }
           if (envelope.classification === 'structured_success') {
             resolve({
               text: JSON.stringify(envelope.structured_output),
@@ -807,6 +916,10 @@ async function callClaudeCli({
               ...normalizeTokenUsage(null),
               cost: 0,
               structuredOutput: true,
+              ...(singleAttempt
+                ? { attemptControls: { maxTurns: 1, apiRetries: 0, schemaRetries: 0, observedTurns: envelope.num_turns, observedModelResponses: envelope.attemptAudit.responseCount } }
+                : {}),
+              ...(envelope.wrapperRecovery ? { structuredOutputRecovery: envelope.wrapperRecovery } : {}),
               contextIsolation: CLAUDE_CLI_CONTEXT_ISOLATION,
               structuredEventAudit: {
                 event_type_counts: { result: 1 },
@@ -1412,6 +1525,8 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       preserveDefaultSystemPrompt: opts?.preserveDefaultSystemPrompt === true,
       rawUserPrompt: opts?.rawUserPrompt === true,
       executable: opts?.executable,
+      singleAttempt: opts?.singleAttempt === true,
+      onRawOutput: opts?.onRawOutput,
     });
   }
   if (agentConfig?.provider === 'codex') {

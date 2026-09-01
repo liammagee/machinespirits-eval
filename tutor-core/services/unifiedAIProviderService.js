@@ -448,14 +448,24 @@ async function callGemini(model, systemPrompt, messages, config) {
  * Call a local OpenAI-compatible API (LM Studio, Ollama, etc.)
  * @private
  */
+function localChatCompletionsEndpoint(baseUrl) {
+  return `${String(baseUrl || '')
+    .replace(/\/+$/u, '')
+    .replace(/\/v1\/chat\/completions$/u, '')
+    .replace(/\/v1$/u, '')}/v1/chat/completions`;
+}
+
 async function callLocal(model, systemPrompt, messages, config) {
   const startTime = Date.now();
 
-  const baseUrl = process.env.LOCAL_AI_URL || 'http://localhost:1234';
-  // Normalize: strip trailing slash, ensure /v1/chat/completions
-  const endpoint = baseUrl.replace(/\/+$/, '').replace(/\/v1\/chat\/completions$/, '') + '/v1/chat/completions';
+  const provider = config.provider === 'mlx-local' ? 'mlx-local' : 'local';
+  const mlxLocal = provider === 'mlx-local';
+  const baseUrl = mlxLocal
+    ? process.env.MLX_LOCAL_AI_URL || 'http://127.0.0.1:8080'
+    : process.env.LOCAL_AI_URL || 'http://localhost:1234';
+  const endpoint = localChatCompletionsEndpoint(baseUrl);
 
-  const effectiveModel = model || 'local-model';
+  const effectiveModel = (mlxLocal ? process.env.MLX_LOCAL_AI_MODEL : '') || model || 'local-model';
 
   const sanitizedMessages = sanitizeMessages(messages);
   const body = {
@@ -470,6 +480,11 @@ async function callLocal(model, systemPrompt, messages, config) {
       })),
     ],
   };
+  // The abliterated Qwen route is being used as an actor, not as a hidden
+  // chain-of-thought generator.  mlx-vlm otherwise follows the model
+  // template's native thinking default, which can consume the whole response
+  // budget and leave message.content empty.
+  if (mlxLocal) body.enable_thinking = false;
   if (config.onToken) body.stream = true;
 
   const res = await fetch(endpoint, {
@@ -503,6 +518,13 @@ async function callLocal(model, systemPrompt, messages, config) {
     outputTokens = data.usage?.completion_tokens || 0;
   }
 
+  if (!String(content || '').trim()) {
+    const error = new Error(`Local AI returned an empty completion from ${effectiveModel}.`);
+    error.code = 'LOCAL_AI_EMPTY_COMPLETION';
+    error.usage = { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens };
+    throw error;
+  }
+
   return {
     content,
     model: effectiveModel,
@@ -512,7 +534,7 @@ async function callLocal(model, systemPrompt, messages, config) {
       totalTokens: inputTokens + outputTokens,
     },
     latencyMs: Date.now() - startTime,
-    provider: 'local',
+    provider,
   };
 }
 
@@ -528,6 +550,7 @@ const PROVIDER_MAP = {
   gemini: callGemini,
   google: callGemini, // alias
   local: callLocal,
+  'mlx-local': callLocal,
   lmstudio: callLocal, // alias
 };
 
@@ -543,7 +566,7 @@ async function dispatch(provider, model, systemPrompt, messages, config) {
     throw new Error(`Unknown provider: ${normalizedProvider}`);
   }
 
-  return callFn(model, systemPrompt, messages, config);
+  return callFn(model, systemPrompt, messages, { ...config, provider: normalizedProvider });
 }
 
 // ============================================================================
@@ -924,11 +947,14 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
     }
 
     case 'local':
+    case 'mlx-local':
     case 'lmstudio': {
-      const localBaseUrl = config.providerConfig?.base_url || process.env.LOCAL_AI_URL || 'http://localhost:1234';
-      const endpoint =
-        localBaseUrl.replace(/\/+$/, '').replace(/\/v1\/chat\/completions$/, '') + '/v1/chat/completions';
-      const effectiveModel = model || 'local-model';
+      const mlxLocal = provider === 'mlx-local';
+      const localBaseUrl = mlxLocal
+        ? process.env.MLX_LOCAL_AI_URL || config.providerConfig?.base_url || 'http://127.0.0.1:8080'
+        : config.providerConfig?.base_url || process.env.LOCAL_AI_URL || 'http://localhost:1234';
+      const endpoint = localChatCompletionsEndpoint(localBaseUrl);
+      const effectiveModel = (mlxLocal ? process.env.MLX_LOCAL_AI_MODEL : '') || model || 'local-model';
       const localHeaders = { 'Content-Type': 'application/json' };
       const localApiKey = config.providerConfig?.apiKey;
       if (localApiKey) localHeaders['Authorization'] = `Bearer ${localApiKey}`;
@@ -941,6 +967,7 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
             temperature: config.temperature ?? 0.7,
             max_tokens: config.maxTokens || 1000,
             stream: true,
+            ...(mlxLocal ? { enable_thinking: false } : {}),
             messages: [
               { role: 'system', content: sanitizeText(systemPrompt) },
               ...sanitizedMessages.map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),

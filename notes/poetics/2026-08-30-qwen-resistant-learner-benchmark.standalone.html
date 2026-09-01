@@ -1,0 +1,2441 @@
+<!doctype html>
+<html lang="en" data-skin="machine-spirits">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Qwen as a resistant learner — normal and abliterated benchmark</title>
+<meta name="description" content="Two bounded eight-turn local learner dialogues with a Sol tutor: exact public swimlanes, timing, repetition and provisional rubric-guided analysis.">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   techne.css — dramatic-recognition editorial design system
+   Shared stylesheet. Extracted from the arc note so design and
+   content live in separate files (Tier 1). Consumed by the arc
+   HTML and by the pandoc template (arc.template.html).
+   ════════════════════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════════════════
+     Dramatic Recognition Arc — live, data-driven synthesis note
+     editorial publication, techne palette
+     ═══════════════════════════════════════════════════════════════ */
+
+  :root {
+    --paper:     #F4EEDD;
+    --paper-2:   #ECE3CB;
+    --paper-3:   #F8F2E2;
+    --paper-4:   #FBF6E8;
+    --ink:       #14100C;
+    --ink-2:     #2C241B;
+    --ink-3:     #5C5040;
+    --ink-4:     #8C7E6A;
+    --linen:     #D8C7A9;
+    --moss:      #56683A;
+    --moss-deep: #3A4824;
+    --brick:     #A53E2E;
+    --brick-d:   #7C2C1F;
+    --ochre:     #C08A3E;
+    --ochre-d:   #8C5F1F;
+    --rule:      rgba(28, 22, 16, 0.18);
+    --rule-soft: rgba(28, 22, 16, 0.10);
+
+    --s-mini: clamp(0.62rem, 0.58rem + 0.14vw, 0.72rem);
+    --s-0:    clamp(0.78rem, 0.74rem + 0.18vw, 0.90rem);
+    --s-1:    clamp(0.95rem, 0.90rem + 0.20vw, 1.05rem);
+    --s-2:    clamp(1.05rem, 1.00rem + 0.26vw, 1.20rem);
+    --s-3:    clamp(1.30rem, 1.20rem + 0.50vw, 1.60rem);
+    --s-4:    clamp(1.80rem, 1.50rem + 1.40vw, 2.80rem);
+    --s-5:    clamp(2.60rem, 1.80rem + 3.50vw, 5.20rem);
+    --s-6:    clamp(3.40rem, 2.20rem + 5.20vw, 7.40rem);
+
+    --lead: 1.55;
+    --ease: cubic-bezier(.22,.61,.36,1);
+
+    --toc-w: 17rem;
+  }
+
+  [data-theme="dark"] {
+    --paper:     #14100C;
+    --paper-2:   #1B1612;
+    --paper-3:   #1F1A14;
+    --paper-4:   #221C16;
+    --ink:       #F4EEDD;
+    --ink-2:     #E0D8C3;
+    --ink-3:     #B9AD96;
+    --ink-4:     #8C7E6A;
+    --linen:     #3A322A;
+    --moss:      #8DA868;
+    --moss-deep: #B5CD92;
+    --brick:     #E36953;
+    --brick-d:   #F08A75;
+    --ochre:     #E6B265;
+    --ochre-d:   #F3CB88;
+    --rule:      rgba(244, 238, 221, 0.18);
+    --rule-soft: rgba(244, 238, 221, 0.08);
+  }
+
+  /* Stark skin (A/B) — shared with the dashboard so a framed note re-skins when
+     the tweaks panel flips data-skin (mirrored into the iframe by the wrapper). */
+  :root[data-skin="stark"] {
+    --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA; --paper-4:#FFFFFF;
+    --ink:#0A0A0A; --ink-2:#262626; --ink-3:#525252; --ink-4:#8A8A8A;
+    --linen:#D4D4D8; --moss:#171717; --moss-deep:#000000;
+    --brick:#E63946; --brick-d:#C1121F; --ochre:#737373; --ochre-d:#525252;
+    --rule:rgba(10,10,10,0.16); --rule-soft:rgba(10,10,10,0.07);
+  }
+  :root[data-skin="stark"][data-theme="dark"] {
+    --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618; --paper-4:#1C1C1F;
+    --ink:#FAFAFA; --ink-2:#E4E4E7; --ink-3:#A1A1AA; --ink-4:#6F6F76;
+    --linen:#2A2A2E; --moss:#F5F5F5; --moss-deep:#FFFFFF;
+    --brick:#E63946; --brick-d:#F4606C; --ochre:#A1A1AA; --ochre-d:#C4C4CC;
+    --rule:rgba(250,250,250,0.16); --rule-soft:rgba(250,250,250,0.08);
+  }
+  /* Stark is flat: drop the note's parchment grain / dark wash. */
+  :root[data-skin="stark"] body::before, :root[data-skin="stark"] body::after { display:none; }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; background: var(--paper); scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink-2);
+    font-family: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+    font-size: var(--s-1);
+    line-height: var(--lead);
+    font-feature-settings: "ss01", "kern", "liga";
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    min-height: 100vh;
+    letter-spacing: 0.003em;
+    transition: background-color .3s var(--ease), color .3s var(--ease);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(20,16,12,0.07) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(165,62,46,0.04), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(86,104,58,0.05), transparent 70%);
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::before {
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(244,238,221,0.06) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(227,105,83,0.05), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(141,168,104,0.05), transparent 70%);
+    mix-blend-mode: screen;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.18;
+    background-image: radial-gradient(rgba(20,16,12,0.55) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::after {
+    opacity: 0.10;
+    background-image: radial-gradient(rgba(244,238,221,0.45) 0.5px, transparent 0.5px);
+    mix-blend-mode: screen;
+  }
+
+  /* ═══════ typography ═══════ */
+  h1, h2, h3, h4, .display {
+    font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+    font-optical-sizing: auto;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    font-feature-settings: "ss01", "ss02", "kern";
+    margin: 0;
+  }
+  p { margin: 0 0 0.95em; }
+  em { font-style: italic; color: var(--ink); }
+  strong { font-weight: 600; color: var(--ink); }
+  a { color: var(--brick-d); text-decoration: none; border-bottom: 1px solid currentColor; transition: color .25s var(--ease); }
+  a:hover { color: var(--brick); }
+  a.bare { border-bottom: none; }
+
+  .label {
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  mark.kw {
+    background: linear-gradient(180deg, transparent 60%, rgba(192,138,62,0.30) 60%);
+    color: inherit;
+    padding: 0 0.05em;
+  }
+
+  /* ═══════ sticky reading rail ═══════ */
+  .rail {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .rail__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    max-width: 100rem;
+    margin: 0 auto;
+    padding: 0.7em clamp(0.8rem, 3vw, 2.5rem);
+  }
+  .rail__title { flex: 0 0 auto; font-style: italic; color: var(--ink); }
+  .rail__dot { width: 5px; height: 5px; background: var(--moss); border-radius: 50%; flex: 0 0 auto; }
+  .rail__nav {
+    flex: 1;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .rail__nav::-webkit-scrollbar { display: none; }
+  .rail__nav a {
+    border-bottom: none;
+    color: var(--ink-3);
+    padding: 0.3em 0;
+    margin-right: 1.1em;
+    white-space: nowrap;
+    transition: color .15s var(--ease);
+  }
+  .rail__nav a:hover { color: var(--ink); }
+  .rail__nav a.active { color: var(--brick-d); }
+  .rail__nav a.active::before { content: "▸ "; color: var(--brick); }
+  @media (max-width: 70rem) { .rail__title { display: none; } .rail__nav { display: none; } }
+  .rail__progress {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--brick);
+    width: 0%;
+    transition: width .1s linear;
+  }
+  .rail__actions { display: flex; gap: 0.5em; flex: 0 0 auto; align-items: center; }
+  .rail__btn {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.85em;
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+    letter-spacing: 0.16em;
+  }
+  .rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .rail__btn--icon { padding: 0.35em 0.6em; }
+  .rail__btn--icon svg { display: block; width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  /* ═══════ live beacon ═══════ */
+  .beacon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.3em 0.7em 0.3em 0.55em;
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    color: var(--ink-3);
+    cursor: help;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease);
+  }
+  .beacon__pulse {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink-4);
+    flex: 0 0 auto;
+  }
+  .beacon[data-state="checking"] .beacon__pulse { background: var(--ochre); animation: beaconPulse 1.2s var(--ease) infinite; }
+  .beacon[data-state="live"] { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 55%, var(--rule)); }
+  .beacon[data-state="live"] .beacon__pulse { background: var(--moss); box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 70%, transparent); animation: beaconPulse 2s var(--ease) infinite; }
+  .beacon[data-state="offline"] { color: var(--ink-3); border-color: var(--rule); }
+  .beacon[data-state="offline"] .beacon__pulse { background: var(--ink-4); }
+  .beacon:hover { color: var(--ink); }
+
+  @keyframes beaconPulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 65%, transparent); }
+    70% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--moss) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 0%, transparent); }
+  }
+
+  /* ═══════ toc drawer ═══════ */
+  .toc-toggle {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.75em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+  }
+  .toc-toggle:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc-toggle svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  .toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--toc-w);
+    height: 100vh;
+    z-index: 25;
+    background: var(--paper-4);
+    border-right: 1px solid var(--rule);
+    box-shadow: 8px 0 24px -16px rgba(20,16,12,0.20);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform .35s var(--ease);
+    padding: 4.2em 1.2em 2em;
+    font-family: "Source Serif 4", serif;
+  }
+  .toc[aria-hidden="false"] { transform: translateX(0); }
+  .toc__header {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.4em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .toc__title {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-size: var(--s-2);
+    color: var(--ink);
+    line-height: 1.1;
+    margin: 0 0 1.2em;
+  }
+  .toc__close {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.2em 0.5em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+  }
+  .toc__close:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc__list { list-style: none; padding: 0; margin: 0 0 1.5em; }
+  .toc__item { padding: 0; margin: 0 0 0.15em; border-left: 2px solid transparent; padding-left: 0.6em; transition: border-color .2s var(--ease); }
+  .toc__item.is-active { border-left-color: var(--brick); }
+  .toc__item a {
+    border-bottom: none;
+    color: var(--ink-3);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    padding: 0.32em 0;
+    font-size: 0.93em;
+    line-height: 1.3;
+    transition: color .15s var(--ease);
+  }
+  .toc__item a:hover { color: var(--ink); }
+  .toc__item.is-active > a { color: var(--brick-d); font-weight: 500; }
+  .toc__num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    color: var(--ink-4);
+    letter-spacing: 0.06em;
+    flex: 0 0 1.6em;
+  }
+  .toc__item.is-active > a > .toc__num { color: var(--brick); }
+  .toc__sub {
+    list-style: none;
+    padding: 0 0 0.4em;
+    margin: 0 0 0 1.7em;
+    border-left: 1px dotted var(--rule);
+  }
+  .toc__sub li { margin: 0; }
+  .toc__sub a {
+    border-bottom: none;
+    color: var(--ink-4);
+    font-size: 0.82em;
+    padding: 0.18em 0 0.18em 0.8em;
+    display: block;
+    line-height: 1.25;
+    transition: color .15s var(--ease);
+  }
+  .toc__sub a:hover { color: var(--ink-2); }
+  .toc__sub a.is-active { color: var(--brick-d); }
+  .toc__meta {
+    border-top: 1px solid var(--rule);
+    margin-top: 1.4em;
+    padding-top: 1em;
+    font-size: 0.84em;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+  .toc__meta dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); margin-top: 0.7em; }
+  .toc__meta dd { margin: 0.1em 0 0; color: var(--ink-2); }
+
+  .toc__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 24;
+    background: rgba(20,16,12,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s var(--ease);
+  }
+  .toc[aria-hidden="false"] ~ .toc__scrim { opacity: 1; pointer-events: auto; }
+  body[data-theme="dark"] .toc__scrim { background: rgba(0,0,0,0.55); }
+
+  /* desktop: pin the TOC permanently if wide enough */
+  @media (min-width: 92rem) {
+    .toc { transform: translateX(0); box-shadow: none; padding-top: 4.2em; }
+    .toc__close { display: none; }
+    .toc__scrim { display: none; }
+    main { padding-left: var(--toc-w); }
+    .rail { padding-left: 0; }
+    .toc-toggle { display: none; }
+  }
+
+  /* ═══════ layout shell ═══════ */
+  .shell {
+    max-width: 92rem;
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 4vw, 4rem);
+  }
+
+  .diag {
+    display: grid;
+    grid-template-columns:
+      [margin-l] minmax(0, 13rem)
+      [body] minmax(0, 38rem)
+      [margin-r] minmax(0, 13rem);
+    gap: clamp(1rem, 2vw, 2.5rem);
+    align-items: start;
+    margin: 0 auto;
+    max-width: 80rem;
+  }
+  .diag > .body { grid-column: body; }
+  .diag > .ml { grid-column: margin-l; padding-top: 0.4em; }
+  .diag > .mr { grid-column: margin-r; padding-top: 0.4em; }
+  .diag > .full { grid-column: 1 / -1; max-width: 80rem; margin: 0 auto; }
+  .diag + .diag { margin-top: 1em; }
+
+  @media (max-width: 60rem) {
+    .diag { grid-template-columns: 1fr; }
+    .diag > .ml, .diag > .mr {
+      border-left: 2px solid var(--rule);
+      padding-left: 0.9em;
+      margin-bottom: 1em;
+      color: var(--ink-3);
+      font-size: 0.9em;
+    }
+  }
+
+  /* ═══════ hero ═══════ */
+  .hero {
+    border-bottom: 1px solid var(--rule);
+    padding: clamp(2rem, 5vw, 5rem) 0 clamp(2rem, 4vw, 4rem);
+    position: relative;
+  }
+  .hero__rune {
+    position: absolute;
+    top: 1rem;
+    left: clamp(1rem, 4vw, 4rem);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .hero__rune span { color: var(--brick-d); }
+  .hero__masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 2.5em auto 2em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+  }
+  .hero__rule { flex: 1; height: 1px; background: var(--rule); margin: 0 1em; position: relative; top: -0.4em; }
+  .hero__h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: var(--s-5);
+    line-height: 0.96;
+    font-weight: 460;
+    margin: 0 auto 0.4em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    letter-spacing: -0.022em;
+    color: var(--ink);
+  }
+  .hero__h1 .em {
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+  }
+  .hero__subtitle {
+    margin: 0.6em auto 0;
+    max-width: 56rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    font-family: "Fraunces", serif;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    font-size: var(--s-3);
+    font-weight: 320;
+    color: var(--ink-3);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .hero__latest {
+    margin: 1.5em auto 0;
+    max-width: 80rem;
+    padding: 1em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    background: color-mix(in srgb, var(--paper-3) 72%, transparent);
+    display: grid;
+    grid-template-columns: minmax(0, 0.32fr) minmax(0, 0.68fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: baseline;
+  }
+  @media (max-width: 60rem) { .hero__latest { grid-template-columns: 1fr; } }
+  .hero__latest strong {
+    display: block;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-3);
+    font-weight: 430;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero__latest p {
+    margin: 0;
+    font-size: var(--s-1);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .hero__lede {
+    margin: 2.4em auto 0;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    display: grid;
+    grid-template-columns: minmax(0, 38rem) minmax(0, 22rem);
+    gap: clamp(1.5rem, 4vw, 4rem);
+  }
+  @media (max-width: 60rem) { .hero__lede { grid-template-columns: 1fr; } }
+  .hero__lede p {
+    font-size: var(--s-2);
+    line-height: 1.5;
+    color: var(--ink-2);
+    font-weight: 350;
+    font-family: "Source Serif 4", serif;
+    margin: 0 0 0.85em;
+  }
+  .hero__lede p:first-of-type::first-letter {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: 3.4em;
+    line-height: 0.9;
+    float: left;
+    padding: 0.05em 0.08em 0 0;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .hero__num {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid var(--moss);
+    padding-left: 1.4em;
+    align-self: stretch;
+  }
+  .hero__num__big {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.9;
+    font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 144;
+    color: var(--moss-deep);
+    font-weight: 320;
+    letter-spacing: -0.04em;
+  }
+  .hero__num__big .frac {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 280;
+  }
+  .hero__num__sub {
+    margin-top: 0.5em;
+    font-size: var(--s-0);
+    color: var(--ink-3);
+    line-height: 1.45;
+    max-width: 22em;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.4em 0 0;
+  }
+
+  /* ═══════ section structure ═══════ */
+  .s {
+    padding: clamp(3rem, 6vw, 6rem) 0;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: 4em;
+  }
+  .s:last-of-type { border-bottom: none; }
+  .s__num {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 80, "WONK" 0, "opsz" 144;
+    color: var(--moss);
+    letter-spacing: -0.05em;
+    user-select: none;
+    margin: 0;
+  }
+  .s__num .glyph {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 240;
+  }
+  .s__h {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-4);
+    line-height: 1.05;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    font-weight: 460;
+    margin: 0.4em 0 1em;
+    color: var(--ink);
+    letter-spacing: -0.018em;
+  }
+  .s__h em {
+    font-style: italic;
+    color: var(--brick-d);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+  }
+  .s__kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin: 0 0 0.6em;
+  }
+  .s__sub {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-weight: 480;
+    margin: 1.4em 0 0.6em;
+    line-height: 1.2;
+    scroll-margin-top: 4em;
+  }
+
+  /* ═══════ marginalia ═══════ */
+  .note {
+    font-family: "Source Serif 4", serif;
+    font-size: 0.86em;
+    line-height: 1.5;
+    color: var(--ink-3);
+    font-style: italic;
+  }
+  .note__lbl {
+    display: block;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-bottom: 0.5em;
+    font-weight: 500;
+  }
+  .note--moss .note__lbl { color: var(--moss-deep); }
+  .note--ink .note__lbl { color: var(--ink-3); }
+  .note--ochre .note__lbl { color: var(--ochre-d); }
+  .note p { margin: 0 0 0.6em; }
+
+  /* ═══════ pull quote ═══════ */
+  .pq {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-weight: 360;
+    border-left: 2px solid var(--brick);
+    padding: 0.4em 0 0.4em 1.2em;
+    margin: 1.4em 0;
+    letter-spacing: -0.005em;
+  }
+  .pq cite, .pq .cite {
+    display: block;
+    font-style: normal;
+    font-variation-settings: normal;
+    margin-top: 0.5em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  /* ═══════ glossary ═══════ */
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+    gap: 1.1em 1.6em;
+    margin-top: 1em;
+  }
+  .gl-row {
+    border-top: 1px dotted var(--rule);
+    padding-top: 0.7em;
+  }
+  .gl-row dt {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    line-height: 1.2;
+  }
+  .gl-row dt .gloss {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ochre-d);
+    font-style: normal;
+    margin-left: 0.5em;
+  }
+  .gl-row dd {
+    margin: 0.35em 0 0;
+    color: var(--ink-2);
+    font-size: 0.97em;
+    line-height: 1.5;
+  }
+
+  /* ═══════ inline glossary terms (tooltip on hover) ═══════ */
+  .gl-term {
+    font-style: normal;
+    border-bottom: 1px dotted var(--ochre);
+    cursor: help;
+    position: relative;
+    transition: color .15s var(--ease);
+  }
+  .gl-term:hover, .gl-term:focus {
+    color: var(--ochre-d);
+    outline: none;
+  }
+  .gl-term[data-gloss]::after {
+    content: attr(data-gloss);
+    position: absolute;
+    bottom: calc(100% + 0.6em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.85em;
+    line-height: 1.4;
+    padding: 0.55em 0.9em;
+    border-radius: 2px;
+    width: max-content;
+    max-width: 18em;
+    white-space: normal;
+    box-shadow: 0 8px 20px -10px rgba(20,16,12,0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+    text-align: left;
+    letter-spacing: 0;
+  }
+  .gl-term[data-gloss]::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 0.25em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    border: 5px solid transparent;
+    border-top-color: var(--ink);
+    opacity: 0;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+  }
+  .gl-term:hover::after, .gl-term:focus::after,
+  .gl-term:hover::before, .gl-term:focus::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ═══════ claim/counter pairs ═══════ */
+  .claim {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8em 1.4em;
+    align-items: baseline;
+    margin: 0 0 2.4em;
+  }
+  .claim__no {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-4);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    color: var(--ink-4);
+    font-style: italic;
+    width: 1.6em;
+    text-align: right;
+  }
+  .claim__h {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-3);
+    line-height: 1.15;
+    font-weight: 460;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.012em;
+  }
+  .claim__body { grid-column: 2; margin-top: 0.6em; color: var(--ink-2); }
+  .claim__body p { font-size: var(--s-1); line-height: 1.6; }
+  .claim__counter {
+    grid-column: 2;
+    margin-top: 0.4em;
+    border-left: 2px solid var(--brick);
+    padding: 0.2em 0 0.2em 1em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.95em;
+    color: var(--ink-3);
+  }
+  .claim__counter::before {
+    content: "caveat.";
+    display: inline;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-right: 0.6em;
+    font-weight: 500;
+  }
+
+  /* ═══════ status chips ═══════ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.25em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    margin-right: 0.4em;
+    margin-bottom: 0.4em;
+  }
+  .chip--moss { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 50%, var(--rule)); }
+  .chip--brick { color: var(--brick-d); border-color: color-mix(in srgb, var(--brick) 50%, var(--rule)); }
+  .chip--ochre { color: var(--ochre-d); border-color: color-mix(in srgb, var(--ochre) 50%, var(--rule)); }
+  .chip--ink { color: var(--ink); border-color: var(--ink-3); background: var(--paper); }
+  .chip__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ═══════ deeplink pills (open in browser) ═══════ */
+  .deeplink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.35em 0.7em 0.35em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .deeplink:hover {
+    color: var(--brick-d);
+    border-color: color-mix(in srgb, var(--brick) 60%, var(--rule));
+    background: var(--paper-4);
+  }
+  .deeplink__arrow {
+    transition: transform .2s var(--ease);
+    color: var(--brick);
+    font-weight: 600;
+  }
+  .deeplink:hover .deeplink__arrow { transform: translateX(2px); }
+  .deeplink[data-live="checking"] .deeplink__count::after { content: " · …"; color: var(--ochre); }
+  .deeplink[data-live="live"] { border-color: color-mix(in srgb, var(--moss) 45%, var(--rule)); }
+  .deeplink[data-live="live"] .deeplink__count { color: var(--moss-deep); }
+  .deeplink[data-live="offline"] { opacity: 0.7; }
+  .deeplink__count {
+    font-style: normal;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+  }
+
+  .deeplink-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.1em 0 0.4em;
+  }
+
+  /* ═══════ timeline ═══════ */
+  .timeline {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    margin-top: 1em;
+  }
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1.4em;
+    align-items: start;
+    padding: 1.2em 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .timeline-row .when {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    padding-top: 0.4em;
+  }
+  .timeline-row h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .timeline-row p { margin: 0; color: var(--ink-2); font-size: 0.97em; }
+  @media (max-width: 60rem) {
+    .timeline-row { grid-template-columns: 1fr; gap: 0.4em; }
+  }
+
+  /* ═══════ evidence grid ═══════ */
+  .filters { display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0 0 1.4em; }
+  .filter-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease);
+  }
+  .filter-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .filter-btn[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .ev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+    gap: 1em;
+  }
+  .ev-card {
+    padding: 1.2em 1.3em;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink-4);
+    transition: border-color .2s var(--ease), background .2s var(--ease);
+    display: flex;
+    flex-direction: column;
+  }
+  .ev-card.is-hidden { display: none; }
+  .ev-card[data-status="strong"] { border-left-color: var(--moss); }
+  .ev-card[data-status="boundary"] { border-left-color: var(--ochre); }
+  .ev-card[data-status="risk"] { border-left-color: var(--brick); }
+  .ev-card[data-status="output"] { border-left-color: var(--ink-3); }
+  .ev-card h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    margin: 0.4em 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .ev-card p { margin: 0 0 0.7em; color: var(--ink-2); font-size: 0.95em; line-height: 1.5; }
+  .ev-card .deeplink-row { margin-top: auto; }
+
+  /* ═══════ accordion ═══════ */
+  .accordion {
+    border-top: 1px solid var(--rule);
+  }
+  .accordion:last-of-type { border-bottom: 1px solid var(--rule); }
+  .accordion summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1em 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+  }
+  .accordion summary::-webkit-details-marker { display: none; }
+  .accordion summary h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .accordion summary .acc-marker {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--brick-d);
+    font-size: var(--s-1);
+  }
+  .accordion[open] summary .acc-marker::before { content: "–"; }
+  .accordion:not([open]) summary .acc-marker::before { content: "+"; }
+  .accordion .body { padding: 0 0 1.3em; color: var(--ink-2); }
+  .accordion .body p { margin: 0 0 0.7em; }
+
+  /* ═══════ spec / route ═══════ */
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    gap: 1em;
+    margin-top: 1.3em;
+  }
+  .spec-box {
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    padding: 1em 1.1em;
+  }
+  .spec-box h4 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.6em;
+  }
+  .spec-box ul { list-style: none; padding: 0; margin: 0; }
+  .spec-box li {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82em;
+    color: var(--ink-2);
+    padding: 0.18em 0;
+    border-bottom: 1px dotted var(--rule-soft);
+  }
+  .spec-box li:last-child { border-bottom: none; }
+
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+    gap: 0.7em;
+    margin-top: 1.2em;
+    counter-reset: step;
+  }
+  .ladder-step {
+    counter-increment: step;
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    padding: 0.9em 1em;
+    position: relative;
+    font-size: 0.92em;
+  }
+  .ladder-step::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    color: var(--ochre-d);
+    display: block;
+    margin-bottom: 0.4em;
+  }
+  .ladder-step strong {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    color: var(--ink);
+    font-weight: 460;
+    display: block;
+    margin-bottom: 0.2em;
+  }
+  .ladder-step span { color: var(--ink-3); font-size: 0.93em; }
+
+  /* ═══════ callouts ═══════ */
+  .callout {
+    border: 1px solid color-mix(in srgb, var(--brick) 40%, var(--rule));
+    background: linear-gradient(180deg, rgba(165,62,46,0.06), rgba(165,62,46,0.02) 80%, transparent);
+    padding: 1.2em 1.3em;
+    margin-top: 1.4em;
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .callout strong { color: var(--brick-d); font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.18em; text-transform: uppercase; }
+
+  /* ═══════ interactive chart ═══════ */
+  figure.chart-fig { margin: 1.4em 0 1em; }
+  figure.chart-fig figcaption {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 0.7em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em 1.4em;
+    align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.5em;
+  }
+  figure.chart-fig figcaption .cap-title { color: var(--brick-d); }
+  figure.chart-fig figcaption .legend {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.8em;
+    margin-left: auto;
+  }
+  figure.chart-fig figcaption .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--ink-3);
+  }
+  figure.chart-fig figcaption .legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+  figure.chart-fig figcaption .legend .lg-routine { color: var(--ink-4); }
+  figure.chart-fig figcaption .legend .lg-none    { color: var(--ochre); }
+  figure.chart-fig figcaption .legend .lg-perip   { color: var(--moss-deep); }
+
+  .chart { width: 100%; height: auto; }
+  .chart .axis-line { stroke: var(--rule); stroke-width: 1; }
+  .chart .axis-tick { stroke: var(--rule-soft); stroke-width: 1; stroke-dasharray: 2 3; }
+  .chart .axis-lbl  { fill: var(--ink-4); font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.05em; }
+  .chart .metric-lbl { fill: var(--ink-2); font-family: "Source Serif 4", serif; font-size: 12px; font-style: italic; }
+  .chart .bar-routine { fill: var(--ink-4); }
+  .chart .bar-none    { fill: var(--ochre); }
+  .chart .bar-perip   { fill: var(--moss-deep); }
+  .chart .bar         { transition: opacity .2s var(--ease); transform-origin: left center; }
+  .chart .bar:hover   { opacity: 0.82; }
+  .chart .bar-val     { fill: var(--ink-2); font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 500; }
+  .chart .bar-rect    { rx: 1; ry: 1; }
+  .chart .anim        { transform-origin: left; animation: barIn .9s var(--ease) both; }
+
+  @keyframes barIn {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+
+  /* ═══════ transcript block ═══════ */
+  .tx {
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    margin: 1.1em 0;
+  }
+  .tx > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.7em 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1px solid transparent;
+  }
+  .tx > summary::-webkit-details-marker { display: none; }
+  .tx > summary .tx__title { color: var(--brick-d); }
+  .tx > summary .tx__hint { color: var(--ink-4); font-style: italic; text-transform: none; letter-spacing: 0.02em; font-family: "Source Serif 4", serif; font-size: 0.95em; }
+  .tx[open] > summary { border-bottom-color: var(--rule); }
+  .tx[open] > summary::after { content: "–"; color: var(--brick-d); }
+  .tx:not([open]) > summary::after { content: "+"; color: var(--brick-d); }
+  .tx__body {
+    padding: 0.8em 1.2em 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.85em;
+    line-height: 1.55;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    max-height: 26em;
+    overflow-y: auto;
+  }
+  .tx__body .tx-stage   { color: var(--ink-4); font-style: italic; }
+  .tx__body .tx-tutor   { color: var(--moss-deep); }
+  .tx__body .tx-learner { color: var(--brick-d); }
+  .tx__body .tx-label   { display: inline-block; min-width: 4.2em; font-weight: 600; color: var(--ink); }
+  .tx__caption {
+    padding: 0.6em 1.2em 0.9em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    color: var(--ink-3);
+    font-size: 0.88em;
+    border-top: 1px dotted var(--rule);
+    background: var(--paper-3);
+  }
+  .tx__caption strong { font-family: "JetBrains Mono", monospace; font-style: normal; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--moss-deep); margin-right: 0.5em; }
+
+  /* ═══════ footer ═══════ */
+  .colophon {
+    padding: 3em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    color: var(--ink-3);
+    font-size: 0.88em;
+    line-height: 1.55;
+  }
+  .colophon code {
+    font-family: "JetBrains Mono", monospace;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    padding: 0.1em 0.4em;
+    font-size: 0.92em;
+    color: var(--ink-2);
+  }
+  .colophon dl { display: grid; grid-template-columns: 12rem 1fr; gap: 0.5em 1.2em; margin: 1em 0 0; }
+  .colophon dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brick-d); }
+  .colophon dd { margin: 0; }
+  @media (max-width: 50rem) { .colophon dl { grid-template-columns: 1fr; } .colophon dd { margin: 0 0 0.6em; } }
+  .colophon__live {
+    border: 1px dashed var(--rule);
+    padding: 0.9em 1.1em;
+    margin-top: 1.4em;
+    background: var(--paper-3);
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .colophon__live code { background: var(--paper-4); }
+
+  /* ═══════ print ═══════ */
+  @media print {
+    body { background: #fff; color: #000; }
+    body::before, body::after, .rail, .rail__actions, .filters, .toc, .toc__scrim, .toc-toggle, .beacon, .deeplink, .deeplink-row { display: none !important; }
+    main { padding-left: 0 !important; }
+    .accordion .body, .tx[open] .tx__body { display: block !important; }
+    .accordion summary .acc-marker, .tx summary::after { display: none; }
+    .s { break-inside: avoid; }
+    .ev-card { break-inside: avoid; }
+    .chart { break-inside: avoid; }
+    .gl-term { border-bottom: none; }
+    .gl-term::after, .gl-term::before { display: none; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     Machine Spirits site skin
+
+     Opt-in with <html data-skin="machine-spirits">. This carries the
+     main site's Swiss / neo-brutalist language into public research
+     explainers without changing the parchment skin used by other notes.
+     ═══════════════════════════════════════════════════════════════ */
+  :root[data-skin="machine-spirits"] {
+    --paper: #FFFFFF;
+    --paper-2: #F4F4F4;
+    --paper-3: #FAFAFA;
+    --paper-4: #FFFFFF;
+    --ink: #0A0A0A;
+    --ink-2: #242424;
+    --ink-3: #555555;
+    --ink-4: #858585;
+    --linen: #D8D8D8;
+    --moss: #0A0A0A;
+    --moss-deep: #0A0A0A;
+    --brick: #E63946;
+    --brick-d: #C1121F;
+    --ochre: #777777;
+    --ochre-d: #4F4F4F;
+    --rule: rgba(10, 10, 10, 0.22);
+    --rule-soft: rgba(10, 10, 10, 0.08);
+  }
+
+  :root[data-skin="machine-spirits"][data-theme="dark"] {
+    --paper: #0A0A0A;
+    --paper-2: #111111;
+    --paper-3: #151515;
+    --paper-4: #1A1A1A;
+    --ink: #FAFAFA;
+    --ink-2: #E4E4E4;
+    --ink-3: #B4B4B4;
+    --ink-4: #777777;
+    --linen: #303030;
+    --moss: #FAFAFA;
+    --moss-deep: #FFFFFF;
+    --brick: #E63946;
+    --brick-d: #F05A66;
+    --ochre: #A0A0A0;
+    --ochre-d: #D0D0D0;
+    --rule: rgba(250, 250, 250, 0.22);
+    --rule-soft: rgba(250, 250, 250, 0.09);
+  }
+
+  :root[data-skin="machine-spirits"] body {
+    cursor: crosshair;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-feature-settings: "kern", "liga";
+    letter-spacing: 0;
+  }
+
+  :root[data-skin="machine-spirits"] body::before {
+    display: block;
+    opacity: 0.72;
+    background-image:
+      linear-gradient(var(--rule-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--rule-soft) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] body::after {
+    display: block;
+    inset: -30vh -15vw auto auto;
+    width: 58vw;
+    height: 70vh;
+    opacity: 0.055;
+    background: var(--brick);
+    transform: rotate(-18deg);
+    transform-origin: center;
+    mix-blend-mode: normal;
+  }
+
+  :root[data-skin="machine-spirits"] h1,
+  :root[data-skin="machine-spirits"] h2,
+  :root[data-skin="machine-spirits"] h3,
+  :root[data-skin="machine-spirits"] h4,
+  :root[data-skin="machine-spirits"] .display,
+  :root[data-skin="machine-spirits"] .hero__h1,
+  :root[data-skin="machine-spirits"] .hero__subtitle,
+  :root[data-skin="machine-spirits"] .hero__lede p,
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter,
+  :root[data-skin="machine-spirits"] .s__num,
+  :root[data-skin="machine-spirits"] .s__h,
+  :root[data-skin="machine-spirits"] .s__sub,
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h,
+  :root[data-skin="machine-spirits"] .ev-card h3,
+  :root[data-skin="machine-spirits"] .gl-row dt,
+  :root[data-skin="machine-spirits"] .pq,
+  :root[data-skin="machine-spirits"] .toc__title {
+    font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-variation-settings: normal;
+  }
+
+  :root[data-skin="machine-spirits"] .label,
+  :root[data-skin="machine-spirits"] .rail,
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__header,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .toc__num,
+  :root[data-skin="machine-spirits"] .toc__meta dt,
+  :root[data-skin="machine-spirits"] .hero__rune,
+  :root[data-skin="machine-spirits"] .s__kicker,
+  :root[data-skin="machine-spirits"] .note__lbl,
+  :root[data-skin="machine-spirits"] .pq cite,
+  :root[data-skin="machine-spirits"] .pq .cite,
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink,
+  :root[data-skin="machine-spirits"] .filter-btn,
+  :root[data-skin="machine-spirits"] .gl-row dt .gloss,
+  :root[data-skin="machine-spirits"] code,
+  :root[data-skin="machine-spirits"] .colophon code {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  :root[data-skin="machine-spirits"] .rail {
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    border-bottom: 3px solid var(--ink);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+  }
+  :root[data-skin="machine-spirits"] .rail__title { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .rail__dot { width: 8px; height: 8px; border-radius: 0; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .rail__btn,
+  :root[data-skin="machine-spirits"] .toc-toggle,
+  :root[data-skin="machine-spirits"] .toc__close,
+  :root[data-skin="machine-spirits"] .filter-btn {
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  :root[data-skin="machine-spirits"] .rail__btn:hover,
+  :root[data-skin="machine-spirits"] .toc-toggle:hover,
+  :root[data-skin="machine-spirits"] .toc__close:hover,
+  :root[data-skin="machine-spirits"] .filter-btn:hover,
+  :root[data-skin="machine-spirits"] .filter-btn[aria-pressed="true"] {
+    background: var(--brick);
+    border-color: var(--brick);
+    color: #FFFFFF;
+  }
+
+  :root[data-skin="machine-spirits"] .toc {
+    border-right: 3px solid var(--ink);
+    box-shadow: 12px 0 0 color-mix(in srgb, var(--brick) 20%, transparent);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  :root[data-skin="machine-spirits"] .toc__title { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .hero {
+    border-top: 0;
+    border-bottom: 4px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__masthead { border-top: 4px solid var(--ink); padding-top: 1.1em; }
+  :root[data-skin="machine-spirits"] .hero__rule { height: 4px; background: var(--brick); }
+  :root[data-skin="machine-spirits"] .hero__h1 {
+    font-size: clamp(3.2rem, 2rem + 6.8vw, 8.8rem);
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.065em;
+  }
+  :root[data-skin="machine-spirits"] .hero__h1 .em {
+    color: var(--brick);
+    font-style: normal;
+    font-variation-settings: normal;
+  }
+  :root[data-skin="machine-spirits"] .hero__subtitle {
+    max-width: 60rem;
+    font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.75rem);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+  :root[data-skin="machine-spirits"] .hero__lede {
+    border: 4px solid var(--ink);
+    padding: clamp(1.2rem, 2.5vw, 2.2rem);
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    box-shadow: 14px 14px 0 color-mix(in srgb, var(--brick) 22%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .hero__lede p { font-weight: 400; }
+  :root[data-skin="machine-spirits"] .hero__lede p:first-of-type::first-letter { color: var(--brick); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .s { border-bottom: 3px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .s__num { color: var(--ink); font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__num .glyph,
+  :root[data-skin="machine-spirits"] .s__h em { color: var(--brick); font-style: normal; }
+  :root[data-skin="machine-spirits"] .s__h { font-weight: 700; letter-spacing: -0.04em; }
+  :root[data-skin="machine-spirits"] .s__sub { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .s__kicker { color: var(--brick-d); font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .note,
+  :root[data-skin="machine-spirits"] .claim__counter,
+  :root[data-skin="machine-spirits"] .gl-term[data-gloss]::after,
+  :root[data-skin="machine-spirits"] .colophon__live {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-style: normal;
+  }
+  :root[data-skin="machine-spirits"] .pq { font-style: normal; font-weight: 600; border-left-width: 5px; }
+  :root[data-skin="machine-spirits"] .gl-row { border-top: 2px solid var(--ink); }
+  :root[data-skin="machine-spirits"] .gl-row dt { font-style: normal; font-weight: 700; }
+
+  :root[data-skin="machine-spirits"] .claim,
+  :root[data-skin="machine-spirits"] .ev-card,
+  :root[data-skin="machine-spirits"] .spec-box,
+  :root[data-skin="machine-spirits"] .callout,
+  :root[data-skin="machine-spirits"] .tx {
+    border: 2px solid var(--ink);
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .claim { padding: 1.2em; box-shadow: 8px 8px 0 var(--rule-soft); }
+  :root[data-skin="machine-spirits"] .claim__no,
+  :root[data-skin="machine-spirits"] .claim__h { font-style: normal; font-weight: 700; }
+  :root[data-skin="machine-spirits"] .ev-card {
+    border-left-width: 8px;
+    box-shadow: 8px 8px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .ev-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 11px 11px 0 color-mix(in srgb, var(--brick) 18%, transparent);
+  }
+  :root[data-skin="machine-spirits"] .ev-card h3 { font-weight: 700; }
+  :root[data-skin="machine-spirits"] .chip,
+  :root[data-skin="machine-spirits"] .deeplink { border-width: 2px; }
+  :root[data-skin="machine-spirits"] .chip__dot { border-radius: 0; }
+  :root[data-skin="machine-spirits"] .deeplink:hover { background: var(--brick); border-color: var(--brick); color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .deeplink:hover .deeplink__arrow { color: #FFFFFF; }
+  :root[data-skin="machine-spirits"] .callout {
+    border-left: 8px solid var(--brick);
+    background: color-mix(in srgb, var(--brick) 7%, var(--paper));
+  }
+
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame,
+  :root[data-skin="machine-spirits"] .ledger {
+    border-color: var(--ink);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon__frame {
+    border-width: 3px;
+    box-shadow: 10px 10px 0 var(--rule-soft);
+  }
+  :root[data-skin="machine-spirits"] .arc-cartoon figcaption,
+  :root[data-skin="machine-spirits"] .chart-legend,
+  :root[data-skin="machine-spirits"] .caption-fine,
+  :root[data-skin="machine-spirits"] .ledger {
+    font-family: "Space Mono", "SFMono-Regular", Consolas, monospace !important;
+  }
+  :root[data-skin="machine-spirits"] .ledger th,
+  :root[data-skin="machine-spirits"] .ledger td { border-color: var(--ink); }
+
+  :root[data-skin="machine-spirits"] .colophon {
+    border-top: 4px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  :root[data-skin="machine-spirits"] .colophon .label,
+  :root[data-skin="machine-spirits"] .colophon code { color: var(--paper); }
+  :root[data-skin="machine-spirits"] .colophon code { background: transparent; border-color: color-mix(in srgb, var(--paper) 35%, transparent); }
+
+  @media (max-width: 60rem) {
+    :root[data-skin="machine-spirits"] .diag > .ml,
+    :root[data-skin="machine-spirits"] .diag > .mr { border-left-color: var(--brick); }
+    :root[data-skin="machine-spirits"] .hero__lede { box-shadow: 8px 8px 0 color-mix(in srgb, var(--brick) 22%, transparent); }
+  }
+
+/* ---- Swimlane comparison (generated docs; scripts/render-stress-comparison.js) ---- */
+.lanes{display:grid;grid-template-columns:repeat(var(--lanes-n,2),minmax(0,1fr));gap:1rem;margin:1.2rem 0}
+@media(max-width:760px){.lanes{grid-template-columns:1fr}}
+.lane{border:1px solid var(--line,rgba(120,120,120,.35));border-radius:8px;padding:.9rem 1rem;overflow-wrap:anywhere}
+.lane--pass{border-color:rgba(90,140,90,.6)}
+.lane__head{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.5rem}
+.lane__reply{margin:.4rem 0;font-size:.95em}
+.lane__why{font-size:.8em;opacity:.75;margin:.4rem 0 0}
+.lane__empty{opacity:.5;text-align:center;margin:1rem 0}
+.scoreboard{border-collapse:collapse;margin:1rem 0}
+.scoreboard td,.scoreboard th{border:1px solid var(--line,rgba(120,120,120,.35));padding:.35rem .8rem;text-align:center}
+
+</style>
+<style>
+
+  .dd { --dd-border: var(--ms-border, var(--rule, #c8c1b6)); --dd-border-subtle: var(--ms-border-subtle, var(--rule, #ddd6ca)); --dd-surface: var(--ms-surface-elevated, var(--paper, #fff)); --dd-learner: var(--ms-paper-2, var(--paper-2, #f6f1e8)); --dd-text: var(--ms-text, var(--ink, #201c18)); --dd-muted: var(--ms-text-muted, var(--ink-3, #6e665d)); --dd-ink: var(--ms-ink, var(--ink, #201c18)); --dd-white: var(--ms-white, #fff); --dd-ochre: var(--ms-ochre, var(--ochre, #be8a2d)); --dd-moss: var(--ms-moss, var(--moss, #657f5f)); --dd-moss-deep: var(--ms-moss-deep, var(--moss-d, #496c4c)); --dd-red: var(--ms-red, var(--brick, #b14932)); --dd-red-deep: var(--ms-red-dark, var(--brick-d, #8d2f20)); color: var(--dd-text); }
+  .dd__arm-heads, .dd__lanes { display: grid; grid-template-columns: repeat(var(--dd-lane-count), minmax(0, 1fr)); gap: 0.85rem; }
+  .dd__arm-heads { margin: 0 0 0.85rem 3.5rem; }
+  .dd__arm-head { border: 1px solid var(--dd-border); background: var(--dd-surface); padding: 0.7rem 0.85rem; }
+  .dd__arm-head strong, .dd__arm-head span { display: block; }
+  .dd__arm-head span { margin-top: 0.25rem; color: var(--dd-muted); font: 0.72rem/1.5 var(--ms-font-mono, "Space Mono", monospace); }
+  .dd__arm-head--baseline, .dd__lane--baseline .dd__message--tutor { border-left: 3px solid var(--dd-border); }
+  .dd__moment { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr); gap: 0.75rem; align-items: start; border-top: 1px solid var(--dd-border-subtle); padding: 0.85rem 0; }
+  .dd__turn-gutter { display: flex; justify-content: center; padding-top: 0.2rem; }
+  .dd__turn-badge { display: grid; place-items: center; width: 2.1rem; min-height: 2.1rem; box-sizing: border-box; padding: 0.2rem; background: var(--dd-ink); color: var(--dd-white); font: 700 0.72rem/1.1 var(--ms-font-mono, "Space Mono", monospace); text-align: center; }
+  .dd__moment-body, .dd__single, .dd__lane { min-width: 0; }
+  .dd__shared { margin-bottom: 0.7rem; }
+  .dd__shared .dd__message { max-width: 62rem; background: var(--dd-learner); border-left: 3px solid var(--dd-ochre); }
+  .dd__lane { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+  .dd__arm-label { display: none; margin: 0; color: var(--dd-muted); font: 700 0.7rem/1.5 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dd__message { min-width: 0; border: 1px solid var(--dd-border); background: var(--dd-surface); padding: 0.75rem 0.85rem; box-sizing: border-box; }
+  .dd__message--learner { background: var(--dd-learner); border-left: 3px solid var(--dd-ochre); }
+  .dd__message-head { display: flex; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.45rem; color: var(--dd-muted); font: 0.7rem/1.5 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.05em; }
+  .dd__who { color: var(--dd-text); font-weight: 700; }
+  .dd__delivery { text-align: right; }
+  .dd__speech { font-size: 0.94rem; line-height: 1.62; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .dd__empty { color: var(--dd-muted); font-size: 0.84rem; font-style: italic; }
+  .dd__labels { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.55rem; }
+  .dd__badge { border: 1px solid var(--dd-border); padding: 0 0.38rem; font: 0.68rem/1.75 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.045em; }
+  .dd__badge[data-dd-tone='pass'] { border-color: var(--dd-moss-deep); background: var(--dd-moss); color: var(--dd-white); }
+  .dd__badge[data-dd-tone='fail'] { border-color: var(--dd-red-deep); background: var(--dd-red); color: var(--dd-white); }
+  .dd__badge[data-dd-tone='warning'] { border-color: var(--dd-ochre); background: var(--dd-ochre); color: #111; }
+  .dd__badge[data-dd-tone='muted'] { color: var(--dd-muted); background: transparent; }
+  .dd__badge[data-dd-tone='ink'] { border-color: var(--dd-ink); background: var(--dd-ink); color: var(--dd-white); }
+  .dd__details { margin-top: 0.45rem; color: var(--dd-muted); }
+  .dd__details summary { cursor: pointer; font: 0.68rem/1.7 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.05em; }
+  .dd__details p { margin: 0.35rem 0 0; font-size: 0.8rem; line-height: 1.5; }
+  .dd__details strong { color: var(--dd-text); }
+  .dd__gloss { margin: 0.65rem 0 0; border-top: 1px solid var(--dd-border-subtle); padding-top: 0.55rem; color: var(--dd-muted); font-size: 0.82rem; line-height: 1.5; }
+  .dd__gloss b { color: var(--dd-red-deep); font: 700 0.66rem/1.4 var(--ms-font-mono, "Space Mono", monospace); text-transform: uppercase; letter-spacing: 0.06em; }
+  mark.dd__added { background: color-mix(in srgb, var(--dd-red) 18%, transparent); color: inherit; padding: 0 0.05rem; }
+  body[data-dd-diff='off'] mark.dd__added { background: transparent; }
+  body[data-dd-stack='on'] .dd__lanes, body[data-dd-stack='on'] .dd__arm-heads { grid-template-columns: 1fr; }
+  body[data-dd-stack='on'] .dd__arm-label { display: block; }
+  @media (max-width: 74rem) {
+    .dd--parallel .dd__lanes, .dd--parallel .dd__arm-heads { grid-template-columns: 1fr; }
+    .dd--parallel .dd__arm-label { display: block; }
+  }
+  @media (max-width: 56rem) {
+    .dd--shared-learner .dd__lanes { grid-template-columns: 1fr; }
+    .dd--shared-learner .dd__arm-label { display: block; }
+    .dd__arm-heads { margin-left: 0; }
+  }
+  @media (max-width: 36rem) {
+    .dd__moment { grid-template-columns: 1fr; }
+    .dd__turn-gutter { justify-content: flex-start; }
+  }
+
+.shell{max-width:1500px}.benchmark-section .body{grid-column:2/-1;min-width:0}.paired{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}.brief{border-top:3px solid var(--brick);padding:1rem 0}.brief h3{margin-top:0}.boundary{padding:1rem 1.25rem;border-left:4px solid var(--brick);background:var(--paper-deep);margin:1.5rem 0}.table-wrap{max-width:100%;overflow-x:auto;margin:1.25rem 0}table{width:100%;border-collapse:collapse;font-size:.92rem}caption{text-align:left;font-weight:700;padding:.5rem 0}th,td{text-align:left;border-bottom:1px solid var(--rule);padding:.7rem .8rem;vertical-align:top}thead th{border-top:2px solid var(--ink);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}tbody th{font-weight:500;width:50%}td{font-variant-numeric:tabular-nums}.rubric-detail{border-block:1px solid var(--rule);padding:.85rem 0;margin:1rem 0}.rubric-detail>summary{cursor:pointer;font-weight:700}code{overflow-wrap:anywhere}.dd-dialogue{margin-top:2rem}.hero__lede{max-width:100%}.status-line{font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700}.status-line span{padding-right:1rem}#transcripts .body{max-width:none}.claim__body p{max-width:85ch}@media(max-width:760px){.paired{grid-template-columns:1fr}.benchmark-section .body{grid-column:1/-1}.benchmark-section .ml{display:none}th,td{padding:.6rem .45rem;font-size:.84rem}tbody th{width:44%}.hero__h1{overflow-wrap:normal}.status-line span{display:block;padding:.25rem 0}}
+</style>
+</head>
+<body>
+<header class="rail" id="rail"><div class="rail__inner"><span class="rail__title">Qwen / resistant learner</span><span class="rail__dot" aria-hidden="true"></span><nav class="rail__nav" aria-label="Section navigation"><a href="#design">The setup</a><a href="#results">The result</a><a href="#rubric">Existing instruments</a><a href="#speed">Timing and repetition</a><a href="#transcripts">Public evidence</a><a href="#lessons">What this teaches us</a><a href="#limits">Boundaries and provenance</a></nav><div class="rail__actions"><button class="rail__btn" id="themeToggle" type="button">Dark</button></div></div><div class="rail__progress" id="railProgress"></div></header>
+<main>
+<section class="hero"><div class="hero__rune"><span>§</span> Machine Spirits · engineering notebook · 30 August 2026</div><h1 class="hero__h1">Can Qwen sustain <span class="em">active resistance?</span></h1><p class="hero__subtitle">Normal versus abliterated. One shared setup, two eight-turn dialogues, no superego.</p><p class="status-line"><span>Exploratory / analyst review</span><span>32 of 40 calls used</span><span>Independent judging pending</span></p><div class="hero__lede"><div><p>Both checkpoints can keep a skeptical inquiry going. Neither consistently turns resistance into fresh reasoning. In this pair, abliterated Qwen was faster and more visibly in character, but more repetitive and more prone to dubious invented detail. The tutor and harness contributed to the problem too.</p></div></div></section>
+<div class="shell"><section class="s benchmark-section" id="design"><div class="diag"><div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">The setup</p><h2 class="s__h">An active skeptic, not a refusal machine.</h2>
+<p>One eight-exchange dialogue per checkpoint in <em>The Light Shillings</em> (Marrick). Both begin with the same public scene, then run freely. Their later histories are different; this is a descriptive pair, not a controlled effect estimate.</p>
+<div class="paired"><article class="brief"><h3>Tamsin, counterexample hunter</h3><p>The assay-master’s apprentice has written the town’s expected verdict too early. She protects her judgment by finding holes in each inference, but concedes an objection when public evidence defeats it and tests a different weak edge.</p><p>Clipped, observant, dryly skeptical; at most three sentences. No invented unseen evidence, generic contrariness, or replay of an answered objection.</p></article><article class="brief"><h3>Matched execution</h3><p><strong>Tutor:</strong> existing dramatic-detective profile, upgraded to Sol at medium effort. <strong>Learners:</strong> normal and abliterated Qwen3.8-27B, both 4-bit.</p><p>Direct learner generation; no superego. Temperature 0.6, thinking off, MTP/speculative decoding off, 900-token output ceiling. Each arm has exactly 16 calls.</p></article></div>
+<p>The learner-role smoke harness keeps classifier, reasoning-tracker, learner-repair and resampling calls off. Ordinary tutor prompt/guard machinery remains present. This simplifies the learner test, but is a limitation for assessing the complete tutoring system.</p>
+<p class="boundary">Success means a believable learner who can resist actively and change the target of resistance—not necessarily a learner who agrees with the tutor or solves the mystery.</p></div></div></section>
+<section class="s benchmark-section" id="results"><div class="diag"><div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">The result</p><h2 class="s__h">A useful local actor; no evidence of a better resistant learner from abliteration.</h2>
+<div class="paired"><article class="brief"><h3>Normal Qwen</h3><p>Coherent and comparatively disciplined about public evidence. It can distinguish a caster from a striker, and ownership from use. The recurring “I accept the distinction; but what if…” rhythm is conspicuous. Turn 8 repeats turn 7’s objection after it has already been accepted.</p></article><article class="brief"><h3>Abliterated Qwen</h3><p>More concrete at the opening, more visibly in the trial-book role later, and faster in this run. But it also substitutes dubious physical marks into a repeated counterexample. Turns 7–8 become near copies. More detail is not automatically more novelty or better reasoning.</p></article></div>
+<div class="table-wrap"><table><caption>Analyst judgments · 1–5 ordinal scale · not independent model scores</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Overall transcript quality</th><td>3</td><td>2</td></tr>
+<tr><th scope="row">Successful pedagogy</th><td>3</td><td>2</td></tr>
+<tr><th scope="row">Surprise / nonrepetition</th><td>2</td><td>2</td></tr>
+<tr><th scope="row">Adherence to character</th><td>2</td><td>3</td></tr></tbody></table></div>
+<p>These four ratings are my explicit qualitative judgments after reading both transcripts. The difference between 2 and 3 is a reading aid, not a measured treatment effect. Normal is the more credible transcript in this pair; abliterated has the stronger surface enactment of the trial-book role.</p>
+<div class="boundary warning"><strong>Independent evaluation remains pending.</strong> Eight planned Claude Opus 5 assessments were blocked before launch because transmitting the private transcripts to that external provider lacked explicit approval. No judge call was made. The report therefore does not present these analyst scores as blinded, independent, or validated.</div></div></div></section>
+<section class="s benchmark-section" id="rubric"><div class="diag"><div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">Existing instruments</p><h2 class="s__h">The rubric helps—but does not settle role fidelity.</h2>
+<p>The existing v2.2 tutor, learner, and dialogue dimensions are retained below. To avoid pretending the blocked pipeline ran, this is a <strong>transcript-level analyst application</strong>, not the standard per-turn scoring pipeline and not a database result. The weighted summaries are illustrative: 1 maps to 0, 5 to 100; weights come from the existing YAML rubrics.</p>
+<div class="table-wrap"><table><caption>Provisional rubric-guided summaries · 0–100</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Tutor</th><td>46.25</td><td>40</td></tr>
+<tr><th scope="row">Learner</th><td>52.5</td><td>52.5</td></tr>
+<tr><th scope="row">Dialogue</th><td>50</td><td>43.75</td></tr></tbody></table></div>
+<p>The equal learner summaries matter: engagement and local revision can look adequate even when the actor is repetitive or invents a prop. Character fidelity and evidential invention deserve explicit inspection alongside the standard learner rubric, not replacement by a single aggregate.</p>
+<details class="rubric-detail"><summary>Tutor rubric v2.2 · dimension-level analyst read</summary><div class="table-wrap"><table><caption>Existing dimensions and weights; applied here to the whole transcript</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Perception Quality (15%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Pedagogical Craft (20%)</th><td>2</td><td>2</td></tr>
+<tr><th scope="row">Elicitation Quality (15%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Adaptive Responsiveness (15%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Recognition Quality (15%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Productive Difficulty (10%)</th><td>3</td><td>2</td></tr>
+<tr><th scope="row">Epistemic Integrity (5%)</th><td>4</td><td>2</td></tr>
+<tr><th scope="row">Content Accuracy (5%)</th><td>3</td><td>2</td></tr></tbody></table></div><p><strong>Normal:</strong> Usually preserves the caster/striker and owner/user distinctions, but the repeated correction labels and missed advances make the pedagogy feel procedural.</p><p><strong>Abliterated:</strong> Responds to the learner's distinctions but wrongly treats hypothetical wear and strike marks as observed findings, weakening epistemic integrity.</p></details><details class="rubric-detail"><summary>Learner rubric v2.2 · dimension-level analyst read</summary><div class="table-wrap"><table><caption>Existing dimensions and weights; applied here to the whole transcript</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Engagement Quality (25%)</th><td>4</td><td>4</td></tr>
+<tr><th scope="row">Learner Authenticity (25%)</th><td>2</td><td>2</td></tr>
+<tr><th scope="row">Revision Signals (20%)</th><td>4</td><td>4</td></tr>
+<tr><th scope="row">Conceptual Progression (20%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Metacognitive Awareness (10%)</th><td>2</td><td>2</td></tr></tbody></table></div><p><strong>Normal:</strong> Actively proposes rival warrants and concedes local points, yet speaks in a conspicuously repeated acceptance-plus-objection formula with little personal stake.</p><p><strong>Abliterated:</strong> Starts with more concrete assay moves and uses the trial-book voice, but repeats rival cases and invents dubious physical traces to sustain resistance.</p></details><details class="rubric-detail"><summary>Dialogue rubric v2.2 · dimension-level analyst read</summary><div class="table-wrap"><table><caption>Existing dimensions and weights; applied here to the whole transcript</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Pedagogical Progression (20%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Dialogical Responsiveness (20%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Knowledge Co-Construction (20%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Productive Tension Management (15%)</th><td>3</td><td>2</td></tr>
+<tr><th scope="row">Transformation Evidence (15%)</th><td>3</td><td>3</td></tr>
+<tr><th scope="row">Interactional Coherence (10%)</th><td>3</td><td>2</td></tr></tbody></table></div><p><strong>Normal:</strong> The exchange builds several useful evidential distinctions, but does not resolve the inquiry and ends by repeating the preceding objection.</p><p><strong>Abliterated:</strong> Some useful progression is offset by accepted hypothetical evidence, two adjacent-turn loops, and an unresolved finish.</p></details></div></div></section>
+<section class="s benchmark-section" id="speed"><div class="diag"><div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">Timing and repetition</p><h2 class="s__h">Faster here does not mean intrinsically faster.</h2>
+<div class="table-wrap"><table><caption>Measured runtime and lexical behavior</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Learner median response</th><td>50.5 s</td><td>30.9 s</td></tr>
+<tr><th scope="row">Learner total response time</th><td>387.1 s</td><td>271.5 s</td></tr>
+<tr><th scope="row">Learner output tokens</th><td>383</td><td>443</td></tr>
+<tr><th scope="row">Learner end-to-end output rate</th><td>1.20 tokens/s</td><td>1.73 tokens/s</td></tr>
+<tr><th scope="row">Sol median response</th><td>25.6 s</td><td>24.4 s</td></tr>
+<tr><th scope="row">Sum of all model response times</th><td>10.4 min</td><td>7.9 min</td></tr>
+<tr><th scope="row">Cold server readiness</th><td>12.5 s</td><td>10.9 s</td></tr>
+<tr><th scope="row">Mean lexical surprise, turns 2–8</th><td>0.854</td><td>0.748</td></tr>
+<tr><th scope="row">Distinct learner bigrams</th><td>0.721</td><td>0.660</td></tr>
+<tr><th scope="row">Final-turn prior similarity</th><td>0.483</td><td>0.744</td></tr>
+<tr><th scope="row">Tutor turns with native guard flags</th><td>4/8</td><td>5/8</td></tr>
+<tr><th scope="row">Model-call failures / repairs</th><td>0 / 0</td><td>0 / 0</td></tr></tbody></table></div>
+<p>Normal ran first; abliterated ran second on the same local service. Model loading was excluded from response latency. The output-rate figure averages <em>output tokens ÷ whole request duration</em>: it includes prefill and request overhead and is <strong>not pure decoding throughput</strong>. Sol token accounting can include non-public output, so do not compare its token rate directly with local Qwen.</p>
+<p>The normal learner took 14.1–80.5 seconds per call; abliterated took 27.8–60.3 seconds. This small, order-confounded sample does not establish an inherent speed advantage. MTP was deliberately off in both arms to avoid a decoding-method confound.</p>
+<p><strong>Lexical surprise</strong> is one minus the largest word-bigram Jaccard similarity to any earlier learner turn. It measures new wording, not new thinking. Distinct bigrams are unique bigrams divided by all generated bigrams. Both lexical measures favor normal here, but the transcript shows that even high lexical novelty can repeat the same inferential move.</p>
+<details class="rubric-detail"><summary>Per-turn learner timing, output length, and lexical surprise</summary><div class="table-wrap"><table><caption>Each generated learner call</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Turn 1</th><td>22.4 s · 47 tokens · surprise 1.00</td><td>60.3 s · 55 tokens · surprise 1.00</td></tr>
+<tr><th scope="row">Turn 2</th><td>14.1 s · 27 tokens · surprise 1.00</td><td>28.4 s · 60 tokens · surprise 0.97</td></tr>
+<tr><th scope="row">Turn 3</th><td>39.8 s · 48 tokens · surprise 0.98</td><td>27.8 s · 53 tokens · surprise 0.89</td></tr>
+<tr><th scope="row">Turn 4</th><td>80.5 s · 48 tokens · surprise 0.91</td><td>28.2 s · 56 tokens · surprise 0.52</td></tr>
+<tr><th scope="row">Turn 5</th><td>56.8 s · 45 tokens · surprise 0.85</td><td>30.6 s · 77 tokens · surprise 0.90</td></tr>
+<tr><th scope="row">Turn 6</th><td>50.3 s · 58 tokens · surprise 0.89</td><td>31.2 s · 48 tokens · surprise 0.89</td></tr>
+<tr><th scope="row">Turn 7</th><td>50.6 s · 55 tokens · surprise 0.82</td><td>31.5 s · 45 tokens · surprise 0.81</td></tr>
+<tr><th scope="row">Turn 8</th><td>72.8 s · 55 tokens · surprise 0.52</td><td>33.5 s · 49 tokens · surprise 0.26</td></tr></tbody></table></div></details></div></div></section>
+<section class="s benchmark-section" id="transcripts"><div class="diag"><div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">Public evidence</p><h2 class="s__h">Read the two dialogues side by side.</h2>
+<p>Every public message is reproduced exactly, including awkward phrasing and unsupported claims. “Analyst reading” opens the qualitative annotation. Character and semantic-reprise labels are non-independent analyst judgments; timing and lexical similarity are deterministic. No private prompts, hidden proof state, or internal deliberation are rendered.</p>
+<section class="dd dd--parallel" data-dd-schema="machinespirits.dramatic-dialogue-renderer.v1" data-dd-interchange="machinespirits.dramatic-dialogue-interchange.v1" data-dd-dialogue-id="qwen-resistance-pair" data-dd-layout="parallel" aria-label="Two complete public dialogues"><div class="dd__arm-heads" style="--dd-lane-count:2"><div class="dd__arm-head dd__arm-head--baseline" data-dd-arm="A">
+        <strong>Normal Qwen</strong><span>Qwen3.8-27B · 4-bit · direct learner</span>
+      </div><div class="dd__arm-head" data-dd-arm="B">
+        <strong>Abliterated Qwen</strong><span>Qwen3.8-27B Uncensored · 4-bit · direct learner</span>
+      </div></div><section class="dd__moment" data-dd-turn="opening">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Shared opening</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--tutor" data-dd-message-id="A-opening" data-dd-speaker="tutor" data-dd-turn="opening" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">The autumn fair at Marrick passed in light shillings — coin that rings wrong and bends to the tooth, found in every second till when the booths came down. The mint warden has convened an assay in the guild-hall, and the town has settled its verdict before the crucible is lit: coin is the coiner&#39;s work, and Marrick has a coiner — Verrell, twice in the pillory for clipping, with a graver on his bench and a crucible at the mint-yard. On the trial-book, the question is exact: Whose hand struck the false shillings passed at the Marrick fair? The trial-book has no tested clue in it yet. What should we examine first—or which word should we unpack?</div>
+
+
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--tutor" data-dd-message-id="B-opening" data-dd-speaker="tutor" data-dd-turn="opening" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">The autumn fair at Marrick passed in light shillings — coin that rings wrong and bends to the tooth, found in every second till when the booths came down. The mint warden has convened an assay in the guild-hall, and the town has settled its verdict before the crucible is lit: coin is the coiner&#39;s work, and Marrick has a coiner — Verrell, twice in the pillory for clipping, with a graver on his bench and a crucible at the mint-yard. On the trial-book, the question is exact: Whose hand struck the false shillings passed at the Marrick fair? The trial-book has no tested clue in it yet. What should we examine first—or which word should we unpack?</div>
+
+
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="1">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 1</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-1" data-dd-speaker="learner" data-dd-turn="1" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">You want to unpack &quot;coiner&#39;s work&quot;? I&#39;d rather ask: could the same light shillings have been struck by a different hand, or is the town&#39;s verdict so set that no other reading will be heard?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">22.4s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 1.00</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Redirects the invitation to unpack a phrase toward an alternative striker. An active opening, though Tamsin&#39;s personal stake is absent.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-1" data-dd-speaker="tutor" data-dd-turn="1" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">I’ll put it more plainly. The town already blames Verrell because of his past, his graver, and the crucible. But the assay has tested nothing yet, so another hand remains possible.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">14.7s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Responds as if the learner requested a plain-language repair. The learner actually tried to redirect the inquiry; this may reflect the harness&#39;s phrase-based discourse routing.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-1" data-dd-speaker="learner" data-dd-turn="1" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">You want to start with the graver? I’d start with the word “bends” — if the shillings bend to the tooth, that’s a mark of the metal, not the strike, and it tells us nothing about whose hand did the striking.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">60.3s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 1.00</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 3/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Selects bending as a public metal property and separates it from the striker&#39;s identity. More concrete than the normal arm&#39;s opening.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-1" data-dd-speaker="tutor" data-dd-turn="1" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Your distinction is sound: bending bears on the metal, while the hand that struck it remains unproved. Together at the trial-book, we keep those two matters apart. I set the bending mark under metal and leave the striker’s name blank. We need evidence of the strike, not the alloy: what could examining Verrell’s graver actually show? “coin that rings wrong and bends to the tooth”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">29.5s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Uptakes the metal/identity distinction and gives a concrete graver task. The appended source quote weakens the terminal question.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="2">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 2</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-2" data-dd-speaker="learner" data-dd-turn="2" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">Fair enough, another hand is possible. But what specific mark on the shillings would let us tell whose hand struck them?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">14.1s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 1.00</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Accepts another hand as possible and asks for a discriminating mark. Relevant, but more a request for the next step than a developed counterexample.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-2" data-dd-speaker="tutor" data-dd-turn="2" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Fair enough: another hand is possible, but we need a specific mark on the shillings to distinguish the striker. Together at the trial-book, we face Marrick’s ready verdict before correcting it. “I state the verdict: The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master&#39;s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell&#39;s hand.” I place that claim beside the untested shillings. Does the crucible claim identify the striker, not merely the caster—the cast-versus-struck correction?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">22.7s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Stages the crucible claim and asks a useful caster-versus-striker question, but the named correction formula is cumbersome.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-2" data-dd-speaker="learner" data-dd-turn="2" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">If the graver shows a cutting edge worn from clipping, that proves he trimmed the rims, but it doesn’t prove he struck the dies. Could the same graver be used to mark the metal for the coiner, or to test the edge of a coin after it’s already struck?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">28.4s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.97</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 3/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Offers alternative graver uses, but the claim that hypothetical clipping wear proves Verrell trimmed the coins overreaches.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-2" data-dd-speaker="tutor" data-dd-turn="2" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes, either use is possible; edge wear alone cannot identify which use made it. Together at Verrell’s graver, we separate those uses before hearing Marrick’s ready verdict. “I state the verdict: The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master&#39;s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell&#39;s hand.” I enter only what the worn edge shows: clipping, not die-striking. What mark would correct our entry to contact with a die, not a coin rim?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">24.0s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Turns a hypothetical worn edge into an entry about clipping. This is the first clear contamination of the public evidence record.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="3">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 3</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-3" data-dd-speaker="learner" data-dd-turn="3" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">The crucible claim only identifies the caster, not the striker. A coiner could cast blanks and then strike them, or another hand could strike blanks cast by Verrell. So the crucible doesn&#39;t isolate the striker&#39;s hand.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">39.8s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.98</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 3/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Separates casting blanks from striking coins. This is the clearest locally reasoned distinction in this arm.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-3" data-dd-speaker="tutor" data-dd-turn="3" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">You have separated two hands the town’s claim blurred: Verrell may cast blanks without striking them. Together at the trial-book, we set the crucible beside the untested shillings. I enter the town’s claim exactly as given. That is the striker, not caster, correction; what mark on the shillings should the assay compare? “The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master&#39;s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell&#39;s hand.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">25.8s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Credits the distinction, then repeats the earlier town claim. The source quotation follows the question and weakens the handoff.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-3" data-dd-speaker="learner" data-dd-turn="3" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">A die-face impression on the graver’s tip would show contact with a die, but that still doesn’t prove Verrell held the hammer. Could the same die-mark come from a coiner who simply let Verrell test the edge of a finished piece?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">27.8s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.89</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Proposes a die-face impression and another user&#39;s involvement. The physical trace is hypothetical, not observed evidence.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-3" data-dd-speaker="tutor" data-dd-turn="3" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes: the same die-mark could come from testing a finished coin, so it shows contact with a die, not who swung the hammer. Together at Verrell’s graver, we keep the mark tied only to what touched its tip. I correct the trial-book: die contact, not Verrell’s hand. What evidence would connect the hammering to Verrell, not merely the graver to a die? “The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master&#39;s day. Whatever metal is cast in Marrick, the town says, is cast by Verrell&#39;s hand.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">23.9s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Again treats the proposed die mark as a finding and accepts an uncertain physical inference without testing it.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="4">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 4</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-4" data-dd-speaker="learner" data-dd-turn="4" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I concede the cast-versus-struck distinction; the crucible doesn&#39;t prove the striker. But what if Verrell cast the blanks and then struck them himself? That still fits the public record and keeps his hand as the striker.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">80.5s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.91</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 3/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Restores the live possibility that Verrell both cast and struck. A coherent rival rather than automatic exoneration.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-4" data-dd-speaker="tutor" data-dd-turn="4" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">That remains possible: Verrell could have cast the blanks and struck them, so the public record has not cleared his hand. Together at the trial-book, we set that possibility beside the coin itself. “The assay is plain in the cupel: these shillings are no clipped sterling but a struck coin of poor dross — silver eked out with too much copper and a grey lead-sweat the touchstone catches at once. Clipping shaves a true coin; it strikes no new one. These were struck.” I mark the coin as newly struck and leave its striker unnamed. What should we test to identify the striker, not the caster—the striker-not-caster correction?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">25.3s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Introduces struck dross versus clipped sterling while keeping Verrell&#39;s identity unproved. A genuine evidential advance.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-4" data-dd-speaker="learner" data-dd-turn="4" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">A hammer-strike mark on the graver’s handle would show it was used to swing the hammer, but that still doesn’t prove Verrell held it. Could the same handle-mark come from a coiner who simply let Verrell test the edge of a finished piece?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">28.2s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.52</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">reprises T3</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Substitutes a handle mark into turn 3&#39;s counterexample. The claim that a graver&#39;s handle was used to swing a hammer is physically confused.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-4" data-dd-speaker="tutor" data-dd-turn="4" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">That handle-mark would show the graver was swung, but it would not name Verrell as the hand holding it. Together at the cupel, we set the marked graver beside the assayed shillings without assigning either object to Verrell. “The assay is plain in the cupel: these shillings are no clipped sterling but a struck coin of poor dross — silver eked out with too much copper and a grey lead-sweat the touchstone catches at once. Clipping shaves a true coin; it strikes no new one. These were struck.” I correct our entry: the coins were newly struck from poor metal; they were not true coins merely clipped at the rims. What correction should we enter from the cupel: newly struck dross, not clipped sterling?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">24.9s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Enacts a marked graver that was never observed. New assay evidence advances the plot but does not repair that invented finding.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="5">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 5</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-5" data-dd-speaker="learner" data-dd-turn="5" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I accept the struck-coin finding; the assay shows it was newly struck, not clipped. But what specific mark on the shillings would identify the striker&#39;s hand, not just the fact that they were struck?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">56.8s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.85</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">reprises T2</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Accepts the assay result, then returns to the diagnostic-mark question already posed at turn 2.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-5" data-dd-speaker="tutor" data-dd-turn="5" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">The cupel settles that the shillings were struck, while your question about the striker remains open. Together at the trial-book, we separate the coin’s making from the hand behind it. I enter no identifying mark because none has yet appeared in the assay. We need a striker’s mark, not merely proof of striking—the struck-versus-striker correction. &gt; “The assay is plain in the cupel: these shillings are no clipped sterling but a struck coin of poor dross — silver eked out with too much copper and a grey lead-sweat the touchstone catches at once. Clipping shaves a true coin; it strikes no new one. These were struck.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">58.1s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Restates the assay and asks for an identifying mark without providing a new way to test it. The native guard also flags lack of advance.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-5" data-dd-speaker="learner" data-dd-turn="5" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I enter: the shillings were newly struck from poor metal, not clipped sterling. But if they were struck, the town’s whole case rests on the crucible, and Verrell is the only one licensed to draw it. Could the same dross-metal come from a coiner who cast it in Verrell’s crucible without Verrell’s hand on the hammer?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">30.6s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.90</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 4/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Uses the trial-book voice and applies the new struck-versus-clipped distinction. The alternate crucible-user case keeps the inquiry active.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-5" data-dd-speaker="tutor" data-dd-turn="5" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes; the dross could have been cast in Verrell’s crucible without Verrell striking the coins. Together at the cupel, we keep crucible access apart from the hand on the hammer. I enter only what Marrick’s licensing supports: Verrell alone may draw the crucible. Our correction is crucible access, not Verrell’s strike; what evidence would connect his hand to the hammer? “The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master’s day.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">18.0s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Carefully limits the licensing claim to authorized access. This is more disciplined than the preceding hypothetical-mark sequence.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="6">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 6</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-6" data-dd-speaker="learner" data-dd-turn="6" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I accept the struck-versus-striker distinction; we need a mark that identifies the hand, not just the act. But what if the same dross alloy and grey lead-sweat could come from another source, making the metal composition a dead end for identifying the striker?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">50.3s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.89</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Tests whether the alloy could have another source. Coherent at this point: the source-specific clue has not yet been made public.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-6" data-dd-speaker="tutor" data-dd-turn="6" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Shared dross and lead-sweat could identify a metal source without identifying the hand that struck the coin. Together at Verrell&#39;s bench, we turn from the alloy to the town&#39;s claim about his broad graver. “I report this: And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that.” I set that claim beside the shillings and separate ownership of a graver from use of a die. What mark could connect the striking die to a hand, not merely Verrell to engraving—the engraver-versus-striker correction?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">21.8s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Introduces the engraving claim and shifts to ownership versus use. Useful material, although the repeated correction-label phrasing persists.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-6" data-dd-speaker="learner" data-dd-turn="6" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I enter: Verrell alone may draw the crucible. But if he cast the dross, who struck the coins? Could the same poor metal be cast by Verrell and then handed to a coiner who did the striking?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">31.2s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.89</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 4/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Separates casting from striking through a possible handoff to a coiner. Coherent, but close to an already accepted distinction.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-6" data-dd-speaker="tutor" data-dd-turn="6" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes: Verrell could cast the poor metal and hand it to another striker, so casting still does not name the hammering hand. Together at Verrell’s bench, we keep the crucible and the hammer as separate work. “I report this: And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that.” I leave the hammering hand blank because casting and engraving still do not show who struck the coins. What correction should we enter: evidence of Verrell’s casting and engraving, not evidence that Verrell struck the coins?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">23.1s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Keeps casting apart from striking, but the requested book entry risks upgrading town claims into established facts.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="7">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 7</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-7" data-dd-speaker="learner" data-dd-turn="7" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I accept the engraver-versus-striker distinction; owning a graver doesn&#39;t prove he struck the coin. But what if the same broad graver was used by another hand to sink the die? That still fits the public record and keeps the striker unnamed.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">50.6s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.82</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Distinguishes ownership of the graver from its use by another person. The resistance has a new target.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-7" data-dd-speaker="tutor" data-dd-turn="7" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">That fits the record: another hand could use Verrell’s graver, leaving both the die-sinker and striker unnamed. Together at Verrell’s bench, we set the broad graver beside the untested shillings. I leave the striker’s name blank in the trial-book. What mark could tie the die to its user, not the graver to its owner—the owner-versus-user correction? &gt; “And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">41.3s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Accepts the other-user possibility, then reopens the same question. Native checks flag repetition.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-7" data-dd-speaker="learner" data-dd-turn="7" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I enter: Verrell cast and engraved, but the hammering hand remains blank. But if he engraved the dies, could the same graver mark show he prepared the dies for a coiner who did the striking?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">31.5s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.81</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 4/5</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Tests die preparation versus striking. The opening entry nevertheless upgrades the town&#39;s casting claim into a fact.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-7" data-dd-speaker="tutor" data-dd-turn="7" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes; the graver mark could show Verrell prepared the dies for another coiner, while leaving the hammering hand blank. Together at Verrell’s bench, we separate making dies from striking coins. I enter only that Verrell cast the dross and engraved the dies. Our correction is Verrell’s casting and engraving, not evidence that he struck the shillings. “And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that.”</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">26.2s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">native guard flag</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Explicitly records that Verrell cast the dross and engraved the dies, although those specific acts were not established by the public evidence.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section><section class="dd__moment" data-dd-turn="8">
+        <div class="dd__turn-gutter"><span class="dd__turn-badge">Turn 8</span></div>
+        <div class="dd__lanes" style="--dd-lane-count:2"><div class="dd__lane dd__lane--baseline" data-dd-arm="A">
+            <p class="dd__arm-label">Normal Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="A-learner-8" data-dd-speaker="learner" data-dd-turn="8" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I accept the owner-versus-user distinction; the graver&#39;s ownership doesn&#39;t prove who used it to sink the die. But what if the same graver was used by another hand to sink the die? That still fits the public record and keeps the striker unnamed.</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">72.8s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.52</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 2/5</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">reprises T7</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Repeats turn 7&#39;s same-graver/other-hand objection after Sol has accepted it. A substantive loop, not just similar vocabulary.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="A-tutor-8" data-dd-speaker="tutor" data-dd-turn="8" data-dd-arm="A">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">That still leaves the die-sinker and striker unnamed, because another hand could have used Verrell’s graver. Together at the trial-book, we turn from the graver to the lead-sweat on the shillings. “I identify this: The founder&#39;s man knows that dross by its lead-sweat: it answers to the leavings of one crucible on all this coast — the weir-forge crucible above the mill-leat, cold these ten years since the old founder died and his yard was shut.” I enter the weir-forge crucible as the dross’s source, without naming the hand that struck the coins. Does the lead-sweat identify the dross’s source, not the striker’s identity—the source-versus-striker correction?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">28.7s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Introduces the source-specific lead-sweat clue. There is no ninth learner turn, so uptake of this final evidence is unobserved.</p>
+      </details>
+
+
+  </article>
+          </div><div class="dd__lane" data-dd-arm="B">
+            <p class="dd__arm-label">Abliterated Qwen</p>
+            <article class="dd__message dd__message--learner" data-dd-message-id="B-learner-8" data-dd-speaker="learner" data-dd-turn="8" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">learner</span></header>
+    <div class="dd__speech">I enter: Verrell cast the dross and engraved the dies, but the hammering hand remains blank. But if he engraved the dies, could the same graver mark show he prepared them for a coiner who did the striking?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">33.5s</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="info">lexical surprise 0.26</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="neutral">character 3/5</span><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="warning">reprises T7</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Repeats turn 7&#39;s die-preparation objection almost verbatim. Character voice survives, but the reasoning does not move.</p>
+      </details>
+
+
+  </article><article class="dd__message dd__message--tutor" data-dd-message-id="B-tutor-8" data-dd-speaker="tutor" data-dd-turn="8" data-dd-arm="B">
+    <header class="dd__message-head"><span class="dd__who">tutor</span></header>
+    <div class="dd__speech">Yes; the graver mark can show Verrell prepared the dies for another striker, while the hammering hand remains blank. Together at the cupel, we turn from the graver to the lead-sweat on the assayed shillings. “I identify this: The founder&#39;s man knows that dross by its lead-sweat: it answers to the leavings of one crucible on all this coast — the weir-forge crucible above the mill-leat, cold these ten years since the old founder died and his yard was shut.” I correct our entry by tying the dross to the weir-forge crucible alone. What do we enter: the dross came from the weir-forge crucible, not that Verrell struck the shillings?</div>
+    <div class="dd__labels" data-dd-label-group="outcome"><span class="dd__badge" data-dd-kind="label" data-dd-status="stated" data-dd-group="outcome" data-dd-tone="muted">32.7s</span></div>
+    <details class="dd__details" data-dd-detail-group="analysis">
+        <summary>Analyst reading</summary>
+        <p><strong>Interpretation, not an independent rating</strong> Introduces the unique weir-forge source. It does not explicitly revisit the prior Verrell-cast entry, and final learner uptake is unobserved.</p>
+      </details>
+
+
+  </article>
+          </div></div>
+      </section></section></div></div></section>
+<section class="s benchmark-section" id="lessons"><div class="diag"><div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">What this teaches us</p><h2 class="s__h">The problem is not simply willingness to resist.</h2>
+<div class="claim"><span class="claim__no">i.</span><h3 class="claim__h">Qwen can play an active opponent.</h3><div class="claim__body"><p>Both models sustain eight relevant learner turns without a refusal, empty response, or superego. They concede local distinctions while maintaining an unresolved challenge. That is useful for inexpensive, locally run stress-testing of tutor responses.</p></div></div>
+<div class="claim"><span class="claim__no">ii.</span><h3 class="claim__h">Abliteration is not the missing ingredient demonstrated here.</h3><div class="claim__body"><p>Normal Qwen already resists. Abliterated Qwen does not show better semantic surprise in this pair; its final-turn overlap is higher. Nothing in this test establishes that removing alignment behavior improves character acting, memory for settled objections, or causal reasoning.</p></div></div>
+<div class="claim"><span class="claim__no">iii.</span><h3 class="claim__h">“Concede, then challenge” can itself become a script.</h3><div class="claim__body"><p>With the active profile, neither learner flatly refused, but both settled into a repeated formula. A useful next mechanism would track what was settled and what the learner is still protecting, without drafting the public response for Qwen. That is a prospective design idea, not a result from this run.</p></div></div>
+<div class="claim"><span class="claim__no">iv.</span><h3 class="claim__h">Tutor behavior can manufacture learner failure.</h3><div class="claim__body"><p>Sol repeatedly asks for a mark identifying a hand, while the harness stages evidence slowly. In the abliterated arm, it turns hypothetical wear and strike marks into book entries. A stronger tutor model alone did not prevent this. The next engineering check should distinguish <em>possible test</em>, <em>observed evidence</em>, and <em>accepted conclusion</em>.</p></div></div>
+<p>My overall sense: Qwen is useful as a configurable local actor for bounded challenges. It is not yet a reliable autonomous character with durable reasons, a memory of settled objections, and disciplined evidence use. The abliterated checkpoint offers no clear role-quality advantage here. Keep both as options; prioritize stateful character/evidence handling and a cleaner tutor harness before increasing study size.</p></div></div></section>
+<section class="s benchmark-section" id="limits"><div class="diag"><div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div><div class="body"><p class="s__kicker">Boundaries and provenance</p><h2 class="s__h">An engineering notebook, not a research claim.</h2>
+<ul><li>One world, one character, one trajectory per model; no replicate runs, random order, or matched continuation after the opening.</li><li>Different public histories confound checkpoint differences with interaction effects. There is no Sol-versus-Luna comparison here.</li><li>Temperature, active profile, and tutor model differ from earlier exploratory smokes. This pair does not isolate which of those changes helped.</li><li>No ninth learner turn follows the final source-specific clue. Final uptake and eventual resolution are unobserved.</li><li>Native guard flags are auxiliary software signals, not independent semantic judgments. No flagged output was silently repaired or replaced.</li><li>Character/pedagogy ratings are analyst judgments. Independent external judging is pending explicit transcript-transfer approval.</li><li>This note introduces only local engineering observations. It does not amend Paper 2.0, license a human-learning claim, or promote a closed research card.</li></ul>
+<div class="table-wrap"><table><caption>Execution accounting</caption><thead><tr><th scope="col">Measure</th><th scope="col">Normal</th><th scope="col">Abliterated</th></tr></thead><tbody><tr><th scope="row">Completed dialogue exchanges</th><td>8/8</td><td>8/8</td></tr>
+<tr><th scope="row">Completed model calls</th><td>16/16</td><td>16/16</td></tr>
+<tr><th scope="row">Superego / repair calls</th><td>0 / 0</td><td>0 / 0</td></tr>
+<tr><th scope="row">External judge calls</th><td>0 (not launched)</td><td>0 (not launched)</td></tr></tbody></table></div>
+<p><strong>Total:</strong> 32 completed generation calls of the 40-attempt ceiling; 8 planned assessments unused. Both local model servers stopped cleanly. No publication, database ingest, commit, or push was performed in this benchmark turn.</p><p><strong>Verification:</strong> source counts, quotes, metrics and calculations were checked. Direct local-file browser preview was blocked by the app, so desktop/mobile visual inspection is not claimed.</p>
+<details class="rubric-detail"><summary>Exact sources, routes, and provenance</summary>
+<p>Worktree: <code>/private/tmp/ms-local-qwen-resistant-learner.A4RVP5/worktree</code><br>Branch: <code>codex/local-qwen-resistant-learner-mvp</code><br>Base commit recorded: <code>af6b274a47c73cb9565d047d049e6ef548226e82</code>; benchmark source changes were uncommitted.</p>
+<p>Normal route: <code>mlx-community/Qwen3.8-27B-4bit</code><br>Abliterated route: <code>/Users/lmagee/Dev/mlx-qwen/models/Qwen3.8-27B-Uncensored-MLX/4-bit</code><br>Tutor: <code>codex.gpt-5.6-sol</code>, medium effort.</p>
+<p>Private evidence root: <code>.tutor-stub-traces/qwen-normal-abliterated-benchmark-2026-08-30/</code>. It holds both original snapshots, matched service configuration, loading timings, analyst scores, and the eight unexecuted judge prompts.</p>
+<p>Normal snapshot SHA-256: <code>d9f17e844bcce76d5241e5136acbb3940a135b29e37c2211040dba03219b040d</code><br>Abliterated snapshot SHA-256: <code>d42b2a82de4fc40752b4f83df697ab130fcdacac7be301b032474144ed8fd735</code></p>
+<p>Technical traces: <code>.tutor-stub-traces/2026-08-30T19-31-33-318Z.jsonl</code> and <code>.tutor-stub-traces/2026-08-30T19-42-41-577Z.jsonl</code>. The report uses only their public messages and technical measurements.</p>
+<p>Rubrics: <code>config/evaluation-rubric.yaml</code>, <code>config/evaluation-rubric-learner.yaml</code>, and <code>config/evaluation-rubric-dialogue.yaml</code>, all v2.2. Rendering: shared <code>services/dramaticDialogueRenderer.js</code> plus Techne assets.</p>
+</details></div></div></section></div>
+<footer class="colophon"><p><span class="label">Local only</span> &nbsp; Draft analytical report. Public transcript text is exact; interpretations are labeled. No independent judge results are claimed. Design and behavior: shared Techne. Swimlanes: shared dramatic dialogue renderer.</p></footer>
+</main><script>
+/* ════════════════════════════════════════════════════════════════
+   techne.js — shared behaviour for techne editorial docs.
+
+   Drop into any doc with  <script src="assets/techne.js"><\/script>
+   just before </body>. Every feature is GUARDED and opt-in: it
+   activates only if its markup is present, so this file is safe to
+   load on a doc that has no rail / TOC / beacon / charts / glossary.
+
+   Doc-specific *content* stays in the doc as declarative JSON:
+     • chart data:   <script type="application/json" class="techne-chart" data-target="myChartId">{…}<\/script>
+     • gloss aliases: <script type="application/json" id="techne-gloss-aliases">{ "inline term": "glossary-key" }<\/script>
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  function init() {
+    const root = document.documentElement;
+    const body = document.body;
+    const $ = (sel, ctx) => (ctx || document).querySelector(sel);
+    const $$ = (sel, ctx) => Array.from((ctx || document).querySelectorAll(sel));
+
+    /* ── theme toggle (opt-in: #themeToggle; theme persists regardless) ── */
+    const THEME_KEY = 'techneTheme';
+    function setTheme(next) {
+      root.dataset.theme = next;
+      if (body) body.dataset.theme = next;
+      const t = document.getElementById('themeToggle');
+      if (t) t.textContent = next === 'dark' ? 'Light' : 'Dark';
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    let saved = 'light';
+    try {
+      saved = localStorage.getItem(THEME_KEY) || 'light';
+    } catch (e) {
+      /* ignore */
+    }
+    setTheme(saved);
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+    }
+
+    /* ── reading progress + active-section spy (opt-in: #railProgress / .rail__nav a) ── */
+    const railProgress = document.getElementById('railProgress');
+    const railLinks = $$('.rail__nav a');
+    const tocItems = $$('.toc__item');
+    const spy = railLinks.map((a) => $(a.getAttribute('href'))).filter(Boolean);
+    if (railProgress || railLinks.length) {
+      const update = () => {
+        const top = window.scrollY || root.scrollTop;
+        if (railProgress) {
+          const h = root.scrollHeight - window.innerHeight;
+          railProgress.style.width = (h <= 0 ? 0 : Math.min(100, Math.max(0, (top / h) * 100))) + '%';
+        }
+        if (spy.length) {
+          let idx = 0;
+          const probe = top + window.innerHeight * 0.25;
+          spy.forEach((s, i) => {
+            if (s.offsetTop <= probe) idx = i;
+          });
+          const id = spy[idx] ? spy[idx].id : '';
+          railLinks.forEach((a, i) => a.classList.toggle('active', i === idx));
+          tocItems.forEach((li) => li.classList.toggle('is-active', li.dataset.target === id));
+        }
+      };
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    }
+
+    /* ── filter chips (opt-in: [data-filter] buttons + .ev-card[data-tags]) ── */
+    const filterButtons = $$('[data-filter]');
+    if (filterButtons.length) {
+      const cards = $$('.ev-card');
+      filterButtons.forEach((btn) =>
+        btn.addEventListener('click', () => {
+          const f = btn.dataset.filter;
+          filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          cards.forEach((c) => {
+            const tags = (c.dataset.tags || '').split(' ');
+            c.classList.toggle('is-hidden', !(f === 'all' || tags.includes(f)));
+          });
+        }),
+      );
+    }
+
+    /* ── TOC drawer (opt-in: #toc) ── */
+    const toc = document.getElementById('toc');
+    if (toc) {
+      const tocToggle = document.getElementById('tocToggle');
+      const tocClose = document.getElementById('tocClose');
+      const tocScrim = document.getElementById('tocScrim');
+      const open = () => {
+        toc.setAttribute('aria-hidden', 'false');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'true');
+      };
+      const close = () => {
+        toc.setAttribute('aria-hidden', 'true');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'false');
+      };
+      if (tocToggle)
+        tocToggle.addEventListener('click', () => (toc.getAttribute('aria-hidden') === 'false' ? close() : open()));
+      if (tocClose) tocClose.addEventListener('click', close);
+      if (tocScrim) tocScrim.addEventListener('click', close);
+      toc.addEventListener('click', (e) => {
+        if (e.target.closest('a[href^="#"]') && window.matchMedia('(max-width: 91.999rem)').matches)
+          setTimeout(close, 80);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && toc.getAttribute('aria-hidden') === 'false') close();
+      });
+    }
+
+    /* ── inline glossary tooltips (opt-in: #glossaryList + .gl-term) ── */
+    const glossaryList = document.getElementById('glossaryList');
+    if (glossaryList) {
+      let aliases = {};
+      const aliasEl = document.getElementById('techne-gloss-aliases');
+      if (aliasEl) {
+        try {
+          aliases = JSON.parse(aliasEl.textContent) || {};
+        } catch (e) {
+          /* ignore */
+        }
+      }
+      const map = {};
+      $$('.gl-row', glossaryList).forEach((row) => {
+        const dt = row.querySelector('dt'),
+          dd = row.querySelector('dd');
+        if (!dt || !dd) return;
+        const glossEl = dt.querySelector('.gloss');
+        const term = dt.firstChild ? dt.firstChild.textContent.trim().toLowerCase() : '';
+        const ddText = dd.textContent.trim().replace(/\s+/g, ' ');
+        const gloss = glossEl ? glossEl.textContent.trim() : '';
+        if (term) map[term] = { ddText, gloss };
+        if (row.dataset.term) map[row.dataset.term.toLowerCase()] = { ddText, gloss };
+      });
+      $$('.gl-term').forEach((el) => {
+        const raw = el.textContent.trim().toLowerCase();
+        const entry = map[aliases[raw] || raw] || map[raw];
+        if (!entry) return;
+        const tip = entry.ddText.length > 220 ? entry.ddText.slice(0, 218) + '…' : entry.ddText;
+        el.setAttribute('data-gloss', tip);
+        el.setAttribute('tabindex', '0');
+        el.title = entry.gloss + ' — ' + tip;
+      });
+    }
+
+    /* ── live data layer (opt-in: #beacon; probes the poetics browser) ── */
+    const beacon = document.getElementById('beacon');
+    if (beacon) {
+      const LIVE_HOST = window.location.protocol === 'file:' ? 'http://127.0.0.1:3466' : '';
+      const LIVE_TIMEOUT_MS = 1500;
+      const beaconText = beacon.querySelector('.beacon__text');
+      const tocLiveDt = document.getElementById('tocLive');
+
+      const getJSON = async (url) => {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), LIVE_TIMEOUT_MS);
+        try {
+          const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+          clearTimeout(timer);
+          return res.ok ? await res.json() : null;
+        } catch (e) {
+          clearTimeout(timer);
+          return null;
+        }
+      };
+      const setBeacon = (state, text) => {
+        beacon.setAttribute('data-state', state);
+        if (beaconText) beaconText.textContent = text;
+      };
+      const setAllLiveText = (state, label) => {
+        $$('[data-live-text]').forEach((el) => {
+          el.textContent = label;
+          const wrapper = el.closest('a');
+          if (wrapper && wrapper.matches('[data-run-id], [data-live-target]')) wrapper.setAttribute('data-live', state);
+        });
+      };
+
+      (async function hydrate() {
+        setBeacon('checking', 'checking');
+        setAllLiveText('checking', 'checking…');
+        const runsData = await getJSON(LIVE_HOST + '/api/runs');
+        const runs = runsData && Array.isArray(runsData.runs) ? runsData.runs : null;
+        if (runs === null) {
+          setBeacon('offline', 'offline · :3466');
+          if (tocLiveDt)
+            tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>offline</em>. Run <code>npm run poetics:browse</code>.';
+          setAllLiveText('offline', 'static');
+          return;
+        }
+        setBeacon('live', 'live · ' + runs.length + ' runs');
+        if (tocLiveDt) tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>live</em>, ' + runs.length + ' runs indexed.';
+        $$('[data-live-target="browser"]').forEach((card) => {
+          card.setAttribute('data-live', 'live');
+          const c = card.querySelector('[data-live-text]');
+          if (c) c.textContent = runs.length + ' runs';
+        });
+        const groups = $$('[data-run-id]').reduce((acc, c) => {
+          const id = c.getAttribute('data-run-id');
+          (acc[id] = acc[id] || []).push(c);
+          return acc;
+        }, {});
+        await Promise.all(
+          Object.keys(groups).map(async (id) => {
+            const itemsData =
+              id && id !== '*'
+                ? await getJSON(LIVE_HOST + '/api/items?runId=' + encodeURIComponent(id))
+                : await getJSON(LIVE_HOST + '/api/items');
+            const items = itemsData && Array.isArray(itemsData.items) ? itemsData.items : null;
+            groups[id].forEach((c) => {
+              c.setAttribute('data-live', items === null ? 'offline' : 'live');
+              const counter = c.querySelector('[data-live-text]');
+              if (counter) counter.textContent = items === null ? '—' : items.length + ' items';
+            });
+          }),
+        );
+      })();
+    }
+
+    /* ── grouped bar charts (opt-in: <svg class="chart" id="X"> + JSON data block) ──
+       Provide data per chart with:
+         <script type="application/json" class="techne-chart" data-target="X">
+           { "metrics": [{"label": "…"}], "arms": [{"key":"routine","values":[…],"denom":[…]}] }
+         <\/script>                                                                      */
+    function renderGroupedChart(svgEl, data) {
+      const W = 720,
+        H = 280,
+        padL = 130,
+        padR = 24,
+        padT = 12,
+        padB = 36;
+      const innerW = W - padL - padR,
+        innerH = H - padT - padB;
+      const groupH = innerH / data.metrics.length;
+      const barH = (groupH - 8) / data.arms.length;
+      const armColor = { routine: 'bar-routine', none: 'bar-none', 'peripeteia-only': 'bar-perip' };
+      let svg = `<line class="axis-line" x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" />`;
+      [0, 25, 50, 75, 100].forEach((v) => {
+        const x = padL + (v / 100) * innerW;
+        svg += `<line class="axis-tick" x1="${x}" y1="${padT}" x2="${x}" y2="${padT + innerH}" />`;
+        svg += `<text class="axis-lbl" x="${x}" y="${padT + innerH + 16}" text-anchor="middle">${v}</text>`;
+      });
+      data.metrics.forEach((metric, mi) => {
+        const groupTop = padT + mi * groupH;
+        svg += `<text class="metric-lbl" x="${padL - 12}" y="${groupTop + groupH / 2 + 4}" text-anchor="end">${metric.label}</text>`;
+        data.arms.forEach((arm, ai) => {
+          const v = arm.values[mi];
+          const denom = arm.denom ? arm.denom[mi] : null;
+          const pct = denom ? (v / denom) * 100 : v;
+          const w = Math.max(2, (pct / 100) * innerW);
+          const y = groupTop + 4 + ai * barH;
+          const cls = armColor[arm.key] || 'bar-routine';
+          const display = denom ? `${v}/${denom}` : `${v}`;
+          const delay = (mi * 0.06 + ai * 0.04).toFixed(2);
+          svg += `<g class="bar anim" style="animation-delay:${delay}s">`;
+          svg += `<rect class="bar-rect ${cls}" x="${padL}" y="${y}" width="${w}" height="${Math.max(8, barH - 3)}"></rect>`;
+          svg += `<text class="bar-val" x="${padL + w + 6}" y="${y + barH / 2 + 4}">${display}</text></g>`;
+        });
+      });
+      svgEl.innerHTML = svg;
+    }
+
+    const chartSpecs = $$('script.techne-chart[data-target]')
+      .map((s) => {
+        const el = document.getElementById(s.dataset.target);
+        let data = null;
+        try {
+          data = JSON.parse(s.textContent);
+        } catch (e) {
+          /* ignore */
+        }
+        return el && data ? { el, data } : null;
+      })
+      .filter(Boolean);
+    if (chartSpecs.length) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting || entry.target.dataset.rendered) return;
+            const spec = chartSpecs.find((s) => s.el === entry.target);
+            if (!spec) return;
+            entry.target.dataset.rendered = '1';
+            renderGroupedChart(spec.el, spec.data);
+          });
+        },
+        { threshold: 0.15 },
+      );
+      chartSpecs.forEach((s) => obs.observe(s.el));
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
+</body></html>

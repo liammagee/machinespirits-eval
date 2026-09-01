@@ -63,7 +63,12 @@ export function isTutorStubRetryableClaudeResponseFreeError(error) {
  */
 export function tutorStubCliPolicyRetryDecision(
   error,
-  { retryCount = 0, allowClaudeExitFailureCodeOne = false, allowClaudeResponseFreeError = false } = {},
+  {
+    retryCount = 0,
+    allowClaudeExitFailureCodeOne = false,
+    allowClaudeResponseFreeError = false,
+    allowRetry = process.env.TUTOR_STUB_CLI_POLICY_RETRY !== 'off',
+  } = {},
 ) {
   const audit = safeAudit(error?.audit);
   const used = Number.isInteger(retryCount) && retryCount > 0 ? retryCount : 0;
@@ -76,17 +81,21 @@ export function tutorStubCliPolicyRetryDecision(
   const claudeResponseFreeError =
     allowClaudeResponseFreeError === true && isTutorStubRetryableClaudeResponseFreeError(error);
   const retryableFailure = policyViolation || failedTurn || claudeExitFailure || claudeResponseFreeError;
-  const retry = Boolean(retryableFailure && used < TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length && !knownToolEvent);
+  const retry = Boolean(
+    allowRetry && retryableFailure && used < TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length && !knownToolEvent,
+  );
   return {
     schema: TUTOR_STUB_CLI_POLICY_RETRY_SCHEMA,
     retry,
-    reason: !retryableFailure
-      ? 'not_codex_policy_violation'
-      : used >= TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length
-        ? 'call_retry_limit_reached'
-        : knownToolEvent
-          ? 'known_tool_event_refused'
-          : 'bounded_transport_or_schema_retry',
+    reason: !allowRetry
+      ? 'retries_disabled_for_run'
+      : !retryableFailure
+        ? 'not_codex_policy_violation'
+        : used >= TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length
+          ? 'call_retry_limit_reached'
+          : knownToolEvent
+            ? 'known_tool_event_refused'
+            : 'bounded_transport_or_schema_retry',
     retry_count: used,
     retry_limit: TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length,
     delay_ms: retry ? TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS[used] : 0,

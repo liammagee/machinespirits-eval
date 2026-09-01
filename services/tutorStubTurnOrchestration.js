@@ -1793,6 +1793,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
             profileRepaired: enforced.repaired,
             profileAdherencePassed: enforced.passed,
             deterministicFallback,
+            ...(generated.learnerDeliberation ? { learnerDeliberation: jsonClone(generated.learnerDeliberation) } : {}),
             ...(enforced.semanticAdjudication
               ? { resistanceSemanticAdjudication: jsonClone(enforced.semanticAdjudication) }
               : {}),
@@ -1812,6 +1813,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           usage: generated.usage,
           profileRepaired: enforced.repaired,
           profileAdherencePassed: enforced.passed,
+          ...(generated.learnerDeliberation ? { learnerDeliberation: jsonClone(generated.learnerDeliberation) } : {}),
           ...(enforced.semanticAdjudication
             ? { resistanceSemanticAdjudication: jsonClone(enforced.semanticAdjudication) }
             : {}),
