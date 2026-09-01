@@ -9,7 +9,7 @@ source: manual
 created: 2026-08-31
 updated: 2026-09-01
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "Both eight-exchange arms and three valid Opus assessments remain preserved at 40/48 aggregate attempts; the five unresolved assessments are represented by seven registered split packets attempted once through schema-bound transport without rerunning accepted output, aggregate use stays at or below 48, and either all eight original assessments complete through validated packet unions or the first new failure is preserved as the terminal disposition."
+verification: "Both eight-exchange arms and seven valid Opus assessments remain preserved at 46/48 aggregate attempts; the final recovery reattempts only the rejected B quality-summary packet and, if valid, runs B quality-turns once, never exceeds 48, and either completes the eighth original assessment or preserves the first final failure as terminal."
 claim_status: planned
 links:
   notes:
@@ -129,3 +129,11 @@ with Sol, no superegos, using one fresh dialogue per arm.
   sends those two packet types through the existing schema-bound output tool.
   Seven missing calls fit under the eight attempts left; full completion would
   end at 47/48 without rerunning a dialogue or accepted assessment.
+- 2026-09-01: The structured split recovery completed A quality plus B tutor,
+  learner and dialogue, leaving seven of eight assessments valid. B
+  quality-summary then added the forbidden top-level field
+  `reasoning_effort`; the schema tool rejected it and the run stopped at
+  46/48 without accepting its content. At the user's explicit direction, a
+  terminal recovery may reattempt only that unchanged summary and, if it
+  validates, run B quality-turns. Those two calls exhaust the ceiling; either
+  failure ends the study incomplete with no further recovery.
