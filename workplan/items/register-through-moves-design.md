@@ -8,12 +8,13 @@ owner: codex
 source: manual
 created: 2026-08-31
 updated: 2026-09-01
+branch: codex/register-through-moves-formal-design-20260901
 verification: >-
-  A zero-call review gives an advance-or-drop recommendation and, if retained,
-  specifies an independently randomized register × move-policy factorial,
-  causal contrasts, eligibility, delivery and agreement gates, dispositions,
-  claim boundary and a hard planning ceiling. Closed manner-only blocks remain
-  unpooled and no model call or launch authority follows from this card.
+  The zero-call review has advanced into a formal 24-dialogue calibration
+  design. It independently randomizes register and move policy, fixes trigger,
+  delivery, agreement, safety and endpoint-spread gates, preserves typed
+  dispositions and prior-study separation, and caps the calibration at 6,240
+  model-attempt reservations. The design grants no call or launch authority.
 claim_status: future
 links:
   items:
@@ -23,9 +24,11 @@ links:
     - paper-300-resistant-learner-publication-refresh
   paper:
     - docs/research/paper-full-2.0.md
+  notes:
+    - config/tutor-stub-register-through-moves-calibration-design.v1.json
 tags:
-  - draft
   - under-review
+  - prospective
   - tutor-stub
   - register
   - negative-register
@@ -43,6 +46,35 @@ so the interaction can be estimated. This review authorizes no model calls,
 data collection or fresh confirmatory study. Activation still requires an
 explicit operator decision and a merged registration under the standing paid
 study policy.
+
+## Formal calibration design — 2026-09-01
+
+The recommended factorial is now specified prospectively in
+`config/tutor-stub-register-through-moves-calibration-design.v1.json`. The first
+stage is deliberately **calibration only**: 24 fresh dialogues, six per arm,
+on the `proof_skipper`/Marrick substrate. It asks whether the four-arm
+manipulation is operationally separable before spending on an interaction
+test. It fixes the existing `warrant_skip` v2 route as the trigger, defines one
+deterministic missing-warrant press plus a one-turn conditional hold, and
+keeps register assignment independent of that conduct.
+
+The design adds the attribution checks the review implied but had not yet
+made executable: warm-arm sharp leakage must stay at or below 0.20, sharp-arm
+presence must reach 0.80, pressing delivery must reach 0.90, baseline
+full-press contamination must stay at or below 0.10, W1/S1 delivery may differ
+by at most 0.10, and both register and move readings require pairwise
+κ ≥ 0.60 from two pinned blind readers. It also requires at least five of six
+dialogues in each pressing arm to instantiate an eligible trigger and at least
+five endpoint-readable dialogues per arm. Any failed construct gate closes the
+calibration without top-up or outcome claim.
+
+The calibration ceiling is 4,320 generation reservations (24 × 180) plus
+1,920 reader reservations (24 × 40 tutor turns × two readers), 6,240 total.
+The former 24,960 figure remains only a programme envelope. A confirmatory
+successor is capped provisionally at 72 fresh dialogues but requires its own
+power decision, design, launch commit and GO; none of its 18,720 planning
+reservations belongs to this calibration. Model calls used to write the formal
+design: 0.
 
 ## Research question
 
@@ -190,8 +222,8 @@ The zero-call review ends in one of two dispositions:
   ceiling. Any paid run remains a separate registered study requiring the
   operator's GO.
 
-The zero-call review recommends the second branch and supplies its minimum
-identifiable shape above. The card is in `review`, not `active`: the remaining
-decision is whether this approximately 25,000-attempt maximum is worth a formal
-registration relative to higher-priority human validation and memory-policy
-work. Model calls used by this review: 0.
+The zero-call review took the second branch and the calibration registration is
+now written. The card remains in `review`, not `active`, because no launcher or
+reader implementation exists and no call authority follows from design work.
+The next decision is whether to implement and dry-run the bounded 6,240-attempt
+calibration path. Model calls used by the review and formal design: 0.
