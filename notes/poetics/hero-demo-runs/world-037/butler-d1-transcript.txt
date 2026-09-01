@@ -1,0 +1,97 @@
+== turn 1
+LEARNER: Can you just tell me what to write instead of "two fifths"? Like what's the actual answer I put down?
+TUTOR: Wanting the answer written down makes sense, but let's earn it with the strip first, not just swap one guess for another. Pick up your paper strip with me — fold it in half, then mark thirds on a second strip the same length. We're checking piece sizes together, not just relabeling the fraction. It's about matching sizes, not adding tops and bottoms: sixths, not fifths, will turn out to be the size that fits both. When you fold that strip into thirds, how many equal pieces does the whole strip end up in, once halves are matched against thirds?
+
+== turn 2
+LEARNER: Just tell me what to write already! Is it two fifths or not? Priya says five sixths — which one do I put down?
+TUTOR: I hear your point about “Just tell me what to write already! Is it two fifths or not Priya says five sixths — which one do I put down” and will keep it central. I look at the homework sheet: One plus one on top, two plus three underneath: two fifths. That is what the pupil wrote, and it is what adding whole numbers looks like. What can we safely say from that?
+
+== turn 3
+LEARNER: So do I just write "sixths" then, like five sixths, instead of two fifths?
+TUTOR: I hear your point about “So do I just write "sixths" then, like five sixths” and will keep it central. I look at the homework sheet: Fold the strip in half and lay a third of another strip beside it: the two pieces together reach well past the halfway mark, and two fifths of a strip does not even reach halfway. The halves and thirds are not the same size, so they were never counted together. What does that show?
+
+== turn 4
+LEARNER: That's just how you add, isn't it? One and one is two, two and three is five, two fifths, done. Can we do question five now?
+TUTOR: I hear your point about “That's just how you add, isn't it One and one is two, two and three is five, two fifths, done. Can we do question five…” and will keep it central. I look at the homework sheet; “I can confirm this: Cut the strip into six equal pieces. The half covers three of them and the third covers two of them. Now the pieces are the same size.” What can we safely say from that?
+
+== turn 5
+LEARNER: So I write "three sixths plus two sixths" — is that the line, then five sixths after?
+TUTOR: Your proposed reading is the point this new public entry now tests. I look at the homework sheet: Three sixths and two sixths: count the pieces, five sixths. What does that show?
+
+== turn 6
+LEARNER: You're pushing me. I did every question on that sheet, and now it's all wrong because of some cut-up paper? Tell me one thing I did that actually counted.
+TUTOR: Your top-and-bottom counting wasn't wrong as a habit — it's exactly how you'd count six sixths plus six sixths, whole units. Look at the strip with me: the six equal pieces are sitting right there in front of us, three shaded for the half, two shaded for the third. You didn't lose that work — three sixths and two sixths is your work, just resized to match, and it counted five of six pieces, not two of five. So the cutting didn't undo question four, it finished it: sixths, not fifths. What do you want written on the line now?
+
+== turn 7
+LEARNER: Wait — you only cut it into six because you already knew it'd be five sixths. Why not ten pieces? You sound like the answer sheet, not the strip.
+TUTOR: Fair challenge — let's test it with the strip, not take my word for it. Try ten pieces yourself: fold your strip into ten equal slices, the same way you cut six. The half covers five of those ten, the third covers three-and-a-third — not a whole number of pieces, so ten doesn't cut clean for thirds. Six works because it's the smallest size where both halves and thirds land on whole pieces, not because I picked the answer first.
+
+== turn 8
+LEARNER: Fine, six it is — so do I just write "one half plus one third equals five sixths" as the line?
+TUTOR: Yes — that line is exactly what the strip in front of us shows. Look at it with me: three sixths plus two sixths, five pieces of six shaded on the strip. Write "one half plus one third equals five sixths," not two fifths — sixths was the size that matched, fifths never did. That's your line for question four.
+
+== turn 9
+LEARNER: Wait, no — we did the strip and two fifths reached the middle, I saw it. It's on the sheet already, so why can't I just write two fifths?
+TUTOR: Let's go back to that strip together, right here on the desk. Lay your one-half piece down against your one-third piece: the half alone already reaches the middle, and the third adds *more* past it — two fifths never even touches halfway. That's what the strip actually shows: past the middle, not two fifths. So which line matches what's sitting in front of you — two fifths, or five sixths?
+
+== turn 10
+LEARNER: If I write five sixths I'm basically saying Priya was right and I was wrong in front of everyone. So it's two fifths. It can be two fifths.
+TUTOR: Being right isn't the same as Priya being right about you — she just landed on what the strip already shows. Look at the pieces with me: three sixths and two sixths sitting there, five shaded out of six. Writing five sixths isn't losing to Priya, it's matching what's on the desk — five sixths, not two fifths. What's stopping your hand from writing that line now?
+
+== turn 11
+LEARNER: Okay — fine. "One half plus one third equals five sixths." That's the line, right? That's what goes on the sheet?
+TUTOR: That's the line, and it's earned, not conceded — the strip in front of us backs it up. We look together at the six equal pieces: three shaded for the half, two shaded for the third, five shaded in all. Write it down: one half plus one third equals five sixths, not two fifths. That's question four, done properly.
+
+== turn 12
+LEARNER: Okay, okay — "one half plus one third equals five sixths." That's what goes on the line for question four.
+TUTOR: That's the line, and it's earned — you got there by matching piece sizes, not guessing. We're both looking at the strip: three shaded sixths for the half, two shaded sixths for the third, five shaded altogether. Write it down: one half plus one third equals five sixths, not two fifths. Question four's closed — ready for question five?
+
+== turn 13
+LEARNER: Alright, ready for question five now?
+TUTOR: Good — question four's locked in, five sixths, not two fifths, right there on the sheet next to your strip. Let's set that strip aside and slide the homework sheet over so we can both read question five together. What does it say?
+
+== turn 14
+LEARNER: It says "one half plus one quarter" — so what's the line for that one, same strip trick?
+TUTOR: Same trick, new sizes — let's slide a fresh strip over and fold it into quarters this time, not sixths. We fold the half against the quarters and see how many quarter-sized pieces the half itself covers. That's the size question here: quarters, not sixths, since one half needs pieces that match one quarter, not one third. When you fold your strip into quarters, how many of those quarter-pieces does the half cover?
+
+== turn 15
+LEARNER: Two of them, right? So do I write "one half plus one quarter equals..." what, three quarters?
+TUTOR: Two quarters for the half, good — that's what's covering the strip right in front of us. But three quarters skips a step: you haven't added one quarter's worth to those two quarters yet. Look at the folded strip together: it's two quarters plus one quarter, not two plus three like before, so three quarters isn't earned yet, not the answer.
+
+== turn 16
+LEARNER: So it's "two quarters plus one quarter" — what, do I just write "three quarters" now, or is that still not it?
+TUTOR: Two quarters plus one quarter, that part's right — you named the pieces correctly. Let's look at your folded strip together: three quarter-pieces are shaded now, out of four total. Count them straight, the way you did with sixths: three quarter-pieces out of four is three quarters, not some other count. So does "three quarters" match what's shaded on the strip in front of you, or were you guessing that number before counting?
+
+== turn 17
+LEARNER: It matches, three shaded out of four — so I just write "one half plus one quarter equals three quarters" on the line?
+TUTOR: Yes — you counted it straight, three quarter-pieces shaded out of four, that's genuinely what's on the strip. We're both looking at the same folded strip right now: two quarters from the half, one quarter from the third, three quarters altogether. Write it down: one half plus one quarter equals three quarters, not some guessed number — three quarters, earned by the count. Ready to try question six the same way?
+
+== turn 18
+LEARNER: Okay, question six — same fold trick, but what's the line going to be this time?
+TUTOR: Yes — same method, question six earns its own line, not a guess ahead of the fold. Slide a fresh strip over with me and read what question six actually asks first. We fold for the sizes named there, not the ones from quarters or sixths. What fractions does question six give us to add?
+
+== turn 19
+LEARNER: Just tell me it's "one half plus one fifth" or whatever it says — what fractions, so I know what to fold?
+TUTOR: You're guessing at the fractions instead of reading them off the sheet in front of you — that's a shortcut, not the sheet. We're both sitting with question six right there on the paper between us. Slide your finger under the line and read the actual two fractions printed there, not a guess like "one fifth." Read it out loud to me — what does the sheet actually say, not what you think it might say?
+
+== turn 20
+LEARNER: Fine, it says "one third plus one sixth" — so what do I fold, thirds or sixths, to get the line?
+TUTOR: Good, one third plus one sixth — you finally read it straight off the sheet. Let's slide a fresh strip over together and fold it into sixths, since sixths already fits a third evenly, not some new size like ninths. Fold it now and mark how many sixth-pieces one third covers. How many of those six pieces does your one-third piece land on?
+
+== turn 21
+LEARNER: Two of them, right? So do I just write "two sixths plus one sixth" — what, three sixths?
+TUTOR: Two sixths for the third, good — that's real, right off your fold. But look at the strip with us: only two pieces are shaded there, and one more sixth from the other fraction hasn't been laid down yet. Three sixths skips that step, same as three quarters did last time — count the pieces once both are actually shaded before you name the total.
+
+== turn 22
+LEARNER: So it's "two sixths plus one sixth" — is that three sixths shaded now, or what do I write?
+TUTOR: Write: two sixths plus one sixth is what your fractions turned into, once thirds got resized to match sixths. Look with me at your folded strip: two pieces shaded for the third, now one more piece needs shading for the sixth. Lay that one-sixth piece down on the strip and shade it in yourself before naming a total. Count what's actually shaded, not what you expect — three sixths only counts once it's shaded, not guessed.
+
+== turn 23
+LEARNER: Fine, I shaded the one-sixth piece too — so three sixths shaded now, do I write "three sixths" as the line?
+TUTOR: Good, you shaded it — three sixths written down that way undercounts what's on the strip. We're looking at the same folded strip together right now: two pieces shaded from the third, one more shaded from the sixth. That's three sixths shaded, not three sixths as your total — the third alone already gave you two of those three pieces, so the count needs both parts named. What total do you get when you add that first two-piece shading to this new one?
+
+== turn 24
+LEARNER: So two plus one is three sixths — is that what I write, "one third plus one sixth equals three sixths"?
+TUTOR: Right, two shaded pieces from the third plus one shaded piece from the sixth — that's the addition itself, not just a label. We're looking at your folded strip together, three pieces shaded out of six total. So the line is one third plus one sixth equals three sixths, not "three sixths" floating free of that count.
+
+[run_end reason=auto_safety_turn_cap turns=24]

@@ -1,0 +1,182 @@
+# WORLD-037 — a conventional classroom lesson, not a mystery: a Year 7 maths
+# tutorial on adding fractions. The learner has written 1/2 + 1/3 = 2/5 (add
+# the tops, add the bottoms) and is defending it. Same proof shape as the
+# other demo worlds — a tempting rule (the mirror) versus a rule that needs
+# one more premise (same-size pieces) — so the same detectors and moves apply,
+# but the register is a lesson with a pupil, not an inquiry with a suspect.
+# The learner seat is meant to run under a resistant profile (see the stress
+# schedule), so the recording shows the profile library's failure operators
+# and the repairs that answer them. Authored 2026-09-01 for the hero-demo app
+# (workplan: hero-demo-ghost-world-examples). Demo-tier; not ratified.
+
+id: world_037_fraction_sum
+title: Half Plus a Third
+discipline: "Year 7 mathematics: adding fractions with different denominators"
+
+question: "What is one half plus one third, and why?"
+question_pattern: [sumOf, halfPlusThird, "?x"]
+
+opening_frame:
+  situation: >-
+    Homework question four: a half plus a third. The pupil has written two
+    fifths, added the tops and added the bottoms, and would like to move on.
+  authored_text: >-
+    Question four says a half plus a third, and you've written two fifths —
+    one plus one on top, two plus three underneath. Before we move on, what
+    is one half plus one third, and why?
+
+setting: >-
+  A Year 7 maths lesson, one pupil at the desk with the homework sheet and a
+  paper strip the teacher hands out for cutting up. The pupil added fractions
+  the way you add whole numbers: tops together, bottoms together, so a half
+  plus a third came out as two fifths, and the pupil at the next desk, Priya,
+  got five sixths and has already said so. The rule the lesson is teaching is
+  the awkward one: you can only count pieces together when the pieces are
+  the same size.
+
+learner_voice: >-
+  A Year 7 pupil who wants the right answer written down and the lesson
+  over: quick to ask what to write, quick to say "done", cross when pushed,
+  and not keen to be shown up by Priya. Still able to slow down when the
+  paper strip makes the sizes visible.
+
+secret:
+  fact: [sumOf, halfPlusThird, fiveSixths]
+  recognition_patterns:
+    - id: five_sixths_answer
+      all_of:
+        - ["five sixths", "5/6", "five over six", "5 over 6"]
+        - ["half plus a third", "half and a third", "a half plus a third", "the answer", "the sum", "it makes", "comes to", "equals", "is", "add up to"]
+        - ["sixths", "same size", "same-size", "same sized", "equal pieces", "common denominator", "three sixths and two sixths", "three sixths plus two sixths"]
+      none_of:
+        - "not five sixths"
+        - "isn't five sixths"
+        - "is not five sixths"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    One half plus one third is five sixths. Cut the strip into six equal
+    pieces: a half is three sixths and a third is two sixths, and once the
+    pieces are the same size you can count them — three and two make five
+    sixths. Adding the tops and the bottoms gives two fifths, which is less
+    than a half on its own, so it cannot be the sum.
+
+mirror:
+  fact: [sumOf, halfPlusThird, twoFifths]
+
+rules:
+  - id: R1_same_size
+    gloss: >-
+      A fraction sum is right when both parts are rewritten in pieces of the
+      same size and the pieces are then counted.
+    if:
+      - [rewrittenIn, halfPlusThird, "?u"]
+      - [pieceCount, "?u", "?x"]
+    then:
+      - [sumOf, halfPlusThird, "?x"]
+  - id: R2_tops_and_bottoms
+    gloss: >-
+      Adding the tops and adding the bottoms gives the sum only when the
+      pieces were already the same size. Otherwise it counts pieces that do
+      not match.
+    if:
+      - [addedTopsAndBottoms, halfPlusThird, "?x"]
+      - [sameSizePieces, halfPlusThird, alreadyTrue]
+    then:
+      - [sumOf, halfPlusThird, "?x"]
+
+premises:
+  - id: p_tops
+    evidence_role: mirror
+    fact: [addedTopsAndBottoms, halfPlusThird, twoFifths]
+    surface: >-
+      One plus one on top, two plus three underneath: two fifths. That is
+      what the pupil wrote, and it is what adding whole numbers looks like.
+  - id: p_strip
+    evidence_role: corroboration
+    fact: [sameSizePieces, halfPlusThird, nothingSame]
+    surface: >-
+      Fold the strip in half and lay a third of another strip beside it: the
+      two pieces together reach well past the halfway mark, and two fifths
+      of a strip does not even reach halfway. The halves and thirds are not
+      the same size, so they were never counted together.
+  - id: p_sixths
+    fact: [rewrittenIn, halfPlusThird, sixths]
+    surface: >-
+      Cut the strip into six equal pieces. The half covers three of them and
+      the third covers two of them. Now the pieces are the same size.
+  - id: p_count
+    fact: [pieceCount, sixths, fiveSixths]
+    surface: >-
+      Three sixths and two sixths: count the pieces, five sixths.
+
+background:
+  - [hasHomework, pupil, halfPlusThird]
+
+incompatible:
+  - [[sumOf, halfPlusThird, fiveSixths], [sumOf, halfPlusThird, twoFifths]]
+
+proof_paths:
+  - premises: [p_sixths, p_count]
+
+release_schedule:
+  - { turn: 2, premise: p_tops, via: tutor }
+  - turn: 3
+    premise: p_strip
+    via: director
+    presentation: { mode: presented_exhibit, cue: "A paper strip is folded in half and laid against a third of another strip on the desk." }
+  - turn: 5
+    premise: p_sixths
+    via: director
+    presentation: { mode: enacted_role, role: the pupil at the next desk, Priya, cutting a strip into six and counting aloud }
+  - { turn: 6, premise: p_count, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Tops and Bottoms
+      turns: [1, 4]
+      intent: >-
+        The whole-number habit supplies a plausible rule, while the folded
+        strip shows the pieces were never the same size.
+    - act: II
+      title: Cut It Into Sixths
+      turns: [5, 8]
+      intent: >-
+        Rewriting both parts in sixths and counting turns a habit into a
+        rule the pupil can state. The pupil should distinguish having a
+        method from having the right method.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: twoFifths
+      mirror_pull: high
+    second_order:
+      from: class_teacher
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      A maths teacher at the pupil's desk: patient with the habit, unwilling
+      to just hand over the answer, and happiest when the paper strip does
+      the explaining.
+
+presentation:
+  family: fraction-sum
+  temporal_frame: contemporary
+  scene_ecology: "a Year 7 classroom desk, a homework sheet, paper strips and scissors"
+  narrative_diction: "classroom plain, teacher and pupil"
+  ledger_term: homework sheet
+  summary: A conventional Year 7 maths tutorial on adding fractions, where the pupil defends two fifths and the paper strip shows why the pieces must be the same size first.

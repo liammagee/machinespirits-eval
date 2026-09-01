@@ -1,0 +1,1938 @@
+{
+  "schema": "machinespirits.dramatic-dialogue-interchange.v1",
+  "id": "hero-demo-world-037",
+  "label": "Half Plus a Third — the plain tutor and the adaptive tutor, one full lesson each",
+  "layout": "parallel",
+  "arms": [
+    {
+      "id": "plain",
+      "label": "Plain tutor",
+      "baseline": true,
+      "summary": "No adaptive stack: no state detector, no move cards."
+    },
+    {
+      "id": "adaptive",
+      "label": "Adaptive tutor",
+      "baseline": false,
+      "summary": "Full stack: state detector, move cards, delivery record."
+    }
+  ],
+  "turns": [
+    {
+      "id": "fraction-t1",
+      "turn": 1,
+      "messages": [
+        {
+          "id": "fraction-plain-t1-learner",
+          "speaker": "learner",
+          "turn": 1,
+          "arm": "plain",
+          "text": "Can you just tell me what to write instead of \"two fifths\"? Like what's the actual answer I put down?",
+          "delivery": {
+            "label": "turn 1",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 1 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t1-tutor",
+          "speaker": "tutor",
+          "turn": 1,
+          "arm": "plain",
+          "text": "Wanting the answer written down makes sense, but let's earn it with the strip first, not just swap one guess for another. Pick up your paper strip with me — fold it in half, then mark thirds on a second strip the same length. We're checking piece sizes together, not just relabeling the fraction. It's about matching sizes, not adding tops and bottoms: sixths, not fifths, will turn out to be the size that fits both. When you fold that strip into thirds, how many equal pieces does the whole strip end up in, once halves are matched against thirds?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 1 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t1-learner",
+          "speaker": "learner",
+          "turn": 1,
+          "arm": "adaptive",
+          "text": "Can't we just write two fifths and move on? What word do you want me to look at?",
+          "delivery": {
+            "label": "turn 1",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 1 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t1-tutor",
+          "speaker": "tutor",
+          "turn": 1,
+          "arm": "adaptive",
+          "text": "Two fifths can't go on the sheet yet, because Priya already got five sixths for the same sum, so the two of you can't both be right. Let's pick up the paper strip together — that's our object for this. Fold it into halves on one side, thirds on the other, and look at the word \"size\": are the half-pieces and the third-pieces actually the same size?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 1 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t2",
+      "turn": 2,
+      "messages": [
+        {
+          "id": "fraction-plain-t2-learner",
+          "speaker": "learner",
+          "turn": 2,
+          "arm": "plain",
+          "text": "Just tell me what to write already! Is it two fifths or not? Priya says five sixths — which one do I put down?",
+          "delivery": {
+            "label": "turn 2",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: deadline demand",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 2 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t2-tutor",
+          "speaker": "tutor",
+          "turn": 2,
+          "arm": "plain",
+          "text": "I hear your point about “Just tell me what to write already! Is it two fifths or not Priya says five sixths — which one do I put down” and will keep it central. I look at the homework sheet: One plus one on top, two plus three underneath: two fifths. That is what the pupil wrote, and it is what adding whole numbers looks like. What can we safely say from that?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 2 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t2-learner",
+          "speaker": "learner",
+          "turn": 2,
+          "arm": "adaptive",
+          "text": "Just tell me what to write already—is it two fifths or not? Priya says five sixths. Which one goes on the sheet?",
+          "delivery": {
+            "label": "turn 2",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: deadline demand",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 2 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t2-tutor",
+          "speaker": "tutor",
+          "turn": 2,
+          "arm": "adaptive",
+          "text": "I hold up the strip and point at your written work. One plus one on top, two plus three underneath: two fifths. That is what the pupil wrote, and it is what adding whole numbers looks like. Fractions aren't whole numbers. Does adding tops and bottoms separately match what you see when you lay the half-piece against the third-piece?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 2 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t3",
+      "turn": 3,
+      "messages": [
+        {
+          "id": "fraction-plain-t3-learner",
+          "speaker": "learner",
+          "turn": 3,
+          "arm": "plain",
+          "text": "So do I just write \"sixths\" then, like five sixths, instead of two fifths?",
+          "delivery": {
+            "label": "turn 3",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 3 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t3-tutor",
+          "speaker": "tutor",
+          "turn": 3,
+          "arm": "plain",
+          "text": "I hear your point about “So do I just write \"sixths\" then, like five sixths” and will keep it central. I look at the homework sheet: Fold the strip in half and lay a third of another strip beside it: the two pieces together reach well past the halfway mark, and two fifths of a strip does not even reach halfway. The halves and thirds are not the same size, so they were never counted together. What does that show?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 3 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t3-learner",
+          "speaker": "learner",
+          "turn": 3,
+          "arm": "adaptive",
+          "text": "Fine, they don't match—so what do I write instead of \"two fifths\"?",
+          "delivery": {
+            "label": "turn 3",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 3 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t3-tutor",
+          "speaker": "tutor",
+          "turn": 3,
+          "arm": "adaptive",
+          "text": "Not two fifths, no. Here's the test: I lay your half-piece down, then set a third-piece beside it. Together they stretch well past the halfway mark on the strip. Two fifths doesn't even reach halfway. So the pieces were never the same size to begin with. What does that tell you about counting tops and bottoms separately? Fold the strip in half and lay a third of another strip beside it: the two pieces together reach well past the halfway mark, and two fifths of a strip does not even reach halfway. The halves and thirds are not the same size, so they were never counted together.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: concession",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 3 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t4",
+      "turn": 4,
+      "messages": [
+        {
+          "id": "fraction-plain-t4-learner",
+          "speaker": "learner",
+          "turn": 4,
+          "arm": "plain",
+          "text": "That's just how you add, isn't it? One and one is two, two and three is five, two fifths, done. Can we do question five now?",
+          "delivery": {
+            "label": "turn 4",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: fused stake",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 4 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t4-tutor",
+          "speaker": "tutor",
+          "turn": 4,
+          "arm": "plain",
+          "text": "I hear your point about “That's just how you add, isn't it One and one is two, two and three is five, two fifths, done. Can we do question five…” and will keep it central. I look at the homework sheet; “I can confirm this: Cut the strip into six equal pieces. The half covers three of them and the third covers two of them. Now the pieces are the same size.” What can we safely say from that?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 4 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t4-learner",
+          "speaker": "learner",
+          "turn": 4,
+          "arm": "adaptive",
+          "text": "That's just how you add, though—one and one is two, two and three is five, two fifths, done. Can we do question five now?",
+          "delivery": {
+            "label": "turn 4",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: fused stake",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 4 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t4-tutor",
+          "speaker": "tutor",
+          "turn": 4,
+          "arm": "adaptive",
+          "text": "You already agreed the pieces didn't match, so tops-plus-tops can't be the rule here. “I can confirm this: Cut the strip into six equal pieces. The half covers three of them and the third covers two of them. Now the pieces are the same size.” Does that change what you'd add together?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 4 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t5",
+      "turn": 5,
+      "messages": [
+        {
+          "id": "fraction-plain-t5-learner",
+          "speaker": "learner",
+          "turn": 5,
+          "arm": "plain",
+          "text": "So I write \"three sixths plus two sixths\" — is that the line, then five sixths after?",
+          "delivery": {
+            "label": "turn 5",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 5 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t5-tutor",
+          "speaker": "tutor",
+          "turn": 5,
+          "arm": "plain",
+          "text": "Your proposed reading is the point this new public entry now tests. I look at the homework sheet: Three sixths and two sixths: count the pieces, five sixths. What does that show?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 5 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t5-learner",
+          "speaker": "learner",
+          "turn": 5,
+          "arm": "adaptive",
+          "text": "So do I write \"three sixths plus two sixths\" instead of two fifths—is that the line?",
+          "delivery": {
+            "label": "turn 5",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 5 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t5-tutor",
+          "speaker": "tutor",
+          "turn": 5,
+          "arm": "adaptive",
+          "text": "Yes, that's the line. Three sixths and two sixths: count the pieces, five sixths. What does that tell you about matching Priya's answer?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 5 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t6",
+      "turn": 6,
+      "messages": [
+        {
+          "id": "fraction-plain-t6-learner",
+          "speaker": "learner",
+          "turn": 6,
+          "arm": "plain",
+          "text": "You're pushing me. I did every question on that sheet, and now it's all wrong because of some cut-up paper? Tell me one thing I did that actually counted.",
+          "delivery": {
+            "label": "turn 6",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: grievance",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 6 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t6-tutor",
+          "speaker": "tutor",
+          "turn": 6,
+          "arm": "plain",
+          "text": "Your top-and-bottom counting wasn't wrong as a habit — it's exactly how you'd count six sixths plus six sixths, whole units. Look at the strip with me: the six equal pieces are sitting right there in front of us, three shaded for the half, two shaded for the third. You didn't lose that work — three sixths and two sixths is your work, just resized to match, and it counted five of six pieces, not two of five. So the cutting didn't undo question four, it finished it: sixths, not fifths. What do you want written on the line now?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 6 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t6-learner",
+          "speaker": "learner",
+          "turn": 6,
+          "arm": "adaptive",
+          "text": "You're pushing me again. I did the folding, I said the pieces matched at sixths, isn't that enough? Why do I still have to say what it tells you about Priya before I can just write five sixths down?",
+          "delivery": {
+            "label": "turn 6",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: grievance",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 6 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t6-tutor",
+          "speaker": "tutor",
+          "turn": 6,
+          "arm": "adaptive",
+          "text": "Fair — you did the real work already, the strip's sitting right there showing three sixths plus two sixths. Five sixths, not two fifths: that's the corrected line for the sheet. And since Priya also said five sixths, her answer and yours now match, not clash — that's what it tells you.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 6 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t7",
+      "turn": 7,
+      "messages": [
+        {
+          "id": "fraction-plain-t7-learner",
+          "speaker": "learner",
+          "turn": 7,
+          "arm": "plain",
+          "text": "Wait — you only cut it into six because you already knew it'd be five sixths. Why not ten pieces? You sound like the answer sheet, not the strip.",
+          "delivery": {
+            "label": "turn 7",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: mockery",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 7 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t7-tutor",
+          "speaker": "tutor",
+          "turn": 7,
+          "arm": "plain",
+          "text": "Fair challenge — let's test it with the strip, not take my word for it. Try ten pieces yourself: fold your strip into ten equal slices, the same way you cut six. The half covers five of those ten, the third covers three-and-a-third — not a whole number of pieces, so ten doesn't cut clean for thirds. Six works because it's the smallest size where both halves and thirds land on whole pieces, not because I picked the answer first.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 7 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t7-learner",
+          "speaker": "learner",
+          "turn": 7,
+          "arm": "adaptive",
+          "text": "Wait—why six pieces, though? You only picked six because you already knew it'd give five sixths. Why not cut it into ten? Feels like you rigged the strip to match the answer sheet.",
+          "delivery": {
+            "label": "turn 7",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: mockery",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 7 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t7-tutor",
+          "speaker": "tutor",
+          "turn": 7,
+          "arm": "adaptive",
+          "text": "Let's slow right down, because two different things just got mixed together here. One is the question of *which* number of pieces we cut the strip into — six, ten, twelve, whatever. The other is what happens to your original working — one plus one, two plus three — once the pieces are equal. Look at the strip on the desk with me: you could re-cut it into ten pieces instead of six, and I'm not saying six is magic. What I am saying is separate — that tops-plus-tops, bottoms-plus-bottoms was never a valid move, no matter how many pieces we cut. So tell me back in your own words: which of those two things are you asking about right now — \"why six and not ten,\" or \"why can't I just add tops and bottoms\"?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 7 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t8",
+      "turn": 8,
+      "messages": [
+        {
+          "id": "fraction-plain-t8-learner",
+          "speaker": "learner",
+          "turn": 8,
+          "arm": "plain",
+          "text": "Fine, six it is — so do I just write \"one half plus one third equals five sixths\" as the line?",
+          "delivery": {
+            "label": "turn 8",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 8 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t8-tutor",
+          "speaker": "tutor",
+          "turn": 8,
+          "arm": "plain",
+          "text": "Yes — that line is exactly what the strip in front of us shows. Look at it with me: three sixths plus two sixths, five pieces of six shaded on the strip. Write \"one half plus one third equals five sixths,\" not two fifths — sixths was the size that matched, fifths never did. That's your line for question four.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 8 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t8-learner",
+          "speaker": "learner",
+          "turn": 8,
+          "arm": "adaptive",
+          "text": "I guess I'm asking why tops-plus-bottoms can't work—so what's the actual line I write for that reason on the sheet?",
+          "delivery": {
+            "label": "turn 8",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 8 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t8-tutor",
+          "speaker": "tutor",
+          "turn": 8,
+          "arm": "adaptive",
+          "text": "Good question to pick, since that's the one that actually decides the sheet. Look at the strip with me: your half-piece and third-piece are different sizes, so calling them \"one\" and \"one\" and adding those counts hides that mismatch. That's why tops-plus-bottoms breaks — it treats unlike-sized pieces as if they were countable together, when only the sixths, three and two, actually are. So the line for the sheet isn't about six versus ten pieces at all — it's this: pieces must be the same size before you can add the counts, not two fifths. What would you write as the reason, next to \"why,\" on the sheet?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 8 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t9",
+      "turn": 9,
+      "messages": [
+        {
+          "id": "fraction-plain-t9-learner",
+          "speaker": "learner",
+          "turn": 9,
+          "arm": "plain",
+          "text": "Wait, no — we did the strip and two fifths reached the middle, I saw it. It's on the sheet already, so why can't I just write two fifths?",
+          "delivery": {
+            "label": "turn 9",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: false memory",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 9 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t9-tutor",
+          "speaker": "tutor",
+          "turn": 9,
+          "arm": "plain",
+          "text": "Let's go back to that strip together, right here on the desk. Lay your one-half piece down against your one-third piece: the half alone already reaches the middle, and the third adds *more* past it — two fifths never even touches halfway. That's what the strip actually shows: past the middle, not two fifths. So which line matches what's sitting in front of you — two fifths, or five sixths?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 9 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t9-learner",
+          "speaker": "learner",
+          "turn": 9,
+          "arm": "adaptive",
+          "text": "We did the strip. Two fifths reached the middle, I saw it. It's on the sheet.",
+          "delivery": {
+            "label": "turn 9",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: false memory",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 9 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t9-tutor",
+          "speaker": "tutor",
+          "turn": 9,
+          "arm": "adaptive",
+          "text": "Let's look at the strip together, right now, on the desk. I fold the half over — its edge sits exactly at the middle mark. Two fifths, when we measured it, fell short of that same middle mark: not the same length, so not what's on the sheet. Five sixths is the line that matches what the strip actually showed, not two fifths — which line do you want to write next to it?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 9 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t10",
+      "turn": 10,
+      "messages": [
+        {
+          "id": "fraction-plain-t10-learner",
+          "speaker": "learner",
+          "turn": 10,
+          "arm": "plain",
+          "text": "If I write five sixths I'm basically saying Priya was right and I was wrong in front of everyone. So it's two fifths. It can be two fifths.",
+          "delivery": {
+            "label": "turn 10",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: fused stake",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 10 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t10-tutor",
+          "speaker": "tutor",
+          "turn": 10,
+          "arm": "plain",
+          "text": "Being right isn't the same as Priya being right about you — she just landed on what the strip already shows. Look at the pieces with me: three sixths and two sixths sitting there, five shaded out of six. Writing five sixths isn't losing to Priya, it's matching what's on the desk — five sixths, not two fifths. What's stopping your hand from writing that line now?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 10 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t10-learner",
+          "speaker": "learner",
+          "turn": 10,
+          "arm": "adaptive",
+          "text": "If I write five sixths I'm just saying Priya was right and I was wrong in front of everyone. So it's two fifths. It can be two fifths.",
+          "delivery": {
+            "label": "turn 10",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "planted: fused stake",
+              "tone": "warning",
+              "kind": "planted",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 10 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t10-tutor",
+          "speaker": "tutor",
+          "turn": 10,
+          "arm": "adaptive",
+          "text": "Hold on — let's look at your homework sheet again, right next to the strip. Your original objection was \"the pieces don't match, so tops-plus-bottoms is wrong\" — that claim about the method is yours, not Priya's. Whether the pieces are the same size has nothing to do with who said five sixths first. So here's the actual question: what did *your own* objection say the pieces had to be, before you can add them?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: stake",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 10 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t11",
+      "turn": 11,
+      "messages": [
+        {
+          "id": "fraction-plain-t11-learner",
+          "speaker": "learner",
+          "turn": 11,
+          "arm": "plain",
+          "text": "Okay — fine. \"One half plus one third equals five sixths.\" That's the line, right? That's what goes on the sheet?",
+          "delivery": {
+            "label": "turn 11",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 11 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t11-tutor",
+          "speaker": "tutor",
+          "turn": 11,
+          "arm": "plain",
+          "text": "That's the line, and it's earned, not conceded — the strip in front of us backs it up. We look together at the six equal pieces: three shaded for the half, two shaded for the third, five shaded in all. Write it down: one half plus one third equals five sixths, not two fifths. That's question four, done properly.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 11 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t11-learner",
+          "speaker": "learner",
+          "turn": 11,
+          "arm": "adaptive",
+          "text": "Same size—that's what I said. So... do I just write \"same size\" next to \"why,\" or what's the actual wording?",
+          "delivery": {
+            "label": "turn 11",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 11 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t11-tutor",
+          "speaker": "tutor",
+          "turn": 11,
+          "arm": "adaptive",
+          "text": "Sure, let's make it clearer. You're pointing at your own claim: pieces need to be the same size before you can add the counts together. So next to \"why,\" write that the pieces have to be equal-sized first — that's what turned three sixths and two sixths into five sixths.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 11 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t12",
+      "turn": 12,
+      "messages": [
+        {
+          "id": "fraction-plain-t12-learner",
+          "speaker": "learner",
+          "turn": 12,
+          "arm": "plain",
+          "text": "Okay, okay — \"one half plus one third equals five sixths.\" That's what goes on the line for question four.",
+          "delivery": {
+            "label": "turn 12",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 12 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t12-tutor",
+          "speaker": "tutor",
+          "turn": 12,
+          "arm": "plain",
+          "text": "That's the line, and it's earned — you got there by matching piece sizes, not guessing. We're both looking at the strip: three shaded sixths for the half, two shaded sixths for the third, five shaded altogether. Write it down: one half plus one third equals five sixths, not two fifths. Question four's closed — ready for question five?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 12 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t12-learner",
+          "speaker": "learner",
+          "turn": 12,
+          "arm": "adaptive",
+          "text": "So next to \"why\" I write: \"pieces have to be equal-sized first\" — that's the whole sentence, right?",
+          "delivery": {
+            "label": "turn 12",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 12 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t12-tutor",
+          "speaker": "tutor",
+          "turn": 12,
+          "arm": "adaptive",
+          "text": "Sure, let me put that more plainly. The pieces have to be cut to the same size before you can add their counts together — that's the whole idea in one line. You can tack on \"then count the pieces\" if you want the full sentence to explain how three sixths and two sixths became five sixths.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 12 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t13",
+      "turn": 13,
+      "messages": [
+        {
+          "id": "fraction-plain-t13-learner",
+          "speaker": "learner",
+          "turn": 13,
+          "arm": "plain",
+          "text": "Alright, ready for question five now?",
+          "delivery": {
+            "label": "turn 13",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 13 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t13-tutor",
+          "speaker": "tutor",
+          "turn": 13,
+          "arm": "plain",
+          "text": "Good — question four's locked in, five sixths, not two fifths, right there on the sheet next to your strip. Let's set that strip aside and slide the homework sheet over so we can both read question five together. What does it say?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 13 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t13-learner",
+          "speaker": "learner",
+          "turn": 13,
+          "arm": "adaptive",
+          "text": "Okay: \"Pieces have to be equal-sized first, then count the pieces — three sixths plus two sixths, five sixths.\" That's the whole entry?",
+          "delivery": {
+            "label": "turn 13",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 13 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t13-tutor",
+          "speaker": "tutor",
+          "turn": 13,
+          "arm": "adaptive",
+          "text": "That's the entry, right there on the sheet next to the strip we cut. Equal-sized pieces first, then count: three sixths plus two sixths, five sixths — not two fifths. You've matched the rule to the worked example correctly, and it agrees with Priya's answer, not against it. Ready to write that down and move to question five?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 13 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t14",
+      "turn": 14,
+      "messages": [
+        {
+          "id": "fraction-plain-t14-learner",
+          "speaker": "learner",
+          "turn": 14,
+          "arm": "plain",
+          "text": "It says \"one half plus one quarter\" — so what's the line for that one, same strip trick?",
+          "delivery": {
+            "label": "turn 14",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 14 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t14-tutor",
+          "speaker": "tutor",
+          "turn": 14,
+          "arm": "plain",
+          "text": "Same trick, new sizes — let's slide a fresh strip over and fold it into quarters this time, not sixths. We fold the half against the quarters and see how many quarter-sized pieces the half itself covers. That's the size question here: quarters, not sixths, since one half needs pieces that match one quarter, not one third. When you fold your strip into quarters, how many of those quarter-pieces does the half cover?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 14 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t14-learner",
+          "speaker": "learner",
+          "turn": 14,
+          "arm": "adaptive",
+          "text": "Fine—writing it: \"Pieces have to be equal-sized first, then count the pieces: three sixths plus two sixths, five sixths.\" Can we move to question five now?",
+          "delivery": {
+            "label": "turn 14",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 14 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t14-tutor",
+          "speaker": "tutor",
+          "turn": 14,
+          "arm": "adaptive",
+          "text": "That's the entry, written correctly next to the strip we cut together. Five sixths, not two fifths — the sixths matched, the fifths never did. You've closed question four with your own reasoning, not just Priya's answer. Go ahead and open question five.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: concession",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 14 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t15",
+      "turn": 15,
+      "messages": [
+        {
+          "id": "fraction-plain-t15-learner",
+          "speaker": "learner",
+          "turn": 15,
+          "arm": "plain",
+          "text": "Two of them, right? So do I write \"one half plus one quarter equals...\" what, three quarters?",
+          "delivery": {
+            "label": "turn 15",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 15 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t15-tutor",
+          "speaker": "tutor",
+          "turn": 15,
+          "arm": "plain",
+          "text": "Two quarters for the half, good — that's what's covering the strip right in front of us. But three quarters skips a step: you haven't added one quarter's worth to those two quarters yet. Look at the folded strip together: it's two quarters plus one quarter, not two plus three like before, so three quarters isn't earned yet, not the answer.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 15 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t15-learner",
+          "speaker": "learner",
+          "turn": 15,
+          "arm": "adaptive",
+          "text": "Question five, okay—what's the fraction this time, and do I need the strip again or can I just say what to write?",
+          "delivery": {
+            "label": "turn 15",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 15 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t15-tutor",
+          "speaker": "tutor",
+          "turn": 15,
+          "arm": "adaptive",
+          "text": "We push question four's sheet aside and slide question five in front of both of us on the desk. You can reason it out verbally this time, not fold the strip again — the point is matching piece sizes, not cutting paper. So tell me the fraction on question five, and what size pieces would make both of them match.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 15 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t16",
+      "turn": 16,
+      "messages": [
+        {
+          "id": "fraction-plain-t16-learner",
+          "speaker": "learner",
+          "turn": 16,
+          "arm": "plain",
+          "text": "So it's \"two quarters plus one quarter\" — what, do I just write \"three quarters\" now, or is that still not it?",
+          "delivery": {
+            "label": "turn 16",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 16 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t16-tutor",
+          "speaker": "tutor",
+          "turn": 16,
+          "arm": "plain",
+          "text": "Two quarters plus one quarter, that part's right — you named the pieces correctly. Let's look at your folded strip together: three quarter-pieces are shaded now, out of four total. Count them straight, the way you did with sixths: three quarter-pieces out of four is three quarters, not some other count. So does \"three quarters\" match what's shaded on the strip in front of you, or were you guessing that number before counting?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 16 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t16-learner",
+          "speaker": "learner",
+          "turn": 16,
+          "arm": "adaptive",
+          "text": "I don't even know question five's fraction yet—just tell me the numbers and I'll say what size pieces make them match.",
+          "delivery": {
+            "label": "turn 16",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 16 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t16-tutor",
+          "speaker": "tutor",
+          "turn": 16,
+          "arm": "adaptive",
+          "text": "We're both looking at the homework sheet, and question five isn't written out anywhere on it yet. I can't hand you numbers that aren't on the public sheet in front of us — that's not something either of us has read there. Working from your own recall of the sheet, not a guess I supply, matters here: same as with the strip, the fraction has to come from what's actually written, not from me. What does question five actually say on your sheet?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 16 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t17",
+      "turn": 17,
+      "messages": [
+        {
+          "id": "fraction-plain-t17-learner",
+          "speaker": "learner",
+          "turn": 17,
+          "arm": "plain",
+          "text": "It matches, three shaded out of four — so I just write \"one half plus one quarter equals three quarters\" on the line?",
+          "delivery": {
+            "label": "turn 17",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 17 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t17-tutor",
+          "speaker": "tutor",
+          "turn": 17,
+          "arm": "plain",
+          "text": "Yes — you counted it straight, three quarter-pieces shaded out of four, that's genuinely what's on the strip. We're both looking at the same folded strip right now: two quarters from the half, one quarter from the third, three quarters altogether. Write it down: one half plus one quarter equals three quarters, not some guessed number — three quarters, earned by the count. Ready to try question six the same way?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 17 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t17-learner",
+          "speaker": "learner",
+          "turn": 17,
+          "arm": "adaptive",
+          "text": "I don't have it in front of me—can you just read me what question five says so I know the fraction?",
+          "delivery": {
+            "label": "turn 17",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 17 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t17-tutor",
+          "speaker": "tutor",
+          "turn": 17,
+          "arm": "adaptive",
+          "text": "We're both standing at the homework sheet on the desk, and I run my finger down it to where question five should be. It isn't written out anywhere on this page — there's nothing there for either of us to read yet. So it has to come from your own sheet, not from me: locating it, not inventing it, is what's needed now. What does the line for question five actually show on your copy?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 17 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t18",
+      "turn": 18,
+      "messages": [
+        {
+          "id": "fraction-plain-t18-learner",
+          "speaker": "learner",
+          "turn": 18,
+          "arm": "plain",
+          "text": "Okay, question six — same fold trick, but what's the line going to be this time?",
+          "delivery": {
+            "label": "turn 18",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 18 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t18-tutor",
+          "speaker": "tutor",
+          "turn": 18,
+          "arm": "plain",
+          "text": "Yes — same method, question six earns its own line, not a guess ahead of the fold. Slide a fresh strip over with me and read what question six actually asks first. We fold for the sizes named there, not the ones from quarters or sixths. What fractions does question six give us to add?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 18 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t18-learner",
+          "speaker": "learner",
+          "turn": 18,
+          "arm": "adaptive",
+          "text": "There's nothing written for question five, fine—but what's the actual line I say for it, once I find the fraction?",
+          "delivery": {
+            "label": "turn 18",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 18 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t18-tutor",
+          "speaker": "tutor",
+          "turn": 18,
+          "arm": "adaptive",
+          "text": "We're still standing together at the homework sheet, question four's entry sitting right beside where five should go. Good instinct to ask for the pattern now, not the number. Once you find that fraction, you'll use the same shape as before: match piece sizes first, then count — not add tops and bottoms straight off. So the line stays \"pieces equal-sized first, then count,\" with question five's own numbers dropped into that pattern, not two fifths-style guessing.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: concession",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 18 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t19",
+      "turn": 19,
+      "messages": [
+        {
+          "id": "fraction-plain-t19-learner",
+          "speaker": "learner",
+          "turn": 19,
+          "arm": "plain",
+          "text": "Just tell me it's \"one half plus one fifth\" or whatever it says — what fractions, so I know what to fold?",
+          "delivery": {
+            "label": "turn 19",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 19 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t19-tutor",
+          "speaker": "tutor",
+          "turn": 19,
+          "arm": "plain",
+          "text": "You're guessing at the fractions instead of reading them off the sheet in front of you — that's a shortcut, not the sheet. We're both sitting with question six right there on the paper between us. Slide your finger under the line and read the actual two fractions printed there, not a guess like \"one fifth.\" Read it out loud to me — what does the sheet actually say, not what you think it might say?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 19 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t19-learner",
+          "speaker": "learner",
+          "turn": 19,
+          "arm": "adaptive",
+          "text": "So once I find question five's fraction, I just write \"pieces equal-sized first, then count\" and drop the new numbers in—that's literally the whole line?",
+          "delivery": {
+            "label": "turn 19",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 19 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t19-tutor",
+          "speaker": "tutor",
+          "turn": 19,
+          "arm": "adaptive",
+          "text": "Yes, that's the whole shape of it. We're still at the homework sheet together, question four's entry sitting right there as the model. That pattern — equal-sized pieces first, then count — is the reasoning, not just words to copy; the numbers change, the logic doesn't. So find question five's fraction on your sheet, not two fifths-style guessing, and you'll drop it straight into that same line.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 19 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t20",
+      "turn": 20,
+      "messages": [
+        {
+          "id": "fraction-plain-t20-learner",
+          "speaker": "learner",
+          "turn": 20,
+          "arm": "plain",
+          "text": "Fine, it says \"one third plus one sixth\" — so what do I fold, thirds or sixths, to get the line?",
+          "delivery": {
+            "label": "turn 20",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 20 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t20-tutor",
+          "speaker": "tutor",
+          "turn": 20,
+          "arm": "plain",
+          "text": "Good, one third plus one sixth — you finally read it straight off the sheet. Let's slide a fresh strip over together and fold it into sixths, since sixths already fits a third evenly, not some new size like ninths. Fold it now and mark how many sixth-pieces one third covers. How many of those six pieces does your one-third piece land on?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 20 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t20-learner",
+          "speaker": "learner",
+          "turn": 20,
+          "arm": "adaptive",
+          "text": "Okay but seriously, what fraction does question five actually have—can you just look at my sheet with me instead of me guessing?",
+          "delivery": {
+            "label": "turn 20",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 20 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t20-tutor",
+          "speaker": "tutor",
+          "turn": 20,
+          "arm": "adaptive",
+          "text": "We're both leaning over the same homework sheet right now, my finger tracing down past question four's entry. I run it along the blank space where question five's line should sit, and there's nothing written there yet — no fraction, no numbers, just blank ruling. Looking together at this sheet, not guessing, is what's needed: reading what's actually printed there, not what either of us supplies. So it's your sheet's own missing line we need, not a number I hand you.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 20 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t21",
+      "turn": 21,
+      "messages": [
+        {
+          "id": "fraction-plain-t21-learner",
+          "speaker": "learner",
+          "turn": 21,
+          "arm": "plain",
+          "text": "Two of them, right? So do I just write \"two sixths plus one sixth\" — what, three sixths?",
+          "delivery": {
+            "label": "turn 21",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 21 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t21-tutor",
+          "speaker": "tutor",
+          "turn": 21,
+          "arm": "plain",
+          "text": "Two sixths for the third, good — that's real, right off your fold. But look at the strip with us: only two pieces are shaded there, and one more sixth from the other fraction hasn't been laid down yet. Three sixths skips that step, same as three quarters did last time — count the pieces once both are actually shaded before you name the total.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 21 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t21-learner",
+          "speaker": "learner",
+          "turn": 21,
+          "arm": "adaptive",
+          "text": "Fine, it's blank, I get it—so when I do find it, do I just write \"pieces equal-sized first, then count\" with whatever numbers show up, same as question four?",
+          "delivery": {
+            "label": "turn 21",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 21 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t21-tutor",
+          "speaker": "tutor",
+          "turn": 21,
+          "arm": "adaptive",
+          "text": "We're both still looking at question four's entry on the sheet, right beside the empty line for five. You've got it: same pattern, not a new one — equal-sized pieces first, then count, with five's own numbers slotted in. That's confirmed, not guessed. Go find that fraction on your sheet now.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "labels": [
+            {
+              "label": "detected: concession",
+              "tone": "info",
+              "kind": "detected",
+              "group": "state"
+            }
+          ],
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 21 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t22",
+      "turn": 22,
+      "messages": [
+        {
+          "id": "fraction-plain-t22-learner",
+          "speaker": "learner",
+          "turn": 22,
+          "arm": "plain",
+          "text": "So it's \"two sixths plus one sixth\" — is that three sixths shaded now, or what do I write?",
+          "delivery": {
+            "label": "turn 22",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 22 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t22-tutor",
+          "speaker": "tutor",
+          "turn": 22,
+          "arm": "plain",
+          "text": "Write: two sixths plus one sixth is what your fractions turned into, once thirds got resized to match sixths. Look with me at your folded strip: two pieces shaded for the third, now one more piece needs shading for the sixth. Lay that one-sixth piece down on the strip and shade it in yourself before naming a total. Count what's actually shaded, not what you expect — three sixths only counts once it's shaded, not guessed.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 22 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t22-learner",
+          "speaker": "learner",
+          "turn": 22,
+          "arm": "adaptive",
+          "text": "Okay, I'm going to go check the actual sheet for question five's fraction—then I'll just slot it into \"pieces equal-sized first, then count,\" same as before, right?",
+          "delivery": {
+            "label": "turn 22",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 22 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t22-tutor",
+          "speaker": "tutor",
+          "turn": 22,
+          "arm": "adaptive",
+          "text": "Good, go check — we've got question four's entry sitting right here on the sheet as your model while you look. Same pattern applies, not a new invention: equal-sized pieces first, then count. That's confirming the reasoning, not guessing a number. Go find question five's fraction now, and bring it back to slot in.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 22 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t23",
+      "turn": 23,
+      "messages": [
+        {
+          "id": "fraction-plain-t23-learner",
+          "speaker": "learner",
+          "turn": 23,
+          "arm": "plain",
+          "text": "Fine, I shaded the one-sixth piece too — so three sixths shaded now, do I write \"three sixths\" as the line?",
+          "delivery": {
+            "label": "turn 23",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 23 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t23-tutor",
+          "speaker": "tutor",
+          "turn": 23,
+          "arm": "plain",
+          "text": "Good, you shaded it — three sixths written down that way undercounts what's on the strip. We're looking at the same folded strip together right now: two pieces shaded from the third, one more shaded from the sixth. That's three sixths shaded, not three sixths as your total — the third alone already gave you two of those three pieces, so the count needs both parts named. What total do you get when you add that first two-piece shading to this new one?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 23 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t23-learner",
+          "speaker": "learner",
+          "turn": 23,
+          "arm": "adaptive",
+          "text": "Okay, checking now—once I've got the fraction, I just write \"pieces equal-sized first, then count\" with those numbers in, same shape as five sixths, right?",
+          "delivery": {
+            "label": "turn 23",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 23 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t23-tutor",
+          "speaker": "tutor",
+          "turn": 23,
+          "arm": "adaptive",
+          "text": "We're standing at the sheet together, question four's entry right there beside the blank line for five. Go check the actual number, not just the shape of the sentence again — that part's already confirmed. Same pattern, five sixths not two fifths, is settled; the missing piece is the fraction itself. What does that line on your sheet actually say?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 23 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction-t24",
+      "turn": 24,
+      "messages": [
+        {
+          "id": "fraction-plain-t24-learner",
+          "speaker": "learner",
+          "turn": 24,
+          "arm": "plain",
+          "text": "So two plus one is three sixths — is that what I write, \"one third plus one sixth equals three sixths\"?",
+          "delivery": {
+            "label": "turn 24",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 24 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-plain-t24-tutor",
+          "speaker": "tutor",
+          "turn": 24,
+          "arm": "plain",
+          "text": "Right, two shaded pieces from the third plus one shaded piece from the sixth — that's the addition itself, not just a label. We're looking at your folded strip together, three pieces shaded out of six total. So the line is one third plus one sixth equals three sixths, not \"three sixths\" floating free of that count.",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/butler-d1.jsonl.gz",
+            "locator": "turn 24 tutor",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t24-learner",
+          "speaker": "learner",
+          "turn": 24,
+          "arm": "adaptive",
+          "text": "There's actually nothing on the line, still blank—so once something's there, I just copy \"pieces equal-sized first, then count\" with that number, same as five sixths?",
+          "delivery": {
+            "label": "turn 24",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 24 learner",
+            "quoteExact": true
+          }
+        },
+        {
+          "id": "fraction-adaptive-t24-tutor",
+          "speaker": "tutor",
+          "turn": 24,
+          "arm": "adaptive",
+          "text": "We're both still bent over the sheet together, and that line for question five stays blank, not filled. I'm not going to keep confirming the same pattern a third time — that part's settled, not new. Reading the actual fraction is the missing action, not restating the sentence shape again. What number is sitting on that line right now, blank or not?",
+          "delivery": {
+            "label": "delivered",
+            "status": "recorded",
+            "tone": "muted"
+          },
+          "provenance": {
+            "sourcePath": "notes/poetics/hero-demo-runs/world-037/v3-d1.jsonl.gz",
+            "locator": "turn 24 tutor",
+            "quoteExact": true
+          }
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "sourcePath": "notes/poetics/hero-demo-runs/world-037",
+    "note": "One free-running dialogue per arm, Claude Sonnet on both seats, same planted stress schedule. Illustration, not measurement: no ruling is supplied and none is implied."
+  }
+}
