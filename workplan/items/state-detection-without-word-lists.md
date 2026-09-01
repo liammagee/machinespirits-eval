@@ -1,7 +1,7 @@
 ---
 id: state-detection-without-word-lists
 title: "Make the adaptive tutor testable across scenarios without rewiring the detector or the bench"
-status: todo
+status: triaged
 type: infra
 priority: P1
 owner: unassigned
