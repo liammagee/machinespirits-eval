@@ -25,6 +25,8 @@ links:
     - tutor-stub-long-running-study-transparency
     - tutor-stub-study-status-skill
     - adaptive-curriculum-memory-controller
+  prs:
+    - 950
 tags:
   - observability
   - workflow
@@ -79,3 +81,5 @@ Log:
   items. The optional skill-creator Python validator could not start because
   the host lacks PyYAML; the repository's authoritative skill validator passed.
   No provider/model call, experiment execution, or sealed-data write occurred.
+- 2026-09-02 — Opened review-ready PR #950 from commit `32beae352`; hosted CI
+  started and the PR remains unmerged.
