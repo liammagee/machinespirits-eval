@@ -17,7 +17,11 @@ import { renderContinuityReport } from '../services/localQwenRefusalContinuityRe
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
 import { plotLint, validateWorld } from '../services/dramaticDerivation/world.js';
 import {
+  assertCompleteScore,
   buildBenchmarkJobs,
+  buildSplitQualityOutputSchema,
+  normalizeScores,
+  parseSplitQualityScore,
   readBenchmarkArm,
   scoreBenchmarkArms,
 } from './score-local-qwen-resistant-learner-benchmark.js';
@@ -537,6 +541,228 @@ function readSavedDirectPrefix(armDir) {
   return { savedReplies, failedUnit };
 }
 
+function assessmentBatchKey(world, mechanism) {
+  return `${world}/${mechanism}`;
+}
+
+function readCurrentAssessmentBatch(source, world, mechanism) {
+  const evaluationDir = path.join(source, 'worlds', world.key, `evaluation-${mechanism.replaceAll('_', '-')}`);
+  const priorScores = [];
+  const priorSplitQualityParts = [];
+  let completedPackets = 0;
+  if (!fs.existsSync(evaluationDir)) {
+    return { world: world.key, mechanism, sourceDir: null, priorScores, priorSplitQualityParts, completedPackets };
+  }
+  const condition = world.conditions[mechanism];
+  for (const arm of condition.arms) {
+    for (const kind of ['tutor', 'learner', 'dialogue']) {
+      const file = path.join(evaluationDir, `${arm.id}-${kind}.json`);
+      if (!fs.existsSync(file)) continue;
+      const raw = readJson(file, `${world.key}/${mechanism}/${arm.id}/${kind}`);
+      priorScores.push({ arm: arm.id, kind, raw, scored: normalizeScores(kind, raw), indexNormalization: null });
+      completedPackets += 1;
+    }
+    const qualityFile = path.join(evaluationDir, `${arm.id}-quality.json`);
+    if (fs.existsSync(qualityFile)) {
+      const raw = readJson(qualityFile, `${world.key}/${mechanism}/${arm.id}/quality`);
+      priorScores.push({
+        arm: arm.id,
+        kind: 'quality',
+        raw,
+        scored: normalizeScores('quality', raw),
+        indexNormalization: null,
+      });
+      completedPackets += 2;
+      continue;
+    }
+    for (const part of ['summary', 'turns']) {
+      const file = path.join(evaluationDir, `${arm.id}-quality-${part}.json`);
+      if (!fs.existsSync(file)) continue;
+      priorSplitQualityParts.push({
+        arm: arm.id,
+        part,
+        raw: readJson(file, `${world.key}/${mechanism}/${arm.id}/quality-${part}`),
+      });
+      completedPackets += 1;
+    }
+  }
+  return {
+    world: world.key,
+    mechanism,
+    sourceDir: evaluationDir,
+    priorScores,
+    priorSplitQualityParts,
+    completedPackets,
+  };
+}
+
+function mergeAssessmentBatch(seed, current) {
+  const scores = new Map();
+  const split = new Map();
+  const addScore = (score) => {
+    const key = `${score.arm}/${score.kind}`;
+    const existing = scores.get(key);
+    if (existing && JSON.stringify(existing.raw) !== JSON.stringify(score.raw)) {
+      throw new Error(`assessment recovery score drift for ${key}`);
+    }
+    scores.set(key, { ...score, scored: normalizeScores(score.kind, score.raw) });
+    if (score.kind === 'quality') {
+      split.delete(`${score.arm}/summary`);
+      split.delete(`${score.arm}/turns`);
+    }
+  };
+  const addSplit = (entry) => {
+    const key = `${entry.arm}/${entry.part}`;
+    if (scores.has(`${entry.arm}/quality`)) return;
+    const existing = split.get(key);
+    if (existing && JSON.stringify(existing.raw) !== JSON.stringify(entry.raw)) {
+      throw new Error(`assessment recovery split-score drift for ${key}`);
+    }
+    split.set(key, entry);
+  };
+  for (const score of [...(seed?.priorScores || []), ...current.priorScores]) addScore(score);
+  for (const entry of [...(seed?.priorSplitQualityParts || []), ...current.priorSplitQualityParts]) addSplit(entry);
+  const priorScores = [...scores.values()];
+  const priorSplitQualityParts = [...split.values()];
+  const completedPackets =
+    priorScores.reduce((sum, score) => sum + (score.kind === 'quality' ? 2 : 1), 0) + priorSplitQualityParts.length;
+  return {
+    world: current.world,
+    mechanism: current.mechanism,
+    sourceDir: current.sourceDir,
+    priorScores,
+    priorSplitQualityParts,
+    completedPackets,
+  };
+}
+
+function isResponseFreeAssessmentFailure(row) {
+  return (
+    row?.status === 'failed' &&
+    row.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR' &&
+    row.classification === 'response_free_error' &&
+    row.reason === 'result_error_without_structured_output'
+  );
+}
+
+function readAssessmentRecovery(plan, source, events, seal, completed, ownReservedAttempts) {
+  const statePath = path.join(source, 'assessment-recovery-state.json');
+  const inherited = fs.existsSync(statePath) ? readJson(statePath, 'assessment recovery state') : null;
+  if (
+    inherited &&
+    (inherited.schema !== 'machinespirits.invested-rival-assessment-recovery-state.v1' || inherited.studyId !== plan.id)
+  ) {
+    throw new Error('assessment recovery state drift');
+  }
+  const currentBatches = plan.worlds.flatMap((world) =>
+    ['baseline', 'active_progression'].map((mechanism) => readCurrentAssessmentBatch(source, world, mechanism)),
+  );
+  const inheritedByKey = new Map(
+    (inherited?.batches || []).map((batch) => [assessmentBatchKey(batch.world, batch.mechanism), batch]),
+  );
+  const batches = currentBatches.map((current) =>
+    mergeAssessmentBatch(inheritedByKey.get(assessmentBatchKey(current.world, current.mechanism)), current),
+  );
+  for (const batch of batches) {
+    const world = plan.worlds.find((candidate) => candidate.key === batch.world);
+    const condition = world?.conditions[batch.mechanism];
+    if (!condition) throw new Error(`assessment recovery has unknown batch ${batch.world}/${batch.mechanism}`);
+    for (const score of batch.priorScores) {
+      const arm = condition.arms.find((candidate) => candidate.id === score.arm);
+      if (!arm) throw new Error(`assessment recovery has unknown arm ${batch.world}/${score.arm}`);
+      const dialogue = readJson(
+        path.join(source, 'worlds', batch.world, 'dialogues', arm.id, 'dialogue.json'),
+        `${batch.world}/${arm.id} recovery dialogue`,
+      );
+      assertCompleteScore(score.kind, score.raw, dialogue.turns.length, { extendedQuality: true });
+    }
+    for (const entry of batch.priorSplitQualityParts) {
+      const arm = condition.arms.find((candidate) => candidate.id === entry.arm);
+      if (!arm) throw new Error(`assessment recovery has unknown split arm ${batch.world}/${entry.arm}`);
+      const dialogue = readJson(
+        path.join(source, 'worlds', batch.world, 'dialogues', arm.id, 'dialogue.json'),
+        `${batch.world}/${arm.id} recovery dialogue`,
+      );
+      parseSplitQualityScore(
+        entry.part,
+        JSON.stringify(entry.raw),
+        dialogue.turns.length,
+        buildSplitQualityOutputSchema(entry.part, dialogue.turns.length),
+      );
+    }
+  }
+  const currentCompletedPackets = currentBatches.reduce((sum, batch) => sum + batch.completedPackets, 0);
+  const completedPackets = batches.reduce((sum, batch) => sum + batch.completedPackets, 0);
+  if (completedPackets > plan.assessment_packets) throw new Error('assessment recovery has too many completed packets');
+
+  const progressPath = path.join(source, 'progress.jsonl');
+  const progress = fs.existsSync(progressPath) ? readJsonLines(progressPath, 'replication recovery progress') : [];
+  const firstAssessmentReservation = events.find(
+    (event) => event.type === 'model_attempt_reserved' && event.stage === 'assessment',
+  );
+  const lastDialogueEvent = progress.findLast((event) => event.type === 'dialogue_complete');
+  const generationAttempts =
+    inherited?.generationAttempts ??
+    (Number.isSafeInteger(firstAssessmentReservation?.study_reserved)
+      ? firstAssessmentReservation.study_reserved - 1
+      : lastDialogueEvent?.reservedAttempts);
+  if (!Number.isSafeInteger(generationAttempts) || generationAttempts < 1) {
+    throw new Error('assessment recovery cannot establish the completed generation attempt count');
+  }
+  const aggregatePriorAttempts = Number.isSafeInteger(seal.study_reserved) ? seal.study_reserved : ownReservedAttempts;
+  const currentAssessmentReservations = events
+    .filter((event) => event.type === 'model_attempt_reserved' && event.stage === 'assessment')
+    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const physicalPath = path.join(source, 'assessment-physical-attempts.jsonl');
+  const physicalRows = fs.existsSync(physicalPath)
+    ? readJsonLines(physicalPath, 'assessment physical-attempt ledger')
+    : [];
+  const candidateRows = physicalRows.filter((row) => row.status === 'candidate_returned');
+  const failedRows = physicalRows.filter((row) => row.status === 'failed');
+  if (
+    candidateRows.length !== currentCompletedPackets ||
+    failedRows.some((row) => !isResponseFreeAssessmentFailure(row))
+  ) {
+    throw new Error('assessment recovery contains an unresolved substantive or mismatched judge result');
+  }
+  const interruptedAttempts = currentAssessmentReservations - physicalRows.length;
+  if (![0, 1].includes(interruptedAttempts)) {
+    throw new Error('assessment recovery has ambiguous in-flight attempt accounting');
+  }
+  const inheritedPhysicalAttempts = Number(inherited?.physicalAttempts || 0);
+  const inheritedResponseFreeFailures = Number(inherited?.responseFreeFailures || 0);
+  if (
+    !Number.isSafeInteger(inheritedPhysicalAttempts) ||
+    inheritedPhysicalAttempts < 0 ||
+    !Number.isSafeInteger(inheritedResponseFreeFailures) ||
+    inheritedResponseFreeFailures < 0 ||
+    inheritedResponseFreeFailures > inheritedPhysicalAttempts ||
+    aggregatePriorAttempts - generationAttempts !== inheritedPhysicalAttempts + currentAssessmentReservations
+  ) {
+    throw new Error('assessment recovery aggregate attempt accounting drift');
+  }
+  const physicalAttempts = aggregatePriorAttempts - generationAttempts;
+  const responseFreeFailures = physicalAttempts - completedPackets;
+  if (
+    responseFreeFailures !== inheritedResponseFreeFailures + failedRows.length + interruptedAttempts ||
+    responseFreeFailures > plan.recovery_attempt_reserve ||
+    aggregatePriorAttempts +
+      (plan.assessment_packets - completedPackets) +
+      (plan.recovery_attempt_reserve - responseFreeFailures) >
+      plan.total_attempt_ceiling
+  ) {
+    throw new Error('assessment recovery exceeds its preserved packet or retry budget');
+  }
+  return {
+    generationAttempts,
+    physicalAttempts,
+    responseFreeFailures,
+    completedPackets,
+    interruptedAttempts,
+    batches,
+  };
+}
+
 export function readLearnerReplicationRecovery(plan, sourceDir) {
   if (!sourceDir || !path.isAbsolute(sourceDir)) throw new Error('replication recovery source must be absolute');
   const source = path.resolve(sourceDir);
@@ -594,6 +820,19 @@ export function readLearnerReplicationRecovery(plan, sourceDir) {
     }
     reachedMissing = true;
   }
+  const aggregatePriorAttempts = Number.isSafeInteger(seal.study_reserved) ? seal.study_reserved : priorAttempts;
+  if (!partial && completed.length === sequence.length && !reachedMissing) {
+    return {
+      phase: 'assessment',
+      source,
+      priorAttempts: aggregatePriorAttempts,
+      responseCount,
+      interruptedResponseFreeAttempts: 0,
+      completed,
+      partial: null,
+      assessment: readAssessmentRecovery(plan, source, events, seal, completed, priorAttempts),
+    };
+  }
   if (!partial) throw new Error('replication recovery requires one interrupted generation arm');
   const interruptedResponseFreeAttempts = priorAttempts - responseCount;
   if (![0, 1].includes(interruptedResponseFreeAttempts)) {
@@ -603,8 +842,9 @@ export function readLearnerReplicationRecovery(plan, sourceDir) {
     throw new Error('replication recovery cannot locate the response-free interrupted unit');
   }
   return {
+    phase: 'generation',
     source,
-    priorAttempts,
+    priorAttempts: aggregatePriorAttempts,
     responseCount,
     interruptedResponseFreeAttempts,
     completed,
@@ -616,6 +856,55 @@ function appendProgress(outDir, value) {
   const event = { at: new Date().toISOString(), ...value };
   fs.appendFileSync(path.join(outDir, 'progress.jsonl'), `${JSON.stringify(event)}\n`);
   console.log(JSON.stringify(event));
+}
+
+function writeAssessmentRecoveryState(outDir, plan, assessment) {
+  writeJson(path.join(outDir, 'assessment-recovery-state.json'), {
+    schema: 'machinespirits.invested-rival-assessment-recovery-state.v1',
+    studyId: plan.id,
+    generationAttempts: assessment.generationAttempts,
+    physicalAttempts: assessment.physicalAttempts,
+    responseFreeFailures: assessment.responseFreeFailures,
+    completedPackets: assessment.completedPackets,
+    batches: assessment.batches.map(({ world, mechanism, priorScores, priorSplitQualityParts, completedPackets }) => ({
+      world,
+      mechanism,
+      priorScores,
+      priorSplitQualityParts,
+      completedPackets,
+    })),
+  });
+}
+
+function copyAssessmentRecoveryEvidence(outDir, recovery) {
+  const evidenceRoot = path.join(outDir, 'reused-assessment-evidence');
+  fs.mkdirSync(evidenceRoot);
+  for (const name of [
+    'plan.json',
+    'recovery.json',
+    'assessment-recovery-state.json',
+    'assessment-physical-attempts.jsonl',
+    'progress.jsonl',
+    'run-ledger.jsonl',
+    'stopped.json',
+  ]) {
+    const source = path.join(recovery.source, name);
+    if (fs.existsSync(source)) fs.copyFileSync(source, path.join(evidenceRoot, `source-${name}`));
+  }
+  const inheritedEvidence = path.join(recovery.source, 'reused-assessment-evidence');
+  if (fs.existsSync(inheritedEvidence)) {
+    fs.cpSync(inheritedEvidence, path.join(evidenceRoot, 'inherited'), {
+      recursive: true,
+      errorOnExist: true,
+      force: false,
+    });
+  }
+  for (const batch of recovery.assessment.batches) {
+    if (!batch.sourceDir) continue;
+    const destination = path.join(evidenceRoot, 'worlds', batch.world, batch.mechanism);
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.cpSync(batch.sourceDir, destination, { recursive: true, errorOnExist: true, force: false });
+  }
 }
 
 export function replicationAssessmentBatches(world, arms) {
@@ -633,10 +922,13 @@ export function replicationAssessmentBatches(world, arms) {
   });
 }
 
-export async function scoreReplicationWorld({ world, arms, worldDir, judge }) {
+export async function scoreReplicationWorld({ world, arms, worldDir, judge, assessmentRecovery = null }) {
   const batches = replicationAssessmentBatches(world, arms);
   const evaluated = [];
   for (const batch of batches) {
+    const prior = assessmentRecovery?.batches.find(
+      (candidate) => candidate.world === world.key && candidate.mechanism === batch.mechanism,
+    );
     const evaluation = await scoreBenchmarkArms(
       batch.arms,
       path.join(worldDir, `evaluation-${batch.mechanism.replaceAll('_', '-')}`),
@@ -648,6 +940,9 @@ export async function scoreReplicationWorld({ world, arms, worldDir, judge }) {
         assessmentContext: batch.condition.assessmentContext,
         publicSourceContextByArm: sourceContexts(batch.condition, batch.arms),
         callJudge: judge,
+        priorScores: prior?.priorScores || [],
+        priorSplitQualityParts: prior?.priorSplitQualityParts || [],
+        priorAttempts: prior?.completedPackets || 0,
       },
     );
     evaluated.push({ mechanism: batch.mechanism, evaluation });
@@ -878,13 +1173,27 @@ async function liveRun(plan, outDir, admission, recovery = null) {
     authorization: admission.authorization,
     recovery: recovery
       ? {
+          phase: recovery.phase,
           source: recovery.source,
           priorAttempts: recovery.priorAttempts,
           responseCount: recovery.responseCount,
           interruptedResponseFreeAttempts: recovery.interruptedResponseFreeAttempts,
           completedArms: recovery.completed.map(({ world, arm }) => `${world.key}/${arm.id}`),
-          partialArm: `${recovery.partial.world.key}/${recovery.partial.arm.id}`,
-          failedUnit: recovery.partial.failedUnit,
+          ...(recovery.partial
+            ? {
+                partialArm: `${recovery.partial.world.key}/${recovery.partial.arm.id}`,
+                failedUnit: recovery.partial.failedUnit,
+              }
+            : {}),
+          ...(recovery.assessment
+            ? {
+                generationAttempts: recovery.assessment.generationAttempts,
+                priorAssessmentPhysicalAttempts: recovery.assessment.physicalAttempts,
+                priorResponseFreeFailures: recovery.assessment.responseFreeFailures,
+                completedAssessmentPackets: recovery.assessment.completedPackets,
+                interruptedAssessmentAttempts: recovery.assessment.interruptedAttempts,
+              }
+            : {}),
         }
       : null,
   };
@@ -900,6 +1209,18 @@ async function liveRun(plan, outDir, admission, recovery = null) {
 
     if (recovery) {
       writeJson(path.join(outDir, 'recovery.json'), provenance.recovery);
+      if (recovery.assessment) {
+        copyAssessmentRecoveryEvidence(outDir, recovery);
+        writeAssessmentRecoveryState(outDir, plan, recovery.assessment);
+        appendProgress(outDir, {
+          type: 'assessment_recovery_started',
+          completedPackets: recovery.assessment.completedPackets,
+          missingPackets: plan.assessment_packets - recovery.assessment.completedPackets,
+          priorPhysicalAttempts: recovery.assessment.physicalAttempts,
+          priorResponseFreeFailures: recovery.assessment.responseFreeFailures,
+          reservedAttempts: budget.snapshot().used,
+        });
+      }
       for (const imported of recovery.completed) {
         const dialogueDir = path.join(outDir, 'worlds', imported.world.key, 'dialogues', imported.arm.id);
         fs.cpSync(imported.sourceDir, dialogueDir, { recursive: true, errorOnExist: true, force: false });
@@ -923,7 +1244,7 @@ async function liveRun(plan, outDir, admission, recovery = null) {
         const { world, condition, arm, mechanism, key } = executionTarget(plan, route, token);
         if (generated.get(world.key).has(arm.id)) continue;
         const dialogueDir = path.join(outDir, 'worlds', world.key, 'dialogues', arm.id);
-        const savedReplies = recovery?.partial.key === key ? recovery.partial.savedReplies : {};
+        const savedReplies = recovery?.partial?.key === key ? recovery.partial.savedReplies : {};
         if (Object.keys(savedReplies).length) {
           appendProgress(outDir, {
             type: 'dialogue_recovery_started',
@@ -985,6 +1306,8 @@ async function liveRun(plan, outDir, admission, recovery = null) {
       budget,
       outDir,
       maximumResponseFreeRetries: plan.recovery_attempt_reserve,
+      priorPhysicalAttempts: recovery?.assessment?.physicalAttempts || 0,
+      priorResponseFreeRetries: recovery?.assessment?.responseFreeFailures || 0,
     });
     const worldResults = [];
     for (const world of plan.worlds) {
@@ -993,7 +1316,13 @@ async function liveRun(plan, outDir, admission, recovery = null) {
       const worldDir = path.join(outDir, 'worlds', world.key);
       writeJson(path.join(worldDir, 'arms.json'), arms);
       const planForReport = world.conditions.baseline;
-      const finalEvaluation = await scoreReplicationWorld({ world, arms, worldDir, judge });
+      const finalEvaluation = await scoreReplicationWorld({
+        world,
+        arms,
+        worldDir,
+        judge,
+        assessmentRecovery: recovery?.assessment || null,
+      });
       renderWorld({
         plan: planForReport,
         arms,

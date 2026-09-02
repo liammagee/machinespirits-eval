@@ -176,9 +176,26 @@ function retryableResponseFreeFailure(error) {
   );
 }
 
-export function makeLunaJudgeCaller({ budget, outDir, maximumResponseFreeRetries = 2, callCli = callAIWithCliBridge }) {
-  let physicalAttempts = 0;
-  let responseFreeRetries = 0;
+export function makeLunaJudgeCaller({
+  budget,
+  outDir,
+  maximumResponseFreeRetries = 2,
+  priorPhysicalAttempts = 0,
+  priorResponseFreeRetries = 0,
+  callCli = callAIWithCliBridge,
+}) {
+  if (
+    !Number.isSafeInteger(priorPhysicalAttempts) ||
+    priorPhysicalAttempts < 0 ||
+    !Number.isSafeInteger(priorResponseFreeRetries) ||
+    priorResponseFreeRetries < 0 ||
+    priorResponseFreeRetries > priorPhysicalAttempts ||
+    priorResponseFreeRetries > maximumResponseFreeRetries
+  ) {
+    throw new Error('invalid prior judge-attempt counters');
+  }
+  let physicalAttempts = priorPhysicalAttempts;
+  let responseFreeRetries = priorResponseFreeRetries;
   const caller = async (agent, systemPrompt, userPrompt, role, options) => {
     for (;;) {
       const reservation = budget.reserve({ role, stage: 'assessment' });
