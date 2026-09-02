@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import { buildTutorStubPromptSizeReportForRequest } from './tutorStubPromptSizeReport.js';
+import { resolveTutorStubWorldFrame } from './tutorStubWorldFrame.js';
 
 export const TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA =
   'machinespirits.tutor-stub.speaking-prompt.compact-no-source.v1';
@@ -55,7 +56,8 @@ function publicWorld(contract, systemPrompt) {
     world.audience_context && typeof world.audience_context === 'object'
       ? Object.values(world.audience_context).map(oneLine).filter(Boolean).join(' ')
       : '';
-  return { title, question, diction, publicObjects, audienceContext };
+  const frame = resolveTutorStubWorldFrame(world);
+  return { title, question, diction, publicObjects, audienceContext, frame };
 }
 
 function currentPublicEvidence(contract) {
@@ -200,9 +202,9 @@ function compactSystemPrompt({ tutor, world }) {
   const sceneCues = [world.diction, ...world.publicObjects].filter(Boolean).join('; ');
   const named = tutor || 'the continuing speaking tutor';
   return [
-    `You are ${named} in an established public inquiry.`,
+    `You are ${named} in ${world.frame.frame_phrase}.`,
     'Continue the exact public conversation in one voice. Answer the learner’s actual words first, then develop the inquiry.',
-    '# Detective-story world',
+    `# ${world.frame.heading}`,
     `World: ${world.title}`,
     `Public question: ${world.question}`,
     sceneCues ? `Diction and scene cues: ${sceneCues}.` : null,

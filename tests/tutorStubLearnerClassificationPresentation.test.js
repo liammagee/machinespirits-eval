@@ -84,7 +84,7 @@ test('learner-classifier projection handles absent and normalized minimal presen
 });
 
 test('classifier world context preserves no-world fallback, public fields, DAG disclosure, and optional discipline', () => {
-  assert.equal(projectTutorStubClassifierWorldContext(null), 'No detective-story world is active.');
+  assert.equal(projectTutorStubClassifierWorldContext(null), 'No story world is active.');
   assert.equal(
     projectTutorStubClassifierWorldContext({
       dag: true,

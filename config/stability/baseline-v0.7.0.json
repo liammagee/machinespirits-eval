@@ -47,7 +47,7 @@
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
       "claim": "speaking prompt assembly; conduct-card and contract-licence slots; speaker-privilege recovery",
-      "sha256": "0643a05075390b8afef3176fd81978de12437ad60464bedea1f03a613ace0698"
+      "sha256": "34945f04a5713eefe5d5a028e70a596b0b42fdda7135fa6c962ad8eaff49d230"
     },
     {
       "file": "services/tutorStubTutorAttemptRuntime.js",
@@ -97,12 +97,12 @@
     {
       "file": "services/tutorStubResponseConfigurationSelectionRuntime.js",
       "claim": "final response-configuration composition, precedence, and selection trace envelope",
-      "sha256": "d438a5e8b3335a6763c1a9890ebbbbac98b28ec0cf4a50243304441ba5370171"
+      "sha256": "9a13664dd5bd975fb0a62829e3396e875ac7860e99a05de5ec47f97855f78a9e"
     },
     {
       "file": "services/tutorStubWorldPromptContext.js",
       "claim": "safety-contract/teaching-charter split, byte-exact reassembly, licence slot",
-      "sha256": "cf26365d90e4ac9a5da50c363b052e3cd0dfc28996b1f0faaa883417c7aba43a"
+      "sha256": "74299bc796b183a14e1c00e08416d7606d6439c9d0ab02cddf935601b16144af"
     },
     {
       "file": "config/drama-derivation/world-030-rowan-flat.yaml",

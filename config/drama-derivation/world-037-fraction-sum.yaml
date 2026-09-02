@@ -179,4 +179,15 @@ presentation:
   scene_ecology: "a Year 7 classroom desk, a homework sheet, paper strips and scissors"
   narrative_diction: "classroom plain, teacher and pupil"
   ledger_term: homework sheet
+  frame:
+    kind: lesson
+    closing_words:
+      - final answer
+      - the answer is
+      - the answer
+      - what is the sum
+      - what do they add up to
+      - add up to
+      - equal to
+      - equals
   summary: A conventional Year 7 maths tutorial on adding fractions, where the pupil defends two fifths and the paper strip shows why the pieces must be the same size first.

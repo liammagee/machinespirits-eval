@@ -1,3 +1,5 @@
+import { tutorStubWorldFrameProjection } from './tutorStubWorldFrame.js';
+
 export const TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA =
   'machinespirits.tutor-stub.performance-obligation-contract.v1';
 export const TUTOR_STUB_PERFORMANCE_EVIDENCE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.performance-evidence-audit.v1';
@@ -66,6 +68,7 @@ function contentTokens(value) {
 
 function sanitizePublicWorld(publicWorld) {
   const audienceContext = publicWorld?.audience_context;
+  const frame = tutorStubWorldFrameProjection(publicWorld?.frame ? { frame: publicWorld.frame } : null);
   return {
     title: oneLine(publicWorld?.title) || null,
     setting: oneLine(publicWorld?.setting) || null,
@@ -84,6 +87,7 @@ function sanitizePublicWorld(publicWorld) {
             knowledge: oneLine(audienceContext.knowledge) || null,
           }
         : null,
+    ...(frame ? { frame } : {}),
   };
 }
 

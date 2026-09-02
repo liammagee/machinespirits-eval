@@ -33,6 +33,7 @@ import {
   resolveTutorStubAnswerReference,
 } from './tutorStubResponseGuard.js';
 import { auditTutorStubLiveTurnProgressionV1 } from './tutorStubTurnProgressionContract.js';
+import { tutorStubWorldFrameProjection } from './tutorStubWorldFrame.js';
 import {
   tutorStubAnswerConclusionAsserted,
   tutorStubSecretConclusionWordPatterns,
@@ -530,6 +531,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world, sourceA
       ledger_term: world.presentation?.ledger_term,
       public_objects: [world.presentation?.ledger_term].filter(Boolean),
       audience_context: world.audience?.context || null,
+      ...(tutorStubWorldFrameProjection(world) ? { frame: tutorStubWorldFrameProjection(world) } : {}),
     },
     publicTurn: {
       visibility: 'public',

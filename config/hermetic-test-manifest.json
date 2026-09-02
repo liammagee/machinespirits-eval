@@ -801,6 +801,7 @@
         "tests/tutorStubWarrantPremiseAudit.test.js",
         "tests/tutorStubWebSurface.test.js",
         "tests/tutorStubWorldCatalogPresentation.test.js",
+        "tests/tutorStubWorldFrame.test.js",
         "tests/tutorStubWorldPromptContext.test.js",
         "tests/tutorStubWorldRecognitionPatterns.test.js",
         "tests/tutorStubWorldScaffold.test.js",

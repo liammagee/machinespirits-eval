@@ -1,3 +1,5 @@
+import { tutorStubWorldFrameProjection } from './tutorStubWorldFrame.js';
+
 export function createTutorStubLearnerEvidenceRuntime({
   HUMAN_DISCOURSE_FRAME_SCHEMA,
   HUMAN_DISCOURSE_PHASE,
@@ -184,8 +186,10 @@ export function createTutorStubLearnerEvidenceRuntime({
   function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classification = null, learnerText = '' }) {
     const dagMode = state?.dagMode || 'strict_dag';
     const scaffoldState = buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag });
+    const worldFrame = tutorStubWorldFrameProjection(state?.world || null);
     const generousInference = resolveTutorStubGenerousInference({
       mode: dagMode,
+      world: state?.world || null,
       learnerText,
       previousTutorText: latestTutorMessage(state),
       branchId: scaffoldState.branch?.id || null,
@@ -193,6 +197,7 @@ export function createTutorStubLearnerEvidenceRuntime({
     });
     const conversationalCompletion = resolveTutorStubConversationalCompletion({
       mode: dagMode,
+      world: state?.world || null,
       learnerText,
       previousTutorText: latestTutorMessage(state),
       classification,
@@ -251,6 +256,7 @@ export function createTutorStubLearnerEvidenceRuntime({
       warrantPremiseAudit,
       generousInference,
       conversationalCompletion,
+      ...(worldFrame ? { worldFrame } : {}),
     };
   }
 

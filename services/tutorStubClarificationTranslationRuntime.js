@@ -1,3 +1,5 @@
+import { resolveTutorStubWorldFrame } from './tutorStubWorldFrame.js';
+
 export function createTutorStubClarificationTranslationRuntime({
   CLARIFIER_SYSTEM_PROMPT,
   TUTOR_STUB_CURRICULUM_TRANSLATOR_SYSTEM_PROMPT,
@@ -42,7 +44,7 @@ export function createTutorStubClarificationTranslationRuntime({
       '# Output rules',
       '',
       '- Use only public wording already in the transcript.',
-      '- Do not add new evidence, new suspects, hidden conclusions, or next proof steps.',
+      `- Do not add new evidence, new ${resolveTutorStubWorldFrame(state.world).candidate_plural}, hidden conclusions, or next proof steps.`,
       '- Prefer one short paragraph, or at most three bullets.',
       '- If the requested term is not in the latest tutor message or public transcript, say so briefly and ask which phrase the learner means.',
       '- If the latest line ended with a question, explain the wording and then restate that live question directly. Never say that a tutor question is "pending".',

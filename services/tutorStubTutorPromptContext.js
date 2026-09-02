@@ -1,4 +1,9 @@
 import { isTutorStubUnanalyzedClassification } from './tutorStubLearnerClassification.js';
+import { resolveTutorStubWorldFrame } from './tutorStubWorldFrame.js';
+
+function worldFrameOf(frame) {
+  return resolveTutorStubWorldFrame(frame?.worldFrame ? { frame: frame.worldFrame } : null);
+}
 
 export function tutorPromptSurfaceKey(value) {
   return String(value || '')
@@ -96,6 +101,7 @@ export function projectTutorStubHumanDiscourseContext(
   { includeQuestionSupport = true, includeDefaultResponseShape = true } = {},
 ) {
   if (!frame || frame.mode === 'strict_dag') return '';
+  const worldFrame = worldFrameOf(frame);
   const scaffold = frame.scaffoldState || {};
   const branch = scaffold.branch || {};
   const sideArc = frame.sideArc || {};
@@ -110,7 +116,7 @@ export function projectTutorStubHumanDiscourseContext(
   const latest = scaffold.releaseState?.latestReleased || null;
   const promptRule =
     frame.mode === 'defeasible_human_scaffold'
-      ? 'Treat plausible learner leaps as compressed human reasoning. Keep obvious omitted bridges as internal proof debt, and surface a warrant gap only when the leap is unsafe, conflicting, or would close the case.'
+      ? `Treat plausible learner leaps as compressed human reasoning. Keep obvious omitted bridges as internal proof debt, and surface a warrant gap only when the leap is unsafe, conflicting, or would close the ${worldFrame.task_noun}.`
       : 'Frame one local warrant in ordinary language while preserving the strict proof audit; do not expand the whole proof chain or license the final answer early.';
   if (discoursePlane?.plane === 'instructional_meta') {
     return [
@@ -200,7 +206,7 @@ export function projectTutorStubHumanDiscourseContext(
     generousInference.applied
       ? 'The immediately preceding local question is closed for learner-facing purposes. Do not paraphrase it into another question, ask for a name, ask what it licenses, or request a public-record restatement. The strict learner-DAG may remain incomplete as an audit; that incompleteness must not control this spoken turn.'
       : null,
-    'Ask for an explicit warrant only if the learner is about to name/confirm a suspect, contradicts public evidence, relies on unstaged evidence, or reaches a conclusion that would be false without the missing bridge.',
+    `Ask for an explicit warrant only if the learner is about to name/confirm a ${worldFrame.candidate_noun}, contradicts public evidence, relies on unstaged evidence, or reaches a conclusion that would be false without the missing bridge.`,
     includeDefaultResponseShape && discoursePlane?.plane === 'instructional_meta'
       ? 'Response shape: acknowledge the comprehension problem, restate the latest tutor point in plain words, and end without a proof question or new clue.'
       : includeDefaultResponseShape
@@ -215,6 +221,7 @@ export function projectTutorStubHumanDiscourseContext(
 
 export function projectTutorStubDialogueClosureContext(frame) {
   if (!frame?.enabled || (!frame.mandatory && !frame.available)) return '';
+  const worldFrame = worldFrameOf(frame);
   if (frame.phase === 'final_checkin_response') {
     return [
       '[Tutor-only dialogue closure]',
@@ -241,7 +248,7 @@ export function projectTutorStubDialogueClosureContext(frame) {
     '[Tutor-only dialogue closure]',
     'The authored proof DAG is now fully public, so conversational closure is available even if the strict learner-record audit remains incomplete.',
     'Do not announce the final verdict unless the learner’s current public move genuinely settles the public question.',
-    'If you do state or confirm the final verdict, explicitly close the case instead of returning to another proof prompt.',
+    `If you do state or confirm the final ${worldFrame.answer_noun}, explicitly close the ${worldFrame.task_noun} instead of returning to another proof prompt.`,
     frame.allowCheckIn
       ? 'After closing, you may ask one optional final check-in about a link to revisit; it must be the only question.'
       : 'If you close, do not ask a follow-up question.',

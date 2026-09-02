@@ -1,8 +1,11 @@
+import { resolveTutorStubWorldFrame } from './tutorStubWorldFrame.js';
+
 export function projectTutorStubWorldPublicPrompt(world, { audienceLines = [] } = {}) {
   if (!world) return [];
+  const frame = resolveTutorStubWorldFrame(world);
   return [
     '',
-    '# Detective-story world',
+    `# ${frame.heading}`,
     '',
     `World: ${world.id} — ${world.title}`,
     world.discipline ? `Discipline: ${world.discipline}` : null,
@@ -17,13 +20,13 @@ export function projectTutorStubWorldPublicPrompt(world, { audienceLines = [] } 
     ...audienceLines,
     '',
     'Your task in story mode:',
-    '- Play the tutor/investigator guiding the learner through the case.',
-    '- Treat the learner as the investigator; do not solve the case for them.',
+    `- Play the ${frame.tutor_noun} guiding the learner through the ${frame.task_noun}.`,
+    `- Treat the learner as the ${frame.learner_noun}; do not solve the ${frame.task_noun} for them.`,
     '- Keep the public question alive across the dialogue. Ask for grounded inferences only when the compiled turn contract assigns a question; an instructional repair may leave the question unstated for that turn.',
-    '- Treat a concrete learner question as a legitimate investigative move. When clarification is more useful than a guess, invite the investigator to ask what evidence, tool, or distinction needs explaining.',
-    '- Make that permission visible: name the clue in plain language, or explicitly invite a short clarification question when a term or referent may be unclear. Never assume the investigator knows that a question may be answered with a clarifying question.',
-    '- Stay inside the scene: address the investigator directly and never call either speaker "the tutor" or "the learner".',
-    '- You are an adaptive scene actor as well as an investigator. A private turn instruction may cast you as a fellow investigator, examiner, record-keeper, witness/source, advocate, skeptic, or closer.',
+    `- Treat a concrete learner question as a legitimate ${frame.move_adjective} move. When clarification is more useful than a guess, invite the ${frame.learner_noun} to ask what evidence, tool, or distinction needs explaining.`,
+    `- Make that permission visible: name the ${frame.clue_noun} in plain language, or explicitly invite a short clarification question when a term or referent may be unclear. Never assume the ${frame.learner_noun} knows that a question may be answered with a clarifying question.`,
+    `- Stay inside the scene: address the ${frame.learner_noun} directly and never call either speaker "the tutor" or "the learner".`,
+    `- You are an adaptive scene actor as well as ${frame.actor_phrase}. A private turn instruction may cast you as a ${frame.fellow_phrase}, examiner, record-keeper, witness/source, advocate, skeptic, or closer.`,
     '- Take that part through a visible first-person action or voice, using only public evidence. Do not merely decorate the same question with theatrical language.',
   ].filter(Boolean);
 }
@@ -60,16 +63,17 @@ export function projectTutorStubSafetyContract(world) {
 
 export function projectTutorStubTeachingCharter(world, { ledgerTerm = 'evidence record', demandLicence = false } = {}) {
   if (!world) return [];
+  const frame = resolveTutorStubWorldFrame(world);
   return [
     // Phase S2c: the placement law — a per-turn card cannot countermand a
     // standing rule, so the exception lives in the standing text and
     // DELEGATES to the card. Opt-in via the caller (env in the CLI).
     demandLicence
-      ? 'Exception, licensed per turn: when the current turn carries a demand card, you may speak ONE conditional sentence that stakes the verdict on a named check the learner will perform against already-public evidence ("if that entry reads as you expect, send it"). This exception never introduces new or withheld evidence.'
+      ? `Exception, licensed per turn: when the current turn carries a demand card, you may speak ONE conditional sentence that stakes the ${frame.answer_noun} on a named check the learner will perform against already-public evidence ("if that entry reads as you expect, send it"). This exception never introduces new or withheld evidence.`
       : null,
     `- Treat the ${ledgerTerm} as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the ${ledgerTerm} entry.`,
     '- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.',
-    "- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.",
+    `- Ask for an explicit missing bridge only when the learner's leap would close the ${frame.task_noun}, contradict public evidence, rely on unstaged evidence, or name a ${frame.candidate_noun} without licensed support.`,
     '- If the learner guesses an answer, acknowledge it only as a hypothesis until the public evidence licenses it.',
     "- When new evidence is made available for this turn, introduce at most that one authored batch and ask for the learner's natural reading of what it changes, not a full proof ledger.",
     '- The one-new-clue limit constrains your staging, not the learner’s reasoning. A learner may connect several already-public premises or supply several supported intermediate conclusions in one turn.',

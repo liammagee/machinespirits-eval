@@ -1,5 +1,6 @@
 import { dispatchTutorStubLearnerAnalysisWithRetries } from './tutorStubLearnerAnalysisCoverage.js';
 import { normalizeTutorStubResponseConfigurationWithActionBeforeRegisterShadow } from './tutorStubActionBeforeRegisterShadow.js';
+import { resolveTutorStubWorldFrame } from './tutorStubWorldFrame.js';
 
 export function resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state) {
   if (!state) return false;
@@ -75,6 +76,7 @@ export function createTutorStubLearnerAnalysisRuntime({
   updateReleasePacingForLearnerTurn,
 }) {
   function buildLearnerClassifierPrompt({ learnerText, state }) {
+    const frame = resolveTutorStubWorldFrame(state.world);
     const comprehensionContext = tutorStubComprehensionPrompt(state.comprehension, {
       turn: state.turns.length + 1,
     });
@@ -116,7 +118,7 @@ export function createTutorStubLearnerAnalysisRuntime({
       '- Use omits_warrant when the learner states a correct public clue and a conclusion but leaves out the bridge that licenses the conclusion. Do not call that links_evidence_to_rule merely because the bridge is easy to infer.',
       '- Use distorts_public_evidence only when the learner misstates, blends, or reassigns an already public clue. Use overleaps_evidence for a premature conclusion or missing warrant without distorted recall.',
       '- Precedence rule: choose distorts_public_evidence, not overleaps_evidence, when the learner says or implies that an earlier/public clue existed when it did not, changes what a public clue said, or blends two public clues into a false remembered detail. This remains true when the distortion also supports a premature conclusion.',
-      '- Otherwise choose omits_warrant over links_evidence_to_rule when the bridge is absent; reserve overleaps_evidence for a claim that outruns the currently public evidence, especially a premature culprit or case-closing inference.',
+      `- Otherwise choose omits_warrant over links_evidence_to_rule when the bridge is absent; reserve overleaps_evidence for a claim that outruns the currently public evidence, especially a premature ${frame.candidate_noun} or ${frame.task_noun}-closing inference.`,
       '- Resolve short answers, pronouns, and ellipsis against the immediately preceding tutor question before classifying them. A reply such as "it will be the same" can fully answer a local single-referent question even though it does not repeat the noun.',
       '- Do not label a contextually complete short answer confused, passive, or evidence-free merely because it omits words already supplied by the preceding question. Preserve any genuinely missing warrant as a separate strict-audit issue.',
       '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
@@ -681,6 +683,7 @@ export function createTutorStubLearnerAnalysisRuntime({
   function resolveConversationalCompletionForLearnerTurn({ learnerText, state, classification, tutorLearnerDag }) {
     const conversationalCompletion = resolveTutorStubConversationalCompletion({
       mode: state?.dagMode || 'strict_dag',
+      world: state?.world || null,
       learnerText,
       previousTutorText: latestTutorMessage(state),
       classification,

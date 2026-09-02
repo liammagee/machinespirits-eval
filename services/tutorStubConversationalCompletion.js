@@ -1,3 +1,5 @@
+import { tutorStubWorldClosingPattern } from './tutorStubWorldFrame.js';
+
 export const TUTOR_STUB_CONVERSATIONAL_COMPLETION_SCHEMA = 'machinespirits.tutor-stub.conversational-completion.v1';
 
 const QUESTION_MOVE_PATTERN = /\b(?:question|clarification|repair_request|plain_language_request)\b/iu;
@@ -76,7 +78,9 @@ export function resolveTutorStubConversationalCompletion({
   classification = null,
   tutorLearnerDag = null,
   generousInference = null,
+  world = null,
 } = {}) {
+  const caseClosingPattern = tutorStubWorldClosingPattern(world, CASE_CLOSING_PATTERN);
   const learnerSurface = oneLine(learnerText);
   const sourceTutorQuestion = lastQuestion(previousTutorText);
   const turn = classification?.turn || {};
@@ -123,7 +127,7 @@ export function resolveTutorStubConversationalCompletion({
   const directShortAnswer =
     learnerSurface.split(/\s+/u).length <= 8 &&
     DIRECT_SHORT_ANSWER_PATTERN.test(learnerSurface) &&
-    !CASE_CLOSING_PATTERN.test(sourceTutorQuestion);
+    !caseClosingPattern.test(sourceTutorQuestion);
   if (!supportedMoves && !contextualAnswer && !classifiedResolution && !directShortAnswer) {
     return { ...base, reason: 'no_public_signal_that_the_local_question_was_resolved' };
   }
