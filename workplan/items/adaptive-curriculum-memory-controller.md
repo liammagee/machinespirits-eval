@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-02
-branch: codex/action-outcome-comparable-v2-go
+branch: codex/action-outcome-v2-recovery-preflight-fix
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -112,6 +112,18 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: The operator paused the v2 collection after 15 complete dialogues
+  and one partial dialogue, then instructed continuation under the unchanged
+  authorization. The zero-call dead-process sealer preserved the initial run as
+  a technical interruption with 1,296 of 4,860 shared reservations consumed.
+  Recovery preflight then exposed a fail-before-call validator defect: the v2
+  check required the original live root to remain absent even though a recovery
+  necessarily names that existing predecessor. Corrected the prospective v2
+  check to require the original live root to exist while the packet, comparison,
+  readiness, and selected fresh recovery destinations remain unused, and added a
+  focused regression test. No recovery destination, provider call, or additional
+  reservation was created by the failed preflight.
 
 - 2026-09-02: PR #937 merged the fixed prospective v2 collection registration
   at launch commit `35c178a0f1acbf467f5ffe643300350bc0089614` with all CI checks
