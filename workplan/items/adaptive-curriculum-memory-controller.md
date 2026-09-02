@@ -117,6 +117,15 @@ contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
 
+- 2026-09-02: The first executable v2 audit was preserved but superseded after
+  its own family rows exposed an aggregation contradiction: 64 condition-matched
+  rows were labelled as seeded comparative cases although 29 were mandatory or
+  singleton audit-only decisions. Restricted v2 feasibility counts to seeded
+  assignments with the exact registered three-family eligible set, while
+  retaining the broader condition-matched count as a separate audit field and
+  leaving the sealed v1 calculation unchanged. No coder packet, model call, or
+  study reservation was created by the superseded audit.
+
 - 2026-09-02: The first v2 zero-call audit invocation failed before reading a
   trace or creating its output because the CLI entry point still routed every
   design through the sealed v1 loader. Added explicit registered-study dispatch

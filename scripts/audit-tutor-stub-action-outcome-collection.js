@@ -219,14 +219,16 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       technicalFailure: rows.filter((row) => row.status === 'technical_failure').length,
     };
   });
-  const registeredRows = enrichRows(registeredReadiness);
+  const conditionMatchedRows = enrichRows(registeredReadiness);
   const allClosedRows = enrichRows(allObservedReadiness);
   const families = comparativeMoveFamilies(design);
+  const exactComparableSet = Array.isArray(design.comparability?.moveFamilies);
+  const isComparableSeededRow = (row) =>
+    row.assignmentStatus === 'seeded_uniform_family_assignment' &&
+    (!exactComparableSet || sameMembers(row.eligibleSet, families));
+  const registeredRows = exactComparableSet ? conditionMatchedRows.filter(isComparableSeededRow) : conditionMatchedRows;
   const matchedFamilies = familySummary(registeredRows, families);
-  const allClosedFamilies = familySummary(
-    allClosedRows.filter((row) => row.assignmentStatus === 'seeded_uniform_family_assignment'),
-    families,
-  );
+  const allClosedFamilies = familySummary(allClosedRows.filter(isComparableSeededRow), families);
   const matchedDialogues = unique(registeredRows.map((row) => row.runId).filter(Boolean));
   const matchedWorlds = unique(registeredRows.map((row) => row.worldId).filter(Boolean));
   const visibleDeliveries = registeredRows.filter((row) => row.auxiliaryDeliveryVisible === true).length;
@@ -486,7 +488,9 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       decisionAssignmentDisposition: countBy(decisionInventory.map((row) => row.assignmentStatus)),
       decisionConditionDisposition: countBy(decisionInventory.map((row) => row.conditionDisposition)),
       closedAssignmentDisposition: countBy(allClosedRows.map((row) => row.assignmentStatus)),
+      conditionMatchedClosedAssignments: conditionMatchedRows.length,
       conditionMatchedSeededClosedAssignments: matchedAssignments,
+      conditionMatchedAuditOnlyClosedAssignments: conditionMatchedRows.length - matchedAssignments,
       conditionUnmatchedClosedAssignments: unmatchedAssignments,
       contributingDialogues: matchedDialogues.length,
       contributingWorlds: matchedWorlds.length,
@@ -588,7 +592,8 @@ export function renderTutorStubActionOutcomeCollectionAudit(audit) {
     `| Completed / planned turns | ${audit.generation.turns.completed} / ${audit.generation.turns.planned} |`,
     `| Typed decisions / closed next-turn opportunities | ${audit.extraction.typedDecisions} / ${audit.extraction.closedNextTurnOpportunities} |`,
     `| Seeded closed assignments | ${audit.extraction.closedAssignmentDisposition.seeded_uniform_family_assignment || 0} |`,
-    `| Condition-matched seeded closed assignments | ${audit.extraction.conditionMatchedSeededClosedAssignments} |`,
+    `| Condition-matched closed / comparative seeded assignments | ${audit.extraction.conditionMatchedClosedAssignments} / ${audit.extraction.conditionMatchedSeededClosedAssignments} |`,
+    `| Condition-matched audit-only assignments | ${audit.extraction.conditionMatchedAuditOnlyClosedAssignments} |`,
     `| Contributing dialogues / worlds | ${audit.extraction.contributingDialogues} / ${audit.extraction.contributingWorlds} |`,
     `| Visible deliveries | ${audit.extraction.visibleDeliveries} |`,
     `| Maximum possible binary records | ${audit.extraction.maximumPotentialBinaryRecords} |`,

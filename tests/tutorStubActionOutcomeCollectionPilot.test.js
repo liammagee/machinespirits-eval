@@ -249,15 +249,36 @@ test('the v2 audit uses only registered comparative families and leaves human-co
       },
     });
   }
+  const auditOnlyRows = [
+    {
+      ...evidenceRows[0],
+      recordId: 'fixture-run-0:contract-audit-only-1',
+      assignmentStatus: 'mandatory_policy_authority_preserved',
+      prospectiveAssignment: {
+        selected_move_family: 'diagnose_elicit',
+        eligible_move_families: [{ family: 'diagnose_elicit' }],
+      },
+    },
+    {
+      ...evidenceRows[1],
+      recordId: 'fixture-run-1:contract-audit-only-2',
+      assignmentStatus: 'insufficient_family_overlap_policy_preserved',
+      prospectiveAssignment: {
+        selected_move_family: 'fade_transfer',
+        eligible_move_families: [{ family: 'fade_transfer' }],
+      },
+    },
+  ];
+  const conditionMatchedRows = [...evidenceRows, ...auditOnlyRows];
   const summary = {
     sourceFiles: sources.length,
     quarantinedSources: 0,
     events: 300,
-    typedDecisions: evidenceRows.length,
-    closedOutcomes: evidenceRows.length,
-    joinedMemoryRecords: evidenceRows.length,
+    typedDecisions: conditionMatchedRows.length,
+    closedOutcomes: conditionMatchedRows.length,
+    joinedMemoryRecords: conditionMatchedRows.length,
   };
-  const readiness = { modelCalls: 0, summary, sources, evidenceRows, exclusionCounts: {} };
+  const readiness = { modelCalls: 0, summary, sources, evidenceRows: conditionMatchedRows, exclusionCounts: {} };
   const audit = buildTutorStubActionOutcomeCollectionAudit({
     design,
     generationReport: {
@@ -278,8 +299,8 @@ test('the v2 audit uses only registered comparative families and leaves human-co
     },
     registeredReadiness: readiness,
     allObservedReadiness: readiness,
-    decisionInventory: evidenceRows.map(() => ({
-      assignmentStatus: 'seeded_uniform_family_assignment',
+    decisionInventory: conditionMatchedRows.map((row) => ({
+      assignmentStatus: row.assignmentStatus,
       conditionDisposition: 'matched',
     })),
     asOf: '2026-09-02T23:00:00.000Z',
@@ -290,6 +311,9 @@ test('the v2 audit uses only registered comparative families and leaves human-co
     families,
   );
   assert.equal(audit.extraction.maximumPotentialBinaryRecords, 30);
+  assert.equal(audit.extraction.conditionMatchedClosedAssignments, 32);
+  assert.equal(audit.extraction.conditionMatchedSeededClosedAssignments, 30);
+  assert.equal(audit.extraction.conditionMatchedAuditOnlyClosedAssignments, 2);
   assert.deepEqual(audit.failedGates, []);
   assert.equal(audit.verdict, 'pending_human_review');
   assert.equal(audit.pendingGates.length, 5);
