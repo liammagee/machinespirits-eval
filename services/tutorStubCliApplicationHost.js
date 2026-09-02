@@ -477,6 +477,7 @@ import {
   parseCardForceSchedule,
   resolveCardForce,
 } from './tutorStubCardForce.js';
+import { formLiveTraceEvent, loadTutorStubFormDetector, readTutorStubFormStateLive } from './tutorStubFormLive.js';
 import { renderTutorStubDueSource } from './tutorStubDueSourceRenderer.js';
 import { composeTutorStubClueSpanReplacement } from './tutorStubDramaticRelease.js';
 import {
@@ -1427,6 +1428,18 @@ export async function runTutorStubCliApplicationHost({
     gateOn: CARD_FORCE_QUIET_GATE,
   });
 
+  // Step 4 of state-detection-without-word-lists: TUTOR_STUB_FORM_DETECTOR=<artifact.json>
+  // makes the form detector the live sensor, in place of the word-list cascade
+  // AND qd-v2. The cards, the dose ladder and the force knob are unchanged;
+  // every read is stamped in-trace as tutor_form_state. Needs MANNER_SWITCH=1.
+  const FORM_DETECTOR_PATH = process.env.TUTOR_STUB_FORM_DETECTOR || '';
+  let formDetectorCache;
+  function activeFormDetector() {
+    if (!FORM_DETECTOR_PATH) return null;
+    if (formDetectorCache === undefined) formDetectorCache = loadTutorStubFormDetector(FORM_DETECTOR_PATH);
+    return formDetectorCache;
+  }
+
   let mannerTriggerCache;
   function activeMannerTrigger() {
     if (!MANNER_TRIGGER_PATH) return null;
@@ -1441,7 +1454,20 @@ export async function runTutorStubCliApplicationHost({
   function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recordTrace = true }) {
     if (!MANNER_SWITCH_ENABLED || !state) return null;
     state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState(activeMannerTrigger());
-    advanceTutorStubMannerSwitch(state.mannerSwitch, { learnerText, turn: tutorTurn });
+    const formDetector = activeFormDetector();
+    const formRead = formDetector ? readTutorStubFormStateLive(formDetector, learnerText, state.history || []) : null;
+    advanceTutorStubMannerSwitch(
+      state.mannerSwitch,
+      formRead
+        ? {
+            learnerText,
+            turn: tutorTurn,
+            pressureOverride: formRead.pressureForSwitch,
+            triggerVersion: formRead.version,
+          }
+        : { learnerText, turn: tutorTurn },
+    );
+    if (formRead && recordTrace) appendTraceEvent(state.trace, formLiveTraceEvent(formRead, tutorTurn));
     let cardOptions = { exemplars: CARD_EXEMPLARS_ENABLED, licence: CARD_LICENCE_ENABLED };
     if (CARD_DOSE_LADDER) {
       // Recurrence of a previously-carded state = the repair missed for this
@@ -1504,7 +1530,19 @@ export async function runTutorStubCliApplicationHost({
     }
     // Phase Q2 (TUTOR_STUB_QUIET_DETECTOR=1): typed quiet-state detection on
     // card-silent turns. A move card outranks it — pressure is never quiet.
-    if (QUIET_DETECTOR_ENABLED && !state.mannerSwitch.card) {
+    if (formRead && !state.mannerSwitch.card) {
+      // Form sensor on: its quiet read fills the card-silent turn; qd-v2 does not run.
+      state.mannerSwitch.card = tutorStubQuietStateCard(formRead.quiet);
+      if (recordTrace && formRead.quiet) {
+        appendTraceEvent(state.trace, {
+          type: 'tutor_quiet_detect',
+          turn: tutorTurn,
+          quietType: formRead.quiet,
+          version: formRead.version,
+          cardActive: Boolean(state.mannerSwitch.card),
+        });
+      }
+    } else if (QUIET_DETECTOR_ENABLED && !state.mannerSwitch.card) {
       state.quietDetector = state.quietDetector || createTutorStubQuietDetectorState();
       const detection = detectTutorStubQuietState(state.quietDetector, learnerText, {
         pressure: state.mannerSwitch.lastAdvance?.pressure || null,
