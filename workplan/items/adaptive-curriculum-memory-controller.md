@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-02
-branch: codex/action-outcome-v2-linked-recovery-fix
+branch: codex/action-outcome-v2-recovery-chain-fix
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -49,6 +49,7 @@ links:
     - 937
     - 940
     - 945
+    - 946
   items:
     - layered-task-session-adaptation
 tags:
@@ -114,6 +115,21 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: The reviewed missing-only continuation completed three more
+  dialogues, then stopped on a provider transport failure in
+  `aocv2_larkspur_fridge_r08`: two automated-learner attempts failed before an
+  accepted response, the next retry succeeded, and learner analysis then hit
+  the fixed 300-second timeout. The unit remains a technical failure and will
+  not be rerun. The launcher sealed 35 complete, 3 failed, and 22 untouched
+  units with 3,078 of 4,860 shared reservations consumed. A chained zero-call
+  preflight exposed that a report-backed failure in a recovery run omits the
+  earlier explicit recovery flag. Extended the loader narrowly: it may accept
+  that predecessor only after the full report, checkpoint, ordered run-ledger
+  dispositions, per-row child attempt counts, and shared study seal agree on
+  exactly one final current-run technical failure. Report presence alone grants
+  nothing. The failed preflight made 0 model calls, created no destination, and
+  consumed no reservation.
 
 - 2026-09-02: Bringing the linked-recovery fix up to current `main` caused the
   repository's full Node 22/24 CI to run. Node 24 reproducibly exposed a
