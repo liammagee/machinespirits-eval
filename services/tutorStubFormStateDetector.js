@@ -17,7 +17,7 @@
  * out; feature order is the artifact contract (featureVersion form-v1).
  */
 
-import { TUTOR_STUB_PLANT_STATE_TO_PRESSURE } from './tutorStubMannerSwitch.js';
+import { TUTOR_STUB_PLANT_STATE_TO_PRESSURE, TUTOR_STUB_PLANT_STATE_TO_QUIET } from './tutorStubMannerSwitch.js';
 
 export const TUTOR_STUB_FORM_FEATURE_VERSION = 'form-v1';
 
@@ -34,7 +34,14 @@ export const TUTOR_STUB_FORM_STATES = Object.freeze([
 // How a form-state read maps onto the two live channels: pressure kinds for
 // the manner switch (move cards), quiet types for the quiet detector.
 export const TUTOR_STUB_FORM_STATE_TO_PRESSURE = TUTOR_STUB_PLANT_STATE_TO_PRESSURE;
-export const TUTOR_STUB_FORM_STATE_TO_QUIET = Object.freeze({ bored: 'flat', lost: 'confused' });
+export const TUTOR_STUB_FORM_STATE_TO_QUIET = Object.freeze(
+  Object.fromEntries(
+    TUTOR_STUB_FORM_STATES.filter((s) => TUTOR_STUB_PLANT_STATE_TO_QUIET[s]).map((s) => [
+      s,
+      TUTOR_STUB_PLANT_STATE_TO_QUIET[s],
+    ]),
+  ),
+);
 
 const PRONOUN_STOP = new Set(
   'the and but for you your not are was were with that this then than there here what when where which just have has had can could would will its it is a an of to in on at me my mine im ive dont wont isnt arent be been being do does did so if or as one we our i'.split(

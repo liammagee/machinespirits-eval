@@ -23,6 +23,7 @@
  * figure-recovery guesser scored 0 of 4 on that move as a result.
  */
 
+import { TUTOR_STUB_PLANT_STATE_TO_PRESSURE, TUTOR_STUB_PLANT_STATE_TO_QUIET } from './tutorStubMannerSwitch.js';
 import { createTutorStubQuietDetectorState, detectTutorStubQuietState } from './tutorStubQuietDetector.js';
 
 export const TUTOR_STUB_CARD_FORCE_GATE_VERSION = 'cfg-v1';
@@ -60,6 +61,38 @@ export function parseCardForceSchedule(raw) {
   }
   waits.sort((a, b) => a.from - b.from);
   return { map: map.size ? map : null, waits: waits.length ? waits : null };
+}
+
+/**
+ * The card a planted state calls for, in TUTOR_STUB_CARD_FORCE spelling: the
+ * pressure kind for a pressure state, `quiet:<type>` for a quiet one, null for
+ * `on_track` (no card). Throws on a state neither map knows, so a schedule with
+ * a new state fails here and not as a silent uncarded turn.
+ */
+export function cardForStressState(state) {
+  if (state === 'on_track') return null;
+  if (TUTOR_STUB_PLANT_STATE_TO_PRESSURE[state]) return TUTOR_STUB_PLANT_STATE_TO_PRESSURE[state];
+  if (TUTOR_STUB_PLANT_STATE_TO_QUIET[state]) return `${QUIET_PREFIX}${TUTOR_STUB_PLANT_STATE_TO_QUIET[state]}`;
+  throw new Error(`cardForStressState: no card for planted state '${state}'`);
+}
+
+/**
+ * The forced-card arm of a stress schedule (card: state-detection-without-word-lists,
+ * step 3). Every plant becomes `turn=card` from the plant map, so the tutor is
+ * told the right move at the planted turn whether or not any detector would
+ * have read it. This is the arm the crossed experiment used for its move
+ * claims; with it, a new scenario needs a schedule and gold and no word list.
+ * Quiet plants pin to their turn like the others; the quiet gate still
+ * withholds the card when her turn does not read as that state, and the
+ * trace records the withholding.
+ */
+export function cardForceScheduleFromStressPlants(plants) {
+  const parts = [];
+  for (const plant of plants || []) {
+    const card = cardForStressState(plant.state);
+    if (card) parts.push(`${plant.turn}=${card}`);
+  }
+  return parts.join(',');
 }
 
 /**

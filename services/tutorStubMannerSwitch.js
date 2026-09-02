@@ -52,6 +52,17 @@ export const TUTOR_STUB_PLANT_STATE_TO_PRESSURE = Object.freeze({
   opposed: 'stake',
 });
 
+// The quiet half of the same map: which typed quiet card each quiet planted
+// state calls for. A quiet state has no pressure kind, so its card is the
+// quiet detector's type, prefixed `quiet:` where a card name is wanted.
+// Shared by the form-state detector, the stress-schedule card-force helper
+// and the bench review, so the three cannot drift apart.
+export const TUTOR_STUB_PLANT_STATE_TO_QUIET = Object.freeze({
+  bored: 'flat',
+  lost: 'confused',
+  confused: 'confused',
+});
+
 const PRESSURE_WEIGHT = Object.freeze({
   mockery: 1,
   demand: 1,
