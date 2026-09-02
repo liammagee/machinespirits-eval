@@ -19,7 +19,10 @@
 
 import { TUTOR_STUB_PLANT_STATE_TO_PRESSURE, TUTOR_STUB_PLANT_STATE_TO_QUIET } from './tutorStubMannerSwitch.js';
 
-export const TUTOR_STUB_FORM_FEATURE_VERSION = 'form-v1';
+// The default feature set for new artifacts. Older artifacts name their own
+// featureVersion and keep computing with that set, so form-v1 stays loadable.
+export const TUTOR_STUB_FORM_FEATURE_VERSION = 'form-v2';
+export const TUTOR_STUB_FORM_FEATURE_VERSIONS = Object.freeze(['form-v1', 'form-v2']);
 
 export const TUTOR_STUB_FORM_STATES = Object.freeze([
   'jumping_ahead',
@@ -71,7 +74,9 @@ function overlapRatio(a, b) {
 const NUMBER_WORD = '(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|noon|midnight|\\d{1,2})';
 
 // Each entry: [name, regex over the lower-cased line]. Binary form cues.
-const CUES = [
+// form-v1 is frozen as shipped (config/manner-trigger/form-v1.json depends on
+// it byte for byte); form-v2 edits are made on the copy below.
+const CUES_V1 = [
   // orders and demands for a verdict now
   [
     'imperative_opener',
@@ -157,8 +162,52 @@ const CUES = [
   ['trailing_off', /(?:—|–|\.\.\.|…)\s*$/],
 ];
 
-export const TUTOR_STUB_FORM_FEATURE_NAMES = Object.freeze([
-  ...CUES.map(([name]) => name),
+const IF_I_WRITE = /\bif i (?:write|say|put|admit|log|enter|record|tell)\b/;
+const COST_CLAUSE =
+  /\bi['’]?m the one\b|\bin front of\b|\bapolog\w*\b|\bwas wrong\b|\bstanding (?:up|there)\b|\bowe\b|\badmit\b|\bmy pride\b|\bthe whole\b/;
+
+// form-v2 (2026-09-02): the training pool put a question mark on every `lost`
+// line and almost nowhere else, so form-v1 read any question as confusion.
+// These cues tell question kinds apart by their grammar, not their topic:
+// doubt about one's own past act; a request aimed at "you" for the answer;
+// "wait, no" as a correction rather than a stumble. Two conjunctions follow
+// (a stake is a conditional AND a cost; a first-person future is a
+// commitment, not a stake). One world leak is closed: form-v1's
+// `why six|ten` quoted a schedule sample; it is now "why" + any number word.
+const CUES_V2 = CUES_V1.map(([name, re]) => {
+  if (name === 'why_challenge')
+    return [
+      name,
+      new RegExp(
+        `^(?:wait[—–,\\s-]*)?(?:but |so )?why\\b|\\bwhy (?:not|do|did|does|would|should|can['’]?t|is it|${NUMBER_WORD})\\b`,
+      ),
+    ];
+  if (name === 'confusion_marker')
+    return [
+      name,
+      /\bhang on\b|^\s*wait\b(?![\s,—–-]+no\b)|\bwait\b[\s,—–-]+(?:i|what|which)\b|\bcan['’]?t (?:tell|remember|recall)\b|\bnow i (?:can['’]?t|don['’]?t)\b|\bmix(?:ing|ed) (?:them|it|those|up)\b|\bdid i (?:mean|write|say)\b|\bor (?:was it|did i|something)\b|\bnot sure (?:which|if|what)\b/,
+    ];
+  return [name, re];
+}).concat([
+  [
+    'q_self_doubt',
+    /\bcan['’]?t (?:tell|remember|recall)\b|\bnot sure\b|\bdon['’]?t know (?:which|what|if|whether)\b|\bdid i (?:mean|write|say|put)\b|\bor (?:was it|did i)\b|\bwhich (?:one )?(?:did|was|do) i mean\b|\bwhat did i mean\b|\bnow i (?:can['’]?t|don['’]?t)\b|\bi had it (?:as|down|written)\b/,
+  ],
+  [
+    'q_to_you',
+    /\b(?:you|your)\b[^?.!]*\?|\btell me\b|\bwhich one do i\b|\bwhat do i (?:write|put|say)\b|\bdo i (?:just )?(?:write|put|say)\b|\bor not\?|\b(?:can|are) we\b[^?.!]*\?/,
+  ],
+  ['wait_no_correct', /\bwait\b[\s,—–-]+no\b|^\s*no[,—–\s-]+(?:we|i|it|that)\b/],
+  ['stake_conditional', (t) => IF_I_WRITE.test(t) && COST_CLAUSE.test(t)],
+  [
+    'commit_future',
+    /\bi['’]?ll (?:write|put|say|tell|log|do|go|finish|stand|sort)\b|\bi['’]?m going to (?:write|put|say|tell)\b|\bgoing now\b/,
+  ],
+]);
+
+const CUE_SETS = Object.freeze({ 'form-v1': CUES_V1, 'form-v2': CUES_V2 });
+
+const NUMERIC_FEATURE_NAMES = Object.freeze([
   'question_count',
   'exclamation',
   'dash_count',
@@ -173,11 +222,28 @@ export const TUTOR_STUB_FORM_FEATURE_NAMES = Object.freeze([
   'own_repeat',
 ]);
 
+function cuesFor(featureVersion) {
+  const cues = CUE_SETS[featureVersion];
+  if (!cues) throw new Error(`form detector: unknown featureVersion ${featureVersion}`);
+  return cues;
+}
+
+/** Feature names for one feature version (cues first, then the numeric block). */
+export function tutorStubFormFeatureNames(featureVersion = TUTOR_STUB_FORM_FEATURE_VERSION) {
+  return Object.freeze([...cuesFor(featureVersion).map(([name]) => name), ...NUMERIC_FEATURE_NAMES]);
+}
+
+export const TUTOR_STUB_FORM_FEATURE_NAMES = tutorStubFormFeatureNames(TUTOR_STUB_FORM_FEATURE_VERSION);
+
 /**
  * Feature vector for one learner line. Context is optional and relational:
  * the tutor's previous line and the learner's earlier lines (most recent last).
  */
-export function computeTutorStubFormFeatures(learnerText, { tutorText = '', priorLearnerTexts = [] } = {}) {
+export function computeTutorStubFormFeatures(
+  learnerText,
+  { tutorText = '', priorLearnerTexts = [] } = {},
+  featureVersion = TUTOR_STUB_FORM_FEATURE_VERSION,
+) {
   const raw = String(learnerText || '');
   const t = raw.toLowerCase().replace(/\s+/g, ' ').trim();
   const words = t.split(' ').filter(Boolean);
@@ -187,7 +253,9 @@ export function computeTutorStubFormFeatures(learnerText, { tutorText = '', prio
   const prior = contentTokens(priorLearnerTexts[priorLearnerTexts.length - 1] || '');
   const quoted = raw.match(/[“"']([^“”"']{3,60})[”"']/g) || [];
   const quotedTokens = contentTokens(quoted.join(' '));
-  const cueValues = CUES.map(([, re]) => (re.test(t) ? 1 : 0));
+  const cueValues = cuesFor(featureVersion).map(([, cue]) =>
+    (typeof cue === 'function' ? cue(t) : cue.test(t)) ? 1 : 0,
+  );
   return [
     ...cueValues,
     Math.min(3, (raw.match(/\?/g) || []).length) / 3,
@@ -206,10 +274,12 @@ export function computeTutorStubFormFeatures(learnerText, { tutorText = '', prio
 }
 
 export function compileTutorStubFormDetector(artifact) {
-  if (artifact?.featureVersion !== TUTOR_STUB_FORM_FEATURE_VERSION)
-    throw new Error(`form detector: featureVersion ${artifact?.featureVersion} != ${TUTOR_STUB_FORM_FEATURE_VERSION}`);
+  if (!TUTOR_STUB_FORM_FEATURE_VERSIONS.includes(artifact?.featureVersion))
+    throw new Error(
+      `form detector: featureVersion ${artifact?.featureVersion} not in ${TUTOR_STUB_FORM_FEATURE_VERSIONS.join('/')}`,
+    );
   if (!artifact.weights || typeof artifact.weights !== 'object') throw new Error('form detector: missing weights');
-  const dim = TUTOR_STUB_FORM_FEATURE_NAMES.length;
+  const dim = tutorStubFormFeatureNames(artifact.featureVersion).length;
   for (const [state, w] of Object.entries(artifact.weights)) {
     if (!Array.isArray(w) || w.length !== dim + 1)
       throw new Error(`form detector: weights for ${state} have length ${w?.length}, expected ${dim + 1}`);
@@ -242,7 +312,10 @@ export function predictTutorStubFormState(detector, features) {
 }
 
 export function readTutorStubFormState(detector, learnerText, context = {}) {
-  const read = predictTutorStubFormState(detector, computeTutorStubFormFeatures(learnerText, context));
+  const read = predictTutorStubFormState(
+    detector,
+    computeTutorStubFormFeatures(learnerText, context, detector.featureVersion),
+  );
   return {
     ...read,
     pressure: TUTOR_STUB_FORM_STATE_TO_PRESSURE[read.state] || null,

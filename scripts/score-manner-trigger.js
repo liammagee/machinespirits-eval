@@ -261,6 +261,7 @@ function tally(bench, plantScores, dialogue, label) {
           turn: plant.turn,
           state: plant.state,
           read: plant.pressure,
+          quiet: plant.quiet ?? null,
           text: text.slice(0, 110),
         });
       }
@@ -451,8 +452,10 @@ function main() {
     }
   } else if (bench.misses.length) {
     console.log('\nmisses:');
-    for (const miss of bench.misses)
-      console.log(`  [${miss.arm} t${miss.turn} ${miss.state}, read=${miss.read}] ${miss.text}`);
+    for (const miss of bench.misses) {
+      const quietNote = miss.quiet ? `, quiet=${miss.quiet}` : '';
+      console.log(`  [${miss.arm} t${miss.turn} ${miss.state}, read=${miss.read}${quietNote}] ${miss.text}`);
+    }
   }
 }
 

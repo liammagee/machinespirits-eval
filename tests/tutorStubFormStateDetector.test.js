@@ -7,11 +7,13 @@ import { fileURLToPath } from 'node:url';
 import {
   TUTOR_STUB_FORM_FEATURE_NAMES,
   TUTOR_STUB_FORM_FEATURE_VERSION,
+  TUTOR_STUB_FORM_FEATURE_VERSIONS,
   TUTOR_STUB_FORM_STATES,
   compileTutorStubFormDetector,
   computeTutorStubFormFeatures,
   predictTutorStubFormState,
   readTutorStubFormState,
+  tutorStubFormFeatureNames,
 } from '../services/tutorStubFormStateDetector.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -73,7 +75,7 @@ test('feature vector length matches the feature-name contract', () => {
   assert.ok(on.has('imperative_opener'));
   assert.ok(on.has('just_already'));
   assert.ok(on.has('forced_choice_q'));
-  assert.equal(TUTOR_STUB_FORM_FEATURE_VERSION, 'form-v1');
+  assert.equal(TUTOR_STUB_FORM_FEATURE_VERSION, 'form-v2');
 });
 
 test('relational features fire on echo, not on any particular word', () => {
@@ -94,10 +96,13 @@ test('compile checks version and weight lengths; predict returns neutral below t
   const dim = TUTOR_STUB_FORM_FEATURE_NAMES.length;
   const zero = Object.fromEntries(TUTOR_STUB_FORM_STATES.map((s) => [s, new Array(dim + 1).fill(0)]));
   assert.throws(() => compileTutorStubFormDetector({ featureVersion: 'other', weights: zero }), /featureVersion/);
-  assert.throws(() => compileTutorStubFormDetector({ featureVersion: 'form-v1', weights: { lost: [0, 1] } }), /length/);
+  assert.throws(
+    () => compileTutorStubFormDetector({ featureVersion: TUTOR_STUB_FORM_FEATURE_VERSION, weights: { lost: [0, 1] } }),
+    /length/,
+  );
   const detector = compileTutorStubFormDetector({
     version: 'zero',
-    featureVersion: 'form-v1',
+    featureVersion: TUTOR_STUB_FORM_FEATURE_VERSION,
     threshold: 0.6,
     weights: zero,
   });
@@ -108,7 +113,7 @@ test('compile checks version and weight lengths; predict returns neutral below t
   const biased = { ...zero, irritated: [...new Array(dim).fill(0), 3], lost: [...new Array(dim).fill(0), 2] };
   const d2 = compileTutorStubFormDetector({
     version: 'biased',
-    featureVersion: 'form-v1',
+    featureVersion: TUTOR_STUB_FORM_FEATURE_VERSION,
     threshold: 0.6,
     weights: biased,
   });
@@ -118,7 +123,7 @@ test('compile checks version and weight lengths; predict returns neutral below t
   assert.equal(r2.quiet, null);
   const d3 = compileTutorStubFormDetector({
     version: 'lost',
-    featureVersion: 'form-v1',
+    featureVersion: TUTOR_STUB_FORM_FEATURE_VERSION,
     threshold: 0.6,
     weights: { ...zero, lost: [...new Array(dim).fill(0), 2] },
   });
@@ -126,4 +131,69 @@ test('compile checks version and weight lengths; predict returns neutral below t
   assert.equal(r3.state, 'lost');
   assert.equal(r3.pressure, null);
   assert.equal(r3.quiet, 'confused');
+});
+
+test('form-v1 stays loadable and frozen beside form-v2', () => {
+  assert.deepEqual([...TUTOR_STUB_FORM_FEATURE_VERSIONS], ['form-v1', 'form-v2']);
+  assert.equal(tutorStubFormFeatureNames('form-v1').length, 40);
+  assert.equal(tutorStubFormFeatureNames('form-v2').length, 45);
+  const shipped = JSON.parse(fs.readFileSync(path.join(ROOT, 'config/manner-trigger/form-v1.json'), 'utf8'));
+  const v1 = compileTutorStubFormDetector(shipped);
+  assert.equal(v1.featureVersion, 'form-v1');
+  assert.deepEqual(shipped.featureNames, [...tutorStubFormFeatureNames('form-v1')]);
+  // Reads compute with the artifact's own feature set, not the default one.
+  const line = "Hang on. Was it the first one or the second? I wrote it down and now I can't tell which I meant.";
+  assert.equal(computeTutorStubFormFeatures(line, {}, 'form-v1').length, 40);
+  assert.equal(computeTutorStubFormFeatures(line).length, 45);
+  assert.equal(readTutorStubFormState(v1, line).state, 'lost');
+  assert.throws(() => computeTutorStubFormFeatures(line, {}, 'form-v9'), /unknown featureVersion/);
+});
+
+test('shipped form-v2 artifact compiles on the form-v2 cue set', () => {
+  const artifact = JSON.parse(fs.readFileSync(path.join(ROOT, 'config/manner-trigger/form-v2.json'), 'utf8'));
+  assert.equal(artifact.version, 'form-v2');
+  assert.equal(artifact.featureVersion, 'form-v2');
+  assert.deepEqual([...artifact.featureNames], [...tutorStubFormFeatureNames('form-v2')]);
+  const detector = compileTutorStubFormDetector(artifact);
+  assert.equal(detector.featureVersion, 'form-v2');
+  // The demand for the answer no longer reads as a stumble.
+  const demand = readTutorStubFormState(
+    detector,
+    'You are pushing me. I did every question, so what did I do that counted?',
+  );
+  assert.notEqual(demand.state, 'lost');
+});
+
+test('form-v2 tells question kinds apart by grammar', () => {
+  const idx = (name) => TUTOR_STUB_FORM_FEATURE_NAMES.indexOf(name);
+  const on = (text) => {
+    const f = computeTutorStubFormFeatures(text);
+    return new Set(TUTOR_STUB_FORM_FEATURE_NAMES.filter((_, i) => f[i] > 0));
+  };
+  // Doubt about one's own past act.
+  const doubt = on("Wait — which one did I mean? I wrote it down and now I can't tell.");
+  assert.ok(doubt.has('q_self_doubt'));
+  assert.ok(doubt.has('confusion_marker'));
+  assert.ok(!doubt.has('q_to_you'));
+  assert.ok(!doubt.has('wait_no_correct'));
+  // A demand aimed at the other speaker for the answer.
+  const demand = on('Just tell me what to write already — is it the first or not? Which one do I put down?');
+  assert.ok(demand.has('q_to_you'));
+  assert.ok(!demand.has('q_self_doubt'));
+  // A correction opener is not a stumble.
+  const correct = on('Wait, no — we did that step and it came out the other way, I saw it!');
+  assert.ok(correct.has('wait_no_correct'));
+  assert.ok(!correct.has('confusion_marker'));
+  // The stake is a conditional AND a cost; the commitment is neither.
+  const stake = on(
+    'If I write that down, I am the one apologizing in front of everyone. So it can still be the other thing.',
+  );
+  assert.ok(stake.has('stake_conditional'));
+  assert.ok(!stake.has('commit_future'));
+  const commit = on("Right — I'll write that down, and I'll say sorry separately.");
+  assert.ok(commit.has('commit_future'));
+  assert.ok(!commit.has('stake_conditional'));
+  // The form-v1 leak is closed: "why" plus any number word, not two words from one schedule.
+  assert.ok(on('Why four pieces and not nine?').has('why_challenge'));
+  assert.equal(idx('q_self_doubt') >= 0, true);
 });

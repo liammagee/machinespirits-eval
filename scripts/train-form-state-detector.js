@@ -286,7 +286,7 @@ function main() {
 
   const artifact = {
     schema: 'machinespirits.tutor-stub.form-state-detector.v1',
-    version: 'form-v1',
+    version: TUTOR_STUB_FORM_FEATURE_VERSION,
     featureVersion: TUTOR_STUB_FORM_FEATURE_VERSION,
     featureNames: TUTOR_STUB_FORM_FEATURE_NAMES,
     threshold,
