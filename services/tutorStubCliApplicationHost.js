@@ -1533,7 +1533,7 @@ export async function runTutorStubCliApplicationHost({
     if (formRead && !state.mannerSwitch.card) {
       // Form sensor on: its quiet read fills the card-silent turn; qd-v2 does not run.
       state.mannerSwitch.card = tutorStubQuietStateCard(formRead.quiet);
-      if (recordTrace) {
+      if (recordTrace && formRead.quiet) {
         appendTraceEvent(state.trace, {
           type: 'tutor_quiet_detect',
           turn: tutorTurn,
