@@ -38,6 +38,7 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
     createConsoleTokenSink,
     isCliProvider,
     jsonClone,
+    markTutorStubMeteredModelCallDispatched = () => {},
     recoverTutorStubDuplicateInstructionLines,
     reserveProgram2ProviderBudget,
     reserveTutorStubMeteredModelCall,
@@ -234,7 +235,8 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
       const useStreamingApi = streamMode === 'live' || streamMode === 'buffered';
       function reserveTutorAttemptBudget() {
         reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });
-        reserveTutorStubMeteredModelCall({ trace, role, turn: tutorTurn });
+        const reservation = reserveTutorStubMeteredModelCall({ trace, role, turn: tutorTurn });
+        markTutorStubMeteredModelCallDispatched({ trace, reservation, role, turn: tutorTurn });
       }
       let startedAt = null;
       let response;

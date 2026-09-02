@@ -32,6 +32,7 @@ export async function runTutorStubNonInteractiveApplication({
     printTutorResponse,
     registerPalette,
     registerSelectionEnabled,
+    resumedDialogue,
     runAutomatedLearnerDialogue,
     runOneTurn,
     saveTranscript,
@@ -62,6 +63,7 @@ export async function runTutorStubNonInteractiveApplication({
       autoTurns,
       autoSafetyTurns,
       autoStopOnGrounded,
+      turnHorizonMode: resumedDialogue ? 'total' : 'additional',
       cliEffort,
     });
     appendTraceEvent(state.trace, { type: 'run_end', reason: result.reason, turns: state.turns.length });

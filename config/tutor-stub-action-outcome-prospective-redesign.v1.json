@@ -18,6 +18,7 @@
     "Use two independent human coders as semantic outcome authority. Treat the deterministic observer as auxiliary: an opposite binary label or invisible delivery forces indeterminacy, while an inconclusive auxiliary label is nonconfirmatory and cannot erase exact human consensus.",
     "Validate the assignment, eligible-set join, outcome rule, abstention behavior, and family-specific review criteria with zero-call fixtures.",
     "Register any fresh collection as a separate fixed-size study with new jobs, seeds, destinations, routes, and spend ceiling; never enlarge it after outcomes are visible.",
+    "Treat an explicit operator pause as a recoverable control event: checkpoint at a safe boundary, preserve every reservation, reconcile each stale attempt to one terminal disposition, and resume only incomplete work.",
     "Keep Rowan Flat and Tideway Makerspace outside collection and memory until a later separately registered controller study measures independent work and transfer against current, stale, scrambled, contradictory, and no-memory controls."
   ],
   "comparability": {
@@ -59,6 +60,7 @@
       "create-once destinations",
       "feasibility thresholds and failure dispositions",
       "fail-before-call spend ceiling",
+      "a positive recovery reserve inside that ceiling, sized so one ordinary pause cannot consume all completion capacity",
       "merged design, clean detached launch commit, and separate signed GO note"
     ],
     "forbidden": [
@@ -68,6 +70,16 @@
       "forcing diagnose_elicit or fade_transfer into a comparison before a genuine co-eligible alternative exists",
       "enabling the memory controller during collection"
     ]
+  },
+  "durableExecution": {
+    "pauseStates": ["pause_requested", "paused", "resuming"],
+    "gracefulBoundary": "Stop before the next reservation or after the active response and checkpoint are durably persisted.",
+    "terminalAttemptDispositions": ["completed", "failed", "cancelled_before_dispatch", "interrupted_after_dispatch"],
+    "accountingInvariant": "reserved = completed + failed + cancelled_before_dispatch + interrupted_after_dispatch, with zero unexplained reservations",
+    "restartRule": "Reconcile stale in-flight reservations from the append-only ledger before any new dispatch. A persisted response is accepted once without redispatch; a reservation before dispatch is cancelled; a dispatched attempt without a persisted response is interrupted and still counts against the hard ceiling.",
+    "acceptedOutputRule": "Never accept the same response twice and never discard a durably persisted completed response.",
+    "recoveryReserveRule": "Every future registration must reserve positive capacity inside its original hard ceiling before launch. Recovery cannot raise that ceiling.",
+    "statusRule": "CLI and report output must state whether the stop is recoverable, the durable pause state, attempt dispositions, unexplained reservations, and the exact missing-only resume scope."
   },
   "heldOutControllerStudy": {
     "status": "not_yet_designed",

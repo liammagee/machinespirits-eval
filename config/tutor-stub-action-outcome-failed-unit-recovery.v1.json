@@ -1,0 +1,88 @@
+{
+  "documentType": "prospective_paid_study_technical_recovery",
+  "revision": 1,
+  "studyId": "tutor-stub-action-outcome-comparable-collection-v2-failed-unit-recovery",
+  "sourceStudyId": "tutor-stub-action-outcome-comparable-collection-v2",
+  "workplanItem": "adaptive-curriculum-memory-controller",
+  "status": "authorized_recovery_registration",
+  "scientificDesign": {
+    "path": "config/tutor-stub-action-outcome-comparable-collection-design.v2.json",
+    "unchanged": true,
+    "turnHorizon": 8,
+    "model": "codex.gpt-5.6-luna",
+    "cliEffort": "low",
+    "memoryControllerEnabled": false
+  },
+  "sourceArtifacts": {
+    "generationReport": {
+      "path": "/private/tmp/machinespirits-action-outcome-comparable-v2-launch/.tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-recovery-3/report.json",
+      "sha256": "7dabf79d9a1b1cf072a1eb022e6461e6c8244bda341274eb74f6c18df98c6fd5"
+    },
+    "launchPlan": {
+      "path": "/private/tmp/machinespirits-action-outcome-comparable-v2-launch/.tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-recovery-3/plan.json",
+      "sha256": "63614457da2d04b7046aa73d5e8b42347753c7a7cb2544fd51787acdc335e80e"
+    }
+  },
+  "attemptCeiling": {
+    "historicalActualReservations": 2334,
+    "historicalCompleted": 2329,
+    "historicalFailed": 3,
+    "historicalOperatorInterruptedAfterDispatch": 2,
+    "recoverySegmentHardCeiling": 100,
+    "nominalAggregateEffectiveCeiling": 4960,
+    "rule": "Only a provider dispatch reservation consumes the recovery segment. Unused per-dialogue capacity is released and does not consume an attempt. Stop before reservation 101."
+  },
+  "units": [
+    {
+      "jobId": "aocv2_skyway_bakery_r01",
+      "completedTurns": 4,
+      "capacity": 34,
+      "sourceTrace": {
+        "path": "/private/tmp/machinespirits-action-outcome-comparable-v2-launch/.tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02/jobs/aocv2_skyway_bakery_r01/traces/2026-09-02T13-53-17-376Z.jsonl",
+        "sha256": "25f7fde85cd7e94ed38f36d3b94b2c2e8be07e0988d0a4dea9c465d641622a8b"
+      }
+    },
+    {
+      "jobId": "aocv2_larkspur_fridge_r04",
+      "completedTurns": 2,
+      "capacity": 44,
+      "sourceTrace": {
+        "path": "/private/tmp/machinespirits-action-outcome-comparable-v2-launch/.tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-recovery-1/jobs/aocv2_larkspur_fridge_r04/traces/2026-09-02T16-29-40-971Z.jsonl",
+        "sha256": "f42d1fed183aa1e4cd910799db0a451d4b77c7ce3bd8397a0cd72dc6cc3a1400"
+      }
+    },
+    {
+      "jobId": "aocv2_larkspur_fridge_r08",
+      "completedTurns": 6,
+      "capacity": 22,
+      "sourceTrace": {
+        "path": "/private/tmp/machinespirits-action-outcome-comparable-v2-launch/.tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-recovery-2/jobs/aocv2_larkspur_fridge_r08/traces/2026-09-02T17-54-16-832Z.jsonl",
+        "sha256": "eed5dd58e087366dd1f934cd30cee61042a7e201078805020fb97c1ee3900701"
+      }
+    }
+  ],
+  "execution": {
+    "freshDestination": ".tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-failed-unit-recovery",
+    "resumeFromLatestDurableAcceptedOutput": true,
+    "rerunCompletedTurns": false,
+    "rerunValidDialogues": false,
+    "selectionAmongOutcomes": false,
+    "createOnce": true,
+    "stopOnAnyRepeatedTechnicalFailure": true
+  },
+  "eta": {
+    "secondsPerRemainingTurnRange": [60, 180],
+    "zeroCallPostRunSecondsRange": [120, 600],
+    "authority": "Status and clock estimates are derived from the durable run ledger, remaining accepted turns, and these registered ranges."
+  },
+  "postRun": {
+    "modelCalls": 0,
+    "steps": [
+      "compose each source prefix with its continuation into a provenance-linked full trace",
+      "write one reconciled 60-dialogue generation report",
+      "run the unchanged registered zero-call extraction and quality audit",
+      "prepare one fresh two-coder packet without inventing human judgments"
+    ]
+  },
+  "claimBoundary": "This recovery changes no scientific design or measurement rule. It can only complete the three named technically interrupted simulated dialogues and refresh descriptive feasibility artifacts. It cannot establish learning, transfer, human benefit, action-family superiority, or memory-controller benefit."
+}

@@ -32,6 +32,9 @@ links:
     - scripts/run-tutor-stub-action-outcome-collection-pilot.js
     - notes/2026-09-01-tutor-stub-action-outcome-collection-pilot-go.md
     - notes/2026-09-02-tutor-stub-action-outcome-comparable-collection-v2-go.md
+    - config/tutor-stub-action-outcome-failed-unit-recovery.v1.json
+    - notes/2026-09-02-tutor-stub-action-outcome-failed-unit-recovery-go.md
+    - docs/durable-evaluation-execution-contract.md
   exports:
     - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
   prs:
@@ -53,6 +56,7 @@ links:
     - 947
   items:
     - layered-task-session-adaptation
+    - durable-evaluation-runner-migration
 tags:
   - adaptive-tutor
   - memory
@@ -116,6 +120,28 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: Registered the exact three-dialogue technical continuation after
+  the operator extended recovery by 100 actual provider-dispatch reservations.
+  The recovery keeps Luna at low effort, the original worlds, seeds, prompts,
+  eight-turn horizon, action assignment, measurement, and claim boundary. It
+  reuses accepted pending learner output and saved analysis where available,
+  treats the horizon as eight total turns, preserves every raw artifact, and
+  writes fresh lineage traces. The shared journal now reserves immediately
+  before dispatch, terminalizes every attempt, reconciles stale in-flight work,
+  releases unused capacity, and projects attempt, unit, workflow, verdict, and
+  ETA state from the same ledger. A separate migration card tracks other paid
+  runners; they are not represented as already migrated. No recovery provider
+  call was made during implementation or preflight.
+
+- 2026-09-02: The first executable v2 audit was preserved but superseded after
+  its own family rows exposed an aggregation contradiction: 64 condition-matched
+  rows were labelled as seeded comparative cases although 29 were mandatory or
+  singleton audit-only decisions. Restricted v2 feasibility counts to seeded
+  assignments with the exact registered three-family eligible set, while
+  retaining the broader condition-matched count as a separate audit field and
+  leaving the sealed v1 calculation unchanged. No coder packet, model call, or
+  study reservation was created by the superseded audit.
 
 - 2026-09-02: The first v2 zero-call audit invocation failed before reading a
   trace or creating its output because the CLI entry point still routed every
