@@ -368,6 +368,7 @@
         "tests/ironicQuestionFloodRedraw.test.js",
         "tests/jsonlEventReader.test.js",
         "tests/judgeStressRepair.test.js",
+        "tests/labelLearnerStateModel.test.js",
         "tests/labellingCoderArtifacts.test.js",
         "tests/labellingGameCli.test.js",
         "tests/labellingImpasseProvenance.test.js",
