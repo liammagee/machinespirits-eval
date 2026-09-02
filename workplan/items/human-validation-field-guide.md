@@ -5,15 +5,24 @@ status: review
 type: content
 priority: P1
 owner: codex
+branch: codex/human-task-editable-packets
 source: manual
 created: 2026-09-01
 updated: 2026-09-01
-verification: "A self-contained Techne HTML guide first explains the adaptive-tutor project and evidence gap, then explains the purpose, contribution, roles, inputs, blinding, case-level procedures, stop conditions, outputs, and claim boundary for all six human-work streams; desktop and mobile renders are inspected; the dedicated machinespirits.org publisher packages the page and passes a no-write dry run."
+verification: "A self-contained Techne HTML guide first explains the adaptive-tutor project and evidence gap, then explains the purpose, contribution, roles, inputs, blinding, case-level procedures, stop conditions, outputs, and claim boundary for all six human-work streams. Every human-facing task link resolves to a downloadable, editable Word guide or Excel workbook rather than an organiser-only source format. The Office files pass package-integrity and visual checks; desktop and mobile page renders are inspected; and the dedicated machinespirits.org publisher stages the page plus its download directory and passes both a no-write dry run and a temporary-destination stage test."
 links:
   notes:
     - notes/poetics/2026-09-01-human-validation-field-guide.html
     - notes/poetics/2026-09-01-human-validation-field-guide.standalone.html
     - notes/poetics/TECHNE-DOCS.md
+    - notes/poetics/human-validation-files/human-validation-task-guide.docx
+    - notes/poetics/human-validation-files/proof-dag-review-form.xlsx
+    - notes/poetics/human-validation-files/state-move-coder-a.xlsx
+    - notes/poetics/human-validation-files/state-move-coder-b.xlsx
+    - notes/poetics/human-validation-files/impasse-review-form.xlsx
+    - notes/poetics/human-validation-files/superego-taxonomy-review-form.xlsx
+    - notes/poetics/human-validation-files/rubric-v3-coder-a.xlsx
+    - notes/poetics/human-validation-files/rubric-v3-coder-b.xlsx
   items:
     - adaptive-causality-human-state-move-validation
     - adaptive-proof-dag-cross-world-validation
@@ -71,3 +80,13 @@ The guide now starts with the adaptive tutor's read → diagnose → choose → 
 human validity and learning, and precedes every procedure with the question the
 card addresses, why human judgment is needed, and what the returned work adds
 to the project.
+
+2026-09-01 Codex: Replaced the human-facing source-format handoff with an
+editable Office packet: one plain-English Word guide plus seven task-specific
+Excel workbooks. The public page now links only to those downloads; source
+YAML, JSON, Markdown, and analysis scripts remain available to organisers in
+the repository but are no longer presented as reviewer work surfaces. The
+taxonomy download is a public template and codebook only: its protected 40-item
+sample remains private and must be inserted by the organiser before assignment.
+Extended the site publisher to stage the complete download directory beside the
+page.
