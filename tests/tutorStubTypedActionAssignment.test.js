@@ -84,6 +84,8 @@ test('uniform family assignment is seeded, replayable, and restricted to policy-
   assert.equal(first.audit.selected_action_type, first.selection.selectedAction.action_type);
   assert.equal(first.audit.baseline_action_type, selection.selectedAction.action_type);
   assert.deepEqual(first.audit.eligible_action_types, eligible);
+  assert.match(first.audit.eligible_set_id, /^action-outcome-eligible-set\.v1:/u);
+  assert.ok(first.audit.comparative_family_count >= 2);
   assert.equal(first.audit.family_draw.selectedValue, repeated.audit.family_draw.selectedValue);
   assert.equal(first.audit.action_draw.selectedValue, repeated.audit.action_draw.selectedValue);
   assert.equal(replayDeterministicChoice(first.audit.family_draw).matches, true);
@@ -94,6 +96,28 @@ test('uniform family assignment is seeded, replayable, and restricted to policy-
     first.audit.selected_family_probability * first.audit.selected_action_within_family_probability,
   );
   assert.equal(first.selection.selectionAuthority.kind, 'prospective_uniform_family_eligible_assignment');
+});
+
+test('uniform family assignment preserves a singleton candidate set as audit-only policy authority', () => {
+  const selectionInput = assignableSelectionInput();
+  const baseline = selectPedagogicalAction(selectionInput);
+  const selection = {
+    ...baseline,
+    candidateActions: baseline.candidateActions.filter(
+      (candidate) => candidate.action_type === baseline.selectedAction.action_type,
+    ),
+  };
+  const result = assignTutorStubTypedAction({
+    mode: 'uniform_family_eligible',
+    selection,
+    selectionInput,
+    samplingContext: samplingContext(),
+  });
+  assert.equal(result.selection, selection);
+  assert.equal(result.probability, 1);
+  assert.equal(result.audit.disposition, 'insufficient_family_overlap_policy_preserved');
+  assert.equal(result.audit.comparative_family_count, 1);
+  assert.equal(result.audit.draw, null);
 });
 
 test('uniform family assignment preserves mandatory diagnostic authority without drawing', () => {

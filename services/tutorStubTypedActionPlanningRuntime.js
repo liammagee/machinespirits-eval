@@ -21,6 +21,7 @@ import {
 import { getEngagementStanceDefinition } from './engagementRegisterRegistry.js';
 import { sampleTutorStubPolicyDistribution } from './tutorStubPolicySampler.js';
 import { planActionMemoryDemotions } from './adaptiveTutor/actionOutcomeMemory.js';
+import { actionOutcomeEligibleSetForCandidates } from './adaptiveTutor/actionOutcomeComparability.js';
 import { buildDynamicalSystemState } from './tutorStubRegisterPolicy.js';
 import { assignTutorStubTypedAction } from './tutorStubTypedActionAssignment.js';
 
@@ -89,6 +90,7 @@ export function createTutorStubTypedActionPlanningRuntime({
       dialogueId: stateRunDebugId(state),
       asOf: now(),
       supportLevel: state.typedActions.config.supportLevel,
+      eligibleSetId: actionOutcomeEligibleSetForCandidates(selection.candidateActions, tutorStubMoveFamilyForAction).id,
     };
     const plan = planActionMemoryDemotions(
       outcomeMemory.snapshot,

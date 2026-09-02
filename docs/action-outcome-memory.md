@@ -30,6 +30,7 @@ Every observation has:
 | `id`                                        | Unique evidence-record identifier; repeats do not create support.                               |
 | `dialogueId`, `contractId`                  | Identity of the intervention being observed.                                                    |
 | `worldId`, `conditionId`, `contextKey`      | World, pre-action detected condition, and compatible instrument/population context.             |
+| `eligibleSetId`                             | Canonical identity of every move family that was eligible at assignment.                         |
 | `actionType`                                | Canonical adaptive action type; the existing adapter derives its move family.                   |
 | `supportLevel`                              | Explicit support level, matched exactly at lookup.                                              |
 | `decisionTurn`, `observationTurn`           | The latter must be the next public learner turn.                                                |
@@ -80,6 +81,11 @@ The policy explicitly supplies `enabled`, `scope`, `minObservations`,
   Any record from the evaluation world invalidates this lookup. There is no
   implicit fallback from exact-world to pooled evidence. Opposing world-level
   associations around the supplied floor cause abstention.
+
+Every lookup also matches the exact canonical eligible-family set from the
+current candidate list. A singleton candidate set cannot trigger a comparative
+demotion, and evidence from a different eligible set cannot be pooled as if the
+same alternatives had been available.
 
 There are no empirically selected defaults for support, age, or effect
 thresholds. Numbers in tests are synthetic fixtures only. Current-dialogue

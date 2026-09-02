@@ -11,7 +11,10 @@ const esc = (text) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   );
 const num = (value, digits = 1) => (Number.isFinite(value) ? value.toFixed(digits) : 'Unavailable');
-const label = (arm) => (arm.variant === 'normal' ? 'Normal Qwen' : 'Abliterated Qwen');
+const label = (arm) =>
+  ({ normal: 'Normal Qwen', abliterated: 'Abliterated Qwen', luna: 'Luna learner' })[arm.variant] ||
+  arm.label ||
+  arm.id;
 export function renderContinuityReport({
   arms,
   evaluation,
@@ -49,9 +52,23 @@ export function renderContinuityReport({
       'The private harness uses the existing proof engine. Neither speaker sees its hidden answer or proof tree. Required source delivery is checked mechanically; private continuity notes and available clues do not establish that the learner understood anything. An early exit remains unresolved when its evidence is insufficient.',
     scopeDescription:
       'One conversation per checkpoint is not a general model ranking or evidence of human learning. Speaker end signals are self-reported interaction choices, not an independent success criterion.',
+    learnerFamilyLabel: 'Qwen',
+    attemptScopeLabel: 'total attempts used, including carried-forward calls',
+    opusAttemptScopeLabel: 'Opus attempts used',
+    setupMechanismDescription:
+      'One new dialogue per checkpoint; no superego, revision or extra continuity-model call. Normal first, abliterated second. Same world opening and evidence availability; due evidence is required and committed only after delivery. Maximum eight paired exchanges, not a minimum.',
+    comparisonMechanismDescription:
+      'The learner brief and sampling are matched across the two new arms; both use the same tutor proof control.',
+    speedDescription:
+      'Qwen generates a short private note and public speech in one pass. These response times include both. Session wall time includes service start/stop but excludes imported calls and their earlier sessions. Cold/warm conditions, conversation lengths and response lengths were not matched. Do not infer a checkpoint throughput advantage. Lexical difference is auxiliary, not semantic evidence.',
     ...reportMeta,
   };
-  const complete = evaluation.scores.length === 8 && failures.length === 0;
+  const expectedAssessments = arms.length * 4;
+  const plannedAssessmentPackets = evaluation.plannedNewAssessmentPackets ?? expectedAssessments;
+  const opusAttemptSummary = Number.isFinite(evaluation.newPhysicalAttempts)
+    ? `${evaluation.newPhysicalAttempts} physical Opus attempts for ${plannedAssessmentPackets} planned packets`
+    : `${evaluation.attemptsUsed ?? '?'} of ${plannedAssessmentPackets} ${meta.opusAttemptScopeLabel}`;
+  const complete = evaluation.scores.length === expectedAssessments && failures.length === 0;
   const generationStopped =
     failures.length > 0 || arms.some((arm) => ['generation_failure', 'not_started'].includes(arm.snapshot.disposition));
   const score = (arm, kind) => evaluation.scores.find((s) => s.arm === arm.id && s.kind === kind);
@@ -123,18 +140,18 @@ export function renderContinuityReport({
     : '<p>Historical comparison has not been attached to this rendering.</p>';
   const speed = table('Response speed includes private note generation', [
     [
-      'Median accepted Qwen response · seconds',
+      `Median accepted ${meta.learnerFamilyLabel} response · seconds`,
       (a) =>
         a.technical.learnerMechanism.calls
           ? num(a.technical.learnerMechanism.medianLatencyMs / 1000)
           : 'No accepted response',
     ],
     [
-      'Qwen output tokens/second · end-to-end',
+      `${meta.learnerFamilyLabel} output tokens/second · end-to-end`,
       (a) => num(a.technical.learnerFinal.meanEndToEndOutputTokensPerSecond, 2),
     ],
     [
-      'Total accepted Qwen time · seconds',
+      `Total accepted ${meta.learnerFamilyLabel} time · seconds`,
       (a) =>
         a.technical.learnerMechanism.calls
           ? num(a.technical.learnerMechanism.totalLatencyMs / 1000)
@@ -173,7 +190,7 @@ export function renderContinuityReport({
     [
       'setup',
       meta.setupTitle,
-      `<p>${esc(meta.setupDescription)} ${proofControl ? 'Sol is responsible for an explicit proof-directed teaching step.' : 'Sol is a responsive housemate without proof steering.'}</p>${corrections.length ? `<h3>Design features</h3><ul>${corrections.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}<p>One new dialogue per checkpoint; no superego, revision or extra continuity-model call. Normal first, abliterated second. Same world opening and evidence availability; ${proofControl ? 'due evidence is required and committed only after delivery' : 'evidence presentation is optional'}. Maximum eight paired exchanges, not a minimum.</p><details><summary>Assigned character, goal and tone</summary><pre>${esc(characterBrief)}</pre></details>`,
+      `<p>${esc(meta.setupDescription)} ${proofControl ? 'Sol is responsible for an explicit proof-directed teaching step.' : 'Sol is a responsive housemate without proof steering.'}</p>${corrections.length ? `<h3>Design features</h3><ul>${corrections.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}<p>${esc(meta.setupMechanismDescription)}</p><details><summary>Assigned character, goal and tone</summary><pre>${esc(characterBrief)}</pre></details>`,
     ],
     [
       'quality',
@@ -183,7 +200,7 @@ export function renderContinuityReport({
     [
       'before-after',
       comparisonLabel,
-      `${previous}<p>${proofControl ? 'The learner brief and sampling are matched across the two new arms; both use the same tutor proof control.' : 'The two new arms share the same tutor framing.'} ${esc(meta.comparisonDescription)}</p>`,
+      `${previous}<p>${esc(proofControl ? meta.comparisonMechanismDescription : 'The two new arms share the same tutor framing.')} ${esc(meta.comparisonDescription)}</p>`,
     ],
     [
       'rubrics',
@@ -204,7 +221,7 @@ export function renderContinuityReport({
     [
       'speed',
       'Cost of remembering the interaction',
-      `${speed}<p>Qwen generates a short private note and public speech in one pass. These response times include both. Session wall time includes service start/stop but excludes imported calls and their earlier sessions. ${provenance.priorAttempts ? 'Normal-Qwen generation crossed multiple sessions; ' : ''}Cold/warm conditions, conversation lengths and response lengths were not matched. Do not infer a checkpoint throughput advantage. Lexical difference is auxiliary, not semantic evidence.</p>`,
+      `${speed}<p>${provenance.priorAttempts ? 'Normal-Qwen generation crossed multiple sessions; ' : ''}${esc(meta.speedDescription)}</p>`,
     ],
     [
       'transcripts',
@@ -245,7 +262,7 @@ export function renderContinuityReport({
     [
       'scope',
       'Private, bounded engineering evidence',
-      `<p>${evaluation.scores.length}/8 assessments accepted. ${provenance.budget?.used ?? '?'} of ${provenance.totalAttemptCeiling ?? provenance.budget?.limit ?? 40} total attempts used, including carried-forward calls. ${evaluation.attemptsUsed ?? '?'} of 8 Opus attempts used. No outcome-driven resampling, fallback judge, production ingestion, push or publication. ${esc(meta.scopeDescription)}</p><pre>${esc(JSON.stringify(provenance, null, 2))}</pre>`,
+      `<p>${evaluation.scores.length}/${expectedAssessments} assessments accepted. ${provenance.budget?.used ?? '?'} of ${provenance.totalAttemptCeiling ?? provenance.budget?.limit ?? 40} ${esc(meta.attemptScopeLabel)}. ${esc(opusAttemptSummary)}. No outcome-driven resampling, fallback judge, production ingestion, push or publication. ${esc(meta.scopeDescription)}</p><pre>${esc(JSON.stringify(provenance, null, 2))}</pre>`,
     ],
   ];
   const html = `<!doctype html><html lang="en" data-skin="machine-spirits"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>Qwen refusal · continuity re-test</title><style>${asset('techne.css')}\n${renderDramaticDialogueStyles()}\n.shell{max-width:1500px}.retest .body{grid-column:2/-1;min-width:0}.table-wrap{overflow-x:auto;margin:1.5rem 0}table{width:100%;border-collapse:collapse}caption{text-align:left;font-weight:700;padding:.7rem 0}th,td{border-bottom:1px solid var(--rule);padding:.65rem;text-align:left;vertical-align:top}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem;line-height:1.5}details{margin:1rem 0}summary{cursor:pointer}li{margin-bottom:.8rem}.notice{padding:1rem;border-left:4px solid var(--brick);background:var(--paper-deep)}.dd__turn-badge{background:var(--ink);color:var(--paper)}@media(max-width:760px){.retest .body{grid-column:1/-1}.retest .ml{display:none}.hero__rune{position:static;margin:1rem}th,td{padding:.4rem}}</style></head><body><header class="rail" id="rail"><div class="rail__inner"><span class="rail__title">Qwen · continuity</span><nav class="rail__nav" aria-label="Sections">${sections.map(([id]) => `<a href="#${id}">${id}</a>`).join('')}</nav><div class="rail__actions"><button class="rail__btn" id="themeToggle" type="button">Dark</button></div></div><div class="rail__progress" id="railProgress"></div></header><main><section class="hero"><div class="hero__rune">Machine Spirits · private engineering</div><h1 class="hero__h1">Refusal that can <span class="em">move on.</span></h1><p class="hero__subtitle">Normal and abliterated Qwen · Sol tutor · no superego</p><p class="notice">${mock ? 'SYNTHETIC PREVIEW — no model evidence.' : 'Exploratory re-test · natural endings allowed · acting is not obedience.'}</p></section><div class="shell">${sections.map(([id, title, body], i) => `<section class="s retest" id="${id}"><div class="diag"><div class="ml"><h2 class="s__num">0${i + 1}<span class="glyph">·</span></h2></div><div class="body"><h2 class="s__h">${title}</h2>${body}</div></div></section>`).join('')}</div><footer class="colophon"><p>Local only · Techne + shared dialogue renderer · no remote assets</p></footer></main><script>${asset('techne.js').replace(/<\/script/giu, '<\\/script')}</script></body></html>`;

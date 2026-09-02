@@ -3,9 +3,10 @@
  * Package and stage the human-validation field guide for machinespirits.org.
  *
  * The source stays in machinespirits-eval. This script bundles the shared
- * Techne CSS and JavaScript, writes the standalone page plus an index-metadata
- * stub into the sibling machinespirits-content-philosophy repository, and
- * leaves live deployment human-gated unless --publish is explicitly supplied.
+ * Techne CSS and JavaScript, writes the standalone page, editable Word/Excel
+ * packet, and index-metadata stub into the sibling
+ * machinespirits-content-philosophy repository, and leaves live deployment
+ * human-gated unless --publish is explicitly supplied.
  *
  * Usage:
  *   node notes/poetics/publish-human-validation-guide-to-site.js --dry-run
@@ -14,7 +15,7 @@
  *   node notes/poetics/publish-human-validation-guide-to-site.js --slug NAME
  *   node notes/poetics/publish-human-validation-guide-to-site.js --dest-repo DIR
  */
-import { existsSync, mkdirSync, utimesSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, utimesSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,6 +24,17 @@ import { bundleStandalone } from './package-standalone.js';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '../..');
 const SOURCE = join(HERE, '2026-09-01-human-validation-field-guide.html');
+const DOWNLOAD_SOURCE_DIR = join(HERE, 'human-validation-files');
+const DOWNLOAD_FILES = [
+  'human-validation-task-guide.docx',
+  'proof-dag-review-form.xlsx',
+  'state-move-coder-a.xlsx',
+  'state-move-coder-b.xlsx',
+  'impasse-review-form.xlsx',
+  'superego-taxonomy-review-form.xlsx',
+  'rubric-v3-coder-a.xlsx',
+  'rubric-v3-coder-b.xlsx',
+];
 const DATE = '2026-09-01';
 
 const args = process.argv.slice(2);
@@ -77,11 +89,20 @@ const destinationRepo = resolve(
 const destinationDir = join(destinationRepo, 'articles', 'ai-tutor');
 const destinationHtml = join(destinationDir, `${slug}.html`);
 const destinationMarkdown = join(destinationDir, `${slug}.md`);
+const destinationDownloadDir = join(destinationDir, 'human-validation-files');
 const publicUrl = `https://machinespirits.org/content/articles/ai-tutor/${slug}.html`;
 
 if (!existsSync(SOURCE)) {
   console.error(`✗ source page not found: ${SOURCE}`);
   process.exit(1);
+}
+
+for (const filename of DOWNLOAD_FILES) {
+  const source = join(DOWNLOAD_SOURCE_DIR, filename);
+  if (!existsSync(source)) {
+    console.error(`✗ required editable download not found: ${source}`);
+    process.exit(1);
+  }
 }
 
 const standalone = bundleStandalone(SOURCE);
@@ -97,7 +118,7 @@ const frontmatter = `---
 title: "Human validation tasks — purpose and procedures"
 date: ${DATE}
 theme: ai-tutor
-dek: "A plain-English explanation of the adaptive-tutor project, what each human task contributes, and exactly how to complete it."
+dek: "A plain-English explanation of the adaptive-tutor project, what each human task contributes, and editable Word and Excel files for completing it."
 ---
 
 <!-- The public page is the sibling ${slug}.html, bundled from
@@ -114,6 +135,10 @@ console.log(`  source    ${SOURCE}`);
 console.log(`  html   →  ${destinationHtml}`);
 console.log(`            ${(standalone.length / 1024).toFixed(0)} KB · Techne CSS and JS inlined`);
 console.log(`  md     →  ${destinationMarkdown}  (index metadata, backdated)`);
+console.log(`  files  →  ${destinationDownloadDir}`);
+for (const filename of DOWNLOAD_FILES) {
+  console.log(`            ${filename}`);
+}
 console.log(`  public URL after deploy:  ${publicUrl}`);
 
 if (dryRun) {
@@ -128,8 +153,12 @@ if (!existsSync(destinationRepo)) {
 }
 
 mkdirSync(destinationDir, { recursive: true });
+mkdirSync(destinationDownloadDir, { recursive: true });
 writeFileSync(destinationMarkdown, frontmatter);
 writeFileSync(destinationHtml, standalone);
+for (const filename of DOWNLOAD_FILES) {
+  copyFileSync(join(DOWNLOAD_SOURCE_DIR, filename), join(destinationDownloadDir, filename));
+}
 
 // The content build skips Markdown conversion only when the hand-authored HTML
 // is newer. Filesystems compare this at one-second granularity, so create an

@@ -57,6 +57,24 @@ import {
   runtimeServiceArm,
   technicalRecoveryEligible,
 } from '../scripts/run-local-qwen-invested-rival.js';
+import {
+  buildLunaReferencePlan,
+  callLunaReferenceModel,
+  makeLunaJudgeCaller,
+} from '../scripts/run-invested-rival-luna-reference.js';
+import {
+  buildLearnerIterationPlan,
+  callLearnerIterationModel,
+  main as runLearnerIteration,
+} from '../scripts/run-invested-rival-learner-iteration.js';
+import {
+  analyzeLearnerReplication,
+  buildLearnerReplicationPlan,
+  callLearnerReplicationModel,
+  readLearnerReplicationRecovery,
+  replicationAssessmentBatches,
+  main as runLearnerReplication,
+} from '../scripts/run-invested-rival-learner-replication.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const plan = loadContinuityPlan(root);
@@ -66,6 +84,9 @@ const bilateralPlan = loadContinuityPlan(
   'config/tutor-stub-local-learners/qwen-refusal-bilateral-superego.v1.yaml',
 );
 const rivalPlan = buildInvestedRivalPlan(root);
+const lunaReferencePlan = buildLunaReferencePlan(root);
+const learnerIterationPlan = buildLearnerIterationPlan(root);
+const learnerReplicationPlan = buildLearnerReplicationPlan(root);
 const opening = [{ role: 'assistant', content: plan.world.opening_frame.authored_text }];
 const destination = () => path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-continuity-test-')), 'arm');
 const reply = (speech, end_dialogue = false, settled = [], open = []) =>
@@ -76,6 +97,411 @@ const fake = (text) => ({
   model: 'fixture',
   latencyMs: 100,
   usage: { inputTokens: 100, outputTokens: 30 },
+});
+
+test('Luna reference keeps the matched direct architecture inside the 23-attempt ceiling', () => {
+  assert.equal(lunaReferencePlan.total_attempt_ceiling, 23);
+  assert.equal(lunaReferencePlan.generationCap, 16);
+  assert.equal(lunaReferencePlan.judge_calls, 5);
+  assert.equal(lunaReferencePlan.recovery_attempt_reserve, 2);
+  assert.deepEqual(
+    lunaReferencePlan.arms.map(({ id, variant, mode, tutorMode, model }) => ({ id, variant, mode, tutorMode, model })),
+    [
+      {
+        id: 'C',
+        variant: 'luna',
+        mode: 'direct',
+        tutorMode: 'direct',
+        model: 'codex.gpt-5.6-luna',
+      },
+    ],
+  );
+  assert.equal(lunaReferencePlan.interaction.learnerSystem, rivalPlan.interaction.learnerSystem);
+  assert.equal(lunaReferencePlan.characterBrief, rivalPlan.characterBrief);
+  assert.equal(lunaReferencePlan.tutor, rivalPlan.tutor);
+});
+
+test('learner iteration fixes two Luna development rungs and a three-model held-out test under 110 attempts', () => {
+  assert.equal(learnerIterationPlan.total_attempt_ceiling, 110);
+  assert.equal(learnerIterationPlan.generation_attempt_ceiling, 80);
+  assert.equal(learnerIterationPlan.assessment_packets, 25);
+  assert.equal(learnerIterationPlan.recovery_attempt_reserve, 5);
+  assert.deepEqual(
+    learnerIterationPlan.development.map((stage) => ({ world: stage.world.id, arms: stage.arms.map((arm) => arm.id) })),
+    [
+      { world: 'world_030_rowan_flat', arms: ['D1'] },
+      { world: 'world_030_rowan_flat', arms: ['D2'] },
+    ],
+  );
+  assert.equal(learnerIterationPlan.holdout.world.id, 'world_034_groupwork_flag');
+  assert.deepEqual(
+    learnerIterationPlan.holdout.arms.map(({ id, variant, mode, tutorMode, model }) => ({
+      id,
+      variant,
+      mode,
+      tutorMode,
+      model,
+    })),
+    [
+      {
+        id: 'A',
+        variant: 'luna',
+        mode: 'direct',
+        tutorMode: 'direct',
+        model: 'codex.gpt-5.6-luna',
+      },
+      {
+        id: 'B',
+        variant: 'normal',
+        mode: 'direct',
+        tutorMode: 'direct',
+        model: 'mlx-community/Qwen3.8-27B-4bit',
+      },
+      {
+        id: 'C',
+        variant: 'abliterated',
+        mode: 'direct',
+        tutorMode: 'direct',
+        model: 'Qwen3.8-27B-Uncensored-MLX/4-bit',
+      },
+    ],
+  );
+  assert.match(learnerIterationPlan.development[0].interaction.learnerTurn, /commit to the assigned initial/iu);
+  assert.doesNotMatch(learnerIterationPlan.development[0].interaction.learnerTurn, /same kind of move/iu);
+  assert.match(learnerIterationPlan.development[1].interaction.learnerTurn, /same kind of move on adjacent turns/iu);
+  assert.equal(
+    learnerIterationPlan.development[1].interaction.learnerTurn,
+    learnerIterationPlan.holdout.interaction.learnerTurn,
+  );
+});
+
+test('learner iteration routes Luna to Codex and leaves Qwen on the local direct path', async () => {
+  const calls = [];
+  const callCli = async (agent, _system, _prompt, role, options) => {
+    calls.push({ agent, role, options });
+    return fake(reply('Fixture line.'));
+  };
+  const request = { systemPrompt: 'system', prompt: 'prompt', messageHistory: [] };
+  await callLearnerIterationModel(
+    {
+      plan: learnerIterationPlan.holdout,
+      arm: learnerIterationPlan.holdout.arms[0],
+      speaker: 'learner',
+      request,
+      role: 'learner',
+    },
+    callCli,
+  );
+  await callLearnerIterationModel(
+    {
+      plan: learnerIterationPlan.holdout,
+      arm: learnerIterationPlan.holdout.arms[0],
+      speaker: 'tutor',
+      request,
+      role: 'tutor',
+    },
+    callCli,
+  );
+  assert.deepEqual(
+    calls.map((call) => call.agent),
+    [
+      { provider: 'codex', model: 'gpt-5.6-luna' },
+      { provider: 'codex', model: 'gpt-5.6-sol' },
+    ],
+  );
+  assert.ok(calls.every((call) => call.options.singleAttempt === true));
+});
+
+test('learner iteration zero-call preview audits both worlds and builds all 25 assessment packets', async () => {
+  const outDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'learner-iteration-preview-')), 'out');
+  const result = await runLearnerIteration(['--output', outDir]);
+  assert.deepEqual(
+    {
+      dryRun: result.dryRun,
+      modelCalls: result.modelCalls,
+      developmentPackets: result.developmentPackets,
+      holdoutPackets: result.holdoutPackets,
+    },
+    { dryRun: true, modelCalls: 0, developmentPackets: 10, holdoutPackets: 15 },
+  );
+  const preflight = JSON.parse(fs.readFileSync(path.join(outDir, 'preflight.json'), 'utf8'));
+  assert.equal(preflight.developmentLearnerRequests.length, 2);
+  assert.equal(preflight.developmentTutorRequests.flat().length, 16);
+  assert.equal(preflight.holdoutTutorRequests.length, 8);
+  assert.ok(preflight.developmentLearnerRequests.every((request) => request.audit.ok && request.privilege.ok));
+  assert.ok(preflight.holdoutTutorRequests.every((request) => request.audit.ok && request.privilege.ok));
+  assert.ok(fs.existsSync(path.join(outDir, 'development-report-preview.html')));
+  assert.ok(fs.existsSync(path.join(outDir, 'report-preview.html')));
+});
+
+test('learner replication fixes nine matched scaffold pairs under 396 attempts', () => {
+  assert.equal(learnerReplicationPlan.total_attempt_ceiling, 396);
+  assert.equal(learnerReplicationPlan.generation_attempt_ceiling, 288);
+  assert.equal(learnerReplicationPlan.assessment_packets, 90);
+  assert.equal(learnerReplicationPlan.recovery_attempt_reserve, 18);
+  assert.deepEqual(
+    learnerReplicationPlan.worlds.map((world) => world.conditions.baseline.world.id),
+    ['world_028_larkspur_fridge', 'world_029_riverside_clinic', 'world_031_tideway_makerspace'],
+  );
+  for (const world of learnerReplicationPlan.worlds) {
+    assert.deepEqual(
+      world.conditions.baseline.arms.map((arm) => `${arm.id}:${arm.route}:${arm.mechanism}`),
+      ['L0:luna:baseline', 'N0:qwen_normal:baseline', 'A0:qwen_abliterated:baseline'],
+    );
+    assert.deepEqual(
+      world.conditions.active_progression.arms.map((arm) => `${arm.id}:${arm.route}:${arm.mechanism}`),
+      ['L1:luna:active_progression', 'N1:qwen_normal:active_progression', 'A1:qwen_abliterated:active_progression'],
+    );
+    assert.doesNotMatch(world.conditions.baseline.interaction.learnerSystem, /\bAlex\b/u);
+    assert.doesNotMatch(world.conditions.active_progression.interaction.learnerSystem, /\bAlex\b/u);
+    assert.doesNotMatch(world.conditions.baseline.interaction.learnerTurn, /same kind of move/iu);
+    assert.match(world.conditions.active_progression.interaction.learnerTurn, /same kind of move on adjacent turns/iu);
+    assert.equal(
+      world.conditions.active_progression.interaction.learnerSystem.split('\n\n').at(-1),
+      learnerIterationPlan.development[1].interaction.learnerSystem.split('\n\n').at(-1),
+    );
+    assert.equal(
+      world.conditions.active_progression.interaction.learnerTurn.split('\n\n').at(-1),
+      learnerIterationPlan.development[1].interaction.learnerTurn.split('\n\n').at(-1),
+    );
+    const batches = replicationAssessmentBatches(world, [
+      ...world.conditions.baseline.arms,
+      ...world.conditions.active_progression.arms,
+    ]);
+    assert.deepEqual(
+      batches.map((batch) => ({
+        mechanism: batch.mechanism,
+        arms: batch.arms.map((arm) => arm.id),
+        packetCeiling: batch.packetCeiling,
+      })),
+      [
+        { mechanism: 'baseline', arms: ['L0', 'N0', 'A0'], packetCeiling: 15 },
+        { mechanism: 'active_progression', arms: ['L1', 'N1', 'A1'], packetCeiling: 15 },
+      ],
+    );
+  }
+});
+
+test('learner replication analysis applies the frozen mechanism and paper gates', () => {
+  const quality = (arm, value, unsupported = false) => ({
+    arm,
+    kind: 'quality',
+    raw: {
+      measurement_indeterminate: false,
+      scores: Object.fromEntries(
+        ['overall_quality', 'successful_pedagogy', 'surprise_nonrepetition', 'character_adherence'].map((dimension) => [
+          dimension,
+          { score: value },
+        ]),
+      ),
+      learner_turns: [{ unsupported_evidence_assertion: unsupported }],
+    },
+  });
+  const worldResults = learnerReplicationPlan.worlds.map((world) => ({
+    key: world.key,
+    evaluation: {
+      scores: ['L', 'N', 'A'].flatMap((prefix) => [quality(`${prefix}0`, 2), quality(`${prefix}1`, 3)]),
+    },
+  }));
+  const passing = analyzeLearnerReplication(learnerReplicationPlan, worldResults);
+  assert.equal(passing.primaryMeanDelta, 1);
+  assert.equal(passing.supportiveMeanDelta, 1);
+  assert.deepEqual(passing.gates, { replication: true, mainTextPaper: true });
+
+  worldResults[0].evaluation.scores.find(
+    (score) => score.arm === 'L1',
+  ).raw.learner_turns[0].unsupported_evidence_assertion = true;
+  const failing = analyzeLearnerReplication(learnerReplicationPlan, worldResults);
+  assert.equal(failing.unsupportedAssertions, 1);
+  assert.deepEqual(failing.gates, { replication: false, mainTextPaper: false });
+});
+
+test('learner replication routes Luna and Sol directly with no superego call', async () => {
+  const calls = [];
+  const callCli = async (agent, _system, _prompt, role, options) => {
+    calls.push({ agent, role, options });
+    return fake(reply('Fixture line.'));
+  };
+  const condition = learnerReplicationPlan.worlds[0].conditions.active_progression;
+  const request = { systemPrompt: 'system', prompt: 'prompt', messageHistory: [] };
+  await callLearnerReplicationModel(
+    { plan: condition, arm: condition.arms[0], speaker: 'learner', request, role: 'learner' },
+    callCli,
+  );
+  await callLearnerReplicationModel(
+    { plan: condition, arm: condition.arms[0], speaker: 'tutor', request, role: 'tutor' },
+    callCli,
+  );
+  assert.deepEqual(
+    calls.map((call) => call.agent),
+    [
+      { provider: 'codex', model: 'gpt-5.6-luna' },
+      { provider: 'codex', model: 'gpt-5.6-sol' },
+    ],
+  );
+  assert.ok(calls.every((call) => call.options.singleAttempt === true));
+});
+
+test('learner replication zero-call preview audits 18 dialogues and all 90 packets', async () => {
+  const outDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-preview-')), 'out');
+  const result = await runLearnerReplication(['--output', outDir]);
+  assert.deepEqual(
+    {
+      dryRun: result.dryRun,
+      modelCalls: result.modelCalls,
+      dialogues: result.dialogues,
+      matchedPairs: result.matchedPairs,
+      assessmentPackets: result.assessmentPackets,
+    },
+    { dryRun: true, modelCalls: 0, dialogues: 18, matchedPairs: 9, assessmentPackets: 90 },
+  );
+  const preflight = JSON.parse(fs.readFileSync(path.join(outDir, 'preflight.json'), 'utf8'));
+  assert.equal(preflight.worlds.length, 3);
+  assert.equal(preflight.worlds.flatMap((world) => world.learnerRequests).length, 18);
+  assert.equal(preflight.worlds.flatMap((world) => world.tutorRequests).length, 24);
+  assert.ok(
+    preflight.worlds
+      .flatMap((world) => world.learnerRequests)
+      .every(({ request }) => request.audit.ok && request.privilege.ok),
+  );
+  assert.ok(
+    preflight.worlds
+      .flatMap((world) => world.tutorRequests)
+      .every((request) => request.audit.ok && request.privilege.ok),
+  );
+  assert.ok(
+    learnerReplicationPlan.worlds.every((world) => fs.existsSync(path.join(outDir, world.key, 'report-preview.html'))),
+  );
+});
+
+test('learner replication paid path fails before writing without standing launch authority', async () => {
+  const outDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-authority-')), 'out');
+  await assert.rejects(runLearnerReplication(['--live', '--output', outDir]), /shared launch arguments/iu);
+  assert.equal(fs.existsSync(outDir), false);
+});
+
+test('learner replication recovery preserves the completed prefix and retries only the interrupted unit', () => {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-recovery-'));
+  fs.writeFileSync(path.join(sourceDir, 'plan.json'), JSON.stringify(learnerReplicationPlan));
+  const runEvents = [
+    {
+      type: 'launch_admitted',
+      study_id: learnerReplicationPlan.id,
+      spend_cap: learnerReplicationPlan.total_attempt_ceiling,
+    },
+    ...Array.from({ length: 4 }, (_value, index) => ({
+      type: 'model_attempt_reserved',
+      count: 1,
+      reserved: index + 1,
+    })),
+    {
+      type: 'run_sealed',
+      status: 'technical_failure',
+      recovery_permitted: true,
+      reserved_attempts: 4,
+    },
+  ];
+  fs.writeFileSync(path.join(sourceDir, 'run-ledger.jsonl'), `${runEvents.map(JSON.stringify).join('\n')}\n`);
+
+  const completeDir = path.join(sourceDir, 'worlds', 'larkspur', 'dialogues', 'L0');
+  fs.mkdirSync(completeDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(completeDir, 'dialogue.json'),
+    JSON.stringify({ turns: [{ turn: 1, learner: 'One.', tutor: 'Two.' }] }),
+  );
+  for (const speaker of ['learner', 'tutor']) {
+    fs.writeFileSync(path.join(completeDir, `1-${speaker}.request.json`), '{}');
+    fs.writeFileSync(path.join(completeDir, `1-${speaker}.response.json`), JSON.stringify(fake(reply(speaker))));
+  }
+
+  const partialDir = path.join(sourceDir, 'worlds', 'larkspur', 'dialogues', 'L1');
+  fs.mkdirSync(partialDir, { recursive: true });
+  fs.writeFileSync(path.join(partialDir, '1-learner.request.json'), '{}');
+  fs.writeFileSync(path.join(partialDir, '1-learner.response.json'), JSON.stringify(fake(reply('Saved learner'))));
+  fs.writeFileSync(path.join(partialDir, '1-tutor.request.json'), '{}');
+
+  const recovery = readLearnerReplicationRecovery(learnerReplicationPlan, sourceDir);
+  assert.equal(recovery.priorAttempts, 4);
+  assert.equal(recovery.responseCount, 3);
+  assert.equal(recovery.interruptedResponseFreeAttempts, 1);
+  assert.deepEqual(
+    recovery.completed.map(({ world, arm }) => `${world.key}/${arm.id}`),
+    ['larkspur/L0'],
+  );
+  assert.equal(recovery.partial.key, 'larkspur/L1');
+  assert.deepEqual(Object.keys(recovery.partial.savedReplies), ['1-learner']);
+  assert.deepEqual(
+    { turn: recovery.partial.failedUnit.turn, speaker: recovery.partial.failedUnit.speaker },
+    { turn: 1, speaker: 'tutor' },
+  );
+});
+
+test('Luna reference routes learner to Luna, tutor to Sol, and never adds a superego call', async () => {
+  const calls = [];
+  const callCli = async (agent, _system, _prompt, role, options) => {
+    calls.push({ agent, role, options });
+    return fake(reply('Fixture line.'));
+  };
+  const request = { systemPrompt: 'system', prompt: 'prompt', messageHistory: [] };
+  await callLunaReferenceModel(
+    { plan: lunaReferencePlan, arm: lunaReferencePlan.lunaArm, speaker: 'learner', request, role: 'learner' },
+    callCli,
+  );
+  await callLunaReferenceModel(
+    { plan: lunaReferencePlan, arm: lunaReferencePlan.lunaArm, speaker: 'tutor', request, role: 'tutor' },
+    callCli,
+  );
+  assert.deepEqual(
+    calls.map((call) => call.agent),
+    [
+      { provider: 'codex', model: 'gpt-5.6-luna' },
+      { provider: 'codex', model: 'gpt-5.6-sol' },
+    ],
+  );
+  assert.ok(calls.every((call) => call.options.singleAttempt === true));
+  assert.ok(calls.every((call) => call.options.outputSchema === CONTINUITY_OUTPUT_SCHEMA));
+});
+
+test('Luna judge transport retries only response-free failures and projects surplus root fields once', async () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'luna-reference-judge-'));
+  let reserved = 0;
+  const budget = {
+    reserve() {
+      reserved += 1;
+      return { call: reserved, limit: 23, remaining: 23 - reserved };
+    },
+  };
+  let calls = 0;
+  const callCli = async (_agent, _system, _prompt, _role, options) => {
+    calls += 1;
+    assert.equal(options.outputSchema.additionalProperties, true);
+    if (calls === 1) {
+      const error = new Error('response-free');
+      error.code = 'CLI_PROVIDER_RESPONSE_FREE_ERROR';
+      error.classification = 'response_free_error';
+      error.reason = 'result_error_without_structured_output';
+      throw error;
+    }
+    options.onRawOutput({ fixture: true });
+    return fake(JSON.stringify({ wanted: 'kept', surplus: 'discarded' }));
+  };
+  const caller = makeLunaJudgeCaller({ budget, outDir, callCli });
+  let transported;
+  const response = await caller({ provider: 'claude-code', model: 'claude-opus-5' }, '', 'prompt', 'fixture-quality', {
+    outputSchema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['wanted'],
+      properties: { wanted: { type: 'string' } },
+    },
+    onRawOutput: (value) => {
+      transported = value;
+    },
+  });
+  assert.deepEqual(JSON.parse(response.text), { wanted: 'kept' });
+  assert.deepEqual(transported, { fixture: true });
+  assert.deepEqual(caller.snapshot(), { physicalAttempts: 2, responseFreeRetries: 1 });
+  assert.equal(reserved, 2);
 });
 const reviewFixture = {
   role_fidelity: 'Keep the role.',
@@ -1942,4 +2368,16 @@ test('scoring and swimlanes use actual unequal lengths without inventing extra t
   assert.match(partialAssessment.html, /Public proof progress is not learner understanding/u);
   assert.match(partialAssessment.html, /Measurement caveats · scores preserved, not corrected/u);
   assert.match(partialAssessment.html, /Fixture &lt;source&gt; provenance/u);
+  const retryAccounting = renderContinuityReport({
+    arms: reportArms,
+    evaluation: {
+      scores: [],
+      newPhysicalAttempts: 6,
+      plannedNewAssessmentPackets: 5,
+    },
+    provenance: { budget: { used: 22, limit: 23 } },
+    characterBrief: 'Fixture only.',
+  });
+  assert.match(retryAccounting.html, /6 physical Opus attempts for 5 planned packets/u);
+  assert.doesNotMatch(retryAccounting.html, /6 of 5/u);
 });

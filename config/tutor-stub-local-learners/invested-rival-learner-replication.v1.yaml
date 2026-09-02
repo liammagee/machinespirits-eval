@@ -1,0 +1,218 @@
+id: invested-rival-learner-replication-v1
+source_config: config/tutor-stub-local-learners/qwen-invested-rival-theorist.v1.yaml
+design: notes/invested-rival-learner-replication-v1.md
+output: .tutor-stub-traces/invested-rival-learner-replication-v1
+total_attempt_ceiling: 396
+generation_attempt_ceiling: 288
+assessment_packets: 90
+response_free_recovery_reserve: 18
+generation_seed: 17
+temperature: 0.6
+
+models:
+  learner_luna: codex.gpt-5.6-luna
+  learner_luna_effort: medium
+  learner_qwen_normal: mlx-community/Qwen3.8-27B-4bit
+  learner_qwen_abliterated: Qwen3.8-27B-Uncensored-MLX/4-bit
+  tutor: codex.gpt-5.6-sol
+  tutor_effort: medium
+  judge: claude-code.claude-opus-5
+  judge_effort: max
+
+mechanisms:
+  baseline:
+    label: original invested-rival prompt
+    system_append: null
+    turn_prompt: null
+  active_progression:
+    label: frozen active progression
+    system_append: >-
+      Carry a live working belief through the exchange. On your first turn,
+      plainly back the character's initial explanation and name one observable
+      consequence that would make sense if it were right. Thereafter, keep,
+      weaken, replace or settle that belief in response to what is actually
+      public. Resistance is active inquiry, not neutral evidence auditing.
+    turn_prompt: >-
+      Make one consequential move suited to the current public evidence: defend
+      your view with a prediction, offer a concrete rival causal reading, draw a
+      discriminating consequence, make a local concession or revision, or
+      synthesize and close. Do not make the same kind of move on adjacent turns
+      unless the newest public evidence materially changes it. Do not merely ask
+      to see the next record. On turn one, visibly back the assigned initial
+      explanation and give one consequence it predicts. On later turns, state
+      what the newest public claim changes or fails to change in your position.
+
+execution_order:
+  luna: [larkspur_baseline, larkspur_progression, riverside_progression, riverside_baseline, tideway_baseline, tideway_progression]
+  qwen_normal: [larkspur_baseline, larkspur_progression, riverside_progression, riverside_baseline, tideway_baseline, tideway_progression]
+  qwen_abliterated: [larkspur_baseline, larkspur_progression, riverside_progression, riverside_baseline, tideway_baseline, tideway_progression]
+
+worlds:
+  - key: larkspur
+    world: config/drama-derivation/world-028-larkspur-fridge.yaml
+    character:
+      name: Morgan
+      role: the studio coordinator responsible for the shared kitchen incident log
+      goal: Identify who moved Priya's lunchbox without turning Dario's history into proof.
+      situation: >-
+        Priya's labelled lunchbox vanished from shelf two. Dario raided the
+        fridge twice before and badged into the kitchen at noon, so you currently
+        think Dario took it. Those facts are public; the actual route is not known.
+      stake: >-
+        You told the office you expected to write Dario up by two o'clock. Backing
+        down costs face, but putting a convenient accusation in your own incident
+        log without a traceable basis would be worse.
+      behavior: >-
+        Defend or revise a recognizable account using only public evidence.
+        Distinguish access, authority and a logged action. Do not invent badge
+        entries, witnesses, notices, receipts or history, and do not become a
+        neutral evidence clerk.
+      tone: >-
+        Contemporary, quick, pointed and dryly sarcastic. Aim barbs at convenient
+        reasoning, not personal worth. Usually use one to three sentences.
+      exit: >-
+        Close when you can state what changed your view and who actually moved
+        the lunchbox, or leave an honestly unresolved exchange without bluffing.
+      avoid:
+        - repeated demands for the same log or a renamed answered objection
+        - invented observations, records, witnesses or actions
+        - threats, discriminatory abuse or attacks on personal worth
+        - stage directions, roleplay commentary or speaking as the tutor
+    tutor: >-
+      Play the office manager speaking directly to Morgan in Larkspur Studio.
+      Work toward a warranted account of who moved the lunchbox. Answer Morgan's
+      live claim or prediction before advancing the proof. Distinguish presence,
+      authority and a recorded action; credit a valid criticism and correct an
+      overstatement. Deliver each due public observation naturally using only
+      public evidence. Do not invent records, calls or disciplinary action, and
+      do not abandon the proof path. Use one reply, usually one to three sentences
+      plus any required source.
+    assessment:
+      scenario_name: The Lunchbox on Shelf Two
+      scenario_description: A contemporary office inquiry in which an invested coordinator initially blames Dario and tests that account against badge, permit and lost-property records.
+      topic: Attribution from access, authority and logged action
+      profile_id: invested_rival_replication_larkspur_v1
+      expected_behavior: Answer the learner's live attribution and use public records to improve the warrant without treating reputation or agreement as proof.
+
+  - key: riverside
+    world: config/drama-derivation/world-029-riverside-clinic.yaml
+    character:
+      name: Rowan
+      role: the clinic duty coordinator responsible for the care log
+      goal: Determine what cancelled Noor's appointment and restore a defensible account without blaming staff by proximity.
+      situation: >-
+        Noor has a confirmation but no appointment. Mara opened Noor's record
+        before closing, so you currently think Mara cancelled it. That access is
+        public; the actual cancellation action is not known.
+      stake: >-
+        Noor is waiting and you already told reception that Mara's access looked
+        decisive. Delay is costly, but accusing a colleague from an access event
+        rather than the action ledger would corrupt the care log you own.
+      behavior: >-
+        Defend or revise a recognizable account using only public evidence.
+        Distinguish viewing a record, process eligibility and the identity that
+        issued an action. Do not invent patient details, logs, staff actions or
+        system events, and do not become a neutral evidence clerk.
+      tone: >-
+        Contemporary, brisk, exacting and dryly impatient under waiting-room
+        pressure. Aim barbs at procedural shortcuts, not personal worth. Usually
+        use one to three sentences.
+      exit: >-
+        Close when you can state what changed your view and what cancelled the
+        appointment, or preserve an honestly unresolved result.
+      avoid:
+        - repeated demands for the same action ledger or renamed objection
+        - invented clinical facts, records, staff actions or system events
+        - threats, discriminatory abuse or attacks on personal worth
+        - stage directions, roleplay commentary or speaking as the tutor
+    tutor: >-
+      Play the operations lead speaking directly to Rowan at Riverside Clinic.
+      Work toward a warranted account of the cancellation. Answer Rowan's live
+      claim or prediction before advancing the proof. Distinguish access,
+      eligibility and attributed action; credit a valid criticism and correct an
+      overstatement. Deliver each due public observation naturally using only
+      public evidence. Do not invent patient details, actions or completed fixes,
+      and do not abandon the proof path. Use one reply, usually one to three
+      sentences plus any required source.
+    assessment:
+      scenario_name: The Missing Appointment at Riverside Clinic
+      scenario_description: A contemporary operations inquiry in which an invested coordinator initially blames Mara and tests that account against process and action ledgers.
+      topic: Attribution from access, process eligibility and action identity
+      profile_id: invested_rival_replication_riverside_v1
+      expected_behavior: Answer the learner's live attribution and use public system evidence to improve the warrant without treating access or agreement as proof.
+
+  - key: tideway
+    world: config/drama-derivation/world-031-tideway-makerspace.yaml
+    character:
+      name: Jordan
+      role: the makerspace build coordinator responsible for the public load-test review
+      goal: Identify the repairable cause of the bridge twist without making the newest builder carry the explanation by reputation.
+      situation: >-
+        The bridge twisted at the north joint, which Jules assembled, and Jules
+        once installed a practice brace backwards. You currently think Jules's
+        assembly caused the failure. Those facts are public; no assembly defect
+        or material cause is yet known.
+      stake: >-
+        You defended the team to the festival committee and then blamed Jules in
+        front of the workshop. Retraction costs face, but a public repair review
+        that mistakes authorship for mechanism would make you a worse coordinator.
+      behavior: >-
+        Defend or revise a recognizable account using only public evidence.
+        Distinguish who assembled a joint from the material and trace that explain
+        failure. Do not invent inspection results, defects, records or history,
+        and do not become a neutral evidence clerk.
+      tone: >-
+        Contemporary workshop speech: sharp, practical, defensive and dryly
+        sarcastic after a public embarrassment. Usually use one to three sentences.
+      exit: >-
+        Close when you can state what changed your view and the supported cause
+        of the twist, or preserve an honestly unresolved review.
+      avoid:
+        - repeated demands for the same trace or a renamed answered objection
+        - invented measurements, inspections, defects or records
+        - threats, discriminatory abuse or attacks on personal worth
+        - stage directions, roleplay commentary or speaking as the tutor
+    tutor: >-
+      Play the senior fabricator speaking directly to Jordan at Tideway
+      Makerspace. Work toward a warranted account of the bridge twist. Answer
+      Jordan's live claim or prediction before advancing the proof. Distinguish
+      assembly credit, logged error, material strength and the first mechanical
+      failure; credit a valid criticism and correct an overstatement. Deliver
+      each due public observation naturally using only public evidence. Do not
+      invent inspections, defects or completed repairs, and do not abandon the
+      proof path. Use one reply, usually one to three sentences plus any required
+      source.
+    assessment:
+      scenario_name: The Twist in the Tideway Footbridge
+      scenario_description: A contemporary makerspace inquiry in which an invested coordinator initially blames Jules and tests that account against material, location and strain records.
+      topic: Attribution from assembly, material weakness and failure sequence
+      profile_id: invested_rival_replication_tideway_v1
+      expected_behavior: Answer the learner's live attribution and use public build evidence to improve the warrant without treating authorship or agreement as proof.
+
+assessment:
+  quality_instructions: >-
+    Judge an invested rival with a live initial explanation, not a cooperative
+    novice, generic skeptic or evidence clerk. Good performance makes concrete
+    predictions, changes position with evidence, preserves a distinct voice and
+    avoids recycling an answered challenge. Do not reward objection volume,
+    random insults, invented facts or mere lexical variety. Score pedagogy
+    separately from agreement and character fidelity separately from politeness.
+
+report:
+  rail_title: Invested rival · replication
+  subtitle: Baseline versus frozen active progression · Luna and Qwen · Sol tutor · no superego
+  setup_title: Nine matched mechanism pairs across three new worlds
+  setup_description: >-
+    Every world crosses the original invested-rival prompt with the frozen
+    active-progression scaffold for Luna, normal Qwen and abliterated Qwen.
+  setup_mechanism_description: >-
+    Only the learner scaffold differs inside each matched pair. The character,
+    proof schedule, Sol tutor, model route, seed and assessment remain fixed.
+  quality_description: Semantic novelty requires a changed inference, prediction, concession or synthesis; lexical variety is auxiliary.
+  comparison_description: The primary comparison is scaffold versus baseline within model/world blocks, not a model ranking.
+  comparison_mechanism_description: Nine matched pairs estimate whether the frozen behavior scaffold transfers beyond its development and pilot worlds.
+  rubric_description: Opus applies v2.2 tutor, learner and dialogue rubrics plus the extended acting-quality instrument.
+  transcript_description: The fixed opening is not scored; each dialogue may end naturally before eight exchanges.
+  proof_description: The harness releases authored public observations on schedule; neither speaker sees hidden answers, future evidence or proof paths.
+  scope_description: This is bounded simulated-learner evidence, not human learning, a causal abliteration estimate or deployment evidence.
+  speed_description: Qwen runs locally while Luna and Sol use Codex routes, so speed is descriptive rather than controlled.

@@ -12,15 +12,51 @@ import {
   tutorStubActionOutcomeCollectionRouteTable,
 } from '../services/tutorStubActionOutcomeCollectionPilot.js';
 import {
+  loadTutorStubActionOutcomeComparableCollectionDesign,
+  runTutorStubActionOutcomeComparableCollectionPreflight,
+  TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH,
+} from '../services/tutorStubActionOutcomeComparableCollection.js';
+import {
+  loadTutorStubActionOutcomeProspectiveRedesign,
+  runTutorStubActionOutcomeProspectiveRedesignPreflight,
+} from '../services/tutorStubActionOutcomeProspectiveRedesign.js';
+import {
   executeTutorStubActionOutcomeCollection,
   extractTutorStubActionOutcomeCollectionRow,
   loadTutorStubActionOutcomeCollectionRecovery,
   main as collectionLauncherMain,
 } from '../scripts/run-tutor-stub-action-outcome-collection-pilot.js';
+import {
+  buildTutorStubActionOutcomeCollectionAudit,
+  renderTutorStubActionOutcomeCollectionAudit,
+  wilsonInterval,
+} from '../scripts/audit-tutor-stub-action-outcome-collection.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN_PATH = 'config/tutor-stub-action-outcome-collection-pilot-design.v1.json';
 const load = () => loadTutorStubActionOutcomeCollectionDesign({ root: REPO_ROOT, designPath: DESIGN_PATH });
+const loadComparable = () =>
+  loadTutorStubActionOutcomeComparableCollectionDesign({
+    root: REPO_ROOT,
+    designPath: TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH,
+  });
+
+test('the prospective redesign preflight fixes the comparison seam without granting model calls', () => {
+  const loaded = loadTutorStubActionOutcomeProspectiveRedesign({ root: REPO_ROOT });
+  const result = runTutorStubActionOutcomeProspectiveRedesignPreflight({ loaded });
+  assert.equal(result.status, 'passed_zero_call');
+  assert.equal(result.modelCalls, 0);
+  assert.equal(result.productionWrites, 0);
+  assert.deepEqual(result.supportedEligibleSet.families, [
+    'explain_model',
+    'minimal_support',
+    'request_self_explanation',
+  ]);
+  assert.deepEqual(
+    result.auditOnlyEligibleSets.map((row) => row.families),
+    [['diagnose_elicit'], ['fade_transfer']],
+  );
+});
 
 function optionValue(args, option) {
   const index = args.indexOf(option);
@@ -89,6 +125,108 @@ function completeRow(job) {
   };
 }
 
+test('the zero-call quality audit fails sparse, auxiliary-inconclusive evidence without inventing review results', () => {
+  const design = load().design;
+  const generationRows = design.randomization.jobs.map((job) =>
+    completeRow({ id: job.jobId, world_id: job.worldId, repeat: job.repeat }),
+  );
+  const source = {
+    path: '/fixture/jobs/aocp1_foxtrot_jukebox_r01/traces/trace.jsonl',
+    runId: 'fixture-run',
+    sha256: 'a'.repeat(64),
+    bytes: 100,
+    metadata: { world: { id: 'world_022_foxtrot_jukebox' } },
+    errors: [],
+  };
+  const seeded = {
+    recordId: 'fixture-run:contract-1',
+    source: source.path,
+    recordedOutcome: 'inconclusive',
+    auxiliaryDeliveryVisible: true,
+    assignmentStatus: 'seeded_uniform_family_assignment',
+    prospectiveAssignment: {
+      selected_move_family: 'diagnose_elicit',
+      eligible_move_families: [{ family: 'diagnose_elicit' }],
+    },
+  };
+  const mandatory = {
+    ...seeded,
+    recordId: 'fixture-run:contract-2',
+    assignmentStatus: 'mandatory_policy_authority_preserved',
+    prospectiveAssignment: { eligible_move_families: [] },
+  };
+  const summary = {
+    sourceFiles: 1,
+    quarantinedSources: 0,
+    events: 20,
+    typedDecisions: 3,
+    closedOutcomes: 2,
+    joinedMemoryRecords: 1,
+  };
+  const registeredReadiness = {
+    modelCalls: 0,
+    summary,
+    sources: [source],
+    evidenceRows: [seeded],
+    exclusionCounts: { no_declared_condition_matched: 1, non_unique_required_join: 1 },
+  };
+  const allObservedReadiness = {
+    modelCalls: 0,
+    summary: { ...summary, joinedMemoryRecords: 2 },
+    sources: [source],
+    evidenceRows: [seeded, mandatory],
+    exclusionCounts: { non_unique_required_join: 1 },
+  };
+  const audit = buildTutorStubActionOutcomeCollectionAudit({
+    design,
+    generationReport: {
+      schema: 'fixture-generation-report',
+      study_id: design.studyId,
+      status: 'generation_complete',
+      source: { commit: 'fixture', detached: true, dirty: false },
+      design: { path: DESIGN_PATH },
+      memory_controller_enabled: false,
+      rows: generationRows,
+      execution: {
+        planned_units: 24,
+        missing_units: 0,
+        completed_turns: 192,
+        planned_turns: 192,
+        model_attempts: {},
+      },
+    },
+    registeredReadiness,
+    allObservedReadiness,
+    decisionInventory: [
+      { assignmentStatus: 'seeded_uniform_family_assignment', conditionDisposition: 'matched' },
+      { assignmentStatus: 'mandatory_policy_authority_preserved', conditionDisposition: 'unmatched' },
+      { assignmentStatus: 'seeded_uniform_family_assignment', conditionDisposition: 'unmatched' },
+    ],
+    asOf: '2026-09-01T23:00:00.000Z',
+  });
+
+  assert.equal(audit.modelCalls, 0);
+  assert.equal(audit.verdict, 'registered_feasibility_gates_failed');
+  assert.equal(audit.controllerStudyLicensed, false);
+  assert.equal(audit.extraction.maximumPotentialBinaryRecords, 0);
+  assert.equal(
+    audit.gates.find((entry) => entry.id === 'minimumVisibleDeliveryRateAmongConditionMatchedAssignments').status,
+    'pass',
+  );
+  assert.equal(audit.gates.find((entry) => entry.id === 'minimumFinalUsableBinaryRecords').status, 'fail');
+  assert.match(renderTutorStubActionOutcomeCollectionAudit(audit), /does not license a held-out controller study/u);
+});
+
+test('Wilson intervals retain the observed fraction and finite bounds', () => {
+  const interval = wilsonInterval(30, 158);
+  assert.equal(interval.successes, 30);
+  assert.equal(interval.total, 158);
+  assert.ok(Math.abs(interval.estimate - 30 / 158) < Number.EPSILON);
+  assert.ok(interval.lower > 0.13 && interval.lower < interval.estimate);
+  assert.ok(interval.upper > interval.estimate && interval.upper < 0.26);
+  assert.equal(wilsonInterval(0, 0), null);
+});
+
 test('the registered design compiles exactly 24 balanced, held-out-safe jobs', () => {
   const loaded = load();
   const destination = path.resolve(REPO_ROOT, loaded.design.destinations.liveRoot);
@@ -117,6 +255,106 @@ test('the registered design compiles exactly 24 balanced, held-out-safe jobs', (
     assert.ok(job.args.includes('--no-training-reuse'));
     assert.ok(!plan.held_out_worlds.includes(job.world_id));
   }
+});
+
+test('the v2 design compiles exactly 60 balanced jobs inside the fixed comparable set', () => {
+  const loaded = loadComparable();
+  const destination = path.resolve(REPO_ROOT, loaded.design.destinations.liveRoot);
+  const plan = buildTutorStubActionOutcomeCollectionPlan({ loaded, destination });
+
+  assert.equal(plan.study_id, 'tutor-stub-action-outcome-comparable-collection-v2');
+  assert.equal(plan.jobs.length, 60);
+  assert.equal(plan.planned_turns, 480);
+  assert.equal(plan.planned_model_calls, 1500);
+  assert.equal(plan.model_attempt_ceiling, 4860);
+  assert.equal(
+    loaded.design.comparability.eligibleSetId,
+    'action-outcome-eligible-set.v1:explain_model+minimal_support+request_self_explanation',
+  );
+  assert.deepEqual(loaded.design.comparability.moveFamilies, [
+    'explain_model',
+    'minimal_support',
+    'request_self_explanation',
+  ]);
+  assert.equal(loaded.design.humanReview.measurementPolicy, 'human_consensus_auxiliary_veto_v2');
+  for (const worldId of loaded.design.population.collectionWorlds) {
+    assert.deepEqual(
+      plan.jobs.filter((job) => job.world_id === worldId).map((job) => job.repeat),
+      Array.from({ length: 15 }, (_, index) => index + 1),
+    );
+  }
+});
+
+test('the v2 zero-call preflight pins the comparable design, routes, and ceiling', async () => {
+  const loaded = loadComparable();
+  const result = await runTutorStubActionOutcomeComparableCollectionPreflight({
+    loaded,
+    buildPlan: buildTutorStubActionOutcomeCollectionPlan,
+    destinationExists: () => false,
+    resolveArchive: () => '/private/fixture-archive',
+    archiveIsWritable: () => true,
+    probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
+    smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', model_calls: 0 }),
+  });
+
+  assert.equal(result.status, 'passed_zero_call');
+  assert.equal(result.model_calls_executed, 0);
+  assert.equal(result.production_writes, 0);
+  assert.equal(result.plan.jobs.length, 60);
+  assert.equal(result.plan.model_attempt_ceiling, 4860);
+  assert.deepEqual(
+    Object.entries(result.checks).filter(([, passed]) => !passed),
+    [],
+  );
+});
+
+test('the v2 recovery preflight requires the original live root and keeps later outputs unused', async () => {
+  const loaded = loadComparable();
+  const liveRoot = path.resolve(loaded.root, loaded.design.destinations.liveRoot);
+  const destination = path.resolve(
+    loaded.root,
+    '.tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-recovery-1',
+  );
+  const result = await runTutorStubActionOutcomeComparableCollectionPreflight({
+    loaded,
+    destination,
+    recovery: true,
+    buildPlan: buildTutorStubActionOutcomeCollectionPlan,
+    destinationExists: (candidate) => path.resolve(candidate) === liveRoot,
+    resolveArchive: () => '/private/fixture-archive',
+    archiveIsWritable: () => true,
+    probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
+    smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', model_calls: 0 }),
+  });
+
+  assert.equal(result.status, 'passed_zero_call');
+  assert.equal(result.destination_availability.liveRoot, false);
+  assert.equal(result.destination_availability.packetRoot, true);
+  assert.equal(result.destination_availability.comparisonRoot, true);
+  assert.equal(result.destination_availability.readinessRoot, true);
+  assert.equal(result.checks.registered_destinations_match_launch_kind, true);
+  assert.equal(result.checks.selected_destination_absent, true);
+  assert.equal(result.model_calls_executed, 0);
+  assert.equal(result.production_writes, 0);
+});
+
+test('the maintained launcher selects the pinned v2 design without authorizing calls', async () => {
+  let observedStudy = null;
+  const result = await collectionLauncherMain(
+    ['--design', TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH, '--dry-run'],
+    {
+      runPreflight: async ({ loaded }) => {
+        observedStudy = loaded.design.studyId;
+        return {
+          status: 'passed_zero_call',
+          checks: { fixture: true },
+          plan: { jobs: [], model_attempt_ceiling: loaded.design.attemptCeiling.hardMaximumReservations },
+        };
+      },
+    },
+  );
+  assert.equal(observedStudy, 'tutor-stub-action-outcome-comparable-collection-v2');
+  assert.equal(result.plan.model_attempt_ceiling, 4860);
 });
 
 test('the route table holds every model-backed role to the registered Luna stack', () => {

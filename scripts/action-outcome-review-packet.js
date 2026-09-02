@@ -56,7 +56,12 @@ export async function prepareActionOutcomeReview({ inputPath, outputPath, packet
     (candidate) => candidate.assignmentStatus === 'seeded_uniform_family_assignment',
   );
   if (!assignedCandidates.length) throw new Error('packet preparation found no seeded uniform family assignments');
-  const artifacts = buildActionOutcomeReviewPacket({ candidates: assignedCandidates, packetId, coderIds });
+  const artifacts = buildActionOutcomeReviewPacket({
+    candidates: assignedCandidates,
+    packetId,
+    coderIds,
+    measurementPolicy: input.measurementPolicy,
+  });
   const packetBytes = reviewJson(artifacts.packet);
   const keyBytes = reviewJson(artifacts.machineKey);
   const codebook = actionOutcomeReviewCodebook();
@@ -67,6 +72,7 @@ export async function prepareActionOutcomeReview({ inputPath, outputPath, packet
   const manifest = {
     version: ACTION_OUTCOME_REVIEW_VERSION,
     packetId,
+    measurementPolicy: artifacts.packet.measurementPolicy,
     modelCalls: 0,
     claimBoundary: artifacts.packet.claimBoundary,
     sources: readiness.report.sources,

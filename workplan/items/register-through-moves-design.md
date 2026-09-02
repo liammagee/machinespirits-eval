@@ -1,7 +1,7 @@
 ---
 id: register-through-moves-design
-title: "Review: isolate register × move coupling on the proof-DAG"
-status: review
+title: "Design: isolate register × move coupling on the proof-DAG"
+status: done
 type: research
 priority: P3
 owner: codex
@@ -10,11 +10,11 @@ created: 2026-08-31
 updated: 2026-09-01
 branch: codex/register-through-moves-formal-design-20260901
 verification: >-
-  The zero-call review has advanced into a formal 24-dialogue calibration
-  design. It independently randomizes register and move policy, fixes trigger,
-  delivery, agreement, safety and endpoint-spread gates, preserves typed
-  dispositions and prior-study separation, and caps the calibration at 6,240
-  model-attempt reservations. The design grants no call or launch authority.
+  PR #924 merged the formal 24-dialogue calibration design at 0df11677d. It
+  independently randomizes register and move policy, fixes trigger, delivery,
+  agreement, safety and endpoint-spread gates, preserves typed dispositions
+  and prior-study separation, and caps calibration at 6,240 model-attempt
+  reservations without granting call or launch authority.
 claim_status: future
 links:
   items:
@@ -22,12 +22,14 @@ links:
     - frame-refuser-depth-study
     - edged-register-stub-dag-replication
     - paper-300-resistant-learner-publication-refresh
+    - register-through-moves-calibration-implementation
   paper:
     - docs/research/paper-full-2.0.md
   notes:
     - config/tutor-stub-register-through-moves-calibration-design.v1.json
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/924
 tags:
-  - under-review
   - prospective
   - tutor-stub
   - register
@@ -223,7 +225,8 @@ The zero-call review ends in one of two dispositions:
   operator's GO.
 
 The zero-call review took the second branch and the calibration registration is
-now written. The card remains in `review`, not `active`, because no launcher or
-reader implementation exists and no call authority follows from design work.
-The next decision is whether to implement and dry-run the bounded 6,240-attempt
-calibration path. Model calls used by the review and formal design: 0.
+now written. PR #924 merged the design as commit `0df11677d`; this design card
+is therefore complete. Launcher, reader, analyzer and dry-run work is routed to
+`register-through-moves-calibration-implementation`. No call authority follows
+from either the merged design or that implementation card. Model calls used by
+the review and formal design: 0.
