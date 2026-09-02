@@ -1,0 +1,80 @@
+{
+  "documentType": "prospective_action_outcome_redesign",
+  "version": 1,
+  "status": "implemented_zero_call_design_seam",
+  "workplanItem": "adaptive-curriculum-memory-controller",
+  "sourcePilot": {
+    "studyId": "tutor-stub-action-outcome-collection-pilot-v1",
+    "disposition": "closed_feasibility_failure",
+    "audit": "exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/audit.json",
+    "reuse": "development_examples_only_never_memory_evidence_or_sample_top_up"
+  },
+  "claimBoundary": "This redesign establishes a prospective comparison and measurement seam. It does not establish learning, transfer, action-family superiority, controller benefit, or authority to launch model-backed work.",
+  "steps": [
+    "Keep the failed pilot and its 30 matched cases sealed as development-only evidence.",
+    "Identify every decision by its exact policy-eligible move-family set before assignment.",
+    "Randomize only when at least two move families are simultaneously eligible; preserve singleton and mandatory choices as audit-only policy decisions.",
+    "Compare historical outcomes only within the same context, condition, support level, world scope, and exact eligible-family set.",
+    "Use two independent human coders as semantic outcome authority. Treat the deterministic observer as auxiliary: an opposite binary label or invisible delivery forces indeterminacy, while an inconclusive auxiliary label is nonconfirmatory and cannot erase exact human consensus.",
+    "Validate the assignment, eligible-set join, outcome rule, abstention behavior, and family-specific review criteria with zero-call fixtures.",
+    "Register any fresh collection as a separate fixed-size study with new jobs, seeds, destinations, routes, and spend ceiling; never enlarge it after outcomes are visible.",
+    "Keep Rowan Flat and Tideway Makerspace outside collection and memory until a later separately registered controller study measures independent work and transfer against current, stale, scrambled, contradictory, and no-memory controls."
+  ],
+  "comparability": {
+    "unit": "exact_eligible_move_family_set",
+    "minimumFamilies": 2,
+    "runtimeEligibleSetVersion": "action-outcome-eligible-set.v1",
+    "firstSupportedStratum": {
+      "scaffoldPhase": "support",
+      "families": ["explain_model", "minimal_support", "request_self_explanation"],
+      "eligibleSetId": "action-outcome-eligible-set.v1:explain_model+minimal_support+request_self_explanation"
+    },
+    "auditOnlyCurrentStrata": [
+      { "scaffoldPhase": "diagnose", "families": ["diagnose_elicit"] },
+      { "scaffoldPhase": "fade", "families": ["fade_transfer"] }
+    ],
+    "unsupportedComparativeFamilies": ["diagnose_elicit", "fade_transfer"],
+    "rule": "No record may support a controller decision whose candidate eligible-set id differs from the record eligible-set id."
+  },
+  "measurement": {
+    "policy": "human_consensus_auxiliary_veto_v2",
+    "semanticAuthority": "exact agreement between two independently blinded human coders on visible delivery and outcome",
+    "binaryAdmission": ["success", "failure"],
+    "auxiliaryRules": {
+      "sameBinary": "confirmatory",
+      "oppositeBinary": "measurement_indeterminate",
+      "inconclusiveOrNonbinary": "nonconfirmatory_no_veto",
+      "deliveryNotVisible": "measurement_indeterminate"
+    },
+    "familySpecificCriteriaSource": "the requested action's saved pre-action success_signal and evidence_contract",
+    "fixtureMatrix": "clear success, clear failure, and ambiguous evidence for each family admitted to a future collection"
+  },
+  "futureCollection": {
+    "status": "not_registered_no_launch_authority",
+    "requiredBeforeLaunch": [
+      "fixed sample size and turn horizon",
+      "fresh job identities and master seed",
+      "collection worlds and untouched held-out worlds",
+      "fixed model routes and reasoning settings",
+      "create-once destinations",
+      "feasibility thresholds and failure dispositions",
+      "fail-before-call spend ceiling",
+      "merged design, clean detached launch commit, and separate signed GO note"
+    ],
+    "forbidden": [
+      "reuse or relabel the sealed pilot as confirmatory evidence",
+      "outcome-dependent top-up, replacement, recoding, or threshold relaxation",
+      "pooling across different eligible-family sets",
+      "forcing diagnose_elicit or fade_transfer into a comparison before a genuine co-eligible alternative exists",
+      "enabling the memory controller during collection"
+    ]
+  },
+  "heldOutControllerStudy": {
+    "status": "not_yet_designed",
+    "worlds": ["world_030_rowan_flat", "world_031_tideway_makerspace"],
+    "requiredControls": ["no_memory", "current_memory", "stale_memory", "scrambled_memory", "contradictory_memory"],
+    "endpoints": ["independent_work", "transfer"],
+    "assistedClosureIsNotAnEndpoint": true
+  },
+  "modelCalls": 0
+}

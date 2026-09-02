@@ -7,6 +7,21 @@ typed-action runtime and the human-review packet. It does not register or launch
 a model-backed collection, choose scientific conditions or thresholds, or test
 whether action-outcome memory improves learning or transfer.
 
+The first registered collection later failed its feasibility gates. Its sealed
+quality audit remains the historical result. The prospective successor is
+specified in `notes/2026-09-01-action-outcome-prospective-redesign.md` and
+`config/tutor-stub-action-outcome-prospective-redesign.v1.json`; it does not
+reuse, recode, or top up the failed pilot.
+
+Run its deterministic contract check with:
+
+```bash
+node scripts/check-tutor-stub-action-outcome-prospective-redesign.js
+```
+
+The check reads repository state only and reports zero model calls and zero
+production writes.
+
 ## Why ordinary policy traces are insufficient
 
 The ordinary typed-action policy chooses one action deterministically from the
@@ -45,8 +60,9 @@ At each turn the runtime:
 1. estimates the public learner state and applies the existing world and scaffold
    gates;
 2. preserves mandatory diagnostic or escalation authority with probability one;
-3. on an assignable turn, draws uniformly among represented eligible move
-   families;
+3. on an assignable turn with at least two represented move families, draws
+   uniformly among those families; a singleton set remains an audit-only policy
+   choice;
 4. draws uniformly among the eligible action types inside the selected family;
 5. realizes the assigned action through the existing response-configuration and
    guard path; and
@@ -58,6 +74,13 @@ selected family`. The trace records the baseline policy action, eligible actions
 grouped by move family, both deterministic draws, both probabilities, the chosen
 action, and the seed material. Repeating the same run seed, profile, repeat, turn,
 and job identity reproduces the draw.
+
+Every decision also records a canonical `eligible_set_id`. Evidence joins and
+controller lookups must match that exact identifier, so rates from different
+choice sets cannot be pooled. The current support phase provides one genuine
+three-family comparison (`minimal_support`, `explain_model`, and
+`request_self_explanation`). The current diagnose and fade phases each expose a
+single family and therefore remain outside comparative memory.
 
 Fixed support is required so an assigned family does not silently change the
 assistance level. Register, task, support, world constraints, scaffold phase,
@@ -78,6 +101,8 @@ The readiness row reports one of these assignment states:
   evidence after valid human review;
 - `mandatory_policy_authority_preserved`: retained for audit, but not an
   exchangeable family assignment;
+- `insufficient_family_overlap_policy_preserved`: an assignable but singleton
+  choice, retained for audit and excluded from comparative evidence;
 - `policy_selected` or `not_recorded`: deterministic or historical selection,
   retained for audit.
 
@@ -85,7 +110,10 @@ The standard two-coder packet accepts only the first state. Even if a separate
 human review is supplied directly, deterministic, mandatory, or unrecorded
 selection remains `measurement_indeterminate` with status
 `nonrandomized_assignment`; it cannot become binary memory support. Human and
-auxiliary disagreement remains indeterminate under the existing rule.
+auxiliary disagreement remains indeterminate under the historical pilot rule.
+The prospective v2 rule keeps two-coder semantic consensus when the deterministic
+observer is merely inconclusive, while an opposite binary auxiliary result or
+invisible delivery still forces `measurement_indeterminate`.
 
 ## Zero-call preflight evidence
 
@@ -111,7 +139,7 @@ their seed schedule, two private human-coder seats, feasibility thresholds,
 create-once destinations, technical dispositions, and a hard ceiling of 1,944
 model-call reservations.
 
-The design is not launch authority. The zero-call collection launcher is
+At registration, the design alone was not launch authority. The zero-call collection launcher is
 `scripts/run-tutor-stub-action-outcome-collection-pilot.js`. Its dry run compiles
 all 24 commands, probes the local Codex CLI version, exercises the three model
 roles with local stubs, and verifies the private archive plus all four
@@ -123,13 +151,13 @@ node scripts/run-tutor-stub-action-outcome-collection-pilot.js --dry-run
 
 The paid path uses `services/paidStudyLaunchContract.js`. Under
 `docs/paid-study-authorization-policy.md`, the launcher must merge to `main`; a
-clean detached launch commit must contain the design and launcher, and a separate
-signed GO note must name that commit, design path, and 1,944-reservation ceiling.
-No GO note is part of this slice, and a passing dry run grants no launch or
-model-call authority.
+clean detached launch commit had to contain the design and launcher, and a separate
+signed GO note had to name that commit, design path, and 1,944-reservation
+ceiling. That launch is now closed. A passing dry run still grants no launch or
+model-call authority for any successor study.
 
-The collection pilot must report mandatory versus assigned turns, eligible-family
+The collection pilot reported mandatory versus assigned turns, eligible-family
 sets, family and action propensities, delivered/displaced actions, conditions,
-review dispositions, and usable binary records. Its outputs may size a later
-controller study. They are not that study's outcome, and the action-outcome
-memory controller remains disabled throughout collection.
+review dispositions, and usable binary records. It failed the registered
+feasibility gates and therefore did not license or size a later controller study.
+The action-outcome memory controller remained disabled throughout collection.

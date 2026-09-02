@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 
 export const ACTION_OUTCOME_REVIEW_VERSION = 'action-outcome-human-review.v1';
+export const ACTION_OUTCOME_MEASUREMENT_POLICIES = Object.freeze({
+  AUXILIARY_AGREEMENT_REQUIRED_V1: 'auxiliary_agreement_required_v1',
+  HUMAN_CONSENSUS_AUXILIARY_VETO_V2: 'human_consensus_auxiliary_veto_v2',
+});
 export const OUTCOME_LABELS = Object.freeze([
   'success',
   'failure',
@@ -9,6 +13,14 @@ export const OUTCOME_LABELS = Object.freeze([
   'measurement_indeterminate',
 ]);
 const DELIVERY_LABELS = ['delivered', 'not_delivered', 'indeterminate'];
+
+function measurementPolicy(value) {
+  const selected = value || ACTION_OUTCOME_MEASUREMENT_POLICIES.AUXILIARY_AGREEMENT_REQUIRED_V1;
+  if (!Object.values(ACTION_OUTCOME_MEASUREMENT_POLICIES).includes(selected)) {
+    throw new Error(`unsupported action-outcome measurement policy: ${JSON.stringify(value)}`);
+  }
+  return selected;
+}
 
 export function reviewDataHash(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -57,8 +69,9 @@ function expectedEvidence(action) {
   };
 }
 
-export function buildActionOutcomeReviewPacket({ candidates, packetId, coderIds } = {}) {
+export function buildActionOutcomeReviewPacket({ candidates, packetId, coderIds, measurementPolicy: policy } = {}) {
   requireString(packetId, 'packetId');
+  const selectedMeasurementPolicy = measurementPolicy(policy);
   if (!Array.isArray(coderIds) || coderIds.length !== 2 || new Set(coderIds).size !== 2) {
     throw new Error('exactly two distinct coderIds are required');
   }
@@ -94,6 +107,7 @@ export function buildActionOutcomeReviewPacket({ candidates, packetId, coderIds 
   const packet = {
     version: ACTION_OUTCOME_REVIEW_VERSION,
     packetId,
+    measurementPolicy: selectedMeasurementPolicy,
     purpose:
       'Review visible action delivery and immediate next-turn uptake using saved public text and pre-action criteria.',
     claimBoundary:
@@ -104,6 +118,7 @@ export function buildActionOutcomeReviewPacket({ candidates, packetId, coderIds 
   const machineKey = {
     version: ACTION_OUTCOME_REVIEW_VERSION,
     packetId,
+    measurementPolicy: selectedMeasurementPolicy,
     packetSha256,
     coderIds: [...coderIds],
     warning: 'Keep this file and source traces away from coders until both independent submissions are complete.',
@@ -148,11 +163,13 @@ export function compareActionOutcomeReviews({ packet, machineKey, submissions, r
   requireTime(recordedAt, 'recordedAt');
   requireString(source, 'review source');
   const packetSha256 = reviewDataHash(reviewJson(packet));
+  const selectedMeasurementPolicy = measurementPolicy(packet?.measurementPolicy);
   if (
     packet?.version !== ACTION_OUTCOME_REVIEW_VERSION ||
     machineKey?.version !== ACTION_OUTCOME_REVIEW_VERSION ||
     machineKey.packetId !== packet.packetId ||
-    machineKey.packetSha256 !== packetSha256
+    machineKey.packetSha256 !== packetSha256 ||
+    measurementPolicy(machineKey.measurementPolicy) !== selectedMeasurementPolicy
   ) {
     throw new Error('packet and machine key do not match');
   }
@@ -231,8 +248,25 @@ export function compareActionOutcomeReviews({ packet, machineKey, submissions, r
       consensusOutcome !== 'measurement_indeterminate' &&
       consensusOutcome === key.auxiliaryOutcome &&
       key.auxiliaryDeliveryVisible === true;
-    if (consensusOutcome !== 'measurement_indeterminate' && !auxiliaryAgrees)
-      reasons.push('auxiliary_human_disagreement');
+    const oppositeBinaryAuxiliary =
+      ['success', 'failure'].includes(consensusOutcome) &&
+      ['success', 'failure'].includes(key.auxiliaryOutcome) &&
+      consensusOutcome !== key.auxiliaryOutcome;
+    let memoryOutcome = 'measurement_indeterminate';
+    if (selectedMeasurementPolicy === ACTION_OUTCOME_MEASUREMENT_POLICIES.AUXILIARY_AGREEMENT_REQUIRED_V1) {
+      if (consensusOutcome !== 'measurement_indeterminate' && !auxiliaryAgrees)
+        reasons.push('auxiliary_human_disagreement');
+      memoryOutcome = auxiliaryAgrees ? consensusOutcome : 'measurement_indeterminate';
+    } else if (consensusOutcome !== 'measurement_indeterminate') {
+      if (key.auxiliaryDeliveryVisible !== true) {
+        reasons.push('auxiliary_delivery_disagreement');
+      } else if (oppositeBinaryAuxiliary) {
+        reasons.push('auxiliary_human_disagreement');
+      } else {
+        memoryOutcome = consensusOutcome;
+        if (!auxiliaryAgrees) reasons.push('auxiliary_nonconfirmatory');
+      }
+    }
     reviews.push({
       runId: key.runId,
       contractId: key.contractId,
@@ -243,8 +277,9 @@ export function compareActionOutcomeReviews({ packet, machineKey, submissions, r
       tutorText: key.tutorText,
       learnerText: key.learnerText,
       deliveredActionType: key.action.action_type,
-      // Retain human consensus; the existing importer separately retains and
-      // stops on disagreement with the saved auxiliary outcome or delivery.
+      measurementPolicy: selectedMeasurementPolicy,
+      // Retain human consensus. The importer applies the packet's prospective
+      // measurement policy while preserving every auxiliary disagreement.
       outcome: consensusOutcome,
     });
     return {
@@ -255,7 +290,7 @@ export function compareActionOutcomeReviews({ packet, machineKey, submissions, r
       consensusOutcome,
       auxiliaryOutcome: key.auxiliaryOutcome,
       auxiliaryDeliveryVisible: key.auxiliaryDeliveryVisible,
-      memoryOutcome: auxiliaryAgrees ? consensusOutcome : 'measurement_indeterminate',
+      memoryOutcome,
       reasons,
     };
   });
@@ -267,6 +302,7 @@ export function compareActionOutcomeReviews({ packet, machineKey, submissions, r
       version: ACTION_OUTCOME_REVIEW_VERSION,
       packetId: packet.packetId,
       packetSha256,
+      measurementPolicy: selectedMeasurementPolicy,
       recordedAt,
       modelCalls: 0,
       claimBoundary: packet.claimBoundary,

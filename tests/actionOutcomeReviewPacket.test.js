@@ -8,6 +8,7 @@ import { estimateLearnerStateBelief, selectPedagogicalAction } from '../services
 import { buildTutorStubTypedActionDecision } from '../services/adaptiveTutor/tutorStubActionAdapter.js';
 import { assignTutorStubTypedAction } from '../services/tutorStubTypedActionAssignment.js';
 import {
+  ACTION_OUTCOME_MEASUREMENT_POLICIES,
   actionOutcomeReviewCodebook,
   buildActionOutcomeReviewPacket,
   compareActionOutcomeReviews,
@@ -95,6 +96,25 @@ test('packet exposes public review material while the private key retains joins 
     built([candidate('run-a:contract-a'), candidate('run-b:contract-b')]).submissions[0].cases,
     built([candidate('run-a:contract-a'), candidate('run-b:contract-b')]).submissions[1].cases,
   );
+});
+
+test('prospective v2 keeps human semantic consensus when the auxiliary is only inconclusive', () => {
+  const artifacts = buildActionOutcomeReviewPacket({
+    candidates: [{ ...candidate(), auxiliaryOutcome: 'inconclusive' }],
+    packetId: 'packet-v2',
+    coderIds: ['coder-a', 'coder-b'],
+    measurementPolicy: ACTION_OUTCOME_MEASUREMENT_POLICIES.HUMAN_CONSENSUS_AUXILIARY_VETO_V2,
+  });
+  const result = compareActionOutcomeReviews({
+    packet: artifacts.packet,
+    machineKey: artifacts.machineKey,
+    submissions: artifacts.submissions.map((row) => complete(row)),
+    recordedAt: '2026-08-06T00:00:00.000Z',
+    source: 'review:packet-v2',
+  });
+  assert.equal(result.report.cases[0].memoryOutcome, 'success');
+  assert.deepEqual(result.report.cases[0].reasons, ['auxiliary_nonconfirmatory']);
+  assert.equal(result.reviews[0].measurementPolicy, 'human_consensus_auxiliary_veto_v2');
 });
 
 test('two matching independent reviews export exact importer records without copying private state', () => {
@@ -313,6 +333,7 @@ test('prepare and compare commands write create-once private artifacts with zero
     inputPath,
     reviewJson({
       asOf: '2026-08-12T00:00:00.000Z',
+      measurementPolicy: ACTION_OUTCOME_MEASUREMENT_POLICIES.HUMAN_CONSENSUS_AUXILIARY_VETO_V2,
       conditions: CONDITIONS,
       sources: [{ path: 'trace.jsonl', role: 'memory', contextKey: 'prospective-context' }],
     }),
@@ -325,6 +346,7 @@ test('prepare and compare commands write create-once private artifacts with zero
     coderIds: ['coder-a', 'coder-b'],
   });
   assert.equal(prepared.manifest.modelCalls, 0);
+  assert.equal(prepared.manifest.measurementPolicy, 'human_consensus_auxiliary_veto_v2');
   assert.equal(prepared.manifest.eligibleCases, 1);
   assert.throws(() => fs.writeFileSync(path.join(packetRoot, 'packet.json'), '{}', { flag: 'wx' }), /EEXIST/u);
   const packet = JSON.parse(fs.readFileSync(path.join(packetRoot, 'packet.json')));

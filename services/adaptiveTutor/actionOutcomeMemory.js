@@ -1,11 +1,24 @@
 import { ADAPTATION_ACTION_BY_TYPE } from './actionPolicy.js';
+import {
+  actionOutcomeEligibleSetForCandidates,
+  actionOutcomeEligibleSetIncludes,
+} from './actionOutcomeComparability.js';
 import { tutorStubMoveFamilyForAction } from './tutorStubActionAdapter.js';
 
 // A supplied, immutable evidence view. No storage access, model calls, learned
 // weights, or scientific thresholds live here. Rates are descriptive uptake
 // associations; they are not estimates of learning or causal action effects.
 const OUTCOMES = new Set(['success', 'failure', 'partial', 'inconclusive', 'measurement_indeterminate']);
-const REQUIRED_STRINGS = ['id', 'dialogueId', 'contractId', 'worldId', 'conditionId', 'contextKey', 'actionType'];
+const REQUIRED_STRINGS = [
+  'id',
+  'dialogueId',
+  'contractId',
+  'worldId',
+  'conditionId',
+  'contextKey',
+  'eligibleSetId',
+  'actionType',
+];
 
 function timestamp(value) {
   return typeof value === 'string' ? Date.parse(value) : NaN;
@@ -20,7 +33,14 @@ function freeze(value) {
 }
 
 function cellKey(row) {
-  return JSON.stringify([row.contextKey, row.conditionId, row.worldId, row.family, row.supportLevel]);
+  return JSON.stringify([
+    row.contextKey,
+    row.conditionId,
+    row.eligibleSetId,
+    row.worldId,
+    row.family,
+    row.supportLevel,
+  ]);
 }
 
 function moveFamilyForAction(actionType) {
@@ -53,6 +73,9 @@ function normalizeRecord(row, cutoff) {
   } catch {
     return { reason: 'unknown_action_type' };
   }
+  if (!actionOutcomeEligibleSetIncludes(row.eligibleSetId, family)) {
+    return { reason: 'invalid_eligible_set' };
+  }
   if (!Array.isArray(row.supersedes ?? []) || (row.supersedes || []).some((id) => typeof id !== 'string')) {
     return { reason: 'invalid_supersession' };
   }
@@ -84,6 +107,7 @@ function summarize(records) {
       cells.set(key, {
         contextKey: row.contextKey,
         conditionId: row.conditionId,
+        eligibleSetId: row.eligibleSetId,
         worldId: row.worldId,
         family: row.family,
         supportLevel: row.supportLevel,
@@ -234,6 +258,7 @@ export function planActionMemoryDemotions(memory, context, candidates, policy = 
     asOf: memory?.asOf ?? null,
     conditionId: context?.conditionId ?? null,
     contextKey: context?.contextKey ?? null,
+    eligibleSetId: context?.eligibleSetId ?? null,
     scope: policy.scope ?? null,
     disposition: 'abstain',
     reason: null,
@@ -250,6 +275,7 @@ export function planActionMemoryDemotions(memory, context, candidates, policy = 
     !context.worldId ||
     !context.dialogueId ||
     !context.contextKey ||
+    !context.eligibleSetId ||
     !Number.isInteger(context.supportLevel) ||
     context.supportLevel < 0 ||
     context.supportLevel > 3
@@ -258,6 +284,9 @@ export function planActionMemoryDemotions(memory, context, candidates, policy = 
   }
   if (!Array.isArray(memory?.records) || !Array.isArray(memory.conflicts) || !Number.isFinite(timestamp(memory.asOf)))
     return abstain('missing_memory');
+  const candidateEligibleSet = actionOutcomeEligibleSetForCandidates(candidates, moveFamilyForAction);
+  if (!candidateEligibleSet.comparative) return abstain('insufficient_family_overlap');
+  if (candidateEligibleSet.id !== context.eligibleSetId) return abstain('candidate_eligible_set_mismatch');
   if (timestamp(memory.asOf) > now) return abstain('future_snapshot');
   const allRecords = [...memory.records, ...memory.conflicts];
   if (
@@ -277,6 +306,7 @@ export function planActionMemoryDemotions(memory, context, candidates, policy = 
   const matches = (row) =>
     row.contextKey === context.contextKey &&
     row.conditionId === context.conditionId &&
+    row.eligibleSetId === context.eligibleSetId &&
     row.supportLevel === context.supportLevel &&
     (policy.scope === 'held_out_world' || row.worldId === context.worldId);
   if (memory.conflicts.some(matches)) return abstain('contradictory_records');

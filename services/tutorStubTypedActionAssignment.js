@@ -1,5 +1,6 @@
 import { deterministicChoice } from './deterministicExperimentSampler.js';
 import { assignPedagogicalActionSelection } from './adaptiveTutor/actionPolicy.js';
+import { actionOutcomeEligibleSetForCandidates } from './adaptiveTutor/actionOutcomeComparability.js';
 import { tutorStubMoveFamilyForAction } from './adaptiveTutor/tutorStubActionAdapter.js';
 
 export const TUTOR_STUB_TYPED_ACTION_ASSIGNMENT_MODES = Object.freeze(['policy', 'uniform_family_eligible']);
@@ -17,6 +18,14 @@ export function normalizeTutorStubTypedActionAssignmentMode(value) {
 export function assignTutorStubTypedAction({ mode = 'policy', selection, selectionInput, samplingContext } = {}) {
   const normalizedMode = normalizeTutorStubTypedActionAssignmentMode(mode);
   const baselineActionType = selection?.selectedAction?.action_type || null;
+  const candidates = selection?.candidateActions || [];
+  const eligibleSet = actionOutcomeEligibleSetForCandidates(candidates, tutorStubMoveFamilyForAction);
+  const eligibleFamilies = eligibleSet.families.map((family) => ({
+    family,
+    action_types: candidates
+      .filter((candidate) => tutorStubMoveFamilyForAction(candidate.action_type) === family)
+      .map((candidate) => candidate.action_type),
+  }));
   if (normalizedMode === 'policy') {
     return {
       selection,
@@ -26,6 +35,9 @@ export function assignTutorStubTypedAction({ mode = 'policy', selection, selecti
         disposition: 'policy_selected',
         baseline_action_type: baselineActionType,
         selected_action_type: baselineActionType,
+        eligible_set_id: eligibleSet.id,
+        eligible_move_families: eligibleFamilies,
+        comparative_family_count: eligibleSet.familyCount,
         draw: null,
       },
     };
@@ -40,11 +52,13 @@ export function assignTutorStubTypedAction({ mode = 'policy', selection, selecti
         baseline_action_type: baselineActionType,
         selected_action_type: baselineActionType,
         authority: selection?.selectionAuthority || null,
+        eligible_set_id: eligibleSet.id,
+        eligible_move_families: eligibleFamilies,
+        comparative_family_count: eligibleSet.familyCount,
         draw: null,
       },
     };
   }
-  const candidates = selection.candidateActions || [];
   if (!candidates.length) throw new Error('uniform eligible assignment requires at least one policy candidate');
   const context = samplingContext || {};
   const byFamily = new Map();
@@ -52,6 +66,24 @@ export function assignTutorStubTypedAction({ mode = 'policy', selection, selecti
     const family = tutorStubMoveFamilyForAction(candidate.action_type);
     if (!byFamily.has(family)) byFamily.set(family, []);
     byFamily.get(family).push(candidate.action_type);
+  }
+  if (!eligibleSet.comparative) {
+    return {
+      selection,
+      probability: 1,
+      familyProbability: 1,
+      audit: {
+        mode: normalizedMode,
+        disposition: 'insufficient_family_overlap_policy_preserved',
+        baseline_action_type: baselineActionType,
+        selected_action_type: baselineActionType,
+        eligible_action_types: candidates.map((candidate) => candidate.action_type),
+        eligible_move_families: eligibleFamilies,
+        eligible_set_id: eligibleSet.id,
+        comparative_family_count: eligibleSet.familyCount,
+        draw: null,
+      },
+    };
   }
   const material = {
     profile: context.profile,
@@ -103,6 +135,8 @@ export function assignTutorStubTypedAction({ mode = 'policy', selection, selecti
       selected_move_family: selectedFamily,
       eligible_action_types: candidates.map((candidate) => candidate.action_type),
       eligible_move_families: [...byFamily].map(([family, actionTypes]) => ({ family, action_types: actionTypes })),
+      eligible_set_id: eligibleSet.id,
+      comparative_family_count: eligibleSet.familyCount,
       selected_family_probability: familyDraw.distribution[familyDraw.selectedIndex].probability,
       selected_action_within_family_probability: actionDraw.distribution[actionDraw.selectedIndex].probability,
       family_draw: familyDraw,
