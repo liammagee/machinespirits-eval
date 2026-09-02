@@ -48,6 +48,7 @@ links:
     - 932
     - 937
     - 940
+    - 945
   items:
     - layered-task-session-adaptation
 tags:
