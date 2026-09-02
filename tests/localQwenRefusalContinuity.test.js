@@ -62,6 +62,11 @@ import {
   callLunaReferenceModel,
   makeLunaJudgeCaller,
 } from '../scripts/run-invested-rival-luna-reference.js';
+import {
+  buildLearnerIterationPlan,
+  callLearnerIterationModel,
+  main as runLearnerIteration,
+} from '../scripts/run-invested-rival-learner-iteration.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const plan = loadContinuityPlan(root);
@@ -72,6 +77,7 @@ const bilateralPlan = loadContinuityPlan(
 );
 const rivalPlan = buildInvestedRivalPlan(root);
 const lunaReferencePlan = buildLunaReferencePlan(root);
+const learnerIterationPlan = buildLearnerIterationPlan(root);
 const opening = [{ role: 'assistant', content: plan.world.opening_frame.authored_text }];
 const destination = () => path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-continuity-test-')), 'arm');
 const reply = (speech, end_dialogue = false, settled = [], open = []) =>
@@ -104,6 +110,119 @@ test('Luna reference keeps the matched direct architecture inside the 23-attempt
   assert.equal(lunaReferencePlan.interaction.learnerSystem, rivalPlan.interaction.learnerSystem);
   assert.equal(lunaReferencePlan.characterBrief, rivalPlan.characterBrief);
   assert.equal(lunaReferencePlan.tutor, rivalPlan.tutor);
+});
+
+test('learner iteration fixes two Luna development rungs and a three-model held-out test under 110 attempts', () => {
+  assert.equal(learnerIterationPlan.total_attempt_ceiling, 110);
+  assert.equal(learnerIterationPlan.generation_attempt_ceiling, 80);
+  assert.equal(learnerIterationPlan.assessment_packets, 25);
+  assert.equal(learnerIterationPlan.recovery_attempt_reserve, 5);
+  assert.deepEqual(
+    learnerIterationPlan.development.map((stage) => ({ world: stage.world.id, arms: stage.arms.map((arm) => arm.id) })),
+    [
+      { world: 'world_030_rowan_flat', arms: ['D1'] },
+      { world: 'world_030_rowan_flat', arms: ['D2'] },
+    ],
+  );
+  assert.equal(learnerIterationPlan.holdout.world.id, 'world_034_groupwork_flag');
+  assert.deepEqual(
+    learnerIterationPlan.holdout.arms.map(({ id, variant, mode, tutorMode, model }) => ({
+      id,
+      variant,
+      mode,
+      tutorMode,
+      model,
+    })),
+    [
+      {
+        id: 'A',
+        variant: 'luna',
+        mode: 'direct',
+        tutorMode: 'direct',
+        model: 'codex.gpt-5.6-luna',
+      },
+      {
+        id: 'B',
+        variant: 'normal',
+        mode: 'direct',
+        tutorMode: 'direct',
+        model: 'mlx-community/Qwen3.8-27B-4bit',
+      },
+      {
+        id: 'C',
+        variant: 'abliterated',
+        mode: 'direct',
+        tutorMode: 'direct',
+        model: 'Qwen3.8-27B-Uncensored-MLX/4-bit',
+      },
+    ],
+  );
+  assert.match(learnerIterationPlan.development[0].interaction.learnerTurn, /commit to the assigned initial/iu);
+  assert.doesNotMatch(learnerIterationPlan.development[0].interaction.learnerTurn, /same kind of move/iu);
+  assert.match(learnerIterationPlan.development[1].interaction.learnerTurn, /same kind of move on adjacent turns/iu);
+  assert.equal(
+    learnerIterationPlan.development[1].interaction.learnerTurn,
+    learnerIterationPlan.holdout.interaction.learnerTurn,
+  );
+});
+
+test('learner iteration routes Luna to Codex and leaves Qwen on the local direct path', async () => {
+  const calls = [];
+  const callCli = async (agent, _system, _prompt, role, options) => {
+    calls.push({ agent, role, options });
+    return fake(reply('Fixture line.'));
+  };
+  const request = { systemPrompt: 'system', prompt: 'prompt', messageHistory: [] };
+  await callLearnerIterationModel(
+    {
+      plan: learnerIterationPlan.holdout,
+      arm: learnerIterationPlan.holdout.arms[0],
+      speaker: 'learner',
+      request,
+      role: 'learner',
+    },
+    callCli,
+  );
+  await callLearnerIterationModel(
+    {
+      plan: learnerIterationPlan.holdout,
+      arm: learnerIterationPlan.holdout.arms[0],
+      speaker: 'tutor',
+      request,
+      role: 'tutor',
+    },
+    callCli,
+  );
+  assert.deepEqual(
+    calls.map((call) => call.agent),
+    [
+      { provider: 'codex', model: 'gpt-5.6-luna' },
+      { provider: 'codex', model: 'gpt-5.6-sol' },
+    ],
+  );
+  assert.ok(calls.every((call) => call.options.singleAttempt === true));
+});
+
+test('learner iteration zero-call preview audits both worlds and builds all 25 assessment packets', async () => {
+  const outDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'learner-iteration-preview-')), 'out');
+  const result = await runLearnerIteration(['--output', outDir]);
+  assert.deepEqual(
+    {
+      dryRun: result.dryRun,
+      modelCalls: result.modelCalls,
+      developmentPackets: result.developmentPackets,
+      holdoutPackets: result.holdoutPackets,
+    },
+    { dryRun: true, modelCalls: 0, developmentPackets: 10, holdoutPackets: 15 },
+  );
+  const preflight = JSON.parse(fs.readFileSync(path.join(outDir, 'preflight.json'), 'utf8'));
+  assert.equal(preflight.developmentLearnerRequests.length, 2);
+  assert.equal(preflight.developmentTutorRequests.flat().length, 16);
+  assert.equal(preflight.holdoutTutorRequests.length, 8);
+  assert.ok(preflight.developmentLearnerRequests.every((request) => request.audit.ok && request.privilege.ok));
+  assert.ok(preflight.holdoutTutorRequests.every((request) => request.audit.ok && request.privilege.ok));
+  assert.ok(fs.existsSync(path.join(outDir, 'development-report-preview.html')));
+  assert.ok(fs.existsSync(path.join(outDir, 'report-preview.html')));
 });
 
 test('Luna reference routes learner to Luna, tutor to Sol, and never adds a superego call', async () => {
