@@ -14,6 +14,7 @@ const ALL_OBSERVED_CONDITION = {
   dagVelocityAtMost: Number.MAX_SAFE_INTEGER,
 };
 const BINARY_OUTCOMES = new Set(['success', 'failure']);
+const HUMAN_CONSENSUS_AUXILIARY_VETO_V2 = 'human_consensus_auxiliary_veto_v2';
 
 function requireString(value, label) {
   if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} is required`);
@@ -167,6 +168,11 @@ function sameMembers(left, right) {
   return JSON.stringify(unique(left)) === JSON.stringify(unique(right));
 }
 
+function comparativeMoveFamilies(design) {
+  const registered = design.comparability?.moveFamilies;
+  return Array.isArray(registered) && registered.length ? registered : design.typedActionAssignment.moveFamilies;
+}
+
 export function buildTutorStubActionOutcomeCollectionAudit({
   design,
   generationReport,
@@ -204,7 +210,7 @@ export function buildTutorStubActionOutcomeCollectionAudit({
   });
   const registeredRows = enrichRows(registeredReadiness);
   const allClosedRows = enrichRows(allObservedReadiness);
-  const families = design.typedActionAssignment.moveFamilies;
+  const families = comparativeMoveFamilies(design);
   const matchedFamilies = familySummary(registeredRows, families);
   const allClosedFamilies = familySummary(
     allClosedRows.filter((row) => row.assignmentStatus === 'seeded_uniform_family_assignment'),
@@ -221,20 +227,38 @@ export function buildTutorStubActionOutcomeCollectionAudit({
     (row) => row.assignmentStatus === 'seeded_uniform_family_assignment',
   ).length;
   const matchedOutcomeCounts = countBy(registeredRows.map((row) => row.recordedOutcome || 'missing'));
-  const maximumPotentialBinaryRecords = registeredRows.filter(
-    (row) => row.auxiliaryDeliveryVisible === true && BINARY_OUTCOMES.has(row.recordedOutcome),
-  ).length;
+  const auxiliaryVetoPolicy = design.humanReview?.measurementPolicy === HUMAN_CONSENSUS_AUXILIARY_VETO_V2;
+  const canBecomeBinary = (row) =>
+    row.auxiliaryDeliveryVisible === true && (auxiliaryVetoPolicy || BINARY_OUTCOMES.has(row.recordedOutcome));
+  const maximumPotentialBinaryRecords = registeredRows.filter(canBecomeBinary).length;
   const maximumPotentialBinaryByFamily = Object.fromEntries(
     families.map((family) => [
       family,
-      registeredRows.filter(
-        (row) =>
-          row.family === family && row.auxiliaryDeliveryVisible === true && BINARY_OUTCOMES.has(row.recordedOutcome),
-      ).length,
+      registeredRows.filter((row) => row.family === family && canBecomeBinary(row)).length,
     ]),
   );
   const registered = design.feasibilityEndpoints.authoritativeGates;
-  const familyCases = matchedFamilies.map((row) => row.cases);
+  const coverageGates = registered.exchangeabilityAndCoverage;
+  const everyFamilyGateId = Object.hasOwn(coverageGates, 'everyComparativeMoveFamilyAssignedAndDelivered')
+    ? 'everyComparativeMoveFamilyAssignedAndDelivered'
+    : 'everyMoveFamilyAssignedAndDelivered';
+  const minimumDeliveredGateId = Object.hasOwn(coverageGates, 'minimumDeliveredCasesPerComparativeMoveFamily')
+    ? 'minimumDeliveredCasesPerComparativeMoveFamily'
+    : 'minimumDeliveredCasesPerMoveFamily';
+  const minimumDialoguesGateId = Object.hasOwn(coverageGates, 'minimumIndependentDialoguesPerComparativeMoveFamily')
+    ? 'minimumIndependentDialoguesPerComparativeMoveFamily'
+    : 'minimumIndependentDialoguesPerMoveFamily';
+  const minimumWorldsGateId = Object.hasOwn(coverageGates, 'minimumCollectionWorldsPerComparativeMoveFamily')
+    ? 'minimumCollectionWorldsPerComparativeMoveFamily'
+    : 'minimumCollectionWorldsPerMoveFamily';
+  const reviewGates = registered.review;
+  const minimumBinaryPerFamilyGateId = Object.hasOwn(
+    reviewGates,
+    'minimumFinalUsableBinaryRecordsPerComparativeMoveFamily',
+  )
+    ? 'minimumFinalUsableBinaryRecordsPerComparativeMoveFamily'
+    : 'minimumFinalUsableBinaryRecordsPerMoveFamily';
+  const familyDeliveries = matchedFamilies.map((row) => row.visibleDeliveries);
   const familyDialogues = matchedFamilies.map((row) => row.dialogues);
   const familyWorlds = matchedFamilies.map((row) => row.worlds);
   const visibleDeliveryRate = matchedAssignments ? visibleDeliveries / matchedAssignments : 0;
@@ -263,7 +287,9 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       true,
       { balanced: unbalancedJobs.length === 0, unbalancedJobs },
       unbalancedJobs.length === 0 ? 'pass' : 'fail',
-      'The interrupted first unit retains one unresolved child reservation.',
+      unbalancedJobs.length
+        ? `${unbalancedJobs.length} preserved unit(s) have unresolved child-attempt accounting.`
+        : 'Every unit balances reserved attempts against completed and failed attempts.',
     ),
     gate(
       'execution',
@@ -271,7 +297,7 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       true,
       { unregisteredJobs, duplicateJobs, missingJobs },
       !unregisteredJobs.length && !duplicateJobs.length && !missingJobs.length ? 'pass' : 'fail',
-      'Compared with the 24 registered job identities.',
+      `Compared with the ${expectedJobs.length} registered job identities.`,
     ),
     gate(
       'exchangeabilityAndCoverage',
@@ -303,40 +329,34 @@ export function buildTutorStubActionOutcomeCollectionAudit({
     ),
     gate(
       'exchangeabilityAndCoverage',
-      'everyMoveFamilyAssignedAndDelivered',
-      true,
+      everyFamilyGateId,
+      coverageGates[everyFamilyGateId],
       Object.fromEntries(matchedFamilies.map((row) => [row.family, row.visibleDeliveries])),
       matchedFamilies.every((row) => row.visibleDeliveries > 0) ? 'pass' : 'fail',
       'Only condition-matched, seeded, visibly delivered cases count.',
     ),
     gate(
       'exchangeabilityAndCoverage',
-      'minimumDeliveredCasesPerMoveFamily',
-      registered.exchangeabilityAndCoverage.minimumDeliveredCasesPerMoveFamily,
+      minimumDeliveredGateId,
+      coverageGates[minimumDeliveredGateId],
       Object.fromEntries(matchedFamilies.map((row) => [row.family, row.visibleDeliveries])),
-      minimum(familyCases) >= registered.exchangeabilityAndCoverage.minimumDeliveredCasesPerMoveFamily
-        ? 'pass'
-        : 'fail',
-      `Minimum observed family yield: ${minimum(familyCases)}.`,
+      minimum(familyDeliveries) >= coverageGates[minimumDeliveredGateId] ? 'pass' : 'fail',
+      `Minimum observed visible family yield: ${minimum(familyDeliveries)}.`,
     ),
     gate(
       'exchangeabilityAndCoverage',
-      'minimumIndependentDialoguesPerMoveFamily',
-      registered.exchangeabilityAndCoverage.minimumIndependentDialoguesPerMoveFamily,
+      minimumDialoguesGateId,
+      coverageGates[minimumDialoguesGateId],
       Object.fromEntries(matchedFamilies.map((row) => [row.family, row.dialogues])),
-      minimum(familyDialogues) >= registered.exchangeabilityAndCoverage.minimumIndependentDialoguesPerMoveFamily
-        ? 'pass'
-        : 'fail',
+      minimum(familyDialogues) >= coverageGates[minimumDialoguesGateId] ? 'pass' : 'fail',
       `Minimum observed dialogue support: ${minimum(familyDialogues)}.`,
     ),
     gate(
       'exchangeabilityAndCoverage',
-      'minimumCollectionWorldsPerMoveFamily',
-      registered.exchangeabilityAndCoverage.minimumCollectionWorldsPerMoveFamily,
+      minimumWorldsGateId,
+      coverageGates[minimumWorldsGateId],
       Object.fromEntries(matchedFamilies.map((row) => [row.family, row.worlds])),
-      minimum(familyWorlds) >= registered.exchangeabilityAndCoverage.minimumCollectionWorldsPerMoveFamily
-        ? 'pass'
-        : 'fail',
+      minimum(familyWorlds) >= coverageGates[minimumWorldsGateId] ? 'pass' : 'fail',
       `Minimum observed world support: ${minimum(familyWorlds)}.`,
     ),
     gate(
@@ -380,21 +400,24 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       registered.review.minimumFinalUsableBinaryRecords,
       { current: 0, maximumPossibleFromFrozenAuxiliaryOutcomes: maximumPotentialBinaryRecords },
       maximumPotentialBinaryRecords >= registered.review.minimumFinalUsableBinaryRecords ? 'pending' : 'fail',
-      'Binary admission requires human consensus to agree with a saved binary auxiliary outcome.',
+      auxiliaryVetoPolicy
+        ? 'Human consensus supplies the semantic label; an opposite binary auxiliary result or invisible delivery can veto it.'
+        : 'Binary admission requires human consensus to agree with a saved binary auxiliary outcome.',
     ),
     gate(
       'review',
-      'minimumFinalUsableBinaryRecordsPerMoveFamily',
-      registered.review.minimumFinalUsableBinaryRecordsPerMoveFamily,
+      minimumBinaryPerFamilyGateId,
+      reviewGates[minimumBinaryPerFamilyGateId],
       {
         current: Object.fromEntries(families.map((family) => [family, 0])),
         maximumPossible: maximumPotentialBinaryByFamily,
       },
-      minimum(Object.values(maximumPotentialBinaryByFamily)) >=
-        registered.review.minimumFinalUsableBinaryRecordsPerMoveFamily
+      minimum(Object.values(maximumPotentialBinaryByFamily)) >= reviewGates[minimumBinaryPerFamilyGateId]
         ? 'pending'
         : 'fail',
-      'The frozen condition-matched auxiliary outcomes contain no binary labels.',
+      auxiliaryVetoPolicy
+        ? 'Human consensus is pending; frozen auxiliary outcomes remain nonconfirmatory unless they supply an opposite binary veto.'
+        : 'Potential binary yield is bounded by the frozen condition-matched auxiliary labels.',
     ),
   ];
   const heldOutWorlds = design.population.laterEvaluationWorldsExcludedFromCollectionAndMemory;
@@ -419,6 +442,7 @@ export function buildTutorStubActionOutcomeCollectionAudit({
     studyId: design.studyId,
     asOf,
     modelCalls: 0,
+    measurementPolicy: design.humanReview?.measurementPolicy || null,
     verdict: failedGates.length
       ? 'registered_feasibility_gates_failed'
       : pendingGates.length
@@ -484,11 +508,14 @@ export function buildTutorStubActionOutcomeCollectionAudit({
     failedGates: failedGates.map((entry) => `${entry.section}.${entry.id}`),
     pendingGates: pendingGates.map((entry) => `${entry.section}.${entry.id}`),
     implications: [
-      'The prospective trace, assignment, join, and delivery plumbing is operational and auditable.',
-      'The registered stalled-state condition yielded too few exchangeable closed assignments and too few contributing dialogues.',
-      'Condition-matched family coverage is not adequate: fade_transfer is absent, explain_model is sparse, and family support is uneven across worlds.',
-      'Every condition-matched auxiliary outcome is inconclusive, so the frozen corpus cannot produce a binary memory table even under perfect coder agreement.',
-      'This feasibility failure does not estimate learning, transfer, controller benefit, or relative family effectiveness.',
+      'The prospective trace, assignment, join, and delivery paths were checked without model calls.',
+      failedGates.length
+        ? `${failedGates.length} registered gate(s) failed; the collection closes without top-up or threshold changes.`
+        : 'Every execution and coverage gate passed; the registered review gates remain authoritative.',
+      pendingGates.length
+        ? `${pendingGates.length} gate(s) remain pending independent human review.`
+        : 'No registered gate remains pending.',
+      'This audit does not estimate learning, transfer, controller benefit, or relative family effectiveness.',
     ],
     provenance: {
       designPath: generationReport.design?.path || null,
@@ -521,6 +548,8 @@ function observedText(value) {
 
 export function renderTutorStubActionOutcomeCollectionAudit(audit) {
   const rates = audit.extraction.rates;
+  const failedCount = audit.failedGates.length;
+  const pendingCount = audit.pendingGates.length;
   const gateRows = audit.gates.map(
     (entry) =>
       `| ${entry.section} | ${entry.id} | ${entry.status.toUpperCase()} | ${observedText(entry.observed)} | ${observedText(entry.expected)} |`,
@@ -534,15 +563,11 @@ export function renderTutorStubActionOutcomeCollectionAudit(audit) {
     '',
     `Study: \`${audit.studyId}\`. As of: ${audit.asOf}. Model calls: 0.`,
     '',
-    `**Verdict: ${audit.verdict}. The pilot does not license a held-out controller study.**`,
+    `**Verdict: ${audit.verdict}. This result does not license a held-out controller study.**`,
     '',
-    'The collection machinery worked: all 23 available trace files were readable, no source was quarantined, every closed assignment validated, and all 30 condition-matched assignments were visibly delivered. The evidence substrate did not meet the registered feasibility standard.',
+    `The audit found ${failedCount} failed gate(s) and ${pendingCount} gate(s) pending human review. It read ${audit.integrity.sourceTraceFiles} trace files and quarantined ${audit.integrity.quarantinedSourceFiles}.`,
     '',
-    'The target condition produced 30 seeded closed assignments, below the registered minimum of 48, across 13 dialogues rather than 16. Family coverage also failed: `fade_transfer` had no condition-matched case, `explain_model` had 3, `minimal_support` 5, `request_self_explanation` 6, and `diagnose_elicit` 16.',
-    '',
-    'All 30 saved auxiliary outcomes were `inconclusive`. Binary memory admission requires a human consensus label to agree with a saved binary auxiliary label, so even perfect coder agreement cannot produce any usable binary record from this frozen corpus. Human review could still diagnose the instrument descriptively, but it cannot rescue the registered verdict.',
-    '',
-    'This is a feasibility failure. It does not show that the controller would fail, that the action families are equivalent, or that any family improves learning.',
+    `Generation closed with ${audit.generation.completeDialogues}/${audit.generation.plannedDialogues} complete dialogues, ${audit.generation.technicalFailures.length} preserved technical failure(s), and ${audit.generation.missingDialogues} missing dialogue(s).`,
     '',
     '## Extraction',
     '',
@@ -570,7 +595,7 @@ export function renderTutorStubActionOutcomeCollectionAudit(audit) {
     '| --- | ---: | ---: | ---: | ---: | --- |',
     ...familyRows,
     '',
-    'The 30 matched cases divide into 16 cases where only `diagnose_elicit` was eligible and 14 cases where `explain_model`, `minimal_support`, and `request_self_explanation` were jointly eligible. `fade_transfer` never entered a matched eligible set.',
+    `The registered condition produced ${audit.extraction.conditionMatchedSeededClosedAssignments} seeded closed assignment(s) across ${audit.extraction.contributingDialogues} dialogue(s) and ${audit.extraction.contributingWorlds} world(s).`,
     '',
     '## Registered gates',
     '',
@@ -578,11 +603,13 @@ export function renderTutorStubActionOutcomeCollectionAudit(audit) {
     '| --- | --- | --- | --- | --- |',
     ...gateRows,
     '',
-    'Pending coder gates remain unmeasured. The binary-yield gates already fail because the frozen auxiliary outcomes place an upper bound of zero on admissible binary records.',
+    pendingCount
+      ? 'Pending coder gates remain unmeasured; no human outcome labels are inferred by this zero-call audit.'
+      : 'No registered gate remains pending.',
     '',
-    '## Big-picture implication',
+    '## Implications',
     '',
-    'The project should stop treating this corpus as a candidate controller memory table. The next useful design task is to repair the measurement and eligibility contract prospectively: make every intended family genuinely reachable under the registered condition, and ensure the immediate outcome instrument can produce discriminating binary evidence when the public learner response warrants it. The registered no-top-up rule means the current pilot closes as failed rather than being enlarged or re-thresholded.',
+    ...audit.implications.map((entry) => `- ${entry}`),
     '',
     audit.claimBoundary,
     '',

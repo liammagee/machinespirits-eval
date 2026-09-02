@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-02
-branch: codex/action-outcome-v2-recovery-chain-fix
+branch: codex/action-outcome-v2-audit-fix
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -50,6 +50,7 @@ links:
     - 940
     - 945
     - 946
+    - 947
   items:
     - layered-task-session-adaptation
 tags:
@@ -115,6 +116,19 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: The final bounded recovery completed all 22 never-started
+  dialogues and sealed the 60-unit block with 57 complete, 3 preserved
+  technical failures, 0 missing units, 468/480 turns, and exactly 4,860/4,860
+  shared reservations. Two failures are the operator-requested interruptions;
+  the third is a learner-analysis request that timed out after three failed
+  attempts. Zero-call artifact preparation then exposed that the audit still
+  treated all five policy families as comparative, read four renamed v2 gate
+  fields through their v1 names, required binary auxiliary labels under the new
+  human-consensus/auxiliary-veto policy, and rendered fixed v1 prose. Corrected
+  those version-sensitive paths and added a v2 regression while preserving the
+  sealed v1 behavior. No model call or study reservation was made by the audit
+  repair.
 
 - 2026-09-02: After PR #946 merged, the final real zero-call preflight passed
   with exactly 22 untouched dialogues and 1,782 remaining reservations, but the
