@@ -596,6 +596,7 @@
         "tests/tutorStubFirstDraftOuterLoop.test.js",
         "tests/tutorStubFixedRegisterFidelity.test.js",
         "tests/tutorStubFixedRegisterPolicies.test.js",
+        "tests/tutorStubFormStateDetector.test.js",
         "tests/tutorStubFrameRefuserDepthStudy.test.js",
         "tests/tutorStubFrameRefuserNarrowingCodebook.test.js",
         "tests/tutorStubFrameRefuserSatisfiableLaunch.test.js",
