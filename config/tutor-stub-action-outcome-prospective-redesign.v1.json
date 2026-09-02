@@ -74,12 +74,7 @@
   "durableExecution": {
     "pauseStates": ["pause_requested", "paused", "resuming"],
     "gracefulBoundary": "Stop before the next reservation or after the active response and checkpoint are durably persisted.",
-    "terminalAttemptDispositions": [
-      "completed",
-      "failed",
-      "cancelled_before_dispatch",
-      "interrupted_after_dispatch"
-    ],
+    "terminalAttemptDispositions": ["completed", "failed", "cancelled_before_dispatch", "interrupted_after_dispatch"],
     "accountingInvariant": "reserved = completed + failed + cancelled_before_dispatch + interrupted_after_dispatch, with zero unexplained reservations",
     "restartRule": "Reconcile stale in-flight reservations from the append-only ledger before any new dispatch. A persisted response is accepted once without redispatch; a reservation before dispatch is cancelled; a dispatched attempt without a persisted response is interrupted and still counts against the hard ceiling.",
     "acceptedOutputRule": "Never accept the same response twice and never discard a durably persisted completed response.",

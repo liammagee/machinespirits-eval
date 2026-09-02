@@ -154,11 +154,12 @@ export function createSharedModelAttemptLedgerClient({
     reserve({ role = 'unknown', turn = null } = {}) {
       return withDirectoryLock(lockPath, () => {
         const studyEvents = readEvents(studyLedgerPath);
-        const runEvents = readEvents(runLedgerPath);
         const studyReservations = studyEvents.filter((event) => event.type === 'study_model_attempt_dispatch_reserved');
         const capacityReservations = studyReservations.filter((event) => event.capacity_id === capacityId);
         if (studyReservations.length >= hardCeiling) {
-          throw new Error(`paid study attempt ceiling exhausted before dispatch: ${studyReservations.length}/${hardCeiling}`);
+          throw new Error(
+            `paid study attempt ceiling exhausted before dispatch: ${studyReservations.length}/${hardCeiling}`,
+          );
         }
         if (capacityReservations.length >= capacityLimit) {
           throw new Error(`unit ${unitId} attempt capacity exhausted before dispatch`);
@@ -200,9 +201,7 @@ export function createSharedModelAttemptLedgerClient({
         const reservation = runEvents.find(
           (event) => event.type === 'model_attempt_dispatch_reserved' && event.attempt_id === attemptId,
         );
-        const terminals = runEvents.filter(
-          (event) => terminalTypes.has(event.type) && event.attempt_id === attemptId,
-        );
+        const terminals = runEvents.filter((event) => terminalTypes.has(event.type) && event.attempt_id === attemptId);
         if (!reservation) throw new Error(`attempt ${attemptId} has no durable reservation`);
         if (terminals.length) throw new Error(`attempt ${attemptId} already has a terminal disposition`);
         appendDurableJsonLine(runLedgerPath, {
@@ -229,7 +228,8 @@ export function summarizeDurableAttemptEvents(events) {
   const attempts = new Map();
   for (const event of events) {
     if (event.type === 'attempt_reserved') {
-      if (!event.attempt_id || attempts.has(event.attempt_id)) throw new Error('duplicate or missing attempt reservation id');
+      if (!event.attempt_id || attempts.has(event.attempt_id))
+        throw new Error('duplicate or missing attempt reservation id');
       attempts.set(event.attempt_id, {
         attemptId: event.attempt_id,
         unitId: event.unit_id,
@@ -317,13 +317,14 @@ export function buildDurableEvaluationStatus({
   const lowerSeconds = remainingTurns * Number(secondsPerRemainingTurn[0] || 0) + Number(postRunSeconds[0] || 0);
   const upperSeconds = remainingTurns * Number(secondsPerRemainingTurn[1] || 0) + Number(postRunSeconds[1] || 0);
   const nowMs = now instanceof Date ? now.getTime() : new Date(now).getTime();
-  const eta = workflowState === 'complete'
-    ? { earliest: new Date(nowMs).toISOString(), latest: new Date(nowMs).toISOString(), basis: 'workflow_complete' }
-    : {
-        earliest: new Date(nowMs + lowerSeconds * 1000).toISOString(),
-        latest: new Date(nowMs + upperSeconds * 1000).toISOString(),
-        basis: 'registered_remaining_turn_range_plus_zero_call_postrun',
-      };
+  const eta =
+    workflowState === 'complete'
+      ? { earliest: new Date(nowMs).toISOString(), latest: new Date(nowMs).toISOString(), basis: 'workflow_complete' }
+      : {
+          earliest: new Date(nowMs + lowerSeconds * 1000).toISOString(),
+          latest: new Date(nowMs + upperSeconds * 1000).toISOString(),
+          basis: 'registered_remaining_turn_range_plus_zero_call_postrun',
+        };
   return {
     schema: 'machinespirits.durable-evaluation-status.v1',
     generated_at: new Date(nowMs).toISOString(),
@@ -368,7 +369,8 @@ export function reconcileDurableAttemptJournal({ ledgerPath, responseDirectory }
     if (attempt.responsePersisted) {
       const responsePath = path.resolve(responseDirectory, attempt.responsePath || '');
       const bytes = fs.readFileSync(responsePath);
-      if (sha256(bytes) !== attempt.responseSha256) throw new Error(`persisted response drift for ${attempt.attemptId}`);
+      if (sha256(bytes) !== attempt.responseSha256)
+        throw new Error(`persisted response drift for ${attempt.attemptId}`);
       appendDurableJsonLine(ledgerPath, {
         type: 'attempt_completed',
         attempt_id: attempt.attemptId,

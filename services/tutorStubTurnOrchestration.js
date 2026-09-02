@@ -1632,6 +1632,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     autoTurns,
     autoSafetyTurns,
     autoStopOnGrounded,
+    turnHorizonMode = 'additional',
     cliEffort = null,
     signal = null,
     isCurrent = null,
@@ -1647,6 +1648,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       safetyTurns: autoSafetyTurns,
       stopOnGrounded: autoStopOnGrounded,
       resumedCompletedTurns: state.turns.length,
+      turnHorizonMode,
     });
     if (!firstMessage) {
       await emitTutorOpeningToState(state, { enabled: openingEnabled, reason: 'auto_start', signal });
@@ -1655,14 +1657,17 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     let resumePendingLearnerTurn = state.resumePendingAutomatedLearnerTurn || null;
     let nextLearnerText = firstMessage.trim() || String(resumePendingLearnerTurn?.text || '').trim();
     let reason = 'auto_turn_cap';
-    if (autoTurns !== null && state.turns.length > autoTurns) {
+    const startingTurnCount = state.turns.length;
+    const turnTarget =
+      autoTurns === null ? null : turnHorizonMode === 'total' ? autoTurns : startingTurnCount + autoTurns;
+    if (turnHorizonMode === 'total' && autoTurns !== null && state.turns.length > turnTarget) {
       throw new Error(
-        `resume trace already contains ${state.turns.length} turns, beyond the configured ${autoTurns}-turn horizon`,
+        `resume trace already contains ${state.turns.length} turns, beyond the configured ${turnTarget}-turn horizon`,
       );
     }
-    for (let i = 0; autoTurns === null || state.turns.length < autoTurns; i += 1) {
+    for (let i = 0; turnTarget === null || state.turns.length < turnTarget; i += 1) {
       assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
-      if (autoTurns === null && state.turns.length >= autoSafetyTurns) {
+      if (turnTarget === null && i >= autoSafetyTurns) {
         reason = 'auto_safety_turn_cap';
         break;
       }
@@ -1715,28 +1720,29 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           : turnNumber === 1
             ? state.resistanceActionRegisterStudy?.trigger_precomputed_raw || null
             : null;
-      let learnerResponseProvenance = resumePendingLearnerTurn?.turn === turnNumber
-        ? jsonClone(resumePendingLearnerTurn.learnerResponseProvenance)
-        : nextLearnerText
-        ? state.resistanceActionRegisterStudy?.enabled
-          ? createTutorStubLearnerResponseProvenance({
-              authorship: 'ai',
-              origin: 'registered_public_prefix_bundle',
-              inputMethod: 'frozen_public_replay',
-              humanInLoop: false,
-              modelRef: 'codex.gpt-5.6-luna',
-              provider: 'codex',
-              model: 'gpt-5.6-luna',
-              learnerProfileId: automatedLearnerProfileId(autoLearnerProfile),
-              automation: { frozenPreTreatmentInput: true },
-            })
-          : createTutorStubLearnerResponseProvenance({
-              authorship: 'human',
-              origin: 'launch_first_message',
-              inputMethod: 'command_line_argument',
-              humanInLoop: true,
-            })
-        : null;
+      let learnerResponseProvenance =
+        resumePendingLearnerTurn?.turn === turnNumber
+          ? jsonClone(resumePendingLearnerTurn.learnerResponseProvenance)
+          : nextLearnerText
+            ? state.resistanceActionRegisterStudy?.enabled
+              ? createTutorStubLearnerResponseProvenance({
+                  authorship: 'ai',
+                  origin: 'registered_public_prefix_bundle',
+                  inputMethod: 'frozen_public_replay',
+                  humanInLoop: false,
+                  modelRef: 'codex.gpt-5.6-luna',
+                  provider: 'codex',
+                  model: 'gpt-5.6-luna',
+                  learnerProfileId: automatedLearnerProfileId(autoLearnerProfile),
+                  automation: { frozenPreTreatmentInput: true },
+                })
+              : createTutorStubLearnerResponseProvenance({
+                  authorship: 'human',
+                  origin: 'launch_first_message',
+                  inputMethod: 'command_line_argument',
+                  humanInLoop: true,
+                })
+            : null;
       if (resumePendingLearnerTurn?.turn === turnNumber) {
         appendTraceEvent(state.trace, {
           type: 'auto_learner_turn',

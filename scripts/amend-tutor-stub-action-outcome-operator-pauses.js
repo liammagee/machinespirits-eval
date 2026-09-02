@@ -179,7 +179,10 @@ export async function buildOperatorPauseAmendment({
   ) {
     throw new Error('source audit is not the preserved corrected 35-case accounting-only failure');
   }
-  if (packetManifest.modelCalls !== 0 || packetManifest.measurementPolicy !== loaded.design.humanReview.measurementPolicy) {
+  if (
+    packetManifest.modelCalls !== 0 ||
+    packetManifest.measurementPolicy !== loaded.design.humanReview.measurementPolicy
+  ) {
     throw new Error('coder packet manifest does not match the registered zero-call measurement policy');
   }
   const evidence = validateOperatorPauseEvidence({ generationReport, unitIds });
@@ -328,14 +331,18 @@ async function main(argv = process.argv.slice(2)) {
     unitIds: values.unit || [],
   });
   process.stdout.write(
-    `${JSON.stringify({
-      output: path.resolve(values.out),
-      originalVerdict: result.amendment.original_audit_verdict,
-      amendedVerdict: result.amendment.amended_audit_verdict,
-      exactComparativeCases: result.amendment.exact_comparative_cases,
-      attemptAccounting: result.amendment.attempt_accounting,
-      modelCalls: 0,
-    }, null, 2)}\n`,
+    `${JSON.stringify(
+      {
+        output: path.resolve(values.out),
+        originalVerdict: result.amendment.original_audit_verdict,
+        amendedVerdict: result.amendment.amended_audit_verdict,
+        exactComparativeCases: result.amendment.exact_comparative_cases,
+        attemptAccounting: result.amendment.attempt_accounting,
+        modelCalls: 0,
+      },
+      null,
+      2,
+    )}\n`,
   );
 }
 

@@ -757,7 +757,10 @@ test('a graceful operator pause checkpoints at the next child boundary and repor
   assert.equal(recovery.prior_completed_units, 1);
   assert.equal(recovery.priorRows.length, 1);
   assert.equal(recovery.executionJobs.length, 23);
-  assert.equal(recovery.executionJobs.some((job) => job.id === firstJob.id), false);
+  assert.equal(
+    recovery.executionJobs.some((job) => job.id === firstJob.id),
+    false,
+  );
 });
 
 test('durable pause state machine persists pause_requested, paused, and resuming states', (t) => {
@@ -766,7 +769,11 @@ test('durable pause state machine persists pause_requested, paused, and resuming
   const events = [];
   const signals = new EventEmitter();
   const statePath = path.join(base, 'run-control.json');
-  const controller = createDurablePauseStateMachine({ statePath, record: (event) => events.push(event), signalTarget: signals });
+  const controller = createDurablePauseStateMachine({
+    statePath,
+    record: (event) => events.push(event),
+    signalTarget: signals,
+  });
   signals.emit('SIGINT', 'SIGINT');
   assert.equal(controller.snapshot().state, 'pause_requested');
   controller.markPaused({ checkpoint: 'checkpoint.json' });

@@ -599,8 +599,7 @@ export function admitPaidStudyLaunch({
   const totalStudyReserved = () =>
     studyReserved + dispatchReservations(lease.studyLedgerPath, 'study_model_attempt_dispatch_reserved');
   const totalRunReserved = () => reserved + dispatchReservations(ledgerPath, 'model_attempt_dispatch_reserved');
-  const activeCapacityTotal = () =>
-    [...activeCapacities.values()].reduce((sum, capacity) => sum + capacity.count, 0);
+  const activeCapacityTotal = () => [...activeCapacities.values()].reduce((sum, capacity) => sum + capacity.count, 0);
 
   return {
     ...verified,
@@ -712,7 +711,9 @@ export function admitPaidStudyLaunch({
           study_reserved: totalStudyReserved(),
           model_attempt_ceiling: verified.spend_cap,
         });
-        throw new Error(`paid study spend cap exceeded before call: ${totalStudyReserved() + count}/${verified.spend_cap}`);
+        throw new Error(
+          `paid study spend cap exceeded before call: ${totalStudyReserved() + count}/${verified.spend_cap}`,
+        );
       }
       studyReserved += count;
       appendJsonLine(studyLedger, {
@@ -755,8 +756,7 @@ export function admitPaidStudyLaunch({
       }
       for (const capacity of [...activeCapacities.values()]) {
         const used = readJsonLines(ledgerPath, 'paid study run ledger').filter(
-          (candidate) =>
-            candidate.type === 'model_attempt_dispatch_reserved' && candidate.capacity_id === capacity.id,
+          (candidate) => candidate.type === 'model_attempt_dispatch_reserved' && candidate.capacity_id === capacity.id,
         ).length;
         activeCapacities.delete(capacity.id);
         appendJsonLine(ledger, {

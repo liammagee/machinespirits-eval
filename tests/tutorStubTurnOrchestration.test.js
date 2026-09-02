@@ -906,6 +906,7 @@ test('a resumed automated dialogue treats auto-turns as the total horizon', asyn
     autoTurns: 8,
     autoSafetyTurns: 8,
     autoStopOnGrounded: false,
+    turnHorizonMode: 'total',
   });
 
   assert.equal(result.reason, 'auto_turn_cap');

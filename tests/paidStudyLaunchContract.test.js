@@ -244,7 +244,10 @@ test('capacity allocation consumes only per-dispatch reservations and releases u
     .split('\n')
     .map(JSON.parse);
   assert.equal(runEvents.filter((event) => event.type === 'model_attempt_dispatch_reserved').length, 2);
-  assert.equal(runEvents.some((event) => event.type === 'model_attempt_reserved'), false);
+  assert.equal(
+    runEvents.some((event) => event.type === 'model_attempt_reserved'),
+    false,
+  );
 });
 
 test('shared attempt restart reconciles a missing mirror and stale inflight dispatch exactly once', (t) => {
@@ -259,14 +262,18 @@ test('shared attempt restart reconciles a missing mirror and stale inflight disp
     [
       { type: 'study_model_attempt_dispatch_reserved', attempt_id: 'a1', capacity_id: capacityId, unit_id: unitId },
       { type: 'study_model_attempt_dispatch_reserved', attempt_id: 'a2', capacity_id: capacityId, unit_id: unitId },
-    ].map((event) => JSON.stringify(event)).join('\n') + '\n',
+    ]
+      .map((event) => JSON.stringify(event))
+      .join('\n') + '\n',
   );
   fs.writeFileSync(
     runLedgerPath,
     [
       { type: 'model_attempt_dispatch_reserved', attempt_id: 'a2', capacity_id: capacityId, unit_id: unitId },
       { type: 'model_attempt_dispatch_started', attempt_id: 'a2', capacity_id: capacityId, unit_id: unitId },
-    ].map((event) => JSON.stringify(event)).join('\n') + '\n',
+    ]
+      .map((event) => JSON.stringify(event))
+      .join('\n') + '\n',
   );
   reconcileSharedModelAttemptLedger({ runLedgerPath, studyLedgerPath, capacityId, unitId });
   createSharedModelAttemptLedgerClient({

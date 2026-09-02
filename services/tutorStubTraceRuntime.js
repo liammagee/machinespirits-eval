@@ -95,7 +95,9 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
     const enrichedEvent = { ...event };
     if (event.type === 'model_call_budget_reserved' && event.admission?.call) {
       enrichedEvent.attemptId =
-        event.attemptId || event.sharedAttemptReservation?.attemptId || `${trace.runId}:model-attempt:${event.admission.call}`;
+        event.attemptId ||
+        event.sharedAttemptReservation?.attemptId ||
+        `${trace.runId}:model-attempt:${event.admission.call}`;
       trace.meteredAttempts ||= [];
       trace.meteredAttempts.push({
         attemptId: enrichedEvent.attemptId,
@@ -110,10 +112,7 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
     } else if (['model_call', 'model_call_error', 'model_call_aborted'].includes(event.type)) {
       const attempt = trace.meteredAttempts?.find(
         (candidate) =>
-          !candidate.terminal &&
-          candidate.dispatched &&
-          candidate.role === event.role &&
-          candidate.turn === event.turn,
+          !candidate.terminal && candidate.dispatched && candidate.role === event.role && candidate.turn === event.turn,
       );
       if (attempt) {
         attempt.terminal = true;
@@ -236,7 +235,12 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
     }
   }
 
-  function markTutorStubMeteredModelCallDispatched({ trace = null, reservation = null, role = 'unknown', turn = null } = {}) {
+  function markTutorStubMeteredModelCallDispatched({
+    trace = null,
+    reservation = null,
+    role = 'unknown',
+    turn = null,
+  } = {}) {
     if (!reservation?.attemptId) return;
     trace?.sharedAttemptLedger?.markDispatched({ attemptId: reservation.attemptId, role, turn });
     appendTraceEvent(trace, {

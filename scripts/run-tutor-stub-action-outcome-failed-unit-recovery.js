@@ -7,10 +7,7 @@ import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
-import {
-  buildDurableEvaluationStatus,
-  reconcileSharedModelAttemptLedger,
-} from '../services/durableAttemptJournal.js';
+import { buildDurableEvaluationStatus, reconcileSharedModelAttemptLedger } from '../services/durableAttemptJournal.js';
 import {
   extractTutorStubActionOutcomeCollectionRow,
   runTutorStubActionOutcomeCollectionChild,
@@ -104,9 +101,7 @@ function acceptedPendingLearnerEvent(events, completedTurns) {
       Number(event.turn) === turn &&
       typeof event.response?.text === 'string',
   );
-  const preflight = events.findLast(
-    (event) => event?.type === 'learner_dag_preflight' && Number(event.turn) === turn,
-  );
+  const preflight = events.findLast((event) => event?.type === 'learner_dag_preflight' && Number(event.turn) === turn);
   return analysis && preflight ? candidate : null;
 }
 
@@ -187,7 +182,14 @@ export function preflightTutorStubActionOutcomeFailedUnitRecovery({ loaded, dest
     check(start?.metadata?.autoLearner?.modelRef === 'codex.gpt-5.6-luna', `${unit.jobId}:learner_route`);
     check(optionValue(job.args, '--auto-turns') === '8', `${unit.jobId}:fixed_horizon`);
     check(optionValue(job.args, '--eval-job-id') === unit.jobId, `${unit.jobId}:job_identity`);
-    units.push({ ...unit, row, job, tracePath, events, acceptedPendingLearner: acceptedPendingLearnerEvent(events, turns.length) });
+    units.push({
+      ...unit,
+      row,
+      job,
+      tracePath,
+      events,
+      acceptedPendingLearner: acceptedPendingLearnerEvent(events, turns.length),
+    });
   }
   return {
     schema: 'machinespirits.tutor-stub.action-outcome-failed-unit-recovery-preflight.v1',
@@ -277,7 +279,14 @@ export function composeTutorStubActionOutcomeRecoveryTrace({ sourceTrace, contin
     );
   }
   writeOnce(outputPath, `${rows.map((event) => JSON.stringify(event)).join('\n')}\n`);
-  return { outputPath, runId, turns: 8, decisions: 8, outcomes: 7, acceptedPendingLearnerOutputReused: Boolean(pending) };
+  return {
+    outputPath,
+    runId,
+    turns: 8,
+    decisions: 8,
+    outcomes: 7,
+    acceptedPendingLearnerOutputReused: Boolean(pending),
+  };
 }
 
 function copyValidCorpus({ report, recoveredRows, destination }) {
@@ -352,7 +361,8 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
       const continuationFiles = fs.existsSync(spec.trace_dir)
         ? fs.readdirSync(spec.trace_dir).filter((name) => name.endsWith('.jsonl'))
         : [];
-      if (continuationFiles.length !== 1) throw new Error(`${unit.jobId} did not produce exactly one continuation trace`);
+      if (continuationFiles.length !== 1)
+        throw new Error(`${unit.jobId} did not produce exactly one continuation trace`);
       const continuationTrace = path.join(spec.trace_dir, continuationFiles[0]);
       const lineageDir = path.join(spec.job_root, 'reconciled-trace');
       fs.mkdirSync(lineageDir, { recursive: false });
@@ -395,8 +405,10 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
         loaded,
         preflight,
         admission,
-        completedTurns: recoveredRows.reduce((sum, candidate) =>
-          sum + (candidate.turns - candidate.recovery.source_completed_turns), 0),
+        completedTurns: recoveredRows.reduce(
+          (sum, candidate) => sum + (candidate.turns - candidate.recovery.source_completed_turns),
+          0,
+        ),
         workflowState: 'running',
         scientificVerdict: 'registered_measurement_pending_human_review',
       });
@@ -455,8 +467,7 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
           unexplained: segmentAttemptStatus.unexplained,
           reserved_in_predecessor: loaded.design.attemptCeiling.historicalActualReservations,
           reserved_in_current_run: newAttempts,
-          reserved_by_shared_study_ledger:
-            loaded.design.attemptCeiling.historicalActualReservations + newAttempts,
+          reserved_by_shared_study_ledger: loaded.design.attemptCeiling.historicalActualReservations + newAttempts,
           hard_ceiling: loaded.design.attemptCeiling.nominalAggregateEffectiveCeiling,
           historical_actual_reserved: loaded.design.attemptCeiling.historicalActualReservations,
           recovery_segment_reserved: newAttempts,
@@ -476,7 +487,11 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
     };
     writeOnce(path.join(destination, 'reconciled-generation-report.json'), report);
     const originalInput = readJson(
-      path.join(path.dirname(preflight.reportPath), '..', 'action-outcome-comparable-collection-v2-2026-09-02-readiness-input.json'),
+      path.join(
+        path.dirname(preflight.reportPath),
+        '..',
+        'action-outcome-comparable-collection-v2-2026-09-02-readiness-input.json',
+      ),
       'original readiness input',
     );
     writeOnce(path.join(destination, 'readiness-input.json'), {
@@ -517,8 +532,10 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
       loaded,
       preflight,
       admission,
-      completedTurns: recoveredRows.reduce((sum, candidate) =>
-        sum + (candidate.turns - candidate.recovery.source_completed_turns), 0),
+      completedTurns: recoveredRows.reduce(
+        (sum, candidate) => sum + (candidate.turns - candidate.recovery.source_completed_turns),
+        0,
+      ),
       workflowState: 'failed',
       scientificVerdict: 'registered_measurement_pending_human_review',
     });
@@ -542,7 +559,9 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     },
   });
   if (values.help) {
-    process.stdout.write('Usage: node scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js --destination <fresh-dir> --dry-run | --launch-commit <sha> --go-note-commit <sha> --go-note-path <note> --accept-charges\n');
+    process.stdout.write(
+      'Usage: node scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js --destination <fresh-dir> --dry-run | --launch-commit <sha> --go-note-commit <sha> --go-note-path <note> --accept-charges\n',
+    );
     return null;
   }
   const loaded = loadTutorStubActionOutcomeFailedUnitRecoveryDesign({ root: ROOT, designPath: values.design });
@@ -552,7 +571,9 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     throw new Error(`failed-unit recovery preflight failed: ${preflight.failures.join(', ')}`);
   }
   if (values['dry-run']) {
-    process.stdout.write(`${JSON.stringify({ ...preflight, report: undefined, sourcePlan: undefined, units: preflight.units.map((unit) => ({ jobId: unit.jobId, completedTurns: unit.completedTurns, acceptedPendingLearner: Boolean(unit.acceptedPendingLearner) })) }, null, 2)}\n`);
+    process.stdout.write(
+      `${JSON.stringify({ ...preflight, report: undefined, sourcePlan: undefined, units: preflight.units.map((unit) => ({ jobId: unit.jobId, completedTurns: unit.completedTurns, acceptedPendingLearner: Boolean(unit.acceptedPendingLearner) })) }, null, 2)}\n`,
+    );
     return preflight;
   }
   if (!values['accept-charges']) throw new Error('paid recovery requires --accept-charges');

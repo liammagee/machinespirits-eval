@@ -142,12 +142,7 @@ function relativeToDestination(destination, value) {
   return value ? path.relative(destination, value).split(path.sep).join('/') : null;
 }
 
-export function extractTutorStubActionOutcomeCollectionRow({
-  job,
-  exit,
-  destination,
-  interruptionDisposition = null,
-}) {
+export function extractTutorStubActionOutcomeCollectionRow({ job, exit, destination, interruptionDisposition = null }) {
   const traces = traceFiles(job.trace_dir);
   const trace = traces.length === 1 ? traces[0] : null;
   const events = trace ? readTrace(trace) : [];
@@ -627,7 +622,7 @@ function reportForRows({ loaded, preflight, admission, rows, halt }) {
         ? 'Freeze the complete source corpus, then prepare the registered two-coder packet without inspecting auxiliary outcomes.'
         : halt.status === 'paused_recoverable'
           ? 'The run is paused at a durable checkpoint. Resume only missing work under the unchanged design and hard ceiling.'
-        : 'Preserve the stopped corpus and apply the registered failure disposition before any further unit.',
+          : 'Preserve the stopped corpus and apply the registered failure disposition before any further unit.',
   };
 }
 
