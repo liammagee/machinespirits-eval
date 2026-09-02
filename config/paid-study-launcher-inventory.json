@@ -63,6 +63,12 @@
       "reason": "Post-policy Luna learner reference extension; reuses hash-pinned sealed Qwen evidence and adopts the shared admission, create-once state, attempt ceiling, and append-only ledgers."
     },
     {
+      "path": "scripts/run-invested-rival-learner-iteration.js",
+      "registered": "2026-09-01",
+      "disposition": "shared_contract",
+      "reason": "Post-policy Luna development and held-out Luna/Qwen learner study; adopts the shared admission, create-once state, study-wide 110-attempt ceiling, and append-only ledger."
+    },
+    {
       "path": "scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js",
       "registered": "2026-08-22",
       "disposition": "historical_live_exemption",
