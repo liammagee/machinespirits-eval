@@ -167,3 +167,10 @@ Checks before the push, all on the branch tip:
 
 Pushed `state-detection-step1` to origin. No PR, not main. The hero `.jsonl`
 traces stay untracked on this machine (see `npm run archive:runs`).
+
+## Later the same day
+
+The lesson-world traces (038/039/040) were replayed and then added to the
+training pool; the result is `config/manner-trigger/form-v3.json`. See
+`2026-09-02-step5-lesson-fold.md`. Limit (b) above still holds: the
+rule-appeal opposed line has no pool support in any model.

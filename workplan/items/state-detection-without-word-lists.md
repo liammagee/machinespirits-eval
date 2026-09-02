@@ -1,13 +1,13 @@
 ---
 id: state-detection-without-word-lists
 title: "Make the adaptive tutor testable across scenarios without rewiring the detector or the bench"
-status: triaged
+status: done
 type: infra
 priority: P1
-owner: unassigned
+owner: claude
 source: manual
 created: 2026-09-01
-updated: 2026-09-01
+updated: 2026-09-02
 verification: "A learner-state detector with NO per-world word list whose
   leave-one-world-out recall at the planted moments of world-030, world-035
   and world-037 (packed traces) matches or beats the v6 cascade's held-out
@@ -21,9 +21,11 @@ links:
     - paraphrase-robust-detection
     - manner-trigger-tuning
     - adaptation-planted-stress-bench
+    - lesson-world-transfer
   notes:
     - notes/poetics/hero-demo-runs/2026-09-01-adjudication-draft.md
-branch: null
+    - notes/poetics/hero-demo-runs/2026-09-02-step5-lesson-fold.md
+branch: claude/de-genre-tutor-stub
 tags:
   - adaptive-tutor
   - detector
@@ -284,15 +286,58 @@ line `step4-form-live`).
 - Reading: the sensor works live and carried to one of two unseen worlds; the
   card's effect on the learner is not shown on one pair per world.
 
+## Step 5 result (2026-09-02, offline)
+
+Full note: `notes/poetics/hero-demo-runs/2026-09-02-step5-lesson-fold.md`.
+The three lesson worlds of the transfer bench (038/039/040, Sonnet learner,
+never in any training set) give a second fresh test of the form detector.
+
+- Frozen replay over the six bench traces (24 pressure plants, 6 quiet
+  plants): form-v2 13/24 right kind, 2/6 wrong-fires at quiet; form-v1 13/24,
+  1/6; v7 cascade 7/24, 0/6; v7 patterns only 7/24, 0/6. Every miss is one
+  of three shapes: the question-shaped demand at t2 (0/6), the opposed line
+  that appeals to a rule and asks to move on at t4 (0/4), and one "Wait,
+  no" forgetting line. Bored sarcasm in 040 read as mockery twice.
+- The trainer on the archive pool alone reproduces form-v2 exactly. With the
+  six lesson traces added to the pool (102 traces, cues unchanged), the
+  leave-one-world-out folds hold at zero wrong-fires everywhere: 030 231/295
+  (form-v2 213/295), 035 8/10, 036 17/20, 037 16/24 (14/24), 038 3/8, 039
+  7/8, 040 6/8. On the hero hold-outs the final model reads 48/64 right kind
+  (form-v2 46/64) with false alarms 22/216 (33/216).
+- Shipped as `config/manner-trigger/form-v3.json` (version form-v3, cue set
+  form-v2, provenance in `trainedOn`). Opt-in by path, as before; nothing
+  live has run on it. form-v2 stays loadable and pinned.
+- Still unsupported: the rule-appeal opposed line (0/6 across 037/038/040
+  in every model; the pool's opposed rows are stake-shaped — a coverage
+  limit, not a cue to add); the 040 confused line at t6 reads as irritated
+  in its fold (a live run would fire a mockery card at a confused pupil); no
+  quiet-state reads on the lesson worlds (the quiet channel is still qd-v2).
+
+## Closeout (2026-09-02)
+
+Verification branch 1 is met on the numbers: a detector with no per-world
+word list, leave-one-world-out, reads 231/295 planted turns on world-030
+(the v6 cascade's held-out figure was 84/162), 8/10 on 035 and 16/24 on 037,
+with zero wrong-fires at quiet plants; the same detector reads 16/24 on
+three lesson worlds it never saw. Two caveats stay beside the numbers: the
+030 pool holds a near-twin world (033), and the three miss shapes above are
+not covered. Branch 2 was also recorded at step 3 (cross-world claims run
+the forced-card bench; the live trigger is a detection-recall row).
+
+Open follow-ups, none started without a go: the blind second reader on the
+step-4 packet (waits on the user); one 037 pair with the learner-sim `hold`
+block; candidate (a) model labels (144 calls dry estimate); a live pair on
+form-v3.
+
 ## What to decide, in order
 
 1. DONE 2026-09-01 — Reproduce: replay v6 and v7 over the three worlds with
    `score-manner-trigger.js` and confirm the table above. Then replay tier 1
    alone (patterns, no bags, no classifier) to see how much recall the
    world-bound tiers were carrying on Rowan. See "Step 1 result" below.
-2. IN PROGRESS 2026-09-01 — candidate (b) built and scored offline (see
-   "Step 2 result" below); candidate (a) exists as a dry-mode script, not
-   run. Design a world-neutral detector. Candidates: (a) a model-read state label
+2. DONE 2026-09-02 — candidate (b) built (form-v1, form-v2) and re-trained on
+   a wider pool (form-v3, see "Step 5 result" below); candidate (a) exists as
+   a dry-mode script, not run. Design a world-neutral detector. Candidates: (a) a model-read state label
    per learner turn, one call, given the seven-state gloss already in
    `judge-planted-replies.js` (STATE_GLOSS) and the last few public turns
    only, never the plant; (b) features that are about form, not content
