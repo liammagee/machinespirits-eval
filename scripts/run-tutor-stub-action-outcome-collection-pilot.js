@@ -272,8 +272,7 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
     launchEvents[0].design_path !== loaded.relativePath ||
     launchEvents[0].spend_cap !== preflight.plan.model_attempt_ceiling ||
     seal?.type !== 'run_sealed' ||
-    seal?.status !== 'technical_failure' ||
-    (seal?.recovery_permitted !== true && !zeroProviderStartupFailure)
+    seal?.status !== 'technical_failure'
   ) {
     throw new Error('action-outcome recovery requires one sealed technical predecessor');
   }
@@ -301,6 +300,7 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
   let priorCompletedUnits;
   let failedJobIds;
   let priorRows;
+  let validatedReportBackedFailure = false;
   if (!linkedRecovery) {
     const completeJobIds = new Set(
       completedEvents.filter((event) => event.status === 'complete').map((event) => event.job_id),
@@ -352,12 +352,13 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
       const sourceReport = readJson(sourceReportPath, 'action-outcome predecessor report');
       const reportRows = Array.isArray(sourceReport.rows) ? sourceReport.rows : [];
       const currentRows = reportRows.slice(inheritedRows.length);
+      const currentTechnicalFailures = currentRows.filter((row) => row.status === 'technical_failure');
       if (
         linkedPlanDrift ||
-        !zeroProviderStartupFailure ||
         sourceReport.schema !== 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1' ||
         sourceReport.study_id !== loaded.design.studyId ||
         sourceReport.status !== 'technical_failure' ||
+        sourceReport.halt_reason !== `technical_failure in ${currentRows.at(-1)?.job_id}` ||
         sourceReport.source?.commit !== sourcePlan.source?.commit ||
         path.resolve(sourceReport.recovery?.source_root || '') !==
           path.resolve(sourcePlan.recovery.source_root || '') ||
@@ -367,12 +368,22 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
         sourceReport.execution.model_attempts.reserved_by_shared_study_ledger < reservedInSourceRun ||
         JSON.stringify(checkpointRows) !== JSON.stringify(reportRows) ||
         currentRows.length !== completedEvents.length ||
+        currentRows.length !== reservationEvents.length ||
+        currentTechnicalFailures.length !== 1 ||
+        currentRows.at(-1)?.status !== 'technical_failure' ||
+        JSON.stringify(reservedJobIds) !== JSON.stringify(completedEvents.map((event) => event.job_id)) ||
         currentRows.some(
-          (row, index) => row.job_id !== completedEvents[index].job_id || row.status !== completedEvents[index].status,
+          (row, index) =>
+            row.job_id !== completedEvents[index].job_id ||
+            row.status !== completedEvents[index].status ||
+            Number(row.model_attempts?.reserved) !== Number(completedEvents[index].child_reserved_attempts) ||
+            Number(row.model_attempts?.completed) !== Number(completedEvents[index].child_completed_attempts) ||
+            Number(row.model_attempts?.failed) !== Number(completedEvents[index].child_failed_attempts),
         )
       ) {
         throw new Error('action-outcome linked recovery predecessor drift');
       }
+      validatedReportBackedFailure = true;
       priorReservedAttempts = sourceReport.execution.model_attempts.reserved_by_shared_study_ledger;
       priorRows = reportRows.map((row) => ({ ...row, artifact_root: row.artifact_root || sourceRoot }));
     } else {
@@ -381,6 +392,7 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
       const interruptedJobIds = reservedJobIds.filter((jobId) => !completedJobIds.includes(jobId));
       if (
         linkedPlanDrift ||
+        (seal.recovery_permitted !== true && !zeroProviderStartupFailure) ||
         completedEvents.some((event) => event.status !== 'complete') ||
         currentRows.length !== completedEvents.length ||
         currentRows.some(
@@ -442,7 +454,7 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
     studySeal?.type !== 'study_run_sealed' ||
     path.resolve(studySeal.destination || '') !== sourceRoot ||
     studySeal.status !== 'technical_failure' ||
-    (studySeal.recovery_permitted !== true && !zeroProviderStartupFailure) ||
+    (studySeal.recovery_permitted !== true && !zeroProviderStartupFailure && !validatedReportBackedFailure) ||
     Number(studySeal.reserved_in_run) !== reservedInSourceRun ||
     Number(studySeal.study_reserved) !== priorReservedAttempts ||
     Number(studySeal.model_attempt_ceiling) !== preflight.plan.model_attempt_ceiling

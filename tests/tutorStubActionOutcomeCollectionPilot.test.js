@@ -659,7 +659,7 @@ function interruptedRecoveryFixture(t) {
   return { loaded, sourceRoot, recoveryDestination, preflight, failedJob };
 }
 
-function linkedZeroProviderRecoveryFixture(t) {
+function linkedZeroProviderRecoveryFixture(t, { providerFailure = false } = {}) {
   const initial = interruptedRecoveryFixture(t);
   const firstRecovery = loadTutorStubActionOutcomeCollectionRecovery({
     loaded: initial.loaded,
@@ -675,7 +675,7 @@ function linkedZeroProviderRecoveryFixture(t) {
     recovery: true,
   });
   const failedJob = sourcePlan.jobs[1];
-  const zeroProviderRow = {
+  const failureRow = {
     job_id: failedJob.id,
     world_id: failedJob.world_id,
     repeat: failedJob.repeat,
@@ -684,21 +684,21 @@ function linkedZeroProviderRecoveryFixture(t) {
     trace: null,
     transcript: null,
     run_end: null,
-    turns: 0,
-    typed_action_decisions: 0,
-    typed_action_outcomes_closed: 0,
+    turns: providerFailure ? 6 : 0,
+    typed_action_decisions: providerFailure ? 6 : 0,
+    typed_action_outcomes_closed: providerFailure ? 5 : 0,
     model_attempts: {
-      reserved: 0,
-      completed: 0,
-      failed: 0,
+      reserved: providerFailure ? 47 : 0,
+      completed: providerFailure ? 44 : 0,
+      failed: providerFailure ? 3 : 0,
       budget_exhausted: false,
       accounting_balanced: true,
       normal_planned_successful: 25,
-      successful_at_or_above_normal_plan: false,
+      successful_at_or_above_normal_plan: providerFailure,
       per_dialogue_ceiling: 81,
     },
   };
-  const rows = [...firstRecovery.priorRows, zeroProviderRow];
+  const rows = [...firstRecovery.priorRows, failureRow];
   const studyLedgerPath = path.join(
     initial.loaded.root,
     '.tutor-stub-auto-eval',
@@ -742,6 +742,7 @@ function linkedZeroProviderRecoveryFixture(t) {
       schema: 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1',
       study_id: initial.loaded.design.studyId,
       status: 'technical_failure',
+      halt_reason: `technical_failure in ${failedJob.id}`,
       source: { commit: 'fixture-recovery' },
       recovery: { source_root: initial.sourceRoot },
       execution: {
@@ -772,9 +773,9 @@ function linkedZeroProviderRecoveryFixture(t) {
       type: 'unit_complete',
       job_id: failedJob.id,
       status: 'technical_failure',
-      child_reserved_attempts: 0,
-      child_completed_attempts: 0,
-      child_failed_attempts: 0,
+      child_reserved_attempts: failureRow.model_attempts.reserved,
+      child_completed_attempts: failureRow.model_attempts.completed,
+      child_failed_attempts: failureRow.model_attempts.failed,
     },
     { type: 'run_sealed', status: 'technical_failure', reserved_attempts: 81 },
   ];
@@ -1002,6 +1003,42 @@ test('linked recovery preserves two failures and selects only 22 untouched jobs'
   assert.equal(recovery.executionJobs.length, 22);
   assert.equal(recovery.executionJobs[0].id.endsWith('r03'), true);
   assert.equal(162 + recovery.executionJobs.length * 81, 1944);
+});
+
+test('linked recovery accepts one fully validated report-backed provider failure', (t) => {
+  const value = linkedZeroProviderRecoveryFixture(t, { providerFailure: true });
+  const recovery = loadTutorStubActionOutcomeCollectionRecovery({
+    loaded: value.loaded,
+    preflight: value.preflight,
+    recoveryFrom: value.sourceRoot,
+  });
+  assert.equal(recovery.prior_reserved_attempts, 162);
+  assert.equal(recovery.prior_completed_units, 0);
+  assert.deepEqual(recovery.failed_job_ids, [value.firstFailedJob.id, value.failedJob.id]);
+  assert.equal(recovery.priorRows[1].turns, 6);
+  assert.equal(recovery.priorRows[1].model_attempts.reserved, 47);
+  assert.equal(recovery.priorRows[1].model_attempts.completed, 44);
+  assert.equal(recovery.priorRows[1].model_attempts.failed, 3);
+  assert.equal(recovery.executionJobs.length, 22);
+  assert.equal(recovery.executionJobs[0].id.endsWith('r03'), true);
+  assert.equal(162 + recovery.executionJobs.length * 81, 1944);
+});
+
+test('report-backed provider failure cannot bypass ledger-attempt validation', (t) => {
+  const value = linkedZeroProviderRecoveryFixture(t, { providerFailure: true });
+  const reportPath = path.join(value.sourceRoot, 'report.json');
+  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  report.rows.at(-1).model_attempts.failed = 2;
+  fs.writeFileSync(reportPath, `${JSON.stringify(report)}\n`);
+  assert.throws(
+    () =>
+      loadTutorStubActionOutcomeCollectionRecovery({
+        loaded: value.loaded,
+        preflight: value.preflight,
+        recoveryFrom: value.sourceRoot,
+      }),
+    /action-outcome linked recovery predecessor drift/u,
+  );
 });
 
 test('linked interrupted recovery preserves both partial failures and selects only untouched jobs', (t) => {
