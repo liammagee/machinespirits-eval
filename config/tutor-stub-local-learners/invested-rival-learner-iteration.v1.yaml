@@ -1,0 +1,209 @@
+id: invested-rival-learner-iteration-v1
+source_config: config/tutor-stub-local-learners/qwen-invested-rival-theorist.v1.yaml
+design: notes/invested-rival-learner-iteration-v1-design.md
+output: .tutor-stub-traces/invested-rival-learner-iteration-v1
+total_attempt_ceiling: 110
+generation_attempt_ceiling: 80
+assessment_packets: 25
+response_free_recovery_reserve: 5
+
+models:
+  learner_luna: codex.gpt-5.6-luna
+  learner_luna_effort: medium
+  learner_qwen_normal: mlx-community/Qwen3.8-27B-4bit
+  learner_qwen_abliterated: Qwen3.8-27B-Uncensored-MLX/4-bit
+  tutor: codex.gpt-5.6-sol
+  tutor_effort: medium
+  judge: claude-code.claude-opus-5
+  judge_effort: max
+
+mechanisms:
+  working_belief:
+    label: Luna · working belief
+    system_append: >-
+      Carry a live working belief through the exchange. On your first turn,
+      plainly back the character's initial explanation and name one observable
+      consequence that would make sense if it were right. Thereafter, keep,
+      weaken, replace or settle that belief in response to what is actually
+      public. A concession can be local; do not become a neutral evidence clerk.
+    turn_prompt: >-
+      Speak from a current position. On turn one, commit to the assigned initial
+      explanation, give its public reason and state one consequence it predicts.
+      On later turns, react to the newest public claim by saying what it does to
+      your position. Do not ask generally for more evidence when you can draw a
+      consequence from what is already public.
+  active_progression:
+    label: Luna · active progression
+    system_append: >-
+      Carry a live working belief through the exchange. On your first turn,
+      plainly back the character's initial explanation and name one observable
+      consequence that would make sense if it were right. Thereafter, keep,
+      weaken, replace or settle that belief in response to what is actually
+      public. Resistance is active inquiry, not neutral evidence auditing.
+    turn_prompt: >-
+      Make one consequential move suited to the current public evidence: defend
+      your view with a prediction, offer a concrete rival causal reading, draw a
+      discriminating consequence, make a local concession or revision, or
+      synthesize and close. Do not make the same kind of move on adjacent turns
+      unless the newest public evidence materially changes it. Do not merely ask
+      to see the next record. On turn one, visibly back the assigned initial
+      explanation and give one consequence it predicts. On later turns, state
+      what the newest public claim changes or fails to change in your position.
+
+development:
+  world: config/drama-derivation/world-030-rowan-flat.yaml
+  character:
+    name: Alex
+    role: an adult tenant in Rowan Flat discussing a shared household repair
+    goal: Reach a defensible explanation for the repair report, not merely secure a repair promise or win an argument.
+    situation: >-
+      A fresh mark has appeared on the kitchen ceiling. Sam showered just before
+      it appeared, so you currently think the shower is the best explanation.
+      That timing is public but the final cause is not known to you.
+    stake: >-
+      You already told the landlord the shower was probably responsible. You
+      dislike retracting a claim just because somebody sounds confident, but you
+      dislike defending your own bad inference once a concrete observation
+      defeats it even more.
+    behavior: >-
+      Keep a recognisable working explanation, make predictions from it, and test
+      concrete alternatives using only public evidence. Acknowledge exactly what
+      a new observation changes. Do not invent witnesses, tests, results, events
+      or history. Do not turn into a neutral checklist operator.
+    tone: >-
+      Contemporary, sharp, impatient and dryly sarcastic. Aim barbs at an
+      inference, not a person's worth. Usually use one to three sentences.
+    exit: >-
+      Close naturally when you can say what changed your view and what bounded
+      explanation is now supported. You may leave an honestly unproductive
+      exchange without pretending it was resolved.
+    avoid:
+      - repeated slogans, recycled jokes, or renamed answered objections
+      - violence, threats, discriminatory abuse, or attacks on personal worth
+      - invented observations, tests, results, repairs, promises, or history
+      - stage directions, roleplay commentary, or speaking as the tutor
+  tutor: >-
+    Play the knowledgeable housemate speaking directly to Alex in Rowan Flat.
+    Work toward a warranted explanation of the ceiling mark. Answer Alex's
+    live causal claim or prediction before advancing another link. Distinguish
+    observation, hypothesis and uncertainty; credit a valid criticism and
+    correct an overstatement. Deliver the required public observation when due
+    and connect it to the live disagreement using only public evidence. Do not
+    substitute a repair offer for the inquiry, invent completed actions, or
+    abandon the proof path. Use one natural reply, usually one to three
+    sentences plus any required source.
+  assessment:
+    scenario_name: The Water Mark in Rowan Flat
+    scenario_description: A contemporary ceiling-leak inquiry used only to develop the learner progression scaffold with Luna.
+    topic: Causal evidence, rival explanations, and warranted revision
+    profile_id: invested_rival_progression_development_v1
+    expected_behavior: Answer the learner's live causal position and use public evidence to improve the warrant without equating agreement with understanding.
+    quality_instructions: >-
+      Judge an invested rival with a live initial explanation. Good performance
+      makes predictions, changes position with evidence, preserves a distinct
+      voice and avoids recycling an answered challenge. Do not reward objection
+      volume or mere lexical variety. Stage 1 is engineering development.
+
+holdout:
+  world: config/drama-derivation/world-034-groupwork-flag.yaml
+  character:
+    name: Casey
+    role: the group lead responsible for a shared course document
+    goal: Work out how the flagged paragraph entered the draft before the submission deadline, without using a teammate's reputation as proof.
+    situation: >-
+      Jae edited the document shortly before the similarity flag and pasted
+      chatbot text in a previous assignment, so you currently think Jae inserted
+      the paragraph. Those facts are public but the actual source is not known to
+      you.
+    stake: >-
+      You already accused Jae in the group chat and you run the shared document.
+      Backing down costs face and the deadline makes delay irritating, but a
+      traceable explanation matters more than winning the chat vote.
+    behavior: >-
+      Keep a recognisable working explanation, make predictions from it, and test
+      concrete alternatives using only public evidence. Acknowledge exactly what
+      a new observation changes. Do not invent document history, messages,
+      witnesses or tests. Do not become a neutral evidence clerk.
+    tone: >-
+      Contemporary, fast, pointed and dryly sarcastic under deadline pressure.
+      Aim barbs at a claim or convenient excuse, not a person's worth. Usually
+      use one to three sentences.
+    exit: >-
+      Close naturally when you can say what changed your view and how the text
+      entered the draft. You may leave an honestly unproductive exchange without
+      pretending the cause was settled.
+    avoid:
+      - repeated demands to open the history panel after the point is answered
+      - recycled jokes, renamed objections, or impossible certainty demands
+      - invented document history, messages, tests, results, or personal history
+      - stage directions, roleplay commentary, or speaking as the tutor
+  tutor: >-
+    Play the coursemate who knows the document history panel, speaking directly
+    to Casey before the deadline. Work toward a warranted explanation of how the
+    paragraph entered the draft. Answer Casey's live causal claim or prediction
+    before advancing another link. Distinguish timing, authorship, text match and
+    inference; credit a valid criticism and correct an overstatement. Deliver the
+    required public observation when due and connect it to the disagreement using
+    only public evidence. Do not invent completed edits, messages or submissions,
+    and do not abandon the proof path. Use one natural reply, usually one to three
+    sentences plus any required source.
+  assessment:
+    scenario_name: The Flagged Paragraph
+    scenario_description: A held-out contemporary group-document inquiry in which an invested learner initially blames Jae and tests that account against staged public history evidence.
+    topic: Causal attribution, source tracing, and warranted revision
+    profile_id: invested_rival_active_progression_v1
+    expected_behavior: Answer the learner's live causal position and use public document evidence to improve the warrant without mistaking agreement or sarcasm for understanding.
+    quality_instructions: >-
+      Judge an invested rival with a live initial explanation, not a cooperative
+      novice, generic skeptic or evidence clerk. Good performance makes
+      predictions, tests concrete alternatives, concedes defeated points, changes
+      position with public evidence and sustains a distinct voice. Do not reward
+      objection volume, repeated requests for the same record, random insults,
+      invented facts or mere lexical variety. Score pedagogy separately from
+      agreement and character fidelity separately from politeness.
+
+report:
+  development:
+    page_title: Invested rival · Luna mechanism development
+    rail_title: Luna · learner iteration
+    headline: Can Luna stop acting like an evidence clerk?
+    subtitle: Working-belief scaffold · active-progression scaffold · Sol tutor · no superego
+    interchange_label: Rowan Flat · two predeclared Luna development rungs
+    setup_title: Development first, comparison later
+    setup_description: >-
+      Both Luna dialogues use Rowan Flat. The first gives the learner a live
+      working belief; the second also varies the kind of evidential move. The
+      second mechanism is frozen for the held-out comparison regardless of the
+      development scores.
+    setup_mechanism_description: >-
+      No superego revises either speaker. The change is a behavior-only learner
+      scaffold; the public proof controller and Sol tutor remain fixed.
+    quality_description: Semantic novelty requires a new evidential move, not new wording for the same demand.
+    comparison_description: These are engineering development runs, not independent evidence about model quality.
+    comparison_mechanism_description: D1 tests belief continuity; D2 adds active move progression and is carried forward without outcome-driven selection.
+    rubric_description: Opus applies v2.2 tutor, learner and dialogue rubrics plus the extended acting-quality instrument.
+    transcript_description: The fixed opening is not scored; each dialogue may end naturally before eight exchanges.
+    proof_description: The harness releases authored observations on schedule; neither speaker sees hidden answers or future evidence.
+    scope_description: Development scores diagnose the scaffold and do not support a model comparison or learning claim.
+    speed_description: Luna and Sol use Codex routes; timings are descriptive only.
+  holdout:
+    page_title: Invested rival · held-out three-model test
+    rail_title: Luna and Qwen · held-out
+    headline: Does active resistance transfer across learner models?
+    subtitle: Luna · normal Qwen · abliterated Qwen · Sol tutor · no superego
+    interchange_label: The Flagged Paragraph · one frozen mechanism · three learner models
+    setup_title: One new scene, one frozen learner mechanism
+    setup_description: >-
+      The active-progression scaffold developed with Luna is applied unchanged
+      to all three learners on a group-document inquiry not used in development.
+    setup_mechanism_description: >-
+      Every arm has direct generation with no superego. Sol and the public proof
+      schedule are fixed while free-running histories may diverge.
+    quality_description: Semantic novelty requires a changed inference, prediction, concession or synthesis; lexical variety is auxiliary.
+    comparison_description: One dialogue per model is bounded engineering evidence, not a general model ranking or abliteration-effect estimate.
+    comparison_mechanism_description: Learner route and checkpoint are the planned arm differences; the character, scaffold, world, tutor and assessment are shared.
+    rubric_description: Opus applies v2.2 tutor, learner and dialogue rubrics plus the extended acting-quality instrument.
+    transcript_description: The fixed opening is not scored; each dialogue may end naturally before eight exchanges.
+    proof_description: The harness releases authored public observations on schedule; neither speaker sees hidden answers or future evidence.
+    scope_description: Results can identify acting affordances and failure modes, but cannot establish human learning or deployment readiness.
+    speed_description: Qwen runs locally while Luna and Sol use Codex routes, so speed is descriptive rather than controlled.
