@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-02
-branch: codex/action-outcome-v2-recovery-preflight-fix
+branch: codex/action-outcome-v2-linked-recovery-fix
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -47,6 +47,7 @@ links:
     - 913
     - 932
     - 937
+    - 940
   items:
     - layered-task-session-adaptation
 tags:
@@ -112,6 +113,22 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: The operator paused the v2 missing-only recovery after 17 of its
+  44 units completed, then instructed continuation under the unchanged study
+  authorization. The zero-call sealer preserved the active partial unit and
+  closed the recovery ledger with 2,754 of 4,860 shared reservations consumed.
+  A chained zero-call preflight then exposed a recovery-loader defect: linked
+  recovery required a finished `report.json`, although an operator-interrupted
+  process can only leave its atomic checkpoint, trace, and sealed ledgers.
+  Extended linked recovery to validate the inherited chain, match every current
+  completed row to its reservation and disposition, and reconstruct exactly one
+  reserved-but-undispositioned unit from its saved trace. The partial unit is
+  preserved as a second technical failure and can never be rerun; only the 26
+  untouched dialogues remain eligible. Added a focused regression test. The
+  failed preflight made 0 model calls, created no recovery destination, and
+  consumed no additional reservation. Model activity remains inactive pending
+  review and merge of this source repair.
 
 - 2026-09-02: The operator paused the v2 collection after 15 complete dialogues
   and one partial dialogue, then instructed continuation under the unchanged

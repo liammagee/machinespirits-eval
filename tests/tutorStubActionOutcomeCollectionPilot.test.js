@@ -819,6 +819,151 @@ function linkedZeroProviderRecoveryFixture(t) {
   };
 }
 
+function linkedInterruptedRecoveryFixture(t) {
+  const initial = interruptedRecoveryFixture(t);
+  const firstRecovery = loadTutorStubActionOutcomeCollectionRecovery({
+    loaded: initial.loaded,
+    preflight: initial.preflight,
+    recoveryFrom: initial.sourceRoot,
+  });
+  const sourceRoot = initial.recoveryDestination;
+  const nextDestination = path.join(initial.loaded.root, '.tutor-stub-auto-eval', 'fixture-initial-recovery-2');
+  const sourcePlan = initial.preflight.plan;
+  const nextPlan = buildTutorStubActionOutcomeCollectionPlan({
+    loaded: initial.loaded,
+    destination: nextDestination,
+    recovery: true,
+  });
+  const completedJob = sourcePlan.jobs[1];
+  const failedJob = sourcePlan.jobs[2];
+  const completedRow = completeRow(completedJob);
+  const rows = [...firstRecovery.priorRows, completedRow];
+  const studyLedgerPath = path.join(
+    initial.loaded.root,
+    '.tutor-stub-auto-eval',
+    '.paid-study-state',
+    initial.loaded.design.studyId,
+    'study-ledger.jsonl',
+  );
+  fs.mkdirSync(sourceRoot, { recursive: true });
+  fs.writeFileSync(
+    path.join(sourceRoot, 'plan.json'),
+    `${JSON.stringify({
+      status: 'admitted_under_shared_paid_study_launch_contract',
+      source: { commit: 'fixture-recovery' },
+      design: { path: initial.loaded.relativePath },
+      model_attempt_ceiling: 1944,
+      recovery: {
+        source_root: initial.sourceRoot,
+        source_plan: path.join(initial.sourceRoot, 'plan.json'),
+        source_ledger: path.join(initial.sourceRoot, 'run-ledger.jsonl'),
+        prior_reserved_attempts: 81,
+        prior_completed_units: 0,
+        failed_job_ids: [initial.failedJob.id],
+      },
+      execution_job_ids: firstRecovery.executionJobs.map((job) => job.id),
+      preflight: { plan: sourcePlan },
+    })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(sourceRoot, 'checkpoint.json'),
+    `${JSON.stringify({
+      status: 'generation_running',
+      rows,
+      missing_job_ids: sourcePlan.jobs.slice(2).map((job) => job.id),
+      shared_reserved_attempts: 81,
+      hard_ceiling: 1944,
+    })}\n`,
+  );
+  fs.mkdirSync(failedJob.trace_dir, { recursive: true });
+  const traceEvents = [
+    ...Array.from({ length: 31 }, () => ({ type: 'model_call_budget_reserved' })),
+    ...Array.from({ length: 30 }, () => ({ type: 'model_call' })),
+    ...Array.from({ length: 5 }, (_, index) => ({ type: 'turn_complete', turnRecord: { turn: index + 1 } })),
+    ...Array.from({ length: 5 }, () => ({ type: 'tutor_typed_action_decision' })),
+    ...Array.from({ length: 4 }, () => ({ type: 'tutor_typed_action_outcome_closed' })),
+  ];
+  fs.writeFileSync(path.join(failedJob.trace_dir, 'trace.jsonl'), `${traceEvents.map(JSON.stringify).join('\n')}\n`);
+  const runLedgerPath = path.join(sourceRoot, 'run-ledger.jsonl');
+  const runLedger = [
+    {
+      type: 'launch_admitted',
+      study_id: initial.loaded.design.studyId,
+      source_commit: 'fixture-recovery',
+      design_path: initial.loaded.relativePath,
+      spend_cap: 1944,
+      study_ledger: studyLedgerPath,
+      launch_kind: 'recovery',
+      recovery_from: initial.sourceRoot,
+    },
+    { type: 'model_attempt_reserved', unit: completedJob.id, count: 81 },
+    {
+      type: 'unit_complete',
+      job_id: completedJob.id,
+      status: 'complete',
+      child_reserved_attempts: 25,
+      child_completed_attempts: 25,
+      child_failed_attempts: 0,
+    },
+    { type: 'model_attempt_reserved', unit: failedJob.id, count: 81 },
+    {
+      type: 'run_sealed',
+      status: 'technical_failure',
+      recovery_permitted: true,
+      reserved_attempts: 162,
+      reason: 'fixture interrupted linked recovery',
+    },
+  ];
+  fs.writeFileSync(runLedgerPath, `${runLedger.map(JSON.stringify).join('\n')}\n`);
+  const studyEvents = fs.readFileSync(studyLedgerPath, 'utf8').trim().split('\n').map(JSON.parse);
+  studyEvents.push(
+    {
+      type: 'study_launch_admitted',
+      study_id: initial.loaded.design.studyId,
+      destination: sourceRoot,
+      run_ledger: runLedgerPath,
+      launch_kind: 'recovery',
+      recovery_from: initial.sourceRoot,
+    },
+    {
+      type: 'study_model_attempt_reserved',
+      destination: sourceRoot,
+      unit: completedJob.id,
+      count: 81,
+      study_reserved: 162,
+      model_attempt_ceiling: 1944,
+    },
+    {
+      type: 'study_model_attempt_reserved',
+      destination: sourceRoot,
+      unit: failedJob.id,
+      count: 81,
+      study_reserved: 243,
+      model_attempt_ceiling: 1944,
+    },
+    {
+      type: 'study_run_sealed',
+      destination: sourceRoot,
+      run_ledger: runLedgerPath,
+      status: 'technical_failure',
+      recovery_permitted: true,
+      reserved_in_run: 162,
+      study_reserved: 243,
+      model_attempt_ceiling: 1944,
+    },
+  );
+  fs.writeFileSync(studyLedgerPath, `${studyEvents.map(JSON.stringify).join('\n')}\n`);
+  return {
+    ...initial,
+    firstFailedJob: initial.failedJob,
+    sourceRoot,
+    nextDestination,
+    completedJob,
+    failedJob,
+    preflight: { destination: nextDestination, plan: nextPlan },
+  };
+}
+
 test('recovery validates the sealed predecessor and selects only 23 never-attempted jobs', (t) => {
   const value = interruptedRecoveryFixture(t);
   const recovery = loadTutorStubActionOutcomeCollectionRecovery({
@@ -857,6 +1002,26 @@ test('linked recovery preserves two failures and selects only 22 untouched jobs'
   assert.equal(recovery.executionJobs.length, 22);
   assert.equal(recovery.executionJobs[0].id.endsWith('r03'), true);
   assert.equal(162 + recovery.executionJobs.length * 81, 1944);
+});
+
+test('linked interrupted recovery preserves both partial failures and selects only untouched jobs', (t) => {
+  const value = linkedInterruptedRecoveryFixture(t);
+  const recovery = loadTutorStubActionOutcomeCollectionRecovery({
+    loaded: value.loaded,
+    preflight: value.preflight,
+    recoveryFrom: value.sourceRoot,
+  });
+  assert.equal(recovery.prior_reserved_attempts, 243);
+  assert.equal(recovery.prior_completed_units, 1);
+  assert.deepEqual(recovery.failed_job_ids, [value.firstFailedJob.id, value.failedJob.id]);
+  assert.equal(recovery.priorRows.length, 3);
+  assert.equal(recovery.priorRows[2].artifact_root, value.sourceRoot);
+  assert.equal(recovery.priorRows[2].turns, 5);
+  assert.equal(recovery.priorRows[2].model_attempts.reserved, 31);
+  assert.equal(recovery.priorRows[2].model_attempts.completed, 30);
+  assert.equal(recovery.executionJobs.length, 21);
+  assert.equal(recovery.executionJobs[0].id.endsWith('r04'), true);
+  assert.equal(243 + recovery.executionJobs.length * 81, 1944);
 });
 
 test('linked recovery seals after the remaining 22 untouched jobs', async (t) => {
