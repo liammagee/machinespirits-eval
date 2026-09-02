@@ -366,3 +366,10 @@ the only judge), indeterminate means stop. No approval machinery beyond
 ## Follow-up runs after closeout (2026-09-02, paid)
 
 - Candidate (a) model labels run, 287 Sonnet calls under a 300 ceiling. Right kind 53/66 vs form-v3 49/66; off-plant fires 35/205 vs 19/205. form-v3 stays shipped. Note `notes/poetics/hero-demo-runs/2026-09-02-step6-model-labels.md`. Labeller defect (bare model string to the bridge) fixed ed26216a9, no spend lost.
+- **Live pair on form-v3 (037), 2026-09-02, paid.** Ceiling 100 calls per
+  dialogue ×2 plus 20 judge calls; used 76 + 75 + 2. form-v3 read 4/6 plants
+  right (form-v1 at step 4: 2/6, with 3 wrong-kind fires), 0 wrong kind,
+  2 off-plant fires on 18 turns (step 4: 5). Judge (codex.gpt-5.6-sol, blind):
+  repair HIT 4/6 with the card, 2/6 without; uptake 5/6 both arms. Lean, not
+  result. Note `notes/poetics/hero-demo-runs/2026-09-02-step6-form-v3-live.md`;
+  artifacts `exports/tutor-stub-outcome/step6-form-v3-live/`, archived.
