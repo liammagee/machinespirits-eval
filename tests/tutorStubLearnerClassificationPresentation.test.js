@@ -153,7 +153,7 @@ test('real technical-debug process preserves exact learner-classifier terminal b
     assert.match(block, /The learner adds a specific clarification to the same turn\./u);
     assert.doesNotMatch(block, /learner-classifier warning/u);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
   }
 });
 

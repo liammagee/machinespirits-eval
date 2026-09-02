@@ -115,6 +115,15 @@ contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
 
+- 2026-09-02: Bringing the linked-recovery fix up to current `main` caused the
+  repository's full Node 22/24 CI to run. Node 24 reproducibly exposed a
+  temporary-directory cleanup race in two existing interactive presentation
+  tests: the tutor process had closed, but a finishing fake-provider child could
+  still create its final log while `rmSync` traversed the fixture directory.
+  Added Node's bounded `ENOTEMPTY` retry options to those two cleanups. This is a
+  test-lifecycle repair only; both failed CI attempts made 0 model calls and
+  consumed no study reservation.
+
 - 2026-09-02: The operator paused the v2 missing-only recovery after 17 of its
   44 units completed, then instructed continuation under the unchanged study
   authorization. The zero-call sealer preserved the active partial unit and
