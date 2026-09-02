@@ -2038,4 +2038,16 @@ test('scoring and swimlanes use actual unequal lengths without inventing extra t
   assert.match(partialAssessment.html, /Public proof progress is not learner understanding/u);
   assert.match(partialAssessment.html, /Measurement caveats · scores preserved, not corrected/u);
   assert.match(partialAssessment.html, /Fixture &lt;source&gt; provenance/u);
+  const retryAccounting = renderContinuityReport({
+    arms: reportArms,
+    evaluation: {
+      scores: [],
+      newPhysicalAttempts: 6,
+      plannedNewAssessmentPackets: 5,
+    },
+    provenance: { budget: { used: 22, limit: 23 } },
+    characterBrief: 'Fixture only.',
+  });
+  assert.match(retryAccounting.html, /6 physical Opus attempts for 5 planned packets/u);
+  assert.doesNotMatch(retryAccounting.html, /6 of 5/u);
 });
