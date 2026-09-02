@@ -69,6 +69,12 @@
       "reason": "Post-policy Luna development and held-out Luna/Qwen learner study; adopts the shared admission, create-once state, study-wide 110-attempt ceiling, and append-only ledger."
     },
     {
+      "path": "scripts/run-invested-rival-learner-replication.js",
+      "registered": "2026-09-02",
+      "disposition": "shared_contract",
+      "reason": "Post-policy matched scaffold/control replication across three learner routes and three worlds; adopts the shared admission, create-once state, study-wide 396-attempt ceiling, and append-only ledger."
+    },
+    {
       "path": "scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js",
       "registered": "2026-08-22",
       "disposition": "historical_live_exemption",
