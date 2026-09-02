@@ -258,6 +258,32 @@ as quiet is withheld (the sheet counts these).
 Also fixed: the old sheet dropped the first trace root whenever `--out` was
 absent (an index-0 filter bug), and did not follow symlinked dialogue dirs.
 
+## Step 4 result (2026-09-02, paid: 303 dialogue calls + 4 judge calls, ceiling 400 + 40)
+
+Full note: `notes/poetics/hero-demo-runs/2026-09-02-step4-form-live.md`.
+Artifacts: `exports/tutor-stub-outcome/step4-form-live/` (archived, ledger
+line `step4-form-live`).
+
+- form-v1 ran as the one live sensor (`TUTOR_STUB_FORM_DETECTOR=config/manner-trigger/form-v1.json`,
+  with `TUTOR_STUB_MANNER_SWITCH=1 TUTOR_STUB_CARD_DOSE_LADDER=1`); the
+  word-list sensors did not run. Every read is a `tutor_form_state` trace line.
+- Detection at the planted turn: world 036 6/6; world 037 2/6 (three
+  question-shaped plants read as `lost`, one missed). Both worlds unseen in
+  training. Not world-neutral yet: a question reads as confusion.
+- Repair, judge `codex.gpt-5.6-sol` blind to gold and arm: with 7/12 HIT,
+  3 PARTIAL, 2 MISS; without 6/12 HIT, 0 PARTIAL, 6 MISS. Sonnet makes the
+  gold move on half the plants with no card at all.
+- Learner took up the move next turn: 10/12 in both arms, same two plants
+  failing. Plants realized 23/24. "Eased" is weak by design (sim returns to
+  brief); read uptake.
+- Template fallbacks at planted turns 7/24 (with 3, without 4).
+- Second reader: `blind-packet.md` + `blind-key.json`; compare with
+  `scripts/stress-blind-packet.js compare`.
+- Seats: tutor/learner/classifier Sonnet 5 (claude-code); reasoning and
+  learner-record codex.gpt-5.6-sol — same family as the judge; say so.
+- Reading: the sensor works live and carried to one of two unseen worlds; the
+  card's effect on the learner is not shown on one pair per world.
+
 ## What to decide, in order
 
 1. DONE 2026-09-01 — Reproduce: replay v6 and v7 over the three worlds with
@@ -282,8 +308,10 @@ absent (an index-0 filter bug), and did not follow symlinked dialogue dirs.
    separately); for cross-scenario claims about the moves, run the forced-card
    arm the crossed experiment used, so adding a scenario needs a schedule and
    gold, not a new word list.
-4. Only then: one paid with/without pair per world on the new detector, both
-   seats stated, learner realization checked per plant, ruled by the author.
+4. DONE 2026-09-02 (paid; see "Step 4 result" below) — one with/without pair
+   per hero world on form-v1 live, seats stated, realization checked per plant
+   by a codex judge blind to gold; a human second reader gets the blind packet.
+   (User changed "ruled by the author" to automated judge + blind human reader.)
 
 Rails that stay: spend ceiling stated before any paid run, attended runs, no
 resampling after a failure, no self-judging (the tutor's own family cannot be
