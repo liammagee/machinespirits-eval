@@ -148,3 +148,8 @@ remain descriptive because the Luna and Qwen routes differ.
   at launch commit `7e502650e0966c048ac7add924bab9b7c235a0dd`. The user's
   direct replication instruction and explicit merge approval were recorded in
   the signed GO note. Model activity remains inactive; 0/396 attempts used.
+- 2026-09-02 — First launch admission stopped before any provider call because
+  the GO note named the machine-readable YAML while the runner's registered
+  design path is this Markdown note. The GO note was corrected to name both;
+  the study, inputs, routes, measures and ceiling did not change. No run
+  destination was created and 0/396 attempts were reserved.

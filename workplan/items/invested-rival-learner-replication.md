@@ -53,3 +53,7 @@ new contemporary proof worlds.
 - 2026-09-02: PR #938 passed CI and merged at launch commit `7e502650`. The
   signed GO note records the user's direct replication instruction and the
   unchanged 396-attempt ceiling; launch remains pending at 0/396.
+- 2026-09-02: Initial launch admission stopped at 0/396 because the GO note
+  named only the YAML, while the runner registers the Markdown design path.
+  Correcting the note to name both paths is documentation-only recovery; no
+  provider was contacted and the approved study is unchanged.

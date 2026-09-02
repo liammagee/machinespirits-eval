@@ -9,7 +9,10 @@ Date: 2026-09-02
 Authorization source: Liam Magee's direct instruction, "Do the replication,"
 followed by explicit approval to merge the fully green launch PR.
 
-Design file:
+Design file used by the launch contract:
+`notes/invested-rival-learner-replication-v1.md`
+
+Machine-readable study configuration:
 `config/tutor-stub-local-learners/invested-rival-learner-replication.v1.yaml`
 
 Launch commit:
