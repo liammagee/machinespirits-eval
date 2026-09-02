@@ -17,8 +17,13 @@
  *   card       — was a card active there, and how did it enter (forced by the
  *                launcher's TUTOR_STUB_CARD_FORCE, or detected live)?
  *   reply      — did the model ship the reply, or did a template?
- *   repair     — was the reply the right repair? Ruled by the author from the
- *                sheet; never computed here (no self-judging).
+ *   repair     — was the reply the right repair? Never computed here. With
+ *                --judgments <file> the sheet carries the rulings of a judge
+ *                from another model family (scripts/judge-stress-repair.js:
+ *                move named blind to the gold, plant realized, learner uptake
+ *                and easing on her next line); without it the row says
+ *                "ruled by the author". The blind packet for a second reader
+ *                is scripts/stress-blind-packet.js.
  *
  * A forced-card arm scores 0 on nothing: its detection row still reports what
  * the detector read, because the switch event records the read before the
@@ -88,6 +93,16 @@ export function reviewStressTrace(tracePath, { labelRoot = process.cwd() } = {})
   if (!plantEvents.length) return null;
   const worldLine = lines.find((line) => line.includes('"worldId"'));
   const world = worldLine ? (worldLine.match(/"worldId":"([^"]+)"/) || [])[1] || null : null;
+  // Seats, as the run start recorded them: the judge must come from another family than the tutor.
+  const identityModels =
+    ev.find((e) => e.type === 'run_start')?.metadata?.sessionRecipe?.config?.identity?.models || {};
+  const models = Object.fromEntries(
+    Object.entries(identityModels).map(([seat, m]) => [
+      seat,
+      m?.ref || (m?.provider && m?.model ? `${m.provider}.${m.model}` : null),
+    ]),
+  );
+  const formReads = Object.fromEntries(ev.filter((e) => e.type === 'tutor_form_state').map((e) => [e.turn, e]));
   const turns = Object.fromEntries(
     ev.filter((e) => e.type === 'turn_complete').map((e) => [e.turn, e.turnRecord || {}]),
   );
@@ -125,6 +140,8 @@ export function reviewStressTrace(tracePath, { labelRoot = process.cwd() } = {})
     const outcome = outcomes[turn]?.accounting?.outcome || null;
     const replyModel = outcome !== null && !/deterministic_fallback/.test(outcome);
     const rec = turns[turn] || {};
+    const next = turns[turn + 1] || null;
+    const form = formReads[turn] || null;
     return {
       turn,
       state: plant.state,
@@ -134,6 +151,9 @@ export function reviewStressTrace(tracePath, { labelRoot = process.cwd() } = {})
       expectedCard,
       read,
       quietRead,
+      sensor: sw?.triggerVersion || null,
+      formState: form ? form.state : null,
+      formP: form ? form.p : null,
       detectedRight,
       wrongFire,
       entry,
@@ -145,12 +165,15 @@ export function reviewStressTrace(tracePath, { labelRoot = process.cwd() } = {})
       replyModel,
       learner: String(rec.learner || ''),
       tutor: String(rec.tutor || ''),
+      // Her line after the reply — the only in-transcript evidence of whether the repair helped.
+      learnerNext: next ? String(next.learner || '') : null,
     };
   });
   return {
-    tracePath,
+    tracePath: path.resolve(tracePath),
     label: path.relative(labelRoot, path.dirname(tracePath)) || path.basename(path.dirname(tracePath)),
     world,
+    models,
     scheduleId: plantEvents[0].scheduleId || null,
     turnCount: Object.keys(turns).length,
     closed,
@@ -177,11 +200,72 @@ function tally(plants) {
   };
 }
 
+/**
+ * Attach a judge file (scripts/judge-stress-repair.js output) to the plants
+ * it judged, matched on trace path and turn (label + turn as the fallback
+ * when a run has moved). Mutates and returns `reviews`; sets `judge` on the
+ * array for the sheet header.
+ */
+export function attachStressJudgments(reviews, judgments) {
+  if (!judgments?.items) return reviews;
+  const byPath = new Map(judgments.items.map((j) => [`${path.resolve(j.tracePath)}#${j.turn}`, j]));
+  const byLabel = new Map(judgments.items.map((j) => [`${j.label}#${j.turn}`, j]));
+  for (const r of reviews) {
+    for (const p of r.plants) {
+      const j = byPath.get(`${r.tracePath}#${p.turn}`) || byLabel.get(`${r.label}#${p.turn}`) || null;
+      p.judgment = j
+        ? {
+            realized: j.realized ?? null,
+            move: j.move ?? null,
+            secondary: j.secondary ?? null,
+            repair: j.repair ?? null,
+            uptake: j.uptake ?? null,
+            eased: j.eased ?? null,
+            why: j.why ?? null,
+          }
+        : null;
+    }
+  }
+  reviews.judge = judgments.judge || null;
+  return reviews;
+}
+
+function tallyJudgments(plants) {
+  const judged = plants.filter((p) => p.judgment);
+  const count = (pred) => judged.filter(pred).length;
+  const withNext = judged.filter((p) => p.judgment.uptake && p.judgment.uptake !== 'none');
+  return {
+    judged: judged.length,
+    unjudged: judged.filter((p) => p.judgment.repair === null).length,
+    repairHit: count((p) => p.judgment.repair === 'HIT'),
+    repairPartial: count((p) => p.judgment.repair === 'PARTIAL'),
+    repairMiss: count((p) => p.judgment.repair === 'MISS'),
+    realizedYes: count((p) => p.judgment.realized === 'yes'),
+    realizedPartly: count((p) => p.judgment.realized === 'partly'),
+    withNext: withNext.length,
+    uptakeYes: withNext.filter((p) => p.judgment.uptake === 'yes').length,
+    eased: withNext.filter((p) => p.judgment.eased === 'eased').length,
+    persists: withNext.filter((p) => p.judgment.eased === 'persists').length,
+  };
+}
+
 export function summarizeStressReviews(reviews) {
+  const judged = reviews.some((r) => r.plants.some((p) => p.judgment));
   return {
     traces: reviews.length,
-    pooled: tally(reviews.flatMap((r) => r.plants)),
-    perTrace: reviews.map((r) => ({ label: r.label, world: r.world, scheduleId: r.scheduleId, ...tally(r.plants) })),
+    judge: judged ? reviews.judge || 'unknown judge' : null,
+    pooled: {
+      ...tally(reviews.flatMap((r) => r.plants)),
+      ...(judged ? tallyJudgments(reviews.flatMap((r) => r.plants)) : {}),
+    },
+    perTrace: reviews.map((r) => ({
+      label: r.label,
+      world: r.world,
+      scheduleId: r.scheduleId,
+      models: r.models || {},
+      ...tally(r.plants),
+      ...(judged ? tallyJudgments(r.plants) : {}),
+    })),
   };
 }
 
@@ -215,15 +299,39 @@ export function renderStressReviewMarkdown(reviews, summary) {
   md.push(
     `| Reply delivery | ${frac(t.replyModel, t.scored)} | the model shipped the reply (${t.replyTemplate} template fallbacks) |`,
   );
-  md.push('| Repair right | ruled by the author | read the sheet below; the bench does not judge its own repairs |');
+  if (summary.judge) {
+    const j = summary.judge;
+    md.push(
+      `| Repair right (judge ${j}, blind to gold) | ${frac(t.repairHit, t.judged)} | the judge named the reply's main move without seeing the gold; HIT when it is the gold or the also-acceptable move (${t.repairPartial} PARTIAL: gold only as a second move; ${t.repairMiss} MISS${t.unjudged ? `; ${t.unjudged} UNJUDGED — indeterminate, stop and look` : ''}) |`,
+    );
+    md.push(
+      `| Plant realized (judge) | ${frac(t.realizedYes, t.judged)} | the learner line carried out the planted direction (${t.realizedPartly} partly) |`,
+    );
+    md.push(
+      `| Learner took up the move (judge) | ${frac(t.uptakeYes, t.withNext)} | her next line works with what the tutor offered (${t.judged - t.withNext} plants had no next line) |`,
+    );
+    md.push(
+      `| State eased next turn (judge) | ${frac(t.eased, t.withNext)} | the planted condition no longer shows in her next line (${t.persists} persists). CAVEAT: the learner-sim returns to its standing brief after a planted turn by design, so this row is weak evidence on its own; read it with the uptake row |`,
+    );
+    md.push(
+      '| Repair right (second reader) | blind packet | scripts/stress-blind-packet.js — a person rules the same items without arm, gold or judge tags |',
+    );
+  } else {
+    md.push('| Repair right | ruled by the author | read the sheet below; the bench does not judge its own repairs |');
+  }
+  const judgeCols = summary.judge ? ' repair HIT | realized | uptake |' : '';
   md.push(
     '',
-    '| Run | world | schedule | plants | detection | card (forced/detected) | model reply |',
-    '|---|---|---|---|---|---|---|',
+    `| Run | world | schedule | seats (tutor / learner) | plants | detection | card (forced/detected) | model reply |${judgeCols}`,
+    `|---|---|---|---|---|---|---|---|${summary.judge ? '---|---|---|' : ''}`,
   );
   for (const r of summary.perTrace) {
+    const seats = `${r.models?.tutor || '?'} / ${r.models?.learner || '?'}`;
+    const judgeCells = summary.judge
+      ? ` ${frac(r.repairHit, r.judged)} | ${frac(r.realizedYes, r.judged)} | ${frac(r.uptakeYes, r.withNext)} |`
+      : '';
     md.push(
-      `| ${r.label} | ${r.world || '?'} | ${r.scheduleId || '?'} | ${r.scored} | ${frac(r.detectedRight, r.scored)} | ${frac(r.cardActive, r.scored)} (${r.cardForced}/${r.cardDetected}) | ${frac(r.replyModel, r.scored)} |`,
+      `| ${r.label} | ${r.world || '?'} | ${r.scheduleId || '?'} | ${seats} | ${r.scored} | ${frac(r.detectedRight, r.scored)} | ${frac(r.cardActive, r.scored)} (${r.cardForced}/${r.cardDetected}) | ${frac(r.replyModel, r.scored)} |${judgeCells}`,
     );
   }
   for (const r of reviews) {
@@ -242,6 +350,16 @@ export function renderStressReviewMarkdown(reviews, summary) {
       );
       md.push(`- her: ${p.learner.slice(0, 160)}`);
       md.push(`- tutor: ${p.tutor.slice(0, 280)}`);
+      if (p.judgment) {
+        const j = p.judgment;
+        const move = j.move ? `${j.move}${j.secondary ? ` (+${j.secondary})` : ''}` : 'unjudged';
+        const next =
+          j.uptake === 'none' ? 'no next line' : `next line: uptake=${j.uptake ?? '?'} eased=${j.eased ?? '?'}`;
+        md.push(
+          `- judge: realized=${j.realized ?? '?'} move=${move} → ${j.repair ?? 'UNJUDGED'}; ${next}${j.why ? ` — ${j.why}` : ''}`,
+        );
+        if (p.learnerNext) md.push(`- her next: ${p.learnerNext.slice(0, 160)}`);
+      }
     }
   }
   return md.join('\n');
@@ -250,14 +368,25 @@ export function renderStressReviewMarkdown(reviews, summary) {
 const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedDirectly) {
   const args = process.argv.slice(2);
-  const outIndex = args.indexOf('--out');
-  const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
+  const valueFlags = ['--out', '--judgments'];
+  const flagValue = (name) => {
+    const i = args.indexOf(name);
+    return i >= 0 ? args[i + 1] : null;
+  };
+  const outPath = flagValue('--out');
+  const judgmentsPath = flagValue('--judgments');
   const json = args.includes('--json');
-  // (The 2026-08 builder dropped the first root whenever --out was absent:
-  // `i !== outIndex + 1` with outIndex -1 excluded index 0. Kept out of the way.)
-  const roots = args.filter((a, i) => a !== '--out' && a !== '--json' && (outIndex < 0 || i !== outIndex + 1));
+  const valueIndexes = new Set(
+    valueFlags
+      .map((f) => args.indexOf(f))
+      .filter((i) => i >= 0)
+      .map((i) => i + 1),
+  );
+  const roots = args.filter((a, i) => !valueFlags.includes(a) && a !== '--json' && !valueIndexes.has(i));
   if (!roots.length) {
-    console.error('usage: node scripts/review-stress-bench.js <traceDirOrParent> [more...] [--out file.md] [--json]');
+    console.error(
+      'usage: node scripts/review-stress-bench.js <traceDirOrParent> [more...] [--judgments judge.json] [--out file.md] [--json]',
+    );
     process.exit(1);
   }
   const reviews = [];
@@ -270,6 +399,7 @@ if (invokedDirectly) {
       if (review) reviews.push(review);
     }
   }
+  if (judgmentsPath) attachStressJudgments(reviews, JSON.parse(fs.readFileSync(path.resolve(judgmentsPath), 'utf8')));
   const summary = summarizeStressReviews(reviews);
   const body = json ? JSON.stringify({ summary, reviews }, null, 2) : renderStressReviewMarkdown(reviews, summary);
   if (outPath) {
