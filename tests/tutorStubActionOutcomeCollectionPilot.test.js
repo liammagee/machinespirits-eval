@@ -217,6 +217,87 @@ test('the zero-call quality audit fails sparse, auxiliary-inconclusive evidence 
   assert.match(renderTutorStubActionOutcomeCollectionAudit(audit), /does not license a held-out controller study/u);
 });
 
+test('the v2 audit uses only registered comparative families and leaves human-consensus gates pending', () => {
+  const design = loadComparable().design;
+  const generationRows = design.randomization.jobs.map((job) =>
+    completeRow({ id: job.jobId, world_id: job.worldId, repeat: job.repeat }),
+  );
+  const families = design.comparability.moveFamilies;
+  const worlds = design.population.collectionWorlds;
+  const sources = [];
+  const evidenceRows = [];
+  for (let index = 0; index < 30; index += 1) {
+    const source = {
+      path: `/fixture/jobs/aocv2_fixture_${index}/traces/trace.jsonl`,
+      runId: `fixture-run-${index}`,
+      sha256: index.toString(16).padStart(64, '0'),
+      bytes: 100,
+      metadata: { world: { id: worlds[index % worlds.length] } },
+      errors: [],
+    };
+    sources.push(source);
+    evidenceRows.push({
+      recordId: `${source.runId}:contract-1`,
+      source: source.path,
+      recordedOutcome: 'inconclusive',
+      auxiliaryDeliveryVisible: true,
+      assignmentStatus: 'seeded_uniform_family_assignment',
+      prospectiveAssignment: {
+        selected_move_family: families[index % families.length],
+        eligible_move_families: families.map((family) => ({ family })),
+      },
+    });
+  }
+  const summary = {
+    sourceFiles: sources.length,
+    quarantinedSources: 0,
+    events: 300,
+    typedDecisions: evidenceRows.length,
+    closedOutcomes: evidenceRows.length,
+    joinedMemoryRecords: evidenceRows.length,
+  };
+  const readiness = { modelCalls: 0, summary, sources, evidenceRows, exclusionCounts: {} };
+  const audit = buildTutorStubActionOutcomeCollectionAudit({
+    design,
+    generationReport: {
+      schema: 'fixture-generation-report',
+      study_id: design.studyId,
+      status: 'generation_complete',
+      source: { commit: 'fixture', detached: true, dirty: false },
+      design: { path: TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH },
+      memory_controller_enabled: false,
+      rows: generationRows,
+      execution: {
+        planned_units: 60,
+        missing_units: 0,
+        completed_turns: 480,
+        planned_turns: 480,
+        model_attempts: {},
+      },
+    },
+    registeredReadiness: readiness,
+    allObservedReadiness: readiness,
+    decisionInventory: evidenceRows.map(() => ({
+      assignmentStatus: 'seeded_uniform_family_assignment',
+      conditionDisposition: 'matched',
+    })),
+    asOf: '2026-09-02T23:00:00.000Z',
+  });
+
+  assert.deepEqual(
+    audit.extraction.matchedByFamily.map((row) => row.family),
+    families,
+  );
+  assert.equal(audit.extraction.maximumPotentialBinaryRecords, 30);
+  assert.deepEqual(audit.failedGates, []);
+  assert.equal(audit.verdict, 'pending_human_review');
+  assert.equal(audit.pendingGates.length, 5);
+  const rendered = renderTutorStubActionOutcomeCollectionAudit(audit);
+  assert.match(rendered, /60\/60 complete dialogues/u);
+  assert.match(rendered, /30 seeded closed assignment/u);
+  assert.doesNotMatch(rendered, /all 23 available trace files/u);
+});
+
 test('Wilson intervals retain the observed fraction and finite bounds', () => {
   const interval = wilsonInterval(30, 158);
   assert.equal(interval.successes, 30);
