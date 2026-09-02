@@ -142,7 +142,14 @@ learner line before counting a miss.
   flags: `--trace <file>` / `--bench-dir <dir>` (repeatable), `--tiers
   all|patterns+bags|patterns`, `--per-plant` (qd-v2 replayed beside the
   trigger, live read shown next to it), `--no-defaults`. The default bench
-  dirs are not on this machine; it says so.
+  dirs are not on this machine; it says so. Step-2 flag: `--state-detector
+  config/manner-trigger/form-v1.json` replays the form detector in place of
+  the cascade.
+- `scripts/train-form-state-detector.js --train-dir <dir> --holdout-trace <f>
+  --out <artifact>` — trains the form detector and scores it
+  leave-one-world-out; hold-out traces are never trained on.
+- `scripts/label-learner-state-model.js --trace <f>` — candidate (a), a
+  model names the state per turn. Dry by default; `--live --max-calls N`.
 - `scripts/review-stress-bench.js <dirs> --out sheet.md` — the plant-by-plant
   ruling sheet.
 - Leave-one-world-out is the evaluation standard for any trigger change
@@ -178,13 +185,36 @@ Full note: `notes/poetics/hero-demo-runs/2026-09-01-step1-detector-replay.md`.
 - 84/162 cannot be re-derived here: the trainer's train/held-out export dirs
   are absent locally and in the archive.
 
+## Step 2 result (2026-09-01, offline)
+
+Note: `notes/poetics/hero-demo-runs/2026-09-01-step2-form-detector.md`.
+
+- Built `services/tutorStubFormStateDetector.js` (form-v1): 40 form features,
+  closed-class English and turn relations only; a test fails if a v6 bag
+  token that is not closed-class appears in its source. Trained per state on
+  96 archive traces (worlds 030/033/034, codex learner, 649 planted turns).
+- Hero hold-out (six traces, 32 should-fire plants, 4 lost plants; worlds
+  035/037 never in training, Sonnet learner): form-v1 fired 21/32, right kind
+  21/32, wrong fires at lost plants 0/4, all four lost plants read `lost`.
+  v7 full cascade on the same traces: 19/32, 18/32, 2/4. v7 patterns only:
+  11/32, 10/32, 0/4. On realized plants: form-v1 17/22, v7 13/22.
+- Leave-one-world-out inside the archive: Rowan from 033+034 207/295 fired;
+  033 from 030+034 only 63/214. Transfer is not symmetric — the form set
+  does not cover the codex learner's Alder Row register.
+- Remaining misses: irritation (5 of 6 hero plants silent; only "sound like"
+  carries it), 037 jumping-ahead read as `lost`, 037 opposed t4 silent.
+- Not done: candidate (a) live labels (needs a go and a call ceiling; dry run
+  says 144 calls for the six hero traces), step 3, step 4.
+
 ## What to decide, in order
 
 1. DONE 2026-09-01 — Reproduce: replay v6 and v7 over the three worlds with
    `score-manner-trigger.js` and confirm the table above. Then replay tier 1
    alone (patterns, no bags, no classifier) to see how much recall the
    world-bound tiers were carrying on Rowan. See "Step 1 result" below.
-2. Design a world-neutral detector. Candidates: (a) a model-read state label
+2. IN PROGRESS 2026-09-01 — candidate (b) built and scored offline (see
+   "Step 2 result" below); candidate (a) exists as a dry-mode script, not
+   run. Design a world-neutral detector. Candidates: (a) a model-read state label
    per learner turn, one call, given the seven-state gloss already in
    `judge-planted-replies.js` (STATE_GLOSS) and the last few public turns
    only, never the plant; (b) features that are about form, not content
