@@ -137,21 +137,53 @@ learner line before counting a miss.
 
 - `scripts/score-manner-trigger.js [--trigger config/manner-trigger/vN.json] [--json]`
   replays any trigger version over recorded learner turns, no model calls.
-  Metrics: per-plant classification recall, arming recall, wrong-fires at
-  quiet plants, false alarms on organic dialogues. Point it at the three
-  hero-demo trace dirs plus whatever it reads by default.
+  Metrics: per-plant classification recall, kind recall, arming recall,
+  wrong-fires at quiet plants, false alarms on organic dialogues. Step-1
+  flags: `--trace <file>` / `--bench-dir <dir>` (repeatable), `--tiers
+  all|patterns+bags|patterns`, `--per-plant` (qd-v2 replayed beside the
+  trigger, live read shown next to it), `--no-defaults`. The default bench
+  dirs are not on this machine; it says so.
 - `scripts/review-stress-bench.js <dirs> --out sheet.md` — the plant-by-plant
   ruling sheet.
 - Leave-one-world-out is the evaluation standard for any trigger change
   (`workplan/items/paraphrase-robust-detection.md`,
   `workplan/items/manner-trigger-tuning.md`, both done; read their closeouts).
 
+## Step 1 result (2026-09-01, offline)
+
+Full note: `notes/poetics/hero-demo-runs/2026-09-01-step1-detector-replay.md`.
+
+- Table above confirmed: the v6 replay matches the live recording at every
+  planted turn on all three v3 traces.
+- Six traces, 32 should-fire plants, 4 lost plants. v6 full: fired 19/32,
+  right kind 17/32, wrong-fires at lost 2/4. v6 tier 1 alone: 9/32, 7/32, 0/4.
+  v7 full 19/32 · 18/32 · 2/4; v7 tier 1 alone 11/32 · 10/32 · 0/4.
+- Rowan (030): full cascade 9/10 fired, tier 1 alone 3/10. The bags carry 6
+  of the 9 fires and the wrong-fire; the classifier carries nothing. The bag
+  tokens that fired are world-033 nouns that world-030 shares (hose, notebook,
+  strip, dry, eight, apologizing, shower, line). The held-out figure tested a
+  near-twin world. Fraction world (037): 4/12 in every tier; bags and
+  classifier add nothing there.
+- Tier 1 is not world-free: `meeting's at`, `by thursday`, `the minutes go
+  out`, `work order`, `the seven who`, `so it's the tanks` are world-033 text,
+  and other patterns quote the schedules' realize wording.
+- Realization (draft rulings + own reading): 22 of the 32 should-fire plants
+  were realized. Realized-right: v6 full 11/22, v7 full 13/22, tier 1 alone
+  6/22 (v6) and 8/22 (v7). On Rowan only 3 of the 8 right-kind fires land on
+  realized plants. The 9 realized misses under v7 (7 fraction, 2 ghost
+  forgetting) are the design target for step 2.
+- qd-v2 reads `confused` at every "Wait"/"Hang on" opener, including
+  forgetting plants; right at 2 of 4 lost plants, blocked by wrong-fires at
+  the other 2.
+- 84/162 cannot be re-derived here: the trainer's train/held-out export dirs
+  are absent locally and in the archive.
+
 ## What to decide, in order
 
-1. Reproduce: replay v6 and v7 over the three worlds with
+1. DONE 2026-09-01 — Reproduce: replay v6 and v7 over the three worlds with
    `score-manner-trigger.js` and confirm the table above. Then replay tier 1
    alone (patterns, no bags, no classifier) to see how much recall the
-   world-bound tiers were carrying on Rowan.
+   world-bound tiers were carrying on Rowan. See "Step 1 result" below.
 2. Design a world-neutral detector. Candidates: (a) a model-read state label
    per learner turn, one call, given the seven-state gloss already in
    `judge-planted-replies.js` (STATE_GLOSS) and the last few public turns
