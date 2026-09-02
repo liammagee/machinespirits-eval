@@ -27,7 +27,7 @@
     {
       "file": "services/tutorStubMannerSwitch.js",
       "claim": "move cards + exemplars + licences; classifier features fv1; dose options",
-      "sha256": "2faaf0dcb4af5611c418f0fbaab6510bb73ae97e2d4e3659b2f66a2bd162192b"
+      "sha256": "6f6fabe62862399842078f3523a516367255c5de44d2c950ca75b5281738bb32"
     },
     {
       "file": "services/tutorStubQuietDetector.js",

@@ -17,7 +17,11 @@ import { renderContinuityReport } from '../services/localQwenRefusalContinuityRe
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
 import { plotLint, validateWorld } from '../services/dramaticDerivation/world.js';
 import {
+  assertCompleteScore,
   buildBenchmarkJobs,
+  buildSplitQualityOutputSchema,
+  normalizeScores,
+  parseSplitQualityScore,
   readBenchmarkArm,
   scoreBenchmarkArms,
 } from './score-local-qwen-resistant-learner-benchmark.js';
@@ -35,6 +39,26 @@ const QUALITY_DIMENSIONS = ['overall_quality', 'successful_pedagogy', 'surprise_
 
 function writeJson(file, value) {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
+}
+
+function readJson(file, label = path.basename(file)) {
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (error) {
+    throw new Error(`${label} is not valid JSON: ${error.message}`);
+  }
+}
+
+function readJsonLines(file, label = path.basename(file)) {
+  try {
+    return fs
+      .readFileSync(file, 'utf8')
+      .split(/\r?\n/u)
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+  } catch (error) {
+    throw new Error(`${label} is not valid JSONL: ${error.message}`);
+  }
 }
 
 function requireString(value, label) {
@@ -447,10 +471,440 @@ function parseExecutionToken(token) {
   throw new Error(`invalid execution token ${token}`);
 }
 
+function executionTarget(plan, route, token) {
+  const { worldKey, mechanism } = parseExecutionToken(token);
+  const world = plan.worlds.find((candidate) => candidate.key === worldKey);
+  const condition = world?.conditions[mechanism];
+  const arm = condition?.arms.find((candidate) => candidate.route === route);
+  if (!world || !condition || !arm) throw new Error(`execution target missing for ${route}/${token}`);
+  return { world, condition, arm, worldKey, mechanism, key: `${worldKey}/${arm.id}` };
+}
+
+function recoveryPlanShape(plan) {
+  return {
+    id: plan.id,
+    design: plan.design,
+    totalAttemptCeiling: plan.total_attempt_ceiling,
+    generationAttemptCeiling: plan.generation_attempt_ceiling,
+    assessmentPackets: plan.assessment_packets,
+    recoveryAttemptReserve: plan.recovery_attempt_reserve,
+    seed: plan.generation_seed,
+    temperature: plan.temperature,
+    models: plan.models,
+    executionOrder: plan.executionOrder,
+    worlds: plan.worlds.map((world) => ({
+      key: world.key,
+      conditions: Object.fromEntries(
+        Object.entries(world.conditions).map(([mechanism, condition]) => [
+          mechanism,
+          {
+            id: condition.id,
+            interaction: condition.interaction,
+            arms: condition.arms.map(({ id, route, mechanism: armMechanism, provider, model }) => ({
+              id,
+              route,
+              mechanism: armMechanism,
+              provider,
+              model,
+            })),
+          },
+        ]),
+      ),
+    })),
+  };
+}
+
+function readSavedDirectPrefix(armDir) {
+  const savedReplies = {};
+  let failedUnit = null;
+  let gapFound = false;
+  for (let turn = 1; turn <= 8; turn += 1) {
+    for (const speaker of ['learner', 'tutor']) {
+      const requestPath = path.join(armDir, `${turn}-${speaker}.request.json`);
+      const responsePath = path.join(armDir, `${turn}-${speaker}.response.json`);
+      const hasRequest = fs.existsSync(requestPath);
+      const hasResponse = fs.existsSync(responsePath);
+      if (hasResponse && !hasRequest) throw new Error(`recovery response has no request: ${responsePath}`);
+      if (!gapFound && hasRequest && hasResponse) {
+        savedReplies[`${turn}-${speaker}`] = {
+          source: responsePath,
+          request: readJson(requestPath, 'saved recovery request'),
+          response: readJson(responsePath, 'saved recovery response'),
+        };
+        continue;
+      }
+      if (hasRequest && !hasResponse && !failedUnit) failedUnit = { turn, speaker, requestPath };
+      if (hasRequest || hasResponse) gapFound = true;
+      if (gapFound && hasResponse) throw new Error(`recovery prefix is not contiguous: ${responsePath}`);
+    }
+  }
+  return { savedReplies, failedUnit };
+}
+
+function assessmentBatchKey(world, mechanism) {
+  return `${world}/${mechanism}`;
+}
+
+function readCurrentAssessmentBatch(source, world, mechanism) {
+  const evaluationDir = path.join(source, 'worlds', world.key, `evaluation-${mechanism.replaceAll('_', '-')}`);
+  const priorScores = [];
+  const priorSplitQualityParts = [];
+  let completedPackets = 0;
+  if (!fs.existsSync(evaluationDir)) {
+    return { world: world.key, mechanism, sourceDir: null, priorScores, priorSplitQualityParts, completedPackets };
+  }
+  const condition = world.conditions[mechanism];
+  for (const arm of condition.arms) {
+    for (const kind of ['tutor', 'learner', 'dialogue']) {
+      const file = path.join(evaluationDir, `${arm.id}-${kind}.json`);
+      if (!fs.existsSync(file)) continue;
+      const raw = readJson(file, `${world.key}/${mechanism}/${arm.id}/${kind}`);
+      priorScores.push({ arm: arm.id, kind, raw, scored: normalizeScores(kind, raw), indexNormalization: null });
+      completedPackets += 1;
+    }
+    const qualityFile = path.join(evaluationDir, `${arm.id}-quality.json`);
+    if (fs.existsSync(qualityFile)) {
+      const raw = readJson(qualityFile, `${world.key}/${mechanism}/${arm.id}/quality`);
+      priorScores.push({
+        arm: arm.id,
+        kind: 'quality',
+        raw,
+        scored: normalizeScores('quality', raw),
+        indexNormalization: null,
+      });
+      completedPackets += 2;
+      continue;
+    }
+    for (const part of ['summary', 'turns']) {
+      const file = path.join(evaluationDir, `${arm.id}-quality-${part}.json`);
+      if (!fs.existsSync(file)) continue;
+      priorSplitQualityParts.push({
+        arm: arm.id,
+        part,
+        raw: readJson(file, `${world.key}/${mechanism}/${arm.id}/quality-${part}`),
+      });
+      completedPackets += 1;
+    }
+  }
+  return {
+    world: world.key,
+    mechanism,
+    sourceDir: evaluationDir,
+    priorScores,
+    priorSplitQualityParts,
+    completedPackets,
+  };
+}
+
+function mergeAssessmentBatch(seed, current) {
+  const scores = new Map();
+  const split = new Map();
+  const addScore = (score) => {
+    const key = `${score.arm}/${score.kind}`;
+    const existing = scores.get(key);
+    if (existing && JSON.stringify(existing.raw) !== JSON.stringify(score.raw)) {
+      throw new Error(`assessment recovery score drift for ${key}`);
+    }
+    scores.set(key, { ...score, scored: normalizeScores(score.kind, score.raw) });
+    if (score.kind === 'quality') {
+      split.delete(`${score.arm}/summary`);
+      split.delete(`${score.arm}/turns`);
+    }
+  };
+  const addSplit = (entry) => {
+    const key = `${entry.arm}/${entry.part}`;
+    if (scores.has(`${entry.arm}/quality`)) return;
+    const existing = split.get(key);
+    if (existing && JSON.stringify(existing.raw) !== JSON.stringify(entry.raw)) {
+      throw new Error(`assessment recovery split-score drift for ${key}`);
+    }
+    split.set(key, entry);
+  };
+  for (const score of [...(seed?.priorScores || []), ...current.priorScores]) addScore(score);
+  for (const entry of [...(seed?.priorSplitQualityParts || []), ...current.priorSplitQualityParts]) addSplit(entry);
+  const priorScores = [...scores.values()];
+  const priorSplitQualityParts = [...split.values()];
+  const completedPackets =
+    priorScores.reduce((sum, score) => sum + (score.kind === 'quality' ? 2 : 1), 0) + priorSplitQualityParts.length;
+  return {
+    world: current.world,
+    mechanism: current.mechanism,
+    sourceDir: current.sourceDir,
+    priorScores,
+    priorSplitQualityParts,
+    completedPackets,
+  };
+}
+
+function isResponseFreeAssessmentFailure(row) {
+  return (
+    row?.status === 'failed' &&
+    row.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR' &&
+    row.classification === 'response_free_error' &&
+    row.reason === 'result_error_without_structured_output'
+  );
+}
+
+function readAssessmentRecovery(plan, source, events, seal, completed, ownReservedAttempts) {
+  const statePath = path.join(source, 'assessment-recovery-state.json');
+  const inherited = fs.existsSync(statePath) ? readJson(statePath, 'assessment recovery state') : null;
+  if (
+    inherited &&
+    (inherited.schema !== 'machinespirits.invested-rival-assessment-recovery-state.v1' || inherited.studyId !== plan.id)
+  ) {
+    throw new Error('assessment recovery state drift');
+  }
+  const currentBatches = plan.worlds.flatMap((world) =>
+    ['baseline', 'active_progression'].map((mechanism) => readCurrentAssessmentBatch(source, world, mechanism)),
+  );
+  const inheritedByKey = new Map(
+    (inherited?.batches || []).map((batch) => [assessmentBatchKey(batch.world, batch.mechanism), batch]),
+  );
+  const batches = currentBatches.map((current) =>
+    mergeAssessmentBatch(inheritedByKey.get(assessmentBatchKey(current.world, current.mechanism)), current),
+  );
+  for (const batch of batches) {
+    const world = plan.worlds.find((candidate) => candidate.key === batch.world);
+    const condition = world?.conditions[batch.mechanism];
+    if (!condition) throw new Error(`assessment recovery has unknown batch ${batch.world}/${batch.mechanism}`);
+    for (const score of batch.priorScores) {
+      const arm = condition.arms.find((candidate) => candidate.id === score.arm);
+      if (!arm) throw new Error(`assessment recovery has unknown arm ${batch.world}/${score.arm}`);
+      const dialogue = readJson(
+        path.join(source, 'worlds', batch.world, 'dialogues', arm.id, 'dialogue.json'),
+        `${batch.world}/${arm.id} recovery dialogue`,
+      );
+      assertCompleteScore(score.kind, score.raw, dialogue.turns.length, { extendedQuality: true });
+    }
+    for (const entry of batch.priorSplitQualityParts) {
+      const arm = condition.arms.find((candidate) => candidate.id === entry.arm);
+      if (!arm) throw new Error(`assessment recovery has unknown split arm ${batch.world}/${entry.arm}`);
+      const dialogue = readJson(
+        path.join(source, 'worlds', batch.world, 'dialogues', arm.id, 'dialogue.json'),
+        `${batch.world}/${arm.id} recovery dialogue`,
+      );
+      parseSplitQualityScore(
+        entry.part,
+        JSON.stringify(entry.raw),
+        dialogue.turns.length,
+        buildSplitQualityOutputSchema(entry.part, dialogue.turns.length),
+      );
+    }
+  }
+  const currentCompletedPackets = currentBatches.reduce((sum, batch) => sum + batch.completedPackets, 0);
+  const completedPackets = batches.reduce((sum, batch) => sum + batch.completedPackets, 0);
+  if (completedPackets > plan.assessment_packets) throw new Error('assessment recovery has too many completed packets');
+
+  const progressPath = path.join(source, 'progress.jsonl');
+  const progress = fs.existsSync(progressPath) ? readJsonLines(progressPath, 'replication recovery progress') : [];
+  const firstAssessmentReservation = events.find(
+    (event) => event.type === 'model_attempt_reserved' && event.stage === 'assessment',
+  );
+  const lastDialogueEvent = progress.findLast((event) => event.type === 'dialogue_complete');
+  const generationAttempts =
+    inherited?.generationAttempts ??
+    (Number.isSafeInteger(firstAssessmentReservation?.study_reserved)
+      ? firstAssessmentReservation.study_reserved - 1
+      : lastDialogueEvent?.reservedAttempts);
+  if (!Number.isSafeInteger(generationAttempts) || generationAttempts < 1) {
+    throw new Error('assessment recovery cannot establish the completed generation attempt count');
+  }
+  const aggregatePriorAttempts = Number.isSafeInteger(seal.study_reserved) ? seal.study_reserved : ownReservedAttempts;
+  const currentAssessmentReservations = events
+    .filter((event) => event.type === 'model_attempt_reserved' && event.stage === 'assessment')
+    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const physicalPath = path.join(source, 'assessment-physical-attempts.jsonl');
+  const physicalRows = fs.existsSync(physicalPath)
+    ? readJsonLines(physicalPath, 'assessment physical-attempt ledger')
+    : [];
+  const candidateRows = physicalRows.filter((row) => row.status === 'candidate_returned');
+  const failedRows = physicalRows.filter((row) => row.status === 'failed');
+  if (
+    candidateRows.length !== currentCompletedPackets ||
+    failedRows.some((row) => !isResponseFreeAssessmentFailure(row))
+  ) {
+    throw new Error('assessment recovery contains an unresolved substantive or mismatched judge result');
+  }
+  const interruptedAttempts = currentAssessmentReservations - physicalRows.length;
+  if (![0, 1].includes(interruptedAttempts)) {
+    throw new Error('assessment recovery has ambiguous in-flight attempt accounting');
+  }
+  const inheritedPhysicalAttempts = Number(inherited?.physicalAttempts || 0);
+  const inheritedResponseFreeFailures = Number(inherited?.responseFreeFailures || 0);
+  if (
+    !Number.isSafeInteger(inheritedPhysicalAttempts) ||
+    inheritedPhysicalAttempts < 0 ||
+    !Number.isSafeInteger(inheritedResponseFreeFailures) ||
+    inheritedResponseFreeFailures < 0 ||
+    inheritedResponseFreeFailures > inheritedPhysicalAttempts ||
+    aggregatePriorAttempts - generationAttempts !== inheritedPhysicalAttempts + currentAssessmentReservations
+  ) {
+    throw new Error('assessment recovery aggregate attempt accounting drift');
+  }
+  const physicalAttempts = aggregatePriorAttempts - generationAttempts;
+  const responseFreeFailures = physicalAttempts - completedPackets;
+  if (
+    responseFreeFailures !== inheritedResponseFreeFailures + failedRows.length + interruptedAttempts ||
+    responseFreeFailures > plan.recovery_attempt_reserve ||
+    aggregatePriorAttempts +
+      (plan.assessment_packets - completedPackets) +
+      (plan.recovery_attempt_reserve - responseFreeFailures) >
+      plan.total_attempt_ceiling
+  ) {
+    throw new Error('assessment recovery exceeds its preserved packet or retry budget');
+  }
+  return {
+    generationAttempts,
+    physicalAttempts,
+    responseFreeFailures,
+    completedPackets,
+    interruptedAttempts,
+    batches,
+  };
+}
+
+export function readLearnerReplicationRecovery(plan, sourceDir) {
+  if (!sourceDir || !path.isAbsolute(sourceDir)) throw new Error('replication recovery source must be absolute');
+  const source = path.resolve(sourceDir);
+  const priorPlan = readJson(path.join(source, 'plan.json'), 'replication recovery plan');
+  if (JSON.stringify(recoveryPlanShape(priorPlan)) !== JSON.stringify(recoveryPlanShape(plan))) {
+    throw new Error('replication recovery plan drift');
+  }
+  const events = readJsonLines(path.join(source, 'run-ledger.jsonl'), 'replication recovery run ledger');
+  const launch = events.find((event) => event.type === 'launch_admitted');
+  const seal = events.at(-1);
+  const reservations = events.filter((event) => event.type === 'model_attempt_reserved');
+  const priorAttempts = reservations.reduce((sum, event) => sum + Number(event.count || 0), 0);
+  if (
+    launch?.study_id !== plan.id ||
+    launch?.spend_cap !== plan.total_attempt_ceiling ||
+    seal?.type !== 'run_sealed' ||
+    seal.status !== 'technical_failure' ||
+    seal.recovery_permitted !== true ||
+    seal.reserved_attempts !== priorAttempts
+  ) {
+    throw new Error('replication recovery requires one sealed technical predecessor');
+  }
+
+  const sequence = ['luna', 'qwen_normal', 'qwen_abliterated'].flatMap((route) =>
+    plan.executionOrder[route].map((token) => executionTarget(plan, route, token)),
+  );
+  const completed = [];
+  let partial = null;
+  let reachedMissing = false;
+  let responseCount = 0;
+  for (const target of sequence) {
+    const armDir = path.join(source, 'worlds', target.world.key, 'dialogues', target.arm.id);
+    const dialoguePath = path.join(armDir, 'dialogue.json');
+    if (fs.existsSync(dialoguePath)) {
+      if (partial || reachedMissing)
+        throw new Error('replication recovery completed arms are not a fixed execution prefix');
+      const snapshot = readJson(dialoguePath, 'completed recovery dialogue');
+      if (!Array.isArray(snapshot.turns) || !snapshot.turns.length)
+        throw new Error('completed recovery dialogue is empty');
+      const armResponses = fs
+        .readdirSync(armDir)
+        .filter((name) => /^\d+-(?:learner|tutor)\.response\.json$/u.test(name));
+      responseCount += armResponses.length;
+      completed.push({ ...target, sourceDir: armDir });
+      continue;
+    }
+    if (fs.existsSync(armDir)) {
+      if (partial || reachedMissing) throw new Error('replication recovery has more than one partial arm');
+      const prefix = readSavedDirectPrefix(armDir);
+      const savedCount = Object.keys(prefix.savedReplies).length;
+      if (!savedCount) throw new Error('replication recovery partial arm has no saved response');
+      responseCount += savedCount;
+      partial = { ...target, sourceDir: armDir, ...prefix };
+      continue;
+    }
+    reachedMissing = true;
+  }
+  const aggregatePriorAttempts = Number.isSafeInteger(seal.study_reserved) ? seal.study_reserved : priorAttempts;
+  if (!partial && completed.length === sequence.length && !reachedMissing) {
+    return {
+      phase: 'assessment',
+      source,
+      priorAttempts: aggregatePriorAttempts,
+      responseCount,
+      interruptedResponseFreeAttempts: 0,
+      completed,
+      partial: null,
+      assessment: readAssessmentRecovery(plan, source, events, seal, completed, priorAttempts),
+    };
+  }
+  if (!partial) throw new Error('replication recovery requires one interrupted generation arm');
+  const interruptedResponseFreeAttempts = priorAttempts - responseCount;
+  if (![0, 1].includes(interruptedResponseFreeAttempts)) {
+    throw new Error('replication recovery response and reservation accounting drift');
+  }
+  if (interruptedResponseFreeAttempts === 1 && !partial.failedUnit) {
+    throw new Error('replication recovery cannot locate the response-free interrupted unit');
+  }
+  return {
+    phase: 'generation',
+    source,
+    priorAttempts: aggregatePriorAttempts,
+    responseCount,
+    interruptedResponseFreeAttempts,
+    completed,
+    partial,
+  };
+}
+
 function appendProgress(outDir, value) {
   const event = { at: new Date().toISOString(), ...value };
   fs.appendFileSync(path.join(outDir, 'progress.jsonl'), `${JSON.stringify(event)}\n`);
   console.log(JSON.stringify(event));
+}
+
+function writeAssessmentRecoveryState(outDir, plan, assessment) {
+  writeJson(path.join(outDir, 'assessment-recovery-state.json'), {
+    schema: 'machinespirits.invested-rival-assessment-recovery-state.v1',
+    studyId: plan.id,
+    generationAttempts: assessment.generationAttempts,
+    physicalAttempts: assessment.physicalAttempts,
+    responseFreeFailures: assessment.responseFreeFailures,
+    completedPackets: assessment.completedPackets,
+    batches: assessment.batches.map(({ world, mechanism, priorScores, priorSplitQualityParts, completedPackets }) => ({
+      world,
+      mechanism,
+      priorScores,
+      priorSplitQualityParts,
+      completedPackets,
+    })),
+  });
+}
+
+function copyAssessmentRecoveryEvidence(outDir, recovery) {
+  const evidenceRoot = path.join(outDir, 'reused-assessment-evidence');
+  fs.mkdirSync(evidenceRoot);
+  for (const name of [
+    'plan.json',
+    'recovery.json',
+    'assessment-recovery-state.json',
+    'assessment-physical-attempts.jsonl',
+    'progress.jsonl',
+    'run-ledger.jsonl',
+    'stopped.json',
+  ]) {
+    const source = path.join(recovery.source, name);
+    if (fs.existsSync(source)) fs.copyFileSync(source, path.join(evidenceRoot, `source-${name}`));
+  }
+  const inheritedEvidence = path.join(recovery.source, 'reused-assessment-evidence');
+  if (fs.existsSync(inheritedEvidence)) {
+    fs.cpSync(inheritedEvidence, path.join(evidenceRoot, 'inherited'), {
+      recursive: true,
+      errorOnExist: true,
+      force: false,
+    });
+  }
+  for (const batch of recovery.assessment.batches) {
+    if (!batch.sourceDir) continue;
+    const destination = path.join(evidenceRoot, 'worlds', batch.world, batch.mechanism);
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.cpSync(batch.sourceDir, destination, { recursive: true, errorOnExist: true, force: false });
+  }
 }
 
 export function replicationAssessmentBatches(world, arms) {
@@ -468,10 +922,13 @@ export function replicationAssessmentBatches(world, arms) {
   });
 }
 
-export async function scoreReplicationWorld({ world, arms, worldDir, judge }) {
+export async function scoreReplicationWorld({ world, arms, worldDir, judge, assessmentRecovery = null }) {
   const batches = replicationAssessmentBatches(world, arms);
   const evaluated = [];
   for (const batch of batches) {
+    const prior = assessmentRecovery?.batches.find(
+      (candidate) => candidate.world === world.key && candidate.mechanism === batch.mechanism,
+    );
     const evaluation = await scoreBenchmarkArms(
       batch.arms,
       path.join(worldDir, `evaluation-${batch.mechanism.replaceAll('_', '-')}`),
@@ -483,6 +940,9 @@ export async function scoreReplicationWorld({ world, arms, worldDir, judge }) {
         assessmentContext: batch.condition.assessmentContext,
         publicSourceContextByArm: sourceContexts(batch.condition, batch.arms),
         callJudge: judge,
+        priorScores: prior?.priorScores || [],
+        priorSplitQualityParts: prior?.priorSplitQualityParts || [],
+        priorAttempts: prior?.completedPackets || 0,
       },
     );
     evaluated.push({ mechanism: batch.mechanism, evaluation });
@@ -509,7 +969,7 @@ export async function scoreReplicationWorld({ world, arms, worldDir, judge }) {
   };
 }
 
-async function runOneArm({ condition, arm, outDir, budget, runtimeArm = arm }) {
+async function runOneArm({ condition, arm, outDir, budget, runtimeArm = arm, savedReplies = {} }) {
   const started = Date.now();
   await runContinuityArm({
     plan: condition,
@@ -517,6 +977,7 @@ async function runOneArm({ condition, arm, outDir, budget, runtimeArm = arm }) {
     outDir,
     budget,
     callModel: callLearnerReplicationModel,
+    savedReplies,
     unsupportedQuotationPolicy: 'drop',
   });
   return readBenchmarkArm({ ...arm, path: path.join(outDir, 'dialogue.json'), wallTimeMs: Date.now() - started });
@@ -696,7 +1157,7 @@ function renderIndexHtml(analysis, plan) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Invested-rival learner replication</title><style>body{font-family:ui-sans-serif,system-ui;margin:0;background:#f3efe7;color:#1f2925}main{max-width:1080px;margin:auto;padding:40px 24px}section{background:#fff;border:1px solid #c9c1b3;border-radius:16px;padding:24px;margin:18px 0}.gates{display:flex;gap:12px;flex-wrap:wrap}.gate{padding:10px 14px;border-radius:999px;background:#ebe5d8}.pass{background:#d8eadb}.fail{background:#f0d3cd}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #ddd}a{color:#175f4c}</style></head><body><main><h1>Invested-rival learner replication</h1><p>Nine matched scaffold/control pairs across three worlds and three learner routes.</p><div class="gates"><span class="gate ${analysis.gates.replication ? 'pass' : 'fail'}">Replication gate: ${analysis.gates.replication ? 'PASS' : 'FAIL'}</span><span class="gate ${analysis.gates.mainTextPaper ? 'pass' : 'fail'}">Main-text paper gate: ${analysis.gates.mainTextPaper ? 'PASS' : 'FAIL'}</span></div><section><h2>Matched results</h2><table><thead><tr><th>World</th><th>Learner</th><th>Baseline</th><th>Scaffold</th><th>Primary Δ</th><th>Encounter Δ</th></tr></thead><tbody>${rows}</tbody></table></section><section><h2>World reports</h2><ul>${links}</ul></section><section><h2>Boundary</h2><p>${escapeHtml(analysis.claimBoundary)}</p></section></main></body></html>`;
 }
 
-async function liveRun(plan, outDir, admission) {
+async function liveRun(plan, outDir, admission, recovery = null) {
   const budget = paidBudget(admission, plan.total_attempt_ceiling);
   const provenance = {
     commit: admission.source.commit,
@@ -710,6 +1171,31 @@ async function liveRun(plan, outDir, admission) {
     responseFreeRecoveryReserve: plan.recovery_attempt_reserve,
     configuredModels: plan.models,
     authorization: admission.authorization,
+    recovery: recovery
+      ? {
+          phase: recovery.phase,
+          source: recovery.source,
+          priorAttempts: recovery.priorAttempts,
+          responseCount: recovery.responseCount,
+          interruptedResponseFreeAttempts: recovery.interruptedResponseFreeAttempts,
+          completedArms: recovery.completed.map(({ world, arm }) => `${world.key}/${arm.id}`),
+          ...(recovery.partial
+            ? {
+                partialArm: `${recovery.partial.world.key}/${recovery.partial.arm.id}`,
+                failedUnit: recovery.partial.failedUnit,
+              }
+            : {}),
+          ...(recovery.assessment
+            ? {
+                generationAttempts: recovery.assessment.generationAttempts,
+                priorAssessmentPhysicalAttempts: recovery.assessment.physicalAttempts,
+                priorResponseFreeFailures: recovery.assessment.responseFreeFailures,
+                completedAssessmentPackets: recovery.assessment.completedPackets,
+                interruptedAssessmentAttempts: recovery.assessment.interruptedAttempts,
+              }
+            : {}),
+        }
+      : null,
   };
   const generated = new Map(plan.worlds.map((world) => [world.key, new Map()]));
   try {
@@ -721,20 +1207,62 @@ async function liveRun(plan, outDir, admission) {
       fs.mkdirSync(path.join(worldDir, 'dialogues'));
     }
 
+    if (recovery) {
+      writeJson(path.join(outDir, 'recovery.json'), provenance.recovery);
+      if (recovery.assessment) {
+        copyAssessmentRecoveryEvidence(outDir, recovery);
+        writeAssessmentRecoveryState(outDir, plan, recovery.assessment);
+        appendProgress(outDir, {
+          type: 'assessment_recovery_started',
+          completedPackets: recovery.assessment.completedPackets,
+          missingPackets: plan.assessment_packets - recovery.assessment.completedPackets,
+          priorPhysicalAttempts: recovery.assessment.physicalAttempts,
+          priorResponseFreeFailures: recovery.assessment.responseFreeFailures,
+          reservedAttempts: budget.snapshot().used,
+        });
+      }
+      for (const imported of recovery.completed) {
+        const dialogueDir = path.join(outDir, 'worlds', imported.world.key, 'dialogues', imported.arm.id);
+        fs.cpSync(imported.sourceDir, dialogueDir, { recursive: true, errorOnExist: true, force: false });
+        const result = readBenchmarkArm({ ...imported.arm, path: path.join(dialogueDir, 'dialogue.json') });
+        generated.get(imported.world.key).set(imported.arm.id, result);
+        appendProgress(outDir, {
+          type: 'dialogue_reused',
+          world: imported.world.key,
+          arm: imported.arm.id,
+          route: imported.arm.route,
+          mechanism: imported.mechanism,
+          exchanges: result.snapshot.turns.length,
+          newAttempts: 0,
+          reservedAttempts: budget.snapshot().used,
+        });
+      }
+    }
+
     const executeRoute = async (route, service = null) => {
       for (const token of plan.executionOrder[route]) {
-        const { worldKey, mechanism } = parseExecutionToken(token);
-        const world = plan.worlds.find((candidate) => candidate.key === worldKey);
-        const condition = world?.conditions[mechanism];
-        const arm = condition?.arms.find((candidate) => candidate.route === route);
-        if (!world || !condition || !arm) throw new Error(`execution target missing for ${route}/${token}`);
+        const { world, condition, arm, mechanism, key } = executionTarget(plan, route, token);
+        if (generated.get(world.key).has(arm.id)) continue;
         const dialogueDir = path.join(outDir, 'worlds', world.key, 'dialogues', arm.id);
+        const savedReplies = recovery?.partial?.key === key ? recovery.partial.savedReplies : {};
+        if (Object.keys(savedReplies).length) {
+          appendProgress(outDir, {
+            type: 'dialogue_recovery_started',
+            world: world.key,
+            arm: arm.id,
+            route,
+            mechanism,
+            reusedReplies: Object.keys(savedReplies).length,
+            failedUnit: recovery.partial.failedUnit,
+            reservedAttempts: budget.snapshot().used,
+          });
+        }
         let runtimeArm = arm;
         if (service) {
           const loaded = await discoverLoadedModel(plan.base.base_url, { modelIdContains: arm.model });
           runtimeArm = runtimeServiceArm(service, arm, loaded);
         }
-        const result = await runOneArm({ condition, arm, outDir: dialogueDir, budget, runtimeArm });
+        const result = await runOneArm({ condition, arm, outDir: dialogueDir, budget, runtimeArm, savedReplies });
         generated.get(world.key).set(arm.id, result);
         appendProgress(outDir, {
           type: 'dialogue_complete',
@@ -753,6 +1281,11 @@ async function liveRun(plan, outDir, admission) {
     const baseService = yaml.parse(fs.readFileSync(path.join(ROOT, plan.base.service_config), 'utf8'));
     baseService.workspace.path = plan.base.mtp_chat_root;
     for (const route of ['qwen_normal', 'qwen_abliterated']) {
+      const hasPending = plan.executionOrder[route].some((token) => {
+        const target = executionTarget(plan, route, token);
+        return !generated.get(target.world.key).has(target.arm.id);
+      });
+      if (!hasPending) continue;
       const firstWorld = plan.worlds[0];
       const firstArm = firstWorld.conditions.baseline.arms.find((arm) => arm.route === route);
       const service = structuredClone(baseService);
@@ -773,6 +1306,8 @@ async function liveRun(plan, outDir, admission) {
       budget,
       outDir,
       maximumResponseFreeRetries: plan.recovery_attempt_reserve,
+      priorPhysicalAttempts: recovery?.assessment?.physicalAttempts || 0,
+      priorResponseFreeRetries: recovery?.assessment?.responseFreeFailures || 0,
     });
     const worldResults = [];
     for (const world of plan.worlds) {
@@ -781,7 +1316,13 @@ async function liveRun(plan, outDir, admission) {
       const worldDir = path.join(outDir, 'worlds', world.key);
       writeJson(path.join(worldDir, 'arms.json'), arms);
       const planForReport = world.conditions.baseline;
-      const finalEvaluation = await scoreReplicationWorld({ world, arms, worldDir, judge });
+      const finalEvaluation = await scoreReplicationWorld({
+        world,
+        arms,
+        worldDir,
+        judge,
+        assessmentRecovery: recovery?.assessment || null,
+      });
       renderWorld({
         plan: planForReport,
         arms,
@@ -820,6 +1361,7 @@ async function liveRun(plan, outDir, admission) {
       assessmentPackets: plan.assessment_packets,
       judgeTransport: judge.snapshot(),
       gates: analysis.gates,
+      recovery: provenance.recovery,
     });
     admission.close({
       type: 'run_sealed',
@@ -857,6 +1399,7 @@ export async function main(argv = process.argv.slice(2)) {
       'go-note-commit': { type: 'string' },
       'go-note-path': { type: 'string' },
       'study-state-root': { type: 'string' },
+      'recovery-from': { type: 'string' },
     },
   });
   const plan = buildLearnerReplicationPlan(ROOT, values.config || DEFAULT_CONFIG);
@@ -865,6 +1408,9 @@ export async function main(argv = process.argv.slice(2)) {
   if (!values['accept-charges'] || !values['launch-commit'] || !values['go-note-commit'] || !values['go-note-path']) {
     throw new Error('paid launch requires the shared launch arguments');
   }
+  const recoveryFrom = values['recovery-from'] ? path.resolve(values['recovery-from']) : null;
+  if (recoveryFrom && !values.output) throw new Error('replication recovery requires a fresh --output destination');
+  const recovery = recoveryFrom ? readLearnerReplicationRecovery(plan, recoveryFrom) : null;
   const admission = admitPaidStudyLaunch({
     root: ROOT,
     designPath: plan.design,
@@ -875,8 +1421,9 @@ export async function main(argv = process.argv.slice(2)) {
     destination: outDir,
     studyId: plan.id,
     studyStateRoot: path.resolve(ROOT, values['study-state-root'] || '.tutor-stub-traces/.paid-study-state'),
+    ...(recoveryFrom ? { recoveryFrom } : {}),
   });
-  return liveRun(plan, outDir, admission);
+  return liveRun(plan, outDir, admission, recovery);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {

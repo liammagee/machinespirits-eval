@@ -23,17 +23,12 @@ import {
   classifyTutorStubLearnerPressure,
   compileTutorStubTriggerArtifact,
   computeTutorStubPressureFeatures,
+  TUTOR_STUB_PLANT_STATE_TO_PRESSURE,
 } from '../services/tutorStubMannerSwitch.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const STATE_TO_PRESSURE = {
-  jumping_ahead: 'demand',
-  irritated: 'mockery',
-  frustrated: 'grievance',
-  forgetting: 'settled_claim',
-  opposed: 'stake',
-};
+const STATE_TO_PRESSURE = TUTOR_STUB_PLANT_STATE_TO_PRESSURE;
 const CLASSES = ['demand', 'mockery', 'grievance', 'settled_claim', 'stake', 'neutral'];
 
 const TRAIN_DIRS = [

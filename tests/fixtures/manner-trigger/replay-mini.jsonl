@@ -1,0 +1,7 @@
+{"type":"learner_stress_plant","turn":1,"state":"irritated","rightRepair":"change_tone"}
+{"type":"turn_complete","turn":1,"turnRecord":{"learner":"You sound like the answer sheet, not the strip."}}
+{"type":"tutor_manner_switch","turn":1,"pressure":"mockery","triggerVersion":"mini"}
+{"type":"learner_stress_plant","turn":2,"state":"lost","rightRepair":"backtrack"}
+{"type":"turn_complete","turn":2,"turnRecord":{"learner":"Hang on, the shower line now runs under something in the cavity."}}
+{"type":"learner_stress_plant","turn":3,"state":"forgetting","rightRepair":"backtrack"}
+{"type":"turn_complete","turn":3,"turnRecord":{"learner":"We did the strip. It's on the sheet."}}

@@ -39,6 +39,30 @@ export const TUTOR_STUB_LEARNER_PRESSURE_PATTERNS = Object.freeze({
     /still (only|the|think|suspect|humming|looks|fits|has no)|not crossing|remains possible|does not (clear|show|prove)|cannot yet|that is not nothing|explain that/i,
 });
 
+// Which pressure kind each planted learner state should read as. Scorer and
+// trainer policy (mechanical, not pedagogical): the quiet states — bored,
+// lost — have no pressure kind and must NOT fire the trigger. Shared by
+// scripts/train-pressure-classifier-v6.js and scripts/score-manner-trigger.js
+// so the training label and the scorecard cannot drift apart.
+export const TUTOR_STUB_PLANT_STATE_TO_PRESSURE = Object.freeze({
+  jumping_ahead: 'demand',
+  irritated: 'mockery',
+  frustrated: 'grievance',
+  forgetting: 'settled_claim',
+  opposed: 'stake',
+});
+
+// The quiet half of the same map: which typed quiet card each quiet planted
+// state calls for. A quiet state has no pressure kind, so its card is the
+// quiet detector's type, prefixed `quiet:` where a card name is wanted.
+// Shared by the form-state detector, the stress-schedule card-force helper
+// and the bench review, so the three cannot drift apart.
+export const TUTOR_STUB_PLANT_STATE_TO_QUIET = Object.freeze({
+  bored: 'flat',
+  lost: 'confused',
+  confused: 'confused',
+});
+
 const PRESSURE_WEIGHT = Object.freeze({
   mockery: 1,
   demand: 1,
@@ -198,15 +222,28 @@ export function createTutorStubMannerSwitchState(trigger = null) {
  * Advance the switch on a learner turn. Mutates and returns the switch state
  * with a `lastAdvance` record suitable for tracing verbatim.
  */
-export function advanceTutorStubMannerSwitch(switchState, { learnerText = '', turn = null } = {}) {
+/**
+ * Advance the switch one learner turn. By default the built-in cascade
+ * classifies the pressure. A live sensor that reads the state another way
+ * (step 4 of state-detection-without-word-lists: the form detector) passes
+ * its read as `pressureOverride` with its own `triggerVersion`, so the trace
+ * event names the sensor that actually fired and the cascade is not run.
+ */
+export function advanceTutorStubMannerSwitch(
+  switchState,
+  { learnerText = '', turn = null, pressureOverride = null, triggerVersion = null } = {},
+) {
   const state = switchState || createTutorStubMannerSwitchState();
   const trigger = state.trigger;
-  const pressure = classifyTutorStubLearnerPressure(
-    learnerText,
-    trigger.patterns,
-    trigger.bags || null,
-    trigger.classifier || null,
-  );
+  const pressure =
+    pressureOverride !== null
+      ? pressureOverride
+      : classifyTutorStubLearnerPressure(
+          learnerText,
+          trigger.patterns,
+          trigger.bags || null,
+          trigger.classifier || null,
+        );
   const before = state.manner;
   state.score = Math.max(0, Math.min(trigger.scoreMax, state.score + (PRESSURE_WEIGHT[pressure] ?? -1)));
   if (state.manner === TUTOR_STUB_MANNERS.default && state.score >= trigger.armAt) {
@@ -220,7 +257,7 @@ export function advanceTutorStubMannerSwitch(switchState, { learnerText = '', tu
     pressure,
     score: state.score,
     manner: state.manner,
-    triggerVersion: trigger.version,
+    triggerVersion: pressureOverride !== null && triggerVersion ? triggerVersion : trigger.version,
     changed: state.manner !== before,
   };
   state.history.push(state.lastAdvance);
