@@ -76,9 +76,12 @@ canonical destination deliberately.
 ## Publish the human-validation field guide
 
 The human-validation guide has a dedicated publisher with the same
-self-contained HTML plus backdated-index-stub convention. Dry-run first; the
-default action stages into the content repository without deploying, and the
-live deployment remains explicit:
+self-contained HTML plus backdated-index-stub convention. It also copies the
+tracked `human-validation-files/` directory so every public task link resolves
+to an editable Word guide or Excel workbook. The human page does not expose the
+organiser-only YAML, JSON, Markdown, or script sources. Dry-run first; the
+default action stages the page and downloads into the content repository
+without deploying, and the live deployment remains explicit:
 
 ```bash
 node notes/poetics/publish-human-validation-guide-to-site.js --dry-run
