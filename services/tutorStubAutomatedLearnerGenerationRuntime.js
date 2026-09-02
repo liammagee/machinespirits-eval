@@ -15,9 +15,9 @@ import {
 } from './tutorStubWorldPresentation.js';
 import {
   loadTutorStubStressSchedule,
+  tutorStubStressTraceEvent,
   tutorStubStressDirective,
   tutorStubStressPlantForTurn,
-  TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
 } from './tutorStubStressSchedule.js';
 import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
 import { createTutorStubBoredomProofDagLearnerRuntime } from './tutorStubBoredomActionRegisterProofDagStudy.js';
@@ -327,15 +327,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     if (!schedule) return null;
     const plant = tutorStubStressPlantForTurn(schedule, turnNumber);
     if (plant && recordTrace && state?.trace) {
-      appendTraceEvent(state.trace, {
-        type: 'learner_stress_plant',
-        schema: TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
-        scheduleId: schedule.scheduleId,
-        turn: turnNumber,
-        state: plant.state,
-        rightRepair: plant.rightRepair,
-        alsoRight: plant.alsoRight,
-      });
+      appendTraceEvent(state.trace, tutorStubStressTraceEvent(schedule, plant, turnNumber));
     }
     return plant;
   }
