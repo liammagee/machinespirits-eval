@@ -222,15 +222,28 @@ export function createTutorStubMannerSwitchState(trigger = null) {
  * Advance the switch on a learner turn. Mutates and returns the switch state
  * with a `lastAdvance` record suitable for tracing verbatim.
  */
-export function advanceTutorStubMannerSwitch(switchState, { learnerText = '', turn = null } = {}) {
+/**
+ * Advance the switch one learner turn. By default the built-in cascade
+ * classifies the pressure. A live sensor that reads the state another way
+ * (step 4 of state-detection-without-word-lists: the form detector) passes
+ * its read as `pressureOverride` with its own `triggerVersion`, so the trace
+ * event names the sensor that actually fired and the cascade is not run.
+ */
+export function advanceTutorStubMannerSwitch(
+  switchState,
+  { learnerText = '', turn = null, pressureOverride = null, triggerVersion = null } = {},
+) {
   const state = switchState || createTutorStubMannerSwitchState();
   const trigger = state.trigger;
-  const pressure = classifyTutorStubLearnerPressure(
-    learnerText,
-    trigger.patterns,
-    trigger.bags || null,
-    trigger.classifier || null,
-  );
+  const pressure =
+    pressureOverride !== null
+      ? pressureOverride
+      : classifyTutorStubLearnerPressure(
+          learnerText,
+          trigger.patterns,
+          trigger.bags || null,
+          trigger.classifier || null,
+        );
   const before = state.manner;
   state.score = Math.max(0, Math.min(trigger.scoreMax, state.score + (PRESSURE_WEIGHT[pressure] ?? -1)));
   if (state.manner === TUTOR_STUB_MANNERS.default && state.score >= trigger.armAt) {
@@ -244,7 +257,7 @@ export function advanceTutorStubMannerSwitch(switchState, { learnerText = '', tu
     pressure,
     score: state.score,
     manner: state.manner,
-    triggerVersion: trigger.version,
+    triggerVersion: pressureOverride !== null && triggerVersion ? triggerVersion : trigger.version,
     changed: state.manner !== before,
   };
   state.history.push(state.lastAdvance);

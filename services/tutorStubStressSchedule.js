@@ -64,6 +64,7 @@ export function loadTutorStubStressSchedule(schedulePath) {
       cause: String(plant.cause || '').trim(),
       realize: String(plant.realize).trim(),
       rightRepair: String(plant.right_repair),
+      repairGloss: String(plant.repair_gloss || '').trim(),
       alsoRight: plant.also_right ? String(plant.also_right) : null,
       alsoAcceptable: plant.also_acceptable ? String(plant.also_acceptable) : null,
       wrongButTempting: String(plant.wrong_but_tempting || '').trim(),
