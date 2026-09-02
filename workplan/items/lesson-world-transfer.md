@@ -55,3 +55,4 @@ keep the sense of discovery and drop the intrigue.
 ## Log
 
 - 2026-09-02: step 1 built on branch `claude/de-genre-tutor-stub`.
+- 2026-09-02: step 1 committed (24caad348) and step 2 committed (bd2bf097c) on claude/de-genre-tutor-stub. Worlds 038-040 lint PASS, quality PASS. Step 3 designed in notes/poetics/hero-demo-runs/2026-09-02-lesson-worlds-bench.md with DAG-on recipes; waits on go + ceiling. Push blocked by the pre-push benchmark hook (needs the user to run it).
