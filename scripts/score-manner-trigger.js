@@ -45,6 +45,7 @@ import {
   createTutorStubMannerSwitchState,
   TUTOR_STUB_PLANT_STATE_TO_PRESSURE,
 } from '../services/tutorStubMannerSwitch.js';
+import { compileTutorStubFormDetector, readTutorStubFormState } from '../services/tutorStubFormStateDetector.js';
 import {
   createTutorStubQuietDetectorState,
   detectTutorStubQuietState,
@@ -146,7 +147,7 @@ function loadDialogue(tracePath) {
     .map((line) => JSON.parse(line));
   const turns = ev
     .filter((e) => e.type === 'turn_complete')
-    .map((e) => ({ turn: e.turn, learner: e.turnRecord?.learner || '' }));
+    .map((e) => ({ turn: e.turn, learner: e.turnRecord?.learner || '', tutor: e.turnRecord?.tutor || '' }));
   const plants = ev
     .filter((e) => e.type === 'learner_stress_plant')
     .map((e) => ({ turn: e.turn, state: e.state, rightRepair: e.rightRepair || null }));
@@ -175,6 +176,34 @@ function replayTrigger(dialogue, trigger) {
   return rows;
 }
 
+// A form-state detector (services/tutorStubFormStateDetector.js) replaces the
+// whole cascade: one read per learner turn, mapped to a pressure kind for the
+// switch and a quiet type for the quiet channel. No manner accumulator runs,
+// so `armed` stays false and arming recall reads 0 by construction.
+function replayStateDetector(dialogue, detector) {
+  const rows = [];
+  const priorLearner = [];
+  let lastTutor = '';
+  for (const turn of dialogue.turns) {
+    const read = readTutorStubFormState(detector, turn.learner, {
+      tutorText: lastTutor,
+      priorLearnerTexts: priorLearner,
+    });
+    rows.push({
+      turn: turn.turn,
+      pressure: read.pressure || 'neutral',
+      state: read.state,
+      p: read.p,
+      quiet: read.quiet,
+      manner: null,
+      changed: false,
+    });
+    priorLearner.push(turn.learner);
+    lastTutor = turn.tutor || '';
+  }
+  return rows;
+}
+
 function plantVerdict(plant, read) {
   const fired = Boolean(read) && !NO_FIRE_READS.has(read);
   if (SHOULD_FIRE.has(plant.state)) {
@@ -186,8 +215,8 @@ function plantVerdict(plant, read) {
   return { expected: null, fired, verdict: 'unscored' };
 }
 
-function scoreDialogue(dialogue, trigger) {
-  const rows = replayTrigger(dialogue, trigger);
+function scoreDialogue(dialogue, trigger, detector = null) {
+  const rows = detector ? replayStateDetector(dialogue, detector) : replayTrigger(dialogue, trigger);
   const rowByTurn = Object.fromEntries(rows.map((row) => [row.turn, row]));
   const armedTurns = rows.filter((row) => row.manner === 'schoolmaster').map((row) => row.turn);
   const armedWindows = rows.filter((row) => row.changed && row.manner === 'schoolmaster').length;
@@ -275,8 +304,17 @@ function collectFlag(args, name) {
 
 function main() {
   const args = process.argv.slice(2);
-  const KNOWN = new Set(['--trigger', '--json', '--trace', '--bench-dir', '--tiers', '--per-plant', '--no-defaults']);
-  const VALUED = new Set(['--trigger', '--trace', '--bench-dir', '--tiers']);
+  const KNOWN = new Set([
+    '--trigger',
+    '--json',
+    '--trace',
+    '--bench-dir',
+    '--tiers',
+    '--per-plant',
+    '--no-defaults',
+    '--state-detector',
+  ]);
+  const VALUED = new Set(['--trigger', '--trace', '--bench-dir', '--tiers', '--state-detector']);
   for (let i = 0; i < args.length; i++) {
     if (!KNOWN.has(args[i])) throw new Error(`unknown argument: ${JSON.stringify(args[i])}`);
     if (VALUED.has(args[i])) i += 1;
@@ -291,7 +329,13 @@ function main() {
         stripTiers(JSON.parse(fs.readFileSync(path.resolve(ROOT, triggerArg), 'utf8')), tiers),
       )
     : null;
-  const label = trigger?.version || 'v1-builtin';
+  const detectorArg = args.includes('--state-detector') ? args[args.indexOf('--state-detector') + 1] : null;
+  if (detectorArg && (triggerArg || tiers !== 'all'))
+    throw new Error('--state-detector replaces the cascade; do not combine it with --trigger or --tiers');
+  const detector = detectorArg
+    ? compileTutorStubFormDetector(JSON.parse(fs.readFileSync(path.resolve(ROOT, detectorArg), 'utf8')))
+    : null;
+  const label = detector ? `${detector.version} (form-state detector)` : trigger?.version || 'v1-builtin';
   const perPlant = args.includes('--per-plant');
   const useDefaults = !args.includes('--no-defaults');
 
@@ -321,7 +365,7 @@ function main() {
   for (const { set, label: armLabel, tracePath } of benchTraces) {
     const dialogue = loadDialogue(tracePath);
     if (!dialogue.plants.length) continue;
-    const { plantScores } = scoreDialogue(dialogue, trigger);
+    const { plantScores } = scoreDialogue(dialogue, trigger, detector);
     tally(bench, plantScores, dialogue, armLabel);
     sets[set] = sets[set] || emptyTally();
     tally(sets[set], plantScores, dialogue, armLabel);
@@ -341,7 +385,7 @@ function main() {
       if (!tracePath) continue;
       const dialogue = loadDialogue(tracePath);
       calmDialogues += 1;
-      calmWindows += scoreDialogue(dialogue, trigger).armedWindows;
+      calmWindows += scoreDialogue(dialogue, trigger, detector).armedWindows;
     }
     for (const dirRel of ORGANIC_DIRS) {
       const tracePath = findTrace(dirRel);
@@ -349,7 +393,7 @@ function main() {
       const dialogue = loadDialogue(tracePath);
       if (dialogue.plants.length) continue; // safety: only unplanted dialogues supply the base rate
       organicDialogues += 1;
-      organicWindows += scoreDialogue(dialogue, trigger).armedWindows;
+      organicWindows += scoreDialogue(dialogue, trigger, detector).armedWindows;
     }
   }
 
