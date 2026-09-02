@@ -8,8 +8,8 @@ owner: codex
 source: manual
 created: 2026-09-02
 updated: 2026-09-02
-branch: codex/invested-rival-learner-replication
-verification: "Paused recovery: 4 dialogues complete, one partial prefix preserved, 76/396 attempts reserved; 14 dialogues including the partial arm and 72 logical Opus assessments remain."
+branch: codex/invested-rival-assessment-recovery
+verification: "Second pause sealed at 294/396: all 18 dialogues and 20/90 physical Opus packets are valid; assessment-only recovery preserves them and exposes exactly 70 missing packets."
 claim_status: planned
 links:
   notes:
@@ -67,3 +67,13 @@ new contemporary proof worlds.
   arms, 13 saved replies in the Tideway partial arm, and one interrupted tutor
   attempt. Shared recovery tests passed 12/12 and the focused suite passed
   80/80. Recovery code is ready to merge; model activity is inactive at 76/396.
+- 2026-09-02: The first recovery completed all 18 dialogues. The user paused
+  during Opus assessment; the run was sealed at 294/396 with 20/90 valid
+  physical packets and three response-free assessment reservations. Model
+  activity is inactive and no completed output will be rerun.
+- 2026-09-02: Assessment-only recovery now validates the actual sealed archive,
+  preserves all 18 dialogues and 20 valid packets, reconciles 271 generation
+  plus 23 assessment reservations, and schedules only the 70 missing packets.
+  Focused tests pass 58/58 with formatting, lint and archive reconciliation
+  clean. The unchanged ceiling leaves 102 attempts for completion and the
+  remaining response-free reserve.
