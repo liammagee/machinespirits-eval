@@ -156,6 +156,14 @@ learner line before counting a miss.
   (`workplan/items/paraphrase-robust-detection.md`,
   `workplan/items/manner-trigger-tuning.md`, both done; read their closeouts).
 
+- `scripts/stress-schedule-card-force.js <schedule.yaml>` — prints the
+  forced-card arm of a schedule (`2=demand,4=mockery,6=quiet:confused,...`)
+  from the plant map, for `TUTOR_STUB_CARD_FORCE`. Step 3.
+- `scripts/review-stress-bench.js` now opens with summary rows: detection
+  recall, wrong-kind fires, card delivery (forced vs detected), card was the
+  gold kind, reply delivery (model vs template), repair right (author-ruled,
+  never computed). `--json` for the numbers. Step 3.
+
 ## Step 1 result (2026-09-01, offline)
 
 Full note: `notes/poetics/hero-demo-runs/2026-09-01-step1-detector-replay.md`.
@@ -206,6 +214,50 @@ Note: `notes/poetics/hero-demo-runs/2026-09-01-step2-form-detector.md`.
 - Not done: candidate (a) live labels (needs a go and a call ceiling; dry run
   says 144 calls for the six hero traces), step 3, step 4.
 
+## Step 3 result (2026-09-01, offline)
+
+Two changes, no paid call. Full note:
+`notes/poetics/hero-demo-runs/2026-09-01-step3-bench-rows.md`.
+
+**Separate rows.** The review sheet now answers four questions in four rows
+instead of one `[CARD]` tag: did the detector read the planted kind (the
+switch event records its read before a forced card replaces the card, so
+the row holds in every arm); was a card active and how did it enter (forced
+by the launcher or detected live); did the model ship the reply or a
+template; was the repair right (the author rules it from the sheet; the
+bench never judges its own repairs). Replayed over the crossed run's 30
+dialogues, pooled both worlds, 6 dialogues per arm:
+
+| arm | plants | detection recall | card active (forced / detected) | card = gold kind | model reply |
+|---|---|---|---|---|---|
+| router | 45 | 39 (2 wrong-kind) | 41 (0 / 41) | 39 | 45 |
+| oracle | 43 | 39 | 39 (12 / 27) | 39 | 43 |
+| fixedA | 43 | 39 | 40 (12 / 28) | 34 | 42 |
+| fixedB | 44 | 39 (1 wrong-kind, at a quiet plant) | 40 (12 / 28) | 34 | 43 |
+| random | 45 | 40 | 40 (12 / 28) | 33 | 45 |
+
+Read: the detection row is the same in every arm (about 39 of 44) because
+it is a property of the v6 detector on its two home worlds, not of the arm;
+the card row is what the arm changed; the "card = gold kind" row falls in
+the fixed and random arms because those arms force the wrong move on
+purpose. Under the old one-tag sheet these five arms looked alike.
+
+**Forced arm from a schedule.** `stress-schedule-card-force.js` turns a
+schedule into the `TUTOR_STUB_CARD_FORCE` string from the plant map alone
+(`services/tutorStubCardForce.js`, `cardForceScheduleFromStressPlants`).
+On the ratified world-030 schedule it prints
+`2=demand,4=mockery,6=quiet:confused,8=grievance,9=settled_claim,10=stake`;
+the crossed run's oracle arm forced exactly `9=settled_claim,10=stake` at
+those plants. So a new scenario needs a schedule and its gold and nothing
+else; the tutor is told the right move at the planted turn with no detector
+in the loop, and the detection row still reports what the detector read.
+One caveat: a forced quiet card passes the existing quiet gate, which reads
+her turn with the qd-v2 regex lists, so a quiet plant she does not realize
+as quiet is withheld (the sheet counts these).
+
+Also fixed: the old sheet dropped the first trace root whenever `--out` was
+absent (an index-0 filter bug), and did not follow symlinked dialogue dirs.
+
 ## What to decide, in order
 
 1. DONE 2026-09-01 — Reproduce: replay v6 and v7 over the three worlds with
@@ -224,11 +276,12 @@ Note: `notes/poetics/hero-demo-runs/2026-09-01-step2-form-detector.md`.
    classifier. Whatever it is, its parameters must not be built from one
    world's nouns, and it must be scored leave-one-world-out on 030/035/037
    from the packed traces before any live run.
-3. Make the bench honest about which thing it tests. Report detection recall
-   and repair delivery as separate rows (the schedule already says they are
-   scored separately); for cross-scenario claims about the moves, run the
-   forced-card arm the crossed experiment used, so adding a scenario needs a
-   schedule and gold, not a new word list.
+3. DONE 2026-09-01 (offline; see "Step 3 result" below) — Make the bench
+   honest about which thing it tests. Report detection recall and repair
+   delivery as separate rows (the schedule already says they are scored
+   separately); for cross-scenario claims about the moves, run the forced-card
+   arm the crossed experiment used, so adding a scenario needs a schedule and
+   gold, not a new word list.
 4. Only then: one paid with/without pair per world on the new detector, both
    seats stated, learner realization checked per plant, ruled by the author.
 
