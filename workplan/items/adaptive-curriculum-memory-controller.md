@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-02
-branch: codex/action-outcome-prospective-collection-v2
+branch: codex/action-outcome-comparable-v2-go
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -31,6 +31,7 @@ links:
     - scripts/check-tutor-stub-action-outcome-prospective-redesign.js
     - scripts/run-tutor-stub-action-outcome-collection-pilot.js
     - notes/2026-09-01-tutor-stub-action-outcome-collection-pilot-go.md
+    - notes/2026-09-02-tutor-stub-action-outcome-comparable-collection-v2-go.md
   exports:
     - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
   prs:
@@ -45,6 +46,7 @@ links:
     - 908
     - 913
     - 932
+    - 937
   items:
     - layered-task-session-adaptation
 tags:
@@ -110,6 +112,16 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: PR #937 merged the fixed prospective v2 collection registration
+  at launch commit `35c178a0f1acbf467f5ffe643300350bc0089614` with all CI checks
+  green. After that merge, the operator explicitly authorized one 60-dialogue
+  collection using Luna at low effort, with 1,500 planned calls and a 4,860
+  paid-model-attempt reservation ceiling, followed by zero-call extraction and
+  coder-packet preparation. Recorded the separate study-level GO note. It does
+  not authorize fabricated human judgments, memory enablement, held-out worlds,
+  or a controller evaluation. Real model activity remains inactive pending this
+  note's merge: 0 calls and 0 production writes.
 
 - 2026-09-02: Registered the fresh fixed-size collection required by the
   prospective redesign. The new block contains 60 dialogues across the same
