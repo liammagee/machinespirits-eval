@@ -67,6 +67,13 @@ import {
   callLearnerIterationModel,
   main as runLearnerIteration,
 } from '../scripts/run-invested-rival-learner-iteration.js';
+import {
+  analyzeLearnerReplication,
+  buildLearnerReplicationPlan,
+  callLearnerReplicationModel,
+  replicationAssessmentBatches,
+  main as runLearnerReplication,
+} from '../scripts/run-invested-rival-learner-replication.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const plan = loadContinuityPlan(root);
@@ -78,6 +85,7 @@ const bilateralPlan = loadContinuityPlan(
 const rivalPlan = buildInvestedRivalPlan(root);
 const lunaReferencePlan = buildLunaReferencePlan(root);
 const learnerIterationPlan = buildLearnerIterationPlan(root);
+const learnerReplicationPlan = buildLearnerReplicationPlan(root);
 const opening = [{ role: 'assistant', content: plan.world.opening_frame.authored_text }];
 const destination = () => path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-continuity-test-')), 'arm');
 const reply = (speech, end_dialogue = false, settled = [], open = []) =>
@@ -223,6 +231,152 @@ test('learner iteration zero-call preview audits both worlds and builds all 25 a
   assert.ok(preflight.holdoutTutorRequests.every((request) => request.audit.ok && request.privilege.ok));
   assert.ok(fs.existsSync(path.join(outDir, 'development-report-preview.html')));
   assert.ok(fs.existsSync(path.join(outDir, 'report-preview.html')));
+});
+
+test('learner replication fixes nine matched scaffold pairs under 396 attempts', () => {
+  assert.equal(learnerReplicationPlan.total_attempt_ceiling, 396);
+  assert.equal(learnerReplicationPlan.generation_attempt_ceiling, 288);
+  assert.equal(learnerReplicationPlan.assessment_packets, 90);
+  assert.equal(learnerReplicationPlan.recovery_attempt_reserve, 18);
+  assert.deepEqual(
+    learnerReplicationPlan.worlds.map((world) => world.conditions.baseline.world.id),
+    ['world_028_larkspur_fridge', 'world_029_riverside_clinic', 'world_031_tideway_makerspace'],
+  );
+  for (const world of learnerReplicationPlan.worlds) {
+    assert.deepEqual(
+      world.conditions.baseline.arms.map((arm) => `${arm.id}:${arm.route}:${arm.mechanism}`),
+      ['L0:luna:baseline', 'N0:qwen_normal:baseline', 'A0:qwen_abliterated:baseline'],
+    );
+    assert.deepEqual(
+      world.conditions.active_progression.arms.map((arm) => `${arm.id}:${arm.route}:${arm.mechanism}`),
+      ['L1:luna:active_progression', 'N1:qwen_normal:active_progression', 'A1:qwen_abliterated:active_progression'],
+    );
+    assert.doesNotMatch(world.conditions.baseline.interaction.learnerSystem, /\bAlex\b/u);
+    assert.doesNotMatch(world.conditions.active_progression.interaction.learnerSystem, /\bAlex\b/u);
+    assert.doesNotMatch(world.conditions.baseline.interaction.learnerTurn, /same kind of move/iu);
+    assert.match(world.conditions.active_progression.interaction.learnerTurn, /same kind of move on adjacent turns/iu);
+    assert.equal(
+      world.conditions.active_progression.interaction.learnerSystem.split('\n\n').at(-1),
+      learnerIterationPlan.development[1].interaction.learnerSystem.split('\n\n').at(-1),
+    );
+    assert.equal(
+      world.conditions.active_progression.interaction.learnerTurn.split('\n\n').at(-1),
+      learnerIterationPlan.development[1].interaction.learnerTurn.split('\n\n').at(-1),
+    );
+    const batches = replicationAssessmentBatches(world, [
+      ...world.conditions.baseline.arms,
+      ...world.conditions.active_progression.arms,
+    ]);
+    assert.deepEqual(
+      batches.map((batch) => ({
+        mechanism: batch.mechanism,
+        arms: batch.arms.map((arm) => arm.id),
+        packetCeiling: batch.packetCeiling,
+      })),
+      [
+        { mechanism: 'baseline', arms: ['L0', 'N0', 'A0'], packetCeiling: 15 },
+        { mechanism: 'active_progression', arms: ['L1', 'N1', 'A1'], packetCeiling: 15 },
+      ],
+    );
+  }
+});
+
+test('learner replication analysis applies the frozen mechanism and paper gates', () => {
+  const quality = (arm, value, unsupported = false) => ({
+    arm,
+    kind: 'quality',
+    raw: {
+      measurement_indeterminate: false,
+      scores: Object.fromEntries(
+        ['overall_quality', 'successful_pedagogy', 'surprise_nonrepetition', 'character_adherence'].map((dimension) => [
+          dimension,
+          { score: value },
+        ]),
+      ),
+      learner_turns: [{ unsupported_evidence_assertion: unsupported }],
+    },
+  });
+  const worldResults = learnerReplicationPlan.worlds.map((world) => ({
+    key: world.key,
+    evaluation: {
+      scores: ['L', 'N', 'A'].flatMap((prefix) => [quality(`${prefix}0`, 2), quality(`${prefix}1`, 3)]),
+    },
+  }));
+  const passing = analyzeLearnerReplication(learnerReplicationPlan, worldResults);
+  assert.equal(passing.primaryMeanDelta, 1);
+  assert.equal(passing.supportiveMeanDelta, 1);
+  assert.deepEqual(passing.gates, { replication: true, mainTextPaper: true });
+
+  worldResults[0].evaluation.scores.find(
+    (score) => score.arm === 'L1',
+  ).raw.learner_turns[0].unsupported_evidence_assertion = true;
+  const failing = analyzeLearnerReplication(learnerReplicationPlan, worldResults);
+  assert.equal(failing.unsupportedAssertions, 1);
+  assert.deepEqual(failing.gates, { replication: false, mainTextPaper: false });
+});
+
+test('learner replication routes Luna and Sol directly with no superego call', async () => {
+  const calls = [];
+  const callCli = async (agent, _system, _prompt, role, options) => {
+    calls.push({ agent, role, options });
+    return fake(reply('Fixture line.'));
+  };
+  const condition = learnerReplicationPlan.worlds[0].conditions.active_progression;
+  const request = { systemPrompt: 'system', prompt: 'prompt', messageHistory: [] };
+  await callLearnerReplicationModel(
+    { plan: condition, arm: condition.arms[0], speaker: 'learner', request, role: 'learner' },
+    callCli,
+  );
+  await callLearnerReplicationModel(
+    { plan: condition, arm: condition.arms[0], speaker: 'tutor', request, role: 'tutor' },
+    callCli,
+  );
+  assert.deepEqual(
+    calls.map((call) => call.agent),
+    [
+      { provider: 'codex', model: 'gpt-5.6-luna' },
+      { provider: 'codex', model: 'gpt-5.6-sol' },
+    ],
+  );
+  assert.ok(calls.every((call) => call.options.singleAttempt === true));
+});
+
+test('learner replication zero-call preview audits 18 dialogues and all 90 packets', async () => {
+  const outDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-preview-')), 'out');
+  const result = await runLearnerReplication(['--output', outDir]);
+  assert.deepEqual(
+    {
+      dryRun: result.dryRun,
+      modelCalls: result.modelCalls,
+      dialogues: result.dialogues,
+      matchedPairs: result.matchedPairs,
+      assessmentPackets: result.assessmentPackets,
+    },
+    { dryRun: true, modelCalls: 0, dialogues: 18, matchedPairs: 9, assessmentPackets: 90 },
+  );
+  const preflight = JSON.parse(fs.readFileSync(path.join(outDir, 'preflight.json'), 'utf8'));
+  assert.equal(preflight.worlds.length, 3);
+  assert.equal(preflight.worlds.flatMap((world) => world.learnerRequests).length, 18);
+  assert.equal(preflight.worlds.flatMap((world) => world.tutorRequests).length, 24);
+  assert.ok(
+    preflight.worlds
+      .flatMap((world) => world.learnerRequests)
+      .every(({ request }) => request.audit.ok && request.privilege.ok),
+  );
+  assert.ok(
+    preflight.worlds
+      .flatMap((world) => world.tutorRequests)
+      .every((request) => request.audit.ok && request.privilege.ok),
+  );
+  assert.ok(
+    learnerReplicationPlan.worlds.every((world) => fs.existsSync(path.join(outDir, world.key, 'report-preview.html'))),
+  );
+});
+
+test('learner replication paid path fails before writing without standing launch authority', async () => {
+  const outDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-authority-')), 'out');
+  await assert.rejects(runLearnerReplication(['--live', '--output', outDir]), /shared launch arguments/iu);
+  assert.equal(fs.existsSync(outDir), false);
 });
 
 test('Luna reference routes learner to Luna, tutor to Sol, and never adds a superego call', async () => {
