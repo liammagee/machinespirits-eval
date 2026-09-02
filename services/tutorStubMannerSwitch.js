@@ -39,6 +39,19 @@ export const TUTOR_STUB_LEARNER_PRESSURE_PATTERNS = Object.freeze({
     /still (only|the|think|suspect|humming|looks|fits|has no)|not crossing|remains possible|does not (clear|show|prove)|cannot yet|that is not nothing|explain that/i,
 });
 
+// Which pressure kind each planted learner state should read as. Scorer and
+// trainer policy (mechanical, not pedagogical): the quiet states — bored,
+// lost — have no pressure kind and must NOT fire the trigger. Shared by
+// scripts/train-pressure-classifier-v6.js and scripts/score-manner-trigger.js
+// so the training label and the scorecard cannot drift apart.
+export const TUTOR_STUB_PLANT_STATE_TO_PRESSURE = Object.freeze({
+  jumping_ahead: 'demand',
+  irritated: 'mockery',
+  frustrated: 'grievance',
+  forgetting: 'settled_claim',
+  opposed: 'stake',
+});
+
 const PRESSURE_WEIGHT = Object.freeze({
   mockery: 1,
   demand: 1,

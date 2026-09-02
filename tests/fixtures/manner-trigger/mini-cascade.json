@@ -1,0 +1,8 @@
+{
+  "version": "mini",
+  "armAt": 1,
+  "patterns": { "mockery": "you sound like" },
+  "bags": {
+    "demand": { "tokens": ["shower", "line", "under", "something", "cavity", "runs"], "threshold": 5 }
+  }
+}

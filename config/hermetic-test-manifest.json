@@ -496,6 +496,7 @@
         "tests/sarcasmMoodFloorReplication.test.js",
         "tests/sarcasmPreconditionGrid.test.js",
         "tests/scaffoldLifecycle.test.js",
+        "tests/scoreMannerTriggerReplay.test.js",
         "tests/scorePoeticsCalibration.test.js",
         "tests/scorePoeticsMissingSonnet.test.js",
         "tests/scorePoeticsPhase2.test.js",
