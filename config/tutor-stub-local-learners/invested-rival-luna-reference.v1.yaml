@@ -1,0 +1,75 @@
+id: invested-rival-luna-reference-v1
+source_config: config/tutor-stub-local-learners/qwen-invested-rival-theorist.v1.yaml
+design: notes/invested-rival-luna-reference-v1-design.md
+output: .tutor-stub-traces/invested-rival-luna-reference-v1
+total_attempt_ceiling: 23
+generation_attempt_ceiling: 16
+assessment_packets: 5
+response_free_recovery_reserve: 2
+
+models:
+  learner: codex.gpt-5.6-luna
+  learner_effort: medium
+  tutor: codex.gpt-5.6-sol
+  tutor_effort: medium
+  judge: claude-code.claude-opus-5
+  judge_effort: max
+
+sealed_qwen_reference:
+  study_id: qwen-invested-rival-theorist-v1
+  launch_commit: 0ed693ddf33f5fe4f75678af6617001442ad57f1
+  public_dialogues_sha256: 5a1b086491898118d4feb6138ba35ab383cf91a6e47216eaa75699ddf79ebe68
+  scores_sha256: 08402fac4181e3eda6e71548b03a65a4cf5c1a515fc4e7f0e59ec63079c85f8e
+  report_data_sha256: f5c72e167a26fbef114c931c38f6ef1ce4bfcab3e39f8dcfe97c4ae2de9bf6f0
+  normal_model: mlx-community/Qwen3.8-27B-4bit
+  abliterated_model: Qwen3.8-27B-Uncensored-MLX/4-bit
+
+report:
+  page_title: Invested rival theorist · Luna reference
+  rail_title: Invested rival · reference
+  headline: How does Luna play the same rival?
+  subtitle: Normal Qwen · abliterated Qwen · Luna learner · Sol tutor · no superego
+  interchange_label: Same invested-rival brief · three descriptive model instances
+  setup_title: A post-hoc reference, not a third randomized arm
+  setup_description: >-
+    Luna receives the same Alex character, Rowan Flat opening, public proof
+    schedule and Sol tutor mechanism. The two sealed Qwen dialogues and their
+    Opus scores are reused byte-for-byte; only Luna is newly generated and
+    assessed.
+  setup_mechanism_description: >-
+    One new Luna dialogue is added without a superego or revision call. The
+    sealed Qwen conversations remain first and second in the display. All three
+    use the same opening and public evidence schedule, with at most eight paired
+    exchanges.
+  quality_description: >-
+    Semantic repetition means reopening the same answered challenge or making
+    the same move in new words. A useful new move changes the tested inference,
+    uses new public evidence, makes a real concession or names a different gap.
+  comparison_description: >-
+    The Luna conversation was added after the Qwen results were known. It is a
+    descriptive reference for the acting task, not a preregistered causal arm,
+    an abliteration estimate or a general model ranking.
+  comparison_mechanism_description: >-
+    The learner brief and Sol proof control are matched across all three
+    conversations. Only Luna is newly generated; the Qwen conversations are
+    immutable reference inputs.
+  rubric_description: >-
+    Opus applies the same v2.2 tutor, learner and dialogue rubrics plus the same
+    acting-quality instrument. Character fidelity, pedagogy and nonrepetition
+    remain separate.
+  transcript_description: >-
+    The fixed opening is not scored. Each conversation may end naturally before
+    eight exchanges; missing later turns are not treated as missing evidence.
+  proof_description: >-
+    The deterministic harness releases the same authored public observations
+    on the same schedule. Neither speaker sees hidden answers, proof paths or
+    future evidence.
+  scope_description: >-
+    Three single free-running conversations are bounded private engineering
+    evidence. They do not establish human learning, a general model ranking or
+    a clean causal effect of model family or abliteration.
+  speed_description: >-
+    Every learner produces public speech plus a private continuity note in one
+    pass. Qwen uses local MLX while Luna and Sol use Codex routes, so latency and
+    throughput are descriptive only. Conversation and response lengths are not
+    matched; lexical difference is auxiliary rather than semantic evidence.

@@ -57,6 +57,11 @@ import {
   runtimeServiceArm,
   technicalRecoveryEligible,
 } from '../scripts/run-local-qwen-invested-rival.js';
+import {
+  buildLunaReferencePlan,
+  callLunaReferenceModel,
+  makeLunaJudgeCaller,
+} from '../scripts/run-invested-rival-luna-reference.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const plan = loadContinuityPlan(root);
@@ -66,6 +71,7 @@ const bilateralPlan = loadContinuityPlan(
   'config/tutor-stub-local-learners/qwen-refusal-bilateral-superego.v1.yaml',
 );
 const rivalPlan = buildInvestedRivalPlan(root);
+const lunaReferencePlan = buildLunaReferencePlan(root);
 const opening = [{ role: 'assistant', content: plan.world.opening_frame.authored_text }];
 const destination = () => path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-continuity-test-')), 'arm');
 const reply = (speech, end_dialogue = false, settled = [], open = []) =>
@@ -76,6 +82,96 @@ const fake = (text) => ({
   model: 'fixture',
   latencyMs: 100,
   usage: { inputTokens: 100, outputTokens: 30 },
+});
+
+test('Luna reference keeps the matched direct architecture inside the 23-attempt ceiling', () => {
+  assert.equal(lunaReferencePlan.total_attempt_ceiling, 23);
+  assert.equal(lunaReferencePlan.generationCap, 16);
+  assert.equal(lunaReferencePlan.judge_calls, 5);
+  assert.equal(lunaReferencePlan.recovery_attempt_reserve, 2);
+  assert.deepEqual(
+    lunaReferencePlan.arms.map(({ id, variant, mode, tutorMode, model }) => ({ id, variant, mode, tutorMode, model })),
+    [
+      {
+        id: 'C',
+        variant: 'luna',
+        mode: 'direct',
+        tutorMode: 'direct',
+        model: 'codex.gpt-5.6-luna',
+      },
+    ],
+  );
+  assert.equal(lunaReferencePlan.interaction.learnerSystem, rivalPlan.interaction.learnerSystem);
+  assert.equal(lunaReferencePlan.characterBrief, rivalPlan.characterBrief);
+  assert.equal(lunaReferencePlan.tutor, rivalPlan.tutor);
+});
+
+test('Luna reference routes learner to Luna, tutor to Sol, and never adds a superego call', async () => {
+  const calls = [];
+  const callCli = async (agent, _system, _prompt, role, options) => {
+    calls.push({ agent, role, options });
+    return fake(reply('Fixture line.'));
+  };
+  const request = { systemPrompt: 'system', prompt: 'prompt', messageHistory: [] };
+  await callLunaReferenceModel(
+    { plan: lunaReferencePlan, arm: lunaReferencePlan.lunaArm, speaker: 'learner', request, role: 'learner' },
+    callCli,
+  );
+  await callLunaReferenceModel(
+    { plan: lunaReferencePlan, arm: lunaReferencePlan.lunaArm, speaker: 'tutor', request, role: 'tutor' },
+    callCli,
+  );
+  assert.deepEqual(
+    calls.map((call) => call.agent),
+    [
+      { provider: 'codex', model: 'gpt-5.6-luna' },
+      { provider: 'codex', model: 'gpt-5.6-sol' },
+    ],
+  );
+  assert.ok(calls.every((call) => call.options.singleAttempt === true));
+  assert.ok(calls.every((call) => call.options.outputSchema === CONTINUITY_OUTPUT_SCHEMA));
+});
+
+test('Luna judge transport retries only response-free failures and projects surplus root fields once', async () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'luna-reference-judge-'));
+  let reserved = 0;
+  const budget = {
+    reserve() {
+      reserved += 1;
+      return { call: reserved, limit: 23, remaining: 23 - reserved };
+    },
+  };
+  let calls = 0;
+  const callCli = async (_agent, _system, _prompt, _role, options) => {
+    calls += 1;
+    assert.equal(options.outputSchema.additionalProperties, true);
+    if (calls === 1) {
+      const error = new Error('response-free');
+      error.code = 'CLI_PROVIDER_RESPONSE_FREE_ERROR';
+      error.classification = 'response_free_error';
+      error.reason = 'result_error_without_structured_output';
+      throw error;
+    }
+    options.onRawOutput({ fixture: true });
+    return fake(JSON.stringify({ wanted: 'kept', surplus: 'discarded' }));
+  };
+  const caller = makeLunaJudgeCaller({ budget, outDir, callCli });
+  let transported;
+  const response = await caller({ provider: 'claude-code', model: 'claude-opus-5' }, '', 'prompt', 'fixture-quality', {
+    outputSchema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['wanted'],
+      properties: { wanted: { type: 'string' } },
+    },
+    onRawOutput: (value) => {
+      transported = value;
+    },
+  });
+  assert.deepEqual(JSON.parse(response.text), { wanted: 'kept' });
+  assert.deepEqual(transported, { fixture: true });
+  assert.deepEqual(caller.snapshot(), { physicalAttempts: 2, responseFreeRetries: 1 });
+  assert.equal(reserved, 2);
 });
 const reviewFixture = {
   role_fidelity: 'Keep the role.',
