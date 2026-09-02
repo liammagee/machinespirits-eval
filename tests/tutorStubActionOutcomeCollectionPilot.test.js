@@ -308,6 +308,36 @@ test('the v2 zero-call preflight pins the comparable design, routes, and ceiling
   );
 });
 
+test('the v2 recovery preflight requires the original live root and keeps later outputs unused', async () => {
+  const loaded = loadComparable();
+  const liveRoot = path.resolve(loaded.root, loaded.design.destinations.liveRoot);
+  const destination = path.resolve(
+    loaded.root,
+    '.tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-recovery-1',
+  );
+  const result = await runTutorStubActionOutcomeComparableCollectionPreflight({
+    loaded,
+    destination,
+    recovery: true,
+    buildPlan: buildTutorStubActionOutcomeCollectionPlan,
+    destinationExists: (candidate) => path.resolve(candidate) === liveRoot,
+    resolveArchive: () => '/private/fixture-archive',
+    archiveIsWritable: () => true,
+    probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
+    smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', model_calls: 0 }),
+  });
+
+  assert.equal(result.status, 'passed_zero_call');
+  assert.equal(result.destination_availability.liveRoot, false);
+  assert.equal(result.destination_availability.packetRoot, true);
+  assert.equal(result.destination_availability.comparisonRoot, true);
+  assert.equal(result.destination_availability.readinessRoot, true);
+  assert.equal(result.checks.registered_destinations_match_launch_kind, true);
+  assert.equal(result.checks.selected_destination_absent, true);
+  assert.equal(result.model_calls_executed, 0);
+  assert.equal(result.production_writes, 0);
+});
+
 test('the maintained launcher selects the pinned v2 design without authorizing calls', async () => {
   let observedStudy = null;
   const result = await collectionLauncherMain(
