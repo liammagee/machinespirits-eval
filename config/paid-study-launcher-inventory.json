@@ -27,6 +27,12 @@
       "reason": "Post-policy prospective action-outcome collection launcher; adopts services/paidStudyLaunchContract.js for admission, create-once state, per-dialogue reservations, and the append-only ledger."
     },
     {
+      "path": "scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js",
+      "registered": "2026-09-02",
+      "disposition": "shared_contract",
+      "reason": "Post-policy exact-unit technical recovery launcher; adopts services/paidStudyLaunchContract.js for admission, create-once state, per-dispatch durable reservations, and append-only recovery ledgers."
+    },
+    {
       "path": "scripts/run-tutor-stub-defiant-warrant-pilot.js",
       "registered": "2026-08-29",
       "disposition": "historical_live_exemption",

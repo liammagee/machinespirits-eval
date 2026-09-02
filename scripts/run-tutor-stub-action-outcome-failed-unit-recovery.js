@@ -18,6 +18,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const ACTION_OUTCOME_FAILED_UNIT_RECOVERY_DESIGN =
   'config/tutor-stub-action-outcome-failed-unit-recovery.v1.json';
 
+function admitWithStandingContract(input) {
+  return admitPaidStudyLaunch(input);
+}
+
 function sha256File(filePath) {
   return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
@@ -577,7 +581,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     return preflight;
   }
   if (!values['accept-charges']) throw new Error('paid recovery requires --accept-charges');
-  const admission = (overrides.admit || admitPaidStudyLaunch)({
+  const admission = (overrides.admit || admitWithStandingContract)({
     root: ROOT,
     designPath: loaded.relativePath,
     launchCommit: values['launch-commit'],
