@@ -5,6 +5,16 @@ import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 import { buildActionOutcomeMemoryReadiness } from './action-outcome-memory-readiness.js';
+import {
+  actionOutcomeCollectionWorkflowStatusPath,
+  ensureActionOutcomeGenerationHandoff,
+} from '../services/actionOutcomeCollectionWorkflowStatus.js';
+import {
+  blockLongRunningWorkflow,
+  completeLongRunningWorkflowPhase,
+  startLongRunningWorkflowPhase,
+  writeLongRunningWorkflowStatusAtomic,
+} from '../services/longRunningWorkflowStatus.js';
 import { loadTutorStubActionOutcomeCollectionDesign } from '../services/tutorStubActionOutcomeCollectionPilot.js';
 import {
   loadTutorStubActionOutcomeComparableCollectionDesign,
@@ -640,13 +650,14 @@ async function main() {
       design: { type: 'string' },
       'generation-report': { type: 'string' },
       'readiness-input': { type: 'string' },
+      'workflow-status': { type: 'string' },
       out: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
   });
   if (values.help) {
     process.stdout.write(
-      'Usage: node scripts/audit-tutor-stub-action-outcome-collection.js --design <design.json> --generation-report <report.json> --readiness-input <input.json> --out <new-dir>\nZero-call extraction and registered feasibility-gate audit.\n',
+      'Usage: node scripts/audit-tutor-stub-action-outcome-collection.js --design <design.json> --generation-report <report.json> --readiness-input <input.json> --out <new-dir> [--workflow-status <status.json>]\nZero-call extraction and registered feasibility-gate audit.\n',
     );
     return;
   }
@@ -661,54 +672,135 @@ async function main() {
     root: repositoryRoot,
     designPath: relativeDesignPath,
   });
-  const input = readJson(readinessInputPath);
-  if (input.reviewsFile || input.replay) throw new Error('quality audit input must not contain reviews or replay');
-  if (JSON.stringify(input.conditions) !== JSON.stringify(loaded.design.condition.conditions)) {
-    throw new Error('readiness input conditions must exactly match the registered design');
-  }
-  if (
-    !Array.isArray(input.sources) ||
-    input.sources.some(
-      (source) => source.role !== 'memory' || source.contextKey !== loaded.design.taskContract.contextKey,
-    )
-  ) {
-    throw new Error('readiness sources must use the registered memory role and context key');
-  }
-  const registered = await buildActionOutcomeMemoryReadiness(input, {
-    inputDirectory: path.dirname(readinessInputPath),
-  });
-  const allObserved = await buildActionOutcomeMemoryReadiness(
-    { ...input, conditions: [ALL_OBSERVED_CONDITION] },
-    { inputDirectory: path.dirname(readinessInputPath) },
+  const generationReport = readJson(generationReportPath);
+  const workflowStatusPath = path.resolve(
+    values['workflow-status'] ||
+      generationReport.workflow_status?.path ||
+      actionOutcomeCollectionWorkflowStatusPath({
+        generationRoot: path.dirname(generationReportPath),
+        workflowId: generationReport.study_id,
+      }),
   );
-  const decisionInventory = readCollectionDecisionInventory(registered.report.sources, input.conditions);
-  const audit = buildTutorStubActionOutcomeCollectionAudit({
-    design: loaded.design,
-    generationReport: readJson(generationReportPath),
-    registeredReadiness: registered.report,
-    allObservedReadiness: allObserved.report,
-    decisionInventory,
-    asOf: input.asOf,
+  let workflowStatus = ensureActionOutcomeGenerationHandoff({
+    filePath: workflowStatusPath,
+    generationReport,
   });
-  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  fs.mkdirSync(outputPath);
-  fs.writeFileSync(path.join(outputPath, 'audit.json'), `${JSON.stringify(audit, null, 2)}\n`, { flag: 'wx' });
-  fs.writeFileSync(path.join(outputPath, 'README.md'), renderTutorStubActionOutcomeCollectionAudit(audit), {
-    flag: 'wx',
-  });
-  process.stdout.write(
-    `${JSON.stringify(
-      {
-        output: outputPath,
-        verdict: audit.verdict,
-        failedGates: audit.failedGates,
-        pendingGates: audit.pendingGates,
-        modelCalls: audit.modelCalls,
+  let activeOperation = 'Extract registered action-outcome readiness rows';
+  try {
+    workflowStatus = startLongRunningWorkflowPhase(workflowStatus, {
+      phase: 'EXTRACTING',
+      modelActivity: {
+        state: 'inactive',
+        explanation: 'Extraction reads sealed artifacts locally and makes no model/provider calls.',
       },
-      null,
-      2,
-    )}\n`,
-  );
+      nextAction: {
+        description: activeOperation,
+        stopping_condition: 'Stop on source, schema, condition, or provenance mismatch.',
+      },
+    });
+    writeLongRunningWorkflowStatusAtomic(workflowStatusPath, workflowStatus);
+    const input = readJson(readinessInputPath);
+    if (input.reviewsFile || input.replay) throw new Error('quality audit input must not contain reviews or replay');
+    if (JSON.stringify(input.conditions) !== JSON.stringify(loaded.design.condition.conditions)) {
+      throw new Error('readiness input conditions must exactly match the registered design');
+    }
+    if (
+      !Array.isArray(input.sources) ||
+      input.sources.some(
+        (source) => source.role !== 'memory' || source.contextKey !== loaded.design.taskContract.contextKey,
+      )
+    ) {
+      throw new Error('readiness sources must use the registered memory role and context key');
+    }
+    const registered = await buildActionOutcomeMemoryReadiness(input, {
+      inputDirectory: path.dirname(readinessInputPath),
+    });
+    const allObserved = await buildActionOutcomeMemoryReadiness(
+      { ...input, conditions: [ALL_OBSERVED_CONDITION] },
+      { inputDirectory: path.dirname(readinessInputPath) },
+    );
+    const decisionInventory = readCollectionDecisionInventory(registered.report.sources, input.conditions);
+    workflowStatus = completeLongRunningWorkflowPhase(workflowStatus, {
+      phase: 'EXTRACTING',
+      nextPhase: 'AUDITING',
+      startNextImmediately: true,
+      modelActivity: {
+        state: 'inactive',
+        explanation: 'The registered audit is deterministic local computation with no provider activity.',
+      },
+      nextAction: {
+        description: 'Apply the registered feasibility gates to the extracted inventory.',
+        stopping_condition: 'Stop after every registered gate has a recorded disposition.',
+      },
+    });
+    writeLongRunningWorkflowStatusAtomic(workflowStatusPath, workflowStatus);
+    activeOperation = 'Apply the registered action-outcome feasibility audit';
+    const audit = buildTutorStubActionOutcomeCollectionAudit({
+      design: loaded.design,
+      generationReport,
+      registeredReadiness: registered.report,
+      allObservedReadiness: allObserved.report,
+      decisionInventory,
+      asOf: input.asOf,
+    });
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.mkdirSync(outputPath);
+    fs.writeFileSync(path.join(outputPath, 'audit.json'), `${JSON.stringify(audit, null, 2)}\n`, { flag: 'wx' });
+    fs.writeFileSync(path.join(outputPath, 'README.md'), renderTutorStubActionOutcomeCollectionAudit(audit), {
+      flag: 'wx',
+    });
+    workflowStatus = completeLongRunningWorkflowPhase(workflowStatus, {
+      phase: 'AUDITING',
+      nextPhase: 'PACKAGING',
+      handoffExplanation: 'The zero-call audit is complete. Packet preparation has not started in this process.',
+      modelActivity: {
+        state: 'inactive',
+        explanation: 'Generation remains sealed and all work since collection has been zero-call.',
+      },
+      nextAction: {
+        description: 'Prepare the registered two-coder packet from the review-free readiness input.',
+        stopping_condition: 'Stop when the create-once packet is complete or packet validation fails.',
+      },
+    });
+    writeLongRunningWorkflowStatusAtomic(workflowStatusPath, workflowStatus);
+    process.stdout.write(
+      `${JSON.stringify(
+        {
+          output: outputPath,
+          verdict: audit.verdict,
+          failedGates: audit.failedGates,
+          pendingGates: audit.pendingGates,
+          modelCalls: audit.modelCalls,
+          workflowStatus: workflowStatusPath,
+          workflowPhase: workflowStatus.current_phase,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  } catch (error) {
+    const repair = error.workflowRepair || null;
+    workflowStatus = blockLongRunningWorkflow(workflowStatus, {
+      blockedPhase: workflowStatus.current_phase === 'AUDITING' ? 'AUDITING' : 'EXTRACTING',
+      operation: activeOperation,
+      error: error.message,
+      repairRequired: Boolean(repair),
+      repair,
+      modelActivity: {
+        state: 'inactive',
+        explanation: 'Generation is sealed and the failed extraction/audit operation is zero-call.',
+      },
+      nextAction: {
+        description: repair
+          ? 'Implement and review the recorded source repair before rerunning the blocked zero-call phase.'
+          : 'Inspect the recorded error and classify it as input drift, artifact damage, or a code defect.',
+        stopping_condition: 'Stop before packet preparation until the blocked phase succeeds.',
+      },
+      humanActionRequired: Boolean(repair?.human_action_required),
+    });
+    writeLongRunningWorkflowStatusAtomic(workflowStatusPath, workflowStatus);
+    throw error;
+  }
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

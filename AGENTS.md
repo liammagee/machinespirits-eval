@@ -37,16 +37,47 @@ not a signature.
 
 ## Long-running work transparency
 
-For long-running work, report every stage change and at least every 60–90 seconds. Never leave a vague gerund such as “defining,” “investigating,” or “monitoring” unexplained. Each status block must state:
+For every task expected to exceed two minutes, the root coordinator must define
+the complete requested phase sequence before starting. Use the maintained
+workflow-status artifact when the runner supports it. Report at every phase
+transition and at least every 60–90 seconds while work remains active. Never
+leave a vague gerund such as “defining,” “investigating,” or “monitoring”
+unexplained.
 
-- whether model activity is active, inactive, or not verifiable;
-- complete, active, failed, and missing units; completed/planned turns; calls reserved, completed, failed, and the hard ceiling;
-- repairs, recovery activity, and any observed configuration drift;
-- the current blocker or uncertainty in plain language;
-- the next action and its stopping condition; and
-- explicitly whether human input is required.
+Every user-visible status block must state:
 
-When nothing material changed, report “no material change” instead of going silent. Workers must send this structured status to their coordinator, and the coordinator must relay it to the user in plain language.
+- the overall workflow phase and all completed phases;
+- what is running now, in plain language;
+- whether model activity is `active`, `inactive`, or `unverifiable` (timestamps
+  alone never prove live provider activity);
+- complete, active, failed, and missing units;
+- completed, failed, and reserved calls plus the hard ceiling;
+- workflow start time, last material progress time, recent observed pace, and an
+  evidence-based ETA range whose basis is labeled `measured`, `inferred`, or
+  `unavailable`;
+- repairs, retries, recovery work, and any observed configuration drift;
+- the current blocker or uncertainty;
+- the exact next action and its stopping condition; and
+- explicitly whether human action is required.
+
+Use distinct states where applicable: `PREFLIGHT`, `GENERATING`, `RECOVERING`,
+`EXTRACTING`, `AUDITING`, `PACKAGING`, `BLOCKED`, `HANDOFF_PENDING`, and
+`WORKFLOW_COMPLETE`. Completion of generation or any other individual phase is
+not completion of the requested workflow. If the next already-authorized phase
+does not start immediately, enter `HANDOFF_PENDING`, say why, identify the next
+phase, and keep reporting. Silence between phases is prohibited.
+
+Before creating a repair branch or PR during an active workflow, first post a
+plain-language update that names the failed operation and actual observed error,
+whether paid work or collected data was affected, why a code change is required,
+exactly what the proposed PR changes, what remains blocked, whether model
+activity is active, and the evidence-based ETA after the repair is available.
+
+When nothing material changed, report “no material change” instead of going
+silent. Workers must send this structured status to their coordinator, and the
+coordinator must relay it to the user in plain language. Monitoring and waits
+must be bounded so the coordinator regains control within the reporting
+interval.
 
 ## Core Architecture
 
