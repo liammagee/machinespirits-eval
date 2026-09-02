@@ -153,7 +153,7 @@ test('real technical-debug process preserves exact learner-DAG terminal bytes', 
     assert.match(block, /grounded 4, voiced 0, hypotheses 0, answer candidates 0/u);
     assert.doesNotMatch(block, /learner-DAG model warning/u);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
   }
 });
 

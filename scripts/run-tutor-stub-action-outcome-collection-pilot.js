@@ -330,47 +330,84 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
     ];
     priorCompletedUnits = checkpointRows.length;
   } else {
-    const sourceReport = readJson(path.join(sourceRoot, 'report.json'), 'action-outcome predecessor report');
-    const reportRows = Array.isArray(sourceReport.rows) ? sourceReport.rows : [];
-    const reportJobIds = reportRows.map((row) => row.job_id);
     const inheritedRecovery = loadTutorStubActionOutcomeCollectionRecovery({
       loaded,
       preflight: { plan: sourceFullPlan },
       recoveryFrom: path.resolve(sourcePlan.recovery.source_root || ''),
     });
     const inheritedRows = inheritedRecovery.priorRows;
-    const currentRows = reportRows.slice(inheritedRows.length);
-    if (
-      !zeroProviderStartupFailure ||
-      sourceReport.schema !== 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1' ||
-      sourceReport.study_id !== loaded.design.studyId ||
-      sourceReport.status !== 'technical_failure' ||
-      sourceReport.source?.commit !== sourcePlan.source?.commit ||
-      path.resolve(sourceReport.recovery?.source_root || '') !== path.resolve(sourcePlan.recovery.source_root || '') ||
-      sourceReport.execution?.model_attempts?.reserved_in_current_run !== reservedInSourceRun ||
-      sourceReport.execution?.model_attempts?.hard_ceiling !== preflight.plan.model_attempt_ceiling ||
-      !Number.isInteger(sourceReport.execution?.model_attempts?.reserved_by_shared_study_ledger) ||
-      sourceReport.execution.model_attempts.reserved_by_shared_study_ledger < reservedInSourceRun ||
+    const linkedPlanDrift =
       sourcePlan.recovery.prior_reserved_attempts !== inheritedRecovery.prior_reserved_attempts ||
       sourcePlan.recovery.prior_completed_units !== inheritedRecovery.prior_completed_units ||
       JSON.stringify(sourcePlan.recovery.failed_job_ids) !== JSON.stringify(inheritedRecovery.failed_job_ids) ||
       JSON.stringify(sourcePlan.execution_job_ids) !==
         JSON.stringify(inheritedRecovery.executionJobs.map((job) => job.id)) ||
-      JSON.stringify(checkpointRows) !== JSON.stringify(reportRows) ||
-      JSON.stringify(reportRows.slice(0, inheritedRows.length)) !== JSON.stringify(inheritedRows) ||
-      new Set(reportJobIds).size !== reportJobIds.length ||
-      reportRows.some(
+      JSON.stringify(checkpointRows.slice(0, inheritedRows.length)) !== JSON.stringify(inheritedRows) ||
+      new Set(checkpointRows.map((row) => row.job_id)).size !== checkpointRows.length ||
+      checkpointRows.some(
         (row) => !plannedById.has(row.job_id) || !['complete', 'technical_failure'].includes(row.status),
-      ) ||
-      currentRows.length !== completedEvents.length ||
-      currentRows.some(
-        (row, index) => row.job_id !== completedEvents[index].job_id || row.status !== completedEvents[index].status,
-      )
-    ) {
-      throw new Error('action-outcome linked recovery predecessor drift');
+      );
+    const sourceReportPath = path.join(sourceRoot, 'report.json');
+    if (fs.existsSync(sourceReportPath)) {
+      const sourceReport = readJson(sourceReportPath, 'action-outcome predecessor report');
+      const reportRows = Array.isArray(sourceReport.rows) ? sourceReport.rows : [];
+      const currentRows = reportRows.slice(inheritedRows.length);
+      if (
+        linkedPlanDrift ||
+        !zeroProviderStartupFailure ||
+        sourceReport.schema !== 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1' ||
+        sourceReport.study_id !== loaded.design.studyId ||
+        sourceReport.status !== 'technical_failure' ||
+        sourceReport.source?.commit !== sourcePlan.source?.commit ||
+        path.resolve(sourceReport.recovery?.source_root || '') !==
+          path.resolve(sourcePlan.recovery.source_root || '') ||
+        sourceReport.execution?.model_attempts?.reserved_in_current_run !== reservedInSourceRun ||
+        sourceReport.execution?.model_attempts?.hard_ceiling !== preflight.plan.model_attempt_ceiling ||
+        !Number.isInteger(sourceReport.execution?.model_attempts?.reserved_by_shared_study_ledger) ||
+        sourceReport.execution.model_attempts.reserved_by_shared_study_ledger < reservedInSourceRun ||
+        JSON.stringify(checkpointRows) !== JSON.stringify(reportRows) ||
+        currentRows.length !== completedEvents.length ||
+        currentRows.some(
+          (row, index) => row.job_id !== completedEvents[index].job_id || row.status !== completedEvents[index].status,
+        )
+      ) {
+        throw new Error('action-outcome linked recovery predecessor drift');
+      }
+      priorReservedAttempts = sourceReport.execution.model_attempts.reserved_by_shared_study_ledger;
+      priorRows = reportRows.map((row) => ({ ...row, artifact_root: row.artifact_root || sourceRoot }));
+    } else {
+      const currentRows = checkpointRows.slice(inheritedRows.length);
+      const completedJobIds = completedEvents.map((event) => event.job_id);
+      const interruptedJobIds = reservedJobIds.filter((jobId) => !completedJobIds.includes(jobId));
+      if (
+        linkedPlanDrift ||
+        completedEvents.some((event) => event.status !== 'complete') ||
+        currentRows.length !== completedEvents.length ||
+        currentRows.some(
+          (row, index) => row.job_id !== completedEvents[index].job_id || row.status !== completedEvents[index].status,
+        ) ||
+        reservationEvents.length !== completedEvents.length + 1 ||
+        JSON.stringify(reservedJobIds.slice(0, -1)) !== JSON.stringify(completedJobIds) ||
+        interruptedJobIds.length !== 1 ||
+        interruptedJobIds[0] !== reservedJobIds.at(-1)
+      ) {
+        throw new Error('action-outcome linked interrupted recovery predecessor drift');
+      }
+      const failedJob = plannedById.get(interruptedJobIds[0]);
+      const failedRow = extractTutorStubActionOutcomeCollectionRow({
+        job: failedJob,
+        exit: { code: null, signal: 'SIGINT', spawn_error: null },
+        destination: sourceRoot,
+      });
+      if (failedRow.status !== 'technical_failure') {
+        throw new Error('interrupted linked action-outcome unit does not reconstruct as a technical failure');
+      }
+      priorReservedAttempts = inheritedRecovery.prior_reserved_attempts + reservedInSourceRun;
+      priorRows = [
+        ...checkpointRows.map((row) => ({ ...row, artifact_root: row.artifact_root || sourceRoot })),
+        { ...failedRow, artifact_root: sourceRoot, interruption_reason: seal.reason || null },
+      ];
     }
-    priorReservedAttempts = sourceReport.execution.model_attempts.reserved_by_shared_study_ledger;
-    priorRows = reportRows.map((row) => ({ ...row, artifact_root: row.artifact_root || sourceRoot }));
     priorCompletedUnits = priorRows.filter((row) => row.status === 'complete').length;
     failedJobIds = priorRows.filter((row) => row.status === 'technical_failure').map((row) => row.job_id);
   }
