@@ -30,8 +30,8 @@ new contemporary proof worlds.
 - [x] Prospective design fixes worlds, arms, order, routes, endpoints, gates,
   stopping rules, claim boundary and 396-attempt ceiling.
 - [x] Zero-call prompt/world and packet preflight passes from a clean branch.
-- [ ] Design, runner and plain GO note reach `main`; launch uses a clean
-  detached commit.
+- [x] Design and runner reach `main`; a plain GO note is committed on a
+  descendant of the clean detached launch commit.
 - [ ] All 18 dialogues and 72 logical assessments complete, or the first
   non-recoverable failure is preserved without rerunning valid outputs.
 - [ ] The private report applies the frozen gates and the Markdown note records
@@ -50,3 +50,6 @@ new contemporary proof worlds.
   packets into fixed baseline and scaffold batches of 15, respecting the
   shared scorer's 18-packet limit. Fresh dry-run, formatting, lint and focused
   tests all passed. Model activity remains inactive at 0/396.
+- 2026-09-02: PR #938 passed CI and merged at launch commit `7e502650`. The
+  signed GO note records the user's direct replication instruction and the
+  unchanged 396-attempt ceiling; launch remains pending at 0/396.

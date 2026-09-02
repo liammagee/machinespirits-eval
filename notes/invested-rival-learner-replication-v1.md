@@ -1,6 +1,6 @@
 # Invested-rival learner replication v1
 
-Status: implementation and zero-call preflight complete; launch pending
+Status: registered on `main`; signed launch note committed; launch pending
 
 ## Question
 
@@ -144,3 +144,7 @@ remain descriptive because the Luna and Qwen routes differ.
   ceiling. The full 79-test selection and a fresh 18-dialogue/90-packet dry run
   passed after the correction. Model activity remains inactive; 0/396 attempts
   used.
+- 2026-09-02 — PR #938 passed all required CI checks and was merged to `main`
+  at launch commit `7e502650e0966c048ac7add924bab9b7c235a0dd`. The user's
+  direct replication instruction and explicit merge approval were recorded in
+  the signed GO note. Model activity remains inactive; 0/396 attempts used.
