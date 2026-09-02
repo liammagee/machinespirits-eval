@@ -138,6 +138,13 @@
               <tr><td>6. Human learner pilot</td><td>Does the adaptive tutor actually improve human learning?</td><td>The study team designs and approves the study first.</td><td>Not ready for participants</td></tr>
             </tbody>
           </table>
+          <div class="files">
+            <h3>Download the complete editable guide</h3>
+            <p>The Word guide explains the project, the purpose of every task, and each procedure in one shareable document. The card sections below also link directly to their Excel workbooks.</p>
+            <ul>
+              <li><a href="human-validation-files/human-validation-task-guide.docx" download>Download the editable Word guide</a></li>
+            </ul>
+          </div>
         </div>
         <div class="mr"><p class="note note--moss"><span class="note__lbl">Shortest answer</span> Cards 1–4 need people to fill prepared files. Card 5 needs a decision first. Card 6 still needs study design and approval.</p></div>
       </div>
@@ -154,36 +161,31 @@
             <div><h3>Why does this task matter?</h3><p>The software can check that the map is internally consistent, but it cannot independently decide that the author’s map captures the intended reasoning. A perfectly functioning tutor could still follow a badly authored lesson.</p></div>
             <div><h3>What does the reviewer contribute?</h3><p>Two people independently decide what the evidence permits at six moments across three different teaching worlds. Agreement supports only the narrow conclusion that, in this packet, the ordinary-language evidence and release timing match the encoded rulings. Disagreement remains uncertain rather than being forced into an answer. A confirmed defect is corrected only for future world versions; sealed historical results are not rewritten. This task does not test whether the tutor improves learning.</p></div>
           </div>
-          <div class="task-meta"><div><b>People</b>Two reviewers</div><div><b>Work</b>Six cases each</div><div><b>Return</b>One completed JSON file per reviewer</div></div>
+          <div class="task-meta"><div><b>People</b>Two reviewers</div><div><b>Work</b>Six cases each</div><div><b>Return</b>One completed Excel workbook per reviewer</div></div>
 
           <div class="files">
-            <h3>Open these files</h3>
+            <h3>Download these editable files</h3>
             <ul>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/adaptive-proof-dag-cross-world-validation.md" target="_blank" rel="noreferrer">Workplan card</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/proof-dag-cross-world-review.md" target="_blank" rel="noreferrer">Review instructions</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/proof-dag-validation/cross-world-v1.packet.json" target="_blank" rel="noreferrer">Six-case packet</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/proof-dag-validation/cross-world-v1.submission-template.json" target="_blank" rel="noreferrer">Blank answer template</a></li>
+              <li><a href="human-validation-files/human-validation-task-guide.docx" download>Download the editable Word guide</a></li>
+              <li><a href="human-validation-files/proof-dag-review-form.xlsx" download>Download the six-case Excel workbook</a></li>
             </ul>
           </div>
 
           <h3>Reviewer procedure</h3>
           <ol class="procedure">
-            <li><div><h4>Get your own copy of the answer template.</h4><p>The organiser makes two copies: one for reviewer A and one for reviewer B.</p></div></li>
-            <li><div><h4>Replace <code>REPLACE_WITH_REVIEWER_ID</code> with your reviewer ID.</h4><p>Do not use the same ID as the other reviewer.</p></div></li>
-            <li><div><h4>Open the packet and your answer file side by side.</h4><p>The packet contains three worlds and two cases per world.</p></div></li>
-            <li><div><h4>For each case, fill <code>available_premise_ids</code>.</h4><p>Copy in the IDs of the evidence that is publicly available at that point in the case.</p></div></li>
-            <li><div><h4>Fill <code>enabled_rule_ids</code>.</h4><p>Copy in a rule ID only when every fact needed by that rule is available.</p></div></li>
-            <li><div><h4>Fill <code>licensed_candidate_ids</code>.</h4><p>Copy in each conclusion ID that the available evidence and rules support.</p></div></li>
-            <li><div><h4>Fill <code>forbidden_candidate_ids</code>.</h4><p>Put every remaining conclusion ID here. If the case is marked <code>determinate</code>, every candidate must appear in either the licensed list or the forbidden list.</p></div></li>
-            <li><div><h4>If part of the case is unclear, mark it clearly.</h4><p>Change <code>disposition</code> to <code>indeterminate</code>. Put the unclear field name in <code>indeterminate_fields</code>. Explain the problem in <code>notes</code>.</p></div></li>
+            <li><div><h4>Download and save your own copy of the Excel workbook.</h4><p>Reviewer A and reviewer B must work in separate copies.</p></div></li>
+            <li><div><h4>Read the “Start here” sheet.</h4><p>Then open “Six cases.” It contains the public evidence, rules, and candidate conclusions for three worlds.</p></div></li>
+            <li><div><h4>Enter your reviewer ID in the yellow column.</h4><p>Do not use the same ID as the other reviewer.</p></div></li>
+            <li><div><h4>List the available premise IDs.</h4><p>In the yellow cell, enter the IDs of the evidence that is publicly available. Separate multiple IDs with commas.</p></div></li>
+            <li><div><h4>List the enabled rule IDs.</h4><p>Include a rule only when every fact needed by that rule is available.</p></div></li>
+            <li><div><h4>List the licensed candidate IDs.</h4><p>Include each conclusion that the available evidence and rules support.</p></div></li>
+            <li><div><h4>List the forbidden candidate IDs.</h4><p>Include every remaining conclusion. For a determinate case, every candidate must be either licensed or forbidden.</p></div></li>
+            <li><div><h4>If part of the case is unclear, mark it clearly.</h4><p>Choose <code>indeterminate</code>, identify the unclear field or fields, and explain the problem in Notes.</p></div></li>
             <li><div><h4>Repeat until all six cases are complete.</h4><p>Do not look at an answer key. Do not discuss cases with the other reviewer.</p></div></li>
-            <li><div><h4>Save and return your completed JSON file.</h4><p>Return it to the organiser. Do not edit it again after returning it.</p></div></li>
+            <li><div><h4>Save and return your completed Excel workbook.</h4><p>Return it to the organiser. Do not edit it again after returning it.</p></div></li>
           </ol>
 
-          <div class="result"><h3>Organiser: after both files arrive</h3><div class="command"><code>node scripts/proof-dag-cross-world-review.js compare \
-  --reviewer /path/to/reviewer-a.json \
-  --reviewer /path/to/reviewer-b.json \
-  --out /path/to/cross-world-review-report.json</code></div></div>
+          <div class="result"><h3>Organiser: after both files arrive</h3><p>Preserve both returned workbooks unchanged. Work from copies when transferring the answers into the project’s comparison workflow.</p></div>
           <div class="result"><h3>The human return is complete when</h3><p>Two different reviewers have independently returned all six cases, with every uncertain field explicitly marked.</p></div>
           <div class="result"><h3>The project closeout is complete when</h3><p>The organiser has created the comparison report, preserved disagreement as <code>indeterminate</code>, recorded any confirmed defect as a prospective correction and regression check, and left sealed historical results unchanged.</p></div>
         </div>
@@ -202,39 +204,33 @@
             <div><h3>Why does this task matter?</h3><p>The system already recorded its own state and move labels. That is not enough: a machine label may be wrong, and an internally selected move may disappear or become distorted when the final reply is written.</p></div>
             <div><h3>What does the reviewer contribute?</h3><p>Two people read only the learner message and tutor reply. They independently say what learner state is visible and what teaching move the reply actually performs. This checks whether human readers recognise the same visible learner state and whether the intended teaching move is visible in the reply. It does not test whether the learner understood, improved, or learned.</p></div>
           </div>
-          <div class="task-meta"><div><b>People</b>Two reviewers</div><div><b>Work</b>24 cases each</div><div><b>Return</b>Completed coder-A and coder-B JSON files</div></div>
+          <div class="task-meta"><div><b>People</b>Two reviewers</div><div><b>Work</b>24 cases each</div><div><b>Return</b>Completed coder-A and coder-B Excel workbooks</div></div>
 
           <div class="files">
-            <h3>Open these files</h3>
+            <h3>Download these editable files</h3>
             <ul>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/adaptive-causality-human-state-move-validation.md" target="_blank" rel="noreferrer">Workplan card</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/adaptive-causality-state-move-review.md" target="_blank" rel="noreferrer">Review instructions</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/adaptive-causality-validation/state-move-v1.packet.json" target="_blank" rel="noreferrer">24 dialogue pairs</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/adaptive-causality-validation/state-move-v1.codebook.md" target="_blank" rel="noreferrer">Label definitions</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/adaptive-causality-validation/state-move-v1.coder-a.json" target="_blank" rel="noreferrer">Coder A answer file</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/adaptive-causality-validation/state-move-v1.coder-b.json" target="_blank" rel="noreferrer">Coder B answer file</a></li>
+              <li><a href="human-validation-files/human-validation-task-guide.docx" download>Download the editable Word guide</a></li>
+              <li><a href="human-validation-files/state-move-coder-a.xlsx" download>Download coder A’s Excel workbook</a></li>
+              <li><a href="human-validation-files/state-move-coder-b.xlsx" download>Download coder B’s Excel workbook</a></li>
             </ul>
           </div>
 
           <h3>Reviewer procedure</h3>
           <ol class="procedure">
-            <li><div><h4>Use only your assigned answer file.</h4><p>Coder A uses the coder-A file. Coder B uses the coder-B file. The cases appear in different orders.</p></div></li>
-            <li><div><h4>Find the same <code>case_id</code> in the packet and answer file.</h4><p>Read the <code>learner_turn</code> and <code>tutor_reply</code> for that case.</p></div></li>
-            <li><div><h4>Choose one learner-state label.</h4><p>Use the codebook. Enter the label in <code>state.label</code>.</p></div></li>
-            <li><div><h4>Copy a short learner quote into <code>state.evidence</code>.</h4><p>The quote must show why you chose that state label.</p></div></li>
-            <li><div><h4>Choose every tutor-move label that is clearly present.</h4><p>Enter the labels in <code>move.labels</code>. More than one is allowed. If no listed move is present, use <code>none_observable</code> by itself.</p></div></li>
-            <li><div><h4>Copy a short tutor quote into <code>move.evidence</code>.</h4><p>The quote must show the move or moves you selected.</p></div></li>
-            <li><div><h4>If the learner state is unclear, use the unclear format.</h4><p>Set <code>state.disposition</code> to <code>indeterminate</code>, set <code>state.label</code> to <code>null</code>, and explain why in <code>state.notes</code>.</p></div></li>
-            <li><div><h4>If the tutor move is unclear, use the unclear format.</h4><p>Set <code>move.disposition</code> to <code>indeterminate</code>, leave <code>move.labels</code> empty, and explain why in <code>move.notes</code>.</p></div></li>
+            <li><div><h4>Use only your assigned Excel workbook.</h4><p>Coder A uses the coder-A workbook. Coder B uses the coder-B workbook. The cases appear in different orders.</p></div></li>
+            <li><div><h4>Read “Start here” and the “Codebook” sheet.</h4><p>Then open “Coding” and read the learner message and tutor reply for the first case.</p></div></li>
+            <li><div><h4>Choose one learner-state label.</h4><p>Use the drop-down list in the yellow “State label” cell.</p></div></li>
+            <li><div><h4>Copy a short learner quote into “State evidence.”</h4><p>The quote must show why you chose that state label.</p></div></li>
+            <li><div><h4>Choose every tutor-move label that is clearly present.</h4><p>Enter the labels in “Move labels,” separated by commas. If no listed move is present, use <code>none_observable</code> by itself.</p></div></li>
+            <li><div><h4>Copy a short tutor quote into “Move evidence.”</h4><p>The quote must show the move or moves you selected.</p></div></li>
+            <li><div><h4>If the learner state is unclear, mark it indeterminate.</h4><p>Choose <code>indeterminate</code>, leave the state label blank, and explain why in “State notes.”</p></div></li>
+            <li><div><h4>If the tutor move is unclear, mark it indeterminate.</h4><p>Choose <code>indeterminate</code>, leave the move labels blank, and explain why in “Move notes.”</p></div></li>
             <li><div><h4>Repeat for all 24 cases.</h4><p>Do not look at the answer key, source records, computer labels, or the other reviewer’s file.</p></div></li>
-            <li><div><h4>Complete the two statements at the top of the file.</h4><p>Set <code>worked_without_other_coder</code> and <code>did_not_access_machine_key</code> to <code>true</code> only if both statements are true.</p></div></li>
-            <li><div><h4>Save and return your completed JSON file.</h4><p>Return it to the organiser. Do not edit it after returning it.</p></div></li>
+            <li><div><h4>Complete the “Attestation” sheet.</h4><p>Confirm independent work and no access to the machine key only when both statements are true.</p></div></li>
+            <li><div><h4>Save and return your completed Excel workbook.</h4><p>Return it to the organiser. Do not edit it after returning it.</p></div></li>
           </ol>
 
-          <div class="result"><h3>Organiser: after both files arrive</h3><div class="command"><code>node scripts/adaptive-causality-state-move-review.js compare \
-  --submission /path/to/coder-a-complete.json \
-  --submission /path/to/coder-b-complete.json \
-  --out /path/to/state-move-review-report.json</code></div></div>
+          <div class="result"><h3>Organiser: after both files arrive</h3><p>Preserve both returned workbooks unchanged. Work from copies when transferring the answers into the project’s comparison workflow.</p></div>
           <div class="result"><h3>The human return is complete when</h3><p>Both 24-case files are complete and both reviewers have truthfully confirmed that they worked independently without seeing the machine key.</p></div>
           <div class="result"><h3>The project closeout is complete when</h3><p>The organiser has reported agreement, disagreement, state confusion, and visible move realization overall and by study arm; preserved ambiguous cases as <code>indeterminate</code>; and either retained the mechanism claim within those measured limits or narrowed it without relabelling cases after the fact.</p></div>
         </div>
@@ -253,20 +249,19 @@
             <div><h3>Why does this task matter?</h3><p>Most current tests use authored situations and simulated learners. The project also needs a small reference drawn from real interaction. The person who experienced a conversation can identify a breakdown that may not be obvious from surface wording alone.</p></div>
             <div><h3>What does the reviewer contribute?</h3><p>The original participant supplies first-person criterion labels for 29 excerpts: whether there was an impasse, what kind it was, whether the tutor addressed it, and whether it cleared. The result can later test whether the tutor’s automatic signals notice real breakdowns. Because it comes from one person’s sessions, it is useful design evidence—not proof that the tutor works generally.</p></div>
           </div>
-          <div class="task-meta"><div><b>Person</b>The person who took part in the original sessions</div><div><b>Work</b>29 excerpts</div><div><b>Return</b>One completed Markdown sheet</div></div>
+          <div class="task-meta"><div><b>Person</b>The person who took part in the original sessions</div><div><b>Work</b>29 excerpts</div><div><b>Return</b>One completed Excel workbook</div></div>
 
           <div class="files">
-            <h3>Open these files</h3>
+            <h3>Download these editable files</h3>
             <ul>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/impasse-corpus-phase1.md" target="_blank" rel="noreferrer">Workplan card</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/notes/impasse/2026-07-17-phase1-labeling-sheet.md" target="_blank" rel="noreferrer">29-excerpt labeling sheet</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/notes/impasse/2026-07-17-phase1-episodes.json" target="_blank" rel="noreferrer">Source episode list</a> — reference only</li>
+              <li><a href="human-validation-files/human-validation-task-guide.docx" download>Download the editable Word guide</a></li>
+              <li><a href="human-validation-files/impasse-review-form.xlsx" download>Download the 29-excerpt Excel workbook</a></li>
             </ul>
           </div>
 
           <h3>Procedure</h3>
           <ol class="procedure">
-            <li><div><h4>Make an editable copy of the labeling sheet.</h4><p>Do not edit the original file.</p></div></li>
+            <li><div><h4>Download and save an editable copy of the Excel workbook.</h4><p>Do not edit the original download.</p></div></li>
             <li><div><h4>Start at <code>E01</code>.</h4><p>Read the conversation excerpt and the “Tutor’s next move” text.</p></div></li>
             <li><div><h4>Fill <code>impasse</code>.</h4><p>Tick <code>yes</code> if communication had stopped working. Otherwise tick <code>no</code>.</p></div></li>
             <li><div><h4>Fill <code>type</code>.</h4><p>Tick every type that applies: comprehension, task-framing, affective, pacing/stall, uptake/echo, or other. If you tick other, write what it was.</p></div></li>
@@ -274,7 +269,7 @@
             <li><div><h4>Fill <code>resolved within 2 turns</code>.</h4><p>Tick yes, no, or session ended.</p></div></li>
             <li><div><h4>Fill <code>notes</code> when useful.</h4><p>Add anything important that is not obvious from the excerpt.</p></div></li>
             <li><div><h4>Repeat for <code>E02</code> through <code>E29</code>.</h4><p>All 29 main excerpts must be completed.</p></div></li>
-            <li><div><h4>Save and return the completed Markdown file.</h4><p>The “Abandoned sessions” list at the bottom is not required to close this card unless the organiser specifically asks for it.</p></div></li>
+            <li><div><h4>Save and return the completed Excel workbook.</h4><p>The abandoned-session candidates are not included because they are not required to close this card.</p></div></li>
           </ol>
 
           <div class="result"><h3>The human return is complete when</h3><p>The required fields—impasse, type, tutor response, and resolution—are completed for E01 through E29; notes are added where useful; and the sheet is returned.</p></div>
@@ -295,33 +290,33 @@
             <div><h3>Why does this task matter?</h3><p>Those categories were assigned by AI systems. If independent experts cannot apply the same categories consistently, the taxonomy may reflect the quirks of the machine classifier rather than stable kinds of criticism.</p></div>
             <div><h3>What does the reviewer contribute?</h3><p>Two experts independently classify the same 40 critic comments. Agreement measured by Cohen’s kappa at or above 0.60 supports using the taxonomy as a description of what the critic talks about. Lower agreement is reported as instability rather than tuned away. This task does not show that the internal critic improves tutoring or learning.</p></div>
           </div>
-          <div class="task-meta"><div><b>People</b>Two expert reviewers</div><div><b>Work</b>40 CSV rows each</div><div><b>Return</b>Rater-A and rater-B CSV files</div></div>
+          <div class="task-meta"><div><b>People</b>Two expert reviewers</div><div><b>Work</b>40 workbook rows each</div><div><b>Return</b>Two completed Excel workbooks</div></div>
 
           <div class="files">
-            <h3>Open these files</h3>
+            <h3>Download these editable files</h3>
             <ul>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/superego-taxonomy-human-validation.md" target="_blank" rel="noreferrer">Workplan card</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/research/human-coding-codebook.md" target="_blank" rel="noreferrer">Label definitions and examples</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/scripts/human-validation-sample.js" target="_blank" rel="noreferrer">Packet preparation script</a> — organiser only</li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/scripts/human-validation-analyze.js" target="_blank" rel="noreferrer">Comparison script</a> — organiser only</li>
+              <li><a href="human-validation-files/human-validation-task-guide.docx" download>Download the editable Word guide</a></li>
+              <li><a href="human-validation-files/superego-taxonomy-review-form.xlsx" download>Download the editable Excel template and codebook</a></li>
             </ul>
-            <p class="small"><strong>The 40-row CSV is not a public file.</strong> The organiser supplies each reviewer with a personal copy of <code>human-validation-pilot-sample.csv</code>.</p>
+            <p class="small"><strong>The protected 40-item sample is not published.</strong> This download shows the codebook, fields, and editable 40-row layout. The organiser inserts the blinded source text into two private copies before assignment; machine labels remain absent.</p>
           </div>
 
           <h3>Reviewer procedure</h3>
           <ol class="procedure">
-            <li><div><h4>Open the codebook and your own 40-row CSV file.</h4><p>Reviewer A and reviewer B work on separate copies.</p></div></li>
-            <li><div><h4>Read the <code>feedback</code> cell for the first row.</h4><p>This is the critic’s comment. The other text columns are only there to help you understand it.</p></div></li>
-            <li><div><h4>Fill <code>human_primary</code>.</h4><p>Choose exactly one code from the codebook: <code>CONTEXT_BLINDNESS</code>, <code>RECOGNITION_FAILURE</code>, <code>REDIRECTION</code>, <code>FABRICATION</code>, <code>VAGUENESS</code>, <code>EMOTIONAL_NEGLECT</code>, <code>REGISTER_MISMATCH</code>, <code>PEDAGOGICAL_MISJUDGMENT</code>, <code>LACK_OF_AGENCY</code>, <code>MEMORY_FAILURE</code>, <code>APPROVAL</code>, or <code>OTHER</code>.</p></div></li>
-            <li><div><h4>Fill <code>human_secondary</code> only if needed.</h4><p>You may add up to two extra codes, separated by commas. This field may be blank.</p></div></li>
-            <li><div><h4>Fill <code>human_confident</code>.</h4><p>Use 1 for guessing, 2 for a reasonable choice, or 3 for certain. This field may be blank, but completing it is preferred.</p></div></li>
-            <li><div><h4>Fill <code>human_notes</code> when useful.</h4><p>Use notes for difficult rows or when you think the critic is wrong. Still label what the critic is complaining about.</p></div></li>
-            <li><div><h4>Do not edit the supplied columns.</h4><p>Leave <code>item_id</code>, <code>feedback</code>, <code>ego_generate</code>, <code>ego_revision</code>, and <code>learner_context_snippet</code> unchanged.</p></div></li>
+            <li><div><h4>Organiser: populate two private copies of the Excel template.</h4><p>Replace every blue placeholder with the blinded item ID, critic feedback, initial response, revised response, and learner context. Do not add machine labels.</p></div></li>
+            <li><div><h4>Reviewer: use only the populated private copy sent to you.</h4><p>Do not code the blank public template. Reviewer A and reviewer B work on separate copies.</p></div></li>
+            <li><div><h4>Read “Start here” and the “Codebook” sheet.</h4><p>Then open “40 Items.”</p></div></li>
+            <li><div><h4>Read the critic feedback in the first row.</h4><p>The initial response, revised response, and learner context are present only to help resolve difficult cases.</p></div></li>
+            <li><div><h4>Choose exactly one primary category.</h4><p>Use the drop-down list in the yellow “Primary category” cell.</p></div></li>
+            <li><div><h4>Add secondary categories only if needed.</h4><p>You may add up to two co-equal categories in the secondary columns. They may be blank.</p></div></li>
+            <li><div><h4>Choose your confidence.</h4><p>Use 1 for guessing, 2 for plausible, or 3 for certain.</p></div></li>
+            <li><div><h4>Add notes when useful.</h4><p>Use Notes for difficult rows or when you think the critic is wrong. Still label what the critic is complaining about.</p></div></li>
+            <li><div><h4>Do not edit the grey or blue reference cells.</h4><p>Type only in yellow cells.</p></div></li>
             <li><div><h4>Take a break after row 20.</h4><p>Then complete rows 21–40.</p></div></li>
-            <li><div><h4>Save and return your CSV file.</h4><p>Use the filename <code>human-validation-pilot-rater-A.csv</code> or <code>human-validation-pilot-rater-B.csv</code>. Do not discuss answers until both files are returned.</p></div></li>
+            <li><div><h4>Save and return your Excel workbook.</h4><p>Use different filenames for reviewer A and reviewer B. Do not discuss answers until both files are returned.</p></div></li>
           </ol>
 
-          <div class="result"><h3>Organiser: after both files arrive</h3><div class="command"><code>node scripts/human-validation-analyze.js</code></div></div>
+          <div class="result"><h3>Organiser: after both files arrive</h3><p>Preserve both returned workbooks unchanged. Work from copies when transferring the answers into the project’s comparison workflow.</p></div>
           <div class="result"><h3>The human return is complete when</h3><p>Both reviewers have independently labeled all 40 rows and returned their original files.</p></div>
           <div class="result"><h3>The project closeout is complete when</h3><p>The organiser has reported overall and per-category agreement, Cohen’s kappa, category F1 scores, and the confusion matrix. Kappa at or above 0.60 supports the descriptive taxonomy; lower agreement is preserved as an instability result, without changing the codebook or threshold after seeing the answers.</p></div>
         </div>
@@ -341,40 +336,33 @@
             <div><h3>What does the human work contribute?</h3><p>First, the project lead decides whether adopting v3 is worth pursuing. Only if the answer is yes do two reviewers score the prepared examples. Their work tells us whether human judgments support the new scoring guide before it is promoted. This card is optional for the current adaptive-tutor claim and remains parked until that decision is made.</p></div>
           </div>
           <div class="stop"><h3>The first required human action is a decision</h3><p>The project lead must decide: “Do we want to consider replacing the current v2.2 scoring guide with v3?” If the answer is no or not yet, nobody needs to label the 20 items.</p></div>
-          <div class="task-meta"><div><b>Decision owner</b>Project lead</div><div><b>If yes</b>Two reviewers score 20 items each</div><div><b>Return</b>Four CSV files: two people × two sets</div></div>
+          <div class="task-meta"><div><b>Decision owner</b>Project lead</div><div><b>If yes</b>Two reviewers score 20 items each</div><div><b>Return</b>Two completed Excel workbooks</div></div>
 
           <div class="files">
-            <h3>Open these files</h3>
+            <h3>Download these editable files</h3>
             <ul>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/rubric-v3-calibration-and-held-out-acceptance.md" target="_blank" rel="noreferrer">Workplan card</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/rubric-v3-measurement-suite.md" target="_blank" rel="noreferrer">Rubric v3 instructions</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/rubrics/v3.0/content-accuracy-calibration.yaml" target="_blank" rel="noreferrer">20-item source packet</a> — organiser only</li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/scripts/calibrate-rubric-v3-accuracy.js" target="_blank" rel="noreferrer">Sheet preparation and analysis script</a> — organiser only</li>
+              <li><a href="human-validation-files/human-validation-task-guide.docx" download>Download the editable Word guide</a></li>
+              <li><a href="human-validation-files/rubric-v3-coder-a.xlsx" download>Download coder A’s Excel workbook</a></li>
+              <li><a href="human-validation-files/rubric-v3-coder-b.xlsx" download>Download coder B’s Excel workbook</a></li>
             </ul>
           </div>
 
           <h3>If the project lead says yes, follow this procedure</h3>
           <ol class="procedure">
-            <li><div><h4>The organiser prepares two sets of files.</h4><p>Prepare the 15-item <code>development</code> set and the five-item <code>held_out</code> set. Each set produces a blinded item file, instructions, a coder-A CSV, and a coder-B CSV.</p></div></li>
-            <li><div><h4>Each reviewer opens the blinded items and their own CSV.</h4><p>Do not look at computer scores or the other reviewer’s file.</p></div></li>
-            <li><div><h4>Match each <code>item_id</code> in the CSV to the same ID in the blinded item file.</h4><p>Read the learner message, tutor answer, and reference information.</p></div></li>
+            <li><div><h4>Each reviewer downloads the assigned Excel workbook.</h4><p>Coder A and coder B use separate files with independently ordered items.</p></div></li>
+            <li><div><h4>Read “Start here.”</h4><p>Then complete both the 15-item “Development” sheet and the five-item “Held out” sheet. Do not look at computer scores or the other reviewer’s file.</p></div></li>
+            <li><div><h4>Read each item’s learner message, tutor turn, and reference basis.</h4><p>The authored targets and machine scores are intentionally absent.</p></div></li>
             <li><div><h4>Fill <code>applicability</code>.</h4><p>Enter <code>applicable</code> if the tutor answer makes a factual or subject-matter claim that can be checked. Otherwise enter <code>not_applicable</code>.</p></div></li>
             <li><div><h4>Fill <code>content_accuracy_score</code>.</h4><p>If applicable, enter a whole number from 1 to 5. If not applicable, leave this cell blank.</p></div></li>
-            <li><div><h4>Fill <code>confidence</code>.</h4><p>Enter a whole number from 1 to 5.</p></div></li>
+            <li><div><h4>Fill <code>confidence</code>.</h4><p>Enter 1 for low confidence, 2 for medium confidence, or 3 for high confidence.</p></div></li>
             <li><div><h4>Fill <code>notes</code>.</h4><p>Briefly explain difficult scores or why an item is not applicable.</p></div></li>
-            <li><div><h4>Complete all 15 development items and all five held-out items.</h4><p>Do not discuss scores until both reviewers have returned all four CSV files.</p></div></li>
-            <li><div><h4>For each split with disagreements, create a separate adjudication CSV.</h4><p>Copy that split’s sheet, set <code>coder_id</code> to <code>adjudicated</code>, and record the agreed answer for disputed rows. Do not edit either original reviewer file.</p></div></li>
+            <li><div><h4>Complete all 15 development items and all five held-out items.</h4><p>Do not discuss scores until both reviewers have returned both workbooks.</p></div></li>
+            <li><div><h4>Save and return the completed workbook.</h4><p>The organiser preserves each original and uses copies for any later adjudication. Do not edit either reviewer’s returned file.</p></div></li>
           </ol>
 
-          <div class="result"><h3>Organiser: prepare the sheets</h3><div class="command"><code>npm run rubric:v3:accuracy -- prepare \
-  --split development \
-  --out-dir exports/rubric-v3-calibration/human-labelling
-
-npm run rubric:v3:accuracy -- prepare \
-  --split held_out \
-  --out-dir exports/rubric-v3-calibration/human-labelling</code></div></div>
-          <div class="result"><h3>The human return is complete when</h3><p>If the project lead chose to consider v3, both reviewers have independently completed and returned their original development and held-out CSVs.</p></div>
-          <div class="result"><h3>The project closeout is complete when</h3><p>Each split with disagreements has its own separate adjudication CSV. The organiser has then analyzed each split using the stored machine-score files plus both human files and any adjudication file, reviewed disagreement examples as well as summary scores, and made a separate reviewed decision about promotion. Until then, v2.2 remains the scoring guide. If the lead chooses “no” or “not yet,” the coding does not start and the card remains parked.</p></div>
+          <div class="result"><h3>Organiser: after both files arrive</h3><p>Preserve both returned workbooks unchanged. Work from copies for disagreement review, comparison with stored machine scores, and any adjudication record.</p></div>
+          <div class="result"><h3>The human return is complete when</h3><p>If the project lead chose to consider v3, both reviewers have independently completed and returned their original workbooks.</p></div>
+          <div class="result"><h3>The project closeout is complete when</h3><p>Disagreements have been reviewed in a separate record. The organiser has analyzed each split using the stored machine-score files plus both human workbooks, reviewed disagreement examples as well as summary scores, and made a separate reviewed decision about promotion. Until then, v2.2 remains the scoring guide. If the lead chooses “no” or “not yet,” the coding does not start and the card remains parked.</p></div>
         </div>
         <div class="mr"><p class="note note--ochre"><span class="note__lbl">Current blocker</span> No decision has been made to move toward v3, so this is not currently an assigned coding task.</p></div>
       </div>
@@ -395,13 +383,9 @@ npm run rubric:v3:accuracy -- prepare \
           <div class="task-meta"><div><b>People needed now</b>Study lead, ethics/IRB owner, assessment designer, engineer</div><div><b>Work now</b>Design and approve the study</div><div><b>Participant work</b>None yet</div></div>
 
           <div class="files">
-            <h3>Open these files</h3>
+            <h3>Download the editable planning document</h3>
             <ul>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/workplan/items/a1-human-learner-validation.md" target="_blank" rel="noreferrer">Workplan card</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/ADAPTIVE-TUTOR-KERNEL-CONTRACT.md" target="_blank" rel="noreferrer">Current tutor design contract</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/notes/poetics/2026-08-29-adaptive-tutor-from-null-to-control.html" target="_blank" rel="noreferrer">Why the study design changed</a></li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/public/pilot/index.html" target="_blank" rel="noreferrer">Existing participant interface</a> — reusable software, not an approved study</li>
-              <li><a href="https://github.com/liammagee/machinespirits-eval/blob/main/config/pilot/fractions-items.yaml" target="_blank" rel="noreferrer">Placeholder test items</a> — must be replaced</li>
+              <li><a href="human-validation-files/human-validation-task-guide.docx" download>Download the editable Word guide and study-planning checklist</a></li>
             </ul>
           </div>
 
