@@ -1,0 +1,757 @@
+{
+  "schema": "machinespirits.tutor-stub.action-outcome-collection-quality-audit.v1",
+  "studyId": "tutor-stub-action-outcome-collection-pilot-v1",
+  "asOf": "2026-09-01T22:55:19.200Z",
+  "modelCalls": 0,
+  "verdict": "registered_feasibility_gates_failed",
+  "controllerStudyLicensed": false,
+  "claimBoundary": "This pilot can establish only the operational feasibility and descriptive yield of prospective seeded eligible-family collection, plus descriptive immediate next-turn uptake associations for the maintained simulated bored learner on the four named collection worlds. It cannot establish learning, durable change, transfer, action-family superiority, a causal family effect outside the realized eligible sets, memory-controller benefit, human-learner benefit, or any result on the two reserved evaluation worlds.",
+  "decisionRule": "Pass licenses only a new design for a separately authorized held-out controller study. Failure reports the registered bottleneck and closes this pilot without top-up, threshold relaxation, recoding, family deletion, world deletion, or controller launch.",
+  "generation": {
+    "status": "generation_complete_with_technical_failure",
+    "source": {
+      "commit": "2f99ce4e3976cb8a60f8f1f6d20a8e6484557358",
+      "tree": "3edd3ee24840b0a6c772272b874dabe7bd7ca003",
+      "detached": true,
+      "dirty": false,
+      "main_ref": "origin/main",
+      "main_commit": "2f99ce4e3976cb8a60f8f1f6d20a8e6484557358"
+    },
+    "plannedDialogues": 24,
+    "completeDialogues": 22,
+    "technicalFailures": [
+      "aocp1_foxtrot_jukebox_r01",
+      "aocp1_foxtrot_jukebox_r02"
+    ],
+    "missingDialogues": 0,
+    "turns": {
+      "completed": 181,
+      "planned": 192
+    },
+    "modelAttempts": {
+      "reserved_by_children": 897,
+      "completed": 891,
+      "failed": 5,
+      "reserved_in_predecessor": 162,
+      "reserved_in_current_run": 1782,
+      "reserved_by_shared_study_ledger": 1944,
+      "hard_ceiling": 1944
+    },
+    "perWorld": [
+      {
+        "worldId": "world_022_foxtrot_jukebox",
+        "planned": 6,
+        "complete": 4,
+        "technicalFailure": 2
+      },
+      {
+        "worldId": "world_026_skyway_bakery",
+        "planned": 6,
+        "complete": 6,
+        "technicalFailure": 0
+      },
+      {
+        "worldId": "world_028_larkspur_fridge",
+        "planned": 6,
+        "complete": 6,
+        "technicalFailure": 0
+      },
+      {
+        "worldId": "world_029_riverside_clinic",
+        "planned": 6,
+        "complete": 6,
+        "technicalFailure": 0
+      }
+    ]
+  },
+  "integrity": {
+    "sourceTraceFiles": 23,
+    "quarantinedSourceFiles": 0,
+    "allClosedAssignmentsValidated": true,
+    "sourceSetsAgree": true,
+    "heldOutWorldLeak": []
+  },
+  "extraction": {
+    "traceFiles": 23,
+    "traceEvents": 10735,
+    "typedDecisions": 181,
+    "closedNextTurnOpportunities": 158,
+    "terminalDecisionsWithoutNextObservation": 23,
+    "decisionAssignmentDisposition": {
+      "mandatory_policy_authority_preserved": 28,
+      "seeded_uniform_family_assignment": 153
+    },
+    "decisionConditionDisposition": {
+      "matched": 34,
+      "unmatched": 147
+    },
+    "closedAssignmentDisposition": {
+      "mandatory_policy_authority_preserved": 28,
+      "seeded_uniform_family_assignment": 130
+    },
+    "conditionMatchedSeededClosedAssignments": 30,
+    "conditionUnmatchedClosedAssignments": 128,
+    "contributingDialogues": 13,
+    "contributingWorlds": 4,
+    "visibleDeliveries": 30,
+    "matchedAuxiliaryOutcomes": {
+      "inconclusive": 30
+    },
+    "maximumPotentialBinaryRecords": 0,
+    "rates": {
+      "assignableClosedTurnPrevalence": {
+        "successes": 130,
+        "total": 158,
+        "estimate": 0.8227848101265823,
+        "lower": 0.7557966860904218,
+        "upper": 0.8744497337284142
+      },
+      "conditionMatchedClosedTurnPrevalence": {
+        "successes": 30,
+        "total": 158,
+        "estimate": 0.189873417721519,
+        "lower": 0.13636351813386116,
+        "upper": 0.25810560792255166
+      },
+      "visibleDeliveryRate": {
+        "successes": 30,
+        "total": 30,
+        "estimate": 1,
+        "lower": 0.8864866068260312,
+        "upper": 0.9999999999999999
+      },
+      "auxiliaryInconclusiveRate": {
+        "successes": 30,
+        "total": 30,
+        "estimate": 1,
+        "lower": 0.8864866068260312,
+        "upper": 0.9999999999999999
+      }
+    },
+    "matchedByFamily": [
+      {
+        "family": "diagnose_elicit",
+        "cases": 16,
+        "visibleDeliveries": 16,
+        "dialogues": 11,
+        "worlds": 4,
+        "auxiliaryOutcomes": {
+          "inconclusive": 16
+        }
+      },
+      {
+        "family": "minimal_support",
+        "cases": 5,
+        "visibleDeliveries": 5,
+        "dialogues": 5,
+        "worlds": 4,
+        "auxiliaryOutcomes": {
+          "inconclusive": 5
+        }
+      },
+      {
+        "family": "explain_model",
+        "cases": 3,
+        "visibleDeliveries": 3,
+        "dialogues": 3,
+        "worlds": 2,
+        "auxiliaryOutcomes": {
+          "inconclusive": 3
+        }
+      },
+      {
+        "family": "request_self_explanation",
+        "cases": 6,
+        "visibleDeliveries": 6,
+        "dialogues": 5,
+        "worlds": 3,
+        "auxiliaryOutcomes": {
+          "inconclusive": 6
+        }
+      },
+      {
+        "family": "fade_transfer",
+        "cases": 0,
+        "visibleDeliveries": 0,
+        "dialogues": 0,
+        "worlds": 0,
+        "auxiliaryOutcomes": {}
+      }
+    ],
+    "allClosedSeededByFamily": [
+      {
+        "family": "diagnose_elicit",
+        "cases": 61,
+        "visibleDeliveries": 58,
+        "dialogues": 23,
+        "worlds": 4,
+        "auxiliaryOutcomes": {
+          "inconclusive": 60,
+          "success": 1
+        }
+      },
+      {
+        "family": "minimal_support",
+        "cases": 24,
+        "visibleDeliveries": 24,
+        "dialogues": 15,
+        "worlds": 4,
+        "auxiliaryOutcomes": {
+          "failure": 3,
+          "inconclusive": 21
+        }
+      },
+      {
+        "family": "explain_model",
+        "cases": 21,
+        "visibleDeliveries": 21,
+        "dialogues": 15,
+        "worlds": 4,
+        "auxiliaryOutcomes": {
+          "inconclusive": 21
+        }
+      },
+      {
+        "family": "request_self_explanation",
+        "cases": 23,
+        "visibleDeliveries": 23,
+        "dialogues": 16,
+        "worlds": 4,
+        "auxiliaryOutcomes": {
+          "inconclusive": 22,
+          "success": 1
+        }
+      },
+      {
+        "family": "fade_transfer",
+        "cases": 1,
+        "visibleDeliveries": 1,
+        "dialogues": 1,
+        "worlds": 1,
+        "auxiliaryOutcomes": {
+          "failure": 1
+        }
+      }
+    ],
+    "matchedByEligibleSet": [
+      {
+        "eligibleSet": "diagnose_elicit",
+        "cases": 16,
+        "assignments": {
+          "diagnose_elicit": 16
+        },
+        "worlds": [
+          "world_022_foxtrot_jukebox",
+          "world_026_skyway_bakery",
+          "world_028_larkspur_fridge",
+          "world_029_riverside_clinic"
+        ]
+      },
+      {
+        "eligibleSet": "explain_model+minimal_support+request_self_explanation",
+        "cases": 14,
+        "assignments": {
+          "explain_model": 3,
+          "minimal_support": 5,
+          "request_self_explanation": 6
+        },
+        "worlds": [
+          "world_022_foxtrot_jukebox",
+          "world_026_skyway_bakery",
+          "world_028_larkspur_fridge",
+          "world_029_riverside_clinic"
+        ]
+      }
+    ],
+    "allClosedSeededByEligibleSet": [
+      {
+        "eligibleSet": "diagnose_elicit",
+        "cases": 61,
+        "assignments": {
+          "diagnose_elicit": 61
+        },
+        "worlds": [
+          "world_022_foxtrot_jukebox",
+          "world_026_skyway_bakery",
+          "world_028_larkspur_fridge",
+          "world_029_riverside_clinic"
+        ]
+      },
+      {
+        "eligibleSet": "explain_model+minimal_support+request_self_explanation",
+        "cases": 68,
+        "assignments": {
+          "explain_model": 21,
+          "minimal_support": 24,
+          "request_self_explanation": 23
+        },
+        "worlds": [
+          "world_022_foxtrot_jukebox",
+          "world_026_skyway_bakery",
+          "world_028_larkspur_fridge",
+          "world_029_riverside_clinic"
+        ]
+      },
+      {
+        "eligibleSet": "fade_transfer",
+        "cases": 1,
+        "assignments": {
+          "fade_transfer": 1
+        },
+        "worlds": [
+          "world_022_foxtrot_jukebox"
+        ]
+      }
+    ],
+    "matchedByWorld": [
+      {
+        "worldId": "world_022_foxtrot_jukebox",
+        "cases": 8,
+        "dialogues": 3,
+        "families": [
+          "diagnose_elicit",
+          "explain_model",
+          "minimal_support",
+          "request_self_explanation"
+        ]
+      },
+      {
+        "worldId": "world_026_skyway_bakery",
+        "cases": 9,
+        "dialogues": 4,
+        "families": [
+          "diagnose_elicit",
+          "explain_model",
+          "minimal_support"
+        ]
+      },
+      {
+        "worldId": "world_028_larkspur_fridge",
+        "cases": 7,
+        "dialogues": 2,
+        "families": [
+          "diagnose_elicit",
+          "minimal_support",
+          "request_self_explanation"
+        ]
+      },
+      {
+        "worldId": "world_029_riverside_clinic",
+        "cases": 6,
+        "dialogues": 4,
+        "families": [
+          "diagnose_elicit",
+          "minimal_support",
+          "request_self_explanation"
+        ]
+      }
+    ]
+  },
+  "gates": [
+    {
+      "section": "execution",
+      "id": "minimumCompleteDialogues",
+      "expected": 20,
+      "observed": 22,
+      "status": "pass",
+      "note": "2 technical failures remain preserved."
+    },
+    {
+      "section": "execution",
+      "id": "minimumCompleteDialoguesPerCollectionWorld",
+      "expected": 4,
+      "observed": {
+        "world_022_foxtrot_jukebox": 4,
+        "world_026_skyway_bakery": 6,
+        "world_028_larkspur_fridge": 6,
+        "world_029_riverside_clinic": 6
+      },
+      "status": "pass",
+      "note": "Evaluated on the four registered collection worlds."
+    },
+    {
+      "section": "execution",
+      "id": "allAttemptAccountingBalances",
+      "expected": true,
+      "observed": {
+        "balanced": false,
+        "unbalancedJobs": [
+          "aocp1_foxtrot_jukebox_r01"
+        ]
+      },
+      "status": "fail",
+      "note": "The interrupted first unit retains one unresolved child reservation."
+    },
+    {
+      "section": "execution",
+      "id": "noUnregisteredOrDuplicateJob",
+      "expected": true,
+      "observed": {
+        "unregisteredJobs": [],
+        "duplicateJobs": [],
+        "missingJobs": []
+      },
+      "status": "pass",
+      "note": "Compared with the 24 registered job identities."
+    },
+    {
+      "section": "exchangeabilityAndCoverage",
+      "id": "minimumConditionMatchedSeededClosedAssignments",
+      "expected": 48,
+      "observed": 30,
+      "status": "fail",
+      "note": "128 closed decisions did not match the registered condition."
+    },
+    {
+      "section": "exchangeabilityAndCoverage",
+      "id": "minimumContributingDialogues",
+      "expected": 16,
+      "observed": 13,
+      "status": "fail",
+      "note": "A dialogue contributes when at least one seeded closed assignment matches the condition."
+    },
+    {
+      "section": "exchangeabilityAndCoverage",
+      "id": "minimumContributingCollectionWorlds",
+      "expected": 4,
+      "observed": 4,
+      "status": "pass",
+      "note": "World identities remain separate."
+    },
+    {
+      "section": "exchangeabilityAndCoverage",
+      "id": "everyMoveFamilyAssignedAndDelivered",
+      "expected": true,
+      "observed": {
+        "diagnose_elicit": 16,
+        "minimal_support": 5,
+        "explain_model": 3,
+        "request_self_explanation": 6,
+        "fade_transfer": 0
+      },
+      "status": "fail",
+      "note": "Only condition-matched, seeded, visibly delivered cases count."
+    },
+    {
+      "section": "exchangeabilityAndCoverage",
+      "id": "minimumDeliveredCasesPerMoveFamily",
+      "expected": 6,
+      "observed": {
+        "diagnose_elicit": 16,
+        "minimal_support": 5,
+        "explain_model": 3,
+        "request_self_explanation": 6,
+        "fade_transfer": 0
+      },
+      "status": "fail",
+      "note": "Minimum observed family yield: 0."
+    },
+    {
+      "section": "exchangeabilityAndCoverage",
+      "id": "minimumIndependentDialoguesPerMoveFamily",
+      "expected": 4,
+      "observed": {
+        "diagnose_elicit": 11,
+        "minimal_support": 5,
+        "explain_model": 3,
+        "request_self_explanation": 5,
+        "fade_transfer": 0
+      },
+      "status": "fail",
+      "note": "Minimum observed dialogue support: 0."
+    },
+    {
+      "section": "exchangeabilityAndCoverage",
+      "id": "minimumCollectionWorldsPerMoveFamily",
+      "expected": 3,
+      "observed": {
+        "diagnose_elicit": 4,
+        "minimal_support": 4,
+        "explain_model": 2,
+        "request_self_explanation": 3,
+        "fade_transfer": 0
+      },
+      "status": "fail",
+      "note": "Minimum observed world support: 0."
+    },
+    {
+      "section": "exchangeabilityAndCoverage",
+      "id": "minimumVisibleDeliveryRateAmongConditionMatchedAssignments",
+      "expected": 0.9,
+      "observed": 1,
+      "status": "pass",
+      "note": "30/30 condition-matched assignments were visibly delivered."
+    },
+    {
+      "section": "review",
+      "id": "bothOriginalCoderSubmissionsComplete",
+      "expected": true,
+      "observed": null,
+      "status": "pending",
+      "note": "The zero-call extraction does not perform human coding."
+    },
+    {
+      "section": "review",
+      "id": "minimumJointDeliveryAndOutcomeExactAgreement",
+      "expected": 0.8,
+      "observed": null,
+      "status": "pending",
+      "note": "No coder submissions exist."
+    },
+    {
+      "section": "review",
+      "id": "maximumMeasurementIndeterminateRate",
+      "expected": 0.2,
+      "observed": null,
+      "status": "pending",
+      "note": "No coder comparison exists."
+    },
+    {
+      "section": "review",
+      "id": "minimumFinalUsableBinaryRecords",
+      "expected": 30,
+      "observed": {
+        "current": 0,
+        "maximumPossibleFromFrozenAuxiliaryOutcomes": 0
+      },
+      "status": "fail",
+      "note": "Binary admission requires human consensus to agree with a saved binary auxiliary outcome."
+    },
+    {
+      "section": "review",
+      "id": "minimumFinalUsableBinaryRecordsPerMoveFamily",
+      "expected": 4,
+      "observed": {
+        "current": {
+          "diagnose_elicit": 0,
+          "minimal_support": 0,
+          "explain_model": 0,
+          "request_self_explanation": 0,
+          "fade_transfer": 0
+        },
+        "maximumPossible": {
+          "diagnose_elicit": 0,
+          "minimal_support": 0,
+          "explain_model": 0,
+          "request_self_explanation": 0,
+          "fade_transfer": 0
+        }
+      },
+      "status": "fail",
+      "note": "The frozen condition-matched auxiliary outcomes contain no binary labels."
+    }
+  ],
+  "failedGates": [
+    "execution.allAttemptAccountingBalances",
+    "exchangeabilityAndCoverage.minimumConditionMatchedSeededClosedAssignments",
+    "exchangeabilityAndCoverage.minimumContributingDialogues",
+    "exchangeabilityAndCoverage.everyMoveFamilyAssignedAndDelivered",
+    "exchangeabilityAndCoverage.minimumDeliveredCasesPerMoveFamily",
+    "exchangeabilityAndCoverage.minimumIndependentDialoguesPerMoveFamily",
+    "exchangeabilityAndCoverage.minimumCollectionWorldsPerMoveFamily",
+    "review.minimumFinalUsableBinaryRecords",
+    "review.minimumFinalUsableBinaryRecordsPerMoveFamily"
+  ],
+  "pendingGates": [
+    "review.bothOriginalCoderSubmissionsComplete",
+    "review.minimumJointDeliveryAndOutcomeExactAgreement",
+    "review.maximumMeasurementIndeterminateRate"
+  ],
+  "implications": [
+    "The prospective trace, assignment, join, and delivery plumbing is operational and auditable.",
+    "The registered stalled-state condition yielded too few exchangeable closed assignments and too few contributing dialogues.",
+    "Condition-matched family coverage is not adequate: fade_transfer is absent, explain_model is sparse, and family support is uneven across worlds.",
+    "Every condition-matched auxiliary outcome is inconclusive, so the frozen corpus cannot produce a binary memory table even under perfect coder agreement.",
+    "This feasibility failure does not estimate learning, transfer, controller benefit, or relative family effectiveness."
+  ],
+  "provenance": {
+    "designPath": "config/tutor-stub-action-outcome-collection-pilot-design.v1.json",
+    "generationReportSchema": "machinespirits.tutor-stub.action-outcome-collection-generation-report.v1",
+    "traces": [
+      {
+        "jobId": "aocp1_foxtrot_jukebox_r01",
+        "runId": "2026-09-01T14-12-31-207Z",
+        "worldId": "world_022_foxtrot_jukebox",
+        "sha256": "c23db88c5c1c9e5398848fd81ddc8e7bf827e4c07eca529db035fd4084082ffe",
+        "bytes": 3784014,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_foxtrot_jukebox_r03",
+        "runId": "2026-09-01T20-56-13-244Z",
+        "worldId": "world_022_foxtrot_jukebox",
+        "sha256": "47b3bb6f52a7b266744f8f5416bdc4171161b2b4761321747c4f4aa13c211e16",
+        "bytes": 6025075,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_foxtrot_jukebox_r04",
+        "runId": "2026-09-01T21-00-02-279Z",
+        "worldId": "world_022_foxtrot_jukebox",
+        "sha256": "2d3f9a81455f6815544ab296d843c0a78bf4f2b67a7bd535e81cfb6b833747d1",
+        "bytes": 6479254,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_foxtrot_jukebox_r05",
+        "runId": "2026-09-01T21-06-06-918Z",
+        "worldId": "world_022_foxtrot_jukebox",
+        "sha256": "fe939fa4be4c2732152581171b0daa4adf71e5042ed5f94c31cf803c2f70b5b2",
+        "bytes": 6906372,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_foxtrot_jukebox_r06",
+        "runId": "2026-09-01T21-13-19-426Z",
+        "worldId": "world_022_foxtrot_jukebox",
+        "sha256": "7b7565c65c97db4fa423eeec42cc409b5aa9335f03852d5511c8fc6e9b48e10a",
+        "bytes": 6404382,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_larkspur_fridge_r01",
+        "runId": "2026-09-01T21-50-56-703Z",
+        "worldId": "world_028_larkspur_fridge",
+        "sha256": "eb53db9409acdbfae6aafe16d8c6ab80c43a720fc2676eaece0374d85ba85b85",
+        "bytes": 6011406,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_larkspur_fridge_r02",
+        "runId": "2026-09-01T21-54-46-674Z",
+        "worldId": "world_028_larkspur_fridge",
+        "sha256": "554975588a39ebf15e4d28cb177b71175c0219132a32556d97b7684245b7c496",
+        "bytes": 6199201,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_larkspur_fridge_r03",
+        "runId": "2026-09-01T21-58-27-519Z",
+        "worldId": "world_028_larkspur_fridge",
+        "sha256": "ae0f901be802f6decc466dfb70044243df31d6056e41490980db02ad49223d47",
+        "bytes": 6876789,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_larkspur_fridge_r04",
+        "runId": "2026-09-01T22-03-28-566Z",
+        "worldId": "world_028_larkspur_fridge",
+        "sha256": "bbbeb94feba184ebaa7c7f581cf96758726a87895cc604e2d0b9d7f6680796b1",
+        "bytes": 6932469,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_larkspur_fridge_r05",
+        "runId": "2026-09-01T22-09-38-060Z",
+        "worldId": "world_028_larkspur_fridge",
+        "sha256": "e428f6f892cd5318ad83bf0190c656179a4ea42648d3106e90c27df65d626872",
+        "bytes": 6845170,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_larkspur_fridge_r06",
+        "runId": "2026-09-01T22-15-37-160Z",
+        "worldId": "world_028_larkspur_fridge",
+        "sha256": "437ea43f3ce054d7d314233ea3fd2797a8f4f593d9c8327a6c25f6ff58a391c3",
+        "bytes": 6779137,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_riverside_clinic_r01",
+        "runId": "2026-09-01T22-22-47-585Z",
+        "worldId": "world_029_riverside_clinic",
+        "sha256": "46202266056b6b8c2324c4c5cbda32c5995905264f05a692cc0b7e5501377f39",
+        "bytes": 6739289,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_riverside_clinic_r02",
+        "runId": "2026-09-01T22-29-08-880Z",
+        "worldId": "world_029_riverside_clinic",
+        "sha256": "4d9e503508a4d52efe4abb92e55e0ac9f7c3b390fc759f1c0c9ec9936e280545",
+        "bytes": 6597201,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_riverside_clinic_r03",
+        "runId": "2026-09-01T22-35-54-339Z",
+        "worldId": "world_029_riverside_clinic",
+        "sha256": "d9d9ca5b161cc967159e23dce80fb80337157dbc9832e41a083eaf708293496b",
+        "bytes": 6204367,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_riverside_clinic_r04",
+        "runId": "2026-09-01T22-40-45-020Z",
+        "worldId": "world_029_riverside_clinic",
+        "sha256": "733757e69899ea5d5be356ee9c77d8c5ddbb99b7c1d142841bc312f3fa42050f",
+        "bytes": 6117903,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_riverside_clinic_r05",
+        "runId": "2026-09-01T22-45-06-661Z",
+        "worldId": "world_029_riverside_clinic",
+        "sha256": "5e66a881f148d26dcfe3e544cf92200c4cf91573fa608ee55116efa19f47c3aa",
+        "bytes": 6065411,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_riverside_clinic_r06",
+        "runId": "2026-09-01T22-49-01-482Z",
+        "worldId": "world_029_riverside_clinic",
+        "sha256": "c87fe456f8efe3d4a5261667e295310e3ae023431dee8aa1460603c32e2d17e4",
+        "bytes": 6535225,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_skyway_bakery_r01",
+        "runId": "2026-09-01T21-20-24-035Z",
+        "worldId": "world_026_skyway_bakery",
+        "sha256": "5401d83845b4f44d74d2a5ec73e13a70f6e57c4a8064a6ba8e676a31689da149",
+        "bytes": 6104020,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_skyway_bakery_r02",
+        "runId": "2026-09-01T21-24-04-725Z",
+        "worldId": "world_026_skyway_bakery",
+        "sha256": "5934a79853473911649e5ac78c652fa03c089677230709e50c10090942267f1d",
+        "bytes": 6818449,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_skyway_bakery_r03",
+        "runId": "2026-09-01T21-32-17-039Z",
+        "worldId": "world_026_skyway_bakery",
+        "sha256": "32bad23ad00d84a62aa126241cd1f461501c70b9202e1fe2d4f5ace30dc6aa52",
+        "bytes": 6414578,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_skyway_bakery_r04",
+        "runId": "2026-09-01T21-37-54-588Z",
+        "worldId": "world_026_skyway_bakery",
+        "sha256": "d027d0084fbd8fbd175a7a3f2909ea0cb5133e1cdea5223ab7d39831cc0c9c63",
+        "bytes": 6186921,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_skyway_bakery_r05",
+        "runId": "2026-09-01T21-41-27-993Z",
+        "worldId": "world_026_skyway_bakery",
+        "sha256": "724c474c59584cd0b5fd3125c93d561a956959ab4ef49857ec9290558d446f7c",
+        "bytes": 6496293,
+        "errors": []
+      },
+      {
+        "jobId": "aocp1_skyway_bakery_r06",
+        "runId": "2026-09-01T21-45-55-445Z",
+        "worldId": "world_026_skyway_bakery",
+        "sha256": "cb48f6ec822263557b83f319b5d41229d7291b5f3164bb45b8cb237a77cad24b",
+        "bytes": 6307521,
+        "errors": []
+      }
+    ]
+  }
+}
