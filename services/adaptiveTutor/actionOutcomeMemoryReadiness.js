@@ -3,7 +3,9 @@ import {
   planActionMemoryDemotions,
   scrambleActionOutcomeMemory,
 } from './actionOutcomeMemory.js';
+import { canonicalActionOutcomeEligibleSet } from './actionOutcomeComparability.js';
 import { ADAPTATION_ACTION_BY_TYPE, selectPedagogicalAction } from './actionPolicy.js';
+import { ACTION_OUTCOME_MEASUREMENT_POLICIES } from './actionOutcomeReviewPacket.js';
 import { tutorStubMoveFamilyForAction } from './tutorStubActionAdapter.js';
 import { tutorStubTypedActionDecisionFromTurn } from '../tutorStubTypedActionRestoration.js';
 import { replayDeterministicChoice } from '../deterministicExperimentSampler.js';
@@ -119,6 +121,8 @@ function reviewIndex(reviews, cutoff) {
       !nonEmpty(review.source) ||
       !Number.isFinite(timestamp(review.recordedAt)) ||
       !OUTCOMES.has(review.outcome) ||
+      (review.measurementPolicy &&
+        !Object.values(ACTION_OUTCOME_MEASUREMENT_POLICIES).includes(review.measurementPolicy)) ||
       !nonEmpty(review.deliveredActionType) ||
       typeof review.tutorText !== 'string' ||
       typeof review.learnerText !== 'string'
@@ -213,7 +217,7 @@ function nearlyEqual(left, right) {
 function prospectiveAssignmentForDecision(decision) {
   const provenance = decision?.decision_provenance || {};
   const audit = provenance.prospective_assignment;
-  if (!audit) return { status: 'not_recorded', audit: null };
+  if (!audit) return { status: 'not_recorded', audit: null, eligibleSetId: null };
   const selectedActionType = decision?.chosen_action?.action_type;
   if (!selectedActionType || audit.selected_action_type !== selectedActionType) {
     return { reason: 'invalid_prospective_assignment' };
@@ -227,7 +231,13 @@ function prospectiveAssignmentForDecision(decision) {
     ) {
       return { reason: 'invalid_prospective_assignment' };
     }
-    return { status: 'policy_selected', audit: clone(audit) };
+    const eligibleSet = canonicalActionOutcomeEligibleSet(
+      (audit.eligible_move_families || []).map((row) => row.family),
+    );
+    if (audit.eligible_set_id && audit.eligible_set_id !== eligibleSet.id) {
+      return { reason: 'invalid_prospective_assignment' };
+    }
+    return { status: 'policy_selected', audit: clone(audit), eligibleSetId: eligibleSet.id };
   }
   if (audit.disposition === 'mandatory_policy_authority_preserved') {
     if (
@@ -240,7 +250,38 @@ function prospectiveAssignmentForDecision(decision) {
     ) {
       return { reason: 'invalid_prospective_assignment' };
     }
-    return { status: 'mandatory_policy_authority_preserved', audit: clone(audit) };
+    const eligibleSet = canonicalActionOutcomeEligibleSet(
+      (audit.eligible_move_families || []).map((row) => row.family),
+    );
+    if (audit.eligible_set_id && audit.eligible_set_id !== eligibleSet.id) {
+      return { reason: 'invalid_prospective_assignment' };
+    }
+    return {
+      status: 'mandatory_policy_authority_preserved',
+      audit: clone(audit),
+      eligibleSetId: eligibleSet.id,
+    };
+  }
+  if (audit.disposition === 'insufficient_family_overlap_policy_preserved') {
+    const familyRows = audit.eligible_move_families || [];
+    const eligibleSet = canonicalActionOutcomeEligibleSet(familyRows.map((row) => row.family));
+    if (
+      audit.mode !== 'uniform_family_eligible' ||
+      audit.baseline_action_type !== selectedActionType ||
+      decision.selection_probability !== 1 ||
+      provenance.propensity?.selected_action_probability !== 1 ||
+      provenance.propensity?.selected_family_probability !== 1 ||
+      eligibleSet.familyCount !== 1 ||
+      audit.eligible_set_id !== eligibleSet.id ||
+      audit.draw !== null
+    ) {
+      return { reason: 'invalid_prospective_assignment' };
+    }
+    return {
+      status: 'insufficient_family_overlap_policy_preserved',
+      audit: clone(audit),
+      eligibleSetId: eligibleSet.id,
+    };
   }
   if (audit.disposition !== 'seeded_uniform_family_assignment' || audit.mode !== 'uniform_family_eligible') {
     return { reason: 'invalid_prospective_assignment' };
@@ -248,6 +289,7 @@ function prospectiveAssignmentForDecision(decision) {
   const candidateTypes = (decision.full_candidate_set || []).map((candidate) => candidate.action_type);
   const auditedTypes = audit.eligible_action_types || [];
   const familyRows = audit.eligible_move_families || [];
+  const eligibleSet = canonicalActionOutcomeEligibleSet(familyRows.map((row) => row.family));
   const flattenedTypes = familyRows.flatMap((row) => row.action_types || []);
   const selectedFamily = tutorStubMoveFamilyForAction(selectedActionType);
   const familyRow = familyRows.find((row) => row.family === selectedFamily);
@@ -267,6 +309,8 @@ function prospectiveAssignmentForDecision(decision) {
     ) ||
     !familyRow?.action_types?.includes(selectedActionType) ||
     audit.selected_move_family !== selectedFamily ||
+    (audit.eligible_set_id && audit.eligible_set_id !== eligibleSet.id) ||
+    (audit.comparative_family_count != null && audit.comparative_family_count !== eligibleSet.familyCount) ||
     !familyReplay ||
     !actionReplay ||
     audit.family_draw.selectedValue !== selectedFamily ||
@@ -279,7 +323,13 @@ function prospectiveAssignmentForDecision(decision) {
   ) {
     return { reason: 'invalid_prospective_assignment' };
   }
-  return { status: 'seeded_uniform_family_assignment', audit: clone(audit) };
+  return {
+    status: eligibleSet.comparative
+      ? 'seeded_uniform_family_assignment'
+      : 'seeded_uniform_family_assignment_legacy_singleton',
+    audit: clone(audit),
+    eligibleSetId: eligibleSet.id,
+  };
 }
 
 export function extractActionOutcomeMemoryEvidence({
@@ -403,6 +453,18 @@ export function extractActionOutcomeMemoryEvidence({
         review.deliveredActionType !== joined.action.action_type
       ) {
         measurementStatus = 'review_join_mismatch';
+      } else if (review.measurementPolicy === ACTION_OUTCOME_MEASUREMENT_POLICIES.HUMAN_CONSENSUS_AUXILIARY_VETO_V2) {
+        const oppositeBinary =
+          ['success', 'failure'].includes(review.outcome) &&
+          ['success', 'failure'].includes(joined.closed.outcome) &&
+          review.outcome !== joined.closed.outcome;
+        if (!joined.auxiliaryDeliveryVisible || oppositeBinary) {
+          measurementStatus = 'auxiliary_human_disagreement';
+        } else {
+          outcome = review.outcome;
+          measurementStatus =
+            review.outcome === joined.closed.outcome ? 'human_confirmed' : 'human_confirmed_auxiliary_nonconfirmatory';
+        }
       } else if (review.outcome !== joined.closed.outcome || !joined.auxiliaryDeliveryVisible) {
         measurementStatus = 'auxiliary_human_disagreement';
       } else {
@@ -417,6 +479,7 @@ export function extractActionOutcomeMemoryEvidence({
       worldId,
       conditionId: conditionResult.condition.id,
       contextKey,
+      eligibleSetId: assignment.eligibleSetId,
       actionType: joined.action.action_type,
       supportLevel: joined.action.support_level,
       decisionTurn: decisionEvent.turn,
@@ -438,6 +501,7 @@ export function extractActionOutcomeMemoryEvidence({
       worldId,
       contextKey,
       conditionId: conditionResult.condition.id,
+      eligibleSetId: assignment.eligibleSetId,
       decisionTurn: decisionEvent.turn,
       observationTurn: matchingOutcomes[0].turn,
       observedAt: matchingOutcomes[0].ts,
@@ -619,6 +683,9 @@ export function replayActionOutcomeMemoryDecisions({
         dialogueId: index.runId,
         asOf: decisionAsOf,
         supportLevel: decision.chosen_action?.support_level,
+        eligibleSetId: canonicalActionOutcomeEligibleSet(
+          baseline.candidateActions.map((candidate) => tutorStubMoveFamilyForAction(candidate.action_type)),
+        ).id,
       };
       const arms = {};
       for (const [name, memory] of [
@@ -659,6 +726,7 @@ export function replayActionOutcomeMemoryDecisions({
         conditionId: conditionResult.condition.id,
         worldId: context.worldId,
         contextKey: context.contextKey,
+        eligibleSetId: context.eligibleSetId,
         baselineActionType: baseline.selectedAction.action_type,
         disabledActionType: baseline.selectedAction.action_type,
         arms,

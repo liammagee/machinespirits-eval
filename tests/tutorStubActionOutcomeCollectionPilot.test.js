@@ -12,6 +12,10 @@ import {
   tutorStubActionOutcomeCollectionRouteTable,
 } from '../services/tutorStubActionOutcomeCollectionPilot.js';
 import {
+  loadTutorStubActionOutcomeProspectiveRedesign,
+  runTutorStubActionOutcomeProspectiveRedesignPreflight,
+} from '../services/tutorStubActionOutcomeProspectiveRedesign.js';
+import {
   executeTutorStubActionOutcomeCollection,
   extractTutorStubActionOutcomeCollectionRow,
   loadTutorStubActionOutcomeCollectionRecovery,
@@ -26,6 +30,23 @@ import {
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN_PATH = 'config/tutor-stub-action-outcome-collection-pilot-design.v1.json';
 const load = () => loadTutorStubActionOutcomeCollectionDesign({ root: REPO_ROOT, designPath: DESIGN_PATH });
+
+test('the prospective redesign preflight fixes the comparison seam without granting model calls', () => {
+  const loaded = loadTutorStubActionOutcomeProspectiveRedesign({ root: REPO_ROOT });
+  const result = runTutorStubActionOutcomeProspectiveRedesignPreflight({ loaded });
+  assert.equal(result.status, 'passed_zero_call');
+  assert.equal(result.modelCalls, 0);
+  assert.equal(result.productionWrites, 0);
+  assert.deepEqual(result.supportedEligibleSet.families, [
+    'explain_model',
+    'minimal_support',
+    'request_self_explanation',
+  ]);
+  assert.deepEqual(
+    result.auditOnlyEligibleSets.map((row) => row.families),
+    [['diagnose_elicit'], ['fade_transfer']],
+  );
+});
 
 function optionValue(args, option) {
   const index = args.indexOf(option);

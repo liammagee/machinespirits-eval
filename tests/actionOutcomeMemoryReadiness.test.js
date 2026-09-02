@@ -12,6 +12,7 @@ import {
   selectPedagogicalAction,
 } from '../services/adaptiveTutor/actionPolicy.js';
 import { buildTutorStubTypedActionDecision } from '../services/adaptiveTutor/tutorStubActionAdapter.js';
+import { ACTION_OUTCOME_MEASUREMENT_POLICIES } from '../services/adaptiveTutor/actionOutcomeReviewPacket.js';
 import { assignTutorStubTypedAction } from '../services/tutorStubTypedActionAssignment.js';
 import {
   extractActionOutcomeMemoryEvidence,
@@ -251,12 +252,30 @@ test('extracts only a complete delivered next-turn join and preserves source pro
   assert.equal(result.records.length, 1);
   assert.equal(result.records[0].outcome, 'failure');
   assert.equal(result.records[0].conditionId, 'high-stagnation');
+  assert.match(result.records[0].eligibleSetId, /^action-outcome-eligible-set\.v1:/u);
   assert.equal(result.rows[0].measurementStatus, 'human_confirmed');
   assert.deepEqual(result.rows[0].sourceSequence, { decision: 2, outcome: 4 });
   assert.equal(result.reviewCandidates[0].tutorText, fixture.review.tutorText);
   assert.equal(result.reviewCandidates[0].learnerText, fixture.review.learnerText);
   assert.equal(result.reviewCandidates[0].auxiliaryOutcome, 'failure');
   assert.equal(result.rows[0].assignmentStatus, 'seeded_uniform_family_assignment');
+});
+
+test('prospective v2 human consensus survives a nonconfirmatory auxiliary outcome', () => {
+  const fixture = traceFixture({ outcome: 'inconclusive' });
+  fixture.review.outcome = 'success';
+  fixture.review.measurementPolicy = ACTION_OUTCOME_MEASUREMENT_POLICIES.HUMAN_CONSENSUS_AUXILIARY_VETO_V2;
+  const result = extract(fixture);
+  assert.equal(result.records[0].outcome, 'success');
+  assert.equal(result.rows[0].measurementStatus, 'human_confirmed_auxiliary_nonconfirmatory');
+
+  fixture.events[3].outcome.outcome = 'failure';
+  fixture.events[3].outcome.closed_record.outcome = 'failure';
+  fixture.events[4].turnRecord.typedActionPriorOutcome.outcome = 'failure';
+  fixture.events[4].turnRecord.typedActionPriorOutcome.closed_record.outcome = 'failure';
+  const opposed = extract(fixture);
+  assert.equal(opposed.records[0].outcome, 'measurement_indeterminate');
+  assert.equal(opposed.rows[0].measurementStatus, 'auxiliary_human_disagreement');
 });
 
 test('prospective family assignment is replayed and corrupt assignment provenance is excluded', () => {

@@ -15,6 +15,7 @@ import { classificationFixture, dagModelFixture, tutorLearnerDagFixture } from '
 
 const NOW = '2026-08-31T12:00:00.000Z';
 const DAY = 24 * 60 * 60 * 1000;
+const ELIGIBLE_SET_ID = 'action-outcome-eligible-set.v1:explain_model+minimal_support+request_self_explanation';
 
 function record(id, overrides = {}) {
   return {
@@ -24,6 +25,7 @@ function record(id, overrides = {}) {
     worldId: 'world-a',
     conditionId: 'stalled',
     contextKey: 'observer-v1|task-v1|support-1',
+    eligibleSetId: ELIGIBLE_SET_ID,
     actionType: 'request_evidence',
     decisionTurn: 2,
     observationTurn: 3,
@@ -51,6 +53,7 @@ function context(overrides = {}) {
     dialogueId: 'evaluation-dialogue',
     asOf: NOW,
     supportLevel: 1,
+    eligibleSetId: ELIGIBLE_SET_ID,
     ...overrides,
   };
 }
@@ -68,7 +71,11 @@ function policy(overrides = {}) {
   };
 }
 
-const CANDIDATES = [{ action_type: 'request_evidence' }, { action_type: 'explain_principle' }];
+const CANDIDATES = [
+  { action_type: 'request_evidence' },
+  { action_type: 'explain_principle' },
+  { action_type: 'minimal_hint' },
+];
 
 test('memory counts only closed, delivered, next-public-turn observations before the cutoff', () => {
   const rows = [
@@ -104,7 +111,12 @@ test('supported low rates demote every candidate in the affected move family', (
   const plan = planActionMemoryDemotions(
     snapshot,
     context(),
-    [{ action_type: 'request_evidence' }, { action_type: 'ask_strategy_choice' }, { action_type: 'explain_principle' }],
+    [
+      { action_type: 'request_evidence' },
+      { action_type: 'ask_strategy_choice' },
+      { action_type: 'explain_principle' },
+      { action_type: 'minimal_hint' },
+    ],
     policy(),
   );
 
@@ -303,6 +315,25 @@ test('irrelevant conditions, incompatible support, and unseen worlds abstain wit
     policy({ scope: 'held_out_world', minWorlds: 2 }),
   );
   assert.equal(pooled.families.find((row) => row.family === 'request_self_explanation').reason, 'low_world_support');
+});
+
+test('controller decisions require genuine and exact eligible-family overlap', () => {
+  const snapshot = memory([record('a'), record('b')]);
+  const singleton = planActionMemoryDemotions(
+    snapshot,
+    context({ eligibleSetId: 'action-outcome-eligible-set.v1:request_self_explanation' }),
+    [{ action_type: 'request_evidence' }],
+    policy(),
+  );
+  assert.equal(singleton.reason, 'insufficient_family_overlap');
+  const mismatched = planActionMemoryDemotions(
+    snapshot,
+    context(),
+    [{ action_type: 'request_evidence' }, { action_type: 'minimal_hint' }],
+    policy(),
+  );
+  assert.equal(mismatched.reason, 'candidate_eligible_set_mismatch');
+  assert.deepEqual(mismatched.penalties, {});
 });
 
 test('a recent observation cannot launder old observations into support', () => {

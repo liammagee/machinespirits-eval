@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-01
-branch: codex/action-outcome-quality-audit
+branch: codex/action-outcome-prospective-redesign
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -22,7 +22,11 @@ links:
     - docs/action-outcome-human-review.md
     - docs/action-outcome-prospective-collection.md
     - config/tutor-stub-action-outcome-collection-pilot-design.v1.json
+    - config/tutor-stub-action-outcome-prospective-redesign.v1.json
+    - notes/2026-09-01-action-outcome-prospective-redesign.md
     - services/tutorStubActionOutcomeCollectionPilot.js
+    - services/tutorStubActionOutcomeProspectiveRedesign.js
+    - scripts/check-tutor-stub-action-outcome-prospective-redesign.js
     - scripts/run-tutor-stub-action-outcome-collection-pilot.js
     - notes/2026-09-01-tutor-stub-action-outcome-collection-pilot-go.md
   exports:
@@ -38,6 +42,7 @@ links:
     - 906
     - 908
     - 913
+    - 932
   items:
     - layered-task-session-adaptation
 tags:
@@ -103,6 +108,23 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-01: Implemented the zero-call prospective redesign after the first
+  collection pilot failed feasibility. Every assignment now carries a canonical
+  exact eligible-family-set id. Seeded family assignment requires at least two
+  simultaneously eligible families; singleton and mandatory choices remain
+  audit-only. Memory cells and lookups include that exact set, and the controller
+  abstains on a singleton or candidate-set mismatch. The first supported
+  comparison is therefore the three-family support phase; `diagnose_elicit` and
+  `fade_transfer` remain outside comparative memory until genuine alternatives
+  exist. Added a prospective human-consensus measurement policy: two independent
+  coders remain semantic authority, an opposite binary auxiliary label or hidden
+  delivery forces indeterminacy, and an inconclusive auxiliary label is retained
+  as nonconfirmatory instead of erasing exact human consensus. Added the saved
+  redesign steps, a versioned zero-call design contract, preflight, and focused
+  fixtures. The sealed pilot remains development-only and is neither recoded nor
+  topped up. No new paid study, launch authority, held-out evaluation, production
+  write, or model call is included.
 
 - 2026-09-01: Completed the registered zero-call extraction and quality audit
   over the sealed collection and recovery chain. All 23 available trace files
