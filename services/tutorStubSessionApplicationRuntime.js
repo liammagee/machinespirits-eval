@@ -205,6 +205,13 @@ export function createTutorStubSessionApplicationRuntime({
       directorGuidance: resumedDialogue.directorGuidance,
       learnerDag: resumedDialogue.learnerDag,
       typedActions: resumedDialogue.typedActions,
+      pendingAutomatedLearnerTurn: resumedDialogue.pendingAutomatedLearnerTurn
+        ? {
+            turn: resumedDialogue.pendingAutomatedLearnerTurn.turn,
+            sourceRunId: resumedDialogue.pendingAutomatedLearnerTurn.sourceRunId,
+            sourceSequence: resumedDialogue.pendingAutomatedLearnerTurn.sourceSequence,
+          }
+        : null,
       dialogueClosure: resumedDialogue.dialogueClosure,
       warnings: resumedDialogue.warnings,
     });

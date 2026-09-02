@@ -37,6 +37,7 @@ export function createTutorStubPromptTransport(dependencies) {
     effectiveTemperatureForModel,
     getInterimState,
     isCliProvider,
+    markTutorStubMeteredModelCallDispatched = () => {},
     providerSupportsStreaming,
     recoverTutorStubDuplicateInstructionLines,
     renderTutorStubStreamLabel,
@@ -310,7 +311,8 @@ export function createTutorStubPromptTransport(dependencies) {
       return response;
     }
     reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });
-    reserveTutorStubMeteredModelCall({ trace, role, turn });
+    const meteredReservation = reserveTutorStubMeteredModelCall({ trace, role, turn });
+    markTutorStubMeteredModelCallDispatched({ trace, reservation: meteredReservation, role, turn });
     try {
       let response;
       if (isCliProvider(resolved.provider)) {

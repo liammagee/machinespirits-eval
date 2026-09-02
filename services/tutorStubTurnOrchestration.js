@@ -1646,16 +1646,23 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       untilGrounded: autoTurns === null,
       safetyTurns: autoSafetyTurns,
       stopOnGrounded: autoStopOnGrounded,
+      resumedCompletedTurns: state.turns.length,
     });
     if (!firstMessage) {
       await emitTutorOpeningToState(state, { enabled: openingEnabled, reason: 'auto_start', signal });
     }
 
-    let nextLearnerText = firstMessage.trim();
+    let resumePendingLearnerTurn = state.resumePendingAutomatedLearnerTurn || null;
+    let nextLearnerText = firstMessage.trim() || String(resumePendingLearnerTurn?.text || '').trim();
     let reason = 'auto_turn_cap';
-    for (let i = 0; autoTurns === null || i < autoTurns; i += 1) {
+    if (autoTurns !== null && state.turns.length > autoTurns) {
+      throw new Error(
+        `resume trace already contains ${state.turns.length} turns, beyond the configured ${autoTurns}-turn horizon`,
+      );
+    }
+    for (let i = 0; autoTurns === null || state.turns.length < autoTurns; i += 1) {
       assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
-      if (autoTurns === null && i >= autoSafetyTurns) {
+      if (autoTurns === null && state.turns.length >= autoSafetyTurns) {
         reason = 'auto_safety_turn_cap';
         break;
       }
@@ -1703,8 +1710,14 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         state.resistanceActionRegisterStudy?.final_learner_without_tutor_reply === true &&
         turnNumber === registeredOutcomeTurn;
       let precomputedRaw =
-        turnNumber === 1 ? state.resistanceActionRegisterStudy?.trigger_precomputed_raw || null : null;
-      let learnerResponseProvenance = nextLearnerText
+        resumePendingLearnerTurn?.turn === turnNumber
+          ? resumePendingLearnerTurn.precomputedRaw
+          : turnNumber === 1
+            ? state.resistanceActionRegisterStudy?.trigger_precomputed_raw || null
+            : null;
+      let learnerResponseProvenance = resumePendingLearnerTurn?.turn === turnNumber
+        ? jsonClone(resumePendingLearnerTurn.learnerResponseProvenance)
+        : nextLearnerText
         ? state.resistanceActionRegisterStudy?.enabled
           ? createTutorStubLearnerResponseProvenance({
               authorship: 'ai',
@@ -1724,6 +1737,21 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
               humanInLoop: true,
             })
         : null;
+      if (resumePendingLearnerTurn?.turn === turnNumber) {
+        appendTraceEvent(state.trace, {
+          type: 'auto_learner_turn',
+          turn: turnNumber,
+          text: nextLearnerText,
+          provider: resumePendingLearnerTurn.provider,
+          model: resumePendingLearnerTurn.model,
+          usage: resumePendingLearnerTurn.usage,
+          learnerDeliberation: resumePendingLearnerTurn.learnerDeliberation,
+          learnerResponseProvenance,
+          resumedFromAcceptedOutput: true,
+          sourceRunId: resumePendingLearnerTurn.sourceRunId,
+          sourceSequence: resumePendingLearnerTurn.sourceSequence,
+        });
+      }
       if (!nextLearnerText) {
         startInterimAnimation(state, 'calling auto learner', { tutorTurn: turnNumber });
         let generated;
@@ -2006,6 +2034,8 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       }
       assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
       nextLearnerText = '';
+      resumePendingLearnerTurn = null;
+      state.resumePendingAutomatedLearnerTurn = null;
 
       if (reason === 'registered_manipulation_validation_complete') break;
 

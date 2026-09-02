@@ -18,6 +18,7 @@ import {
   runTutorStubActionOutcomeComparableCollectionPreflight,
   TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH,
 } from '../services/tutorStubActionOutcomeComparableCollection.js';
+import { createDurablePauseStateMachine } from '../services/durableAttemptJournal.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -104,14 +105,18 @@ function traceFiles(directory) {
     .map((name) => path.join(directory, name));
 }
 
-export function tutorStubActionOutcomeCollectionChildSpec({ job }) {
+export function tutorStubActionOutcomeCollectionChildSpec({ job, admission = null, capacity = null }) {
   fs.mkdirSync(job.job_root, { recursive: false });
   fs.mkdirSync(job.trace_dir, { recursive: false });
+  const attemptLedgerEnvironment =
+    admission?.attemptLedgerEnvironment && capacity
+      ? admission.attemptLedgerEnvironment({ unitId: job.id, capacity })
+      : {};
   return {
     ...job,
     stdout: path.join(job.job_root, 'stdout.log'),
     stderr: path.join(job.job_root, 'stderr.log'),
-    env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+    env: { ...process.env, ...attemptLedgerEnvironment, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
   };
 }
 
@@ -137,7 +142,12 @@ function relativeToDestination(destination, value) {
   return value ? path.relative(destination, value).split(path.sep).join('/') : null;
 }
 
-export function extractTutorStubActionOutcomeCollectionRow({ job, exit, destination }) {
+export function extractTutorStubActionOutcomeCollectionRow({
+  job,
+  exit,
+  destination,
+  interruptionDisposition = null,
+}) {
   const traces = traceFiles(job.trace_dir);
   const trace = traces.length === 1 ? traces[0] : null;
   const events = trace ? readTrace(trace) : [];
@@ -150,8 +160,24 @@ export function extractTutorStubActionOutcomeCollectionRow({ job, exit, destinat
   const failedAttempts = events.filter((event) =>
     ['model_call_error', 'model_call_aborted'].includes(event?.type),
   ).length;
+  let cancelledBeforeDispatch = events.filter(
+    (event) => event?.type === 'model_attempt_cancelled_before_dispatch',
+  ).length;
+  let interruptedAfterDispatch = events.filter(
+    (event) => event?.type === 'model_attempt_interrupted_after_dispatch',
+  ).length;
+  const initiallyUnexplained = Math.max(
+    0,
+    reservedAttempts - completedAttempts - failedAttempts - cancelledBeforeDispatch - interruptedAfterDispatch,
+  );
+  if (interruptionDisposition === 'cancelled_before_dispatch') cancelledBeforeDispatch += initiallyUnexplained;
+  if (interruptionDisposition === 'interrupted_after_dispatch') interruptedAfterDispatch += initiallyUnexplained;
+  const unexplainedAttempts = Math.max(
+    0,
+    reservedAttempts - completedAttempts - failedAttempts - cancelledBeforeDispatch - interruptedAfterDispatch,
+  );
   const budgetExhausted = events.some((event) => event?.type === 'model_call_budget_exhausted');
-  const attemptAccountingBalanced = reservedAttempts === completedAttempts + failedAttempts;
+  const attemptAccountingBalanced = unexplainedAttempts === 0;
   const successfulCallPlanComplete = completedAttempts >= job.planned_model_calls;
   const complete =
     exit.code === 0 &&
@@ -198,8 +224,13 @@ export function extractTutorStubActionOutcomeCollectionRow({ job, exit, destinat
       reserved: reservedAttempts,
       completed: completedAttempts,
       failed: failedAttempts,
+      cancelled_before_dispatch: cancelledBeforeDispatch,
+      interrupted_after_dispatch: interruptedAfterDispatch,
+      unexplained: unexplainedAttempts,
       budget_exhausted: budgetExhausted,
       accounting_balanced: attemptAccountingBalanced,
+      accounting_equation:
+        'reserved = completed + failed + cancelled_before_dispatch + interrupted_after_dispatch + unexplained',
       normal_planned_successful: job.planned_model_calls,
       successful_at_or_above_normal_plan: successfulCallPlanComplete,
       per_dialogue_ceiling: job.model_attempt_ceiling,
@@ -256,6 +287,7 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
   const completedEvents = ledger.filter((event) => event.type === 'unit_complete');
   const seal = ledger.at(-1);
   const linkedRecovery = Boolean(sourcePlan.recovery);
+  const pausedPredecessor = seal?.status === 'paused_recoverable';
   const zeroProviderStartupFailure =
     linkedRecovery &&
     reservationEvents.length === 1 &&
@@ -272,9 +304,9 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
     launchEvents[0].design_path !== loaded.relativePath ||
     launchEvents[0].spend_cap !== preflight.plan.model_attempt_ceiling ||
     seal?.type !== 'run_sealed' ||
-    seal?.status !== 'technical_failure'
+    !['technical_failure', 'paused_recoverable'].includes(seal?.status)
   ) {
-    throw new Error('action-outcome recovery requires one sealed technical predecessor');
+    throw new Error('action-outcome recovery requires one sealed technical predecessor or recoverable pause');
   }
   const reservedJobIds = reservationEvents.map((event) => event.unit);
   const reservedInSourceRun = reservationEvents.reduce((sum, event) => sum + Number(event.count || 0), 0);
@@ -301,7 +333,61 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
   let failedJobIds;
   let priorRows;
   let validatedReportBackedFailure = false;
-  if (!linkedRecovery) {
+  let validatedRecoverablePause = false;
+  if (pausedPredecessor) {
+    const sourceReportPath = path.join(sourceRoot, 'report.json');
+    const sourceReport = readJson(sourceReportPath, 'paused action-outcome predecessor report');
+    const reportRows = Array.isArray(sourceReport.rows) ? sourceReport.rows : [];
+    const inheritedRecovery = linkedRecovery
+      ? loadTutorStubActionOutcomeCollectionRecovery({
+          loaded,
+          preflight: { plan: sourceFullPlan },
+          recoveryFrom: path.resolve(sourcePlan.recovery.source_root || ''),
+        })
+      : null;
+    const inheritedRows = inheritedRecovery?.priorRows || [];
+    const linkedPlanDrift =
+      linkedRecovery &&
+      (sourcePlan.recovery.prior_reserved_attempts !== inheritedRecovery.prior_reserved_attempts ||
+        sourcePlan.recovery.prior_completed_units !== inheritedRecovery.prior_completed_units ||
+        JSON.stringify(sourcePlan.recovery.failed_job_ids) !== JSON.stringify(inheritedRecovery.failed_job_ids) ||
+        JSON.stringify(sourcePlan.execution_job_ids) !==
+          JSON.stringify(inheritedRecovery.executionJobs.map((job) => job.id)) ||
+        JSON.stringify(reportRows.slice(0, inheritedRows.length)) !== JSON.stringify(inheritedRows));
+    const currentRows = reportRows.slice(inheritedRows.length);
+    if (
+      linkedPlanDrift ||
+      seal.recovery_permitted !== true ||
+      sourceReport.schema !== 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1' ||
+      sourceReport.study_id !== loaded.design.studyId ||
+      sourceReport.status !== 'paused_recoverable' ||
+      !String(sourceReport.halt_reason || '').startsWith('operator-requested pause') ||
+      sourceReport.source?.commit !== sourcePlan.source?.commit ||
+      sourceReport.execution?.model_attempts?.reserved_in_current_run !== reservedInSourceRun ||
+      sourceReport.execution?.model_attempts?.hard_ceiling !== preflight.plan.model_attempt_ceiling ||
+      !Number.isInteger(sourceReport.execution?.model_attempts?.reserved_by_shared_study_ledger) ||
+      JSON.stringify(checkpointRows) !== JSON.stringify(reportRows) ||
+      currentRows.length !== completedEvents.length ||
+      currentRows.length !== reservationEvents.length ||
+      JSON.stringify(reservedJobIds) !== JSON.stringify(completedEvents.map((event) => event.job_id)) ||
+      currentRows.some(
+        (row, index) =>
+          row.job_id !== completedEvents[index].job_id ||
+          row.status !== completedEvents[index].status ||
+          Number(row.model_attempts?.reserved) !== Number(completedEvents[index].child_reserved_attempts) ||
+          Number(row.model_attempts?.completed) !== Number(completedEvents[index].child_completed_attempts) ||
+          Number(row.model_attempts?.failed) !== Number(completedEvents[index].child_failed_attempts) ||
+          Number(row.model_attempts?.unexplained || 0) !== 0,
+      )
+    ) {
+      throw new Error('recoverable action-outcome pause predecessor drift');
+    }
+    priorReservedAttempts = sourceReport.execution.model_attempts.reserved_by_shared_study_ledger;
+    priorRows = reportRows.map((row) => ({ ...row, artifact_root: row.artifact_root || sourceRoot }));
+    priorCompletedUnits = priorRows.filter((row) => row.status === 'complete').length;
+    failedJobIds = priorRows.filter((row) => row.status === 'technical_failure').map((row) => row.job_id);
+    validatedRecoverablePause = true;
+  } else if (!linkedRecovery) {
     const completeJobIds = new Set(
       completedEvents.filter((event) => event.status === 'complete').map((event) => event.job_id),
     );
@@ -453,8 +539,11 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
       JSON.stringify(reservationEvents.map((event) => [event.unit, Number(event.count)])) ||
     studySeal?.type !== 'study_run_sealed' ||
     path.resolve(studySeal.destination || '') !== sourceRoot ||
-    studySeal.status !== 'technical_failure' ||
-    (studySeal.recovery_permitted !== true && !zeroProviderStartupFailure && !validatedReportBackedFailure) ||
+    !['technical_failure', 'paused_recoverable'].includes(studySeal.status) ||
+    (studySeal.recovery_permitted !== true &&
+      !zeroProviderStartupFailure &&
+      !validatedReportBackedFailure &&
+      !validatedRecoverablePause) ||
     Number(studySeal.reserved_in_run) !== reservedInSourceRun ||
     Number(studySeal.study_reserved) !== priorReservedAttempts ||
     Number(studySeal.model_attempt_ceiling) !== preflight.plan.model_attempt_ceiling
@@ -478,7 +567,7 @@ function reportForRows({ loaded, preflight, admission, rows, halt }) {
   const plannedJobIds = preflight.plan.jobs.map((job) => job.id);
   const observedJobIds = new Set(rows.map((row) => row.job_id));
   const count = (status) => rows.filter((row) => row.status === status).length;
-  const sums = (field) => rows.reduce((sum, row) => sum + row.model_attempts[field], 0);
+  const sums = (field) => rows.reduce((sum, row) => sum + Number(row.model_attempts[field] || 0), 0);
   const priorReservedAttempts = preflight.recovery?.prior_reserved_attempts || 0;
   const recoveredWithPriorFailure = !halt && preflight.recovery?.failed_job_ids?.length > 0;
   return {
@@ -493,6 +582,11 @@ function reportForRows({ loaded, preflight, admission, rows, halt }) {
     authorization: admission.authorization,
     claim_boundary: loaded.design.claimBoundary,
     memory_controller_enabled: false,
+    control: {
+      state: halt?.status === 'paused_recoverable' ? 'paused' : halt ? 'stopped' : 'complete',
+      recoverable: halt?.status === 'paused_recoverable',
+      resume_scope: halt?.status === 'paused_recoverable' ? 'missing_work_only' : null,
+    },
     recovery: preflight.recovery
       ? {
           source_root: preflight.recovery.source_root,
@@ -518,6 +612,9 @@ function reportForRows({ loaded, preflight, admission, rows, halt }) {
         reserved_by_children: sums('reserved'),
         completed: sums('completed'),
         failed: sums('failed'),
+        cancelled_before_dispatch: sums('cancelled_before_dispatch'),
+        interrupted_after_dispatch: sums('interrupted_after_dispatch'),
+        unexplained: sums('unexplained'),
         reserved_in_predecessor: priorReservedAttempts,
         reserved_in_current_run: admission.reserved,
         reserved_by_shared_study_ledger: admission.studyReserved ?? priorReservedAttempts + admission.reserved,
@@ -528,6 +625,8 @@ function reportForRows({ loaded, preflight, admission, rows, halt }) {
     next_step:
       halt === null
         ? 'Freeze the complete source corpus, then prepare the registered two-coder packet without inspecting auxiliary outcomes.'
+        : halt.status === 'paused_recoverable'
+          ? 'The run is paused at a durable checkpoint. Resume only missing work under the unchanged design and hard ceiling.'
         : 'Preserve the stopped corpus and apply the registered failure disposition before any further unit.',
   };
 }
@@ -540,6 +639,8 @@ export async function executeTutorStubActionOutcomeCollection({
   runChild = runTutorStubActionOutcomeCollectionChild,
   extractRow = extractTutorStubActionOutcomeCollectionRow,
   progress = (line) => process.stdout.write(`${line}\n`),
+  signalTarget = process,
+  createPauseController = createDurablePauseStateMachine,
 } = {}) {
   const { destination } = preflight;
   const perDialogueCeiling = loaded.design.attemptCeiling.maximumReservationsPerDialogue;
@@ -570,21 +671,60 @@ export async function executeTutorStubActionOutcomeCollection({
     preflight,
   });
 
+  const pauseController = createPauseController({
+    statePath: path.join(destination, 'run-control.json'),
+    record: (event) => admission.record(event),
+    signalTarget,
+  });
+
   const rows = [...(preflight.recovery?.priorRows || [])];
   let halt = null;
   try {
     for (const job of executionJobs) {
       if (halt) break;
-      admission.reserveModelAttempts(perDialogueCeiling, {
+      if (pauseController.snapshot().state === 'pause_requested') {
+        pauseController.markPaused({ safe_boundary: 'before_reservation', next_job_id: job.id });
+        halt = {
+          status: 'paused_recoverable',
+          reason: `operator-requested pause before reservation for ${job.id}`,
+        };
+        break;
+      }
+      const capacityDetail = {
         unit: job.id,
         world_id: job.world_id,
         reservation_scope: 'per_dialogue_fail_before_call_ceiling',
-      });
-      const spec = childSpec({ loaded, job, destination });
+      };
+      const capacity = admission.allocateModelAttemptCapacity
+        ? admission.allocateModelAttemptCapacity(perDialogueCeiling, capacityDetail)
+        : (admission.reserveModelAttempts(perDialogueCeiling, capacityDetail), null);
+      const spec = childSpec({ loaded, job, destination, admission, capacity });
+      admission.record({ type: 'unit_dispatched', job_id: job.id, world_id: job.world_id });
       const exit = await runChild(spec);
-      const row = extractRow({ loaded, job: spec, exit, destination });
+      const pauseRequested = pauseController.snapshot().state === 'pause_requested';
+      const row = extractRow({
+        loaded,
+        job: spec,
+        exit,
+        destination,
+        interruptionDisposition:
+          pauseRequested && ['SIGINT', 'SIGTERM'].includes(exit.signal) ? 'interrupted_after_dispatch' : null,
+      });
+      const releasedCapacity = capacity
+        ? admission.releaseModelAttemptCapacity(capacity, { unit: job.id, world_id: job.world_id })
+        : null;
       rows.push(row);
-      if (row.status !== 'complete') {
+      if (pauseRequested) {
+        pauseController.markPaused({
+          safe_boundary: 'after_child_exit_and_checkpoint',
+          last_job_id: row.job_id,
+          interrupted_after_dispatch: row.model_attempts.interrupted_after_dispatch,
+        });
+        halt = {
+          status: 'paused_recoverable',
+          reason: `operator-requested pause after ${row.job_id}`,
+        };
+      } else if (row.status !== 'complete') {
         halt = {
           status: row.status,
           reason: `${row.status} in ${row.job_id}`,
@@ -598,6 +738,16 @@ export async function executeTutorStubActionOutcomeCollection({
         child_reserved_attempts: row.model_attempts.reserved,
         child_completed_attempts: row.model_attempts.completed,
         child_failed_attempts: row.model_attempts.failed,
+        child_cancelled_before_dispatch_attempts: row.model_attempts.cancelled_before_dispatch,
+        child_interrupted_after_dispatch_attempts: row.model_attempts.interrupted_after_dispatch,
+        child_unexplained_attempts: row.model_attempts.unexplained,
+        ...(releasedCapacity
+          ? {
+              child_attempt_capacity_allocated: releasedCapacity.allocated,
+              child_attempt_capacity_consumed: releasedCapacity.consumed,
+              child_attempt_capacity_unused: releasedCapacity.unused,
+            }
+          : {}),
         shared_reserved_attempts: admission.reserved,
         ...(halt ? { halt_reason: halt.reason } : {}),
       });
@@ -612,7 +762,7 @@ export async function executeTutorStubActionOutcomeCollection({
         hard_ceiling: preflight.plan.model_attempt_ceiling,
       });
       progress(
-        `dispositioned ${rows.length}/${preflight.plan.jobs.length}; turns ${rows.reduce((sum, candidate) => sum + candidate.turns, 0)}/${preflight.plan.planned_turns}; child calls ${rows.reduce((sum, candidate) => sum + candidate.model_attempts.completed, 0)}; study reserved ${admission.studyReserved ?? priorReservedAttempts + admission.reserved}/${preflight.plan.model_attempt_ceiling}${halt ? `; halted: ${halt.reason}` : ''}`,
+        `dispositioned ${rows.length}/${preflight.plan.jobs.length}; turns ${rows.reduce((sum, candidate) => sum + candidate.turns, 0)}/${preflight.plan.planned_turns}; child attempts ${rows.reduce((sum, candidate) => sum + candidate.model_attempts.reserved, 0)} reserved / ${rows.reduce((sum, candidate) => sum + candidate.model_attempts.completed, 0)} completed / ${rows.reduce((sum, candidate) => sum + candidate.model_attempts.failed, 0)} failed / ${rows.reduce((sum, candidate) => sum + Number(candidate.model_attempts.cancelled_before_dispatch || 0), 0)} cancelled before dispatch / ${rows.reduce((sum, candidate) => sum + Number(candidate.model_attempts.interrupted_after_dispatch || 0), 0)} interrupted after dispatch / ${rows.reduce((sum, candidate) => sum + Number(candidate.model_attempts.unexplained || 0), 0)} unexplained; study reserved ${admission.studyReserved ?? priorReservedAttempts + admission.reserved}/${preflight.plan.model_attempt_ceiling}${halt ? `; ${halt.status}: ${halt.reason}; recoverable ${halt.status === 'paused_recoverable'}; resume ${halt.status === 'paused_recoverable' ? 'missing work only' : 'not authorized by this status'}` : ''}`,
       );
     }
     const report = reportForRows({ loaded, preflight, admission, rows, halt });
@@ -628,7 +778,11 @@ export async function executeTutorStubActionOutcomeCollection({
       missing_units: report.execution.missing_units,
       observed_attempts: report.execution.model_attempts.completed + report.execution.model_attempts.failed,
       reserved_attempts: admission.reserved,
-      ...(report.status === 'technical_failure' && !preflight.recovery ? { recovery_permitted: true } : {}),
+      ...(report.status === 'paused_recoverable' || (report.status === 'technical_failure' && !preflight.recovery)
+        ? { recovery_permitted: true }
+        : {}),
+      recoverable: report.status === 'paused_recoverable' || undefined,
+      resume_scope: report.status === 'paused_recoverable' ? 'missing_work_only' : undefined,
     });
     progress(`${report.status}: ${path.join(destination, 'report.json')}`);
     return report;
@@ -636,6 +790,8 @@ export async function executeTutorStubActionOutcomeCollection({
     admission.record({ type: 'launcher_failed', error: error.message });
     admission.close({ type: 'run_sealed', status: 'failed', error: error.message });
     throw error;
+  } finally {
+    pauseController.dispose();
   }
 }
 

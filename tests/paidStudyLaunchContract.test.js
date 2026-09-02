@@ -12,6 +12,11 @@ import {
   sealInterruptedPaidStudyLaunch,
   verifyPaidStudyLaunchContract,
 } from '../services/paidStudyLaunchContract.js';
+import {
+  createSharedModelAttemptLedgerClient,
+  reconcileSharedModelAttemptLedger,
+  sharedModelAttemptLedgerClientFromEnv,
+} from '../services/durableAttemptJournal.js';
 
 const RACE_WORKER = fileURLToPath(new URL('./fixtures/paidStudyLaunchRaceWorker.js', import.meta.url));
 
@@ -210,6 +215,74 @@ test('admission creates the destination and append-only budget ledger before cal
   );
   assert.equal(admitted.reserved, 2);
   assert.throws(() => admitPaidStudyLaunch({ ...value.contract, destination }), /create-once/u);
+});
+
+test('capacity allocation consumes only per-dispatch reservations and releases unused allowance', (t) => {
+  const value = fixture(t, { cap: 5, noteCap: '5' });
+  const admission = admitPaidStudyLaunch({ ...value.contract, destination: path.join(value.base, 'capacity-run') });
+  const capacity = admission.allocateModelAttemptCapacity(3, { unit: 'unit-1' });
+  assert.equal(admission.reserved, 0);
+  assert.equal(admission.studyReserved, 0);
+  const client = sharedModelAttemptLedgerClientFromEnv(
+    admission.attemptLedgerEnvironment({ unitId: 'unit-1', capacity }),
+  );
+  for (const turn of [1, 2]) {
+    const attempt = client.reserve({ role: 'fixture-role', turn });
+    client.markDispatched({ attemptId: attempt.attemptId, role: 'fixture-role', turn });
+    client.terminalize({ attemptId: attempt.attemptId, disposition: 'completed', role: 'fixture-role', turn });
+  }
+  assert.equal(admission.reserved, 2);
+  assert.equal(admission.studyReserved, 2);
+  const released = admission.releaseModelAttemptCapacity(capacity, { unit: 'unit-1' });
+  assert.deepEqual(released, { allocated: 3, consumed: 2, unused: 1 });
+  assert.throws(() => admission.allocateModelAttemptCapacity(4, { unit: 'unit-2' }), /remaining attempt ceiling/u);
+  admission.close({ type: 'run_sealed', status: 'complete' });
+
+  const runEvents = fs
+    .readFileSync(path.join(value.base, 'capacity-run', 'run-ledger.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map(JSON.parse);
+  assert.equal(runEvents.filter((event) => event.type === 'model_attempt_dispatch_reserved').length, 2);
+  assert.equal(runEvents.some((event) => event.type === 'model_attempt_reserved'), false);
+});
+
+test('shared attempt restart reconciles a missing mirror and stale inflight dispatch exactly once', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'shared-attempt-reconcile-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const runLedgerPath = path.join(base, 'run.jsonl');
+  const studyLedgerPath = path.join(base, 'study.jsonl');
+  const capacityId = 'capacity-1';
+  const unitId = 'unit-1';
+  fs.writeFileSync(
+    studyLedgerPath,
+    [
+      { type: 'study_model_attempt_dispatch_reserved', attempt_id: 'a1', capacity_id: capacityId, unit_id: unitId },
+      { type: 'study_model_attempt_dispatch_reserved', attempt_id: 'a2', capacity_id: capacityId, unit_id: unitId },
+    ].map((event) => JSON.stringify(event)).join('\n') + '\n',
+  );
+  fs.writeFileSync(
+    runLedgerPath,
+    [
+      { type: 'model_attempt_dispatch_reserved', attempt_id: 'a2', capacity_id: capacityId, unit_id: unitId },
+      { type: 'model_attempt_dispatch_started', attempt_id: 'a2', capacity_id: capacityId, unit_id: unitId },
+    ].map((event) => JSON.stringify(event)).join('\n') + '\n',
+  );
+  reconcileSharedModelAttemptLedger({ runLedgerPath, studyLedgerPath, capacityId, unitId });
+  createSharedModelAttemptLedgerClient({
+    runLedgerPath,
+    studyLedgerPath,
+    studyId: 'fixture-study',
+    destination: base,
+    hardCeiling: 5,
+    unitId,
+    capacityId,
+    capacityLimit: 5,
+  });
+  const events = fs.readFileSync(runLedgerPath, 'utf8').trim().split(/\r?\n/u).map(JSON.parse);
+  assert.equal(events.filter((event) => event.type === 'model_attempt_dispatch_reserved').length, 2);
+  assert.equal(events.filter((event) => event.type === 'attempt_cancelled_before_dispatch').length, 1);
+  assert.equal(events.filter((event) => event.type === 'attempt_interrupted_after_dispatch').length, 1);
 });
 
 test('failed authorization performs no production write', (t) => {
@@ -411,6 +484,38 @@ test('a sealed technical predecessor hands its remaining study budget to one rec
       .reduce((sum, event) => sum + event.count, 0),
     3,
   );
+  assert.equal(studyLedger.filter((event) => event.type === 'study_launch_admitted').length, 2);
+});
+
+test('a recoverable pause hands only the remaining reservation capacity to recovery', (t) => {
+  const value = fixture(t, { cap: 2, noteCap: '2' });
+  const initialDestination = path.join(value.base, 'paused-initial');
+  const initial = admitPaidStudyLaunch({ ...value.contract, destination: initialDestination });
+  initial.reserveModelAttempts(1, { unit: 'completed-before-pause' });
+  initial.close({
+    type: 'run_sealed',
+    status: 'paused_recoverable',
+    recovery_permitted: true,
+    recoverable: true,
+    resume_scope: 'missing_work_only',
+  });
+
+  const recovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'paused-recovery'),
+    recoveryFrom: initialDestination,
+  });
+  assert.equal(recovery.studyReserved, 1);
+  recovery.reserveModelAttempts(1, { unit: 'missing-after-pause' });
+  recovery.close({ type: 'run_sealed', status: 'complete' });
+
+  const studyLedger = fs
+    .readFileSync(path.join(value.contract.studyStateRoot, value.contract.studyId, 'study-ledger.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map(JSON.parse);
+  const pauseSeal = studyLedger.find((event) => event.status === 'paused_recoverable');
+  assert.equal(pauseSeal.recovery_permitted, true);
   assert.equal(studyLedger.filter((event) => event.type === 'study_launch_admitted').length, 2);
 });
 

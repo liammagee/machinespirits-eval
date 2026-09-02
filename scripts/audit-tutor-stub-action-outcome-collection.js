@@ -302,7 +302,7 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       unbalancedJobs.length === 0 ? 'pass' : 'fail',
       unbalancedJobs.length
         ? `${unbalancedJobs.length} preserved unit(s) have unresolved child-attempt accounting.`
-        : 'Every unit balances reserved attempts against completed and failed attempts.',
+        : 'Every reservation has one terminal disposition; no child attempt remains unexplained.',
     ),
     gate(
       'execution',
