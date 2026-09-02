@@ -373,3 +373,14 @@ the only judge), indeterminate means stop. No approval machinery beyond
   repair HIT 4/6 with the card, 2/6 without; uptake 5/6 both arms. Lean, not
   result. Note `notes/poetics/hero-demo-runs/2026-09-02-step6-form-v3-live.md`;
   artifacts `exports/tutor-stub-outcome/step6-form-v3-live/`, archived.
+- **Hold pair on 037, 2026-09-02, paid.** Schedule copy with `hold: turns 1`
+  on plants 2 and 4 (6/7 and 9/10 are adjacent, so they cannot hold).
+  Ceiling 200 dialogue + 20 judge calls; used 38 + 40 + 2, turn cap 12. Hold
+  events fired at t3 and t5 in both arms. The sim dropped the state on all
+  three held turns where the reply missed the release; the one held-looking
+  turn is the answer-seeking plant, which the standing brief asks for anyway.
+  The release text leaked into one plant line. Repair HIT 4/6 with, 3/6
+  without (step 6 again). Next step is offline: stricter hold direction,
+  release text hidden on the planted turn, with a test. Note
+  `notes/poetics/hero-demo-runs/2026-09-02-step7-hold-live.md`; artifacts
+  `exports/tutor-stub-outcome/step7-hold-live/`, archived.

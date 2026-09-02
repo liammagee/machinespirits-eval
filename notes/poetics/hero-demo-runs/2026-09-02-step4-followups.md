@@ -94,7 +94,7 @@ Also: `scripts/score-manner-trigger.js` now prints `quiet=confused` beside
 showed as a plain miss). The trainer stamps the artifact `version` from the
 feature version instead of a fixed string.
 
-## 3. Learner-sim that holds its mood — DONE (tests only, no paid run)
+## 3. Learner-sim that holds its mood — BUILT; live pair RAN 2026-09-02, hold did not hold
 
 Uptake was 10/12 in both arms: the sim returns to the standing brief on the
 turn after a plant, so the card cannot show an effect on the learner.
@@ -143,6 +143,15 @@ not working and a wider run measures nothing. Judge with the same codex
 adjudicator and the same blind packet builder, so the second reader's kappa
 from item 1 carries over.
 
+Ran 2026-09-02 (paid, 38 + 40 dialogue calls, 2 judge calls): one pair on
+`world-037-stress-schedule-hold1.yaml`, `hold: turns 1` on plants 2 and 4
+only (6/7 and 9/10 are adjacent turns, so the four-plant two-turn shape is
+not possible on this schedule). The hold events fired; the sim dropped the
+state on all three held turns where the reply missed the release, and once
+spoke the release question in its own plant line. Not widened to 036. Next
+is offline: stricter direction, release text hidden on the planted turn.
+See `2026-09-02-step7-hold-live.md`.
+
 ## 4. Push the branch — DONE
 
 Checks before the push, all on the branch tip:
@@ -174,3 +183,10 @@ The lesson-world traces (038/039/040) were replayed and then added to the
 training pool; the result is `config/manner-trigger/form-v3.json`. See
 `2026-09-02-step5-lesson-fold.md`. Limit (b) above still holds: the
 rule-appeal opposed line has no pool support in any model.
+
+Also that day, both paid, both under stated ceilings: candidate (a) model
+labels (287 Sonnet calls; right kind 53/66 against form-v3 49/66, off-plant
+fires 35/205 against 19/205; form-v3 stays shipped) in
+`2026-09-02-step6-model-labels.md`; and the live pair on form-v3 (037: right
+reads 4/6 against form-v1 2/6, no wrong kind; repair HIT 4/6 with the card,
+2/6 without) in `2026-09-02-step6-form-v3-live.md`.
