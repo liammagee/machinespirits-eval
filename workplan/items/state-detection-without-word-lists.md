@@ -362,3 +362,7 @@ Rails that stay: spend ceiling stated before any paid run, attended runs, no
 resampling after a failure, no self-judging (the tutor's own family cannot be
 the only judge), indeterminate means stop. No approval machinery beyond
 "the user says go".
+
+## Follow-up runs after closeout (2026-09-02, paid)
+
+- Candidate (a) model labels run, 287 Sonnet calls under a 300 ceiling. Right kind 53/66 vs form-v3 49/66; off-plant fires 35/205 vs 19/205. form-v3 stays shipped. Note `notes/poetics/hero-demo-runs/2026-09-02-step6-model-labels.md`. Labeller defect (bare model string to the bridge) fixed ed26216a9, no spend lost.
