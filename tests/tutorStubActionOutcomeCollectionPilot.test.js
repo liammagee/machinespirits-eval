@@ -28,6 +28,7 @@ import {
 } from '../scripts/run-tutor-stub-action-outcome-collection-pilot.js';
 import {
   buildTutorStubActionOutcomeCollectionAudit,
+  loadTutorStubActionOutcomeAuditDesign,
   renderTutorStubActionOutcomeCollectionAudit,
   wilsonInterval,
 } from '../scripts/audit-tutor-stub-action-outcome-collection.js';
@@ -296,6 +297,20 @@ test('the v2 audit uses only registered comparative families and leaves human-co
   assert.match(rendered, /60\/60 complete dialogues/u);
   assert.match(rendered, /30 seeded closed assignment/u);
   assert.doesNotMatch(rendered, /all 23 available trace files/u);
+});
+
+test('the audit CLI loader dispatches the registered v1 and v2 designs to their validators', () => {
+  assert.equal(
+    loadTutorStubActionOutcomeAuditDesign({ root: REPO_ROOT, designPath: DESIGN_PATH }).design.studyId,
+    load().design.studyId,
+  );
+  assert.equal(
+    loadTutorStubActionOutcomeAuditDesign({
+      root: REPO_ROOT,
+      designPath: TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH,
+    }).design.studyId,
+    loadComparable().design.studyId,
+  );
 });
 
 test('Wilson intervals retain the observed fraction and finite bounds', () => {

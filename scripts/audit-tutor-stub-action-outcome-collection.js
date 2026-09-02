@@ -6,6 +6,10 @@ import { fileURLToPath } from 'node:url';
 
 import { buildActionOutcomeMemoryReadiness } from './action-outcome-memory-readiness.js';
 import { loadTutorStubActionOutcomeCollectionDesign } from '../services/tutorStubActionOutcomeCollectionPilot.js';
+import {
+  loadTutorStubActionOutcomeComparableCollectionDesign,
+  TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_STUDY_ID,
+} from '../services/tutorStubActionOutcomeComparableCollection.js';
 
 const ALL_OBSERVED_CONDITION = {
   id: 'audit_all_observed',
@@ -23,6 +27,13 @@ function requireString(value, label) {
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+export function loadTutorStubActionOutcomeAuditDesign({ root, designPath }) {
+  const raw = readJson(path.resolve(root, designPath));
+  return raw.studyId === TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_STUDY_ID
+    ? loadTutorStubActionOutcomeComparableCollectionDesign({ root, designPath })
+    : loadTutorStubActionOutcomeCollectionDesign({ root, designPath });
 }
 
 function countBy(values) {
@@ -639,9 +650,11 @@ async function main() {
   const readinessInputPath = path.resolve(requireString(values['readiness-input'], '--readiness-input'));
   const outputPath = path.resolve(requireString(values.out, '--out'));
   if (fs.existsSync(outputPath)) throw new Error(`refusing to overwrite audit output: ${outputPath}`);
-  const loaded = loadTutorStubActionOutcomeCollectionDesign({
-    root: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'),
-    designPath: path.relative(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), designPath),
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const relativeDesignPath = path.relative(repositoryRoot, designPath).split(path.sep).join('/');
+  const loaded = loadTutorStubActionOutcomeAuditDesign({
+    root: repositoryRoot,
+    designPath: relativeDesignPath,
   });
   const input = readJson(readinessInputPath);
   if (input.reviewsFile || input.replay) throw new Error('quality audit input must not contain reviews or replay');

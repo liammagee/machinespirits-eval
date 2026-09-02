@@ -117,6 +117,13 @@ contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
 
+- 2026-09-02: The first v2 zero-call audit invocation failed before reading a
+  trace or creating its output because the CLI entry point still routed every
+  design through the sealed v1 loader. Added explicit registered-study dispatch
+  to the maintained v2 loader plus a CLI-loader regression covering both design
+  versions. The fixed `asOf` input remains unchanged for the next invocation;
+  this failed attempt made no model call and consumed no reservation.
+
 - 2026-09-02: The final bounded recovery completed all 22 never-started
   dialogues and sealed the 60-unit block with 57 complete, 3 preserved
   technical failures, 0 missing units, 468/480 turns, and exactly 4,860/4,860
