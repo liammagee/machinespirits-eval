@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-01
-branch: codex/action-outcome-zero-provider-recovery
+branch: codex/action-outcome-quality-audit
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -25,6 +25,8 @@ links:
     - services/tutorStubActionOutcomeCollectionPilot.js
     - scripts/run-tutor-stub-action-outcome-collection-pilot.js
     - notes/2026-09-01-tutor-stub-action-outcome-collection-pilot-go.md
+  exports:
+    - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
   prs:
     - 895
     - 898
@@ -33,6 +35,9 @@ links:
     - 902
     - 903
     - 905
+    - 906
+    - 908
+    - 913
   items:
     - layered-task-session-adaptation
 tags:
@@ -98,6 +103,25 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-01: Completed the registered zero-call extraction and quality audit
+  over the sealed collection and recovery chain. All 23 available trace files
+  were readable and unquarantined; all 158 closed next-turn opportunities
+  validated, with 181 typed decisions in total, 130 seeded closed assignments,
+  and no held-out-world leakage. The registered stalled-state condition yielded
+  30 seeded closed assignments across 13 dialogues and all four collection
+  worlds, below the gates of 48 assignments and 16 dialogues. Delivery was
+  visible for all 30, but family support failed: `diagnose_elicit` 16,
+  `request_self_explanation` 6, `minimal_support` 5, `explain_model` 3, and
+  `fade_transfer` 0. Every matched auxiliary outcome was `inconclusive`, so the
+  frozen auxiliary-agreement rule places an upper bound of zero on final usable
+  binary records even under perfect coder agreement. The pilot therefore fails
+  its registered feasibility gates and does not license a held-out controller
+  study; the no-top-up and no-threshold-change rules remain in force. Added a
+  reusable zero-call audit script plus public Markdown/JSON reports with source
+  hashes, Wilson intervals, family/world coverage, and every gate disposition;
+  no transcript text is copied. Model activity was inactive and model calls were
+  0.
 
 - 2026-09-01: After PR #908 merged, the operator explicitly instructed,
   "continue the 22 untouched jobs." Added one narrow linked-recovery path for

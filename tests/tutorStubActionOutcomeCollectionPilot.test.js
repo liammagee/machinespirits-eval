@@ -17,6 +17,11 @@ import {
   loadTutorStubActionOutcomeCollectionRecovery,
   main as collectionLauncherMain,
 } from '../scripts/run-tutor-stub-action-outcome-collection-pilot.js';
+import {
+  buildTutorStubActionOutcomeCollectionAudit,
+  renderTutorStubActionOutcomeCollectionAudit,
+  wilsonInterval,
+} from '../scripts/audit-tutor-stub-action-outcome-collection.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN_PATH = 'config/tutor-stub-action-outcome-collection-pilot-design.v1.json';
@@ -88,6 +93,108 @@ function completeRow(job) {
     },
   };
 }
+
+test('the zero-call quality audit fails sparse, auxiliary-inconclusive evidence without inventing review results', () => {
+  const design = load().design;
+  const generationRows = design.randomization.jobs.map((job) =>
+    completeRow({ id: job.jobId, world_id: job.worldId, repeat: job.repeat }),
+  );
+  const source = {
+    path: '/fixture/jobs/aocp1_foxtrot_jukebox_r01/traces/trace.jsonl',
+    runId: 'fixture-run',
+    sha256: 'a'.repeat(64),
+    bytes: 100,
+    metadata: { world: { id: 'world_022_foxtrot_jukebox' } },
+    errors: [],
+  };
+  const seeded = {
+    recordId: 'fixture-run:contract-1',
+    source: source.path,
+    recordedOutcome: 'inconclusive',
+    auxiliaryDeliveryVisible: true,
+    assignmentStatus: 'seeded_uniform_family_assignment',
+    prospectiveAssignment: {
+      selected_move_family: 'diagnose_elicit',
+      eligible_move_families: [{ family: 'diagnose_elicit' }],
+    },
+  };
+  const mandatory = {
+    ...seeded,
+    recordId: 'fixture-run:contract-2',
+    assignmentStatus: 'mandatory_policy_authority_preserved',
+    prospectiveAssignment: { eligible_move_families: [] },
+  };
+  const summary = {
+    sourceFiles: 1,
+    quarantinedSources: 0,
+    events: 20,
+    typedDecisions: 3,
+    closedOutcomes: 2,
+    joinedMemoryRecords: 1,
+  };
+  const registeredReadiness = {
+    modelCalls: 0,
+    summary,
+    sources: [source],
+    evidenceRows: [seeded],
+    exclusionCounts: { no_declared_condition_matched: 1, non_unique_required_join: 1 },
+  };
+  const allObservedReadiness = {
+    modelCalls: 0,
+    summary: { ...summary, joinedMemoryRecords: 2 },
+    sources: [source],
+    evidenceRows: [seeded, mandatory],
+    exclusionCounts: { non_unique_required_join: 1 },
+  };
+  const audit = buildTutorStubActionOutcomeCollectionAudit({
+    design,
+    generationReport: {
+      schema: 'fixture-generation-report',
+      study_id: design.studyId,
+      status: 'generation_complete',
+      source: { commit: 'fixture', detached: true, dirty: false },
+      design: { path: DESIGN_PATH },
+      memory_controller_enabled: false,
+      rows: generationRows,
+      execution: {
+        planned_units: 24,
+        missing_units: 0,
+        completed_turns: 192,
+        planned_turns: 192,
+        model_attempts: {},
+      },
+    },
+    registeredReadiness,
+    allObservedReadiness,
+    decisionInventory: [
+      { assignmentStatus: 'seeded_uniform_family_assignment', conditionDisposition: 'matched' },
+      { assignmentStatus: 'mandatory_policy_authority_preserved', conditionDisposition: 'unmatched' },
+      { assignmentStatus: 'seeded_uniform_family_assignment', conditionDisposition: 'unmatched' },
+    ],
+    asOf: '2026-09-01T23:00:00.000Z',
+  });
+
+  assert.equal(audit.modelCalls, 0);
+  assert.equal(audit.verdict, 'registered_feasibility_gates_failed');
+  assert.equal(audit.controllerStudyLicensed, false);
+  assert.equal(audit.extraction.maximumPotentialBinaryRecords, 0);
+  assert.equal(
+    audit.gates.find((entry) => entry.id === 'minimumVisibleDeliveryRateAmongConditionMatchedAssignments').status,
+    'pass',
+  );
+  assert.equal(audit.gates.find((entry) => entry.id === 'minimumFinalUsableBinaryRecords').status, 'fail');
+  assert.match(renderTutorStubActionOutcomeCollectionAudit(audit), /does not license a held-out controller study/u);
+});
+
+test('Wilson intervals retain the observed fraction and finite bounds', () => {
+  const interval = wilsonInterval(30, 158);
+  assert.equal(interval.successes, 30);
+  assert.equal(interval.total, 158);
+  assert.ok(Math.abs(interval.estimate - 30 / 158) < Number.EPSILON);
+  assert.ok(interval.lower > 0.13 && interval.lower < interval.estimate);
+  assert.ok(interval.upper > interval.estimate && interval.upper < 0.26);
+  assert.equal(wilsonInterval(0, 0), null);
+});
 
 test('the registered design compiles exactly 24 balanced, held-out-safe jobs', () => {
   const loaded = load();
