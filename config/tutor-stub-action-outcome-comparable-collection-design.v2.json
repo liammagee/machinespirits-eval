@@ -1,0 +1,567 @@
+{
+  "documentType": "prospective_paid_study_design",
+  "revision": 2,
+  "studyId": "tutor-stub-action-outcome-comparable-collection-v2",
+  "title": "Prospective exact-set action-outcome collection",
+  "status": "prospective_design_only_no_call_authority",
+  "workplanItem": "adaptive-curriculum-memory-controller",
+  "registeredQuestion": "Can a fresh fixed collection produce enough independently reviewed binary next-turn outcomes inside the exact three-family support-phase eligible set to populate a later, separately designed action-outcome memory-controller study?",
+  "purpose": {
+    "primary": "Collect exchangeable, visibly delivered, independently reviewable next-turn outcomes only when explain_model, minimal_support, and request_self_explanation are simultaneously policy-eligible under the registered stalled-state condition.",
+    "secondary": "Estimate condition prevalence, exact-set assignment yield, delivery fidelity, human-review agreement, indeterminacy, and usable binary-record yield by family and world.",
+    "notThisStudy": [
+      "The action-outcome memory controller is disabled.",
+      "Diagnose and fade singleton decisions remain audit-only and cannot enter comparative evidence.",
+      "No learned ranking, demotion threshold, success-rate floor, minimum memory support, pooling rule, age window, or controller treatment is selected from these outcomes.",
+      "No unassisted-work or transfer endpoint is run, and the held-out worlds remain excluded.",
+      "The sealed v1 pilot is not recoded, relabelled, topped up, pooled, or reused as evidence."
+    ]
+  },
+  "callAuthority": {
+    "grantsModelCalls": false,
+    "grantsLaunch": false,
+    "statement": "This merged design is the study registration only. Launch additionally requires a clean detached launch commit containing it and one signed GO note under docs/paid-study-authorization-policy.md."
+  },
+  "design": {
+    "kind": "fixed_size_exact_eligible_set_collection",
+    "dialogues": 60,
+    "turnHorizon": 8,
+    "fixedHorizon": true,
+    "maximumExchangeableClosedAssignmentsPerDialogue": 7,
+    "ordinaryExpectedMaximumExchangeableClosedAssignmentsPerDialogue": 6,
+    "why": "The sealed v1 pilot observed 14 stalled-state closures in the exact three-family support set across 23 available dialogues. Sixty fresh dialogues provide a fixed, conservative opportunity to reach the registered 30-case coverage floor without outcome-dependent enlargement.",
+    "noOutcomeDependentEnlargement": true,
+    "noReplacementOfValidOrSubstantiveUnits": true,
+    "unit": "one independently seeded tutor-stub dialogue",
+    "interventionUnit": "one nonmandatory tutor decision randomized only when the exact eligible set is explain_model plus minimal_support plus request_self_explanation",
+    "outcomeUnit": "the immediate next public learner turn after a visibly delivered assigned support action"
+  },
+  "population": {
+    "learnerProfile": "bored",
+    "profileMeaning": "the maintained built-in effort-withholding boredom profile",
+    "taskClass": "causal detective proof-DAG inquiry using public evidence and rules",
+    "collectionWorlds": [
+      "world_022_foxtrot_jukebox",
+      "world_026_skyway_bakery",
+      "world_028_larkspur_fridge",
+      "world_029_riverside_clinic"
+    ],
+    "laterEvaluationWorldsExcludedFromCollectionAndMemory": ["world_030_rowan_flat", "world_031_tideway_makerspace"],
+    "holdoutMeaning": "Rowan Flat and Tideway Makerspace remain excluded from collection, review, readiness, and memory. They are reserved for a separately registered controller evaluation and are not claimed to be globally unseen.",
+    "crossWorldPoolingInThisPilot": "Allowed only within the exact registered eligible set for feasibility totals. Every record retains world identity and is reported by family and world."
+  },
+  "condition": {
+    "conditions": [
+      {
+        "id": "stalled_low_velocity_v1",
+        "stagnationAtLeast": 0.6,
+        "fieldVelocityAtMost": 0.02,
+        "dagVelocityAtMost": 0.2
+      }
+    ],
+    "matchRule": "stagnation >= 0.6 AND abs(fieldVelocity) <= 0.02 AND abs(dagVelocity) <= 0.2",
+    "nonOverlapRule": "Exactly one condition is registered, so a structurally valid observation can match zero or one condition, never more than one.",
+    "provenance": "The stagnation boundary is the maintained Program-2 stall detector boundary. The velocity bounds are the existing low-velocity terms used by buildDynamicalSystemState when constructing stagnation. Historical traces missing these current quantities are never reconstructed.",
+    "outcomeBlindRule": "The condition and all thresholds are fixed before collection. Condition matching may be inspected for feasibility after collection, but it cannot trigger top-up, replacement, threshold relaxation, or selective packet inclusion."
+  },
+  "typedActionAssignment": {
+    "mode": "uniform_family_eligible",
+    "moveFamilies": [
+      "diagnose_elicit",
+      "minimal_support",
+      "explain_model",
+      "request_self_explanation",
+      "fade_transfer"
+    ],
+    "familyDraw": "uniform among explain_model, minimal_support, and request_self_explanation only when all three are simultaneously policy-eligible",
+    "withinFamilyDraw": "uniform among policy-eligible actions in the selected family",
+    "mandatoryAuthority": "Mandatory, diagnose singleton, fade singleton, and every other noncomparative decision retain policy authority and remain audit-only with no random draw.",
+    "fixedSupportLevel": 1,
+    "registerPolicy": "bland",
+    "safeRegisters": true,
+    "lightAdaptation": false,
+    "memoryControllerEnabled": false,
+    "deliveryRule": "A guard displacement or configuration mismatch cancels the requested intervention before delivery. The next learner turn cannot be credited to the requested action.",
+    "propensityRule": "Save and replay the exact eligible-set id, family propensity, and conditional action propensity. The three comparative families must each have family propensity one third at an admitted turn."
+  },
+  "taskContract": {
+    "taskIdRule": "action-outcome-comparable-v2-<world-id>",
+    "knowledgeComponent": "causal_inference_from_public_evidence_and_rules",
+    "prerequisitePath": ["identify_public_evidence", "apply_public_rule", "state_bounded_causal_inference"],
+    "itemDifficulty": 0.5,
+    "contextKey": "action-outcome-comparable-collection.v2|bored|causal-detective-proof-dag|support-1|exact-support-set-v1|codex.gpt-5.6-luna-stack",
+    "contextKeyRule": "Every exported record uses this exact key. World, condition, support level, action, family, exact eligible set, dialogue, and contract remain separate fields."
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "automatedLearner": "codex.gpt-5.6-luna",
+    "learnerClassifier": "codex.gpt-5.6-luna",
+    "learnerRecordAndDag": "codex.gpt-5.6-luna",
+    "learnerAnalysisTransport": "one combined classifier-plus-learner-record/DAG call per learner turn",
+    "cliEffort": "low",
+    "modelOutcomeJudges": [],
+    "outcomeAuthority": "exact agreement between two independent human coders; the saved auxiliary observer can confirm, remain nonconfirmatory, or veto with an opposite binary result or invisible delivery"
+  },
+  "launchConfiguration": {
+    "requiredCommonArguments": [
+      "--all-models codex.gpt-5.6-luna",
+      "--cli-effort low",
+      "--auto-learner",
+      "--auto-learner-profile bored",
+      "--auto-turns 8",
+      "--no-auto-stop-on-grounded",
+      "--dag",
+      "--dag-mode strict_dag",
+      "--tutor-learner-dag",
+      "--typed-actions",
+      "--typed-action-assignment uniform_family_eligible",
+      "--typed-action-knowledge-component causal_inference_from_public_evidence_and_rules",
+      "--typed-action-prerequisites identify_public_evidence,apply_public_rule,state_bounded_causal_inference",
+      "--typed-action-item-difficulty 0.5",
+      "--typed-action-support-level 1",
+      "--register-policy bland",
+      "--safe-registers",
+      "--no-light-adaptation",
+      "--loop-mode strict",
+      "--no-training-reuse",
+      "--acknowledge-research-use",
+      "--model-call-budget 81",
+      "--run-seed 2026090201"
+    ],
+    "perJobArguments": [
+      "--world <world-id>",
+      "--typed-action-task-id action-outcome-comparable-v2-<world-id>",
+      "--eval-repeat <1..15>",
+      "--eval-job-id <registered-job-id>"
+    ],
+    "preflightRule": "The maintained launcher must compile exactly the 60 registered jobs, enforce the exact support eligible set and fixed common arguments, verify all create-once destinations, and pass the shared paid-study launch contract before provider initialization."
+  },
+  "randomization": {
+    "masterSeed": 2026090201,
+    "algorithm": "the runtime deterministic uniform_family_eligible draw keyed by the registered seed, learner profile, world, repeat, turn, and job identity; singleton sets consume no draw",
+    "jobs": [
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r01",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 1
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r02",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 2
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r03",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 3
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r04",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 4
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r05",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 5
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r06",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 6
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r07",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 7
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r08",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 8
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r09",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 9
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r10",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 10
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r11",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 11
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r12",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 12
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r13",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 13
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r14",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 14
+      },
+      {
+        "jobId": "aocv2_foxtrot_jukebox_r15",
+        "worldId": "world_022_foxtrot_jukebox",
+        "repeat": 15
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r01",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 1
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r02",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 2
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r03",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 3
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r04",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 4
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r05",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 5
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r06",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 6
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r07",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 7
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r08",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 8
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r09",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 9
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r10",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 10
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r11",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 11
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r12",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 12
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r13",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 13
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r14",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 14
+      },
+      {
+        "jobId": "aocv2_skyway_bakery_r15",
+        "worldId": "world_026_skyway_bakery",
+        "repeat": 15
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r01",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 1
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r02",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 2
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r03",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 3
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r04",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 4
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r05",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 5
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r06",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 6
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r07",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 7
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r08",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 8
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r09",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 9
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r10",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 10
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r11",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 11
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r12",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 12
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r13",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 13
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r14",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 14
+      },
+      {
+        "jobId": "aocv2_larkspur_fridge_r15",
+        "worldId": "world_028_larkspur_fridge",
+        "repeat": 15
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r01",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 1
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r02",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 2
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r03",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 3
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r04",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 4
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r05",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 5
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r06",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 6
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r07",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 7
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r08",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 8
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r09",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 9
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r10",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 10
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r11",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 11
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r12",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 12
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r13",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 13
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r14",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 14
+      },
+      {
+        "jobId": "aocv2_riverside_clinic_r15",
+        "worldId": "world_029_riverside_clinic",
+        "repeat": 15
+      }
+    ],
+    "noResampling": "Each registered job may yield at most one valid dialogue. No seed, repeat, family draw, job identity, valid dialogue, or reviewed case is replaced after any outcome is visible."
+  },
+  "humanReview": {
+    "requiredCoders": ["human:coder-a", "human:coder-b"],
+    "identityBinding": "Before packet access, two different people are bound to these fixed seat ids in the private handoff record. Their personal identities are not committed to the public repository.",
+    "independence": "Coders work independently and without a model, machine key, auxiliary labels, trace files, readiness report, other submission, or outcome summary.",
+    "packet": "Use scripts/action-outcome-review-packet.js after the complete source corpus is frozen. Give each coder only packet.json, codebook.md, and that coder's differently ordered template.",
+    "caseInclusion": "Include every structurally valid, stalled-state-matched seeded assignment with a joined next public learner turn and the exact registered three-family eligible-set id. Exclude singleton and mismatched sets as audit-only before text review.",
+    "labels": ["success", "failure", "partial", "inconclusive", "measurement_indeterminate"],
+    "binaryMemoryAdmission": "Exact two-coder agreement on visible delivery and success or failure is semantic authority. An opposite binary auxiliary result or invisible delivery forces measurement_indeterminate. An inconclusive or nonbinary auxiliary result remains nonconfirmatory and cannot erase exact human consensus.",
+    "asOfRule": "Record one cutoff after the last preserved source attempt and before packet preparation. The packet, comparison, and readiness import use that same cutoff and create-once destinations.",
+    "measurementPolicy": "human_consensus_auxiliary_veto_v2"
+  },
+  "feasibilityEndpoints": {
+    "reportedForAllScheduledUnits": [
+      "complete, technically failed, substantively failed, and missing dialogues",
+      "planned, reserved, completed, failed, and unresolved model attempts",
+      "total turns and closed next-turn opportunities",
+      "mandatory-policy, seeded assigned, deterministic, invalid, and unrecorded decisions",
+      "condition observed, matched, unmatched, malformed, and overlapping counts",
+      "eligible-family sets and family/action propensities",
+      "assigned, delivered, displaced, and mismatched actions by family and world",
+      "coder delivery and outcome labels, exact agreement, indeterminacy, and coder minutes",
+      "auxiliary-human agreement and final usable binary records by family and world"
+    ],
+    "authoritativeGates": {
+      "execution": {
+        "minimumCompleteDialogues": 56,
+        "minimumCompleteDialoguesPerCollectionWorld": 13,
+        "allAttemptAccountingBalances": true,
+        "noUnregisteredOrDuplicateJob": true
+      },
+      "exchangeabilityAndCoverage": {
+        "exactEligibleSetRequired": "action-outcome-eligible-set.v1:explain_model+minimal_support+request_self_explanation",
+        "minimumConditionMatchedSeededClosedAssignments": 30,
+        "minimumContributingDialogues": 20,
+        "minimumContributingCollectionWorlds": 4,
+        "everyComparativeMoveFamilyAssignedAndDelivered": true,
+        "minimumDeliveredCasesPerComparativeMoveFamily": 8,
+        "minimumIndependentDialoguesPerComparativeMoveFamily": 6,
+        "minimumCollectionWorldsPerComparativeMoveFamily": 3,
+        "minimumVisibleDeliveryRateAmongConditionMatchedAssignments": 0.9
+      },
+      "review": {
+        "bothOriginalCoderSubmissionsComplete": true,
+        "minimumJointDeliveryAndOutcomeExactAgreement": 0.8,
+        "maximumMeasurementIndeterminateRate": 0.2,
+        "minimumFinalUsableBinaryRecords": 24,
+        "minimumFinalUsableBinaryRecordsPerComparativeMoveFamily": 6
+      }
+    },
+    "decision": "Pass licenses only a new design for a separately authorized held-out controller study. Failure closes this collection without top-up, threshold relaxation, recoding, family deletion, world deletion, or controller launch.",
+    "precisionMeaning": "The fixed block uses the sealed v1 yield only to choose sample size before launch. The coverage floors are operational prerequisites for a later design, not power claims or learned controller thresholds."
+  },
+  "analysis": {
+    "primary": "A disposition table against every registered execution, exact-set coverage, and human-review gate.",
+    "descriptive": [
+      "condition and exact-set assignment prevalence with Wilson 95% intervals",
+      "delivery, coder agreement, and indeterminacy rates with Wilson 95% intervals",
+      "family allocation and usable binary yield by world inside the exact eligible set",
+      "immediate reviewed success and failure counts by assigned family and world"
+    ],
+    "forbidden": [
+      "null-hypothesis testing or powered causal claims",
+      "pooling across different eligible-set ids",
+      "ranking singleton diagnose or fade decisions",
+      "outcome-conditioned exclusion, top-up, recoding, or threshold changes",
+      "using held-out evaluation worlds in collection, review, readiness, or memory",
+      "choosing a final controller demotion rule from these collection outcomes"
+    ]
+  },
+  "attemptCeiling": {
+    "normalPlannedCallsPerDialogue": 25,
+    "callPlanPerDialogue": {
+      "opening": 1,
+      "automatedLearner": 8,
+      "combinedLearnerAnalysis": 8,
+      "tutor": 8
+    },
+    "plannedCalls": 1500,
+    "maximumReservationsPerPlannedCall": 3,
+    "perDialogueTechnicalHeadroomReservations": 6,
+    "maximumReservationsPerDialogue": 81,
+    "hardMaximumReservations": 4860,
+    "arithmetic": "60 * ((25 * 3) + 6) = 4860",
+    "role": "fail-before-call ceiling, not a target",
+    "ledger": "The future launcher must use services/paidStudyLaunchContract.js and the shared append-only attempt ledger. Every attempted provider call consumes one reservation before dispatch. Reservations are never moved between studies or restored after failure.",
+    "spendCap": "4860 model-call reservations on the registered Codex CLI route; no separate dollar budget is claimed for this subscription-backed route"
+  },
+  "destinations": {
+    "liveRoot": ".tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02",
+    "packetRoot": ".tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-human-packet",
+    "comparisonRoot": ".tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-human-comparison",
+    "readinessRoot": ".tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-readiness",
+    "createOnce": true,
+    "privateArchive": "Archive the run ledger, traces, attempts, packet, coder originals, private identity binding, machine key, comparison, and readiness outputs to the maintained private study archive. Public summaries contain no learner text or identity mapping."
+  },
+  "dispositions": {
+    "validDialogue": "Preserve once; never rerun or replace.",
+    "measurementIndeterminate": "Retain and report; never recode, adjudicate, replace, or treat as failure. It contributes no binary memory evidence.",
+    "mandatoryOrNonrandomizedAssignment": "Retain for audit. This includes singleton diagnose and fade decisions and every eligible-set mismatch.",
+    "guardDisplacementOrNonDelivery": "Retain and report; do not credit the requested action or its next learner turn; no replacement.",
+    "substantiveFailure": "Stop the affected unit, preserve it, and do not rerun or replace it.",
+    "technicalFailure": "Preserve the failed attempt and stop before another new unit. Standing bounded technical recovery may run only the missing or failed unit under the unchanged design, launch commit, routes, world, profile, seed, job id, horizon, and global ceiling into a fresh nonoverwriting recovery destination. Never rerun a valid unit or choose among outputs. A repeated failure or suspected instrument defect stops the study for human review.",
+    "ceilingReached": "Fail before the next call, preserve all artifacts, and report incomplete. No extra reservations or replacement block.",
+    "configurationDrift": "Stop before the next call. Any change to the study question, population, worlds, routes, condition, assignment, horizon, measurement, seed, destinations, or ceiling requires a prospective design amendment merged before a fresh GO note.",
+    "humanCoderUnavailable": "Do not substitute after packet access. Preserve the uncoded packet and stop; a prospective amendment is required before a replacement coder sees it."
+  },
+  "claimBoundary": "This collection can establish only the operational feasibility and descriptive yield of prospective exact-set randomized action-outcome records, plus descriptive immediate next-turn uptake associations for the maintained simulated bored learner on the four named collection worlds. It cannot establish learning, durable change, transfer, action-family superiority beyond the realized exact set, memory-controller benefit, human-learner benefit, or any result on the two reserved evaluation worlds.",
+  "stoppingRule": "Stop after the 60 registered jobs and their original two-coder packet are dispositioned, or earlier on a repeated technical failure, suspected instrument defect, configuration drift, or global ceiling. No result in this collection itself authorizes a controller run.",
+  "sourcePilot": {
+    "studyId": "tutor-stub-action-outcome-collection-pilot-v1",
+    "disposition": "closed_feasibility_failure",
+    "reuse": "sealed_development_only_never_sample_top_up_or_memory_evidence"
+  },
+  "comparability": {
+    "unit": "exact_eligible_move_family_set",
+    "eligibleSetId": "action-outcome-eligible-set.v1:explain_model+minimal_support+request_self_explanation",
+    "moveFamilies": ["explain_model", "minimal_support", "request_self_explanation"],
+    "minimumFamilies": 2,
+    "auditOnlyMoveFamilies": ["diagnose_elicit", "fade_transfer"],
+    "rule": "Only condition-matched seeded assignments carrying this exact eligible-set id enter the review packet or any later memory view. No pooling across different eligible sets is permitted."
+  }
+}

@@ -12,6 +12,11 @@ import {
   tutorStubActionOutcomeCollectionRouteTable,
 } from '../services/tutorStubActionOutcomeCollectionPilot.js';
 import {
+  loadTutorStubActionOutcomeComparableCollectionDesign,
+  runTutorStubActionOutcomeComparableCollectionPreflight,
+  TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH,
+} from '../services/tutorStubActionOutcomeComparableCollection.js';
+import {
   loadTutorStubActionOutcomeProspectiveRedesign,
   runTutorStubActionOutcomeProspectiveRedesignPreflight,
 } from '../services/tutorStubActionOutcomeProspectiveRedesign.js';
@@ -30,6 +35,11 @@ import {
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN_PATH = 'config/tutor-stub-action-outcome-collection-pilot-design.v1.json';
 const load = () => loadTutorStubActionOutcomeCollectionDesign({ root: REPO_ROOT, designPath: DESIGN_PATH });
+const loadComparable = () =>
+  loadTutorStubActionOutcomeComparableCollectionDesign({
+    root: REPO_ROOT,
+    designPath: TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH,
+  });
 
 test('the prospective redesign preflight fixes the comparison seam without granting model calls', () => {
   const loaded = loadTutorStubActionOutcomeProspectiveRedesign({ root: REPO_ROOT });
@@ -245,6 +255,76 @@ test('the registered design compiles exactly 24 balanced, held-out-safe jobs', (
     assert.ok(job.args.includes('--no-training-reuse'));
     assert.ok(!plan.held_out_worlds.includes(job.world_id));
   }
+});
+
+test('the v2 design compiles exactly 60 balanced jobs inside the fixed comparable set', () => {
+  const loaded = loadComparable();
+  const destination = path.resolve(REPO_ROOT, loaded.design.destinations.liveRoot);
+  const plan = buildTutorStubActionOutcomeCollectionPlan({ loaded, destination });
+
+  assert.equal(plan.study_id, 'tutor-stub-action-outcome-comparable-collection-v2');
+  assert.equal(plan.jobs.length, 60);
+  assert.equal(plan.planned_turns, 480);
+  assert.equal(plan.planned_model_calls, 1500);
+  assert.equal(plan.model_attempt_ceiling, 4860);
+  assert.equal(
+    loaded.design.comparability.eligibleSetId,
+    'action-outcome-eligible-set.v1:explain_model+minimal_support+request_self_explanation',
+  );
+  assert.deepEqual(loaded.design.comparability.moveFamilies, [
+    'explain_model',
+    'minimal_support',
+    'request_self_explanation',
+  ]);
+  assert.equal(loaded.design.humanReview.measurementPolicy, 'human_consensus_auxiliary_veto_v2');
+  for (const worldId of loaded.design.population.collectionWorlds) {
+    assert.deepEqual(
+      plan.jobs.filter((job) => job.world_id === worldId).map((job) => job.repeat),
+      Array.from({ length: 15 }, (_, index) => index + 1),
+    );
+  }
+});
+
+test('the v2 zero-call preflight pins the comparable design, routes, and ceiling', async () => {
+  const loaded = loadComparable();
+  const result = await runTutorStubActionOutcomeComparableCollectionPreflight({
+    loaded,
+    buildPlan: buildTutorStubActionOutcomeCollectionPlan,
+    destinationExists: () => false,
+    resolveArchive: () => '/private/fixture-archive',
+    archiveIsWritable: () => true,
+    probeRoute: (route) => ({ ...route, status: 'passed_zero_call', model_calls: 0 }),
+    smokeRole: async (route) => ({ ...route, status: 'passed_zero_call_stub', model_calls: 0 }),
+  });
+
+  assert.equal(result.status, 'passed_zero_call');
+  assert.equal(result.model_calls_executed, 0);
+  assert.equal(result.production_writes, 0);
+  assert.equal(result.plan.jobs.length, 60);
+  assert.equal(result.plan.model_attempt_ceiling, 4860);
+  assert.deepEqual(
+    Object.entries(result.checks).filter(([, passed]) => !passed),
+    [],
+  );
+});
+
+test('the maintained launcher selects the pinned v2 design without authorizing calls', async () => {
+  let observedStudy = null;
+  const result = await collectionLauncherMain(
+    ['--design', TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH, '--dry-run'],
+    {
+      runPreflight: async ({ loaded }) => {
+        observedStudy = loaded.design.studyId;
+        return {
+          status: 'passed_zero_call',
+          checks: { fixture: true },
+          plan: { jobs: [], model_attempt_ceiling: loaded.design.attemptCeiling.hardMaximumReservations },
+        };
+      },
+    },
+  );
+  assert.equal(observedStudy, 'tutor-stub-action-outcome-comparable-collection-v2');
+  assert.equal(result.plan.model_attempt_ceiling, 4860);
 });
 
 test('the route table holds every model-backed role to the registered Luna stack', () => {
