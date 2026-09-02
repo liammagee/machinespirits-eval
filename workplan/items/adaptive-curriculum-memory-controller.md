@@ -116,6 +116,20 @@ contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
 
+- 2026-09-02: After PR #946 merged, the final real zero-call preflight passed
+  with exactly 22 untouched dialogues and 1,782 remaining reservations, but the
+  live admission stopped before creating Recovery 3 or making a provider call.
+  Root cause: the action-outcome loader independently validated Recovery 2's
+  sealed report-backed provider failure, while the shared paid-study gate still
+  treated its default `recovery_permitted: false` study-ledger field as final.
+  Added a fail-closed admission check that reads the sealed action-outcome
+  report and run ledger itself. It admits no caller override: launch identity,
+  recovery link, job order, per-job child attempt accounting, cumulative
+  reservations, final technical-failure disposition, missing units, and the
+  unchanged hard ceiling must all agree. An absent or tampered report remains
+  blocked. The focused paid-contract and collection suites pass 36/36. Model
+  calls and new reservations for this failed admission: 0.
+
 - 2026-09-02: The reviewed missing-only continuation completed three more
   dialogues, then stopped on a provider transport failure in
   `aocv2_larkspur_fridge_r08`: two automated-learner attempts failed before an
