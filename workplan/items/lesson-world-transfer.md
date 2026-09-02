@@ -15,8 +15,10 @@ links:
   items:
     - state-detection-without-word-lists
     - hero-demo-ghost-world-examples
+    - tutor-stub-closure-assertion-timing
   notes:
     - notes/poetics/hero-demo-runs/2026-09-01-adjudication-draft.md
+    - notes/poetics/hero-demo-runs/2026-09-02-lesson-worlds-bench.md
 tags:
   - adaptive-tutor
   - worlds
@@ -56,3 +58,5 @@ keep the sense of discovery and drop the intrigue.
 
 - 2026-09-02: step 1 built on branch `claude/de-genre-tutor-stub`.
 - 2026-09-02: step 1 committed (24caad348) and step 2 committed (bd2bf097c) on claude/de-genre-tutor-stub. Worlds 038-040 lint PASS, quality PASS. Step 3 designed in notes/poetics/hero-demo-runs/2026-09-02-lesson-worlds-bench.md with DAG-on recipes; waits on go + ceiling. Push blocked by the pre-push benchmark hook (needs the user to run it).
+- 2026-09-02: step 3 ran under the go (ceiling 600 dialogue calls, 24 judge calls; used 313 and 6). Six attended runs on 038/039/040, learner DAG on, forced-card and plants-only versions, Sonnet 5 both seats, judge codex.gpt-5.6-sol on 34 plants: 23 HIT, 2 PARTIAL, 9 MISS. 039 closed in both versions; 038 plants and 040 plants hit the cap; 040 forced stopped at turn 16 on a CLI timeout, not resampled. 040 was re-authored after a zero-call misfire (predicate rename, question re-worded). Traces packed under notes/poetics/hero-demo-runs/world-03{8,9}/ and world-040/, archived in the private repo (dba9634fa). Commit f9236d2c3. Results and three defects in notes/poetics/hero-demo-runs/2026-09-02-lesson-worlds-bench.md.
+- 2026-09-02: the authored openings of 037, 038 and 039 failed the opening audit, so every run on them (hero runs included) spoke the fallback opening. Fixed in 4a7e1cc59; all four lesson worlds now pass offline. The closure defect (assertion must land at or after grounding) is carded as tutor-stub-closure-assertion-timing. Steps 1-3 done; step 4 is the detector card, unstarted. PR #944 open.
