@@ -13,6 +13,7 @@ claim_status: planned
 links:
   notes:
     - notes/invested-rival-learner-iteration-v1-design.md
+    - notes/invested-rival-learner-iteration-v1-go-2026-09-01.md
   items:
     - invested-rival-luna-reference
 tags: [qwen, luna, learner-profiles, tutor-stub, iteration, holdout]
@@ -32,7 +33,7 @@ abliterated Qwen on a held-out contemporary inquiry.
   ceiling.
 - [x] Prompt/world audits and focused tests pass; the zero-call preview contains
   two development lanes, three held-out lanes and 25 assessment packets.
-- [ ] The user says `GO`; the design and plain GO note reach `main` in one PR.
+- [ ] The user authorizes launch; the design and plain GO note reach `main` in one PR.
 - [ ] A clean detached launch completes all five dialogues and assessments, or
   preserves the first non-recoverable failure under the shared ceiling.
 - [ ] The private report separates development from held-out evidence and states
@@ -50,3 +51,7 @@ abliterated Qwen on a held-out contemporary inquiry.
   derivation-quality gate; speaker prompt and privilege audits pass at every
   proof-release boundary; focused continuity, launcher-inventory and workplan
   checks pass. No model was contacted.
+- 2026-09-01: User authorized the prepared study with "okay lets proceed."
+  The plain GO note records that instruction without requiring a special
+  copy/paste formula. Model activity remains inactive at 0/110 attempts while
+  the single launch PR is prepared.
