@@ -271,6 +271,10 @@ export async function runTutorStubActionOutcomeComparableCollectionPreflight({
   const destinationAvailability = Object.fromEntries(
     Object.entries(destinations).map(([key, value]) => [key, !destinationExists(value)]),
   );
+  const registeredDestinationsMatchLaunchKind = recovery
+    ? destinationAvailability.liveRoot === false &&
+      ['packetRoot', 'comparisonRoot', 'readinessRoot'].every((key) => destinationAvailability[key])
+    : Object.values(destinationAvailability).every(Boolean);
   const archiveDirectory = resolveArchive(null, { cwd: loaded.root, repoRoot: loaded.root });
   const archiveWritable = archiveIsWritable(archiveDirectory);
   const checks = {
@@ -293,7 +297,7 @@ export async function runTutorStubActionOutcomeComparableCollectionPreflight({
     role_smokes_passed: roleSmokes.every((smoke) => smoke.status === 'passed_zero_call_stub'),
     private_archive_available: Boolean(archiveDirectory),
     private_archive_writable: archiveWritable,
-    all_registered_destinations_absent: Object.values(destinationAvailability).every(Boolean),
+    registered_destinations_match_launch_kind: registeredDestinationsMatchLaunchKind,
     selected_destination_absent: !destinationExists(path.resolve(destination)),
     planned_calls_match_design: plan.planned_model_calls === 1500,
     attempt_ceiling_matches_design: plan.model_attempt_ceiling === 4860,
