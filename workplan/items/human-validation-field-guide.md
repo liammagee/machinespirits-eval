@@ -1,11 +1,11 @@
 ---
 id: human-validation-field-guide
 title: "Publishable field guide for the remaining human validation work"
-status: review
+status: done
 type: content
 priority: P1
 owner: codex
-branch: codex/human-task-editable-packets
+branch: codex/close-human-validation-field-guide
 source: manual
 created: 2026-09-01
 updated: 2026-09-01
@@ -30,6 +30,8 @@ links:
     - superego-taxonomy-human-validation
     - rubric-v3-calibration-and-held-out-acceptance
     - a1-human-learner-validation
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/931
   code:
     - notes/poetics/publish-human-validation-guide-to-site.js
 tags:
@@ -90,3 +92,7 @@ taxonomy download is a public template and codebook only: its protected 40-item
 sample remains private and must be inserted by the organiser before assignment.
 Extended the site publisher to stage the complete download directory beside the
 page.
+
+2026-09-01 Codex: DONE after PR #931 merged as `eda7bccd` with all required CI
+checks green. The public guide and its downloadable Word and Excel packets are
+now present on `main`; live publication remains an explicit separate action.
