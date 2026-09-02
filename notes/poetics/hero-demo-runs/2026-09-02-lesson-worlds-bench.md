@@ -217,8 +217,13 @@ Three defects for cards, none of which needs a re-run:
 2. The authored openings of 037, 038 and 039 fail the opening audit
    (invitation or exact question missing), so every run on them, hero
    runs included, spoke the deterministic fallback opening. 040 is the
-   first lesson world to speak its authored opening. Fix the three texts;
-   the offline check is the scratch script named in the run log.
+   first lesson world to speak its authored opening. Fixed after the
+   bench: 037 and 038 now end with an invitation sentence after the
+   question ("Tell me which step you want to examine first"), and 039 now
+   quotes the public question word for word ("£80", "25%") instead of
+   spelling the numbers out. All three pass the offline opening audit and
+   the leak audit. The bench traces above were run on the fallback
+   opening and stand as recorded.
 3. The claude CLI timed out once at 180 s on a turn-15 analysis wait of
    355 s (040 forced). The run was not resampled. The wait is the learner
    analysis call, not the tutor call.
