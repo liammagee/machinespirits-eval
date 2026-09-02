@@ -449,7 +449,7 @@ test('one recovery may continue after a sealed pre-provider startup failure', (t
   finalRecovery.close({ type: 'run_sealed', status: 'complete' });
 });
 
-test('a recovery with any child model attempt cannot use the startup exception', (t) => {
+test('a recovery with child model attempts requires a fully aligned action-outcome failure report', (t) => {
   const value = fixture(t, { cap: 3, noteCap: '3' });
   const initialDestination = path.join(value.base, 'child-call-initial');
   const initial = admitPaidStudyLaunch({ ...value.contract, destination: initialDestination });
@@ -468,8 +468,8 @@ test('a recovery with any child model attempt cannot use the startup exception',
     job_id: 'child-call-unit',
     status: 'technical_failure',
     child_reserved_attempts: 1,
-    child_completed_attempts: 1,
-    child_failed_attempts: 0,
+    child_completed_attempts: 0,
+    child_failed_attempts: 1,
     shared_reserved_attempts: 1,
   });
   failedRecovery.close({ type: 'run_sealed', status: 'technical_failure', reserved_attempts: 1 });
@@ -483,6 +483,54 @@ test('a recovery with any child model attempt cannot use the startup exception',
       }),
     /sealed technical predecessor/u,
   );
+
+  const reportPath = path.join(failedRecoveryDestination, 'report.json');
+  const report = {
+    schema: 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1',
+    study_id: 'fixture-study',
+    status: 'technical_failure',
+    halt_reason: 'technical_failure in child-call-unit',
+    source: { commit: failedRecovery.source.commit },
+    design: { path: value.contract.designPath },
+    recovery: { source_root: initialDestination },
+    execution: {
+      missing_units: 1,
+      model_attempts: {
+        reserved_in_predecessor: 1,
+        reserved_in_current_run: 1,
+        reserved_by_shared_study_ledger: 2,
+        hard_ceiling: 3,
+      },
+    },
+    rows: [
+      {
+        job_id: 'child-call-unit',
+        status: 'technical_failure',
+        model_attempts: { reserved: 1, completed: 0, failed: 2 },
+      },
+    ],
+  };
+  fs.writeFileSync(reportPath, `${JSON.stringify(report)}\n`);
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        destination: path.join(value.base, 'child-call-final-recovery-with-tampered-report'),
+        recoveryFrom: failedRecoveryDestination,
+      }),
+    /sealed technical predecessor/u,
+  );
+  report.rows[0].model_attempts.failed = 1;
+  fs.writeFileSync(reportPath, `${JSON.stringify(report)}\n`);
+
+  const finalRecovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'child-call-final-recovery-with-report'),
+    recoveryFrom: failedRecoveryDestination,
+  });
+  assert.equal(finalRecovery.studyReserved, 2);
+  finalRecovery.reserveModelAttempts(1, { unit: 'remaining-unit' });
+  finalRecovery.close({ type: 'run_sealed', status: 'complete' });
 });
 
 test('a repeated pre-provider startup failure cannot open another recovery', (t) => {

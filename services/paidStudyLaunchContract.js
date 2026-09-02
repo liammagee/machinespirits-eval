@@ -184,6 +184,90 @@ function isSealedZeroProviderStartupFailure(event) {
   );
 }
 
+function isSealedReportBackedActionOutcomeFailure(event) {
+  if (
+    event?.type !== 'study_run_sealed' ||
+    event.status !== 'technical_failure' ||
+    event.recovery_permitted === true ||
+    !path.isAbsolute(event.destination || '') ||
+    !path.isAbsolute(event.run_ledger || '') ||
+    path.dirname(path.resolve(event.run_ledger)) !== path.resolve(event.destination)
+  ) {
+    return false;
+  }
+  const destination = path.resolve(event.destination);
+  const reportPath = path.join(destination, 'report.json');
+  if (!fs.existsSync(reportPath)) return false;
+
+  let report;
+  try {
+    report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  } catch {
+    return false;
+  }
+  const runEvents = readJsonLines(path.resolve(event.run_ledger), 'report-backed technical-failure run ledger');
+  const launches = runEvents.filter((candidate) => candidate.type === 'launch_admitted');
+  const reservations = runEvents.filter((candidate) => candidate.type === 'model_attempt_reserved');
+  const units = runEvents.filter((candidate) => candidate.type === 'unit_complete');
+  const seal = runEvents.at(-1);
+  const reportRows = Array.isArray(report.rows) ? report.rows : [];
+  const currentRows = reportRows.slice(-units.length);
+  const reservedInRun = reservations.reduce((sum, candidate) => sum + Number(candidate.count || 0), 0);
+  const priorReserved = Number(report.execution?.model_attempts?.reserved_in_predecessor);
+  let cumulativeReserved = 0;
+  const aligned = reservations.every((reservation, index) => {
+    cumulativeReserved += Number(reservation.count || 0);
+    const unit = units[index];
+    const row = currentRows[index];
+    return (
+      Number.isInteger(reservation.count) &&
+      reservation.count > 0 &&
+      reservation.reserved === cumulativeReserved &&
+      unit?.job_id === reservation.unit &&
+      unit.status === row?.status &&
+      row.job_id === reservation.unit &&
+      Number(row.model_attempts?.reserved) === Number(unit.child_reserved_attempts) &&
+      Number(row.model_attempts?.completed) === Number(unit.child_completed_attempts) &&
+      Number(row.model_attempts?.failed) === Number(unit.child_failed_attempts) &&
+      Number(unit.child_reserved_attempts) ===
+        Number(unit.child_completed_attempts) + Number(unit.child_failed_attempts) &&
+      Number(unit.shared_reserved_attempts) === cumulativeReserved
+    );
+  });
+  return (
+    report.schema === 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1' &&
+    report.study_id === launches[0]?.study_id &&
+    report.status === 'technical_failure' &&
+    report.halt_reason === `technical_failure in ${units.at(-1)?.job_id}` &&
+    report.source?.commit === launches[0]?.source_commit &&
+    report.design?.path === launches[0]?.design_path &&
+    path.resolve(report.recovery?.source_root || '') === path.resolve(launches[0]?.recovery_from || '') &&
+    launches.length === 1 &&
+    launches[0].launch_kind === 'recovery' &&
+    reservations.length > 0 &&
+    reservations.length === units.length &&
+    currentRows.length === units.length &&
+    new Set(reservations.map((candidate) => candidate.unit)).size === reservations.length &&
+    units.filter((candidate) => candidate.status === 'technical_failure').length === 1 &&
+    units.at(-1)?.status === 'technical_failure' &&
+    units.slice(0, -1).every((candidate) => candidate.status === 'complete') &&
+    aligned &&
+    Number.isInteger(reservedInRun) &&
+    reservedInRun > 0 &&
+    Number(seal?.reserved_attempts) === reservedInRun &&
+    seal?.type === 'run_sealed' &&
+    seal.status === 'technical_failure' &&
+    Number(event.reserved_in_run) === reservedInRun &&
+    Number.isInteger(priorReserved) &&
+    priorReserved >= 0 &&
+    priorReserved + reservedInRun === Number(event.study_reserved) &&
+    Number(report.execution?.model_attempts?.reserved_in_current_run) === reservedInRun &&
+    Number(report.execution?.model_attempts?.reserved_by_shared_study_ledger) === Number(event.study_reserved) &&
+    Number(report.execution?.model_attempts?.hard_ceiling) === Number(event.model_attempt_ceiling) &&
+    Number(report.execution?.missing_units) > 0
+  );
+}
+
 function writeDurableJsonOnce(filePath, value) {
   const descriptor = fs.openSync(filePath, 'wx');
   try {
@@ -404,11 +488,14 @@ function validateStudyLedger({ events, studyId, spendCap, recoveryFrom }) {
   const seal = events[lastSealIndex];
   const ordinaryRecovery = seal?.recovery_permitted === true;
   const zeroProviderStartupRecovery = isSealedZeroProviderStartupFailure(seal);
+  const reportBackedActionOutcomeRecovery = isSealedReportBackedActionOutcomeFailure(seal);
   const zeroProviderStartupFailures = events.filter(isSealedZeroProviderStartupFailure).length;
   if (
     lastSealIndex < lastLaunchIndex ||
     seal?.destination !== recoveryFrom ||
-    (!ordinaryRecovery && (!zeroProviderStartupRecovery || zeroProviderStartupFailures !== 1))
+    (!ordinaryRecovery &&
+      !reportBackedActionOutcomeRecovery &&
+      (!zeroProviderStartupRecovery || zeroProviderStartupFailures !== 1))
   ) {
     throw new Error('recovery requires the latest run to be a sealed technical predecessor');
   }
