@@ -8,16 +8,26 @@ import { fileURLToPath } from 'node:url';
 
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
 import {
+  buildTutorStubActionOutcomeCollectionPlan,
   loadTutorStubActionOutcomeCollectionDesign,
   runTutorStubActionOutcomeCollectionPreflight,
   TUTOR_STUB_ACTION_OUTCOME_COLLECTION_DESIGN_PATH,
 } from '../services/tutorStubActionOutcomeCollectionPilot.js';
+import {
+  loadTutorStubActionOutcomeComparableCollectionDesign,
+  runTutorStubActionOutcomeComparableCollectionPreflight,
+  TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH,
+} from '../services/tutorStubActionOutcomeComparableCollection.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const TUTOR_STUB_ACTION_OUTCOME_COLLECTION_USAGE = `Usage:
   node scripts/run-tutor-stub-action-outcome-collection-pilot.js \
     --design config/tutor-stub-action-outcome-collection-pilot-design.v1.json \
+    --dry-run
+
+  node scripts/run-tutor-stub-action-outcome-collection-pilot.js \
+    --design config/tutor-stub-action-outcome-comparable-collection-design.v2.json \
     --dry-run
 
   node scripts/run-tutor-stub-action-outcome-collection-pilot.js \
@@ -36,13 +46,13 @@ export const TUTOR_STUB_ACTION_OUTCOME_COLLECTION_USAGE = `Usage:
     --go-note-path notes/<signed-study-go-note>.md \
     --accept-charges
 
---dry-run compiles all 24 registered jobs, probes the local CLI version, exercises
+--dry-run compiles all jobs in the selected registered design, probes the local CLI version, exercises
 the three role transports with local stubs, verifies the private archive and all
 create-once destinations, and writes nothing. It executes no provider call.
 
 The paid path is unreachable without the shared standing launch contract: the
 merged design, a clean detached launch commit, a signed GO note, create-once state,
-the append-only ledger, and the registered 1,944-attempt hard ceiling. This launcher
+the append-only ledger, and the selected design's registered hard ceiling. This launcher
 collects the corpus only. It does not prepare or compare human codes, enable memory,
 or authorize the later controller study. Recovery preserves and skips every prior
 completed or failed unit, runs only never-attempted jobs, and remains inside the
@@ -604,11 +614,21 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     process.stdout.write(`${TUTOR_STUB_ACTION_OUTCOME_COLLECTION_USAGE}\n`);
     return null;
   }
-  const loaded = loadTutorStubActionOutcomeCollectionDesign({ root: ROOT, designPath: values.design });
+  const comparableDesign = values.design === TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH;
+  const loaded = comparableDesign
+    ? loadTutorStubActionOutcomeComparableCollectionDesign({ root: ROOT, designPath: values.design })
+    : loadTutorStubActionOutcomeCollectionDesign({ root: ROOT, designPath: values.design });
   if (values['recovery-from'] && !values.destination) {
     throw new Error('action-outcome recovery requires --destination');
   }
-  let preflight = await (overrides.runPreflight || runTutorStubActionOutcomeCollectionPreflight)({
+  const selectedPreflight = comparableDesign
+    ? (input) =>
+        runTutorStubActionOutcomeComparableCollectionPreflight({
+          ...input,
+          buildPlan: buildTutorStubActionOutcomeCollectionPlan,
+        })
+    : runTutorStubActionOutcomeCollectionPreflight;
+  let preflight = await (overrides.runPreflight || selectedPreflight)({
     loaded,
     ...(values.destination ? { destination: path.resolve(values.destination) } : {}),
     recovery: Boolean(values['recovery-from']),

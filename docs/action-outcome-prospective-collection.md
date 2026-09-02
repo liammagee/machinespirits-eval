@@ -2,10 +2,10 @@
 
 Workplan item: `adaptive-curriculum-memory-controller`.
 
-This zero-call engineering contract closes the action-selection gap between the
-typed-action runtime and the human-review packet. It does not register or launch
-a model-backed collection, choose scientific conditions or thresholds, or test
-whether action-outcome memory improves learning or transfer.
+The original zero-call engineering contract closed the action-selection gap
+between the typed-action runtime and the human-review packet. The current v2
+design now registers a fresh collection inside the repaired comparison seam. It
+still does not test whether action-outcome memory improves learning or transfer.
 
 The first registered collection later failed its feasibility gates. Its sealed
 quality audit remains the historical result. The prospective successor is
@@ -161,3 +161,25 @@ sets, family and action propensities, delivered/displaced actions, conditions,
 review dispositions, and usable binary records. It failed the registered
 feasibility gates and therefore did not license or size a later controller study.
 The action-outcome memory controller remained disabled throughout collection.
+
+## Registered comparable collection v2
+
+`config/tutor-stub-action-outcome-comparable-collection-design.v2.json`
+registers the successor block. It contains 60 fresh dialogues, 15 independent
+repeats in each of the four collection worlds, a new master seed, the same
+Luna-only low-effort route, and a fixed ceiling of 4,860 reservations for 1,500
+planned calls. The maintained collection launcher accepts this exact pinned
+design through `services/tutorStubActionOutcomeComparableCollection.js`.
+
+Only stalled-state decisions with the exact three-family support eligible set
+enter comparative review. Diagnose and fade singleton decisions remain visible
+audit records. The measurement policy is
+`human_consensus_auxiliary_veto_v2`: exact agreement between two independent
+human coders supplies the semantic label; an opposite binary auxiliary result
+or invisible delivery makes the case indeterminate; an inconclusive auxiliary
+result is retained as nonconfirmatory and does not erase human agreement.
+
+The sealed v1 pilot is not part of the new sample. Rowan Flat and Tideway
+Makerspace remain outside collection, review, readiness, and memory. The
+controller stays disabled, so even a passing v2 collection can only support a
+new held-out controller-study design.

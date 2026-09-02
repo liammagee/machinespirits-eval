@@ -7,8 +7,8 @@ priority: P2
 owner: codex
 source: review
 created: 2026-07-11
-updated: 2026-09-01
-branch: codex/action-outcome-prospective-redesign
+updated: 2026-09-02
+branch: codex/action-outcome-prospective-collection-v2
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -24,6 +24,8 @@ links:
     - config/tutor-stub-action-outcome-collection-pilot-design.v1.json
     - config/tutor-stub-action-outcome-prospective-redesign.v1.json
     - notes/2026-09-01-action-outcome-prospective-redesign.md
+    - config/tutor-stub-action-outcome-comparable-collection-design.v2.json
+    - services/tutorStubActionOutcomeComparableCollection.js
     - services/tutorStubActionOutcomeCollectionPilot.js
     - services/tutorStubActionOutcomeProspectiveRedesign.js
     - scripts/check-tutor-stub-action-outcome-prospective-redesign.js
@@ -108,6 +110,21 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: Registered the fresh fixed-size collection required by the
+  prospective redesign. The new block contains 60 dialogues across the same
+  four collection worlds, 15 independent repeats per world, a fresh master
+  seed, Luna-only low-effort routes, an eight-turn horizon, and a fail-before-call
+  ceiling of 4,860 reservations for 1,500 planned calls. Comparative review is
+  restricted to the exact support-phase set containing `explain_model`,
+  `minimal_support`, and `request_self_explanation`; diagnose and fade singleton
+  decisions remain audit-only. Two independent human coders remain the semantic
+  authority under `human_consensus_auxiliary_veto_v2`. The sealed v1 pilot is
+  excluded from the new sample, Rowan Flat and Tideway Makerspace remain held
+  out, and the memory controller remains disabled. Extended the maintained
+  launcher with a separate pinned v2 preflight while leaving the historical v1
+  validation boundary intact. This registration grants no call authority until
+  its merged commit and separate signed GO note exist.
 
 - 2026-09-01: Implemented the zero-call prospective redesign after the first
   collection pilot failed feasibility. Every assignment now carries a canonical
