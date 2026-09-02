@@ -1,6 +1,6 @@
 # Invested-rival learner replication v1
 
-Status: registered on `main`; signed launch note committed; launch pending
+Status: paused after 76 attempts; bounded recovery ready for merge
 
 ## Question
 
@@ -153,3 +153,19 @@ remain descriptive because the Luna and Qwen routes differ.
   design path is this Markdown note. The GO note was corrected to name both;
   the study, inputs, routes, measures and ceiling did not change. No run
   destination was created and 0/396 attempts were reserved.
+- 2026-09-02 — The corrected note admitted the run. Four Luna dialogues
+  completed: both Larkspur arms and both Riverside arms. The Tideway Luna
+  baseline completed six exchanges and saved its seventh learner reply before
+  the user requested a pause during tutor turn seven. The runner was
+  interrupted immediately; model activity stopped at 76/396 reservations.
+- 2026-09-02 — The stale launch lease was checked against its dead process and
+  durably sealed as a technical interruption eligible for bounded recovery.
+  The source contains 75 completed responses, one response-free interrupted
+  Sol attempt, four complete dialogues and one contiguous partial prefix. The
+  recovery will reuse all completed work without charge, retry only that tutor
+  turn, and run only the 13 untouched dialogues and 90 assessments afterward.
+- 2026-09-02 — Zero-call recovery rehearsal passed against the actual sealed
+  source. It identified the four complete arms in fixed execution order, the
+  exact 13-response Tideway prefix, and only tutor turn seven as the
+  response-free retry. The shared 12-test recovery contract, 80 focused tests,
+  lint and formatting all passed. Model activity remains inactive at 76/396.

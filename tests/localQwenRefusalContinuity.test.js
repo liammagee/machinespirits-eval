@@ -71,6 +71,7 @@ import {
   analyzeLearnerReplication,
   buildLearnerReplicationPlan,
   callLearnerReplicationModel,
+  readLearnerReplicationRecovery,
   replicationAssessmentBatches,
   main as runLearnerReplication,
 } from '../scripts/run-invested-rival-learner-replication.js';
@@ -377,6 +378,62 @@ test('learner replication paid path fails before writing without standing launch
   const outDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-authority-')), 'out');
   await assert.rejects(runLearnerReplication(['--live', '--output', outDir]), /shared launch arguments/iu);
   assert.equal(fs.existsSync(outDir), false);
+});
+
+test('learner replication recovery preserves the completed prefix and retries only the interrupted unit', () => {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-recovery-'));
+  fs.writeFileSync(path.join(sourceDir, 'plan.json'), JSON.stringify(learnerReplicationPlan));
+  const runEvents = [
+    {
+      type: 'launch_admitted',
+      study_id: learnerReplicationPlan.id,
+      spend_cap: learnerReplicationPlan.total_attempt_ceiling,
+    },
+    ...Array.from({ length: 4 }, (_value, index) => ({
+      type: 'model_attempt_reserved',
+      count: 1,
+      reserved: index + 1,
+    })),
+    {
+      type: 'run_sealed',
+      status: 'technical_failure',
+      recovery_permitted: true,
+      reserved_attempts: 4,
+    },
+  ];
+  fs.writeFileSync(path.join(sourceDir, 'run-ledger.jsonl'), `${runEvents.map(JSON.stringify).join('\n')}\n`);
+
+  const completeDir = path.join(sourceDir, 'worlds', 'larkspur', 'dialogues', 'L0');
+  fs.mkdirSync(completeDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(completeDir, 'dialogue.json'),
+    JSON.stringify({ turns: [{ turn: 1, learner: 'One.', tutor: 'Two.' }] }),
+  );
+  for (const speaker of ['learner', 'tutor']) {
+    fs.writeFileSync(path.join(completeDir, `1-${speaker}.request.json`), '{}');
+    fs.writeFileSync(path.join(completeDir, `1-${speaker}.response.json`), JSON.stringify(fake(reply(speaker))));
+  }
+
+  const partialDir = path.join(sourceDir, 'worlds', 'larkspur', 'dialogues', 'L1');
+  fs.mkdirSync(partialDir, { recursive: true });
+  fs.writeFileSync(path.join(partialDir, '1-learner.request.json'), '{}');
+  fs.writeFileSync(path.join(partialDir, '1-learner.response.json'), JSON.stringify(fake(reply('Saved learner'))));
+  fs.writeFileSync(path.join(partialDir, '1-tutor.request.json'), '{}');
+
+  const recovery = readLearnerReplicationRecovery(learnerReplicationPlan, sourceDir);
+  assert.equal(recovery.priorAttempts, 4);
+  assert.equal(recovery.responseCount, 3);
+  assert.equal(recovery.interruptedResponseFreeAttempts, 1);
+  assert.deepEqual(
+    recovery.completed.map(({ world, arm }) => `${world.key}/${arm.id}`),
+    ['larkspur/L0'],
+  );
+  assert.equal(recovery.partial.key, 'larkspur/L1');
+  assert.deepEqual(Object.keys(recovery.partial.savedReplies), ['1-learner']);
+  assert.deepEqual(
+    { turn: recovery.partial.failedUnit.turn, speaker: recovery.partial.failedUnit.speaker },
+    { turn: 1, speaker: 'tutor' },
+  );
 });
 
 test('Luna reference routes learner to Luna, tutor to Sol, and never adds a superego call', async () => {

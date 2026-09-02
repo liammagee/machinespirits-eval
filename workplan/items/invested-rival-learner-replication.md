@@ -9,7 +9,7 @@ source: manual
 created: 2026-09-02
 updated: 2026-09-02
 branch: codex/invested-rival-learner-replication
-verification: "Pending: 18 sealed dialogues and 72 logical Opus assessments across nine matched scaffold/control pairs, analyzed under the preregistered gates without exceeding 396 attempts."
+verification: "Paused recovery: 4 dialogues complete, one partial prefix preserved, 76/396 attempts reserved; 14 dialogues including the partial arm and 72 logical Opus assessments remain."
 claim_status: planned
 links:
   notes:
@@ -57,3 +57,13 @@ new contemporary proof worlds.
   named only the YAML, while the runner registers the Markdown design path.
   Correcting the note to name both paths is documentation-only recovery; no
   provider was contacted and the approved study is unchanged.
+- 2026-09-02: Corrected admission launched successfully. At the user's pause,
+  four Luna dialogues were complete and Tideway Luna baseline had six complete
+  exchanges plus learner turn seven. The interruption was sealed at 76/396:
+  75 completed responses and one response-free Sol attempt. A fresh recovery
+  will preserve the prefix, retry only the interrupted tutor turn, and continue
+  the untouched plan.
+- 2026-09-02: Actual-source recovery rehearsal found exactly four complete
+  arms, 13 saved replies in the Tideway partial arm, and one interrupted tutor
+  attempt. Shared recovery tests passed 12/12 and the focused suite passed
+  80/80. Recovery code is ready to merge; model activity is inactive at 76/396.
