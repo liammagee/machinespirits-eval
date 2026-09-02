@@ -1,0 +1,50 @@
+== opening
+TUTOR: Homework question six: a jacket at £80 goes up by a quarter and then down by a quarter. The pupil has written £80, "they cancel", and would like to move on. On the homework sheet, the question is exact: A jacket costs £80. The price goes up by 25% and then down by 25%. What does it cost now, and why? The homework sheet has no tested clue in it yet. What should we examine first—or which word should we unpack?
+
+== turn 1
+LEARNER: I mean it's up a quarter then down a quarter, so isn't it just £80 still? What do I actually write for "why"?
+TUTOR: I hear you — "cancel" feels right because up and down are equal. Let's open the homework sheet and write your claim exactly as you gave it: £80, by cancellation, no "why" yet. That "why" column stays blank next to it. Right below it, we've got two blank price tags sitting on the desk, ready to be filled in one step at a time. Let's write the first tag together — what does the price become after just the 25% rise, before any fall happens?
+
+== turn 2
+LEARNER: Just tell me the number for the first tag. Is it 100 or something else? Dev says seventy-five for the end but I mean right now, after the rise — what do I put down?
+TUTOR: Yes — £100 is right for the first tag: 25% of £80 is £20, so £80 up to £100. I look at the homework sheet: Up a quarter, then down a quarter: the two undo each other, back to eighty pounds. That is what the pupil wrote, and it is what a step forward and a step back look like. What does that show?
+
+== turn 3
+LEARNER: So the second tag's £100 minus 25%, right? What number do I put there — 75?
+TUTOR: Your reading of “The learner uses £100 as the new base and tentatively proposes £75” is the one I will answer now. I look at the homework sheet: Write the two tags. The first says eighty pounds and the rise adds a quarter of eighty, which is twenty pounds. The second tag says one hundred pounds, and the sale sticker takes a quarter off that. Twenty up and a quarter of a hundred down are not the same number of pounds, so the two changes were never the same size. What changes now?
+
+== turn 4
+LEARNER: I did the whole sheet like this, every question. Now it's wrong because of a sticker on a tag? Tell me one thing I did right before you throw the £75 at me.
+TUTOR: I hear your point about “I did the whole sheet like this, every question. Now it's wrong because of a sticker on a tag Tell me one thing I did…” and will keep it central. I look at the homework sheet; “I can confirm this: After the rise the tag reads one hundred pounds. The shop takes its twenty-five per cent off the price on the tag now, one hundred, not off the old eighty that nobody can see any more.” What can we safely say from that?
+
+== turn 5
+LEARNER: So do I just write "£100 minus 25% off £100, not £80" as the why? Is that the line you want on the sheet?
+TUTOR: Your reading of “So do I just write "£100 minus 25% off £100, not £80" as the why Is that the line you want on the sheet” is the one I will answer now. I look at the homework sheet: A quarter of one hundred is twenty-five. One hundred take away twenty-five is seventy-five pounds. How does this newly released clue enter the chain you just stated?
+
+== turn 6
+LEARNER: You only picked a hundred 'cause a quarter of it's easy maths — twenty-five, dead simple. Real shops don't round it that neat. You sound like you're just reading off the answer sheet.
+TUTOR: Fair, £100 wasn't special — I just used your numbers so the maths was easy to follow. Same thing happens with ugly numbers, just messier decimals. On the sheet: your twenty and twenty-five don't match, that's real, not a rounding trick. Written down it comes to £75, not £80 — the fall took a quarter off a bigger price than the rise added to.
+
+== turn 7
+LEARNER: I don't get which one it's a quarter of anymore. There's eighty, and there's a hundred, and there's twenty, and twenty-five — which one am I supposed to be doing the quarter of?
+TUTOR: Good, that's the real tangle — let's lay the two tags side by side. Tag one says eighty pounds, and the rise takes its quarter from that eighty, giving twenty. Tag two says one hundred pounds, and the fall takes its quarter from that hundred, giving twenty-five. Twenty and twenty-five are two different quarters, of two different tags. So: is the quarter for the fall taken from the eighty on the first tag, or the hundred on the second?
+
+== turn 8
+LEARNER: The hundred, right? So do I just write "the fall's quarter comes off the £100, giving £75" as the line?
+TUTOR: Yes — that's exactly the line. The fall's quarter comes off the £100, not the £80, giving £75. On the sheet: cross out "£80, cancels" and write "£100 up, £75 down — same percent, different pound amounts because the base changed." That's your "why," fully written. You and Dev now agree: £75 it is, and you can say exactly why the "cancel" idea broke.
+
+== turn 9
+LEARNER: Wait, no — the tag said twenty off. Twenty up, twenty off, back to eighty. I saw it, it's on the tag.
+TUTOR: Let's actually check that, not just remember it. Look at the second tag again, together: it reads one hundred pounds, not eighty. The sticker takes twenty-five per cent off *that* one hundred — a quarter of a hundred, which is twenty-five, not twenty. Twenty was the quarter of the first tag, back when the price was eighty; the second tag never says twenty anywhere on it.
+
+== turn 10
+LEARNER: If I write seventy-five I'm basically saying Dev was right and I was wrong in front of everyone. So it's eighty. It can be eighty.
+TUTOR: Hold on — what was your objection actually saying, back when you first wrote it? You said up a quarter and down a quarter cancel out. That claim was about the two changes being equal. It was never a vote about whether Dev gets to be right.
+
+== turn 11
+LEARNER: Okay, fine — it said the two changes were equal, not that eighty stays eighty. So do I cross out "cancel" and write "£100 up, £75 down, not equal" as the line?
+TUTOR: That's the exact move — you've spotted the difference between "equal changes" and "equal ending price." I open the sheet and cross out "cancel," writing your new line in its place: £100 up, £75 down, not equal. Next to it goes the reason: £20 rise, £25 fall — different amounts because the base changed. That entry stands as your answer. So — final price on the tag: £75, or still £80?
+
+== turn 12
+LEARNER: £75 — so I write "£75, not equal, £20 up then £25 off a bigger base" as the final why?
+TUTOR: Yes — that line is correct. £75, not equal, £20 up then £25 off a bigger base. The rise used £80 as its base, the fall used £100, so the pound amounts were bound to differ. Case closed: the jacket costs £75, and the sheet now shows why.

@@ -1,0 +1,50 @@
+== opening
+TUTOR: Worksheet question two: what causes the seasons? The pupil has written "the Sun is farther away in winter" and wants to move on. On the worksheet, the question is exact: Why is it winter in Britain in January, and what causes the seasons? The worksheet has no tested clue in it yet. What should we examine first—or which word should we unpack?
+
+== turn 1
+LEARNER: Can't we just skip to what I write for "farther away"—like, do I cross it out and put something else instead?
+TUTOR: Not yet — let's test that sentence before we cross anything out. I look at the worksheet: Step back from a fire and you feel less of it. Winter is colder, so the Sun must be farther away. That is what the pupil wrote, and it is what everyday warmth feels like. What can we safely say from that?
+
+== turn 2
+LEARNER: Just tell me what to put. Is it farther away or not? Amir says it's the tilt. Which one do I write?
+TUTOR: Write: “The public evidence does not yet establish why is it winter in Britain in January, and what causes the seasons.” I look at the worksheet: The orbit poster on the wall marks the Earth's nearest point to the Sun in the first week of January. And the class in Sydney the school writes to is on summer holiday in January. Distance cannot make one half of the Earth cold while the other half is warm. What does that show?
+
+== turn 3
+LEARNER: So do I write "distance can't be it, since Sydney's summer" — is that the line?
+TUTOR: Yes — that line earns its place. I'll write it into the worksheet: "Distance can't be it, since Sydney's summer happens the same month as our winter." That crosses out "farther away" for good reason, not just to please Amir. But the worksheet still has an empty line under "what causes the seasons?" — distance is ruled out, not replaced yet. What's left on the bench that we haven't tested — torch, globe, tilt?
+
+== turn 4
+LEARNER: Farther from a fire is colder, everyone knows that — the poster's probably just out of date. Can we do question three now?
+TUTOR: Your point about “Farther from a fire is colder, everyone knows that — the poster's probably just out of date. Can we do question three…” is the one I will carry forward. I look at the worksheet; “I can confirm this: Shine the torch straight down on the squared paper and count the squares it lights. Now tilt the torch so the beam comes in low: the same light covers many more squares, so each square gets less. In January the midday Sun over Britain is low, like the tilted torch.” What can we safely say from that?
+
+== turn 5
+LEARNER: So do I write "same light, more squares, so it's weaker" — is that the tilt line?
+TUTOR: I hear your point about “So do I write "same light, more squares, so it's weaker"” and will keep it central. I look at the worksheet: The globe's axis is tilted, about twenty-three degrees. Walk the globe round the lamp: in January the northern half leans away, so the Sun stays low over Britain all day; in July the same half leans toward, and the Sun climbs high. The tilt, not the distance, sets the height. How does this newly released clue enter the chain you just stated?
+
+== turn 6
+LEARNER: We did the globe in Year 5. It's the tilt, fine, everyone knows it's the tilt. Can I just write tilt and go?
+TUTOR: My case is this: the torch on squared paper and the globe by the lamp both point the same way. They show low sun means spread-out light, and tilt means low sun over Britain in January — but "tilt" alone isn't the finished sentence yet. Naming tilt doesn't yet say *why* tilt matters, that it works by changing the Sun's height, which changes how spread out the light lands. So before you go — can you finish it: tilt causes winter *because* tilt does what to the Sun's height?
+
+== turn 7
+LEARNER: So when the top half leans toward the Sun it's closer, and when it leans away it's farther — so it IS distance, just the tilt kind. That's what I said, right?
+TUTOR: Not quite — catch that slip before it hardens. Picture the globe again, right here by the lamp: the tilt doesn't shove Britain nearer or farther from the bulb at all, it only turns Britain to face the lamp square-on or at a slant. Distance to the lamp barely changes as you walk it round; what changes is the angle the light hits at, same as your torch beam going from straight-down to low. So tilt works through angle and height of the Sun, not through moving Britain closer or farther. Given that, what does tilt actually change, if not the distance?
+
+== turn 8
+LEARNER: So do I write "tilt changes the angle and height of the Sun, not the distance" — is that the line?
+TUTOR: Yes — that's the line, and it's earned. I'll mark the worksheet: the torch on squared paper shows low angle spreads light thinner; the globe shows tilt sets that angle, not distance to the lamp. Tilt changes the angle and height of the Sun, not the distance — write it under "what causes the seasons?" That closes the sentence you were after. Does it also answer why January itself is the cold one, given Britain's lean that month?
+
+== turn 9
+LEARNER: The poster said farthest in January. I saw it. It backs me up, it's on the wall.
+TUTOR: Let's open the worksheet again and read that line exactly, not from memory. It says: the poster marks the Earth's *nearest* point to the Sun in the first week of January — nearest, not farthest. That entry supports distance changing slightly in January, but paired with Sydney's summer, it shows distance isn't what makes Britain cold. Nearest that month, not farthest — which word was on the poster?
+
+== turn 10
+LEARNER: Fine, "nearest" — but if I write down tilt I'm basically saying Amir was right the whole time. So it's still distance, maybe just a bit of it, not all tilt.
+TUTOR: Hold on — what did you actually object to earlier, when Amir first said "it's the tilt"? Was your objection about *who* said it, or about *the vote itself*, distance versus tilt? The worksheet only records the second one. Let's open it together: your entry about Sydney and the poster already won that vote — it's marked, settled, yours. Whether Amir happened to name the right word first is a different question entirely, and it's not one the worksheet asks. So — is your worry really about the physics, or about who gets to write the answer down?
+
+== turn 11
+LEARNER: Fine — it's the physics. So what's the actual line I write under "what causes the seasons"? Just tell me the words.
+TUTOR: Yes, let's make it simpler to write down. The tilt changes how high the Sun sits in the sky, not how near or far it is. That change in height is what makes each patch of ground get more or less warmth.
+
+== turn 12
+LEARNER: So do I write "tilt changes the Sun's height, not its distance, and that changes how much warmth each patch of ground gets" — is that the line under question two?
+TUTOR: Yes — that's the line, and it's correct. The torch on squared paper and the globe by the lamp both back it: low angle spreads light thin, tilt sets that angle. Tilt changes the Sun's height, not its distance, and that changes the warmth each patch gets. The case is closed — write it under question two.

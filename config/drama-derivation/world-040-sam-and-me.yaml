@@ -12,8 +12,8 @@ id: world_040_sam_and_me
 title: Sam and Me
 discipline: "Year 7 English: choosing I or me after a verb or a preposition"
 
-question: "Should it be 'Mrs Okafor gave the prize to Sam and I' or 'to Sam and me', and why?"
-question_pattern: [correctForm, prizeSentence, "?x"]
+question: "Should it be 'to Sam and I' or 'to Sam and me', and why?"
+question_pattern: [resolvesTo, prizeSentence, "?x"]
 
 opening_frame:
   situation: >-
@@ -43,7 +43,7 @@ learner_voice: >-
   slow down when hearing the sentence out loud with Sam covered up.
 
 secret:
-  fact: [correctForm, prizeSentence, samAndMe]
+  fact: [resolvesTo, prizeSentence, samAndMe]
   recognition_patterns:
     - id: sam_and_me_answer
       all_of:
@@ -66,7 +66,7 @@ secret:
     we only received, so the pair sits after "to" and takes "me".
 
 mirror:
-  fact: [correctForm, prizeSentence, samAndI]
+  fact: [resolvesTo, prizeSentence, samAndI]
 
 rules:
   - id: R1_cover_the_other
@@ -78,7 +78,7 @@ rules:
       - [withOtherCovered, prizeSentence, "?u"]
       - [standsAloneAs, "?u", "?x"]
     then:
-      - [correctForm, prizeSentence, "?x"]
+      - [resolvesTo, prizeSentence, "?x"]
   - id: R2_always_I
     gloss: >-
       "Sam and I" is the corrected form only when the pair is doing the
@@ -88,7 +88,7 @@ rules:
       - [politeForm, prizeSentence, "?x"]
       - [pairDoesTheAction, prizeSentence, alreadyTrue]
     then:
-      - [correctForm, prizeSentence, "?x"]
+      - [resolvesTo, prizeSentence, "?x"]
 
 premises:
   - id: p_polite
@@ -123,7 +123,7 @@ background:
   - [hasWorksheet, pupil, prizeSentence]
 
 incompatible:
-  - [[correctForm, prizeSentence, samAndMe], [correctForm, prizeSentence, samAndI]]
+  - [[resolvesTo, prizeSentence, samAndMe], [resolvesTo, prizeSentence, samAndI]]
 
 proof_paths:
   - premises: [p_cover, p_uncover]

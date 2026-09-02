@@ -1,0 +1,98 @@
+== opening
+TUTOR: Worksheet question two: what causes the seasons? The pupil has written "the Sun is farther away in winter" and wants to move on. On the worksheet, the question is exact: Why is it winter in Britain in January, and what causes the seasons? The worksheet has no tested clue in it yet. What should we examine first—or which word should we unpack?
+
+== turn 1
+LEARNER: Just tell me what to write for "distance" then—like "the Sun isn't farther away in winter," right?
+TUTOR: Your proposed reading is the point this new public entry now tests. I look at the worksheet: Step back from a fire and you feel less of it. Winter is colder, so the Sun must be farther away. That is what the pupil wrote, and it is what everyday warmth feels like. What can we safely say from that?
+
+== turn 2
+LEARNER: Just tell me what to put. Is it farther away or not? Amir says it's the tilt. Which one do I write?
+TUTOR: Write: “The public evidence does not yet establish why is it winter in Britain in January, and what causes the seasons.” I look at the worksheet: The orbit poster on the wall marks the Earth's nearest point to the Sun in the first week of January. And the class in Sydney the school writes to is on summer holiday in January. Distance cannot make one half of the Earth cold while the other half is warm. What changes now?
+
+== turn 3
+LEARNER: So is it the tilt then—do I just write "Sydney is on summer holiday because of the tilt, not the distance"?
+TUTOR: Hold on — the poster and the Sydney letter rule out distance, that's solid. But neither one says "tilt" anywhere on the worksheet yet. The globe on the bench is still just sitting there, untilted, unused. Sydney being warm while Britain is cold tells us the cause is something that splits the Earth into two different halves at once — that rules out distance. So the correct line right now is: not distance, cause still unnamed — not "not distance, so tilt."
+
+== turn 4
+LEARNER: Farther from a fire is colder, everyone knows that — the poster's probably just old or wrong. Can we do question three now?
+TUTOR: Your point about “Farther from a fire is colder, everyone knows that — the poster's probably just old or wrong. Can we do question three…” is the one I will carry forward. I look at the worksheet; “I can confirm this: Shine the torch straight down on the squared paper and count the squares it lights. Now tilt the torch so the beam comes in low: the same light covers many more squares, so each square gets less. In January the midday Sun over Britain is low, like the tilted torch.” What does that show?
+
+== turn 5
+LEARNER: So do I write "the low angle spreads the light out, so each square gets less" — is that the line?
+TUTOR: I hear your point about “So do I write "the low angle spreads the light out, so each square gets less"” and will keep it central. I look at the worksheet: The globe's axis is tilted, about twenty-three degrees. Walk the globe round the lamp: in January the northern half leans away, so the Sun stays low over Britain all day; in July the same half leans toward, and the Sun climbs high. The tilt, not the distance, sets the height. How does this newly released clue enter the chain you just stated?
+
+== turn 6
+LEARNER: We did the globe in Year 5. It's the tilt, fine, everyone knows it's the tilt. Can I just write tilt and go?
+TUTOR: "Tilt" alone isn't quite the full sentence yet — tilt does what, exactly? Look at the globe: the torch square-counting showed low light spreads thin, and the globe walk showed the tilt is what makes Britain's Sun sit low in January. So the line isn't just "it's the tilt" — it's "the tilt makes the Sun stay low, and a low Sun spreads its light over more ground, so each patch gets less warmth." Can you put those two pieces together in one sentence for the worksheet?
+
+== turn 7
+LEARNER: So when the top half leans toward the Sun it's closer, and when it leans away it's farther — so it IS distance, just the tilt kind, right? That's what I put?
+TUTOR: Good try, but look again at the globe next to the lamp: the whole ball stays the same distance from the bulb the entire way round, tilted or not. Only the *angle* of the northern half changes as it leans away or toward. So the leaning isn't moving Britain nearer or farther — it's changing how square-on the Sun hits it, which is exactly what the torch test showed. So: is it distance-in-disguise, or is the tilt doing something to the *angle* of the light rather than the *distance* to it?
+
+== turn 8
+LEARNER: So do I write "the tilt changes the angle, not the distance, and that angle is what spreads the light thinner"—is that the line?
+TUTOR: Yes — that's the line. I mark it on the worksheet: tilt changes angle, not distance, and low angle spreads light thinner, so each patch gets less warmth. That closes question two cleanly. Ready to write your answer for question one, why Britain is cold in January?
+
+== turn 9
+LEARNER: Wait, no—the poster said farthest in January, I saw it, it backs me up, it's on the wall! So do I write "farthest away," not the tilt line?
+TUTOR: Let's check the wording, not just the memory of it — walk over to the poster with me. It marks Earth's *nearest* point to the Sun in early January, not the farthest — that's the closest approach of the whole year. So the poster you're pointing to actually backs the opposite of what you just said. Given that, does "farthest away" still fit what's written on the wall — or does the tilt line still stand?
+
+== turn 10
+LEARNER: If I write "tilt" that's just saying Amir was right and I was wrong in front of everyone — so it's still distance, okay, maybe just a little bit distance?
+TUTOR: Being right isn't the point here — the globe next to the lamp doesn't care who said what first. You and I already walked it round together: same distance the whole way, only the angle changing. Nothing in that walk left room for "a little bit distance" — the ball never got nearer or farther. So set Amir aside for a second — what does the globe itself say is changing, distance or angle?
+
+== turn 11
+LEARNER: Fine—angle, not distance. So do I write "the globe shows angle changes, not distance" as the line?
+TUTOR: Good — that's correct as far as it goes. I open the worksheet and mark question two: the globe shows angle changes, not distance, and that's solid. But your line stops one step short of the full answer — it says what *doesn't* change but not what the changed angle *does*. Remember the torch: low angle spreads the beam thinner, so each patch gets less warmth. So the worksheet needs angle, not distance, and low angle means less warmth per patch — can you fold that second half in?
+
+== turn 12
+LEARNER: So do I write "angle changes, not distance, and low angle means less warmth per patch" — is that the whole line now?
+TUTOR: I mark it on the worksheet: angle changes, not distance, and low angle means less warmth per patch. That's the full, correct line for question two — tilt sets the angle, low angle spreads the light thin, thin light warms less. Ready to write your answer for question one now: why Britain is cold in January?
+
+== turn 13
+LEARNER: So for question one do I just write "Britain is cold in January because of low angle, not distance" — same line as before?
+TUTOR: That's the right shape, close the loop with Britain itself named in it. I mark the worksheet: question two settled — angle, not distance, low angle means less warmth per patch. For question one, say what causes what, in Britain: "In January the tilt leaves Britain leaning away, so the Sun sits low, and that low angle spreads its light thin, so Britain gets little warmth." Try saying it that way, with Britain doing the leaning?
+
+== turn 14
+LEARNER: So I write "In January the tilt leaves Britain leaning away, so the Sun sits low, and that low angle spreads its light thin, so Britain gets little warmth" — word for word like that?
+TUTOR: Yes — word for word, that's it. I mark it into the worksheet next to question one: leaning gives the low Sun, low Sun gives thin light, thin light gives little warmth for Britain. That line is now backed by two things — the torch and paper showing low angle spreads light thin, and the globe walk showing the tilt is what makes Britain lean away in January. Distance stays ruled out by the poster and the Sydney letter, so nothing there contradicts it. Question two settled, question one written — want to check what the tilt does for Sydney at the same moment, or leave that for next time?
+
+== turn 15
+LEARNER: Fine, next time—so what do I write for Sydney, "leaning toward, so it's summer" like that?
+TUTOR: Write: "In January Sydney leans toward the Sun, so the Sun sits high there, and that gives them summer." I open the worksheet next to Britain's line and enter that sentence for Sydney beside it. Question one now covers both halves of the tilt story, Britain leaning away and Sydney leaning toward, both already backed by the globe walk and the torch test. Nothing new needed — that's the worksheet closed for today.
+
+== turn 16
+LEARNER: So worksheet's actually done then—both lines written, Britain leaning away and Sydney leaning toward? That's it, right?
+TUTOR: Yes — that's it. I close the worksheet on both lines: Britain leaning away, low Sun, thin light, little warmth; Sydney leaning toward, high Sun, summer. Both rest on the torch test and the globe walk, with distance ruled out by the poster and the Sydney letter. Question one and two are done — nothing left to add today.
+
+== turn 17
+LEARNER: Okay, so it's actually done then — worksheet's closed, both lines written, nothing else to fill in?
+TUTOR: Yes — done. We look at the worksheet together: both lines sit there, Britain leaning away with thin low light, Sydney leaning toward with high summer light, each one resting on the torch test and the globe walk, distance crossed out by the poster and the Sydney letter. Nothing on the page is still shaky or half-finished. That's the worksheet, closed — good work getting there. Want to pack up the globe and torch, or leave them set up for next lesson?
+
+== turn 18
+LEARNER: Okay so we can leave the globe and torch set up then, since it's actually done, right?
+TUTOR: Yes — leave them set up. I close the worksheet: both lines stand, Britain leaning away with thin low light, Sydney leaning toward with high summer light. The globe and torch stay on the bench as the evidence backing those two lines. Good, that's today's work done — pack up whenever you're ready.
+
+== turn 19
+LEARNER: Alright, so both lines just stay written like that, "Britain leaning away" and "Sydney leaning toward" — that's the exact wording that goes in the book?
+TUTOR: Yes, I'll say it more plainly. Both lines can stay just as they are, kept simple. Britain stays with "leaning away, low sun, thin light, little warmth," and Sydney stays with "leaning toward, high sun, summer." Leave the globe and torch set up beside them if you want to check the wording again later.
+
+== turn 20
+LEARNER: So it's just "Britain: leaning away, low sun, thin light, little warmth" and "Sydney: leaning toward, high sun, summer" written exactly like that in the book, nothing else added?
+TUTOR: Yes — exactly like that, nothing else needed. I look at the worksheet with you: Britain's line reads leaning away, low sun, thin light, little warmth; Sydney's reads leaning toward, high sun, summer. Both entries sit closed now, backed by the torch test and the globe walk, distance crossed off by the poster and the Sydney letter. We can leave the book like that and shut it.
+
+== turn 21
+LEARNER: Okay, so I just write "Britain: leaning away, low sun, thin light, little warmth" and "Sydney: leaning toward, high sun, summer" in the book and shut it — that's the final wording, done?
+TUTOR: Let me make that plainer, yes. Both lines can stay short and simple, worded just as you have them now. Britain's line and Sydney's line are ready to copy into the book as they stand. Shut it whenever you're ready.
+
+== turn 22
+LEARNER: Right, "Britain: leaning away, low sun, thin light, little warmth" and "Sydney: leaning toward, high sun, summer" — that's what goes in the book, word for word?
+TUTOR: Yes — word for word, that's the wording. I close the worksheet on those two lines: Britain leaning away, low sun, thin light, little warmth; Sydney leaning toward, high sun, summer. The torch test backs "low angle, thin light," and the globe walk backs "tilt sets the leaning" — the poster and Sydney letter still rule out distance, so nothing contradicts either line. Shut the book — that's genuinely done.
+
+== turn 23
+LEARNER: Okay, so those two lines, word for word, are what actually get written in the book — nothing more to add underneath them?
+TUTOR: Yes — nothing more to add underneath them. I close the exercise book on those two lines, sitting beside the torch and globe. The torch test supports "low angle spreads light thin," and the globe walk supports "tilt sets the leaning" — together they establish both lines fully; the poster and Sydney letter establish only that distance is not the cause, nothing further. So it's tilt-and-angle written in the book, not distance lurking underneath it. That's the worksheet shut for good — nothing waiting under the surface.
+
+== turn 24
+LEARNER: Okay, so it's just those two lines in the book, nothing underneath — that's actually the final wording, word for word, done?
+TUTOR: Yes, let me put it plainly. Those two lines are the finished wording, nothing more sits beneath them in the book. Britain's line and Sydney's line stand exactly as written, backed by the torch and the globe already on the bench. Shut it whenever you're ready.
