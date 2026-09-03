@@ -4,11 +4,11 @@ title: Split the CI root test lane into four shards and start it without waiting
 status: review
 type: infra
 priority: P2
-owner: claude
+owner: codex
 source: manual
 created: 2026-09-03
 updated: 2026-09-03
-branch: ci/four-shard-root-test-matrix
+branch: codex/restore-green-finish-ci-shards
 verification: >-
   Focused workflow, local-CI and change-policy contract tests pass; prettier
   and eslint pass on the changed files; workplan source check passes; then one
@@ -93,3 +93,10 @@ Log:
   the approximately 20-second shard-balance criterion did not. Close or retune
   only after two or three further hosted runs distinguish stable imbalance
   from runner noise.
+- 2026-09-03 — Three later full hosted runs confirmed stable imbalance. Root
+  step times for Node 22 were 71/168/124/119 s, 64/104/135/105 s, and
+  74/113/132/115 s; Node 24 was 69/87/97/100 s, 74/97/117/109 s, and
+  72/112/92/91 s. `tutorStubHumanDiscourseLayer.test.js` was shard 3's stable
+  dominant file (57-62 s on Node 22; 39 s in the inspected Node 24 run), so the
+  measured correction moves only that file to shard 1. Card remains in review
+  until the correction has one hosted PR timing result.
