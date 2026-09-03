@@ -384,3 +384,4 @@ the only judge), indeterminate means stop. No approval machinery beyond
   release text hidden on the planted turn, with a test. Note
   `notes/poetics/hero-demo-runs/2026-09-02-step7-hold-live.md`; artifacts
   `exports/tutor-stub-outcome/step7-hold-live/`, archived.
+- Model second reader on the three blind packets (3 calls, Sonnet 5, judge was codex): card effect keeps its direction on every packet, reader margin one plant (step 6: 4/6 vs 3/6; judge 4/6 vs 2/6); kappa on HIT vs not 0.67 / 0.50 / 0.31; move tags agree on half the items or fewer. A human reader is still needed; the model read does not close that. Note `notes/poetics/hero-demo-runs/2026-09-02-model-second-reader.md`; script `scripts/score-blind-packet-model.js`.
