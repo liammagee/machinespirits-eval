@@ -117,7 +117,29 @@ test('zero-call study status explains a six-unit technical stop without mutating
   try {
     const human = run();
     assert.equal(human.status, 0, human.stderr);
+    assert.deepEqual(
+      human.stdout
+        .split('\n')
+        .slice(0, 11)
+        .map((line) => line.split(':', 1)[0]),
+      [
+        'State',
+        'What is happening now',
+        'Overall progress',
+        'Timing',
+        'Model activity',
+        'Units',
+        'Calls',
+        'Repairs or recovery',
+        'Current issue',
+        'Next action',
+        'Human decision required',
+      ],
+    );
     assert.match(human.stdout, /^State: BLOCKED$/mu);
+    assert.match(human.stdout, /^What is happening now: /mu);
+    assert.match(human.stdout, /^Overall progress: /mu);
+    assert.match(human.stdout, /^Timing: .*ETA unavailable — The workflow is blocked/mu);
     assert.match(human.stdout, /^Model activity: not verifiable /mu);
     assert.match(human.stdout, /^Units: 2 complete \/ 0 active \/ 1 failed \/ 3 missing$/mu);
     assert.match(human.stdout, /^Turns: 23 completed \/ 48 planned$/mu);
@@ -154,6 +176,10 @@ test('zero-call study status explains a six-unit technical stop without mutating
     assert.equal(status.registeredVerdict.found, false);
     assert.equal(status.modelActivity.state, 'not verifiable');
     assert.equal(status.humanDecisionRequired, true);
+    assert.equal(status.timing.workflowStartedAt, '2026-08-20T12:00:00.000Z');
+    assert.equal(status.timing.lastMaterialProgressAt, '2026-08-20T12:07:02.000Z');
+    assert.deepEqual(status.timing.recentUnitDurationsMs, [118_000, 119_000]);
+    assert.equal(status.timing.etaRange.basis, 'unavailable');
 
     assert.deepEqual(fixtureTreeSnapshot(fixture), before, 'status reads must preserve every fixture byte');
     assert.equal(fs.existsSync(providerLog), false, 'status must not invoke the provider trap');
@@ -162,6 +188,45 @@ test('zero-call study status explains a six-unit technical stop without mutating
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test('human status reports an inferred ETA only when completed-unit timestamps support it', (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-study-status-eta-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.writeFileSync(
+    path.join(root, 'run-plan.json'),
+    `${JSON.stringify({
+      jobs: [
+        { id: 'unit-1', plannedTurns: 1, modelCallBudget: 2 },
+        { id: 'unit-2', plannedTurns: 1, modelCallBudget: 2 },
+        { id: 'unit-3', plannedTurns: 1, modelCallBudget: 2 },
+      ],
+    })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(root, 'run-events.jsonl'),
+    `${[
+      { type: 'run_started', recordedAt: '2026-09-02T12:00:00.000Z' },
+      { type: 'job_started', jobId: 'unit-1', recordedAt: '2026-09-02T12:00:01.000Z' },
+      { type: 'job_completed', jobId: 'unit-1', status: 'complete', recordedAt: '2026-09-02T12:01:01.000Z' },
+      { type: 'job_started', jobId: 'unit-2', recordedAt: '2026-09-02T12:01:02.000Z' },
+      { type: 'job_completed', jobId: 'unit-2', status: 'complete', recordedAt: '2026-09-02T12:02:32.000Z' },
+    ]
+      .map(JSON.stringify)
+      .join('\n')}\n`,
+  );
+
+  const human = spawnSync(process.execPath, [STUDY_STATUS, root], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    timeout: 10_000,
+  });
+  assert.equal(human.status, 0, human.stderr);
+  assert.match(human.stdout, /^State: HANDOFF_PENDING$/mu);
+  assert.match(
+    human.stdout,
+    /^Timing: .*recent pace 1m00s\/unit–1m30s\/unit from 2 completed unit\(s\); ETA inferred /mu,
+  );
 });
 
 test('passthrough status projection pins all six lines, exact bytes, and input immutability', () => {

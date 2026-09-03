@@ -391,6 +391,7 @@
         "tests/localQwenResistantLearner.test.js",
         "tests/localQwenResistantLearnerBenchmark.test.js",
         "tests/localQwenSuperegoFactorial.test.js",
+        "tests/longRunningWorkflowStatus.test.js",
         "tests/m0TwoJudgeQualityReport.test.js",
         "tests/machineSpiritsHouseStyle.test.js",
         "tests/memoryArchitectureSeam.test.js",

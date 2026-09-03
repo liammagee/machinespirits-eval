@@ -833,6 +833,89 @@ test('fresh confirmation fails substantively before a third learner call when no
   );
 });
 
+test('a resumed automated dialogue treats auto-turns as the total horizon', async () => {
+  const events = [];
+  let learnerCalls = 0;
+  let tutorCalls = 0;
+  const orchestration = createTutorStubTurnOrchestration({
+    C: { brightBlue: '', bold: '', reset: '' },
+    analyzeLearnerTurn: async () => ({
+      classification: null,
+      tutorLearnerDag: null,
+      registerSelection: null,
+      previousRegisterEfficacy: null,
+    }),
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    appendTutorStubTurnFailureTraceRecords() {},
+    assertTutorStubTurnAttemptCurrent() {},
+    automatedLearnerProfileId: () => 'bored',
+    automaticTechnicalDetailsEnabled: () => false,
+    buildTutorInterimContext: () => ({}),
+    createTutorStubLearnerResponseProvenance: (value) => value,
+    enforceAutomatedLearnerProfile: async ({ generated }) => ({ generated, repaired: false, passed: true }),
+    enforceGuardedLearnerConcessionGuard: async ({ generated }) => ({ generated }),
+    generateAutomatedLearnerTurn: async () => {
+      learnerCalls += 1;
+      return { text: `learner-${learnerCalls}`, provider: 'test', model: 'test' };
+    },
+    jsonClone: (value) => (value == null ? value : JSON.parse(JSON.stringify(value))),
+    learnerProfileSpeakerLabel: () => 'learner',
+    printExplanatoryDebugTurn: async () => {},
+    printDirectorPreludeBeforeFirstTutor() {},
+    printResponseDetails() {},
+    printTutorDagSnapshot() {},
+    printTutorResponse() {},
+    printTurnDebugLine() {},
+    printWithConcurrentTerminal: (_state, action) => action(),
+    recordTutorStubReplyFeatures() {},
+    runOneTurn: undefined,
+    startInterimAnimation() {},
+    stopInterimAnimation() {},
+    turnDebugId: (_state, turn) => `t${turn}`,
+    writeFieldVisualization() {},
+    callTutor: async () => {
+      tutorCalls += 1;
+      return { text: `tutor-${tutorCalls}`, provider: 'test', model: 'test', usage: null };
+    },
+    recordTutorStubTurnTiming: () => null,
+  });
+  const state = {
+    trace: null,
+    turns: Array.from({ length: 6 }, (_, index) => ({
+      turn: index + 1,
+      learner: `old-learner-${index + 1}`,
+      tutor: `old-tutor-${index + 1}`,
+    })),
+    history: [{ role: 'assistant', content: 'Opening' }],
+    interim: null,
+    classifier: { enabled: false },
+    learnerDag: { enabled: false },
+    loopMode: 'strict',
+    passthrough: { enabled: true },
+    register: { policy: 'bland' },
+    world: {},
+  };
+
+  const result = await orchestration.runAutomatedLearnerDialogue({
+    state,
+    openingEnabled: true,
+    autoLearnerResolved: { provider: 'test', model: 'test' },
+    autoLearnerProfile: 'bored',
+    autoTurns: 8,
+    autoSafetyTurns: 8,
+    autoStopOnGrounded: false,
+    turnHorizonMode: 'total',
+  });
+
+  assert.equal(result.reason, 'auto_turn_cap');
+  assert.equal(result.turns, 8);
+  assert.equal(learnerCalls, 2);
+  assert.equal(tutorCalls, 2);
+  assert.equal(events.find((event) => event.type === 'auto_learner_run_start').resumedCompletedTurns, 6);
+});
+
 test('manipulation validation judges the intervention once and stops without a learner outcome', async () => {
   const events = [];
   const state = {

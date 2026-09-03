@@ -5,7 +5,21 @@ import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 import { buildActionOutcomeMemoryReadiness } from './action-outcome-memory-readiness.js';
+import {
+  actionOutcomeCollectionWorkflowStatusPath,
+  ensureActionOutcomeGenerationHandoff,
+} from '../services/actionOutcomeCollectionWorkflowStatus.js';
+import {
+  blockLongRunningWorkflow,
+  completeLongRunningWorkflowPhase,
+  startLongRunningWorkflowPhase,
+  writeLongRunningWorkflowStatusAtomic,
+} from '../services/longRunningWorkflowStatus.js';
 import { loadTutorStubActionOutcomeCollectionDesign } from '../services/tutorStubActionOutcomeCollectionPilot.js';
+import {
+  loadTutorStubActionOutcomeComparableCollectionDesign,
+  TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_STUDY_ID,
+} from '../services/tutorStubActionOutcomeComparableCollection.js';
 
 const ALL_OBSERVED_CONDITION = {
   id: 'audit_all_observed',
@@ -14,6 +28,7 @@ const ALL_OBSERVED_CONDITION = {
   dagVelocityAtMost: Number.MAX_SAFE_INTEGER,
 };
 const BINARY_OUTCOMES = new Set(['success', 'failure']);
+const HUMAN_CONSENSUS_AUXILIARY_VETO_V2 = 'human_consensus_auxiliary_veto_v2';
 
 function requireString(value, label) {
   if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} is required`);
@@ -22,6 +37,13 @@ function requireString(value, label) {
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+export function loadTutorStubActionOutcomeAuditDesign({ root, designPath }) {
+  const raw = readJson(path.resolve(root, designPath));
+  return raw.studyId === TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_STUDY_ID
+    ? loadTutorStubActionOutcomeComparableCollectionDesign({ root, designPath })
+    : loadTutorStubActionOutcomeCollectionDesign({ root, designPath });
 }
 
 function countBy(values) {
@@ -167,6 +189,11 @@ function sameMembers(left, right) {
   return JSON.stringify(unique(left)) === JSON.stringify(unique(right));
 }
 
+function comparativeMoveFamilies(design) {
+  const registered = design.comparability?.moveFamilies;
+  return Array.isArray(registered) && registered.length ? registered : design.typedActionAssignment.moveFamilies;
+}
+
 export function buildTutorStubActionOutcomeCollectionAudit({
   design,
   generationReport,
@@ -202,14 +229,16 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       technicalFailure: rows.filter((row) => row.status === 'technical_failure').length,
     };
   });
-  const registeredRows = enrichRows(registeredReadiness);
+  const conditionMatchedRows = enrichRows(registeredReadiness);
   const allClosedRows = enrichRows(allObservedReadiness);
-  const families = design.typedActionAssignment.moveFamilies;
+  const families = comparativeMoveFamilies(design);
+  const exactComparableSet = Array.isArray(design.comparability?.moveFamilies);
+  const isComparableSeededRow = (row) =>
+    row.assignmentStatus === 'seeded_uniform_family_assignment' &&
+    (!exactComparableSet || sameMembers(row.eligibleSet, families));
+  const registeredRows = exactComparableSet ? conditionMatchedRows.filter(isComparableSeededRow) : conditionMatchedRows;
   const matchedFamilies = familySummary(registeredRows, families);
-  const allClosedFamilies = familySummary(
-    allClosedRows.filter((row) => row.assignmentStatus === 'seeded_uniform_family_assignment'),
-    families,
-  );
+  const allClosedFamilies = familySummary(allClosedRows.filter(isComparableSeededRow), families);
   const matchedDialogues = unique(registeredRows.map((row) => row.runId).filter(Boolean));
   const matchedWorlds = unique(registeredRows.map((row) => row.worldId).filter(Boolean));
   const visibleDeliveries = registeredRows.filter((row) => row.auxiliaryDeliveryVisible === true).length;
@@ -221,20 +250,38 @@ export function buildTutorStubActionOutcomeCollectionAudit({
     (row) => row.assignmentStatus === 'seeded_uniform_family_assignment',
   ).length;
   const matchedOutcomeCounts = countBy(registeredRows.map((row) => row.recordedOutcome || 'missing'));
-  const maximumPotentialBinaryRecords = registeredRows.filter(
-    (row) => row.auxiliaryDeliveryVisible === true && BINARY_OUTCOMES.has(row.recordedOutcome),
-  ).length;
+  const auxiliaryVetoPolicy = design.humanReview?.measurementPolicy === HUMAN_CONSENSUS_AUXILIARY_VETO_V2;
+  const canBecomeBinary = (row) =>
+    row.auxiliaryDeliveryVisible === true && (auxiliaryVetoPolicy || BINARY_OUTCOMES.has(row.recordedOutcome));
+  const maximumPotentialBinaryRecords = registeredRows.filter(canBecomeBinary).length;
   const maximumPotentialBinaryByFamily = Object.fromEntries(
     families.map((family) => [
       family,
-      registeredRows.filter(
-        (row) =>
-          row.family === family && row.auxiliaryDeliveryVisible === true && BINARY_OUTCOMES.has(row.recordedOutcome),
-      ).length,
+      registeredRows.filter((row) => row.family === family && canBecomeBinary(row)).length,
     ]),
   );
   const registered = design.feasibilityEndpoints.authoritativeGates;
-  const familyCases = matchedFamilies.map((row) => row.cases);
+  const coverageGates = registered.exchangeabilityAndCoverage;
+  const everyFamilyGateId = Object.hasOwn(coverageGates, 'everyComparativeMoveFamilyAssignedAndDelivered')
+    ? 'everyComparativeMoveFamilyAssignedAndDelivered'
+    : 'everyMoveFamilyAssignedAndDelivered';
+  const minimumDeliveredGateId = Object.hasOwn(coverageGates, 'minimumDeliveredCasesPerComparativeMoveFamily')
+    ? 'minimumDeliveredCasesPerComparativeMoveFamily'
+    : 'minimumDeliveredCasesPerMoveFamily';
+  const minimumDialoguesGateId = Object.hasOwn(coverageGates, 'minimumIndependentDialoguesPerComparativeMoveFamily')
+    ? 'minimumIndependentDialoguesPerComparativeMoveFamily'
+    : 'minimumIndependentDialoguesPerMoveFamily';
+  const minimumWorldsGateId = Object.hasOwn(coverageGates, 'minimumCollectionWorldsPerComparativeMoveFamily')
+    ? 'minimumCollectionWorldsPerComparativeMoveFamily'
+    : 'minimumCollectionWorldsPerMoveFamily';
+  const reviewGates = registered.review;
+  const minimumBinaryPerFamilyGateId = Object.hasOwn(
+    reviewGates,
+    'minimumFinalUsableBinaryRecordsPerComparativeMoveFamily',
+  )
+    ? 'minimumFinalUsableBinaryRecordsPerComparativeMoveFamily'
+    : 'minimumFinalUsableBinaryRecordsPerMoveFamily';
+  const familyDeliveries = matchedFamilies.map((row) => row.visibleDeliveries);
   const familyDialogues = matchedFamilies.map((row) => row.dialogues);
   const familyWorlds = matchedFamilies.map((row) => row.worlds);
   const visibleDeliveryRate = matchedAssignments ? visibleDeliveries / matchedAssignments : 0;
@@ -263,7 +310,9 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       true,
       { balanced: unbalancedJobs.length === 0, unbalancedJobs },
       unbalancedJobs.length === 0 ? 'pass' : 'fail',
-      'The interrupted first unit retains one unresolved child reservation.',
+      unbalancedJobs.length
+        ? `${unbalancedJobs.length} preserved unit(s) have unresolved child-attempt accounting.`
+        : 'Every reservation has one terminal disposition; no child attempt remains unexplained.',
     ),
     gate(
       'execution',
@@ -271,7 +320,7 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       true,
       { unregisteredJobs, duplicateJobs, missingJobs },
       !unregisteredJobs.length && !duplicateJobs.length && !missingJobs.length ? 'pass' : 'fail',
-      'Compared with the 24 registered job identities.',
+      `Compared with the ${expectedJobs.length} registered job identities.`,
     ),
     gate(
       'exchangeabilityAndCoverage',
@@ -303,40 +352,34 @@ export function buildTutorStubActionOutcomeCollectionAudit({
     ),
     gate(
       'exchangeabilityAndCoverage',
-      'everyMoveFamilyAssignedAndDelivered',
-      true,
+      everyFamilyGateId,
+      coverageGates[everyFamilyGateId],
       Object.fromEntries(matchedFamilies.map((row) => [row.family, row.visibleDeliveries])),
       matchedFamilies.every((row) => row.visibleDeliveries > 0) ? 'pass' : 'fail',
       'Only condition-matched, seeded, visibly delivered cases count.',
     ),
     gate(
       'exchangeabilityAndCoverage',
-      'minimumDeliveredCasesPerMoveFamily',
-      registered.exchangeabilityAndCoverage.minimumDeliveredCasesPerMoveFamily,
+      minimumDeliveredGateId,
+      coverageGates[minimumDeliveredGateId],
       Object.fromEntries(matchedFamilies.map((row) => [row.family, row.visibleDeliveries])),
-      minimum(familyCases) >= registered.exchangeabilityAndCoverage.minimumDeliveredCasesPerMoveFamily
-        ? 'pass'
-        : 'fail',
-      `Minimum observed family yield: ${minimum(familyCases)}.`,
+      minimum(familyDeliveries) >= coverageGates[minimumDeliveredGateId] ? 'pass' : 'fail',
+      `Minimum observed visible family yield: ${minimum(familyDeliveries)}.`,
     ),
     gate(
       'exchangeabilityAndCoverage',
-      'minimumIndependentDialoguesPerMoveFamily',
-      registered.exchangeabilityAndCoverage.minimumIndependentDialoguesPerMoveFamily,
+      minimumDialoguesGateId,
+      coverageGates[minimumDialoguesGateId],
       Object.fromEntries(matchedFamilies.map((row) => [row.family, row.dialogues])),
-      minimum(familyDialogues) >= registered.exchangeabilityAndCoverage.minimumIndependentDialoguesPerMoveFamily
-        ? 'pass'
-        : 'fail',
+      minimum(familyDialogues) >= coverageGates[minimumDialoguesGateId] ? 'pass' : 'fail',
       `Minimum observed dialogue support: ${minimum(familyDialogues)}.`,
     ),
     gate(
       'exchangeabilityAndCoverage',
-      'minimumCollectionWorldsPerMoveFamily',
-      registered.exchangeabilityAndCoverage.minimumCollectionWorldsPerMoveFamily,
+      minimumWorldsGateId,
+      coverageGates[minimumWorldsGateId],
       Object.fromEntries(matchedFamilies.map((row) => [row.family, row.worlds])),
-      minimum(familyWorlds) >= registered.exchangeabilityAndCoverage.minimumCollectionWorldsPerMoveFamily
-        ? 'pass'
-        : 'fail',
+      minimum(familyWorlds) >= coverageGates[minimumWorldsGateId] ? 'pass' : 'fail',
       `Minimum observed world support: ${minimum(familyWorlds)}.`,
     ),
     gate(
@@ -380,21 +423,24 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       registered.review.minimumFinalUsableBinaryRecords,
       { current: 0, maximumPossibleFromFrozenAuxiliaryOutcomes: maximumPotentialBinaryRecords },
       maximumPotentialBinaryRecords >= registered.review.minimumFinalUsableBinaryRecords ? 'pending' : 'fail',
-      'Binary admission requires human consensus to agree with a saved binary auxiliary outcome.',
+      auxiliaryVetoPolicy
+        ? 'Human consensus supplies the semantic label; an opposite binary auxiliary result or invisible delivery can veto it.'
+        : 'Binary admission requires human consensus to agree with a saved binary auxiliary outcome.',
     ),
     gate(
       'review',
-      'minimumFinalUsableBinaryRecordsPerMoveFamily',
-      registered.review.minimumFinalUsableBinaryRecordsPerMoveFamily,
+      minimumBinaryPerFamilyGateId,
+      reviewGates[minimumBinaryPerFamilyGateId],
       {
         current: Object.fromEntries(families.map((family) => [family, 0])),
         maximumPossible: maximumPotentialBinaryByFamily,
       },
-      minimum(Object.values(maximumPotentialBinaryByFamily)) >=
-        registered.review.minimumFinalUsableBinaryRecordsPerMoveFamily
+      minimum(Object.values(maximumPotentialBinaryByFamily)) >= reviewGates[minimumBinaryPerFamilyGateId]
         ? 'pending'
         : 'fail',
-      'The frozen condition-matched auxiliary outcomes contain no binary labels.',
+      auxiliaryVetoPolicy
+        ? 'Human consensus is pending; frozen auxiliary outcomes remain nonconfirmatory unless they supply an opposite binary veto.'
+        : 'Potential binary yield is bounded by the frozen condition-matched auxiliary labels.',
     ),
   ];
   const heldOutWorlds = design.population.laterEvaluationWorldsExcludedFromCollectionAndMemory;
@@ -419,6 +465,7 @@ export function buildTutorStubActionOutcomeCollectionAudit({
     studyId: design.studyId,
     asOf,
     modelCalls: 0,
+    measurementPolicy: design.humanReview?.measurementPolicy || null,
     verdict: failedGates.length
       ? 'registered_feasibility_gates_failed'
       : pendingGates.length
@@ -451,7 +498,9 @@ export function buildTutorStubActionOutcomeCollectionAudit({
       decisionAssignmentDisposition: countBy(decisionInventory.map((row) => row.assignmentStatus)),
       decisionConditionDisposition: countBy(decisionInventory.map((row) => row.conditionDisposition)),
       closedAssignmentDisposition: countBy(allClosedRows.map((row) => row.assignmentStatus)),
+      conditionMatchedClosedAssignments: conditionMatchedRows.length,
       conditionMatchedSeededClosedAssignments: matchedAssignments,
+      conditionMatchedAuditOnlyClosedAssignments: conditionMatchedRows.length - matchedAssignments,
       conditionUnmatchedClosedAssignments: unmatchedAssignments,
       contributingDialogues: matchedDialogues.length,
       contributingWorlds: matchedWorlds.length,
@@ -484,11 +533,14 @@ export function buildTutorStubActionOutcomeCollectionAudit({
     failedGates: failedGates.map((entry) => `${entry.section}.${entry.id}`),
     pendingGates: pendingGates.map((entry) => `${entry.section}.${entry.id}`),
     implications: [
-      'The prospective trace, assignment, join, and delivery plumbing is operational and auditable.',
-      'The registered stalled-state condition yielded too few exchangeable closed assignments and too few contributing dialogues.',
-      'Condition-matched family coverage is not adequate: fade_transfer is absent, explain_model is sparse, and family support is uneven across worlds.',
-      'Every condition-matched auxiliary outcome is inconclusive, so the frozen corpus cannot produce a binary memory table even under perfect coder agreement.',
-      'This feasibility failure does not estimate learning, transfer, controller benefit, or relative family effectiveness.',
+      'The prospective trace, assignment, join, and delivery paths were checked without model calls.',
+      failedGates.length
+        ? `${failedGates.length} registered gate(s) failed; the collection closes without top-up or threshold changes.`
+        : 'Every execution and coverage gate passed; the registered review gates remain authoritative.',
+      pendingGates.length
+        ? `${pendingGates.length} gate(s) remain pending independent human review.`
+        : 'No registered gate remains pending.',
+      'This audit does not estimate learning, transfer, controller benefit, or relative family effectiveness.',
     ],
     provenance: {
       designPath: generationReport.design?.path || null,
@@ -521,6 +573,8 @@ function observedText(value) {
 
 export function renderTutorStubActionOutcomeCollectionAudit(audit) {
   const rates = audit.extraction.rates;
+  const failedCount = audit.failedGates.length;
+  const pendingCount = audit.pendingGates.length;
   const gateRows = audit.gates.map(
     (entry) =>
       `| ${entry.section} | ${entry.id} | ${entry.status.toUpperCase()} | ${observedText(entry.observed)} | ${observedText(entry.expected)} |`,
@@ -534,15 +588,11 @@ export function renderTutorStubActionOutcomeCollectionAudit(audit) {
     '',
     `Study: \`${audit.studyId}\`. As of: ${audit.asOf}. Model calls: 0.`,
     '',
-    `**Verdict: ${audit.verdict}. The pilot does not license a held-out controller study.**`,
+    `**Verdict: ${audit.verdict}. This result does not license a held-out controller study.**`,
     '',
-    'The collection machinery worked: all 23 available trace files were readable, no source was quarantined, every closed assignment validated, and all 30 condition-matched assignments were visibly delivered. The evidence substrate did not meet the registered feasibility standard.',
+    `The audit found ${failedCount} failed gate(s) and ${pendingCount} gate(s) pending human review. It read ${audit.integrity.sourceTraceFiles} trace files and quarantined ${audit.integrity.quarantinedSourceFiles}.`,
     '',
-    'The target condition produced 30 seeded closed assignments, below the registered minimum of 48, across 13 dialogues rather than 16. Family coverage also failed: `fade_transfer` had no condition-matched case, `explain_model` had 3, `minimal_support` 5, `request_self_explanation` 6, and `diagnose_elicit` 16.',
-    '',
-    'All 30 saved auxiliary outcomes were `inconclusive`. Binary memory admission requires a human consensus label to agree with a saved binary auxiliary label, so even perfect coder agreement cannot produce any usable binary record from this frozen corpus. Human review could still diagnose the instrument descriptively, but it cannot rescue the registered verdict.',
-    '',
-    'This is a feasibility failure. It does not show that the controller would fail, that the action families are equivalent, or that any family improves learning.',
+    `Generation closed with ${audit.generation.completeDialogues}/${audit.generation.plannedDialogues} complete dialogues, ${audit.generation.technicalFailures.length} preserved technical failure(s), and ${audit.generation.missingDialogues} missing dialogue(s).`,
     '',
     '## Extraction',
     '',
@@ -552,7 +602,8 @@ export function renderTutorStubActionOutcomeCollectionAudit(audit) {
     `| Completed / planned turns | ${audit.generation.turns.completed} / ${audit.generation.turns.planned} |`,
     `| Typed decisions / closed next-turn opportunities | ${audit.extraction.typedDecisions} / ${audit.extraction.closedNextTurnOpportunities} |`,
     `| Seeded closed assignments | ${audit.extraction.closedAssignmentDisposition.seeded_uniform_family_assignment || 0} |`,
-    `| Condition-matched seeded closed assignments | ${audit.extraction.conditionMatchedSeededClosedAssignments} |`,
+    `| Condition-matched closed / comparative seeded assignments | ${audit.extraction.conditionMatchedClosedAssignments} / ${audit.extraction.conditionMatchedSeededClosedAssignments} |`,
+    `| Condition-matched audit-only assignments | ${audit.extraction.conditionMatchedAuditOnlyClosedAssignments} |`,
     `| Contributing dialogues / worlds | ${audit.extraction.contributingDialogues} / ${audit.extraction.contributingWorlds} |`,
     `| Visible deliveries | ${audit.extraction.visibleDeliveries} |`,
     `| Maximum possible binary records | ${audit.extraction.maximumPotentialBinaryRecords} |`,
@@ -570,7 +621,7 @@ export function renderTutorStubActionOutcomeCollectionAudit(audit) {
     '| --- | ---: | ---: | ---: | ---: | --- |',
     ...familyRows,
     '',
-    'The 30 matched cases divide into 16 cases where only `diagnose_elicit` was eligible and 14 cases where `explain_model`, `minimal_support`, and `request_self_explanation` were jointly eligible. `fade_transfer` never entered a matched eligible set.',
+    `The registered condition produced ${audit.extraction.conditionMatchedSeededClosedAssignments} seeded closed assignment(s) across ${audit.extraction.contributingDialogues} dialogue(s) and ${audit.extraction.contributingWorlds} world(s).`,
     '',
     '## Registered gates',
     '',
@@ -578,11 +629,13 @@ export function renderTutorStubActionOutcomeCollectionAudit(audit) {
     '| --- | --- | --- | --- | --- |',
     ...gateRows,
     '',
-    'Pending coder gates remain unmeasured. The binary-yield gates already fail because the frozen auxiliary outcomes place an upper bound of zero on admissible binary records.',
+    pendingCount
+      ? 'Pending coder gates remain unmeasured; no human outcome labels are inferred by this zero-call audit.'
+      : 'No registered gate remains pending.',
     '',
-    '## Big-picture implication',
+    '## Implications',
     '',
-    'The project should stop treating this corpus as a candidate controller memory table. The next useful design task is to repair the measurement and eligibility contract prospectively: make every intended family genuinely reachable under the registered condition, and ensure the immediate outcome instrument can produce discriminating binary evidence when the public learner response warrants it. The registered no-top-up rule means the current pilot closes as failed rather than being enlarged or re-thresholded.',
+    ...audit.implications.map((entry) => `- ${entry}`),
     '',
     audit.claimBoundary,
     '',
@@ -597,13 +650,14 @@ async function main() {
       design: { type: 'string' },
       'generation-report': { type: 'string' },
       'readiness-input': { type: 'string' },
+      'workflow-status': { type: 'string' },
       out: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
   });
   if (values.help) {
     process.stdout.write(
-      'Usage: node scripts/audit-tutor-stub-action-outcome-collection.js --design <design.json> --generation-report <report.json> --readiness-input <input.json> --out <new-dir>\nZero-call extraction and registered feasibility-gate audit.\n',
+      'Usage: node scripts/audit-tutor-stub-action-outcome-collection.js --design <design.json> --generation-report <report.json> --readiness-input <input.json> --out <new-dir> [--workflow-status <status.json>]\nZero-call extraction and registered feasibility-gate audit.\n',
     );
     return;
   }
@@ -612,58 +666,141 @@ async function main() {
   const readinessInputPath = path.resolve(requireString(values['readiness-input'], '--readiness-input'));
   const outputPath = path.resolve(requireString(values.out, '--out'));
   if (fs.existsSync(outputPath)) throw new Error(`refusing to overwrite audit output: ${outputPath}`);
-  const loaded = loadTutorStubActionOutcomeCollectionDesign({
-    root: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'),
-    designPath: path.relative(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), designPath),
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const relativeDesignPath = path.relative(repositoryRoot, designPath).split(path.sep).join('/');
+  const loaded = loadTutorStubActionOutcomeAuditDesign({
+    root: repositoryRoot,
+    designPath: relativeDesignPath,
   });
-  const input = readJson(readinessInputPath);
-  if (input.reviewsFile || input.replay) throw new Error('quality audit input must not contain reviews or replay');
-  if (JSON.stringify(input.conditions) !== JSON.stringify(loaded.design.condition.conditions)) {
-    throw new Error('readiness input conditions must exactly match the registered design');
-  }
-  if (
-    !Array.isArray(input.sources) ||
-    input.sources.some(
-      (source) => source.role !== 'memory' || source.contextKey !== loaded.design.taskContract.contextKey,
-    )
-  ) {
-    throw new Error('readiness sources must use the registered memory role and context key');
-  }
-  const registered = await buildActionOutcomeMemoryReadiness(input, {
-    inputDirectory: path.dirname(readinessInputPath),
-  });
-  const allObserved = await buildActionOutcomeMemoryReadiness(
-    { ...input, conditions: [ALL_OBSERVED_CONDITION] },
-    { inputDirectory: path.dirname(readinessInputPath) },
+  const generationReport = readJson(generationReportPath);
+  const workflowStatusPath = path.resolve(
+    values['workflow-status'] ||
+      generationReport.workflow_status?.path ||
+      actionOutcomeCollectionWorkflowStatusPath({
+        generationRoot: path.dirname(generationReportPath),
+        workflowId: generationReport.study_id,
+      }),
   );
-  const decisionInventory = readCollectionDecisionInventory(registered.report.sources, input.conditions);
-  const audit = buildTutorStubActionOutcomeCollectionAudit({
-    design: loaded.design,
-    generationReport: readJson(generationReportPath),
-    registeredReadiness: registered.report,
-    allObservedReadiness: allObserved.report,
-    decisionInventory,
-    asOf: input.asOf,
+  let workflowStatus = ensureActionOutcomeGenerationHandoff({
+    filePath: workflowStatusPath,
+    generationReport,
   });
-  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  fs.mkdirSync(outputPath);
-  fs.writeFileSync(path.join(outputPath, 'audit.json'), `${JSON.stringify(audit, null, 2)}\n`, { flag: 'wx' });
-  fs.writeFileSync(path.join(outputPath, 'README.md'), renderTutorStubActionOutcomeCollectionAudit(audit), {
-    flag: 'wx',
-  });
-  process.stdout.write(
-    `${JSON.stringify(
-      {
-        output: outputPath,
-        verdict: audit.verdict,
-        failedGates: audit.failedGates,
-        pendingGates: audit.pendingGates,
-        modelCalls: audit.modelCalls,
+  let activeOperation = 'Extract registered action-outcome readiness rows';
+  try {
+    workflowStatus = startLongRunningWorkflowPhase(workflowStatus, {
+      phase: 'EXTRACTING',
+      modelActivity: {
+        state: 'inactive',
+        explanation: 'Extraction reads sealed artifacts locally and makes no model/provider calls.',
       },
-      null,
-      2,
-    )}\n`,
-  );
+      nextAction: {
+        description: activeOperation,
+        stopping_condition: 'Stop on source, schema, condition, or provenance mismatch.',
+      },
+    });
+    writeLongRunningWorkflowStatusAtomic(workflowStatusPath, workflowStatus);
+    const input = readJson(readinessInputPath);
+    if (input.reviewsFile || input.replay) throw new Error('quality audit input must not contain reviews or replay');
+    if (JSON.stringify(input.conditions) !== JSON.stringify(loaded.design.condition.conditions)) {
+      throw new Error('readiness input conditions must exactly match the registered design');
+    }
+    if (
+      !Array.isArray(input.sources) ||
+      input.sources.some(
+        (source) => source.role !== 'memory' || source.contextKey !== loaded.design.taskContract.contextKey,
+      )
+    ) {
+      throw new Error('readiness sources must use the registered memory role and context key');
+    }
+    const registered = await buildActionOutcomeMemoryReadiness(input, {
+      inputDirectory: path.dirname(readinessInputPath),
+    });
+    const allObserved = await buildActionOutcomeMemoryReadiness(
+      { ...input, conditions: [ALL_OBSERVED_CONDITION] },
+      { inputDirectory: path.dirname(readinessInputPath) },
+    );
+    const decisionInventory = readCollectionDecisionInventory(registered.report.sources, input.conditions);
+    workflowStatus = completeLongRunningWorkflowPhase(workflowStatus, {
+      phase: 'EXTRACTING',
+      nextPhase: 'AUDITING',
+      startNextImmediately: true,
+      modelActivity: {
+        state: 'inactive',
+        explanation: 'The registered audit is deterministic local computation with no provider activity.',
+      },
+      nextAction: {
+        description: 'Apply the registered feasibility gates to the extracted inventory.',
+        stopping_condition: 'Stop after every registered gate has a recorded disposition.',
+      },
+    });
+    writeLongRunningWorkflowStatusAtomic(workflowStatusPath, workflowStatus);
+    activeOperation = 'Apply the registered action-outcome feasibility audit';
+    const audit = buildTutorStubActionOutcomeCollectionAudit({
+      design: loaded.design,
+      generationReport,
+      registeredReadiness: registered.report,
+      allObservedReadiness: allObserved.report,
+      decisionInventory,
+      asOf: input.asOf,
+    });
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.mkdirSync(outputPath);
+    fs.writeFileSync(path.join(outputPath, 'audit.json'), `${JSON.stringify(audit, null, 2)}\n`, { flag: 'wx' });
+    fs.writeFileSync(path.join(outputPath, 'README.md'), renderTutorStubActionOutcomeCollectionAudit(audit), {
+      flag: 'wx',
+    });
+    workflowStatus = completeLongRunningWorkflowPhase(workflowStatus, {
+      phase: 'AUDITING',
+      nextPhase: 'PACKAGING',
+      handoffExplanation: 'The zero-call audit is complete. Packet preparation has not started in this process.',
+      modelActivity: {
+        state: 'inactive',
+        explanation: 'Generation remains sealed and all work since collection has been zero-call.',
+      },
+      nextAction: {
+        description: 'Prepare the registered two-coder packet from the review-free readiness input.',
+        stopping_condition: 'Stop when the create-once packet is complete or packet validation fails.',
+      },
+    });
+    writeLongRunningWorkflowStatusAtomic(workflowStatusPath, workflowStatus);
+    process.stdout.write(
+      `${JSON.stringify(
+        {
+          output: outputPath,
+          verdict: audit.verdict,
+          failedGates: audit.failedGates,
+          pendingGates: audit.pendingGates,
+          modelCalls: audit.modelCalls,
+          workflowStatus: workflowStatusPath,
+          workflowPhase: workflowStatus.current_phase,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  } catch (error) {
+    const repair = error.workflowRepair || null;
+    workflowStatus = blockLongRunningWorkflow(workflowStatus, {
+      blockedPhase: workflowStatus.current_phase === 'AUDITING' ? 'AUDITING' : 'EXTRACTING',
+      operation: activeOperation,
+      error: error.message,
+      repairRequired: Boolean(repair),
+      repair,
+      modelActivity: {
+        state: 'inactive',
+        explanation: 'Generation is sealed and the failed extraction/audit operation is zero-call.',
+      },
+      nextAction: {
+        description: repair
+          ? 'Implement and review the recorded source repair before rerunning the blocked zero-call phase.'
+          : 'Inspect the recorded error and classify it as input drift, artifact damage, or a code defect.',
+        stopping_condition: 'Stop before packet preparation until the blocked phase succeeds.',
+      },
+      humanActionRequired: Boolean(repair?.human_action_required),
+    });
+    writeLongRunningWorkflowStatusAtomic(workflowStatusPath, workflowStatus);
+    throw error;
+  }
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

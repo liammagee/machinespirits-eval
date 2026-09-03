@@ -13,6 +13,13 @@ import {
   reviewDataHash,
   reviewJson,
 } from '../services/adaptiveTutor/actionOutcomeReviewPacket.js';
+import {
+  blockLongRunningWorkflow,
+  completeLongRunningWorkflowPhase,
+  loadLongRunningWorkflowStatus,
+  startLongRunningWorkflowPhase,
+  writeLongRunningWorkflowStatusAtomic,
+} from '../services/longRunningWorkflowStatus.js';
 
 function requireString(value, label) {
   if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} is required`);
@@ -37,66 +44,119 @@ function safeCoderFile(coderId) {
   return `${coderId}.submission.json`;
 }
 
-export async function prepareActionOutcomeReview({ inputPath, outputPath, packetId, coderIds }) {
-  const resolvedInput = path.resolve(inputPath);
-  const input = readJson(resolvedInput);
-  if (input.reviewsFile || input.replay)
-    throw new Error('packet preparation requires review- and replay-free readiness input');
-  if (!Array.isArray(input.conditions) || !input.conditions.length) {
-    throw new Error('packet preparation requires explicit nonempty conditions');
+export async function prepareActionOutcomeReview({ inputPath, outputPath, packetId, coderIds, workflowStatusPath }) {
+  const resolvedWorkflowStatus = workflowStatusPath ? path.resolve(workflowStatusPath) : null;
+  let workflowStatus = resolvedWorkflowStatus ? loadLongRunningWorkflowStatus(resolvedWorkflowStatus).status : null;
+  if (workflowStatus) {
+    workflowStatus = startLongRunningWorkflowPhase(workflowStatus, {
+      phase: 'PACKAGING',
+      modelActivity: {
+        state: 'inactive',
+        explanation: 'Packet preparation is deterministic local work over sealed sources.',
+      },
+      nextAction: {
+        description: 'Build the create-once blinded two-coder packet.',
+        stopping_condition: 'Stop when every packet artifact is written and hashed or any validation fails.',
+      },
+    });
+    writeLongRunningWorkflowStatusAtomic(resolvedWorkflowStatus, workflowStatus);
   }
-  if (!Array.isArray(input.sources) || input.sources.some((source) => source.role !== 'memory')) {
-    throw new Error('packet preparation accepts memory-role sources only');
+  try {
+    const resolvedInput = path.resolve(inputPath);
+    const input = readJson(resolvedInput);
+    if (input.reviewsFile || input.replay)
+      throw new Error('packet preparation requires review- and replay-free readiness input');
+    if (!Array.isArray(input.conditions) || !input.conditions.length) {
+      throw new Error('packet preparation requires explicit nonempty conditions');
+    }
+    if (!Array.isArray(input.sources) || input.sources.some((source) => source.role !== 'memory')) {
+      throw new Error('packet preparation accepts memory-role sources only');
+    }
+    const readiness = await buildActionOutcomeMemoryReadiness(input, { inputDirectory: path.dirname(resolvedInput) });
+    const incompatible = readiness.reviewCandidates.filter(
+      (candidate) => candidate.assignmentStatus !== 'seeded_uniform_family_assignment',
+    );
+    const assignedCandidates = readiness.reviewCandidates.filter(
+      (candidate) => candidate.assignmentStatus === 'seeded_uniform_family_assignment',
+    );
+    if (!assignedCandidates.length) throw new Error('packet preparation found no seeded uniform family assignments');
+    const artifacts = buildActionOutcomeReviewPacket({
+      candidates: assignedCandidates,
+      packetId,
+      coderIds,
+      measurementPolicy: input.measurementPolicy,
+    });
+    const packetBytes = reviewJson(artifacts.packet);
+    const keyBytes = reviewJson(artifacts.machineKey);
+    const codebook = actionOutcomeReviewCodebook();
+    const submissions = artifacts.submissions.map((submission) => ({
+      file: safeCoderFile(submission.coderId),
+      bytes: reviewJson(submission),
+    }));
+    const manifest = {
+      version: ACTION_OUTCOME_REVIEW_VERSION,
+      packetId,
+      measurementPolicy: artifacts.packet.measurementPolicy,
+      modelCalls: 0,
+      claimBoundary: artifacts.packet.claimBoundary,
+      sources: readiness.report.sources,
+      exclusions: {
+        ...readiness.report.exclusionCounts,
+        ...(incompatible.length ? { non_seeded_family_assignment: incompatible.length } : {}),
+      },
+      eligibleCases: artifacts.packet.cases.length,
+      artifactDataHashes: {
+        packet: reviewDataHash(packetBytes),
+        codebook: reviewDataHash(codebook),
+        machineKey: reviewDataHash(keyBytes),
+        submissions: Object.fromEntries(submissions.map((row) => [row.file, reviewDataHash(row.bytes)])),
+      },
+    };
+    const resolvedOutput = path.resolve(outputPath);
+    fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true });
+    newDirectory(resolvedOutput);
+    writeNew(path.join(resolvedOutput, 'packet.json'), packetBytes);
+    writeNew(path.join(resolvedOutput, 'codebook.md'), codebook);
+    writeNew(path.join(resolvedOutput, 'machine-key.json'), keyBytes);
+    for (const submission of submissions) writeNew(path.join(resolvedOutput, submission.file), submission.bytes);
+    writeNew(path.join(resolvedOutput, 'manifest.json'), reviewJson(manifest));
+    if (workflowStatus) {
+      workflowStatus = completeLongRunningWorkflowPhase(workflowStatus, {
+        phase: 'PACKAGING',
+        nextPhase: 'WORKFLOW_COMPLETE',
+        startNextImmediately: true,
+        modelActivity: {
+          state: 'inactive',
+          explanation: 'Packet preparation used no model/provider calls.',
+        },
+        nextAction: {
+          description: 'Preserve the completed generation, audit, and packet artifacts.',
+          stopping_condition: 'Stop unless a separately scoped human-coding or controller-study task is requested.',
+        },
+      });
+      writeLongRunningWorkflowStatusAtomic(resolvedWorkflowStatus, workflowStatus);
+    }
+    return { outputPath: resolvedOutput, manifest, workflowStatus: resolvedWorkflowStatus };
+  } catch (error) {
+    if (workflowStatus) {
+      workflowStatus = blockLongRunningWorkflow(workflowStatus, {
+        blockedPhase: 'PACKAGING',
+        operation: 'Prepare the registered action-outcome review packet',
+        error: error.message,
+        modelActivity: {
+          state: 'inactive',
+          explanation: 'Packet preparation is zero-call and generation remains sealed.',
+        },
+        nextAction: {
+          description: 'Inspect the packet validation or write failure before retrying packaging.',
+          stopping_condition: 'Stop before human packet access until create-once packaging succeeds.',
+        },
+        humanActionRequired: false,
+      });
+      writeLongRunningWorkflowStatusAtomic(resolvedWorkflowStatus, workflowStatus);
+    }
+    throw error;
   }
-  const readiness = await buildActionOutcomeMemoryReadiness(input, { inputDirectory: path.dirname(resolvedInput) });
-  const incompatible = readiness.reviewCandidates.filter(
-    (candidate) => candidate.assignmentStatus !== 'seeded_uniform_family_assignment',
-  );
-  const assignedCandidates = readiness.reviewCandidates.filter(
-    (candidate) => candidate.assignmentStatus === 'seeded_uniform_family_assignment',
-  );
-  if (!assignedCandidates.length) throw new Error('packet preparation found no seeded uniform family assignments');
-  const artifacts = buildActionOutcomeReviewPacket({
-    candidates: assignedCandidates,
-    packetId,
-    coderIds,
-    measurementPolicy: input.measurementPolicy,
-  });
-  const packetBytes = reviewJson(artifacts.packet);
-  const keyBytes = reviewJson(artifacts.machineKey);
-  const codebook = actionOutcomeReviewCodebook();
-  const submissions = artifacts.submissions.map((submission) => ({
-    file: safeCoderFile(submission.coderId),
-    bytes: reviewJson(submission),
-  }));
-  const manifest = {
-    version: ACTION_OUTCOME_REVIEW_VERSION,
-    packetId,
-    measurementPolicy: artifacts.packet.measurementPolicy,
-    modelCalls: 0,
-    claimBoundary: artifacts.packet.claimBoundary,
-    sources: readiness.report.sources,
-    exclusions: {
-      ...readiness.report.exclusionCounts,
-      ...(incompatible.length ? { non_seeded_family_assignment: incompatible.length } : {}),
-    },
-    eligibleCases: artifacts.packet.cases.length,
-    artifactDataHashes: {
-      packet: reviewDataHash(packetBytes),
-      codebook: reviewDataHash(codebook),
-      machineKey: reviewDataHash(keyBytes),
-      submissions: Object.fromEntries(submissions.map((row) => [row.file, reviewDataHash(row.bytes)])),
-    },
-  };
-  const resolvedOutput = path.resolve(outputPath);
-  fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true });
-  newDirectory(resolvedOutput);
-  writeNew(path.join(resolvedOutput, 'packet.json'), packetBytes);
-  writeNew(path.join(resolvedOutput, 'codebook.md'), codebook);
-  writeNew(path.join(resolvedOutput, 'machine-key.json'), keyBytes);
-  for (const submission of submissions) writeNew(path.join(resolvedOutput, submission.file), submission.bytes);
-  writeNew(path.join(resolvedOutput, 'manifest.json'), reviewJson(manifest));
-  return { outputPath: resolvedOutput, manifest };
 }
 
 export function compareActionOutcomeReviewFiles({ rootPath, submissionPaths, outputPath, recordedAt }) {
@@ -134,7 +194,7 @@ export function compareActionOutcomeReviewFiles({ rootPath, submissionPaths, out
 
 function usage() {
   return `Usage:
-  node scripts/action-outcome-review-packet.js prepare --input <readiness.json> --out <new-dir> --packet-id <id> --coder <id> --coder <id>
+  node scripts/action-outcome-review-packet.js prepare --input <readiness.json> --out <new-dir> --packet-id <id> --coder <id> --coder <id> [--workflow-status <status.json>]
   node scripts/action-outcome-review-packet.js compare --root <packet-dir> --submission <file> --submission <file> --recorded-at <timestamp> --out <new-dir>
 
 Zero model calls. The packet builder consumes only prospective compatible typed-action traces.\n`;
@@ -152,6 +212,7 @@ async function main() {
       root: { type: 'string' },
       submission: { type: 'string', multiple: true },
       'recorded-at': { type: 'string' },
+      'workflow-status': { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
   });
@@ -163,6 +224,7 @@ async function main() {
       outputPath: requireString(values.out, '--out'),
       packetId: requireString(values['packet-id'], '--packet-id'),
       coderIds: values.coder || [],
+      workflowStatusPath: values['workflow-status'],
     });
   } else if (command === 'compare') {
     result = compareActionOutcomeReviewFiles({
@@ -175,7 +237,7 @@ async function main() {
     throw new Error(usage().trim());
   }
   process.stdout.write(
-    `${JSON.stringify({ output: result.outputPath, summary: result.report?.summary || result.manifest }, null, 2)}\n`,
+    `${JSON.stringify({ output: result.outputPath, summary: result.report?.summary || result.manifest, workflowStatus: result.workflowStatus || null }, null, 2)}\n`,
   );
 }
 

@@ -421,6 +421,7 @@ test('learner replication recovery preserves the completed prefix and retries on
   fs.writeFileSync(path.join(partialDir, '1-tutor.request.json'), '{}');
 
   const recovery = readLearnerReplicationRecovery(learnerReplicationPlan, sourceDir);
+  assert.equal(recovery.phase, 'generation');
   assert.equal(recovery.priorAttempts, 4);
   assert.equal(recovery.responseCount, 3);
   assert.equal(recovery.interruptedResponseFreeAttempts, 1);
@@ -433,6 +434,92 @@ test('learner replication recovery preserves the completed prefix and retries on
   assert.deepEqual(
     { turn: recovery.partial.failedUnit.turn, speaker: recovery.partial.failedUnit.speaker },
     { turn: 1, speaker: 'tutor' },
+  );
+});
+
+test('learner replication assessment recovery preserves every valid packet and one interrupted reservation', () => {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-assessment-recovery-'));
+  fs.writeFileSync(path.join(sourceDir, 'plan.json'), JSON.stringify(learnerReplicationPlan));
+  const reservations = Array.from({ length: 6 }, (_value, index) => ({
+    type: 'model_attempt_reserved',
+    count: 1,
+    reserved: index + 1,
+    study_reserved: index + 1,
+    ...(index >= 2 ? { stage: 'assessment' } : {}),
+  }));
+  fs.writeFileSync(
+    path.join(sourceDir, 'run-ledger.jsonl'),
+    `${[
+      {
+        type: 'launch_admitted',
+        study_id: learnerReplicationPlan.id,
+        spend_cap: learnerReplicationPlan.total_attempt_ceiling,
+      },
+      ...reservations,
+      {
+        type: 'run_sealed',
+        status: 'technical_failure',
+        recovery_permitted: true,
+        reserved_attempts: 6,
+        study_reserved: 6,
+      },
+    ]
+      .map(JSON.stringify)
+      .join('\n')}\n`,
+  );
+  fs.writeFileSync(
+    path.join(sourceDir, 'progress.jsonl'),
+    `${JSON.stringify({ type: 'dialogue_complete', reservedAttempts: 2 })}\n`,
+  );
+  for (const route of ['luna', 'qwen_normal', 'qwen_abliterated']) {
+    for (const token of learnerReplicationPlan.executionOrder[route]) {
+      const suffix = token.endsWith('_progression') ? 'active_progression' : 'baseline';
+      const worldKey = token.replace(/_(?:baseline|progression)$/u, '');
+      const world = learnerReplicationPlan.worlds.find((candidate) => candidate.key === worldKey);
+      const arm = world.conditions[suffix].arms.find((candidate) => candidate.route === route);
+      const armDir = path.join(sourceDir, 'worlds', worldKey, 'dialogues', arm.id);
+      fs.mkdirSync(armDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(armDir, 'dialogue.json'),
+        JSON.stringify({ turns: [{ turn: 1, learner: 'Learner.', tutor: 'Tutor.' }] }),
+      );
+    }
+  }
+  const evaluationDir = path.join(sourceDir, 'worlds', 'larkspur', 'evaluation-baseline');
+  fs.mkdirSync(evaluationDir, { recursive: true });
+  for (const kind of ['tutor', 'learner']) {
+    const raw = schemaFixture(buildBenchmarkOutputSchema(kind, 1, { extendedQuality: true }));
+    fs.writeFileSync(path.join(evaluationDir, `L0-${kind}.json`), JSON.stringify(raw));
+  }
+  fs.writeFileSync(
+    path.join(sourceDir, 'assessment-physical-attempts.jsonl'),
+    `${[
+      { status: 'candidate_returned' },
+      { status: 'candidate_returned' },
+      {
+        status: 'failed',
+        code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
+        classification: 'response_free_error',
+        reason: 'result_error_without_structured_output',
+      },
+    ]
+      .map(JSON.stringify)
+      .join('\n')}\n`,
+  );
+
+  const recovery = readLearnerReplicationRecovery(learnerReplicationPlan, sourceDir);
+  assert.equal(recovery.phase, 'assessment');
+  assert.equal(recovery.priorAttempts, 6);
+  assert.equal(recovery.completed.length, 18);
+  assert.equal(recovery.partial, null);
+  assert.equal(recovery.assessment.generationAttempts, 2);
+  assert.equal(recovery.assessment.physicalAttempts, 4);
+  assert.equal(recovery.assessment.responseFreeFailures, 2);
+  assert.equal(recovery.assessment.interruptedAttempts, 1);
+  assert.equal(recovery.assessment.completedPackets, 2);
+  assert.deepEqual(
+    recovery.assessment.batches[0].priorScores.map((score) => `${score.arm}/${score.kind}`),
+    ['L0/tutor', 'L0/learner'],
   );
 });
 
@@ -502,6 +589,40 @@ test('Luna judge transport retries only response-free failures and projects surp
   assert.deepEqual(transported, { fixture: true });
   assert.deepEqual(caller.snapshot(), { physicalAttempts: 2, responseFreeRetries: 1 });
   assert.equal(reserved, 2);
+});
+
+test('Luna judge transport continues prior physical and retry counters without resetting the allowance', async () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'luna-reference-judge-recovery-'));
+  let reserved = 0;
+  const budget = {
+    reserve() {
+      reserved += 1;
+      return { call: 294 + reserved, limit: 396, remaining: 102 - reserved };
+    },
+  };
+  const caller = makeLunaJudgeCaller({
+    budget,
+    outDir,
+    priorPhysicalAttempts: 23,
+    priorResponseFreeRetries: 3,
+    maximumResponseFreeRetries: 18,
+    callCli: async (_agent, _system, _prompt, _role, options) => {
+      options.onRawOutput({ fixture: true });
+      return fake(JSON.stringify({ wanted: 'kept' }));
+    },
+  });
+  await caller({ provider: 'claude-code', model: 'claude-opus-5' }, '', 'prompt', 'fixture-quality', {
+    outputSchema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['wanted'],
+      properties: { wanted: { type: 'string' } },
+    },
+  });
+  assert.deepEqual(caller.snapshot(), { physicalAttempts: 24, responseFreeRetries: 3 });
+  const row = JSON.parse(fs.readFileSync(path.join(outDir, 'assessment-physical-attempts.jsonl'), 'utf8'));
+  assert.equal(row.attempt, 24);
+  assert.equal(row.reservation.call, 295);
 });
 const reviewFixture = {
   role_fidelity: 'Keep the role.',
