@@ -81,3 +81,10 @@ Log:
   confirmed with the file alone under a fresh override: 4 failures before,
   69/69 after. (b) `docs/ref-status.md` was stale on `main` after the paper
   bump to 3.0.301; re-rendered with `npm run refs:render`.
+- 2026-09-03 — Second hosted run (head 99508cdf) green: whole workflow 3m09s.
+  Root shard step times, Node 22 / Node 24: shard 1 77 s / 69 s; shard 2
+  107 s / 110 s; shard 3 130 s / 120 s; shard 4 84 s / 116 s. The 3-minute
+  target holds. The balance target does not on this run: shard 3 sits about
+  50 s above shard 1, and the same shard varies by 30 s between Node
+  versions, so one run cannot separate imbalance from runner noise. Leave the
+  override as is; revisit after two or three more runs of hosted timings.
