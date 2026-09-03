@@ -61,7 +61,7 @@ secret:
         - "can't conclude"
         - "not yet"
   surface: >-
-    The chance the next toss is tails is a half, the same as on any toss.
+    The chance the next toss is tails is one half, the same as on any toss.
     The coin carries nothing from the last four throws: it does not know it
     has come up heads, so it owes nobody a tails. Each toss is a fresh coin
     with two equal faces, and the run of four heads, however striking, has

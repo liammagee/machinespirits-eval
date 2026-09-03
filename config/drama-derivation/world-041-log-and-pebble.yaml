@@ -47,7 +47,7 @@ learner_voice: >-
   scale together.
 
 secret:
-  fact: [floatsBecause, logAndPebble, lighterThanSameSizeWater]
+  fact: [floatsBecause, logAndPebble, lighterThanWaterForItsSize]
   recognition_patterns:
     - id: same_size_water_answer
       all_of:
@@ -63,11 +63,12 @@ secret:
         - "can't conclude"
         - "not yet"
   surface: >-
-    The log floats because a piece of wood weighs less than the same-sized
-    piece of water, and the pebble sinks because a piece of stone weighs
-    more than the same-sized piece of water. Heavy and light on their own
-    decide nothing: the log is heavy because it is big, not because wood is
-    heavy for its size. Compare like-sized pieces and the pond makes sense.
+    The log floats because wood is lighter than water for its size: a piece
+    of wood weighs less than the same-sized piece of water. The pebble
+    sinks because stone is heavier than water for its size. Heavy and light
+    on their own decide nothing: the log is heavy because it is big, not
+    because wood is heavy for its size. Compare like-sized pieces and the
+    pond makes sense.
 
 mirror:
   fact: [floatsBecause, logAndPebble, fullOfAir]
@@ -118,7 +119,7 @@ premises:
       exactly the log's size. Every comparison is with the same-sized piece
       of water and nothing else.
   - id: p_weigh
-    fact: [sameSizePiecesShow, sameSizePieces, lighterThanSameSizeWater]
+    fact: [sameSizePiecesShow, sameSizePieces, lighterThanWaterForItsSize]
     surface: >-
       Put the wood cube and the water cube side by side: sixty grams against
       one hundred. The wood is lighter than the same-sized water, so it
@@ -129,7 +130,7 @@ background:
   - [hasWriteUp, pupil, logAndPebble]
 
 incompatible:
-  - [[floatsBecause, logAndPebble, lighterThanSameSizeWater], [floatsBecause, logAndPebble, fullOfAir]]
+  - [[floatsBecause, logAndPebble, lighterThanWaterForItsSize], [floatsBecause, logAndPebble, fullOfAir]]
 
 proof_paths:
   - premises: [p_compare, p_weigh]

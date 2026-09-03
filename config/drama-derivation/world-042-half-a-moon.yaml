@@ -45,7 +45,7 @@ learner_voice: >-
   stool and the lit half stays lit.
 
 secret:
-  fact: [halfMoonBecause, tonight, sideOnToSunlitHalf]
+  fact: [halfMoonBecause, tonight, sideOnToTheLitHalf]
   recognition_patterns:
     - id: side_on_answer
       all_of:
@@ -62,7 +62,7 @@ secret:
   surface: >-
     We see half a Moon because the Sun lights one whole half of the Moon
     and tonight the Moon sits out to the side of us, a quarter of the way
-    round, so we look at it side on and see half of the lit half. The
+    round, so we look at it side on to the lit half and see half of it. The
     Earth's shadow has nothing to do with it: the shadow points straight
     away from the Sun, and the Moon is nowhere near that line tonight.
 
@@ -114,7 +114,7 @@ premises:
       is due south at sunset, which is why it is up in the evening and gone
       by the small hours.
   - id: p_view
-    fact: [viewOfLitHalfFrom, sideOn, sideOnToSunlitHalf]
+    fact: [viewOfLitHalfFrom, sideOn, sideOnToTheLitHalf]
     surface: >-
       The Sun lights one whole half of the Moon, always, whatever we see.
       From out to the side we look at that lit half edge on: half of the
@@ -125,7 +125,7 @@ background:
   - [hasDiagram, pupil, tonight]
 
 incompatible:
-  - [[halfMoonBecause, tonight, sideOnToSunlitHalf], [halfMoonBecause, tonight, earthShadow]]
+  - [[halfMoonBecause, tonight, sideOnToTheLitHalf], [halfMoonBecause, tonight, earthShadow]]
 
 proof_paths:
   - premises: [p_position, p_view]

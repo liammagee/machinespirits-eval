@@ -12,7 +12,7 @@ import {
 import { assert, fs, path, ROOT, spawnSync, test } from './helpers/tutorStubInteractiveHarness.js';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
-const LIVE_WORLD_CATALOG_HASH = 'b2590b28ab9ae1e627ee379f8a438f0a65234d2027fc24041caaeb1ffd6fdf18';
+const LIVE_WORLD_CATALOG_HASH = '9e59c14a571f99446b4efd1fed2a39d88583612becd1d55df782323ae493084c';
 
 test('world presentation and picker summaries preserve authored and fallback semantics', () => {
   const presentation = { summary: 'Authored summary.', temporal_frame: 'contemporary' };
@@ -131,7 +131,7 @@ test('the scenario controller owns world loading, grouping, and terminal output 
   });
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout.split('\n').length - 1, 96);
-  assert.equal(Buffer.byteLength(result.stdout), 9421);
+  assert.equal(result.stdout.split('\n').length - 1, 105);
+  assert.equal(Buffer.byteLength(result.stdout), 10522);
   assert.equal(createHash('sha256').update(result.stdout).digest('hex'), LIVE_WORLD_CATALOG_HASH);
 });
