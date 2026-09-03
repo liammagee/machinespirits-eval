@@ -1,0 +1,122 @@
+{
+  "schema": "machinespirits.tutor-stub.action-outcome-model-judge-shadow-public-summary.v1",
+  "study_id": "tutor-stub-action-outcome-model-judge-shadow-v1",
+  "source_study_id": "tutor-stub-action-outcome-comparable-collection-v2",
+  "status": "exploratory_model_pair_failed",
+  "private_report_sha256": "bd4753132840e2c3dea36343e149a413555647b0ce2de6818c2226263692128b",
+  "execution": {
+    "completed_units": 70,
+    "protocol_valid_units": 68,
+    "failed_units": 0,
+    "missing_units": 0,
+    "reserved_attempts": 70,
+    "hard_attempt_ceiling": 70,
+    "source_commit": "1ee6323ae5fb7ac7e6148c17e768924f06cd6d1e",
+    "source_tree": "18f95919154352b1d36ca7d494c6b8b3f9ac8721"
+  },
+  "seats": {
+    "judge_sol": {
+      "model_ref": "codex.gpt-5.6-sol",
+      "completed": 35,
+      "protocol_valid": 35,
+      "delivery_labels": {
+        "delivered": 24,
+        "not_delivered": 11
+      },
+      "outcome_labels": {
+        "failure": 13,
+        "inconclusive": 5,
+        "measurement_indeterminate": 11,
+        "partial": 3,
+        "success": 3
+      }
+    },
+    "judge_opus": {
+      "model_ref": "claude-code.opus-5",
+      "completed": 35,
+      "protocol_valid": 33,
+      "delivery_labels": {
+        "delivered": 23,
+        "not_delivered": 10
+      },
+      "outcome_labels": {
+        "failure": 8,
+        "inconclusive": 12,
+        "measurement_indeterminate": 10,
+        "partial": 3
+      }
+    }
+  },
+  "agreement": {
+    "paired_protocol_valid_cases": 33,
+    "delivery_exact": {
+      "numerator": 30,
+      "denominator": 33,
+      "rate": 0.9090909090909091,
+      "cohen_kappa": 0.7906976744186046
+    },
+    "outcome_exact": {
+      "numerator": 17,
+      "denominator": 33,
+      "rate": 0.5151515151515151,
+      "cohen_kappa": 0.360774818401937
+    },
+    "joint_exact": {
+      "numerator": 17,
+      "denominator": 33,
+      "rate": 0.5151515151515151,
+      "cohen_kappa": 0.360774818401937
+    }
+  },
+  "yield": {
+    "cases": 35,
+    "paired_measurement_indeterminate": 27,
+    "paired_measurement_indeterminate_rate": 0.7714285714285715,
+    "exact_consensus_binary_records": 5,
+    "exact_consensus_binary_by_family": {
+      "explain_model": 2,
+      "minimal_support": 2,
+      "request_self_explanation": 1
+    },
+    "exact_consensus_binary_outcomes": {
+      "success": 0,
+      "failure": 5
+    }
+  },
+  "diagnostic_checks": {
+    "protocol_valid_rate_per_seat": {
+      "threshold": 0.9,
+      "pass": true
+    },
+    "joint_exact_agreement": {
+      "observed": 0.5151515151515151,
+      "threshold": 0.8,
+      "pass": false
+    },
+    "paired_measurement_indeterminate_rate": {
+      "observed": 0.7714285714285715,
+      "threshold": 0.2,
+      "pass": false
+    },
+    "exact_consensus_binary_records": {
+      "observed": 5,
+      "threshold": 24,
+      "pass": false
+    },
+    "exact_consensus_binary_records_per_move_family": {
+      "observed": {
+        "explain_model": 2,
+        "minimal_support": 2,
+        "request_self_explanation": 1
+      },
+      "threshold": 6,
+      "pass": false
+    }
+  },
+  "input_integrity_after_run": {
+    "packet_sha256": "b88a1021f5aa6214a48dee5bd897f58e5a39880f76a49d0d237cc4f0744ac77f",
+    "human_submission_files_unchanged": true
+  },
+  "human_gate_status": "unchanged_pending_human_review",
+  "controller_study_licensed": false
+}

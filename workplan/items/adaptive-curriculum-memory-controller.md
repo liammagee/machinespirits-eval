@@ -43,6 +43,7 @@ links:
     - notes/2026-09-02-tutor-stub-action-outcome-model-judge-shadow-go.md
   exports:
     - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
+    - exports/action-outcome-model-judge-shadow/2026-09-02/README.md
   prs:
     - 895
     - 898
@@ -64,6 +65,9 @@ links:
     - 949
     - 951
     - 952
+    - 955
+    - 958
+    - 959
   items:
     - layered-task-session-adaptation
     - durable-evaluation-runner-migration
@@ -130,6 +134,23 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: Completed the registered 35-case Opus-Sol shadow semantic
+  judgment with exactly 70/70 reservations, 70 completed calls, no failed or
+  missing units, and no retries. Protocol validity passed at 35/35 for Sol and
+  33/35 for Opus. Delivery judgment was reproducible (30/33 exact, 90.9%,
+  Cohen's kappa 0.791), while learner-outcome judgment was not (17/33 exact,
+  51.5%, kappa 0.361). The pair left 27/35 cases measurement-indeterminate and
+  produced only five exact-consensus binary records against the registered
+  minimum of 24; every one was a failure, and no move family reached its
+  minimum of six. The diagnostic therefore closed as
+  `exploratory_model_pair_failed`. This shows that a model pair can automate
+  delivery recognition much more readily than learner-outcome recognition; it
+  does not justify substituting model consensus for the human construct anchor.
+  The frozen source packet and both human templates remained unchanged. Public
+  aggregate report:
+  `exports/action-outcome-model-judge-shadow/2026-09-02/README.md`. The original
+  human gates remain pending, and the controller study is not licensed.
 
 - 2026-09-02: After PR #955 merged the bounded shadow-judgment design at
   `1ee6323ae5fb7ac7e6148c17e768924f06cd6d1e`, recorded the operator's direct
