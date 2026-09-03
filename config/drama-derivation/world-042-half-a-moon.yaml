@@ -1,0 +1,204 @@
+# WORLD-042 — a conventional classroom lesson: a Year 8 science tutorial on
+# the phases of the Moon. The learner has drawn a half moon with the Earth's
+# shadow covering the dark half, and is defending it. Same proof shape as
+# world-037 — a tempting rule (the mirror: the Earth's shadow makes the
+# phases) versus a rule that needs one more premise (the Sun always lights
+# one half of the Moon; where the Moon sits decides how much of that lit
+# half we see) — so the same detectors and moves apply. Lesson register,
+# pupil not suspect. Authored 2026-09-03 for the form-detector pool widening
+# (workplan: state-detection-without-word-lists). Demo-tier; not ratified.
+
+id: world_042_half_a_moon
+title: Half a Moon
+discipline: "Year 8 science: phases of the Moon"
+
+question: "Tonight the Moon is exactly half lit. Why do we see half a Moon?"
+question_pattern: [halfMoonBecause, tonight, "?x"]
+
+opening_frame:
+  situation: >-
+    Diagram question two: tonight the Moon is exactly half lit. The pupil
+    has drawn the Earth's shadow across the dark half, written "Earth's
+    shadow", and would like to colour it in.
+  authored_text: >-
+    Question two: tonight the Moon is exactly half lit. Why do we see half
+    a Moon? You've drawn the Earth's shadow across the dark half. Before
+    you colour it in, tell me which part of the drawing you want to check
+    first.
+
+setting: >-
+  A Year 8 science lesson with the blinds down, one pupil at the bench with
+  the diagram sheet, a torch clamped at one end of the bench, a football on
+  a stool in the middle and a tennis ball on a stick. The pupil treated the
+  dark half of the Moon as something that must be blocking the light, and
+  the only big thing nearby is the Earth. The pupil at the next bench,
+  Kwame, has said it is about where the Moon is and has already drawn it.
+  The rule the lesson is teaching is the awkward one: the Sun lights one
+  whole half of the Moon at all times, and what we see depends on where the
+  Moon sits, not on anything getting in the way.
+
+learner_voice: >-
+  A Year 8 pupil who wants the diagram finished and coloured: quick to ask
+  whether the shadow is right or wrong, sure that a dark half must be a
+  shadow, sharp when the torch comes back on, and not keen on Kwame being
+  right. Still able to slow down when the tennis ball is walked round the
+  stool and the lit half stays lit.
+
+secret:
+  fact: [halfMoonBecause, tonight, sideOnToSunlitHalf]
+  recognition_patterns:
+    - id: side_on_answer
+      all_of:
+        - ["lit half", "sunlit half", "the half that is lit", "half the moon is lit", "the sun lights one half", "the sun lights half", "always lights half", "side on", "side-on", "from the side", "at a right angle", "quarter of the way round", "where the moon is", "where it is in its orbit"]
+        - ["half moon", "half a moon", "we see half", "see half", "looks half", "half lit", "half of it"]
+        - ["not the shadow", "not the earth's shadow", "isn't the shadow", "shadow points away", "shadow is nowhere near", "nothing to do with the shadow", "no shadow", "the sun's light", "lit by the sun", "from the sun"]
+      none_of:
+        - "it is the shadow"
+        - "it's the shadow"
+        - "is the earth's shadow"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    We see half a Moon because the Sun lights one whole half of the Moon
+    and tonight the Moon sits out to the side of us, a quarter of the way
+    round, so we look at it side on and see half of the lit half. The
+    Earth's shadow has nothing to do with it: the shadow points straight
+    away from the Sun, and the Moon is nowhere near that line tonight.
+
+mirror:
+  fact: [halfMoonBecause, tonight, earthShadow]
+
+rules:
+  - id: R1_side_on
+    gloss: >-
+      The Sun always lights one half of the Moon. How much of that lit half
+      we see depends on where the Moon is in its path round us.
+    if:
+      - [moonPositionIs, tonight, "?u"]
+      - [viewOfLitHalfFrom, "?u", "?x"]
+    then:
+      - [halfMoonBecause, tonight, "?x"]
+  - id: R2_shadow
+    gloss: >-
+      A dark part of the Moon is the Earth's shadow only when the Earth is
+      between the Sun and the Moon, so that its shadow can reach the Moon.
+    if:
+      - [shadowCovers, tonight, "?x"]
+      - [shadowCanReachMoon, tonight, alreadyTrue]
+    then:
+      - [halfMoonBecause, tonight, "?x"]
+
+premises:
+  - id: p_shadow
+    evidence_role: mirror
+    fact: [shadowCovers, tonight, earthShadow]
+    surface: >-
+      The dark half is dark because something is in the way, and the Earth
+      is the big thing nearby, so the Earth's shadow covers half the Moon.
+      That is what the pupil drew, and it is what a shadow on a wall looks
+      like.
+  - id: p_torch
+    evidence_role: corroboration
+    fact: [shadowCanReachMoon, tonight, shadowPointsAway]
+    surface: >-
+      Torch on. The football's shadow lies along the bench straight away
+      from the torch. The tennis ball, out to the side where the Moon is
+      tonight, is nowhere near that shadow, and the torch lights one whole
+      half of it. Nothing is in the way of anything.
+  - id: p_position
+    fact: [moonPositionIs, tonight, sideOn]
+    surface: >-
+      Tonight the Moon is a quarter of the way round its path: out to the
+      side of us, at a right angle to the line between us and the Sun. It
+      is due south at sunset, which is why it is up in the evening and gone
+      by the small hours.
+  - id: p_view
+    fact: [viewOfLitHalfFrom, sideOn, sideOnToSunlitHalf]
+    surface: >-
+      The Sun lights one whole half of the Moon, always, whatever we see.
+      From out to the side we look at that lit half edge on: half of the
+      lit half faces us and half of the dark half faces us. That is a half
+      Moon.
+
+background:
+  - [hasDiagram, pupil, tonight]
+
+incompatible:
+  - [[halfMoonBecause, tonight, sideOnToSunlitHalf], [halfMoonBecause, tonight, earthShadow]]
+
+proof_paths:
+  - premises: [p_position, p_view]
+
+release_schedule:
+  - { turn: 2, premise: p_shadow, via: tutor }
+  - turn: 3
+    premise: p_torch
+    via: director
+    presentation: { mode: presented_exhibit, cue: "A torch clamped at one end of the bench, a football on a stool in the middle, and a tennis ball on a stick out to the side; the football's shadow lies along the bench away from the torch and misses the tennis ball by an arm's length." }
+  - turn: 5
+    premise: p_position
+    via: director
+    presentation: { mode: enacted_role, role: the pupil at the next bench, Kwame, playing the Moon, who walks the tennis ball a quarter of the way round the stool and stops where the class sees it side on }
+  - { turn: 6, premise: p_view, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Something in the Way
+      turns: [1, 4]
+      intent: >-
+        The shadow-on-a-wall habit supplies a plausible rule, while the
+        torch and the football show the shadow pointing nowhere near the
+        Moon.
+    - act: II
+      title: Half of the Lit Half
+      turns: [5, 8]
+      intent: >-
+        The tennis ball walked a quarter of the way round turns "where the
+        Moon is" into a rule the pupil can state. The pupil should
+        distinguish a half that is blocked from a half that is turned away.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: earthShadow
+      mirror_pull: high
+    second_order:
+      from: class_teacher
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      A science teacher at the pupil's bench with the blinds down: patient
+      with the shadow habit, unwilling to just hand over the sentence, and
+      happiest when the torch and the tennis ball do the explaining.
+
+presentation:
+  family: half-a-moon
+  temporal_frame: contemporary
+  scene_ecology: "a Year 8 science bench with the blinds down, a diagram sheet, a clamped torch, a football on a stool and a tennis ball on a stick"
+  narrative_diction: "classroom plain, teacher and pupil"
+  ledger_term: diagram sheet
+  frame:
+    kind: lesson
+    closing_words:
+      - final answer
+      - the answer is
+      - the answer
+      - why do we see half
+      - half a moon because
+      - we see half because
+      - the reason is
+      - it looks half because
+  summary: A conventional Year 8 science tutorial on the phases of the Moon, where the pupil defends "it's the Earth's shadow" and a torch, a football and a tennis ball show that the Sun lights one whole half and we see it side on.

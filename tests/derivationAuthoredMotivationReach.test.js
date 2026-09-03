@@ -43,7 +43,10 @@ const WORLD_DIR = path.join(ROOT, 'config', 'drama-derivation');
 // 25th-27th worlds: world_038_seasons_tilt, world_039_percent_up_down and
 // world_040_sam_and_me (lesson-world transfer bench, 2026-09-02) declare the
 // same block and run on the tutor-stub stress path, which reads it.
-const WORLDS_DECLARING_LEARNER_MOTIVATION = 27;
+// 28th-30th worlds: world_041_log_and_pebble, world_042_half_a_moon and
+// world_043_tails_is_due (form-detector pool widening, 2026-09-03) declare the
+// same block and run on the tutor-stub stress path, which reads it.
+const WORLDS_DECLARING_LEARNER_MOTIVATION = 30;
 
 function allWorlds() {
   return fs

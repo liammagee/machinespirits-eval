@@ -1,0 +1,143 @@
+# Stress schedule — world-043 (Tails Is Due), authored 2026-09-03 for the
+# form-detector pool widening (workplan: state-detection-without-word-lists).
+# A conventional lesson rather than a mystery. Each plant is drawn from a
+# profile in scripts/tutor-stub-learner-profile-contracts.js — its failure
+# operator in the pupil's own words — and its repair gold from the profile's
+# repair model and the move cards in services/tutorStubMannerSwitch.js.
+# States are keyed to the clue releases (turns 2, 3, 5, 6; floor 6, cap 12).
+#
+# Why this schedule exists: opposition is realised early, at turn 4, as an
+# appeal to "the law of averages"; irritation is realised late, at turn 9,
+# as clipped commands about the teacher's pace, not with "you sound like".
+# DEMO-TIER, NOT RATIFIED: no blind second column, no gate. Runs on this
+# schedule are illustration, never adjudicated study evidence.
+
+schedule_id: world_043_stress_demo_1
+world: world_043_tails_is_due
+persona: year8-pupil
+states_covered: [jumping_ahead, opposed, frustrated, lost, irritated, forgetting]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      Profile: answer_seeking. The tails-is-due note is due this turn; the
+      pupil wants the fraction to write, not the reason.
+    realize: >-
+      Ask for the fraction to copy, impatiently, as questions, like a pupil
+      who wants the sheet over. Sample: "Is it a half or isn't it? Mina says
+      a half, I say more. Which one do I write down? Can you just say?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the demand: take "more than a half" as a live claim and name
+      the one check that decides it — read the fifth-toss column on the
+      board — as a task the pupil does, with the fraction written only
+      after.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Handing over "a half" to copy, or refusing the tempo with a lecture on
+      independence.
+
+  - turn: 4
+    state: opposed
+    cause: >-
+      Profile: contradiction_keeper. The tally at 3 showed nineteen tails
+      in forty; the pupil holds to the rule everyone knows and asks to move
+      on.
+    realize: >-
+      Appeal to the rule as common knowledge, name it as a law, dismiss the
+      tally on its size, restate the claim and ask to move on. Do not
+      engage the numbers. Sample: "Everyone knows things even out. That's
+      literally the law of averages, it's a law. The tally's only forty
+      goes. I'm putting more than a half. Can we move on to question six?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Take "things even out" as a live claim and test it where it can be
+      tested: what the law would predict for the fifth-toss column, and
+      what the column shows. The pupil reads the two numbers, not the
+      teacher.
+    also_acceptable: off_track_probe
+    wrong_but_tempting: >-
+      Declaring there is no such law, or moving on to question six.
+
+  - turn: 6
+    state: frustrated
+    cause: >-
+      Profile: affective_resistant. The fresh-coin rule at 6 means the bet
+      with Mina was lost for nothing; the pupil hears that no pattern they
+      ever spot will count.
+    realize: >-
+      Name the pressure and withhold, with one demand in it, like a pupil
+      who feels got at. Do NOT concede the fraction. Sample: "So I lost the
+      bet with Mina for nothing. Four heads and it meant nothing. Every time
+      I think I've found a pattern in here it turns out there isn't one.
+      Tell me one thing I said today that was right."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Credit before correction: name, in the pupil's words, two things that
+      stand — four heads running really is unusual, and over many tosses
+      heads and tails really do come out close — then one small check with
+      the coin in the hand.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Reassurance without named content, or pressing on to the fraction.
+
+  - turn: 7
+    state: lost
+    cause: >-
+      Profile: slow_learner / low_agency. "A half" has come apart from
+      anything in particular; the pupil no longer knows what the half is a
+      half of.
+    realize: >-
+      Say plainly that the thread is lost, without a claim to defend.
+      Sample: "Wait, is it a half for tails or a half for heads? Or a half
+      for both? That's a whole. I don't know what the half is of any more."
+    right_repair: simplify
+    repair_gloss: >-
+      Cut to one toss: one coin, two faces, one throw. Tails is one of the
+      two. That is the half. Nothing about the last four until that is said
+      back.
+    also_acceptable: slow_down
+    wrong_but_tempting: >-
+      Restating the whole argument faster, or introducing the multiplication
+      rule the pupil has not met.
+
+  - turn: 9
+    state: irritated
+    cause: >-
+      Profile: low_trust_skeptic. The teacher has slowed right down after
+      the lost turn, and the pupil hears the slow pace as being talked down
+      to.
+    realize: >-
+      Object to the teacher's pace and manner in short clipped commands,
+      quote one of the teacher's phrases back, and demand it said once,
+      normally. Do NOT use the words "sound like". Sample: "Stop doing the
+      slow bit. I'm not five. 'Each toss is a fresh coin.' Say it once,
+      normally, and I'll write it."
+    right_repair: change_tone
+    repair_gloss: >-
+      Change register at once: one plain sentence at normal speed, then
+      hand the coin over and let the pupil toss it and say what it
+      remembers. No more staging.
+    also_acceptable: fewer_words
+    wrong_but_tempting: >-
+      Explaining why the pace was slow, or apologising and continuing at
+      the same pace.
+
+  - turn: 10
+    state: forgetting
+    cause: >-
+      Profile: false_memory under pressure. The pupil misremembers the
+      fifth-toss column as twenty-one tails.
+    realize: >-
+      Assert the false memory as settled. Sample: "The tally said tails came
+      up more. Twenty-one tails, nineteen heads, I remember it. So tails is
+      more likely after a run. It's on the board."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the board itself and read the two numbers as written (nineteen
+      tails, twenty-one heads), letting the board disagree instead of the
+      teacher. No scolding.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum, or correcting from authority.

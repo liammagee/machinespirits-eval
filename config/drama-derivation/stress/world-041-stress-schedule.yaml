@@ -1,0 +1,151 @@
+# Stress schedule — world-041 (The Log and the Pebble), authored 2026-09-03
+# for the form-detector pool widening (workplan:
+# state-detection-without-word-lists). A conventional lesson rather than a
+# mystery. Each plant is drawn from a profile in
+# scripts/tutor-stub-learner-profile-contracts.js — its failure operator in
+# the pupil's own words — and its repair gold from the profile's repair model
+# and the move cards in services/tutorStubMannerSwitch.js. States are keyed
+# to the clue releases (turns 2, 3, 5, 6; floor 6, cap 12).
+#
+# Why this schedule exists: every irritated plant in the pool before it was
+# realised with "you sound like". Here irritation is realised by quoting the
+# teacher's own phrase back. Opposition is realised as an appeal to a rule
+# everyone knows, a shape the pool had not yet held.
+# DEMO-TIER, NOT RATIFIED: no blind second column, no gate. Runs on this
+# schedule are illustration, never adjudicated study evidence.
+
+schedule_id: world_041_stress_demo_1
+world: world_041_log_and_pebble
+persona: year8-pupil
+states_covered: [jumping_ahead, frustrated, irritated, lost, forgetting, opposed]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      Profile: answer_seeking. The heavy-sinks note is due this turn; the
+      pupil wants the sentence for the box, not the reason.
+    realize: >-
+      Ask for the sentence to copy, impatiently, as a string of short
+      questions, like a pupil who wants the sheet over. Sample: "So what do
+      I put? Is it the air or isn't it? Priya's got a whole paragraph and
+      I've got one line. What goes in the box?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the demand: take "the air" as a live claim and name the one
+      check that decides it — put the same-sized cubes on the scale — as a
+      task the pupil does, with the sentence written only after.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Handing over "lighter than the same-sized water" to copy, or refusing
+      the tempo with a lecture on density.
+
+  - turn: 4
+    state: frustrated
+    cause: >-
+      Profile: affective_resistant. The three cubes at 3 showed wood lighter
+      than water and stone heavier; the pupil hears the whole write-up being
+      marked wrong.
+    realize: >-
+      Name the pressure and withhold, in flat statements with no question in
+      them, like a pupil who feels got at. Do NOT concede the answer.
+      Sample: "Great. So the whole write-up's wrong. Everything I put about
+      the air. I spent all of last lesson on that page. Nothing I do in here
+      counts for anything."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Credit before correction: name, in the pupil's words, two things that
+      stand — wood really does have air in it, and a stone dropped in a
+      pond really does sink — then one small check with two cubes on the
+      scale.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Reassurance without named content, or pressing on to the water cube.
+
+  - turn: 6
+    state: irritated
+    cause: >-
+      Profile: low_trust_skeptic. The phrase "the same-sized piece of water"
+      has now been said three times, and the pupil hears a formula, not an
+      explanation.
+    realize: >-
+      Mock the teacher's manner by quoting the teacher's own phrase back,
+      twice, in scare quotes, then ask whether anyone talks like that. Do
+      NOT use the words "sound like" or "voice". Sample: "'The same-sized
+      piece of water.' 'The same-sized piece of water.' Do you hear
+      yourself? Nobody at the pond has a same-sized piece of water. Say it
+      in words a person would actually use."
+    right_repair: change_tone
+    repair_gloss: >-
+      Drop the formula and change register, in plain words: the pond weighs
+      the log against the water it shoves out of the way, and that water is
+      the log's own size. Offer a bath and a rubber duck, and let the pupil
+      say the rule back in their own words.
+    also_acceptable: backtrack
+    wrong_but_tempting: >-
+      Repeating the phrase a fourth time, or apologising and continuing in
+      the same manner.
+
+  - turn: 7
+    state: lost
+    cause: >-
+      Profile: slow_learner / low_agency. "Heavy" has come apart into two
+      meanings, and the pupil no longer knows which comparison is being
+      made.
+    realize: >-
+      Say plainly that the thread is lost, without a claim to defend.
+      Sample: "Hang on, which one's heavier now? The wood's lighter but the
+      log's heavy, and the pebble's light but the stone's heavy. I've got
+      them the wrong way round in my head and I don't know which way is
+      right."
+    right_repair: simplify
+    repair_gloss: >-
+      Cut to one pair at a time: one cube of wood, one cube of water, same
+      size, on the scale. Which is lighter. That one floats. Nothing else on
+      the bench until that is said back.
+    also_acceptable: slow_down
+    wrong_but_tempting: >-
+      Restating the whole comparison faster, or introducing grams per cubic
+      centimetre the pupil has not met.
+
+  - turn: 9
+    state: forgetting
+    cause: >-
+      Profile: false_memory under pressure. The pupil misremembers the scale
+      reading sixty under the water cube.
+    realize: >-
+      Assert the false memory as settled. Sample: "The water cube was the
+      lightest. That's what the scale said, sixty for the water. So wood's
+      heavier than water and it floats anyway, so it must be the air. I saw
+      the scale."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the scale itself and say what it read under each cube (sixty
+      under the wood, one hundred under the water, two hundred and seventy
+      under the stone), letting the record disagree instead of the teacher.
+      No scolding.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum, or correcting from authority.
+
+  - turn: 10
+    state: opposed
+    cause: >-
+      Endgame: the same-sized-water case is nearly closed. The pupil falls
+      back on the rule everyone knows and on the teacher who taught it last
+      year, and asks to move on.
+    realize: >-
+      Appeal to the rule as common knowledge and to a past teacher's
+      authority, refuse the finding on that ground, then ask to move to the
+      next question. Do not argue the cubes. Sample: "Heavy things sink.
+      Everyone knows that, it's in the textbook, Mr Adeyemi said it in Year
+      7. I'm putting the air. Can we do question four now?"
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the rule from the case with one oblique move — e.g. ask what Mr
+      Adeyemi would say the log is heavier than — so that keeping the old
+      rule for stones no longer means it decides the log.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Re-arguing the cubes against a stake that was never about the cubes,
+      or contradicting the Year 7 teacher.
