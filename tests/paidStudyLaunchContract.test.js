@@ -109,12 +109,20 @@ function raceConfig({ value, destination, resultFile, providerLog, unit, recover
   };
 }
 
-test('standing contract accepts a clean detached launch and separator-tolerant cap', (t) => {
+test('standing contract accepts a launch, records its provenance, and reads a separator-tolerant cap', (t) => {
   const value = fixture(t);
   const verified = verifyPaidStudyLaunchContract(value.contract);
   assert.equal(verified.source.commit, value.launchCommit);
   assert.equal(verified.source.detached, true);
+  assert.equal(verified.source.branch, null);
+  assert.equal(verified.source.dirty, false);
+  assert.equal(verified.source.dirty_entries, 0);
+  assert.equal(verified.source.named_launch_commit, value.launchCommit);
+  assert.equal(verified.source.named_launch_commit_is_head, true);
   assert.equal(verified.design.path, 'config/study.json');
+  assert.equal(verified.design.in_head, true);
+  assert.equal(verified.design.checkout_matches_head, true);
+  assert.equal(verified.design.checkout_matches_main, true);
   assert.equal(verified.spend_cap, 1200);
   assert.deepEqual(
     paidStudyGoNoteIssues({
@@ -126,24 +134,49 @@ test('standing contract accepts a clean detached launch and separator-tolerant c
   );
 });
 
-test('standing contract rejects branch, dirt, changed design bytes, ancestry, GO position, and cap drift', (t) => {
+test('provenance is recorded, not enforced: branch, dirt, design edits, and a different named commit all admit', (t) => {
   const branched = fixture(t);
   git(branched.root, 'checkout', '-q', '-b', 'launch-branch');
-  assert.throws(() => verifyPaidStudyLaunchContract(branched.contract), /detached HEAD/u);
+  const onBranch = verifyPaidStudyLaunchContract(branched.contract);
+  assert.equal(onBranch.source.branch, 'launch-branch');
+  assert.equal(onBranch.source.detached, false);
+  assert.equal(onBranch.source.commit, branched.launchCommit);
 
   const dirty = fixture(t);
   fs.writeFileSync(path.join(dirty.root, 'untracked.txt'), 'dirty\n');
-  assert.throws(() => verifyPaidStudyLaunchContract(dirty.contract), /clean checkout/u);
+  const withDirt = verifyPaidStudyLaunchContract(dirty.contract);
+  assert.equal(withDirt.source.dirty, true);
+  assert.equal(withDirt.source.dirty_entries, 1);
+  assert.equal(withDirt.design.checkout_matches_main, true);
 
   const changed = fixture(t);
   fs.writeFileSync(path.join(changed.root, 'config', 'study.json'), '{"study":"changed"}\n');
-  assert.throws(() => verifyPaidStudyLaunchContract(changed.contract), /clean checkout/u);
+  const withEdit = verifyPaidStudyLaunchContract(changed.contract);
+  assert.equal(withEdit.source.dirty, true);
+  assert.equal(withEdit.design.checkout_matches_head, false);
+  assert.equal(withEdit.design.checkout_matches_main, false);
 
   const hiddenChange = fixture(t);
   git(hiddenChange.root, 'update-index', '--assume-unchanged', 'config/study.json');
   fs.writeFileSync(path.join(hiddenChange.root, 'config', 'study.json'), '{"study":"hidden-change"}\n');
-  assert.throws(() => verifyPaidStudyLaunchContract(hiddenChange.contract), /checked-out bytes/u);
+  const hidden = verifyPaidStudyLaunchContract(hiddenChange.contract);
+  assert.equal(hidden.source.dirty, false);
+  assert.equal(hidden.design.checkout_matches_head, false);
+  assert.equal(hidden.design.checkout_matches_main, false);
 
+  const elsewhere = fixture(t);
+  const named = verifyPaidStudyLaunchContract({ ...elsewhere.contract, launchCommit: elsewhere.goNoteCommit });
+  assert.equal(named.source.commit, elsewhere.launchCommit);
+  assert.equal(named.source.named_launch_commit, elsewhere.goNoteCommit);
+  assert.equal(named.source.named_launch_commit_is_head, false);
+
+  const unnamed = verifyPaidStudyLaunchContract({ ...elsewhere.contract, launchCommit: undefined });
+  assert.equal(unnamed.source.commit, elsewhere.launchCommit);
+  assert.equal(unnamed.source.named_launch_commit, null);
+  assert.equal(unnamed.source.named_launch_commit_is_head, null);
+});
+
+test('standing contract still refuses a missing or unmerged design, a bad GO note, and cap drift', (t) => {
   const wrongGo = fixture(t, { firstLine: '# approval' });
   assert.throws(() => verifyPaidStudyLaunchContract(wrongGo.contract), /go_token/u);
 
@@ -158,9 +191,14 @@ test('standing contract rejects branch, dirt, changed design bytes, ancestry, GO
   );
 
   const unmerged = fixture(t);
-  const unmergedMain = git(unmerged.root, 'commit-tree', `${unmerged.launchCommit}^{tree}`, '-m', 'unrelated main');
+  const emptyTree = git(unmerged.root, 'hash-object', '-t', 'tree', '/dev/null');
+  const unmergedMain = git(unmerged.root, 'commit-tree', emptyTree, '-m', 'main without the design');
   git(unmerged.root, 'update-ref', 'refs/remotes/origin/main', unmergedMain);
   assert.throws(() => verifyPaidStudyLaunchContract(unmerged.contract), /must be merged/u);
+
+  const missingDesign = fixture(t);
+  fs.rmSync(path.join(missingDesign.root, 'config', 'study.json'));
+  assert.throws(() => verifyPaidStudyLaunchContract(missingDesign.contract), /not in the checkout/u);
 });
 
 test('the original study GO remains valid after a merged technical code fix', (t) => {
@@ -179,6 +217,40 @@ test('the original study GO remains valid after a merged technical code fix', (t
   assert.equal(verified.source.commit, recoveryCommit);
   assert.equal(verified.authorization.commit, value.goNoteCommit);
   assert.equal(verified.authorization.path, 'notes/go.md');
+
+  const stillNamedOriginal = verifyPaidStudyLaunchContract(value.contract);
+  assert.equal(stillNamedOriginal.source.commit, recoveryCommit);
+  assert.equal(stillNamedOriginal.source.named_launch_commit, value.launchCommit);
+  assert.equal(stillNamedOriginal.source.named_launch_commit_is_head, false);
+});
+
+test('a dirty branch checkout with a code commit after GO still admits and writes its provenance to the ledger', (t) => {
+  const value = fixture(t, { cap: 2, noteCap: '2' });
+  git(value.root, 'checkout', '-q', '-b', 'fix-after-go', value.goNoteCommit);
+  fs.writeFileSync(path.join(value.root, 'fix.txt'), 'code fix after GO\n');
+  git(value.root, 'add', 'fix.txt');
+  git(value.root, 'commit', '-qm', 'code fix after GO');
+  const fixCommit = git(value.root, 'rev-parse', 'HEAD');
+  fs.writeFileSync(path.join(value.root, 'scratch.txt'), 'uncommitted\n');
+
+  const destination = path.join(value.base, 'run');
+  const admitted = admitPaidStudyLaunch({ ...value.contract, destination });
+  assert.equal(fs.existsSync(admitted.ledger_path), true);
+  assert.deepEqual(admitted.reserveModelAttempts(1, { unit: 'a' }), {
+    reserved: 1,
+    remaining: 1,
+    study_reserved: 1,
+  });
+  admitted.close({ type: 'run_sealed', status: 'complete' });
+
+  const rows = fs.readFileSync(admitted.ledger_path, 'utf8').trim().split('\n').map(JSON.parse);
+  const launch = rows.find((row) => row.type === 'launch_admitted');
+  assert.equal(launch.source_commit, fixCommit);
+  assert.equal(launch.source_branch, 'fix-after-go');
+  assert.equal(launch.source_dirty, true);
+  assert.equal(launch.named_launch_commit, value.launchCommit);
+  assert.equal(launch.design_checkout_matches_main, true);
+  assert.deepEqual(launch.go_note, { commit: value.goNoteCommit, path: 'notes/go.md' });
 });
 
 test('admission creates the destination and append-only budget ledger before calls', (t) => {
@@ -229,6 +301,9 @@ test('capacity allocation consumes only per-dispatch reservations and releases u
   for (const turn of [1, 2]) {
     const attempt = client.reserve({ role: 'fixture-role', turn });
     client.markDispatched({ attemptId: attempt.attemptId, role: 'fixture-role', turn });
+    const responsePath = path.join(value.base, 'capacity-run', `response-${turn}.json`);
+    fs.writeFileSync(responsePath, JSON.stringify({ turn }));
+    client.persistResponse({ attemptId: attempt.attemptId, responsePath, role: 'fixture-role', turn });
     client.terminalize({ attemptId: attempt.attemptId, disposition: 'completed', role: 'fixture-role', turn });
   }
   assert.equal(admission.reserved, 2);
@@ -433,6 +508,14 @@ test('sealing a killed per-dispatch launch reconciles and counts its interrupted
   );
   const completed = client.reserve({ role: 'fixture', turn: 1 });
   client.markDispatched({ attemptId: completed.attemptId, role: 'fixture', turn: 1 });
+  const completedResponsePath = path.join(destination, 'completed-response.json');
+  fs.writeFileSync(completedResponsePath, JSON.stringify({ turn: 1 }));
+  client.persistResponse({
+    attemptId: completed.attemptId,
+    responsePath: completedResponsePath,
+    role: 'fixture',
+    turn: 1,
+  });
   client.terminalize({ attemptId: completed.attemptId, disposition: 'completed', role: 'fixture', turn: 1 });
   const interrupted = client.reserve({ role: 'fixture', turn: 2 });
   client.markDispatched({ attemptId: interrupted.attemptId, role: 'fixture', turn: 2 });

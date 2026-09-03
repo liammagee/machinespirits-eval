@@ -30,6 +30,27 @@ describe('tutor-stub dialogue closure', () => {
     assert.equal(frame.basis, 'strict_learner_dag_grounded_and_asserted');
   });
 
+  it('makes a carried same-answer assertion mandatory only after grounding', () => {
+    const lifecycle = createTutorStubDialogueClosureLifecycle({ enabled: true });
+    const beforeGrounding = buildTutorStubDialogueClosureFrame({
+      lifecycle,
+      learnerDagModel: {
+        assessment: { finalSecretEntailed: false, assertedSecret: true, carriedSecretAssertion: false },
+      },
+    });
+    const afterGrounding = buildTutorStubDialogueClosureFrame({
+      lifecycle,
+      learnerDagModel: {
+        assessment: { finalSecretEntailed: true, assertedSecret: false, carriedSecretAssertion: true },
+      },
+    });
+
+    assert.equal(beforeGrounding.mandatory, false);
+    assert.equal(afterGrounding.mandatory, true);
+    assert.equal(afterGrounding.phase, 'grounded_terminal_close');
+    assert.equal(afterGrounding.basis, 'strict_learner_dag_grounded_and_asserted');
+  });
+
   it('active typed completion blocks a DAG-only close while observe remains inert', () => {
     const frame = buildTutorStubDialogueClosureFrame({
       lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),

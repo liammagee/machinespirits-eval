@@ -7,13 +7,14 @@ priority: P1
 owner: codex
 source: review
 created: 2026-08-28
-updated: 2026-08-28
-verification: An importable, fixture-tested launch helper enforces the standing
-  design-file, clean detached launch-commit, signed GO-note, numeric spend-cap,
-  create-once destination, and append-only ledger contract before provider
-  initialization; all post-2026-08-22 launchers use it or carry a reviewed
-  historical/live-run exemption, while sealed legacy launchers and artifacts
-  remain byte-identical.
+updated: 2026-09-03
+verification: An importable, fixture-tested launch helper checks the study
+  authorities only (merged design file, signed GO note, numeric spend cap) and
+  opens the create-once destination and append-only ledger before provider
+  initialization; launch provenance (commit, tree, branch, dirty flag, design
+  bytes) is recorded in the ledger and never refused; all post-2026-08-22
+  launchers use it or carry a reviewed historical/live-run exemption, while
+  sealed legacy launchers and artifacts remain byte-identical.
 claim_status: methods
 links:
   notes:
@@ -70,3 +71,12 @@ fixture tests, and a nine-launcher inventory ratchet. No launcher migration was
 eligible: the six post-policy launchers in scope have already served sealed or
 live runs, so their bytes remain unchanged under narrow historical/live
 exemptions.
+
+2026-09-03: Reduced the helper to record-only provenance, to match the
+CLAUDE.md rule of 2026-08-21 and the revised policy doc. The helper no longer
+refuses a dirty tree, a branch checkout, a launch commit that differs from
+HEAD, or design bytes that differ from the commit. It writes commit, tree,
+branch, dirty flag, the named launch commit, and whether the checked-out design
+matches main into the launch record. It still refuses a design file that is
+missing or not merged, a GO note without `GO` first, a wrong design path, and a
+wrong cap. Four launchers had their help text changed; none changed behaviour.

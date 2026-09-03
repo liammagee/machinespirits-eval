@@ -1,6 +1,33 @@
 {
   "policyEffectiveAfter": "2026-08-22",
   "discoveryMarkers": ["--accept-charges", "typed_approval_recorded_attended_launch"],
+  "durableMigration": {
+    "referenceImplementation": [
+      "scripts/run-tutor-stub-action-outcome-collection-pilot.js",
+      "scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js",
+      "scripts/run-invested-rival-learner-replication.js"
+    ],
+    "migrationRequired": [
+      "scripts/run-tutor-stub-action-outcome-model-judge-shadow.js",
+      "scripts/run-tutor-stub-frame-refuser-narrowing-calibration.js",
+      "scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js",
+      "scripts/run-local-qwen-invested-rival.js",
+      "scripts/run-invested-rival-luna-reference.js",
+      "scripts/run-invested-rival-learner-iteration.js"
+    ],
+    "retireOrMigrate": [
+      "scripts/run-adaptive-warrant-outcome-main-block.js",
+      "scripts/run-adaptive-warrant-outcome-pilot.js",
+      "scripts/run-adaptive-warrant-steering-decomposition.js",
+      "scripts/run-tutor-stub-defiant-warrant-pilot.js",
+      "scripts/run-tutor-stub-frame-refuser-depth-calibration.js",
+      "scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js",
+      "scripts/run-tutor-stub-resistance-warm-nonwarm-confirmation.js",
+      "scripts/run-tutor-stub-resistant-learner-calibration-v2.js",
+      "scripts/run-tutor-stub-resistant-learner-calibration.js",
+      "scripts/run-tutor-stub-resistant-learner-merged-calibration.js"
+    ]
+  },
   "launchers": [
     {
       "path": "scripts/run-adaptive-warrant-outcome-main-block.js",
@@ -84,7 +111,7 @@
       "path": "scripts/run-invested-rival-learner-replication.js",
       "registered": "2026-09-02",
       "disposition": "shared_contract",
-      "reason": "Post-policy matched scaffold/control replication across three learner routes and three worlds; adopts the shared admission, create-once state, study-wide 396-attempt ceiling, and append-only ledger."
+      "reason": "Post-policy matched scaffold/control replication across three learner routes and three worlds; uses per-dispatch durable reservations, response persistence, terminal attempt dispositions, missing-only dialogue and assessment recovery, ledger-derived status, and the unchanged study-wide 396-attempt ceiling."
     },
     {
       "path": "scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js",

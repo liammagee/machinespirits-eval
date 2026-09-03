@@ -1,13 +1,14 @@
 ---
 id: durable-evaluation-runner-migration
 title: Migrate paid runners to the durable execution contract
-status: triaged
+status: active
 type: infra
 priority: P1
 owner: codex
 source: review
 created: 2026-09-02
-updated: 2026-09-02
+updated: 2026-09-03
+branch: codex/durable-invested-rival-replication
 verification: "Each named paid runner reserves immediately before dispatch, terminalizes every attempt, reconciles stale in-flight work, resumes only missing accepted work, and reports attempt, unit, workflow, and scientific-verdict state from the same ledger."
 claim_status: planned
 links:
@@ -38,3 +39,52 @@ until its own dispatch path and recovery semantics are exercised.
 
 This card is infrastructure only. It authorizes no provider call and changes no
 scientific design.
+
+## Inventory and migration state
+
+The executable inventory is `config/paid-study-launcher-inventory.json`; its
+durability partition is checked by `scripts/check-paid-study-launcher-inventory.js`.
+Shared launch admission is not treated as evidence of durable per-dispatch
+execution.
+
+- Reference implementation / fully migrated (3):
+  `run-tutor-stub-action-outcome-collection-pilot.js` and
+  `run-tutor-stub-action-outcome-failed-unit-recovery.js`, plus
+  `run-invested-rival-learner-replication.js`.
+- Shared-admission runners still requiring migration (6):
+  `run-tutor-stub-action-outcome-model-judge-shadow.js`,
+  `run-tutor-stub-frame-refuser-narrowing-calibration.js`,
+  `run-tutor-stub-frame-refuser-satisfiable-calibration.js`,
+  `run-local-qwen-invested-rival.js`,
+  `run-invested-rival-luna-reference.js`, and
+  `run-invested-rival-learner-iteration.js`.
+- Historical or pre-policy runners that must be retired or migrated before any
+  future reuse (10): `run-adaptive-warrant-outcome-main-block.js`,
+  `run-adaptive-warrant-outcome-pilot.js`,
+  `run-adaptive-warrant-steering-decomposition.js`,
+  `run-tutor-stub-defiant-warrant-pilot.js`,
+  `run-tutor-stub-frame-refuser-depth-calibration.js`,
+  `run-tutor-stub-resistance-action-register-manipulation-validation.js`,
+  `run-tutor-stub-resistance-warm-nonwarm-confirmation.js`,
+  `run-tutor-stub-resistant-learner-calibration-v2.js`,
+  `run-tutor-stub-resistant-learner-calibration.js`, and
+  `run-tutor-stub-resistant-learner-merged-calibration.js`.
+
+2026-09-03 — Completed the fail-closed inventory tranche from current
+`origin/main`. No additional runner is marked migrated: the simple fixed-call
+calibration runners lack a registered recovery reserve, while the reserve-bearing
+invested-rival runners share a multi-stage dispatch path that must be migrated
+coherently with response persistence, missing-only recovery, and ledger-derived
+workflow status. The whole card remains active.
+
+2026-09-03 — Migrated `run-invested-rival-learner-replication.js` without
+changing its design, routes, inputs, seed, instruments, or 396-attempt ceiling.
+Dialogue generation and assessment now reserve immediately before each
+dispatch, record dispatch start, durably identify the saved response, and give
+every reservation exactly one terminal disposition. Restart reconciliation
+reuses valid saved dialogue replies and deterministically parses valid saved
+assessment responses before considering any new call. Workflow call counts are
+projected from the run ledger. Focused zero-call tests cover all four crash
+boundaries and retain the registered 288 generation + 90 assessment + 18
+recovery allocation. No model call was made. The remaining six shared-admission
+runners stay open above, so this card remains active.

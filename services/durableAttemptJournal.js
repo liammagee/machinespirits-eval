@@ -118,12 +118,31 @@ export function reconcileSharedModelAttemptLedger({
       const dispatched = runEvents.some(
         (event) => event.type === 'model_attempt_dispatch_started' && event.attempt_id === reservation.attempt_id,
       );
+      const persisted = runEvents.find(
+        (event) => event.type === 'attempt_response_persisted' && event.attempt_id === reservation.attempt_id,
+      );
+      if (persisted) {
+        if (!dispatched) throw new Error(`persisted response has no dispatch for attempt ${reservation.attempt_id}`);
+        const responsePath = path.resolve(persisted.response_path || '');
+        if (!path.isAbsolute(persisted.response_path || '') || !fs.existsSync(responsePath)) {
+          throw new Error(`persisted response is missing for attempt ${reservation.attempt_id}`);
+        }
+        const bytes = fs.readFileSync(responsePath);
+        if (sha256(bytes) !== persisted.response_sha256) {
+          throw new Error(`persisted response drift for attempt ${reservation.attempt_id}`);
+        }
+      }
       appendDurableJsonLine(runLedgerPath, {
-        type: dispatched ? 'attempt_interrupted_after_dispatch' : 'attempt_cancelled_before_dispatch',
+        type: persisted
+          ? 'attempt_completed'
+          : dispatched
+            ? 'attempt_interrupted_after_dispatch'
+            : 'attempt_cancelled_before_dispatch',
         attempt_id: reservation.attempt_id,
         unit_id: unitId,
         capacity_id: capacityId,
         reconciled_on_restart: true,
+        ...(persisted ? { recovered_from_persisted_response: true } : {}),
       });
     }
     return readEvents(runLedgerPath);
@@ -155,7 +174,7 @@ export function createSharedModelAttemptLedgerClient({
   reconcileSharedModelAttemptLedger({ runLedgerPath, studyLedgerPath, capacityId, unitId, lockPath });
   const terminalTypes = new Set(Object.values(TERMINAL_EVENT_BY_DISPOSITION));
   return Object.freeze({
-    reserve({ role = 'unknown', turn = null } = {}) {
+    reserve({ role = 'unknown', turn = null, ...detail } = {}) {
       if (maximumTurn !== null && Number.isFinite(Number(turn)) && Number(turn) > maximumTurn) {
         throw new Error(`registered turn horizon exceeded before dispatch: turn ${Number(turn)} > ${maximumTurn}`);
       }
@@ -173,6 +192,7 @@ export function createSharedModelAttemptLedgerClient({
         }
         const attemptId = `${unitId}:${capacityReservations.length + 1}:${randomUUID()}`;
         const event = {
+          ...detail,
           type: 'model_attempt_dispatch_reserved',
           attempt_id: attemptId,
           study_id: studyId,
@@ -190,13 +210,81 @@ export function createSharedModelAttemptLedgerClient({
       });
     },
     markDispatched({ attemptId, role = 'unknown', turn = null } = {}) {
-      appendDurableJsonLine(runLedgerPath, {
-        type: 'model_attempt_dispatch_started',
-        attempt_id: attemptId,
-        unit_id: unitId,
-        capacity_id: capacityId,
-        role,
-        turn,
+      withDirectoryLock(lockPath, () => {
+        const runEvents = readEvents(runLedgerPath);
+        if (
+          !runEvents.some((event) => event.type === 'model_attempt_dispatch_reserved' && event.attempt_id === attemptId)
+        ) {
+          throw new Error(`attempt ${attemptId} has no durable reservation`);
+        }
+        if (
+          runEvents.some(
+            (event) =>
+              event.attempt_id === attemptId &&
+              (event.type === 'model_attempt_dispatch_started' || terminalTypes.has(event.type)),
+          )
+        ) {
+          throw new Error(`attempt ${attemptId} cannot be dispatched from its recorded lifecycle`);
+        }
+        appendDurableJsonLine(runLedgerPath, {
+          type: 'model_attempt_dispatch_started',
+          attempt_id: attemptId,
+          unit_id: unitId,
+          capacity_id: capacityId,
+          role,
+          turn,
+        });
+      });
+    },
+    persistResponse({ attemptId, responsePath, role = 'unknown', turn = null } = {}) {
+      if (!path.isAbsolute(responsePath || '')) throw new Error('persisted response path must be absolute');
+      const resolvedResponsePath = path.resolve(responsePath);
+      const responseRelative = path.relative(path.resolve(destination), resolvedResponsePath);
+      if (!responseRelative || responseRelative.startsWith('..') || path.isAbsolute(responseRelative)) {
+        throw new Error('persisted response must be a file inside the registered destination');
+      }
+      if (!fs.existsSync(resolvedResponsePath)) {
+        throw new Error(`persisted response does not exist: ${resolvedResponsePath}`);
+      }
+      const responseDescriptor = fs.openSync(resolvedResponsePath, 'r');
+      try {
+        fs.fsyncSync(responseDescriptor);
+      } finally {
+        fs.closeSync(responseDescriptor);
+      }
+      const responseDirectoryDescriptor = fs.openSync(path.dirname(resolvedResponsePath), 'r');
+      try {
+        fs.fsyncSync(responseDirectoryDescriptor);
+      } finally {
+        fs.closeSync(responseDirectoryDescriptor);
+      }
+      const bytes = fs.readFileSync(resolvedResponsePath);
+      withDirectoryLock(lockPath, () => {
+        const runEvents = readEvents(runLedgerPath);
+        if (
+          !runEvents.some((event) => event.type === 'model_attempt_dispatch_started' && event.attempt_id === attemptId)
+        ) {
+          throw new Error(`attempt ${attemptId} has no durable dispatch event`);
+        }
+        if (
+          runEvents.some(
+            (event) =>
+              event.attempt_id === attemptId &&
+              (event.type === 'attempt_response_persisted' || terminalTypes.has(event.type)),
+          )
+        ) {
+          throw new Error(`attempt ${attemptId} cannot persist a response from its recorded lifecycle`);
+        }
+        appendDurableJsonLine(runLedgerPath, {
+          type: 'attempt_response_persisted',
+          attempt_id: attemptId,
+          unit_id: unitId,
+          capacity_id: capacityId,
+          role,
+          turn,
+          response_path: resolvedResponsePath,
+          response_sha256: sha256(bytes),
+        });
       });
     },
     terminalize({ attemptId, disposition, role = 'unknown', turn = null, traceSequence = null } = {}) {
@@ -209,8 +297,26 @@ export function createSharedModelAttemptLedgerClient({
           (event) => event.type === 'model_attempt_dispatch_reserved' && event.attempt_id === attemptId,
         );
         const terminals = runEvents.filter((event) => terminalTypes.has(event.type) && event.attempt_id === attemptId);
+        const dispatched = runEvents.some(
+          (event) => event.type === 'model_attempt_dispatch_started' && event.attempt_id === attemptId,
+        );
+        const persisted = runEvents.some(
+          (event) => event.type === 'attempt_response_persisted' && event.attempt_id === attemptId,
+        );
         if (!reservation) throw new Error(`attempt ${attemptId} has no durable reservation`);
         if (terminals.length) throw new Error(`attempt ${attemptId} already has a terminal disposition`);
+        if (disposition === 'cancelled_before_dispatch' && dispatched) {
+          throw new Error(`attempt ${attemptId} cannot be cancelled after dispatch`);
+        }
+        if (disposition === 'interrupted_after_dispatch' && (!dispatched || persisted)) {
+          throw new Error(`attempt ${attemptId} cannot be marked interrupted with its recorded lifecycle`);
+        }
+        if (disposition === 'failed' && !dispatched) {
+          throw new Error(`attempt ${attemptId} cannot fail before dispatch`);
+        }
+        if (disposition === 'completed' && !persisted) {
+          throw new Error(`attempt ${attemptId} cannot complete before response persistence`);
+        }
         appendDurableJsonLine(runLedgerPath, {
           type: TERMINAL_EVENT_BY_DISPOSITION[disposition],
           attempt_id: attemptId,

@@ -963,6 +963,89 @@ describe('strict public learner analysis', () => {
 });
 
 describe('public evidence boundary and exact DAG postprocessor', () => {
+  it('carries a packed fact-array answer assertion until the same answer becomes grounded', () => {
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-040-sam-and-me.yaml'));
+    const record = createTutorStubPublicLearnerRecord(world);
+    const stagedThrough = (turn) =>
+      world.releaseSchedule
+        .filter((release) => release.turn <= turn)
+        .map((release) => {
+          const premise = world.premiseById.get(release.premise);
+          return {
+            premise: premise.id,
+            turn: release.turn,
+            via: release.via,
+            surface: premise.surface,
+            fact: premise.fact,
+          };
+        });
+    const early = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: ['p_who_gave'],
+        derive: [],
+        assert_answer: world.secret.fact,
+      },
+      world,
+      record,
+      tutorTurn: 3,
+      learnerText: 'So do I write "to Sam and me" now, since the pair sits after "to"?',
+      publicStagedEvidence: stagedThrough(3),
+      publicReleaseLedger: stagedThrough(3),
+    });
+    const grounded = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: ['p_cover', 'p_uncover'],
+        derive: [world.secret.fact],
+        assert_answer: null,
+      },
+      world,
+      record,
+      tutorTurn: 9,
+      learnerText: 'The card test now supplies the missing bridge.',
+      publicStagedEvidence: stagedThrough(9),
+      publicReleaseLedger: stagedThrough(9),
+    });
+
+    assert.equal(early.accepted.assertAnswer, 'samAndMe');
+    assert.equal(early.model.assessment.bottleneck, 'premature_assertion');
+    assert.equal(grounded.model.assessment.firstSecretAssertionTurn, 3);
+    assert.equal(grounded.model.assessment.firstSecretEntailedTurn, 9);
+    assert.equal(grounded.model.assessment.carriedSecretAssertion, true);
+    assert.equal(grounded.model.assessment.bottleneck, 'grounded_asserted_secret');
+    assert.equal(tutorStubLearnerDagGrounded(grounded.model), true);
+  });
+
+  it('keeps the packed seasons assertion aligned with its same-turn final derivation', () => {
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-038-seasons-tilt.yaml'));
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 8,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+    const assertion = 'The tilt changes the angle, not the distance, and the angle spreads the light thinner.';
+    const result = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: world.proofPaths[0].premises,
+        derive: [world.secret.fact],
+        assert_answer: assertion,
+      },
+      world,
+      record: createTutorStubPublicLearnerRecord(world),
+      tutorTurn: 8,
+      learnerText: `So do I write "${assertion}"—is that the line?`,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+
+    assert.equal(result.accepted.assertAnswer, assertion);
+    assert.equal(result.model.assessment.assertedSecret, true);
+    assert.equal(result.model.assessment.carriedSecretAssertion, false);
+    assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret');
+    assert.equal(tutorStubLearnerDagGrounded(result.model), true);
+  });
+
   it('maps a sentence-form answer onto the uniquely entailed public answer fact', () => {
     const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-024-emberwick-forum.yaml'));
     const record = createTutorStubPublicLearnerRecord(world);

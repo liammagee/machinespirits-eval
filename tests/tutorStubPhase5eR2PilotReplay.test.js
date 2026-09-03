@@ -321,6 +321,9 @@ test('Phase 5e R2 pilot A1 replay reaches grounded closure from the missed natur
   assert.equal(answer.model.assessment.bestPathCoverage, 1);
   assert.equal(answer.model.assessment.finalSecretEntailed, true);
   assert.equal(answer.model.assessment.assertedSecret, true);
+  assert.equal(answer.model.assessment.firstSecretAssertionTurn, 14);
+  assert.equal(answer.model.assessment.firstSecretEntailedTurn, 11);
+  assert.equal(answer.model.assessment.carriedSecretAssertion, false);
   assert.equal(answer.model.assessment.bottleneck, 'grounded_asserted_secret');
   assert.match(answer.accepted.authoredRecognition.assertedSurface, /twice-long route/u);
 });
@@ -487,6 +490,9 @@ test('Phase 5e R2 pilot A3 frozen-prefix replay targets the missing spiral relat
   assert.equal(recovered.model.assessment.bestPathCoverage, 1);
   assert.equal(recovered.model.assessment.finalSecretEntailed, true);
   assert.equal(recovered.model.assessment.assertedSecret, true);
+  assert.equal(recovered.model.assessment.firstSecretAssertionTurn, 17);
+  assert.equal(recovered.model.assessment.firstSecretEntailedTurn, 17);
+  assert.equal(recovered.model.assessment.carriedSecretAssertion, false);
   assert.equal(recovered.model.assessment.bottleneck, 'grounded_asserted_secret');
 });
 
@@ -708,6 +714,9 @@ test('Phase 5f A2 turn-8 replay recognises the completed Tideway finding without
     assert.equal(result.model.assessment.bestPathCoverage, 1, learnerText);
     assert.equal(result.model.assessment.finalSecretEntailed, true, learnerText);
     assert.equal(result.model.assessment.assertedSecret, true, learnerText);
+    assert.equal(result.model.assessment.firstSecretAssertionTurn, 8, learnerText);
+    assert.equal(result.model.assessment.firstSecretEntailedTurn, 8, learnerText);
+    assert.equal(result.model.assessment.carriedSecretAssertion, false, learnerText);
     assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret', learnerText);
     assert.match(result.accepted.authoredRecognition.assertedPattern, /^blue_connectors_/u, learnerText);
   }

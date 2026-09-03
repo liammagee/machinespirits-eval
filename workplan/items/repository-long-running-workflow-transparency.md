@@ -1,13 +1,13 @@
 ---
 id: repository-long-running-workflow-transparency
 title: Make long-running workflow phases and handoffs transparent
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-09-02
-updated: 2026-09-02
+updated: 2026-09-03
 verification: Focused status, action-outcome, reporter, atomic-recovery, skill, formatting, manifest, and source-workplan checks pass without model/provider calls or sealed-artifact mutation.
 branch: codex/long-running-workflow-transparency
 links:
@@ -27,6 +27,7 @@ links:
     - adaptive-curriculum-memory-controller
   prs:
     - 950
+    - 957
 tags:
   - observability
   - workflow
@@ -82,4 +83,10 @@ Log:
   the host lacks PyYAML; the repository's authoritative skill validator passed.
   No provider/model call, experiment execution, or sealed-data write occurred.
 - 2026-09-02 — Opened review-ready PR #950 from commit `32beae352`; hosted CI
-  started and the PR remains unmerged.
+  started.
+- 2026-09-03 — DONE after PR #950 merged as `8dc5ceb0` with the complete hosted
+  CI result green, and PR #957 merged the corresponding prospective Paper 2.0
+  record as `e7f84e39`. Paper 2.0 v3.0.301 was published from content commit
+  `b535d4a`; website deployment `33713980842` completed successfully, and both
+  the atlas and PDF were verified live. The broader runner migration remains on
+  its separate `durable-evaluation-runner-migration` card.

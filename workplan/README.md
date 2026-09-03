@@ -24,6 +24,12 @@ view, historical context, or a cross-link. Concretely:
   from `items/`. `scripts/workplan.js render` can still export `BOARD.md` and
   `board.json` for local compatibility, but both files are ignored and never
   authoritative. Never hand-edit, stage, or force-add them.
+- Before suggesting, resuming, or reopening named work, read its exact current
+  `items/<id>.md` source. If it is `done`, `archived`, or `dropped`, report that
+  disposition and suppress historical next actions. Stale threads, notes,
+  artifacts, generated views, and memory are context, not authority to change
+  a closed status. Reopen only when the user explicitly requests it; otherwise
+  put genuinely new follow-up work on a new item.
 - Feature PRs commit workplan **source only**: `items/*.md`, `milestones.yaml`,
   schema/tooling, or other authored files. PR CI validates source and in-memory
   renderability and rejects any reintroduction of `BOARD.md` or `board.json`.

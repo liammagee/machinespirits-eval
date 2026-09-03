@@ -283,3 +283,102 @@ export function tutorStubStressHoldVerdictTraceEvent(schedule, plant, turnNumber
     quoteFound: parsed.quoteFound,
   };
 }
+
+/**
+ * Speech check (2026-09-03, after the step-7b pair). On both t5 turns the sim
+ * wrote `HOLD: kept` and then conceded in the same reply: the verdict line
+ * did not track the speech. Opt-in with TUTOR_STUB_STRESS_HOLD_SPEECH_CHECK=1:
+ * on a held turn whose verdict is `kept` (or missing), a second model call
+ * reads the spoken line against the planted state and says whether the words
+ * still hold it. If they do not, the sim gets its own draft back once with
+ * that reading and rewrites the turn. One retry, then the second draft goes
+ * through whatever it says. Every draft and every reading is recorded
+ * (`learner_stress_hold_speech_check`). No word list: the reader is a model
+ * read of the line. A reading that cannot be parsed is `null` and stops the
+ * retry (indeterminate means stop).
+ */
+export const TUTOR_STUB_STRESS_HOLD_SPEECH_CHECK_ENV = 'TUTOR_STUB_STRESS_HOLD_SPEECH_CHECK';
+
+export function tutorStubStressHoldSpeechCheckEnabled(env = process.env) {
+  return /^(?:1|true|on|yes)$/iu.test(String(env?.[TUTOR_STUB_STRESS_HOLD_SPEECH_CHECK_ENV] || ''));
+}
+
+export function tutorStubStressHoldSpeechCheckPrompt({ plant, speech, tutorReplyText = '' }) {
+  return [
+    'You read one line of speech from a learner in a lesson and say whether it still holds a given state.',
+    '',
+    '# The state the learner was directed to hold',
+    '',
+    plant.realize,
+    '',
+    '# What the other speaker said last',
+    '',
+    String(tutorReplyText || '').trim() || '(nothing recorded)',
+    '',
+    "# The learner's spoken line",
+    '',
+    String(speech || '').trim() || '(empty)',
+    '',
+    '# Question',
+    '',
+    'Do these words still hold that state? Holding means the learner is still in it: still pushing, still refusing, still insisting, still asking for the same thing, in her own voice.',
+    "Dropping means the words give it up: they concede the point, adopt the other speaker's answer or method, soften into agreement, or move on as if settled.",
+    'A line can be short or grudging and still hold. Judge the words, not the tone.',
+    '',
+    'Answer with one JSON object only: {"holds": true or false, "reason": "<one short sentence quoting the words that decide it>"}',
+  ].join('\n');
+}
+
+export function parseTutorStubStressHoldSpeechCheck(rawText) {
+  const raw = String(rawText || '').trim();
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/iu);
+  const body = fenced ? fenced[1] : raw;
+  const start = body.indexOf('{');
+  const end = body.lastIndexOf('}');
+  if (start < 0 || end <= start) return { holds: null, reason: null, raw };
+  try {
+    const parsed = JSON.parse(body.slice(start, end + 1));
+    const holds = typeof parsed.holds === 'boolean' ? parsed.holds : null;
+    const reason = typeof parsed.reason === 'string' ? parsed.reason.trim() || null : null;
+    return { holds, reason, raw };
+  } catch {
+    return { holds: null, reason: null, raw };
+  }
+}
+
+export function tutorStubStressHoldSpeechFeedback({ plant, verdict, speech, reason }) {
+  const wrote = verdict === 'missing' ? 'no verdict line' : `\`${TUTOR_STUB_STRESS_HOLD_VERDICT_PREFIX} ${verdict}\``;
+  return [
+    '# Your last draft did not match its own verdict',
+    '',
+    `You wrote ${wrote}, then said this: "${String(speech || '').trim()}"`,
+    `Those words drop the state you were directed to hold${reason ? ` (${reason})` : ''}.`,
+    '',
+    'Rewrite the turn. Do one of these two things, not both:',
+    `- Stay in the state in what you say. The direction was: ${plant.realize}`,
+    `- Or, if the other speaker's last reply really did this: ${plant.hold.releaseWhen} — then write \`${TUTOR_STUB_STRESS_HOLD_VERDICT_PREFIX} released "<their exact words>"\` on the first line and let the change show.`,
+    'Do not write `kept` and then give the point away in the same breath.',
+  ].join('\n');
+}
+
+export function tutorStubStressHoldSpeechCheckTraceEvent(schedule, plant, turnNumber, { drafts, retried, final }) {
+  return {
+    type: 'learner_stress_hold_speech_check',
+    schema: TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
+    scheduleId: schedule.scheduleId,
+    turn: turnNumber,
+    plantTurn: plant.turn,
+    state: plant.state,
+    held: plant.held,
+    drafts: drafts.map((draft) => ({
+      verdict: draft.verdict,
+      text: draft.text,
+      holds: draft.reading ? draft.reading.holds : null,
+      reason: draft.reading ? draft.reading.reason : null,
+    })),
+    retried,
+    finalVerdict: final.verdict,
+    finalHolds: final.reading ? final.reading.holds : null,
+    agree: final.reading && final.reading.holds !== null ? (final.verdict === 'kept') === final.reading.holds : null,
+  };
+}

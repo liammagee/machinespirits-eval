@@ -1,14 +1,14 @@
 ---
 id: adaptive-curriculum-memory-controller
 title: Evidence-anchored memory and curriculum adaptation controller
-status: active
+status: blocked
+blocked_by: "Valid action-outcome evidence with adequate binary support: either human-calibrated judgments or prospectively collected, objectively checkable learner outcomes."
 type: research
 priority: P2
 owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-03
-branch: claude/action-outcome-judge-v2
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -42,13 +42,17 @@ links:
     - scripts/run-tutor-stub-action-outcome-model-judge-shadow.js
     - notes/2026-09-02-tutor-stub-action-outcome-model-judge-shadow-go.md
     - notes/2026-09-03-action-outcome-model-judge-divergence-diagnosis.md
+    - notes/2026-09-03-tutor-stub-action-outcome-model-judge-shadow-v2-go.md
     - config/tutor-stub-action-outcome-model-judge-shadow-design.v2.json
     - config/tutor-stub-action-outcome-model-judge-codebook.v2.md
     - scripts/rescore-tutor-stub-action-outcome-model-judge-shadow.js
+    - config/tutor-stub-action-outcome-keyed-collection-design.v3.json
+    - notes/2026-09-03-action-outcome-keyed-collection-v3-design.md
   exports:
     - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
     - exports/action-outcome-model-judge-shadow/2026-09-02/README.md
     - exports/action-outcome-model-judge-shadow/2026-09-02-quote-normalized-rescore/README.md
+    - exports/action-outcome-model-judge-shadow/2026-09-03-v2/README.md
   prs:
     - 895
     - 898
@@ -73,6 +77,9 @@ links:
     - 955
     - 958
     - 959
+    - 961
+    - 967
+    - 970
   items:
     - layered-task-session-adaptation
     - durable-evaluation-runner-migration
@@ -139,6 +146,55 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-03: Marked blocked after a zero-call review of the v2 shadow run
+  data. The block is the packet, not the judges: the v2 collection sampled one
+  effort-withholding profile (bored) and admitted only stall-condition
+  closures, and all 35 reviewed next turns carry a disengagement marker, so
+  there was no binary outcome to find. Two codebook gaps remain: an explicit
+  stop after a delivered action is not separated from a missing or truncated
+  turn, and a bare yes/no or either/or answer in the tutor's words has no
+  rule. The v2 hand-back sentence moved delivery agreement from kappa 0.79
+  (v1) to kappa 0.20 (27/35, v2); per-family checklists replace it. Drafted
+  revision 3 as a design-only document with no call authority:
+  `config/tutor-stub-action-outcome-keyed-collection-design.v3.json` and
+  `notes/2026-09-03-action-outcome-keyed-collection-v3-design.md`. Changes
+  from v2: a keyed hand-back question in every delivered comparative action,
+  with key and foil fixed from the world file at generation and the pick read
+  by exact token match; three learner profiles (bored, diligent,
+  slow_learner) at 20 dialogues each; the stall condition kept as a stratum,
+  not a filter; per-family delivery checklists; two registered outcome rules;
+  human seats retained; no model judge in the authoritative path; ceiling
+  4860 unchanged; fresh seed 2026090301. Six engineering items and a codebook
+  v3 are required before any GO. Private backup: all local v1 shadow, v2
+  collection, and ledger artifacts are committed in the archive repo and
+  pushed to branch `backup/local-main-2026-09-03` (archive main not moved).
+  Nothing here licenses the memory controller.
+
+- 2026-09-03: After PR #961 merged at launch commit
+  `60336d2467e2d3cdcf099d5a9f594cc43e3f9596`, the operator said `GO` and
+  authorized the registered revision-2 shadow instrument. The clean detached
+  preflight verified the same frozen 35-case packet, both medium-effort seats,
+  the new order seeds, 70 planned calls, a 70-reservation hard ceiling, zero
+  retries, unchanged human files, and the unchanged claim boundary. The
+  attended run then completed exactly 70/70 reservations with 70 valid
+  judgments, no failed or missing calls, and no retries. All 11 diagnosed
+  stall-direction cases closed to exact `inconclusive` consensus. Against
+  archived v1 and the quote-normalized v1 re-score, joint exact agreement moved
+  from 17/33 to 18/35 to 24/35, while paired indeterminacy moved from 27/35 to
+  26/35 to 13/35. The targeted stall disagreement therefore narrowed, but the
+  registered diagnostic still failed: joint agreement was 68.6% against 80%,
+  paired indeterminacy was 37.1% against 20%, and exact-consensus binary yield
+  fell from five records to zero against the minimum of 24. Delivery agreement
+  also fell to 27/35 (77.1%, kappa 0.200), exposing a remaining hand-back
+  interpretation split. No revision-2 row required quote normalization; Sol's
+  confidence distribution was 29 high and 6 medium, while Opus's was 18 high,
+  14 medium, and 3 low. The binary-yield failure is a property of this
+  stall-heavy packet under the registered rule, not a provider/runtime failure.
+  Public aggregate comparison:
+  `exports/action-outcome-model-judge-shadow/2026-09-03-v2/README.md`. This is
+  an instrument result, not construct evidence. The human gates remain pending,
+  and nothing licenses the memory controller.
 
 - 2026-09-03: Diagnosed the Opus-Sol outcome split and prepared revision 2 of
   the shadow instrument on branch `claude/action-outcome-judge-v2`, with zero

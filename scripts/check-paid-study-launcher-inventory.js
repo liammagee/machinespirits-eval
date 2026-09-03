@@ -8,6 +8,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_INVENTORY = path.join(ROOT, 'config', 'paid-study-launcher-inventory.json');
 const SHARED_HELPER = 'paidStudyLaunchContract.js';
 const ALLOWED_DISPOSITIONS = new Set(['shared_contract', 'pre_policy_exemption', 'historical_live_exemption']);
+const DURABLE_REFERENCE = 'referenceImplementation';
+const DURABLE_MIGRATION_REQUIRED = 'migrationRequired';
+const DURABLE_RETIRE_OR_MIGRATE = 'retireOrMigrate';
+const DURABLE_GROUPS = Object.freeze([DURABLE_REFERENCE, DURABLE_MIGRATION_REQUIRED, DURABLE_RETIRE_OR_MIGRATE]);
 
 function walk(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -20,6 +24,7 @@ export function checkPaidStudyLauncherInventory({ root = ROOT, inventoryPath = D
   const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
   const markers = inventory.discoveryMarkers || [];
   const launchers = inventory.launchers || [];
+  const durableMigration = inventory.durableMigration || {};
   const issues = [];
   const entries = new Map();
   for (const entry of launchers) {
@@ -62,7 +67,46 @@ export function checkPaidStudyLauncherInventory({ root = ROOT, inventoryPath = D
       }
     }
   }
-  return { discovered, entries: launchers.length, issues };
+
+  const durableClassification = new Map();
+  for (const group of DURABLE_GROUPS) {
+    const files = durableMigration[group];
+    if (!Array.isArray(files)) {
+      issues.push(`durable migration inventory is missing ${group}`);
+      continue;
+    }
+    for (const file of files) {
+      if (durableClassification.has(file)) {
+        issues.push(`paid launcher has multiple durable migration classifications: ${file}`);
+      } else {
+        durableClassification.set(file, group);
+      }
+      if (!entries.has(file)) issues.push(`durable migration inventory names an unknown launcher: ${file}`);
+    }
+  }
+  for (const [file, entry] of entries) {
+    const group = durableClassification.get(file);
+    if (!group) {
+      issues.push(`paid launcher has no durable migration classification: ${file}`);
+      continue;
+    }
+    if (group === DURABLE_REFERENCE) {
+      const source = fs.readFileSync(path.join(root, file), 'utf8');
+      if (entry.disposition !== 'shared_contract' || !source.includes('durableAttemptJournal.js')) {
+        issues.push(`${file}: durable reference must use shared admission and the durable attempt journal`);
+      }
+    } else if (group === DURABLE_MIGRATION_REQUIRED && entry.disposition !== 'shared_contract') {
+      issues.push(`${file}: migrationRequired is reserved for shared-admission launchers`);
+    } else if (group === DURABLE_RETIRE_OR_MIGRATE && entry.disposition === 'shared_contract') {
+      issues.push(`${file}: shared-admission launcher cannot be classified retireOrMigrate`);
+    }
+  }
+  return {
+    discovered,
+    entries: launchers.length,
+    durableCounts: Object.fromEntries(DURABLE_GROUPS.map((group) => [group, durableMigration[group]?.length || 0])),
+    issues,
+  };
 }
 
 const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);

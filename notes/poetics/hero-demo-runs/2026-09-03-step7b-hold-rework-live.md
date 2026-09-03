@@ -94,3 +94,60 @@ if they disagree (one retry, recorded); (b) move the hold to a plant whose
 brief does not pull the same way as the drop, on a world where the plant turns
 allow it. Do not re-run this pair as is, and do not widen to 036. The human
 read of the step-6 packet is still open; the model reads do not close it.
+
+## Offline follow-up (2026-09-03, later the same day, no paid call)
+
+Both next steps are built. Neither has run.
+
+**Speech check.** Opt-in with `TUTOR_STUB_STRESS_HOLD_SPEECH_CHECK=1`. On a
+held turn whose verdict is `kept` (or missing), a second model call on the
+learner seat reads the spoken line against the planted state and answers
+`{"holds": true|false, "reason"}`. It sees the state, the tutor's last reply
+and the line; it never sees the release text. If it says the words drop the
+state, the sim gets its own draft back once, with the reading, and rewrites
+the turn: stay in the state in speech, or write `HOLD: released "<quote>"`
+if the reply really did the named thing. The second draft is spoken whatever
+the reader then says. One retry, never more. A reading that does not parse
+stops the retry and is recorded as `null`. A `released` verdict is not read;
+the quote check already covers it. Every draft and reading lands in one
+trace event (`learner_stress_hold_speech_check`: drafts, retried,
+finalVerdict, finalHolds, agree). Cost: up to three extra calls per held
+turn, so up to six on the 037 hold schedule. Code in
+`services/tutorStubStressSchedule.js` (prompt, parser, feedback text, event)
+and the learner-turn runtime; tests in `tests/tutorStubStressSchedule.test.js`
+and `tests/tutorStubStressHoldWiring.test.js` (canned dialogue: off by
+default; a kept verdict over a conceding line is read, sent back once, and
+the second draft is spoken; a holding line, a released verdict, or an
+unreadable reading gets no retry).
+
+**A brief that does not pull with the drop.** No new schedule. The same hold
+schedule with the overconfident brief instead of the answer-seeking one
+(`--auto-learner-profile overconfident`). Under the answer-seeking brief the
+t5 concession was the brief speaking: a pupil who wants the line to write
+takes a worked answer when shown one. The overconfident brief "tries to
+close anyway" and "names one missing step but keeps pushing closure", so a
+template reply that shows the six-piece cut is not a reason to concede. The
+opposed plant is then kept by default, and the only thing that should lift
+it is the release: the strip put back and the question asked. That is the
+contrast the hold was built to show, a card lifting a state the sim would
+otherwise keep. The jumping_ahead plant at t2 is not the brief either under
+this profile, so t3 can be read too. The recipe pins the answer-seeking
+brief; the flag overrides it and `--acknowledge-drift` (already in the
+launch line) records the override as drift.
+
+Launch for the next pair, when it gets a go (copied from step7b `LAUNCH.md`,
+with the two additions). Ceiling to state: 100 calls per dialogue, two
+dialogues, judge at most 20.
+
+```
+TUTOR_STUB_STRESS_HOLD_SPEECH_CHECK=1 TUTOR_STUB_STRESS_SCHEDULE=config/drama-derivation/stress/world-037-stress-schedule-hold1.yaml node scripts/tutor-stub.js --recipe exports/tutor-stub-outcome/recipes/hero037-recipe.json --auto-learner-profile overconfident --trace-dir exports/tutor-stub-outcome/step7c-hold-overconfident/traces/world-037/<arm>-d0 --acknowledge-drift --artifact-archive required --model-call-budget 100 --auto-safety-turns 12
+```
+
+With-arm adds `TUTOR_STUB_MANNER_SWITCH=1 TUTOR_STUB_CARD_DOSE_LADDER=1
+TUTOR_STUB_FORM_DETECTOR=config/manner-trigger/form-v3.json`. What to read
+first: the speech-check events at turns 3 and 5 (did the reader and the
+verdict agree; did a retry happen; did the second draft hold), then the
+verdict events, then the repair judge as before. Not run. Needs its own go.
+The human read of the packets is still open; model reads do not close it.
+
+Ran as step 7c on 2026-09-03: `notes/poetics/hero-demo-runs/2026-09-03-step7c-hold-overconfident-live.md`.

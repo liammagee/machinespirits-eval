@@ -45,6 +45,29 @@ export function paidStudyGoNoteIssues({ text, designPath, spendCap }) {
   return issues;
 }
 
+function blobAt(root, commit, relativePath) {
+  try {
+    return git(root, ['show', `${commit}:${relativePath}`], { encoding: null });
+  } catch {
+    return null;
+  }
+}
+
+function currentBranch(root) {
+  try {
+    return git(root, ['symbolic-ref', '-q', '--short', 'HEAD']).trim() || null;
+  } catch (error) {
+    if (error?.status === 1) return null;
+    throw error;
+  }
+}
+
+// The standing contract checks the study authorities only: the design file is
+// present and merged, and the GO note is signed for that design and cap.
+// Launch provenance (commit, tree, branch, dirty flag, design bytes) is
+// recorded in the returned source/design blocks and never enforced. A dirty
+// tree, a branch checkout, or a code commit made after the GO does not stop a
+// launch (CLAUDE.md, "NEVER build officious authorization", 2026-08-21).
 export function verifyPaidStudyLaunchContract({
   root,
   designPath,
@@ -61,37 +84,10 @@ export function verifyPaidStudyLaunchContract({
   if (!note.relative.startsWith('notes/')) throw new Error('GO note path must be under notes/');
   if (!Number.isFinite(spendCap) || spendCap < 0) throw new Error('spend cap must be a non-negative number');
 
-  const resolvedLaunchCommit = resolveCommit(repositoryRoot, launchCommit, 'launch commit');
-  const headCommit = resolveCommit(repositoryRoot, 'HEAD', 'HEAD');
-  if (headCommit !== resolvedLaunchCommit) {
-    throw new Error(`launch commit drift: expected ${resolvedLaunchCommit}, found ${headCommit}`);
-  }
-  if (git(repositoryRoot, ['status', '--porcelain=v1', '--untracked-files=all']).trim()) {
-    throw new Error('paid study launch requires a clean checkout');
-  }
-  try {
-    const branch = git(repositoryRoot, ['symbolic-ref', '-q', '--short', 'HEAD']).trim();
-    if (branch) throw new Error(`paid study launch requires detached HEAD, found ${branch}`);
-  } catch (error) {
-    if (error?.status !== 1) throw error;
-  }
-
-  let committedDesign;
-  try {
-    committedDesign = git(repositoryRoot, ['show', `${resolvedLaunchCommit}:${design.relative}`], { encoding: null });
-  } catch {
-    throw new Error(`launch commit does not contain design file ${design.relative}`);
-  }
-  const onDiskDesign = fs.readFileSync(design.absolute);
-  if (!committedDesign.equals(onDiskDesign)) {
-    throw new Error(`launch commit does not contain the checked-out bytes of ${design.relative}`);
-  }
+  if (!fs.existsSync(design.absolute)) throw new Error(`design file ${design.relative} is not in the checkout`);
   const resolvedMainCommit = resolveCommit(repositoryRoot, mainRef, 'main ref');
-  try {
-    git(repositoryRoot, ['merge-base', '--is-ancestor', resolvedLaunchCommit, resolvedMainCommit]);
-  } catch {
-    throw new Error(`launch commit containing the design must be merged into ${mainRef}`);
-  }
+  const mainDesign = blobAt(repositoryRoot, resolvedMainCommit, design.relative);
+  if (mainDesign === null) throw new Error(`design file ${design.relative} must be merged into ${mainRef}`);
 
   const resolvedGoNoteCommit = resolveCommit(repositoryRoot, goNoteCommit, 'GO note commit');
   let goNoteText;
@@ -107,16 +103,34 @@ export function verifyPaidStudyLaunchContract({
   });
   if (issues.length) throw new Error(`signed GO note does not satisfy the standing contract: ${issues.join(', ')}`);
 
+  const headCommit = resolveCommit(repositoryRoot, 'HEAD', 'HEAD');
+  const namedLaunchCommit = launchCommit ? resolveCommit(repositoryRoot, launchCommit, 'launch commit') : null;
+  const branch = currentBranch(repositoryRoot);
+  const dirtyEntries = git(repositoryRoot, ['status', '--porcelain=v1', '--untracked-files=all'])
+    .split(/\r?\n/u)
+    .filter(Boolean).length;
+  const headDesign = blobAt(repositoryRoot, headCommit, design.relative);
+  const onDiskDesign = fs.readFileSync(design.absolute);
+
   return {
     source: {
-      commit: resolvedLaunchCommit,
-      tree: git(repositoryRoot, ['rev-parse', `${resolvedLaunchCommit}^{tree}`]).trim(),
-      detached: true,
-      dirty: false,
+      commit: headCommit,
+      tree: git(repositoryRoot, ['rev-parse', `${headCommit}^{tree}`]).trim(),
+      branch,
+      detached: branch === null,
+      dirty: dirtyEntries > 0,
+      dirty_entries: dirtyEntries,
+      named_launch_commit: namedLaunchCommit,
+      named_launch_commit_is_head: namedLaunchCommit === null ? null : namedLaunchCommit === headCommit,
       main_ref: mainRef,
       main_commit: resolvedMainCommit,
     },
-    design: { path: design.relative },
+    design: {
+      path: design.relative,
+      in_head: headDesign !== null,
+      checkout_matches_head: headDesign !== null && headDesign.equals(onDiskDesign),
+      checkout_matches_main: mainDesign.equals(onDiskDesign),
+    },
     authorization: { commit: resolvedGoNoteCommit, path: note.relative },
     spend_cap: spendCap,
   };
@@ -588,7 +602,11 @@ export function admitPaidStudyLaunch({
     type: 'launch_admitted',
     source_commit: verified.source.commit,
     source_tree: verified.source.tree,
+    source_branch: verified.source.branch,
+    source_dirty: verified.source.dirty,
+    named_launch_commit: verified.source.named_launch_commit,
     design_path: verified.design.path,
+    design_checkout_matches_main: verified.design.checkout_matches_main,
     go_note: verified.authorization,
     spend_cap: verified.spend_cap,
     study_id: studyId,
@@ -776,6 +794,12 @@ export function admitPaidStudyLaunch({
         throw new Error('only a sealed technical failure or recoverable pause may permit recovery');
       }
       for (const capacity of [...activeCapacities.values()]) {
+        reconcileSharedModelAttemptLedger({
+          runLedgerPath: ledgerPath,
+          studyLedgerPath: lease.studyLedgerPath,
+          capacityId: capacity.id,
+          unitId: capacity.detail.unit_id || capacity.detail.unit || capacity.id,
+        });
         const used = readJsonLines(ledgerPath, 'paid study run ledger').filter(
           (candidate) => candidate.type === 'model_attempt_dispatch_reserved' && candidate.capacity_id === capacity.id,
         ).length;

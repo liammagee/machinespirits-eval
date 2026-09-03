@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import {
   answerSurfaceMentioned,
+  answerSurfaceTokens,
   matchAuthoredRecognitionClaim,
   matchAuthoredRecognitionSurface,
   mintAnswerConstant,
@@ -1218,6 +1219,23 @@ function factFromQuestionAnswer(world, answer, candidateFacts = []) {
   const minted = mintAnswerConstant(answer);
   if (!world || !minted) return null;
   return world.questionPattern.map((part) => (typeof part === 'string' && part.startsWith('?') ? minted : part));
+}
+
+function uniquelyNamesDerivedAnswerByDistinctiveTail(world, answer, facts = []) {
+  const answerTokens = new Set(answerSurfaceTokens(answer));
+  const matches = facts.filter((fact) => {
+    const bindings = matchPattern(world?.questionPattern, fact);
+    if (!bindings) return false;
+    const values = Object.values(bindings).filter((value) => String(value ?? '').trim());
+    return (
+      values.length > 0 &&
+      values.every((value) => {
+        const tail = answerSurfaceTokens(value).at(-1) || '';
+        return tail.length >= 4 && answerTokens.has(tail);
+      })
+    );
+  });
+  return matches.length === 1 ? [...matches[0]] : null;
 }
 
 function matchingQuestionAnswerFacts(world, answer, candidateFacts = []) {
@@ -2879,8 +2897,22 @@ export function applyTutorStubPublicLearnerRecordUpdate({
     accepted.authoredRecognition.assertedSurface = authoredAssertion.matchedSurface;
     accepted.authoredRecognition.assertedPattern = authoredAssertion.matchedPattern;
     accepted.authoredRecognition.assertedPatternAlternatives = authoredAssertion.matchedAlternatives;
+  } else if (validFactArray(update?.assert_answer)) {
+    // Older packed traces include schema-shaped answer facts in assert_answer
+    // rather than the advertised free-text answer. Preserve that explicit
+    // assertion so the learner-DAG can carry it forward until its support is
+    // grounded; the question-pattern check below still rejects unrelated facts.
+    assertion = [...update.assert_answer];
+    const assertedBindings = matchPattern(world?.questionPattern, assertion);
+    const assertedValues = assertedBindings
+      ? Object.values(assertedBindings).filter((value) => String(value).trim())
+      : [];
+    accepted.assertAnswer = assertedValues.length === 1 ? String(assertedValues[0]) : [...update.assert_answer];
   } else if (typeof update?.assert_answer === 'string' && update.assert_answer.trim()) {
-    assertion = factFromQuestionAnswer(world, update.assert_answer, answerCandidates);
+    const assertedVoicedAnswers = accepted.derive.filter((fact) => matchPattern(world.questionPattern, fact));
+    assertion =
+      uniquelyNamesDerivedAnswerByDistinctiveTail(world, update.assert_answer, assertedVoicedAnswers) ||
+      factFromQuestionAnswer(world, update.assert_answer, answerCandidates);
     if (assertion) {
       accepted.assertAnswer = update.assert_answer.trim();
     } else {
