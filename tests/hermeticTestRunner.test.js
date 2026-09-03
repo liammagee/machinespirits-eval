@@ -196,6 +196,19 @@ test('root sharding is deterministic, exhaustive, and isolated from forwarded ru
   );
 });
 
+test('four-way shard overrides retain the measured hosted corrections', () => {
+  const expectedMembership = new Map([
+    ['tests/tutorStubResistanceSemanticValidationRuntime.test.js', 2],
+    ['tests/tutorStubResistanceActionRegisterConfirmationGoRequest.test.js', 1],
+    ['tests/tutorStubHumanDiscourseLayer.test.js', 1],
+  ]);
+
+  for (const [file, expectedShard] of expectedMembership) {
+    const memberships = [1, 2, 3, 4].filter((index) => selectTestShard([file], { index, total: 4 }).length === 1);
+    assert.deepEqual(memberships, [expectedShard], `${file} must remain on shard ${expectedShard}`);
+  }
+});
+
 test('quiet phases retain child output for accounting without mirroring successful chatter', async () => {
   let mirrored = '';
   const result = await runPhase({
