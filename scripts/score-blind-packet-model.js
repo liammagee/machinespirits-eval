@@ -14,16 +14,42 @@
  *
  * Usage:
  *   node scripts/score-blind-packet-model.js <packet.md> --out <submission.json>
- *        [--model claude-code.claude-sonnet-5] [--dry-run]
+ *        [--model claude-code.claude-sonnet-5] [--dry-run] [--from-raw <saved.raw.txt>]
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { parseJudgeJson } from './judge-stress-repair.js';
 import { parseModelRef } from './label-learner-state-model.js';
 
 const FIELDS = ['realized', 'move', 'uptake', 'eased'];
+
+/**
+ * Pull the answer array out of a reply. A reader may echo the array inside
+ * other text first (Opus on step 6 put an escaped copy inside a shell
+ * command before the real array), so first-`[` to last-`]` is not enough.
+ * Walk the `[` positions from the last one back and take the first slice
+ * that parses as an array of objects.
+ */
+export function extractAnswerArray(text) {
+  const raw = String(text || '');
+  const end = raw.lastIndexOf(']');
+  if (end < 0) return null;
+  let start = raw.lastIndexOf('[', end);
+  while (start >= 0) {
+    try {
+      const parsed = JSON.parse(raw.slice(start, end + 1));
+      if (Array.isArray(parsed) && parsed.every((r) => r && typeof r === 'object' && !Array.isArray(r))) {
+        return parsed;
+      }
+    } catch {
+      /* keep walking back */
+    }
+    if (start === 0) break; // lastIndexOf('[', -1) would return 0 again
+    start = raw.lastIndexOf('[', start - 1);
+  }
+  return null;
+}
 
 export function buildReaderPrompt(packetText) {
   return [
@@ -84,15 +110,22 @@ async function main() {
     );
     return;
   }
-  const { callAIWithCliBridge } = await import('../services/cliProviderBridge.js');
-  const modelRef = parseModelRef(model);
-  const label = `blind-packet-reader-${path.basename(path.dirname(packetPath))}`;
-  const res = await callAIWithCliBridge(modelRef, '', prompt, label, { timeoutMs: 600000 });
-  const text = typeof res === 'string' ? res : (res?.content ?? res?.text ?? JSON.stringify(res));
-  const rows = normaliseSubmission(parseJudgeJson(text), expected);
+  const fromRaw = flag('--from-raw', null);
+  let text;
+  if (fromRaw) {
+    // Re-parse a saved reply after a parser fix. No paid call, no resample.
+    text = fs.readFileSync(path.resolve(fromRaw), 'utf8');
+  } else {
+    const { callAIWithCliBridge } = await import('../services/cliProviderBridge.js');
+    const modelRef = parseModelRef(model);
+    const label = `blind-packet-reader-${path.basename(path.dirname(packetPath))}`;
+    const res = await callAIWithCliBridge(modelRef, '', prompt, label, { timeoutMs: 600000 });
+    text = typeof res === 'string' ? res : (res?.content ?? res?.text ?? JSON.stringify(res));
+  }
+  const rows = normaliseSubmission(extractAnswerArray(text), expected);
   const rawPath = out.replace(/\.json$/u, '') + '.raw.txt';
   fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
-  fs.writeFileSync(rawPath, String(text));
+  if (!fromRaw) fs.writeFileSync(rawPath, String(text));
   if (!rows) {
     console.error(`unparsed or incomplete reply (expected ${expected} items); raw saved to ${rawPath}; not retrying`);
     process.exit(1);

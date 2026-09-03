@@ -1,8 +1,8 @@
-# Model second reader on the three blind packets (2026-09-02, paid)
+# Model second readers on the three blind packets (2026-09-02, paid)
 
 Card: `workplan/items/state-detection-without-word-lists.md`.
-Ceiling: 3 calls, one per packet, Sonnet 5 through the claude-code bridge.
-Used: 3. No retry.
+Two reads, each under a ceiling of 3 calls, one per packet, no retry:
+Sonnet 5, then Opus 5, both through the claude-code bridge. Used: 3 + 3.
 
 ## Why a model, and why this one
 
@@ -75,3 +75,49 @@ That one item is the whole difference.
 - A model reader is not a human reader. Both readers are language models
   reading the same three lines; they may share a blind spot. The human
   read stays open on the card.
+
+## Second read: Opus 5 (same packets, same script, 3 calls)
+
+The user asked for Opus after the Sonnet read. Same blind setup;
+`--model claude-code.claude-opus-5`. Files
+`reader-opus5{.json,.raw.txt,.meta.json,-compare.md}` beside the Sonnet
+ones. One parse defect on the way: on step 6 Opus put an escaped copy of
+the array inside a shell command before the real array, and the
+first-`[`-to-last-`]` cut failed. The reply was complete. The script now
+walks back from the last `]` to the first slice that parses
+(`extractAnswerArray`, tested) and has `--from-raw` to re-read a saved
+reply. No second call was made.
+
+| packet | realized | move tag | repair | uptake | eased | kappa (HIT vs not) |
+|---|---|---|---|---|---|---|
+| step 4 | 23/24 | 13/24 | 15/24 | 22/24 | 20/24 | 0.51 |
+| step 6 | 12/12 | 10/12 | 10/12 | 10/12 | 11/12 | 0.83 |
+| step 7 | 12/12 | 6/12 | 8/12 | 11/12 | 11/12 | 0.50 |
+
+Repair HIT by version of the tutor, all three readers:
+
+| packet | judge (codex) | Sonnet 5 | Opus 5 |
+|---|---|---|---|
+| step 4 (form-v1) | 7/12 vs 6/12 | 6/12 vs 5/12 | 4/12 vs 5/12 |
+| step 6 (form-v3) | 4/6 vs 2/6 | 4/6 vs 3/6 | 5/6 vs 2/6 |
+| step 7 (hold) | 4/6 vs 3/6 | 4/6 vs 3/6 | 4/6 vs 2/6 |
+
+- On step 6 Opus agrees with the judge on 10 of 12 move tags and gives
+  the card a wider margin than either other reader (three plants). The
+  two disagreements both go the card's way: with-card t4 (judge
+  `continue`, Opus `backtrack`, the gold) and without-card t6 (judge
+  `speed_up`, Opus `backtrack`, PARTIAL).
+- On step 4 Opus reverses the direction: 4 of 12 with the card, 5 of 12
+  without. It tags `continue` on 8 of the 24 replies, and three of those
+  are with-card 037 replies the judge and Sonnet both read as the gold
+  move (t4 opposed, t7 irritated, t9 forgetting). Step 4 ran on form-v1,
+  where the sensor read only 2 of 6 plants; step 6 is the same pair on
+  form-v3.
+- On step 7 all three readers agree that the with-card tutor repairs 4
+  of 6 and the without-card tutor 2 or 3 of 6.
+
+What changes: the step-6 result (form-v3 live) now has three readers
+from three families agreeing on the direction, margins one to three
+plants. The step-4 result (form-v1) does not survive the Opus read and
+should not be cited on its own. The human read is still open.
+

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { buildReaderPrompt, normaliseSubmission } from '../scripts/score-blind-packet-model.js';
+import { buildReaderPrompt, extractAnswerArray, normaliseSubmission } from '../scripts/score-blind-packet-model.js';
 
 // The reader gets the packet as written and nothing else: no key, no judge
 // file, no version-of-the-tutor label. The prompt must carry the packet text
@@ -37,4 +37,16 @@ test('normaliseSubmission refuses a short or half-filled reply (no resampling, f
   );
   assert.equal(normaliseSubmission([{ n: 1, realized: 'yes', move: '', uptake: 'yes', eased: 'eased' }], 1), null);
   assert.equal(normaliseSubmission('not an array', 1), null);
+});
+
+// Opus on step 6 (2026-09-02) echoed an escaped copy of the array inside a
+// shell command before the real array. First-`[` to last-`]` spanned both
+// and failed to parse; the answer was complete. Pin the walk-back.
+test('extractAnswerArray takes the last parseable array, past an escaped echo', () => {
+  const real = [{ n: 1, realized: 'yes', move: 'backtrack', secondary: null, uptake: 'yes', eased: 'eased' }];
+  const echo = JSON.stringify({ cmd: `cat > x.json << 'EOF'\n${JSON.stringify(real)}\nEOF` });
+  const text = `${echo}\nHere are the answers:\n${JSON.stringify(real, null, 1)}\n`;
+  assert.deepEqual(extractAnswerArray(text), real);
+  assert.equal(extractAnswerArray('no array here'), null);
+  assert.equal(extractAnswerArray('[1, 2, 3]'), null);
 });
