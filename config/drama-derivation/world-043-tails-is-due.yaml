@@ -112,10 +112,9 @@ premises:
   - id: p_fresh
     fact: [nextTossIs, afterFourHeads, freshToss]
     surface: >-
-      Ask the coin, before the fifth toss, what it remembers. Nothing. It
-      has no mark on it from the last four throws and no way to know they
-      happened. The fifth toss is a fresh coin in a fresh hand, exactly as
-      the first toss was.
+      Ask the coin, before the fifth toss, what it remembers. Nothing: no
+      mark from the last four throws, no way to know they happened. Number
+      five starts fresh, exactly as number one did.
   - id: p_fair
     fact: [fairCoinGives, freshToss, oneHalf]
     surface: >-

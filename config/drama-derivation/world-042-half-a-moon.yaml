@@ -103,9 +103,9 @@ premises:
     fact: [shadowCanReachMoon, tonight, shadowPointsAway]
     surface: >-
       Torch on. The football's shadow lies along the bench straight away
-      from the torch. The tennis ball, out to the side where the Moon is
-      tonight, is nowhere near that shadow, and the torch lights one whole
-      half of it. Nothing is in the way of anything.
+      from the torch. The tennis ball, out where the Moon is tonight, is
+      nowhere near that shadow, and the torch reaches it as fully as before.
+      Nothing is in the way of anything.
   - id: p_position
     fact: [moonPositionIs, tonight, sideOn]
     surface: >-
