@@ -310,8 +310,10 @@ export function localCiLaneCatalog(
       'node-tests',
       `Root shards and tutor-core (Node ${process.versions.node})`,
       [
-        npm('test:root', ['--', '--shard=1/2', '--quiet']),
-        npm('test:root', ['--', '--shard=2/2', '--quiet']),
+        npm('test:root', ['--', '--shard=1/4', '--quiet']),
+        npm('test:root', ['--', '--shard=2/4', '--quiet']),
+        npm('test:root', ['--', '--shard=3/4', '--quiet']),
+        npm('test:root', ['--', '--shard=4/4', '--quiet']),
         npm('test:core', ['--', '--quiet']),
       ],
       ['full', 'node-tests'],

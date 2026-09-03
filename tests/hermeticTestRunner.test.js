@@ -841,21 +841,13 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.match(workflow, /^concurrency:\n {2}group: .*github\.workflow.*github\.ref/mu);
   assert.match(workflow, /^ {2}test-contract:\n {4}name: Hermetic test contract\n {4}runs-on: ubuntu-latest$/mu);
   assert.match(workflow, /^ {8}run: npm run test:manifest$/mu);
-  for (const lane of [
-    'focused',
-    'validator-only',
-    'ref-governance',
-    'lint',
-    'test',
-    'pty-concurrency',
-    'risk-coverage',
-  ]) {
+  for (const lane of ['focused', 'validator-only', 'ref-governance', 'lint', 'pty-concurrency', 'risk-coverage']) {
     assert.match(
       workflow,
       new RegExp(`^ {2}${lane}:\\n(?: {4}name: [^\\n]+\\n)? {4}needs: \\[classify, test-contract\\]$`, 'mu'),
     );
   }
-  assert.match(workflow, /^ {2}test:\n {4}needs: \[classify, test-contract\]$/mu);
+  assert.match(workflow, /^ {2}test:\n(?: {4}#[^\n]*\n)* {4}needs: \[classify\]$/mu);
   assert.match(
     workflow,
     /^ {2}pty-concurrency:\n {4}name: PTY \/ loopback concurrency\n {4}needs: \[classify, test-contract\]$/mu,
@@ -867,8 +859,8 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.match(workflow, /^ {2}ref-governance:\n {4}name: Ref governance$/mu);
   assert.match(workflow, /needs\.classify\.outputs\.ref_governance_required == 'true'/u);
   assert.match(workflow, /^ {6}fail-fast: false$/mu);
-  assert.match(workflow, /^ {8}node-version: \[22, 24\]\n {8}shard: \[1, 2\]$/mu);
-  assert.match(workflow, /npm run test:root -- --shard=\$\{\{ matrix\.shard \}\}\/2 --quiet/u);
+  assert.match(workflow, /^ {8}node-version: \[22, 24\]\n {8}shard: \[1, 2, 3, 4\]$/mu);
+  assert.match(workflow, /npm run test:root -- --shard=\$\{\{ matrix\.shard \}\}\/4 --quiet/u);
   assert.match(workflow, /^ {8}if: matrix\.shard == 1\n {8}run: npm run test:core -- --quiet$/mu);
   function jobBlock(name) {
     const marker = `  ${name}:\n`;
