@@ -1,0 +1,779 @@
+{
+  "documentType": "prospective_paid_study_design",
+  "revision": 3,
+  "studyId": "tutor-stub-action-outcome-keyed-collection-v3",
+  "title": "Prospective keyed hand-back action-outcome collection",
+  "status": "prospective_design_only_no_call_authority",
+  "workplanItem": "adaptive-curriculum-memory-controller",
+  "supersedes": {
+    "studyId": "tutor-stub-action-outcome-comparable-collection-v2",
+    "designPath": "config/tutor-stub-action-outcome-comparable-collection-design.v2.json",
+    "disposition": "sealed; its two model-judge shadow runs (v1, v2) gave zero exact-consensus binary records on 35 cases",
+    "reuse": "sealed_development_only_never_sample_top_up_or_memory_evidence"
+  },
+  "registeredQuestion": "Can a fresh fixed collection, with a keyed hand-back question in every delivered support action and a mixed learner population, produce enough objectively checkable binary next-turn outcomes inside the exact three-family support-phase eligible set to populate a later, separately designed action-outcome memory-controller study?",
+  "whyRevision3": [
+    "The v2 collection sampled one effort-withholding learner profile (bored) and admitted only stall-condition closures. Every one of the 35 reviewed next turns carried a disengagement marker, so the packet held no binary outcome for any judge to find. Zero binary yield was a property of the packet, not of the judges.",
+    "The v2 outcome labels were semantic (learner-authored application, rationale, choice). Two isolated judge seats agreed on outcome in 24/35 cases (kappa 0.17) and on delivery in 27/35 (kappa 0.20). Semantic labels alone cannot carry the binary record.",
+    "Revision 3 keeps the exact eligible set and the human seats, and adds one deterministic outcome channel: a keyed hand-back question whose answer key is fixed from the world file at generation time and read from the next learner turn by exact token match."
+  ],
+  "purpose": {
+    "primary": "Collect exchangeable, visibly delivered, objectively checkable next-turn outcomes only when explain_model, minimal_support, and request_self_explanation are simultaneously policy-eligible, across stalled and non-stalled turns and across three learner profiles.",
+    "secondary": "Estimate exact-set prevalence by profile and stall stratum, hand-back delivery fidelity, keyed-pick yield, record-citation yield, human delivery agreement, indeterminacy, and usable binary-record yield by family, world, profile, and stratum.",
+    "notThisStudy": [
+      "The action-outcome memory controller is disabled.",
+      "Diagnose and fade singleton decisions remain audit-only and cannot enter comparative evidence.",
+      "No learned ranking, demotion threshold, success-rate floor, minimum memory support, pooling rule, age window, or controller treatment is selected from these outcomes.",
+      "No unassisted-work or transfer endpoint is run, and the held-out worlds remain excluded.",
+      "The sealed v1 pilot, the sealed v2 collection, and both model-judge shadow runs are not recoded, relabelled, topped up, pooled, or reused as evidence.",
+      "No model judge sits in the authoritative outcome path. A model-judge shadow on this packet needs its own design."
+    ]
+  },
+  "callAuthority": {
+    "grantsModelCalls": false,
+    "grantsLaunch": false,
+    "statement": "This merged design is the study registration only. Launch requires this design merged to main and one GO note under docs/paid-study-authorization-policy.md that names this file and the spend ceiling. The GO covers the study as registered here: question, population, worlds, condition strata, assignment, measurement rules, and ceiling. It stays valid while those stay the same.",
+    "provenance": "The run ledger records the launch commit, the tree hash, and whether the checkout was dirty. These are recorded, not enforced. A fix to a code defect after GO does not void the GO and is recorded in the ledger. No approval is bound to a commit SHA, a file digest, or a request-text hash."
+  },
+  "design": {
+    "kind": "fixed_size_exact_eligible_set_collection_keyed_hand_back",
+    "dialogues": 60,
+    "turnHorizon": 8,
+    "fixedHorizon": true,
+    "maximumExchangeableClosedAssignmentsPerDialogue": 7,
+    "ordinaryExpectedMaximumExchangeableClosedAssignmentsPerDialogue": 6,
+    "why": "Sixty dialogues match the v2 block, which is the only prior block with a measured exact-set closure rate. The block is split across three learner profiles so that the packet cannot again be all disengagement. No outcome-dependent enlargement.",
+    "noOutcomeDependentEnlargement": true,
+    "noReplacementOfValidOrSubstantiveUnits": true,
+    "unit": "one independently seeded tutor-stub dialogue",
+    "interventionUnit": "one nonmandatory tutor decision randomized only when the exact eligible set is explain_model plus minimal_support plus request_self_explanation, at any turn, stalled or not",
+    "outcomeUnit": "the immediate next public learner turn after a visibly delivered assigned support action that carries its keyed hand-back question"
+  },
+  "population": {
+    "learnerProfiles": ["bored", "diligent", "slow_learner"],
+    "profileMeaning": {
+      "bored": "the maintained built-in effort-withholding boredom profile; kept as a stratum so that v3 yield can be compared with the v2 packet",
+      "diligent": "the maintained built-in baseline profile: bounded claims, named uncertainty, explicit revision",
+      "slow_learner": "the maintained built-in careful incremental profile: one clue at a time, one local confirmation, asks for a slower pace"
+    },
+    "profileSource": "scripts/tutor-stub-learner-profile-contracts.js (the --auto-learner-profile catalogue)",
+    "dialoguesPerProfile": 20,
+    "dialoguesPerWorldPerProfile": 5,
+    "taskClass": "causal detective proof-DAG inquiry using public evidence and rules",
+    "collectionWorlds": [
+      "world_022_foxtrot_jukebox",
+      "world_026_skyway_bakery",
+      "world_028_larkspur_fridge",
+      "world_029_riverside_clinic"
+    ],
+    "laterEvaluationWorldsExcludedFromCollectionAndMemory": ["world_030_rowan_flat", "world_031_tideway_makerspace"],
+    "holdoutMeaning": "Rowan Flat and Tideway Makerspace remain excluded from collection, review, readiness, and memory. They are reserved for a separately registered controller evaluation and are not claimed to be globally unseen.",
+    "crossWorldPoolingInThisPilot": "Allowed only within the exact registered eligible set for feasibility totals. Every record retains world, profile, and stratum identity and is reported by family, world, profile, and stratum."
+  },
+  "condition": {
+    "role": "stratum_not_filter",
+    "conditions": [
+      {
+        "id": "stalled_low_velocity_v1",
+        "stagnationAtLeast": 0.6,
+        "fieldVelocityAtMost": 0.02,
+        "dagVelocityAtMost": 0.2
+      }
+    ],
+    "matchRule": "stagnation >= 0.6 AND abs(fieldVelocity) <= 0.02 AND abs(dagVelocity) <= 0.2",
+    "strata": ["stalled_low_velocity_v1:matched", "stalled_low_velocity_v1:unmatched"],
+    "changeFromV2": "In v2 the condition was an admission filter: only matched closures entered the packet. In v3 every exact-set closure enters the packet and the condition is recorded as a stratum label. This is what removes the all-stall packet.",
+    "provenance": "The stagnation boundary is the maintained Program-2 stall detector boundary. The velocity bounds are the existing low-velocity terms used by buildDynamicalSystemState when constructing stagnation. Historical traces missing these quantities are never reconstructed.",
+    "outcomeBlindRule": "The condition and thresholds are fixed before collection. Stratum counts may be inspected for feasibility after collection, but cannot trigger top-up, replacement, threshold change, or selective packet inclusion."
+  },
+  "typedActionAssignment": {
+    "mode": "uniform_family_eligible",
+    "moveFamilies": [
+      "diagnose_elicit",
+      "minimal_support",
+      "explain_model",
+      "request_self_explanation",
+      "fade_transfer"
+    ],
+    "familyDraw": "uniform among explain_model, minimal_support, and request_self_explanation only when all three are simultaneously policy-eligible",
+    "withinFamilyDraw": "uniform among policy-eligible actions in the selected family",
+    "mandatoryAuthority": "Mandatory, diagnose singleton, fade singleton, and every other noncomparative decision retain policy authority and remain audit-only with no random draw.",
+    "fixedSupportLevel": 1,
+    "registerPolicy": "bland",
+    "safeRegisters": true,
+    "lightAdaptation": false,
+    "memoryControllerEnabled": false,
+    "deliveryRule": "A guard displacement, a configuration mismatch, or a missing or malformed keyed hand-back cancels the requested intervention before credit. The next learner turn cannot be credited to the requested action.",
+    "propensityRule": "Save and replay the exact eligible-set id, family propensity, and conditional action propensity. The three comparative families must each have family propensity one third at an admitted turn."
+  },
+  "keyedHandBack": {
+    "role": "primary_binary_outcome_channel",
+    "definition": "Every assigned comparative action ends with one hand-back question that names exactly two options. Both options are argument tokens of facts already released into the public record at that turn. One option is the token the current proof-DAG frontier uses next (the key); the other is a released token the frontier does not use (the foil). The learner is asked which one the next step needs.",
+    "keySource": "The key and foil are computed by the runtime from the world file (fact tuples, question_pattern, proof-DAG rules) and the released-record state at that turn, before the tutor model is called. They are written to the trace with the turn. The tutor text does not define the key.",
+    "leakGuard": "Neither option may be an unreleased or director-guarded token. A keyed question that names an unreleased token is a delivery failure and is audit-only. This keeps the existing leak-guard design of the worlds intact.",
+    "deliveryCheck": "Deterministic: both option tokens appear in the tutor turn, in a question, after the family-specific content. Human coders confirm from the transcript alone that the question was asked and hands the next step back.",
+    "pickReader": "Deterministic: the next public learner turn is scanned for the key token and the foil token. Exactly one present, or one named as the pick, gives correct_pick or wrong_pick. Neither present gives no_pick. Both present with no stated pick gives other.",
+    "pickLabels": ["correct_pick", "wrong_pick", "no_pick", "other"],
+    "secondObservable": {
+      "id": "record_citation",
+      "definition": "The next learner turn names a released public-record fact token that was absent from the learner account (learner DAG) before that turn. Computed from the learner DAG state, not from the tutor text.",
+      "role": "reported, not part of the binary record in this collection"
+    },
+    "calibration": "Before launch, run the key builder and pick reader on the sealed v1 and v2 traces as zero-call regression tests. This checks the code, not the outcomes; those traces stay sealed as evidence."
+  },
+  "deliveryChecklists": {
+    "role": "replaces the single hand-back sentence of codebook v2 with one checklist per family; a turn is delivered when every line for its family holds and the keyed hand-back is present",
+    "common": [
+      "The turn is public tutor text, not empty, not truncated.",
+      "The keyed hand-back question is present with both option tokens.",
+      "No unreleased or guarded token appears."
+    ],
+    "explain_model": {
+      "actions": ["explain_principle", "model_worked_example"],
+      "lines": [
+        "States one general principle or rule in words the learner can reuse.",
+        "For model_worked_example: the demonstration reaches its own conclusion; it does not stop midway.",
+        "Does not answer the hand-back question itself."
+      ]
+    },
+    "minimal_support": {
+      "actions": ["minimal_hint", "lower_cognitive_load", "reanchor_goal", "acknowledge_and_redirect"],
+      "lines": [
+        "States no conclusion and names at most one released record as the hint.",
+        "For acknowledge_and_redirect: one explicit line acknowledges the learner state before the redirect.",
+        "For lower_cognitive_load: names one piece to work on and sets the rest aside in words."
+      ]
+    },
+    "request_self_explanation": {
+      "actions": ["request_evidence", "ask_strategy_choice", "repair_overconfidence", "challenge_without_telling"],
+      "lines": [
+        "Asks the learner before the tutor states any distinction or verdict.",
+        "For ask_strategy_choice: names at least two options the learner can choose between (the keyed pair counts).",
+        "For repair_overconfidence: names the claim to be checked and asks for the check; does not supply it."
+      ]
+    },
+    "auditOnlyFamilies": ["diagnose_elicit", "fade_transfer"]
+  },
+  "outcomeRules": {
+    "role": "registered before collection; codebook v3 is written from these lines and cannot add outcome rules",
+    "binaryRecord": "A binary record is a human-agreed delivered turn whose next learner turn reads correct_pick (success) or wrong_pick (failure), or reads no_pick together with an explicit stop statement (failure).",
+    "explicitStopVersusAbsence": {
+      "rule": "An explicit stop statement after a delivered action is an outcome; a missing or truncated turn is not.",
+      "explicitStop": "The learner says in their own words that they have stopped, will not continue, or have put the task down. Read as failure when no pick is present.",
+      "absence": "An empty, truncated, malformed, or off-task next turn with no stop statement is inconclusive. It contributes no binary evidence.",
+      "malformed": "A missing turn, a non-public turn, or a turn the reader cannot parse is measurement_indeterminate."
+    },
+    "pickIsNotAuthorship": {
+      "rule": "A bare pick answers the keyed question and is the machine outcome. It is not learner-authored application, rationale, or choice.",
+      "humanSemanticLabel": "Coders keep the v2 semantic labels (success, failure, partial, inconclusive, measurement_indeterminate) for the family success signal. A bare pick with no reason is at most partial on the semantic label. The semantic label is reported by family and stratum; it does not gate the binary record."
+    },
+    "twoChannels": {
+      "machine": "keyed pick, record citation, stall stratum, delivery token check",
+      "human": "delivery checklist confirmation, semantic outcome label, explicit-stop reading",
+      "admission": "binary record requires: machine pick or explicit-stop failure, plus exact two-coder agreement that the turn was delivered"
+    }
+  },
+  "taskContract": {
+    "taskIdRule": "action-outcome-keyed-v3-<world-id>-<profile-id>",
+    "knowledgeComponent": "causal_inference_from_public_evidence_and_rules",
+    "prerequisitePath": ["identify_public_evidence", "apply_public_rule", "state_bounded_causal_inference"],
+    "itemDifficulty": 0.5,
+    "contextKey": "action-outcome-keyed-collection.v3|mixed-3-profiles|causal-detective-proof-dag|support-1|exact-support-set-v1|keyed-hand-back-v1|codex.gpt-5.6-luna-stack",
+    "contextKeyRule": "Every exported record uses this exact key. World, profile, stratum, support level, action, family, exact eligible set, key, foil, pick, dialogue, and contract remain separate fields."
+  },
+  "models": {
+    "tutor": "codex.gpt-5.6-luna",
+    "automatedLearner": "codex.gpt-5.6-luna",
+    "learnerClassifier": "codex.gpt-5.6-luna",
+    "learnerRecordAndDag": "codex.gpt-5.6-luna",
+    "learnerAnalysisTransport": "one combined classifier-plus-learner-record/DAG call per learner turn",
+    "cliEffort": "low",
+    "effortNote": "Delivery of the keyed hand-back is checked by a deterministic token check, not by model effort, so the v2 effort level is kept.",
+    "modelOutcomeJudges": [],
+    "outcomeAuthority": "Machine keyed pick on a turn both human coders agree was delivered. Human semantic labels are reported alongside. No model judge in the authoritative path."
+  },
+  "launchConfiguration": {
+    "requiredCommonArguments": [
+      "--all-models codex.gpt-5.6-luna",
+      "--cli-effort low",
+      "--auto-learner",
+      "--auto-turns 8",
+      "--no-auto-stop-on-grounded",
+      "--dag",
+      "--dag-mode strict_dag",
+      "--tutor-learner-dag",
+      "--typed-actions",
+      "--typed-action-assignment uniform_family_eligible",
+      "--typed-action-knowledge-component causal_inference_from_public_evidence_and_rules",
+      "--typed-action-prerequisites identify_public_evidence,apply_public_rule,state_bounded_causal_inference",
+      "--typed-action-item-difficulty 0.5",
+      "--typed-action-support-level 1",
+      "--register-policy bland",
+      "--safe-registers",
+      "--no-light-adaptation",
+      "--loop-mode strict",
+      "--no-training-reuse",
+      "--acknowledge-research-use",
+      "--model-call-budget 81",
+      "--run-seed 2026090301"
+    ],
+    "perJobArguments": [
+      "--world <world-id>",
+      "--auto-learner-profile <profile-id>",
+      "--typed-action-task-id action-outcome-keyed-v3-<world-id>-<profile-id>",
+      "--eval-repeat <1..5>",
+      "--eval-job-id <registered-job-id>"
+    ],
+    "newArgumentsRequired": [
+      "--typed-action-keyed-hand-back (enables key/foil construction and the delivery token check; does not exist yet)"
+    ],
+    "preflightRule": "The launcher must compile exactly the 60 registered jobs, enforce the exact support eligible set and fixed common arguments, verify all create-once destinations, and pass services/paidStudyLaunchContract.js before provider initialization. It records the commit and dirty flag; it does not refuse on them."
+  },
+  "randomization": {
+    "masterSeed": 2026090301,
+    "algorithm": "the runtime deterministic uniform_family_eligible draw keyed by the registered seed, learner profile, world, repeat, turn, and job identity; singleton sets consume no draw; key and foil selection is deterministic from world and released state and consumes no draw",
+    "jobs": [
+      {
+        "jobId": "aockv3_foxtrot_jukebox_bored_r01",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "bored",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_bored_r02",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "bored",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_bored_r03",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "bored",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_bored_r04",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "bored",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_bored_r05",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "bored",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_diligent_r01",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "diligent",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_diligent_r02",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "diligent",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_diligent_r03",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "diligent",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_diligent_r04",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "diligent",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_diligent_r05",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "diligent",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_slow_learner_r01",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "slow_learner",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_slow_learner_r02",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "slow_learner",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_slow_learner_r03",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "slow_learner",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_slow_learner_r04",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "slow_learner",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_foxtrot_jukebox_slow_learner_r05",
+        "worldId": "world_022_foxtrot_jukebox",
+        "learnerProfile": "slow_learner",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_bored_r01",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "bored",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_bored_r02",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "bored",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_bored_r03",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "bored",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_bored_r04",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "bored",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_bored_r05",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "bored",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_diligent_r01",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "diligent",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_diligent_r02",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "diligent",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_diligent_r03",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "diligent",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_diligent_r04",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "diligent",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_diligent_r05",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "diligent",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_slow_learner_r01",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "slow_learner",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_slow_learner_r02",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "slow_learner",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_slow_learner_r03",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "slow_learner",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_slow_learner_r04",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "slow_learner",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_skyway_bakery_slow_learner_r05",
+        "worldId": "world_026_skyway_bakery",
+        "learnerProfile": "slow_learner",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_bored_r01",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "bored",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_bored_r02",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "bored",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_bored_r03",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "bored",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_bored_r04",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "bored",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_bored_r05",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "bored",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_diligent_r01",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "diligent",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_diligent_r02",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "diligent",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_diligent_r03",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "diligent",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_diligent_r04",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "diligent",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_diligent_r05",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "diligent",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_slow_learner_r01",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "slow_learner",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_slow_learner_r02",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "slow_learner",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_slow_learner_r03",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "slow_learner",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_slow_learner_r04",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "slow_learner",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_larkspur_fridge_slow_learner_r05",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "slow_learner",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_bored_r01",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "bored",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_bored_r02",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "bored",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_bored_r03",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "bored",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_bored_r04",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "bored",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_bored_r05",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "bored",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_diligent_r01",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "diligent",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_diligent_r02",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "diligent",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_diligent_r03",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "diligent",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_diligent_r04",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "diligent",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_diligent_r05",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "diligent",
+        "repeat": 5
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_slow_learner_r01",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "slow_learner",
+        "repeat": 1
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_slow_learner_r02",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "slow_learner",
+        "repeat": 2
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_slow_learner_r03",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "slow_learner",
+        "repeat": 3
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_slow_learner_r04",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "slow_learner",
+        "repeat": 4
+      },
+      {
+        "jobId": "aockv3_riverside_clinic_slow_learner_r05",
+        "worldId": "world_029_riverside_clinic",
+        "learnerProfile": "slow_learner",
+        "repeat": 5
+      }
+    ],
+    "noResampling": "Each registered job may yield at most one valid dialogue. No seed, repeat, family draw, job identity, valid dialogue, or reviewed case is replaced after any outcome is visible."
+  },
+  "humanReview": {
+    "requiredCoders": ["human:coder-a", "human:coder-b"],
+    "identityBinding": "Before packet access, two different people are bound to these fixed seat ids in the private handoff record. Their personal identities are not committed to the public repository.",
+    "independence": "Coders work independently and without a model, the machine key, the pick-reader output, auxiliary labels, trace files, readiness report, other submission, or outcome summary. They see tutor text, learner text, the family checklist, and the requested action.",
+    "packet": "Use scripts/action-outcome-review-packet.js after the complete source corpus is frozen. Give each coder only packet.json, codebook.md, and that coder's differently ordered template. The packet does not carry the key, the foil, or the machine pick.",
+    "caseInclusion": "Include every structurally valid seeded assignment, matched or unmatched on the stall condition, with a joined next public learner turn and the exact registered three-family eligible-set id. Exclude singleton and mismatched sets as audit-only before text review.",
+    "coderTasks": [
+      "delivered / not_delivered / indeterminate against the family checklist",
+      "semantic outcome label",
+      "explicit stop present: yes / no"
+    ],
+    "labels": ["success", "failure", "partial", "inconclusive", "measurement_indeterminate"],
+    "binaryMemoryAdmission": "Exact two-coder agreement on delivered plus a machine correct_pick or wrong_pick, or a machine no_pick with two-coder agreement that an explicit stop is present. A coder delivery disagreement forces measurement_indeterminate for that case.",
+    "asOfRule": "Record one cutoff after the last preserved source attempt and before packet preparation. The packet, comparison, and readiness import use that same cutoff and create-once destinations.",
+    "measurementPolicy": "keyed_pick_human_delivery_v3"
+  },
+  "feasibilityEndpoints": {
+    "reportedForAllScheduledUnits": [
+      "complete, technically failed, substantively failed, and missing dialogues by profile and world",
+      "planned, reserved, completed, failed, and unresolved model attempts",
+      "total turns and closed next-turn opportunities by profile and stratum",
+      "mandatory-policy, seeded assigned, deterministic, invalid, and unrecorded decisions",
+      "stratum counts: matched, unmatched, malformed",
+      "eligible-family sets and family/action propensities by profile and stratum",
+      "assigned, delivered, displaced, mismatched, and key-leak-failed actions by family, world, and profile",
+      "keyed pick distribution (correct, wrong, none, other) by family, world, profile, and stratum",
+      "record-citation rate by family and stratum",
+      "coder delivery labels, exact agreement, indeterminacy, explicit-stop agreement, and coder minutes",
+      "final usable binary records by family, world, profile, and stratum"
+    ],
+    "authoritativeGates": {
+      "execution": {
+        "minimumCompleteDialogues": 56,
+        "minimumCompleteDialoguesPerCollectionWorld": 13,
+        "minimumCompleteDialoguesPerProfile": 18,
+        "allAttemptAccountingBalances": true,
+        "noUnregisteredOrDuplicateJob": true
+      },
+      "exchangeabilityAndCoverage": {
+        "exactEligibleSetRequired": "action-outcome-eligible-set.v1:explain_model+minimal_support+request_self_explanation",
+        "minimumSeededClosedAssignments": 30,
+        "minimumContributingDialogues": 20,
+        "minimumContributingCollectionWorlds": 4,
+        "minimumContributingProfiles": 3,
+        "minimumUnmatchedStratumDeliveredCases": 10,
+        "minimumMatchedStratumDeliveredCases": 10,
+        "everyComparativeMoveFamilyAssignedAndDelivered": true,
+        "minimumDeliveredCasesPerComparativeMoveFamily": 8,
+        "minimumIndependentDialoguesPerComparativeMoveFamily": 6,
+        "minimumCollectionWorldsPerComparativeMoveFamily": 3,
+        "minimumProfilesPerComparativeMoveFamily": 2,
+        "minimumVisibleDeliveryRateAmongSeededAssignments": 0.9,
+        "minimumKeyedHandBackPresentRateAmongDeliveredCases": 0.9,
+        "maximumKeyLeakFailureRate": 0.05
+      },
+      "review": {
+        "bothOriginalCoderSubmissionsComplete": true,
+        "minimumDeliveryExactAgreement": 0.8,
+        "minimumExplicitStopExactAgreement": 0.8,
+        "maximumMeasurementIndeterminateRate": 0.2,
+        "minimumMachinePickToHumanPickAgreementOnAuditSample": 0.9,
+        "auditSampleRule": "After the coders submit, one coder reads the machine pick on 20 random delivered cases and records agree / disagree. This is a check of the reader, not a recoding of outcomes.",
+        "minimumFinalUsableBinaryRecords": 24,
+        "minimumFinalUsableBinaryRecordsPerComparativeMoveFamily": 6,
+        "minimumFinalUsableBinaryRecordsInUnmatchedStratum": 8
+      }
+    },
+    "prevalenceRisk": "The exact three-family set may be rare outside stalled turns. If the unmatched-stratum floors fail, the design closes on that fact and reports the realized eligible-set distribution by stratum. No widening of the eligible set after outcomes are visible.",
+    "decision": "Pass licenses only a new design for a separately authorized held-out controller study. Failure closes this collection without top-up, threshold relaxation, recoding, family deletion, world deletion, profile deletion, or controller launch.",
+    "precisionMeaning": "The fixed block uses the sealed v2 closure rate only to choose sample size before launch. The coverage floors are operational prerequisites for a later design, not power claims or learned controller thresholds."
+  },
+  "analysis": {
+    "primary": "A disposition table against every registered execution, coverage, and review gate, by family, world, profile, and stratum.",
+    "descriptive": [
+      "exact-set closure prevalence by profile and stratum with Wilson 95% intervals",
+      "delivery, keyed hand-back presence, key-leak failure, coder agreement, and indeterminacy rates with Wilson 95% intervals",
+      "keyed pick distribution and usable binary yield by family, world, profile, and stratum",
+      "record-citation rate by family and stratum",
+      "semantic label distribution against machine pick, as a cross-tab (reported, not gated)"
+    ],
+    "forbidden": [
+      "null-hypothesis testing or powered causal claims",
+      "pooling across different eligible-set ids",
+      "ranking singleton diagnose or fade decisions",
+      "outcome-conditioned exclusion, top-up, recoding, or threshold changes",
+      "using held-out evaluation worlds in collection, review, readiness, or memory",
+      "choosing a final controller demotion rule from these collection outcomes",
+      "treating correct_pick as evidence of learning, durable change, or transfer"
+    ]
+  },
+  "attemptCeiling": {
+    "normalPlannedCallsPerDialogue": 25,
+    "callPlanPerDialogue": {
+      "opening": 1,
+      "automatedLearner": 8,
+      "combinedLearnerAnalysis": 8,
+      "tutor": 8
+    },
+    "plannedCalls": 1500,
+    "maximumReservationsPerPlannedCall": 3,
+    "perDialogueTechnicalHeadroomReservations": 6,
+    "positiveRecoveryReserve": 360,
+    "recoveryReserveArithmetic": "60 * 6 = 360 reservations held inside the hard ceiling for bounded technical recovery",
+    "maximumReservationsPerDialogue": 81,
+    "hardMaximumReservations": 4860,
+    "arithmetic": "60 * ((25 * 3) + 6) = 4860",
+    "role": "fail-before-call ceiling, not a target",
+    "ledger": "The launcher must use services/paidStudyLaunchContract.js and the shared append-only attempt ledger. Every attempted provider call consumes one reservation before dispatch. Reservations are never moved between studies or restored after failure.",
+    "spendCap": "4860 model-call reservations on the registered Codex CLI route; no separate dollar budget is claimed for this subscription-backed route"
+  },
+  "destinations": {
+    "liveRoot": ".tutor-stub-auto-eval/action-outcome-keyed-collection-v3-<launch-date>",
+    "packetRoot": ".tutor-stub-auto-eval/action-outcome-keyed-collection-v3-<launch-date>-human-packet",
+    "comparisonRoot": ".tutor-stub-auto-eval/action-outcome-keyed-collection-v3-<launch-date>-human-comparison",
+    "readinessRoot": ".tutor-stub-auto-eval/action-outcome-keyed-collection-v3-<launch-date>-readiness",
+    "launchDateRule": "The GO note fixes <launch-date> as YYYY-MM-DD. The roots are create-once from then on.",
+    "createOnce": true,
+    "privateArchive": "Archive the run ledger, traces, attempts, keys, packet, coder originals, private identity binding, machine picks, comparison, and readiness outputs to the maintained private study archive with npm run archive:runs. Public summaries contain no learner text, key text, or identity mapping."
+  },
+  "dispositions": {
+    "validDialogue": "Preserve once; never rerun or replace.",
+    "measurementIndeterminate": "Retain and report; never recode, adjudicate, replace, or treat as failure. It contributes no binary memory evidence.",
+    "mandatoryOrNonrandomizedAssignment": "Retain for audit. This includes singleton diagnose and fade decisions and every eligible-set mismatch.",
+    "guardDisplacementOrNonDelivery": "Retain and report; do not credit the requested action or its next learner turn; no replacement.",
+    "keyLeakFailure": "Retain and report as audit-only; do not credit; no replacement. A key-leak rate above the gate stops the study for human review of the key builder.",
+    "substantiveFailure": "Stop the affected unit, preserve it, and do not rerun or replace it.",
+    "technicalFailure": "Preserve the failed attempt and stop before another new unit. Bounded technical recovery may run only the missing or failed unit under the unchanged design, routes, world, profile, seed, job id, horizon, and global ceiling into a fresh nonoverwriting recovery destination, drawing on the positive recovery reserve. Never rerun a valid unit or choose among outputs. A repeated failure or suspected instrument defect stops the study for human review.",
+    "ceilingReached": "Fail before the next call, preserve all artifacts, and report incomplete. No extra reservations or replacement block.",
+    "studyChange": "Stop before the next call. A change to the study question, population, worlds, routes, strata, assignment, horizon, key rule, measurement, seed, destinations, or ceiling needs a design amendment merged before a fresh GO note.",
+    "codeDefectFix": "A fix to a code defect that leaves the study as registered is recorded in the ledger with its commit and the run continues under the same GO. Attempts already made are never rerun.",
+    "humanCoderUnavailable": "Do not substitute after packet access. Preserve the uncoded packet and stop; a design amendment is required before a replacement coder sees it."
+  },
+  "requiredBeforeLaunch": {
+    "engineering": [
+      "Key builder: from a world file and the released-record state, produce key and foil tokens that satisfy the leak guard; write them to the turn trace.",
+      "Tutor hand-back contract: the assigned comparative action ends with the keyed question; a deterministic token check marks delivery.",
+      "Pick reader: read correct_pick / wrong_pick / no_pick / other from the next learner turn by exact token match.",
+      "Record-citation observable from the learner DAG state.",
+      "Per-family delivery checklist rendered into the review packet and codebook v3.",
+      "A loader and launcher that accept revision 3 of this document type (the v2 loader pins revision 2 and the v2 study id).",
+      "Zero-call regression tests for each of the above on the sealed v1 and v2 traces."
+    ],
+    "documents": [
+      "config/tutor-stub-action-outcome-model-judge-codebook.v3.md written from outcomeRules and deliveryChecklists, with no added outcome rules",
+      "one GO note under docs/paid-study-authorization-policy.md"
+    ],
+    "noCallsUntil": "every engineering item has a passing regression test and the GO note exists"
+  },
+  "claimBoundary": "This collection can establish only the operational feasibility and descriptive yield of prospective exact-set randomized action-outcome records with a keyed next-turn outcome, plus descriptive immediate next-turn pick and uptake associations for three maintained simulated learner profiles on the four named collection worlds. A correct pick shows that the learner named the token the frontier needs; it does not show learning, durable change, transfer, action-family superiority beyond the realized exact set, memory-controller benefit, human-learner benefit, or any result on the two reserved evaluation worlds.",
+  "stoppingRule": "Stop after the 60 registered jobs and their original two-coder packet are dispositioned, or earlier on a repeated technical failure, suspected instrument defect, key-leak rate above gate, study change, or global ceiling. No result in this collection itself authorizes a controller run.",
+  "sourceStudies": [
+    {
+      "studyId": "tutor-stub-action-outcome-collection-pilot-v1",
+      "disposition": "closed_feasibility_failure",
+      "reuse": "sealed_development_only_never_sample_top_up_or_memory_evidence"
+    },
+    {
+      "studyId": "tutor-stub-action-outcome-comparable-collection-v2",
+      "disposition": "sealed; zero exact-consensus binary records under both model-judge shadow runs",
+      "reuse": "sealed_development_only_never_sample_top_up_or_memory_evidence"
+    },
+    {
+      "studyId": "tutor-stub-action-outcome-model-judge-shadow-v1",
+      "disposition": "failed diagnostic; joint exact 17/33; paired indeterminate 27/35",
+      "reuse": "sealed"
+    },
+    {
+      "studyId": "tutor-stub-action-outcome-model-judge-shadow-v2",
+      "disposition": "failed diagnostic; joint exact 24/35; paired indeterminate 13/35; binary 0/35",
+      "reuse": "sealed"
+    }
+  ],
+  "comparability": {
+    "unit": "exact_eligible_move_family_set",
+    "eligibleSetId": "action-outcome-eligible-set.v1:explain_model+minimal_support+request_self_explanation",
+    "moveFamilies": ["explain_model", "minimal_support", "request_self_explanation"],
+    "minimumFamilies": 2,
+    "auditOnlyMoveFamilies": ["diagnose_elicit", "fade_transfer"],
+    "rule": "Only seeded assignments carrying this exact eligible-set id enter the review packet or any later memory view. No pooling across different eligible sets is permitted. Stratum and profile are reported, never pooled away."
+  }
+}
