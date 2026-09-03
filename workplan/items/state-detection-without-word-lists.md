@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-09-01
-updated: 2026-09-02
+updated: 2026-09-03
 verification: "A learner-state detector with NO per-world word list whose
   leave-one-world-out recall at the planted moments of world-030, world-035
   and world-037 (packed traces) matches or beats the v6 cascade's held-out
@@ -25,6 +25,7 @@ links:
   notes:
     - notes/poetics/hero-demo-runs/2026-09-01-adjudication-draft.md
     - notes/poetics/hero-demo-runs/2026-09-02-step5-lesson-fold.md
+    - notes/poetics/hero-demo-runs/2026-09-03-step6-pool-widening.md
 branch: claude/de-genre-tutor-stub
 tags:
   - adaptive-tutor
@@ -387,3 +388,4 @@ the only judge), indeterminate means stop. No approval machinery beyond
 - Model second reader on the three blind packets (3 calls, Sonnet 5, judge was codex): card effect keeps its direction on every packet, reader margin one plant (step 6: 4/6 vs 3/6; judge 4/6 vs 2/6); kappa on HIT vs not 0.67 / 0.50 / 0.31; move tags agree on half the items or fewer. Opus 5 read the same packets (3 more calls): step 6 5/6 vs 2/6, kappa 0.83; step 7 4/6 vs 2/6; step 4 (form-v1) reversed to 4/12 vs 5/12, so step 4 is not citable alone. A human reader is still needed; the model reads do not close that.
 - Offline hold-block rework (2026-09-02, no paid call): release text hidden on the planted turn; held turn names the drop as the exception and makes the sim quote the releasing words on a private `HOLD:` line, stripped and recorded as `learner_stress_hold_verdict` with a `quoteFound` check. Canned-dialogue test `tests/tutorStubStressHoldWiring.test.js`. A paid 037 hold pair on the reworked direction needs its own go. Note `notes/poetics/hero-demo-runs/2026-09-02-model-second-reader.md`; script `scripts/score-blind-packet-model.js`.
 - **Hold pair on 037 again, 2026-09-03, paid, on the reworked direction.** Ceiling 200 dialogue + 20 judge calls; used 40 + 40 + 2, turn cap 12. All four held turns wrote `HOLD: kept`, none claimed a release. The release leak is gone. Both t3 turns kept the state in speech (the brief asks for that line anyway); both t5 turns conceded five sixths in speech while marking `kept`, after the same template reply that shows the six-piece cut. Repair HIT 5/6 with, 4/6 without (within one plant of step 7). The hold still cannot show a card lifting a state the sim would keep. Next is offline (a speech-versus-verdict check, or a plant whose brief does not pull the same way); no re-run as is. Note `notes/poetics/hero-demo-runs/2026-09-03-step7b-hold-rework-live.md`; artifacts `exports/tutor-stub-outcome/step7b-hold-rework/`, archived.
+- **Pool widening on three new lesson worlds (041/042/043), 2026-09-03, paid.** Six plants-only dialogues (Sonnet and codex learners), ceiling 100 calls each; used 335 (24 on two failed starts) plus 6 judge calls. Both failed starts were world-text defects (a leaked answer word in 042, a duplicated clue sentence in 043), fixed offline and pinned by `tests/derivationWorldSurfacesPassTutorGuards.test.js`; the two Sonnet dialogues ran again as `d1` on the fixed worlds, the failed `d0` traces kept. All 32 plants realized; the irritated lines avoid "sound like". Detection offline on the 26 pressure plants: form-v3 (unseen) 4/26 right kind; form-v4, retrained on the widened pool and scored leave-one-world-out, 6/26; 042 reads 0/10 under both, and the three new irritated shapes ("reading off a card", "Oh come on", "I'm not five") are silent under both. On the eight hero hold-outs form-v4 equals form-v3 plant for plant (29/42, 0/6 wrong-fires). Shipped `config/manner-trigger/form-v4.json`, opt-in, pinned; form-v3 unchanged. Plain-tutor repair with no card, judge codex blind: HIT 18 / PARTIAL 4 / MISS 10, the t2 demand missed in all six. The pool is not the limit for the new shapes; the cue set is. Next is offline only. Note `notes/poetics/hero-demo-runs/2026-09-03-step6-pool-widening.md`; artifacts `exports/tutor-stub-outcome/step6-pool-widening-2026-09-03/`, archived.
