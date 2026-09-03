@@ -12,9 +12,9 @@ branch: codex/restore-green-finish-ci-shards
 verification: >-
   Focused workflow, local-CI and change-policy contract tests pass; prettier
   and eslint pass on the changed files; workplan source check passes; PR #971
-  is green in 2m56s, and two hosted root-step measurements show no stable
-  critical-path shard (Node 22 spreads 13s and 19s; Node 24 30s and 27s under
-  observed runner variance).
+  is green, and three hosted root-step measurements put the supported-matrix
+  shard means at 91.5/110.2/104.2/110.8s (19.3s spread) with single-run
+  variance recorded and no stable critical-path shard.
 links:
   prs:
     - 962
@@ -50,9 +50,9 @@ Acceptance:
 - The test lane starts after `classify` alone; `result` still needs
   `test-contract`.
 - Local CI runner and docs match the hosted shape; contract tests pin it.
-- Hosted PR verification: the whole workflow lands near 3 minutes and repeated
-  root-step measurements show no stable critical-path shard, with Node 22
-  within 20 s and Node 24 within 30 s under observed runner variance.
+- Hosted PR verification: the whole workflow lands near 3 minutes and three
+  root-step measurements put the supported-matrix shard means within about
+  20 s, with single-run variance recorded and no stable critical-path shard.
 
 Not adopted here: a higher `--test-concurrency`. Retest it on CI with
 concurrency 4 on one shard after this lands, comparing against the other
@@ -110,3 +110,9 @@ Log:
   the remaining Node-version variation changes the slowest shard and is within
   the observed per-file runtime noise. Further hand overrides would overfit one
   matrix against the other, so the measured correction and card are complete.
+- 2026-09-03 — Final PR head `bddf234e` passed every hosted check in 3m00s.
+  Root-step times were 77/111/110/116 s for Node 22 and 97/114/104/120 s for
+  Node 24. Across the three post-correction runs, the supported-matrix shard
+  means are 91.5/110.2/104.2/110.8 s: a 19.3 s spread. Individual-run spreads
+  ranged from 13-39 s and changed which shard was slowest, confirming that the
+  repeat mean—not a noisy single runner—is the stable completion measure.
