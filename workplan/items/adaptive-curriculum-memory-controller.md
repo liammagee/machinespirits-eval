@@ -40,6 +40,7 @@ links:
     - config/tutor-stub-action-outcome-model-judge-codebook.v1.md
     - services/tutorStubActionOutcomeModelJudge.js
     - scripts/run-tutor-stub-action-outcome-model-judge-shadow.js
+    - notes/2026-09-02-tutor-stub-action-outcome-model-judge-shadow-go.md
   exports:
     - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
   prs:
@@ -129,6 +130,16 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: After PR #955 merged the bounded shadow-judgment design at
+  `1ee6323ae5fb7ac7e6148c17e768924f06cd6d1e`, recorded the operator's direct
+  "good, do it" instruction as the study-level GO note. It licenses exactly 70
+  non-retried low-effort calls: one Sol and one Opus judgment for each of the 35
+  frozen public cases, under the shared create-once ledger and the unchanged
+  exploratory claim boundary. The note does not authorize human-label
+  fabrication, model-result substitution into the human seats, source changes,
+  memory enablement, or controller evaluation. Recording this note makes zero
+  model calls.
 
 - 2026-09-02: Registered the operator-requested Opus-Sol shadow semantic
   judgment before either model saw the frozen 35-case packet. The separate lane
