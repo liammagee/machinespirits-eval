@@ -168,6 +168,13 @@ export function tutorStubStressPlantForTurn(schedule, turnNumber) {
  * realize text verbatim, and it outranks the standing persona brief for this
  * turn only. Never names the state to the learner (the state is bench
  * metadata; the learner just IS it).
+ *
+ * Hold rework (2026-09-02, after the step-7 pair): the planted turn no longer
+ * shows the release text. The step-7 sim spoke the release's own question in
+ * a plant line and then had nothing left to resist. The held turn names the
+ * drop as the exception, makes the sim quote the words that met the release,
+ * and puts that verdict on a private first line the runtime strips and
+ * records (`learner_stress_hold_verdict`). Recorded, never enforced.
  */
 export function tutorStubStressDirective(plant) {
   if (!plant) return null;
@@ -187,10 +194,13 @@ export function tutorStubStressDirective(plant) {
     plant.realize,
     '',
     'Realize this direction as the learner, in her own voice, inside the scene.',
-    `Keep this state on the next ${plant.hold.turns === 1 ? 'turn' : `${plant.hold.turns} turns`} too, unless the other speaker's reply releases it: ${plant.hold.releaseWhen}`,
+    `Keep this state on the next ${plant.hold.turns === 1 ? 'turn' : `${plant.hold.turns} turns`} too. Dropping it early is the exception, not the default, and only the other speaker can earn it.`,
+    'You are not told what would release you. Do not guess at it, and do not hand the other speaker a way out: do not name the check that would settle the matter, offer to do it, or ask the question that would settle it yourself.',
     'Do not soften on your own before that.',
   ].join('\n');
 }
+
+export const TUTOR_STUB_STRESS_HOLD_VERDICT_PREFIX = 'HOLD:';
 
 function heldDirective(plant) {
   const left = plant.hold.turns - plant.held;
@@ -199,10 +209,77 @@ function heldDirective(plant) {
     '',
     `On an earlier turn you were given this direction: ${plant.realize}`,
     '',
-    `Read the other speaker's last reply. It releases you only if it did this: ${plant.hold.releaseWhen}`,
-    'If it did, drop the state now, return to the standing brief, and let the change show in what you say.',
+    'The default this turn is to stay in that state. Dropping it is the exception, and only one thing earns it.',
+    `You are released only if the other speaker's last reply did this: ${plant.hold.releaseWhen}`,
+    'Test it like this. Find the words in that reply that did it. If you can quote them, you are released. If you cannot quote them, you are not released, whatever else the reply did: a reply that touches the same topic, or partly reopens it, does not count.',
+    '',
+    'Put your verdict on the first line, before any speech, in exactly one of these two forms:',
+    `${TUTOR_STUB_STRESS_HOLD_VERDICT_PREFIX} kept`,
+    `${TUTOR_STUB_STRESS_HOLD_VERDICT_PREFIX} released "<the exact words from the other speaker's last reply that did it>"`,
+    'Then your speech starts on the next line. The first line is private; it is removed before anyone hears you.',
+    '',
+    'If released: drop the state, return to the standing brief, and let the change show in what you say.',
     left > 0
-      ? 'If it did not, stay in the state, in your own voice, without softening on your own.'
-      : 'If it did not, stay in the state this one last time; the standing brief returns next turn regardless.',
+      ? "If kept: stay in the state, in your own voice, without softening on your own. Do not name or hint at what would release you, and do not do the other speaker's job for them."
+      : "If kept: stay in the state this one last time, in your own voice, without softening on your own; the standing brief returns next turn regardless. Do not name or hint at what would release you, and do not do the other speaker's job for them.",
   ].join('\n');
+}
+
+const VERDICT_LINE = /^\s*HOLD:\s*(kept|released)\b\s*(.*)$/iu;
+
+function looseWords(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[“”"'‘’`]/gu, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+}
+
+/**
+ * Split a held-turn reply into the private verdict line and the speech.
+ * `verdict` is `kept`, `released`, or `missing` (no verdict line: the sim
+ * ignored the direction; the whole reply is speech). `quoteFound` says whether
+ * the quoted words occur in the other speaker's last reply, after loosening
+ * case, quotes and punctuation; it is null when there is nothing to check.
+ * Pure. The runtime records the result; nothing acts on it.
+ */
+export function parseTutorStubStressHoldVerdict(rawText, tutorReplyText = '') {
+  const raw = String(rawText || '');
+  const lines = raw.split('\n');
+  const index = lines.findIndex((line) => line.trim());
+  const first = index >= 0 ? lines[index] : '';
+  const match = first.match(VERDICT_LINE);
+  if (!match) return { verdict: 'missing', quote: null, quoteFound: null, text: raw.trim() };
+  const verdict = match[1].toLowerCase();
+  const rest = match[2].trim();
+  const quoted = rest.match(/^["“](.*)["”]\s*$/u);
+  const quote = verdict === 'released' ? (quoted ? quoted[1].trim() : rest || null) : null;
+  const tutorLoose = looseWords(tutorReplyText);
+  const quoteLoose = looseWords(quote);
+  const quoteFound = quote ? Boolean(quoteLoose && tutorLoose.includes(quoteLoose)) : null;
+  return {
+    verdict,
+    quote,
+    quoteFound,
+    text: lines
+      .slice(index + 1)
+      .join('\n')
+      .trim(),
+  };
+}
+
+export function tutorStubStressHoldVerdictTraceEvent(schedule, plant, turnNumber, parsed) {
+  return {
+    type: 'learner_stress_hold_verdict',
+    schema: TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
+    scheduleId: schedule.scheduleId,
+    turn: turnNumber,
+    plantTurn: plant.turn,
+    state: plant.state,
+    held: plant.held,
+    holdTurns: plant.hold.turns,
+    verdict: parsed.verdict,
+    quote: parsed.quote,
+    quoteFound: parsed.quoteFound,
+  };
 }

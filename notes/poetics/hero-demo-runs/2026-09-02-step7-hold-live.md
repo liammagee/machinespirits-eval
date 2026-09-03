@@ -95,6 +95,39 @@ Template fallbacks: with t4, t5; without t2–t5.
   release text must not be visible on the planted turn itself. Both are
   offline changes with a test; no paid call. Do not widen to 036.
 
+## Offline rework (2026-09-02, later the same day, no paid call)
+
+Done in `services/tutorStubStressSchedule.js` and the learner-sim runtime
+(`services/tutorStubAutomatedLearnerGenerationRuntime.js`):
+
+- The planted turn no longer shows the release text. It says: keep the state
+  next turn, dropping early is the exception, you are not told what would
+  release you, do not name the check or ask the settling question yourself.
+- The held turn names the drop as the exception and gives one test: quote
+  the words of the other speaker's last reply that did the named thing. If
+  you cannot quote them you are not released, and a reply that only touches
+  the topic or partly reopens it does not count.
+- The sim puts its verdict on a private first line, `HOLD: kept` or
+  `HOLD: released "<exact words>"`. The runtime strips that line before the
+  speech is cleaned and recorded, and writes a
+  `learner_stress_hold_verdict` trace event with the verdict, the quote, and
+  `quoteFound`: whether the quoted words are in the tutor's last reply after
+  loosening case, quotes and punctuation. A missing line is recorded as
+  `missing`. Recorded, never enforced; the speech goes through either way.
+- Tests: `tests/tutorStubStressSchedule.test.js` (direction text, parser) and
+  `tests/tutorStubStressHoldWiring.test.js` (canned dialogue through the
+  runtime with a fake model: hidden release on the planted turn, stripped
+  verdict, quote found / invented / missing). 18 pass with the guarded-learner
+  wiring test alongside.
+
+What the next paid pair can read that step 7 could not: for each held turn,
+the sim's own verdict and whether its quote is real. A `kept` on a turn where
+the tutor missed the release is the hold working. A `released` with
+`quoteFound: false` is the sim letting go on an invented reason, which the
+old direction could not surface. Same schedule file
+(`world-037-stress-schedule-hold1.yaml`), same seats. Needs its own go and
+ceiling. Do not widen to 036.
+
 ## Second reader
 
 `blind-packet.md`, 12 items, seed 7. Compare with

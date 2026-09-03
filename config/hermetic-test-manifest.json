@@ -772,6 +772,7 @@
         "tests/tutorStubSourceAccessibilityContract.test.js",
         "tests/tutorStubSpeakerPublicPremise.test.js",
         "tests/tutorStubStressSchedule.test.js",
+        "tests/tutorStubStressHoldWiring.test.js",
         "tests/tutorStubStrictDagAuditState.test.js",
         "tests/tutorStubStructuredFirstDraft.test.js",
         "tests/tutorStubSurfaceAcceptance.test.js",

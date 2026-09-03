@@ -152,6 +152,15 @@ spoke the release question in its own plant line. Not widened to 036. Next
 is offline: stricter direction, release text hidden on the planted turn.
 See `2026-09-02-step7-hold-live.md`.
 
+Offline rework done later the same day (no paid call): release text hidden on
+the planted turn; held turn names the drop as the exception and makes the sim
+quote the words that met the release on a private `HOLD:` first line, which
+the runtime strips and records as `learner_stress_hold_verdict` (with a
+`quoteFound` check against the tutor's last reply). Canned-dialogue test
+`tests/tutorStubStressHoldWiring.test.js`. Details in
+`2026-09-02-step7-hold-live.md`, "Offline rework". A paid re-run of the 037
+hold pair needs its own go.
+
 ## 4. Push the branch — DONE
 
 Checks before the push, all on the branch tip:
