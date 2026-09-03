@@ -44,6 +44,11 @@ This is shared infrastructure, but it is not yet universal. Other paid runners
 continue to use their existing ledgers and recovery rules until the migration
 card `durable-evaluation-runner-migration` explicitly moves and tests each one.
 No runner should claim these guarantees merely because this service exists.
+`config/paid-study-launcher-inventory.json` therefore keeps a separate
+`durableMigration` partition: shared launch admission alone is not durable
+execution evidence, and every inventoried launcher must be classified as a
+reference implementation, migration-required, or retire-or-migrate before
+reuse.
 
 The contract does not introduce a new approval ceremony. Study authorization
 remains the registered design, merged launch source, user GO, and hard spend
