@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-09-02
 updated: 2026-09-03
-branch: codex/durable-evaluation-runner-migration
+branch: codex/durable-invested-rival-replication
 verification: "Each named paid runner reserves immediately before dispatch, terminalizes every attempt, reconciles stale in-flight work, resumes only missing accepted work, and reports attempt, unit, workflow, and scientific-verdict state from the same ledger."
 claim_status: planned
 links:
@@ -47,17 +47,17 @@ durability partition is checked by `scripts/check-paid-study-launcher-inventory.
 Shared launch admission is not treated as evidence of durable per-dispatch
 execution.
 
-- Reference implementation (2):
+- Reference implementation / fully migrated (3):
   `run-tutor-stub-action-outcome-collection-pilot.js` and
-  `run-tutor-stub-action-outcome-failed-unit-recovery.js`.
-- Shared-admission runners still requiring migration (7):
+  `run-tutor-stub-action-outcome-failed-unit-recovery.js`, plus
+  `run-invested-rival-learner-replication.js`.
+- Shared-admission runners still requiring migration (6):
   `run-tutor-stub-action-outcome-model-judge-shadow.js`,
   `run-tutor-stub-frame-refuser-narrowing-calibration.js`,
   `run-tutor-stub-frame-refuser-satisfiable-calibration.js`,
   `run-local-qwen-invested-rival.js`,
-  `run-invested-rival-luna-reference.js`,
-  `run-invested-rival-learner-iteration.js`, and
-  `run-invested-rival-learner-replication.js`.
+  `run-invested-rival-luna-reference.js`, and
+  `run-invested-rival-learner-iteration.js`.
 - Historical or pre-policy runners that must be retired or migrated before any
   future reuse (10): `run-adaptive-warrant-outcome-main-block.js`,
   `run-adaptive-warrant-outcome-pilot.js`,
@@ -76,3 +76,15 @@ calibration runners lack a registered recovery reserve, while the reserve-bearin
 invested-rival runners share a multi-stage dispatch path that must be migrated
 coherently with response persistence, missing-only recovery, and ledger-derived
 workflow status. The whole card remains active.
+
+2026-09-03 — Migrated `run-invested-rival-learner-replication.js` without
+changing its design, routes, inputs, seed, instruments, or 396-attempt ceiling.
+Dialogue generation and assessment now reserve immediately before each
+dispatch, record dispatch start, durably identify the saved response, and give
+every reservation exactly one terminal disposition. Restart reconciliation
+reuses valid saved dialogue replies and deterministically parses valid saved
+assessment responses before considering any new call. Workflow call counts are
+projected from the run ledger. Focused zero-call tests cover all four crash
+boundaries and retain the registered 288 generation + 90 assessment + 18
+recovery allocation. No model call was made. The remaining six shared-admission
+runners stay open above, so this card remains active.

@@ -733,6 +733,7 @@ export async function scoreBenchmarkArms(
     publicSourceContextByArm = null,
     splitQuality = false,
     priorSplitQualityParts = [],
+    durableUnitPrefix = null,
   } = {},
 ) {
   const jobs = buildBenchmarkJobs(arms, {
@@ -806,11 +807,13 @@ export async function scoreBenchmarkArms(
         preserveDefaultSystemPrompt: true,
         outputSchema: job.outputSchema,
         singleAttempt: true,
+        durableUnitId: [durableUnitPrefix || 'assessment', job.arm, job.kind].join('/'),
         onRawOutput: (output) =>
           fs.writeFileSync(`${jobBase}.transport.json`, `${JSON.stringify(output, null, 2)}\n`, { flag: 'wx' }),
       });
       fs.writeFileSync(`${jobBase}.provider.json`, `${JSON.stringify(response, null, 2)}\n`, { flag: 'wx' });
       fs.writeFileSync(`${jobBase}.response.txt`, response.text, { flag: 'wx' });
+      callJudge.persistResponse?.(`${jobBase}.response.txt`);
       const turnCount = arms.find((arm) => arm.id === job.arm).snapshot.turns.length;
       if (job.logicalKind === 'quality' && job.kind !== 'quality') {
         const part = job.kind.replace('quality-', '');
@@ -840,7 +843,9 @@ export async function scoreBenchmarkArms(
         results.push({ arm: job.arm, kind: job.kind, scored, raw: parsed, indexNormalization });
         record('completed', { indexNormalization });
       }
+      callJudge.complete?.();
     } catch (error) {
+      callJudge.fail?.(error);
       fs.writeFileSync(
         `${jobBase}.error.json`,
         `${JSON.stringify({ message: error.message, code: error.code, classification: error.classification, reason: error.reason }, null, 2)}\n`,

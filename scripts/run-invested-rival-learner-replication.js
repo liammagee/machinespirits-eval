@@ -6,6 +6,7 @@ import { parseArgs } from 'node:util';
 import yaml from 'yaml';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { createSharedModelAttemptLedgerClient } from '../services/durableAttemptJournal.js';
 import {
   buildContinuityProofPlan,
   buildContinuityRequest,
@@ -30,6 +31,7 @@ import {
   buildBenchmarkJobs,
   buildSplitQualityOutputSchema,
   normalizeScores,
+  parseBenchmarkScore,
   parseSplitQualityScore,
   readBenchmarkArm,
   scoreBenchmarkArms,
@@ -339,33 +341,118 @@ export async function callLearnerReplicationModel(args, callCli = callAIWithCliB
   );
 }
 
-export function learnerReplicationPaidBudget(admission, limit, hooks = {}, priorAttemptBase = 0) {
+export function learnerReplicationPaidBudget(admission, limit, hooks = {}, priorAttemptBase = 0, unitPrefix = null) {
   let activeAttempt = null;
-  return {
+  const budget = {
+    scope(prefix) {
+      if (!prefix || unitPrefix) throw new Error('model-attempt budget scope requires one stable root unit id');
+      return learnerReplicationPaidBudget(admission, limit, hooks, priorAttemptBase, prefix);
+    },
     reserve(detail = {}) {
       if (activeAttempt) throw new Error('model-attempt tracking found an unresolved active attempt');
+      const unitId =
+        detail.unitId ||
+        [unitPrefix, detail.role, detail.turn].filter((value) => value !== null && value !== undefined).join('/');
       if (priorAttemptBase + admission.studyReserved + 1 > limit) {
         throw new Error(
           `paid study aggregate spend cap exceeded before call: ${priorAttemptBase + admission.studyReserved + 1}/${limit}`,
         );
       }
-      const reservation = admission.reserveModelAttempts(1, detail);
-      activeAttempt = { reservation, detail, startedAt: Date.now() };
-      hooks.onAttemptStarted?.(activeAttempt);
-      return {
-        call: priorAttemptBase + reservation.study_reserved,
+      if (typeof admission.allocateModelAttemptCapacity !== 'function') {
+        const reservation = admission.reserveModelAttempts(1, detail);
+        activeAttempt = {
+          reservation: {
+            ...reservation,
+            call: priorAttemptBase + reservation.study_reserved,
+            limit,
+            remaining: limit - priorAttemptBase - reservation.study_reserved,
+          },
+          detail: { ...detail, unitId },
+          startedAt: Date.now(),
+          legacy: true,
+          dispatched: false,
+          responsePersisted: false,
+        };
+        return activeAttempt.reservation;
+      }
+      if (!unitId) throw new Error('durable model-attempt reservation requires a stable unit id');
+      const capacity = admission.allocateModelAttemptCapacity(1, { ...detail, unit_id: unitId });
+      const environment = admission.attemptLedgerEnvironment({ unitId, capacity });
+      const client = createSharedModelAttemptLedgerClient(JSON.parse(environment.TUTOR_STUB_SHARED_ATTEMPT_LEDGER));
+      const durableReservation = client.reserve(detail);
+      const reservation = {
+        ...durableReservation,
+        study_reserved: admission.studyReserved,
+        call: priorAttemptBase + admission.studyReserved,
         limit,
-        remaining: limit - priorAttemptBase - reservation.study_reserved,
+        remaining: limit - priorAttemptBase - admission.studyReserved,
       };
+      activeAttempt = {
+        reservation,
+        detail: { ...detail, unitId },
+        startedAt: Date.now(),
+        capacity,
+        client,
+        dispatched: false,
+        responsePersisted: false,
+      };
+      return reservation;
+    },
+    markDispatched() {
+      if (!activeAttempt) throw new Error('cannot dispatch without an active durable reservation');
+      activeAttempt.client?.markDispatched({
+        attemptId: activeAttempt.reservation.attemptId,
+        role: activeAttempt.detail.role,
+        turn: activeAttempt.detail.turn,
+      });
+      activeAttempt.dispatched = true;
+      hooks.onAttemptStarted?.(activeAttempt);
+    },
+    persistResponse(responsePath) {
+      if (!activeAttempt?.dispatched) throw new Error('cannot persist a response before durable dispatch');
+      activeAttempt.client?.persistResponse({
+        attemptId: activeAttempt.reservation.attemptId,
+        responsePath: path.resolve(responsePath),
+        role: activeAttempt.detail.role,
+        turn: activeAttempt.detail.turn,
+      });
+      activeAttempt.responsePersisted = true;
     },
     complete() {
       if (!activeAttempt) return;
+      if (!activeAttempt.legacy && !activeAttempt.responsePersisted) {
+        throw new Error('cannot complete a model attempt before response persistence');
+      }
+      activeAttempt.client?.terminalize({
+        attemptId: activeAttempt.reservation.attemptId,
+        disposition: 'completed',
+        role: activeAttempt.detail.role,
+        turn: activeAttempt.detail.turn,
+      });
+      if (!activeAttempt.legacy) {
+        admission.releaseModelAttemptCapacity(activeAttempt.capacity, {
+          unit_id: activeAttempt.detail.unitId,
+          reason: 'attempt_completed',
+        });
+      }
       const finished = { ...activeAttempt, durationMs: Date.now() - activeAttempt.startedAt };
       activeAttempt = null;
       hooks.onAttemptCompleted?.(finished);
     },
     fail(error) {
       if (!activeAttempt) return;
+      activeAttempt.client?.terminalize({
+        attemptId: activeAttempt.reservation.attemptId,
+        disposition: activeAttempt.dispatched ? 'failed' : 'cancelled_before_dispatch',
+        role: activeAttempt.detail.role,
+        turn: activeAttempt.detail.turn,
+      });
+      if (!activeAttempt.legacy) {
+        admission.releaseModelAttemptCapacity(activeAttempt.capacity, {
+          unit_id: activeAttempt.detail.unitId,
+          reason: 'attempt_failed',
+        });
+      }
       const finished = { ...activeAttempt, durationMs: Date.now() - activeAttempt.startedAt, error };
       activeAttempt = null;
       hooks.onAttemptFailed?.(finished);
@@ -374,6 +461,7 @@ export function learnerReplicationPaidBudget(admission, limit, hooks = {}, prior
       return { used: priorAttemptBase + admission.studyReserved, limit };
     },
   };
+  return budget;
 }
 
 function learnerReplicationWorkflowUnits(phase, state) {
@@ -423,12 +511,36 @@ export function createLearnerReplicationWorkflowTracker({
   };
   if (state.completedCalls < 0) throw new Error('workflow status has negative completed-call accounting');
   const startedAt = at || new Date();
-  const callCounts = () => ({
-    completed: state.completedCalls,
-    failed: state.failedCalls,
-    reserved: priorAttemptBase + admission.studyReserved,
-    hard_ceiling: plan.total_attempt_ceiling,
-  });
+  const durableTerminalCounts = () => {
+    if (!admission.ledger_path || !fs.existsSync(admission.ledger_path)) return null;
+    const events = readJsonLines(admission.ledger_path, 'replication workflow attempt ledger');
+    return {
+      completed: events.filter((event) => event.type === 'attempt_completed').length,
+      failed: events.filter((event) =>
+        ['attempt_failed', 'attempt_cancelled_before_dispatch', 'attempt_interrupted_after_dispatch'].includes(
+          event.type,
+        ),
+      ).length,
+    };
+  };
+  const baselineCalls = { completed: state.completedCalls, failed: state.failedCalls };
+  const callCounts = () => {
+    const current = durableTerminalCounts();
+    if (!current) {
+      return {
+        completed: state.completedCalls,
+        failed: state.failedCalls,
+        reserved: priorAttemptBase + admission.studyReserved,
+        hard_ceiling: plan.total_attempt_ceiling,
+      };
+    }
+    return {
+      completed: baselineCalls.completed + current.completed,
+      failed: baselineCalls.failed + current.failed,
+      reserved: priorAttemptBase + admission.studyReserved,
+      hard_ceiling: plan.total_attempt_ceiling,
+    };
+  };
   let status = createLongRunningWorkflowStatus({
     workflowId: `${plan.id}-completion`,
     phasePlan: LEARNER_REPLICATION_WORKFLOW_PHASES,
@@ -874,12 +986,68 @@ function readCurrentAssessmentBatch(source, world, mechanism) {
     return { world: world.key, mechanism, sourceDir: null, priorScores, priorSplitQualityParts, completedPackets };
   }
   const condition = world.conditions[mechanism];
+  const arms = condition.arms.map((arm) =>
+    readBenchmarkArm({
+      ...arm,
+      path: path.join(source, 'worlds', world.key, 'dialogues', arm.id, 'dialogue.json'),
+    }),
+  );
+  const jobs = buildBenchmarkJobs(arms, {
+    extendedQuality: true,
+    splitQuality: true,
+    assessmentContext: condition.assessmentContext,
+    publicSourceContextByArm: sourceContexts(condition, arms),
+  });
+  const recoveredPacket = (arm, kind) => {
+    const job = jobs.find((candidate) => candidate.arm === arm.id && candidate.kind === kind);
+    const base = path.join(evaluationDir, `${arm.id}-${kind}`);
+    if (
+      !job ||
+      !fs.existsSync(`${base}.response.txt`) ||
+      !fs.existsSync(`${base}.provider.json`) ||
+      !fs.existsSync(`${base}.prompt.txt`) ||
+      !fs.existsSync(`${base}.schema.json`) ||
+      fs.existsSync(`${base}.error.json`)
+    ) {
+      return null;
+    }
+    if (
+      fs.readFileSync(`${base}.prompt.txt`, 'utf8') !== job.prompt ||
+      JSON.stringify(readJson(`${base}.schema.json`, `${world.key}/${arm.id}/${kind} schema`)) !==
+        JSON.stringify(job.outputSchema)
+    ) {
+      throw new Error(`persisted assessment packet drift for ${world.key}/${mechanism}/${arm.id}/${kind}`);
+    }
+    const response = fs.readFileSync(`${base}.response.txt`, 'utf8');
+    const provider = readJson(`${base}.provider.json`, `${world.key}/${arm.id}/${kind} provider`);
+    if (provider.text !== response) {
+      throw new Error(`persisted assessment response mismatch for ${world.key}/${mechanism}/${arm.id}/${kind}`);
+    }
+    const turnCount = arms.find((candidate) => candidate.id === arm.id).snapshot.turns.length;
+    if (kind.startsWith('quality-')) {
+      return { raw: parseSplitQualityScore(kind.replace('quality-', ''), response, turnCount, job.outputSchema) };
+    }
+    const parsed = parseBenchmarkScore(kind, response, turnCount, {
+      extendedQuality: true,
+      allowOneBasedIndices: true,
+      outputSchema: job.outputSchema,
+    });
+    return { raw: parsed.parsed, indexNormalization: parsed.indexNormalization };
+  };
   for (const arm of condition.arms) {
     for (const kind of ['tutor', 'learner', 'dialogue']) {
       const file = path.join(evaluationDir, `${arm.id}-${kind}.json`);
-      if (!fs.existsSync(file)) continue;
-      const raw = readJson(file, `${world.key}/${mechanism}/${arm.id}/${kind}`);
-      priorScores.push({ arm: arm.id, kind, raw, scored: normalizeScores(kind, raw), indexNormalization: null });
+      const recovered = fs.existsSync(file)
+        ? { raw: readJson(file, `${world.key}/${mechanism}/${arm.id}/${kind}`), indexNormalization: null }
+        : recoveredPacket(arm, kind);
+      if (!recovered) continue;
+      priorScores.push({
+        arm: arm.id,
+        kind,
+        raw: recovered.raw,
+        scored: normalizeScores(kind, recovered.raw),
+        indexNormalization: recovered.indexNormalization || null,
+      });
       completedPackets += 1;
     }
     const qualityFile = path.join(evaluationDir, `${arm.id}-quality.json`);
@@ -897,11 +1065,14 @@ function readCurrentAssessmentBatch(source, world, mechanism) {
     }
     for (const part of ['summary', 'turns']) {
       const file = path.join(evaluationDir, `${arm.id}-quality-${part}.json`);
-      if (!fs.existsSync(file)) continue;
+      const recovered = fs.existsSync(file)
+        ? { raw: readJson(file, `${world.key}/${mechanism}/${arm.id}/quality-${part}`) }
+        : recoveredPacket(arm, `quality-${part}`);
+      if (!recovered) continue;
       priorSplitQualityParts.push({
         arm: arm.id,
         part,
-        raw: readJson(file, `${world.key}/${mechanism}/${arm.id}/quality-${part}`),
+        raw: recovered.raw,
       });
       completedPackets += 1;
     }
@@ -1168,9 +1339,8 @@ function readAssessmentRecovery(
 
   const progressPath = path.join(source, 'progress.jsonl');
   const progress = fs.existsSync(progressPath) ? readJsonLines(progressPath, 'replication recovery progress') : [];
-  const firstAssessmentReservation = events.find(
-    (event) => event.type === 'model_attempt_reserved' && event.stage === 'assessment',
-  );
+  const isReservation = (event) => ['model_attempt_reserved', 'model_attempt_dispatch_reserved'].includes(event.type);
+  const firstAssessmentReservation = events.find((event) => isReservation(event) && event.stage === 'assessment');
   const lastDialogueEvent = progress.findLast((event) => event.type === 'dialogue_complete');
   const generationAttempts =
     inherited?.generationAttempts ??
@@ -1181,8 +1351,17 @@ function readAssessmentRecovery(
     throw new Error('assessment recovery cannot establish the completed generation attempt count');
   }
   const currentAssessmentReservations = events
-    .filter((event) => event.type === 'model_attempt_reserved' && event.stage === 'assessment')
-    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+    .filter((event) => isReservation(event) && event.stage === 'assessment')
+    .reduce((sum, event) => sum + Number(event.count || 1), 0);
+  const durableAssessmentReservations = events.filter(
+    (event) => event.type === 'model_attempt_dispatch_reserved' && event.stage === 'assessment',
+  );
+  const legacyAssessmentReservations = events.filter(
+    (event) => event.type === 'model_attempt_reserved' && event.stage === 'assessment',
+  );
+  if (durableAssessmentReservations.length && legacyAssessmentReservations.length) {
+    throw new Error('assessment recovery mixes legacy and durable reservations in one run');
+  }
   const physicalPath = path.join(source, 'assessment-physical-attempts.jsonl');
   const physicalRows = fs.existsSync(physicalPath)
     ? readJsonLines(physicalPath, 'assessment physical-attempt ledger')
@@ -1190,7 +1369,9 @@ function readAssessmentRecovery(
   const candidateRows = physicalRows.filter((row) => row.status === 'candidate_returned');
   const failedRows = physicalRows.filter((row) => row.status === 'failed');
   if (
-    candidateRows.length !== currentCompletedPackets + providerRejectedFailures.length ||
+    (!durableAssessmentReservations.length &&
+      candidateRows.length !== currentCompletedPackets + providerRejectedFailures.length) ||
+    (durableAssessmentReservations.length && candidateRows.some((row) => !row.reservation?.attemptId)) ||
     failedRows.some((row) => !isResponseFreeAssessmentFailure(row)) ||
     responseFreeTransportFailures.some(
       (failure) =>
@@ -1204,7 +1385,29 @@ function readAssessmentRecovery(
   ) {
     throw new Error('assessment recovery contains an unresolved substantive or mismatched judge result');
   }
-  const interruptedAttempts = currentAssessmentReservations - physicalRows.length;
+  const durableTerminalTypes = new Set([
+    'attempt_completed',
+    'attempt_failed',
+    'attempt_cancelled_before_dispatch',
+    'attempt_interrupted_after_dispatch',
+  ]);
+  const durableTerminals = events.filter(
+    (event) =>
+      durableTerminalTypes.has(event.type) &&
+      durableAssessmentReservations.some((reservation) => reservation.attempt_id === event.attempt_id),
+  );
+  if (
+    durableAssessmentReservations.length &&
+    (durableTerminals.length !== durableAssessmentReservations.length ||
+      new Set(durableTerminals.map((event) => event.attempt_id)).size !== durableTerminals.length)
+  ) {
+    throw new Error('assessment recovery has unexplained durable reservations');
+  }
+  const interruptedAttempts = durableAssessmentReservations.length
+    ? durableTerminals.filter((event) =>
+        ['attempt_cancelled_before_dispatch', 'attempt_interrupted_after_dispatch'].includes(event.type),
+      ).length
+    : currentAssessmentReservations - physicalRows.length;
   if (![0, 1].includes(interruptedAttempts)) {
     throw new Error('assessment recovery has ambiguous in-flight attempt accounting');
   }
@@ -1231,7 +1434,9 @@ function readAssessmentRecovery(
   const responseFreeRecoveryLimit = learnerReplicationResponseFreeRecoveryLimit(plan, generationAttempts);
   if (
     responseFreeFailures !==
-      inheritedResponseFreeFailures + failedRows.length + interruptedAttempts + providerRejectedFailures.length ||
+      (durableAssessmentReservations.length
+        ? inheritedResponseFreeFailures + currentAssessmentReservations - currentCompletedPackets
+        : inheritedResponseFreeFailures + failedRows.length + interruptedAttempts + providerRejectedFailures.length) ||
     responseFreeFailures > responseFreeRecoveryLimit ||
     aggregatePriorAttempts +
       (plan.assessment_packets - completedPackets) +
@@ -1264,8 +1469,10 @@ export function readLearnerReplicationRecovery(plan, sourceDir) {
   const events = readJsonLines(path.join(source, 'run-ledger.jsonl'), 'replication recovery run ledger');
   const launch = events.find((event) => event.type === 'launch_admitted');
   const seal = events.at(-1);
-  const reservations = events.filter((event) => event.type === 'model_attempt_reserved');
-  const priorAttempts = reservations.reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const reservations = events.filter((event) =>
+    ['model_attempt_reserved', 'model_attempt_dispatch_reserved'].includes(event.type),
+  );
+  const priorAttempts = reservations.reduce((sum, event) => sum + Number(event.count || 1), 0);
   const ordinaryTechnicalSeal = seal?.status === 'technical_failure' && seal.recovery_permitted === true;
   const potentiallyMisclassifiedProviderSeal = seal?.status === 'failed' && seal.recovery_permitted !== true;
   const linkedPriorAttemptBase =
@@ -1505,6 +1712,7 @@ export async function scoreReplicationWorld({ world, arms, worldDir, judge, asse
         priorScores: prior?.priorScores || [],
         priorSplitQualityParts: prior?.priorSplitQualityParts || [],
         priorAttempts: prior?.completedPackets || 0,
+        durableUnitPrefix: `assessment/${world.key}/${batch.mechanism}`,
       },
     );
     evaluated.push({ mechanism: batch.mechanism, evaluation });
@@ -1531,23 +1739,14 @@ export async function scoreReplicationWorld({ world, arms, worldDir, judge, asse
   };
 }
 
-async function runOneArm({ condition, arm, outDir, budget, runtimeArm = arm, savedReplies = {} }) {
+async function runOneArm({ condition, arm, outDir, budget, unitId, runtimeArm = arm, savedReplies = {} }) {
   const started = Date.now();
   await runContinuityArm({
     plan: condition,
     arm: runtimeArm,
     outDir,
-    budget,
-    callModel: async (args) => {
-      try {
-        const response = await callLearnerReplicationModel(args);
-        budget.complete?.();
-        return response;
-      } catch (error) {
-        budget.fail?.(error);
-        throw error;
-      }
-    },
+    budget: budget.scope(unitId),
+    callModel: callLearnerReplicationModel,
     savedReplies,
     unsupportedQuotationPolicy: 'drop',
   });
@@ -1870,7 +2069,15 @@ async function liveRun(plan, outDir, admission, recovery = null, linkedCompletio
         }
         const dialogueStartedAt = Date.now();
         workflow.dialogueStarted();
-        const result = await runOneArm({ condition, arm, outDir: dialogueDir, budget, runtimeArm, savedReplies });
+        const result = await runOneArm({
+          condition,
+          arm,
+          outDir: dialogueDir,
+          budget,
+          unitId: `generation/${key}`,
+          runtimeArm,
+          savedReplies,
+        });
         generated.get(world.key).set(arm.id, result);
         workflow.dialogueCompleted(Date.now() - dialogueStartedAt);
         appendProgress(outDir, {
