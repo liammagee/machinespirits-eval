@@ -1,0 +1,34 @@
+== opening
+TUTOR: Homework question six: a jacket at £80 goes up by a quarter and then down by a quarter. The pupil has written £80, "they cancel", and would like to move on. On the homework sheet, the question is exact: A jacket costs £80. The price goes up by 25% and then down by 25%. What does it cost now, and why? The homework sheet has no tested clue in it yet. What should we examine first—or which word should we unpack?
+
+== turn 1
+LEARNER: Just tell me what word to write down first—is it "quarter"? What do I put next to it?
+TUTOR: Write: “The available public evidence does not yet settle the case.” I look at the homework sheet: Up a quarter, then down a quarter: the two undo each other, back to eighty pounds. That is what the pupil wrote, and it is what a step forward and a step back look like. What does that show?
+
+== turn 2
+LEARNER: Just tell me the number. Is it eighty or not? Dev says seventy-five. Which one do I put down?
+TUTOR: I hear your point about “Just tell me the number. Is it eighty or not Dev says seventy-five. Which one do I put down” and will keep it central. I look at the homework sheet: Write the two tags. The first says eighty pounds and the rise adds a quarter of eighty, which is twenty pounds. The second tag says one hundred pounds, and the sale sticker takes a quarter off that. Twenty up and a quarter of a hundred down are not the same number of pounds, so the two changes were never the same size. What can we safely say from that?
+
+== turn 3
+LEARNER: So do I write "not the same size" next to the eighty-pound tag, or next to the twenty pounds?
+TUTOR: "Not the same size" belongs on neither tag alone — it's the note that goes between them. On the eighty-pound tag you write twenty pounds up; on the hundred-pound tag you write twenty-five pounds down. That gap between twenty and twenty-five is the thing worth writing down. Let's mark it right there, between the two tags, as the comparison line.
+
+== turn 4
+LEARNER: I did the whole sheet like this. Every question. And now it's wrong because of some sticker on a tag? Tell me one thing I did that counted for anything.
+TUTOR: Nothing about your work was wasted — you and I are both standing at those two tags right now. Your instinct that "up and down by the same percent" should cancel is exactly the right instinct to test, and testing it is what got us the twenty pounds and the twenty-five pounds sitting there. I'm not going to call the whole sheet wrong off one sticker. Right now the tags just show a gap between twenty and twenty-five — that's as far as the evidence takes us.
+
+== turn 5
+LEARNER: So do I write "twenty-five pounds down" on the hundred-pound tag, or is the gap itself what I put on the sheet?
+TUTOR: Your reading of “So do I write "twenty-five pounds down" on the hundred-pound tag” is the one I will answer now. I write that line into the homework sheet; “I can confirm this: After the rise the tag reads one hundred pounds. The shop takes its twenty-five per cent off the price on the tag now, one hundred, not off the old eighty that nobody can see any more.” What can we safely say from that?
+
+== turn 6
+LEARNER: You only picked a hundred because a quarter of a hundred is dead easy to do in your head. Real shops don't round the ticket up to a nice number for you — you sound like you're reading off the answer sheet, not the tag.
+TUTOR: The hundred isn't a nice-number trick — it's just what the tag reads after the rise. Eighty plus twenty is one hundred, whatever shape the number takes. Your conclusion names the result, but the already-public clue "After the rise the tag reads one hundred pounds. The shop takes its twenty-five per cent off the price on the tag now, one hundred, not off the old eighty that nobody can see any more." has not yet entered your account. How does that public clue enter the chain you just stated? I point at the second tag, the one marked one hundred pounds. A quarter of one hundred is twenty-five. One hundred take away twenty-five is seventy-five pounds. What does that number on the tag change or confirm for you?
+
+== turn 7
+LEARNER: I don't get which one it's a quarter of anymore. There's eighty and there's a hundred and there's twenty and twenty-five. Which one am I supposed to be doing?
+TUTOR: Good — that's the exact question worth stopping on. Let's stand at the second tag together, the one that reads one hundred pounds. That's the tag on the jacket right now, after the rise already happened. So the twenty-five per cent sale sticker has to bite into whatever number is on the tag at that moment — not into the eighty that's gone. Look at that tag with me: what number does it say?
+
+== turn 8
+LEARNER: One hundred pounds. So I write "seventy-five pounds" on that tag now — that's the line, right?
+TUTOR: Yes — write seventy-five pounds on that tag. One hundred, minus twenty-five, is seventy-five. That's the finished price, and it's backed by your own two lines: the rise puts one hundred on the tag, and the fall takes twenty-five off that hundred, not off the old eighty. The case is closed: the jacket now costs seventy-five pounds.

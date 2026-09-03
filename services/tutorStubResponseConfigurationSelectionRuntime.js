@@ -341,6 +341,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         lifecycle: state.dialogueClosure,
         learnerDagModel: tutorLearnerDag?.model || null,
         tutorDagSnapshot: state.turns.at(-1)?.tutorDag || null,
+        world: state.world,
       });
       const learnerDagAtDecision = tutorLearnerDag?.model || tutorLearnerDag || null;
       const integrationTargetAtDecision = buildTutorStubLearnerIntegrationTarget({

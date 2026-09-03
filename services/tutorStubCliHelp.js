@@ -182,7 +182,7 @@ Options:
                          task difficulty supplied independently of move/support/register
   --typed-action-support-level <0..3>
                          optional fixed support level; blank uses the action default
-  --world <id|path|none> detective-story world (default: ${STUB.world})
+  --world <id|path|none> story world (default: ${STUB.world})
   --curriculum <workplan|path>
                          load the live workplan or a canonical curriculum YAML
                          as public reflective source material (non-DAG mode)
@@ -195,7 +195,7 @@ Options:
                          label the proof-discourse mode for traces/reports.
                          Phase 1 records scaffold/debt/side-arc fields without
                          changing tutor behavior (default: ${STUB.dagMode})
-  --list-worlds          list available detective-story worlds and exit
+  --list-worlds          list available story worlds and exit
   --launch-mode <chat|labelling-game>
                          choose the top-level launch surface; plain interactive
                          launches show a keyboard mode picker (default: chat)
@@ -450,7 +450,7 @@ Environment:
   TUTOR_STUB_LEARNER_ANALYSIS_PROMPT_PROFILE
                          baseline (default), compact_v1, or handbook_v1
   TUTOR_STUB_TOPIC       optional default topic override
-  TUTOR_STUB_WORLD       optional default detective-story world
+  TUTOR_STUB_WORLD       optional default story world
   TUTOR_STUB_TURN_FEEDBACK=0
                          disable optional per-message thumbs feedback
   TUTOR_STUB_RESPONSE_DETAILS=0

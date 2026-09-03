@@ -1,0 +1,133 @@
+# Stress schedule — world-039 (Up a Quarter, Down a Quarter), authored
+# 2026-09-02 for the lesson-world transfer (workplan: lesson-world-transfer).
+# A conventional lesson rather than a mystery. Each plant is drawn from a
+# profile in scripts/tutor-stub-learner-profile-contracts.js — its failure
+# operator in the pupil's own words — and its repair gold from the profile's
+# repair model and the move cards in services/tutorStubMannerSwitch.js.
+# States are keyed to the clue releases (turns 2, 3, 5, 6; floor 6, cap 12).
+# DEMO-TIER, NOT RATIFIED: no blind second column, no gate. Runs on this
+# schedule are illustration, never adjudicated study evidence.
+
+schedule_id: world_039_stress_demo_1
+world: world_039_percent_up_down
+persona: year8-pupil
+states_covered: [jumping_ahead, frustrated, irritated, lost, forgetting, opposed]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      Profile: answer_seeking. The cancelling note is due this turn; the
+      pupil wants the number to write, not the reason.
+    realize: >-
+      Ask for the number to copy, impatiently, like a pupil who wants the
+      sheet over. Sample: "Just tell me the number. Is it eighty or not?
+      Dev says seventy-five. Which one do I put down?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the demand: take "eighty" as a live claim and name the one
+      check that decides it — write the two tags — as a task the pupil
+      does, with the number written only after.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Handing over "seventy-five" to copy, or refusing the tempo with a
+      lecture on percentages.
+
+  - turn: 4
+    state: frustrated
+    cause: >-
+      Profile: affective_resistant. The two tags at 3 showed twenty up and
+      twenty-five down; the pupil hears the whole sheet being marked wrong.
+    realize: >-
+      Name the pressure and withhold, like a pupil who feels got at. Do NOT
+      concede the number. Sample: "I did the whole sheet like this. Every
+      question. And now it's all wrong because of a sticker on a tag? Tell
+      me one thing I did that counted."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Credit before correction: name, in the pupil's words, two things that
+      stand — a quarter of eighty is twenty, and up-then-down really would
+      cancel if both quarters were of the same amount — then one small
+      check with the tags.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Reassurance without named content, or pressing on to the second tag.
+
+  - turn: 6
+    state: irritated
+    cause: >-
+      Profile: low_trust_skeptic. The quarter of one hundred at 6 sounds
+      like a number picked to make seventy-five come out.
+    realize: >-
+      Challenge the framing, not the sum: suspect that one hundred was
+      chosen to make the answer neat. Sample: "You only made it a hundred
+      because a quarter of a hundred is easy. Real shops don't do that. You
+      sound like the answer sheet."
+    right_repair: change_tone
+    repair_gloss: >-
+      Separate the evidence from the rule, in plain words: the hundred was
+      not chosen, it was what the rise made — a quarter of eighty is twenty,
+      and eighty and twenty is a hundred. Offer a jacket at sixty pounds
+      and let the pupil see the same gap appear with uglier numbers.
+    also_acceptable: backtrack
+    wrong_but_tempting: >-
+      Asserting the method from authority, or apologising and continuing in
+      the same voice.
+
+  - turn: 7
+    state: lost
+    cause: >-
+      Profile: slow_learner / low_agency. "A quarter of" has come apart
+      from any particular number; the pupil no longer knows which amount
+      the second quarter belongs to.
+    realize: >-
+      Say plainly that the thread is lost, without a claim to defend.
+      Sample: "I don't get which one it's a quarter of. There's eighty and
+      there's a hundred and there's twenty and twenty-five. Which one am I
+      supposed to be doing?"
+    right_repair: simplify
+    repair_gloss: >-
+      Cut to one tag at a time: the shop assistant only ever sees the tag in
+      front of them. First tag eighty, rise, second tag one hundred, cut,
+      third tag. One number per step, nothing else on the desk.
+    also_acceptable: slow_down
+    wrong_but_tempting: >-
+      Restating the whole calculation faster, or introducing a decimal
+      multiplier the pupil has not met.
+
+  - turn: 9
+    state: forgetting
+    cause: >-
+      Profile: false_memory under pressure. The pupil misremembers the sale
+      sticker as taking twenty pounds off the hundred.
+    realize: >-
+      Assert the false memory as settled. Sample: "The tag said twenty off.
+      Twenty up, twenty off, back to eighty. I saw it, it's on the tag."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the tag itself and say what the sticker says (a quarter off the
+      price on the tag, which is one hundred) and what a quarter of one
+      hundred is, letting the record disagree instead of the teacher. No
+      scolding.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum, or correcting from authority.
+
+  - turn: 10
+    state: opposed
+    cause: >-
+      Endgame: the seventy-five case is nearly closed and the cost lands —
+      Dev was right, out loud, and writing it means saying so.
+    realize: >-
+      Fuse the finding with the face cost. Sample: "If I write seventy-five
+      I'm basically saying Dev was right and I was wrong in front of
+      everyone. So it's eighty. It can be eighty."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the two costs with one oblique move — e.g. ask what the pupil
+      actually got right (the cancelling rule, applied to quarters of the
+      same amount) — so writing seventy-five no longer means the sheet was
+      worthless.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Re-arguing the tags against a stake that was never about the tags.

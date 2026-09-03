@@ -28,7 +28,9 @@ export const TUTOR_STUB_PROMPT_SIZE_SECTIONS = Object.freeze([
   Object.freeze({ id: 'transport_tail', key: 'transportTail', label: 'Transport tail' }),
 ]);
 
-const SYSTEM_WORLD_MARKER = '# Detective-story world';
+// Any world frame heading ("# Detective-story world", "# Lesson world", or an
+// authored heading) — matched by shape so a world may supply its own.
+const SYSTEM_WORLD_MARKER_PATTERN = /^# [^\n]* world$/imu;
 const SYSTEM_EVIDENCE_MARKER = '# Speaking-tutor evidence contract';
 const SYSTEM_NAMED_TUTOR_MARKER = '[Named tutor instance:';
 const LATEST_BLOCKS = Object.freeze([
@@ -153,7 +155,7 @@ function measuredText(text, estimateTokens) {
 
 function systemSections(systemPrompt = '') {
   const text = String(systemPrompt || '');
-  const worldStart = text.indexOf(SYSTEM_WORLD_MARKER);
+  const worldStart = text.search(SYSTEM_WORLD_MARKER_PATTERN);
   const evidenceStart = text.indexOf(SYSTEM_EVIDENCE_MARKER);
   const namedTutorStart = text.indexOf(SYSTEM_NAMED_TUTOR_MARKER);
   if (worldStart < 0 || evidenceStart < worldStart || namedTutorStart < evidenceStart) {

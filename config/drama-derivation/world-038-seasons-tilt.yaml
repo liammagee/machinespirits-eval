@@ -1,0 +1,203 @@
+# WORLD-038 — a conventional classroom lesson: a Year 8 science tutorial on
+# why we have seasons. The learner has written "it is winter because the Sun
+# is farther away" and is defending it. Same proof shape as world-037 — a
+# tempting rule (the mirror: distance) versus a rule that needs one more
+# premise (the tilt of the axis sets the height of the Sun) — so the same
+# detectors and moves apply, and the register is a lesson with a pupil, not
+# an inquiry with a suspect. Authored 2026-09-02 for the lesson-world
+# transfer (workplan: lesson-world-transfer). Demo-tier; not ratified.
+
+id: world_038_seasons_tilt
+title: Why January Is Cold
+discipline: "Year 8 science: the cause of the seasons"
+
+question: "Why is it winter in Britain in January, and what causes the seasons?"
+question_pattern: [causeOf, seasons, "?x"]
+
+opening_frame:
+  situation: >-
+    Worksheet question two: what causes the seasons? The pupil has written
+    "the Sun is farther away in winter" and wants to move on.
+  authored_text: >-
+    Question two asks what causes the seasons, and you've written that the
+    Sun is farther away in winter. Before we move on: why is it winter in
+    Britain in January, and what causes the seasons? Tell me which part of
+    your answer you want to examine first.
+
+setting: >-
+  A Year 8 science lesson, one pupil at the bench with a worksheet, a globe,
+  a torch and a sheet of squared paper. The pupil has written that winter
+  comes when the Earth is farther from the Sun, which sounds right because a
+  fire warms you less when you step back from it. The pupil at the next
+  bench, Amir, has already said "it's the tilt" and been told to wait. The
+  rule the lesson is teaching is the awkward one: it is the height of the
+  Sun in the sky, set by the tilt of the axis, that decides how much warmth
+  each patch of ground gets.
+
+learner_voice: >-
+  A Year 8 pupil who wants a sentence to write and the worksheet finished:
+  quick to say "so what do I put", sure that farther means colder, cross
+  when the torch is brought out again, and not keen on Amir being right.
+  Still able to slow down when the torch and the squared paper make the
+  spread of light visible.
+
+secret:
+  fact: [causeOf, seasons, axisTilt]
+  recognition_patterns:
+    - id: tilt_answer
+      all_of:
+        - ["tilt", "tilted", "tilts", "lean", "leans", "leaning", "axis"]
+        - ["seasons", "winter", "summer", "january", "the cause", "causes", "because", "the answer", "the reason"]
+        - ["low in the sky", "lower in the sky", "higher in the sky", "height of the sun", "angle", "spread", "spreads", "spread out", "slant", "slanted", "more ground", "same light over more"]
+      none_of:
+        - "not the tilt"
+        - "isn't the tilt"
+        - "is not the tilt"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    The seasons are caused by the tilt of the Earth's axis. In January the
+    northern half of the Earth leans away from the Sun, so the midday Sun
+    sits low in the sky and its light is spread over more ground: each
+    patch gets less warmth, and the days are shorter. Distance cannot be
+    the cause, because the Earth is nearest the Sun in early January, and
+    Australia has summer at the same moment Britain has winter.
+
+mirror:
+  fact: [causeOf, seasons, sunDistance]
+
+rules:
+  - id: R1_sun_height
+    gloss: >-
+      The cause of the seasons is whatever sets how high the Sun sits in
+      the sky, because the height of the Sun sets how much light lands on
+      each patch of ground.
+    if:
+      - [winterSunIs, britain, "?u"]
+      - [heightSetBy, "?u", "?x"]
+    then:
+      - [causeOf, seasons, "?x"]
+  - id: R2_distance
+    gloss: >-
+      Farther from a heat source is colder, so distance would explain winter
+      if the Earth really were farther from the Sun in winter and the
+      whole Earth had winter at once.
+    if:
+      - [feelsLike, seasons, "?x"]
+      - [fartherInWinter, earth, alreadyTrue]
+    then:
+      - [causeOf, seasons, "?x"]
+
+premises:
+  - id: p_fire
+    evidence_role: mirror
+    fact: [feelsLike, seasons, sunDistance]
+    surface: >-
+      Step back from a fire and you feel less of it. Winter is colder, so
+      the Sun must be farther away. That is what the pupil wrote, and it is
+      what everyday warmth feels like.
+  - id: p_january
+    evidence_role: corroboration
+    fact: [fartherInWinter, earth, nearestInJanuary]
+    surface: >-
+      The orbit poster on the wall marks the Earth's nearest point to the
+      Sun in the first week of January. And the class in Sydney the school
+      writes to is on summer holiday in January. Distance cannot make one
+      half of the Earth cold while the other half is warm.
+  - id: p_torch
+    fact: [winterSunIs, britain, lowAndSpread]
+    surface: >-
+      Shine the torch straight down on the squared paper and count the
+      squares it lights. Now tilt the torch so the beam comes in low: the
+      same light covers many more squares, so each square gets less. In
+      January the midday Sun over Britain is low, like the tilted torch.
+  - id: p_globe
+    fact: [heightSetBy, lowAndSpread, axisTilt]
+    surface: >-
+      The globe's axis is tilted, about twenty-three degrees. Walk the globe
+      round the lamp: in January the northern half leans away, so the Sun
+      stays low over Britain all day; in July the same half leans toward,
+      and the Sun climbs high. The tilt, not the distance, sets the height.
+
+background:
+  - [hasWorksheet, pupil, seasons]
+
+incompatible:
+  - [[causeOf, seasons, axisTilt], [causeOf, seasons, sunDistance]]
+
+proof_paths:
+  - premises: [p_torch, p_globe]
+
+release_schedule:
+  - { turn: 2, premise: p_fire, via: tutor }
+  - turn: 3
+    premise: p_january
+    via: director
+    presentation: { mode: presented_exhibit, cue: "The orbit poster on the wall, with the Earth's nearest point to the Sun marked in early January, and the Sydney class's holiday postcard pinned beside it." }
+  - turn: 5
+    premise: p_torch
+    via: director
+    presentation: { mode: enacted_role, role: the pupil at the next bench, Amir, tilting a torch over squared paper and counting the lit squares aloud }
+  - { turn: 6, premise: p_globe, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Farther Means Colder
+      turns: [1, 4]
+      intent: >-
+        The fire habit supplies a plausible rule, while the orbit poster
+        and the Sydney postcard show that distance cannot be doing the work.
+    - act: II
+      title: The Tilted Torch
+      turns: [5, 8]
+      intent: >-
+        The torch on squared paper turns "low Sun" into a count the pupil
+        can see, and the globe shows what sets the height. The pupil should
+        distinguish a cause that feels right from a cause that fits the
+        record.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: sunDistance
+      mirror_pull: high
+    second_order:
+      from: class_teacher
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      A science teacher at the pupil's bench: patient with the fire habit,
+      unwilling to just hand over the sentence, and happiest when the torch
+      and the globe do the explaining.
+
+presentation:
+  family: seasons-tilt
+  temporal_frame: contemporary
+  scene_ecology: "a Year 8 science bench, a worksheet, a globe, a torch, squared paper and an orbit poster"
+  narrative_diction: "classroom plain, teacher and pupil"
+  ledger_term: worksheet
+  frame:
+    kind: lesson
+    closing_words:
+      - final answer
+      - the answer is
+      - the answer
+      - what causes the seasons
+      - the cause of the seasons
+      - the cause is
+      - caused by
+      - because of
+  summary: A conventional Year 8 science tutorial on the seasons, where the pupil defends "the Sun is farther away" and the torch on squared paper shows why the height of the Sun, set by the tilt, is the cause.

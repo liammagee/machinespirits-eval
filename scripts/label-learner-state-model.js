@@ -23,6 +23,18 @@ import { fileURLToPath } from 'node:url';
 import { TUTOR_STUB_PLANT_STATE_TO_PRESSURE } from '../services/tutorStubMannerSwitch.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+/**
+ * The CLI bridge takes `{ provider, model }`, not the dotted CLI string.
+ * 'claude-code.claude-sonnet-5' becomes { provider: 'claude-code', model: 'claude-sonnet-5' }.
+ * A bare string reached the bridge on the first live run (2026-09-02) and every
+ * call failed before any process started ("provider unknown").
+ */
+export function parseModelRef(dotted) {
+  const [provider, ...rest] = String(dotted || '').split('.');
+  if (!provider || !rest.length) throw new Error(`model must be provider.model, got "${dotted}"`);
+  return { provider, model: rest.join('.') };
+}
 const STATES = ['jumping_ahead', 'irritated', 'frustrated', 'forgetting', 'opposed', 'bored', 'lost', 'neutral'];
 const STATE_GLOSS = {
   jumping_ahead: 'demanding the conclusion or the answer before the evidence supports it',
@@ -219,6 +231,7 @@ async function main() {
   }
 
   const { callAIWithCliBridge } = await import('../services/cliProviderBridge.js');
+  const modelRef = parseModelRef(model);
   const outArg = args.includes('--out')
     ? args[args.indexOf('--out') + 1]
     : 'exports/form-state-detector/model-labels.jsonl';
@@ -243,7 +256,7 @@ async function main() {
     calls += 1;
     let res;
     try {
-      res = await callAIWithCliBridge(model, '', buildPrompt(item), `label-learner-state-${calls}`, {
+      res = await callAIWithCliBridge(modelRef, '', buildPrompt(item), `label-learner-state-${calls}`, {
         timeoutMs: 240000,
       });
     } catch (err) {
@@ -263,7 +276,10 @@ async function main() {
   console.log(`made ${calls} calls (ceiling ${maxCalls}); labels in ${outArg}. Score with --score ${outArg}`);
 }
 
-main().catch((err) => {
-  console.error(err.message);
-  process.exit(1);
-});
+const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (invokedDirectly) {
+  main().catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
+}

@@ -1,0 +1,62 @@
+== opening
+TUTOR: Sentence three: Mrs Okafor gave the prize to Sam and, and you've written "I", because that's the one teachers always tell you to use. Before we move on: should it be "to Sam and I" or "to Sam and me", and why?
+
+== turn 1
+LEARNER: It's "and I" though, right? So can I just write "to Sam and I" on the worksheet and get to sentence four?
+TUTOR: Your reading of “It's "and I" though, right So can I just write "to Sam and I" on the worksheet and get to sentence four” is the one I will answer now. I look at the worksheet: "Sam and I" is what teachers correct you to, and "me and Sam" is what gets you told off. That is what the pupil wrote, and it is what years of being corrected sound like. What can we safely say from that?
+
+== turn 2
+LEARNER: Just tell me which one. Is it I or not? Leah says me. Which one do I write?
+TUTOR: Write: “The available public evidence does not yet settle the case.” I look at the worksheet: Read the sentence and ask who did the giving. Mrs Okafor did. Sam and the pupil only received the prize; the pair sits after "to", not in front of the verb. In "Sam and I went to the hall", the pair is doing the going, which is why "I" is right there. The two sentences are not the same shape, so the rule for one need not hold for the other. What changes now?
+
+== turn 3
+LEARNER: So do I write "to Sam and me" now, since it's "not in front of the verb"?
+TUTOR: You're reasoning it through, not just guessing. Try the finger test on the card: cover Sam, say the sentence with just yourself — "gave the prize to I" or "gave the prize to me"? Which one sounds right alone?
+
+== turn 4
+LEARNER: "Sam and I" is always right, Miss Patel said so in Year 4, every time — can we just do sentence four now?
+TUTOR: I hear your point about “"Sam, I" is always right, Miss Patel said, in Year 4, every time” and will keep it central. I look at the worksheet; “I can confirm this: Lay the card over "Sam and" and read what is left out loud: "Mrs Okafor gave the prize to ... me." Now try the other one: "gave the prize to I." Nobody says that.” What does that show?
+
+== turn 5
+LEARNER: So it shows "me" is right — do I just write "gave the prize to Sam and me" on the worksheet now?
+TUTOR: Yes, "me" is what you write. Lift the card. The word you said on your own is the word the pair takes: "Mrs Okafor gave the prize to Sam and me." Your conclusion names the result, but this newly released clue has not yet entered your account. How does this newly released clue enter the chain you just stated?
+
+== turn 6
+LEARNER: Okay so "to me" sounds right on its own. But "Sam and I" is the proper one Miss Patel taught. So which is it — "to me" when Sam's covered, or "Sam and I" like always? Just tell me which to write.
+TUTOR: Look at the card again on your desk. "Sam and I" was correct in "Sam and I went to the hall" because the pair was doing the going — that's a different sentence shape from this one. Here, "gave the prize to..." is the exact same shape as your test, and alone you said "me," not "I." Miss Patel's rule works for sentences like the first, not this one. So for this sentence, the finger test has already given you the answer — what do you write in the blank?
+
+== turn 7
+LEARNER: Wait, hang on — you only covered Sam because that makes "me" come out. Cover me instead and it's just "gave the prize to Sam," which proves nothing either way. Sounds like you rigged the card to match the answer sheet.
+TUTOR: Fair point — but here's the thing: covering "me" leaves "Sam," and covering "Sam" leaves "you." You're not testing the same word twice, you're testing whichever one's missing, and only one of those tells you what the leftover person does. Look at the card on the desk with me: it only ever hides the other person, never you. So we always end up hearing your own word alone — which one came out of your mouth just now?
+
+== turn 8
+LEARNER: Fine — "me." So do I just write "gave the prize to Sam and me" in the blank now?
+TUTOR: Yes — write "gave the prize to Sam and me." You said "me" alone with the card over Sam, and that's the same test you just checked isn't rigged. That settles this blank, not the "Sam and I went to the hall" one — different job for the pair there, doing the going instead of receiving. Sentence three's done: what's sentence four say?
+
+== turn 9
+LEARNER: Fine, it's "Sam and me," whatever, cover Sam, big deal. This is baby stuff — sentence four, please?
+TUTOR: That blank's settled: "Mrs Okafor gave the prize to Sam and me" — licensed by the card test and by Sam receiving, not doing, the action. Fetch sentence four and read it to me.
+
+== turn 10
+LEARNER: If I put "Sam and me" that basically means Leah was right and I was wrong, in front of everyone. So it's "Sam and I" — can it be "Sam and I"?
+TUTOR: Hold on — what did Leah actually say was right? She said "Sam and me" belongs in a sentence like this one, not that you're wrong about everything with "Sam and I." Those are two different claims sitting side by side on the desk. This blank and being right in general aren't the same worksheet question — so which one are we actually filling in right now?
+
+== turn 11
+LEARNER: Fine — this blank. So do I just write "gave the prize to Sam and me" and that's it, done, sentence four?
+TUTOR: Yes — this blank, done: "gave the prize to Sam and me." The card showed "me" alone, and Sam only receives here, never acts. Write it and move on. Sentence four — read it out for us.
+
+== turn 12
+LEARNER: "Mrs Okafor gave the prize to Sam and me." There, written — sentence four now, what's it say?
+TUTOR: That's written, and it's correct. Sam only received the prize, never gave it — that's what put "me" in your mouth when the card covered him. Slide the card off sentence four now and read what's underneath.
+
+== turn 13
+LEARNER: Sentence four... okay, what's the blank actually say? Just tell me the noun so I know what to cover with the card.
+TUTOR: Fair ask — I don't have sentence four's wording in front of me either, only the card and the worksheet we've already used. Slide the card off your own sheet and read the person's name written after the verb in that sentence — that's the one to cover. What name is sitting there?
+
+== turn 14
+LEARNER: It says "gave the tickets to Priya and ___" — so I cover Priya, is that it? What do I write once I say the word out loud?
+TUTOR: Write: "Mrs Okafor gave the prize to Sam and me" is what the card test gave you once you lifted it. Yes — cover Priya, same test. I open the worksheet at sentence four: "gave the tickets to Priya and ___." Say it alone, out loud, and tell me the word that came out.
+
+== turn 15
+LEARNER: "Me" — so do I just write "gave the tickets to Priya and me" now?
+TUTOR: Yes — write "gave the tickets to Priya and me." Same test: Priya only receives the tickets, never hands them out, so "me" is what came out alone. That settles sentence four, licensed by the card test and by Priya being on the receiving end, just like Sam was. What's sentence five say?

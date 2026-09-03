@@ -23,7 +23,8 @@ opening_frame:
   authored_text: >-
     Question four says a half plus a third, and you've written two fifths —
     one plus one on top, two plus three underneath. Before we move on, what
-    is one half plus one third, and why?
+    is one half plus one third, and why? Tell me which step you want to
+    examine first.
 
 setting: >-
   A Year 7 maths lesson, one pupil at the desk with the homework sheet and a
@@ -179,4 +180,15 @@ presentation:
   scene_ecology: "a Year 7 classroom desk, a homework sheet, paper strips and scissors"
   narrative_diction: "classroom plain, teacher and pupil"
   ledger_term: homework sheet
+  frame:
+    kind: lesson
+    closing_words:
+      - final answer
+      - the answer is
+      - the answer
+      - what is the sum
+      - what do they add up to
+      - add up to
+      - equal to
+      - equals
   summary: A conventional Year 7 maths tutorial on adding fractions, where the pupil defends two fifths and the paper strip shows why the pieces must be the same size first.

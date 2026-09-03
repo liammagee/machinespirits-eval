@@ -4,6 +4,7 @@
  * never gated.
  */
 import { buildTutorStubSpeakingResponseConfiguration } from './tutorStubPerformanceObligationContract.js';
+import { tutorStubWorldFrameProjection } from './tutorStubWorldFrame.js';
 
 export const TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS = Object.freeze([
   'context_continuity',
@@ -128,6 +129,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
           publicEvidence: committedPublicEvidence,
           dueEvidence: duePublicEvidence,
         });
+    const worldFrameProjection = tutorStubWorldFrameProjection(world);
     const performanceObligationContract = passthrough
       ? null
       : compileTutorStubPerformanceObligationContract({
@@ -143,6 +145,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
             ledger_term: world?.presentation?.ledger_term,
             public_objects: [world?.presentation?.ledger_term].filter(Boolean),
             audience_context: world?.audience?.context || null,
+            ...(worldFrameProjection ? { frame: worldFrameProjection } : {}),
           },
           publicTurn: {
             visibility: 'public',

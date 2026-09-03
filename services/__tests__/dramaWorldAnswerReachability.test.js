@@ -27,6 +27,10 @@ const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
 const KNOWN_UNREACHABLE = new Map([
   ['world-021-clockwork-tribunal.yaml', 'surface splits "wardens ... quittance" across a clause'],
   ['world-030-rowan-flat.yaml', 'surface interposes an adjective: "the basin\'s flexible feed hose"'],
+  [
+    'world-038-seasons-tilt.yaml',
+    'surface reverses the name order: "the tilt of the Earth\'s axis" (learners close by saying "axis tilt(s)" or via the tilt_answer pattern; bench 038 forced closed at turn 12)',
+  ],
 ]);
 
 function answerConstant(world) {

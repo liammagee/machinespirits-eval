@@ -1,3 +1,5 @@
+import { resolveTutorStubWorldFrame } from './tutorStubWorldFrame.js';
+
 export function createTutorStubOpeningRuntime(dependencies) {
   const {
     C,
@@ -251,6 +253,7 @@ export function createTutorStubOpeningRuntime(dependencies) {
     multipleChoice = false,
   }) {
     const world = worldBundle?.world || null;
+    const frame = resolveTutorStubWorldFrame(world);
     return [
       'You are an experimental AI tutor stub.',
       '',
@@ -289,10 +292,10 @@ export function createTutorStubOpeningRuntime(dependencies) {
       ...responseChoiceModeRules({ multipleChoice, world: worldBundle?.world || null }),
       curriculumBundle
         ? '- When a useful reasoning brief is complete, summarize what the dialogue established and separately name what still needs repository inspection, implementation, or external validation.'
-        : '- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.',
+        : `- If the public evidence has licensed the final answer and the learner has stated it, close the ${frame.task_noun} plainly: say the ${frame.answer_noun} is now licensed, name the two proof supports in public language, and stop asking for another ${frame.move_adjective} branch.`,
       curriculumBundle
         ? '- Never invent repository state, test results, run outcomes, or completion evidence. Ask what must be inspected when the source does not settle it.'
-        : '- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.',
+        : `- Never supply the answer or a named ${frame.candidate_noun} from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.`,
       ...worldPublicPrompt(world),
       ...(dag ? worldSpeakerDagPrompt(world) : []),
     ].join('\n');

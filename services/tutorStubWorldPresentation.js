@@ -27,7 +27,7 @@ export function tutorStubWorldFlavourPhrase(world) {
 }
 
 export function projectTutorStubPublicWorldSummary(world) {
-  if (!world) return 'No detective-story world is active; respond to the tutor topic directly.';
+  if (!world) return 'No story world is active; respond to the tutor topic directly.';
   return [
     `World: ${world.id} - ${world.title}`,
     `Discipline: ${world.discipline || 'investigation'}`,

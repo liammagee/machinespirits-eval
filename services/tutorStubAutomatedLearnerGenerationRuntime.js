@@ -18,6 +18,8 @@ import {
   tutorStubStressTraceEvent,
   tutorStubStressDirective,
   tutorStubStressPlantForTurn,
+  tutorStubStressHoldVerdictTraceEvent,
+  parseTutorStubStressHoldVerdict,
 } from './tutorStubStressSchedule.js';
 import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
 import { createTutorStubBoredomProofDagLearnerRuntime } from './tutorStubBoredomActionRegisterProofDagStudy.js';
@@ -453,11 +455,23 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       cliEffort,
       signal,
     });
-    const text = applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(raw.text));
+    // Held stress turn: the sim's private first-line verdict (HOLD: kept / released "<quote>") is
+    // stripped before the reply is cleaned and recorded as a trace event. Recorded, never enforced.
+    const heldPlant = stressPlantForLearnerTurn(state, turnNumber, { recordTrace: false });
+    let spokenRaw = raw.text;
+    let stressHoldVerdict = null;
+    if (heldPlant?.held > 0) {
+      const parsed = parseTutorStubStressHoldVerdict(raw.text, latestTutorMessage(state));
+      spokenRaw = parsed.text;
+      stressHoldVerdict = tutorStubStressHoldVerdictTraceEvent(activeStressSchedule(), heldPlant, turnNumber, parsed);
+      if (state?.trace) appendTraceEvent(state.trace, stressHoldVerdict);
+    }
+    const text = applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(spokenRaw));
     return {
       ...raw,
       text,
       learnerDeliberation,
+      ...(stressHoldVerdict ? { stressHoldVerdict } : {}),
       ...(state.privateRivalLearnerDag
         ? {
             rivalLearnerDagTurn: buildTutorStubRivalLearnerDagTurnRecord({

@@ -164,6 +164,31 @@ test('shipped form-v2 artifact compiles on the form-v2 cue set', () => {
   assert.notEqual(demand.state, 'lost');
 });
 
+test('shipped form-v3 artifact is form-v2 cues on the widened pool', () => {
+  const artifact = JSON.parse(fs.readFileSync(path.join(ROOT, 'config/manner-trigger/form-v3.json'), 'utf8'));
+  assert.equal(artifact.version, 'form-v3');
+  assert.equal(artifact.featureVersion, 'form-v2');
+  assert.deepEqual([...artifact.featureNames], [...tutorStubFormFeatureNames('form-v2')]);
+  // The pool is the archive worlds plus the three lesson worlds of the
+  // 2026-09-02 bench; the hero worlds 035/036/037 stay held out.
+  for (const world of ['world_038_seasons_tilt', 'world_039_percent_up_down', 'world_040_sam_and_me'])
+    assert.ok(artifact.trainedOn.worlds.includes(world), world);
+  for (const world of ['world_035_nine_oclock_ghost', 'world_036_class_plant', 'world_037_fraction_sum'])
+    assert.ok(!artifact.trainedOn.worlds.includes(world), world);
+  const v3 = compileTutorStubFormDetector(artifact);
+  assert.equal(v3.version, 'form-v3');
+  assert.equal(v3.featureVersion, 'form-v2');
+  // A question-shaped demand from held-out world 037 (step-4 trace, Sonnet
+  // learner) reads as the demand under form-v3; form-v2 read it as a stumble.
+  const line =
+    "Just tell me what to write already — is it two fifths or not? Priya's saying it's five sixths. Which one do I put down?";
+  assert.equal(readTutorStubFormState(v3, line).state, 'jumping_ahead');
+  const v2 = compileTutorStubFormDetector(
+    JSON.parse(fs.readFileSync(path.join(ROOT, 'config/manner-trigger/form-v2.json'), 'utf8')),
+  );
+  assert.equal(readTutorStubFormState(v2, line).state, 'lost');
+});
+
 test('form-v2 tells question kinds apart by grammar', () => {
   const idx = (name) => TUTOR_STUB_FORM_FEATURE_NAMES.indexOf(name);
   const on = (text) => {

@@ -23,6 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { loadWorld, plotLint, worldClosure } from '../services/dramaticDerivation/index.js';
 import { derivationDistance } from '../services/dramaticDerivation/slope.js';
 import { factKey } from '../services/dramaticDerivation/chainer.js';
+import { validateTutorStubWorldFrame } from '../services/tutorStubWorldFrame.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -66,6 +67,12 @@ console.log(`paths: ${world.proofPaths.length} authored; releases: ${world.relea
 console.log(`plot lint: ${lint.ok ? 'OK' : 'FAIL'} (first entailment at turn ${lint.firstEntailedTurn})`);
 for (const err of lint.errors) console.error(`  lint error: ${err}`);
 
+// The presentation frame (lesson | inquiry) supplies the nouns the tutor-stub
+// prompts use for the world. A defective block degrades to the inquiry
+// defaults at runtime, so catch it here where the author can see it.
+const frameErrors = validateTutorStubWorldFrame(world);
+for (const err of frameErrors) console.error(`  frame error: ${err}`);
+
 // Walk the schedule under instant adoption: the PLANNED staircase. Track the
 // gap between strict D decreases against the aporia window (mirror-fuel
 // releases do not move D — the plan must not let them pile up).
@@ -108,6 +115,6 @@ const derived = [...finalClosure.facts.values()].filter(
 console.log(`\nclosure at full release: ${finalClosure.facts.size} facts (${derived.length} derived):`);
 for (const fact of derived) console.log(`  ⊢ ${fact.join(' ')}`);
 
-const ok = lint.ok && gapErrors === 0;
+const ok = lint.ok && gapErrors === 0 && frameErrors.length === 0;
 console.log(`\n${ok ? 'LINT PASS' : 'LINT FAIL'}`);
 process.exit(ok ? 0 : 1);

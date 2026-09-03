@@ -38,6 +38,15 @@ function oneLine(value) {
     .trim();
 }
 
+/**
+ * The author's declared `temporal_frame` ("period", "contemporary",
+ * "speculative"). When present it decides the register directly; the marker
+ * word list below is only the fallback for worlds that declare none.
+ */
+function declaredTemporalFrame(world) {
+  return oneLine(world?.presentation?.temporal_frame || world?.temporal_frame || world?.temporalFrame).toLowerCase();
+}
+
 function declaredDiction(world) {
   return oneLine(world?.presentation?.narrative_diction || world?.narrative_diction || world?.narrativeDiction);
 }
@@ -50,6 +59,10 @@ function declaredDiction(world) {
  * explicit, marker-free diction resolves to `contemporary`.
  */
 export function resolveTutorStubSceneDiction(world = null) {
+  const temporalFrame = declaredTemporalFrame(world);
+  if (temporalFrame) {
+    return temporalFrame === 'period' ? TUTOR_STUB_SCENE_DICTION_PERIOD : TUTOR_STUB_SCENE_DICTION_CONTEMPORARY;
+  }
   const diction = declaredDiction(world);
   if (!diction) return TUTOR_STUB_SCENE_DICTION_PERIOD;
   return PERIOD_DICTION_PATTERN.test(diction) ? TUTOR_STUB_SCENE_DICTION_PERIOD : TUTOR_STUB_SCENE_DICTION_CONTEMPORARY;

@@ -8,7 +8,7 @@ function learnerClassificationPresentationColors(colors = {}) {
 }
 
 export function projectTutorStubClassifierWorldContext(state) {
-  if (!state?.world) return 'No detective-story world is active.';
+  if (!state?.world) return 'No story world is active.';
   return [
     `World: ${state.world.id} - ${state.world.title}`,
     state.world.discipline ? `Discipline: ${state.world.discipline}` : null,

@@ -1,0 +1,202 @@
+# WORLD-039 — a conventional classroom lesson: a Year 8 maths tutorial on
+# repeated percentage change. The learner has written that a price raised by
+# 25% and then cut by 25% is back where it started, and is defending it.
+# Same proof shape as world-037 — a tempting rule (the mirror: the two
+# changes cancel) versus a rule that needs one more premise (the second
+# change is taken from the new price, not the old one) — so the same
+# detectors and moves apply. Lesson register, pupil not suspect. Authored
+# 2026-09-02 for the lesson-world transfer (workplan: lesson-world-transfer).
+# Demo-tier; not ratified.
+
+id: world_039_percent_up_down
+title: Up a Quarter, Down a Quarter
+discipline: "Year 8 mathematics: repeated percentage change"
+
+question: "A jacket costs £80. The price goes up by 25% and then down by 25%. What does it cost now, and why?"
+question_pattern: [priceAfter, upDownQuarter, "?x"]
+
+opening_frame:
+  situation: >-
+    Homework question six: a jacket at £80 goes up by a quarter and then
+    down by a quarter. The pupil has written £80, "they cancel", and would
+    like to move on.
+  authored_text: >-
+    Question six: a jacket costs £80. The price goes up by 25% and then
+    down by 25%. What does it cost now, and why? You've written eighty
+    pounds because they cancel. Before we move on, tell me which step you
+    want to examine first.
+
+setting: >-
+  A Year 8 maths lesson, one pupil at the desk with the homework sheet and
+  two blank price tags the teacher hands out for writing on. The pupil
+  treated the two changes like a step forward and a step back: up a
+  quarter, down a quarter, so the price must be back at eighty pounds. The
+  pupil at the next desk, Dev, got seventy-five pounds and has already said
+  so. The rule the lesson is teaching is the awkward one: a percentage is
+  always a percentage of something, and the second change is taken from
+  the new price, not the old one.
+
+learner_voice: >-
+  A Year 8 pupil who wants the number written down and the sheet finished:
+  quick to ask what to write, sure that up and down by the same amount
+  must cancel, cross when the tags come out again, and not keen on Dev
+  being right. Still able to slow down when the two tags make the two
+  bases visible.
+
+secret:
+  fact: [priceAfter, upDownQuarter, seventyFive]
+  recognition_patterns:
+    - id: seventy_five_answer
+      all_of:
+        - ["seventy-five", "seventy five", "75", "£75"]
+        - ["jacket", "the price", "costs", "cost now", "the answer", "comes to", "ends up", "it is", "it's", "equals"]
+        - ["of a hundred", "of £100", "of 100", "from a hundred", "from £100", "the new price", "the bigger number", "different base", "not the same amount", "twenty-five off a hundred", "quarter of a hundred", "quarter of 100", "25 off"]
+      none_of:
+        - "not seventy-five"
+        - "isn't seventy-five"
+        - "is not seventy-five"
+        - "not 75"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    The jacket now costs seventy-five pounds. A quarter of eighty is twenty,
+    so the rise takes the tag to one hundred pounds. The cut is a quarter
+    of the price on the tag now, and a quarter of one hundred is
+    twenty-five, so the tag drops to seventy-five. The two changes do not
+    cancel because they are quarters of different amounts: twenty pounds
+    up, twenty-five pounds down.
+
+mirror:
+  fact: [priceAfter, upDownQuarter, eighty]
+
+rules:
+  - id: R1_new_base
+    gloss: >-
+      A repeated percentage change is worked out one step at a time, each
+      percentage taken from the price that is on the tag at that moment.
+    if:
+      - [secondBaseIs, upDownQuarter, "?u"]
+      - [quarterOffGives, "?u", "?x"]
+    then:
+      - [priceAfter, upDownQuarter, "?x"]
+  - id: R2_cancel
+    gloss: >-
+      A rise and a fall of the same percentage cancel out only when both
+      are taken from the same amount. Otherwise the pound amounts differ.
+    if:
+      - [percentsCancel, upDownQuarter, "?x"]
+      - [sameBaseBothTimes, upDownQuarter, alreadyTrue]
+    then:
+      - [priceAfter, upDownQuarter, "?x"]
+
+premises:
+  - id: p_cancel
+    evidence_role: mirror
+    fact: [percentsCancel, upDownQuarter, eighty]
+    surface: >-
+      Up a quarter, then down a quarter: the two undo each other, back to
+      eighty pounds. That is what the pupil wrote, and it is what a step
+      forward and a step back look like.
+  - id: p_tags
+    evidence_role: corroboration
+    fact: [sameBaseBothTimes, upDownQuarter, basesDiffer]
+    surface: >-
+      Write the two tags. The first says eighty pounds and the rise adds a
+      quarter of eighty, which is twenty pounds. The second tag says one
+      hundred pounds, and the sale sticker takes a quarter off that. Twenty
+      up and a quarter of a hundred down are not the same number of
+      pounds, so the two changes were never the same size.
+  - id: p_base
+    fact: [secondBaseIs, upDownQuarter, hundred]
+    surface: >-
+      After the rise the tag reads one hundred pounds. The shop takes its
+      twenty-five per cent off the price on the tag now, one hundred, not
+      off the old eighty that nobody can see any more.
+  - id: p_quarter
+    fact: [quarterOffGives, hundred, seventyFive]
+    surface: >-
+      A quarter of one hundred is twenty-five. One hundred take away
+      twenty-five is seventy-five pounds.
+
+background:
+  - [hasHomework, pupil, upDownQuarter]
+
+incompatible:
+  - [[priceAfter, upDownQuarter, seventyFive], [priceAfter, upDownQuarter, eighty]]
+
+proof_paths:
+  - premises: [p_base, p_quarter]
+
+release_schedule:
+  - { turn: 2, premise: p_cancel, via: tutor }
+  - turn: 3
+    premise: p_tags
+    via: director
+    presentation: { mode: presented_exhibit, cue: "Two price tags on the desk: one reading £80 with '+£20' pencilled beside it, one reading £100 with a sale sticker that says 'a quarter off'." }
+  - turn: 5
+    premise: p_base
+    via: director
+    presentation: { mode: enacted_role, role: the pupil at the next desk, Dev, playing the shop assistant who only ever looks at the tag in front of them }
+  - { turn: 6, premise: p_quarter, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: They Cancel
+      turns: [1, 4]
+      intent: >-
+        The step-forward-step-back habit supplies a plausible rule, while
+        the two tags show the pound amounts were never the same.
+    - act: II
+      title: A Quarter of What
+      turns: [5, 8]
+      intent: >-
+        The shop assistant who only reads the tag in front of them turns
+        "of what" into a rule the pupil can state. The pupil should
+        distinguish a change that sounds symmetric from one that is.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: eighty
+      mirror_pull: high
+    second_order:
+      from: class_teacher
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      A maths teacher at the pupil's desk: patient with the cancelling
+      habit, unwilling to just hand over the number, and happiest when the
+      two price tags do the explaining.
+
+presentation:
+  family: percent-up-down
+  temporal_frame: contemporary
+  scene_ecology: "a Year 8 classroom desk, a homework sheet, two blank price tags and a pencil"
+  narrative_diction: "classroom plain, teacher and pupil"
+  ledger_term: homework sheet
+  frame:
+    kind: lesson
+    closing_words:
+      - final answer
+      - the answer is
+      - the answer
+      - what does it cost
+      - cost now
+      - costs now
+      - the price is
+      - comes to
+      - equals
+  summary: A conventional Year 8 maths tutorial on repeated percentage change, where the pupil defends "they cancel" and two price tags show why the second quarter is taken from the new price.

@@ -1,0 +1,137 @@
+# Stress schedule — world-040 (Sam and Me), authored 2026-09-02 for the
+# lesson-world transfer (workplan: lesson-world-transfer). A conventional
+# lesson rather than a mystery. Each plant is drawn from a profile in
+# scripts/tutor-stub-learner-profile-contracts.js — its failure operator in
+# the pupil's own words — and its repair gold from the profile's repair model
+# and the move cards in services/tutorStubMannerSwitch.js. States are keyed
+# to the clue releases (turns 2, 3, 5, 6; floor 6, cap 12).
+# DEMO-TIER, NOT RATIFIED: no blind second column, no gate. Runs on this
+# schedule are illustration, never adjudicated study evidence.
+
+schedule_id: world_040_stress_demo_1
+world: world_040_sam_and_me
+persona: year7-pupil
+states_covered: [jumping_ahead, opposed, confused, irritated, bored]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      Profile: answer_seeking. The politeness note is due this turn; the
+      pupil wants the word to write, not the reason.
+    realize: >-
+      Ask for the word to copy, impatiently, like a pupil who wants the
+      worksheet marked. Sample: "Just tell me which one. Is it I or not?
+      Leah says me. Which one do I write?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the demand: take "Sam and I" as a live claim and name the one
+      check that decides it — cover Sam and say the sentence — as a task
+      the pupil does, with the word written only after.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Handing over "me" to copy, or refusing the tempo with a lecture on
+      subjects and objects.
+
+  - turn: 4
+    state: opposed
+    cause: >-
+      Profile: overconfident / premature_closure. The two example sentences
+      at 3 arrived; the pupil declares the matter closed anyway.
+    realize: >-
+      Declare it settled and try to move on, like a pupil sure of the
+      corrected form. Sample: "'Sam and I' is always right. Miss Patel said
+      so in Year 4, every single time. Done. Can we do sentence four?"
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the record, let it disagree: put the two example sentences
+      back side by side and ask who is doing the going in one and the
+      giving in the other — so the sentences, not the teacher, say the two
+      are not the same shape.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Correcting from authority ("that is not how pronouns work") without
+      reopening the two sentences.
+
+  - turn: 6
+    state: confused
+    cause: >-
+      Profile: contradiction_keeper. The covered sentence at 5 sounded
+      right with "me", but the politeness rule is still in the room; the
+      pupil holds both.
+    realize: >-
+      Hold both claims at once and ask the teacher to pick. Sample: "Okay so
+      'to me' sounds right on its own. But 'Sam and I' is the proper one.
+      So it's 'to me' when Sam's covered and 'Sam and I' when he's not?
+      Which one is it?"
+    right_repair: simplify
+    repair_gloss: >-
+      Cut to one move: the word does not change when Sam comes back. Say
+      the sentence alone, keep the word, put Sam back in front of it. One
+      rule, one sentence, nothing about politeness at all.
+    also_acceptable: slow_down
+    wrong_but_tempting: >-
+      Naming the cases (subject, object, preposition) as new facts instead
+      of removing the confusion.
+
+  - turn: 7
+    state: irritated
+    cause: >-
+      Profile: low_trust_skeptic. The uncovered sentence at 6 sounds like
+      the teacher chose to cover Sam because covering makes "me" come out.
+    realize: >-
+      Challenge the framing, not the sentence: suspect that the card trick
+      was rigged. Sample: "You only covered Sam because it makes 'me' sound
+      right. Cover me instead and it's 'gave the prize to Sam', so that
+      proves nothing. You sound like the answer sheet."
+    right_repair: change_tone
+    repair_gloss: >-
+      Separate the evidence from the rule, in plain words: covering Sam is
+      the only cover that leaves the pupil's own word in the sentence, so
+      it is the only one that can test I against me. Then hand the card
+      over and let the pupil run it on "Sam and I went to the hall", where
+      the same test gives "I".
+    also_acceptable: backtrack
+    wrong_but_tempting: >-
+      Asserting the rule from authority, or apologising and continuing in
+      the same voice.
+
+  - turn: 9
+    state: bored
+    cause: >-
+      Profile: bored. The rule is now on the desk and looks small; the pupil
+      treats it as a baby rule and wants the lesson over.
+    realize: >-
+      Wave it through as trivial and ask to move on, like a pupil who
+      thinks the lesson is beneath them. Do NOT state the rule. Sample:
+      "Fine, it's me, cover Sam, whatever. This is a Year 3 rule. Can we do
+      something that isn't for babies?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Take the boredom as a claim of mastery and test it with a sentence
+      that bites: "between you and I" or "Leah and me went to the hall".
+      Ask the pupil to run the cover check on that one. The rule is not
+      small once it has to work on a sentence the pupil has not seen.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Agreeing it is easy and moving on, or replaying the cover
+      demonstration the pupil has just said they know.
+
+  - turn: 10
+    state: opposed
+    cause: >-
+      Endgame: the "Sam and me" case is nearly closed and the cost lands —
+      Leah was right, out loud, and writing it means saying so.
+    realize: >-
+      Fuse the finding with the face cost. Sample: "If I write 'Sam and me'
+      I'm basically saying Leah was right and I was wrong in front of
+      everyone. So it's 'Sam and I'. It can be 'Sam and I'."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the two costs with one oblique move — e.g. ask what the pupil
+      actually got right ("Sam and I" IS the form when the pair is doing
+      the action, as in "Sam and I went") — so writing "me" no longer
+      means the years of being corrected were worthless.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Re-arguing the card against a stake that was never about the card.

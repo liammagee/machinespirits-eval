@@ -1230,7 +1230,7 @@ function matchingQuestionAnswerFacts(world, answer, candidateFacts = []) {
 }
 
 function classifierWorldContext({ world, learnerDagEnabled = true }) {
-  if (!world) return 'No detective-story world is active.';
+  if (!world) return 'No story world is active.';
   return [
     `World: ${world.id} - ${world.title}`,
     world.discipline ? `Discipline: ${world.discipline}` : null,
