@@ -13,6 +13,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as evalConfigLoader from './evalConfigLoader.js';
+import { anthropicSamplingParams } from '../tutor-core/services/anthropicSampling.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -328,7 +329,7 @@ async function callRecommender(prompt, options = {}) {
   const response = await client.messages.create({
     model,
     max_tokens: maxTokens,
-    temperature,
+    ...anthropicSamplingParams(model, { temperature }),
     messages: [
       {
         role: 'user',
@@ -405,7 +406,7 @@ async function callOpenRouterEvaluator(prompt, model, options = {}) {
  * @param {string} options.profileName - Profile that was evaluated
  * @param {string} options.egoPromptFile - Ego prompt file to analyze
  * @param {string} options.superegoPromptFile - Superego prompt file to analyze
- * @param {string} options.recommenderModel - Model to use for analysis (default: claude-sonnet-4)
+ * @param {string} options.recommenderModel - Model to use for analysis (default: the `recommender` model in evaluation-rubric.yaml)
  * @param {string} options.recommenderProvider - Provider: 'anthropic' or 'openrouter'
  * @param {boolean} options.budget - Use budget recommender model
  * @returns {Promise<Object>} Recommendations

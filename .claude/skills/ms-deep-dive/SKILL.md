@@ -60,7 +60,7 @@ Common model alias → ID mappings (from `config/providers.yaml`):
 | `nemotron` | `%nemotron%` |
 | `gemini-flash` | `%gemini-3-flash%` |
 | `gemini-pro` | `%gemini-3-pro%` |
-| `gpt` | `%gpt-5.2%` |
+| `gpt` | `%gpt-5%` |
 | `kimi` | `%kimi%` |
 | `deepseek` | `%deepseek%` |
 
@@ -208,7 +208,7 @@ Based on the data, suggest 3-5 specific `/ms-deep-dive` commands the user might 
 2. `/ms-deep-dive cell_80..87` — Coverage audit of messages-mode 2×2×2 factorial
 3. `/ms-deep-dive cell_71` — Investigate naive baseline regression (dev: -8.2)
 4. `/ms-deep-dive cell_80..87 --scenario epistemic_resistance_impasse` — Hardest scenario, widest spread
-5. `/ms-deep-dive nemotron --condition recog` — Nemotron recognition runs (strongest model effect)
+5. `/ms-deep-dive nemotron --condition recog` — Nemotron recognition runs (historical weak-stack rows; nulls there are stack-bounded)
 ```
 
 Each suggestion should include a brief rationale in parentheses explaining *why* it's interesting.

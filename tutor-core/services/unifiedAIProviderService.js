@@ -9,6 +9,7 @@
 import { getApiKey, getDefaultModel, getDefaultProviderId, logInteraction } from './aiConfigService.js';
 import { parseSSEStream } from './sseStreamParser.js';
 import { externalProviderHandles, callExternalProvider } from './externalAIProvider.js';
+import { anthropicSamplingParams } from './anthropicSampling.js';
 
 // ============================================================================
 // Configuration Presets
@@ -236,7 +237,7 @@ async function callAnthropic(model, systemPrompt, messages, config) {
   const body = {
     model: effectiveModel,
     max_tokens: config.maxTokens || 1000,
-    temperature: config.temperature ?? 0.5,
+    ...anthropicSamplingParams(effectiveModel, { temperature: config.temperature ?? 0.5 }),
     system: sanitizeText(systemPrompt),
     messages: sanitizedMessages.map((m) => ({
       role: m.role === 'user' ? 'user' : 'assistant',
@@ -865,7 +866,7 @@ async function buildStreamRequest(provider, model, systemPrompt, messages, confi
           body: JSON.stringify({
             model: effectiveModel,
             max_tokens: config.maxTokens || 1000,
-            temperature: config.temperature ?? 0.5,
+            ...anthropicSamplingParams(effectiveModel, { temperature: config.temperature ?? 0.5 }),
             stream: true,
             system: sanitizeText(systemPrompt),
             messages: sanitizedMessages.map((m) => ({

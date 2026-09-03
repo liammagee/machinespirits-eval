@@ -277,7 +277,7 @@ Respond ONLY with valid JSON in the format specified above.`;
   try {
     const response = await unifiedProvider.call({
       provider: selected,
-      model: selected === 'claude' ? process.env.CODE_REVIEW_MODEL || 'claude-sonnet-4-20250514' : null,
+      model: selected === 'claude' ? process.env.CODE_REVIEW_MODEL || 'claude-sonnet-5' : null,
       systemPrompt: fullSystemPrompt,
       messages: [{ role: 'user', content: prompt }],
       preset: 'codeReview',
