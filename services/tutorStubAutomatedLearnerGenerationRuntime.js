@@ -18,9 +18,9 @@ import {
   tutorStubStressTraceEvent,
   tutorStubStressDirective,
   tutorStubStressPlantForTurn,
-  tutorStubStressHoldVerdictTraceEvent,
-  parseTutorStubStressHoldVerdict,
+  tutorStubStressHoldSpeechCheckEnabled,
 } from './tutorStubStressSchedule.js';
+import { generateTutorStubLearnerTurnWithStressHold as generateLearnerTurnWithStressHold } from './tutorStubStressHoldTurn.js';
 import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
 import { createTutorStubBoredomProofDagLearnerRuntime } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION } from './tutorStubResistanceSemanticAdjudication.js';
@@ -440,38 +440,40 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     cliEffort = null,
     signal = null,
   }) {
-    const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
     const systemPrompt = automatedLearnerSystemPrompt(profile);
     const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
-    const { raw, metadata: learnerDeliberation } = await learnerDeliberationRuntime.generate({
-      prompt,
-      messageHistory,
-      resolved,
-      profile,
-      systemPrompt,
-      turnNumber,
+    const generate = (prompt) =>
+      learnerDeliberationRuntime.generate({
+        prompt,
+        messageHistory,
+        resolved,
+        profile,
+        systemPrompt,
+        turnNumber,
+        state,
+        stream,
+        cliEffort,
+        signal,
+      });
+    const { raw, spokenRaw, prompt, learnerDeliberation, stressHold } = await generateLearnerTurnWithStressHold({
+      buildPrompt: (feedback = adherenceFeedback) =>
+        buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback: feedback }),
+      generate,
+      heldPlant: stressPlantForLearnerTurn(state, turnNumber, { recordTrace: false }),
+      schedule: activeStressSchedule(),
       state,
-      stream,
-      cliEffort,
-      signal,
+      turnNumber,
+      tutorReplyText: latestTutorMessage(state),
+      speechCheck: tutorStubStressHoldSpeechCheckEnabled(env) ? { callPromptModel, resolved, cliEffort, signal } : null,
+      cleanReply: cleanAutomatedLearnerReply,
+      appendTraceEvent,
     });
-    // Held stress turn: the sim's private first-line verdict (HOLD: kept / released "<quote>") is
-    // stripped before the reply is cleaned and recorded as a trace event. Recorded, never enforced.
-    const heldPlant = stressPlantForLearnerTurn(state, turnNumber, { recordTrace: false });
-    let spokenRaw = raw.text;
-    let stressHoldVerdict = null;
-    if (heldPlant?.held > 0) {
-      const parsed = parseTutorStubStressHoldVerdict(raw.text, latestTutorMessage(state));
-      spokenRaw = parsed.text;
-      stressHoldVerdict = tutorStubStressHoldVerdictTraceEvent(activeStressSchedule(), heldPlant, turnNumber, parsed);
-      if (state?.trace) appendTraceEvent(state.trace, stressHoldVerdict);
-    }
     const text = applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(spokenRaw));
     return {
       ...raw,
       text,
       learnerDeliberation,
-      ...(stressHoldVerdict ? { stressHoldVerdict } : {}),
+      ...stressHold,
       ...(state.privateRivalLearnerDag
         ? {
             rivalLearnerDagTurn: buildTutorStubRivalLearnerDagTurnRecord({
