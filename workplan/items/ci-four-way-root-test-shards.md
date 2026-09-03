@@ -69,3 +69,15 @@ Log:
   runner, local CI, change policy); prettier and eslint clean on the changed
   files. Branch `ci/four-shard-root-test-matrix` opened from `origin/main`
   at 698da289.
+- 2026-09-03 — First hosted run on PR #962 (head d8e6e3f2): the whole
+  workflow took 3m55s, down from about 5 minutes. The eight test jobs started
+  3 s after `classify` and took between 1m50s and 2m39s each, job time
+  including checkout and install. Two failures, both outside the shard change:
+  (a) `tests/provableDiscourse.test.js` opened the shared hermetic DB instead
+  of its fixture DB, because the audit lets `EVAL_DB_PATH` win over the spec's
+  `db_path`. It passed before only when an earlier file in the same shard had
+  created that DB; the 4-way split put none ahead of it in shard 3. Fixed by
+  pinning the override to the fixture DB inside the fixture. Reproduced and
+  confirmed with the file alone under a fresh override: 4 failures before,
+  69/69 after. (b) `docs/ref-status.md` was stale on `main` after the paper
+  bump to 3.0.301; re-rendered with `npm run refs:render`.
