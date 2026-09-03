@@ -38,11 +38,29 @@ const CHILD_STALL_KILL_GRACE_MS = 5_000;
 export const NODE_REPORTS_FILES_AS_THEY_FINISH = Number(process.versions.node.split('.')[0]) >= 22;
 const TEST_SHARD_SEED = 'hermetic-v1:1491';
 const SLOW_FILE_LIMIT = 8;
-const TWO_WAY_SHARD_OVERRIDES = new Map([
-  // The timing reporter identifies this model-free subprocess suite as the
-  // dominant shard-2 worker. This measured correction reduces the critical
-  // path while every other path retains stable hash membership.
-  ['tests/tutorStubFirstDraftOuterLoop.test.js', 0],
+// Hand corrections to the hash split, keyed by shard count, then by file, with
+// the zero-based shard index the file moves to. Every other file keeps its
+// stable hash membership. Re-measure with `--report-dir` before changing one.
+const SHARD_OVERRIDES = new Map([
+  [
+    2,
+    new Map([
+      // The timing reporter identifies this model-free subprocess suite as the
+      // dominant shard-2 worker. This measured correction reduces the critical
+      // path while every other path retains stable hash membership.
+      ['tests/tutorStubFirstDraftOuterLoop.test.js', 0],
+    ]),
+  ],
+  [
+    4,
+    new Map([
+      // Measured 2026-09-03: the hash split put 292s of the 842s of root work
+      // on shard 4 against 161s on shard 2. Moving these two files gives
+      // 192/214/218/217.
+      ['tests/tutorStubResistanceSemanticValidationRuntime.test.js', 1],
+      ['tests/tutorStubResistanceActionRegisterConfirmationGoRequest.test.js', 0],
+    ]),
+  ],
 ]);
 
 export { discoverCoreTestFiles, discoverRootTestFiles, resolveVitestEntryPoint } from './hermetic-test-contract.js';
@@ -70,7 +88,7 @@ export function selectTestShard(files, shard) {
   if (!shard) return [...files];
   return files.filter((file) => {
     const normalizedFile = file.replaceAll('\\', '/');
-    const overrideIndex = shard.total === 2 ? TWO_WAY_SHARD_OVERRIDES.get(normalizedFile) : undefined;
+    const overrideIndex = SHARD_OVERRIDES.get(shard.total)?.get(normalizedFile);
     if (overrideIndex !== undefined) return overrideIndex === shard.index - 1;
     const digest = createHash('sha256').update(`${TEST_SHARD_SEED}:${normalizedFile}`).digest();
     return digest.readUInt32BE(0) % shard.total === shard.index - 1;
