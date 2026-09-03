@@ -72,6 +72,8 @@ import {
   buildLearnerReplicationPlan,
   callLearnerReplicationModel,
   createLearnerReplicationWorkflowTracker,
+  learnerReplicationLinkedCompletionContract,
+  learnerReplicationPaidBudget,
   readLearnerReplicationRecovery,
   replicationAssessmentBatches,
   main as runLearnerReplication,
@@ -420,6 +422,49 @@ test('learner replication recovery exposes durable long-workflow progress before
   assert.deepEqual(status.units, { complete: 48, active: 0, failed: 0, missing: 42 });
   assert.deepEqual(status.calls, { completed: 319, failed: 10, reserved: 329, hard_ceiling: 396 });
   assert.equal(fs.existsSync(path.join(outDir, 'workflow-status.json')), true);
+});
+
+test('learner replication linked completion preserves 328 attempts and fails before a 397th call', () => {
+  const recovery = {
+    phase: 'assessment',
+    sourceStudyId: learnerReplicationPlan.id,
+    priorAttempts: 328,
+    completed: Array.from({ length: 18 }, () => ({})),
+    assessment: { completedPackets: 48, responseFreeFailures: 9 },
+  };
+  assert.deepEqual(learnerReplicationLinkedCompletionContract(learnerReplicationPlan, recovery), {
+    studyId: `${learnerReplicationPlan.id}-linked-completion-v1`,
+    spendCap: 396,
+    priorAttemptCount: 328,
+    priorAttemptBase: 328,
+    completedPackets: 48,
+    missingPackets: 42,
+    remainingRecoveryReserve: 9,
+    remainingAttempts: 68,
+    unallocatedAttemptHeadroom: 17,
+    linkedPredecessor: false,
+  });
+
+  let studyReserved = 0;
+  let providerReservations = 0;
+  const admission = {
+    get studyReserved() {
+      return studyReserved;
+    },
+    reserveModelAttempts() {
+      providerReservations += 1;
+      studyReserved += 1;
+      return { study_reserved: studyReserved, remaining: 396 - studyReserved };
+    },
+  };
+  const budget = learnerReplicationPaidBudget(admission, 396, {}, 328);
+  for (let attempt = 329; attempt <= 396; attempt += 1) {
+    assert.equal(budget.reserve().call, attempt);
+    budget.complete();
+  }
+  assert.deepEqual(budget.snapshot(), { used: 396, limit: 396 });
+  assert.throws(() => budget.reserve(), /397\/396/u);
+  assert.equal(providerReservations, 68);
 });
 
 test('learner replication recovery preserves the completed prefix and retries only the interrupted unit', () => {

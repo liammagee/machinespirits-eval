@@ -46,6 +46,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_CONFIG = 'config/tutor-stub-local-learners/invested-rival-learner-replication.v1.yaml';
 const QUALITY_DIMENSIONS = ['overall_quality', 'successful_pedagogy', 'surprise_nonrepetition', 'character_adherence'];
 const VERIFIED_PROVIDER_SCHEMA_RECOVERY = 'verified_response_free_provider_schema_rejection';
+const LINKED_COMPLETION_STUDY_SUFFIX = '-linked-completion-v1';
 const LEARNER_REPLICATION_WORKFLOW_PHASES = Object.freeze([
   'PREFLIGHT',
   'GENERATING',
@@ -317,15 +318,24 @@ export async function callLearnerReplicationModel(args, callCli = callAIWithCliB
   );
 }
 
-function paidBudget(admission, limit, hooks = {}) {
+export function learnerReplicationPaidBudget(admission, limit, hooks = {}, priorAttemptBase = 0) {
   let activeAttempt = null;
   return {
     reserve(detail = {}) {
       if (activeAttempt) throw new Error('model-attempt tracking found an unresolved active attempt');
+      if (priorAttemptBase + admission.studyReserved + 1 > limit) {
+        throw new Error(
+          `paid study aggregate spend cap exceeded before call: ${priorAttemptBase + admission.studyReserved + 1}/${limit}`,
+        );
+      }
       const reservation = admission.reserveModelAttempts(1, detail);
       activeAttempt = { reservation, detail, startedAt: Date.now() };
       hooks.onAttemptStarted?.(activeAttempt);
-      return { call: reservation.study_reserved, limit, remaining: reservation.remaining };
+      return {
+        call: priorAttemptBase + reservation.study_reserved,
+        limit,
+        remaining: limit - priorAttemptBase - reservation.study_reserved,
+      };
     },
     complete() {
       if (!activeAttempt) return;
@@ -340,7 +350,7 @@ function paidBudget(admission, limit, hooks = {}) {
       hooks.onAttemptFailed?.(finished);
     },
     snapshot() {
-      return { used: admission.studyReserved, limit };
+      return { used: priorAttemptBase + admission.studyReserved, limit };
     },
   };
 }
@@ -368,7 +378,14 @@ function learnerReplicationWorkflowUnits(phase, state) {
   return { complete: 0, active: 0, failed: 0, missing: 0 };
 }
 
-export function createLearnerReplicationWorkflowTracker({ plan, outDir, admission, recovery = null, at } = {}) {
+export function createLearnerReplicationWorkflowTracker({
+  plan,
+  outDir,
+  admission,
+  recovery = null,
+  priorAttemptBase = 0,
+  at,
+} = {}) {
   const filePath = path.join(outDir, 'workflow-status.json');
   const priorFailedCalls = recovery?.assessment?.responseFreeFailures || recovery?.interruptedResponseFreeAttempts || 0;
   const state = {
@@ -377,7 +394,7 @@ export function createLearnerReplicationWorkflowTracker({ plan, outDir, admissio
     activeDialogue: 0,
     completedAssessments: recovery?.assessment?.completedPackets || 0,
     activeAssessment: 0,
-    completedCalls: admission.studyReserved - priorFailedCalls,
+    completedCalls: priorAttemptBase + admission.studyReserved - priorFailedCalls,
     failedCalls: priorFailedCalls,
     activeCalls: 0,
     packageComplete: false,
@@ -388,7 +405,7 @@ export function createLearnerReplicationWorkflowTracker({ plan, outDir, admissio
   const callCounts = () => ({
     completed: state.completedCalls,
     failed: state.failedCalls,
-    reserved: admission.studyReserved,
+    reserved: priorAttemptBase + admission.studyReserved,
     hard_ceiling: plan.total_attempt_ceiling,
   });
   let status = createLongRunningWorkflowStatus({
@@ -925,6 +942,14 @@ function isResponseFreeAssessmentFailure(row) {
   );
 }
 
+function isResponseFreeModelError(error) {
+  return (
+    error?.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR' &&
+    error.classification === 'response_free_error' &&
+    ['result_error_without_structured_output', 'provider_rejected_invalid_structured_output'].includes(error.reason)
+  );
+}
+
 function readProviderRejectedAssessmentFailures(plan, source) {
   const failures = [];
   for (const world of plan.worlds) {
@@ -1168,8 +1193,13 @@ export function readLearnerReplicationRecovery(plan, sourceDir) {
   const priorAttempts = reservations.reduce((sum, event) => sum + Number(event.count || 0), 0);
   const ordinaryTechnicalSeal = seal?.status === 'technical_failure' && seal.recovery_permitted === true;
   const potentiallyMisclassifiedProviderSeal = seal?.status === 'failed' && seal.recovery_permitted !== true;
+  const linkedPriorAttemptBase =
+    launch?.study_id === `${plan.id}${LINKED_COMPLETION_STUDY_SUFFIX}`
+      ? Number(priorPlan.provenance?.linkedCompletion?.priorAttemptBase)
+      : null;
+  const linkedCompletionStudyId = `${plan.id}${LINKED_COMPLETION_STUDY_SUFFIX}`;
   if (
-    launch?.study_id !== plan.id ||
+    ![plan.id, linkedCompletionStudyId].includes(launch?.study_id) ||
     launch?.spend_cap !== plan.total_attempt_ceiling ||
     seal?.type !== 'run_sealed' ||
     (!ordinaryTechnicalSeal && !potentiallyMisclassifiedProviderSeal) ||
@@ -1220,6 +1250,8 @@ export function readLearnerReplicationRecovery(plan, sourceDir) {
     return {
       phase: 'assessment',
       source,
+      sourceStudyId: launch.study_id,
+      linkedPriorAttemptBase,
       priorAttempts: assessment.aggregatePriorAttempts,
       responseCount,
       interruptedResponseFreeAttempts: 0,
@@ -1243,11 +1275,61 @@ export function readLearnerReplicationRecovery(plan, sourceDir) {
   return {
     phase: 'generation',
     source,
+    sourceStudyId: launch.study_id,
+    linkedPriorAttemptBase,
     priorAttempts: aggregatePriorAttempts,
     responseCount,
     interruptedResponseFreeAttempts,
     completed,
     partial,
+  };
+}
+
+export function learnerReplicationLinkedCompletionContract(plan, recovery) {
+  if (recovery?.phase !== 'assessment' || recovery.completed?.length !== 18 || !recovery.assessment) {
+    throw new Error('linked completion requires all 18 preserved dialogues and an incomplete assessment phase');
+  }
+  const priorAttemptCount = recovery.priorAttempts;
+  const completedPackets = recovery.assessment.completedPackets;
+  const priorResponseFreeFailures = recovery.assessment.responseFreeFailures;
+  const missingPackets = plan.assessment_packets - completedPackets;
+  const remainingRecoveryReserve = plan.recovery_attempt_reserve - priorResponseFreeFailures;
+  const remainingAttempts = plan.total_attempt_ceiling - priorAttemptCount;
+  const unallocatedAttemptHeadroom = remainingAttempts - missingPackets - remainingRecoveryReserve;
+  if (
+    !Number.isSafeInteger(priorAttemptCount) ||
+    priorAttemptCount < 1 ||
+    !Number.isSafeInteger(completedPackets) ||
+    completedPackets < 0 ||
+    missingPackets < 1 ||
+    !Number.isSafeInteger(priorResponseFreeFailures) ||
+    priorResponseFreeFailures < 0 ||
+    remainingRecoveryReserve < 0 ||
+    unallocatedAttemptHeadroom < 0
+  ) {
+    throw new Error('linked completion attempt accounting does not match the registered study ceiling');
+  }
+  const studyId = `${plan.id}${LINKED_COMPLETION_STUDY_SUFFIX}`;
+  const linkedPredecessor = recovery.sourceStudyId === studyId;
+  if (![plan.id, studyId].includes(recovery.sourceStudyId)) {
+    throw new Error('linked completion predecessor study identity drift');
+  }
+  const inheritedBase = Number(recovery.linkedPriorAttemptBase);
+  const priorAttemptBase = linkedPredecessor ? inheritedBase : priorAttemptCount;
+  if (!Number.isSafeInteger(priorAttemptBase) || priorAttemptBase < 1 || priorAttemptBase > priorAttemptCount) {
+    throw new Error('linked completion prior-attempt base is invalid');
+  }
+  return {
+    studyId,
+    spendCap: plan.total_attempt_ceiling,
+    priorAttemptCount,
+    priorAttemptBase,
+    completedPackets,
+    missingPackets,
+    remainingRecoveryReserve,
+    remainingAttempts,
+    unallocatedAttemptHeadroom,
+    linkedPredecessor,
   };
 }
 
@@ -1565,13 +1647,18 @@ function renderIndexHtml(analysis, plan) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Invested-rival learner replication</title><style>body{font-family:ui-sans-serif,system-ui;margin:0;background:#f3efe7;color:#1f2925}main{max-width:1080px;margin:auto;padding:40px 24px}section{background:#fff;border:1px solid #c9c1b3;border-radius:16px;padding:24px;margin:18px 0}.gates{display:flex;gap:12px;flex-wrap:wrap}.gate{padding:10px 14px;border-radius:999px;background:#ebe5d8}.pass{background:#d8eadb}.fail{background:#f0d3cd}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #ddd}a{color:#175f4c}</style></head><body><main><h1>Invested-rival learner replication</h1><p>Nine matched scaffold/control pairs across three worlds and three learner routes.</p><div class="gates"><span class="gate ${analysis.gates.replication ? 'pass' : 'fail'}">Replication gate: ${analysis.gates.replication ? 'PASS' : 'FAIL'}</span><span class="gate ${analysis.gates.mainTextPaper ? 'pass' : 'fail'}">Main-text paper gate: ${analysis.gates.mainTextPaper ? 'PASS' : 'FAIL'}</span></div><section><h2>Matched results</h2><table><thead><tr><th>World</th><th>Learner</th><th>Baseline</th><th>Scaffold</th><th>Primary Δ</th><th>Encounter Δ</th></tr></thead><tbody>${rows}</tbody></table></section><section><h2>World reports</h2><ul>${links}</ul></section><section><h2>Boundary</h2><p>${escapeHtml(analysis.claimBoundary)}</p></section></main></body></html>`;
 }
 
-async function liveRun(plan, outDir, admission, recovery = null) {
+async function liveRun(plan, outDir, admission, recovery = null, linkedCompletion = null) {
   let workflow;
-  const budget = paidBudget(admission, plan.total_attempt_ceiling, {
-    onAttemptStarted: (attempt) => workflow?.attemptStarted(attempt),
-    onAttemptCompleted: (attempt) => workflow?.attemptCompleted(attempt),
-    onAttemptFailed: (attempt) => workflow?.attemptFailed(attempt),
-  });
+  const budget = learnerReplicationPaidBudget(
+    admission,
+    plan.total_attempt_ceiling,
+    {
+      onAttemptStarted: (attempt) => workflow?.attemptStarted(attempt),
+      onAttemptCompleted: (attempt) => workflow?.attemptCompleted(attempt),
+      onAttemptFailed: (attempt) => workflow?.attemptFailed(attempt),
+    },
+    linkedCompletion?.priorAttemptBase || 0,
+  );
   const provenance = {
     commit: admission.source.commit,
     tree: admission.source.tree,
@@ -1584,6 +1671,19 @@ async function liveRun(plan, outDir, admission, recovery = null) {
     responseFreeRecoveryReserve: plan.recovery_attempt_reserve,
     configuredModels: plan.models,
     authorization: admission.authorization,
+    linkedCompletion: linkedCompletion
+      ? {
+          executionStudyId: linkedCompletion.studyId,
+          priorAttemptBase: linkedCompletion.priorAttemptBase,
+          priorAttemptsPreserved: linkedCompletion.priorAttemptCount,
+          completedAssessmentPacketsPreserved: linkedCompletion.completedPackets,
+          missingAssessmentPackets: linkedCompletion.missingPackets,
+          remainingAttempts: linkedCompletion.remainingAttempts,
+          remainingResponseFreeReserve: linkedCompletion.remainingRecoveryReserve,
+          unallocatedAttemptHeadroom: linkedCompletion.unallocatedAttemptHeadroom,
+          linkedPredecessor: linkedCompletion.linkedPredecessor,
+        }
+      : null,
     recovery: recovery
       ? {
           phase: recovery.phase,
@@ -1614,7 +1714,13 @@ async function liveRun(plan, outDir, admission, recovery = null) {
   const generated = new Map(plan.worlds.map((world) => [world.key, new Map()]));
   try {
     writeJson(path.join(outDir, 'plan.json'), { ...plan, provenance });
-    workflow = createLearnerReplicationWorkflowTracker({ plan, outDir, admission, recovery });
+    workflow = createLearnerReplicationWorkflowTracker({
+      plan,
+      outDir,
+      admission,
+      recovery,
+      priorAttemptBase: linkedCompletion?.priorAttemptBase || 0,
+    });
     fs.mkdirSync(path.join(outDir, 'worlds'));
     for (const world of plan.worlds) {
       const worldDir = path.join(outDir, 'worlds', world.key);
@@ -1791,6 +1897,7 @@ async function liveRun(plan, outDir, admission, recovery = null) {
       completed_dialogues: 18,
       completed_assessments: 72,
       reserved_attempts: admission.reserved,
+      study_reserved: budget.snapshot().used,
       replication_gate: analysis.gates.replication,
       main_text_paper_gate: analysis.gates.mainTextPaper,
     });
@@ -1806,11 +1913,14 @@ async function liveRun(plan, outDir, admission, recovery = null) {
     if (!fs.existsSync(path.join(outDir, 'stopped.json'))) {
       writeJson(path.join(outDir, 'stopped.json'), { error: error.message, budget: budget.snapshot() });
     }
+    const recoveryPermitted = isResponseFreeModelError(error);
     admission.close({
       type: 'run_sealed',
-      status: 'failed',
+      status: recoveryPermitted ? 'technical_failure' : 'failed',
       error: error.message,
       reserved_attempts: admission.reserved,
+      study_reserved: budget.snapshot().used,
+      recovery_permitted: recoveryPermitted,
     });
     workflow?.blocked(error);
     throw error;
@@ -1830,6 +1940,7 @@ export async function main(argv = process.argv.slice(2)) {
       'go-note-path': { type: 'string' },
       'study-state-root': { type: 'string' },
       'recovery-from': { type: 'string' },
+      'linked-completion': { type: 'boolean', default: false },
     },
   });
   const plan = buildLearnerReplicationPlan(ROOT, values.config || DEFAULT_CONFIG);
@@ -1841,6 +1952,17 @@ export async function main(argv = process.argv.slice(2)) {
   const recoveryFrom = values['recovery-from'] ? path.resolve(values['recovery-from']) : null;
   if (recoveryFrom && !values.output) throw new Error('replication recovery requires a fresh --output destination');
   const recovery = recoveryFrom ? readLearnerReplicationRecovery(plan, recoveryFrom) : null;
+  if (values['linked-completion'] && !recovery) {
+    throw new Error('--linked-completion requires --recovery-from');
+  }
+  const linkedCompletion = values['linked-completion']
+    ? learnerReplicationLinkedCompletionContract(plan, recovery)
+    : null;
+  const admissionRecoveryFrom = linkedCompletion
+    ? linkedCompletion.linkedPredecessor
+      ? recoveryFrom
+      : null
+    : recoveryFrom;
   const admission = admitPaidStudyLaunch({
     root: ROOT,
     designPath: plan.design,
@@ -1849,12 +1971,26 @@ export async function main(argv = process.argv.slice(2)) {
     goNotePath: values['go-note-path'],
     spendCap: plan.total_attempt_ceiling,
     destination: outDir,
-    studyId: plan.id,
+    studyId: linkedCompletion?.studyId || plan.id,
     studyStateRoot: path.resolve(ROOT, values['study-state-root'] || '.tutor-stub-traces/.paid-study-state'),
-    ...(recoveryFrom ? { recoveryFrom } : {}),
+    ...(admissionRecoveryFrom ? { recoveryFrom: admissionRecoveryFrom } : {}),
     ...(recovery?.recoveryClassification ? { recoveryClassification: recovery.recoveryClassification } : {}),
   });
-  return liveRun(plan, outDir, admission, recovery);
+  if (linkedCompletion) {
+    admission.record({
+      type: 'linked_completion_admitted',
+      predecessor: recoveryFrom,
+      prior_attempt_base: linkedCompletion.priorAttemptBase,
+      prior_attempts_preserved: linkedCompletion.priorAttemptCount,
+      completed_assessment_packets_preserved: linkedCompletion.completedPackets,
+      missing_assessment_packets: linkedCompletion.missingPackets,
+      remaining_attempts: linkedCompletion.remainingAttempts,
+      remaining_response_free_reserve: linkedCompletion.remainingRecoveryReserve,
+      unallocated_attempt_headroom: linkedCompletion.unallocatedAttemptHeadroom,
+      aggregate_attempt_ceiling: plan.total_attempt_ceiling,
+    });
+  }
+  return liveRun(plan, outDir, admission, recovery, linkedCompletion);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {
