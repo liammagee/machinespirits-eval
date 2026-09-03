@@ -3,6 +3,8 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 
+import { reconcileSharedModelAttemptLedger } from './durableAttemptJournal.js';
+
 function repositoryRelativePath(root, value, label) {
   if (!value || path.isAbsolute(value)) throw new Error(`${label} must be repository-relative`);
   const normalized = path.normalize(value);
@@ -391,15 +393,30 @@ export function sealInterruptedPaidStudyLaunch({
     if (path.dirname(runLedgerPath) !== resolvedDestination) {
       throw new Error('interrupted run ledger is outside its destination');
     }
-    const runEvents = readJsonLines(runLedgerPath, 'interrupted run ledger');
+    let runEvents = readJsonLines(runLedgerPath, 'interrupted run ledger');
     const runLaunch = runEvents.find((event) => event.type === 'launch_admitted');
     if (!runLaunch || runLaunch.study_id !== studyId || runEvents.some((event) => event.type === 'run_sealed')) {
       throw new Error('interrupted run ledger is not one open launch');
     }
-    const reservedInRun = runEvents
-      .filter((event) => event.type === 'model_attempt_reserved')
-      .reduce((sum, event) => sum + Number(event.count || 0), 0);
-    const studyReserved = studyReservedAttempts(studyEvents);
+    const capacities = runEvents.filter((event) => event.type === 'model_attempt_capacity_allocated');
+    for (const capacity of capacities) {
+      reconcileSharedModelAttemptLedger({
+        runLedgerPath,
+        studyLedgerPath,
+        capacityId: capacity.capacity_id,
+        unitId: capacity.unit,
+      });
+    }
+    runEvents = readJsonLines(runLedgerPath, 'interrupted run ledger after attempt reconciliation');
+    const reservedInRun =
+      runEvents
+        .filter((event) => event.type === 'model_attempt_reserved')
+        .reduce((sum, event) => sum + Number(event.count || 0), 0) +
+      runEvents.filter((event) => event.type === 'model_attempt_dispatch_reserved').length;
+    const refreshedStudyEvents = readJsonLines(studyLedgerPath, 'paid study ledger after attempt reconciliation');
+    const studyReserved =
+      studyReservedAttempts(refreshedStudyEvents) +
+      refreshedStudyEvents.filter((event) => event.type === 'study_model_attempt_dispatch_reserved').length;
     const created = studyEvents.find((event) => event.type === 'study_created');
     if (
       !Number.isInteger(reservedInRun) ||
@@ -643,11 +660,14 @@ export function admitPaidStudyLaunch({
       });
       return Object.freeze({ id: capacity.id, count: capacity.count });
     },
-    attemptLedgerEnvironment({ unitId, capacity } = {}) {
+    attemptLedgerEnvironment({ unitId, capacity, maximumTurn = null } = {}) {
       ensureOpen();
       const registered = activeCapacities.get(capacity?.id);
       if (!unitId || !registered || registered.count !== capacity.count) {
         throw new Error('attempt ledger environment requires one active matching capacity allocation');
+      }
+      if (maximumTurn !== null && (!Number.isInteger(maximumTurn) || maximumTurn < 1)) {
+        throw new Error('attempt ledger environment maximum turn must be a positive integer or null');
       }
       return {
         TUTOR_STUB_SHARED_ATTEMPT_LEDGER: JSON.stringify({
@@ -659,6 +679,7 @@ export function admitPaidStudyLaunch({
           unitId,
           capacityId: registered.id,
           capacityLimit: registered.count,
+          maximumTurn,
         }),
       };
     },

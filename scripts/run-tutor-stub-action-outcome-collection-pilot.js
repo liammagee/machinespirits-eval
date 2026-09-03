@@ -107,6 +107,12 @@ function readJsonLines(filePath, label) {
   }
 }
 
+function requiredOptionValue(args, option) {
+  const index = args.indexOf(option);
+  if (index < 0 || index + 1 >= args.length) throw new Error(`job is missing ${option}`);
+  return args[index + 1];
+}
+
 function traceFiles(directory) {
   if (!fs.existsSync(directory)) return [];
   return fs
@@ -120,7 +126,11 @@ export function tutorStubActionOutcomeCollectionChildSpec({ job, admission = nul
   fs.mkdirSync(job.trace_dir, { recursive: false });
   const attemptLedgerEnvironment =
     admission?.attemptLedgerEnvironment && capacity
-      ? admission.attemptLedgerEnvironment({ unitId: job.id, capacity })
+      ? admission.attemptLedgerEnvironment({
+          unitId: job.id,
+          capacity,
+          maximumTurn: Number.parseInt(requiredOptionValue(job.args, '--auto-turns'), 10),
+        })
       : {};
   return {
     ...job,

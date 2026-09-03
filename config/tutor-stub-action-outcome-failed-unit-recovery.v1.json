@@ -1,6 +1,6 @@
 {
   "documentType": "prospective_paid_study_technical_recovery",
-  "revision": 1,
+  "revision": 2,
   "studyId": "tutor-stub-action-outcome-comparable-collection-v2-failed-unit-recovery",
   "sourceStudyId": "tutor-stub-action-outcome-comparable-collection-v2",
   "workplanItem": "adaptive-curriculum-memory-controller",
@@ -22,6 +22,20 @@
       "path": "/private/tmp/machinespirits-action-outcome-comparable-v2-launch/.tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-recovery-3/plan.json",
       "sha256": "63614457da2d04b7046aa73d5e8b42347753c7a7cb2544fd51787acdc335e80e"
     }
+  },
+  "interruptedSegment": {
+    "destination": "/private/tmp/machinespirits-action-outcome-comparable-v2-launch/.tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-failed-unit-recovery",
+    "reserved": 18,
+    "completed": 17,
+    "interruptedAfterDispatch": 1,
+    "affectedUnit": "aocv2_skyway_bakery_r01",
+    "acceptedContinuationTrace": {
+      "path": "/private/tmp/machinespirits-action-outcome-comparable-v2-launch/.tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-failed-unit-recovery/jobs/aocv2_skyway_bakery_r01/continuation-trace/2026-09-02T22-41-54-343Z.jsonl",
+      "sha256": "b96f32fa2a0deb2646b23d7bf8466ba4d6a90da13c6342f11a6786e7f7d55b3e",
+      "acceptThroughTurn": 8,
+      "excludeTurnsAfterRegisteredHorizon": true
+    },
+    "disposition": "Preserve all 18 charged dispatch reservations. Accept completed turns 5 through 8 without redispatch. Retain generated turns 9 and 10 only in the immutable incident trace and exclude them from the registered eight-turn corpus."
   },
   "attemptCeiling": {
     "historicalActualReservations": 2334,
@@ -62,7 +76,7 @@
     }
   ],
   "execution": {
-    "freshDestination": ".tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-failed-unit-recovery",
+    "freshDestination": ".tutor-stub-auto-eval/action-outcome-comparable-collection-v2-2026-09-02-failed-unit-recovery-2",
     "resumeFromLatestDurableAcceptedOutput": true,
     "rerunCompletedTurns": false,
     "rerunValidDialogues": false,

@@ -30,6 +30,16 @@ reuse a saved, accepted automated-learner output plus its saved public analysis.
 The raw failed trace remains immutable; a fresh lineage trace combines the
 accepted prefix with the new continuation for downstream zero-call extraction.
 
+Resume has two independent horizon controls. The public CLI/application boundary
+must propagate an actual resume request into orchestration, where a fixed turn
+count means the dialogue's total horizon. The shared attempt ledger also receives
+that maximum turn and refuses a reservation before provider dispatch when a call
+would exceed it. Integration tests must cross the public application boundary;
+testing orchestration alone does not prove that CLI state reached it. When a
+launcher dies, closeout first reconciles every per-dispatch reservation, assigns
+each one a terminal disposition, and includes those reservations in the study
+total before another recovery can be admitted.
+
 This is shared infrastructure, but it is not yet universal. Other paid runners
 continue to use their existing ledgers and recovery rules until the migration
 card `durable-evaluation-runner-migration` explicitly moves and tests each one.

@@ -60,7 +60,12 @@ function writeJsonAtomic(filePath, value) {
 }
 
 function writeRecoveryStatus({ loaded, preflight, admission, completedTurns, workflowState, scientificVerdict }) {
-  const events = readJsonLines(admission.ledger_path, 'recovery run ledger');
+  const events = [
+    ...(preflight.predecessorLedgerPath
+      ? readJsonLines(preflight.predecessorLedgerPath, 'predecessor recovery run ledger')
+      : []),
+    ...readJsonLines(admission.ledger_path, 'recovery run ledger'),
+  ];
   const status = buildDurableEvaluationStatus({
     events,
     plannedUnits: 3,
@@ -122,7 +127,7 @@ export function loadTutorStubActionOutcomeFailedUnitRecoveryDesign({
   return { root: path.resolve(root), relativePath, absolutePath, design };
 }
 
-export function preflightTutorStubActionOutcomeFailedUnitRecovery({ loaded, destination } = {}) {
+export function preflightTutorStubActionOutcomeFailedUnitRecovery({ loaded, destination, recoveryFrom } = {}) {
   const { design } = loaded;
   const failures = [];
   const check = (condition, label) => {
@@ -130,6 +135,10 @@ export function preflightTutorStubActionOutcomeFailedUnitRecovery({ loaded, dest
   };
   const reportPath = path.resolve(design.sourceArtifacts?.generationReport?.path || '');
   const planPath = path.resolve(design.sourceArtifacts?.launchPlan?.path || '');
+  const interruptedSegment = design.interruptedSegment;
+  const predecessor = recoveryFrom ? path.resolve(recoveryFrom) : null;
+  const predecessorLedgerPath = predecessor ? path.join(predecessor, 'run-ledger.jsonl') : null;
+  const acceptedContinuationPath = path.resolve(interruptedSegment?.acceptedContinuationTrace?.path || '');
   check(design.documentType === 'prospective_paid_study_technical_recovery', 'document_type');
   check(design.scientificDesign?.unchanged === true, 'scientific_design_unchanged');
   check(design.scientificDesign?.turnHorizon === 8, 'turn_horizon');
@@ -141,6 +150,17 @@ export function preflightTutorStubActionOutcomeFailedUnitRecovery({ loaded, dest
   check(design.attemptCeiling?.nominalAggregateEffectiveCeiling === 4960, 'aggregate_ceiling');
   check(Array.isArray(design.units) && design.units.length === 3, 'three_units');
   check(design.units?.reduce((sum, unit) => sum + Number(unit.capacity || 0), 0) === 100, 'capacity_sum');
+  check(Boolean(predecessor), 'recovery_predecessor_required');
+  check(
+    predecessor && path.resolve(interruptedSegment?.destination || '') === predecessor,
+    'recovery_predecessor_identity',
+  );
+  check(interruptedSegment?.reserved === 18, 'interrupted_segment_reserved');
+  check(interruptedSegment?.completed === 17, 'interrupted_segment_completed');
+  check(interruptedSegment?.interruptedAfterDispatch === 1, 'interrupted_segment_interrupted');
+  check(interruptedSegment?.affectedUnit === 'aocv2_skyway_bakery_r01', 'interrupted_segment_unit');
+  check(interruptedSegment?.acceptedContinuationTrace?.acceptThroughTurn === 8, 'accepted_continuation_horizon');
+  check(interruptedSegment?.acceptedContinuationTrace?.excludeTurnsAfterRegisteredHorizon === true, 'exclude_overrun');
   check(!fs.existsSync(destination), 'create_once_destination');
   check(fs.existsSync(reportPath), 'source_report_exists');
   check(fs.existsSync(planPath), 'source_plan_exists');
@@ -149,6 +169,52 @@ export function preflightTutorStubActionOutcomeFailedUnitRecovery({ loaded, dest
   }
   if (fs.existsSync(planPath)) {
     check(sha256File(planPath) === design.sourceArtifacts.launchPlan.sha256, 'source_plan_hash');
+  }
+  check(Boolean(predecessorLedgerPath && fs.existsSync(predecessorLedgerPath)), 'predecessor_ledger_exists');
+  check(fs.existsSync(acceptedContinuationPath), 'accepted_continuation_exists');
+  if (fs.existsSync(acceptedContinuationPath)) {
+    check(
+      sha256File(acceptedContinuationPath) === interruptedSegment.acceptedContinuationTrace.sha256,
+      'accepted_continuation_hash',
+    );
+  }
+  let predecessorEvents = [];
+  if (predecessorLedgerPath && fs.existsSync(predecessorLedgerPath)) {
+    predecessorEvents = readJsonLines(predecessorLedgerPath, 'predecessor recovery run ledger');
+    const reservations = predecessorEvents.filter((event) => event.type === 'model_attempt_dispatch_reserved');
+    const terminalTypes = new Set([
+      'attempt_completed',
+      'attempt_failed',
+      'attempt_cancelled_before_dispatch',
+      'attempt_interrupted_after_dispatch',
+    ]);
+    const terminals = predecessorEvents.filter((event) => terminalTypes.has(event.type));
+    const seal = predecessorEvents.findLast((event) => event.type === 'run_sealed');
+    check(reservations.length === 18, 'predecessor_reserved_attempts');
+    check(
+      terminals.filter((event) => event.type === 'attempt_completed').length === 17,
+      'predecessor_completed_attempts',
+    );
+    check(
+      terminals.filter((event) => event.type === 'attempt_interrupted_after_dispatch').length === 1,
+      'predecessor_interrupted_attempts',
+    );
+    check(terminals.length === reservations.length, 'predecessor_terminal_attempt_count');
+    check(
+      new Set(terminals.map((event) => event.attempt_id)).size === reservations.length,
+      'predecessor_balanced_attempts',
+    );
+    check(seal?.status === 'technical_failure' && seal?.recovery_permitted === true, 'predecessor_recovery_seal');
+    check(
+      JSON.stringify([
+        ...new Set(
+          predecessorEvents
+            .filter((event) => event.type === 'partial_dialogue_continuation_dispatched')
+            .map((event) => event.unit),
+        ),
+      ]) === JSON.stringify(['aocv2_skyway_bakery_r01']),
+      'predecessor_exact_touched_unit',
+    );
   }
   const report = fs.existsSync(reportPath) ? readJson(reportPath, 'source generation report') : null;
   const sourcePlan = fs.existsSync(planPath) ? readJson(planPath, 'source launch plan') : null;
@@ -195,6 +261,18 @@ export function preflightTutorStubActionOutcomeFailedUnitRecovery({ loaded, dest
       acceptedPendingLearner: acceptedPendingLearnerEvent(events, turns.length),
     });
   }
+  let acceptedContinuationEvents = [];
+  if (fs.existsSync(acceptedContinuationPath)) {
+    try {
+      acceptedContinuationEvents = buildTutorStubAcceptedContinuationPrefix({
+        events: readJsonLines(acceptedContinuationPath, 'accepted continuation trace'),
+        sourceCompletedTurns: 4,
+        maximumTurn: 8,
+      });
+    } catch (error) {
+      failures.push(`accepted_continuation_prefix:${error.message}`);
+    }
+  }
   return {
     schema: 'machinespirits.tutor-stub.action-outcome-failed-unit-recovery-preflight.v1',
     status: failures.length ? 'failed_zero_call' : 'passed_zero_call',
@@ -206,13 +284,61 @@ export function preflightTutorStubActionOutcomeFailedUnitRecovery({ loaded, dest
     report,
     sourcePlan,
     units,
+    recoveryFrom: predecessor,
+    predecessorLedgerPath,
+    predecessorEvents,
+    acceptedContinuationPath,
+    acceptedContinuationEvents,
     attempts: {
       historicalActualReservations: 2334,
-      recoverySegmentReserved: 0,
+      recoverySegmentReserved: interruptedSegment?.reserved || 0,
       recoverySegmentHardCeiling: 100,
       nominalAggregateEffectiveCeiling: 4960,
     },
   };
+}
+
+export function buildTutorStubAcceptedContinuationPrefix({ events, sourceCompletedTurns, maximumTurn } = {}) {
+  if (!Array.isArray(events) || !events.length) throw new Error('continuation trace is empty');
+  if (
+    !Number.isInteger(sourceCompletedTurns) ||
+    !Number.isInteger(maximumTurn) ||
+    sourceCompletedTurns >= maximumTurn
+  ) {
+    throw new Error('accepted continuation horizon is invalid');
+  }
+  const runStart = events.find((event) => event.type === 'run_start');
+  if (!runStart) throw new Error('continuation trace has no run_start');
+  const expectedTurns = Array.from(
+    { length: maximumTurn - sourceCompletedTurns },
+    (_, index) => sourceCompletedTurns + index + 1,
+  );
+  const completed = traceTurns(events)
+    .map((event) => Number(event.turn))
+    .filter((turn) => turn > sourceCompletedTurns && turn <= maximumTurn);
+  if (JSON.stringify(completed) !== JSON.stringify(expectedTurns)) {
+    throw new Error(`accepted continuation turns are incomplete: ${completed.join(',')}`);
+  }
+  const cutoff = events.findLastIndex(
+    (event) => event.type === 'turn_complete' && Number(event.turn) === maximumTurn && event.turnRecord,
+  );
+  if (cutoff < 0) throw new Error(`continuation trace has no completed turn ${maximumTurn}`);
+  const accepted = events.slice(0, cutoff + 1);
+  const failed = accepted.find((event) =>
+    ['model_call_error', 'model_call_aborted', 'model_attempt_failed'].includes(event.type),
+  );
+  if (failed) throw new Error(`accepted continuation contains ${failed.type} at turn ${failed.turn ?? 'unknown'}`);
+  return [
+    ...accepted,
+    {
+      type: 'run_end',
+      runId: runStart.runId,
+      seq: Number(accepted.at(-1)?.seq || accepted.length) + 1,
+      reason: 'auto_turn_cap',
+      turns: maximumTurn,
+      recoveredFromInterruptedOverrun: true,
+    },
+  ];
 }
 
 export function buildTutorStubActionOutcomeContinuationJob({ unit, destination }) {
@@ -293,6 +419,66 @@ export function composeTutorStubActionOutcomeRecoveryTrace({ sourceTrace, contin
   };
 }
 
+export function materializeAcceptedTutorStubActionOutcomeRecoveryUnit({ preflight, unit, destination }) {
+  const jobRoot = path.join(destination, 'jobs', unit.jobId);
+  const continuationDir = path.join(jobRoot, 'continuation-trace');
+  const lineageDir = path.join(jobRoot, 'reconciled-trace');
+  fs.mkdirSync(jobRoot, { recursive: false });
+  fs.mkdirSync(continuationDir, { recursive: false });
+  fs.mkdirSync(lineageDir, { recursive: false });
+  const continuationTrace = path.join(continuationDir, `${unit.jobId}-accepted-through-turn-8.jsonl`);
+  writeOnce(
+    continuationTrace,
+    `${preflight.acceptedContinuationEvents.map((event) => JSON.stringify(event)).join('\n')}\n`,
+  );
+  const reconciledTrace = path.join(lineageDir, `${unit.jobId}.jsonl`);
+  const lineage = composeTutorStubActionOutcomeRecoveryTrace({
+    sourceTrace: unit.tracePath,
+    continuationTrace,
+    outputPath: reconciledTrace,
+  });
+  const reconciledEvents = readJsonLines(reconciledTrace, 'materialized accepted recovery trace');
+  const transcript = path.join(jobRoot, 'transcript.json');
+  writeOnce(transcript, {
+    schema: 'machinespirits.tutor-stub.recovered-transcript.v1',
+    sourceTrace: unit.tracePath,
+    continuationTrace: preflight.acceptedContinuationPath,
+    acceptedThroughTurn: 8,
+    turns: traceTurns(reconciledEvents).map((event) => event.turnRecord),
+  });
+  const job = {
+    ...unit.job,
+    job_root: jobRoot,
+    trace_dir: lineageDir,
+    transcript,
+    model_attempt_ceiling: 81,
+  };
+  const row = extractTutorStubActionOutcomeCollectionRow({
+    job,
+    exit: { code: 0, signal: null, spawn_error: null },
+    destination,
+  });
+  if (row.status !== 'complete') throw new Error(`accepted recovery prefix is incomplete: ${row.status}`);
+  return {
+    ...row,
+    artifact_root: destination,
+    reconciled_trace: reconciledTrace,
+    recovery: {
+      source_trace: unit.tracePath,
+      continuation_trace: preflight.acceptedContinuationPath,
+      materialized_continuation_trace: continuationTrace,
+      accepted_pending_learner_output_reused: lineage.acceptedPendingLearnerOutputReused,
+      new_attempts_reserved: 18,
+      accepted_attempts_completed: 10,
+      interrupted_attempts: 1,
+      excluded_out_of_horizon_attempts: 7,
+      source_completed_turns: unit.completedTurns,
+      accepted_through_turn: 8,
+      overrun_turns_excluded: [9, 10],
+    },
+  };
+}
+
 function copyValidCorpus({ report, recoveredRows, destination }) {
   const corpus = path.join(destination, 'reconciled-corpus');
   fs.mkdirSync(corpus, { recursive: false });
@@ -322,6 +508,14 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
     source: admission.source,
     authorization: admission.authorization,
     attempts: preflight.attempts,
+    recoveryFrom: preflight.recoveryFrom,
+    acceptedInterruptedSegment: {
+      affectedUnit: loaded.design.interruptedSegment.affectedUnit,
+      acceptedContinuationTrace: preflight.acceptedContinuationPath,
+      acceptThroughTurn: loaded.design.interruptedSegment.acceptedContinuationTrace.acceptThroughTurn,
+      excludedTurns: [9, 10],
+      providerDispatchesRerun: 0,
+    },
     units: preflight.units.map((unit) => ({
       jobId: unit.jobId,
       completedTurns: unit.completedTurns,
@@ -330,18 +524,30 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
       acceptedPendingLearnerOutput: Boolean(unit.acceptedPendingLearner),
     })),
   });
-  const recoveredRows = [];
+  const bankedUnit = preflight.units.find((unit) => unit.jobId === loaded.design.interruptedSegment.affectedUnit);
+  if (!bankedUnit) throw new Error('interrupted recovery unit is absent from the registered units');
+  const recoveredRows = [
+    materializeAcceptedTutorStubActionOutcomeRecoveryUnit({ preflight, unit: bankedUnit, destination }),
+  ];
+  admission.record({
+    type: 'partial_dialogue_continuation_completed',
+    unit: bankedUnit.jobId,
+    turns: 8,
+    new_attempts_reserved: 0,
+    predecessor_attempts_reserved: 18,
+    accepted_from_predecessor: true,
+  });
   let currentUnitId = null;
   writeRecoveryStatus({
     loaded,
     preflight,
     admission,
-    completedTurns: 0,
+    completedTurns: 4,
     workflowState: 'running',
     scientificVerdict: 'registered_measurement_pending_human_review',
   });
   try {
-    for (const unit of preflight.units) {
+    for (const unit of preflight.units.filter((candidate) => candidate.jobId !== bankedUnit.jobId)) {
       currentUnitId = unit.jobId;
       const capacity = admission.allocateModelAttemptCapacity(unit.capacity, { unit: unit.jobId });
       const continuationJob = buildTutorStubActionOutcomeContinuationJob({ unit, destination });
@@ -416,12 +622,19 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
         workflowState: 'running',
         scientificVerdict: 'registered_measurement_pending_human_review',
       });
-      progress(`recovered ${recoveredRows.length}/3 ${unit.jobId}; new attempts ${admission.reserved}/100`);
+      progress(
+        `recovered ${recoveredRows.length}/3 ${unit.jobId}; recovery segment attempts ${admission.studyReserved}/100`,
+      );
     }
     const { corpus, rows } = copyValidCorpus({ report: preflight.report, recoveredRows, destination });
-    const newAttempts = admission.reserved;
+    const currentRunAttempts = admission.reserved;
+    const recoverySegmentAttempts = admission.studyReserved;
+    const attemptEvents = [
+      ...preflight.predecessorEvents,
+      ...readJsonLines(admission.ledger_path, 'recovery run ledger'),
+    ];
     const segmentAttemptStatus = buildDurableEvaluationStatus({
-      events: readJsonLines(admission.ledger_path, 'recovery run ledger'),
+      events: attemptEvents,
       plannedUnits: 3,
       plannedTurns: 12,
       completedTurns: 12,
@@ -461,7 +674,7 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
         completed_turns: 480,
         planned_turns: 480,
         model_attempts: {
-          reserved_by_children: loaded.design.attemptCeiling.historicalActualReservations + newAttempts,
+          reserved_by_children: loaded.design.attemptCeiling.historicalActualReservations + recoverySegmentAttempts,
           completed: loaded.design.attemptCeiling.historicalCompleted + segmentAttemptStatus.completed,
           failed: loaded.design.attemptCeiling.historicalFailed + segmentAttemptStatus.failed,
           cancelled_before_dispatch: segmentAttemptStatus.cancelled_before_dispatch,
@@ -470,12 +683,14 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
             segmentAttemptStatus.interrupted_after_dispatch,
           unexplained: segmentAttemptStatus.unexplained,
           reserved_in_predecessor: loaded.design.attemptCeiling.historicalActualReservations,
-          reserved_in_current_run: newAttempts,
-          reserved_by_shared_study_ledger: loaded.design.attemptCeiling.historicalActualReservations + newAttempts,
+          reserved_in_current_run: currentRunAttempts,
+          recovery_segment_predecessor_reserved: loaded.design.interruptedSegment.reserved,
+          reserved_by_shared_study_ledger:
+            loaded.design.attemptCeiling.historicalActualReservations + recoverySegmentAttempts,
           hard_ceiling: loaded.design.attemptCeiling.nominalAggregateEffectiveCeiling,
           historical_actual_reserved: loaded.design.attemptCeiling.historicalActualReservations,
-          recovery_segment_reserved: newAttempts,
-          actual_reserved_total: loaded.design.attemptCeiling.historicalActualReservations + newAttempts,
+          recovery_segment_reserved: recoverySegmentAttempts,
+          actual_reserved_total: loaded.design.attemptCeiling.historicalActualReservations + recoverySegmentAttempts,
           recovery_segment_hard_ceiling: loaded.design.attemptCeiling.recoverySegmentHardCeiling,
           nominal_aggregate_effective_ceiling: loaded.design.attemptCeiling.nominalAggregateEffectiveCeiling,
           reconciled_trace_lineage_reserved: rowLineageReserved,
@@ -519,7 +734,8 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
       status: 'complete',
       complete_units: 3,
       failed_units: 0,
-      reserved_attempts: newAttempts,
+      reserved_attempts: currentRunAttempts,
+      study_reserved_attempts: recoverySegmentAttempts,
     });
     writeRecoveryStatus({
       loaded,
@@ -543,7 +759,12 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
       workflowState: 'failed',
       scientificVerdict: 'registered_measurement_pending_human_review',
     });
-    admission.close({ type: 'run_sealed', status: 'technical_failure', error: error.message });
+    admission.close({
+      type: 'run_sealed',
+      status: 'technical_failure',
+      recovery_permitted: true,
+      error: error.message,
+    });
     throw error;
   }
 }
@@ -554,6 +775,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     options: {
       design: { type: 'string', default: ACTION_OUTCOME_FAILED_UNIT_RECOVERY_DESIGN },
       destination: { type: 'string' },
+      'recovery-from': { type: 'string' },
       'launch-commit': { type: 'string' },
       'go-note-commit': { type: 'string' },
       'go-note-path': { type: 'string' },
@@ -564,13 +786,14 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
   });
   if (values.help) {
     process.stdout.write(
-      'Usage: node scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js --destination <fresh-dir> --dry-run | --launch-commit <sha> --go-note-commit <sha> --go-note-path <note> --accept-charges\n',
+      'Usage: node scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js --recovery-from <sealed-dir> --destination <fresh-dir> --dry-run | --launch-commit <sha> --go-note-commit <sha> --go-note-path <note> --accept-charges\n',
     );
     return null;
   }
   const loaded = loadTutorStubActionOutcomeFailedUnitRecoveryDesign({ root: ROOT, designPath: values.design });
   const destination = path.resolve(values.destination || loaded.design.execution.freshDestination);
-  const preflight = preflightTutorStubActionOutcomeFailedUnitRecovery({ loaded, destination });
+  const recoveryFrom = values['recovery-from'] ? path.resolve(values['recovery-from']) : null;
+  const preflight = preflightTutorStubActionOutcomeFailedUnitRecovery({ loaded, destination, recoveryFrom });
   if (preflight.status !== 'passed_zero_call') {
     throw new Error(`failed-unit recovery preflight failed: ${preflight.failures.join(', ')}`);
   }
@@ -591,6 +814,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     studyId: loaded.design.studyId,
     studyStateRoot: path.join(path.dirname(destination), '.paid-study-state'),
     destination,
+    recoveryFrom,
   });
   return executeTutorStubActionOutcomeFailedUnitRecovery({ loaded, preflight, admission, ...overrides });
 }
