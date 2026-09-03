@@ -1,8 +1,8 @@
 ---
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
-date: "August 2026"
-version: "3.0.300"
+date: "September 2026"
+version: "3.0.301"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -3865,6 +3865,8 @@ Four design lessons follow, stated as constraints rather than morals. (1) Oversi
 
 **Later incident: a ceiling per destination is not a ceiling per study (2026-08-30).** The refusal-narrowing calibration in §6.28 exposed a different failure. Two sessions admitted the same registered study about one minute apart under different create-once destination names. Each execution respected its local 72-attempt counter, including the second execution's missing-only recovery, but their combined exposure reached **144 attempts against the user's 72-attempt study maximum**. The first produced 72 reader outputs; the second produced 71 and retained one transport failure. All three artifact roots remain preserved, and neither execution is selected as the uniquely authorized one. The missing control was shared ownership and accounting across processes, not another approval document. The repair, merged in PR #883, acquires an atomic durable lease for the declared study before provider initialization and charges initial and permitted recovery reservations to one study-wide ledger. Offline multi-process fixtures check that a competing launcher is rejected before a model call and that a sealed technical stop can hand off only the remaining budget. These are runtime contract tests, not a new paid validation or a tutoring result. The case qualifies lesson (4): a mechanical counter protects only the scope it actually owns. Sources: workplan items `frame-refuser-refusal-narrowing` and `paid-study-cross-session-budget-lease`; private archive commits `0d81c69d6` and `b8b184368`; `services/paidStudyLaunchContract.js` and `tests/paidStudyLaunchContract.test.js` at merge `e34ee66d9`.
 
+**Subsequent operational hardening (2026-09-02).** PR #950 (`8dc5ceb05`) implements the durable-record lesson prospectively. A versioned, atomically replaced status record outside the sealed generation root now carries the complete requested phase plan; explicit `RECOVERING`, `BLOCKED`, and `HANDOFF_PENDING` states; unit and call accounting; directly evidenced model-activity status; pace and ETA provenance; the next action and stopping condition; human-action status; and repair/recovery history, with fallback to the last valid record after an interrupted write. The action-outcome collection workflow is the first adopter: a sealed `generation_complete` report advances only to `HANDOFF_PENDING` for zero-call extraction and cannot be reported as whole-workflow completion. This is post-study operational infrastructure: it made no model calls, changes no sealed artifact, study design, threshold, model route, call ceiling, or result, and did not govern the historical runs reported above. Sources: PR #950 at merge `8dc5ceb05` and workplan item `repository-long-running-workflow-transparency`; implementation in its generic and action-outcome status services and reporter.
+
 *Status.* Process observations, not tutoring results; this section originates no claim about an experimental treatment. The earlier relay counts reproduce from the committed ledger (`docs/adaptation-refinement/relay/`, memos 001–069a and `STATE.md`) and `git log` over 2026-08-12/13 on the campaign branch. The later incident's attempt counts are preserved in the two sealed calibration reports, whose aggregate extracts and source hashes are recorded in `config/adaptive-tutor-evidence/` (`frame-refuser-closeouts-2026-08-30.json`).
 
 ### 7.16 The limits of prompt-level adaptation: what context cannot add, and what it cannot subtract
@@ -4843,6 +4845,10 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.301** (2026-09-02)
+
+:   **§7.15 prospective operational-hardening note: PR #950 makes whole-workflow state durable without changing the paper's evidence.** Records the versioned atomic status contract added after the reported experiments: complete phase plans, explicit recovery/block/handoff states, unit and call accounting, directly evidenced model activity, evidence-based pace and ETA, next-action and stopping conditions, human-action state, repair/recovery history, and fallback to the last valid record after an interrupted write. The action-outcome collection path is the first adopter and now distinguishes a sealed generation block from whole-workflow completion. The note explicitly classifies this as post-study operational infrastructure that did not govern historical runs and changes no sealed artifact, design, threshold, route, ceiling, result, abstract, headline N, or conclusion. Sources: PR #950 at merge `8dc5ceb05` and workplan item `repository-long-running-workflow-transparency`; implementation in its generic and action-outcome status services and reporter. Frontmatter date advanced to September 2026; no sections renumbered.
 
 **v3.0.300** (2026-08-31)
 
