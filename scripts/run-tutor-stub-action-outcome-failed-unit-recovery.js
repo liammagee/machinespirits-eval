@@ -479,14 +479,21 @@ export function materializeAcceptedTutorStubActionOutcomeRecoveryUnit({ prefligh
   };
 }
 
-function copyValidCorpus({ report, recoveredRows, destination }) {
+export function resolveTutorStubActionOutcomeRowTrace({ row, sourceReportPath }) {
+  if (row.reconciled_trace) return path.resolve(row.reconciled_trace);
+  if (!row.trace) throw new Error(`reconciled corpus row ${row.job_id || '<unknown>'} has no trace`);
+  const artifactRoot = row.artifact_root || path.dirname(sourceReportPath);
+  return path.resolve(artifactRoot, row.trace);
+}
+
+function copyValidCorpus({ report, recoveredRows, destination, sourceReportPath }) {
   const corpus = path.join(destination, 'reconciled-corpus');
   fs.mkdirSync(corpus, { recursive: false });
   const replacements = new Map(recoveredRows.map((row) => [row.job_id, row]));
   const rows = report.rows.map((row) => replacements.get(row.job_id) || row);
   for (const row of rows) {
     if (row.status !== 'complete') throw new Error(`reconciled corpus retains incomplete unit ${row.job_id}`);
-    const source = row.reconciled_trace || path.resolve(row.artifact_root, row.trace);
+    const source = resolveTutorStubActionOutcomeRowTrace({ row, sourceReportPath });
     fs.copyFileSync(source, path.join(corpus, `${row.job_id}.jsonl`), fs.constants.COPYFILE_EXCL);
   }
   return { corpus, rows };
@@ -626,7 +633,12 @@ export async function executeTutorStubActionOutcomeFailedUnitRecovery({
         `recovered ${recoveredRows.length}/3 ${unit.jobId}; recovery segment attempts ${admission.studyReserved}/100`,
       );
     }
-    const { corpus, rows } = copyValidCorpus({ report: preflight.report, recoveredRows, destination });
+    const { corpus, rows } = copyValidCorpus({
+      report: preflight.report,
+      recoveredRows,
+      destination,
+      sourceReportPath: preflight.reportPath,
+    });
     const currentRunAttempts = admission.reserved;
     const recoverySegmentAttempts = admission.studyReserved;
     const attemptEvents = [

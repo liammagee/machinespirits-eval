@@ -48,6 +48,7 @@ import {
   buildTutorStubAcceptedContinuationPrefix,
   composeTutorStubActionOutcomeRecoveryTrace,
   materializeAcceptedTutorStubActionOutcomeRecoveryUnit,
+  resolveTutorStubActionOutcomeRowTrace,
 } from '../scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -1122,6 +1123,20 @@ test('accepted interrupted continuation keeps only the exact registered turn pre
       }),
     /model_call_error/u,
   );
+});
+
+test('reconciled corpus resolves rows created by the latest recovery relative to its report', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'action-outcome-row-trace-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const reportPath = path.join(base, 'report.json');
+  const trace = resolveTutorStubActionOutcomeRowTrace({
+    row: {
+      job_id: 'fixture-job',
+      trace: 'jobs/fixture-job/traces/trace.jsonl',
+    },
+    sourceReportPath: reportPath,
+  });
+  assert.equal(trace, path.join(base, 'jobs/fixture-job/traces/trace.jsonl'));
 });
 
 function traceTurnsForTest(events) {
