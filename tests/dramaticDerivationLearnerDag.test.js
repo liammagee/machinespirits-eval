@@ -207,6 +207,99 @@ test('the assertion channel is still reported as its own channel', () => {
   assert.equal(dag.assessment.bottleneck, 'grounded_asserted_secret');
 });
 
+test('an earlier assertion of the same answer carries forward when its final premise is grounded', () => {
+  const world = smokeWorld();
+  const p1 = world.premiseById.get('p1').fact;
+  const p2 = world.premiseById.get('p2').fact;
+  const p3 = world.premiseById.get('p3').fact;
+  const ledger = [
+    { turn: 2, premiseId: 'p1', via: 'director' },
+    { turn: 5, premiseId: 'p2', via: 'tutor' },
+    { turn: 8, premiseId: 'p3', via: 'tutor' },
+  ];
+  const dag = buildLearnerDag(
+    [
+      buildLearnerDagSnapshot(world, {
+        turn: 3,
+        boardFacts: [p1],
+        validFacts: [p1],
+        assertion: world.secret.fact,
+        ledger,
+      }),
+      buildLearnerDagSnapshot(world, {
+        turn: 8,
+        boardFacts: [p1, p2, p3],
+        validFacts: [p1, p2, p3],
+        assertion: null,
+        ledger,
+      }),
+    ],
+    world,
+  );
+
+  assert.equal(dag.assessment.firstSecretAssertionTurn, 3);
+  assert.equal(dag.assessment.firstSecretEntailedTurn, 8);
+  assert.equal(dag.assessment.latestAssertionTurn, 3);
+  assert.equal(dag.assessment.carriedSecretAssertion, true);
+  assert.equal(dag.assessment.assertedSecret, true);
+  assert.equal(dag.assessment.bottleneck, 'grounded_asserted_secret');
+});
+
+test('a later mismatched assertion supersedes an earlier correct answer', () => {
+  const world = smokeWorld();
+  const facts = ['p1', 'p2', 'p3'].map((id) => world.premiseById.get(id).fact);
+  const dag = buildLearnerDag(
+    [
+      buildLearnerDagSnapshot(world, {
+        turn: 3,
+        boardFacts: facts.slice(0, 1),
+        validFacts: facts.slice(0, 1),
+        assertion: world.secret.fact,
+      }),
+      buildLearnerDagSnapshot(world, {
+        turn: 8,
+        boardFacts: facts,
+        validFacts: facts,
+        assertion: world.mirror.fact,
+      }),
+    ],
+    world,
+  );
+
+  assert.equal(dag.assessment.finalSecretEntailed, true);
+  assert.equal(dag.assessment.assertedSecret, false);
+  assert.equal(dag.assessment.assertedMirror, true);
+  assert.equal(dag.assessment.carriedSecretAssertion, false);
+  assert.equal(dag.assessment.bottleneck, 'mirror_assertion_after_entailment');
+});
+
+test('a premature unsupported answer remains non-closing after the proof is grounded', () => {
+  const world = smokeWorld();
+  const facts = ['p1', 'p2', 'p3'].map((id) => world.premiseById.get(id).fact);
+  const dag = buildLearnerDag(
+    [
+      buildLearnerDagSnapshot(world, {
+        turn: 3,
+        boardFacts: facts.slice(0, 1),
+        validFacts: facts.slice(0, 1),
+        assertion: ['heir', 'someoneElse'],
+      }),
+      buildLearnerDagSnapshot(world, {
+        turn: 8,
+        boardFacts: facts,
+        validFacts: facts,
+        assertion: null,
+      }),
+    ],
+    world,
+  );
+
+  assert.equal(dag.assessment.finalSecretEntailed, true);
+  assert.equal(dag.assessment.assertedSecret, false);
+  assert.equal(dag.assessment.carriedSecretAssertion, false);
+  assert.equal(dag.assessment.bottleneck, 'assertion_gap');
+});
+
 test('voicing the secret without the evidence to entail it does not count as stating it', () => {
   const world = smokeWorld();
   const p1 = world.premiseById.get('p1').fact;
