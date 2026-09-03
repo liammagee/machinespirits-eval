@@ -11,8 +11,8 @@ test('repository paid-launcher inventory is complete', () => {
   assert.deepEqual(result.issues, []);
   assert.equal(result.discovered.length, result.entries);
   assert.deepEqual(result.durableCounts, {
-    referenceImplementation: 2,
-    migrationRequired: 7,
+    referenceImplementation: 3,
+    migrationRequired: 6,
     retireOrMigrate: 10,
   });
 });

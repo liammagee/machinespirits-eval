@@ -794,6 +794,12 @@ export function admitPaidStudyLaunch({
         throw new Error('only a sealed technical failure or recoverable pause may permit recovery');
       }
       for (const capacity of [...activeCapacities.values()]) {
+        reconcileSharedModelAttemptLedger({
+          runLedgerPath: ledgerPath,
+          studyLedgerPath: lease.studyLedgerPath,
+          capacityId: capacity.id,
+          unitId: capacity.detail.unit_id || capacity.detail.unit || capacity.id,
+        });
         const used = readJsonLines(ledgerPath, 'paid study run ledger').filter(
           (candidate) => candidate.type === 'model_attempt_dispatch_reserved' && candidate.capacity_id === capacity.id,
         ).length;

@@ -4,7 +4,8 @@
   "durableMigration": {
     "referenceImplementation": [
       "scripts/run-tutor-stub-action-outcome-collection-pilot.js",
-      "scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js"
+      "scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js",
+      "scripts/run-invested-rival-learner-replication.js"
     ],
     "migrationRequired": [
       "scripts/run-tutor-stub-action-outcome-model-judge-shadow.js",
@@ -12,8 +13,7 @@
       "scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js",
       "scripts/run-local-qwen-invested-rival.js",
       "scripts/run-invested-rival-luna-reference.js",
-      "scripts/run-invested-rival-learner-iteration.js",
-      "scripts/run-invested-rival-learner-replication.js"
+      "scripts/run-invested-rival-learner-iteration.js"
     ],
     "retireOrMigrate": [
       "scripts/run-adaptive-warrant-outcome-main-block.js",
@@ -111,7 +111,7 @@
       "path": "scripts/run-invested-rival-learner-replication.js",
       "registered": "2026-09-02",
       "disposition": "shared_contract",
-      "reason": "Post-policy matched scaffold/control replication across three learner routes and three worlds; adopts the shared admission, create-once state, study-wide 396-attempt ceiling, and append-only ledger."
+      "reason": "Post-policy matched scaffold/control replication across three learner routes and three worlds; uses per-dispatch durable reservations, response persistence, terminal attempt dispositions, missing-only dialogue and assessment recovery, ledger-derived status, and the unchanged study-wide 396-attempt ceiling."
     },
     {
       "path": "scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js",

@@ -211,9 +211,15 @@ export function makeLunaJudgeCaller({
   }
   let physicalAttempts = priorPhysicalAttempts;
   let responseFreeRetries = priorResponseFreeRetries;
+  let returnedCandidate = null;
   const caller = async (agent, systemPrompt, userPrompt, role, options) => {
     for (;;) {
-      const reservation = budget.reserve({ role, stage: 'assessment' });
+      const reservation = budget.reserve({
+        role,
+        stage: 'assessment',
+        unitId: options.durableUnitId,
+      });
+      budget.markDispatched?.();
       physicalAttempts += 1;
       let rawOutput;
       try {
@@ -227,12 +233,16 @@ export function makeLunaJudgeCaller({
         const projection = projectRegisteredRootOutput(response.text, options.outputSchema);
         const providerFailure = providerRejectedInvalidOutput(response, projection, options.outputSchema);
         if (providerFailure) throw providerFailure;
-        budget.complete?.();
         options.onRawOutput?.(rawOutput);
-        fs.appendFileSync(
-          path.join(outDir, 'assessment-physical-attempts.jsonl'),
-          `${JSON.stringify({ role, attempt: physicalAttempts, reservation, status: 'candidate_returned', discardedRootKeys: projection.discardedRootKeys })}\n`,
-        );
+        returnedCandidate = { role, attempt: physicalAttempts, reservation, projection };
+        if (!options.durableUnitId) {
+          budget.complete?.();
+          fs.appendFileSync(
+            path.join(outDir, 'assessment-physical-attempts.jsonl'),
+            `${JSON.stringify({ role, attempt: physicalAttempts, reservation, status: 'candidate_returned', discardedRootKeys: projection.discardedRootKeys })}\n`,
+          );
+          returnedCandidate = null;
+        }
         return { ...response, text: projection.text, outputProjection: projection };
       } catch (error) {
         budget.fail?.(error);
@@ -244,6 +254,22 @@ export function makeLunaJudgeCaller({
         responseFreeRetries += 1;
       }
     }
+  };
+  caller.persistResponse = (responsePath) => {
+    if (!returnedCandidate) throw new Error('cannot persist an assessment response without a returned candidate');
+    budget.persistResponse?.(responsePath);
+    fs.appendFileSync(
+      path.join(outDir, 'assessment-physical-attempts.jsonl'),
+      `${JSON.stringify({ role: returnedCandidate.role, attempt: returnedCandidate.attempt, reservation: returnedCandidate.reservation, status: 'candidate_returned', discardedRootKeys: returnedCandidate.projection.discardedRootKeys })}\n`,
+    );
+  };
+  caller.complete = () => {
+    budget.complete?.();
+    returnedCandidate = null;
+  };
+  caller.fail = (error) => {
+    budget.fail?.(error);
+    returnedCandidate = null;
   };
   caller.snapshot = () => ({ physicalAttempts, responseFreeRetries });
   return caller;

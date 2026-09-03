@@ -567,6 +567,7 @@ export async function runContinuityArm({
         const reservation = budget.reserve({ role, turn });
         trace({ type: 'model_call_budget_reserved', ...reservation });
         console.log(`${arm.id} ${speaker} ${turn} started; ${reservation.call}/${reservation.limit} attempts reserved`);
+        budget.markDispatched?.();
       }
       try {
         let response =
@@ -579,7 +580,9 @@ export async function runContinuityArm({
             role,
             onEvent: (event) => trace({ type: 'provider_event', speaker, turn, event }),
           }));
-        write(`${turn}-${speaker}${deliberates ? '-draft' : ''}.response.json`, response);
+        const initialResponseName = `${turn}-${speaker}${deliberates ? '-draft' : ''}.response.json`;
+        write(initialResponseName, response);
+        if (!reused) budget.persistResponse?.(path.join(outDir, initialResponseName));
         const parseReply = (text) =>
           parseContinuityReply(text, history, {
             unsupportedQuotationPolicy,
@@ -595,6 +598,7 @@ export async function runContinuityArm({
               }),
           });
         let parsed = parseReply(response.text);
+        if (!reused) budget.complete?.();
         if (deliberates) {
           trace({
             type: 'model_call',
@@ -622,6 +626,7 @@ export async function runContinuityArm({
           console.log(
             `${arm.id} ${speaker} superego ${turn}; ${reservation.call}/${reservation.limit} attempts reserved`,
           );
+          budget.markDispatched?.();
           const reviewed = await callReview({
             plan,
             arm,
@@ -629,8 +634,11 @@ export async function runContinuityArm({
             request: reviewRequest,
             onEvent: (event) => trace({ type: 'provider_event', speaker, stage: 'superego', turn, event }),
           });
-          write(`${turn}-${speaker}-superego.response.json`, reviewed);
+          const reviewResponseName = `${turn}-${speaker}-superego.response.json`;
+          write(reviewResponseName, reviewed);
+          budget.persistResponse?.(path.join(outDir, reviewResponseName));
           const review = parseContinuityReview(reviewed.text);
+          budget.complete?.();
           trace({
             type: 'model_call',
             role: activeRole,
@@ -648,6 +656,7 @@ export async function runContinuityArm({
           console.log(
             `${arm.id} ${speaker} revision ${turn}; ${reservation.call}/${reservation.limit} attempts reserved`,
           );
+          budget.markDispatched?.();
           response = await callModel({
             plan,
             arm,
@@ -656,8 +665,11 @@ export async function runContinuityArm({
             role: activeRole,
             onEvent: (event) => trace({ type: 'provider_event', speaker, stage: 'revision', turn, event }),
           });
-          write(`${turn}-${speaker}.response.json`, response);
+          const revisionResponseName = `${turn}-${speaker}.response.json`;
+          write(revisionResponseName, response);
+          budget.persistResponse?.(path.join(outDir, revisionResponseName));
           parsed = parseReply(response.text);
+          budget.complete?.();
           const deliberation = {
             speaker,
             turn,
@@ -713,6 +725,7 @@ export async function runContinuityArm({
         row[speaker] = parsed.speech;
         history.push({ role: speaker === 'learner' ? 'user' : 'assistant', content: parsed.speech });
       } catch (error) {
+        budget.fail?.(error);
         trace({ type: 'model_call_failed', role: activeRole, turn, error: error.message });
         write('stopped.json', { error: error.message, turns, partialTurn: row, budget: budget.snapshot() });
         throw error;
