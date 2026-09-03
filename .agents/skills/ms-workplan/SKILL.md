@@ -12,6 +12,15 @@ If you haven't this session, read `workplan/README.md` — it defines the item
 schema, lifecycle states, and how each surface interacts. Read only the
 playbook file relevant to the requested transition or operation.
 
+## Guard closed work
+Immediately before suggesting, resuming, or reopening a named item, resolve its
+exact id and read the current `workplan/items/<id>.md`. If its status is `done`,
+`archived`, or `dropped`, report that disposition and do not present an older
+next action as current. Thread history, notes, artifacts, generated board views,
+and memory may explain the item but cannot override its current source status.
+Never reopen a closed item without an explicit user request. Treat a genuinely
+new follow-up as a new item rather than silently extending the closed one.
+
 ## Common routes
 - **"what's active / what's blocked / show the board"**
   ```bash
