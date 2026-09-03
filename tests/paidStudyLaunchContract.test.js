@@ -301,6 +301,9 @@ test('capacity allocation consumes only per-dispatch reservations and releases u
   for (const turn of [1, 2]) {
     const attempt = client.reserve({ role: 'fixture-role', turn });
     client.markDispatched({ attemptId: attempt.attemptId, role: 'fixture-role', turn });
+    const responsePath = path.join(value.base, 'capacity-run', `response-${turn}.json`);
+    fs.writeFileSync(responsePath, JSON.stringify({ turn }));
+    client.persistResponse({ attemptId: attempt.attemptId, responsePath, role: 'fixture-role', turn });
     client.terminalize({ attemptId: attempt.attemptId, disposition: 'completed', role: 'fixture-role', turn });
   }
   assert.equal(admission.reserved, 2);
@@ -505,6 +508,14 @@ test('sealing a killed per-dispatch launch reconciles and counts its interrupted
   );
   const completed = client.reserve({ role: 'fixture', turn: 1 });
   client.markDispatched({ attemptId: completed.attemptId, role: 'fixture', turn: 1 });
+  const completedResponsePath = path.join(destination, 'completed-response.json');
+  fs.writeFileSync(completedResponsePath, JSON.stringify({ turn: 1 }));
+  client.persistResponse({
+    attemptId: completed.attemptId,
+    responsePath: completedResponsePath,
+    role: 'fixture',
+    turn: 1,
+  });
   client.terminalize({ attemptId: completed.attemptId, disposition: 'completed', role: 'fixture', turn: 1 });
   const interrupted = client.reserve({ role: 'fixture', turn: 2 });
   client.markDispatched({ attemptId: interrupted.attemptId, role: 'fixture', turn: 2 });

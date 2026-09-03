@@ -28,6 +28,7 @@ import { deliveredSourceContext } from '../scripts/run-local-qwen-bilateral-supe
 import { buildFactorialInterchange } from '../services/localQwenFactorialReport.js';
 import { learnerProfileContract } from '../scripts/tutor-stub-learner-profile-contracts.js';
 import { renderContinuityReport } from '../services/localQwenRefusalContinuityReport.js';
+import { reconcileSharedModelAttemptLedger } from '../services/durableAttemptJournal.js';
 import {
   armBoundaryRecoveryContract,
   buildInvestedRivalPlan,
@@ -494,6 +495,121 @@ test('learner replication linked completion preserves 328 attempts and fails bef
   assert.equal(providerReservations, 68);
 });
 
+test('learner replication durable budget closes all four crash boundaries without widening the study', () => {
+  const makeAdmission = () => {
+    const stateRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-durable-budget-'));
+    const destination = path.join(stateRoot, 'run');
+    fs.mkdirSync(destination);
+    const runLedgerPath = path.join(destination, 'run-ledger.jsonl');
+    const studyLedgerPath = path.join(stateRoot, 'study-attempts.jsonl');
+    fs.writeFileSync(runLedgerPath, '');
+    fs.writeFileSync(studyLedgerPath, '');
+    let capacitySequence = 0;
+    const capacities = new Map();
+    return {
+      destination,
+      runLedgerPath,
+      studyLedgerPath,
+      get studyReserved() {
+        return fs
+          .readFileSync(studyLedgerPath, 'utf8')
+          .split(/\r?\n/u)
+          .filter(Boolean)
+          .map((line) => JSON.parse(line))
+          .filter((event) => event.type === 'study_model_attempt_dispatch_reserved').length;
+      },
+      allocateModelAttemptCapacity(count, detail) {
+        const capacity = { id: `capacity-${++capacitySequence}`, count };
+        capacities.set(capacity.id, { ...capacity, detail });
+        return capacity;
+      },
+      attemptLedgerEnvironment({ unitId, capacity }) {
+        return {
+          TUTOR_STUB_SHARED_ATTEMPT_LEDGER: JSON.stringify({
+            runLedgerPath,
+            studyLedgerPath,
+            studyId: learnerReplicationPlan.id,
+            destination,
+            hardCeiling: learnerReplicationPlan.total_attempt_ceiling,
+            unitId,
+            capacityId: capacity.id,
+            capacityLimit: capacity.count,
+          }),
+        };
+      },
+      releaseModelAttemptCapacity(capacity) {
+        capacities.delete(capacity.id);
+      },
+    };
+  };
+  const events = (admission) =>
+    fs
+      .readFileSync(admission.runLedgerPath, 'utf8')
+      .split(/\r?\n/u)
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+  const reconcile = (admission, unitId) => {
+    const reservation = events(admission).find((event) => event.type === 'model_attempt_dispatch_reserved');
+    return reconcileSharedModelAttemptLedger({
+      runLedgerPath: admission.runLedgerPath,
+      studyLedgerPath: admission.studyLedgerPath,
+      capacityId: reservation.capacity_id,
+      unitId,
+    });
+  };
+
+  const beforeReservation = makeAdmission();
+  assert.equal(events(beforeReservation).length, 0);
+
+  const afterReservation = makeAdmission();
+  learnerReplicationPaidBudget(afterReservation, 396).scope('generation/world/arm').reserve({
+    role: 'tutor_stub_auto_learner',
+    turn: 1,
+  });
+  let reconciled = reconcile(afterReservation, 'generation/world/arm/tutor_stub_auto_learner/1');
+  assert.equal(reconciled.filter((event) => event.type === 'attempt_cancelled_before_dispatch').length, 1);
+
+  const afterDispatch = makeAdmission();
+  const dispatchedBudget = learnerReplicationPaidBudget(afterDispatch, 396).scope('generation/world/arm');
+  dispatchedBudget.reserve({ role: 'tutor_stub_auto_learner', turn: 1 });
+  dispatchedBudget.markDispatched();
+  reconciled = reconcile(afterDispatch, 'generation/world/arm/tutor_stub_auto_learner/1');
+  assert.equal(reconciled.filter((event) => event.type === 'attempt_interrupted_after_dispatch').length, 1);
+
+  const afterPersistence = makeAdmission();
+  const persistedBudget = learnerReplicationPaidBudget(afterPersistence, 396).scope('generation/world/arm');
+  persistedBudget.reserve({ role: 'tutor_stub_auto_learner', turn: 1 });
+  persistedBudget.markDispatched();
+  const responsePath = path.join(afterPersistence.destination, '1-learner.response.json');
+  fs.writeFileSync(responsePath, `${JSON.stringify(fake(reply('Preserved learner reply.')))}\n`);
+  persistedBudget.persistResponse(responsePath);
+  reconciled = reconcile(afterPersistence, 'generation/world/arm/tutor_stub_auto_learner/1');
+  assert.equal(reconciled.filter((event) => event.type === 'attempt_completed').length, 1);
+  assert.equal(reconciled.filter((event) => event.type === 'model_attempt_dispatch_reserved').length, 1);
+  assert.equal(reconciled.filter((event) => event.type.startsWith('attempt_')).length, 2);
+
+  assert.deepEqual(
+    {
+      design: learnerReplicationPlan.design,
+      seed: learnerReplicationPlan.generation_seed,
+      models: learnerReplicationPlan.models,
+      generation: learnerReplicationPlan.generation_attempt_ceiling,
+      assessment: learnerReplicationPlan.assessment_packets,
+      recovery: learnerReplicationPlan.recovery_attempt_reserve,
+      total: learnerReplicationPlan.total_attempt_ceiling,
+    },
+    {
+      design: 'notes/invested-rival-learner-replication-v1.md',
+      seed: 17,
+      models: learnerReplicationPlan.models,
+      generation: 288,
+      assessment: 90,
+      recovery: 18,
+      total: 396,
+    },
+  );
+});
+
 test('learner replication recovery preserves the completed prefix and retries only the interrupted unit', () => {
   const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-recovery-'));
   fs.writeFileSync(path.join(sourceDir, 'plan.json'), JSON.stringify(learnerReplicationPlan));
@@ -556,13 +672,26 @@ test('learner replication assessment recovery preserves valid packets and one te
   const terminalError =
     'claude CLI structured response classified as response_free_error (result_error_without_structured_output)';
   fs.writeFileSync(path.join(sourceDir, 'plan.json'), JSON.stringify(learnerReplicationPlan));
-  const reservations = Array.from({ length: 6 }, (_value, index) => ({
+  const generationReservations = Array.from({ length: 2 }, (_value, index) => ({
     type: 'model_attempt_reserved',
     count: 1,
     reserved: index + 1,
     study_reserved: index + 1,
-    ...(index >= 2 ? { stage: 'assessment' } : {}),
   }));
+  const assessmentLifecycle = Array.from({ length: 4 }, (_value, index) => {
+    const attemptId = `assessment-${index + 1}`;
+    return [
+      {
+        type: 'model_attempt_dispatch_reserved',
+        attempt_id: attemptId,
+        stage: 'assessment',
+        study_reserved: index + 3,
+      },
+      { type: 'model_attempt_dispatch_started', attempt_id: attemptId },
+      ...(index === 3 ? [] : [{ type: 'attempt_response_persisted', attempt_id: attemptId }]),
+      { type: index === 3 ? 'attempt_failed' : 'attempt_completed', attempt_id: attemptId },
+    ];
+  }).flat();
   fs.writeFileSync(
     path.join(sourceDir, 'run-ledger.jsonl'),
     `${[
@@ -571,7 +700,8 @@ test('learner replication assessment recovery preserves valid packets and one te
         study_id: learnerReplicationPlan.id,
         spend_cap: learnerReplicationPlan.total_attempt_ceiling,
       },
-      ...reservations,
+      ...generationReservations,
+      ...assessmentLifecycle,
       {
         type: 'run_sealed',
         status: 'technical_failure',
@@ -610,7 +740,7 @@ test('learner replication assessment recovery preserves valid packets and one te
   }
   const evaluationDir = path.join(sourceDir, 'worlds', 'larkspur', 'evaluation-baseline');
   fs.mkdirSync(evaluationDir, { recursive: true });
-  for (const kind of ['tutor', 'learner', 'dialogue']) {
+  for (const kind of ['tutor', 'learner']) {
     const raw = schemaFixture(buildBenchmarkOutputSchema(kind, 1, { extendedQuality: true }));
     fs.writeFileSync(path.join(evaluationDir, `L0-${kind}.json`), JSON.stringify(raw));
   }
@@ -621,14 +751,27 @@ test('learner replication assessment recovery preserves valid packets and one te
       path: path.join(sourceDir, 'worlds', 'larkspur', 'dialogues', arm.id, 'dialogue.json'),
     }),
   );
-  const qualitySummaryJob = buildBenchmarkJobs(arms, {
+  const assessmentJobs = buildBenchmarkJobs(arms, {
     extendedQuality: true,
     splitQuality: true,
     assessmentContext: condition.assessmentContext,
     publicSourceContextByArm: Object.fromEntries(
       arms.map((arm) => [arm.id, investedRivalDeliveredSourceContext(condition, arm)]),
     ),
-  }).find((job) => job.arm === 'L0' && job.kind === 'quality-summary');
+  });
+  const persistedDialogueJob = assessmentJobs.find((job) => job.arm === 'L0' && job.kind === 'dialogue');
+  const persistedDialogue = schemaFixture(persistedDialogueJob.outputSchema);
+  fs.writeFileSync(path.join(evaluationDir, 'L0-dialogue.prompt.txt'), persistedDialogueJob.prompt);
+  fs.writeFileSync(
+    path.join(evaluationDir, 'L0-dialogue.schema.json'),
+    JSON.stringify(persistedDialogueJob.outputSchema),
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'L0-dialogue.provider.json'),
+    JSON.stringify(fake(JSON.stringify(persistedDialogue))),
+  );
+  fs.writeFileSync(path.join(evaluationDir, 'L0-dialogue.response.txt'), JSON.stringify(persistedDialogue));
+  const qualitySummaryJob = assessmentJobs.find((job) => job.arm === 'L0' && job.kind === 'quality-summary');
   fs.writeFileSync(path.join(evaluationDir, 'L0-quality-summary.prompt.txt'), qualitySummaryJob.prompt);
   fs.writeFileSync(
     path.join(evaluationDir, 'L0-quality-summary.schema.json'),
@@ -655,12 +798,13 @@ test('learner replication assessment recovery preserves valid packets and one te
   fs.writeFileSync(
     path.join(sourceDir, 'assessment-physical-attempts.jsonl'),
     `${[
-      { status: 'candidate_returned' },
-      { status: 'candidate_returned' },
-      { status: 'candidate_returned' },
+      { status: 'candidate_returned', reservation: { attemptId: 'assessment-1' } },
+      { status: 'candidate_returned', reservation: { attemptId: 'assessment-2' } },
+      { status: 'candidate_returned', reservation: { attemptId: 'assessment-3' } },
       {
         role: 'local-qwen-benchmark-quality-summary',
         status: 'failed',
+        reservation: { attemptId: 'assessment-4' },
         code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
         classification: 'response_free_error',
         reason: 'result_error_without_structured_output',
