@@ -1,3 +1,9 @@
+import {
+  resolveTutorStubWorldFrame,
+  tutorStubWorldClosingPattern,
+  tutorStubWorldFrameProjection,
+} from './tutorStubWorldFrame.js';
+
 const CLOSURE_SCHEMA = 'machinespirits.tutor-stub.dialogue-closure.v1';
 
 const EXPLICIT_CLOSURE_PATTERN =
@@ -57,8 +63,11 @@ export function buildTutorStubDialogueClosureFrame({
   learnerDagModel = null,
   tutorDagSnapshot = null,
   answerTerm = '',
+  world = null,
 } = {}) {
   const current = lifecycle || createTutorStubDialogueClosureLifecycle();
+  const closingWords = resolveTutorStubWorldFrame(world).closing_words;
+  const worldFrame = tutorStubWorldFrameProjection(world);
   const strictGrounded = tutorStubLearnerDagGrounded(learnerDagModel);
   const authoredDagSatisfied = tutorStubAuthoredDagSatisfied(tutorDagSnapshot);
   const base = {
@@ -71,6 +80,8 @@ export function buildTutorStubDialogueClosureFrame({
     authoredDagSatisfied,
     allowCheckIn: Boolean(current.allowCheckIn),
     answerTerm: String(answerTerm || '').trim() || null,
+    closingWords: closingWords ? [...closingWords] : null,
+    ...(worldFrame ? { worldFrame } : {}),
     basis: null,
   };
   if (!current.enabled) return base;
@@ -136,14 +147,15 @@ export function constrainTutorStubDialogueClosureFrameForAdaptiveWarrant(frame, 
   return constrained;
 }
 
-export function detectTutorStubVerdictDeclaration(text, { answerTerm = '' } = {}) {
+export function detectTutorStubVerdictDeclaration(text, { answerTerm = '', closingWords = null, world = null } = {}) {
+  const answerVerdictPattern = tutorStubWorldClosingPattern(world, ANSWER_VERDICT_PATTERN, { closingWords });
   const source = String(text || '');
   const closureMatch = NEGATED_CLOSURE_PATTERN.test(source) ? null : source.match(EXPLICIT_CLOSURE_PATTERN);
   const explicitClosure = Boolean(closureMatch);
   const finalVerdict = Boolean(
     !NEGATED_VERDICT_PATTERN.test(source) &&
     (AFFIRMATIVE_VERDICT_PATTERN.test(source) ||
-      (answerMentioned(source, answerTerm) && ANSWER_VERDICT_PATTERN.test(source))),
+      (answerMentioned(source, answerTerm) && answerVerdictPattern.test(source))),
   );
   return {
     declared: explicitClosure || finalVerdict,
@@ -165,7 +177,10 @@ export function auditTutorStubDialogueClosureResponse({ text, frame } = {}) {
   if (!frame?.enabled) {
     return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [] };
   }
-  const verdict = detectTutorStubVerdictDeclaration(text, { answerTerm: frame.answerTerm });
+  const verdict = detectTutorStubVerdictDeclaration(text, {
+    answerTerm: frame.answerTerm,
+    closingWords: frame.closingWords || null,
+  });
   if (!frame.mandatory && !frame.available) {
     // Closure is not earned yet, so the only closing question is whether the
     // response claimed it anyway — either by declaring the case closed or by

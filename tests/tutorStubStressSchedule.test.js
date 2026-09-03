@@ -9,6 +9,8 @@ import {
   tutorStubStressPlantForTurn,
   tutorStubStressDirective,
   tutorStubStressTraceEvent,
+  tutorStubStressHoldVerdictTraceEvent,
+  parseTutorStubStressHoldVerdict,
   TUTOR_STUB_STRESS_HOLD_MAX_TURNS,
 } from '../services/tutorStubStressSchedule.js';
 
@@ -66,6 +68,9 @@ test('an opt-in hold keeps the plant on the following turns and names the releas
   assert.match(plantedText, /until released/);
   assert.match(plantedText, /next 2 turns/);
   assert.doesNotMatch(plantedText, /Return to the standing brief next turn/);
+  assert.doesNotMatch(plantedText, /folded strip|two fifths/, 'the planted turn never sees the release text');
+  assert.match(plantedText, /not told what would release you/);
+  assert.match(plantedText, /do not hand the other speaker a way out/);
 
   const held1 = tutorStubStressPlantForTurn(schedule, 3);
   assert.equal(held1.state, 'opposed');
@@ -76,6 +81,11 @@ test('an opt-in hold keeps the plant on the following turns and names the releas
   assert.match(heldText, /held \(turn 1 of 2/);
   assert.match(heldText, /folded strip back on the desk/);
   assert.match(heldText, /stay in the state, in your own voice/);
+  assert.match(heldText, /Dropping it is the exception/);
+  assert.match(heldText, /If you cannot quote them, you are not released/);
+  assert.match(heldText, /^HOLD: kept$/mu);
+  assert.match(heldText, /^HOLD: released "<the exact words/mu);
+  assert.match(heldText, /Do not name or hint at what would release you/);
 
   const held2 = tutorStubStressPlantForTurn(schedule, 4);
   assert.equal(held2.held, 2);
@@ -137,4 +147,40 @@ test('held turns write their own trace event; planted turns keep the plant event
   const plain = tutorStubStressTraceEvent(schedule, tutorStubStressPlantForTurn(schedule, 6), 6);
   assert.equal(plain.type, 'learner_stress_plant');
   assert.equal(plain.hold, null);
+});
+
+test('the held-turn verdict line is parsed off the speech and checked against the other speaker', () => {
+  const tutor = 'Put the folded half back on the desk. What would two fifths of the strip reach?';
+  const released = parseTutorStubStressHoldVerdict(
+    'HOLD: released “what would two fifths of the strip reach”\nFine. Two fifths would not even get to the half.',
+    tutor,
+  );
+  assert.deepEqual(released, {
+    verdict: 'released',
+    quote: 'what would two fifths of the strip reach',
+    quoteFound: true,
+    text: 'Fine. Two fifths would not even get to the half.',
+  });
+
+  const invented = parseTutorStubStressHoldVerdict('HOLD: released "fold the strip yourself"\nOkay.', tutor);
+  assert.equal(invented.verdict, 'released');
+  assert.equal(invented.quoteFound, false, 'a quote that is not in the reply is recorded as not found');
+
+  const kept = parseTutorStubStressHoldVerdict('\n  hold: KEPT  \nThat is just how you add. Question five?', tutor);
+  assert.equal(kept.verdict, 'kept');
+  assert.equal(kept.quote, null);
+  assert.equal(kept.quoteFound, null);
+  assert.equal(kept.text, 'That is just how you add. Question five?');
+
+  const missing = parseTutorStubStressHoldVerdict('That is just how you add.', tutor);
+  assert.equal(missing.verdict, 'missing');
+  assert.equal(missing.text, 'That is just how you add.');
+
+  const schedule = loadTutorStubStressSchedule(writeSchedule(withHold(1)));
+  const event = tutorStubStressHoldVerdictTraceEvent(schedule, tutorStubStressPlantForTurn(schedule, 3), 3, released);
+  assert.equal(event.type, 'learner_stress_hold_verdict');
+  assert.equal(event.plantTurn, 2);
+  assert.equal(event.held, 1);
+  assert.equal(event.verdict, 'released');
+  assert.equal(event.quoteFound, true);
 });

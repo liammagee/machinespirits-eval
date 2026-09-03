@@ -1,0 +1,202 @@
+# WORLD-040 — a conventional classroom lesson: a Year 7 English tutorial on
+# "Sam and I" versus "Sam and me". The learner has written "Mrs Okafor gave
+# the prize to Sam and I" and is defending it as the polite, corrected form.
+# Same proof shape as world-037 — a tempting rule (the mirror: "and I" is
+# always the proper form) versus a rule that needs one more premise (drop
+# the other person and hear which word stands alone) — so the same detectors
+# and moves apply. Lesson register, pupil not suspect. Authored 2026-09-02
+# for the lesson-world transfer (workplan: lesson-world-transfer). Demo-tier;
+# not ratified.
+
+id: world_040_sam_and_me
+title: Sam and Me
+discipline: "Year 7 English: choosing I or me after a verb or a preposition"
+
+question: "Should it be 'to Sam and I' or 'to Sam and me', and why?"
+question_pattern: [resolvesTo, prizeSentence, "?x"]
+
+opening_frame:
+  situation: >-
+    Sentence three on the worksheet: Mrs Okafor gave the prize to Sam and
+    ___. The pupil has written "I", because "Sam and I" is what teachers
+    always correct you to, and wants to move on.
+  authored_text: >-
+    Sentence three: Mrs Okafor gave the prize to Sam and, and you've
+    written "I", because that's the one teachers always tell you to use.
+    Before we move on: should it be "to Sam and I" or "to Sam and me", and
+    why?
+
+setting: >-
+  A Year 7 English lesson, one pupil at the desk with the grammar worksheet
+  and a strip of card the teacher uses to cover words. The pupil has
+  learned, from years of being corrected, that "Sam and I" is the proper
+  form and "me and Sam" is the one that gets you told off. The pupil at the
+  next desk, Leah, has written "Sam and me" and has already said so. The
+  rule the lesson is teaching is the awkward one: cover the other person
+  with your finger and say the sentence with only yourself in it; the word
+  you would use alone is the word you use in the pair.
+
+learner_voice: >-
+  A Year 7 pupil who wants the worksheet marked and done: quick to ask
+  which one is "right", sure that "and I" is the polite one, cross when the
+  card comes out again, and not keen on Leah being right. Still able to
+  slow down when hearing the sentence out loud with Sam covered up.
+
+secret:
+  fact: [resolvesTo, prizeSentence, samAndMe]
+  recognition_patterns:
+    - id: sam_and_me_answer
+      all_of:
+        - ["sam and me", "to sam and me", "and me"]
+        - ["should be", "it's", "it is", "the answer", "the right one", "correct", "goes", "we write", "you write", "put"]
+        - ["cover", "covered", "take sam out", "take out sam", "without sam", "on my own", "on its own", "by itself", "gave the prize to me", "to me", "after to", "after the to", "receiving", "received", "not doing the giving"]
+      none_of:
+        - "not sam and me"
+        - "isn't sam and me"
+        - "is not sam and me"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    It should be "Mrs Okafor gave the prize to Sam and me". Cover Sam with
+    your finger and say what is left: "Mrs Okafor gave the prize to me".
+    Nobody says "gave the prize to I". Put Sam back and the word does not
+    change: "to Sam and me". "Sam and I" is right when Sam and I are doing
+    something, as in "Sam and I went"; here Mrs Okafor did the giving and
+    we only received, so the pair sits after "to" and takes "me".
+
+mirror:
+  fact: [resolvesTo, prizeSentence, samAndI]
+
+rules:
+  - id: R1_cover_the_other
+    gloss: >-
+      To choose I or me in a pair, cover the other person and say the
+      sentence with yourself alone; the word that stands alone is the word
+      the pair takes.
+    if:
+      - [withOtherCovered, prizeSentence, "?u"]
+      - [standsAloneAs, "?u", "?x"]
+    then:
+      - [resolvesTo, prizeSentence, "?x"]
+  - id: R2_always_I
+    gloss: >-
+      "Sam and I" is the corrected form only when the pair is doing the
+      action of the sentence. It is not a politeness rule that holds
+      everywhere.
+    if:
+      - [politeForm, prizeSentence, "?x"]
+      - [pairDoesTheAction, prizeSentence, alreadyTrue]
+    then:
+      - [resolvesTo, prizeSentence, "?x"]
+
+premises:
+  - id: p_polite
+    evidence_role: mirror
+    fact: [politeForm, prizeSentence, samAndI]
+    surface: >-
+      "Sam and I" is what teachers correct you to, and "me and Sam" is what
+      gets you told off. That is what the pupil wrote, and it is what years
+      of being corrected sound like.
+  - id: p_who_gave
+    evidence_role: corroboration
+    fact: [pairDoesTheAction, prizeSentence, pairReceives]
+    surface: >-
+      Read the sentence and ask who did the giving. Mrs Okafor did. Sam and
+      the pupil only received the prize; the pair sits after "to", not in
+      front of the verb. In "Sam and I went to the hall", the pair is doing
+      the going, which is why "I" is right there. The two sentences are not
+      the same shape, so the rule for one need not hold for the other.
+  - id: p_cover
+    fact: [withOtherCovered, prizeSentence, toMeAlone]
+    surface: >-
+      Lay the card over "Sam and" and read what is left out loud: "Mrs
+      Okafor gave the prize to ... me." Now try the other one: "gave the
+      prize to I." Nobody says that.
+  - id: p_uncover
+    fact: [standsAloneAs, toMeAlone, samAndMe]
+    surface: >-
+      Lift the card. The word you said on your own is the word the pair
+      takes: "Mrs Okafor gave the prize to Sam and me."
+
+background:
+  - [hasWorksheet, pupil, prizeSentence]
+
+incompatible:
+  - [[resolvesTo, prizeSentence, samAndMe], [resolvesTo, prizeSentence, samAndI]]
+
+proof_paths:
+  - premises: [p_cover, p_uncover]
+
+release_schedule:
+  - { turn: 2, premise: p_polite, via: tutor }
+  - turn: 3
+    premise: p_who_gave
+    via: director
+    presentation: { mode: presented_exhibit, cue: "The worksheet's two example sentences side by side, 'Sam and I went to the hall' and 'Mrs Okafor gave the prize to Sam and ___', with the verb in each underlined." }
+  - turn: 5
+    premise: p_cover
+    via: director
+    presentation: { mode: enacted_role, role: the pupil at the next desk, Leah, laying a strip of card over "Sam and" and reading the sentence aloud both ways }
+  - { turn: 6, premise: p_uncover, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Polite One
+      turns: [1, 4]
+      intent: >-
+        Years of correction supply a plausible rule, while the two example
+        sentences show they are not the same shape.
+    - act: II
+      title: Cover Sam
+      turns: [5, 8]
+      intent: >-
+        Covering the other person turns a habit into a check the pupil can
+        run on any sentence. The pupil should distinguish a rule learned
+        from being corrected from a rule that can be tested.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: samAndI
+      mirror_pull: high
+    second_order:
+      from: class_teacher
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      An English teacher at the pupil's desk: patient with the politeness
+      habit, unwilling to just hand over the word, and happiest when the
+      card and the pupil's own ear do the explaining.
+
+presentation:
+  family: sam-and-me
+  temporal_frame: contemporary
+  scene_ecology: "a Year 7 classroom desk, a grammar worksheet, a strip of card for covering words"
+  narrative_diction: "classroom plain, teacher and pupil"
+  ledger_term: worksheet
+  frame:
+    kind: lesson
+    closing_words:
+      - final answer
+      - the answer is
+      - the answer
+      - which one is right
+      - which is right
+      - should it be
+      - it should be
+      - the right one is
+      - the correct one is
+  summary: A conventional Year 7 English tutorial on I versus me, where the pupil defends "Sam and I" as the polite form and covering Sam with a card shows why the sentence takes "me".

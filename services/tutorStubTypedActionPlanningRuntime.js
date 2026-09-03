@@ -118,6 +118,7 @@ export function createTutorStubTypedActionPlanningRuntime({
         learnerDagModel: tutorLearnerDag?.model || tutorLearnerDag || null,
         tutorDagSnapshot,
         answerTerm: answerTermForWorld(state.world),
+        world: state.world,
       }),
     };
   }

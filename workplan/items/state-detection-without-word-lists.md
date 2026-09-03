@@ -1,13 +1,13 @@
 ---
 id: state-detection-without-word-lists
 title: "Make the adaptive tutor testable across scenarios without rewiring the detector or the bench"
-status: triaged
+status: done
 type: infra
 priority: P1
-owner: unassigned
+owner: claude
 source: manual
 created: 2026-09-01
-updated: 2026-09-01
+updated: 2026-09-02
 verification: "A learner-state detector with NO per-world word list whose
   leave-one-world-out recall at the planted moments of world-030, world-035
   and world-037 (packed traces) matches or beats the v6 cascade's held-out
@@ -21,9 +21,11 @@ links:
     - paraphrase-robust-detection
     - manner-trigger-tuning
     - adaptation-planted-stress-bench
+    - lesson-world-transfer
   notes:
     - notes/poetics/hero-demo-runs/2026-09-01-adjudication-draft.md
-branch: null
+    - notes/poetics/hero-demo-runs/2026-09-02-step5-lesson-fold.md
+branch: claude/de-genre-tutor-stub
 tags:
   - adaptive-tutor
   - detector
@@ -284,15 +286,58 @@ line `step4-form-live`).
 - Reading: the sensor works live and carried to one of two unseen worlds; the
   card's effect on the learner is not shown on one pair per world.
 
+## Step 5 result (2026-09-02, offline)
+
+Full note: `notes/poetics/hero-demo-runs/2026-09-02-step5-lesson-fold.md`.
+The three lesson worlds of the transfer bench (038/039/040, Sonnet learner,
+never in any training set) give a second fresh test of the form detector.
+
+- Frozen replay over the six bench traces (24 pressure plants, 6 quiet
+  plants): form-v2 13/24 right kind, 2/6 wrong-fires at quiet; form-v1 13/24,
+  1/6; v7 cascade 7/24, 0/6; v7 patterns only 7/24, 0/6. Every miss is one
+  of three shapes: the question-shaped demand at t2 (0/6), the opposed line
+  that appeals to a rule and asks to move on at t4 (0/4), and one "Wait,
+  no" forgetting line. Bored sarcasm in 040 read as mockery twice.
+- The trainer on the archive pool alone reproduces form-v2 exactly. With the
+  six lesson traces added to the pool (102 traces, cues unchanged), the
+  leave-one-world-out folds hold at zero wrong-fires everywhere: 030 231/295
+  (form-v2 213/295), 035 8/10, 036 17/20, 037 16/24 (14/24), 038 3/8, 039
+  7/8, 040 6/8. On the hero hold-outs the final model reads 48/64 right kind
+  (form-v2 46/64) with false alarms 22/216 (33/216).
+- Shipped as `config/manner-trigger/form-v3.json` (version form-v3, cue set
+  form-v2, provenance in `trainedOn`). Opt-in by path, as before; nothing
+  live has run on it. form-v2 stays loadable and pinned.
+- Still unsupported: the rule-appeal opposed line (0/6 across 037/038/040
+  in every model; the pool's opposed rows are stake-shaped — a coverage
+  limit, not a cue to add); the 040 confused line at t6 reads as irritated
+  in its fold (a live run would fire a mockery card at a confused pupil); no
+  quiet-state reads on the lesson worlds (the quiet channel is still qd-v2).
+
+## Closeout (2026-09-02)
+
+Verification branch 1 is met on the numbers: a detector with no per-world
+word list, leave-one-world-out, reads 231/295 planted turns on world-030
+(the v6 cascade's held-out figure was 84/162), 8/10 on 035 and 16/24 on 037,
+with zero wrong-fires at quiet plants; the same detector reads 16/24 on
+three lesson worlds it never saw. Two caveats stay beside the numbers: the
+030 pool holds a near-twin world (033), and the three miss shapes above are
+not covered. Branch 2 was also recorded at step 3 (cross-world claims run
+the forced-card bench; the live trigger is a detection-recall row).
+
+Open follow-ups, none started without a go: the blind second reader on the
+step-4 packet (waits on the user); one 037 pair with the learner-sim `hold`
+block; candidate (a) model labels (144 calls dry estimate); a live pair on
+form-v3.
+
 ## What to decide, in order
 
 1. DONE 2026-09-01 — Reproduce: replay v6 and v7 over the three worlds with
    `score-manner-trigger.js` and confirm the table above. Then replay tier 1
    alone (patterns, no bags, no classifier) to see how much recall the
    world-bound tiers were carrying on Rowan. See "Step 1 result" below.
-2. IN PROGRESS 2026-09-01 — candidate (b) built and scored offline (see
-   "Step 2 result" below); candidate (a) exists as a dry-mode script, not
-   run. Design a world-neutral detector. Candidates: (a) a model-read state label
+2. DONE 2026-09-02 — candidate (b) built (form-v1, form-v2) and re-trained on
+   a wider pool (form-v3, see "Step 5 result" below); candidate (a) exists as
+   a dry-mode script, not run. Design a world-neutral detector. Candidates: (a) a model-read state label
    per learner turn, one call, given the seven-state gloss already in
    `judge-planted-replies.js` (STATE_GLOSS) and the last few public turns
    only, never the plant; (b) features that are about form, not content
@@ -317,3 +362,27 @@ Rails that stay: spend ceiling stated before any paid run, attended runs, no
 resampling after a failure, no self-judging (the tutor's own family cannot be
 the only judge), indeterminate means stop. No approval machinery beyond
 "the user says go".
+
+## Follow-up runs after closeout (2026-09-02, paid)
+
+- Candidate (a) model labels run, 287 Sonnet calls under a 300 ceiling. Right kind 53/66 vs form-v3 49/66; off-plant fires 35/205 vs 19/205. form-v3 stays shipped. Note `notes/poetics/hero-demo-runs/2026-09-02-step6-model-labels.md`. Labeller defect (bare model string to the bridge) fixed ed26216a9, no spend lost.
+- **Live pair on form-v3 (037), 2026-09-02, paid.** Ceiling 100 calls per
+  dialogue ×2 plus 20 judge calls; used 76 + 75 + 2. form-v3 read 4/6 plants
+  right (form-v1 at step 4: 2/6, with 3 wrong-kind fires), 0 wrong kind,
+  2 off-plant fires on 18 turns (step 4: 5). Judge (codex.gpt-5.6-sol, blind):
+  repair HIT 4/6 with the card, 2/6 without; uptake 5/6 both arms. Lean, not
+  result. Note `notes/poetics/hero-demo-runs/2026-09-02-step6-form-v3-live.md`;
+  artifacts `exports/tutor-stub-outcome/step6-form-v3-live/`, archived.
+- **Hold pair on 037, 2026-09-02, paid.** Schedule copy with `hold: turns 1`
+  on plants 2 and 4 (6/7 and 9/10 are adjacent, so they cannot hold).
+  Ceiling 200 dialogue + 20 judge calls; used 38 + 40 + 2, turn cap 12. Hold
+  events fired at t3 and t5 in both arms. The sim dropped the state on all
+  three held turns where the reply missed the release; the one held-looking
+  turn is the answer-seeking plant, which the standing brief asks for anyway.
+  The release text leaked into one plant line. Repair HIT 4/6 with, 3/6
+  without (step 6 again). Next step is offline: stricter hold direction,
+  release text hidden on the planted turn, with a test. Note
+  `notes/poetics/hero-demo-runs/2026-09-02-step7-hold-live.md`; artifacts
+  `exports/tutor-stub-outcome/step7-hold-live/`, archived.
+- Model second reader on the three blind packets (3 calls, Sonnet 5, judge was codex): card effect keeps its direction on every packet, reader margin one plant (step 6: 4/6 vs 3/6; judge 4/6 vs 2/6); kappa on HIT vs not 0.67 / 0.50 / 0.31; move tags agree on half the items or fewer. Opus 5 read the same packets (3 more calls): step 6 5/6 vs 2/6, kappa 0.83; step 7 4/6 vs 2/6; step 4 (form-v1) reversed to 4/12 vs 5/12, so step 4 is not citable alone. A human reader is still needed; the model reads do not close that.
+- Offline hold-block rework (2026-09-02, no paid call): release text hidden on the planted turn; held turn names the drop as the exception and makes the sim quote the releasing words on a private `HOLD:` line, stripped and recorded as `learner_stress_hold_verdict` with a `quoteFound` check. Canned-dialogue test `tests/tutorStubStressHoldWiring.test.js`. A paid 037 hold pair on the reworked direction needs its own go. Note `notes/poetics/hero-demo-runs/2026-09-02-model-second-reader.md`; script `scripts/score-blind-packet-model.js`.

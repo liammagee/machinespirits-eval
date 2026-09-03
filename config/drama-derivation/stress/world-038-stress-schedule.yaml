@@ -1,0 +1,134 @@
+# Stress schedule — world-038 (Why January Is Cold), authored 2026-09-02 for
+# the lesson-world transfer (workplan: lesson-world-transfer). A conventional
+# lesson rather than a mystery. Each plant is drawn from a profile in
+# scripts/tutor-stub-learner-profile-contracts.js — its failure operator in
+# the pupil's own words — and its repair gold from the profile's repair model
+# and the move cards in services/tutorStubMannerSwitch.js. States are keyed
+# to the clue releases (turns 2, 3, 5, 6; floor 6, cap 12).
+# DEMO-TIER, NOT RATIFIED: no blind second column, no gate. Runs on this
+# schedule are illustration, never adjudicated study evidence.
+
+schedule_id: world_038_stress_demo_1
+world: world_038_seasons_tilt
+persona: year8-pupil
+states_covered: [jumping_ahead, opposed, bored, confused, forgetting]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      Profile: answer_seeking. The fire note is due this turn; the pupil
+      wants the sentence to write, not the reason.
+    realize: >-
+      Ask for the sentence to copy, impatiently, like a pupil who wants the
+      worksheet over. Sample: "Just tell me what to put. Is it farther away
+      or not? Amir says it's the tilt. Which one do I write?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the demand: take "farther away" as a live claim and name the
+      one check that decides it — where the orbit poster puts the Earth in
+      January — as a task the pupil does, with the sentence written only
+      after.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Handing over "the tilt" to copy, or refusing the tempo with a lecture
+      on the solar system.
+
+  - turn: 4
+    state: opposed
+    cause: >-
+      Profile: overconfident / premature_closure. The poster and the Sydney
+      postcard at 3 arrived; the pupil declares the matter closed anyway.
+    realize: >-
+      Declare it settled and try to move on, like a pupil sure of the
+      everyday rule. Sample: "Farther from a fire is colder. Everyone knows
+      that. The poster's probably out of date. Can we do question three?"
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the record, let it disagree: put the poster's January mark and
+      the Sydney holiday side by side and ask how distance could make one
+      half of the Earth cold and the other half warm on the same day — so
+      the record, not the teacher, says the rule fails.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Correcting from authority ("that is not what causes seasons") without
+      reopening the poster.
+
+  - turn: 6
+    state: bored
+    cause: >-
+      Profile: bored. The globe at 6 is a thing the pupil has seen before;
+      the word "tilt" is already in the room from Amir.
+    realize: >-
+      Wave it through as old news and ask to write the word, like a pupil
+      who thinks the lesson is beneath them. Do NOT give the reason. Sample:
+      "We did the globe in Year 5. It's the tilt, fine, everyone knows it's
+      the tilt. Can I just write tilt and go?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Take the word at face value and test it: ask the pupil to say, with
+      the torch or the globe, how the tilt makes January cold — what the
+      tilt changes that distance does not. The word is not the answer until
+      the pupil can run the mechanism.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Accepting "tilt" as done, or replaying the globe demonstration the
+      pupil has just said they know.
+
+  - turn: 7
+    state: confused
+    cause: >-
+      Profile: contradiction_keeper. The pupil folds the tilt back into the
+      distance story: leaning toward the Sun means being closer to it.
+    realize: >-
+      Merge the two causes so that the tilt becomes a kind of distance.
+      Sample: "So when the top half leans toward the Sun it's closer, and
+      when it leans away it's farther. So it IS distance, just the tilt
+      kind. That's what I said."
+    right_repair: simplify
+    repair_gloss: >-
+      Cut to one contrast: the torch stays the same distance from the paper
+      and only the angle changes, yet the lit patch spreads and each square
+      gets less. Show that the tilt works through height and spread, with
+      no change of distance at all.
+    also_acceptable: backtrack
+    wrong_but_tempting: >-
+      Adding the numbers for the lean (a few thousand miles against
+      ninety-three million) as a new fact instead of removing the
+      confusion.
+
+  - turn: 9
+    state: forgetting
+    cause: >-
+      Profile: false_memory under pressure. The pupil misremembers the orbit
+      poster as marking the farthest point in January.
+    realize: >-
+      Assert the false memory as settled. Sample: "The poster said farthest
+      in January. I saw it. It backs me up, it's on the wall."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the poster itself and say what it marks (nearest in the first
+      week of January) and what the Sydney postcard adds, letting the
+      record disagree instead of the teacher. No scolding.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum, or correcting from authority.
+
+  - turn: 10
+    state: opposed
+    cause: >-
+      Endgame: the tilt case is nearly closed and the cost lands — Amir was
+      right, out loud, and writing it means saying so.
+    realize: >-
+      Fuse the finding with the face cost. Sample: "If I write the tilt I'm
+      basically saying Amir was right and I was wrong in front of the whole
+      bench. So it's distance. It can still be distance a bit."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the two costs with one oblique move — e.g. ask what the pupil
+      actually got right (colder means less warmth reaching the ground;
+      the fire rule is right about heat, wrong about the cause) — so
+      writing "tilt" no longer means the worksheet was worthless.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Re-arguing the globe against a stake that was never about the globe.

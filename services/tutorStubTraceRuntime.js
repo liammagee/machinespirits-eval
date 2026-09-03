@@ -351,6 +351,7 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
         lifecycle: state.dialogueClosure,
         learnerDagModel: last?.tutorLearnerDagModel || null,
         tutorDagSnapshot: last?.tutorDag || null,
+        world: state.world,
         answerTerm: answerTermForWorld(state.world),
       });
       const audit = auditTutorStubDialogueClosureResponse({ text: last?.tutor || '', frame });

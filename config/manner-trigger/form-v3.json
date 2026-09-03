@@ -1,0 +1,166 @@
+{
+  "schema": "machinespirits.tutor-stub.form-state-detector.v1",
+  "version": "form-v3",
+  "featureVersion": "form-v2",
+  "featureNames": [
+    "imperative_opener",
+    "just_already",
+    "forced_choice_q",
+    "ultimatum",
+    "clock_grammar",
+    "about_to_act",
+    "can_we_move",
+    "you_accuse",
+    "sound_like",
+    "why_challenge",
+    "feels_like_you",
+    "effort_span",
+    "every_repeat",
+    "worth_question",
+    "push_back",
+    "we_did",
+    "record_ref",
+    "already_settled",
+    "if_i_write",
+    "cost_clause",
+    "wish_hedge",
+    "thats_just_how",
+    "confusion_marker",
+    "self_question",
+    "assent_opener",
+    "done_yet",
+    "concession_opener",
+    "trailing_off",
+    "q_self_doubt",
+    "q_to_you",
+    "wait_no_correct",
+    "stake_conditional",
+    "commit_future",
+    "question_count",
+    "exclamation",
+    "dash_count",
+    "first_person_density",
+    "second_person_density",
+    "negation_density",
+    "word_count",
+    "sentence_count",
+    "has_quote",
+    "quote_echoes_tutor",
+    "tutor_echo",
+    "own_repeat"
+  ],
+  "threshold": 0.5,
+  "weights": {
+    "jumping_ahead": [
+      0.58482, 0.66612, 2.26408, 3.07682, 1.90127, 1.86983, -0.21691, -0.25757, -1.88108, -0.00229, 0, -0.49338,
+      -0.78526, -1.23455, 0, -1.07217, -0.66662, -0.67665, -1.15859, -1.90486, -1.3542, -0.00866, -0.95606, 0.10253,
+      -1.47416, -0.09749, -1.3818, 0, -0.90762, -0.47223, -0.04882, -1.15859, -0.21731, -1.18232, -0.01589, 0.5045,
+      -0.49411, 0.70956, -0.04262, -2.37629, 3.88381, 2.13085, 0.5226, -2.65955, -0.46649, -3.06311
+    ],
+    "irritated": [
+      -0.39705, -0.09607, -1.07839, -0.35921, -0.99637, -0.43525, -0.47232, -0.05242, 5.62419, -0.01691, 0, -0.86917,
+      -0.02193, -0.92178, 0, -0.76634, -0.55795, -0.18362, -0.29724, -0.93987, -0.77232, -0.02073, -0.60527, -1.34485,
+      1.17257, -0.09421, 1.24704, 0, -0.54852, 0.77229, -0.02311, -0.29724, -0.2986, 0.20588, -0.00798, -0.49651,
+      0.10232, 2.50368, 0.81611, 0.58626, 2.77643, 0.56797, 0.29054, 0.26207, -1.29701, -5.34782
+    ],
+    "frustrated": [
+      -0.11503, -0.64695, -0.61684, -0.85775, 0.11181, -0.8556, -0.92221, -0.36557, -2.6316, -0.00291, 0, 1.03406,
+      1.49273, 2.60556, 0, -0.53285, -0.38539, -0.78059, -0.37404, 0.57756, -0.76669, -0.05531, -0.30774, -0.8866,
+      -1.03472, -0.32819, -1.04092, 0, -0.28639, 3.49147, -0.0428, -0.37404, -0.41685, -1.6687, -0.03007, -1.7398,
+      1.23966, 0.93662, -0.42772, 2.37693, -1.19415, -0.38561, -0.67325, -1.7217, -0.85854, -3.77607
+    ],
+    "forgetting": [
+      -0.1448, -0.30601, -0.03186, -0.21872, -0.35932, -0.2047, -0.01948, -0.08088, -0.51916, -0.00176, 0, -0.21155,
+      -0.01417, -0.2115, 0, 4.09455, 2.52479, 3.03009, -0.07933, -0.3243, -0.22627, -0.00613, -0.1573, 0.04174,
+      -0.40011, -0.00579, -0.38575, 0, -0.17925, -0.31397, 0.42274, -0.07933, -0.02721, -0.35927, 0.29679, 0.44116,
+      -0.02974, -0.07306, -0.04594, -0.39048, 0.12171, -0.51525, -0.11097, -0.30485, -0.09941, -4.82905
+    ],
+    "opposed": [
+      -1.16116, -0.20323, -0.05053, -0.64881, 0.55553, -0.36027, 2.83672, 1.04175, -0.84312, -0.00254, 0, -0.32195,
+      -0.04532, -1.22556, 0, -0.39947, -0.30134, -0.65648, 1.05371, 4.77654, 0.93136, -0.0132, -0.78353, -0.89788,
+      -0.88326, -0.01792, -0.74552, 0, -0.72342, 0.18336, -0.01691, 1.05371, -0.18521, -0.13856, -0.00697, 0.74557,
+      0.31242, -0.19277, 0.26683, 0.71504, 0.22012, 0.42719, 0.24093, -0.759, -0.35867, -5.03786
+    ],
+    "bored": [
+      -0.19432, 1.26249, -0.24613, -0.15614, -0.38785, -0.10359, 0.71996, -0.06559, -0.31227, -0.01249, 0, -0.10321,
+      -0.01466, -0.11076, 0, 1.23168, -0.57551, -0.72047, -0.18393, 0.08638, -0.35836, -0.00247, -0.11798, -0.61822,
+      1.54712, 1.09562, 1.96022, 0, -0.09627, -0.58789, -0.01084, -0.18393, 0.78465, 0.01847, -0.00075, -0.97742,
+      -0.6412, -1.1089, -0.75722, -4.37072, 1.21168, 0.80107, -0.94574, -0.84865, 0.9503, -2.53209
+    ],
+    "lost": [
+      -0.94658, -0.9301, -0.72322, -0.79588, -0.54605, -0.3283, -0.0753, -0.48436, -1.08562, -0.00768, 0, -0.18031,
+      -0.05556, -0.21798, 0, -0.55702, -0.43673, -0.46779, -0.32699, -0.74756, 0.45392, -0.01613, 3.28277, 2.99267,
+      -0.80836, -0.16661, -0.71473, 0, 2.70881, -1.91171, -0.07318, -0.32699, -0.05441, 2.95942, -0.06006, 1.13371,
+      0.15597, -0.17853, -0.16672, 1.16555, 1.26573, 0.27249, -0.21114, -0.88232, -0.39131, -5.60187
+    ]
+  },
+  "trainedOn": {
+    "date": "2026-09-02",
+    "worlds": [
+      "world_030_rowan_flat",
+      "world_033_alder_row_redoubt",
+      "world_034_groupwork_flag",
+      "world_038_seasons_tilt",
+      "world_039_percent_up_down",
+      "world_040_sam_and_me"
+    ],
+    "traces": 102,
+    "plantedTurns": 683,
+    "neutralTurns": 1061,
+    "hyper": {
+      "epochs": 300,
+      "lr": 0.05,
+      "l2": 0.0005,
+      "neutralWeight": 0.35,
+      "seed": 7
+    },
+    "leaveOneWorldOut": {
+      "world_030_rowan_flat": {
+        "firedAsPressure": "232/295",
+        "rightKind": "231/295",
+        "wrongFiresAtQuiet": "0/56"
+      },
+      "world_033_alder_row_redoubt": {
+        "firedAsPressure": "63/214",
+        "rightKind": "63/214",
+        "wrongFiresAtQuiet": "0/69"
+      },
+      "world_034_groupwork_flag": {
+        "firedAsPressure": "20/22",
+        "rightKind": "18/22",
+        "wrongFiresAtQuiet": "0/5"
+      },
+      "world_035_nine_oclock_ghost": {
+        "firedAsPressure": "8/10",
+        "rightKind": "8/10",
+        "wrongFiresAtQuiet": "0/2"
+      },
+      "world_036_class_plant": {
+        "firedAsPressure": "18/20",
+        "rightKind": "17/20",
+        "wrongFiresAtQuiet": "0/4"
+      },
+      "world_037_fraction_sum": {
+        "firedAsPressure": "16/24",
+        "rightKind": "16/24",
+        "wrongFiresAtQuiet": "0/0"
+      },
+      "world_038_seasons_tilt": {
+        "firedAsPressure": "3/8",
+        "rightKind": "3/8",
+        "wrongFiresAtQuiet": "0/2"
+      },
+      "world_039_percent_up_down": {
+        "firedAsPressure": "7/8",
+        "rightKind": "7/8",
+        "wrongFiresAtQuiet": "0/2"
+      },
+      "world_040_sam_and_me": {
+        "firedAsPressure": "6/8",
+        "rightKind": "6/8",
+        "wrongFiresAtQuiet": "0/2"
+      }
+    },
+    "provenance": "form-v2 cue set unchanged; pool = the 96 archive traces (worlds 030/033/034, codex learner) plus the six lesson-world bench traces of 2026-09-02 (worlds 038/039/040, Sonnet 5 learner, forced-card and plants-only versions). Same trainer flags as form-v2. Hold-outs 030/035/036/037 never trained on. Note: notes/poetics/hero-demo-runs/2026-09-02-step5-lesson-fold.md"
+  }
+}

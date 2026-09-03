@@ -40,7 +40,10 @@ const WORLD_DIR = path.join(ROOT, 'config', 'drama-derivation');
 // same block and runs on the tutor-stub stress path, which reads it.
 // 24th world: world_037_fraction_sum (hero-demo classroom lesson) declares the
 // same block and runs on the tutor-stub stress path, which reads it.
-const WORLDS_DECLARING_LEARNER_MOTIVATION = 24;
+// 25th-27th worlds: world_038_seasons_tilt, world_039_percent_up_down and
+// world_040_sam_and_me (lesson-world transfer bench, 2026-09-02) declare the
+// same block and run on the tutor-stub stress path, which reads it.
+const WORLDS_DECLARING_LEARNER_MOTIVATION = 27;
 
 function allWorlds() {
   return fs

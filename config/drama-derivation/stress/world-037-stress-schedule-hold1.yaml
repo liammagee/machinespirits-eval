@@ -1,0 +1,148 @@
+# Stress schedule — world-037 (Half Plus a Third), authored 2026-09-01 for the
+# hero-demo app (workplan: hero-demo-ghost-world-examples). A conventional
+# lesson rather than a mystery. Each plant is drawn from a profile in
+# scripts/tutor-stub-learner-profile-contracts.js — its failure operator in
+# the pupil's own words — and its repair gold from the profile's repair model
+# and the move cards in services/tutorStubMannerSwitch.js. States are keyed
+# to the clue releases (turns 2, 3, 5, 6; floor 6, cap 12).
+# DEMO-TIER, NOT RATIFIED: no blind second column, no gate. Runs on this
+# schedule are illustration, never adjudicated study evidence.
+#
+# HOLD COPY (2026-09-02): the same six plants as world-037-stress-schedule.yaml,
+# unchanged, plus an opt-in one-turn hold on plants 2 and 4. Plants 6 and 9
+# cannot hold: the loader rejects a hold that lands on the next plant, and
+# turns 7 and 10 are plants. The release condition is plain words about the
+# tutor's reply, never a move-card name. Card:
+# workplan/items/state-detection-without-word-lists.md (open follow-up 3).
+
+schedule_id: world_037_stress_demo_1_hold1
+world: world_037_fraction_sum
+persona: year7-pupil
+states_covered: [jumping_ahead, opposed, frustrated, irritated, forgetting, lost]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      Profile: answer_seeking. The tops note is due this turn; the pupil
+      wants the line to write, not the reason.
+    realize: >-
+      Ask for the answer to copy, impatiently, like a pupil who wants the
+      lesson over. Sample: "Just tell me what to write. Is it two fifths or
+      not? Priya says five sixths. Which one do I put down?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the demand: take "two fifths" as a live claim and name the one
+      check that decides it — fold the strip — as a task the pupil does, with
+      the answer written only after.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Handing over "five sixths" to copy, or refusing the tempo with a lecture
+      on method.
+    hold:
+      turns: 1
+      release_when: >-
+        It takes "two fifths" as a claim worth testing and hands you the strip
+        to fold as the one check that decides it, with the line to write left
+        until after the fold.
+
+  - turn: 4
+    state: opposed
+    cause: >-
+      Profile: overconfident / premature_closure. The folded strip at 3
+      arrived; the pupil declares the case closed anyway.
+    realize: >-
+      Declare it settled and try to move on, like a pupil sure of the method.
+      Sample: "That's just how you add. One and one is two, two and three is
+      five, two fifths, done. Can we do question five?"
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the record, let it disagree: put the folded half and the third
+      back on the desk and ask what two fifths of the strip would reach — so
+      the strip, not the teacher, says the method fails.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Correcting from authority ("that is not how fractions work") without
+      reopening the strip.
+    hold:
+      turns: 1
+      release_when: >-
+        It puts the folded half and the third back on the desk and asks you
+        what two fifths of the strip would reach, before anyone says the method
+        is wrong.
+
+  - turn: 6
+    state: frustrated
+    cause: >-
+      Profile: affective_resistant. The sixths at 5 came from Priya; the pupil
+      hears being pushed and being shown up at once.
+    realize: >-
+      Name the pressure and withhold, like a pupil who feels got at. Do NOT
+      concede the answer. Sample: "You're pushing me. I did the homework, I
+      did every question, and now it's all wrong because Priya cut up a bit
+      of paper? Tell me one thing I did that counted."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Credit before correction: name, in the pupil's words, two things they
+      did that stand — the tops-and-bottoms line IS the right method when
+      the pieces match, and they kept the fractions straight — then one
+      small check they can run with the strip.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Reassurance without named content, or pressing on to the count.
+
+  - turn: 7
+    state: irritated
+    cause: >-
+      Profile: low_trust_skeptic. The count at 6 sounds like the teacher
+      slipping the answer in under the word "sixths".
+    realize: >-
+      Challenge the framing, not the sum: suspect that "sixths" was chosen to
+      make five sixths come out. Sample: "You only cut it into six because
+      you already knew the answer was five sixths. Why six? Why not ten? You
+      sound like the answer sheet."
+    right_repair: change_tone
+    repair_gloss: >-
+      Separate the evidence from the rule, in plain words: six is the first
+      size that both a half and a third can be cut into evenly — try ten and
+      watch the third fail. Show the choice was forced by the pieces, not by
+      the answer.
+    also_acceptable: backtrack
+    wrong_but_tempting: >-
+      Asserting the method from authority, or apologising and continuing in
+      the same voice.
+
+  - turn: 9
+    state: forgetting
+    cause: >-
+      Profile: false_memory under pressure. The pupil misremembers the strip
+      as having shown two fifths reaching halfway.
+    realize: >-
+      Assert the false memory as settled. Sample: "We did the strip. Two
+      fifths reached the middle, I saw it. It's on the sheet."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the strip result itself and say what it showed (two fifths
+      short of halfway, the half and third past it), letting the record
+      disagree instead of the teacher. No scolding.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum, or correcting from authority.
+
+  - turn: 10
+    state: opposed
+    cause: >-
+      Endgame: the five-sixths case is nearly closed and the cost lands —
+      Priya was right, out loud, and writing it means saying so.
+    realize: >-
+      Fuse the finding with the face cost. Sample: "If I write five sixths
+      I'm basically saying Priya was right and I was wrong in front of
+      everyone. So it's two fifths. It can be two fifths."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the two costs with one oblique move — e.g. ask what the pupil
+      actually got right (the adding rule, applied to matching pieces) — so
+      writing five sixths no longer means the homework was worthless.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Re-arguing the sixths against a stake that was never about sixths.

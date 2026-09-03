@@ -1,3 +1,5 @@
+import { tutorStubWorldClosingPattern } from './tutorStubWorldFrame.js';
+
 const ELLIPTICAL_SAME_PATTERN =
   /^(?:(?:yes[,;:]?\s*)?(?:(?:it|that|this|they|he|she|the (?:one|person|hand))\s+)?(?:will|would|must|should|could|has to|have to|is|are|was|were)?\s*(?:be\s+)?)?(?:the\s+)?same(?:\s+(?:one|person|hand|place|source))?[.!]*$/iu;
 const BINARY_REPLY_PATTERN = /^(?:yes|right|exactly|correct|no|not so)[.!]*$/iu;
@@ -102,7 +104,9 @@ export function resolveTutorStubGenerousInference({
   previousTutorText,
   branchId = null,
   classification = null,
+  world = null,
 } = {}) {
+  const caseClosingPattern = tutorStubWorldClosingPattern(world, CASE_CLOSING_PATTERN);
   const surface = String(learnerText || '').trim();
   const tutorText = String(previousTutorText || '').trim();
   const sourceQuestion = lastQuestion(tutorText);
@@ -127,7 +131,7 @@ export function resolveTutorStubGenerousInference({
 
   if (mode !== 'defeasible_human_scaffold') return { ...base, reason: 'mode_not_defeasible' };
   if (!surface || !sourceQuestion) return { ...base, reason: 'no_adjacent_question_and_answer' };
-  if (branchId === 'join' || CASE_CLOSING_PATTERN.test(sourceQuestion)) {
+  if (branchId === 'join' || caseClosingPattern.test(sourceQuestion)) {
     return { ...base, reason: 'case_closing_question_requires_explicit_grounding' };
   }
   if (UNCERTAINTY_OR_QUESTION_PATTERN.test(surface) || CONTRADICTION_PATTERN.test(surface)) {
