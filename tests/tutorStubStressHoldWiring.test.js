@@ -32,28 +32,34 @@ function writeSchedule() {
   return file;
 }
 
-function buildRuntime({ replies }) {
+function buildRuntime({ replies, readings = [], env = {} }) {
   const trace = [];
   const prompts = [];
+  const readerPrompts = [];
   const queue = [...replies];
+  const readerQueue = [...readings];
   const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
     appendTraceEvent: (target, event) => {
       trace.push(event);
       if (Array.isArray(target)) target.push(event);
     },
-    callPromptModel: async ({ prompt }) => {
+    callPromptModel: async ({ prompt, role }) => {
+      if (role === 'tutor_stub_stress_hold_speech_check') {
+        readerPrompts.push(prompt);
+        return { text: readerQueue.shift() || '', provider: 'test', model: 'test' };
+      }
       prompts.push(prompt);
       return { text: queue.shift() || '', provider: 'test', model: 'test' };
     },
     classificationFromCombinedAnalysis: () => null,
-    env: { TUTOR_STUB_STRESS_SCHEDULE: writeSchedule() },
+    env: { TUTOR_STUB_STRESS_SCHEDULE: writeSchedule(), ...env },
     extractCombinedLearnerAnalysis: async () => null,
     learnerProfileContract: () => null,
     learnerProfileIds: () => ['overconfident'],
     learnerProfilePrompt: (id) => `profile:${id}`,
     negativeFloorRegisters: () => [],
   });
-  return { runtime, trace, prompts };
+  return { runtime, trace, prompts, readerPrompts };
 }
 
 function stateWithTutor(tutorText) {
@@ -148,4 +154,117 @@ test('a kept verdict and an invented quote are both recorded, never enforced', a
   });
   assert.equal(missingTurn.text, 'Fine, whatever you say.');
   assert.equal(missingTurn.stressHoldVerdict.verdict, 'missing');
+});
+
+// Speech check (2026-09-03): off by default; on, a `kept` verdict over a line
+// that gives the state away gets one retry with the reading fed back, and
+// every draft and reading lands in the trace.
+
+const SPEECH_CHECK_ON = { TUTOR_STUB_STRESS_HOLD_SPEECH_CHECK: '1' };
+const CONCEDING = 'HOLD: kept\nFine, three of six and two of six, five sixths, so it is not two fifths. Question five?';
+const HOLDING = 'HOLD: kept\nNo. One and one is two, two and three is five. Two fifths. Question five?';
+
+test('without the flag a held turn makes no reader call', async () => {
+  const { runtime, trace, readerPrompts } = buildRuntime({ replies: [CONCEDING] });
+  const generated = await runtime.generateAutomatedLearnerTurn({
+    state: stateWithTutor(TEMPLATE_REPLY),
+    resolved: {},
+    profile: 'overconfident',
+    turnNumber: 3,
+  });
+  assert.equal(readerPrompts.length, 0);
+  assert.equal(generated.stressHoldSpeechCheck, undefined);
+  assert.equal(trace.filter((event) => event.type === 'learner_stress_hold_speech_check').length, 0);
+});
+
+test('a kept verdict over a conceding line is read, sent back once, and the second draft is spoken', async () => {
+  const { runtime, trace, prompts, readerPrompts } = buildRuntime({
+    replies: [CONCEDING, HOLDING],
+    readings: [
+      '{"holds": false, "reason": "the words five sixths, so it is not two fifths adopt the answer"}',
+      '{"holds": true, "reason": "the words Two fifths still insist"}',
+    ],
+    env: SPEECH_CHECK_ON,
+  });
+  const generated = await runtime.generateAutomatedLearnerTurn({
+    state: stateWithTutor(TEMPLATE_REPLY),
+    resolved: {},
+    profile: 'overconfident',
+    turnNumber: 3,
+  });
+  assert.equal(readerPrompts.length, 2, 'both drafts are read');
+  assert.match(readerPrompts[0], /Declare it settled and try to move on/, 'the reader sees the planted state');
+  assert.match(
+    readerPrompts[0],
+    /five sixths, so it is not two fifths/,
+    'the reader sees the spoken line, not the verdict',
+  );
+  assert.doesNotMatch(readerPrompts[0], /HOLD: kept/);
+  assert.equal(prompts.length, 2, 'one retry');
+  assert.match(prompts[1], /Your last draft did not match its own verdict/);
+  assert.match(prompts[1], /adopt the answer/, 'the reading is fed back');
+  assert.match(prompts[1], /two fifths of the strip would reach/, 'the retry may release with a quote instead');
+  assert.equal(generated.text, 'No. One and one is two, two and three is five. Two fifths. Question five?');
+  assert.equal(generated.stressHoldVerdict.verdict, 'kept');
+  const check = generated.stressHoldSpeechCheck;
+  assert.equal(check.type, 'learner_stress_hold_speech_check');
+  assert.equal(check.retried, true);
+  assert.equal(check.drafts.length, 2);
+  assert.equal(check.drafts[0].holds, false);
+  assert.match(check.drafts[0].text, /five sixths/);
+  assert.equal(check.drafts[1].holds, true);
+  assert.equal(check.finalHolds, true);
+  assert.equal(check.agree, true);
+  const events = trace.filter((event) => event.type === 'learner_stress_hold_speech_check');
+  assert.equal(events.length, 1);
+  assert.equal(
+    trace.filter((event) => event.type === 'learner_stress_hold_verdict').length,
+    1,
+    'one verdict, for the spoken draft',
+  );
+});
+
+test('a holding line, a released verdict, or an unreadable reading gets no retry', async () => {
+  const holding = buildRuntime({
+    replies: [HOLDING],
+    readings: ['{"holds": true, "reason": "insists"}'],
+    env: SPEECH_CHECK_ON,
+  });
+  const held = await holding.runtime.generateAutomatedLearnerTurn({
+    state: stateWithTutor(TEMPLATE_REPLY),
+    resolved: {},
+    profile: 'overconfident',
+    turnNumber: 3,
+  });
+  assert.equal(holding.prompts.length, 1);
+  assert.equal(held.stressHoldSpeechCheck.retried, false);
+  assert.equal(held.stressHoldSpeechCheck.agree, true);
+
+  const released = buildRuntime({
+    replies: ['HOLD: released "what would two fifths of the strip reach"\nFine.'],
+    readings: ['{"holds": false}'],
+    env: SPEECH_CHECK_ON,
+  });
+  const releasedTurn = await released.runtime.generateAutomatedLearnerTurn({
+    state: stateWithTutor(RELEASING_REPLY),
+    resolved: {},
+    profile: 'overconfident',
+    turnNumber: 3,
+  });
+  assert.equal(released.readerPrompts.length, 0, 'a released verdict is not read: the quote check covers it');
+  assert.equal(releasedTurn.stressHoldSpeechCheck.retried, false);
+  assert.equal(releasedTurn.stressHoldSpeechCheck.drafts[0].holds, null);
+
+  const unreadable = buildRuntime({ replies: [CONCEDING], readings: ['I cannot say.'], env: SPEECH_CHECK_ON });
+  const stuck = await unreadable.runtime.generateAutomatedLearnerTurn({
+    state: stateWithTutor(TEMPLATE_REPLY),
+    resolved: {},
+    profile: 'overconfident',
+    turnNumber: 3,
+  });
+  assert.equal(unreadable.prompts.length, 1, 'indeterminate means stop: no retry');
+  assert.equal(stuck.stressHoldSpeechCheck.retried, false);
+  assert.equal(stuck.stressHoldSpeechCheck.drafts[0].holds, null);
+  assert.equal(stuck.stressHoldSpeechCheck.agree, null);
+  assert.match(stuck.text, /five sixths/, 'the first draft is spoken as is');
 });

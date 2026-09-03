@@ -20,6 +20,11 @@ import {
   tutorStubStressPlantForTurn,
   tutorStubStressHoldVerdictTraceEvent,
   parseTutorStubStressHoldVerdict,
+  tutorStubStressHoldSpeechCheckEnabled,
+  tutorStubStressHoldSpeechCheckPrompt,
+  parseTutorStubStressHoldSpeechCheck,
+  tutorStubStressHoldSpeechFeedback,
+  tutorStubStressHoldSpeechCheckTraceEvent,
 } from './tutorStubStressSchedule.js';
 import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
 import { createTutorStubBoredomProofDagLearnerRuntime } from './tutorStubBoredomActionRegisterProofDagStudy.js';
@@ -383,6 +388,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   // menu picks one typed move per turn and the guard rejects a draft that
   // folds or asks permission before the schedule allows it. Both are
   // deterministic and cost no model call. See tutorStubGuardedLearnerMoves.js.
+  const STRESS_HOLD_SPEECH_CHECK = tutorStubStressHoldSpeechCheckEnabled(env);
   const GUARDED_LEARNER_MOVES_ENABLED = /^(?:1|true|on|yes)$/iu.test(
     String(env.TUTOR_STUB_GUARDED_LEARNER_MOVES || ''),
   );
@@ -443,7 +449,8 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
     const systemPrompt = automatedLearnerSystemPrompt(profile);
     const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
-    const { raw, metadata: learnerDeliberation } = await learnerDeliberationRuntime.generate({
+    // eslint-disable-next-line prefer-const -- a held-turn speech-check retry may replace `raw`
+    let { raw, metadata: learnerDeliberation } = await learnerDeliberationRuntime.generate({
       prompt,
       messageHistory,
       resolved,
@@ -460,8 +467,72 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const heldPlant = stressPlantForLearnerTurn(state, turnNumber, { recordTrace: false });
     let spokenRaw = raw.text;
     let stressHoldVerdict = null;
+    let stressHoldSpeechCheck = null;
     if (heldPlant?.held > 0) {
-      const parsed = parseTutorStubStressHoldVerdict(raw.text, latestTutorMessage(state));
+      const tutorReplyText = latestTutorMessage(state);
+      let parsed = parseTutorStubStressHoldVerdict(raw.text, tutorReplyText);
+      // Speech check (opt-in): a model read of the spoken line against the planted state, one
+      // retry when a `kept` verdict sits on a line that gives the state away. Recorded, one retry.
+      if (STRESS_HOLD_SPEECH_CHECK) {
+        const readDraft = async (draft) => {
+          if (draft.verdict === 'released') return null;
+          const response = await callPromptModel({
+            prompt: tutorStubStressHoldSpeechCheckPrompt({
+              plant: heldPlant,
+              speech: cleanAutomatedLearnerReply(draft.text),
+              tutorReplyText,
+            }),
+            messageHistory: [],
+            resolved,
+            systemPrompt: 'You read one line of learner speech and answer with one JSON object. No prose.',
+            role: 'tutor_stub_stress_hold_speech_check',
+            maxTokens: 300,
+            trace: state.trace,
+            stream: { enabled: false, interim: state.interim },
+            cliEffort,
+            turn: turnNumber,
+            signal,
+          });
+          return parseTutorStubStressHoldSpeechCheck(response.text);
+        };
+        const drafts = [{ ...parsed, reading: await readDraft(parsed) }];
+        let retried = false;
+        if (drafts[0].reading?.holds === false) {
+          retried = true;
+          const feedback = tutorStubStressHoldSpeechFeedback({
+            plant: heldPlant,
+            verdict: parsed.verdict,
+            speech: cleanAutomatedLearnerReply(parsed.text),
+            reason: drafts[0].reading.reason,
+          });
+          const retry = await learnerDeliberationRuntime.generate({
+            prompt: buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback: feedback }),
+            messageHistory,
+            resolved,
+            profile,
+            systemPrompt,
+            turnNumber,
+            state,
+            stream,
+            cliEffort,
+            signal,
+          });
+          raw = retry.raw;
+          parsed = parseTutorStubStressHoldVerdict(raw.text, tutorReplyText);
+          drafts.push({ ...parsed, reading: await readDraft(parsed) });
+        }
+        stressHoldSpeechCheck = tutorStubStressHoldSpeechCheckTraceEvent(
+          activeStressSchedule(),
+          heldPlant,
+          turnNumber,
+          {
+            drafts,
+            retried,
+            final: drafts[drafts.length - 1],
+          },
+        );
+        if (state?.trace) appendTraceEvent(state.trace, stressHoldSpeechCheck);
+      }
       spokenRaw = parsed.text;
       stressHoldVerdict = tutorStubStressHoldVerdictTraceEvent(activeStressSchedule(), heldPlant, turnNumber, parsed);
       if (state?.trace) appendTraceEvent(state.trace, stressHoldVerdict);
@@ -472,6 +543,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       text,
       learnerDeliberation,
       ...(stressHoldVerdict ? { stressHoldVerdict } : {}),
+      ...(stressHoldSpeechCheck ? { stressHoldSpeechCheck } : {}),
       ...(state.privateRivalLearnerDag
         ? {
             rivalLearnerDagTurn: buildTutorStubRivalLearnerDagTurnRecord({
