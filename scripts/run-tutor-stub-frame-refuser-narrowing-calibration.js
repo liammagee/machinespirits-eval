@@ -30,7 +30,7 @@ export const TUTOR_STUB_FRAME_REFUSER_NARROWING_USAGE = `Usage:
     --design config/tutor-stub-frame-refuser-narrowing-calibration-design.v1.json \
     --archive-root /absolute/path/to/private-archive \
     --destination /absolute/create-once/private-archive/artifacts/tutor-stub-live/run-name \
-    --launch-commit <merged-detached-commit> \
+    --launch-commit <commit-to-record> \
     --go-note-commit <commit-containing-signed-note> \
     --go-note-path notes/<signed-go-note>.md \
     --accept-charges
@@ -40,7 +40,7 @@ export const TUTOR_STUB_FRAME_REFUSER_NARROWING_USAGE = `Usage:
     --archive-root /absolute/path/to/private-archive \
     --recovery-from /absolute/path/to/sealed-transport-failure-root \
     --destination /absolute/create-once/private-archive/artifacts/tutor-stub-live/recovery-name \
-    --launch-commit <merged-detached-recovery-commit> \
+    --launch-commit <recovery-commit-to-record> \
     --go-note-commit <commit-containing-study-go-note> \
     --go-note-path notes/<signed-study-go-note>.md \
     --accept-charges
