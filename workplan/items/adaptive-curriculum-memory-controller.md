@@ -7,8 +7,8 @@ priority: P2
 owner: codex
 source: review
 created: 2026-07-11
-updated: 2026-09-02
-branch: codex/action-outcome-model-judge
+updated: 2026-09-03
+branch: claude/action-outcome-judge-v2
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -41,9 +41,14 @@ links:
     - services/tutorStubActionOutcomeModelJudge.js
     - scripts/run-tutor-stub-action-outcome-model-judge-shadow.js
     - notes/2026-09-02-tutor-stub-action-outcome-model-judge-shadow-go.md
+    - notes/2026-09-03-action-outcome-model-judge-divergence-diagnosis.md
+    - config/tutor-stub-action-outcome-model-judge-shadow-design.v2.json
+    - config/tutor-stub-action-outcome-model-judge-codebook.v2.md
+    - scripts/rescore-tutor-stub-action-outcome-model-judge-shadow.js
   exports:
     - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
     - exports/action-outcome-model-judge-shadow/2026-09-02/README.md
+    - exports/action-outcome-model-judge-shadow/2026-09-02-quote-normalized-rescore/README.md
   prs:
     - 895
     - 898
@@ -134,6 +139,38 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-03: Diagnosed the Opus-Sol outcome split and prepared revision 2 of
+  the shadow instrument on branch `claude/action-outcome-judge-v2`, with zero
+  model calls. Three causes. First, the packet is stall reports: 23/35 learner
+  replies say the learner stopped before the step, and the v1 codebook has no
+  stall rule. Sol read the absence of the step as `failure` in six cases and an
+  echoed tutor step as `success` in two, all at high confidence; Opus applied
+  the literal "absence is not failure" rule and said `inconclusive`. Second,
+  the validator compared quotations byte for byte, so two Opus rows that wrote
+  a straight apostrophe for the packet's curly one were voided. Third, both
+  seats ran at low effort. Changes: codebook v2 adds a stall-report rule (a
+  stall with no forbidden evidence is `inconclusive`; an echoed step is not
+  learner-authored application), a confidence definition, and the quotation
+  tolerance; the validator now maps curly apostrophes and quotation marks to
+  straight ones before matching and records when it did so; design v2 runs
+  both seats at medium effort with new order seeds and is otherwise identical
+  to v1. Re-scoring the archived v1 responses under the new validator
+  (`scripts/rescore-tutor-stub-action-outcome-model-judge-shadow.js`; public
+  copy at
+  `exports/action-outcome-model-judge-shadow/2026-09-02-quote-normalized-rescore/README.md`)
+  recovers both voided Opus rows: paired valid cases 33 to 35, joint exact
+  17/33 to 18/35, paired indeterminacy 27 to 26, binary records unchanged at
+  5. The apostrophe fix alone does not move the verdict. The codebook and
+  effort changes need a paid v2 run (70 calls) under a new GO note; this entry
+  licenses nothing. Expected direction: the six Sol-failure/Opus-inconclusive
+  and two Sol-success/Opus-inconclusive splits should close toward
+  `inconclusive`, which raises joint agreement but not binary yield, because a
+  stall-report packet holds few binary outcomes to find. Diagnosis with case
+  ids and the label cross-tab (no case text):
+  `notes/2026-09-03-action-outcome-model-judge-divergence-diagnosis.md`. Full
+  re-score rows are in the private archive under
+  `artifacts/tutor-stub-live/rescores/`.
 
 - 2026-09-02: Completed the registered 35-case Opus-Sol shadow semantic
   judgment with exactly 70/70 reservations, 70 completed calls, no failed or

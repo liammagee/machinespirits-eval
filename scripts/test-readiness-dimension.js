@@ -32,7 +32,7 @@ const modelArgIdx = process.argv.indexOf('--model');
 const MODEL_KEY = modelArgIdx !== -1 ? process.argv[modelArgIdx + 1] : 'claude-code';
 
 const OPENROUTER_MODELS = {
-  openrouter: 'anthropic/claude-opus-4-20250514',
+  openrouter: 'anthropic/claude-opus-4.6',
   haiku: 'anthropic/claude-haiku-4.5',
 };
 

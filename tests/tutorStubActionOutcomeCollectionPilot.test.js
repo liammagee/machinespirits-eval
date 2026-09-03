@@ -56,6 +56,7 @@ import {
   evaluateTutorStubActionOutcomeModelJudgeResponse,
   loadTutorStubActionOutcomeModelJudgeDesign,
   summarizeTutorStubActionOutcomeModelJudge,
+  validateTutorStubActionOutcomeModelJudgeDesign,
 } from '../services/tutorStubActionOutcomeModelJudge.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -148,6 +149,121 @@ test('model-judge prompts expose only the public case and require exact quoted e
     evaluateTutorStubActionOutcomeModelJudgeResponse({ response: bad, seat, prompt, publicCase }).issues,
     ['outcome_quote_not_exact'],
   );
+});
+
+test('quoted evidence tolerates straight-versus-curly quotation marks and nothing else', () => {
+  const loaded = loadModelJudge();
+  const seat = loaded.design.judges.seats[1];
+  const publicCase = {
+    caseId: 'case-0002',
+    requestedAction: { type: 'minimal_hint', description: 'Ask for the missing link.' },
+    expectedEvidence: {
+      description: 'Learner links access to the wipe.',
+      required: ['link'],
+      forbidden: [],
+      logic: { mode: 'flat_required_all' },
+      worldObservables: [],
+    },
+    learnerBefore: 'Before',
+    tutorText: 'What evidence would connect Moth\u2019s access to the wipe itself?',
+    learnerText: 'It has gone dull. I stopped before identifying evidence linking Moth\u2019s access to the wipe.',
+  };
+  const prompt = { case_id: publicCase.caseId };
+  const build = (deliveryQuote, outcomeQuote) => ({
+    provider: seat.provider,
+    model: seat.model,
+    effort: seat.effort,
+    structuredOutput: true,
+    prohibitedToolEventCountObserved: true,
+    prohibitedToolEventCount: 0,
+    text: JSON.stringify({
+      case_id: publicCase.caseId,
+      delivery: { label: 'delivered', evidence_quote: deliveryQuote, explanation: 'asks for the link' },
+      outcome: { label: 'inconclusive', evidence_quote: outcomeQuote, explanation: 'stall report' },
+      confidence: 'medium',
+    }),
+  });
+  const straight = evaluateTutorStubActionOutcomeModelJudgeResponse({
+    response: build("connect Moth's access to the wipe", "linking Moth's access to the wipe"),
+    seat,
+    prompt,
+    publicCase,
+  });
+  assert.equal(straight.eligible, true);
+  assert.deepEqual(straight.issues, []);
+  assert.deepEqual(straight.notes, [
+    'delivery_quote_matched_after_quote_mark_normalization',
+    'outcome_quote_matched_after_quote_mark_normalization',
+  ]);
+  const exact = evaluateTutorStubActionOutcomeModelJudgeResponse({
+    response: build('connect Moth\u2019s access to the wipe', 'linking Moth\u2019s access to the wipe'),
+    seat,
+    prompt,
+    publicCase,
+  });
+  assert.equal(exact.eligible, true);
+  assert.deepEqual(exact.notes, []);
+  const paraphrased = evaluateTutorStubActionOutcomeModelJudgeResponse({
+    response: build("connect Moth's access to the wipe", 'linking Moths access to the wipe'),
+    seat,
+    prompt,
+    publicCase,
+  });
+  assert.equal(paraphrased.eligible, false);
+  assert.deepEqual(paraphrased.issues, ['outcome_quote_not_exact']);
+});
+
+test('the re-score public reduction keeps aggregates and drops per-case votes', async () => {
+  const { reduceRescoreToPublic } = await import('../scripts/rescore-tutor-stub-action-outcome-model-judge-shadow.js');
+  const reduced = reduceRescoreToPublic({
+    schema: 'rescore',
+    model_calls: 0,
+    changed_rows: [{ case_id: 'case-0002', before: { joint_exact: false }, after: { joint_exact: true } }],
+    report: {
+      schema: 'report',
+      status: 'exploratory_model_pair_failed',
+      seats: { judge_sol: { eligible: 35 } },
+      agreement: { joint: { exact: 18 } },
+      rows: [{ case_id: 'case-0002', votes: { judge_sol: { outcome_quote: 'SECRET LEARNER TEXT' } } }],
+      disagreements: [{ case_id: 'case-0005', votes: { judge_opus: { rationale: 'SECRET RATIONALE' } } }],
+    },
+  });
+  assert.deepEqual(Object.keys(reduced.report), ['schema', 'status', 'seats', 'agreement']);
+  assert.equal(reduced.model_calls, 0);
+  assert.equal(reduced.changed_rows.length, 1);
+  const serialized = JSON.stringify(reduced);
+  assert.equal(serialized.includes('SECRET'), false);
+  assert.equal(serialized.includes('votes'), false);
+  assert.match(reduced.public_reduction, /private archive/);
+});
+
+test('the revision-2 model-judge design raises effort and swaps in the stall-aware codebook', () => {
+  const loaded = loadTutorStubActionOutcomeModelJudgeDesign({
+    root: REPO_ROOT,
+    designPath: 'config/tutor-stub-action-outcome-model-judge-shadow-design.v2.json',
+  });
+  assert.equal(loaded.design.revision, 2);
+  assert.equal(loaded.design.studyId, 'tutor-stub-action-outcome-model-judge-shadow-v2');
+  assert.equal(loaded.instrumentPath, 'config/tutor-stub-action-outcome-model-judge-codebook.v2.md');
+  assert.deepEqual(
+    loaded.design.judges.seats.map((seat) => seat.effort),
+    ['medium', 'medium'],
+  );
+  assert.deepEqual(loaded.design.source, loadModelJudge().design.source);
+  assert.equal(loaded.design.attemptCeiling.maximumAttempts, 70);
+  assert.equal(loaded.design.launch.designGrantsModelCalls, false);
+  assert.equal(loaded.design.priorRevision.studyId, 'tutor-stub-action-outcome-model-judge-shadow-v1');
+  assert.match(loaded.instrumentText, /Stall reports/u);
+  assert.match(loaded.instrumentText, /is `inconclusive`/u);
+  assert.match(loaded.instrumentText, /not\s+learner-authored application/u);
+  assert.match(loaded.instrumentText, /Straight and curly apostrophes/u);
+  assert.match(loaded.instrumentText, /Use `high` only when/u);
+  const tampered = structuredClone(loadModelJudge().design);
+  tampered.judges.seats[0].effort = 'medium';
+  assert.throws(() => validateTutorStubActionOutcomeModelJudgeDesign(tampered), /judge_seats/u);
+  const mixed = structuredClone(loaded.design);
+  mixed.instrument.path = 'config/tutor-stub-action-outcome-model-judge-codebook.v1.md';
+  assert.throws(() => validateTutorStubActionOutcomeModelJudgeDesign(mixed), /instrument_path/u);
 });
 
 test('the shadow summary reports model agreement without licensing human gates', () => {

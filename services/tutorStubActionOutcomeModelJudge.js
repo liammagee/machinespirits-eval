@@ -2,14 +2,50 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
+export const TUTOR_STUB_ACTION_OUTCOME_MODEL_JUDGE_DESIGN_REVISIONS = Object.freeze({
+  1: Object.freeze({
+    designPath: 'config/tutor-stub-action-outcome-model-judge-shadow-design.v1.json',
+    studyId: 'tutor-stub-action-outcome-model-judge-shadow-v1',
+    instrumentPath: 'config/tutor-stub-action-outcome-model-judge-codebook.v1.md',
+    effort: 'low',
+    orderSeeds: Object.freeze([2026090211, 2026090212]),
+  }),
+  2: Object.freeze({
+    designPath: 'config/tutor-stub-action-outcome-model-judge-shadow-design.v2.json',
+    studyId: 'tutor-stub-action-outcome-model-judge-shadow-v2',
+    instrumentPath: 'config/tutor-stub-action-outcome-model-judge-codebook.v2.md',
+    effort: 'medium',
+    orderSeeds: Object.freeze([2026090221, 2026090222]),
+  }),
+});
+export const TUTOR_STUB_ACTION_OUTCOME_MODEL_JUDGE_DESIGN_PATH_V1 =
+  TUTOR_STUB_ACTION_OUTCOME_MODEL_JUDGE_DESIGN_REVISIONS[1].designPath;
 export const TUTOR_STUB_ACTION_OUTCOME_MODEL_JUDGE_DESIGN_PATH =
-  'config/tutor-stub-action-outcome-model-judge-shadow-design.v1.json';
+  TUTOR_STUB_ACTION_OUTCOME_MODEL_JUDGE_DESIGN_REVISIONS[2].designPath;
 export const TUTOR_STUB_ACTION_OUTCOME_MODEL_JUDGE_REPORT_SCHEMA =
   'machinespirits.tutor-stub.action-outcome-model-judge-shadow-report.v1';
 
 const DELIVERY_LABELS = Object.freeze(['delivered', 'not_delivered', 'indeterminate']);
 const OUTCOME_LABELS = Object.freeze(['success', 'failure', 'partial', 'inconclusive', 'measurement_indeterminate']);
 const CONFIDENCE_LABELS = Object.freeze(['high', 'medium', 'low']);
+const QUOTE_MARK_EQUIVALENTS = Object.freeze([
+  [/[\u2018\u2019\u201a\u201b\u2032]/gu, "'"],
+  [/[\u201c\u201d\u201e\u201f\u2033]/gu, '"'],
+]);
+
+export function normalizeQuotedEvidenceText(value) {
+  let text = String(value ?? '').normalize('NFC');
+  for (const [pattern, replacement] of QUOTE_MARK_EQUIVALENTS) text = text.replace(pattern, replacement);
+  return text;
+}
+
+function matchQuotedEvidence(quote, sourceText) {
+  const needle = String(quote || '');
+  if (!needle) return 'missing';
+  if (String(sourceText).includes(needle)) return 'exact';
+  if (normalizeQuotedEvidenceText(sourceText).includes(normalizeQuotedEvidenceText(needle))) return 'normalized';
+  return 'absent';
+}
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -45,8 +81,10 @@ function exactKeys(value, expected, label, issues) {
 export function validateTutorStubActionOutcomeModelJudgeDesign(design) {
   const issues = [];
   if (design?.documentType !== 'prospective_paid_shadow_measurement_design') issues.push('document_type');
-  if (design?.revision !== 1) issues.push('revision');
-  if (design?.studyId !== 'tutor-stub-action-outcome-model-judge-shadow-v1') issues.push('study_id');
+  const revision = TUTOR_STUB_ACTION_OUTCOME_MODEL_JUDGE_DESIGN_REVISIONS[design?.revision] || null;
+  if (!revision) issues.push('revision');
+  if (design?.studyId !== revision?.studyId) issues.push('study_id');
+  if (design?.instrument?.path !== revision?.instrumentPath) issues.push('instrument_path');
   if (design?.source?.sourceStudyId !== 'tutor-stub-action-outcome-comparable-collection-v2') {
     issues.push('source_study');
   }
@@ -58,8 +96,24 @@ export function validateTutorStubActionOutcomeModelJudgeDesign(design) {
     if (!/^[0-9a-f]{64}$/u.test(String(design?.source?.[key] || ''))) issues.push(key);
   }
   const expectedSeats = [
-    ['judge_sol', 'codex.gpt-5.6-sol', 'codex', 'gpt-5.6-sol', 'openai_gpt_5_6', 'low', 2026090211],
-    ['judge_opus', 'claude-code.opus-5', 'claude-code', 'claude-opus-5', 'anthropic_claude_5', 'low', 2026090212],
+    [
+      'judge_sol',
+      'codex.gpt-5.6-sol',
+      'codex',
+      'gpt-5.6-sol',
+      'openai_gpt_5_6',
+      revision?.effort,
+      revision?.orderSeeds[0],
+    ],
+    [
+      'judge_opus',
+      'claude-code.opus-5',
+      'claude-code',
+      'claude-opus-5',
+      'anthropic_claude_5',
+      revision?.effort,
+      revision?.orderSeeds[1],
+    ],
   ];
   const seats = design?.judges?.seats;
   if (
@@ -266,6 +320,7 @@ function parseJsonObject(raw) {
 
 export function evaluateTutorStubActionOutcomeModelJudgeResponse({ response, seat, prompt, publicCase }) {
   const issues = [];
+  const notes = [];
   const output = parseJsonObject(response?.text ?? response);
   exactKeys(output, ['case_id', 'delivery', 'outcome', 'confidence'], 'output', issues);
   exactKeys(output?.delivery, ['label', 'evidence_quote', 'explanation'], 'delivery', issues);
@@ -279,14 +334,18 @@ export function evaluateTutorStubActionOutcomeModelJudgeResponse({ response, sea
   const deliveryQuote = output?.delivery?.evidence_quote;
   if (output?.delivery?.label === 'indeterminate') {
     if (deliveryQuote !== null) issues.push('delivery_indeterminate_quote_must_be_null');
-  } else if (!String(deliveryQuote || '') || !String(publicCase.tutorText).includes(String(deliveryQuote))) {
-    issues.push('delivery_quote_not_exact');
+  } else {
+    const match = matchQuotedEvidence(deliveryQuote, publicCase.tutorText);
+    if (match === 'normalized') notes.push('delivery_quote_matched_after_quote_mark_normalization');
+    else if (match !== 'exact') issues.push('delivery_quote_not_exact');
   }
   const outcomeQuote = output?.outcome?.evidence_quote;
   if (output?.outcome?.label === 'measurement_indeterminate') {
     if (outcomeQuote !== null) issues.push('outcome_indeterminate_quote_must_be_null');
-  } else if (!String(outcomeQuote || '') || !String(publicCase.learnerText).includes(String(outcomeQuote))) {
-    issues.push('outcome_quote_not_exact');
+  } else {
+    const match = matchQuotedEvidence(outcomeQuote, publicCase.learnerText);
+    if (match === 'normalized') notes.push('outcome_quote_matched_after_quote_mark_normalization');
+    else if (match !== 'exact') issues.push('outcome_quote_not_exact');
   }
   if (output?.delivery?.label !== 'delivered' && output?.outcome?.label !== 'measurement_indeterminate') {
     issues.push('undelivered_outcome_must_be_indeterminate');
@@ -304,6 +363,7 @@ export function evaluateTutorStubActionOutcomeModelJudgeResponse({ response, sea
   return {
     eligible: uniqueIssues.length === 0,
     issues: uniqueIssues,
+    notes,
     delivery: DELIVERY_LABELS.includes(output?.delivery?.label) ? output.delivery : null,
     outcome: OUTCOME_LABELS.includes(output?.outcome?.label) ? output.outcome : null,
     confidence: CONFIDENCE_LABELS.includes(output?.confidence) ? output.confidence : null,

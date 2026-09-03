@@ -21,11 +21,11 @@ function getDefaultConfig() {
       anthropic: {
         api_key_env: 'ANTHROPIC_API_KEY',
         base_url: 'https://api.anthropic.com/v1/messages',
-        default_model: 'claude-sonnet-4-5-20250514',
+        default_model: 'claude-sonnet-5',
         models: {
-          haiku: 'claude-haiku-4-5-20241022',
-          sonnet: 'claude-sonnet-4-5-20250514',
-          opus: 'claude-opus-4-5-20250514',
+          haiku: 'claude-haiku-4-5',
+          sonnet: 'claude-sonnet-5',
+          opus: 'claude-opus-5',
         },
       },
     },
