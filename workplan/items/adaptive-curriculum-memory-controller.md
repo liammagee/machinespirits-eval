@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-02
-branch: codex/action-outcome-v2-audit-fix
+branch: codex/action-outcome-recovery-horizon-fix
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -35,6 +35,7 @@ links:
     - config/tutor-stub-action-outcome-failed-unit-recovery.v1.json
     - notes/2026-09-02-tutor-stub-action-outcome-failed-unit-recovery-go.md
     - docs/durable-evaluation-execution-contract.md
+    - notes/2026-09-02-action-outcome-recovery-horizon-incident.md
   exports:
     - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
   prs:
@@ -54,6 +55,10 @@ links:
     - 945
     - 946
     - 947
+    - 948
+    - 949
+    - 951
+    - 952
   items:
     - layered-task-session-adaptation
     - durable-evaluation-runner-migration
@@ -120,6 +125,20 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: The first three-dialogue recovery exposed a resume-boundary defect:
+  orchestration correctly supported a total eight-turn horizon, but the
+  noninteractive application did not receive the resumed-dialogue object and
+  selected eight additional turns. The operator stopped it after 18 dispatch
+  reservations: 17 completed and one interrupted. The raw trace is preserved;
+  completed turns 5 through 8 are accepted without redispatch, while turns 9
+  and 10 are excluded from the registered corpus. Permanent controls now derive
+  resume mode from the actual CLI request, enforce the maximum turn again at
+  the shared provider-dispatch ledger, reconcile and count killed per-dispatch
+  attempts before recovery, and test both public boundaries. Incident record:
+  `notes/2026-09-02-action-outcome-recovery-horizon-incident.md`. The scientific
+  design and claim boundary did not change; provider activity remains stopped
+  until the fix is merged and the interrupted ledger is sealed.
 
 - 2026-09-02: Registered the exact three-dialogue technical continuation after
   the operator extended recovery by 100 actual provider-dispatch reservations.

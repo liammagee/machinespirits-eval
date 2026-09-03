@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { parseTutorStubCliArguments } from '../services/tutorStubCliArguments.js';
 import { createTutorStubLaunchApplicationContext } from '../services/tutorStubLaunchApplicationContext.js';
 import { createTutorStubLaunchRuntime } from '../services/tutorStubLaunchRuntime.js';
+import { runTutorStubNonInteractiveApplication } from '../services/tutorStubNonInteractiveApplication.js';
 import { createTutorStubTerminalHost } from '../services/tutorStubTerminalHost.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -225,6 +226,37 @@ test('terminal host owns mutable readline lifecycle state without tutoring-polic
   assert.deepEqual(host.getActiveLearnerTurn(), { turnId: 'turn-1' });
   assert.equal(host.nextPendingAutoRequestSequence(), 1);
   assert.equal(host.nextPendingAutoRequestSequence(), 2);
+});
+
+test('noninteractive resume requests use the configured total turn horizon', async () => {
+  let dispatched = null;
+  const state = { trace: null, turns: Array.from({ length: 4 }, (_, index) => ({ turn: index + 1 })) };
+  const completed = await runTutorStubNonInteractiveApplication({
+    launchApplicationContext: {},
+    sessionApplicationContext: {},
+    args: { resume: '/sealed/source.jsonl', 'resume-last': false, 'auto-learner-profile': 'bored' },
+    autoLearnerEnabled: true,
+    autoLearnerResolved: { provider: 'fixture', model: 'fixture' },
+    autoSafetyTurns: 80,
+    autoStopOnGrounded: false,
+    autoTurns: 8,
+    appendTraceEvent() {},
+    appendTutorStubTurnFailureTraceRecords() {},
+    closeoutReportEnabled: false,
+    firstMessage: '',
+    openingEnabled: false,
+    runAutomatedLearnerDialogue: async (options) => {
+      dispatched = options;
+      return { reason: 'auto_turn_cap', turns: 8 };
+    },
+    state,
+    writeFinalLearningSummary() {},
+  });
+
+  assert.equal(completed, true);
+  assert.equal(dispatched.turnHorizonMode, 'total');
+  assert.equal(dispatched.autoTurns, 8);
+  assert.equal(dispatched.state.turns.length, 4);
 });
 
 test('thin entrypoint delegates to an import-safe application host that binds bounded facades', async () => {

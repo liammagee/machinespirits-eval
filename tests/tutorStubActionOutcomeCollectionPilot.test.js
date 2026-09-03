@@ -26,6 +26,7 @@ import {
   extractTutorStubActionOutcomeCollectionRow,
   loadTutorStubActionOutcomeCollectionRecovery,
   main as collectionLauncherMain,
+  tutorStubActionOutcomeCollectionChildSpec,
 } from '../scripts/run-tutor-stub-action-outcome-collection-pilot.js';
 import {
   buildTutorStubActionOutcomeCollectionAudit,
@@ -42,7 +43,9 @@ import {
 import { normalizeTutorStubResumeTrace } from '../services/tutorStubSessionRecipe.js';
 import {
   buildTutorStubActionOutcomeContinuationJob,
+  buildTutorStubAcceptedContinuationPrefix,
   composeTutorStubActionOutcomeRecoveryTrace,
+  materializeAcceptedTutorStubActionOutcomeRecoveryUnit,
 } from '../scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -1002,7 +1005,115 @@ test('partial-dialogue recovery reuses an accepted pending learner output and ke
   assert.equal(optionValue(job.args, '--auto-turns'), '8');
   assert.equal(optionValue(job.args, '--resume'), sourceTrace);
   assert.equal(job.accepted_pending_learner, true);
+
+  const materializedRoot = path.join(base, 'materialized');
+  fs.mkdirSync(path.join(materializedRoot, 'jobs'), { recursive: true });
+  const materialized = materializeAcceptedTutorStubActionOutcomeRecoveryUnit({
+    preflight: {
+      acceptedContinuationEvents: buildTutorStubAcceptedContinuationPrefix({
+        events: continuation,
+        sourceCompletedTurns: 4,
+        maximumTurn: 8,
+      }),
+      acceptedContinuationPath: continuationTrace,
+    },
+    unit: {
+      jobId: 'fixture-job',
+      completedTurns: 4,
+      tracePath: sourceTrace,
+      job: {
+        id: 'fixture-job',
+        world_id: 'world',
+        repeat: 1,
+        planned_model_calls: 0,
+      },
+    },
+    destination: materializedRoot,
+  });
+  assert.equal(materialized.status, 'complete');
+  assert.equal(materialized.turns, 8);
+  assert.deepEqual(materialized.recovery.overrun_turns_excluded, [9, 10]);
 });
+
+test('collection child propagates the registered turn horizon into the provider-dispatch ledger', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'action-outcome-child-horizon-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  let received = null;
+  const spec = tutorStubActionOutcomeCollectionChildSpec({
+    job: {
+      id: 'unit-1',
+      job_root: path.join(base, 'job'),
+      trace_dir: path.join(base, 'job', 'trace'),
+      args: ['scripts/tutor-stub.js', '--auto-turns', '8'],
+    },
+    admission: {
+      attemptLedgerEnvironment(options) {
+        received = options;
+        return { TUTOR_STUB_SHARED_ATTEMPT_LEDGER: '{}' };
+      },
+    },
+    capacity: { id: 'capacity-1', count: 20 },
+  });
+  assert.equal(received.maximumTurn, 8);
+  assert.equal(received.unitId, 'unit-1');
+  assert.equal(spec.env.TUTOR_STUB_REMEMBER_SETTINGS, '0');
+});
+
+test('accepted interrupted continuation keeps only the exact registered turn prefix', () => {
+  const events = [{ type: 'run_start', runId: 'continuation', seq: 1 }];
+  for (let turn = 5; turn <= 10; turn += 1) {
+    events.push({ type: 'model_call', runId: 'continuation', seq: events.length + 1, turn });
+    events.push({
+      type: 'turn_complete',
+      runId: 'continuation',
+      seq: events.length + 1,
+      turn,
+      turnRecord: { turn },
+    });
+  }
+  const accepted = buildTutorStubAcceptedContinuationPrefix({
+    events,
+    sourceCompletedTurns: 4,
+    maximumTurn: 8,
+  });
+  assert.deepEqual(traceTurnsForTest(accepted), [5, 6, 7, 8]);
+  assert.equal(accepted.at(-1).type, 'run_end');
+  assert.equal(accepted.at(-1).reason, 'auto_turn_cap');
+  assert.equal(
+    accepted.some((event) => Number(event.turn) > 8),
+    false,
+  );
+
+  assert.throws(
+    () =>
+      buildTutorStubAcceptedContinuationPrefix({
+        events: events.filter((event) => !(event.type === 'turn_complete' && event.turn === 7)),
+        sourceCompletedTurns: 4,
+        maximumTurn: 8,
+      }),
+    /incomplete/u,
+  );
+  assert.throws(
+    () =>
+      buildTutorStubAcceptedContinuationPrefix({
+        events: [
+          ...events.slice(
+            0,
+            events.findIndex((event) => event.type === 'turn_complete' && event.turn === 8),
+          ),
+          { type: 'model_call_error', turn: 8 },
+          events.find((event) => event.type === 'turn_complete' && event.turn === 8),
+        ],
+        sourceCompletedTurns: 4,
+        maximumTurn: 8,
+      }),
+    /model_call_error/u,
+  );
+});
+
+function traceTurnsForTest(events) {
+  return events.filter((event) => event.type === 'turn_complete' && event.turnRecord).map((event) => event.turn);
+}
 
 test('execution accounts for all 24 jobs and seals the complete generation block', async (t) => {
   const value = executionFixture(t);
