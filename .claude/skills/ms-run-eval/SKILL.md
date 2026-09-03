@@ -11,7 +11,7 @@ Run an evaluation pipeline. The user will specify which cells and how many runs.
 
 1. **Parse the request**: Identify cell profiles, run count, model overrides, and options.
    - Cell format: `cell_1_base_single_unified`, `cell_5_recog_single_unified`, etc.
-   - Model format: dot notation like `openrouter.nemotron` or `openrouter.kimi-k2.5`
+   - Model format: dot notation like `codex.gpt-5.6-luna` or `claude-code.sonnet-5`
    - Options: `--scenario <id>`, `--cluster <name>`, `--parallelism N`, `--live`, `--transcript`
 
 2. **Pre-flight checks**:
@@ -56,7 +56,7 @@ Run an evaluation pipeline. The user will specify which cells and how many runs.
    ```
 
 ## Critical notes
-- CLI model format is **dot notation**: `openrouter.nemotron`, NOT `openrouter/nemotron`
+- CLI model format is **dot notation**: `codex.gpt-5.6-luna`, NOT `codex/gpt-5.6-luna`
 - CLI uses `--runs` NOT `--repeats`
 - Score column: `tutor_first_turn_score` (Turn 0). `overall_score` is deprecated alias.
 - Multi-turn runs also have `tutor_last_turn_score` (last turn) and `tutor_development_score`.

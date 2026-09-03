@@ -104,12 +104,8 @@ const seedDefaultProviders = () => {
       enabled: 1,
       apiKeyEnvVar: 'ANTHROPIC_API_KEY',
       baseUrl: 'https://api.anthropic.com',
-      defaultModel: 'claude-sonnet-4-5-20250514',
-      supportedModels: JSON.stringify([
-        'claude-sonnet-4-20250514',
-        'claude-opus-4-20250514',
-        'claude-3-5-sonnet-20241022',
-      ]),
+      defaultModel: 'claude-sonnet-5',
+      supportedModels: JSON.stringify(['claude-sonnet-5', 'claude-opus-5', 'claude-haiku-4-5']),
       maxTokens: 4096,
     },
     {

@@ -1713,10 +1713,12 @@ router.get(
         }
         req.modelCallBudget.reserve(options.agentRole || 'interaction_model_call');
         const { temperature = 0.7, maxTokens = 1000 } = options;
+        // Last-resort model per provider. The Anthropic entry must be a live id:
+        // the old `claude-3-5-haiku-20241022` fallback was retired on 2026-02-19
+        // and was unreachable here in any case (`model` is never falsy).
+        const lastResortModel = llmProvider === 'anthropic' ? 'claude-sonnet-5' : 'deepseek/deepseek-chat';
         const model =
-          requestedModel ||
-          getDefaultModel(llmProvider === 'anthropic' ? 'claude' : llmProvider) ||
-          'deepseek/deepseek-chat';
+          requestedModel || getDefaultModel(llmProvider === 'anthropic' ? 'claude' : llmProvider) || lastResortModel;
 
         try {
           if (llmProvider === 'openrouter') {
@@ -1756,7 +1758,7 @@ router.get(
             };
           } else if (llmProvider === 'anthropic') {
             const response = await llmClient.messages.create({
-              model: model || 'claude-3-5-haiku-20241022',
+              model,
               max_tokens: maxTokens,
               system: systemPrompt,
               messages: messages.map((m) => ({

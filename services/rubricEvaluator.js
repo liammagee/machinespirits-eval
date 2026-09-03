@@ -14,6 +14,7 @@ import * as evalConfigLoader from './evalConfigLoader.js';
 import { sanitizeEvaluationValue, stripThinkBlocks } from './evaluationTextSanitizer.js';
 import { callAIWithCliBridge } from './cliProviderBridge.js';
 import { jsonrepair } from 'jsonrepair';
+import { anthropicSamplingParams } from '../tutor-core/services/anthropicSampling.js';
 import {
   buildScaleInstructions,
   calculateWeightedRubricScore,
@@ -698,7 +699,7 @@ async function callJudgeModel(prompt, overrides = {}) {
         body: JSON.stringify({
           model,
           max_tokens: maxTokens,
-          temperature,
+          ...anthropicSamplingParams(model, { temperature }),
           messages: [{ role: 'user', content: prompt }],
         }),
         signal: controller.signal,
