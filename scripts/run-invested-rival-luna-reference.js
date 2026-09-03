@@ -17,6 +17,7 @@ import {
 import { renderContinuityReport } from '../services/localQwenRefusalContinuityReport.js';
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
 import {
+  benchmarkOutputSchemaIssues,
   buildBenchmarkJobs,
   readBenchmarkArm,
   scoreBenchmarkArms,
@@ -172,8 +173,22 @@ function retryableResponseFreeFailure(error) {
   return (
     error?.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR' &&
     error?.classification === 'response_free_error' &&
-    error?.reason === 'result_error_without_structured_output'
+    ['result_error_without_structured_output', 'provider_rejected_invalid_structured_output'].includes(error?.reason)
   );
+}
+
+function providerRejectedInvalidOutput(response, projection, outputSchema) {
+  if (response?.structuredOutputRecovery?.providerValidated !== false) return null;
+  const issues = benchmarkOutputSchemaIssues(JSON.parse(projection.text), outputSchema);
+  if (!issues.length) return null;
+  const error = new Error(
+    `claude CLI provider-rejected structured output failed the registered schema (${issues.slice(0, 8).join(', ')})`,
+  );
+  error.code = 'CLI_PROVIDER_RESPONSE_FREE_ERROR';
+  error.classification = 'response_free_error';
+  error.reason = 'provider_rejected_invalid_structured_output';
+  error.responseFree = true;
+  return error;
 }
 
 export function makeLunaJudgeCaller({
@@ -209,14 +224,18 @@ export function makeLunaJudgeCaller({
             rawOutput = output;
           },
         });
-        options.onRawOutput?.(rawOutput);
         const projection = projectRegisteredRootOutput(response.text, options.outputSchema);
+        const providerFailure = providerRejectedInvalidOutput(response, projection, options.outputSchema);
+        if (providerFailure) throw providerFailure;
+        budget.complete?.();
+        options.onRawOutput?.(rawOutput);
         fs.appendFileSync(
           path.join(outDir, 'assessment-physical-attempts.jsonl'),
           `${JSON.stringify({ role, attempt: physicalAttempts, reservation, status: 'candidate_returned', discardedRootKeys: projection.discardedRootKeys })}\n`,
         );
         return { ...response, text: projection.text, outputProjection: projection };
       } catch (error) {
+        budget.fail?.(error);
         fs.appendFileSync(
           path.join(outDir, 'assessment-physical-attempts.jsonl'),
           `${JSON.stringify({ role, attempt: physicalAttempts, reservation, status: 'failed', code: error.code, classification: error.classification, reason: error.reason, message: error.message })}\n`,
