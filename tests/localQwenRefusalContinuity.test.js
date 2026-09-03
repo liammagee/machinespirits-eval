@@ -71,6 +71,7 @@ import {
   analyzeLearnerReplication,
   buildLearnerReplicationPlan,
   callLearnerReplicationModel,
+  createLearnerReplicationWorkflowTracker,
   readLearnerReplicationRecovery,
   replicationAssessmentBatches,
   main as runLearnerReplication,
@@ -380,6 +381,47 @@ test('learner replication paid path fails before writing without standing launch
   assert.equal(fs.existsSync(outDir), false);
 });
 
+test('learner replication recovery exposes durable long-workflow progress before any new call', () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-workflow-'));
+  const admission = { studyReserved: 328 };
+  const tracker = createLearnerReplicationWorkflowTracker({
+    plan: learnerReplicationPlan,
+    outDir,
+    admission,
+    recovery: {
+      completed: Array.from({ length: 18 }, () => ({})),
+      assessment: { completedPackets: 48, responseFreeFailures: 9 },
+    },
+    at: '2026-09-02T12:00:00.000Z',
+  });
+
+  let status = tracker.snapshot();
+  assert.equal(status.current_phase, 'GENERATING');
+  assert.deepEqual(status.units, { complete: 18, active: 0, failed: 0, missing: 0 });
+  assert.deepEqual(status.calls, { completed: 319, failed: 9, reserved: 328, hard_ceiling: 396 });
+  assert.equal(status.repair_or_recovery_history.length, 1);
+
+  tracker.generationCompleted();
+  status = tracker.snapshot();
+  assert.equal(status.current_phase, 'AUDITING');
+  assert.deepEqual(status.units, { complete: 48, active: 0, failed: 0, missing: 42 });
+  assert.equal(status.model_activity.state, 'inactive');
+
+  admission.studyReserved = 329;
+  tracker.attemptStarted({ detail: { stage: 'assessment' } });
+  status = tracker.snapshot();
+  assert.equal(status.model_activity.state, 'active');
+  assert.deepEqual(status.units, { complete: 48, active: 1, failed: 0, missing: 41 });
+  assert.equal(status.calls.reserved, 329);
+
+  tracker.attemptFailed({ detail: { stage: 'assessment' }, error: new Error('response-free fixture') });
+  status = tracker.snapshot();
+  assert.equal(status.model_activity.state, 'inactive');
+  assert.deepEqual(status.units, { complete: 48, active: 0, failed: 0, missing: 42 });
+  assert.deepEqual(status.calls, { completed: 319, failed: 10, reserved: 329, hard_ceiling: 396 });
+  assert.equal(fs.existsSync(path.join(outDir, 'workflow-status.json')), true);
+});
+
 test('learner replication recovery preserves the completed prefix and retries only the interrupted unit', () => {
   const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-recovery-'));
   fs.writeFileSync(path.join(sourceDir, 'plan.json'), JSON.stringify(learnerReplicationPlan));
@@ -479,9 +521,15 @@ test('learner replication assessment recovery preserves every valid packet and o
       const arm = world.conditions[suffix].arms.find((candidate) => candidate.route === route);
       const armDir = path.join(sourceDir, 'worlds', worldKey, 'dialogues', arm.id);
       fs.mkdirSync(armDir, { recursive: true });
+      const tracePath = path.join(armDir, 'trace.jsonl');
+      fs.writeFileSync(tracePath, '');
       fs.writeFileSync(
         path.join(armDir, 'dialogue.json'),
-        JSON.stringify({ turns: [{ turn: 1, learner: 'Learner.', tutor: 'Tutor.' }] }),
+        JSON.stringify({
+          trace: tracePath,
+          proofControl: { releasedPremiseIds: [] },
+          turns: [{ turn: 1, learner: 'Learner.', tutor: 'Tutor.' }],
+        }),
       );
     }
   }
@@ -552,10 +600,18 @@ test('Luna reference routes learner to Luna, tutor to Sol, and never adds a supe
 test('Luna judge transport retries only response-free failures and projects surplus root fields once', async () => {
   const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'luna-reference-judge-'));
   let reserved = 0;
+  let completed = 0;
+  let failed = 0;
   const budget = {
     reserve() {
       reserved += 1;
       return { call: reserved, limit: 23, remaining: 23 - reserved };
+    },
+    complete() {
+      completed += 1;
+    },
+    fail() {
+      failed += 1;
     },
   };
   let calls = 0;
@@ -589,6 +645,8 @@ test('Luna judge transport retries only response-free failures and projects surp
   assert.deepEqual(transported, { fixture: true });
   assert.deepEqual(caller.snapshot(), { physicalAttempts: 2, responseFreeRetries: 1 });
   assert.equal(reserved, 2);
+  assert.equal(completed, 1);
+  assert.equal(failed, 1);
 });
 
 test('Luna judge transport continues prior physical and retry counters without resetting the allowance', async () => {
