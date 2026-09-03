@@ -14,10 +14,19 @@ import {
   runContinuityArm,
 } from '../services/localQwenRefusalContinuity.js';
 import { renderContinuityReport } from '../services/localQwenRefusalContinuityReport.js';
+import {
+  blockLongRunningWorkflow,
+  completeLongRunningWorkflowPhase,
+  createLongRunningWorkflowStatus,
+  recordLongRunningWorkflowRecovery,
+  updateLongRunningWorkflowProgress,
+  writeLongRunningWorkflowStatusAtomic,
+} from '../services/longRunningWorkflowStatus.js';
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
 import { plotLint, validateWorld } from '../services/dramaticDerivation/world.js';
 import {
   assertCompleteScore,
+  benchmarkOutputSchemaIssues,
   buildBenchmarkJobs,
   buildSplitQualityOutputSchema,
   normalizeScores,
@@ -36,6 +45,14 @@ import { discoverLoadedModel, manageServer } from './run-local-qwen-resistant-le
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_CONFIG = 'config/tutor-stub-local-learners/invested-rival-learner-replication.v1.yaml';
 const QUALITY_DIMENSIONS = ['overall_quality', 'successful_pedagogy', 'surprise_nonrepetition', 'character_adherence'];
+const VERIFIED_PROVIDER_SCHEMA_RECOVERY = 'verified_response_free_provider_schema_rejection';
+const LEARNER_REPLICATION_WORKFLOW_PHASES = Object.freeze([
+  'PREFLIGHT',
+  'GENERATING',
+  'AUDITING',
+  'PACKAGING',
+  'WORKFLOW_COMPLETE',
+]);
 
 function writeJson(file, value) {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
@@ -300,14 +317,277 @@ export async function callLearnerReplicationModel(args, callCli = callAIWithCliB
   );
 }
 
-function paidBudget(admission, limit) {
+function paidBudget(admission, limit, hooks = {}) {
+  let activeAttempt = null;
   return {
     reserve(detail = {}) {
+      if (activeAttempt) throw new Error('model-attempt tracking found an unresolved active attempt');
       const reservation = admission.reserveModelAttempts(1, detail);
+      activeAttempt = { reservation, detail, startedAt: Date.now() };
+      hooks.onAttemptStarted?.(activeAttempt);
       return { call: reservation.study_reserved, limit, remaining: reservation.remaining };
+    },
+    complete() {
+      if (!activeAttempt) return;
+      const finished = { ...activeAttempt, durationMs: Date.now() - activeAttempt.startedAt };
+      activeAttempt = null;
+      hooks.onAttemptCompleted?.(finished);
+    },
+    fail(error) {
+      if (!activeAttempt) return;
+      const finished = { ...activeAttempt, durationMs: Date.now() - activeAttempt.startedAt, error };
+      activeAttempt = null;
+      hooks.onAttemptFailed?.(finished);
     },
     snapshot() {
       return { used: admission.studyReserved, limit };
+    },
+  };
+}
+
+function learnerReplicationWorkflowUnits(phase, state) {
+  if (phase === 'GENERATING') {
+    return {
+      complete: state.completedDialogues,
+      active: state.activeDialogue,
+      failed: 0,
+      missing: Math.max(0, 18 - state.completedDialogues - state.activeDialogue),
+    };
+  }
+  if (phase === 'AUDITING') {
+    return {
+      complete: state.completedAssessments,
+      active: state.activeAssessment,
+      failed: 0,
+      missing: Math.max(0, state.plan.assessment_packets - state.completedAssessments - state.activeAssessment),
+    };
+  }
+  if (phase === 'PACKAGING') {
+    return { complete: state.packageComplete ? 1 : 0, active: state.packageComplete ? 0 : 1, failed: 0, missing: 0 };
+  }
+  return { complete: 0, active: 0, failed: 0, missing: 0 };
+}
+
+export function createLearnerReplicationWorkflowTracker({ plan, outDir, admission, recovery = null, at } = {}) {
+  const filePath = path.join(outDir, 'workflow-status.json');
+  const priorFailedCalls = recovery?.assessment?.responseFreeFailures || recovery?.interruptedResponseFreeAttempts || 0;
+  const state = {
+    plan,
+    completedDialogues: recovery?.completed?.length || 0,
+    activeDialogue: 0,
+    completedAssessments: recovery?.assessment?.completedPackets || 0,
+    activeAssessment: 0,
+    completedCalls: admission.studyReserved - priorFailedCalls,
+    failedCalls: priorFailedCalls,
+    activeCalls: 0,
+    packageComplete: false,
+    recentUnitDurationsMs: [],
+  };
+  if (state.completedCalls < 0) throw new Error('workflow status has negative completed-call accounting');
+  const startedAt = at || new Date();
+  const callCounts = () => ({
+    completed: state.completedCalls,
+    failed: state.failedCalls,
+    reserved: admission.studyReserved,
+    hard_ceiling: plan.total_attempt_ceiling,
+  });
+  let status = createLongRunningWorkflowStatus({
+    workflowId: `${plan.id}-completion`,
+    phasePlan: LEARNER_REPLICATION_WORKFLOW_PHASES,
+    at: startedAt,
+    units: learnerReplicationWorkflowUnits('GENERATING', state),
+    calls: callCounts(),
+    modelActivity: {
+      state: 'inactive',
+      explanation: 'Preflight and recovery-source verification are local and make no model calls.',
+    },
+    nextAction: {
+      description: 'Verify the registered study and preserved recovery evidence.',
+      stopping_condition:
+        'Stop before dispatch if study admission, recovery evidence, or the remaining ceiling drifts.',
+    },
+  });
+  status = completeLongRunningWorkflowPhase(status, {
+    phase: 'PREFLIGHT',
+    nextPhase: 'GENERATING',
+    at: startedAt,
+    startNextImmediately: true,
+    units: learnerReplicationWorkflowUnits('GENERATING', state),
+    calls: callCounts(),
+    modelActivity: {
+      state: 'inactive',
+      explanation: 'Preflight passed; no dialogue-generation model call is active.',
+    },
+    nextAction: {
+      description: 'Generate only dialogue units not already preserved by the recovery source.',
+      stopping_condition: 'Stop on configuration drift, a failed dialogue unit, or the hard call ceiling.',
+    },
+  });
+  if (recovery) {
+    status = recordLongRunningWorkflowRecovery(status, {
+      at: startedAt,
+      operation: 'Continue the registered invested-rival study from preserved evidence.',
+      reason: 'A sealed predecessor stopped before all registered assessment packets were complete.',
+      scope: 'Reuse every valid dialogue and assessment; run only missing work under the unchanged aggregate ceiling.',
+      modelActivity: status.model_activity,
+    });
+  }
+
+  const persist = () => {
+    writeLongRunningWorkflowStatusAtomic(filePath, status);
+    return status;
+  };
+  const refresh = ({ modelActivity, nextAction, durationMs } = {}) => {
+    if (Number.isFinite(durationMs) && durationMs > 0) {
+      state.recentUnitDurationsMs = [...state.recentUnitDurationsMs, durationMs].slice(-8);
+    }
+    status = updateLongRunningWorkflowProgress(status, {
+      units: learnerReplicationWorkflowUnits(status.current_phase, state),
+      calls: callCounts(),
+      recentUnitDurationsMs: state.recentUnitDurationsMs,
+      ...(modelActivity ? { modelActivity } : {}),
+      ...(nextAction ? { nextAction } : {}),
+    });
+    return persist();
+  };
+
+  persist();
+  return {
+    filePath,
+    snapshot: () => structuredClone(status),
+    dialogueStarted() {
+      state.activeDialogue = 1;
+      return refresh({
+        modelActivity: { state: 'active', explanation: 'A registered learner-tutor dialogue is running.' },
+        nextAction: {
+          description: 'Finish the active dialogue without resampling completed turns.',
+          stopping_condition: 'Stop after the dialogue completes or its first unrecoverable failure.',
+        },
+      });
+    },
+    dialogueCompleted(durationMs) {
+      state.activeDialogue = 0;
+      state.completedDialogues += 1;
+      return refresh({
+        durationMs,
+        modelActivity: {
+          state: 'inactive',
+          explanation: 'The latest dialogue is complete; no provider call is active.',
+        },
+      });
+    },
+    attemptStarted({ detail }) {
+      state.activeCalls += 1;
+      if (detail.stage === 'assessment') state.activeAssessment = 1;
+      return refresh({
+        modelActivity: {
+          state: 'active',
+          explanation:
+            detail.stage === 'assessment'
+              ? 'One registered Opus assessment packet is in flight.'
+              : 'One registered dialogue model call is in flight.',
+        },
+      });
+    },
+    attemptCompleted({ detail, durationMs }) {
+      state.activeCalls = Math.max(0, state.activeCalls - 1);
+      state.completedCalls += 1;
+      if (detail.stage === 'assessment') {
+        state.activeAssessment = 0;
+        state.completedAssessments += 1;
+      }
+      return refresh({
+        durationMs: detail.stage === 'assessment' ? durationMs : undefined,
+        modelActivity: { state: 'inactive', explanation: 'The latest model call returned and no call is in flight.' },
+      });
+    },
+    attemptFailed({ detail, error }) {
+      state.activeCalls = Math.max(0, state.activeCalls - 1);
+      state.failedCalls += 1;
+      if (detail.stage === 'assessment') state.activeAssessment = 0;
+      return refresh({
+        modelActivity: { state: 'inactive', explanation: 'The latest model call failed and no call is in flight.' },
+        nextAction: {
+          description: `Apply only the registered bounded retry rule: ${error?.message || 'model call failed'}`,
+          stopping_condition: 'Stop if the failure is substantive, repeats beyond the reserve, or changes the study.',
+        },
+      });
+    },
+    generationCompleted() {
+      if (state.completedDialogues !== 18 || state.activeDialogue || state.activeCalls) {
+        throw new Error('cannot complete workflow generation before all 18 dialogues are inactive and complete');
+      }
+      status = completeLongRunningWorkflowPhase(status, {
+        phase: 'GENERATING',
+        nextPhase: 'AUDITING',
+        startNextImmediately: true,
+        units: learnerReplicationWorkflowUnits('AUDITING', state),
+        calls: callCounts(),
+        recentUnitDurationsMs: [],
+        modelActivity: {
+          state: 'inactive',
+          explanation: 'All 18 dialogues are complete; assessment has not dispatched.',
+        },
+        nextAction: {
+          description: 'Assess only the registered packets not already preserved as valid.',
+          stopping_condition: 'Stop on a substantive judgment failure or when all 90 packets are valid.',
+        },
+      });
+      state.recentUnitDurationsMs = [];
+      return persist();
+    },
+    assessmentCompleted() {
+      if (state.completedAssessments !== plan.assessment_packets || state.activeAssessment || state.activeCalls) {
+        throw new Error('cannot complete workflow assessment before every packet is inactive and valid');
+      }
+      status = completeLongRunningWorkflowPhase(status, {
+        phase: 'AUDITING',
+        nextPhase: 'PACKAGING',
+        startNextImmediately: true,
+        units: learnerReplicationWorkflowUnits('PACKAGING', state),
+        calls: callCounts(),
+        modelActivity: { state: 'inactive', explanation: 'All assessments are valid; report packaging is zero-call.' },
+        nextAction: {
+          description: 'Build and verify the combined analysis and local report.',
+          stopping_condition: 'Stop after the report, completion record, and run seal are written.',
+        },
+      });
+      return persist();
+    },
+    packagingCompleted() {
+      state.packageComplete = true;
+      status = completeLongRunningWorkflowPhase(status, {
+        phase: 'PACKAGING',
+        nextPhase: 'WORKFLOW_COMPLETE',
+        startNextImmediately: true,
+        units: { complete: 1, active: 0, failed: 0, missing: 0 },
+        calls: callCounts(),
+        modelActivity: { state: 'inactive', explanation: 'The study is sealed and no model-backed phase remains.' },
+        nextAction: {
+          description: 'Preserve the completed private archive and inspect the local report.',
+          stopping_condition: 'Stop unless a separately scoped follow-up is requested.',
+        },
+      });
+      return persist();
+    },
+    blocked(error) {
+      state.activeDialogue = 0;
+      state.activeAssessment = 0;
+      state.activeCalls = 0;
+      status = blockLongRunningWorkflow(status, {
+        blockedPhase: status.current_phase,
+        operation: 'Run the current registered invested-rival workflow phase.',
+        error: error?.message || String(error),
+        units: learnerReplicationWorkflowUnits(status.current_phase, state),
+        calls: callCounts(),
+        modelActivity: { state: 'inactive', explanation: 'The runner stopped and no provider call remains active.' },
+        nextAction: {
+          description: 'Inspect the preserved failure and use bounded recovery only if it is technically eligible.',
+          stopping_condition: 'Stop before changing scientific inputs, rerunning valid work, or exceeding the ceiling.',
+        },
+        humanActionRequired: false,
+      });
+      return persist();
     },
   };
 }
@@ -641,11 +921,107 @@ function isResponseFreeAssessmentFailure(row) {
     row?.status === 'failed' &&
     row.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR' &&
     row.classification === 'response_free_error' &&
-    row.reason === 'result_error_without_structured_output'
+    ['result_error_without_structured_output', 'provider_rejected_invalid_structured_output'].includes(row.reason)
   );
 }
 
-function readAssessmentRecovery(plan, source, events, seal, completed, ownReservedAttempts) {
+function readProviderRejectedAssessmentFailures(plan, source) {
+  const failures = [];
+  for (const world of plan.worlds) {
+    for (const mechanism of ['baseline', 'active_progression']) {
+      const evaluationDir = path.join(source, 'worlds', world.key, `evaluation-${mechanism.replaceAll('_', '-')}`);
+      if (!fs.existsSync(evaluationDir)) continue;
+      const condition = world.conditions[mechanism];
+      const arms = condition.arms.map((arm) =>
+        readBenchmarkArm({
+          ...arm,
+          path: path.join(source, 'worlds', world.key, 'dialogues', arm.id, 'dialogue.json'),
+        }),
+      );
+      const jobs = buildBenchmarkJobs(arms, {
+        extendedQuality: true,
+        splitQuality: true,
+        assessmentContext: condition.assessmentContext,
+        publicSourceContextByArm: sourceContexts(condition, arms),
+      });
+      const ledgerPath = path.join(evaluationDir, 'judge-ledger.jsonl');
+      const judgeEvents = fs.existsSync(ledgerPath)
+        ? readJsonLines(ledgerPath, `${world.key}/${mechanism} judge ledger`)
+        : [];
+      for (const name of fs.readdirSync(evaluationDir).filter((file) => file.endsWith('.error.json'))) {
+        const packet = name.replace(/\.error\.json$/u, '');
+        const job = jobs.find((candidate) => `${candidate.arm}-${candidate.kind}` === packet);
+        if (!job || !['quality-summary', 'quality-turns'].includes(job.kind)) {
+          throw new Error(`assessment recovery has an unknown failed packet ${world.key}/${packet}`);
+        }
+        const base = path.join(evaluationDir, packet);
+        const requiredFiles = ['prompt.txt', 'schema.json', 'provider.json', 'response.txt', 'transport.json'];
+        if (requiredFiles.some((suffix) => !fs.existsSync(`${base}.${suffix}`)) || fs.existsSync(`${base}.json`)) {
+          throw new Error(`assessment recovery failed packet ${world.key}/${packet} is incomplete or contradictory`);
+        }
+        const error = readJson(`${base}.error.json`, `${world.key}/${packet} error`);
+        const schema = readJson(`${base}.schema.json`, `${world.key}/${packet} schema`);
+        const provider = readJson(`${base}.provider.json`, `${world.key}/${packet} provider`);
+        const transport = readJson(`${base}.transport.json`, `${world.key}/${packet} transport`);
+        const responseText = fs.readFileSync(`${base}.response.txt`, 'utf8').trim();
+        const transportEvents = JSON.parse(transport.stdout || 'null');
+        const resultEvent = Array.isArray(transportEvents)
+          ? transportEvents.findLast((event) => event?.type === 'result')
+          : null;
+        const structuredCalls = Array.isArray(transportEvents)
+          ? transportEvents
+              .filter((event) => event?.type === 'assistant')
+              .flatMap((event) => event.message?.content || [])
+              .filter((block) => block.type === 'tool_use' && block.name === 'StructuredOutput')
+          : [];
+        const wrapperValues = Object.values(structuredCalls[0]?.input || {});
+        const packetEvents = judgeEvents.filter((event) => event.arm === job.arm && event.kind === job.kind);
+        const expectedError = `quality ${job.kind.replace('quality-', '')} packet failed its output schema: ${benchmarkOutputSchemaIssues({}, job.outputSchema).slice(0, 8).join(', ')}`;
+        if (
+          fs.readFileSync(`${base}.prompt.txt`, 'utf8') !== job.prompt ||
+          JSON.stringify(schema) !== JSON.stringify(job.outputSchema) ||
+          error.message !== expectedError ||
+          responseText !== '{}' ||
+          provider.text !== '{}' ||
+          provider.provider !== 'claude-code' ||
+          provider.model !== 'claude-opus-5' ||
+          provider.structuredOutputRecovery?.providerValidated !== false ||
+          provider.outputProjection?.text !== '{}' ||
+          provider.attemptControls?.maxTurns !== 1 ||
+          provider.attemptControls?.apiRetries !== 0 ||
+          provider.attemptControls?.schemaRetries !== 0 ||
+          provider.attemptControls?.observedModelResponses !== 1 ||
+          transport.exitCode === 0 ||
+          resultEvent?.is_error !== true ||
+          resultEvent?.terminal_reason !== 'structured_output_retry_exhausted' ||
+          structuredCalls.length !== 1 ||
+          wrapperValues.length !== 1 ||
+          wrapperValues[0] !== '{}' ||
+          packetEvents.length !== 2 ||
+          packetEvents[0].event !== 'reserved' ||
+          packetEvents[1].event !== 'failed' ||
+          packetEvents[1].error !== error.message
+        ) {
+          throw new Error(
+            `assessment recovery failed packet ${world.key}/${packet} is not a response-free provider rejection`,
+          );
+        }
+        failures.push({ world: world.key, mechanism, arm: job.arm, kind: job.kind, error: error.message });
+      }
+    }
+  }
+  return failures;
+}
+
+function readAssessmentRecovery(
+  plan,
+  source,
+  events,
+  seal,
+  completed,
+  ownReservedAttempts,
+  { allowProviderRejectedFailure = false } = {},
+) {
   const statePath = path.join(source, 'assessment-recovery-state.json');
   const inherited = fs.existsSync(statePath) ? readJson(statePath, 'assessment recovery state') : null;
   if (
@@ -694,6 +1070,13 @@ function readAssessmentRecovery(plan, source, events, seal, completed, ownReserv
   const currentCompletedPackets = currentBatches.reduce((sum, batch) => sum + batch.completedPackets, 0);
   const completedPackets = batches.reduce((sum, batch) => sum + batch.completedPackets, 0);
   if (completedPackets > plan.assessment_packets) throw new Error('assessment recovery has too many completed packets');
+  const providerRejectedFailures = readProviderRejectedAssessmentFailures(plan, source);
+  if (
+    providerRejectedFailures.length !== (allowProviderRejectedFailure ? 1 : 0) ||
+    (allowProviderRejectedFailure && providerRejectedFailures[0].error !== seal.error)
+  ) {
+    throw new Error('assessment recovery provider-rejected failure accounting drift');
+  }
 
   const progressPath = path.join(source, 'progress.jsonl');
   const progress = fs.existsSync(progressPath) ? readJsonLines(progressPath, 'replication recovery progress') : [];
@@ -709,7 +1092,6 @@ function readAssessmentRecovery(plan, source, events, seal, completed, ownReserv
   if (!Number.isSafeInteger(generationAttempts) || generationAttempts < 1) {
     throw new Error('assessment recovery cannot establish the completed generation attempt count');
   }
-  const aggregatePriorAttempts = Number.isSafeInteger(seal.study_reserved) ? seal.study_reserved : ownReservedAttempts;
   const currentAssessmentReservations = events
     .filter((event) => event.type === 'model_attempt_reserved' && event.stage === 'assessment')
     .reduce((sum, event) => sum + Number(event.count || 0), 0);
@@ -720,7 +1102,7 @@ function readAssessmentRecovery(plan, source, events, seal, completed, ownReserv
   const candidateRows = physicalRows.filter((row) => row.status === 'candidate_returned');
   const failedRows = physicalRows.filter((row) => row.status === 'failed');
   if (
-    candidateRows.length !== currentCompletedPackets ||
+    candidateRows.length !== currentCompletedPackets + providerRejectedFailures.length ||
     failedRows.some((row) => !isResponseFreeAssessmentFailure(row))
   ) {
     throw new Error('assessment recovery contains an unresolved substantive or mismatched judge result');
@@ -731,20 +1113,27 @@ function readAssessmentRecovery(plan, source, events, seal, completed, ownReserv
   }
   const inheritedPhysicalAttempts = Number(inherited?.physicalAttempts || 0);
   const inheritedResponseFreeFailures = Number(inherited?.responseFreeFailures || 0);
+  const inferredAggregateAttempts = generationAttempts + inheritedPhysicalAttempts + currentAssessmentReservations;
+  const aggregatePriorAttempts = Number.isSafeInteger(seal.study_reserved)
+    ? seal.study_reserved
+    : inherited
+      ? inferredAggregateAttempts
+      : ownReservedAttempts;
   if (
     !Number.isSafeInteger(inheritedPhysicalAttempts) ||
     inheritedPhysicalAttempts < 0 ||
     !Number.isSafeInteger(inheritedResponseFreeFailures) ||
     inheritedResponseFreeFailures < 0 ||
     inheritedResponseFreeFailures > inheritedPhysicalAttempts ||
-    aggregatePriorAttempts - generationAttempts !== inheritedPhysicalAttempts + currentAssessmentReservations
+    aggregatePriorAttempts !== inferredAggregateAttempts
   ) {
     throw new Error('assessment recovery aggregate attempt accounting drift');
   }
   const physicalAttempts = aggregatePriorAttempts - generationAttempts;
   const responseFreeFailures = physicalAttempts - completedPackets;
   if (
-    responseFreeFailures !== inheritedResponseFreeFailures + failedRows.length + interruptedAttempts ||
+    responseFreeFailures !==
+      inheritedResponseFreeFailures + failedRows.length + interruptedAttempts + providerRejectedFailures.length ||
     responseFreeFailures > plan.recovery_attempt_reserve ||
     aggregatePriorAttempts +
       (plan.assessment_packets - completedPackets) +
@@ -754,11 +1143,13 @@ function readAssessmentRecovery(plan, source, events, seal, completed, ownReserv
     throw new Error('assessment recovery exceeds its preserved packet or retry budget');
   }
   return {
+    aggregatePriorAttempts,
     generationAttempts,
     physicalAttempts,
     responseFreeFailures,
     completedPackets,
     interruptedAttempts,
+    providerRejectedFailures,
     batches,
   };
 }
@@ -775,12 +1166,13 @@ export function readLearnerReplicationRecovery(plan, sourceDir) {
   const seal = events.at(-1);
   const reservations = events.filter((event) => event.type === 'model_attempt_reserved');
   const priorAttempts = reservations.reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const ordinaryTechnicalSeal = seal?.status === 'technical_failure' && seal.recovery_permitted === true;
+  const potentiallyMisclassifiedProviderSeal = seal?.status === 'failed' && seal.recovery_permitted !== true;
   if (
     launch?.study_id !== plan.id ||
     launch?.spend_cap !== plan.total_attempt_ceiling ||
     seal?.type !== 'run_sealed' ||
-    seal.status !== 'technical_failure' ||
-    seal.recovery_permitted !== true ||
+    (!ordinaryTechnicalSeal && !potentiallyMisclassifiedProviderSeal) ||
     seal.reserved_attempts !== priorAttempts
   ) {
     throw new Error('replication recovery requires one sealed technical predecessor');
@@ -822,16 +1214,23 @@ export function readLearnerReplicationRecovery(plan, sourceDir) {
   }
   const aggregatePriorAttempts = Number.isSafeInteger(seal.study_reserved) ? seal.study_reserved : priorAttempts;
   if (!partial && completed.length === sequence.length && !reachedMissing) {
+    const assessment = readAssessmentRecovery(plan, source, events, seal, completed, priorAttempts, {
+      allowProviderRejectedFailure: potentiallyMisclassifiedProviderSeal,
+    });
     return {
       phase: 'assessment',
       source,
-      priorAttempts: aggregatePriorAttempts,
+      priorAttempts: assessment.aggregatePriorAttempts,
       responseCount,
       interruptedResponseFreeAttempts: 0,
       completed,
       partial: null,
-      assessment: readAssessmentRecovery(plan, source, events, seal, completed, priorAttempts),
+      assessment,
+      ...(potentiallyMisclassifiedProviderSeal ? { recoveryClassification: VERIFIED_PROVIDER_SCHEMA_RECOVERY } : {}),
     };
+  }
+  if (potentiallyMisclassifiedProviderSeal) {
+    throw new Error('provider-schema recovery is allowed only after all dialogues completed');
   }
   if (!partial) throw new Error('replication recovery requires one interrupted generation arm');
   const interruptedResponseFreeAttempts = priorAttempts - responseCount;
@@ -976,7 +1375,16 @@ async function runOneArm({ condition, arm, outDir, budget, runtimeArm = arm, sav
     arm: runtimeArm,
     outDir,
     budget,
-    callModel: callLearnerReplicationModel,
+    callModel: async (args) => {
+      try {
+        const response = await callLearnerReplicationModel(args);
+        budget.complete?.();
+        return response;
+      } catch (error) {
+        budget.fail?.(error);
+        throw error;
+      }
+    },
     savedReplies,
     unsupportedQuotationPolicy: 'drop',
   });
@@ -1158,7 +1566,12 @@ function renderIndexHtml(analysis, plan) {
 }
 
 async function liveRun(plan, outDir, admission, recovery = null) {
-  const budget = paidBudget(admission, plan.total_attempt_ceiling);
+  let workflow;
+  const budget = paidBudget(admission, plan.total_attempt_ceiling, {
+    onAttemptStarted: (attempt) => workflow?.attemptStarted(attempt),
+    onAttemptCompleted: (attempt) => workflow?.attemptCompleted(attempt),
+    onAttemptFailed: (attempt) => workflow?.attemptFailed(attempt),
+  });
   const provenance = {
     commit: admission.source.commit,
     tree: admission.source.tree,
@@ -1192,6 +1605,7 @@ async function liveRun(plan, outDir, admission, recovery = null) {
                 priorResponseFreeFailures: recovery.assessment.responseFreeFailures,
                 completedAssessmentPackets: recovery.assessment.completedPackets,
                 interruptedAssessmentAttempts: recovery.assessment.interruptedAttempts,
+                providerRejectedAssessmentFailures: recovery.assessment.providerRejectedFailures,
               }
             : {}),
         }
@@ -1200,6 +1614,7 @@ async function liveRun(plan, outDir, admission, recovery = null) {
   const generated = new Map(plan.worlds.map((world) => [world.key, new Map()]));
   try {
     writeJson(path.join(outDir, 'plan.json'), { ...plan, provenance });
+    workflow = createLearnerReplicationWorkflowTracker({ plan, outDir, admission, recovery });
     fs.mkdirSync(path.join(outDir, 'worlds'));
     for (const world of plan.worlds) {
       const worldDir = path.join(outDir, 'worlds', world.key);
@@ -1262,8 +1677,11 @@ async function liveRun(plan, outDir, admission, recovery = null) {
           const loaded = await discoverLoadedModel(plan.base.base_url, { modelIdContains: arm.model });
           runtimeArm = runtimeServiceArm(service, arm, loaded);
         }
+        const dialogueStartedAt = Date.now();
+        workflow.dialogueStarted();
         const result = await runOneArm({ condition, arm, outDir: dialogueDir, budget, runtimeArm, savedReplies });
         generated.get(world.key).set(arm.id, result);
+        workflow.dialogueCompleted(Date.now() - dialogueStartedAt);
         appendProgress(outDir, {
           type: 'dialogue_complete',
           world: world.key,
@@ -1301,6 +1719,8 @@ async function liveRun(plan, outDir, admission, recovery = null) {
         if (ownsServer) await manageServer(plan.base.mtp_chat_root, firstArm.profile, 'stop', servicePath);
       }
     }
+
+    workflow.generationCompleted();
 
     const judge = makeLunaJudgeCaller({
       budget,
@@ -1340,6 +1760,8 @@ async function liveRun(plan, outDir, admission, recovery = null) {
       });
     }
 
+    workflow.assessmentCompleted();
+
     const analysis = analyzeLearnerReplication(plan, worldResults);
     writeJson(path.join(outDir, 'analysis.json'), analysis);
     fs.writeFileSync(path.join(outDir, 'report.md'), renderAnalysisMarkdown(analysis), { flag: 'wx' });
@@ -1372,7 +1794,14 @@ async function liveRun(plan, outDir, admission, recovery = null) {
       replication_gate: analysis.gates.replication,
       main_text_paper_gate: analysis.gates.mainTextPaper,
     });
-    return { outDir, dryRun: false, attempts: budget.snapshot().used, gates: analysis.gates };
+    workflow.packagingCompleted();
+    return {
+      outDir,
+      dryRun: false,
+      attempts: budget.snapshot().used,
+      gates: analysis.gates,
+      workflowStatus: workflow.filePath,
+    };
   } catch (error) {
     if (!fs.existsSync(path.join(outDir, 'stopped.json'))) {
       writeJson(path.join(outDir, 'stopped.json'), { error: error.message, budget: budget.snapshot() });
@@ -1383,6 +1812,7 @@ async function liveRun(plan, outDir, admission, recovery = null) {
       error: error.message,
       reserved_attempts: admission.reserved,
     });
+    workflow?.blocked(error);
     throw error;
   }
 }
@@ -1422,6 +1852,7 @@ export async function main(argv = process.argv.slice(2)) {
     studyId: plan.id,
     studyStateRoot: path.resolve(ROOT, values['study-state-root'] || '.tutor-stub-traces/.paid-study-state'),
     ...(recoveryFrom ? { recoveryFrom } : {}),
+    ...(recovery?.recoveryClassification ? { recoveryClassification: recovery.recoveryClassification } : {}),
   });
   return liveRun(plan, outDir, admission, recovery);
 }

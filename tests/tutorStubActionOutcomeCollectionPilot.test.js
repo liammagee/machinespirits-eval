@@ -48,7 +48,15 @@ import {
   buildTutorStubAcceptedContinuationPrefix,
   composeTutorStubActionOutcomeRecoveryTrace,
   materializeAcceptedTutorStubActionOutcomeRecoveryUnit,
+  resolveTutorStubActionOutcomeRowTrace,
 } from '../scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js';
+import {
+  buildTutorStubActionOutcomeModelJudgePlan,
+  buildTutorStubActionOutcomeModelJudgePrompt,
+  evaluateTutorStubActionOutcomeModelJudgeResponse,
+  loadTutorStubActionOutcomeModelJudgeDesign,
+  summarizeTutorStubActionOutcomeModelJudge,
+} from '../services/tutorStubActionOutcomeModelJudge.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN_PATH = 'config/tutor-stub-action-outcome-collection-pilot-design.v1.json';
@@ -58,6 +66,166 @@ const loadComparable = () =>
     root: REPO_ROOT,
     designPath: TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH,
   });
+
+const loadModelJudge = () =>
+  loadTutorStubActionOutcomeModelJudgeDesign({
+    root: REPO_ROOT,
+    designPath: 'config/tutor-stub-action-outcome-model-judge-shadow-design.v1.json',
+  });
+
+test('the action-outcome model-judge design is a bounded shadow lane', () => {
+  const loaded = loadModelJudge();
+  assert.equal(loaded.design.attemptCeiling.plannedCalls, 70);
+  assert.equal(loaded.design.attemptCeiling.maximumAttempts, 70);
+  assert.equal(loaded.design.judges.automaticRetries, 0);
+  assert.deepEqual(
+    loaded.design.judges.seats.map((seat) => seat.modelRef),
+    ['codex.gpt-5.6-sol', 'claude-code.opus-5'],
+  );
+  assert.equal(loaded.design.launch.designGrantsModelCalls, false);
+  assert.match(loaded.design.claimBoundary, /cannot validate the construct/u);
+  assert.match(loaded.design.claimBoundary, /cannot.*satisfy.*human gates/u);
+});
+
+test('model-judge prompts expose only the public case and require exact quoted evidence', () => {
+  const loaded = loadModelJudge();
+  const publicCase = {
+    caseId: 'case-0001',
+    requestedAction: { type: 'minimal_hint', description: 'Offer one small scaffold.' },
+    expectedEvidence: {
+      description: 'Learner supplies the next step.',
+      required: ['learner-authored next step'],
+      forbidden: ['tutor-completed step'],
+      logic: { mode: 'flat_required_all' },
+      worldObservables: [],
+    },
+    learnerBefore: 'I stopped.',
+    tutorText: 'Try separating the observation from the conclusion.',
+    learnerText: 'The observation is the warm rail; the conclusion is only that the drone docked.',
+  };
+  const caseEntry = {
+    case_id: publicCase.caseId,
+    public_case_sha256: 'fixture',
+    public_case: publicCase,
+  };
+  const prompt = buildTutorStubActionOutcomeModelJudgePrompt({
+    instrumentText: loaded.instrumentText,
+    caseEntry,
+  });
+  assert.equal(prompt.user_prompt.includes('auxiliaryOutcome'), false);
+  assert.equal(prompt.user_prompt.includes('worldId'), false);
+  assert.equal(prompt.system_prompt.includes("another seat's output"), true);
+  const seat = loaded.design.judges.seats[0];
+  const response = {
+    provider: seat.provider,
+    model: seat.model,
+    effort: seat.effort,
+    structuredOutput: true,
+    prohibitedToolEventCountObserved: true,
+    prohibitedToolEventCount: 0,
+    text: JSON.stringify({
+      case_id: publicCase.caseId,
+      delivery: {
+        label: 'delivered',
+        evidence_quote: 'separating the observation from the conclusion',
+        explanation: 'The tutor supplies a small reasoning scaffold.',
+      },
+      outcome: {
+        label: 'success',
+        evidence_quote: 'The observation is the warm rail',
+        explanation: 'The learner independently performs the requested separation.',
+      },
+      confidence: 'high',
+    }),
+  };
+  assert.equal(evaluateTutorStubActionOutcomeModelJudgeResponse({ response, seat, prompt, publicCase }).eligible, true);
+  const bad = structuredClone(response);
+  bad.text = JSON.stringify({
+    ...JSON.parse(response.text),
+    outcome: { ...JSON.parse(response.text).outcome, evidence_quote: 'not present' },
+  });
+  assert.deepEqual(
+    evaluateTutorStubActionOutcomeModelJudgeResponse({ response: bad, seat, prompt, publicCase }).issues,
+    ['outcome_quote_not_exact'],
+  );
+});
+
+test('the shadow summary reports model agreement without licensing human gates', () => {
+  const loaded = loadModelJudge();
+  const families = [
+    ...Array(18).fill('explain_model'),
+    ...Array(8).fill('minimal_support'),
+    ...Array(9).fill('request_self_explanation'),
+  ];
+  const packetCases = families.map((family, index) => ({
+    caseId: `case-${String(index + 1).padStart(4, '0')}`,
+    requestedAction: { type: `${family}_action`, description: family },
+    expectedEvidence: {
+      description: 'Learner advances.',
+      required: ['advance'],
+      forbidden: [],
+      logic: { mode: 'flat_required_all' },
+      worldObservables: [],
+    },
+    learnerBefore: 'Before',
+    tutorText: 'Tutor move',
+    learnerText: 'Learner advance',
+  }));
+  const machineCases = packetCases.map((entry, index) => ({
+    caseId: entry.caseId,
+    worldId: `world_${index % 4}`,
+    action: { action_type: entry.requestedAction.type, move_family: families[index] },
+    auxiliaryOutcome: index === 0 ? 'success' : 'inconclusive',
+    auxiliaryDeliveryVisible: true,
+  }));
+  const readers = loaded.design.judges.seats.map((seat) => ({
+    ...seat,
+    resolved: { provider: seat.provider, model: seat.model },
+  }));
+  const plan = buildTutorStubActionOutcomeModelJudgePlan({
+    loaded,
+    inputs: {
+      packet: { cases: packetCases },
+      machineKey: { cases: machineCases },
+      humanSubmissionHashes: {},
+    },
+    readers,
+  });
+  const records = readers.flatMap((seat) =>
+    packetCases.map((entry, index) => ({
+      case_id: entry.caseId,
+      seat_id: seat.id,
+      measurement: {
+        eligible: true,
+        issues: [],
+        delivery: { label: 'delivered', evidence_quote: 'Tutor move', explanation: 'delivered' },
+        outcome: {
+          label: index % 2 ? 'failure' : 'success',
+          evidence_quote: 'Learner advance',
+          explanation: 'outcome',
+        },
+        confidence: 'high',
+      },
+    })),
+  );
+  const report = summarizeTutorStubActionOutcomeModelJudge({
+    loaded,
+    plan,
+    records,
+    failures: [],
+    machineKey: { cases: machineCases },
+  });
+  assert.equal(report.status, 'exploratory_model_pair_pass');
+  assert.equal(report.agreement.joint.exact.rate, 1);
+  assert.equal(report.yield.exact_consensus_binary_records, 35);
+  assert.deepEqual(report.yield.exact_consensus_binary_by_family, {
+    explain_model: 18,
+    minimal_support: 8,
+    request_self_explanation: 9,
+  });
+  assert.equal(report.human_gate_status, 'unchanged_pending_human_review');
+  assert.equal(report.controller_study_licensed, false);
+});
 
 test('the prospective redesign preflight fixes the comparison seam without granting model calls', () => {
   const loaded = loadTutorStubActionOutcomeProspectiveRedesign({ root: REPO_ROOT });
@@ -1122,6 +1290,20 @@ test('accepted interrupted continuation keeps only the exact registered turn pre
       }),
     /model_call_error/u,
   );
+});
+
+test('reconciled corpus resolves rows created by the latest recovery relative to its report', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'action-outcome-row-trace-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const reportPath = path.join(base, 'report.json');
+  const trace = resolveTutorStubActionOutcomeRowTrace({
+    row: {
+      job_id: 'fixture-job',
+      trace: 'jobs/fixture-job/traces/trace.jsonl',
+    },
+    sourceReportPath: reportPath,
+  });
+  assert.equal(trace, path.join(base, 'jobs/fixture-job/traces/trace.jsonl'));
 });
 
 function traceTurnsForTest(events) {
