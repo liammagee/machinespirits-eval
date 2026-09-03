@@ -15,7 +15,8 @@ verification: >-
   hosted PR run shows the four root shards finish within about 20 seconds of
   each other and the whole workflow lands near 3 minutes.
 links:
-  prs: []
+  prs:
+    - 962
   items:
     - calibrate-local-node-test-concurrency
     - expedite-ci-expensive-boundaries
