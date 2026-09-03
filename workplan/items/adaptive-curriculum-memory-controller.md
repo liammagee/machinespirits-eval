@@ -1,14 +1,14 @@
 ---
 id: adaptive-curriculum-memory-controller
 title: Evidence-anchored memory and curriculum adaptation controller
-status: active
+status: blocked
+blocked_by: "Valid action-outcome evidence with adequate binary support: either human-calibrated judgments or prospectively collected, objectively checkable learner outcomes."
 type: research
 priority: P2
 owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-03
-branch: codex/action-outcome-judge-v2-result
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -46,6 +46,8 @@ links:
     - config/tutor-stub-action-outcome-model-judge-shadow-design.v2.json
     - config/tutor-stub-action-outcome-model-judge-codebook.v2.md
     - scripts/rescore-tutor-stub-action-outcome-model-judge-shadow.js
+    - config/tutor-stub-action-outcome-keyed-collection-design.v3.json
+    - notes/2026-09-03-action-outcome-keyed-collection-v3-design.md
   exports:
     - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
     - exports/action-outcome-model-judge-shadow/2026-09-02/README.md
@@ -76,6 +78,7 @@ links:
     - 958
     - 959
     - 961
+    - 967
   items:
     - layered-task-session-adaptation
     - durable-evaluation-runner-migration
@@ -142,6 +145,30 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-03: Marked blocked after a zero-call review of the v2 shadow run
+  data. The block is the packet, not the judges: the v2 collection sampled one
+  effort-withholding profile (bored) and admitted only stall-condition
+  closures, and all 35 reviewed next turns carry a disengagement marker, so
+  there was no binary outcome to find. Two codebook gaps remain: an explicit
+  stop after a delivered action is not separated from a missing or truncated
+  turn, and a bare yes/no or either/or answer in the tutor's words has no
+  rule. The v2 hand-back sentence moved delivery agreement from kappa 0.79
+  (v1) to kappa 0.20 (27/35, v2); per-family checklists replace it. Drafted
+  revision 3 as a design-only document with no call authority:
+  `config/tutor-stub-action-outcome-keyed-collection-design.v3.json` and
+  `notes/2026-09-03-action-outcome-keyed-collection-v3-design.md`. Changes
+  from v2: a keyed hand-back question in every delivered comparative action,
+  with key and foil fixed from the world file at generation and the pick read
+  by exact token match; three learner profiles (bored, diligent,
+  slow_learner) at 20 dialogues each; the stall condition kept as a stratum,
+  not a filter; per-family delivery checklists; two registered outcome rules;
+  human seats retained; no model judge in the authoritative path; ceiling
+  4860 unchanged; fresh seed 2026090301. Six engineering items and a codebook
+  v3 are required before any GO. Private backup: all local v1 shadow, v2
+  collection, and ledger artifacts are committed in the archive repo and
+  pushed to branch `backup/local-main-2026-09-03` (archive main not moved).
+  Nothing here licenses the memory controller.
 
 - 2026-09-03: After PR #961 merged at launch commit
   `60336d2467e2d3cdcf099d5a9f594cc43e3f9596`, the operator said `GO` and
