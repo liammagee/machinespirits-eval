@@ -65,6 +65,33 @@ no output is selected by quality.
    horizon propagation, fail-before-dispatch enforcement, interrupted
    per-dispatch reconciliation, and exact prefix truncation.
 
+## Post-generation packaging incident
+
+The corrected recovery subsequently completed all three registered dialogues
+at the eight-turn horizon. It used 34 new provider-dispatch reservations; with
+the 18-reservation interrupted predecessor, the recovery segment used 52 of its
+100-attempt ceiling. All 52 reservations have one terminal disposition: 51
+completed and one remains recorded as interrupted.
+
+After those dialogues were complete, corpus assembly failed without making a
+model call. Twenty-two valid rows produced by the last ordinary recovery lacked
+an `artifact_root` field. Their trace paths were relative to that recovery's
+report directory, but the assembler passed the absent field to `path.resolve`.
+The test fixture had covered rows with explicit roots and therefore missed the
+mixed-lineage report shape.
+
+The permanent repair resolves a row's trace against its explicit artifact root
+when present and otherwise against the directory containing the source report.
+A regression test covers the rootless latest-recovery row. A fresh zero-call
+finalization preserved the failed packaging output, copied all 60 reconciled
+traces, and verified exactly 480 turns with no turn above eight.
+
+The zero-call quality audit passed every execution and coverage gate. It found
+35 condition-matched comparative cases in 27 dialogues across all four worlds,
+with 34 visible deliveries. Its verdict is `pending_human_review` solely because
+the five registered two-coder gates remain pending. A fresh auxiliary-blind
+two-coder packet contains all 35 cases and no recorded auxiliary outcomes.
+
 ## Impact
 
 The defect consumed recovery budget and time. It did not change the registered

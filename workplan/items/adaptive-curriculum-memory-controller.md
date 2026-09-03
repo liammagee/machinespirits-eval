@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-02
-branch: codex/action-outcome-recovery-horizon-fix
+branch: codex/action-outcome-recovery-packaging-fix
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -125,6 +125,20 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: Completed the exact three-dialogue recovery at the registered
+  eight-turn horizon. The fresh worker used 34 reservations; together with the
+  sealed interrupted predecessor the recovery segment used 52/100, comprising
+  51 completed and one interrupted attempt with zero unexplained. A zero-call
+  packaging failure then exposed 22 valid latest-recovery rows whose relative
+  trace paths had no explicit `artifact_root`. Added a source-report-directory
+  fallback and regression coverage, finalized a 60/60-dialogue, 480/480-turn
+  corpus with no turn above eight, and ran the unchanged zero-call audit. All
+  execution and coverage gates pass: 35 condition-matched comparative cases,
+  27 contributing dialogues, four worlds, and 34 visible deliveries. The
+  verdict is `pending_human_review` only on the five registered coder gates. A
+  fresh auxiliary-blind packet provides 35 cases each to `coder-a` and
+  `coder-b`; no human labels have been fabricated.
 
 - 2026-09-02: The first three-dialogue recovery exposed a resume-boundary defect:
   orchestration correctly supported a total eight-turn horizon, but the
