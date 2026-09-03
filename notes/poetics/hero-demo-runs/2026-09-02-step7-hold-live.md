@@ -128,6 +128,8 @@ old direction could not surface. Same schedule file
 (`world-037-stress-schedule-hold1.yaml`), same seats. Needs its own go and
 ceiling. Do not widen to 036.
 
+Re-run on this rework: `2026-09-03-step7b-hold-rework-live.md` (leak gone; the sim still concedes at t5 in both arms while writing `HOLD: kept`).
+
 ## Second reader
 
 `blind-packet.md`, 12 items, seed 7. Compare with
