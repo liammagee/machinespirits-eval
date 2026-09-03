@@ -83,8 +83,10 @@ Log:
   the host lacks PyYAML; the repository's authoritative skill validator passed.
   No provider/model call, experiment execution, or sealed-data write occurred.
 - 2026-09-02 — Opened review-ready PR #950 from commit `32beae352`; hosted CI
-  started and the PR remains unmerged.
+  started.
 - 2026-09-03 — DONE after PR #950 merged as `8dc5ceb0` with the complete hosted
   CI result green, and PR #957 merged the corresponding prospective Paper 2.0
-  record as `e7f84e39`. The broader runner migration remains on its separate
-  `durable-evaluation-runner-migration` card.
+  record as `e7f84e39`. Paper 2.0 v3.0.301 was published from content commit
+  `b535d4a`; website deployment `33713980842` completed successfully, and both
+  the atlas and PDF were verified live. The broader runner migration remains on
+  its separate `durable-evaluation-runner-migration` card.
