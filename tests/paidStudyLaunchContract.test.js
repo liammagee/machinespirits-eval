@@ -224,7 +224,7 @@ test('capacity allocation consumes only per-dispatch reservations and releases u
   assert.equal(admission.reserved, 0);
   assert.equal(admission.studyReserved, 0);
   const client = sharedModelAttemptLedgerClientFromEnv(
-    admission.attemptLedgerEnvironment({ unitId: 'unit-1', capacity }),
+    admission.attemptLedgerEnvironment({ unitId: 'unit-1', capacity, maximumTurn: 2 }),
   );
   for (const turn of [1, 2]) {
     const attempt = client.reserve({ role: 'fixture-role', turn });
@@ -233,6 +233,11 @@ test('capacity allocation consumes only per-dispatch reservations and releases u
   }
   assert.equal(admission.reserved, 2);
   assert.equal(admission.studyReserved, 2);
+  assert.throws(
+    () => client.reserve({ role: 'fixture-role', turn: 3 }),
+    /registered turn horizon exceeded before dispatch/u,
+  );
+  assert.equal(admission.reserved, 2);
   const released = admission.releaseModelAttemptCapacity(capacity, { unit: 'unit-1' });
   assert.deepEqual(released, { allocated: 3, consumed: 2, unused: 1 });
   assert.throws(() => admission.allocateModelAttemptCapacity(4, { unit: 'unit-2' }), /remaining attempt ceiling/u);
@@ -415,6 +420,47 @@ test('a dead interrupted launcher can be sealed once without rewriting its ledge
   });
   assert.equal(recovery.studyReserved, 2);
   recovery.reserveModelAttempts(1, { unit: 'remaining-unit' });
+  recovery.close({ type: 'run_sealed', status: 'complete' });
+});
+
+test('sealing a killed per-dispatch launch reconciles and counts its interrupted attempt', (t) => {
+  const value = fixture(t, { cap: 3, noteCap: '3' });
+  const destination = path.join(value.base, 'interrupted-dispatch-run');
+  const initial = admitPaidStudyLaunch({ ...value.contract, destination });
+  const capacity = initial.allocateModelAttemptCapacity(3, { unit: 'unit-1' });
+  const client = sharedModelAttemptLedgerClientFromEnv(
+    initial.attemptLedgerEnvironment({ unitId: 'unit-1', capacity, maximumTurn: 2 }),
+  );
+  const completed = client.reserve({ role: 'fixture', turn: 1 });
+  client.markDispatched({ attemptId: completed.attemptId, role: 'fixture', turn: 1 });
+  client.terminalize({ attemptId: completed.attemptId, disposition: 'completed', role: 'fixture', turn: 1 });
+  const interrupted = client.reserve({ role: 'fixture', turn: 2 });
+  client.markDispatched({ attemptId: interrupted.attemptId, role: 'fixture', turn: 2 });
+
+  const sealed = sealInterruptedPaidStudyLaunch({
+    studyId: 'fixture-study',
+    studyStateRoot: value.contract.studyStateRoot,
+    destination,
+    reason: 'fixture process killed after dispatch',
+    isProcessAlive: () => false,
+  });
+  assert.equal(sealed.reserved_in_run, 2);
+  assert.equal(sealed.study_reserved, 2);
+
+  const runEvents = fs.readFileSync(initial.ledger_path, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.equal(runEvents.filter((event) => event.type === 'attempt_completed').length, 1);
+  assert.equal(runEvents.filter((event) => event.type === 'attempt_interrupted_after_dispatch').length, 1);
+  assert.equal(runEvents.at(-1).reserved_attempts, 2);
+
+  const recovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'interrupted-dispatch-recovery'),
+    recoveryFrom: destination,
+  });
+  assert.equal(recovery.studyReserved, 2);
+  const remaining = recovery.allocateModelAttemptCapacity(1, { unit: 'unit-2' });
+  assert.equal(remaining.count, 1);
+  recovery.releaseModelAttemptCapacity(remaining, { unit: 'unit-2' });
   recovery.close({ type: 'run_sealed', status: 'complete' });
 });
 

@@ -76,6 +76,21 @@ remain charged to the original hard ceiling. A durably persisted response is
 accepted once without redispatch. Scientific completeness requires zero
 unexplained reservations, not zero interruptions.
 
+### Resume horizon and dispatch invariant
+
+A resumed automated dialogue interprets its configured turn count as the total
+dialogue horizon. The runner must carry the actual resume request across the
+CLI/application boundary into turn orchestration. Independently, the shared
+dispatch ledger receives the registered maximum turn and rejects any attempt
+above it before reservation and provider dispatch. This gives the horizon the
+same fail-before-call protection as the spend ceiling.
+
+Tests for a resumed runner cross the public application boundary and also prove
+the dispatch ledger refuses an over-horizon turn without consuming a
+reservation. If a process is interrupted, sealing it reconciles all durable
+per-dispatch reservations and counts completed, failed, cancelled, and
+interrupted attempts before admitting a fresh missing-work-only recovery.
+
 ## What is retired for new studies
 
 Request JSONs with executable-closure digest lists; endpoint preflight

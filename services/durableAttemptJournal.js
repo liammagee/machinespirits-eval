@@ -139,6 +139,7 @@ export function createSharedModelAttemptLedgerClient({
   unitId,
   capacityId,
   capacityLimit,
+  maximumTurn = null,
   lockPath = `${studyLedgerPath}.attempt-lock`,
 } = {}) {
   if (![runLedgerPath, studyLedgerPath, destination].every((value) => path.isAbsolute(value || ''))) {
@@ -148,10 +149,16 @@ export function createSharedModelAttemptLedgerClient({
   if (!Number.isInteger(hardCeiling) || hardCeiling < 1 || !Number.isInteger(capacityLimit) || capacityLimit < 1) {
     throw new Error('shared attempt ledger ceilings must be positive integers');
   }
+  if (maximumTurn !== null && (!Number.isInteger(maximumTurn) || maximumTurn < 1)) {
+    throw new Error('shared attempt ledger maximum turn must be a positive integer or null');
+  }
   reconcileSharedModelAttemptLedger({ runLedgerPath, studyLedgerPath, capacityId, unitId, lockPath });
   const terminalTypes = new Set(Object.values(TERMINAL_EVENT_BY_DISPOSITION));
   return Object.freeze({
     reserve({ role = 'unknown', turn = null } = {}) {
+      if (maximumTurn !== null && Number.isFinite(Number(turn)) && Number(turn) > maximumTurn) {
+        throw new Error(`registered turn horizon exceeded before dispatch: turn ${Number(turn)} > ${maximumTurn}`);
+      }
       return withDirectoryLock(lockPath, () => {
         const studyEvents = readEvents(studyLedgerPath);
         const studyReservations = studyEvents.filter((event) => event.type === 'study_model_attempt_dispatch_reserved');
