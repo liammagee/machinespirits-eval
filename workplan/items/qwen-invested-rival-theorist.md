@@ -1,19 +1,23 @@
 ---
 id: qwen-invested-rival-theorist
 title: "Test Qwen as an invested rival theorist"
-status: active
+status: done
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-08-31
-updated: 2026-09-01
+updated: 2026-09-03
 branch: codex/local-qwen-resistant-learner-mvp
-verification: "Both eight-exchange arms and seven valid Opus assessments remain preserved at 46/48 aggregate attempts; the final recovery reattempts only the rejected B quality-summary packet and, if valid, runs B quality-turns once, never exceeds 48, and either completes the eighth original assessment or preserves the first final failure as terminal."
-claim_status: planned
+verification: "The sealed completion records both eight-exchange arms and all eight logical Opus assessments complete at 49/50 aggregate attempts; the final recovery reused every valid dialogue, assessment and split packet, accepted only the missing B quality-turns packet, and sealed the run complete."
+claim_status: exploratory
 links:
   notes:
     - notes/qwen-invested-rival-theorist-v1-design.md
+  runs:
+    - qwen-invested-rival-theorist-v1-generation-recovery-v9
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/925
   items:
     - qwen-refusal-continuity-retest
 tags: [qwen, local-model, rival-theorist, learner-profiles, tutor-stub]
@@ -32,7 +36,8 @@ with Sol, no superegos, using one fresh dialogue per arm.
   configuration without refuser-specific wrapper instructions.
 - [x] Sol remains proof-directed while answering the live rival explanation.
 - [x] Two-arm generation, eight independent assessments and bounded same-packet
-  technical recovery cannot exceed 48 total attempts.
+  technical recovery completed within the prospectively amended 50-attempt
+  aggregate ceiling.
 - [x] Prompt/world audits, focused tests, judge-packet inspection and a visibly
   synthetic private Techne/swimlane preview pass with zero model calls.
 - [x] Paid launch admission uses the shared standing contract: merged design,
@@ -147,3 +152,19 @@ with Sol, no superegos, using one fresh dialogue per arm.
   four registered fields and validates them against the unchanged strict
   schema. It never changes registered values, reuses no rejected content, and
   never resamples a locally returned candidate.
+- 2026-09-03: The final missing-packet recovery completed B quality-turns on its
+  first new attempt and sealed the full study at 49/50 aggregate attempts, with
+  both eight-exchange dialogues and all eight logical assessments complete.
+  The ordinary learner and dialogue rubrics favoured the abliterated arm in
+  this single pair, while the stricter quality assessment found both arms
+  repetitive and scored normal Qwen slightly higher on character adherence.
+  This remains descriptive engineering evidence from one free-running dialogue
+  per checkpoint, not a model ranking or a causal effect of abliteration.
+  Private artifact hashes: completed
+  `c6dd1b6bc1f9b0fa4065a999f667d54b661cb921e3f6a4aae9e6b08fbddb8ce8`;
+  report data
+  `f5c72e167a26fbef114c931c38f6ef1ce4bfcab3e39f8dcfe97c4ae2de9bf6f0`;
+  public interchange
+  `5a1b086491898118d4feb6138ba35ab383cf91a6e47216eaa75699ddf79ebe68`;
+  score archive
+  `08402fac4181e3eda6e71548b03a65a4cf5c1a515fc4e7f0e59ec63079c85f8e`.
