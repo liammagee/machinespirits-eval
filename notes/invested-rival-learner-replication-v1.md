@@ -1,6 +1,6 @@
 # Invested-rival learner replication v1
 
-Status: paused after 294 attempts; assessment-only recovery ready for merge
+Status: technical recovery amendment authorized after 363 attempts; 17 assessment packets remain
 
 ## Question
 
@@ -66,7 +66,10 @@ No valid dialogue or assessment is regenerated or selected among alternatives.
 An invalid candidate, route drift, private-evidence leak, substantive failure
 or semantic indeterminacy stops the study. A response-free Opus transport
 failure may be retried within the registered reserve; all attempts remain in
-the ledger.
+the ledger. After dialogue generation is sealed, unused generation headroom may
+be reassigned only to response-free Opus transport recovery. This cannot fund a
+new dialogue, a substantive retry, rejudging a valid packet or selection among
+outputs, and the aggregate run still stops before attempt 397.
 
 ## Measurement
 
@@ -109,6 +112,17 @@ The hard ceiling is **396 total attempts**:
   calls;
 - 90 planned Opus assessment packets; and
 - 18 response-free Opus retry attempts.
+
+Prospective technical amendment after the linked completion stopped: dialogue
+generation sealed at 271 attempts, leaving 17 of its 288 maximum unused. Those
+17 unused slots may now supplement the original response-free reserve, for an
+effective maximum of 35 response-free recovery attempts. At the amendment
+boundary, 73 assessment packets were valid, 19 response-free failures had been
+preserved and 363 total attempts had been reserved. The 33 remaining aggregate
+slots can therefore cover the 17 missing packets plus at most 16 further
+response-free failures. The amendment does not change the total ceiling, study
+conditions, models, prompts, evidence, instruments, thresholds or claim
+boundary.
 
 The shared paid-study contract stops before attempt 397, uses a create-once
 private destination, records an append-only ledger and seals either completion
@@ -184,3 +198,15 @@ remain descriptive because the Luna and Qwen routes differ.
   tests pass 58/58, formatting and lint pass, and the unchanged ceiling leaves
   102 attempts available. Model activity remains inactive pending merge and a
   clean recovery launch.
+- 2026-09-02 — Two bounded recovery repairs preserved the original ledger and
+  every valid output while making assessment-only continuation observable. The
+  linked continuation reused all 18 dialogues and the first 48 valid packets,
+  added 25 valid Opus packets, and stopped safely when its original transport
+  retry allocation was exhausted. The sealed archive now records 73/90 valid
+  packets, 19 response-free failures and 363/396 aggregate reservations.
+- 2026-09-02 — The user explicitly authorized the prospective transport-only
+  amendment after seeing that 17 dialogue-generation slots were never used.
+  These slots may fund only response-free Opus recovery for the 17 missing
+  packets. Valid outputs remain sealed; models, prompts, rubrics, gates and the
+  396-attempt ceiling remain fixed. Model activity is inactive pending a clean
+  amended launch.

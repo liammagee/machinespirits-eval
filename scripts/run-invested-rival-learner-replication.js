@@ -232,6 +232,7 @@ export function buildLearnerReplicationPlan(root = ROOT, configPath = DEFAULT_CO
     config.generation_attempt_ceiling !== 288 ||
     config.assessment_packets !== 90 ||
     config.response_free_recovery_reserve !== 18 ||
+    config.reuse_unused_generation_headroom_for_response_free_recovery !== true ||
     config.generation_attempt_ceiling + config.assessment_packets + config.response_free_recovery_reserve !==
       config.total_attempt_ceiling
   ) {
@@ -289,6 +290,8 @@ export function buildLearnerReplicationPlan(root = ROOT, configPath = DEFAULT_CO
     generation_attempt_ceiling: config.generation_attempt_ceiling,
     assessment_packets: config.assessment_packets,
     recovery_attempt_reserve: config.response_free_recovery_reserve,
+    reuse_unused_generation_headroom_for_response_free_recovery:
+      config.reuse_unused_generation_headroom_for_response_free_recovery,
     generation_seed: config.generation_seed,
     temperature: config.temperature,
     models: config.models,
@@ -296,6 +299,24 @@ export function buildLearnerReplicationPlan(root = ROOT, configPath = DEFAULT_CO
     base,
     worlds,
   };
+}
+
+export function learnerReplicationResponseFreeRecoveryLimit(plan, generationAttempts) {
+  if (
+    !Number.isSafeInteger(generationAttempts) ||
+    generationAttempts < 0 ||
+    generationAttempts > plan.generation_attempt_ceiling
+  ) {
+    throw new Error('learner-replication generation attempt count is invalid');
+  }
+  if (!plan.reuse_unused_generation_headroom_for_response_free_recovery) {
+    return plan.recovery_attempt_reserve;
+  }
+  const limit = plan.recovery_attempt_reserve + (plan.generation_attempt_ceiling - generationAttempts);
+  if (generationAttempts + plan.assessment_packets + limit !== plan.total_attempt_ceiling) {
+    throw new Error('learner-replication response-free recovery limit exceeds the study ceiling');
+  }
+  return limit;
 }
 
 export async function callLearnerReplicationModel(args, callCli = callAIWithCliBridge) {
@@ -778,6 +799,8 @@ function executionTarget(plan, route, token) {
 }
 
 function recoveryPlanShape(plan) {
+  // Transport-recovery allocation is prospective operational policy, not a
+  // scientific input; keep it out so sealed dialogues and scores remain reusable.
   return {
     id: plan.id,
     design: plan.design,
@@ -950,7 +973,7 @@ function isResponseFreeModelError(error) {
   );
 }
 
-function readProviderRejectedAssessmentFailures(plan, source) {
+function readTerminalAssessmentFailures(plan, source) {
   const failures = [];
   for (const world of plan.worlds) {
     for (const mechanism of ['baseline', 'active_progression']) {
@@ -980,12 +1003,45 @@ function readProviderRejectedAssessmentFailures(plan, source) {
           throw new Error(`assessment recovery has an unknown failed packet ${world.key}/${packet}`);
         }
         const base = path.join(evaluationDir, packet);
-        const requiredFiles = ['prompt.txt', 'schema.json', 'provider.json', 'response.txt', 'transport.json'];
-        if (requiredFiles.some((suffix) => !fs.existsSync(`${base}.${suffix}`)) || fs.existsSync(`${base}.json`)) {
+        const responseFiles = ['provider.json', 'response.txt', 'transport.json'];
+        if (
+          !fs.existsSync(`${base}.prompt.txt`) ||
+          !fs.existsSync(`${base}.schema.json`) ||
+          fs.existsSync(`${base}.json`)
+        ) {
           throw new Error(`assessment recovery failed packet ${world.key}/${packet} is incomplete or contradictory`);
         }
         const error = readJson(`${base}.error.json`, `${world.key}/${packet} error`);
         const schema = readJson(`${base}.schema.json`, `${world.key}/${packet} schema`);
+        const packetEvents = judgeEvents.filter((event) => event.arm === job.arm && event.kind === job.kind);
+        const commonEvidenceMatches =
+          fs.readFileSync(`${base}.prompt.txt`, 'utf8') === job.prompt &&
+          JSON.stringify(schema) === JSON.stringify(job.outputSchema) &&
+          packetEvents.length === 2 &&
+          packetEvents[0].event === 'reserved' &&
+          packetEvents[1].event === 'failed' &&
+          packetEvents[1].error === error.message;
+        const responseFileCount = responseFiles.filter((suffix) => fs.existsSync(`${base}.${suffix}`)).length;
+        if (
+          responseFileCount === 0 &&
+          commonEvidenceMatches &&
+          error.code === 'CLI_PROVIDER_RESPONSE_FREE_ERROR' &&
+          error.classification === 'response_free_error' &&
+          error.reason === 'result_error_without_structured_output'
+        ) {
+          failures.push({
+            world: world.key,
+            mechanism,
+            arm: job.arm,
+            kind: job.kind,
+            error: error.message,
+            physicalStatus: 'failed',
+          });
+          continue;
+        }
+        if (responseFileCount !== responseFiles.length) {
+          throw new Error(`assessment recovery failed packet ${world.key}/${packet} is incomplete or contradictory`);
+        }
         const provider = readJson(`${base}.provider.json`, `${world.key}/${packet} provider`);
         const transport = readJson(`${base}.transport.json`, `${world.key}/${packet} transport`);
         const responseText = fs.readFileSync(`${base}.response.txt`, 'utf8').trim();
@@ -1000,11 +1056,9 @@ function readProviderRejectedAssessmentFailures(plan, source) {
               .filter((block) => block.type === 'tool_use' && block.name === 'StructuredOutput')
           : [];
         const wrapperValues = Object.values(structuredCalls[0]?.input || {});
-        const packetEvents = judgeEvents.filter((event) => event.arm === job.arm && event.kind === job.kind);
         const expectedError = `quality ${job.kind.replace('quality-', '')} packet failed its output schema: ${benchmarkOutputSchemaIssues({}, job.outputSchema).slice(0, 8).join(', ')}`;
         if (
-          fs.readFileSync(`${base}.prompt.txt`, 'utf8') !== job.prompt ||
-          JSON.stringify(schema) !== JSON.stringify(job.outputSchema) ||
+          !commonEvidenceMatches ||
           error.message !== expectedError ||
           responseText !== '{}' ||
           provider.text !== '{}' ||
@@ -1021,17 +1075,20 @@ function readProviderRejectedAssessmentFailures(plan, source) {
           resultEvent?.terminal_reason !== 'structured_output_retry_exhausted' ||
           structuredCalls.length !== 1 ||
           wrapperValues.length !== 1 ||
-          wrapperValues[0] !== '{}' ||
-          packetEvents.length !== 2 ||
-          packetEvents[0].event !== 'reserved' ||
-          packetEvents[1].event !== 'failed' ||
-          packetEvents[1].error !== error.message
+          wrapperValues[0] !== '{}'
         ) {
           throw new Error(
             `assessment recovery failed packet ${world.key}/${packet} is not a response-free provider rejection`,
           );
         }
-        failures.push({ world: world.key, mechanism, arm: job.arm, kind: job.kind, error: error.message });
+        failures.push({
+          world: world.key,
+          mechanism,
+          arm: job.arm,
+          kind: job.kind,
+          error: error.message,
+          physicalStatus: 'candidate_returned',
+        });
       }
     }
   }
@@ -1045,7 +1102,7 @@ function readAssessmentRecovery(
   seal,
   completed,
   ownReservedAttempts,
-  { allowProviderRejectedFailure = false } = {},
+  { allowProviderRejectedFailure = false, allowResponseFreeTransportFailure = false } = {},
 ) {
   const statePath = path.join(source, 'assessment-recovery-state.json');
   const inherited = fs.existsSync(statePath) ? readJson(statePath, 'assessment recovery state') : null;
@@ -1095,10 +1152,16 @@ function readAssessmentRecovery(
   const currentCompletedPackets = currentBatches.reduce((sum, batch) => sum + batch.completedPackets, 0);
   const completedPackets = batches.reduce((sum, batch) => sum + batch.completedPackets, 0);
   if (completedPackets > plan.assessment_packets) throw new Error('assessment recovery has too many completed packets');
-  const providerRejectedFailures = readProviderRejectedAssessmentFailures(plan, source);
+  const terminalFailures = readTerminalAssessmentFailures(plan, source);
+  const providerRejectedFailures = terminalFailures.filter(
+    (failure) => failure.physicalStatus === 'candidate_returned',
+  );
+  const responseFreeTransportFailures = terminalFailures.filter((failure) => failure.physicalStatus === 'failed');
   if (
     providerRejectedFailures.length !== (allowProviderRejectedFailure ? 1 : 0) ||
-    (allowProviderRejectedFailure && providerRejectedFailures[0].error !== seal.error)
+    (allowProviderRejectedFailure && providerRejectedFailures[0].error !== seal.error) ||
+    responseFreeTransportFailures.length > (allowResponseFreeTransportFailure ? 1 : 0) ||
+    responseFreeTransportFailures.some((failure) => failure.error !== seal.error)
   ) {
     throw new Error('assessment recovery provider-rejected failure accounting drift');
   }
@@ -1128,7 +1191,16 @@ function readAssessmentRecovery(
   const failedRows = physicalRows.filter((row) => row.status === 'failed');
   if (
     candidateRows.length !== currentCompletedPackets + providerRejectedFailures.length ||
-    failedRows.some((row) => !isResponseFreeAssessmentFailure(row))
+    failedRows.some((row) => !isResponseFreeAssessmentFailure(row)) ||
+    responseFreeTransportFailures.some(
+      (failure) =>
+        !failedRows.some(
+          (row) =>
+            row.role === `local-qwen-benchmark-${failure.kind}` &&
+            row.message === failure.error &&
+            row.reason === 'result_error_without_structured_output',
+        ),
+    )
   ) {
     throw new Error('assessment recovery contains an unresolved substantive or mismatched judge result');
   }
@@ -1156,13 +1228,14 @@ function readAssessmentRecovery(
   }
   const physicalAttempts = aggregatePriorAttempts - generationAttempts;
   const responseFreeFailures = physicalAttempts - completedPackets;
+  const responseFreeRecoveryLimit = learnerReplicationResponseFreeRecoveryLimit(plan, generationAttempts);
   if (
     responseFreeFailures !==
       inheritedResponseFreeFailures + failedRows.length + interruptedAttempts + providerRejectedFailures.length ||
-    responseFreeFailures > plan.recovery_attempt_reserve ||
+    responseFreeFailures > responseFreeRecoveryLimit ||
     aggregatePriorAttempts +
       (plan.assessment_packets - completedPackets) +
-      (plan.recovery_attempt_reserve - responseFreeFailures) >
+      (responseFreeRecoveryLimit - responseFreeFailures) >
       plan.total_attempt_ceiling
   ) {
     throw new Error('assessment recovery exceeds its preserved packet or retry budget');
@@ -1172,9 +1245,11 @@ function readAssessmentRecovery(
     generationAttempts,
     physicalAttempts,
     responseFreeFailures,
+    responseFreeRecoveryLimit,
     completedPackets,
     interruptedAttempts,
     providerRejectedFailures,
+    responseFreeTransportFailures,
     batches,
   };
 }
@@ -1246,6 +1321,7 @@ export function readLearnerReplicationRecovery(plan, sourceDir) {
   if (!partial && completed.length === sequence.length && !reachedMissing) {
     const assessment = readAssessmentRecovery(plan, source, events, seal, completed, priorAttempts, {
       allowProviderRejectedFailure: potentiallyMisclassifiedProviderSeal,
+      allowResponseFreeTransportFailure: ordinaryTechnicalSeal,
     });
     return {
       phase: 'assessment',
@@ -1292,8 +1368,12 @@ export function learnerReplicationLinkedCompletionContract(plan, recovery) {
   const priorAttemptCount = recovery.priorAttempts;
   const completedPackets = recovery.assessment.completedPackets;
   const priorResponseFreeFailures = recovery.assessment.responseFreeFailures;
+  const responseFreeRecoveryLimit = learnerReplicationResponseFreeRecoveryLimit(
+    plan,
+    recovery.assessment.generationAttempts,
+  );
   const missingPackets = plan.assessment_packets - completedPackets;
-  const remainingRecoveryReserve = plan.recovery_attempt_reserve - priorResponseFreeFailures;
+  const remainingRecoveryReserve = responseFreeRecoveryLimit - priorResponseFreeFailures;
   const remainingAttempts = plan.total_attempt_ceiling - priorAttemptCount;
   const unallocatedAttemptHeadroom = remainingAttempts - missingPackets - remainingRecoveryReserve;
   if (
@@ -1326,6 +1406,7 @@ export function learnerReplicationLinkedCompletionContract(plan, recovery) {
     priorAttemptBase,
     completedPackets,
     missingPackets,
+    responseFreeRecoveryLimit,
     remainingRecoveryReserve,
     remainingAttempts,
     unallocatedAttemptHeadroom,
@@ -1669,6 +1750,8 @@ async function liveRun(plan, outDir, admission, recovery = null, linkedCompletio
     generationAttemptMaximum: plan.generation_attempt_ceiling,
     plannedAssessmentPackets: plan.assessment_packets,
     responseFreeRecoveryReserve: plan.recovery_attempt_reserve,
+    reuseUnusedGenerationHeadroomForResponseFreeRecovery:
+      plan.reuse_unused_generation_headroom_for_response_free_recovery,
     configuredModels: plan.models,
     authorization: admission.authorization,
     linkedCompletion: linkedCompletion
@@ -1678,6 +1761,7 @@ async function liveRun(plan, outDir, admission, recovery = null, linkedCompletio
           priorAttemptsPreserved: linkedCompletion.priorAttemptCount,
           completedAssessmentPacketsPreserved: linkedCompletion.completedPackets,
           missingAssessmentPackets: linkedCompletion.missingPackets,
+          responseFreeRecoveryLimit: linkedCompletion.responseFreeRecoveryLimit,
           remainingAttempts: linkedCompletion.remainingAttempts,
           remainingResponseFreeReserve: linkedCompletion.remainingRecoveryReserve,
           unallocatedAttemptHeadroom: linkedCompletion.unallocatedAttemptHeadroom,
@@ -1706,6 +1790,7 @@ async function liveRun(plan, outDir, admission, recovery = null, linkedCompletio
                 completedAssessmentPackets: recovery.assessment.completedPackets,
                 interruptedAssessmentAttempts: recovery.assessment.interruptedAttempts,
                 providerRejectedAssessmentFailures: recovery.assessment.providerRejectedFailures,
+                responseFreeTransportFailures: recovery.assessment.responseFreeTransportFailures,
               }
             : {}),
         }
@@ -1828,10 +1913,13 @@ async function liveRun(plan, outDir, admission, recovery = null, linkedCompletio
 
     workflow.generationCompleted();
 
+    const generationAttempts = recovery?.assessment?.generationAttempts ?? budget.snapshot().used;
+    const responseFreeRecoveryLimit = learnerReplicationResponseFreeRecoveryLimit(plan, generationAttempts);
+
     const judge = makeLunaJudgeCaller({
       budget,
       outDir,
-      maximumResponseFreeRetries: plan.recovery_attempt_reserve,
+      maximumResponseFreeRetries: responseFreeRecoveryLimit,
       priorPhysicalAttempts: recovery?.assessment?.physicalAttempts || 0,
       priorResponseFreeRetries: recovery?.assessment?.responseFreeFailures || 0,
     });
@@ -1984,6 +2072,7 @@ export async function main(argv = process.argv.slice(2)) {
       prior_attempts_preserved: linkedCompletion.priorAttemptCount,
       completed_assessment_packets_preserved: linkedCompletion.completedPackets,
       missing_assessment_packets: linkedCompletion.missingPackets,
+      response_free_recovery_limit: linkedCompletion.responseFreeRecoveryLimit,
       remaining_attempts: linkedCompletion.remainingAttempts,
       remaining_response_free_reserve: linkedCompletion.remainingRecoveryReserve,
       unallocated_attempt_headroom: linkedCompletion.unallocatedAttemptHeadroom,
