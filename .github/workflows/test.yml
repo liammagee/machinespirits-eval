@@ -200,14 +200,16 @@ jobs:
       - run: npm run format:check:tutor-core
 
   test:
-    needs: [classify, test-contract]
+    # The hermetic runner re-checks the test manifest itself, so this lane
+    # starts without waiting for test-contract; `result` still requires it.
+    needs: [classify]
     if: needs.classify.outputs.full_required == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         node-version: [22, 24]
-        shard: [1, 2]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -221,8 +223,8 @@ jobs:
 
       - run: npm ci
 
-      - name: Run root test shard ${{ matrix.shard }}/2
-        run: npm run test:root -- --shard=${{ matrix.shard }}/2 --quiet
+      - name: Run root test shard ${{ matrix.shard }}/4
+        run: npm run test:root -- --shard=${{ matrix.shard }}/4 --quiet
 
       - name: Run the in-housed tutor-core suite once per Node version
         if: matrix.shard == 1

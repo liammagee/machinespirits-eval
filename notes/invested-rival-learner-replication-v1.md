@@ -1,6 +1,6 @@
 # Invested-rival learner replication v1
 
-Status: technical recovery amendment authorized after 363 attempts; 17 assessment packets remain
+Status: complete; both registered gates failed; exploratory negative result
 
 ## Question
 
@@ -137,6 +137,41 @@ general model ranking, a causal effect of abliteration, human learning,
 human-learner validity or deployment readiness. Model-level means and speed
 remain descriptive because the Luna and Qwen routes differ.
 
+## Result
+
+The private completion archive contains all 18 dialogues, 72 logical
+assessments, and 90 physical assessment packets. It stopped at 384 of the 396
+allowed attempts: 271 generation reservations plus 113 Opus packet attempts,
+of which 23 were preserved response-free transport failures. There were no
+substantive failures, invalid dialogues, or semantically indeterminate rows.
+
+The frozen scaffold did not replicate overall. Its primary matched-pair mean
+change was -0.03, with five of nine pairs positive, seven non-negative, and two
+of three route means positive. The route-level primary changes were +0.42 for
+Luna, +0.25 for normal Qwen, and -0.75 for abliterated Qwen. The supportive
+encounter change was +0.17, and scaffold turns contained three unsupported
+evidence assertions. The primary replication gate and stronger main-text gate
+therefore both failed exactly as registered.
+
+The unscaffolded descriptive primary means were 2.00 for Luna, 2.08 for normal
+Qwen, and 2.92 for abliterated Qwen; with the scaffold they were 2.42, 2.33,
+and 2.17 respectively. This does not establish a model ranking or a causal
+effect of abliteration. It bounds the mechanism instead: all three routes
+produced assessable resistant-learner dialogues, but the same progression
+scaffold was not portable across them. Abliterated Qwen was the strongest
+unscaffolded route on this narrow measure and showed the largest negative
+response to the scaffold in this sample. That makes it a prompt-sensitive
+stress-test route here, rather than evidence for adopting it as the default
+simulator.
+
+Private completion root:
+`.tutor-stub-traces/invested-rival-learner-replication-v1-linked-completion-2`
+in the isolated completion worktree. Integrity anchors:
+
+- `analysis.json`: `a39c7d4d95933974b9c4b28d84eb8c3b21ede034062112aa93772818fe276620`
+- `completed.json`: `7f22265223312e65a7db1ecfccd596571f8284cbd0d5127a8143122be4c9959e`
+- `report.md`: `0363af71499bf0c7f7d6d4de823f24abbb8b150ec21ffcc416a71273538e7694`
+
 ## Step log
 
 - 2026-09-02 — User requested the replication and asked that its steps be
@@ -210,3 +245,11 @@ remain descriptive because the Luna and Qwen routes differ.
   packets. Valid outputs remain sealed; models, prompts, rubrics, gates and the
   396-attempt ceiling remain fixed. Model activity is inactive pending a clean
   amended launch.
+- 2026-09-03 — The amended missing-only recovery completed the remaining 17
+  Opus packets without regenerating a dialogue or a valid assessment. The
+  study sealed at 384/396 aggregate attempts with 18/18 dialogues, 72/72
+  logical assessments, 90/90 physical packets, 23 preserved response-free
+  transport failures, zero substantive failures, and zero indeterminate rows.
+  The primary replication and main-text paper gates both failed. The result is
+  retained as an exploratory model-and-prompt interaction bound and recorded
+  in Paper 2.0 §8.1; model activity is inactive and no human action remains.

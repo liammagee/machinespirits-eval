@@ -30,7 +30,7 @@ When `auto` selects `full` (or `--profile full` is explicit), the runner:
 3. runs managed-ref governance when the change touches that contract (or when
    a full profile is explicitly requested), then runs root and tutor-core
    ESLint, import-cycle, and Prettier checks in a separate lane;
-4. runs both root shards and tutor-core under the local Node 22 runtime;
+4. runs all four root shards and tutor-core under the local Node 22 runtime;
 5. runs the dedicated PTY/loopback and application-lifecycle lanes;
 6. enforces risk-coverage floors;
 7. runs content and paper-claim smoke validation;
@@ -74,7 +74,7 @@ npm run ci:local -- --list
 
 `npm test` is the comprehensive fast local code gate: it runs the root files in
 one hermetic Node process, then runs the in-housed tutor-core suite. The full
-local-CI profile deliberately runs the two root shards sequentially to match
+local-CI profile deliberately runs the four root shards sequentially to match
 the hosted matrix contract, so it can take longer even though the selected test
 coverage is identical.
 

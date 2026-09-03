@@ -1,16 +1,16 @@
 ---
 id: invested-rival-learner-replication
 title: "Replicate the invested-rival learner scaffold across worlds and models"
-status: active
+status: done
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-09-02
-updated: 2026-09-02
-branch: codex/invested-rival-assessment-recovery
-verification: "Second pause sealed at 294/396: all 18 dialogues and 20/90 physical Opus packets are valid; assessment-only recovery preserves them and exposes exactly 70 missing packets."
-claim_status: planned
+updated: 2026-09-03
+branch: codex/paper-qwen-resistant-learner-result
+verification: "Private completion sealed at 384/396 with 18/18 dialogues, 72/72 logical assessments, 90/90 physical packets, 23 preserved response-free transport failures, zero substantive failures and zero indeterminate rows; both registered gates failed and Paper 2.0 §8.1 records the bounded result."
+claim_status: exploratory
 links:
   notes:
     - notes/invested-rival-learner-replication-v1.md
@@ -32,9 +32,9 @@ new contemporary proof worlds.
 - [x] Zero-call prompt/world and packet preflight passes from a clean branch.
 - [x] Design and runner reach `main`; a plain GO note is committed on a
   descendant of the clean detached launch commit.
-- [ ] All 18 dialogues and 72 logical assessments complete, or the first
+- [x] All 18 dialogues and 72 logical assessments complete, or the first
   non-recoverable failure is preserved without rerunning valid outputs.
-- [ ] The private report applies the frozen gates and the Markdown note records
+- [x] The private report applies the frozen gates and the Markdown note records
   each launch, run, recovery and analysis step.
 
 ## Log
@@ -77,3 +77,11 @@ new contemporary proof worlds.
   Focused tests pass 58/58 with formatting, lint and archive reconciliation
   clean. The unchanged ceiling leaves 102 attempts for completion and the
   remaining response-free reserve.
+- 2026-09-03: The final missing-only recovery completed all 90 physical Opus
+  packets and 72 logical assessments at 384/396 aggregate attempts. Twenty-
+  three response-free transport failures remain preserved; no substantive
+  failure or indeterminate row occurred. The registered replication and
+  main-text gates failed: the scaffold's primary mean change was -0.03 overall,
+  with route means +0.42 Luna, +0.25 normal Qwen, and -0.75 abliterated Qwen.
+  Paper 2.0 §8.1 records this as an exploratory model-and-prompt interaction
+  bound, not a model ranking or causal effect of abliteration. The card closes.
