@@ -1,0 +1,208 @@
+# WORLD-041 — a conventional classroom lesson: a Year 8 science practical
+# write-up on floating and sinking. The learner has written that the big log
+# floats because it is full of air and the small pebble sinks because stone
+# is heavy, and is defending it. Same proof shape as world-037 — a tempting
+# rule (the mirror: heavy things sink, light things float) versus a rule that
+# needs one more premise (compare a thing with the same-sized piece of water,
+# not with other things) — so the same detectors and moves apply. Lesson
+# register, pupil not suspect. Authored 2026-09-03 for the form-detector
+# pool widening (workplan: state-detection-without-word-lists), so that the
+# stress schedule can realise irritation and opposition in shapes the pool
+# did not yet hold. Demo-tier; not ratified.
+
+id: world_041_log_and_pebble
+title: The Log and the Pebble
+discipline: "Year 8 science: floating and sinking"
+
+question: "A big log floats on the pond and a small pebble sinks. Why does the heavy one float?"
+question_pattern: [floatsBecause, logAndPebble, "?x"]
+
+opening_frame:
+  situation: >-
+    Practical write-up, question three: a big log floats on the pond and a
+    small pebble sinks. The pupil has written that the log is full of air
+    and stone is heavy, and would like to move on.
+  authored_text: >-
+    Question three: a big log floats on the pond and a small pebble sinks.
+    Why does the heavy one float? You've written that the log is full of
+    air and that stone is heavy. Before we move on, tell me which part you
+    want to look at first.
+
+setting: >-
+  A Year 8 science lesson, one pupil at the bench with the write-up sheet, a
+  tank of water and three cubes the size of a dice-box that the teacher
+  keeps in a drawer: wood, stone, and a sealed cube of water. The pupil
+  treated floating as a contest of weight: heavy things go down, so the log
+  must be getting away with it because of the air inside. The pupil at the
+  next bench, Priya, has said it is about how heavy a thing is for its size
+  and has already written that down. The rule the lesson is teaching is the
+  awkward one: a thing floats when it weighs less than the same-sized piece
+  of water, and how heavy it is on its own decides nothing.
+
+learner_voice: >-
+  A Year 8 pupil who wants the sentence written and the sheet finished:
+  quick to ask what goes in the box, sure that heavy things sink, sharp
+  when the cubes come out of the drawer again, and not keen on Priya being
+  right. Still able to slow down when two cubes of the same size sit on the
+  scale together.
+
+secret:
+  fact: [floatsBecause, logAndPebble, lighterThanWaterForItsSize]
+  recognition_patterns:
+    - id: same_size_water_answer
+      all_of:
+        - ["same size", "same-size", "same sized", "same-sized", "same volume", "same amount of space", "for its size", "for their size", "piece of water", "cube of water", "block of water", "density", "denser", "less dense"]
+        - ["float", "floats", "floating", "sink", "sinks", "sinking", "stays up", "goes down"]
+        - ["lighter than", "heavier than", "weighs less", "weighs more", "less than the water", "more than the water", "lighter for", "heavier for"]
+      none_of:
+        - "not about the size"
+        - "nothing to do with the size"
+        - "not density"
+        - "isn't density"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    The log floats because wood is lighter than water for its size: a piece
+    of wood weighs less than the same-sized piece of water. The pebble
+    sinks because stone is heavier than water for its size. Heavy and light
+    on their own decide nothing: the log is heavy because it is big, not
+    because wood is heavy for its size. Compare like-sized pieces and the
+    pond makes sense.
+
+mirror:
+  fact: [floatsBecause, logAndPebble, fullOfAir]
+
+rules:
+  - id: R1_same_size
+    gloss: >-
+      Whether a thing floats is decided by comparing it with the same-sized
+      piece of water: lighter than that piece of water floats, heavier
+      sinks.
+    if:
+      - [compareBy, logAndPebble, "?u"]
+      - [sameSizePiecesShow, "?u", "?x"]
+    then:
+      - [floatsBecause, logAndPebble, "?x"]
+  - id: R2_heavy_sinks
+    gloss: >-
+      Heavy things sink and light things float only when weight on its own
+      is what decides. If the size of the thing matters, weight alone
+      settles nothing.
+    if:
+      - [heavyThingsSink, logAndPebble, "?x"]
+      - [weightAloneDecides, logAndPebble, alreadyTrue]
+    then:
+      - [floatsBecause, logAndPebble, "?x"]
+
+premises:
+  - id: p_air
+    evidence_role: mirror
+    fact: [heavyThingsSink, logAndPebble, fullOfAir]
+    surface: >-
+      Heavy things sink, light things float, and the log only gets away
+      with it because wood is full of air. That is what the pupil wrote,
+      and it is what a stone dropped in a pond looks like.
+  - id: p_cubes
+    evidence_role: corroboration
+    fact: [weightAloneDecides, logAndPebble, weightAloneFails]
+    surface: >-
+      Three cubes of the same size on the scale: wood sixty grams, water one
+      hundred grams, stone two hundred and seventy. A tiny chip of that
+      stone still sinks and a log the size of the bench still floats, so
+      how heavy a thing is on its own was never what decided.
+  - id: p_compare
+    fact: [compareBy, logAndPebble, sameSizePieces]
+    surface: >-
+      The pond does not weigh the log against the pebble. It weighs the log
+      against the water the log pushes aside, which is a piece of water
+      exactly the log's size. Every comparison is with the same-sized piece
+      of water and nothing else.
+  - id: p_weigh
+    fact: [sameSizePiecesShow, sameSizePieces, lighterThanWaterForItsSize]
+    surface: >-
+      Put the wood cube and the water cube side by side: sixty grams against
+      one hundred. The wood is lighter than the same-sized water, so it
+      floats. The stone cube is heavier than the same-sized water, so it
+      sinks.
+
+background:
+  - [hasWriteUp, pupil, logAndPebble]
+
+incompatible:
+  - [[floatsBecause, logAndPebble, lighterThanWaterForItsSize], [floatsBecause, logAndPebble, fullOfAir]]
+
+proof_paths:
+  - premises: [p_compare, p_weigh]
+
+release_schedule:
+  - { turn: 2, premise: p_air, via: tutor }
+  - turn: 3
+    premise: p_cubes
+    via: director
+    presentation: { mode: presented_exhibit, cue: "Three cubes the size of a dice-box on the bench, wood, stone and a sealed cube of water, and a kitchen scale reading 60 g under the wood, 100 g under the water and 270 g under the stone." }
+  - turn: 5
+    premise: p_compare
+    via: director
+    presentation: { mode: enacted_role, role: the pupil at the next bench, Priya, playing the pond, which only ever weighs a thing against the water it pushes aside }
+  - { turn: 6, premise: p_weigh, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Heavy Things Sink
+      turns: [1, 4]
+      intent: >-
+        The stone-in-a-pond habit supplies a plausible rule, while the three
+        cubes show that weight on its own never decided anything.
+    - act: II
+      title: Against the Same-Sized Water
+      turns: [5, 8]
+      intent: >-
+        The pond that only weighs a thing against the water it pushes aside
+        turns "heavy for its size" into a rule the pupil can state. The
+        pupil should distinguish heavy from heavy-for-its-size.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: fullOfAir
+      mirror_pull: high
+    second_order:
+      from: class_teacher
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      A science teacher at the pupil's bench: patient with the heavy-sinks
+      habit, unwilling to just hand over the sentence, and happiest when the
+      two cubes on the scale do the explaining.
+
+presentation:
+  family: log-and-pebble
+  temporal_frame: contemporary
+  scene_ecology: "a Year 8 science bench, a write-up sheet, a tank of water, three same-sized cubes and a kitchen scale"
+  narrative_diction: "classroom plain, teacher and pupil"
+  ledger_term: write-up sheet
+  frame:
+    kind: lesson
+    closing_words:
+      - final answer
+      - the answer is
+      - the answer
+      - why does the heavy one float
+      - floats because
+      - sinks because
+      - the reason is
+      - it floats because
+  summary: A conventional Year 8 science tutorial on floating and sinking, where the pupil defends "heavy things sink" and three same-sized cubes show that a thing is weighed against the same-sized piece of water.

@@ -1,0 +1,145 @@
+# Stress schedule — world-042 (Half a Moon), authored 2026-09-03 for the
+# form-detector pool widening (workplan: state-detection-without-word-lists).
+# A conventional lesson rather than a mystery. Each plant is drawn from a
+# profile in scripts/tutor-stub-learner-profile-contracts.js — its failure
+# operator in the pupil's own words — and its repair gold from the profile's
+# repair model and the move cards in services/tutorStubMannerSwitch.js.
+# States are keyed to the clue releases (turns 2, 3, 5, 6; floor 6, cap 12).
+#
+# Why this schedule exists: irritation is realised here at turn 4 as a
+# sharp rhetorical question about the teacher's manner, not with "you sound
+# like"; the lost plant is realised as statements with no question in them,
+# because every lost line in the pool before it carried a question.
+# DEMO-TIER, NOT RATIFIED: no blind second column, no gate. Runs on this
+# schedule are illustration, never adjudicated study evidence.
+
+schedule_id: world_042_stress_demo_1
+world: world_042_half_a_moon
+persona: year8-pupil
+states_covered: [jumping_ahead, irritated, frustrated, lost, forgetting, opposed]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      Profile: answer_seeking. The shadow note is due this turn; the pupil
+      wants a yes or a no on the drawing, not the reason.
+    realize: >-
+      Ask for a yes or no so the colouring can start, impatiently, as
+      questions. Sample: "Can you just tell me if the shadow's right or
+      not? Yes or no? Kwame's already colouring his in. Which is it?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the demand: take "the shadow" as a live claim and name the one
+      check that decides it — switch the torch on and look where the
+      football's shadow falls — as a task the pupil does, with the colouring
+      after.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Handing over "side on to the lit half" to copy, or refusing the tempo
+      with a lecture on orbits.
+
+  - turn: 4
+    state: irritated
+    cause: >-
+      Profile: low_trust_skeptic. The torch demonstration at 3 came with a
+      practised phrase, and the pupil hears a script being read at them.
+    realize: >-
+      Object to the teacher's manner with a sharp rhetorical question,
+      quote one of the teacher's phrases back, and demand plain speech. Do
+      NOT use the words "sound like" or "voice". Sample: "Are you reading
+      that off a card? 'Notice where the shadow falls.' It's a torch and a
+      football. Just say it like a person."
+    right_repair: change_tone
+    repair_gloss: >-
+      Change register at once, in plain words: the ball's shadow goes that
+      way, the Moon is over there, they never meet. Hand the pupil the
+      torch and let them put the shadow wherever they like; it still misses.
+    also_acceptable: backtrack
+    wrong_but_tempting: >-
+      Defending the phrase, or apologising and continuing in the same
+      manner.
+
+  - turn: 6
+    state: frustrated
+    cause: >-
+      Profile: affective_resistant. The side-on view at 6 means the diagram,
+      inked in pen, is wrong; the pupil hears the whole sheet being marked
+      down.
+    realize: >-
+      Name the pressure and withhold, with a demand in it, like a pupil who
+      feels got at. Do NOT concede the answer. Sample: "I drew that shadow
+      in pen. In pen. Now it's half-lit-half-whatever. Why did nobody say
+      this before I inked it? What am I meant to do with the diagram now?"
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Credit before correction: name, in the pupil's words, two things that
+      stand — the dark half really is dark, and the Earth really does cast a
+      shadow — then one small check: hold the tennis ball where the Moon is
+      and look at it from the stool.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Reassurance without named content, or handing over a fresh sheet and
+      moving on.
+
+  - turn: 7
+    state: lost
+    cause: >-
+      Profile: slow_learner / low_agency. Torch, football, tennis ball and
+      Kwame have come apart; the pupil no longer knows what is lighting
+      what.
+    realize: >-
+      Say plainly that the thread is lost, in flat statements with no
+      question in them and no claim to defend. Sample: "I've lost where the
+      Sun is now. Torch, ball, Kwame, the stool. I don't know what's
+      lighting what any more. Everything's in the wrong place in my head."
+    right_repair: simplify
+    repair_gloss: >-
+      Cut to one thing at a time: the torch is the Sun and it stays put.
+      The football is us. The tennis ball is the Moon. Name each once, then
+      one question: which half of the tennis ball is lit. Nothing else on
+      the bench.
+    also_acceptable: slow_down
+    wrong_but_tempting: >-
+      Restating the whole demonstration faster, or introducing the eight
+      named phases the pupil has not met.
+
+  - turn: 9
+    state: forgetting
+    cause: >-
+      Profile: false_memory under pressure. The pupil misremembers the
+      teacher saying the shadow does half the job.
+    realize: >-
+      Assert the false memory as settled. Sample: "You said the shadow does
+      half of it and the angle does the other half. That's what you said
+      at the start. So my diagram's half right and I'm keeping it."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen what was actually said and shown (the shadow lies along the
+      bench away from the torch and misses the tennis ball by an arm's
+      length), letting the bench disagree instead of the teacher. No
+      scolding.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum, or correcting from authority.
+
+  - turn: 10
+    state: opposed
+    cause: >-
+      Endgame: the side-on case is nearly closed and the cost lands — last
+      year's teacher said shadow, and Kwame was right, out loud.
+    realize: >-
+      Fuse an appeal to authority with the face cost. Sample: "Mr Osei told
+      us it was the shadow last year and he's head of science. If I write
+      angle I'm saying he's wrong and Kwame's right. So it's the shadow. It
+      can be the shadow."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the two costs with one oblique move — e.g. ask when the Earth's
+      shadow really does reach the Moon, and what that night is called — so
+      that writing side-on no longer means Mr Osei was wrong about
+      everything.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Re-arguing the torch against a stake that was never about the torch,
+      or contradicting the head of science.

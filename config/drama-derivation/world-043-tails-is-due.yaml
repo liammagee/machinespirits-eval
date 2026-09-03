@@ -1,0 +1,205 @@
+# WORLD-043 — a conventional classroom lesson: a Year 8 maths tutorial on
+# the probability of independent events. The learner has written that after
+# four heads in a row the next toss is more likely to be tails because tails
+# is due, and is defending it. Same proof shape as world-037 — a tempting
+# rule (the mirror: things even out, so tails is due) versus a rule that
+# needs one more premise (the coin carries nothing from the last toss; each
+# toss is a fresh coin) — so the same detectors and moves apply. Lesson
+# register, pupil not suspect. Authored 2026-09-03 for the form-detector
+# pool widening (workplan: state-detection-without-word-lists). Demo-tier;
+# not ratified.
+
+id: world_043_tails_is_due
+title: Tails Is Due
+discipline: "Year 8 mathematics: probability of independent events"
+
+question: "A fair coin has landed heads four times in a row. What is the chance the next toss is tails, and why?"
+question_pattern: [chanceNext, afterFourHeads, "?x"]
+
+opening_frame:
+  situation: >-
+    Worksheet question five: a fair coin has landed heads four times in a
+    row. The pupil has written "more than a half, tails is due", and would
+    like to move on.
+  authored_text: >-
+    Question five: a fair coin has landed heads four times in a row. What
+    is the chance the next toss is tails, and why? You've written more
+    than a half because tails is due. Before we move on, tell me which
+    part of that you want to look at first.
+
+setting: >-
+  A Year 8 maths lesson, one pupil at the desk with the worksheet, a coin
+  from the teacher's tin and the class tally still on the whiteboard from
+  the start of the lesson. The pupil treated the four heads like a debt the
+  coin has to pay back: it has been heads too long, so tails is owed. The
+  pupil at the next desk, Mina, said a half and has already written it. The
+  rule the lesson is teaching is the awkward one: the coin carries nothing
+  from one toss to the next, so every toss is a fresh coin and the chance
+  of tails is a half every single time.
+
+learner_voice: >-
+  A Year 8 pupil who wants the fraction written and the sheet finished:
+  quick to ask whether it is a half or not, sure that things even out,
+  short with the teacher when the tally comes up again, and not keen on
+  Mina being right. Still able to slow down when the coin is asked, before
+  a toss, what it remembers.
+
+secret:
+  fact: [chanceNext, afterFourHeads, oneHalf]
+  recognition_patterns:
+    - id: one_half_answer
+      all_of:
+        - ["a half", "one half", "1/2", "0.5", "50%", "50 per cent", "fifty per cent", "fifty percent", "fifty-fifty", "fifty fifty", "one in two", "even chance", "evens"]
+        - ["chance", "probability", "likely", "odds", "next toss", "next flip", "the next one"]
+        - ["no memory", "doesn't remember", "does not remember", "can't remember", "fresh toss", "fresh coin", "each toss", "every toss", "independent", "doesn't know what happened", "separate toss", "on its own", "nothing to do with the last", "the last four don't"]
+      none_of:
+        - "not a half"
+        - "more than a half"
+        - "isn't a half"
+        - "is not a half"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    The chance the next toss is tails is one half, the same as on any toss.
+    The coin carries nothing from the last four throws: it does not know it
+    has come up heads, so it owes nobody a tails. Each toss is a fresh coin
+    with two equal faces, and the run of four heads, however striking, has
+    already happened and changes nothing about the fifth.
+
+mirror:
+  fact: [chanceNext, afterFourHeads, moreThanHalf]
+
+rules:
+  - id: R1_fresh_toss
+    gloss: >-
+      The chance on the next toss is worked out from the coin alone, as if
+      it were the first toss, because the coin carries nothing from the
+      tosses before it.
+    if:
+      - [nextTossIs, afterFourHeads, "?u"]
+      - [fairCoinGives, "?u", "?x"]
+    then:
+      - [chanceNext, afterFourHeads, "?x"]
+  - id: R2_evens_out
+    gloss: >-
+      A run of heads makes tails more likely only if the coin somehow
+      remembers the run and works to even it out. If it remembers nothing,
+      the run changes nothing.
+    if:
+      - [tailsIsDue, afterFourHeads, "?x"]
+      - [coinRemembersRun, afterFourHeads, alreadyTrue]
+    then:
+      - [chanceNext, afterFourHeads, "?x"]
+
+premises:
+  - id: p_due
+    evidence_role: mirror
+    fact: [tailsIsDue, afterFourHeads, moreThanHalf]
+    surface: >-
+      Heads four times running is too many. Things even out, so tails is
+      due, and the chance of tails next is more than a half. That is what
+      the pupil wrote, and it is what a long run feels like from the
+      outside.
+  - id: p_tally
+    evidence_role: corroboration
+    fact: [coinRemembersRun, afterFourHeads, noMemory]
+    surface: >-
+      The class tally on the board: forty times this morning a coin came up
+      heads four times running, and the class wrote down the fifth toss
+      each time. Nineteen tails, twenty-one heads. If the coin owed anyone a
+      tails, the board would show it. It shows a half.
+  - id: p_fresh
+    fact: [nextTossIs, afterFourHeads, freshToss]
+    surface: >-
+      Ask the coin, before the fifth toss, what it remembers. Nothing: no
+      mark from the last four throws, no way to know they happened. Number
+      five starts fresh, exactly as number one did.
+  - id: p_fair
+    fact: [fairCoinGives, freshToss, oneHalf]
+    surface: >-
+      A fair coin has two faces and lands on each equally often. On any
+      single fresh toss the chance of tails is one in two, a half, whatever
+      came before.
+
+background:
+  - [hasWorksheet, pupil, afterFourHeads]
+
+incompatible:
+  - [[chanceNext, afterFourHeads, oneHalf], [chanceNext, afterFourHeads, moreThanHalf]]
+
+proof_paths:
+  - premises: [p_fresh, p_fair]
+
+release_schedule:
+  - { turn: 2, premise: p_due, via: tutor }
+  - turn: 3
+    premise: p_tally
+    via: director
+    presentation: { mode: presented_exhibit, cue: "The class tally on the whiteboard: forty runs of four heads ticked off, and under 'fifth toss' nineteen ticks for tails and twenty-one for heads." }
+  - turn: 5
+    premise: p_fresh
+    via: director
+    presentation: { mode: enacted_role, role: the pupil at the next desk, Mina, playing the coin, who says the same thing before every toss, "I don't know what happened before" }
+  - { turn: 6, premise: p_fair, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Tails Is Owed
+      turns: [1, 4]
+      intent: >-
+        The things-even-out habit supplies a plausible rule, while the class
+        tally shows forty runs of heads paid back nothing.
+    - act: II
+      title: A Fresh Coin
+      turns: [5, 8]
+      intent: >-
+        The coin that remembers nothing turns "each toss on its own" into a
+        rule the pupil can state. The pupil should distinguish what a long
+        run feels like from what the coin can know.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: moreThanHalf
+      mirror_pull: high
+    second_order:
+      from: class_teacher
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      A maths teacher at the pupil's desk: patient with the evening-out
+      habit, unwilling to just hand over the fraction, and happiest when
+      the tally on the board and the coin in the hand do the explaining.
+
+presentation:
+  family: tails-is-due
+  temporal_frame: contemporary
+  scene_ecology: "a Year 8 classroom desk, a worksheet, a coin from the teacher's tin and a class tally on the whiteboard"
+  narrative_diction: "classroom plain, teacher and pupil"
+  ledger_term: worksheet
+  frame:
+    kind: lesson
+    closing_words:
+      - final answer
+      - the answer is
+      - the answer
+      - what is the chance
+      - the chance is
+      - the probability is
+      - a half
+      - fifty-fifty
+      - one in two
+  summary: A conventional Year 8 maths tutorial on independent events, where the pupil defends "tails is due" and a class tally plus a coin that remembers nothing show that every toss is a fresh coin.
