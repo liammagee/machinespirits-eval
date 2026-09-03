@@ -74,6 +74,7 @@ import {
   createLearnerReplicationWorkflowTracker,
   learnerReplicationLinkedCompletionContract,
   learnerReplicationPaidBudget,
+  learnerReplicationResponseFreeRecoveryLimit,
   readLearnerReplicationRecovery,
   replicationAssessmentBatches,
   main as runLearnerReplication,
@@ -242,6 +243,9 @@ test('learner replication fixes nine matched scaffold pairs under 396 attempts',
   assert.equal(learnerReplicationPlan.generation_attempt_ceiling, 288);
   assert.equal(learnerReplicationPlan.assessment_packets, 90);
   assert.equal(learnerReplicationPlan.recovery_attempt_reserve, 18);
+  assert.equal(learnerReplicationPlan.reuse_unused_generation_headroom_for_response_free_recovery, true);
+  assert.equal(learnerReplicationResponseFreeRecoveryLimit(learnerReplicationPlan, 288), 18);
+  assert.equal(learnerReplicationResponseFreeRecoveryLimit(learnerReplicationPlan, 271), 35);
   assert.deepEqual(
     learnerReplicationPlan.worlds.map((world) => world.conditions.baseline.world.id),
     ['world_028_larkspur_fridge', 'world_029_riverside_clinic', 'world_031_tideway_makerspace'],
@@ -430,7 +434,7 @@ test('learner replication linked completion preserves 328 attempts and fails bef
     sourceStudyId: learnerReplicationPlan.id,
     priorAttempts: 328,
     completed: Array.from({ length: 18 }, () => ({})),
-    assessment: { completedPackets: 48, responseFreeFailures: 9 },
+    assessment: { generationAttempts: 271, completedPackets: 48, responseFreeFailures: 9 },
   };
   assert.deepEqual(learnerReplicationLinkedCompletionContract(learnerReplicationPlan, recovery), {
     studyId: `${learnerReplicationPlan.id}-linked-completion-v1`,
@@ -439,10 +443,33 @@ test('learner replication linked completion preserves 328 attempts and fails bef
     priorAttemptBase: 328,
     completedPackets: 48,
     missingPackets: 42,
-    remainingRecoveryReserve: 9,
+    responseFreeRecoveryLimit: 35,
+    remainingRecoveryReserve: 26,
     remainingAttempts: 68,
-    unallocatedAttemptHeadroom: 17,
+    unallocatedAttemptHeadroom: 0,
     linkedPredecessor: false,
+  });
+
+  const linkedRecovery = {
+    phase: 'assessment',
+    sourceStudyId: `${learnerReplicationPlan.id}-linked-completion-v1`,
+    linkedPriorAttemptBase: 328,
+    priorAttempts: 363,
+    completed: Array.from({ length: 18 }, () => ({})),
+    assessment: { generationAttempts: 271, completedPackets: 73, responseFreeFailures: 19 },
+  };
+  assert.deepEqual(learnerReplicationLinkedCompletionContract(learnerReplicationPlan, linkedRecovery), {
+    studyId: `${learnerReplicationPlan.id}-linked-completion-v1`,
+    spendCap: 396,
+    priorAttemptCount: 363,
+    priorAttemptBase: 328,
+    completedPackets: 73,
+    missingPackets: 17,
+    responseFreeRecoveryLimit: 35,
+    remainingRecoveryReserve: 16,
+    remainingAttempts: 33,
+    unallocatedAttemptHeadroom: 0,
+    linkedPredecessor: true,
   });
 
   let studyReserved = 0;
@@ -524,8 +551,10 @@ test('learner replication recovery preserves the completed prefix and retries on
   );
 });
 
-test('learner replication assessment recovery preserves every valid packet and one interrupted reservation', () => {
+test('learner replication assessment recovery preserves valid packets and one terminal response-free failure', () => {
   const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'learner-replication-assessment-recovery-'));
+  const terminalError =
+    'claude CLI structured response classified as response_free_error (result_error_without_structured_output)';
   fs.writeFileSync(path.join(sourceDir, 'plan.json'), JSON.stringify(learnerReplicationPlan));
   const reservations = Array.from({ length: 6 }, (_value, index) => ({
     type: 'model_attempt_reserved',
@@ -549,6 +578,7 @@ test('learner replication assessment recovery preserves every valid packet and o
         recovery_permitted: true,
         reserved_attempts: 6,
         study_reserved: 6,
+        error: terminalError,
       },
     ]
       .map(JSON.stringify)
@@ -580,20 +610,61 @@ test('learner replication assessment recovery preserves every valid packet and o
   }
   const evaluationDir = path.join(sourceDir, 'worlds', 'larkspur', 'evaluation-baseline');
   fs.mkdirSync(evaluationDir, { recursive: true });
-  for (const kind of ['tutor', 'learner']) {
+  for (const kind of ['tutor', 'learner', 'dialogue']) {
     const raw = schemaFixture(buildBenchmarkOutputSchema(kind, 1, { extendedQuality: true }));
     fs.writeFileSync(path.join(evaluationDir, `L0-${kind}.json`), JSON.stringify(raw));
   }
+  const condition = learnerReplicationPlan.worlds.find((world) => world.key === 'larkspur').conditions.baseline;
+  const arms = condition.arms.map((arm) =>
+    readBenchmarkArm({
+      ...arm,
+      path: path.join(sourceDir, 'worlds', 'larkspur', 'dialogues', arm.id, 'dialogue.json'),
+    }),
+  );
+  const qualitySummaryJob = buildBenchmarkJobs(arms, {
+    extendedQuality: true,
+    splitQuality: true,
+    assessmentContext: condition.assessmentContext,
+    publicSourceContextByArm: Object.fromEntries(
+      arms.map((arm) => [arm.id, investedRivalDeliveredSourceContext(condition, arm)]),
+    ),
+  }).find((job) => job.arm === 'L0' && job.kind === 'quality-summary');
+  fs.writeFileSync(path.join(evaluationDir, 'L0-quality-summary.prompt.txt'), qualitySummaryJob.prompt);
+  fs.writeFileSync(
+    path.join(evaluationDir, 'L0-quality-summary.schema.json'),
+    JSON.stringify(qualitySummaryJob.outputSchema),
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'L0-quality-summary.error.json'),
+    JSON.stringify({
+      message: terminalError,
+      code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
+      classification: 'response_free_error',
+      reason: 'result_error_without_structured_output',
+    }),
+  );
+  fs.writeFileSync(
+    path.join(evaluationDir, 'judge-ledger.jsonl'),
+    `${[
+      { event: 'reserved', arm: 'L0', kind: 'quality-summary' },
+      { event: 'failed', arm: 'L0', kind: 'quality-summary', error: terminalError },
+    ]
+      .map(JSON.stringify)
+      .join('\n')}\n`,
+  );
   fs.writeFileSync(
     path.join(sourceDir, 'assessment-physical-attempts.jsonl'),
     `${[
       { status: 'candidate_returned' },
       { status: 'candidate_returned' },
+      { status: 'candidate_returned' },
       {
+        role: 'local-qwen-benchmark-quality-summary',
         status: 'failed',
         code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
         classification: 'response_free_error',
         reason: 'result_error_without_structured_output',
+        message: terminalError,
       },
     ]
       .map(JSON.stringify)
@@ -607,12 +678,14 @@ test('learner replication assessment recovery preserves every valid packet and o
   assert.equal(recovery.partial, null);
   assert.equal(recovery.assessment.generationAttempts, 2);
   assert.equal(recovery.assessment.physicalAttempts, 4);
-  assert.equal(recovery.assessment.responseFreeFailures, 2);
-  assert.equal(recovery.assessment.interruptedAttempts, 1);
-  assert.equal(recovery.assessment.completedPackets, 2);
+  assert.equal(recovery.assessment.responseFreeFailures, 1);
+  assert.equal(recovery.assessment.responseFreeRecoveryLimit, 304);
+  assert.equal(recovery.assessment.interruptedAttempts, 0);
+  assert.equal(recovery.assessment.completedPackets, 3);
+  assert.equal(recovery.assessment.responseFreeTransportFailures.length, 1);
   assert.deepEqual(
     recovery.assessment.batches[0].priorScores.map((score) => `${score.arm}/${score.kind}`),
-    ['L0/tutor', 'L0/learner'],
+    ['L0/tutor', 'L0/learner', 'L0/dialogue'],
   );
 });
 

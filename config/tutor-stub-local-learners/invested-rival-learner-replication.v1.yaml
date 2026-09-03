@@ -6,6 +6,7 @@ total_attempt_ceiling: 396
 generation_attempt_ceiling: 288
 assessment_packets: 90
 response_free_recovery_reserve: 18
+reuse_unused_generation_headroom_for_response_free_recovery: true
 generation_seed: 17
 temperature: 0.6
 
