@@ -1,0 +1,112 @@
+{
+  "schema": "machinespirits.tutor-stub.action-outcome-model-judge-shadow-public-summary.v1",
+  "study_id": "tutor-stub-action-outcome-model-judge-shadow-v2",
+  "source_study_id": "tutor-stub-action-outcome-comparable-collection-v2",
+  "status": "exploratory_model_pair_failed",
+  "private_report_sha256": "422b21489d53dc87b9785875b20a52017e222a2651527142172e49e9855b71dd",
+  "execution": {
+    "completed_units": 70,
+    "protocol_valid_units": 70,
+    "failed_units": 0,
+    "missing_units": 0,
+    "reserved_attempts": 70,
+    "hard_attempt_ceiling": 70,
+    "source_commit": "60336d2467e2d3cdcf099d5a9f594cc43e3f9596",
+    "source_tree": "6c896302b217fa0d587da66e3709388f18a21547"
+  },
+  "seats": {
+    "judge_sol": {
+      "model_ref": "codex.gpt-5.6-sol",
+      "completed": 35,
+      "protocol_valid": 35,
+      "delivery_labels": {
+        "delivered": 28,
+        "not_delivered": 7
+      },
+      "outcome_labels": {
+        "failure": 1,
+        "inconclusive": 25,
+        "measurement_indeterminate": 7,
+        "success": 2
+      }
+    },
+    "judge_opus": {
+      "model_ref": "claude-code.opus-5",
+      "completed": 35,
+      "protocol_valid": 35,
+      "delivery_labels": {
+        "delivered": 30,
+        "not_delivered": 5
+      },
+      "outcome_labels": {
+        "inconclusive": 29,
+        "measurement_indeterminate": 5,
+        "partial": 1
+      }
+    }
+  },
+  "agreement": {
+    "paired_protocol_valid_cases": 35,
+    "delivery_exact": {
+      "numerator": 27,
+      "denominator": 35,
+      "rate": 0.7714285714285715,
+      "cohen_kappa": 0.20000000000000007
+    },
+    "outcome_exact": {
+      "numerator": 24,
+      "denominator": 35,
+      "rate": 0.6857142857142857,
+      "cohen_kappa": 0.17204301075268794
+    },
+    "joint_exact": {
+      "numerator": 24,
+      "denominator": 35,
+      "rate": 0.6857142857142857,
+      "cohen_kappa": 0.17204301075268794
+    }
+  },
+  "yield": {
+    "cases": 35,
+    "paired_measurement_indeterminate": 13,
+    "paired_measurement_indeterminate_rate": 0.37142857142857144,
+    "exact_consensus_binary_records": 0,
+    "exact_consensus_binary_by_family": {},
+    "exact_consensus_binary_outcomes": {
+      "success": 0,
+      "failure": 0
+    }
+  },
+  "diagnostic_checks": {
+    "protocol_valid_rate_per_seat": {
+      "threshold": 0.9,
+      "pass": true
+    },
+    "joint_exact_agreement": {
+      "observed": 0.6857142857142857,
+      "threshold": 0.8,
+      "pass": false
+    },
+    "paired_measurement_indeterminate_rate": {
+      "observed": 0.37142857142857144,
+      "threshold": 0.2,
+      "pass": false
+    },
+    "exact_consensus_binary_records": {
+      "observed": 0,
+      "threshold": 24,
+      "pass": false
+    },
+    "exact_consensus_binary_records_per_move_family": {
+      "observed": {},
+      "threshold": 6,
+      "pass": false
+    }
+  },
+  "input_integrity_after_run": {
+    "packet_sha256": "b88a1021f5aa6214a48dee5bd897f58e5a39880f76a49d0d237cc4f0744ac77f",
+    "human_submission_files_unchanged": true
+  },
+  "human_gate_status": "unchanged_pending_human_review",
+  "controller_study_licensed": false
+}
