@@ -88,3 +88,8 @@ Log:
   50 s above shard 1, and the same shard varies by 30 s between Node
   versions, so one run cannot separate imbalance from runner noise. Leave the
   override as is; revisit after two or three more runs of hosted timings.
+- 2026-09-03 — PR #962 merged as `72311824` with all hosted checks green. This
+  card remains in review: the near-three-minute workflow target passed, but
+  the approximately 20-second shard-balance criterion did not. Close or retune
+  only after two or three further hosted runs distinguish stable imbalance
+  from runner noise.
