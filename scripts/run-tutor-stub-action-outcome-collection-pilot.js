@@ -43,7 +43,7 @@ export const TUTOR_STUB_ACTION_OUTCOME_COLLECTION_USAGE = `Usage:
 
   node scripts/run-tutor-stub-action-outcome-collection-pilot.js \
     --design config/tutor-stub-action-outcome-collection-pilot-design.v1.json \
-    --launch-commit <merged-detached-commit> \
+    --launch-commit <commit-to-record> \
     --go-note-commit <commit-containing-signed-note> \
     --go-note-path notes/<signed-go-note>.md \
     --accept-charges
@@ -52,7 +52,7 @@ export const TUTOR_STUB_ACTION_OUTCOME_COLLECTION_USAGE = `Usage:
     --design config/tutor-stub-action-outcome-collection-pilot-design.v1.json \
     --recovery-from /absolute/path/to/sealed-technical-predecessor \
     --destination /absolute/path/to/fresh-recovery-destination \
-    --launch-commit <merged-detached-recovery-commit> \
+    --launch-commit <recovery-commit-to-record> \
     --go-note-commit <commit-containing-study-go-note> \
     --go-note-path notes/<signed-study-go-note>.md \
     --accept-charges
@@ -62,7 +62,7 @@ the three role transports with local stubs, verifies the private archive and all
 create-once destinations, and writes nothing. It executes no provider call.
 
 The paid path is unreachable without the shared standing launch contract: the
-merged design, a clean detached launch commit, a signed GO note, create-once state,
+merged design, a recorded launch commit, a signed GO note, create-once state,
 the append-only ledger, and the selected design's registered hard ceiling. This launcher
 collects the corpus only. It does not prepare or compare human codes, enable memory,
 or authorize the later controller study. Recovery preserves and skips every prior

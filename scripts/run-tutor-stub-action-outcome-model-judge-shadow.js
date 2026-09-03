@@ -39,7 +39,7 @@ export const TUTOR_STUB_ACTION_OUTCOME_MODEL_JUDGE_USAGE = `Usage:
     --packet-root /absolute/path/to/frozen-human-packet \
     --archive-root /absolute/path/to/private-archive \
     --destination /absolute/path/to/private-archive/artifacts/tutor-stub-live/run-name \
-    --launch-commit <merged-clean-detached-commit> \
+    --launch-commit <commit-to-record> \
     --go-note-commit <commit-containing-signed-note> \
     --go-note-path notes/<signed-go-note>.md \
     --accept-charges
