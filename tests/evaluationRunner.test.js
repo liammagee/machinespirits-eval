@@ -244,7 +244,7 @@ describe('getCliJudgeModelLabel', () => {
     assert.strictEqual(getCliJudgeModelLabel('gemini', 'gemini-2.5-pro'), 'gemini-cli/gemini-2.5-pro');
     assert.strictEqual(getCliJudgeModelLabel('gemini'), 'gemini-cli/auto');
     assert.strictEqual(getCliJudgeModelLabel('claude', 'claude-opus-4-6'), 'claude-code/claude-opus-4-6');
-    assert.strictEqual(getCliJudgeModelLabel('claude'), 'claude-opus-4.6');
+    assert.strictEqual(getCliJudgeModelLabel('claude'), 'claude-code/auto');
     assert.strictEqual(
       getCliJudgeModelLabel('claude', 'claude-sonnet-5', 'medium'),
       'claude-code/claude-sonnet-5@medium',

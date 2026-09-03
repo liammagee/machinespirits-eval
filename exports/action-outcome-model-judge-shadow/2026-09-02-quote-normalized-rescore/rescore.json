@@ -1,0 +1,296 @@
+{
+  "schema": "machinespirits.tutor-stub.action-outcome-model-judge-shadow-rescore.v1",
+  "study_id": "tutor-stub-action-outcome-model-judge-shadow-v1",
+  "source": {
+    "destination": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-private/artifacts/tutor-stub-live/action-outcome-model-judge-shadow-v1-2026-09-02",
+    "archived_report_sha256": "bd4753132840e2c3dea36343e149a413555647b0ce2de6818c2226263692128b",
+    "design": {
+      "path": "config/tutor-stub-action-outcome-model-judge-shadow-design.v1.json",
+      "sha256": "f95e03794284cf0cf4737a473e9f535a148dd869b609ec778dd3fed5ff43e237"
+    },
+    "archived_records": 70,
+    "archived_failures": 0
+  },
+  "model_calls": 0,
+  "archived": {
+    "status": "exploratory_model_pair_failed",
+    "eligible_by_seat": {
+      "judge_sol": 35,
+      "judge_opus": 33
+    },
+    "paired_protocol_valid_cases": 33,
+    "delivery_exact": {
+      "numerator": 30,
+      "denominator": 33,
+      "rate": 0.9090909090909091
+    },
+    "delivery_kappa": 0.7906976744186046,
+    "outcome_exact": {
+      "numerator": 17,
+      "denominator": 33,
+      "rate": 0.5151515151515151
+    },
+    "outcome_kappa": 0.360774818401937,
+    "joint_exact": {
+      "numerator": 17,
+      "denominator": 33,
+      "rate": 0.5151515151515151
+    },
+    "joint_kappa": 0.360774818401937,
+    "paired_measurement_indeterminate": 27,
+    "exact_consensus_binary_records": 5,
+    "checks_pass": {
+      "protocol_valid_rate_per_seat": true,
+      "joint_exact_agreement": false,
+      "paired_measurement_indeterminate_rate": false,
+      "exact_consensus_binary_records": false,
+      "exact_consensus_binary_records_per_move_family": false
+    }
+  },
+  "rescored": {
+    "status": "exploratory_model_pair_failed",
+    "eligible_by_seat": {
+      "judge_sol": 35,
+      "judge_opus": 35
+    },
+    "paired_protocol_valid_cases": 35,
+    "delivery_exact": {
+      "numerator": 31,
+      "denominator": 35,
+      "rate": 0.8857142857142857
+    },
+    "delivery_kappa": 0.7348484848484848,
+    "outcome_exact": {
+      "numerator": 18,
+      "denominator": 35,
+      "rate": 0.5142857142857142
+    },
+    "outcome_kappa": 0.357451403887689,
+    "joint_exact": {
+      "numerator": 18,
+      "denominator": 35,
+      "rate": 0.5142857142857142
+    },
+    "joint_kappa": 0.357451403887689,
+    "paired_measurement_indeterminate": 26,
+    "exact_consensus_binary_records": 5,
+    "checks_pass": {
+      "protocol_valid_rate_per_seat": true,
+      "joint_exact_agreement": false,
+      "paired_measurement_indeterminate_rate": false,
+      "exact_consensus_binary_records": false,
+      "exact_consensus_binary_records_per_move_family": false
+    }
+  },
+  "validity_changes": [
+    {
+      "case_id": "case-0002",
+      "seat_id": "judge_opus",
+      "archived_issues": [
+        "delivery_quote_not_exact",
+        "outcome_quote_not_exact"
+      ],
+      "rescored_issues": [],
+      "rescored_notes": [
+        "delivery_quote_matched_after_quote_mark_normalization",
+        "outcome_quote_matched_after_quote_mark_normalization"
+      ]
+    },
+    {
+      "case_id": "case-0011",
+      "seat_id": "judge_opus",
+      "archived_issues": [
+        "delivery_quote_not_exact"
+      ],
+      "rescored_issues": [],
+      "rescored_notes": [
+        "delivery_quote_matched_after_quote_mark_normalization"
+      ]
+    }
+  ],
+  "changed_rows": [
+    {
+      "case_id": "case-0002",
+      "before": {
+        "both_eligible": false,
+        "joint_exact": false,
+        "consensus": {
+          "disposition": "measurement_indeterminate",
+          "delivery": null,
+          "outcome": null,
+          "binary": false
+        }
+      },
+      "after": {
+        "both_eligible": true,
+        "joint_exact": true,
+        "consensus": {
+          "disposition": "inconclusive",
+          "delivery": "delivered",
+          "outcome": "inconclusive",
+          "binary": false
+        }
+      }
+    },
+    {
+      "case_id": "case-0011",
+      "before": {
+        "both_eligible": false,
+        "joint_exact": false,
+        "consensus": {
+          "disposition": "measurement_indeterminate",
+          "delivery": null,
+          "outcome": null,
+          "binary": false
+        }
+      },
+      "after": {
+        "both_eligible": true,
+        "joint_exact": false,
+        "consensus": {
+          "disposition": "measurement_indeterminate",
+          "delivery": null,
+          "outcome": null,
+          "binary": false
+        }
+      }
+    }
+  ],
+  "report": {
+    "schema": "machinespirits.tutor-stub.action-outcome-model-judge-shadow-report.v1",
+    "study_id": "tutor-stub-action-outcome-model-judge-shadow-v1",
+    "status": "exploratory_model_pair_failed",
+    "source_study_id": "tutor-stub-action-outcome-comparable-collection-v2",
+    "claim_boundary": "This shadow study can establish only cross-model reproducibility, protocol-validity, indeterminacy, and candidate binary-yield for semantic judgment of the frozen 35 simulated-learner cases. It cannot validate the construct without an external human anchor, satisfy the source study's registered human gates, establish learning or transfer, compare action-family effectiveness, or license the memory-controller study.",
+    "human_gate_status": "unchanged_pending_human_review",
+    "controller_study_licensed": false,
+    "seats": {
+      "judge_sol": {
+        "model_ref": "codex.gpt-5.6-sol",
+        "completed": 35,
+        "eligible": 35,
+        "failed": 0,
+        "missing": 0,
+        "eligible_rate": 1,
+        "delivery_labels": {
+          "delivered": 24,
+          "not_delivered": 11
+        },
+        "outcome_labels": {
+          "failure": 13,
+          "inconclusive": 5,
+          "measurement_indeterminate": 11,
+          "partial": 3,
+          "success": 3
+        }
+      },
+      "judge_opus": {
+        "model_ref": "claude-code.opus-5",
+        "completed": 35,
+        "eligible": 35,
+        "failed": 0,
+        "missing": 0,
+        "eligible_rate": 1,
+        "delivery_labels": {
+          "delivered": 24,
+          "not_delivered": 11
+        },
+        "outcome_labels": {
+          "failure": 8,
+          "inconclusive": 13,
+          "measurement_indeterminate": 11,
+          "partial": 3
+        }
+      }
+    },
+    "agreement": {
+      "paired_protocol_valid_cases": 35,
+      "delivery": {
+        "exact": {
+          "numerator": 31,
+          "denominator": 35,
+          "rate": 0.8857142857142857
+        },
+        "cohen_kappa": 0.7348484848484848
+      },
+      "outcome": {
+        "exact": {
+          "numerator": 18,
+          "denominator": 35,
+          "rate": 0.5142857142857142
+        },
+        "cohen_kappa": 0.357451403887689
+      },
+      "joint": {
+        "exact": {
+          "numerator": 18,
+          "denominator": 35,
+          "rate": 0.5142857142857142
+        },
+        "cohen_kappa": 0.357451403887689
+      }
+    },
+    "yield": {
+      "cases": 35,
+      "paired_measurement_indeterminate": 26,
+      "paired_measurement_indeterminate_rate": 0.7428571428571429,
+      "exact_consensus_binary_records": 5,
+      "exact_consensus_binary_by_family": {
+        "explain_model": 2,
+        "minimal_support": 2,
+        "request_self_explanation": 1
+      },
+      "exact_consensus_binary_by_world": {
+        "world_022_foxtrot_jukebox": 1,
+        "world_026_skyway_bakery": 1,
+        "world_028_larkspur_fridge": 1,
+        "world_029_riverside_clinic": 2
+      },
+      "exact_consensus_binary_outcomes": {
+        "success": 0,
+        "failure": 5
+      }
+    },
+    "frozen_auxiliary_comparison": {
+      "binary_overlap": 0,
+      "same_binary": 0,
+      "opposite_binary": 0,
+      "nonconfirmatory_auxiliary": 5
+    },
+    "diagnostic_checks": {
+      "protocol_valid_rate_per_seat": {
+        "observed": {
+          "judge_sol": 1,
+          "judge_opus": 1
+        },
+        "threshold": 0.9,
+        "pass": true
+      },
+      "joint_exact_agreement": {
+        "observed": 0.5142857142857142,
+        "threshold": 0.8,
+        "pass": false
+      },
+      "paired_measurement_indeterminate_rate": {
+        "observed": 0.7428571428571429,
+        "threshold": 0.2,
+        "pass": false
+      },
+      "exact_consensus_binary_records": {
+        "observed": 5,
+        "threshold": 24,
+        "pass": false
+      },
+      "exact_consensus_binary_records_per_move_family": {
+        "observed": {
+          "explain_model": 2,
+          "minimal_support": 2,
+          "request_self_explanation": 1
+        },
+        "threshold": 6,
+        "pass": false
+      }
+    }
+  },
+  "public_reduction": "per-case rows, disagreements, and seat quotations stay in the private archive"
+}

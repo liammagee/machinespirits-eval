@@ -25,11 +25,11 @@ function recentContext(history) {
 }
 
 // Alternative backend: spawn the local `claude` CLI (non-interactive -p mode) so
-// a user can test their chat architectures against Claude Opus 4.7 without
+// a user can test their chat architectures against a current Claude model without
 // touching any eval config or adding an API key. Same return shape as callModel
 // so runTutorTurn can swap transparently.
 const CLAUDE_CLI_BIN = process.env.CLAUDE_CLI_BIN || 'claude';
-const CLAUDE_CLI_MODEL = process.env.CHAT_CLI_MODEL || 'claude-opus-4-7';
+const CLAUDE_CLI_MODEL = process.env.CHAT_CLI_MODEL || 'claude-sonnet-5';
 const CLAUDE_CLI_TIMEOUT_MS = Number(process.env.CHAT_CLI_TIMEOUT_MS) || 180_000;
 const CODEX_CLI_BIN = process.env.CODEX_CLI_BIN || 'codex';
 // No hardcoded codex default: ChatGPT-account codex rejects models outside its
