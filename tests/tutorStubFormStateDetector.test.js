@@ -189,6 +189,44 @@ test('shipped form-v3 artifact is form-v2 cues on the widened pool', () => {
   assert.equal(readTutorStubFormState(v2, line).state, 'lost');
 });
 
+test('shipped form-v4 artifact is form-v2 cues on the step-6 pool', () => {
+  const artifact = JSON.parse(fs.readFileSync(path.join(ROOT, 'config/manner-trigger/form-v4.json'), 'utf8'));
+  assert.equal(artifact.version, 'form-v4');
+  assert.equal(artifact.featureVersion, 'form-v2');
+  assert.deepEqual([...artifact.featureNames], [...tutorStubFormFeatureNames('form-v2')]);
+  // The pool is the form-v3 pool plus the six plants-only traces on the
+  // 2026-09-03 lesson worlds 041/042/043; the hero worlds 035/036/037 stay
+  // held out.
+  for (const world of [
+    'world_038_seasons_tilt',
+    'world_039_percent_up_down',
+    'world_040_sam_and_me',
+    'world_041_log_and_pebble',
+    'world_042_half_a_moon',
+    'world_043_tails_is_due',
+  ])
+    assert.ok(artifact.trainedOn.worlds.includes(world), world);
+  for (const world of ['world_035_nine_oclock_ghost', 'world_036_class_plant', 'world_037_fraction_sum'])
+    assert.ok(!artifact.trainedOn.worlds.includes(world), world);
+  const v4 = compileTutorStubFormDetector(artifact);
+  assert.equal(v4.version, 'form-v4');
+  assert.equal(v4.featureVersion, 'form-v2');
+  // A forced-choice demand from world 043 (Sonnet learner, t2) reads as the
+  // demand with a clear margin. The line is in form-v4's pool, so this pins
+  // behaviour, not transfer; form-v3 sits on the threshold for it (p 0.51).
+  const line = "Is it a half or isn't it? Mina says a half, I say more. Which one do I write down? Can you just say?";
+  const demand = readTutorStubFormState(v4, line);
+  assert.equal(demand.state, 'jumping_ahead');
+  assert.ok(demand.p > 0.9, String(demand.p));
+  // The two irritated shapes the new worlds added are not read by either
+  // artifact: no closed-class cue carries them.
+  for (const silent of [
+    'Are you reading that off a card? Just tell me what the torch shows.',
+    "Stop doing the slow bit. I'm not five. Say it once, normally, and I'll write it.",
+  ])
+    assert.notEqual(readTutorStubFormState(v4, silent).state, 'irritated', silent);
+});
+
 test('form-v2 tells question kinds apart by grammar', () => {
   const idx = (name) => TUTOR_STUB_FORM_FEATURE_NAMES.indexOf(name);
   const on = (text) => {
