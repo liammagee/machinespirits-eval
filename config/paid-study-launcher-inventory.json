@@ -33,6 +33,12 @@
       "reason": "Post-policy exact-unit technical recovery launcher; adopts services/paidStudyLaunchContract.js for admission, create-once state, per-dispatch durable reservations, and append-only recovery ledgers."
     },
     {
+      "path": "scripts/run-tutor-stub-action-outcome-model-judge-shadow.js",
+      "registered": "2026-09-02",
+      "disposition": "shared_contract",
+      "reason": "Post-policy blinded model-judge shadow study; adopts services/paidStudyLaunchContract.js for merged-design admission, create-once private output, one reservation per independent case-seat call, and an append-only ledger."
+    },
+    {
       "path": "scripts/run-tutor-stub-defiant-warrant-pilot.js",
       "registered": "2026-08-29",
       "disposition": "historical_live_exemption",
