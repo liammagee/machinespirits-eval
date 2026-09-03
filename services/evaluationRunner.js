@@ -640,7 +640,7 @@ export function getCliJudgeModelLabel(judgeCli, modelOverride = null, effort = n
   const effortSuffix = effort ? `@${effort}` : '';
   if (cli === 'gemini') return `gemini-cli/${modelOverride || 'auto'}${effortSuffix}`;
   if (cli === 'codex') return `codex-cli/${modelOverride || 'auto'}${effortSuffix}`;
-  return `${modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6'}${effortSuffix}`;
+  return `claude-code/${modelOverride || 'auto'}${effortSuffix}`;
 }
 
 function getDefaultCliJudgeModelOverride(judgeCli = 'claude') {

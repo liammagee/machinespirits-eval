@@ -43,7 +43,7 @@ export async function runBackfillFirstTurnCommand(context) {
         return null;
       }
     })();
-  const judgeModelLabel = effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
+  const judgeModelLabel = `claude-code/${effectiveJudgeModel || 'auto'}`;
 
   // Restore env overrides from run metadata (e.g. domain generalizability runs)
   {
