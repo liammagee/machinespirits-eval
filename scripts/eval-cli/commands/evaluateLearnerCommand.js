@@ -66,9 +66,7 @@ export async function runEvaluateLearnerCommand(context) {
       ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
       : judgeCli === 'codex'
         ? `codex-cli/${effectiveJudgeModel || 'auto'}`
-        : effectiveJudgeModel
-          ? `claude-code/${effectiveJudgeModel}`
-          : 'claude-opus-4.6';
+        : `claude-code/${effectiveJudgeModel || 'auto'}`;
 
   // Load results with dialogue IDs (multi-turn data)
   const allResults = evaluationStore.getResults(runId, { profileName: profileFilter });

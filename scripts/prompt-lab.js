@@ -253,7 +253,7 @@ function formatCliLabel(cli, modelOverride = null) {
   const normalized = normalizeCliName(cli);
   if (normalized === 'gemini') return `gemini-cli/${modelOverride || 'auto'}`;
   if (normalized === 'codex') return `codex-cli/${modelOverride || 'auto'}`;
-  return modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+  return `claude-code/${modelOverride || 'auto'}`;
 }
 
 function formatJudgeSelection(selection = {}) {

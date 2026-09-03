@@ -57,9 +57,7 @@ export async function runEvaluateDialogueCommand(context) {
       ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
       : judgeCli === 'codex'
         ? `codex-cli/${effectiveJudgeModel || 'auto'}`
-        : effectiveJudgeModel
-          ? `claude-code/${effectiveJudgeModel}`
-          : 'claude-opus-4.6';
+        : `claude-code/${effectiveJudgeModel || 'auto'}`;
 
   // Restore env overrides from run metadata
   {

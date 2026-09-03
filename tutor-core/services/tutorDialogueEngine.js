@@ -25,6 +25,7 @@ import * as configLoader from './tutorConfigLoader.js';
 import * as monitoringService from './monitoringService.js';
 import { parseSSEStream } from './sseStreamParser.js';
 import { externalProviderHandles, callExternalProvider } from './externalAIProvider.js';
+import { anthropicSamplingParams } from './anthropicSampling.js';
 import { isQuietOrTranscript, setQuietMode } from './dialogueLoggingState.js';
 import { getTutorCoreLogDirectories, setTutorCoreLogRoot } from './dialogueLogDirectories.js';
 import { jsonrepair } from 'jsonrepair';
@@ -1117,14 +1118,10 @@ async function _fetchProvider({
     const bodyParams = {
       model,
       max_tokens,
-      temperature,
+      ...anthropicSamplingParams(model, { temperature, top_p }),
       system: systemPrompt,
       messages,
     };
-    if (top_p !== undefined) {
-      delete bodyParams.temperature;
-      bodyParams.top_p = top_p;
-    }
     if (onToken) bodyParams.stream = true;
 
     const res = await fetch(providerConfig.base_url, {
