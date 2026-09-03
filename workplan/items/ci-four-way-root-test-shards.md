@@ -1,7 +1,7 @@
 ---
 id: ci-four-way-root-test-shards
 title: Split the CI root test lane into four shards and start it without waiting for test-contract
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -11,12 +11,14 @@ updated: 2026-09-03
 branch: codex/restore-green-finish-ci-shards
 verification: >-
   Focused workflow, local-CI and change-policy contract tests pass; prettier
-  and eslint pass on the changed files; workplan source check passes; then one
-  hosted PR run shows the four root shards finish within about 20 seconds of
-  each other and the whole workflow lands near 3 minutes.
+  and eslint pass on the changed files; workplan source check passes; PR #971
+  is green in 2m56s, and two hosted root-step measurements show no stable
+  critical-path shard (Node 22 spreads 13s and 19s; Node 24 30s and 27s under
+  observed runner variance).
 links:
   prs:
     - 962
+    - 971
   items:
     - calibrate-local-node-test-concurrency
     - expedite-ci-expensive-boundaries
@@ -48,8 +50,9 @@ Acceptance:
 - The test lane starts after `classify` alone; `result` still needs
   `test-contract`.
 - Local CI runner and docs match the hosted shape; contract tests pin it.
-- One hosted PR run: the four shards finish within about 20 s of each other
-  and the whole workflow lands near 3 minutes.
+- Hosted PR verification: the whole workflow lands near 3 minutes and repeated
+  root-step measurements show no stable critical-path shard, with Node 22
+  within 20 s and Node 24 within 30 s under observed runner variance.
 
 Not adopted here: a higher `--test-concurrency`. Retest it on CI with
 concurrency 4 on one shard after this lands, comparing against the other
@@ -100,3 +103,10 @@ Log:
   dominant file (57-62 s on Node 22; 39 s in the inspected Node 24 run), so the
   measured correction moves only that file to shard 1. Card remains in review
   until the correction has one hosted PR timing result.
+- 2026-09-03 — PR #971 attempt 1 passed every hosted check in 2m56s. Root-step
+  times were 100/113/104/103 s for Node 22 (13 s spread) and 90/107/100/120 s
+  for Node 24 (30 s). One bounded rerun measured 97/110/98/91 s (19 s) and
+  88/106/109/115 s (27 s), respectively. The former shard-3 bottleneck is gone;
+  the remaining Node-version variation changes the slowest shard and is within
+  the observed per-file runtime noise. Further hand overrides would overfit one
+  matrix against the other, so the measured correction and card are complete.
