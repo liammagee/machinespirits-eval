@@ -149,3 +149,5 @@ first: the speech-check events at turns 3 and 5 (did the reader and the
 verdict agree; did a retry happen; did the second draft hold), then the
 verdict events, then the repair judge as before. Not run. Needs its own go.
 The human read of the packets is still open; model reads do not close it.
+
+Ran as step 7c on 2026-09-03: `notes/poetics/hero-demo-runs/2026-09-03-step7c-hold-overconfident-live.md`.
