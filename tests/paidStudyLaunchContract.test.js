@@ -12,6 +12,11 @@ import {
   sealInterruptedPaidStudyLaunch,
   verifyPaidStudyLaunchContract,
 } from '../services/paidStudyLaunchContract.js';
+import {
+  createSharedModelAttemptLedgerClient,
+  reconcileSharedModelAttemptLedger,
+  sharedModelAttemptLedgerClientFromEnv,
+} from '../services/durableAttemptJournal.js';
 
 const RACE_WORKER = fileURLToPath(new URL('./fixtures/paidStudyLaunchRaceWorker.js', import.meta.url));
 
@@ -212,6 +217,86 @@ test('admission creates the destination and append-only budget ledger before cal
   assert.throws(() => admitPaidStudyLaunch({ ...value.contract, destination }), /create-once/u);
 });
 
+test('capacity allocation consumes only per-dispatch reservations and releases unused allowance', (t) => {
+  const value = fixture(t, { cap: 5, noteCap: '5' });
+  const admission = admitPaidStudyLaunch({ ...value.contract, destination: path.join(value.base, 'capacity-run') });
+  const capacity = admission.allocateModelAttemptCapacity(3, { unit: 'unit-1' });
+  assert.equal(admission.reserved, 0);
+  assert.equal(admission.studyReserved, 0);
+  const client = sharedModelAttemptLedgerClientFromEnv(
+    admission.attemptLedgerEnvironment({ unitId: 'unit-1', capacity, maximumTurn: 2 }),
+  );
+  for (const turn of [1, 2]) {
+    const attempt = client.reserve({ role: 'fixture-role', turn });
+    client.markDispatched({ attemptId: attempt.attemptId, role: 'fixture-role', turn });
+    client.terminalize({ attemptId: attempt.attemptId, disposition: 'completed', role: 'fixture-role', turn });
+  }
+  assert.equal(admission.reserved, 2);
+  assert.equal(admission.studyReserved, 2);
+  assert.throws(
+    () => client.reserve({ role: 'fixture-role', turn: 3 }),
+    /registered turn horizon exceeded before dispatch/u,
+  );
+  assert.equal(admission.reserved, 2);
+  const released = admission.releaseModelAttemptCapacity(capacity, { unit: 'unit-1' });
+  assert.deepEqual(released, { allocated: 3, consumed: 2, unused: 1 });
+  assert.throws(() => admission.allocateModelAttemptCapacity(4, { unit: 'unit-2' }), /remaining attempt ceiling/u);
+  admission.close({ type: 'run_sealed', status: 'complete' });
+
+  const runEvents = fs
+    .readFileSync(path.join(value.base, 'capacity-run', 'run-ledger.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map(JSON.parse);
+  assert.equal(runEvents.filter((event) => event.type === 'model_attempt_dispatch_reserved').length, 2);
+  assert.equal(
+    runEvents.some((event) => event.type === 'model_attempt_reserved'),
+    false,
+  );
+});
+
+test('shared attempt restart reconciles a missing mirror and stale inflight dispatch exactly once', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'shared-attempt-reconcile-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const runLedgerPath = path.join(base, 'run.jsonl');
+  const studyLedgerPath = path.join(base, 'study.jsonl');
+  const capacityId = 'capacity-1';
+  const unitId = 'unit-1';
+  fs.writeFileSync(
+    studyLedgerPath,
+    [
+      { type: 'study_model_attempt_dispatch_reserved', attempt_id: 'a1', capacity_id: capacityId, unit_id: unitId },
+      { type: 'study_model_attempt_dispatch_reserved', attempt_id: 'a2', capacity_id: capacityId, unit_id: unitId },
+    ]
+      .map((event) => JSON.stringify(event))
+      .join('\n') + '\n',
+  );
+  fs.writeFileSync(
+    runLedgerPath,
+    [
+      { type: 'model_attempt_dispatch_reserved', attempt_id: 'a2', capacity_id: capacityId, unit_id: unitId },
+      { type: 'model_attempt_dispatch_started', attempt_id: 'a2', capacity_id: capacityId, unit_id: unitId },
+    ]
+      .map((event) => JSON.stringify(event))
+      .join('\n') + '\n',
+  );
+  reconcileSharedModelAttemptLedger({ runLedgerPath, studyLedgerPath, capacityId, unitId });
+  createSharedModelAttemptLedgerClient({
+    runLedgerPath,
+    studyLedgerPath,
+    studyId: 'fixture-study',
+    destination: base,
+    hardCeiling: 5,
+    unitId,
+    capacityId,
+    capacityLimit: 5,
+  });
+  const events = fs.readFileSync(runLedgerPath, 'utf8').trim().split(/\r?\n/u).map(JSON.parse);
+  assert.equal(events.filter((event) => event.type === 'model_attempt_dispatch_reserved').length, 2);
+  assert.equal(events.filter((event) => event.type === 'attempt_cancelled_before_dispatch').length, 1);
+  assert.equal(events.filter((event) => event.type === 'attempt_interrupted_after_dispatch').length, 1);
+});
+
 test('failed authorization performs no production write', (t) => {
   const value = fixture(t, { cap: 3, noteCap: '2' });
   const destination = path.join(value.base, 'must-not-exist');
@@ -338,6 +423,47 @@ test('a dead interrupted launcher can be sealed once without rewriting its ledge
   recovery.close({ type: 'run_sealed', status: 'complete' });
 });
 
+test('sealing a killed per-dispatch launch reconciles and counts its interrupted attempt', (t) => {
+  const value = fixture(t, { cap: 3, noteCap: '3' });
+  const destination = path.join(value.base, 'interrupted-dispatch-run');
+  const initial = admitPaidStudyLaunch({ ...value.contract, destination });
+  const capacity = initial.allocateModelAttemptCapacity(3, { unit: 'unit-1' });
+  const client = sharedModelAttemptLedgerClientFromEnv(
+    initial.attemptLedgerEnvironment({ unitId: 'unit-1', capacity, maximumTurn: 2 }),
+  );
+  const completed = client.reserve({ role: 'fixture', turn: 1 });
+  client.markDispatched({ attemptId: completed.attemptId, role: 'fixture', turn: 1 });
+  client.terminalize({ attemptId: completed.attemptId, disposition: 'completed', role: 'fixture', turn: 1 });
+  const interrupted = client.reserve({ role: 'fixture', turn: 2 });
+  client.markDispatched({ attemptId: interrupted.attemptId, role: 'fixture', turn: 2 });
+
+  const sealed = sealInterruptedPaidStudyLaunch({
+    studyId: 'fixture-study',
+    studyStateRoot: value.contract.studyStateRoot,
+    destination,
+    reason: 'fixture process killed after dispatch',
+    isProcessAlive: () => false,
+  });
+  assert.equal(sealed.reserved_in_run, 2);
+  assert.equal(sealed.study_reserved, 2);
+
+  const runEvents = fs.readFileSync(initial.ledger_path, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.equal(runEvents.filter((event) => event.type === 'attempt_completed').length, 1);
+  assert.equal(runEvents.filter((event) => event.type === 'attempt_interrupted_after_dispatch').length, 1);
+  assert.equal(runEvents.at(-1).reserved_attempts, 2);
+
+  const recovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'interrupted-dispatch-recovery'),
+    recoveryFrom: destination,
+  });
+  assert.equal(recovery.studyReserved, 2);
+  const remaining = recovery.allocateModelAttemptCapacity(1, { unit: 'unit-2' });
+  assert.equal(remaining.count, 1);
+  recovery.releaseModelAttemptCapacity(remaining, { unit: 'unit-2' });
+  recovery.close({ type: 'run_sealed', status: 'complete' });
+});
+
 test('a sealed technical predecessor hands its remaining study budget to one recovery', async (t) => {
   const value = fixture(t, { cap: 3, noteCap: '3' });
   const studyStateRoot = path.join(value.base, 'study-state');
@@ -414,6 +540,38 @@ test('a sealed technical predecessor hands its remaining study budget to one rec
   assert.equal(studyLedger.filter((event) => event.type === 'study_launch_admitted').length, 2);
 });
 
+test('a recoverable pause hands only the remaining reservation capacity to recovery', (t) => {
+  const value = fixture(t, { cap: 2, noteCap: '2' });
+  const initialDestination = path.join(value.base, 'paused-initial');
+  const initial = admitPaidStudyLaunch({ ...value.contract, destination: initialDestination });
+  initial.reserveModelAttempts(1, { unit: 'completed-before-pause' });
+  initial.close({
+    type: 'run_sealed',
+    status: 'paused_recoverable',
+    recovery_permitted: true,
+    recoverable: true,
+    resume_scope: 'missing_work_only',
+  });
+
+  const recovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'paused-recovery'),
+    recoveryFrom: initialDestination,
+  });
+  assert.equal(recovery.studyReserved, 1);
+  recovery.reserveModelAttempts(1, { unit: 'missing-after-pause' });
+  recovery.close({ type: 'run_sealed', status: 'complete' });
+
+  const studyLedger = fs
+    .readFileSync(path.join(value.contract.studyStateRoot, value.contract.studyId, 'study-ledger.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map(JSON.parse);
+  const pauseSeal = studyLedger.find((event) => event.status === 'paused_recoverable');
+  assert.equal(pauseSeal.recovery_permitted, true);
+  assert.equal(studyLedger.filter((event) => event.type === 'study_launch_admitted').length, 2);
+});
+
 test('one recovery may continue after a sealed pre-provider startup failure', (t) => {
   const value = fixture(t, { cap: 3, noteCap: '3' });
   const initialDestination = path.join(value.base, 'zero-call-initial');
@@ -449,7 +607,7 @@ test('one recovery may continue after a sealed pre-provider startup failure', (t
   finalRecovery.close({ type: 'run_sealed', status: 'complete' });
 });
 
-test('a recovery with any child model attempt cannot use the startup exception', (t) => {
+test('a recovery with child model attempts requires a fully aligned action-outcome failure report', (t) => {
   const value = fixture(t, { cap: 3, noteCap: '3' });
   const initialDestination = path.join(value.base, 'child-call-initial');
   const initial = admitPaidStudyLaunch({ ...value.contract, destination: initialDestination });
@@ -468,8 +626,8 @@ test('a recovery with any child model attempt cannot use the startup exception',
     job_id: 'child-call-unit',
     status: 'technical_failure',
     child_reserved_attempts: 1,
-    child_completed_attempts: 1,
-    child_failed_attempts: 0,
+    child_completed_attempts: 0,
+    child_failed_attempts: 1,
     shared_reserved_attempts: 1,
   });
   failedRecovery.close({ type: 'run_sealed', status: 'technical_failure', reserved_attempts: 1 });
@@ -483,6 +641,54 @@ test('a recovery with any child model attempt cannot use the startup exception',
       }),
     /sealed technical predecessor/u,
   );
+
+  const reportPath = path.join(failedRecoveryDestination, 'report.json');
+  const report = {
+    schema: 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1',
+    study_id: 'fixture-study',
+    status: 'technical_failure',
+    halt_reason: 'technical_failure in child-call-unit',
+    source: { commit: failedRecovery.source.commit },
+    design: { path: value.contract.designPath },
+    recovery: { source_root: initialDestination },
+    execution: {
+      missing_units: 1,
+      model_attempts: {
+        reserved_in_predecessor: 1,
+        reserved_in_current_run: 1,
+        reserved_by_shared_study_ledger: 2,
+        hard_ceiling: 3,
+      },
+    },
+    rows: [
+      {
+        job_id: 'child-call-unit',
+        status: 'technical_failure',
+        model_attempts: { reserved: 1, completed: 0, failed: 2 },
+      },
+    ],
+  };
+  fs.writeFileSync(reportPath, `${JSON.stringify(report)}\n`);
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        destination: path.join(value.base, 'child-call-final-recovery-with-tampered-report'),
+        recoveryFrom: failedRecoveryDestination,
+      }),
+    /sealed technical predecessor/u,
+  );
+  report.rows[0].model_attempts.failed = 1;
+  fs.writeFileSync(reportPath, `${JSON.stringify(report)}\n`);
+
+  const finalRecovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'child-call-final-recovery-with-report'),
+    recoveryFrom: failedRecoveryDestination,
+  });
+  assert.equal(finalRecovery.studyReserved, 2);
+  finalRecovery.reserveModelAttempts(1, { unit: 'remaining-unit' });
+  finalRecovery.close({ type: 'run_sealed', status: 'complete' });
 });
 
 test('a repeated pre-provider startup failure cannot open another recovery', (t) => {

@@ -20,6 +20,13 @@ import {
   compareActionOutcomeReviewFiles,
   prepareActionOutcomeReview,
 } from '../scripts/action-outcome-review-packet.js';
+import { createActionOutcomeCollectionWorkflowStatus } from '../services/actionOutcomeCollectionWorkflowStatus.js';
+import {
+  completeLongRunningWorkflowPhase,
+  loadLongRunningWorkflowStatus,
+  startLongRunningWorkflowPhase,
+  writeLongRunningWorkflowStatusAtomic,
+} from '../services/longRunningWorkflowStatus.js';
 
 const CONDITIONS = [
   { id: 'prospective-condition', stagnationAtLeast: 0.8, fieldVelocityAtMost: 0.3, dagVelocityAtMost: 0.3 },
@@ -339,15 +346,49 @@ test('prepare and compare commands write create-once private artifacts with zero
     }),
   );
   const packetRoot = path.join(root, 'packet');
+  const workflowStatusPath = path.join(root, 'workflow-status.json');
+  let workflowStatus = createActionOutcomeCollectionWorkflowStatus({
+    workflowId: 'packet-cli-workflow',
+    at: '2026-08-11T23:50:00.000Z',
+  });
+  workflowStatus = completeLongRunningWorkflowPhase(workflowStatus, {
+    phase: 'GENERATING',
+    nextPhase: 'EXTRACTING',
+    at: '2026-08-11T23:51:00.000Z',
+    handoffExplanation: 'Generation is sealed; extraction is pending.',
+  });
+  workflowStatus = startLongRunningWorkflowPhase(workflowStatus, {
+    phase: 'EXTRACTING',
+    at: '2026-08-11T23:52:00.000Z',
+  });
+  workflowStatus = completeLongRunningWorkflowPhase(workflowStatus, {
+    phase: 'EXTRACTING',
+    nextPhase: 'AUDITING',
+    at: '2026-08-11T23:53:00.000Z',
+    startNextImmediately: true,
+  });
+  workflowStatus = completeLongRunningWorkflowPhase(workflowStatus, {
+    phase: 'AUDITING',
+    nextPhase: 'PACKAGING',
+    at: '2026-08-11T23:54:00.000Z',
+    handoffExplanation: 'Audit is complete; packaging is pending.',
+  });
+  writeLongRunningWorkflowStatusAtomic(workflowStatusPath, workflowStatus);
   const prepared = await prepareActionOutcomeReview({
     inputPath,
     outputPath: packetRoot,
     packetId: 'packet-cli',
     coderIds: ['coder-a', 'coder-b'],
+    workflowStatusPath,
   });
   assert.equal(prepared.manifest.modelCalls, 0);
   assert.equal(prepared.manifest.measurementPolicy, 'human_consensus_auxiliary_veto_v2');
   assert.equal(prepared.manifest.eligibleCases, 1);
+  assert.equal(prepared.workflowStatus, workflowStatusPath);
+  const packagedStatus = loadLongRunningWorkflowStatus(workflowStatusPath).status;
+  assert.equal(packagedStatus.current_phase, 'WORKFLOW_COMPLETE');
+  assert.equal(packagedStatus.workflow_status, 'complete');
+  assert.equal(packagedStatus.model_activity.state, 'inactive');
   assert.throws(() => fs.writeFileSync(path.join(packetRoot, 'packet.json'), '{}', { flag: 'wx' }), /EEXIST/u);
   const packet = JSON.parse(fs.readFileSync(path.join(packetRoot, 'packet.json')));
   assert.equal(prepared.manifest.artifactDataHashes.packet, reviewDataHash(reviewJson(packet)));

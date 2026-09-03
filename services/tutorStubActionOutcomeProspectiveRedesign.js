@@ -86,6 +86,13 @@ export function runTutorStubActionOutcomeProspectiveRedesignPreflight({ loaded }
       design.measurement?.policy === ACTION_OUTCOME_MEASUREMENT_POLICIES.HUMAN_CONSENSUS_AUXILIARY_VETO_V2 &&
       design.measurement?.auxiliaryRules?.oppositeBinary === 'measurement_indeterminate' &&
       design.measurement?.auxiliaryRules?.inconclusiveOrNonbinary === 'nonconfirmatory_no_veto',
+    durable_pause_and_recovery_registered:
+      JSON.stringify(design.durableExecution?.pauseStates) ===
+        JSON.stringify(['pause_requested', 'paused', 'resuming']) &&
+      JSON.stringify(design.durableExecution?.terminalAttemptDispositions) ===
+        JSON.stringify(['completed', 'failed', 'cancelled_before_dispatch', 'interrupted_after_dispatch']) &&
+      design.durableExecution?.accountingInvariant?.includes('zero unexplained reservations') &&
+      design.durableExecution?.recoveryReserveRule?.includes('inside its original hard ceiling'),
     held_out_worlds_preserved:
       design.heldOutControllerStudy?.status === 'not_yet_designed' &&
       design.heldOutControllerStudy?.worlds?.length === 2 &&

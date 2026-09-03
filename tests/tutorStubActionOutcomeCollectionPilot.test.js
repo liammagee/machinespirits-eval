@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { EventEmitter } from 'node:events';
 
 import {
   buildTutorStubActionOutcomeCollectionPlan,
@@ -20,17 +21,34 @@ import {
   loadTutorStubActionOutcomeProspectiveRedesign,
   runTutorStubActionOutcomeProspectiveRedesignPreflight,
 } from '../services/tutorStubActionOutcomeProspectiveRedesign.js';
+import { actionOutcomeCollectionWorkflowStatusPath } from '../services/actionOutcomeCollectionWorkflowStatus.js';
+import { loadLongRunningWorkflowStatus } from '../services/longRunningWorkflowStatus.js';
 import {
   executeTutorStubActionOutcomeCollection,
   extractTutorStubActionOutcomeCollectionRow,
   loadTutorStubActionOutcomeCollectionRecovery,
   main as collectionLauncherMain,
+  tutorStubActionOutcomeCollectionChildSpec,
 } from '../scripts/run-tutor-stub-action-outcome-collection-pilot.js';
 import {
   buildTutorStubActionOutcomeCollectionAudit,
+  loadTutorStubActionOutcomeAuditDesign,
   renderTutorStubActionOutcomeCollectionAudit,
   wilsonInterval,
 } from '../scripts/audit-tutor-stub-action-outcome-collection.js';
+import {
+  createDurablePauseStateMachine,
+  buildDurableEvaluationStatus,
+  runDurableAttemptUnit,
+  summarizeDurableAttemptEvents,
+} from '../services/durableAttemptJournal.js';
+import { normalizeTutorStubResumeTrace } from '../services/tutorStubSessionRecipe.js';
+import {
+  buildTutorStubActionOutcomeContinuationJob,
+  buildTutorStubAcceptedContinuationPrefix,
+  composeTutorStubActionOutcomeRecoveryTrace,
+  materializeAcceptedTutorStubActionOutcomeRecoveryUnit,
+} from '../scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN_PATH = 'config/tutor-stub-action-outcome-collection-pilot-design.v1.json';
@@ -47,6 +65,7 @@ test('the prospective redesign preflight fixes the comparison seam without grant
   assert.equal(result.status, 'passed_zero_call');
   assert.equal(result.modelCalls, 0);
   assert.equal(result.productionWrites, 0);
+  assert.equal(result.checks.durable_pause_and_recovery_registered, true);
   assert.deepEqual(result.supportedEligibleSet.families, [
     'explain_model',
     'minimal_support',
@@ -215,6 +234,125 @@ test('the zero-call quality audit fails sparse, auxiliary-inconclusive evidence 
   );
   assert.equal(audit.gates.find((entry) => entry.id === 'minimumFinalUsableBinaryRecords').status, 'fail');
   assert.match(renderTutorStubActionOutcomeCollectionAudit(audit), /does not license a held-out controller study/u);
+});
+
+test('the v2 audit uses only registered comparative families and leaves human-consensus gates pending', () => {
+  const design = loadComparable().design;
+  const generationRows = design.randomization.jobs.map((job) =>
+    completeRow({ id: job.jobId, world_id: job.worldId, repeat: job.repeat }),
+  );
+  const families = design.comparability.moveFamilies;
+  const worlds = design.population.collectionWorlds;
+  const sources = [];
+  const evidenceRows = [];
+  for (let index = 0; index < 30; index += 1) {
+    const source = {
+      path: `/fixture/jobs/aocv2_fixture_${index}/traces/trace.jsonl`,
+      runId: `fixture-run-${index}`,
+      sha256: index.toString(16).padStart(64, '0'),
+      bytes: 100,
+      metadata: { world: { id: worlds[index % worlds.length] } },
+      errors: [],
+    };
+    sources.push(source);
+    evidenceRows.push({
+      recordId: `${source.runId}:contract-1`,
+      source: source.path,
+      recordedOutcome: 'inconclusive',
+      auxiliaryDeliveryVisible: true,
+      assignmentStatus: 'seeded_uniform_family_assignment',
+      prospectiveAssignment: {
+        selected_move_family: families[index % families.length],
+        eligible_move_families: families.map((family) => ({ family })),
+      },
+    });
+  }
+  const auditOnlyRows = [
+    {
+      ...evidenceRows[0],
+      recordId: 'fixture-run-0:contract-audit-only-1',
+      assignmentStatus: 'mandatory_policy_authority_preserved',
+      prospectiveAssignment: {
+        selected_move_family: 'diagnose_elicit',
+        eligible_move_families: [{ family: 'diagnose_elicit' }],
+      },
+    },
+    {
+      ...evidenceRows[1],
+      recordId: 'fixture-run-1:contract-audit-only-2',
+      assignmentStatus: 'insufficient_family_overlap_policy_preserved',
+      prospectiveAssignment: {
+        selected_move_family: 'fade_transfer',
+        eligible_move_families: [{ family: 'fade_transfer' }],
+      },
+    },
+  ];
+  const conditionMatchedRows = [...evidenceRows, ...auditOnlyRows];
+  const summary = {
+    sourceFiles: sources.length,
+    quarantinedSources: 0,
+    events: 300,
+    typedDecisions: conditionMatchedRows.length,
+    closedOutcomes: conditionMatchedRows.length,
+    joinedMemoryRecords: conditionMatchedRows.length,
+  };
+  const readiness = { modelCalls: 0, summary, sources, evidenceRows: conditionMatchedRows, exclusionCounts: {} };
+  const audit = buildTutorStubActionOutcomeCollectionAudit({
+    design,
+    generationReport: {
+      schema: 'fixture-generation-report',
+      study_id: design.studyId,
+      status: 'generation_complete',
+      source: { commit: 'fixture', detached: true, dirty: false },
+      design: { path: TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH },
+      memory_controller_enabled: false,
+      rows: generationRows,
+      execution: {
+        planned_units: 60,
+        missing_units: 0,
+        completed_turns: 480,
+        planned_turns: 480,
+        model_attempts: {},
+      },
+    },
+    registeredReadiness: readiness,
+    allObservedReadiness: readiness,
+    decisionInventory: conditionMatchedRows.map((row) => ({
+      assignmentStatus: row.assignmentStatus,
+      conditionDisposition: 'matched',
+    })),
+    asOf: '2026-09-02T23:00:00.000Z',
+  });
+
+  assert.deepEqual(
+    audit.extraction.matchedByFamily.map((row) => row.family),
+    families,
+  );
+  assert.equal(audit.extraction.maximumPotentialBinaryRecords, 30);
+  assert.equal(audit.extraction.conditionMatchedClosedAssignments, 32);
+  assert.equal(audit.extraction.conditionMatchedSeededClosedAssignments, 30);
+  assert.equal(audit.extraction.conditionMatchedAuditOnlyClosedAssignments, 2);
+  assert.deepEqual(audit.failedGates, []);
+  assert.equal(audit.verdict, 'pending_human_review');
+  assert.equal(audit.pendingGates.length, 5);
+  const rendered = renderTutorStubActionOutcomeCollectionAudit(audit);
+  assert.match(rendered, /60\/60 complete dialogues/u);
+  assert.match(rendered, /30 seeded closed assignment/u);
+  assert.doesNotMatch(rendered, /all 23 available trace files/u);
+});
+
+test('the audit CLI loader dispatches the registered v1 and v2 designs to their validators', () => {
+  assert.equal(
+    loadTutorStubActionOutcomeAuditDesign({ root: REPO_ROOT, designPath: DESIGN_PATH }).design.studyId,
+    load().design.studyId,
+  );
+  assert.equal(
+    loadTutorStubActionOutcomeAuditDesign({
+      root: REPO_ROOT,
+      designPath: TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH,
+    }).design.studyId,
+    loadComparable().design.studyId,
+  );
 });
 
 test('Wilson intervals retain the observed fraction and finite bounds', () => {
@@ -472,8 +610,13 @@ test('trace extraction requires the complete eight-turn, seven-outcome contract'
     reserved: 25,
     completed: 25,
     failed: 0,
+    cancelled_before_dispatch: 0,
+    interrupted_after_dispatch: 0,
+    unexplained: 0,
     budget_exhausted: false,
     accounting_balanced: true,
+    accounting_equation:
+      'reserved = completed + failed + cancelled_before_dispatch + interrupted_after_dispatch + unexplained',
     normal_planned_successful: 25,
     successful_at_or_above_normal_plan: true,
     per_dialogue_ceiling: 81,
@@ -510,7 +653,480 @@ test('trace extraction requires the complete eight-turn, seven-outcome contract'
   });
   assert.equal(corrupt.status, 'technical_failure');
   assert.equal(corrupt.model_attempts.accounting_balanced, false);
+  assert.equal(corrupt.model_attempts.unexplained, 1);
+
+  const reconciled = extractTutorStubActionOutcomeCollectionRow({
+    job,
+    exit: { code: null, signal: 'SIGINT', spawn_error: null },
+    destination: base,
+    interruptionDisposition: 'interrupted_after_dispatch',
+  });
+  assert.equal(reconciled.status, 'technical_failure');
+  assert.equal(reconciled.model_attempts.interrupted_after_dispatch, 1);
+  assert.equal(reconciled.model_attempts.unexplained, 0);
+  assert.equal(reconciled.model_attempts.accounting_balanced, true);
 });
+
+test('a graceful operator pause checkpoints at the next child boundary and reports recoverable work', async (t) => {
+  const value = executionFixture(t);
+  const signals = new EventEmitter();
+  const report = await executeTutorStubActionOutcomeCollection({
+    ...value,
+    signalTarget: signals,
+    childSpec: ({ job }) => job,
+    runChild: async () => {
+      signals.emit('SIGINT', 'SIGINT');
+      return { code: 0, signal: null, spawn_error: null };
+    },
+    extractRow: ({ job }) => completeRow(job),
+    progress: () => {},
+  });
+  const control = JSON.parse(fs.readFileSync(path.join(value.destination, 'run-control.json'), 'utf8'));
+  assert.equal(report.status, 'paused_recoverable');
+  assert.equal(report.execution.complete_units, 1);
+  assert.equal(report.execution.missing_units, 23);
+  assert.equal(report.next_step.includes('Resume only missing work'), true);
+  assert.equal(control.state, 'paused');
+  assert.equal(control.recoverable, true);
+  assert.equal(value.admission.closed.recovery_permitted, true);
+  assert.equal(value.admission.closed.resume_scope, 'missing_work_only');
+  assert.equal(signals.listenerCount('SIGINT'), 0);
+  assert.equal(signals.listenerCount('SIGTERM'), 0);
+  const workflowStatusPath = actionOutcomeCollectionWorkflowStatusPath({
+    generationRoot: value.destination,
+    workflowId: value.loaded.design.studyId,
+  });
+  const workflowStatus = loadLongRunningWorkflowStatus(workflowStatusPath).status;
+  assert.equal(report.workflow_status.path, workflowStatusPath);
+  assert.equal(workflowStatus.current_phase, 'BLOCKED');
+  assert.equal(workflowStatus.blocker.blocked_phase, 'GENERATING');
+  assert.equal(workflowStatus.blocker.observed_error.includes('operator-requested pause'), true);
+  assert.equal(workflowStatus.human_action_required, true);
+  assert.equal(workflowStatus.model_activity.state, 'inactive');
+
+  const runLedgerPath = path.join(value.destination, 'run-ledger.jsonl');
+  const studyStateRoot = path.join(path.dirname(value.destination), '.paid-study-state');
+  const studyDirectory = path.join(studyStateRoot, value.loaded.design.studyId);
+  const studyLedgerPath = path.join(studyDirectory, 'study-ledger.jsonl');
+  fs.mkdirSync(studyDirectory, { recursive: true });
+  const firstJob = value.preflight.plan.jobs[0];
+  const firstRow = report.rows[0];
+  const runLedger = [
+    {
+      type: 'launch_admitted',
+      study_id: value.loaded.design.studyId,
+      source_commit: 'fixture-commit',
+      design_path: value.loaded.relativePath,
+      spend_cap: 1944,
+      study_ledger: studyLedgerPath,
+    },
+    { type: 'model_attempt_reserved', unit: firstJob.id, count: 81 },
+    {
+      type: 'unit_complete',
+      job_id: firstJob.id,
+      status: firstRow.status,
+      child_reserved_attempts: firstRow.model_attempts.reserved,
+      child_completed_attempts: firstRow.model_attempts.completed,
+      child_failed_attempts: firstRow.model_attempts.failed,
+    },
+    { type: 'run_sealed', status: 'paused_recoverable', recovery_permitted: true, reserved_attempts: 81 },
+  ];
+  fs.writeFileSync(runLedgerPath, `${runLedger.map(JSON.stringify).join('\n')}\n`);
+  const studyLedger = [
+    { type: 'study_created', study_id: value.loaded.design.studyId, model_attempt_ceiling: 1944 },
+    {
+      type: 'study_launch_admitted',
+      study_id: value.loaded.design.studyId,
+      destination: value.destination,
+      run_ledger: runLedgerPath,
+    },
+    {
+      type: 'study_model_attempt_reserved',
+      destination: value.destination,
+      unit: firstJob.id,
+      count: 81,
+      study_reserved: 81,
+      model_attempt_ceiling: 1944,
+    },
+    {
+      type: 'study_run_sealed',
+      destination: value.destination,
+      status: 'paused_recoverable',
+      recovery_permitted: true,
+      reserved_in_run: 81,
+      study_reserved: 81,
+      model_attempt_ceiling: 1944,
+    },
+  ];
+  fs.writeFileSync(studyLedgerPath, `${studyLedger.map(JSON.stringify).join('\n')}\n`);
+  const recoveryDestination = path.join(path.dirname(value.destination), '.tutor-stub-auto-eval', 'run-recovery-1');
+  const recoveryPlan = buildTutorStubActionOutcomeCollectionPlan({
+    loaded: value.loaded,
+    destination: recoveryDestination,
+    recovery: true,
+  });
+  const recovery = loadTutorStubActionOutcomeCollectionRecovery({
+    loaded: value.loaded,
+    preflight: { destination: recoveryDestination, plan: recoveryPlan },
+    recoveryFrom: value.destination,
+  });
+  assert.equal(recovery.prior_completed_units, 1);
+  assert.equal(recovery.priorRows.length, 1);
+  assert.equal(recovery.executionJobs.length, 23);
+  assert.equal(
+    recovery.executionJobs.some((job) => job.id === firstJob.id),
+    false,
+  );
+});
+
+test('durable pause state machine persists pause_requested, paused, and resuming states', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'durable-pause-state-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const events = [];
+  const signals = new EventEmitter();
+  const statePath = path.join(base, 'run-control.json');
+  const controller = createDurablePauseStateMachine({
+    statePath,
+    record: (event) => events.push(event),
+    signalTarget: signals,
+  });
+  signals.emit('SIGINT', 'SIGINT');
+  assert.equal(controller.snapshot().state, 'pause_requested');
+  controller.markPaused({ checkpoint: 'checkpoint.json' });
+  assert.equal(controller.snapshot().state, 'paused');
+  controller.markResuming({ resume_from: 'checkpoint.json' });
+  assert.equal(controller.snapshot().state, 'resuming');
+  controller.markRunning();
+  assert.equal(controller.snapshot().state, 'running');
+  controller.dispose();
+  assert.deepEqual(
+    events.map((event) => event.to),
+    ['pause_requested', 'paused', 'resuming', 'running'],
+  );
+});
+
+test('durable attempt restart reconciles every fault boundary without duplicate accepted output', async (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'durable-attempt-faults-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const faults = [
+    'before_reservation',
+    'after_reservation_before_dispatch',
+    'after_dispatch_before_response_persistence',
+    'after_response_persistence_before_unit_completion',
+  ];
+  for (const faultAt of faults) {
+    const root = path.join(base, faultAt);
+    const ledgerPath = path.join(root, 'attempt-ledger.jsonl');
+    const responseDirectory = path.join(root, 'responses');
+    let dispatches = 0;
+    const dispatch = async () => {
+      dispatches += 1;
+      return { analysis: { eligible: 35, label: 'unchanged' } };
+    };
+    await assert.rejects(
+      runDurableAttemptUnit({
+        ledgerPath,
+        responseDirectory,
+        unitId: 'fixture-unit',
+        hardCeiling: 3,
+        plannedInitialAttempts: 1,
+        recoveryReserve: 2,
+        dispatch,
+        faultAt,
+      }),
+      /fault injection/u,
+    );
+    const resumed = await runDurableAttemptUnit({
+      ledgerPath,
+      responseDirectory,
+      unitId: 'fixture-unit',
+      hardCeiling: 3,
+      plannedInitialAttempts: 1,
+      recoveryReserve: 2,
+      dispatch,
+    });
+    const events = fs.readFileSync(ledgerPath, 'utf8').trim().split(/\r?\n/u).map(JSON.parse);
+    const accounting = summarizeDurableAttemptEvents(events);
+    const acceptedEvents = events.filter((event) => event.type === 'unit_completed');
+    const acceptedResponse = JSON.parse(
+      fs.readFileSync(path.join(responseDirectory, resumed.accepted.response_path), 'utf8'),
+    );
+    assert.deepEqual(acceptedResponse.analysis, { eligible: 35, label: 'unchanged' });
+    assert.equal(acceptedEvents.length, 1);
+    assert.equal(accounting.unexplained, 0);
+    assert.equal(
+      accounting.reserved,
+      accounting.completed +
+        accounting.failed +
+        accounting.cancelled_before_dispatch +
+        accounting.interrupted_after_dispatch,
+    );
+    if (faultAt === 'after_reservation_before_dispatch') assert.equal(accounting.cancelled_before_dispatch, 1);
+    if (faultAt === 'after_dispatch_before_response_persistence') {
+      assert.equal(accounting.interrupted_after_dispatch, 1);
+      assert.equal(dispatches, 2);
+    }
+    if (faultAt === 'after_response_persistence_before_unit_completion') assert.equal(dispatches, 1);
+  }
+});
+
+test('durable status reports attempts, units, workflow, scientific verdict, and ledger-derived ETA together', () => {
+  const now = new Date('2026-09-02T22:00:00.000Z');
+  const status = buildDurableEvaluationStatus({
+    events: [
+      { at: '2026-09-02T21:58:00.000Z', type: 'partial_dialogue_continuation_dispatched', unit: 'u1' },
+      { at: '2026-09-02T21:58:01.000Z', type: 'model_attempt_dispatch_reserved', attempt_id: 'a1' },
+      { at: '2026-09-02T21:58:02.000Z', type: 'attempt_completed', attempt_id: 'a1' },
+      { at: '2026-09-02T21:59:00.000Z', type: 'partial_dialogue_continuation_completed', unit: 'u1' },
+    ],
+    plannedUnits: 3,
+    plannedTurns: 12,
+    completedTurns: 4,
+    hardCeiling: 100,
+    scientificVerdict: 'pending_human_review',
+    secondsPerRemainingTurn: [60, 120],
+    postRunSeconds: [120, 240],
+    now,
+  });
+  assert.deepEqual(status.planes.attempt, {
+    reserved: 1,
+    completed: 1,
+    failed: 0,
+    cancelled_before_dispatch: 0,
+    interrupted_after_dispatch: 0,
+    active: 0,
+    unexplained: 0,
+    hard_ceiling: 100,
+  });
+  assert.deepEqual(status.planes.unit, {
+    planned: 3,
+    complete: 1,
+    active: 0,
+    failed: 0,
+    missing: 2,
+    completed_turns: 4,
+    planned_turns: 12,
+  });
+  assert.equal(status.planes.workflow.model_activity, 'inactive');
+  assert.equal(status.planes.scientific_verdict.changed_by_pause_or_recovery, false);
+  assert.equal(status.eta.earliest, '2026-09-02T22:10:00.000Z');
+  assert.equal(status.eta.latest, '2026-09-02T22:20:00.000Z');
+});
+
+test('partial-dialogue recovery reuses an accepted pending learner output and keeps the total horizon at eight', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'partial-dialogue-recovery-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const sourceTrace = path.join(base, 'source.jsonl');
+  const continuationTrace = path.join(base, 'continuation.jsonl');
+  const outputPath = path.join(base, 'reconciled.jsonl');
+  const runId = 'source-run';
+  const events = [
+    { type: 'run_start', runId, seq: 1, metadata: { modelRef: 'codex.gpt-5.6-luna', world: { id: 'world' } } },
+  ];
+  for (let turn = 1; turn <= 4; turn += 1) {
+    events.push({ type: 'model_call_budget_reserved', runId, seq: events.length + 1, role: 'tutor_stub_tutor', turn });
+    events.push({ type: 'model_call', runId, seq: events.length + 1, role: 'tutor_stub_tutor', turn });
+    if (turn > 1) events.push({ type: 'tutor_typed_action_outcome_closed', runId, seq: events.length + 1, turn });
+    events.push({ type: 'tutor_typed_action_decision', runId, seq: events.length + 1, turn });
+    events.push({ type: 'turn_complete', runId, seq: events.length + 1, turn, turnRecord: { turn } });
+  }
+  events.push({
+    type: 'learner_dag_preflight',
+    runId,
+    seq: events.length + 1,
+    turn: 5,
+    preflight: { schema: 'fixture-preflight', contentSha256: 'a'.repeat(64) },
+  });
+  events.push({
+    type: 'model_call',
+    runId,
+    seq: events.length + 1,
+    role: 'tutor_stub_learner_analysis',
+    turn: 5,
+    response: { text: JSON.stringify({ classification: { turn: {} }, learner_record: {} }) },
+  });
+  events.push({
+    type: 'auto_learner_turn',
+    runId,
+    seq: events.length + 1,
+    turn: 5,
+    text: 'Accepted learner output.',
+    learnerResponseProvenance: { authorship: 'ai' },
+  });
+  fs.writeFileSync(sourceTrace, `${events.map(JSON.stringify).join('\n')}\n`);
+  const normalized = normalizeTutorStubResumeTrace(sourceTrace);
+  assert.equal(normalized.turns.length, 4);
+  assert.equal(normalized.pendingAutomatedLearnerTurn.turn, 5);
+  assert.equal(normalized.pendingAutomatedLearnerTurn.text, 'Accepted learner output.');
+  assert.equal(normalized.pendingAutomatedLearnerTurn.precomputedRaw.dagPreflight.schema, 'fixture-preflight');
+  assert.equal(normalized.acceptedStateEvents.at(-1).type, 'auto_learner_turn');
+
+  const continuation = [{ type: 'run_start', runId: 'continuation-run', seq: 1, metadata: {} }];
+  continuation.push({
+    type: 'auto_learner_turn',
+    runId: 'continuation-run',
+    seq: continuation.length + 1,
+    turn: 5,
+    text: 'Accepted learner output.',
+    resumedFromAcceptedOutput: true,
+  });
+  for (let turn = 5; turn <= 8; turn += 1) {
+    continuation.push({
+      type: 'tutor_typed_action_outcome_closed',
+      runId: 'continuation-run',
+      seq: continuation.length + 1,
+      turn,
+    });
+    continuation.push({
+      type: 'tutor_typed_action_decision',
+      runId: 'continuation-run',
+      seq: continuation.length + 1,
+      turn,
+    });
+    continuation.push({
+      type: 'turn_complete',
+      runId: 'continuation-run',
+      seq: continuation.length + 1,
+      turn,
+      turnRecord: { turn },
+    });
+  }
+  continuation.push({ type: 'run_end', runId: 'continuation-run', seq: continuation.length + 1, turns: 8 });
+  fs.writeFileSync(continuationTrace, `${continuation.map(JSON.stringify).join('\n')}\n`);
+  const lineage = composeTutorStubActionOutcomeRecoveryTrace({ sourceTrace, continuationTrace, outputPath });
+  assert.equal(lineage.acceptedPendingLearnerOutputReused, true);
+  const reconciled = fs.readFileSync(outputPath, 'utf8').trim().split(/\r?\n/u).map(JSON.parse);
+  assert.equal(reconciled.filter((event) => event.type === 'auto_learner_turn' && event.turn === 5).length, 1);
+  assert.equal(reconciled.filter((event) => event.type === 'turn_complete').length, 8);
+  assert.equal(reconciled.filter((event) => event.type === 'tutor_typed_action_decision').length, 8);
+  assert.equal(reconciled.filter((event) => event.type === 'tutor_typed_action_outcome_closed').length, 7);
+
+  const job = buildTutorStubActionOutcomeContinuationJob({
+    unit: {
+      jobId: 'fixture-job',
+      completedTurns: 4,
+      capacity: 20,
+      tracePath: sourceTrace,
+      acceptedPendingLearner: normalized.pendingAutomatedLearnerTurn,
+      job: {
+        id: 'fixture-job',
+        args: ['scripts/tutor-stub.js', '--auto-turns', '8', '--trace-dir', 'old', '--save', 'old.json'],
+      },
+    },
+    destination: path.join(base, 'fresh'),
+  });
+  assert.equal(optionValue(job.args, '--auto-turns'), '8');
+  assert.equal(optionValue(job.args, '--resume'), sourceTrace);
+  assert.equal(job.accepted_pending_learner, true);
+
+  const materializedRoot = path.join(base, 'materialized');
+  fs.mkdirSync(path.join(materializedRoot, 'jobs'), { recursive: true });
+  const materialized = materializeAcceptedTutorStubActionOutcomeRecoveryUnit({
+    preflight: {
+      acceptedContinuationEvents: buildTutorStubAcceptedContinuationPrefix({
+        events: continuation,
+        sourceCompletedTurns: 4,
+        maximumTurn: 8,
+      }),
+      acceptedContinuationPath: continuationTrace,
+    },
+    unit: {
+      jobId: 'fixture-job',
+      completedTurns: 4,
+      tracePath: sourceTrace,
+      job: {
+        id: 'fixture-job',
+        world_id: 'world',
+        repeat: 1,
+        planned_model_calls: 0,
+      },
+    },
+    destination: materializedRoot,
+  });
+  assert.equal(materialized.status, 'complete');
+  assert.equal(materialized.turns, 8);
+  assert.deepEqual(materialized.recovery.overrun_turns_excluded, [9, 10]);
+});
+
+test('collection child propagates the registered turn horizon into the provider-dispatch ledger', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'action-outcome-child-horizon-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  let received = null;
+  const spec = tutorStubActionOutcomeCollectionChildSpec({
+    job: {
+      id: 'unit-1',
+      job_root: path.join(base, 'job'),
+      trace_dir: path.join(base, 'job', 'trace'),
+      args: ['scripts/tutor-stub.js', '--auto-turns', '8'],
+    },
+    admission: {
+      attemptLedgerEnvironment(options) {
+        received = options;
+        return { TUTOR_STUB_SHARED_ATTEMPT_LEDGER: '{}' };
+      },
+    },
+    capacity: { id: 'capacity-1', count: 20 },
+  });
+  assert.equal(received.maximumTurn, 8);
+  assert.equal(received.unitId, 'unit-1');
+  assert.equal(spec.env.TUTOR_STUB_REMEMBER_SETTINGS, '0');
+});
+
+test('accepted interrupted continuation keeps only the exact registered turn prefix', () => {
+  const events = [{ type: 'run_start', runId: 'continuation', seq: 1 }];
+  for (let turn = 5; turn <= 10; turn += 1) {
+    events.push({ type: 'model_call', runId: 'continuation', seq: events.length + 1, turn });
+    events.push({
+      type: 'turn_complete',
+      runId: 'continuation',
+      seq: events.length + 1,
+      turn,
+      turnRecord: { turn },
+    });
+  }
+  const accepted = buildTutorStubAcceptedContinuationPrefix({
+    events,
+    sourceCompletedTurns: 4,
+    maximumTurn: 8,
+  });
+  assert.deepEqual(traceTurnsForTest(accepted), [5, 6, 7, 8]);
+  assert.equal(accepted.at(-1).type, 'run_end');
+  assert.equal(accepted.at(-1).reason, 'auto_turn_cap');
+  assert.equal(
+    accepted.some((event) => Number(event.turn) > 8),
+    false,
+  );
+
+  assert.throws(
+    () =>
+      buildTutorStubAcceptedContinuationPrefix({
+        events: events.filter((event) => !(event.type === 'turn_complete' && event.turn === 7)),
+        sourceCompletedTurns: 4,
+        maximumTurn: 8,
+      }),
+    /incomplete/u,
+  );
+  assert.throws(
+    () =>
+      buildTutorStubAcceptedContinuationPrefix({
+        events: [
+          ...events.slice(
+            0,
+            events.findIndex((event) => event.type === 'turn_complete' && event.turn === 8),
+          ),
+          { type: 'model_call_error', turn: 8 },
+          events.find((event) => event.type === 'turn_complete' && event.turn === 8),
+        ],
+        sourceCompletedTurns: 4,
+        maximumTurn: 8,
+      }),
+    /model_call_error/u,
+  );
+});
+
+function traceTurnsForTest(events) {
+  return events.filter((event) => event.type === 'turn_complete' && event.turnRecord).map((event) => event.turn);
+}
 
 test('execution accounts for all 24 jobs and seals the complete generation block', async (t) => {
   const value = executionFixture(t);
@@ -533,6 +1149,17 @@ test('execution accounts for all 24 jobs and seals the complete generation block
   assert.equal(fs.existsSync(path.join(value.destination, 'plan.json')), true);
   assert.equal(fs.existsSync(path.join(value.destination, 'checkpoint.json')), true);
   assert.equal(fs.existsSync(path.join(value.destination, 'report.json')), true);
+  const workflowStatusPath = actionOutcomeCollectionWorkflowStatusPath({
+    generationRoot: value.destination,
+    workflowId: value.loaded.design.studyId,
+  });
+  const workflowStatus = loadLongRunningWorkflowStatus(workflowStatusPath).status;
+  assert.equal(report.workflow_status.path, workflowStatusPath);
+  assert.equal(workflowStatus.current_phase, 'HANDOFF_PENDING');
+  assert.equal(workflowStatus.workflow_status, 'handoff_pending');
+  assert.deepEqual(workflowStatus.completed_phases, ['PREFLIGHT', 'GENERATING']);
+  assert.equal(workflowStatus.blocker.next_phase, 'EXTRACTING');
+  assert.equal(workflowStatus.model_activity.state, 'inactive');
 });
 
 test('a technical failure stops before the next job and preserves bounded recovery authority', async (t) => {
@@ -659,7 +1286,7 @@ function interruptedRecoveryFixture(t) {
   return { loaded, sourceRoot, recoveryDestination, preflight, failedJob };
 }
 
-function linkedZeroProviderRecoveryFixture(t) {
+function linkedZeroProviderRecoveryFixture(t, { providerFailure = false } = {}) {
   const initial = interruptedRecoveryFixture(t);
   const firstRecovery = loadTutorStubActionOutcomeCollectionRecovery({
     loaded: initial.loaded,
@@ -675,7 +1302,7 @@ function linkedZeroProviderRecoveryFixture(t) {
     recovery: true,
   });
   const failedJob = sourcePlan.jobs[1];
-  const zeroProviderRow = {
+  const failureRow = {
     job_id: failedJob.id,
     world_id: failedJob.world_id,
     repeat: failedJob.repeat,
@@ -684,21 +1311,21 @@ function linkedZeroProviderRecoveryFixture(t) {
     trace: null,
     transcript: null,
     run_end: null,
-    turns: 0,
-    typed_action_decisions: 0,
-    typed_action_outcomes_closed: 0,
+    turns: providerFailure ? 6 : 0,
+    typed_action_decisions: providerFailure ? 6 : 0,
+    typed_action_outcomes_closed: providerFailure ? 5 : 0,
     model_attempts: {
-      reserved: 0,
-      completed: 0,
-      failed: 0,
+      reserved: providerFailure ? 47 : 0,
+      completed: providerFailure ? 44 : 0,
+      failed: providerFailure ? 3 : 0,
       budget_exhausted: false,
       accounting_balanced: true,
       normal_planned_successful: 25,
-      successful_at_or_above_normal_plan: false,
+      successful_at_or_above_normal_plan: providerFailure,
       per_dialogue_ceiling: 81,
     },
   };
-  const rows = [...firstRecovery.priorRows, zeroProviderRow];
+  const rows = [...firstRecovery.priorRows, failureRow];
   const studyLedgerPath = path.join(
     initial.loaded.root,
     '.tutor-stub-auto-eval',
@@ -742,6 +1369,7 @@ function linkedZeroProviderRecoveryFixture(t) {
       schema: 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1',
       study_id: initial.loaded.design.studyId,
       status: 'technical_failure',
+      halt_reason: `technical_failure in ${failedJob.id}`,
       source: { commit: 'fixture-recovery' },
       recovery: { source_root: initial.sourceRoot },
       execution: {
@@ -772,9 +1400,9 @@ function linkedZeroProviderRecoveryFixture(t) {
       type: 'unit_complete',
       job_id: failedJob.id,
       status: 'technical_failure',
-      child_reserved_attempts: 0,
-      child_completed_attempts: 0,
-      child_failed_attempts: 0,
+      child_reserved_attempts: failureRow.model_attempts.reserved,
+      child_completed_attempts: failureRow.model_attempts.completed,
+      child_failed_attempts: failureRow.model_attempts.failed,
     },
     { type: 'run_sealed', status: 'technical_failure', reserved_attempts: 81 },
   ];
@@ -819,6 +1447,151 @@ function linkedZeroProviderRecoveryFixture(t) {
   };
 }
 
+function linkedInterruptedRecoveryFixture(t) {
+  const initial = interruptedRecoveryFixture(t);
+  const firstRecovery = loadTutorStubActionOutcomeCollectionRecovery({
+    loaded: initial.loaded,
+    preflight: initial.preflight,
+    recoveryFrom: initial.sourceRoot,
+  });
+  const sourceRoot = initial.recoveryDestination;
+  const nextDestination = path.join(initial.loaded.root, '.tutor-stub-auto-eval', 'fixture-initial-recovery-2');
+  const sourcePlan = initial.preflight.plan;
+  const nextPlan = buildTutorStubActionOutcomeCollectionPlan({
+    loaded: initial.loaded,
+    destination: nextDestination,
+    recovery: true,
+  });
+  const completedJob = sourcePlan.jobs[1];
+  const failedJob = sourcePlan.jobs[2];
+  const completedRow = completeRow(completedJob);
+  const rows = [...firstRecovery.priorRows, completedRow];
+  const studyLedgerPath = path.join(
+    initial.loaded.root,
+    '.tutor-stub-auto-eval',
+    '.paid-study-state',
+    initial.loaded.design.studyId,
+    'study-ledger.jsonl',
+  );
+  fs.mkdirSync(sourceRoot, { recursive: true });
+  fs.writeFileSync(
+    path.join(sourceRoot, 'plan.json'),
+    `${JSON.stringify({
+      status: 'admitted_under_shared_paid_study_launch_contract',
+      source: { commit: 'fixture-recovery' },
+      design: { path: initial.loaded.relativePath },
+      model_attempt_ceiling: 1944,
+      recovery: {
+        source_root: initial.sourceRoot,
+        source_plan: path.join(initial.sourceRoot, 'plan.json'),
+        source_ledger: path.join(initial.sourceRoot, 'run-ledger.jsonl'),
+        prior_reserved_attempts: 81,
+        prior_completed_units: 0,
+        failed_job_ids: [initial.failedJob.id],
+      },
+      execution_job_ids: firstRecovery.executionJobs.map((job) => job.id),
+      preflight: { plan: sourcePlan },
+    })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(sourceRoot, 'checkpoint.json'),
+    `${JSON.stringify({
+      status: 'generation_running',
+      rows,
+      missing_job_ids: sourcePlan.jobs.slice(2).map((job) => job.id),
+      shared_reserved_attempts: 81,
+      hard_ceiling: 1944,
+    })}\n`,
+  );
+  fs.mkdirSync(failedJob.trace_dir, { recursive: true });
+  const traceEvents = [
+    ...Array.from({ length: 31 }, () => ({ type: 'model_call_budget_reserved' })),
+    ...Array.from({ length: 30 }, () => ({ type: 'model_call' })),
+    ...Array.from({ length: 5 }, (_, index) => ({ type: 'turn_complete', turnRecord: { turn: index + 1 } })),
+    ...Array.from({ length: 5 }, () => ({ type: 'tutor_typed_action_decision' })),
+    ...Array.from({ length: 4 }, () => ({ type: 'tutor_typed_action_outcome_closed' })),
+  ];
+  fs.writeFileSync(path.join(failedJob.trace_dir, 'trace.jsonl'), `${traceEvents.map(JSON.stringify).join('\n')}\n`);
+  const runLedgerPath = path.join(sourceRoot, 'run-ledger.jsonl');
+  const runLedger = [
+    {
+      type: 'launch_admitted',
+      study_id: initial.loaded.design.studyId,
+      source_commit: 'fixture-recovery',
+      design_path: initial.loaded.relativePath,
+      spend_cap: 1944,
+      study_ledger: studyLedgerPath,
+      launch_kind: 'recovery',
+      recovery_from: initial.sourceRoot,
+    },
+    { type: 'model_attempt_reserved', unit: completedJob.id, count: 81 },
+    {
+      type: 'unit_complete',
+      job_id: completedJob.id,
+      status: 'complete',
+      child_reserved_attempts: 25,
+      child_completed_attempts: 25,
+      child_failed_attempts: 0,
+    },
+    { type: 'model_attempt_reserved', unit: failedJob.id, count: 81 },
+    {
+      type: 'run_sealed',
+      status: 'technical_failure',
+      recovery_permitted: true,
+      reserved_attempts: 162,
+      reason: 'fixture interrupted linked recovery',
+    },
+  ];
+  fs.writeFileSync(runLedgerPath, `${runLedger.map(JSON.stringify).join('\n')}\n`);
+  const studyEvents = fs.readFileSync(studyLedgerPath, 'utf8').trim().split('\n').map(JSON.parse);
+  studyEvents.push(
+    {
+      type: 'study_launch_admitted',
+      study_id: initial.loaded.design.studyId,
+      destination: sourceRoot,
+      run_ledger: runLedgerPath,
+      launch_kind: 'recovery',
+      recovery_from: initial.sourceRoot,
+    },
+    {
+      type: 'study_model_attempt_reserved',
+      destination: sourceRoot,
+      unit: completedJob.id,
+      count: 81,
+      study_reserved: 162,
+      model_attempt_ceiling: 1944,
+    },
+    {
+      type: 'study_model_attempt_reserved',
+      destination: sourceRoot,
+      unit: failedJob.id,
+      count: 81,
+      study_reserved: 243,
+      model_attempt_ceiling: 1944,
+    },
+    {
+      type: 'study_run_sealed',
+      destination: sourceRoot,
+      run_ledger: runLedgerPath,
+      status: 'technical_failure',
+      recovery_permitted: true,
+      reserved_in_run: 162,
+      study_reserved: 243,
+      model_attempt_ceiling: 1944,
+    },
+  );
+  fs.writeFileSync(studyLedgerPath, `${studyEvents.map(JSON.stringify).join('\n')}\n`);
+  return {
+    ...initial,
+    firstFailedJob: initial.failedJob,
+    sourceRoot,
+    nextDestination,
+    completedJob,
+    failedJob,
+    preflight: { destination: nextDestination, plan: nextPlan },
+  };
+}
+
 test('recovery validates the sealed predecessor and selects only 23 never-attempted jobs', (t) => {
   const value = interruptedRecoveryFixture(t);
   const recovery = loadTutorStubActionOutcomeCollectionRecovery({
@@ -857,6 +1630,62 @@ test('linked recovery preserves two failures and selects only 22 untouched jobs'
   assert.equal(recovery.executionJobs.length, 22);
   assert.equal(recovery.executionJobs[0].id.endsWith('r03'), true);
   assert.equal(162 + recovery.executionJobs.length * 81, 1944);
+});
+
+test('linked recovery accepts one fully validated report-backed provider failure', (t) => {
+  const value = linkedZeroProviderRecoveryFixture(t, { providerFailure: true });
+  const recovery = loadTutorStubActionOutcomeCollectionRecovery({
+    loaded: value.loaded,
+    preflight: value.preflight,
+    recoveryFrom: value.sourceRoot,
+  });
+  assert.equal(recovery.prior_reserved_attempts, 162);
+  assert.equal(recovery.prior_completed_units, 0);
+  assert.deepEqual(recovery.failed_job_ids, [value.firstFailedJob.id, value.failedJob.id]);
+  assert.equal(recovery.priorRows[1].turns, 6);
+  assert.equal(recovery.priorRows[1].model_attempts.reserved, 47);
+  assert.equal(recovery.priorRows[1].model_attempts.completed, 44);
+  assert.equal(recovery.priorRows[1].model_attempts.failed, 3);
+  assert.equal(recovery.executionJobs.length, 22);
+  assert.equal(recovery.executionJobs[0].id.endsWith('r03'), true);
+  assert.equal(162 + recovery.executionJobs.length * 81, 1944);
+});
+
+test('report-backed provider failure cannot bypass ledger-attempt validation', (t) => {
+  const value = linkedZeroProviderRecoveryFixture(t, { providerFailure: true });
+  const reportPath = path.join(value.sourceRoot, 'report.json');
+  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  report.rows.at(-1).model_attempts.failed = 2;
+  fs.writeFileSync(reportPath, `${JSON.stringify(report)}\n`);
+  assert.throws(
+    () =>
+      loadTutorStubActionOutcomeCollectionRecovery({
+        loaded: value.loaded,
+        preflight: value.preflight,
+        recoveryFrom: value.sourceRoot,
+      }),
+    /action-outcome linked recovery predecessor drift/u,
+  );
+});
+
+test('linked interrupted recovery preserves both partial failures and selects only untouched jobs', (t) => {
+  const value = linkedInterruptedRecoveryFixture(t);
+  const recovery = loadTutorStubActionOutcomeCollectionRecovery({
+    loaded: value.loaded,
+    preflight: value.preflight,
+    recoveryFrom: value.sourceRoot,
+  });
+  assert.equal(recovery.prior_reserved_attempts, 243);
+  assert.equal(recovery.prior_completed_units, 1);
+  assert.deepEqual(recovery.failed_job_ids, [value.firstFailedJob.id, value.failedJob.id]);
+  assert.equal(recovery.priorRows.length, 3);
+  assert.equal(recovery.priorRows[2].artifact_root, value.sourceRoot);
+  assert.equal(recovery.priorRows[2].turns, 5);
+  assert.equal(recovery.priorRows[2].model_attempts.reserved, 31);
+  assert.equal(recovery.priorRows[2].model_attempts.completed, 30);
+  assert.equal(recovery.executionJobs.length, 21);
+  assert.equal(recovery.executionJobs[0].id.endsWith('r04'), true);
+  assert.equal(243 + recovery.executionJobs.length * 81, 1944);
 });
 
 test('linked recovery seals after the remaining 22 untouched jobs', async (t) => {

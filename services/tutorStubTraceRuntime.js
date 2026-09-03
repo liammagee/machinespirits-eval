@@ -2,6 +2,7 @@ import {
   createTutorStubArtifactArchiveMirror as createArtifactArchiveMirror,
   normalizeTutorStubArtifactArchivePolicy,
 } from './tutorStubArtifactArchive.js';
+import { sharedModelAttemptLedgerClientFromEnv } from './durableAttemptJournal.js';
 
 export function createTutorStubTraceRuntime(dependencies = {}) {
   const {
@@ -72,6 +73,8 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
       assetId,
       seq: 0,
       metadata: enrichedMetadata,
+      meteredAttempts: [],
+      sharedAttemptLedger: sharedModelAttemptLedgerClientFromEnv(),
     };
     trace.artifactArchive = createTutorStubArtifactArchiveMirror({
       policy: normalizedArchivePolicy,
@@ -89,11 +92,39 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
 
   function appendTraceEvent(trace, event) {
     if (!trace?.enabled) return;
+    const enrichedEvent = { ...event };
+    if (event.type === 'model_call_budget_reserved' && event.admission?.call) {
+      enrichedEvent.attemptId =
+        event.attemptId ||
+        event.sharedAttemptReservation?.attemptId ||
+        `${trace.runId}:model-attempt:${event.admission.call}`;
+      trace.meteredAttempts ||= [];
+      trace.meteredAttempts.push({
+        attemptId: enrichedEvent.attemptId,
+        role: event.role,
+        turn: event.turn,
+        dispatched: false,
+        terminal: false,
+      });
+    } else if (event.type === 'model_call_dispatch_started' && event.attemptId) {
+      const attempt = trace.meteredAttempts?.find((candidate) => candidate.attemptId === event.attemptId);
+      if (attempt) attempt.dispatched = true;
+    } else if (['model_call', 'model_call_error', 'model_call_aborted'].includes(event.type)) {
+      const attempt = trace.meteredAttempts?.find(
+        (candidate) =>
+          !candidate.terminal && candidate.dispatched && candidate.role === event.role && candidate.turn === event.turn,
+      );
+      if (attempt) {
+        attempt.terminal = true;
+        enrichedEvent.attemptId = attempt.attemptId;
+        enrichedEvent.attemptDisposition = event.type === 'model_call' ? 'completed' : 'failed';
+      }
+    }
     const entry = {
       ts: new Date().toISOString(),
       runId: trace.runId,
       seq: ++trace.seq,
-      ...event,
+      ...enrichedEvent,
     };
     if (!entry.turnId && entry.turn !== undefined && entry.turn !== null) {
       entry.turnId = formatTurnDebugId(trace.runId, entry.turn);
@@ -108,7 +139,34 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
       fs.appendFileSync(trace.filePath, line);
       throw error;
     }
-    fs.appendFileSync(trace.filePath, line);
+    const descriptor = fs.openSync(trace.filePath, 'a');
+    try {
+      fs.writeSync(descriptor, line);
+      if (
+        [
+          'model_call_budget_reserved',
+          'model_call_dispatch_started',
+          'model_call',
+          'model_call_error',
+          'model_call_aborted',
+          'turn_complete',
+          'run_end',
+        ].includes(entry.type)
+      ) {
+        fs.fsyncSync(descriptor);
+      }
+    } finally {
+      fs.closeSync(descriptor);
+    }
+    if (enrichedEvent.attemptDisposition && enrichedEvent.attemptId && trace.sharedAttemptLedger) {
+      trace.sharedAttemptLedger.terminalize({
+        attemptId: enrichedEvent.attemptId,
+        disposition: enrichedEvent.attemptDisposition,
+        role: enrichedEvent.role,
+        turn: enrichedEvent.turn,
+        traceSequence: entry.seq,
+      });
+    }
   }
 
   function appendTutorStubTurnFailureTraceRecords(state, { sealed = false } = {}) {
@@ -144,23 +202,54 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
     const modelCallBudget = getSelectedLabModelCallBudget?.() ?? selectedLabModelCallBudget;
     if (!modelCallBudget) return null;
     try {
+      const snapshot = typeof modelCallBudget.snapshot === 'function' ? modelCallBudget.snapshot() : null;
+      if (snapshot && snapshot.remaining < 1) {
+        const error = new Error(
+          `lab ${snapshot.labId} exhausted its ${snapshot.limit}-call model budget before ${role}`,
+        );
+        error.code = 'model_call_budget_exhausted';
+        throw error;
+      }
+      const sharedAttemptReservation = trace?.sharedAttemptLedger?.reserve({ role, turn }) || null;
       const reservation = modelCallBudget.reserve({ role, turn });
       appendTraceEvent(trace, {
         type: 'model_call_budget_reserved',
         role,
         turn,
         admission: reservation,
+        sharedAttemptReservation,
+        attemptId: sharedAttemptReservation?.attemptId || null,
       });
-      return reservation;
+      const attemptId =
+        sharedAttemptReservation?.attemptId ||
+        (trace?.enabled ? `${trace.runId}:model-attempt:${reservation.call}` : null);
+      return Object.freeze(attemptId ? { ...reservation, attemptId } : { ...reservation });
     } catch (error) {
       appendTraceEvent(trace, {
         type: 'model_call_budget_exhausted',
         role,
         turn,
-        admission: modelCallBudget.snapshot(),
+        admission: typeof modelCallBudget.snapshot === 'function' ? modelCallBudget.snapshot() : null,
       });
       throw error;
     }
+  }
+
+  function markTutorStubMeteredModelCallDispatched({
+    trace = null,
+    reservation = null,
+    role = 'unknown',
+    turn = null,
+  } = {}) {
+    if (!reservation?.attemptId) return;
+    trace?.sharedAttemptLedger?.markDispatched({ attemptId: reservation.attemptId, role, turn });
+    appendTraceEvent(trace, {
+      type: 'model_call_dispatch_started',
+      attemptId: reservation.attemptId,
+      role,
+      turn,
+      publicTranscriptChanged: false,
+    });
   }
 
   function reserveProgram2ProviderBudget({ maxTokens, trace = null, role = 'unknown', turn = null } = {}) {
@@ -197,14 +286,15 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
   function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening = false }) {
     if (!resume?.turns?.length) return null;
     const turns = resume.turns.map((turn) => jsonClone(turn));
+    const acceptedStateEvents = resume.acceptedStateEvents || resume.events || [];
     state.turns = turns;
     state.history = [];
     if (restoreOpening) {
-      const lastClearIndex = (resume.events || []).reduce(
+      const lastClearIndex = acceptedStateEvents.reduce(
         (index, event, candidate) => (event?.type === 'history_clear' ? candidate : index),
         -1,
       );
-      const activeEvents = (resume.events || []).slice(lastClearIndex + 1);
+      const activeEvents = acceptedStateEvents.slice(lastClearIndex + 1);
       const opening = activeEvents.find(
         (event) => event?.type === 'tutor_opening' && typeof event.text === 'string' && event.text.trim(),
       );
@@ -236,13 +326,16 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
     }
 
     const register = restoreRegisterStateFromTurns(state, turns);
-    const comprehension = restoreComprehensionState(state, turns, resume.events || []);
-    const directorGuidance = restoreDirectorGuidanceState(state, resume.events || []);
+    const comprehension = restoreComprehensionState(state, turns, acceptedStateEvents);
+    const directorGuidance = restoreDirectorGuidanceState(state, acceptedStateEvents);
     const learnerDag = replayTutorStubLearnerDagFromTurns(state, turns, {
       applyLearnerRecordUpdate,
       learnerPublicEvidenceState,
     });
-    const typedActions = restoreTypedActionState(state, turns, resume.events || []);
+    const typedActions = restoreTypedActionState(state, turns, acceptedStateEvents);
+    state.resumePendingAutomatedLearnerTurn = resume.pendingAutomatedLearnerTurn
+      ? jsonClone(resume.pendingAutomatedLearnerTurn)
+      : null;
     const storedClosure = turns.at(-1)?.dialogueClosure?.lifecycle || null;
     if (storedClosure && state.dialogueClosure?.enabled) {
       state.dialogueClosure = {
@@ -290,6 +383,7 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
       directorGuidance,
       learnerDag,
       typedActions,
+      pendingAutomatedLearnerTurn: state.resumePendingAutomatedLearnerTurn,
       dialogueClosure: state.dialogueClosure,
       metadata: resume.metadata || null,
       warnings,
@@ -302,6 +396,7 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
     createTraceState,
     jsonClone,
     printAutomaticTechnicalDetails,
+    markTutorStubMeteredModelCallDispatched,
     reserveProgram2ProviderBudget,
     reserveTutorStubMeteredModelCall,
     restoreDialogueFromTrace,

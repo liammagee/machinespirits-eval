@@ -31,10 +31,21 @@ The redesign proceeds in this order:
    destinations, routes, and a fail-before-call ceiling. Freeze it before launch
    and forbid outcome-dependent top-up, replacement, recoding, or threshold
    changes.
-8. Keep Rowan Flat and Tideway Makerspace outside collection and memory. A later
+8. Put a positive recovery reserve inside every future ceiling. An explicit
+   operator pause moves through `pause_requested`, `paused`, and `resuming`,
+   checkpoints at the next safe boundary, and resumes only incomplete work.
+   Each durable reservation ends exactly once as `completed`, `failed`,
+   `cancelled_before_dispatch`, or `interrupted_after_dispatch`. Restart first
+   reconciles stale reservations; dispatched attempts still count against the
+   original ceiling, while a durably persisted response is accepted without a
+   second dispatch.
+9. Keep Rowan Flat and Tideway Makerspace outside collection and memory. A later
    separately registered controller study must compare no memory, current
    memory, stale memory, scrambled memory, and contradictory memory on
    independent-work and transfer endpoints. Assisted closure does not count.
 
-This implementation covers steps 1-6. It creates no paid-study registration,
-GO note, provider request, collection output, or controller-benefit claim.
+The original implementation covered steps 1-6. The prospective runner repair
+now also implements step 8 as a durable execution primitive and collection
+pause state machine. It does not amend the sealed v2 design, raise its ceiling,
+rerun a dialogue, make a provider request, or license a controller-benefit
+claim.

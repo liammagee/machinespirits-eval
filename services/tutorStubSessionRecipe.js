@@ -320,6 +320,44 @@ function turnsFromEvents(events) {
   return turns;
 }
 
+function pendingAutomatedLearnerTurnFromEvents(events, turns) {
+  const completedThrough = Math.max(0, ...turns.map((turn) => Number(turn?.turn) || 0));
+  const pendingTurn = completedThrough + 1;
+  const learnerEvent = events.findLast(
+    (event) => event?.type === 'auto_learner_turn' && Number(event.turn) === pendingTurn,
+  );
+  if (!learnerEvent?.text) return null;
+  const analysisCall = events.findLast(
+    (event) =>
+      event?.type === 'model_call' &&
+      event.role === 'tutor_stub_learner_analysis' &&
+      Number(event.turn) === pendingTurn &&
+      typeof event.response?.text === 'string',
+  );
+  const dagPreflight = events.findLast(
+    (event) => event?.type === 'learner_dag_preflight' && Number(event.turn) === pendingTurn,
+  )?.preflight;
+  if (!analysisCall || !dagPreflight) return null;
+  let precomputedRaw;
+  try {
+    precomputedRaw = JSON.parse(analysisCall.response.text);
+  } catch {
+    return null;
+  }
+  return {
+    turn: pendingTurn,
+    text: learnerEvent.text,
+    provider: learnerEvent.provider || analysisCall.provider || null,
+    model: learnerEvent.model || analysisCall.model || null,
+    usage: learnerEvent.usage || null,
+    learnerDeliberation: learnerEvent.learnerDeliberation || null,
+    learnerResponseProvenance: learnerEvent.learnerResponseProvenance || null,
+    precomputedRaw: { ...precomputedRaw, dagPreflight },
+    sourceSequence: learnerEvent.seq || null,
+    sourceRunId: learnerEvent.runId || null,
+  };
+}
+
 function legacyRecipeFromMetadata(metadata = {}) {
   const options = {};
   const assign = (key, value) => {
@@ -385,6 +423,10 @@ export function normalizeTutorStubResumeTrace(filePath) {
   const events = parseTraceEvents(absolute);
   const start = events.find((event) => event?.type === 'run_start') || null;
   const turns = turnsFromEvents(events);
+  const pendingAutomatedLearnerTurn = pendingAutomatedLearnerTurnFromEvents(events, turns);
+  const acceptedStateEvents = pendingAutomatedLearnerTurn
+    ? events.slice(0, events.findIndex((event) => event.seq === pendingAutomatedLearnerTurn.sourceSequence) + 1)
+    : events;
   if (!start && !turns.length) {
     throw new Error(`resume trace ${absolute} has no run_start event or resumable turns`);
   }
@@ -410,7 +452,9 @@ export function normalizeTutorStubResumeTrace(filePath) {
       path.basename(absolute, '.jsonl'),
     metadata,
     events,
+    acceptedStateEvents,
     turns,
+    pendingAutomatedLearnerTurn,
     recipe,
     migration: storedRecipe
       ? null

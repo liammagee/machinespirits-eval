@@ -47,9 +47,14 @@ These move out of per-study validators and into shared runner code,
 tested once in CI:
 
 - the ceiling from the design file, counted in attempts, fail-before-call;
-- a create-once destination; no resume, rerun, replacement, or selection
-  without a fresh GO note;
-- an append-only run ledger (commit, seed, calls, failures);
+- a create-once destination for each run or recovery segment;
+- an append-only run ledger (commit, seed, reservations, terminal attempt
+  dispositions, pauses, resumptions, and failures);
+- outcome-blind technical recovery and explicit operator pause under the
+  unchanged study authorization, design, routes, seed, data scope, and hard
+  ceiling; recovery resumes only missing work and never selects among outputs;
+- a positive recovery reserve registered inside future hard ceilings, so an
+  ordinary pause does not consume all completion capacity;
 - the sealed archive to the private repo when the run ends.
 
 New launchers use `services/paidStudyLaunchContract.js` to check the three
@@ -60,6 +65,31 @@ the narrow historical/live-run exemptions; the inventory checker fails when a
 new paid launcher is not classified. The helper records ordinary git
 provenance. It does not hash source files, create an authorization schema, or
 turn the GO note into a second registration.
+
+An explicit operator pause is a recoverable control event. A durable runner
+moves through `pause_requested`, `paused`, and `resuming`, checkpoints at the
+next safe boundary, and reports the exact missing-only resume scope. Every
+reservation ends exactly once as `completed`, `failed`,
+`cancelled_before_dispatch`, or `interrupted_after_dispatch`; a restart
+reconciles stale reservations before dispatching new work. Dispatched attempts
+remain charged to the original hard ceiling. A durably persisted response is
+accepted once without redispatch. Scientific completeness requires zero
+unexplained reservations, not zero interruptions.
+
+### Resume horizon and dispatch invariant
+
+A resumed automated dialogue interprets its configured turn count as the total
+dialogue horizon. The runner must carry the actual resume request across the
+CLI/application boundary into turn orchestration. Independently, the shared
+dispatch ledger receives the registered maximum turn and rejects any attempt
+above it before reservation and provider dispatch. This gives the horizon the
+same fail-before-call protection as the spend ceiling.
+
+Tests for a resumed runner cross the public application boundary and also prove
+the dispatch ledger refuses an over-horizon turn without consuming a
+reservation. If a process is interrupted, sealing it reconciles all durable
+per-dispatch reservations and counts completed, failed, cancelled, and
+interrupted attempts before admitting a fresh missing-work-only recovery.
 
 ## What is retired for new studies
 

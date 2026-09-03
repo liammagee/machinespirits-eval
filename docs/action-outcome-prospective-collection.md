@@ -162,6 +162,30 @@ review dispositions, and usable binary records. It failed the registered
 feasibility gates and therefore did not license or size a later controller study.
 The action-outcome memory controller remained disabled throughout collection.
 
+## Whole-workflow status
+
+The maintained launcher writes a versioned atomic status record outside the
+sealed generation root, under its sibling `.workflow-status/` directory. The
+record follows this complete phase plan:
+
+```text
+PREFLIGHT → GENERATING → EXTRACTING → AUDITING → PACKAGING → WORKFLOW_COMPLETE
+```
+
+`RECOVERING`, `BLOCKED`, and `HANDOFF_PENDING` are explicit operational states.
+When generation seals, the status enters `HANDOFF_PENDING` for `EXTRACTING` and
+reports model activity as inactive; `generation_complete` in the generation
+report is never whole-workflow completion. The zero-call audit resumes the same
+status automatically from the generation report. Its output prints the status
+path, which packet preparation accepts with `--workflow-status <status.json>`.
+Packet completion is the only point in this registered collection/audit/packet
+workflow that records `WORKFLOW_COMPLETE`.
+
+Status updates use atomic replacement plus a validated `.previous` record. A
+reader can recover the previous complete record after an interrupted or corrupt
+primary write. The status file is operational metadata only: it does not alter
+sealed traces, results, routes, thresholds, study design, or call ceilings.
+
 ## Registered comparable collection v2
 
 `config/tutor-stub-action-outcome-comparable-collection-design.v2.json`

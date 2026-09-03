@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-02
-branch: codex/action-outcome-v2-recovery-preflight-fix
+branch: codex/action-outcome-recovery-horizon-fix
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -32,6 +32,10 @@ links:
     - scripts/run-tutor-stub-action-outcome-collection-pilot.js
     - notes/2026-09-01-tutor-stub-action-outcome-collection-pilot-go.md
     - notes/2026-09-02-tutor-stub-action-outcome-comparable-collection-v2-go.md
+    - config/tutor-stub-action-outcome-failed-unit-recovery.v1.json
+    - notes/2026-09-02-tutor-stub-action-outcome-failed-unit-recovery-go.md
+    - docs/durable-evaluation-execution-contract.md
+    - notes/2026-09-02-action-outcome-recovery-horizon-incident.md
   exports:
     - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
   prs:
@@ -47,8 +51,17 @@ links:
     - 913
     - 932
     - 937
+    - 940
+    - 945
+    - 946
+    - 947
+    - 948
+    - 949
+    - 951
+    - 952
   items:
     - layered-task-session-adaptation
+    - durable-evaluation-runner-migration
 tags:
   - adaptive-tutor
   - memory
@@ -112,6 +125,116 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: The first three-dialogue recovery exposed a resume-boundary defect:
+  orchestration correctly supported a total eight-turn horizon, but the
+  noninteractive application did not receive the resumed-dialogue object and
+  selected eight additional turns. The operator stopped it after 18 dispatch
+  reservations: 17 completed and one interrupted. The raw trace is preserved;
+  completed turns 5 through 8 are accepted without redispatch, while turns 9
+  and 10 are excluded from the registered corpus. Permanent controls now derive
+  resume mode from the actual CLI request, enforce the maximum turn again at
+  the shared provider-dispatch ledger, reconcile and count killed per-dispatch
+  attempts before recovery, and test both public boundaries. Incident record:
+  `notes/2026-09-02-action-outcome-recovery-horizon-incident.md`. The scientific
+  design and claim boundary did not change; provider activity remains stopped
+  until the fix is merged and the interrupted ledger is sealed.
+
+- 2026-09-02: Registered the exact three-dialogue technical continuation after
+  the operator extended recovery by 100 actual provider-dispatch reservations.
+  The recovery keeps Luna at low effort, the original worlds, seeds, prompts,
+  eight-turn horizon, action assignment, measurement, and claim boundary. It
+  reuses accepted pending learner output and saved analysis where available,
+  treats the horizon as eight total turns, preserves every raw artifact, and
+  writes fresh lineage traces. The shared journal now reserves immediately
+  before dispatch, terminalizes every attempt, reconciles stale in-flight work,
+  releases unused capacity, and projects attempt, unit, workflow, verdict, and
+  ETA state from the same ledger. A separate migration card tracks other paid
+  runners; they are not represented as already migrated. No recovery provider
+  call was made during implementation or preflight.
+
+- 2026-09-02: The first executable v2 audit was preserved but superseded after
+  its own family rows exposed an aggregation contradiction: 64 condition-matched
+  rows were labelled as seeded comparative cases although 29 were mandatory or
+  singleton audit-only decisions. Restricted v2 feasibility counts to seeded
+  assignments with the exact registered three-family eligible set, while
+  retaining the broader condition-matched count as a separate audit field and
+  leaving the sealed v1 calculation unchanged. No coder packet, model call, or
+  study reservation was created by the superseded audit.
+
+- 2026-09-02: The first v2 zero-call audit invocation failed before reading a
+  trace or creating its output because the CLI entry point still routed every
+  design through the sealed v1 loader. Added explicit registered-study dispatch
+  to the maintained v2 loader plus a CLI-loader regression covering both design
+  versions. The fixed `asOf` input remains unchanged for the next invocation;
+  this failed attempt made no model call and consumed no reservation.
+
+- 2026-09-02: The final bounded recovery completed all 22 never-started
+  dialogues and sealed the 60-unit block with 57 complete, 3 preserved
+  technical failures, 0 missing units, 468/480 turns, and exactly 4,860/4,860
+  shared reservations. Two failures are the operator-requested interruptions;
+  the third is a learner-analysis request that timed out after three failed
+  attempts. Zero-call artifact preparation then exposed that the audit still
+  treated all five policy families as comparative, read four renamed v2 gate
+  fields through their v1 names, required binary auxiliary labels under the new
+  human-consensus/auxiliary-veto policy, and rendered fixed v1 prose. Corrected
+  those version-sensitive paths and added a v2 regression while preserving the
+  sealed v1 behavior. No model call or study reservation was made by the audit
+  repair.
+
+- 2026-09-02: After PR #946 merged, the final real zero-call preflight passed
+  with exactly 22 untouched dialogues and 1,782 remaining reservations, but the
+  live admission stopped before creating Recovery 3 or making a provider call.
+  Root cause: the action-outcome loader independently validated Recovery 2's
+  sealed report-backed provider failure, while the shared paid-study gate still
+  treated its default `recovery_permitted: false` study-ledger field as final.
+  Added a fail-closed admission check that reads the sealed action-outcome
+  report and run ledger itself. It admits no caller override: launch identity,
+  recovery link, job order, per-job child attempt accounting, cumulative
+  reservations, final technical-failure disposition, missing units, and the
+  unchanged hard ceiling must all agree. An absent or tampered report remains
+  blocked. The focused paid-contract and collection suites pass 36/36. Model
+  calls and new reservations for this failed admission: 0.
+
+- 2026-09-02: The reviewed missing-only continuation completed three more
+  dialogues, then stopped on a provider transport failure in
+  `aocv2_larkspur_fridge_r08`: two automated-learner attempts failed before an
+  accepted response, the next retry succeeded, and learner analysis then hit
+  the fixed 300-second timeout. The unit remains a technical failure and will
+  not be rerun. The launcher sealed 35 complete, 3 failed, and 22 untouched
+  units with 3,078 of 4,860 shared reservations consumed. A chained zero-call
+  preflight exposed that a report-backed failure in a recovery run omits the
+  earlier explicit recovery flag. Extended the loader narrowly: it may accept
+  that predecessor only after the full report, checkpoint, ordered run-ledger
+  dispositions, per-row child attempt counts, and shared study seal agree on
+  exactly one final current-run technical failure. Report presence alone grants
+  nothing. The failed preflight made 0 model calls, created no destination, and
+  consumed no reservation.
+
+- 2026-09-02: Bringing the linked-recovery fix up to current `main` caused the
+  repository's full Node 22/24 CI to run. Node 24 reproducibly exposed a
+  temporary-directory cleanup race in two existing interactive presentation
+  tests: the tutor process had closed, but a finishing fake-provider child could
+  still create its final log while `rmSync` traversed the fixture directory.
+  Added Node's bounded `ENOTEMPTY` retry options to those two cleanups. This is a
+  test-lifecycle repair only; both failed CI attempts made 0 model calls and
+  consumed no study reservation.
+
+- 2026-09-02: The operator paused the v2 missing-only recovery after 17 of its
+  44 units completed, then instructed continuation under the unchanged study
+  authorization. The zero-call sealer preserved the active partial unit and
+  closed the recovery ledger with 2,754 of 4,860 shared reservations consumed.
+  A chained zero-call preflight then exposed a recovery-loader defect: linked
+  recovery required a finished `report.json`, although an operator-interrupted
+  process can only leave its atomic checkpoint, trace, and sealed ledgers.
+  Extended linked recovery to validate the inherited chain, match every current
+  completed row to its reservation and disposition, and reconstruct exactly one
+  reserved-but-undispositioned unit from its saved trace. The partial unit is
+  preserved as a second technical failure and can never be rerun; only the 26
+  untouched dialogues remain eligible. Added a focused regression test. The
+  failed preflight made 0 model calls, created no recovery destination, and
+  consumed no additional reservation. Model activity remains inactive pending
+  review and merge of this source repair.
 
 - 2026-09-02: The operator paused the v2 collection after 15 complete dialogues
   and one partial dialogue, then instructed continuation under the unchanged

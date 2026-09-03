@@ -32,6 +32,7 @@ export async function runTutorStubNonInteractiveApplication({
     printTutorResponse,
     registerPalette,
     registerSelectionEnabled,
+    resumedDialogue,
     runAutomatedLearnerDialogue,
     runOneTurn,
     saveTranscript,
@@ -53,6 +54,7 @@ export async function runTutorStubNonInteractiveApplication({
   } = { ...launchApplicationContext, ...sessionApplicationContext, ...runtime };
 
   if (autoLearnerEnabled) {
+    const resumedLaunch = Boolean(resumedDialogue || args.resume || args['resume-last']);
     const result = await runAutomatedLearnerDialogue({
       state,
       firstMessage,
@@ -62,6 +64,7 @@ export async function runTutorStubNonInteractiveApplication({
       autoTurns,
       autoSafetyTurns,
       autoStopOnGrounded,
+      turnHorizonMode: resumedLaunch ? 'total' : 'additional',
       cliEffort,
     });
     appendTraceEvent(state.trace, { type: 'run_end', reason: result.reason, turns: state.turns.length });

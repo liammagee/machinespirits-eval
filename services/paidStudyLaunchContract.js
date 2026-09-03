@@ -3,6 +3,8 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 
+import { reconcileSharedModelAttemptLedger } from './durableAttemptJournal.js';
+
 function repositoryRelativePath(root, value, label) {
   if (!value || path.isAbsolute(value)) throw new Error(`${label} must be repository-relative`);
   const normalized = path.normalize(value);
@@ -184,6 +186,90 @@ function isSealedZeroProviderStartupFailure(event) {
   );
 }
 
+function isSealedReportBackedActionOutcomeFailure(event) {
+  if (
+    event?.type !== 'study_run_sealed' ||
+    event.status !== 'technical_failure' ||
+    event.recovery_permitted === true ||
+    !path.isAbsolute(event.destination || '') ||
+    !path.isAbsolute(event.run_ledger || '') ||
+    path.dirname(path.resolve(event.run_ledger)) !== path.resolve(event.destination)
+  ) {
+    return false;
+  }
+  const destination = path.resolve(event.destination);
+  const reportPath = path.join(destination, 'report.json');
+  if (!fs.existsSync(reportPath)) return false;
+
+  let report;
+  try {
+    report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  } catch {
+    return false;
+  }
+  const runEvents = readJsonLines(path.resolve(event.run_ledger), 'report-backed technical-failure run ledger');
+  const launches = runEvents.filter((candidate) => candidate.type === 'launch_admitted');
+  const reservations = runEvents.filter((candidate) => candidate.type === 'model_attempt_reserved');
+  const units = runEvents.filter((candidate) => candidate.type === 'unit_complete');
+  const seal = runEvents.at(-1);
+  const reportRows = Array.isArray(report.rows) ? report.rows : [];
+  const currentRows = reportRows.slice(-units.length);
+  const reservedInRun = reservations.reduce((sum, candidate) => sum + Number(candidate.count || 0), 0);
+  const priorReserved = Number(report.execution?.model_attempts?.reserved_in_predecessor);
+  let cumulativeReserved = 0;
+  const aligned = reservations.every((reservation, index) => {
+    cumulativeReserved += Number(reservation.count || 0);
+    const unit = units[index];
+    const row = currentRows[index];
+    return (
+      Number.isInteger(reservation.count) &&
+      reservation.count > 0 &&
+      reservation.reserved === cumulativeReserved &&
+      unit?.job_id === reservation.unit &&
+      unit.status === row?.status &&
+      row.job_id === reservation.unit &&
+      Number(row.model_attempts?.reserved) === Number(unit.child_reserved_attempts) &&
+      Number(row.model_attempts?.completed) === Number(unit.child_completed_attempts) &&
+      Number(row.model_attempts?.failed) === Number(unit.child_failed_attempts) &&
+      Number(unit.child_reserved_attempts) ===
+        Number(unit.child_completed_attempts) + Number(unit.child_failed_attempts) &&
+      Number(unit.shared_reserved_attempts) === cumulativeReserved
+    );
+  });
+  return (
+    report.schema === 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1' &&
+    report.study_id === launches[0]?.study_id &&
+    report.status === 'technical_failure' &&
+    report.halt_reason === `technical_failure in ${units.at(-1)?.job_id}` &&
+    report.source?.commit === launches[0]?.source_commit &&
+    report.design?.path === launches[0]?.design_path &&
+    path.resolve(report.recovery?.source_root || '') === path.resolve(launches[0]?.recovery_from || '') &&
+    launches.length === 1 &&
+    launches[0].launch_kind === 'recovery' &&
+    reservations.length > 0 &&
+    reservations.length === units.length &&
+    currentRows.length === units.length &&
+    new Set(reservations.map((candidate) => candidate.unit)).size === reservations.length &&
+    units.filter((candidate) => candidate.status === 'technical_failure').length === 1 &&
+    units.at(-1)?.status === 'technical_failure' &&
+    units.slice(0, -1).every((candidate) => candidate.status === 'complete') &&
+    aligned &&
+    Number.isInteger(reservedInRun) &&
+    reservedInRun > 0 &&
+    Number(seal?.reserved_attempts) === reservedInRun &&
+    seal?.type === 'run_sealed' &&
+    seal.status === 'technical_failure' &&
+    Number(event.reserved_in_run) === reservedInRun &&
+    Number.isInteger(priorReserved) &&
+    priorReserved >= 0 &&
+    priorReserved + reservedInRun === Number(event.study_reserved) &&
+    Number(report.execution?.model_attempts?.reserved_in_current_run) === reservedInRun &&
+    Number(report.execution?.model_attempts?.reserved_by_shared_study_ledger) === Number(event.study_reserved) &&
+    Number(report.execution?.model_attempts?.hard_ceiling) === Number(event.model_attempt_ceiling) &&
+    Number(report.execution?.missing_units) > 0
+  );
+}
+
 function writeDurableJsonOnce(filePath, value) {
   const descriptor = fs.openSync(filePath, 'wx');
   try {
@@ -307,15 +393,30 @@ export function sealInterruptedPaidStudyLaunch({
     if (path.dirname(runLedgerPath) !== resolvedDestination) {
       throw new Error('interrupted run ledger is outside its destination');
     }
-    const runEvents = readJsonLines(runLedgerPath, 'interrupted run ledger');
+    let runEvents = readJsonLines(runLedgerPath, 'interrupted run ledger');
     const runLaunch = runEvents.find((event) => event.type === 'launch_admitted');
     if (!runLaunch || runLaunch.study_id !== studyId || runEvents.some((event) => event.type === 'run_sealed')) {
       throw new Error('interrupted run ledger is not one open launch');
     }
-    const reservedInRun = runEvents
-      .filter((event) => event.type === 'model_attempt_reserved')
-      .reduce((sum, event) => sum + Number(event.count || 0), 0);
-    const studyReserved = studyReservedAttempts(studyEvents);
+    const capacities = runEvents.filter((event) => event.type === 'model_attempt_capacity_allocated');
+    for (const capacity of capacities) {
+      reconcileSharedModelAttemptLedger({
+        runLedgerPath,
+        studyLedgerPath,
+        capacityId: capacity.capacity_id,
+        unitId: capacity.unit,
+      });
+    }
+    runEvents = readJsonLines(runLedgerPath, 'interrupted run ledger after attempt reconciliation');
+    const reservedInRun =
+      runEvents
+        .filter((event) => event.type === 'model_attempt_reserved')
+        .reduce((sum, event) => sum + Number(event.count || 0), 0) +
+      runEvents.filter((event) => event.type === 'model_attempt_dispatch_reserved').length;
+    const refreshedStudyEvents = readJsonLines(studyLedgerPath, 'paid study ledger after attempt reconciliation');
+    const studyReserved =
+      studyReservedAttempts(refreshedStudyEvents) +
+      refreshedStudyEvents.filter((event) => event.type === 'study_model_attempt_dispatch_reserved').length;
     const created = studyEvents.find((event) => event.type === 'study_created');
     if (
       !Number.isInteger(reservedInRun) ||
@@ -404,11 +505,14 @@ function validateStudyLedger({ events, studyId, spendCap, recoveryFrom }) {
   const seal = events[lastSealIndex];
   const ordinaryRecovery = seal?.recovery_permitted === true;
   const zeroProviderStartupRecovery = isSealedZeroProviderStartupFailure(seal);
+  const reportBackedActionOutcomeRecovery = isSealedReportBackedActionOutcomeFailure(seal);
   const zeroProviderStartupFailures = events.filter(isSealedZeroProviderStartupFailure).length;
   if (
     lastSealIndex < lastLaunchIndex ||
     seal?.destination !== recoveryFrom ||
-    (!ordinaryRecovery && (!zeroProviderStartupRecovery || zeroProviderStartupFailures !== 1))
+    (!ordinaryRecovery &&
+      !reportBackedActionOutcomeRecovery &&
+      (!zeroProviderStartupRecovery || zeroProviderStartupFailures !== 1))
   ) {
     throw new Error('recovery requires the latest run to be a sealed technical predecessor');
   }
@@ -475,6 +579,7 @@ export function admitPaidStudyLaunch({
   }
   let reserved = 0;
   let studyReserved = studyReservedAttempts(events);
+  const activeCapacities = new Map();
   let closed = false;
   const ensureOpen = () => {
     if (closed) throw new Error('paid study run ledger is closed');
@@ -498,9 +603,20 @@ export function admitPaidStudyLaunch({
     run_ledger: ledgerPath,
     launch_kind: resolvedRecoveryFrom ? 'recovery' : 'initial',
     ...(resolvedRecoveryFrom ? { recovery_from: resolvedRecoveryFrom } : {}),
-    reserved_before_launch: studyReserved,
+    reserved_before_launch:
+      studyReserved +
+      readJsonLines(lease.studyLedgerPath, 'paid study attempt ledger').filter(
+        (event) => event.type === 'study_model_attempt_dispatch_reserved',
+      ).length,
     model_attempt_ceiling: verified.spend_cap,
   });
+
+  const dispatchReservations = (filePath, type) =>
+    readJsonLines(filePath, 'paid study attempt ledger').filter((event) => event.type === type).length;
+  const totalStudyReserved = () =>
+    studyReserved + dispatchReservations(lease.studyLedgerPath, 'study_model_attempt_dispatch_reserved');
+  const totalRunReserved = () => reserved + dispatchReservations(ledgerPath, 'model_attempt_dispatch_reserved');
+  const activeCapacityTotal = () => [...activeCapacities.values()].reduce((sum, capacity) => sum + capacity.count, 0);
 
   return {
     ...verified,
@@ -509,22 +625,103 @@ export function admitPaidStudyLaunch({
     destination: resolvedDestination,
     ledger_path: ledgerPath,
     get reserved() {
-      return reserved;
+      return totalRunReserved();
     },
     get studyReserved() {
-      return studyReserved;
+      return totalStudyReserved();
+    },
+    allocateModelAttemptCapacity(count, detail = {}) {
+      ensureOpen();
+      if (!Number.isInteger(count) || count < 1) throw new Error('model-attempt capacity must be a positive integer');
+      if (totalStudyReserved() + activeCapacityTotal() + count > verified.spend_cap) {
+        throw new Error(
+          `paid study capacity exceeds the remaining attempt ceiling: ${totalStudyReserved() + activeCapacityTotal() + count}/${verified.spend_cap}`,
+        );
+      }
+      const capacity = { id: randomUUID(), count, detail };
+      activeCapacities.set(capacity.id, capacity);
+      appendJsonLine(studyLedger, {
+        ...detail,
+        type: 'study_model_attempt_capacity_allocated',
+        destination: resolvedDestination,
+        capacity_id: capacity.id,
+        count,
+        consumed_attempts: totalStudyReserved(),
+        model_attempt_ceiling: verified.spend_cap,
+      });
+      appendJsonLine(ledger, {
+        ...detail,
+        type: 'model_attempt_capacity_allocated',
+        capacity_id: capacity.id,
+        count,
+        consumed_attempts: totalRunReserved(),
+        study_consumed_attempts: totalStudyReserved(),
+        spend_cap: verified.spend_cap,
+      });
+      return Object.freeze({ id: capacity.id, count: capacity.count });
+    },
+    attemptLedgerEnvironment({ unitId, capacity, maximumTurn = null } = {}) {
+      ensureOpen();
+      const registered = activeCapacities.get(capacity?.id);
+      if (!unitId || !registered || registered.count !== capacity.count) {
+        throw new Error('attempt ledger environment requires one active matching capacity allocation');
+      }
+      if (maximumTurn !== null && (!Number.isInteger(maximumTurn) || maximumTurn < 1)) {
+        throw new Error('attempt ledger environment maximum turn must be a positive integer or null');
+      }
+      return {
+        TUTOR_STUB_SHARED_ATTEMPT_LEDGER: JSON.stringify({
+          runLedgerPath: ledgerPath,
+          studyLedgerPath: lease.studyLedgerPath,
+          studyId,
+          destination: resolvedDestination,
+          hardCeiling: verified.spend_cap,
+          unitId,
+          capacityId: registered.id,
+          capacityLimit: registered.count,
+          maximumTurn,
+        }),
+      };
+    },
+    releaseModelAttemptCapacity(capacity, detail = {}) {
+      ensureOpen();
+      const registered = activeCapacities.get(capacity?.id);
+      if (!registered) throw new Error('model-attempt capacity is not active');
+      const used = readJsonLines(ledgerPath, 'paid study run ledger').filter(
+        (event) => event.type === 'model_attempt_dispatch_reserved' && event.capacity_id === registered.id,
+      ).length;
+      if (used > registered.count) throw new Error('model-attempt capacity overrun');
+      activeCapacities.delete(registered.id);
+      appendJsonLine(ledger, {
+        ...detail,
+        type: 'model_attempt_capacity_released',
+        capacity_id: registered.id,
+        allocated: registered.count,
+        consumed: used,
+        unused: registered.count - used,
+      });
+      appendJsonLine(studyLedger, {
+        ...detail,
+        type: 'study_model_attempt_capacity_released',
+        destination: resolvedDestination,
+        capacity_id: registered.id,
+        allocated: registered.count,
+        consumed: used,
+        unused: registered.count - used,
+      });
+      return { allocated: registered.count, consumed: used, unused: registered.count - used };
     },
     reserveModelAttempts(count = 1, detail = {}) {
       ensureOpen();
       if (!Number.isInteger(count) || count < 1)
         throw new Error('model-attempt reservation must be a positive integer');
-      if (studyReserved + count > verified.spend_cap) {
+      if (totalStudyReserved() + count > verified.spend_cap) {
         appendJsonLine(ledger, {
           ...detail,
           type: 'model_attempt_reservation_rejected',
           requested: count,
           reserved,
-          study_reserved: studyReserved,
+          study_reserved: totalStudyReserved(),
           spend_cap: verified.spend_cap,
         });
         appendJsonLine(studyLedger, {
@@ -532,10 +729,12 @@ export function admitPaidStudyLaunch({
           type: 'study_model_attempt_reservation_rejected',
           destination: resolvedDestination,
           requested: count,
-          study_reserved: studyReserved,
+          study_reserved: totalStudyReserved(),
           model_attempt_ceiling: verified.spend_cap,
         });
-        throw new Error(`paid study spend cap exceeded before call: ${studyReserved + count}/${verified.spend_cap}`);
+        throw new Error(
+          `paid study spend cap exceeded before call: ${totalStudyReserved() + count}/${verified.spend_cap}`,
+        );
       }
       studyReserved += count;
       appendJsonLine(studyLedger, {
@@ -543,7 +742,7 @@ export function admitPaidStudyLaunch({
         type: 'study_model_attempt_reserved',
         destination: resolvedDestination,
         count,
-        study_reserved: studyReserved,
+        study_reserved: totalStudyReserved(),
         model_attempt_ceiling: verified.spend_cap,
       });
       reserved += count;
@@ -552,13 +751,13 @@ export function admitPaidStudyLaunch({
         type: 'model_attempt_reserved',
         count,
         reserved,
-        study_reserved: studyReserved,
+        study_reserved: totalStudyReserved(),
         spend_cap: verified.spend_cap,
       });
       return {
         reserved,
-        remaining: verified.spend_cap - studyReserved,
-        study_reserved: studyReserved,
+        remaining: verified.spend_cap - totalStudyReserved(),
+        study_reserved: totalStudyReserved(),
       };
     },
     record(event) {
@@ -570,8 +769,34 @@ export function admitPaidStudyLaunch({
     },
     close(event = { type: 'launcher_closed' }) {
       if (closed) return;
-      if (event.recovery_permitted === true && !['technical_failure', 'transport_failure'].includes(event.status)) {
-        throw new Error('only a sealed technical failure may permit recovery');
+      if (
+        event.recovery_permitted === true &&
+        !['technical_failure', 'transport_failure', 'paused_recoverable'].includes(event.status)
+      ) {
+        throw new Error('only a sealed technical failure or recoverable pause may permit recovery');
+      }
+      for (const capacity of [...activeCapacities.values()]) {
+        const used = readJsonLines(ledgerPath, 'paid study run ledger').filter(
+          (candidate) => candidate.type === 'model_attempt_dispatch_reserved' && candidate.capacity_id === capacity.id,
+        ).length;
+        activeCapacities.delete(capacity.id);
+        appendJsonLine(ledger, {
+          type: 'model_attempt_capacity_released',
+          capacity_id: capacity.id,
+          allocated: capacity.count,
+          consumed: used,
+          unused: capacity.count - used,
+          reason: 'run_closed',
+        });
+        appendJsonLine(studyLedger, {
+          type: 'study_model_attempt_capacity_released',
+          destination: resolvedDestination,
+          capacity_id: capacity.id,
+          allocated: capacity.count,
+          consumed: used,
+          unused: capacity.count - used,
+          reason: 'run_closed',
+        });
       }
       appendJsonLine(ledger, event);
       appendJsonLine(studyLedger, {
@@ -581,8 +806,10 @@ export function admitPaidStudyLaunch({
         run_event_type: event.type,
         status: event.status || null,
         recovery_permitted: event.recovery_permitted === true,
-        reserved_in_run: reserved,
-        study_reserved: studyReserved,
+        recoverable: event.recoverable === true,
+        resume_scope: event.resume_scope || null,
+        reserved_in_run: totalRunReserved(),
+        study_reserved: totalStudyReserved(),
         model_attempt_ceiling: verified.spend_cap,
       });
       fs.closeSync(ledger);

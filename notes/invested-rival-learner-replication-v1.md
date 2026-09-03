@@ -1,6 +1,6 @@
 # Invested-rival learner replication v1
 
-Status: paused after 76 attempts; bounded recovery ready for merge
+Status: paused after 294 attempts; assessment-only recovery ready for merge
 
 ## Question
 
@@ -169,3 +169,18 @@ remain descriptive because the Luna and Qwen routes differ.
   exact 13-response Tideway prefix, and only tutor turn seven as the
   response-free retry. The shared 12-test recovery contract, 80 focused tests,
   lint and formatting all passed. Model activity remains inactive at 76/396.
+- 2026-09-02 — The first bounded recovery completed all 18 dialogues without
+  regenerating valid work, then the user paused during Opus assessment. The
+  recovery was interrupted and sealed at 294/396 reservations. It contains all
+  18 complete dialogues and 20 of 90 valid physical assessment packets; three
+  assessment reservations returned no usable response, including the
+  interrupted packet. Model activity is inactive.
+- 2026-09-02 — The runner's existing recovery path handled generation but not
+  a pause after generation had completed. A narrow assessment-recovery path now
+  validates and carries forward every complete dialogue and valid score,
+  reconciles the append-only ledgers, and exposes only the 70 missing packets.
+  The actual sealed archive audit reports 271 generation attempts, 23 Opus
+  reservations, 20 valid packets and three response-free failures. Focused
+  tests pass 58/58, formatting and lint pass, and the unchanged ceiling leaves
+  102 attempts available. Model activity remains inactive pending merge and a
+  clean recovery launch.

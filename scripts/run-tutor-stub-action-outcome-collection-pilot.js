@@ -18,6 +18,17 @@ import {
   runTutorStubActionOutcomeComparableCollectionPreflight,
   TUTOR_STUB_ACTION_OUTCOME_COMPARABLE_COLLECTION_DESIGN_PATH,
 } from '../services/tutorStubActionOutcomeComparableCollection.js';
+import { createDurablePauseStateMachine } from '../services/durableAttemptJournal.js';
+import {
+  actionOutcomeCollectionWorkflowStatusPath,
+  loadOrCreateActionOutcomeCollectionWorkflowStatus,
+} from '../services/actionOutcomeCollectionWorkflowStatus.js';
+import {
+  blockLongRunningWorkflow,
+  completeLongRunningWorkflowPhase,
+  updateLongRunningWorkflowProgress,
+  writeLongRunningWorkflowStatusAtomic,
+} from '../services/longRunningWorkflowStatus.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -96,6 +107,12 @@ function readJsonLines(filePath, label) {
   }
 }
 
+function requiredOptionValue(args, option) {
+  const index = args.indexOf(option);
+  if (index < 0 || index + 1 >= args.length) throw new Error(`job is missing ${option}`);
+  return args[index + 1];
+}
+
 function traceFiles(directory) {
   if (!fs.existsSync(directory)) return [];
   return fs
@@ -104,14 +121,22 @@ function traceFiles(directory) {
     .map((name) => path.join(directory, name));
 }
 
-export function tutorStubActionOutcomeCollectionChildSpec({ job }) {
+export function tutorStubActionOutcomeCollectionChildSpec({ job, admission = null, capacity = null }) {
   fs.mkdirSync(job.job_root, { recursive: false });
   fs.mkdirSync(job.trace_dir, { recursive: false });
+  const attemptLedgerEnvironment =
+    admission?.attemptLedgerEnvironment && capacity
+      ? admission.attemptLedgerEnvironment({
+          unitId: job.id,
+          capacity,
+          maximumTurn: Number.parseInt(requiredOptionValue(job.args, '--auto-turns'), 10),
+        })
+      : {};
   return {
     ...job,
     stdout: path.join(job.job_root, 'stdout.log'),
     stderr: path.join(job.job_root, 'stderr.log'),
-    env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+    env: { ...process.env, ...attemptLedgerEnvironment, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
   };
 }
 
@@ -137,7 +162,7 @@ function relativeToDestination(destination, value) {
   return value ? path.relative(destination, value).split(path.sep).join('/') : null;
 }
 
-export function extractTutorStubActionOutcomeCollectionRow({ job, exit, destination }) {
+export function extractTutorStubActionOutcomeCollectionRow({ job, exit, destination, interruptionDisposition = null }) {
   const traces = traceFiles(job.trace_dir);
   const trace = traces.length === 1 ? traces[0] : null;
   const events = trace ? readTrace(trace) : [];
@@ -150,8 +175,24 @@ export function extractTutorStubActionOutcomeCollectionRow({ job, exit, destinat
   const failedAttempts = events.filter((event) =>
     ['model_call_error', 'model_call_aborted'].includes(event?.type),
   ).length;
+  let cancelledBeforeDispatch = events.filter(
+    (event) => event?.type === 'model_attempt_cancelled_before_dispatch',
+  ).length;
+  let interruptedAfterDispatch = events.filter(
+    (event) => event?.type === 'model_attempt_interrupted_after_dispatch',
+  ).length;
+  const initiallyUnexplained = Math.max(
+    0,
+    reservedAttempts - completedAttempts - failedAttempts - cancelledBeforeDispatch - interruptedAfterDispatch,
+  );
+  if (interruptionDisposition === 'cancelled_before_dispatch') cancelledBeforeDispatch += initiallyUnexplained;
+  if (interruptionDisposition === 'interrupted_after_dispatch') interruptedAfterDispatch += initiallyUnexplained;
+  const unexplainedAttempts = Math.max(
+    0,
+    reservedAttempts - completedAttempts - failedAttempts - cancelledBeforeDispatch - interruptedAfterDispatch,
+  );
   const budgetExhausted = events.some((event) => event?.type === 'model_call_budget_exhausted');
-  const attemptAccountingBalanced = reservedAttempts === completedAttempts + failedAttempts;
+  const attemptAccountingBalanced = unexplainedAttempts === 0;
   const successfulCallPlanComplete = completedAttempts >= job.planned_model_calls;
   const complete =
     exit.code === 0 &&
@@ -198,8 +239,13 @@ export function extractTutorStubActionOutcomeCollectionRow({ job, exit, destinat
       reserved: reservedAttempts,
       completed: completedAttempts,
       failed: failedAttempts,
+      cancelled_before_dispatch: cancelledBeforeDispatch,
+      interrupted_after_dispatch: interruptedAfterDispatch,
+      unexplained: unexplainedAttempts,
       budget_exhausted: budgetExhausted,
       accounting_balanced: attemptAccountingBalanced,
+      accounting_equation:
+        'reserved = completed + failed + cancelled_before_dispatch + interrupted_after_dispatch + unexplained',
       normal_planned_successful: job.planned_model_calls,
       successful_at_or_above_normal_plan: successfulCallPlanComplete,
       per_dialogue_ceiling: job.model_attempt_ceiling,
@@ -256,6 +302,7 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
   const completedEvents = ledger.filter((event) => event.type === 'unit_complete');
   const seal = ledger.at(-1);
   const linkedRecovery = Boolean(sourcePlan.recovery);
+  const pausedPredecessor = seal?.status === 'paused_recoverable';
   const zeroProviderStartupFailure =
     linkedRecovery &&
     reservationEvents.length === 1 &&
@@ -272,10 +319,9 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
     launchEvents[0].design_path !== loaded.relativePath ||
     launchEvents[0].spend_cap !== preflight.plan.model_attempt_ceiling ||
     seal?.type !== 'run_sealed' ||
-    seal?.status !== 'technical_failure' ||
-    (seal?.recovery_permitted !== true && !zeroProviderStartupFailure)
+    !['technical_failure', 'paused_recoverable'].includes(seal?.status)
   ) {
-    throw new Error('action-outcome recovery requires one sealed technical predecessor');
+    throw new Error('action-outcome recovery requires one sealed technical predecessor or recoverable pause');
   }
   const reservedJobIds = reservationEvents.map((event) => event.unit);
   const reservedInSourceRun = reservationEvents.reduce((sum, event) => sum + Number(event.count || 0), 0);
@@ -301,7 +347,62 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
   let priorCompletedUnits;
   let failedJobIds;
   let priorRows;
-  if (!linkedRecovery) {
+  let validatedReportBackedFailure = false;
+  let validatedRecoverablePause = false;
+  if (pausedPredecessor) {
+    const sourceReportPath = path.join(sourceRoot, 'report.json');
+    const sourceReport = readJson(sourceReportPath, 'paused action-outcome predecessor report');
+    const reportRows = Array.isArray(sourceReport.rows) ? sourceReport.rows : [];
+    const inheritedRecovery = linkedRecovery
+      ? loadTutorStubActionOutcomeCollectionRecovery({
+          loaded,
+          preflight: { plan: sourceFullPlan },
+          recoveryFrom: path.resolve(sourcePlan.recovery.source_root || ''),
+        })
+      : null;
+    const inheritedRows = inheritedRecovery?.priorRows || [];
+    const linkedPlanDrift =
+      linkedRecovery &&
+      (sourcePlan.recovery.prior_reserved_attempts !== inheritedRecovery.prior_reserved_attempts ||
+        sourcePlan.recovery.prior_completed_units !== inheritedRecovery.prior_completed_units ||
+        JSON.stringify(sourcePlan.recovery.failed_job_ids) !== JSON.stringify(inheritedRecovery.failed_job_ids) ||
+        JSON.stringify(sourcePlan.execution_job_ids) !==
+          JSON.stringify(inheritedRecovery.executionJobs.map((job) => job.id)) ||
+        JSON.stringify(reportRows.slice(0, inheritedRows.length)) !== JSON.stringify(inheritedRows));
+    const currentRows = reportRows.slice(inheritedRows.length);
+    if (
+      linkedPlanDrift ||
+      seal.recovery_permitted !== true ||
+      sourceReport.schema !== 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1' ||
+      sourceReport.study_id !== loaded.design.studyId ||
+      sourceReport.status !== 'paused_recoverable' ||
+      !String(sourceReport.halt_reason || '').startsWith('operator-requested pause') ||
+      sourceReport.source?.commit !== sourcePlan.source?.commit ||
+      sourceReport.execution?.model_attempts?.reserved_in_current_run !== reservedInSourceRun ||
+      sourceReport.execution?.model_attempts?.hard_ceiling !== preflight.plan.model_attempt_ceiling ||
+      !Number.isInteger(sourceReport.execution?.model_attempts?.reserved_by_shared_study_ledger) ||
+      JSON.stringify(checkpointRows) !== JSON.stringify(reportRows) ||
+      currentRows.length !== completedEvents.length ||
+      currentRows.length !== reservationEvents.length ||
+      JSON.stringify(reservedJobIds) !== JSON.stringify(completedEvents.map((event) => event.job_id)) ||
+      currentRows.some(
+        (row, index) =>
+          row.job_id !== completedEvents[index].job_id ||
+          row.status !== completedEvents[index].status ||
+          Number(row.model_attempts?.reserved) !== Number(completedEvents[index].child_reserved_attempts) ||
+          Number(row.model_attempts?.completed) !== Number(completedEvents[index].child_completed_attempts) ||
+          Number(row.model_attempts?.failed) !== Number(completedEvents[index].child_failed_attempts) ||
+          Number(row.model_attempts?.unexplained || 0) !== 0,
+      )
+    ) {
+      throw new Error('recoverable action-outcome pause predecessor drift');
+    }
+    priorReservedAttempts = sourceReport.execution.model_attempts.reserved_by_shared_study_ledger;
+    priorRows = reportRows.map((row) => ({ ...row, artifact_root: row.artifact_root || sourceRoot }));
+    priorCompletedUnits = priorRows.filter((row) => row.status === 'complete').length;
+    failedJobIds = priorRows.filter((row) => row.status === 'technical_failure').map((row) => row.job_id);
+    validatedRecoverablePause = true;
+  } else if (!linkedRecovery) {
     const completeJobIds = new Set(
       completedEvents.filter((event) => event.status === 'complete').map((event) => event.job_id),
     );
@@ -330,47 +431,96 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
     ];
     priorCompletedUnits = checkpointRows.length;
   } else {
-    const sourceReport = readJson(path.join(sourceRoot, 'report.json'), 'action-outcome predecessor report');
-    const reportRows = Array.isArray(sourceReport.rows) ? sourceReport.rows : [];
-    const reportJobIds = reportRows.map((row) => row.job_id);
     const inheritedRecovery = loadTutorStubActionOutcomeCollectionRecovery({
       loaded,
       preflight: { plan: sourceFullPlan },
       recoveryFrom: path.resolve(sourcePlan.recovery.source_root || ''),
     });
     const inheritedRows = inheritedRecovery.priorRows;
-    const currentRows = reportRows.slice(inheritedRows.length);
-    if (
-      !zeroProviderStartupFailure ||
-      sourceReport.schema !== 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1' ||
-      sourceReport.study_id !== loaded.design.studyId ||
-      sourceReport.status !== 'technical_failure' ||
-      sourceReport.source?.commit !== sourcePlan.source?.commit ||
-      path.resolve(sourceReport.recovery?.source_root || '') !== path.resolve(sourcePlan.recovery.source_root || '') ||
-      sourceReport.execution?.model_attempts?.reserved_in_current_run !== reservedInSourceRun ||
-      sourceReport.execution?.model_attempts?.hard_ceiling !== preflight.plan.model_attempt_ceiling ||
-      !Number.isInteger(sourceReport.execution?.model_attempts?.reserved_by_shared_study_ledger) ||
-      sourceReport.execution.model_attempts.reserved_by_shared_study_ledger < reservedInSourceRun ||
+    const linkedPlanDrift =
       sourcePlan.recovery.prior_reserved_attempts !== inheritedRecovery.prior_reserved_attempts ||
       sourcePlan.recovery.prior_completed_units !== inheritedRecovery.prior_completed_units ||
       JSON.stringify(sourcePlan.recovery.failed_job_ids) !== JSON.stringify(inheritedRecovery.failed_job_ids) ||
       JSON.stringify(sourcePlan.execution_job_ids) !==
         JSON.stringify(inheritedRecovery.executionJobs.map((job) => job.id)) ||
-      JSON.stringify(checkpointRows) !== JSON.stringify(reportRows) ||
-      JSON.stringify(reportRows.slice(0, inheritedRows.length)) !== JSON.stringify(inheritedRows) ||
-      new Set(reportJobIds).size !== reportJobIds.length ||
-      reportRows.some(
+      JSON.stringify(checkpointRows.slice(0, inheritedRows.length)) !== JSON.stringify(inheritedRows) ||
+      new Set(checkpointRows.map((row) => row.job_id)).size !== checkpointRows.length ||
+      checkpointRows.some(
         (row) => !plannedById.has(row.job_id) || !['complete', 'technical_failure'].includes(row.status),
-      ) ||
-      currentRows.length !== completedEvents.length ||
-      currentRows.some(
-        (row, index) => row.job_id !== completedEvents[index].job_id || row.status !== completedEvents[index].status,
-      )
-    ) {
-      throw new Error('action-outcome linked recovery predecessor drift');
+      );
+    const sourceReportPath = path.join(sourceRoot, 'report.json');
+    if (fs.existsSync(sourceReportPath)) {
+      const sourceReport = readJson(sourceReportPath, 'action-outcome predecessor report');
+      const reportRows = Array.isArray(sourceReport.rows) ? sourceReport.rows : [];
+      const currentRows = reportRows.slice(inheritedRows.length);
+      const currentTechnicalFailures = currentRows.filter((row) => row.status === 'technical_failure');
+      if (
+        linkedPlanDrift ||
+        sourceReport.schema !== 'machinespirits.tutor-stub.action-outcome-collection-generation-report.v1' ||
+        sourceReport.study_id !== loaded.design.studyId ||
+        sourceReport.status !== 'technical_failure' ||
+        sourceReport.halt_reason !== `technical_failure in ${currentRows.at(-1)?.job_id}` ||
+        sourceReport.source?.commit !== sourcePlan.source?.commit ||
+        path.resolve(sourceReport.recovery?.source_root || '') !==
+          path.resolve(sourcePlan.recovery.source_root || '') ||
+        sourceReport.execution?.model_attempts?.reserved_in_current_run !== reservedInSourceRun ||
+        sourceReport.execution?.model_attempts?.hard_ceiling !== preflight.plan.model_attempt_ceiling ||
+        !Number.isInteger(sourceReport.execution?.model_attempts?.reserved_by_shared_study_ledger) ||
+        sourceReport.execution.model_attempts.reserved_by_shared_study_ledger < reservedInSourceRun ||
+        JSON.stringify(checkpointRows) !== JSON.stringify(reportRows) ||
+        currentRows.length !== completedEvents.length ||
+        currentRows.length !== reservationEvents.length ||
+        currentTechnicalFailures.length !== 1 ||
+        currentRows.at(-1)?.status !== 'technical_failure' ||
+        JSON.stringify(reservedJobIds) !== JSON.stringify(completedEvents.map((event) => event.job_id)) ||
+        currentRows.some(
+          (row, index) =>
+            row.job_id !== completedEvents[index].job_id ||
+            row.status !== completedEvents[index].status ||
+            Number(row.model_attempts?.reserved) !== Number(completedEvents[index].child_reserved_attempts) ||
+            Number(row.model_attempts?.completed) !== Number(completedEvents[index].child_completed_attempts) ||
+            Number(row.model_attempts?.failed) !== Number(completedEvents[index].child_failed_attempts),
+        )
+      ) {
+        throw new Error('action-outcome linked recovery predecessor drift');
+      }
+      validatedReportBackedFailure = true;
+      priorReservedAttempts = sourceReport.execution.model_attempts.reserved_by_shared_study_ledger;
+      priorRows = reportRows.map((row) => ({ ...row, artifact_root: row.artifact_root || sourceRoot }));
+    } else {
+      const currentRows = checkpointRows.slice(inheritedRows.length);
+      const completedJobIds = completedEvents.map((event) => event.job_id);
+      const interruptedJobIds = reservedJobIds.filter((jobId) => !completedJobIds.includes(jobId));
+      if (
+        linkedPlanDrift ||
+        (seal.recovery_permitted !== true && !zeroProviderStartupFailure) ||
+        completedEvents.some((event) => event.status !== 'complete') ||
+        currentRows.length !== completedEvents.length ||
+        currentRows.some(
+          (row, index) => row.job_id !== completedEvents[index].job_id || row.status !== completedEvents[index].status,
+        ) ||
+        reservationEvents.length !== completedEvents.length + 1 ||
+        JSON.stringify(reservedJobIds.slice(0, -1)) !== JSON.stringify(completedJobIds) ||
+        interruptedJobIds.length !== 1 ||
+        interruptedJobIds[0] !== reservedJobIds.at(-1)
+      ) {
+        throw new Error('action-outcome linked interrupted recovery predecessor drift');
+      }
+      const failedJob = plannedById.get(interruptedJobIds[0]);
+      const failedRow = extractTutorStubActionOutcomeCollectionRow({
+        job: failedJob,
+        exit: { code: null, signal: 'SIGINT', spawn_error: null },
+        destination: sourceRoot,
+      });
+      if (failedRow.status !== 'technical_failure') {
+        throw new Error('interrupted linked action-outcome unit does not reconstruct as a technical failure');
+      }
+      priorReservedAttempts = inheritedRecovery.prior_reserved_attempts + reservedInSourceRun;
+      priorRows = [
+        ...checkpointRows.map((row) => ({ ...row, artifact_root: row.artifact_root || sourceRoot })),
+        { ...failedRow, artifact_root: sourceRoot, interruption_reason: seal.reason || null },
+      ];
     }
-    priorReservedAttempts = sourceReport.execution.model_attempts.reserved_by_shared_study_ledger;
-    priorRows = reportRows.map((row) => ({ ...row, artifact_root: row.artifact_root || sourceRoot }));
     priorCompletedUnits = priorRows.filter((row) => row.status === 'complete').length;
     failedJobIds = priorRows.filter((row) => row.status === 'technical_failure').map((row) => row.job_id);
   }
@@ -404,8 +554,11 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
       JSON.stringify(reservationEvents.map((event) => [event.unit, Number(event.count)])) ||
     studySeal?.type !== 'study_run_sealed' ||
     path.resolve(studySeal.destination || '') !== sourceRoot ||
-    studySeal.status !== 'technical_failure' ||
-    (studySeal.recovery_permitted !== true && !zeroProviderStartupFailure) ||
+    !['technical_failure', 'paused_recoverable'].includes(studySeal.status) ||
+    (studySeal.recovery_permitted !== true &&
+      !zeroProviderStartupFailure &&
+      !validatedReportBackedFailure &&
+      !validatedRecoverablePause) ||
     Number(studySeal.reserved_in_run) !== reservedInSourceRun ||
     Number(studySeal.study_reserved) !== priorReservedAttempts ||
     Number(studySeal.model_attempt_ceiling) !== preflight.plan.model_attempt_ceiling
@@ -425,11 +578,11 @@ export function loadTutorStubActionOutcomeCollectionRecovery({ loaded, preflight
   };
 }
 
-function reportForRows({ loaded, preflight, admission, rows, halt }) {
+function reportForRows({ loaded, preflight, admission, rows, halt, workflowStatusPath }) {
   const plannedJobIds = preflight.plan.jobs.map((job) => job.id);
   const observedJobIds = new Set(rows.map((row) => row.job_id));
   const count = (status) => rows.filter((row) => row.status === status).length;
-  const sums = (field) => rows.reduce((sum, row) => sum + row.model_attempts[field], 0);
+  const sums = (field) => rows.reduce((sum, row) => sum + Number(row.model_attempts[field] || 0), 0);
   const priorReservedAttempts = preflight.recovery?.prior_reserved_attempts || 0;
   const recoveredWithPriorFailure = !halt && preflight.recovery?.failed_job_ids?.length > 0;
   return {
@@ -444,6 +597,15 @@ function reportForRows({ loaded, preflight, admission, rows, halt }) {
     authorization: admission.authorization,
     claim_boundary: loaded.design.claimBoundary,
     memory_controller_enabled: false,
+    control: {
+      state: halt?.status === 'paused_recoverable' ? 'paused' : halt ? 'stopped' : 'complete',
+      recoverable: halt?.status === 'paused_recoverable',
+      resume_scope: halt?.status === 'paused_recoverable' ? 'missing_work_only' : null,
+    },
+    workflow_status: {
+      path: workflowStatusPath,
+      meaning: 'Whole-workflow state; generation completion alone is not workflow completion.',
+    },
     recovery: preflight.recovery
       ? {
           source_root: preflight.recovery.source_root,
@@ -469,6 +631,9 @@ function reportForRows({ loaded, preflight, admission, rows, halt }) {
         reserved_by_children: sums('reserved'),
         completed: sums('completed'),
         failed: sums('failed'),
+        cancelled_before_dispatch: sums('cancelled_before_dispatch'),
+        interrupted_after_dispatch: sums('interrupted_after_dispatch'),
+        unexplained: sums('unexplained'),
         reserved_in_predecessor: priorReservedAttempts,
         reserved_in_current_run: admission.reserved,
         reserved_by_shared_study_ledger: admission.studyReserved ?? priorReservedAttempts + admission.reserved,
@@ -479,7 +644,9 @@ function reportForRows({ loaded, preflight, admission, rows, halt }) {
     next_step:
       halt === null
         ? 'Freeze the complete source corpus, then prepare the registered two-coder packet without inspecting auxiliary outcomes.'
-        : 'Preserve the stopped corpus and apply the registered failure disposition before any further unit.',
+        : halt.status === 'paused_recoverable'
+          ? 'The run is paused at a durable checkpoint. Resume only missing work under the unchanged design and hard ceiling.'
+          : 'Preserve the stopped corpus and apply the registered failure disposition before any further unit.',
   };
 }
 
@@ -491,6 +658,10 @@ export async function executeTutorStubActionOutcomeCollection({
   runChild = runTutorStubActionOutcomeCollectionChild,
   extractRow = extractTutorStubActionOutcomeCollectionRow,
   progress = (line) => process.stdout.write(`${line}\n`),
+  signalTarget = process,
+  createPauseController = createDurablePauseStateMachine,
+  workflowStatusPath,
+  now = () => new Date(),
 } = {}) {
   const { destination } = preflight;
   const perDialogueCeiling = loaded.design.attemptCeiling.maximumReservationsPerDialogue;
@@ -499,6 +670,37 @@ export async function executeTutorStubActionOutcomeCollection({
   if (priorReservedAttempts + perDialogueCeiling * executionJobs.length !== preflight.plan.model_attempt_ceiling) {
     throw new Error('current and predecessor reservations do not close to the registered study ceiling');
   }
+  const statusPath = path.resolve(
+    workflowStatusPath ||
+      actionOutcomeCollectionWorkflowStatusPath({
+        generationRoot: destination,
+        workflowId: loaded.design.studyId,
+      }),
+  );
+  const initialRows = [...(preflight.recovery?.priorRows || [])];
+  const statusCounts = (rows, active = 0) => ({
+    complete: rows.filter((row) => row.status === 'complete').length,
+    active,
+    failed: rows.filter((row) => row.status !== 'complete').length,
+    missing: Math.max(0, preflight.plan.jobs.length - rows.length - active),
+  });
+  const statusCalls = (rows) => ({
+    completed: rows.reduce((sum, row) => sum + Number(row.model_attempts?.completed || 0), 0),
+    failed: rows.reduce((sum, row) => sum + Number(row.model_attempts?.failed || 0), 0),
+    reserved: admission.studyReserved ?? priorReservedAttempts + admission.reserved,
+    hard_ceiling: preflight.plan.model_attempt_ceiling,
+  });
+  let workflowStatus = loadOrCreateActionOutcomeCollectionWorkflowStatus({
+    filePath: statusPath,
+    workflowId: loaded.design.studyId,
+    at: now(),
+    units: statusCounts(initialRows),
+    calls: statusCalls(initialRows),
+    recovering: Boolean(preflight.recovery),
+  }).status;
+  let admissionClosed = false;
+  const recentUnitDurationsMs = workflowStatus.timing.recent_unit_durations_ms || [];
+  writeLongRunningWorkflowStatusAtomic(statusPath, workflowStatus);
   fs.mkdirSync(path.join(destination, 'jobs'), { recursive: false });
   writeOnce(path.join(destination, 'plan.json'), {
     status: 'admitted_under_shared_paid_study_launch_contract',
@@ -521,21 +723,80 @@ export async function executeTutorStubActionOutcomeCollection({
     preflight,
   });
 
-  const rows = [...(preflight.recovery?.priorRows || [])];
+  const pauseController = createPauseController({
+    statePath: path.join(destination, 'run-control.json'),
+    record: (event) => admission.record(event),
+    signalTarget,
+  });
+
+  const rows = initialRows;
   let halt = null;
   try {
     for (const job of executionJobs) {
       if (halt) break;
-      admission.reserveModelAttempts(perDialogueCeiling, {
+      if (pauseController.snapshot().state === 'pause_requested') {
+        pauseController.markPaused({ safe_boundary: 'before_reservation', next_job_id: job.id });
+        halt = {
+          status: 'paused_recoverable',
+          reason: `operator-requested pause before reservation for ${job.id}`,
+        };
+        break;
+      }
+      const capacityDetail = {
         unit: job.id,
         world_id: job.world_id,
         reservation_scope: 'per_dialogue_fail_before_call_ceiling',
+      };
+      const capacity = admission.allocateModelAttemptCapacity
+        ? admission.allocateModelAttemptCapacity(perDialogueCeiling, capacityDetail)
+        : (admission.reserveModelAttempts(perDialogueCeiling, capacityDetail), null);
+      const spec = childSpec({ loaded, job, destination, admission, capacity });
+      admission.record({ type: 'unit_dispatched', job_id: job.id, world_id: job.world_id });
+      const unitStartedAt = now();
+      workflowStatus = updateLongRunningWorkflowProgress(workflowStatus, {
+        at: unitStartedAt,
+        units: statusCounts(rows, 1),
+        calls: statusCalls(rows),
+        recentUnitDurationsMs,
+        modelActivity: {
+          state: 'active',
+          explanation: `The launcher directly dispatched registered unit ${job.id}; this state is not inferred from a timestamp.`,
+        },
+        nextAction: {
+          description: `Wait for registered unit ${job.id} to reach a terminal child result.`,
+          stopping_condition: 'Stop on a failed unit, configuration drift, or the hard call ceiling.',
+        },
       });
-      const spec = childSpec({ loaded, job, destination });
+      writeLongRunningWorkflowStatusAtomic(statusPath, workflowStatus);
       const exit = await runChild(spec);
-      const row = extractRow({ loaded, job: spec, exit, destination });
+      const pauseRequested = pauseController.snapshot().state === 'pause_requested';
+      const row = extractRow({
+        loaded,
+        job: spec,
+        exit,
+        destination,
+        interruptionDisposition:
+          pauseRequested && ['SIGINT', 'SIGTERM'].includes(exit.signal) ? 'interrupted_after_dispatch' : null,
+      });
+      const releasedCapacity = capacity
+        ? admission.releaseModelAttemptCapacity(capacity, { unit: job.id, world_id: job.world_id })
+        : null;
       rows.push(row);
-      if (row.status !== 'complete') {
+      const unitCompletedAt = now();
+      if (row.status === 'complete') {
+        recentUnitDurationsMs.push(Math.max(1, unitCompletedAt.getTime() - unitStartedAt.getTime()));
+      }
+      if (pauseRequested) {
+        pauseController.markPaused({
+          safe_boundary: 'after_child_exit_and_checkpoint',
+          last_job_id: row.job_id,
+          interrupted_after_dispatch: row.model_attempts.interrupted_after_dispatch,
+        });
+        halt = {
+          status: 'paused_recoverable',
+          reason: `operator-requested pause after ${row.job_id}`,
+        };
+      } else if (row.status !== 'complete') {
         halt = {
           status: row.status,
           reason: `${row.status} in ${row.job_id}`,
@@ -549,6 +810,16 @@ export async function executeTutorStubActionOutcomeCollection({
         child_reserved_attempts: row.model_attempts.reserved,
         child_completed_attempts: row.model_attempts.completed,
         child_failed_attempts: row.model_attempts.failed,
+        child_cancelled_before_dispatch_attempts: row.model_attempts.cancelled_before_dispatch,
+        child_interrupted_after_dispatch_attempts: row.model_attempts.interrupted_after_dispatch,
+        child_unexplained_attempts: row.model_attempts.unexplained,
+        ...(releasedCapacity
+          ? {
+              child_attempt_capacity_allocated: releasedCapacity.allocated,
+              child_attempt_capacity_consumed: releasedCapacity.consumed,
+              child_attempt_capacity_unused: releasedCapacity.unused,
+            }
+          : {}),
         shared_reserved_attempts: admission.reserved,
         ...(halt ? { halt_reason: halt.reason } : {}),
       });
@@ -562,11 +833,41 @@ export async function executeTutorStubActionOutcomeCollection({
         shared_reserved_attempts: admission.reserved,
         hard_ceiling: preflight.plan.model_attempt_ceiling,
       });
+      workflowStatus = updateLongRunningWorkflowProgress(workflowStatus, {
+        at: unitCompletedAt,
+        units: statusCounts(rows),
+        calls: statusCalls(rows),
+        recentUnitDurationsMs,
+        modelActivity: {
+          state: 'inactive',
+          explanation:
+            halt?.status === 'paused_recoverable'
+              ? 'The active child reached a terminal boundary after the operator requested a durable pause; no later unit was dispatched.'
+              : halt
+                ? 'The failed generation unit is terminal and no later unit was dispatched.'
+                : 'The completed child is terminal; the launcher has not yet dispatched the next unit.',
+        },
+        nextAction: {
+          description:
+            halt?.status === 'paused_recoverable'
+              ? 'Resume only the missing registered work from the durable checkpoint.'
+              : halt
+                ? 'Apply the registered failure disposition.'
+                : 'Dispatch the next registered generation unit.',
+          stopping_condition:
+            halt?.status === 'paused_recoverable'
+              ? 'Stop if the design, provider route, inputs, or hard ceiling would change.'
+              : halt
+                ? 'Stop before another unit until the failure boundary is resolved.'
+                : 'Stop when every registered unit is dispositioned or any unit fails.',
+        },
+      });
+      writeLongRunningWorkflowStatusAtomic(statusPath, workflowStatus);
       progress(
-        `dispositioned ${rows.length}/${preflight.plan.jobs.length}; turns ${rows.reduce((sum, candidate) => sum + candidate.turns, 0)}/${preflight.plan.planned_turns}; child calls ${rows.reduce((sum, candidate) => sum + candidate.model_attempts.completed, 0)}; study reserved ${admission.studyReserved ?? priorReservedAttempts + admission.reserved}/${preflight.plan.model_attempt_ceiling}${halt ? `; halted: ${halt.reason}` : ''}`,
+        `dispositioned ${rows.length}/${preflight.plan.jobs.length}; turns ${rows.reduce((sum, candidate) => sum + candidate.turns, 0)}/${preflight.plan.planned_turns}; child attempts ${rows.reduce((sum, candidate) => sum + candidate.model_attempts.reserved, 0)} reserved / ${rows.reduce((sum, candidate) => sum + candidate.model_attempts.completed, 0)} completed / ${rows.reduce((sum, candidate) => sum + candidate.model_attempts.failed, 0)} failed / ${rows.reduce((sum, candidate) => sum + Number(candidate.model_attempts.cancelled_before_dispatch || 0), 0)} cancelled before dispatch / ${rows.reduce((sum, candidate) => sum + Number(candidate.model_attempts.interrupted_after_dispatch || 0), 0)} interrupted after dispatch / ${rows.reduce((sum, candidate) => sum + Number(candidate.model_attempts.unexplained || 0), 0)} unexplained; study reserved ${admission.studyReserved ?? priorReservedAttempts + admission.reserved}/${preflight.plan.model_attempt_ceiling}${halt ? `; ${halt.status}: ${halt.reason}; recoverable ${halt.status === 'paused_recoverable'}; resume ${halt.status === 'paused_recoverable' ? 'missing work only' : 'not authorized by this status'}` : ''}`,
       );
     }
-    const report = reportForRows({ loaded, preflight, admission, rows, halt });
+    const report = reportForRows({ loaded, preflight, admission, rows, halt, workflowStatusPath: statusPath });
     writeOnce(path.join(destination, 'report.json'), report);
     admission.close({
       type: 'run_sealed',
@@ -579,14 +880,92 @@ export async function executeTutorStubActionOutcomeCollection({
       missing_units: report.execution.missing_units,
       observed_attempts: report.execution.model_attempts.completed + report.execution.model_attempts.failed,
       reserved_attempts: admission.reserved,
-      ...(report.status === 'technical_failure' && !preflight.recovery ? { recovery_permitted: true } : {}),
+      ...(report.status === 'paused_recoverable' || (report.status === 'technical_failure' && !preflight.recovery)
+        ? { recovery_permitted: true }
+        : {}),
+      recoverable: report.status === 'paused_recoverable' || undefined,
+      resume_scope: report.status === 'paused_recoverable' ? 'missing_work_only' : undefined,
     });
+    admissionClosed = true;
+    if (halt) {
+      const pausedRecoverably = halt.status === 'paused_recoverable';
+      workflowStatus = blockLongRunningWorkflow(workflowStatus, {
+        blockedPhase: preflight.recovery ? 'RECOVERING' : 'GENERATING',
+        operation: pausedRecoverably
+          ? 'Hold at the durable operator-requested pause boundary'
+          : `Generate registered unit ${rows.at(-1)?.job_id || 'unknown'}`,
+        error: report.halt_reason || report.status,
+        at: now(),
+        units: statusCounts(rows),
+        calls: statusCalls(rows),
+        modelActivity: {
+          state: 'inactive',
+          explanation: pausedRecoverably
+            ? 'The launcher sealed a recoverable pause and dispatched no later unit.'
+            : 'The launcher sealed the failed generation block and dispatched no later unit.',
+        },
+        nextAction: {
+          description: pausedRecoverably
+            ? 'Resume only missing work under the unchanged design and hard ceiling.'
+            : 'Inspect the recorded failure and apply the registered recovery or stop disposition.',
+          stopping_condition: pausedRecoverably
+            ? 'Stop if resumption would change the registered study or revisit a dispositioned unit.'
+            : 'Stop before any new model call until recovery eligibility is established.',
+        },
+        humanActionRequired: pausedRecoverably || report.status !== 'technical_failure' || Boolean(preflight.recovery),
+      });
+    } else {
+      workflowStatus = completeLongRunningWorkflowPhase(workflowStatus, {
+        phase: 'GENERATING',
+        nextPhase: 'EXTRACTING',
+        at: now(),
+        handoffExplanation:
+          'Generation is sealed. The authorized zero-call extraction phase has not started in this process.',
+        units: statusCounts(rows),
+        calls: statusCalls(rows),
+        recentUnitDurationsMs,
+        modelActivity: {
+          state: 'inactive',
+          explanation: 'Generation is sealed; the remaining registered phases are zero-call.',
+        },
+        nextAction: {
+          description: 'Start zero-call extraction from the sealed generation report and source traces.',
+          stopping_condition: 'Stop if a source, schema, or registered-condition check fails.',
+        },
+      });
+    }
+    writeLongRunningWorkflowStatusAtomic(statusPath, workflowStatus);
     progress(`${report.status}: ${path.join(destination, 'report.json')}`);
+    progress(`workflow status ${workflowStatus.current_phase}: ${statusPath}`);
     return report;
   } catch (error) {
     admission.record({ type: 'launcher_failed', error: error.message });
-    admission.close({ type: 'run_sealed', status: 'failed', error: error.message });
+    if (!admissionClosed) admission.close({ type: 'run_sealed', status: 'failed', error: error.message });
+    try {
+      workflowStatus = blockLongRunningWorkflow(workflowStatus, {
+        blockedPhase: preflight.recovery ? 'RECOVERING' : 'GENERATING',
+        operation: 'Run the action-outcome collection launcher',
+        error: error.message,
+        at: now(),
+        units: statusCounts(rows),
+        calls: statusCalls(rows),
+        modelActivity: {
+          state: 'inactive',
+          explanation: 'The launcher caught the failure and will dispatch no later unit.',
+        },
+        nextAction: {
+          description: 'Inspect the recorded launcher failure before any recovery or source repair.',
+          stopping_condition: 'Stop before another model call until the failure is classified.',
+        },
+        humanActionRequired: true,
+      });
+      writeLongRunningWorkflowStatusAtomic(statusPath, workflowStatus);
+    } catch (statusError) {
+      error.message = `${error.message}; workflow status update also failed: ${statusError.message}`;
+    }
     throw error;
+  } finally {
+    pauseController.dispose();
   }
 }
 
