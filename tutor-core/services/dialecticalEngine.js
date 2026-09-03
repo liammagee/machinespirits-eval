@@ -92,7 +92,7 @@ function resolveDialecticalModel(modelOverride, agentRole = 'superego') {
 
   // 4. Last resort
   console.warn(`[Dialectical] All model resolution failed for ${agentRole}, using last-resort default`);
-  return { provider: 'anthropic', model: 'claude-sonnet-4-20250514' };
+  return { provider: 'anthropic', model: 'claude-sonnet-5' };
 }
 
 /**

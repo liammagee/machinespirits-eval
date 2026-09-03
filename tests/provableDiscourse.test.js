@@ -29,6 +29,10 @@ function makeProvableFixture(specOverrides = {}) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'provable-discourse-'));
   const dbPath = path.join(tmpDir, 'evaluations.db');
   new Database(dbPath).close();
+  // The audit resolves db_path through the EVAL_DB_PATH override, which the
+  // hermetic runner always sets. Pin it to this fixture so the audit opens the
+  // database built here, not whatever an earlier file in the shard left behind.
+  process.env.EVAL_DB_PATH = dbPath;
   fs.writeFileSync(path.join(tmpDir, 'manifest.json'), JSON.stringify({ totals: { expected_scored: 123 } }, null, 2));
   fs.writeFileSync(path.join(tmpDir, 'paper-full.md'), 'Legacy-only proof phrase. Shared claim phrase.');
   fs.writeFileSync(path.join(tmpDir, 'paper-full-2.0.md'), 'Paper 2 only proof phrase. Shared claim phrase.');
