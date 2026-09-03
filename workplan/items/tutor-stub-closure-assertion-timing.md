@@ -1,15 +1,15 @@
 ---
 id: tutor-stub-closure-assertion-timing
 title: "Strict closure misses a learner who states the answer before the last premise is grounded"
-status: triaged
+status: review
 type: infra
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-09-02
-updated: 2026-09-02
+updated: 2026-09-03
 verification: "On the packed world-040 plants-d0 trace (notes/poetics/hero-demo-runs/world-040/), a replay of the closure rule closes the dialogue at or soon after turn 10, when the last premise (p_uncover) is grounded, because the learner stated the answer at turns 3 and 8; and no frozen inquiry-world fixture changes its closure turn. Or a recorded decision that an early answer must be restated after grounding, with the tutor prompt changed to ask for it."
-branch: null
+branch: codex/tutor-stub-closure-assertion-timing
 depends_on: []
 links:
   items:
@@ -52,3 +52,26 @@ same way. The forced-card run of 040 never filled the slot at all.
 
 Offline first: replay the packed 040 and 038 traces through the closure rule
 under option 1 before any paid run.
+
+## Resolution (2026-09-03)
+
+Implemented option 1. The learner DAG now retains the latest explicit answer
+assertion across turns and applies it only after the same answer becomes
+entailed. A later mismatching assertion supersedes an earlier correct one, and
+an unsupported early assertion remains non-closing.
+
+Offline replay of the packed learner-analysis events produced the intended
+closure points without any model calls:
+
+- world-040 plants-d0 closes at learner turn 9 when `p_uncover` completes the
+  proof path; its latest matching answer assertion is on turn 8.
+- world-038 plants-d0 closes at learner turn 8, where its answer assertion and
+  final derivation occur together.
+- frozen inquiry-world replays retain their existing closure turns: Skyway A1
+  at turn 14, Skyway A3 at turn 17, and Tideway A2 at turn 8.
+
+Regression coverage now fixes the three decision boundaries: a matching early
+answer carries after grounding, a later mismatch supersedes it, and a premature
+unsupported assertion cannot close the dialogue. Focused learner-DAG, closure,
+public-analysis, proxy-memory, restoration, packed-replay, and frozen-replay
+tests pass; `npm run wp:source-check` is the remaining publication check.

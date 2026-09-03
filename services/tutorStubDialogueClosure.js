@@ -48,7 +48,8 @@ export function tutorStubLearnerDagGrounded(model) {
   const assessment = model?.assessment || model || {};
   return Boolean(
     assessment.bottleneck === 'grounded_asserted_secret' ||
-    (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
+    (assessment.finalSecretEntailed === true &&
+      (assessment.assertedSecret === true || assessment.carriedSecretAssertion === true)),
   );
 }
 
