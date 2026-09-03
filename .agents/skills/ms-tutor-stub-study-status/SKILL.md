@@ -42,6 +42,13 @@ paths for both the reporter and artifact root. Before reporting results, record
 the session worktree, its `HEAD` SHA and dirt state, the artifact root, and the
 reporter checkout's `HEAD` SHA and dirt state.
 
+The default output is concise prose beginning with `State`, `What is happening
+now`, `Overall progress`, `Timing`, `Model activity`, `Units`, `Calls`, `Repairs
+or recovery`, `Current issue`, `Next action`, and `Human decision required`.
+Keep the ETA label: it is inferred only when at least two completed-unit
+durations support a range; otherwise it is unavailable with a reason. JSON is
+an explicit `--json` mode, never the default.
+
 Do not run a process-status command to supplement the snapshot. The reporter's
 `Model activity: not verifiable` is the correct result unless the user has
 separately asked for process/provider inspection and that activity is proved by

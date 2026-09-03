@@ -21,6 +21,8 @@ import {
   loadTutorStubActionOutcomeProspectiveRedesign,
   runTutorStubActionOutcomeProspectiveRedesignPreflight,
 } from '../services/tutorStubActionOutcomeProspectiveRedesign.js';
+import { actionOutcomeCollectionWorkflowStatusPath } from '../services/actionOutcomeCollectionWorkflowStatus.js';
+import { loadLongRunningWorkflowStatus } from '../services/longRunningWorkflowStatus.js';
 import {
   executeTutorStubActionOutcomeCollection,
   extractTutorStubActionOutcomeCollectionRow,
@@ -690,6 +692,17 @@ test('a graceful operator pause checkpoints at the next child boundary and repor
   assert.equal(value.admission.closed.resume_scope, 'missing_work_only');
   assert.equal(signals.listenerCount('SIGINT'), 0);
   assert.equal(signals.listenerCount('SIGTERM'), 0);
+  const workflowStatusPath = actionOutcomeCollectionWorkflowStatusPath({
+    generationRoot: value.destination,
+    workflowId: value.loaded.design.studyId,
+  });
+  const workflowStatus = loadLongRunningWorkflowStatus(workflowStatusPath).status;
+  assert.equal(report.workflow_status.path, workflowStatusPath);
+  assert.equal(workflowStatus.current_phase, 'BLOCKED');
+  assert.equal(workflowStatus.blocker.blocked_phase, 'GENERATING');
+  assert.equal(workflowStatus.blocker.observed_error.includes('operator-requested pause'), true);
+  assert.equal(workflowStatus.human_action_required, true);
+  assert.equal(workflowStatus.model_activity.state, 'inactive');
 
   const runLedgerPath = path.join(value.destination, 'run-ledger.jsonl');
   const studyStateRoot = path.join(path.dirname(value.destination), '.paid-study-state');
@@ -1136,6 +1149,17 @@ test('execution accounts for all 24 jobs and seals the complete generation block
   assert.equal(fs.existsSync(path.join(value.destination, 'plan.json')), true);
   assert.equal(fs.existsSync(path.join(value.destination, 'checkpoint.json')), true);
   assert.equal(fs.existsSync(path.join(value.destination, 'report.json')), true);
+  const workflowStatusPath = actionOutcomeCollectionWorkflowStatusPath({
+    generationRoot: value.destination,
+    workflowId: value.loaded.design.studyId,
+  });
+  const workflowStatus = loadLongRunningWorkflowStatus(workflowStatusPath).status;
+  assert.equal(report.workflow_status.path, workflowStatusPath);
+  assert.equal(workflowStatus.current_phase, 'HANDOFF_PENDING');
+  assert.equal(workflowStatus.workflow_status, 'handoff_pending');
+  assert.deepEqual(workflowStatus.completed_phases, ['PREFLIGHT', 'GENERATING']);
+  assert.equal(workflowStatus.blocker.next_phase, 'EXTRACTING');
+  assert.equal(workflowStatus.model_activity.state, 'inactive');
 });
 
 test('a technical failure stops before the next job and preserves bounded recovery authority', async (t) => {

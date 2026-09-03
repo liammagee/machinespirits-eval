@@ -17,6 +17,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { tutorStubTraceModelRole, verifyExperimentRun } from '../services/experimentRunArtifacts.js';
+import { estimateLongRunningWorkflowEta } from '../services/longRunningWorkflowStatus.js';
 
 const STATUS_SCHEMA = 'machinespirits.tutor-stub.study-status.v1';
 const COMPLETE_STATUSES = new Set(['ok', 'complete', 'completed', 'dry_run']);
@@ -278,6 +279,20 @@ function lastVerifiedEvent(records, root) {
   };
 }
 
+function eventTimestamp(event) {
+  const value = event?.recordedAt || event?.ts || null;
+  return value && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null;
+}
+
+function firstVerifiedTimestamp(records) {
+  return (
+    records
+      .map(({ event }) => eventTimestamp(event))
+      .filter(Boolean)
+      .sort((left, right) => Date.parse(left) - Date.parse(right))[0] || null
+  );
+}
+
 function sealStatus(root, files) {
   const sealPath = path.join(root, 'run-seal.json');
   if (!files.includes(sealPath)) {
@@ -351,6 +366,13 @@ export function deriveTutorStubStudyStatus(rootPath) {
     const adherenceExhaustions = countTypes(records, new Set(['auto_learner_profile_adherence_exhausted']));
     const localStops = hasLocalStop(records) ? 1 : 0;
     const status = localStops > 0 ? 'failed' : unitStatus(jobEvents, records);
+    const startedAt = firstVerifiedTimestamp(jobEvents.filter(({ event }) => event.type === 'job_started'));
+    const completedAt = lastByType(jobEvents, new Set(['job_completed']));
+    const completedTimestamp = eventTimestamp(completedAt);
+    const durationMs =
+      status === 'complete' && startedAt && completedTimestamp
+        ? Math.max(1, Date.parse(completedTimestamp) - Date.parse(startedAt))
+        : null;
     return {
       ...shell,
       arguments: undefined,
@@ -363,6 +385,9 @@ export function deriveTutorStubStudyStatus(rootPath) {
       repairRequests,
       adherenceExhaustions,
       localStops,
+      startedAt,
+      completedAt: completedTimestamp,
+      durationMs,
       lastEvent: lastVerifiedEvent(records, root),
     };
   });
@@ -410,8 +435,10 @@ export function deriveTutorStubStudyStatus(rootPath) {
     counts.failed > 0 || localStops > 0
       ? 'BLOCKED'
       : counts.complete === units.length && seal.verified && seal.status === 'complete'
-        ? 'COMPLETE'
-        : 'PAUSED';
+        ? verdictFiles.length
+          ? 'WORKFLOW_COMPLETE'
+          : 'HANDOFF_PENDING'
+        : 'HANDOFF_PENDING';
   const noVerdict = verdictFiles.length === 0;
   const humanDecisionRequired = state === 'BLOCKED' && recoveries.length === 0;
   const failedDescription = units
@@ -425,9 +452,48 @@ export function deriveTutorStubStudyStatus(rootPath) {
       : 'No execution failure is recorded in the readable artifacts.';
   const nextSafeAction = humanDecisionRequired
     ? 'Decide whether frozen authority permits recovery or continuation; stop before any model call until that boundary is resolved.'
-    : state === 'COMPLETE'
+    : state === 'WORKFLOW_COMPLETE'
       ? 'Preserve the sealed artifacts; stop unless separately authorized analysis is requested.'
       : 'Verify process/provider activity outside this artifact snapshot; stop if activity cannot be proved.';
+  const allRecords = [...allRunEvents, ...allTraceRecords];
+  const lastEvent = lastVerifiedEvent(allRecords, root);
+  const completedDurations = units
+    .filter((unit) => unit.durationMs !== null)
+    .sort((left, right) => Date.parse(left.completedAt) - Date.parse(right.completedAt))
+    .map((unit) => unit.durationMs);
+  const etaTiming = estimateLongRunningWorkflowEta({
+    recentUnitDurationsMs: completedDurations,
+    remainingUnits: counts.active + counts.missing,
+    asOf: lastEvent?.timestamp || new Date(),
+  });
+  const timing = {
+    workflowStartedAt: firstVerifiedTimestamp(allRecords),
+    lastMaterialProgressAt: lastEvent?.timestamp || null,
+    recentUnitDurationsMs: etaTiming.recent_unit_durations_ms,
+    recentObservedPace: etaTiming.recent_observed_pace,
+    etaRange:
+      state === 'BLOCKED'
+        ? {
+            basis: 'unavailable',
+            earliestAt: null,
+            latestAt: null,
+            explanation: 'The workflow is blocked, so completed-unit pace does not establish a restart time.',
+          }
+        : {
+            basis: etaTiming.eta_range.basis,
+            earliestAt: etaTiming.eta_range.earliest_at,
+            latestAt: etaTiming.eta_range.latest_at,
+            explanation: etaTiming.eta_range.explanation,
+          },
+  };
+  const whatIsHappeningNow =
+    state === 'BLOCKED'
+      ? 'The recorded generation phase is stopped at a failed unit; no later unit is shown as running.'
+      : state === 'WORKFLOW_COMPLETE'
+        ? 'The recorded workflow is sealed and includes a registered terminal verdict.'
+        : counts.complete === units.length && seal.verified
+          ? 'Generation is sealed; a later requested phase or verdict remains pending.'
+          : 'The artifact snapshot has no independently verified live process; execution or handoff remains pending.';
 
   return {
     schema: STATUS_SCHEMA,
@@ -461,7 +527,9 @@ export function deriveTutorStubStudyStatus(rootPath) {
       driftObservations: driftCount,
     },
     seal,
-    lastVerifiedEvent: lastVerifiedEvent([...allRunEvents, ...allTraceRecords], root),
+    lastVerifiedEvent: lastEvent,
+    whatIsHappeningNow,
+    timing,
     registeredVerdict: { found: !noVerdict, sources: verdictFiles },
     currentIssue,
     nextSafeAction,
@@ -474,27 +542,54 @@ function listUnits(values) {
   return values.length ? values.join(', ') : 'none';
 }
 
+function durationText(milliseconds) {
+  if (!Number.isFinite(milliseconds)) return 'unavailable';
+  const seconds = Math.round(milliseconds / 1000);
+  if (seconds < 60) return `${seconds}s/unit`;
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return `${minutes}m${String(remainder).padStart(2, '0')}s/unit`;
+}
+
+function timingText(timing) {
+  const durations = timing.recentUnitDurationsMs || [];
+  const pace = durations.length
+    ? `${durationText(Math.min(...durations))}–${durationText(Math.max(...durations))} from ${durations.length} completed unit(s)`
+    : 'unavailable';
+  const eta = timing.etaRange;
+  const etaText =
+    eta.basis === 'inferred'
+      ? `inferred ${eta.earliestAt} to ${eta.latestAt} — ${eta.explanation}`
+      : eta.basis === 'measured'
+        ? `measured ${eta.earliestAt} — ${eta.explanation}`
+        : `unavailable — ${eta.explanation}`;
+  return `started ${timing.workflowStartedAt || 'unavailable'}; last material progress ${timing.lastMaterialProgressAt || 'unavailable'}; recent pace ${pace}; ETA ${etaText}`;
+}
+
 export function renderTutorStubStudyStatus(status) {
   const lines = [
     `State: ${status.state}`,
+    `What is happening now: ${status.whatIsHappeningNow}`,
+    `Overall progress: ${status.unitCounts.complete}/${status.units.length} units complete; ${status.turns.completed}/${status.turns.planned} planned turns recorded; completed phases cannot be inferred beyond this artifact snapshot.`,
+    `Timing: ${timingText(status.timing)}`,
     `Model activity: ${status.modelActivity.state} — ${status.modelActivity.explanation}`,
     `Units: ${status.unitCounts.complete} complete / ${status.unitCounts.active} active / ${status.unitCounts.failed} failed / ${status.unitCounts.missing} missing`,
-    `Turns: ${status.turns.completed} completed / ${status.turns.planned} planned`,
     `Calls: ${status.calls.reserved} reserved / ${status.calls.completed} completed / ${status.calls.failed} failed / ${status.calls.hardCeiling} hard ceiling (${status.calls.remaining} remaining)`,
+    `Repairs or recovery: ${status.repairsOrRecovery.profileRepairRequests} profile-repair requests in ${listUnits(status.repairsOrRecovery.profileRepairUnits)}; ${status.repairsOrRecovery.adherenceExhaustions} adherence exhaustions in ${listUnits(status.repairsOrRecovery.adherenceExhaustionUnits)}; ${status.repairsOrRecovery.recoveryRuns} recovery runs recorded.`,
+    `Current issue: ${status.currentIssue}`,
+    `Next action: ${status.nextSafeAction}`,
+    `Human decision required: ${status.humanDecisionRequired ? 'yes' : 'no'}`,
+    `Turns: ${status.turns.completed} completed / ${status.turns.planned} planned`,
     'Per-unit progress:',
     ...status.units.map(
       (unit) =>
         `  ${unit.id}: ${unit.status}; turns ${unit.turnsCompleted}/${unit.plannedTurns || '?'}; calls ${unit.callsReserved} reserved, ${unit.callsCompleted} completed, ${unit.callsFailed} failed / ${unit.hardCeiling} ceiling`,
     ),
-    `Repairs or recovery: ${status.repairsOrRecovery.profileRepairRequests} profile-repair requests in ${listUnits(status.repairsOrRecovery.profileRepairUnits)}; ${status.repairsOrRecovery.adherenceExhaustions} adherence exhaustions in ${listUnits(status.repairsOrRecovery.adherenceExhaustionUnits)}; ${status.repairsOrRecovery.recoveryRuns} recovery runs recorded.`,
     `Failure boundary: ${status.failures.providerCallFailures} provider-call failures; ${status.failures.localBudgetOrRuntimeStops} local budget/runtime stops in ${listUnits(status.failures.localStopUnits)}.`,
     `Configuration drift: ${status.configurationDrift.state} (${status.configurationDrift.checkedObservations} readable observations checked).`,
     `Seal/integrity: ${status.seal.state}${status.seal.status ? `; recorded status ${status.seal.status}` : ''}.`,
     `Last verified event: ${status.lastVerifiedEvent ? `${status.lastVerifiedEvent.timestamp} — ${status.lastVerifiedEvent.type} at ${status.lastVerifiedEvent.source}` : 'none readable'}`,
     `Registered verdict: ${status.registeredVerdict.found ? `found at ${status.registeredVerdict.sources.join(', ')}` : 'none found in artifact root'}.`,
-    `Current issue: ${status.currentIssue}`,
-    `Next safe action: ${status.nextSafeAction}`,
-    `Human decision required: ${status.humanDecisionRequired ? 'yes' : 'no'}`,
   ];
   if (status.warnings.length)
     lines.push(`Read safety: ${status.warnings.length} warning(s); ${status.warnings.join('; ')}`);
