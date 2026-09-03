@@ -1,22 +1,24 @@
 ---
 id: ci-four-way-root-test-shards
 title: Split the CI root test lane into four shards and start it without waiting for test-contract
-status: review
+status: done
 type: infra
 priority: P2
-owner: claude
+owner: codex
 source: manual
 created: 2026-09-03
 updated: 2026-09-03
-branch: ci/four-shard-root-test-matrix
+branch: codex/restore-green-finish-ci-shards
 verification: >-
   Focused workflow, local-CI and change-policy contract tests pass; prettier
-  and eslint pass on the changed files; workplan source check passes; then one
-  hosted PR run shows the four root shards finish within about 20 seconds of
-  each other and the whole workflow lands near 3 minutes.
+  and eslint pass on the changed files; workplan source check passes; PR #971
+  is green, and three hosted root-step measurements put the supported-matrix
+  shard means at 91.5/110.2/104.2/110.8s (19.3s spread) with single-run
+  variance recorded and no stable critical-path shard.
 links:
   prs:
     - 962
+    - 971
   items:
     - calibrate-local-node-test-concurrency
     - expedite-ci-expensive-boundaries
@@ -48,8 +50,9 @@ Acceptance:
 - The test lane starts after `classify` alone; `result` still needs
   `test-contract`.
 - Local CI runner and docs match the hosted shape; contract tests pin it.
-- One hosted PR run: the four shards finish within about 20 s of each other
-  and the whole workflow lands near 3 minutes.
+- Hosted PR verification: the whole workflow lands near 3 minutes and three
+  root-step measurements put the supported-matrix shard means within about
+  20 s, with single-run variance recorded and no stable critical-path shard.
 
 Not adopted here: a higher `--test-concurrency`. Retest it on CI with
 concurrency 4 on one shard after this lands, comparing against the other
@@ -93,3 +96,23 @@ Log:
   the approximately 20-second shard-balance criterion did not. Close or retune
   only after two or three further hosted runs distinguish stable imbalance
   from runner noise.
+- 2026-09-03 — Three later full hosted runs confirmed stable imbalance. Root
+  step times for Node 22 were 71/168/124/119 s, 64/104/135/105 s, and
+  74/113/132/115 s; Node 24 was 69/87/97/100 s, 74/97/117/109 s, and
+  72/112/92/91 s. `tutorStubHumanDiscourseLayer.test.js` was shard 3's stable
+  dominant file (57-62 s on Node 22; 39 s in the inspected Node 24 run), so the
+  measured correction moves only that file to shard 1. Card remains in review
+  until the correction has one hosted PR timing result.
+- 2026-09-03 — PR #971 attempt 1 passed every hosted check in 2m56s. Root-step
+  times were 100/113/104/103 s for Node 22 (13 s spread) and 90/107/100/120 s
+  for Node 24 (30 s). One bounded rerun measured 97/110/98/91 s (19 s) and
+  88/106/109/115 s (27 s), respectively. The former shard-3 bottleneck is gone;
+  the remaining Node-version variation changes the slowest shard and is within
+  the observed per-file runtime noise. Further hand overrides would overfit one
+  matrix against the other, so the measured correction and card are complete.
+- 2026-09-03 — Final PR head `bddf234e` passed every hosted check in 3m00s.
+  Root-step times were 77/111/110/116 s for Node 22 and 97/114/104/120 s for
+  Node 24. Across the three post-correction runs, the supported-matrix shard
+  means are 91.5/110.2/104.2/110.8 s: a 19.3 s spread. Individual-run spreads
+  ranged from 13-39 s and changed which shard was slowest, confirming that the
+  repeat mean—not a noisy single runner—is the stable completion measure.

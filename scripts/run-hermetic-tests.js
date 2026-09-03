@@ -59,6 +59,10 @@ const SHARD_OVERRIDES = new Map([
       // 192/214/218/217.
       ['tests/tutorStubResistanceSemanticValidationRuntime.test.js', 1],
       ['tests/tutorStubResistanceActionRegisterConfirmationGoRequest.test.js', 0],
+      // Three post-merge hosted runs kept shard 1 light and shard 3 heavy.
+      // This was shard 3's stable dominant file (57-62s on Node 22 and 39s
+      // on Node 24), so move only it to shard 1.
+      ['tests/tutorStubHumanDiscourseLayer.test.js', 0],
     ]),
   ],
 ]);
