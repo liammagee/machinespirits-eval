@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-09-02
-branch: codex/action-outcome-recovery-packaging-fix
+branch: codex/action-outcome-model-judge
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -36,6 +36,10 @@ links:
     - notes/2026-09-02-tutor-stub-action-outcome-failed-unit-recovery-go.md
     - docs/durable-evaluation-execution-contract.md
     - notes/2026-09-02-action-outcome-recovery-horizon-incident.md
+    - config/tutor-stub-action-outcome-model-judge-shadow-design.v1.json
+    - config/tutor-stub-action-outcome-model-judge-codebook.v1.md
+    - services/tutorStubActionOutcomeModelJudge.js
+    - scripts/run-tutor-stub-action-outcome-model-judge-shadow.js
   exports:
     - exports/action-outcome-collection-pilot/2026-09-01-zero-call-quality-audit/README.md
   prs:
@@ -125,6 +129,20 @@ ranking pass. Memory entries require evidence, validity, supersession,
 contradiction, and retrieval reasons; stale memory must be an explicit control.
 
 ## Log
+
+- 2026-09-02: Registered the operator-requested Opus-Sol shadow semantic
+  judgment before either model saw the frozen 35-case packet. The separate lane
+  gives `codex.gpt-5.6-sol` and `claude-code.opus-5` one isolated low-effort
+  call per case, with no retries, 70 planned calls, and a hard ceiling of 70
+  attempt reservations. Prompts expose only the auxiliary-blind public case and
+  require exact quotations for delivery and outcome labels. The machine key is
+  used only after judgment for family, world, and frozen-auxiliary comparison;
+  both original human submission templates are hash-checked before and after
+  execution and never populated. The report measures protocol validity, exact
+  agreement, Cohen kappa, paired indeterminacy, binary yield, and disagreements.
+  Passing is exploratory evidence for a future model-first measurement design;
+  it does not satisfy the v2 human gates, validate the construct, or license the
+  controller. This registration and its tests make zero model calls.
 
 - 2026-09-02: Completed the exact three-dialogue recovery at the registered
   eight-turn horizon. The fresh worker used 34 reservations; together with the
