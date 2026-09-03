@@ -1,30 +1,27 @@
 ---
 id: hero-demo-ghost-world-examples
 title: "Record with/without examples on new demo worlds and build the tabbed hero-demo app"
-status: review
+status: done
 type: content
 priority: P2
 owner: claude
 source: manual
 created: 2026-09-01
-updated: 2026-09-01
-verification: "Three scenarios (Rowan Flat, the Nine O'Clock Ghost, Half
-  Plus a Third) each recorded once per tutor (bare vs full adaptive stack,
-  Claude Sonnet both seats), traces packed in-branch, and rendered as
-  parallel swimlanes through the shared dramatic-dialogue renderer by
-  scripts/render-hero-demo-swimlanes.js (--check passes). The tabbed app
-  explains the approach in a teaching register, links every moment to its
-  turn in the full swimlane, keeps a works/didn't ledger with every number
-  traced to the 29 August note and Paper 2.0, and labels every recording as
-  illustration outside the adjudicated tallies. World-037's planted moments
-  are drawn from the resistant-learner profile library; the detector's
-  single firing on that lesson is stated on the page."
+updated: 2026-09-03
+verification: "Verified on 2026-09-03 against origin/main@2af95ac6: PR
+  #918 is merged; all three bare/adaptive trace pairs and interchanges are
+  packed; node scripts/render-hero-demo-swimlanes.js --check reports 24
+  turns for Rowan, Ghost, and Fraction and 'note is current'; the app meets
+  the teaching-register, turn-link, evidence-ledger, illustration-boundary,
+  resistant-profile, and one-of-six detector-firing criteria."
 depends_on:
   - adaptive-tutor-hero-demo-lay-rewrite
 links:
   notes:
     - notes/poetics/2026-09-01-adaptive-tutor-hero-demo.html
     - notes/poetics/2026-09-01-adaptive-tutor-demo-app.html
+  prs:
+    - 918
   items:
     - adaptation-planted-stress-bench
     - adaptive-causality-repertoire
@@ -135,3 +132,12 @@ planted line in about half the turns (5/12 realized on the fresh Rowan pair),
 where the counted runs used a codex learner; and the whole-stack effect on the
 trigger's home world (world-033: 10/24 vs 15/29) is about one hit per ten
 plants, below what six plants show; on Rowan the pressure-only stack lost.
+
+## Closeout log
+
+- 2026-09-03 Codex: Closed after independently reconciling the acceptance
+  criteria against current `origin/main` at `2af95ac6`. PR #918 is merged as
+  `7ed9bc816f992048a7428b44a4457124ad315314`; the checked-in transcript
+  pairs, interchanges, app copy, provenance, and stated limits are present,
+  and the renderer freshness check passes without rewriting the note. No
+  model/provider calls were made during this reconciliation.
