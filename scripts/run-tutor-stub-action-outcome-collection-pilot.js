@@ -830,23 +830,26 @@ export async function executeTutorStubActionOutcomeCollection({
         recentUnitDurationsMs,
         modelActivity: {
           state: 'inactive',
-          explanation: halt?.status === 'paused_recoverable'
-            ? 'The active child reached a terminal boundary after the operator requested a durable pause; no later unit was dispatched.'
-            : halt
-              ? 'The failed generation unit is terminal and no later unit was dispatched.'
-            : 'The completed child is terminal; the launcher has not yet dispatched the next unit.',
+          explanation:
+            halt?.status === 'paused_recoverable'
+              ? 'The active child reached a terminal boundary after the operator requested a durable pause; no later unit was dispatched.'
+              : halt
+                ? 'The failed generation unit is terminal and no later unit was dispatched.'
+                : 'The completed child is terminal; the launcher has not yet dispatched the next unit.',
         },
         nextAction: {
-          description: halt?.status === 'paused_recoverable'
-            ? 'Resume only the missing registered work from the durable checkpoint.'
-            : halt
-              ? 'Apply the registered failure disposition.'
-            : 'Dispatch the next registered generation unit.',
-          stopping_condition: halt?.status === 'paused_recoverable'
-            ? 'Stop if the design, provider route, inputs, or hard ceiling would change.'
-            : halt
-              ? 'Stop before another unit until the failure boundary is resolved.'
-            : 'Stop when every registered unit is dispositioned or any unit fails.',
+          description:
+            halt?.status === 'paused_recoverable'
+              ? 'Resume only the missing registered work from the durable checkpoint.'
+              : halt
+                ? 'Apply the registered failure disposition.'
+                : 'Dispatch the next registered generation unit.',
+          stopping_condition:
+            halt?.status === 'paused_recoverable'
+              ? 'Stop if the design, provider route, inputs, or hard ceiling would change.'
+              : halt
+                ? 'Stop before another unit until the failure boundary is resolved.'
+                : 'Stop when every registered unit is dispositioned or any unit fails.',
         },
       });
       writeLongRunningWorkflowStatusAtomic(statusPath, workflowStatus);

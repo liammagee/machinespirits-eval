@@ -689,6 +689,17 @@ test('a graceful operator pause checkpoints at the next child boundary and repor
   assert.equal(value.admission.closed.resume_scope, 'missing_work_only');
   assert.equal(signals.listenerCount('SIGINT'), 0);
   assert.equal(signals.listenerCount('SIGTERM'), 0);
+  const workflowStatusPath = actionOutcomeCollectionWorkflowStatusPath({
+    generationRoot: value.destination,
+    workflowId: value.loaded.design.studyId,
+  });
+  const workflowStatus = loadLongRunningWorkflowStatus(workflowStatusPath).status;
+  assert.equal(report.workflow_status.path, workflowStatusPath);
+  assert.equal(workflowStatus.current_phase, 'BLOCKED');
+  assert.equal(workflowStatus.blocker.blocked_phase, 'GENERATING');
+  assert.equal(workflowStatus.blocker.observed_error.includes('operator-requested pause'), true);
+  assert.equal(workflowStatus.human_action_required, true);
+  assert.equal(workflowStatus.model_activity.state, 'inactive');
 
   const runLedgerPath = path.join(value.destination, 'run-ledger.jsonl');
   const studyStateRoot = path.join(path.dirname(value.destination), '.paid-study-state');
