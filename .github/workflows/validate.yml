@@ -65,7 +65,17 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      # node-pty compiles from source and better-sqlite3 fetches a prebuilt
+      # binary; the setup-node cache covers neither, so cache the built tree.
+      - name: Restore built dependencies
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node22-${{ hashFiles('package-lock.json') }}
+
       - run: npm ci
+        if: steps.modules.outputs.cache-hit != 'true'
 
       - name: Content-package validation
         run: npm run content:validate

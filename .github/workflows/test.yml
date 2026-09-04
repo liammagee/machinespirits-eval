@@ -73,7 +73,15 @@ jobs:
           --test-name-pattern='test-contract installs dependencies before every dependency-bearing bootstrap check'
           tests/ciChangePolicy.test.js
 
+      - name: Restore built dependencies
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node22-${{ hashFiles('package-lock.json') }}
+
       - run: npm ci
+        if: steps.modules.outputs.cache-hit != 'true'
 
       - name: Check the required test inventory
         run: npm run test:manifest
@@ -140,7 +148,15 @@ jobs:
           --head "$HEAD_SHA"
           --validate-focused
 
+      - name: Restore built dependencies
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node22-${{ hashFiles('package-lock.json') }}
+
       - run: npm ci
+        if: steps.modules.outputs.cache-hit != 'true'
 
       - name: Run the registered validator contract
         env:
@@ -189,7 +205,17 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      # node-pty compiles from source and better-sqlite3 fetches a prebuilt
+      # binary; the setup-node cache covers neither, so cache the built tree.
+      - name: Restore built dependencies
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node22-${{ hashFiles('package-lock.json') }}
+
       - run: npm ci
+        if: steps.modules.outputs.cache-hit != 'true'
 
       - run: npm run lint
       # tutor-core/ keeps its own lint and format policy so the module stays
@@ -221,7 +247,17 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      # node-pty compiles from source and better-sqlite3 fetches a prebuilt
+      # binary; the setup-node cache covers neither, so cache the built tree.
+      - name: Restore built dependencies
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node${{ matrix.node-version }}-${{ hashFiles('package-lock.json') }}
+
       - run: npm ci
+        if: steps.modules.outputs.cache-hit != 'true'
 
       - name: Run root test shard ${{ matrix.shard }}/4
         run: npm run test:root -- --shard=${{ matrix.shard }}/4 --quiet
@@ -245,7 +281,17 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      # node-pty compiles from source and better-sqlite3 fetches a prebuilt
+      # binary; the setup-node cache covers neither, so cache the built tree.
+      - name: Restore built dependencies
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node22-${{ hashFiles('package-lock.json') }}
+
       - run: npm ci
+        if: steps.modules.outputs.cache-hit != 'true'
 
       - name: Run the concurrent terminal lane without forced exit
         run: npm run test:pty:ci
@@ -266,7 +312,17 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      # node-pty compiles from source and better-sqlite3 fetches a prebuilt
+      # binary; the setup-node cache covers neither, so cache the built tree.
+      - name: Restore built dependencies
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node22-${{ hashFiles('package-lock.json') }}
+
       - run: npm ci
+        if: steps.modules.outputs.cache-hit != 'true'
 
       - run: npm run test:coverage:risk
 
