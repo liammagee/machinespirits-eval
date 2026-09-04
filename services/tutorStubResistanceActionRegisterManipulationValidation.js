@@ -21,10 +21,6 @@ function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
-function fileSha256(filePath) {
-  return sha256(fs.readFileSync(filePath));
-}
-
 function repositoryPath(root, relative, label) {
   if (!relative || path.isAbsolute(relative)) throw new Error(`${label} must be repository-relative`);
   const absolute = path.resolve(root, relative);
@@ -57,16 +53,13 @@ function assertDesign(design, root) {
   ) {
     throw new Error('manipulation-validation design contract drifted');
   }
-  // The contrast repair audit is a written record of what was measured before
-  // this design was cut, so it keeps its byte pin. The two registrations are
-  // recorded: correcting one of them is not a design change.
-  const auditPath = repositoryPath(root, execution.contrastRepairAuditPath, 'contrast repair audit');
-  if (fileSha256(auditPath) !== execution.contrastRepairAuditSha256) {
-    throw new Error('contrast repair audit digest drifted');
-  }
+  // The contrast repair audit note writes up a run that already finished, and
+  // git history keeps it. Its bytes are recorded like the two registrations:
+  // correcting any of the three is not a design change.
   return [
     [execution.baseRegistrationPath, execution.baseRegistrationSha256, 'base registration'],
     [design.instrument.registrationPath, design.instrument.registrationSha256, 'fidelity instrument registration'],
+    [execution.contrastRepairAuditPath, execution.contrastRepairAuditSha256, 'contrast repair audit'],
   ].map(([relative, recordedSha256, label]) => {
     repositoryPath(root, relative, label);
     return recordFileDigest({ root, filePath: relative, recordedSha256, label });

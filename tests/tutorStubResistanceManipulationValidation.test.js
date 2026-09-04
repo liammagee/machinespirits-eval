@@ -7,6 +7,7 @@ import {
   configureTutorStubResistanceManipulationValidationFromCli,
   loadTutorStubResistanceManipulationValidation,
 } from '../services/tutorStubResistanceActionRegisterManipulationValidation.js';
+import { recordFileDigest } from '../services/recordedFileDigest.js';
 import { assembleTutorStubResistanceManipulationValidationReport } from '../scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -89,4 +90,28 @@ test('sealed report requires complete execution and every predeclared arm gate',
   assert.equal(failed.status, 'failed');
   assert.equal(failed.gates.execution_complete, false);
   assert.equal(failed.confirmation_launch_allowed, false);
+});
+
+test('the contrast repair audit note is carried as a digest record beside the two registrations', () => {
+  const loaded = loadTutorStubResistanceManipulationValidation({ designPath: DESIGN, root: ROOT });
+  assert.deepEqual(
+    loaded.digestRecords.map((row) => row.label),
+    ['base registration', 'fidelity instrument registration', 'contrast repair audit'],
+  );
+  const note = loaded.digestRecords.find((row) => row.label === 'contrast repair audit');
+  assert.equal(note.path, loaded.design.execution.contrastRepairAuditPath);
+  assert.equal(note.drifted, false);
+  assert.equal(note.recordedSha256, note.observedSha256);
+});
+
+test('a drifted contrast repair audit note is recorded and does not throw', () => {
+  const record = recordFileDigest({
+    root: ROOT,
+    filePath: 'notes/2026-08-22-v10-plain-warm-contrast-zero-call-audit.md',
+    recordedSha256: '0'.repeat(64),
+    label: 'contrast repair audit',
+  });
+  assert.equal(record.drifted, true);
+  assert.equal(record.recordedSha256, '0'.repeat(64));
+  assert.notEqual(record.observedSha256, record.recordedSha256);
 });
