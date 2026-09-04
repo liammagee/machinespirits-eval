@@ -59,13 +59,15 @@ rules below bind everything from 2026-06-11 on.
    State the window in a machine-readable header comment (rule 5).
 
 3. **Dedup by arxiv ID (hard rule).** No arxiv ID appears in two roundups.
-   Before publishing, compute the IDs already covered in the last 30 days and
-   exclude them from the new note:
+   Before publishing, compute the IDs already covered by every tracked
+   canonical roundup and exclude them from the new note. Use the tracked corpus,
+   not filesystem modification times: a fresh checkout resets mtimes and can
+   otherwise make old papers look eligible again.
 
    ```bash
-   # arxiv IDs already covered in the last 30 days — exclude these from a new roundup
-   find notes/daily-notes -name '*research-roundup*.html' -mtime -30 \
-     -exec grep -ohE '26[0-9]{2}\.[0-9]{4,5}' {} + | sort -u
+   # all arxiv IDs in tracked canonical roundups — exclude these from a new roundup
+   git grep -ohE '26[0-9]{2}\.[0-9]{4,5}' -- \
+     'notes/daily-notes/*-research-roundup.html' | sort -u
    ```
 
    A paper genuinely worth re-surfacing (major revision, new relevance) goes in

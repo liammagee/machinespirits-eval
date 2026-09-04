@@ -52,3 +52,11 @@ Documented the external pause in `notes/daily-notes/README.md`, including the
 safe resume window `(2026-08-17, run date]` and existing-ID deduplication
 requirement. No scheduler or repository workflow was changed and no model calls
 were made.
+
+2026-09-04 Codex: Review found the README's legacy `find ... -mtime -30`
+example contradicted the all-existing-ID resume contract and could miss old IDs
+after a fresh checkout reset file mtimes. Replaced it with a tracked-corpus
+`git grep` over every canonical `*-research-roundup.html` file. There was no
+existing focused documentation-contract test to adjust; the command was run
+directly against the repository corpus and the normal source, formatting, and
+structural checks remained green.
