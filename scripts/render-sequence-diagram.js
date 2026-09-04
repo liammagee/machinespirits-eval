@@ -26,10 +26,10 @@
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 import Database from 'better-sqlite3';
 import YAML from 'yaml';
 import { createEvaluationScriptContext } from '../services/evaluationStore/scriptContext.js';
+import { openLocalTarget } from './lib/openLocalTarget.js';
 
 const ROOT = path.join(import.meta.dirname, '..');
 const { databasePath: DB_PATH, dialogueLogs } = createEvaluationScriptContext({ rootDir: ROOT });
@@ -832,7 +832,7 @@ console.log(`\nRendered ${rendered.length} diagram(s) to ${outputDir}/`);
 
 if (shouldOpen && rendered.length > 0) {
   try {
-    execSync(`open "${rendered[0]}"`);
+    openLocalTarget(rendered[0]);
     console.log(`Opened: ${path.basename(rendered[0])}`);
   } catch {
     /* ignore */
