@@ -37,8 +37,17 @@ jobs:
 
       # The ingester only needs the YAML parser — skip the native deps the full
       # install would build (better-sqlite3, node-pty) to stay fast and robust.
-      - name: Install yaml
-        run: npm install --no-save yaml
+      # 'npm install --no-save yaml' installed the whole lockfile tree and
+      # compiled node-pty. Restore the built tree instead; npm ci only on a miss.
+      - name: Restore built dependencies
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node22-${{ hashFiles('package-lock.json') }}
+
+      - run: npm ci
+        if: steps.modules.outputs.cache-hit != 'true'
 
       - name: Ingest the roundup's actions into the workplan inbox
         run: node scripts/workplan.js ingest --daily
