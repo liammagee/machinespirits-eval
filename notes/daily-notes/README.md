@@ -6,6 +6,24 @@ generator and any human editor follow so the folder stays a clean,
 non-overlapping timeline instead of a pile of synonym-named, overlapping-window
 digests.
 
+## Scheduler status
+
+The upstream generator is the external Claude Cloud routine **Research
+roundup** (`trig_01Jr63yDpgZ5JPvpVv6mtqai`), not a repository workflow or a
+local Codex automation. As inspected in the Claude Routines UI on 2026-09-04,
+the routine is explicitly disabled: status **Paused**, **Enabled Off**, with
+all triggers paused. Its configured cadence remains Monday at 4:00 AM CDT; its
+last run succeeded on 2026-08-17 (26 of 30 recorded runs succeeded).
+
+While that explicit pause remains in force, a missing roundup is expected and
+must not be diagnosed from the PR-triggered email or workplan-ingest workflows;
+those downstream workflows only run after the external routine opens a PR. If
+the routine is re-enabled, the first new note must cover
+`(2026-08-17, run date]`, then resume the delta rule below, and must deduplicate
+against the arXiv IDs already present in this folder. Update this dated status
+paragraph whenever the external routine is paused, resumed, replaced, or
+retired so silence remains distinguishable from a missed active run.
+
 ## The drift this prevents
 
 The first two notes showed the failure mode:
