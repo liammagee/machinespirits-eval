@@ -4,7 +4,10 @@
  *
  * Runs `npm run lint:all` — root and tutor-core ESLint, the import-cycle
  * check, and both Prettier checks, matching CI's lint job — before the push
- * leaves the machine, and blocks the push when they fail. Ref governance is a
+ * leaves the machine, and blocks the push when they fail. When the lint lane
+ * passes it also runs `npm run test:ratchets` — the line-cap tests, about a
+ * second — so a refactor that CI would reject for a facade cap stops here
+ * (PR #985, 2026-09-03, went red twice on one). Ref governance is a
  * separately selected CI/local-CI lane. See
  * services/lintPrePushHook.js for why this one blocks where the
  * workplan-trailer hook only reports.
@@ -30,6 +33,7 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NAME = 'lint pre-push hook';
 const LINT_SCRIPT = 'lint:all';
+const RATCHET_SCRIPT = 'test:ratchets';
 
 function usage() {
   return `Usage: node scripts/lint-hook.js <command>
@@ -91,6 +95,18 @@ function prePush() {
     console.error('Fix mechanically, then push again:');
     console.error('');
     console.error('  npm run lint:fix && npm run format');
+    console.error('');
+    process.exitCode = 1;
+    return;
+  }
+  if (!scripts[RATCHET_SCRIPT]) return;
+  console.error(`${NAME}: npm run ${RATCHET_SCRIPT} (the line-cap tests, about a second)`);
+  const ratchets = spawnSync('npm', ['run', RATCHET_SCRIPT], { cwd: ROOT, stdio: 'inherit' });
+  if (ratchets.error) throw ratchets.error;
+  if (ratchets.status !== 0) {
+    console.error('');
+    console.error(`${NAME}: push blocked — a source file is over its line cap; CI would fail this push.`);
+    console.error('Move code out of the capped file (the failing test names it), then push again.');
     console.error('');
     process.exitCode = 1;
   }
