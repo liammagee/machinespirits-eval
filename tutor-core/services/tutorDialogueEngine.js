@@ -1702,6 +1702,7 @@ async function egoGenerateSuggestions(learnerContext, curriculumContext, simulat
     superegoCompliance = 0.7,
     recognitionSeeking = 0.6,
     learnerId = null, // Phase 1: Writing Pad persistence
+    sessionId = null, // Public dialogue ID used to scope persisted recognition moments
     dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
     behavioralOverrides = null, // Quantitative params from superego self-reflection
     onToken = null, // Streaming callback for token-by-token output
@@ -1857,7 +1858,7 @@ ${userPrompt}`;
       try {
         const negotiation = await dialecticalEngine.negotiateDialectically({
           learnerId,
-          sessionId: null, // TODO: Add session tracking in Phase 3
+          sessionId,
           egoSuggestion: {
             message: impulse.message || impulse.title,
             reasoning: impulse.reasoning,
@@ -1928,6 +1929,7 @@ ${userPrompt}`;
             synthesis,
             { compliance: superegoCompliance, seeking: recognitionSeeking },
             learnerId, // Phase 1: Persist to Writing Pad if learner ID provided
+            sessionId,
           );
 
           if (!isQuietOrTranscript()) {
@@ -2874,6 +2876,7 @@ export async function runDialogue(context, options = {}) {
     superegoCompliance,
     recognitionSeeking,
     learnerId,
+    sessionId: dialogueId,
     dialecticalNegotiation,
     behavioralOverrides,
     onToken: makeOnToken('ego', 0),
@@ -2958,6 +2961,7 @@ export async function runDialogue(context, options = {}) {
       superegoCompliance,
       recognitionSeeking,
       learnerId,
+      sessionId: dialogueId,
       dialecticalNegotiation,
       behavioralOverrides,
     });
@@ -3459,6 +3463,7 @@ export async function quickGenerate(context, options = {}) {
     superegoCompliance: options.superegoCompliance,
     recognitionSeeking: options.recognitionSeeking,
     learnerId: options.learnerId,
+    sessionId: dialogueId,
     dialecticalNegotiation: options.dialecticalNegotiation,
   });
 
@@ -3926,9 +3931,17 @@ class RecognitionMoment {
  * @param {object} synthesis - Synthesis resolution
  * @param {object} parameters - Recognition parameters
  * @param {string} learnerId - Optional learner ID for Phase 1 persistence
+ * @param {string} sessionId - Optional dialogue ID for session-scoped persistence
  * @returns {object} - Recognition moment
  */
-function recordRecognitionMoment(ghostJudgment, learnerNeed, synthesis, parameters, learnerId = null) {
+function recordRecognitionMoment(
+  ghostJudgment,
+  learnerNeed,
+  synthesis,
+  parameters,
+  learnerId = null,
+  sessionId = null,
+) {
   // Phase 0: In-memory moment (backward compatible)
   const moment = new RecognitionMoment(ghostJudgment, learnerNeed, synthesis, parameters);
   recognitionMoments.push(moment);
@@ -3947,7 +3960,7 @@ function recordRecognitionMoment(ghostJudgment, learnerNeed, synthesis, paramete
       // Create database recognition moment
       writingPadService.createRecognitionMoment({
         writingPadId: writingPad.id,
-        sessionId: null, // TODO: Add session tracking in future
+        sessionId,
         ghostDemand: ghostJudgment,
         learnerNeed: learnerNeed,
         synthesis: synthesis,

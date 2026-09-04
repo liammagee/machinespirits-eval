@@ -844,6 +844,7 @@
         "tutor-core/services/__tests__/recognitionOrchestrator.test.js",
         "tutor-core/services/__tests__/runtimeDefects.test.js",
         "tutor-core/services/__tests__/sseStreamParser.test.js",
+        "tutor-core/services/__tests__/tutorDialogueSessionIdentity.test.js",
         "tutor-core/services/__tests__/writingPadInternalPathDelivery.test.js",
         "tutor-core/services/__tests__/writingPadService.recognitionMoment.test.js"
       ]

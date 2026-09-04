@@ -419,14 +419,14 @@ export function computeRecognitionFlow(learnerId, sessionId) {
     };
   }
 
-  // Get session moments
+  // Resolve one exact session before reading either side of the interaction.
+  // Legacy null rows remain available through the Writing Pad history API but
+  // cannot be treated as one synthetic session without causing collisions.
   let query = `SELECT * FROM recognition_moments WHERE writing_pad_id = ?`;
   const params = [pad.id];
+  let effectiveSessionId = sessionId;
 
-  if (sessionId) {
-    query += ' AND session_id = ?';
-    params.push(sessionId);
-  } else {
+  if (!effectiveSessionId) {
     // Get the most recent session
     const latestSession = getDb()
       .prepare(
@@ -436,11 +436,21 @@ export function computeRecognitionFlow(learnerId, sessionId) {
       )
       .get(pad.id);
 
-    if (latestSession) {
-      query += ' AND session_id = ?';
-      params.push(latestSession.session_id);
+    if (!latestSession) {
+      return {
+        flowScore: 0,
+        struggleDepthInRange: false,
+        synthesisBalance: 0,
+        resistanceProductivity: 0,
+        flowState: 'none',
+      };
     }
+
+    effectiveSessionId = latestSession.session_id;
   }
+
+  query += ' AND session_id = ?';
+  params.push(effectiveSessionId);
 
   query += ' ORDER BY created_at ASC';
   const moments = getDb()
@@ -469,11 +479,10 @@ export function computeRecognitionFlow(learnerId, sessionId) {
   const sessionEvents = getDb()
     .prepare(
       `SELECT * FROM learner_recognition_events
-     WHERE learner_id = ? AND event_type = 'resistance'
-     ${sessionId ? 'AND session_id = ?' : ''}
+     WHERE learner_id = ? AND event_type = 'resistance' AND session_id = ?
      ORDER BY created_at DESC LIMIT 20`,
     )
-    .all(sessionId ? [learnerId, sessionId] : [learnerId]);
+    .all(learnerId, effectiveSessionId);
 
   const productiveResistance = sessionEvents.filter((e) => e.resistance_interpretation === 'productive').length;
   const resistanceProductivity = sessionEvents.length > 0 ? productiveResistance / sessionEvents.length : 0;
