@@ -1,7 +1,7 @@
 ---
 id: archive-loss-guards
 title: Close the two archive gaps behind the E.7 and §7.9 withdrawals
-status: review
+status: done
 type: infra
 priority: P1
 owner: claude
@@ -19,6 +19,8 @@ links:
     - scripts/snapshot-archive.sh
     - docs/archive-replication.md
     - tests/snapshotArchiveScript.test.js
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/988
 tags:
   - archive
   - infra
@@ -59,3 +61,6 @@ did not cover either loss:
 
 - 2026-09-03: built all three, tests added, first full archive copy and first
   dated DB snapshot taken. Awaiting merge.
+- 2026-09-03: PR #988 merged with all required checks green. Post-merge
+  verification passed 23 focused tests, found 0 missing artifacts across 21
+  runs, and confirmed all four current dated database snapshots.
