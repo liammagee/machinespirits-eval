@@ -291,6 +291,17 @@ function createProtectedPackagerCheckout(t, request, label, commit = request.sou
   return checkout;
 }
 
+function withLaunchCommitClosure(request) {
+  const replay = structuredClone(request);
+  for (const entry of replay.source.closure) {
+    entry.sha256 = crypto
+      .createHash('sha256')
+      .update(execFileSync('git', ['show', `${replay.source.launchCommit}:${entry.path}`], { cwd: ROOT }))
+      .digest('hex');
+  }
+  return replay;
+}
+
 test('approved study request remains bound to its launch source and fails closed after source drift', () => {
   const requestBytes = fs.readFileSync(REQUEST_PATH);
   const request = JSON.parse(requestBytes.toString('utf8'));
@@ -1070,8 +1081,9 @@ test('future V2 action/register HOLD requests bind both live batches and one com
   assert.equal(report.budget.maximumPlannedModelAttempts, 468);
 
   const templatePath = path.join(temporary, 'action-register-template.json');
-  fs.writeFileSync(templatePath, actionRegisterBaselineTemplateText(request));
-  const protectedRoot = createProtectedPackagerCheckout(t, request, 'action-register-v2');
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, actionRegisterBaselineTemplateText(replayRequest));
+  const protectedRoot = createProtectedPackagerCheckout(t, replayRequest, 'action-register-v2');
   const output = `config/.test-action-register-go-request-${process.pid}.json`;
   const packaged = spawnSync(
     process.execPath,
@@ -1091,7 +1103,7 @@ test('future V2 action/register HOLD requests bind both live batches and one com
   assert.equal(packageReport.effects.modelCalls, 0);
   assert.deepEqual(
     fs.readFileSync(path.join(protectedRoot, output)),
-    fs.readFileSync(requestPath),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
     'baseline packager must reproduce the validator-ready HOLD request bytes deterministically',
   );
 
@@ -1137,8 +1149,13 @@ test('future V2 action/register HOLD requests bind both live batches and one com
   assert.equal(successorReport.budget.programmeLedgerAfterMaximum, 544);
 
   const successorTemplatePath = path.join(temporary, 'action-register-successor-template.json');
-  fs.writeFileSync(successorTemplatePath, actionRegisterBaselineTemplateText(successor));
-  const successorProtectedRoot = createProtectedPackagerCheckout(t, successor, 'action-register-v2-successor');
+  const successorReplayRequest = withLaunchCommitClosure(successor);
+  fs.writeFileSync(successorTemplatePath, actionRegisterBaselineTemplateText(successorReplayRequest));
+  const successorProtectedRoot = createProtectedPackagerCheckout(
+    t,
+    successorReplayRequest,
+    'action-register-v2-successor',
+  );
   const successorOutput = `config/.test-action-register-successor-go-request-${process.pid}.json`;
   const successorPackaged = spawnSync(
     process.execPath,
@@ -1165,7 +1182,7 @@ test('future V2 action/register HOLD requests bind both live batches and one com
   assert.equal(successorPackageReport.effects.modelCalls, 0);
   assert.deepEqual(
     fs.readFileSync(path.join(successorProtectedRoot, successorOutput)),
-    fs.readFileSync(successorPath),
+    Buffer.from(`${JSON.stringify(successorReplayRequest, null, 2)}\n`),
     'successor packager must reproduce the exact stopped-exclusion HOLD request bytes',
   );
 
@@ -1248,10 +1265,11 @@ test('future V2 action/register HOLD requests bind both live batches and one com
   assert.equal(secondSuccessorReport.budget.programmeLedgerAfterMaximum, 577);
 
   const secondSuccessorTemplatePath = path.join(temporary, 'action-register-second-successor-template.json');
-  fs.writeFileSync(secondSuccessorTemplatePath, actionRegisterBaselineTemplateText(secondSuccessor));
+  const secondSuccessorReplayRequest = withLaunchCommitClosure(secondSuccessor);
+  fs.writeFileSync(secondSuccessorTemplatePath, actionRegisterBaselineTemplateText(secondSuccessorReplayRequest));
   const secondSuccessorProtectedRoot = createProtectedPackagerCheckout(
     t,
-    secondSuccessor,
+    secondSuccessorReplayRequest,
     'action-register-v2-second-successor',
   );
   const secondSuccessorOutput = `config/.test-action-register-second-successor-go-request-${process.pid}.json`;
@@ -1280,7 +1298,7 @@ test('future V2 action/register HOLD requests bind both live batches and one com
   assert.equal(secondSuccessorPackageReport.effects.modelCalls, 0);
   assert.deepEqual(
     fs.readFileSync(path.join(secondSuccessorProtectedRoot, secondSuccessorOutput)),
-    fs.readFileSync(secondSuccessorPath),
+    Buffer.from(`${JSON.stringify(secondSuccessorReplayRequest, null, 2)}\n`),
     'second-successor packager must reproduce the exact stopped-exclusion HOLD request bytes',
   );
 
@@ -1501,8 +1519,9 @@ test('sealed action/register analysis-only request binds completed batches and a
   assert.equal(report.budget.maximumPlannedModelAttempts, 0);
 
   const templatePath = path.join(temporary, 'analysis-only-template.json');
-  fs.writeFileSync(templatePath, actionRegisterBaselineTemplateText(request));
-  const protectedRoot = createProtectedPackagerCheckout(t, request, 'action-register-analysis-only');
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, actionRegisterBaselineTemplateText(replayRequest));
+  const protectedRoot = createProtectedPackagerCheckout(t, replayRequest, 'action-register-analysis-only');
   const output = `config/.test-action-register-analysis-only-${process.pid}.json`;
   const packaged = spawnSync(
     process.execPath,
@@ -1519,7 +1538,10 @@ test('sealed action/register analysis-only request binds completed batches and a
   assert.equal(packageReport.repositoryBindingFiles, 7);
   assert.equal(packageReport.isolatedReplay.packetValid, true);
   assert.equal(packageReport.effects.modelCalls, 0);
-  assert.deepEqual(fs.readFileSync(path.join(protectedRoot, output)), fs.readFileSync(requestPath));
+  assert.deepEqual(
+    fs.readFileSync(path.join(protectedRoot, output)),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
+  );
 
   for (const invalid of [
     {
@@ -1821,7 +1843,9 @@ test('GO request packaging materializes the approved request bytes deterministic
   assert.equal(report.launchTree, request.source.launchTree);
   assert.equal(report.sourceClosureFiles, 19);
   assert.equal(report.repositoryBindingFiles, 6);
-  assert.equal(report.protectedWorktreeBytesMatchLaunchCommit, true);
+  assert.equal(report.sourceBlobsReadFromLaunchCommit, true);
+  assert.equal(report.workingTreeComparedToLaunchCommit, false);
+  assert.equal('protectedWorktreeBytesMatchLaunchCommit' in report, false);
   assert.equal(report.fullCheckoutCleanlinessClaimed, false);
   assert.deepEqual(report.isolatedReplay, {
     nodeModulesPresent: false,

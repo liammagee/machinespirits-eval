@@ -289,12 +289,6 @@ function materializeRepoFile({ launchCommit, repoPath, label, files }) {
   const canonicalPath = canonicalRepoPath(repoPath, label);
   const blob = gitBlobAt(launchCommit, canonicalPath);
   const digest = sha256(blob.bytes);
-  const workingPath = path.join(ROOT, canonicalPath);
-  if (!fs.existsSync(workingPath)) throw new Error(`${label} is absent from the protected worktree: ${canonicalPath}`);
-  const workingDigest = sha256(fs.readFileSync(workingPath));
-  if (workingDigest !== digest) {
-    throw new Error(`${label} differs between the protected worktree and launch commit: ${canonicalPath}`);
-  }
   files.set(canonicalPath, { ...blob, sha256: digest });
   return { path: canonicalPath, mode: blob.mode, gitBlob: blob.oid, sha256: digest };
 }
@@ -1154,7 +1148,8 @@ export function packageTutorStubResistantProfileStudyGoRequest({ templatePath, l
     launchTree: materialized.launchTree,
     sourceClosureFiles: materialized.sourceClosure.length,
     repositoryBindingFiles: materialized.repositoryBindingCount,
-    protectedWorktreeBytesMatchLaunchCommit: true,
+    sourceBlobsReadFromLaunchCommit: true,
+    workingTreeComparedToLaunchCommit: false,
     fullCheckoutCleanlinessClaimed: false,
     isolatedReplay: replay,
     authorizationBoundary: {

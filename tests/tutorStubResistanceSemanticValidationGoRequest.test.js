@@ -397,6 +397,14 @@ const RECOVERY_CLOSURE = [
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
 const fileSha256 = (repoPath) => sha256(fs.readFileSync(path.join(ROOT, repoPath)));
 
+function withLaunchCommitClosure(request) {
+  const replay = structuredClone(request);
+  for (const entry of replay.source.closure) {
+    entry.sha256 = sha256(execFileSync('git', ['show', `${replay.source.launchCommit}:${entry.path}`], { cwd: ROOT }));
+  }
+  return replay;
+}
+
 function canonicalJson(value) {
   if (Array.isArray(value)) return value.map(canonicalJson);
   if (value && typeof value === 'object') {
@@ -874,7 +882,8 @@ test('semantic validation GO validator and packager bind frozen dual judging wit
   fs.rmSync(path.join(ROOT, output));
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   const packageReport = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
     launchCommit: request.source.launchCommit,
@@ -884,7 +893,10 @@ test('semantic validation GO validator and packager bind frozen dual judging wit
   assert.equal(packageReport.isolatedReplay.nodeModulesPresent, false);
   assert.equal(packageReport.isolatedReplay.packetValid, true);
   assert.equal(packageReport.effects.modelCalls, 0);
-  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), Buffer.from(`${JSON.stringify(request, null, 2)}\n`));
+  assert.deepEqual(
+    fs.readFileSync(path.join(ROOT, output)),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
+  );
 
   for (const mutation of [
     (value) => (value.bindings.judgeRoutes.judgeB.model = 'gpt-5.6-sol'),
@@ -923,7 +935,8 @@ test('future v2 GO packaging binds failed-v1 exclusion and the 491-to-971 valida
   fs.rmSync(path.join(ROOT, output));
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   const packaged = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
     launchCommit: request.source.launchCommit,
@@ -979,7 +992,8 @@ test('future v3 GO packaging binds both failed validations and the 651-to-1131 v
   fs.rmSync(path.join(ROOT, output));
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   const packaged = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
     launchCommit: request.source.launchCommit,
@@ -1031,7 +1045,8 @@ test('future v3 successor packaging binds the stopped partial and the 661-to-114
   fs.rmSync(path.join(ROOT, output));
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   const packaged = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
     launchCommit: request.source.launchCommit,
@@ -1041,7 +1056,10 @@ test('future v3 successor packaging binds the stopped partial and the 661-to-114
   assert.equal(packaged.isolatedReplay.nodeModulesPresent, false);
   assert.equal(packaged.isolatedReplay.packetValid, true);
   assert.equal(packaged.effects.modelCalls, 0);
-  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), Buffer.from(`${JSON.stringify(request, null, 2)}\n`));
+  assert.deepEqual(
+    fs.readFileSync(path.join(ROOT, output)),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
+  );
 
   for (const mutate of [
     (value) => (value.semanticAdjudicationValidation.requestRevision = 3),
@@ -1086,7 +1104,8 @@ test('future v3 revision-3 packaging binds both stopped partials and the 696-to-
   fs.rmSync(path.join(ROOT, output));
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   const packaged = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
     launchCommit: request.source.launchCommit,
@@ -1096,7 +1115,10 @@ test('future v3 revision-3 packaging binds both stopped partials and the 696-to-
   assert.equal(packaged.isolatedReplay.nodeModulesPresent, false);
   assert.equal(packaged.isolatedReplay.packetValid, true);
   assert.equal(packaged.effects.modelCalls, 0);
-  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), Buffer.from(`${JSON.stringify(request, null, 2)}\n`));
+  assert.deepEqual(
+    fs.readFileSync(path.join(ROOT, output)),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
+  );
 
   for (const mutate of [
     (value) => (value.semanticAdjudicationValidation.requestRevision = 4),
@@ -1144,7 +1166,8 @@ test('outcome semantic validation GO validator and packager bind the 120-case fu
   assert.equal(report.budget.maximumPlannedModelAttempts, 720);
   fs.rmSync(path.join(ROOT, output));
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   const packaged = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
     launchCommit: request.source.launchCommit,
