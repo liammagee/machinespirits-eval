@@ -116,6 +116,14 @@ function fileSha256(repoPath) {
   return sha256(fs.readFileSync(path.join(ROOT, repoPath)));
 }
 
+function withLaunchCommitClosure(request) {
+  const replay = structuredClone(request);
+  for (const entry of replay.source.closure) {
+    entry.sha256 = sha256(execFileSync('git', ['show', `${replay.source.launchCommit}:${entry.path}`], { cwd: ROOT }));
+  }
+  return replay;
+}
+
 function canonicalJson(value) {
   if (Array.isArray(value)) return value.map(canonicalJson);
   if (value && typeof value === 'object') {
@@ -664,7 +672,8 @@ test('confirmation GO validator and packager bind the exact powered ceiling amen
   assert.match(report.exactApprovalStatement, /18 warm and 18 plain/u);
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
   const packageReport = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
@@ -675,7 +684,10 @@ test('confirmation GO validator and packager bind the exact powered ceiling amen
   assert.equal(packageReport.isolatedReplay.nodeModulesPresent, false);
   assert.equal(packageReport.isolatedReplay.packetValid, true);
   assert.equal(packageReport.effects.modelCalls, 0);
-  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+  assert.deepEqual(
+    fs.readFileSync(path.join(ROOT, output)),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
+  );
 
   for (const mutation of [
     (value) => {
@@ -716,7 +728,8 @@ test('successor confirmation GO validator binds the incomplete V1 exclusion and 
   assert.match(report.exactApprovalStatement, /incomplete V1 confirmation block/u);
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
   const packageReport = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
@@ -727,7 +740,10 @@ test('successor confirmation GO validator binds the incomplete V1 exclusion and 
   assert.equal(packageReport.repositoryBindingFiles, 7);
   assert.equal(packageReport.isolatedReplay.packetValid, true);
   assert.equal(packageReport.effects.modelCalls, 0);
-  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+  assert.deepEqual(
+    fs.readFileSync(path.join(ROOT, output)),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
+  );
 
   for (const mutation of [
     (value) => {
@@ -800,7 +816,8 @@ test('operational-ceiling confirmation GO validator preserves the powered design
   assert.match(report.exactApprovalStatement, /18 warm and 18 plain/u);
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
   const packageReport = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
@@ -811,7 +828,10 @@ test('operational-ceiling confirmation GO validator preserves the powered design
   assert.equal(packageReport.repositoryBindingFiles, 8);
   assert.equal(packageReport.isolatedReplay.packetValid, true);
   assert.equal(packageReport.effects.modelCalls, 0);
-  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+  assert.deepEqual(
+    fs.readFileSync(path.join(ROOT, output)),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
+  );
 
   for (const mutation of [
     (value) => {
@@ -901,7 +921,8 @@ test('observer-repair successor binds the incomplete V3 block and unchanged 5000
   assert.match(report.exactApprovalStatement, /incomplete V1 and V3 confirmation blocks/u);
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
   const packageReport = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
@@ -912,7 +933,10 @@ test('observer-repair successor binds the incomplete V3 block and unchanged 5000
   assert.equal(packageReport.repositoryBindingFiles, 9);
   assert.equal(packageReport.isolatedReplay.packetValid, true);
   assert.equal(packageReport.effects.modelCalls, 0);
-  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+  assert.deepEqual(
+    fs.readFileSync(path.join(ROOT, output)),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
+  );
 
   for (const mutation of [
     (value) => {
@@ -969,7 +993,8 @@ test('prospective-v7 future request binds the stopped V4 block and 293-to-2453 p
   assert.match(report.exactApprovalStatement, /incomplete V1, V3, or V4 confirmation blocks/u);
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
   const packageReport = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
@@ -980,7 +1005,10 @@ test('prospective-v7 future request binds the stopped V4 block and 293-to-2453 p
   assert.equal(packageReport.repositoryBindingFiles, 10);
   assert.equal(packageReport.isolatedReplay.packetValid, true);
   assert.equal(packageReport.effects.modelCalls, 0);
-  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+  assert.deepEqual(
+    fs.readFileSync(path.join(ROOT, output)),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
+  );
 
   for (const mutation of [
     (value) => {
@@ -1040,7 +1068,8 @@ test('semantic V9 request packages the validated panels, stopped V7 exclusion, a
   assert.match(report.exactApprovalStatement, /incomplete V1, V3, V4, or V7/u);
 
   const templatePath = path.join(temporary, 'template.json');
-  fs.writeFileSync(templatePath, templateText(request));
+  const replayRequest = withLaunchCommitClosure(request);
+  fs.writeFileSync(templatePath, templateText(replayRequest));
   fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
   const packageReport = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
@@ -1051,7 +1080,10 @@ test('semantic V9 request packages the validated panels, stopped V7 exclusion, a
   assert.equal(packageReport.repositoryBindingFiles, 11);
   assert.equal(packageReport.isolatedReplay.packetValid, true);
   assert.equal(packageReport.effects.modelCalls, 0);
-  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+  assert.deepEqual(
+    fs.readFileSync(path.join(ROOT, output)),
+    Buffer.from(`${JSON.stringify(replayRequest, null, 2)}\n`),
+  );
 
   for (const mutation of [
     (value) => {

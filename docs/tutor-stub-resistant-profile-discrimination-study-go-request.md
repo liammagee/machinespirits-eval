@@ -89,15 +89,18 @@ node scripts/package-tutor-stub-resistant-profile-study-go-request.js \
   --json
 ```
 
-The command fills only the marked mechanical fields, checks the protected
-working-tree bytes against the launch Git blobs, proves the study destination
-is absent, and runs the existing focused validator against the generated
-request in an isolated tree with no `node_modules`. It opens the request with
-create-once semantics and emits the request digest and validation summary on
-stdout; it does not create a second proof artifact.
+The command fills only the marked mechanical fields from Git blobs at the
+recorded launch commit, proves the study destination is absent, and runs the
+existing focused validator against the generated request in an isolated tree
+with no `node_modules`. It does not compare those historical blobs with the
+current checkout, so later code or dependency edits cannot change or block the
+replay. It opens the request with create-once semantics and emits the request
+digest and validation summary on stdout; it does not create a second proof
+artifact.
 
-This protected-file proof is deliberately narrower than a whole-checkout
-cleanliness claim. A future live launch still requires `HEAD` to equal the
-pinned launch commit in a clean, detached worktree. The stdout summary contains
-the validator's exact approval sentence for a human to supply separately;
-neither the command nor the request records approval or authorizes a model call.
+This packager is retained only to replay historical packet construction. Its
+templates keep their original source-requirement fields byte-for-byte, but they
+are not a launch contract for a new study. Current studies follow
+`docs/paid-study-authorization-policy.md`. The stdout summary contains the
+historical validator's exact approval sentence; neither the command nor the
+request records approval or authorizes a model call.

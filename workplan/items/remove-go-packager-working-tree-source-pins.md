@@ -1,10 +1,11 @@
 ---
 id: remove-go-packager-working-tree-source-pins
 title: Remove working-tree source pins from the historical GO packager
-status: triaged
+status: review
 type: infra
 priority: P1
-owner: unassigned
+owner: codex
+branch: codex/remove-go-packager-working-tree-pins
 source: review
 created: 2026-09-03
 updated: 2026-09-03
@@ -45,3 +46,11 @@ source-closure digests from the live checkout. The exploratory source change
 was reverted; no request or sealed artifact changed. A safe repair must isolate
 historical launch-commit replay fixtures from current-source request builders,
 not merely remove one guard.
+
+## Implementation note
+
+2026-09-03 — The packager now materializes protected files only from the
+recorded launch commit and never compares them with the working tree. The three
+affected suites explicitly separate current-source validator fixtures from
+launch-commit replay fixtures; all 24 focused packager tests pass. No sealed
+request artifact changed.
