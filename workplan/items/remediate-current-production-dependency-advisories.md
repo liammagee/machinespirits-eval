@@ -1,7 +1,7 @@
 ---
 id: remediate-current-production-dependency-advisories
 title: Remediate current production dependency advisories
-status: active
+status: review
 type: infra
 priority: P1
 owner: codex
@@ -12,6 +12,8 @@ branch: codex/end-to-end-audit-20260903
 verification: "A clean install succeeds, npm audit --omit=dev reports zero production vulnerabilities, focused server and surface tests pass, and the full CI-selected validation remains green."
 claim_status: planned
 links:
+  prs:
+    - 983
   items:
     - migrate-adaptive-dag-runtime-to-langgraph-1-4-without-longit
     - upgrade-eslint-toolchain-past-minimatch-advisories
@@ -38,5 +40,5 @@ passes; do not take the Express 5 major upgrade in this card.
 patched releases and pinned `qs` 6.16.0 through an override while retaining
 Express 4. A clean install, the focused server/surface tests, the full hermetic
 suite, and all maintained risk-coverage groups pass. `npm audit --omit=dev`
-reports zero production vulnerabilities. The card remains active until its
-pull request is opened for review.
+reports zero production vulnerabilities. Implementation is under review in
+PR #983.

@@ -1,7 +1,7 @@
 ---
 id: remove-retired-electron-agent-guidance
 title: Remove retired Electron instructions from live agent guidance
-status: active
+status: review
 type: maintenance
 priority: P1
 owner: codex
@@ -12,6 +12,8 @@ branch: codex/end-to-end-audit-20260903
 verification: "Live Claude, Gemini, and documentation-map guidance names the browser surfaces as supported, contains no command or path that implies the retired Electron target still exists, and directs cell lookups to config/tutor-agents.yaml rather than a static cell range."
 claim_status: planned
 links:
+  prs:
+    - 983
   items:
     - decommission-electron-desktop-target
   notes:
@@ -40,4 +42,4 @@ silently reintroduce commands for the retired target.
 guidance to describe the current repository and browser surfaces. The shared
 hook regression test now rejects reintroduction of the retired Electron paths
 or commands in those live documents. The full hermetic suite passes; the card
-remains active until its pull request is opened for review.
+is under review in PR #983.

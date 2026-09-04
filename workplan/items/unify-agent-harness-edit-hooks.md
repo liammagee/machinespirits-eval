@@ -1,7 +1,7 @@
 ---
 id: unify-agent-harness-edit-hooks
 title: Share safe edit-hook logic across Claude and Codex
-status: active
+status: review
 type: infra
 priority: P1
 owner: codex
@@ -12,6 +12,8 @@ branch: codex/end-to-end-audit-20260903
 verification: "Claude and Codex invoke the same repository-owned edit-hook scripts; worktree, relative-path, non-JavaScript, missing-install, lint-failure, format-repair, and protected-env cases pass in focused tests; both hook JSON files parse and remain provider-neutral."
 claim_status: planned
 links:
+  prs:
+    - 983
   items:
     - lint-hook-worktree-node-modules-fallback
   notes:
@@ -43,4 +45,4 @@ both `.claude/settings.json` and `.codex/hooks.json` at it. Focused tests cover
 configuration parity, protected environment files, worktree dependency lookup,
 metacharacter-bearing filenames, missing installs, format repair, and genuine
 lint failures. The full hermetic suite and all maintained risk-coverage groups
-pass; the card remains active until its pull request is opened for review.
+pass. Implementation is under review in PR #983.
