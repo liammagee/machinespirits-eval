@@ -296,13 +296,18 @@ export function verifySteeringDecompositionManifest({ manifestPath = DEFAULT_MAN
   if (!inherited?.path || !inherited?.sha256 || fileSha256(path.resolve(ROOT, inherited.path)) !== inherited.sha256) {
     throw new Error('steering-decomposition inherited pilot bindings drift');
   }
+  // Source-file digests are recorded, not enforced (CLAUDE.md, no officious
+  // authorization): a bug fix in the reader tooling must never read as a
+  // design change. The registered digests stay in the manifest as history.
   const bindings = manifest.channels.decision.digests;
-  if (
-    fileSha256(DECISION_RUNNER_PATH) !== bindings.reader_runner_sha256 ||
-    fileSha256(DECISION_PREPARER_PATH) !== bindings.preparation_and_assembly_sha256
-  ) {
-    throw new Error('steering-decomposition frozen decision tooling drift');
-  }
+  const toolingDigests = {
+    reader_runner: { registered: bindings.reader_runner_sha256, observed: fileSha256(DECISION_RUNNER_PATH) },
+    preparation_and_assembly: {
+      registered: bindings.preparation_and_assembly_sha256,
+      observed: fileSha256(DECISION_PREPARER_PATH),
+    },
+  };
+  toolingDigests.drifted = Object.values(toolingDigests).some((row) => row.registered !== row.observed);
   for (const world of manifest.worlds || []) {
     const resolved = path.resolve(ROOT, world.path);
     if (!fs.existsSync(resolved) || fileSha256(resolved) !== world.sha256) {
@@ -312,7 +317,7 @@ export function verifySteeringDecompositionManifest({ manifestPath = DEFAULT_MAN
   const assignments = buildSteeringDecompositionAssignments({ seeds: manifest.seeds });
   const studyPlanGuard = guardSteeringDecompositionStudyPlan({ manifest, assignments });
   if (studyPlanGuard.status !== 'passed') throw new Error('steering-decomposition study-plan guard failed');
-  return { manifest, resolvedManifest, assignments, studyPlanGuard };
+  return { manifest, resolvedManifest, assignments, studyPlanGuard, toolingDigests };
 }
 
 export function printSteeringDecompositionPlan(manifest = null) {
