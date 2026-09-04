@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: review
 created: 2026-09-03
-updated: 2026-09-03
+updated: 2026-09-04
 verification: "Either the turn-2 and turn-4 template fallback on world-037 is explained offline and one recorded run shows a held plant meeting a model reply; or the six pooled with/without pairs are written up as a lean in the hold notes and this card closes with no further paid 037 pair."
 claim_status: exploratory
 depends_on:
@@ -33,6 +33,7 @@ links:
     - notes/poetics/hero-demo-runs/2026-09-03-step7-quote-manner-cue.md
     - notes/poetics/hero-demo-runs/2026-09-03-model-second-reader-7b-7c.md
     - notes/poetics/hero-demo-runs/2026-09-03-step7d-hold-memory-limited-live.md
+    - notes/poetics/hero-demo-runs/2026-09-04-step7-template-fallback-cause.md
   exports:
     - exports/tutor-stub-outcome/step6-form-v3-live/
     - exports/tutor-stub-outcome/step7-hold-live/
@@ -71,13 +72,20 @@ card's verdict.
 
 # Open steps (offline only, no paid call without its own go)
 
-1. Find out why turns 2 and 4 on world-037 fall to the template fallback.
-   Read the traces in the exports above; do not run again.
+1. Done 2026-09-04, offline. Turns 2 to 5 are the four clue turns; the
+   guard wants the clue text character for character, Sonnet 5 rewords it
+   (turn 4 drops only the quotation marks), the recovery is not told what
+   failed, and the clue-insertion repair was off in every hold run
+   (`TUTOR_STUB_CLUE_INSERTION` unset). Note
+   `notes/poetics/hero-demo-runs/2026-09-04-step7-template-fallback-cause.md`.
 2. A human second read of at least one blind packet is still open. The model
    reads (Sonnet, Opus) do not close it.
-3. Then choose: a powered run (about six dialogues per version) on a world
-   where the held turn meets a model line, or write the six pairs up as a lean
-   in the hold notes and close this card. Do not widen to world-036.
+3. Then choose: a powered run (about six dialogues per version) with a
+   launch line that gives the held turn a model line (the cause note lists
+   four ways: the clue-insertion flag, the codex tutor seat, a cue and
+   matcher fix, or a recovery prompt that names the failed check), or write
+   the six pairs up as a lean in the hold notes and close this card. Do not
+   widen to world-036.
 
 # Also landed on PR #985, not detector work
 
@@ -124,3 +132,19 @@ approval machinery beyond "the user says go".
 - **Model second reads of the 7b and 7c packets, 2026-09-03, 4 paid reader calls.** Sonnet 5 and Opus 5 read each 12-item packet blind; compared with the codex judge on repair HIT vs not-HIT. Kappa: 7b Sonnet 0.50, Opus 0.80; 7c Sonnet 0.63, Opus 0.82. Card-effect direction (HIT with / without): judge 5/4 and 5/3; Sonnet 4/2 and 4/4; Opus 5/3 and 4/3. Opus reaches the arc's bar, Sonnet does not; every reader keeps with at or above without. Human read still open. Note `notes/poetics/hero-demo-runs/2026-09-03-model-second-reader-7b-7c.md`.
 - **7c offline fixes, 2026-09-03.** The plant event fires once per learner turn, not once per draft; the speech-check retry asks for a line in her own words and the reader flags a near-verbatim copy of the sample line (`copy`, recorded, never enforced); the review sheet gains held-turn rows (kept, retried, copies). Tests extended. On the 7c traces the new rows read: held turns kept 4/4, retried 3/4.
 - **Hold pair on 037 a fourth time, 2026-09-03, paid: memory_limited brief, own-words retry, form-v5 sensor (step 7d).** Ceiling 200 dialogue + 20 judge calls; used 44 + 42 + 2, plus 2 model second-reader calls; turn cap 12. All four held turns wrote `HOLD: kept`; the reader found one conceding line (with-arm t3) and the own-words retry kept the demand in a new sentence, not the sample line; the copy flag fired once, at without-arm t5, on a first draft the reader passed. The brief did not pull on either held plant, so the 7b/7c t3 confound is gone. Plant events once per turn. Repair HIT 4/6 with, 4/6 without (with-arm t2 template read as capitulate); three pairs pooled 14/18 vs 11/18. Second readers on the packet: Sonnet kappa 0.82, Opus 0.63, both keep with at or above without. The wall is the template fallback at turns 2 and 4 in every 037 run: until that reply is a model line a held plant cannot test the card. Next is offline (why t2/t4 fall to the template); no re-run as is; do not widen to 036. Note `notes/poetics/hero-demo-runs/2026-09-03-step7d-hold-memory-limited-live.md`; artifacts `exports/tutor-stub-outcome/step7d-hold-memory-limited/`, archived.
+- **Template-fallback cause, 2026-09-04, offline, no paid call.** Read the
+  eight 037 hold dialogues (7, 7b, 7c, 7d) and the archive traces of earlier
+  runs. Turns 2 to 5 are world 037's four clue turns and the only turns where
+  the guard's exact-text check can fail; turns 6 to 12 all shipped as model
+  lines. On clue turns: t2 7/8 and t3 6/8 rewordings, t4 8/8 whole text with
+  the curly quotation marks dropped, t5 8/8 exact but rejected as duplicate
+  delivery (a one-line arithmetic clue restated while explaining it). The
+  plain recovery fails the same way on every turn; its prompt says only that
+  a check failed. Cross-run: step-6 pool worlds 24/27 clue turns to template
+  vs 2/70 no-clue turns; codex tutor seat 6/472 clue turns to template
+  (its recovery copies text), Sonnet 5 from Aug 7 on 75 to 100%.
+  Early-August Sonnet runs shipped most clue-turn misses through clue
+  insertion (87/133, 36/53); that path is opt-in and was unset in every hold
+  launch line. Four ways to a model line are listed in the note; none chosen
+  here, no runtime change. Note
+  `notes/poetics/hero-demo-runs/2026-09-04-step7-template-fallback-cause.md`.
