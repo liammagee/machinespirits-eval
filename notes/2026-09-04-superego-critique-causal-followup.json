@@ -1,0 +1,511 @@
+{
+  "schemaVersion": "superego-critique-causal-followup-v1",
+  "analysisDate": "2026-09-04",
+  "claimBoundary": "Post-hoc aggregate lexical association, evidence-channel coverage, and unscored semantic calibration only; no causal or quality effect.",
+  "provenance": {
+    "sourceLedger": "notes/2026-09-04-communication-topology-link-analysis.json",
+    "sourceLedgerSha256": "9401fffc1bcbc86aa1cc8145b24237960fe80b85c81046697e209b322c5fb720",
+    "sourceSchemaVersion": "communication-topology-link-audit-v1",
+    "traceFilesExpected": 319,
+    "traceFilesVerified": 319,
+    "sourceLinks": 1202
+  },
+  "individualResolution": {
+    "testableLinks": 304,
+    "minimumComparators": 19,
+    "maximumComparators": 54,
+    "coarsestMinimumEmpiricalP": 0.05,
+    "finestMinimumEmpiricalP": 0.01818181818181818,
+    "nominalPAtMost005": 50,
+    "bestObservedFdrQ": 0.304
+  },
+  "aggregate": {
+    "method": "matched-stratum non-zero cyclic-shift randomization",
+    "critiqueField": "critiqueText",
+    "links": 304,
+    "strata": 11,
+    "minimumStratumSize": 2,
+    "permutations": 20000,
+    "seed": 20260904,
+    "observedMean": 0.041255,
+    "brokenMean": 0.021251,
+    "observedToBrokenRatio": 1.941372,
+    "meanDifference": 0.020005,
+    "nullStandardDeviation": 0.001257,
+    "nullMinimum": 0.016861,
+    "nullMaximum": 0.026141,
+    "drawsAtLeastObserved": 0,
+    "oneSidedMonteCarloP": 0.00005,
+    "claimBoundary": "Exploratory aggregate lexical association only; not an individual-link or causal effect.",
+    "byProfile": {
+      "cell_22_base_suspicious_unified": {
+        "links": 13,
+        "observedMean": 0.038328,
+        "brokenMean": 0.015659,
+        "meanDifference": 0.022668,
+        "positiveDifferenceLinks": 7
+      },
+      "cell_23_recog_suspicious_unified": {
+        "links": 11,
+        "observedMean": 0.027056,
+        "brokenMean": 0.009146,
+        "meanDifference": 0.017911,
+        "positiveDifferenceLinks": 4
+      },
+      "cell_24_base_adversary_unified": {
+        "links": 15,
+        "observedMean": 0.014134,
+        "brokenMean": 0.010452,
+        "meanDifference": 0.003682,
+        "positiveDifferenceLinks": 5
+      },
+      "cell_25_recog_adversary_unified": {
+        "links": 11,
+        "observedMean": 0.025279,
+        "brokenMean": 0.01529,
+        "meanDifference": 0.009989,
+        "positiveDifferenceLinks": 5
+      },
+      "cell_26_base_advocate_unified": {
+        "links": 10,
+        "observedMean": 0.013113,
+        "brokenMean": 0.009262,
+        "meanDifference": 0.003852,
+        "positiveDifferenceLinks": 3
+      },
+      "cell_27_recog_advocate_unified": {
+        "links": 8,
+        "observedMean": 0.01748,
+        "brokenMean": 0.00916,
+        "meanDifference": 0.00832,
+        "positiveDifferenceLinks": 3
+      },
+      "cell_28_base_dialectical_suspicious_unified": {
+        "links": 44,
+        "observedMean": 0.052774,
+        "brokenMean": 0.028286,
+        "meanDifference": 0.024488,
+        "positiveDifferenceLinks": 23
+      },
+      "cell_29_recog_dialectical_suspicious_unified": {
+        "links": 26,
+        "observedMean": 0.059472,
+        "brokenMean": 0.023704,
+        "meanDifference": 0.035768,
+        "positiveDifferenceLinks": 17
+      },
+      "cell_30_base_dialectical_adversary_unified": {
+        "links": 52,
+        "observedMean": 0.040585,
+        "brokenMean": 0.021881,
+        "meanDifference": 0.018705,
+        "positiveDifferenceLinks": 32
+      },
+      "cell_31_recog_dialectical_adversary_unified": {
+        "links": 37,
+        "observedMean": 0.04728,
+        "brokenMean": 0.02065,
+        "meanDifference": 0.02663,
+        "positiveDifferenceLinks": 25
+      },
+      "cell_32_base_dialectical_advocate_unified": {
+        "links": 44,
+        "observedMean": 0.033629,
+        "brokenMean": 0.022696,
+        "meanDifference": 0.010933,
+        "positiveDifferenceLinks": 22
+      },
+      "cell_33_recog_dialectical_advocate_unified": {
+        "links": 33,
+        "observedMean": 0.053844,
+        "brokenMean": 0.027519,
+        "meanDifference": 0.026325,
+        "positiveDifferenceLinks": 19
+      }
+    },
+    "byScenario": {
+      "misconception_correction_flow": {
+        "links": 84,
+        "observedMean": 0.046592,
+        "brokenMean": 0.019409,
+        "meanDifference": 0.027184,
+        "positiveDifferenceLinks": 50
+      },
+      "mood_frustration_to_breakthrough": {
+        "links": 68,
+        "observedMean": 0.062568,
+        "brokenMean": 0.037828,
+        "meanDifference": 0.02474,
+        "positiveDifferenceLinks": 46
+      },
+      "mutual_transformation_journey": {
+        "links": 21,
+        "observedMean": 0.052795,
+        "brokenMean": 0.031964,
+        "meanDifference": 0.020831,
+        "positiveDifferenceLinks": 13
+      },
+      "new_user_first_visit": {
+        "links": 131,
+        "observedMean": 0.02492,
+        "brokenMean": 0.012142,
+        "meanDifference": 0.012778,
+        "positiveDifferenceLinks": 56
+      }
+    }
+  },
+  "robustness": {
+    "withoutParserFailures": {
+      "method": "matched-stratum non-zero cyclic-shift randomization",
+      "critiqueField": "critiqueText",
+      "links": 272,
+      "strata": 11,
+      "minimumStratumSize": 2,
+      "permutations": 20000,
+      "seed": 20260904,
+      "observedMean": 0.044875,
+      "brokenMean": 0.022657,
+      "observedToBrokenRatio": 1.980623,
+      "meanDifference": 0.022218,
+      "nullStandardDeviation": 0.001267,
+      "nullMinimum": 0.017769,
+      "nullMaximum": 0.028518,
+      "drawsAtLeastObserved": 0,
+      "oneSidedMonteCarloP": 0.00005,
+      "claimBoundary": "Exploratory aggregate lexical association only; not an individual-link or causal effect.",
+      "byProfile": {
+        "cell_22_base_suspicious_unified": {
+          "links": 13,
+          "observedMean": 0.038291,
+          "brokenMean": 0.016474,
+          "meanDifference": 0.021817,
+          "positiveDifferenceLinks": 7
+        },
+        "cell_23_recog_suspicious_unified": {
+          "links": 10,
+          "observedMean": 0.029783,
+          "brokenMean": 0.009583,
+          "meanDifference": 0.0202,
+          "positiveDifferenceLinks": 4
+        },
+        "cell_24_base_adversary_unified": {
+          "links": 15,
+          "observedMean": 0.014144,
+          "brokenMean": 0.011017,
+          "meanDifference": 0.003127,
+          "positiveDifferenceLinks": 5
+        },
+        "cell_25_recog_adversary_unified": {
+          "links": 11,
+          "observedMean": 0.025258,
+          "brokenMean": 0.016077,
+          "meanDifference": 0.009181,
+          "positiveDifferenceLinks": 5
+        },
+        "cell_26_base_advocate_unified": {
+          "links": 8,
+          "observedMean": 0.016388,
+          "brokenMean": 0.008926,
+          "meanDifference": 0.007462,
+          "positiveDifferenceLinks": 3
+        },
+        "cell_27_recog_advocate_unified": {
+          "links": 7,
+          "observedMean": 0.019957,
+          "brokenMean": 0.011202,
+          "meanDifference": 0.008755,
+          "positiveDifferenceLinks": 3
+        },
+        "cell_28_base_dialectical_suspicious_unified": {
+          "links": 38,
+          "observedMean": 0.06095,
+          "brokenMean": 0.033028,
+          "meanDifference": 0.027922,
+          "positiveDifferenceLinks": 22
+        },
+        "cell_29_recog_dialectical_suspicious_unified": {
+          "links": 22,
+          "observedMean": 0.062999,
+          "brokenMean": 0.024521,
+          "meanDifference": 0.038479,
+          "positiveDifferenceLinks": 16
+        },
+        "cell_30_base_dialectical_adversary_unified": {
+          "links": 48,
+          "observedMean": 0.040724,
+          "brokenMean": 0.023128,
+          "meanDifference": 0.017597,
+          "positiveDifferenceLinks": 31
+        },
+        "cell_31_recog_dialectical_adversary_unified": {
+          "links": 36,
+          "observedMean": 0.048424,
+          "brokenMean": 0.021151,
+          "meanDifference": 0.027273,
+          "positiveDifferenceLinks": 24
+        },
+        "cell_32_base_dialectical_advocate_unified": {
+          "links": 36,
+          "observedMean": 0.040998,
+          "brokenMean": 0.023157,
+          "meanDifference": 0.017841,
+          "positiveDifferenceLinks": 22
+        },
+        "cell_33_recog_dialectical_advocate_unified": {
+          "links": 28,
+          "observedMean": 0.063338,
+          "brokenMean": 0.03071,
+          "meanDifference": 0.032628,
+          "positiveDifferenceLinks": 19
+        }
+      },
+      "byScenario": {
+        "misconception_correction_flow": {
+          "links": 72,
+          "observedMean": 0.054267,
+          "brokenMean": 0.023272,
+          "meanDifference": 0.030995,
+          "positiveDifferenceLinks": 50
+        },
+        "mood_frustration_to_breakthrough": {
+          "links": 57,
+          "observedMean": 0.068954,
+          "brokenMean": 0.039336,
+          "meanDifference": 0.029618,
+          "positiveDifferenceLinks": 42
+        },
+        "mutual_transformation_journey": {
+          "links": 19,
+          "observedMean": 0.058153,
+          "brokenMean": 0.032592,
+          "meanDifference": 0.025561,
+          "positiveDifferenceLinks": 13
+        },
+        "new_user_first_visit": {
+          "links": 124,
+          "observedMean": 0.026318,
+          "brokenMean": 0.013101,
+          "meanDifference": 0.013217,
+          "positiveDifferenceLinks": 56
+        }
+      }
+    },
+    "completeCritiqueText": {
+      "method": "matched-stratum non-zero cyclic-shift randomization",
+      "critiqueField": "fullCritiqueText",
+      "links": 272,
+      "strata": 11,
+      "minimumStratumSize": 2,
+      "permutations": 20000,
+      "seed": 20260904,
+      "observedMean": 0.036236,
+      "brokenMean": 0.020639,
+      "observedToBrokenRatio": 1.755767,
+      "meanDifference": 0.015598,
+      "nullStandardDeviation": 0.000847,
+      "nullMinimum": 0.017525,
+      "nullMaximum": 0.024917,
+      "drawsAtLeastObserved": 0,
+      "oneSidedMonteCarloP": 0.00005,
+      "claimBoundary": "Exploratory aggregate lexical association only; not an individual-link or causal effect.",
+      "byProfile": {
+        "cell_22_base_suspicious_unified": {
+          "links": 13,
+          "observedMean": 0.036759,
+          "brokenMean": 0.016543,
+          "meanDifference": 0.020215,
+          "positiveDifferenceLinks": 10
+        },
+        "cell_23_recog_suspicious_unified": {
+          "links": 10,
+          "observedMean": 0.025837,
+          "brokenMean": 0.010633,
+          "meanDifference": 0.015203,
+          "positiveDifferenceLinks": 6
+        },
+        "cell_24_base_adversary_unified": {
+          "links": 15,
+          "observedMean": 0.015456,
+          "brokenMean": 0.011971,
+          "meanDifference": 0.003484,
+          "positiveDifferenceLinks": 6
+        },
+        "cell_25_recog_adversary_unified": {
+          "links": 11,
+          "observedMean": 0.016619,
+          "brokenMean": 0.017359,
+          "meanDifference": -0.000739,
+          "positiveDifferenceLinks": 3
+        },
+        "cell_26_base_advocate_unified": {
+          "links": 8,
+          "observedMean": 0.03214,
+          "brokenMean": 0.011006,
+          "meanDifference": 0.021135,
+          "positiveDifferenceLinks": 6
+        },
+        "cell_27_recog_advocate_unified": {
+          "links": 7,
+          "observedMean": 0.022567,
+          "brokenMean": 0.013156,
+          "meanDifference": 0.009411,
+          "positiveDifferenceLinks": 4
+        },
+        "cell_28_base_dialectical_suspicious_unified": {
+          "links": 38,
+          "observedMean": 0.053059,
+          "brokenMean": 0.027794,
+          "meanDifference": 0.025265,
+          "positiveDifferenceLinks": 32
+        },
+        "cell_29_recog_dialectical_suspicious_unified": {
+          "links": 22,
+          "observedMean": 0.038998,
+          "brokenMean": 0.022668,
+          "meanDifference": 0.01633,
+          "positiveDifferenceLinks": 15
+        },
+        "cell_30_base_dialectical_adversary_unified": {
+          "links": 48,
+          "observedMean": 0.032665,
+          "brokenMean": 0.020416,
+          "meanDifference": 0.012248,
+          "positiveDifferenceLinks": 33
+        },
+        "cell_31_recog_dialectical_adversary_unified": {
+          "links": 36,
+          "observedMean": 0.033406,
+          "brokenMean": 0.019821,
+          "meanDifference": 0.013585,
+          "positiveDifferenceLinks": 23
+        },
+        "cell_32_base_dialectical_advocate_unified": {
+          "links": 36,
+          "observedMean": 0.036141,
+          "brokenMean": 0.021144,
+          "meanDifference": 0.014997,
+          "positiveDifferenceLinks": 27
+        },
+        "cell_33_recog_dialectical_advocate_unified": {
+          "links": 28,
+          "observedMean": 0.04802,
+          "brokenMean": 0.0261,
+          "meanDifference": 0.021921,
+          "positiveDifferenceLinks": 23
+        }
+      },
+      "byScenario": {
+        "misconception_correction_flow": {
+          "links": 72,
+          "observedMean": 0.039475,
+          "brokenMean": 0.020732,
+          "meanDifference": 0.018742,
+          "positiveDifferenceLinks": 53
+        },
+        "mood_frustration_to_breakthrough": {
+          "links": 57,
+          "observedMean": 0.050069,
+          "brokenMean": 0.031371,
+          "meanDifference": 0.018698,
+          "positiveDifferenceLinks": 45
+        },
+        "mutual_transformation_journey": {
+          "links": 19,
+          "observedMean": 0.037697,
+          "brokenMean": 0.02606,
+          "meanDifference": 0.011637,
+          "positiveDifferenceLinks": 14
+        },
+        "new_user_first_visit": {
+          "links": 124,
+          "observedMean": 0.027774,
+          "brokenMean": 0.01481,
+          "meanDifference": 0.012964,
+          "positiveDifferenceLinks": 76
+        }
+      }
+    }
+  },
+  "channels": {
+    "links": 1202,
+    "parserFailureCritiques": 99,
+    "parserFailureCritiquesTestable": 32,
+    "critiquesWithStructuredChanges": 1105,
+    "critiquesWithSpecificRevisionLists": 948,
+    "changedActionType": 182,
+    "changedActionTarget": 637,
+    "changedTitle": 891,
+    "changedMessage": 1196,
+    "multipleDraftSuggestions": 3,
+    "multipleRevisionSuggestions": 12,
+    "originalLexicalInstrumentRead": ["critique.feedback", "revision.firstSuggestion.message"],
+    "omittedFromOriginalLexicalInstrument": [
+      "critique.suggestedChanges",
+      "revision.firstSuggestion.title",
+      "revision.firstSuggestion.actionType",
+      "revision.firstSuggestion.actionTarget",
+      "additional revision suggestions"
+    ]
+  },
+  "semanticPacket": {
+    "method": "profile-stratified systematic midpoint sampling before semantic labels exist",
+    "sample_per_profile": 4,
+    "profiles": 12,
+    "selected": 48,
+    "packetPath": "exports/superego-critique-causal-followup/semantic-review-packet.json",
+    "packetSha256": "9da00d931b6f65bbbce7b506ec721fa876275fa8fe0304cef55ff3d851790573",
+    "identityLedgerPath": "exports/superego-critique-causal-followup/semantic-review-identity-ledger.json",
+    "identityLedgerSha256": "7349cdeafc57d6260a5599e6261fcfb5b378ec75803dbb6df2a7dc40a5077498",
+    "status": "unscored_calibration_material"
+  },
+  "causalProtocol": {
+    "schema_version": "superego-critique-causal-replay-protocol-seed-v1",
+    "status": "design_seed_not_authorized",
+    "frozen_unit": "one draft plus its exact visible context, held identical across arms",
+    "arms": [
+      { "id": "draft_only", "operation": "retain the frozen draft; no generation call" },
+      { "id": "generic_revision", "operation": "one revision pass with a content-neutral improve instruction" },
+      { "id": "actual_critique", "operation": "one revision pass with the draft's actual complete critique" },
+      {
+        "id": "matched_wrong_critique",
+        "operation": "one revision pass with a same-stratum critique from another draft"
+      }
+    ],
+    "estimands": [
+      "generic_revision minus draft_only: extra-pass effect",
+      "actual_critique minus generic_revision: critique-content effect",
+      "actual_critique minus matched_wrong_critique: link-specific critique effect",
+      "actual_critique minus draft_only: total loop effect"
+    ],
+    "measurement": {
+      "semantic": "independent pinned adjudicator with quoted critique and revision evidence spans",
+      "public_output": ["directive fulfillment", "material action or strategy change", "blind output quality"],
+      "separate_future_lane": "learner response or transfer; never inferred from tutor revision quality",
+      "disagreement": "measurement_indeterminate"
+    },
+    "execution_rules": [
+      "randomize arm presentation within each frozen unit",
+      "use the same ego route and decoding policy in every generated arm",
+      "one planned generation per arm; no outcome-driven retry or resampling",
+      "keep the generating architecture separate from every semantic and quality judge"
+    ],
+    "unresolved_before_registration": [
+      "eligible frozen-unit corpus and exclusions",
+      "sample size and sensitivity target",
+      "master randomization seed",
+      "ego model and provider route",
+      "semantic adjudicator and blinded quality judge routes",
+      "primary endpoint, threshold, and indeterminate disposition",
+      "attempt and spend ceilings",
+      "technical-failure and missing-unit policy"
+    ],
+    "launch_boundary": "No provider call is authorized by this protocol seed. A complete study design and explicit GO are still required."
+  },
+  "execution": {
+    "modelCallsCompleted": 0,
+    "modelCallsFailed": 0,
+    "modelCallsReserved": 0,
+    "hardCeiling": 0,
+    "historicalMutation": false
+  }
+}

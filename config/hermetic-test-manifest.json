@@ -530,6 +530,7 @@
         "tests/structureLearnerContext.test.js",
         "tests/subjectExplorerServer.test.js",
         "tests/superego-guard.test.js",
+        "tests/superegoCritiqueCausalFollowupAnalyzer.test.js",
         "tests/superegoFramingTrajectoryAnalyzer.test.js",
         "tests/superegoFramingTrajectoryCli.test.js",
         "tests/superegoTaxonomyProvenance.test.js",
