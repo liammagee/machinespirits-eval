@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
+import { recordFileDigest } from './recordedFileDigest.js';
 import {
   buildTutorStubResistanceRecoverySemanticPrompt,
   buildTutorStubResistanceRecoverySemanticZeroCallFixture,
@@ -52,7 +53,6 @@ function recoveryStratum(judgment) {
 
 export function validateTutorStubResistanceRecoverySemanticValidationRegistration({
   registration,
-  instrument,
   corpus,
   corpusSha256,
   developmentCorpus,
@@ -90,7 +90,6 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
     ]) ||
     registration?.instrument?.registrationPath !==
       'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json' ||
-    registration?.instrument?.registrationSha256 !== instrument.sha256 ||
     registration?.instrument?.instrumentFreezeCommit !== 'ecb0c5b289848308adffa2a415ced06924e5afe6' ||
     registration?.instrument?.instrumentBindingCommit !== 'd37c5ef66b54f199a505560eb3d244106502b36a' ||
     registration?.instrument?.postHeldoutPromptModelThresholdOrConsensusTuning !== false
@@ -344,6 +343,14 @@ export function loadTutorStubResistanceRecoverySemanticValidation() {
   });
   const issues = [...instrumentValidation.issues, ...corpusValidation.issues, ...bindingValidation.issues];
   if (issues.length) throw new Error(`outcome semantic validation invalid: ${issues.join('; ')}`);
+  const digestRecords = [
+    recordFileDigest({
+      root: ROOT,
+      filePath: instrumentPath,
+      recordedSha256: registration?.instrument?.registrationSha256,
+      label: 'outcome semantic instrument registration',
+    }),
+  ];
   return {
     registration,
     registrationPath: TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REGISTRATION,
@@ -353,6 +360,7 @@ export function loadTutorStubResistanceRecoverySemanticValidation() {
     instrumentSha256: fileSha256(instrumentPath),
     corpus,
     corpusSha256: fileSha256(registration.heldout.corpusPath),
+    digestRecords,
   };
 }
 
@@ -426,11 +434,24 @@ export function assembleTutorStubResistanceRecoverySemanticValidationPreflight({
 
 export function runTutorStubResistanceRecoverySemanticValidationPreflight({ contract }) {
   const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  const digestRecords = [
+    ...loaded.digestRecords,
+    recordFileDigest({
+      root: ROOT,
+      filePath: loaded.registrationPath,
+      recordedSha256: contract?.registration?.registration_sha256,
+      label: 'outcome semantic validation registration',
+    }),
+    recordFileDigest({
+      root: ROOT,
+      filePath: loaded.instrumentPath,
+      recordedSha256: contract?.registration?.instrument_registration_sha256,
+      label: 'outcome semantic instrument registration',
+    }),
+  ];
   if (
     contract?.registration?.registration_path !== loaded.registrationPath ||
-    contract?.registration?.registration_sha256 !== loaded.registrationSha256 ||
     contract?.registration?.instrument_registration_path !== loaded.instrumentPath ||
-    contract?.registration?.instrument_registration_sha256 !== loaded.instrumentSha256 ||
     contract?.registration?.heldout_corpus_path !== loaded.registration.heldout.corpusPath ||
     contract?.registration?.heldout_corpus_sha256 !== loaded.corpusSha256
   ) {
@@ -445,6 +466,7 @@ export function runTutorStubResistanceRecoverySemanticValidationPreflight({ cont
   });
   return {
     ...preflight,
+    digestRecords,
     outcome_semantic_validation_readiness_audit: {
       status: 'passed_zero_call_wiring_only_not_accuracy_or_launch_authority_evidence',
       cases: 120,
