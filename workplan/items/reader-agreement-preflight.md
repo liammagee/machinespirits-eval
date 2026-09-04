@@ -1,7 +1,7 @@
 ---
 id: reader-agreement-preflight
 title: Read archived transcripts with the registered reader seats before a paid run
-status: review
+status: done
 type: infra
 priority: P2
 owner: claude
@@ -96,3 +96,6 @@ One script and one service, no new gate.
   merged face against an unregistered per-pair floor and would have failed
   every merged preflight; fixed to read the rule from the design. Dry runs
   on the two archived runs above. PR opened.
+- 2026-09-04: Closed after PR #1004 merged as `5ce49e49`. The tool is in
+  `main`. No paid preflight has run; the first one still needs a go and a
+  ceiling from the user.
