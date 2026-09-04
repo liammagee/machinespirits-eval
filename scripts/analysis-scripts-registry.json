@@ -172,6 +172,12 @@
       ]
     },
     {
+      "path": "scripts/analyze-communication-topology-links.js",
+      "family": "evaluation-core",
+      "purpose": "Audit per-link lexical association between revision-demanding superego critiques and immediate ego revisions.",
+      "flags": ["--db", "--help", "--json", "--logs", "--output"]
+    },
+    {
       "path": "scripts/analyze-cross-judge.js",
       "family": "evaluation-core",
       "purpose": "Compare score distributions and agreement across selected runs and judges.",
