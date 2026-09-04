@@ -7,7 +7,7 @@ priority: P2
 owner: codex
 source: manual
 created: 2026-06-27
-updated: 2026-08-31
+updated: 2026-09-04
 branch: worktree-character-development
 claim_status: killed
 verification: "2026-08-31 recovery closeout: filesystem, archive, index, Git/stash, and session-record checks found only two hash-recoverable reports; primary score JSON and episode transcripts remain unavailable. Empirical claim withdrawn; no replication planned."
@@ -131,3 +131,7 @@ status passed, and Paper 2 v3.0.300 built. The legacy Paper 1 bug audit retains
 three unrelated source-guard failures in conversation-history and multi-turn
 selection checks; those runtime files were not changed. No model-backed
 generation or scoring was performed during recovery.
+
+No re-run (2026-09-04): the user reviewed the withdrawal and chose not to
+re-run the pilot. Nothing else in the paper cites the result, and the June
+runner may not run on the current engine. This question is closed.
