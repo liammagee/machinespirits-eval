@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { recordFileDigest } from './recordedFileDigest.js';
 import { loadTutorStubResistanceActionRegisterRegistration } from './tutorStubResistanceActionRegisterStudy.js';
 
 export const TUTOR_STUB_RESISTANCE_MANIPULATION_VALIDATION_SCHEMA =
@@ -56,14 +57,20 @@ function assertDesign(design, root) {
   ) {
     throw new Error('manipulation-validation design contract drifted');
   }
-  for (const [relative, digest, label] of [
-    [execution.baseRegistrationPath, execution.baseRegistrationSha256, 'base registration'],
-    [execution.contrastRepairAuditPath, execution.contrastRepairAuditSha256, 'contrast repair audit'],
-    [design.instrument.registrationPath, design.instrument.registrationSha256, 'fidelity instrument'],
-  ]) {
-    const absolute = repositoryPath(root, relative, label);
-    if (fileSha256(absolute) !== digest) throw new Error(`${label} digest drifted`);
+  // The contrast repair audit is a written record of what was measured before
+  // this design was cut, so it keeps its byte pin. The two registrations are
+  // recorded: correcting one of them is not a design change.
+  const auditPath = repositoryPath(root, execution.contrastRepairAuditPath, 'contrast repair audit');
+  if (fileSha256(auditPath) !== execution.contrastRepairAuditSha256) {
+    throw new Error('contrast repair audit digest drifted');
   }
+  return [
+    [execution.baseRegistrationPath, execution.baseRegistrationSha256, 'base registration'],
+    [design.instrument.registrationPath, design.instrument.registrationSha256, 'fidelity instrument registration'],
+  ].map(([relative, recordedSha256, label]) => {
+    repositoryPath(root, relative, label);
+    return recordFileDigest({ root, filePath: relative, recordedSha256, label });
+  });
 }
 
 export function buildTutorStubResistanceManipulationValidationPlan(design) {
@@ -122,7 +129,7 @@ export function loadTutorStubResistanceManipulationValidation({ designPath, root
   const absolute = repositoryPath(root, path.relative(root, requested), 'validation design');
   const source = fs.readFileSync(absolute, 'utf8');
   const design = JSON.parse(source);
-  assertDesign(design, root);
+  const digestRecords = assertDesign(design, root);
   const base = loadTutorStubResistanceActionRegisterRegistration(
     repositoryPath(root, design.execution.baseRegistrationPath, 'base registration'),
   );
@@ -130,6 +137,7 @@ export function loadTutorStubResistanceManipulationValidation({ designPath, root
     path: absolute,
     source,
     sha256: sha256(source),
+    digestRecords,
     design,
     base,
     plan: buildTutorStubResistanceManipulationValidationPlan(design),
