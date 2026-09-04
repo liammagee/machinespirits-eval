@@ -134,9 +134,10 @@ test('compile checks version and weight lengths; predict returns neutral below t
 });
 
 test('form-v1 stays loadable and frozen beside form-v2', () => {
-  assert.deepEqual([...TUTOR_STUB_FORM_FEATURE_VERSIONS], ['form-v1', 'form-v2']);
+  assert.deepEqual([...TUTOR_STUB_FORM_FEATURE_VERSIONS], ['form-v1', 'form-v2', 'form-v3']);
   assert.equal(tutorStubFormFeatureNames('form-v1').length, 40);
   assert.equal(tutorStubFormFeatureNames('form-v2').length, 45);
+  assert.equal(tutorStubFormFeatureNames('form-v3').length, 46);
   const shipped = JSON.parse(fs.readFileSync(path.join(ROOT, 'config/manner-trigger/form-v1.json'), 'utf8'));
   const v1 = compileTutorStubFormDetector(shipped);
   assert.equal(v1.featureVersion, 'form-v1');
@@ -225,6 +226,83 @@ test('shipped form-v4 artifact is form-v2 cues on the step-6 pool', () => {
     "Stop doing the slow bit. I'm not five. Say it once, normally, and I'll write it.",
   ])
     assert.notEqual(readTutorStubFormState(v4, silent).state, 'irritated', silent);
+});
+
+test('form-v3 adds one conjunction: a quoted phrase plus a manner challenge', () => {
+  const names = tutorStubFormFeatureNames('form-v3');
+  const on = (text) => {
+    const f = computeTutorStubFormFeatures(text, {}, 'form-v3');
+    return new Set(names.filter((_, i) => f[i] > 0));
+  };
+  assert.ok(!tutorStubFormFeatureNames('form-v2').includes('quote_manner_challenge'));
+  assert.equal(names[names.length - 13], 'quote_manner_challenge');
+  // The three step-6 irritated lines no earlier cue carried: the tutor's
+  // phrase in quote marks, and outside the marks a demand to say it plainly
+  // or a challenge to the speech itself.
+  for (const line of [
+    'Oh come on — "What does that show?" — could you just tell me straight what that shows instead of quizzing me with the torch again?',
+    'Are you reading that off a card? “The available public evidence does not yet settle the case.” It’s a torch and two balls—just say plainly what I should write.',
+    'Stop doing the slow bit. I\'m not five. "No memory, starts fresh." Say it once, normally, and I\'ll write it.',
+  ])
+    assert.ok(on(line).has('quote_manner_challenge'), line);
+  // Both halves are needed. A quote plus a demand for content is a demand,
+  // and a challenge with nothing quoted is not this shape.
+  for (const line of [
+    'Just tell me what to write instead of "two fifths"? Like what\'s the actual answer I put down?',
+    'Are you reading that off a card? Just tell me what the torch shows.',
+    'Mate, you sound like a plumber’s invoice—tell me where the water walked.',
+  ])
+    assert.ok(!on(line).has('quote_manner_challenge'), line);
+  // form-v3 stops a straight apostrophe from opening a quoted span; the older
+  // feature sets keep their matcher so their artifacts compute as they did.
+  const apostrophes = "I'm not sure it's right, and I don't know which one you meant.";
+  assert.equal(on(apostrophes).has('has_quote'), false);
+  const v2 = computeTutorStubFormFeatures(apostrophes, {}, 'form-v2');
+  assert.equal(v2[tutorStubFormFeatureNames('form-v2').indexOf('has_quote')], 1);
+  assert.ok(on('Stop doing the slow bit. I\'m not five. "No memory, starts fresh." Say it once.').has('has_quote'));
+});
+
+test('shipped form-v5 artifact is form-v3 cues on the step-6 pool', () => {
+  const artifact = JSON.parse(fs.readFileSync(path.join(ROOT, 'config/manner-trigger/form-v5.json'), 'utf8'));
+  assert.equal(artifact.version, 'form-v5');
+  assert.equal(artifact.featureVersion, 'form-v3');
+  assert.deepEqual([...artifact.featureNames], [...tutorStubFormFeatureNames('form-v3')]);
+  // Same pool as form-v4; the hero worlds 035/036/037 stay held out.
+  for (const world of ['world_041_log_and_pebble', 'world_042_half_a_moon', 'world_043_tails_is_due'])
+    assert.ok(artifact.trainedOn.worlds.includes(world), world);
+  for (const world of ['world_035_nine_oclock_ghost', 'world_036_class_plant', 'world_037_fraction_sum'])
+    assert.ok(!artifact.trainedOn.worlds.includes(world), world);
+  // The transfer evidence is the 042 fold, recorded in the provenance: 042
+  // held out went 0/10 to 2/10 with no new wrong-fires.
+  assert.match(artifact.trainedOn.provenance, /042 held out went 0\/10 to 2\/10/);
+  assert.equal(artifact.trainedOn.leaveOneWorldOut.world_042_half_a_moon.rightKind, '2/10');
+  assert.equal(artifact.trainedOn.leaveOneWorldOut.world_042_half_a_moon.wrongFiresAtQuiet, '0/2');
+  const v5 = compileTutorStubFormDetector(artifact);
+  assert.equal(v5.version, 'form-v5');
+  assert.equal(v5.featureVersion, 'form-v3');
+  const v4 = compileTutorStubFormDetector(
+    JSON.parse(fs.readFileSync(path.join(ROOT, 'config/manner-trigger/form-v4.json'), 'utf8')),
+  );
+  // The three lines are in form-v5's pool, so this pins behaviour, not
+  // transfer. form-v4 reads all three as nothing.
+  for (const line of [
+    'Oh come on — "What does that show?" — could you just tell me straight what that shows instead of quizzing me with the torch again?',
+    'Are you reading that off a card? “The available public evidence does not yet settle the case.” It’s a torch and two balls—just say plainly what I should write.',
+    'Stop doing the slow bit. I\'m not five. "No memory, starts fresh." Say it once, normally, and I\'ll write it.',
+  ]) {
+    assert.equal(readTutorStubFormState(v5, line).state, 'irritated', line);
+    assert.equal(readTutorStubFormState(v4, line).state, 'neutral', line);
+  }
+  // Without the quote the same words stay unread under form-v5 as well.
+  assert.notEqual(
+    readTutorStubFormState(v5, 'Are you reading that off a card? Just tell me what the torch shows.').state,
+    'irritated',
+  );
+  // The older cues still carry what they carried.
+  assert.equal(
+    readTutorStubFormState(v5, 'Mate, you sound like a plumber’s invoice—tell me where the water walked.').state,
+    'irritated',
+  );
 });
 
 test('form-v2 tells question kinds apart by grammar', () => {

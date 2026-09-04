@@ -1,0 +1,185 @@
+{
+  "schema": "machinespirits.tutor-stub.form-state-detector.v1",
+  "version": "form-v5",
+  "featureVersion": "form-v3",
+  "featureNames": [
+    "imperative_opener",
+    "just_already",
+    "forced_choice_q",
+    "ultimatum",
+    "clock_grammar",
+    "about_to_act",
+    "can_we_move",
+    "you_accuse",
+    "sound_like",
+    "why_challenge",
+    "feels_like_you",
+    "effort_span",
+    "every_repeat",
+    "worth_question",
+    "push_back",
+    "we_did",
+    "record_ref",
+    "already_settled",
+    "if_i_write",
+    "cost_clause",
+    "wish_hedge",
+    "thats_just_how",
+    "confusion_marker",
+    "self_question",
+    "assent_opener",
+    "done_yet",
+    "concession_opener",
+    "trailing_off",
+    "q_self_doubt",
+    "q_to_you",
+    "wait_no_correct",
+    "stake_conditional",
+    "commit_future",
+    "quote_manner_challenge",
+    "question_count",
+    "exclamation",
+    "dash_count",
+    "first_person_density",
+    "second_person_density",
+    "negation_density",
+    "word_count",
+    "sentence_count",
+    "has_quote",
+    "quote_echoes_tutor",
+    "tutor_echo",
+    "own_repeat"
+  ],
+  "threshold": 0.5,
+  "weights": {
+    "jumping_ahead": [
+      -0.10397, 0.45541, 3.42935, 3.03794, 1.96356, 1.68115, -0.62615, 0.64088, -1.62747, -0.00241, 0, -0.61138,
+      -0.38204, -0.97054, 0, -0.99156, -0.80721, -0.30636, -1.18026, -1.95249, -1.33701, -0.00909, -1.31579, 0.07005,
+      -1.63833, -0.14053, -1.5423, 0, -1.14118, -0.24163, -0.04188, -1.15993, -0.33453, -1.41597, -0.31116, -0.23239,
+      0.48074, -0.62742, 0.73951, -0.04154, -2.40835, 3.6502, 2.31436, 0.37846, -2.11491, -0.71306, -3.02335
+    ],
+    "irritated": [
+      -0.02261, 0.07867, -1.01978, -0.27053, -0.8414, -0.48873, -0.42231, 0.19386, 5.64469, -0.01399, 0, -0.81587,
+      -0.01434, -0.92397, 0, -0.61651, -0.5482, -0.20699, -0.25445, -0.89645, -0.63114, -0.0154, -0.32573, -1.26269,
+      1.30365, -0.10713, 1.41351, 0, -0.48474, 0.93013, -0.01713, -0.22603, 0.00744, 4.15772, 0.06657, -0.16798,
+      -0.7592, 0.26808, 2.42811, 0.84518, 0.57044, 2.62113, -0.19573, 0.57069, 0.07568, -1.24733, -5.29217
+    ],
+    "frustrated": [
+      -0.14956, -0.78898, -0.76279, -0.7384, 0.00737, -1.19119, -0.57629, -0.37663, -2.62909, -0.00278, 0, 0.99332,
+      1.36773, 2.51197, 0, -0.66944, -0.59572, -0.29584, -0.51627, 0.82552, -0.34502, -0.05259, -0.46526, -0.62258,
+      -1.1181, -0.34033, -1.04582, 0, -0.43115, 3.39577, -0.05685, -0.47146, -0.42295, -0.17204, -1.74751, 0.38992,
+      -1.60402, 1.14028, 0.89101, -0.38718, 2.44841, -0.51528, -1.15059, -0.08406, -1.96724, -0.73439, -4.14406
+    ],
+    "forgetting": [
+      -0.21833, -0.49267, -0.0955, -0.33566, -0.51338, -0.4004, 0.31272, -0.28345, -0.64582, -0.00263, 0, -0.26872,
+      -0.03101, -0.28664, 0, 3.63696, 2.49742, 2.76227, -0.08578, -0.50462, -0.37022, -0.01486, 0.5248, 0.02854,
+      -0.51371, -0.01002, -0.49893, 0, -0.46548, -0.79906, 0.74133, -0.0676, -0.04228, -0.12296, -0.70105, 0.57364,
+      0.8692, -0.01751, -0.02107, -0.08268, 0.67208, 0.28218, -0.70715, -0.51742, -0.37661, -0.02834, -4.96769
+    ],
+    "opposed": [
+      -1.07218, -0.57871, -0.1261, -1.04026, 0.26664, 0.60354, 2.9039, 0.96303, -0.84721, -0.00307, 0, -0.4112,
+      -0.03424, -1.20767, 0, -0.46029, 0.00914, -0.81351, 2.06016, 4.31019, 1.10626, -0.01631, -0.83833, -1.37999,
+      -1.01023, -0.02663, -0.78416, 0, -0.74342, 0.33563, -0.1583, 0.83551, -0.15845, -0.31988, -0.14712, 0.14277,
+      0.87188, 0.36742, -0.22951, 0.26775, 0.96316, 0.04088, 0.08677, 0.26348, -0.91715, -0.21918, -4.94253
+    ],
+    "bored": [
+      -0.20108, 1.31597, -0.24184, -0.16874, -0.36936, -0.11436, 0.79336, -0.09226, -0.31751, -0.01339, 0, -0.11695,
+      -0.01082, -0.12303, 0, 1.19614, -0.60032, -0.74403, -0.13556, 0.08759, -0.30554, -0.00276, -0.08821, -0.60763,
+      1.44274, 1.03135, 1.86222, 0, -0.08673, -0.59688, -0.01269, -0.13491, 0.73179, -0.07831, 0.03255, -0.003,
+      -0.95487, -0.60498, -1.06485, -0.75126, -4.24596, 1.19694, 0.04051, -0.70321, -0.93638, 0.90152, -2.5551
+    ],
+    "lost": [
+      -0.74796, -0.7905, -0.99938, -0.68564, -0.54273, -0.37102, -0.48828, -0.5185, -0.93371, -0.00761, 0, -0.16825,
+      -0.05294, -0.21072, 0, -0.55971, -0.63561, -0.46663, -0.39755, -0.71016, 0.29133, -0.01495, 3.23561, 2.8448,
+      -0.84855, -0.12435, -0.66871, 0, 3.25192, -2.13701, -0.28682, -0.25746, -0.05623, -0.36978, 2.64923, -0.29019,
+      1.02747, 0.20566, -0.19897, -0.15377, 0.89041, 1.65639, 0.24721, -0.44395, -0.90903, -0.52737, -5.24476
+    ]
+  },
+  "trainedOn": {
+    "date": "2026-09-03",
+    "worlds": [
+      "world_030_rowan_flat",
+      "world_033_alder_row_redoubt",
+      "world_034_groupwork_flag",
+      "world_038_seasons_tilt",
+      "world_039_percent_up_down",
+      "world_040_sam_and_me",
+      "world_041_log_and_pebble",
+      "world_042_half_a_moon",
+      "world_043_tails_is_due"
+    ],
+    "traces": 108,
+    "plantedTurns": 715,
+    "neutralTurns": 1122,
+    "hyper": {
+      "epochs": 300,
+      "lr": 0.05,
+      "l2": 0.0005,
+      "neutralWeight": 0.35,
+      "seed": 7
+    },
+    "leaveOneWorldOut": {
+      "world_030_rowan_flat": {
+        "firedAsPressure": "223/295",
+        "rightKind": "223/295",
+        "wrongFiresAtQuiet": "0/56"
+      },
+      "world_033_alder_row_redoubt": {
+        "firedAsPressure": "68/214",
+        "rightKind": "68/214",
+        "wrongFiresAtQuiet": "0/69"
+      },
+      "world_034_groupwork_flag": {
+        "firedAsPressure": "17/22",
+        "rightKind": "17/22",
+        "wrongFiresAtQuiet": "0/5"
+      },
+      "world_035_nine_oclock_ghost": {
+        "firedAsPressure": "8/10",
+        "rightKind": "8/10",
+        "wrongFiresAtQuiet": "0/2"
+      },
+      "world_036_class_plant": {
+        "firedAsPressure": "7/10",
+        "rightKind": "6/10",
+        "wrongFiresAtQuiet": "0/2"
+      },
+      "world_037_fraction_sum": {
+        "firedAsPressure": "7/12",
+        "rightKind": "7/12",
+        "wrongFiresAtQuiet": "0/0"
+      },
+      "world_038_seasons_tilt": {
+        "firedAsPressure": "6/8",
+        "rightKind": "6/8",
+        "wrongFiresAtQuiet": "0/2"
+      },
+      "world_039_percent_up_down": {
+        "firedAsPressure": "8/8",
+        "rightKind": "8/8",
+        "wrongFiresAtQuiet": "0/2"
+      },
+      "world_040_sam_and_me": {
+        "firedAsPressure": "6/8",
+        "rightKind": "6/8",
+        "wrongFiresAtQuiet": "0/2"
+      },
+      "world_041_log_and_pebble": {
+        "firedAsPressure": "4/8",
+        "rightKind": "2/8",
+        "wrongFiresAtQuiet": "0/2"
+      },
+      "world_042_half_a_moon": {
+        "firedAsPressure": "2/10",
+        "rightKind": "2/10",
+        "wrongFiresAtQuiet": "0/2"
+      },
+      "world_043_tails_is_due": {
+        "firedAsPressure": "4/8",
+        "rightKind": "4/8",
+        "wrongFiresAtQuiet": "0/2"
+      }
+    },
+    "provenance": "form-v3 cue set = form-v2 plus one conjunction, quote_manner_challenge (a quoted span plus, outside it, a demand to say it plainly or a challenge to the speech itself), and a quote matcher that no longer lets a straight apostrophe open a span. Pool identical to form-v4 (archive worlds 030/033/034, lesson worlds 038/039/040, six step-6 plants-only traces on 041/042/043). Hold-outs 030/035/036/037 never trained on. Gate: 042 held out went 0/10 to 2/10 (both irritated lines), wrong-fires at quiet plants 0/2, neutral false alarms 2/28 unchanged. Elsewhere, against form-v4 folds: 043 3/8 to 4/8, 033 63/214 to 68/214, 041 3/8 to 2/8 (one demand line), 036 7/10 to 6/10 (one demand line), 030 234/295 to 223/295 (six quote-less sound-like lines and six deadline demands went silent), 034 wrong-kind 2 to silent; hero hold-outs 29/42 to 28/42 right kind (the same 036 demand line), false alarms 9/144 to 6/144, 0/6 wrong-fires."
+  }
+}
