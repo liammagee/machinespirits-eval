@@ -17,6 +17,8 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
+
 import {
   OUTCOME_DEFAULT_RUN_SHAPE,
   OUTCOME_PER_DIALOGUE_GENERATION_CAP,
@@ -1075,6 +1077,7 @@ export async function runReadersAfterFingerprintGuard({
   excludedCases = [],
   runReaders,
 } = {}) {
+  refuseRetiredPaidLaunch('adaptive-warrant-outcome-pilot');
   const guard = guardOutcomeAnnotationFingerprints({ cases, keyCases, expectedCount, excludedCases });
   if (typeof runReaders !== 'function') throw new Error('reader launcher callback is required');
   const result = await runReaders();
@@ -1350,6 +1353,7 @@ export async function runOutcomeGeneration({
   runDialogue = spawnLogged,
   collectJobResult = collectAdaptiveWarrantStudyJobResult,
 } = {}) {
+  refuseRetiredPaidLaunch('adaptive-warrant-outcome-pilot');
   const rulingDecisions = applyReviewerRulingToCheckpoint({ checkpoint, jobs, ruling: reviewerRuling });
   if (rulingDecisions.length) {
     checkpoint.reviewer_ruling_decisions = rulingDecisions;
@@ -1465,6 +1469,7 @@ export async function runReaderProcesses({
   readerCwd = ROOT,
   runProcess = spawnLogged,
 }) {
+  refuseRetiredPaidLaunch('adaptive-warrant-outcome-pilot');
   // Read the plan the checkpoint was opened with, not a module constant: on a
   // resume the checkpoint on disk is the authority on how large this run is.
   const plan = checkpoint.call_budget?.plan;
@@ -1561,6 +1566,7 @@ export async function executeOutcomePilot({
   runDialogue,
   runReaderProcess,
 } = {}) {
+  refuseRetiredPaidLaunch('adaptive-warrant-outcome-pilot');
   if (!goNotePath) throw new Error('outcome pilot refuses: --go-note is required');
   if (!acceptCharges) throw new Error('outcome pilot refuses: --accept-charges is required');
   // A reviewer ruling is a committed artifact, not a flag. The run records the
@@ -2050,6 +2056,7 @@ async function main() {
     process.stdout.write(usage());
     return;
   }
+  if (values['accept-charges']) refuseRetiredPaidLaunch('adaptive-warrant-outcome-pilot');
   if (!values['go-note'] || !values['accept-charges']) {
     let manifest = null;
     try {

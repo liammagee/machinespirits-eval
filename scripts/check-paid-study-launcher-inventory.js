@@ -7,11 +7,35 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_INVENTORY = path.join(ROOT, 'config', 'paid-study-launcher-inventory.json');
 const SHARED_HELPER = 'paidStudyLaunchContract.js';
-const ALLOWED_DISPOSITIONS = new Set(['shared_contract', 'pre_policy_exemption', 'historical_live_exemption']);
+const ALLOWED_DISPOSITIONS = new Set([
+  'shared_contract',
+  'pre_policy_exemption',
+  'historical_live_exemption',
+  'retired',
+]);
 const DURABLE_REFERENCE = 'referenceImplementation';
 const DURABLE_MIGRATION_REQUIRED = 'migrationRequired';
 const DURABLE_RETIRE_OR_MIGRATE = 'retireOrMigrate';
-const DURABLE_GROUPS = Object.freeze([DURABLE_REFERENCE, DURABLE_MIGRATION_REQUIRED, DURABLE_RETIRE_OR_MIGRATE]);
+const DURABLE_RETIRED = 'retired';
+const RETIRED_GUARD_CALL_MINIMUMS = new Map([
+  ['scripts/run-adaptive-warrant-outcome-main-block.js', 3],
+  ['scripts/run-adaptive-warrant-outcome-pilot.js', 5],
+  ['scripts/run-adaptive-warrant-steering-decomposition.js', 3],
+  ['scripts/run-tutor-stub-action-outcome-model-judge-shadow.js', 2],
+  ['scripts/run-tutor-stub-defiant-warrant-pilot.js', 2],
+  ['scripts/run-tutor-stub-frame-refuser-depth-calibration.js', 2],
+  ['scripts/run-tutor-stub-frame-refuser-narrowing-calibration.js', 2],
+  ['scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js', 2],
+  ['scripts/run-tutor-stub-resistance-warm-nonwarm-confirmation.js', 2],
+  ['scripts/run-tutor-stub-resistant-learner-calibration.js', 2],
+  ['scripts/run-tutor-stub-resistant-learner-merged-calibration.js', 2],
+]);
+const DURABLE_GROUPS = Object.freeze([
+  DURABLE_REFERENCE,
+  DURABLE_MIGRATION_REQUIRED,
+  DURABLE_RETIRE_OR_MIGRATE,
+  DURABLE_RETIRED,
+]);
 
 function walk(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -65,6 +89,12 @@ export function checkPaidStudyLauncherInventory({ root = ROOT, inventoryPath = D
       if (!/sealed|completed|produced|served|live|run/iu.test(entry.reason || '')) {
         issues.push(`${file}: historical/live exemption must name its narrow run basis`);
       }
+    } else if (entry.disposition === 'retired') {
+      const retirementGuardCalls = source.match(/refuseRetiredPaidLaunch\(/gu)?.length || 0;
+      const requiredGuardCalls = RETIRED_GUARD_CALL_MINIMUMS.get(file) || 1;
+      if (!source.includes('retiredPaidLauncher.js') || retirementGuardCalls < requiredGuardCalls) {
+        issues.push(`${file}: retired launcher does not call the shared fail-closed retirement guard`);
+      }
     }
   }
 
@@ -92,13 +122,18 @@ export function checkPaidStudyLauncherInventory({ root = ROOT, inventoryPath = D
     }
     if (group === DURABLE_REFERENCE) {
       const source = fs.readFileSync(path.join(root, file), 'utf8');
-      if (entry.disposition !== 'shared_contract' || !source.includes('durableAttemptJournal.js')) {
+      if (
+        entry.disposition !== 'shared_contract' ||
+        (!source.includes('durableAttemptJournal.js') && !source.includes('durablePaidModelAttemptBudget.js'))
+      ) {
         issues.push(`${file}: durable reference must use shared admission and the durable attempt journal`);
       }
     } else if (group === DURABLE_MIGRATION_REQUIRED && entry.disposition !== 'shared_contract') {
       issues.push(`${file}: migrationRequired is reserved for shared-admission launchers`);
     } else if (group === DURABLE_RETIRE_OR_MIGRATE && entry.disposition === 'shared_contract') {
       issues.push(`${file}: shared-admission launcher cannot be classified retireOrMigrate`);
+    } else if (group === DURABLE_RETIRED && entry.disposition !== 'retired') {
+      issues.push(`${file}: retired durability classification requires the retired disposition`);
     }
   }
   return {

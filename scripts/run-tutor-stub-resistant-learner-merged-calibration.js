@@ -7,6 +7,7 @@ import { createInterface } from 'node:readline/promises';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
 import {
   loadTutorStubResistantLearnerDesign,
   summarizeTutorStubResistantLearnerCalibration,
@@ -171,6 +172,7 @@ export async function executeTutorStubResistantLearnerMergedCalibration({
   runChild = runTutorStubResistantLearnerCalibrationChild,
   extractRow = extractTutorStubResistantLearnerCalibrationRow,
 } = {}) {
+  refuseRetiredPaidLaunch('tutor-stub-resistant-learner-merged-calibration');
   const plan = preflight.plan;
   const ledgerPath = path.join(destination, 'run-ledger.jsonl');
   let rows = [];
@@ -336,6 +338,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     process.stdout.write(`${TUTOR_STUB_RESISTANT_LEARNER_MERGED_USAGE}\n`);
     return null;
   }
+  if (values.launch) refuseRetiredPaidLaunch('tutor-stub-resistant-learner-merged-calibration');
   if (values['dry-run'] === values.launch) {
     throw new Error('select exactly one of --dry-run or --launch');
   }

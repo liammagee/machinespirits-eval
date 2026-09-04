@@ -1,16 +1,16 @@
 ---
 id: durable-evaluation-runner-migration
 title: Migrate paid runners to the durable execution contract
-status: active
+status: done
 type: infra
 priority: P1
 owner: codex
 source: review
 created: 2026-09-02
 updated: 2026-09-03
-branch: codex/durable-invested-rival-replication
-verification: "Each named paid runner reserves immediately before dispatch, terminalizes every attempt, reconciles stale in-flight work, resumes only missing accepted work, and reports attempt, unit, workflow, and scientific-verdict state from the same ledger."
-claim_status: planned
+branch: codex/durable-runner-migration-completion
+verification: "The six maintained paid runners satisfy the durable execution contract with focused crash-boundary, missing-only recovery, plan-identity, response-integrity, and four-plane status tests; all thirteen non-migrated launchers fail closed at every exported and CLI paid-dispatch boundary."
+claim_status: methods
 links:
   notes:
     - docs/durable-evaluation-execution-contract.md
@@ -47,19 +47,19 @@ durability partition is checked by `scripts/check-paid-study-launcher-inventory.
 Shared launch admission is not treated as evidence of durable per-dispatch
 execution.
 
-- Reference implementation / fully migrated (3):
+- Reference implementation / fully migrated (6):
   `run-tutor-stub-action-outcome-collection-pilot.js` and
   `run-tutor-stub-action-outcome-failed-unit-recovery.js`, plus
-  `run-invested-rival-learner-replication.js`.
-- Shared-admission runners still requiring migration (6):
+  `run-invested-rival-learner-replication.js`,
+  `run-invested-rival-luna-reference.js`,
+  `run-invested-rival-learner-iteration.js`, and
+  `run-local-qwen-invested-rival.js`.
+- Shared-admission runners still requiring migration (0).
+- Retired from future paid dispatch (13):
   `run-tutor-stub-action-outcome-model-judge-shadow.js`,
   `run-tutor-stub-frame-refuser-narrowing-calibration.js`,
   `run-tutor-stub-frame-refuser-satisfiable-calibration.js`,
-  `run-local-qwen-invested-rival.js`,
-  `run-invested-rival-luna-reference.js`, and
-  `run-invested-rival-learner-iteration.js`.
-- Historical or pre-policy runners that must be retired or migrated before any
-  future reuse (10): `run-adaptive-warrant-outcome-main-block.js`,
+  `run-adaptive-warrant-outcome-main-block.js`,
   `run-adaptive-warrant-outcome-pilot.js`,
   `run-adaptive-warrant-steering-decomposition.js`,
   `run-tutor-stub-defiant-warrant-pilot.js`,
@@ -71,11 +71,12 @@ execution.
   `run-tutor-stub-resistant-learner-merged-calibration.js`.
 
 2026-09-03 — Completed the fail-closed inventory tranche from current
-`origin/main`. No additional runner is marked migrated: the simple fixed-call
-calibration runners lack a registered recovery reserve, while the reserve-bearing
-invested-rival runners share a multi-stage dispatch path that must be migrated
-coherently with response persistence, missing-only recovery, and ledger-derived
-workflow status. The whole card remains active.
+`origin/main`. At that checkpoint, before this card's implementation tranches,
+the simple fixed-call calibration runners lacked a registered recovery reserve,
+while the reserve-bearing invested-rival runners shared a multi-stage dispatch
+path that needed coherent response persistence, missing-only recovery, and
+ledger-derived workflow status. The completion entry below resolves that
+inventory.
 
 2026-09-03 — Migrated `run-invested-rival-learner-replication.js` without
 changing its design, routes, inputs, seed, instruments, or 396-attempt ceiling.
@@ -86,5 +87,17 @@ reuses valid saved dialogue replies and deterministically parses valid saved
 assessment responses before considering any new call. Workflow call counts are
 projected from the run ledger. Focused zero-call tests cover all four crash
 boundaries and retain the registered 288 generation + 90 assessment + 18
-recovery allocation. No model call was made. The remaining six shared-admission
-runners stay open above, so this card remains active.
+recovery allocation. No model call was made. This was the first maintained-runner
+migration; the completion entry below records the remaining dispositions.
+
+2026-09-03 — Completed the card. Extracted the shared durable paid-attempt
+budget adapter and migrated the Luna reference, learner iteration, and local
+Qwen runners without changing their registered routes, inputs, instruments,
+seeds, or ceilings. Each now has per-dispatch durable lifecycle accounting,
+ledger-and-hash-gated response reuse, full-plan recovery identity, missing-only
+continuation, and attempt/unit/workflow/ETA/scientific-verdict status. Retired
+the ten historical launchers and the three fixed-call/no-reserve launchers at
+both CLI and exported paid-dispatch boundaries while preserving zero-call
+inspection and sealed evidence. Focused crash, recovery, status, compatibility,
+inventory, and retirement tests pass; the hermetic manifest and workplan source
+checks are synchronized. No model call was made.

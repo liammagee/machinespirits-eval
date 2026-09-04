@@ -71,7 +71,7 @@ test('steering decomposition dry-run builds active gated twins and disables chal
   assert.equal(dryRun.checks.steering_only_unselectable, true);
 });
 
-test('steering decomposition bare invocation is HOLD and the paid path refuses without note 103', (t) => {
+test('steering decomposition bare invocation stays zero-call and its former paid path is retired', (t) => {
   const output = execFileSync(process.execPath, [SCRIPT], { cwd: ROOT, encoding: 'utf8' });
   assert.match(output, /HOLD \/ zero-call plan only/u);
   assert.match(output, /run cap 2240 calls/u);
@@ -83,7 +83,7 @@ test('steering decomposition bare invocation is HOLD and the paid path refuses w
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(refused.status, 0);
-  assert.match(refused.stderr, /go-note must be .*103-reviewer-go-note-steering-decomposition/u);
+  assert.match(refused.stderr, /paid launcher retired: adaptive-warrant-steering-decomposition/u);
   assert.equal(fs.existsSync(outputDir), false);
 });
 

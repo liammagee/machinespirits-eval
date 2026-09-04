@@ -462,7 +462,7 @@ test('three agreeing seats can pass agreement and spread only through the regist
   assert.equal(report.archived_rows_confirmatory, false);
 });
 
-test('the complete preflight writes nothing and the launcher makes exactly 72 non-retried reader calls', async (t) => {
+test('the complete preflight writes nothing and the retired executor calls no reader', async (t) => {
   const { archiveRoot } = createNarrowingArchiveFixture(t);
   const destination = path.join(archiveRoot, 'artifacts/tutor-stub-live/narrowing-reader-test');
   const preflight = prepareTutorStubFrameRefuserNarrowingCalibration({
@@ -477,122 +477,38 @@ test('the complete preflight writes nothing and the launcher makes exactly 72 no
   assert.equal(preflight.model_calls_executed, 0);
   assert.equal(fs.existsSync(destination), false, 'zero-call preflight must not create the destination');
 
-  fs.mkdirSync(destination, { recursive: true });
   const admission = fakeAdmission(72);
   let calls = 0;
   const callBridge = async (agentConfig, _systemPrompt, userPrompt, _role, options) => {
     calls += 1;
     return categoricalBridgeResponse(agentConfig, userPrompt, options);
   };
-  const report = await executeTutorStubFrameRefuserNarrowingCalibration({
-    preflight,
-    admission,
-    callBridge,
-    progress: () => {},
-  });
-  assert.equal(calls, 72);
-  assert.equal(admission.reserved, 72);
-  assert.equal(admission.closed, true);
-  assert.equal(report.execution.complete_units, 72);
-  assert.equal(report.execution.eligible_units, 72);
-  assert.equal(report.execution.missing_units, 0);
-  assert.equal(fs.readdirSync(path.join(destination, 'results')).length, 72);
-  assert.equal(report.status, 'failed_agreement', 'categorical-only agreement cannot pass the three-mark gate');
+  await assert.rejects(
+    executeTutorStubFrameRefuserNarrowingCalibration({ preflight, admission, callBridge, progress: () => {} }),
+    /paid launcher retired: tutor-stub-frame-refuser-narrowing-calibration/u,
+  );
+  assert.equal(calls, 0);
+  assert.equal(admission.reserved, 0);
+  assert.equal(fs.existsSync(destination), false);
 });
 
-test('recovery skips completed and failed units and spends only the 61 untouched attempts', async (t) => {
-  const { archiveRoot } = createNarrowingArchiveFixture(t);
-  const initialDestination = path.join(archiveRoot, 'artifacts/tutor-stub-live/narrowing-reader-transport-failure');
-  const initialPreflight = prepareTutorStubFrameRefuserNarrowingCalibration({
-    root: REPO_ROOT,
-    designPath: DESIGN_PATH,
-    archiveRoot,
-    destination: initialDestination,
-    verifyCommittedFile: () => true,
-    resolve: resolveTestReader,
-  });
-  fs.mkdirSync(initialDestination, { recursive: true });
-  const initialAdmission = fakeAdmission(72, {
-    ledgerPath: path.join(initialDestination, 'run-ledger.jsonl'),
-  });
-  let initialCalls = 0;
+test('retired narrowing executor refuses recovery before reader or filesystem work', async () => {
+  let calls = 0;
+  const destination = '/absolute/narrowing-recovery-root';
   await assert.rejects(
     executeTutorStubFrameRefuserNarrowingCalibration({
-      preflight: initialPreflight,
-      admission: initialAdmission,
-      callBridge: async (agentConfig, _systemPrompt, userPrompt, _role, options) => {
-        initialCalls += 1;
-        if (initialCalls === 11) throw new Error('synthetic transport failure');
-        return categoricalBridgeResponse(agentConfig, userPrompt, options);
+      preflight: { destination, recovery: { source_root: '/absolute/source-root' } },
+      callBridge: async () => {
+        calls += 1;
       },
-      progress: () => {},
     }),
-    /synthetic transport failure/u,
+    /paid launcher retired: tutor-stub-frame-refuser-narrowing-calibration/u,
   );
-  assert.equal(initialCalls, 11);
-  assert.equal(initialAdmission.reserved, 11);
-  assert.equal(initialAdmission.closed, true);
-  assert.equal(fs.readdirSync(path.join(initialDestination, 'results')).length, 10);
-  const failure = JSON.parse(fs.readFileSync(path.join(initialDestination, 'failure.json'), 'utf8'));
-  assert.equal(failure.status, 'transport_failure');
-  assert.equal(failure.unit, 'nrw_004/reader_b');
-
-  const recoveryDestination = path.join(archiveRoot, 'artifacts/tutor-stub-live/narrowing-reader-recovery');
-  const recoveryPreflight = prepareTutorStubFrameRefuserNarrowingCalibration({
-    root: REPO_ROOT,
-    designPath: DESIGN_PATH,
-    archiveRoot,
-    destination: recoveryDestination,
-    recoveryFrom: initialDestination,
-    verifyCommittedFile: () => true,
-    resolve: resolveTestReader,
-  });
-  assert.equal(recoveryPreflight.prior_attempts, 11);
-  assert.equal(recoveryPreflight.recovery_model_calls, 61);
-  assert.equal(recoveryPreflight.remaining_study_attempts, 61);
-  assert.equal(recoveryPreflight.recovery_summary.failed_unit, 'nrw_004/reader_b');
-  assert.equal(recoveryPreflight.executionUnits.length, 61);
-  assert.equal(recoveryPreflight.executionUnits[0].caseEntry.case_id, 'nrw_004');
-  assert.equal(recoveryPreflight.executionUnits[0].seat.id, 'reader_c');
-  assert.equal(
-    recoveryPreflight.executionUnits.some(
-      ({ caseEntry, seat }) => `${caseEntry.case_id}/${seat.id}` === 'nrw_004/reader_b',
-    ),
-    false,
-  );
-  assert.equal(fs.existsSync(recoveryDestination), false, 'recovery preflight must remain zero-call and non-writing');
-
-  fs.mkdirSync(recoveryDestination, { recursive: true });
-  const recoveryAdmission = fakeAdmission(61, {
-    ledgerPath: path.join(recoveryDestination, 'run-ledger.jsonl'),
-  });
-  let recoveryCalls = 0;
-  const report = await executeTutorStubFrameRefuserNarrowingCalibration({
-    preflight: recoveryPreflight,
-    admission: recoveryAdmission,
-    callBridge: async (agentConfig, _systemPrompt, userPrompt, _role, options) => {
-      recoveryCalls += 1;
-      return categoricalBridgeResponse(agentConfig, userPrompt, options);
-    },
-    progress: () => {},
-  });
-  assert.equal(recoveryCalls, 61);
-  assert.equal(recoveryAdmission.reserved, 61);
-  assert.equal(recoveryAdmission.closed, true);
-  assert.equal(report.execution.complete_units, 71);
-  assert.equal(report.execution.failed_units, 1);
-  assert.deepEqual(report.execution.failed_unit_ids, ['nrw_004/reader_b']);
-  assert.equal(report.execution.missing_units, 0);
-  assert.equal(report.execution.prior_attempted_model_calls, 11);
-  assert.equal(report.execution.recovery_attempted_model_calls, 61);
-  assert.equal(report.execution.attempted_model_calls, 72);
-  assert.equal(report.execution.reserved_model_calls, 72);
-  assert.equal(fs.readdirSync(path.join(recoveryDestination, 'results')).length, 61);
-  assert.equal(fs.existsSync(path.join(recoveryDestination, 'results/nrw_004--reader_b.json')), false);
+  assert.equal(calls, 0);
 });
 
-test('launcher admission uses one stable study identity and full ceiling for initial and recovery roots', async () => {
-  const captures = [];
+test('launcher retires initial and recovery paid paths before admission', async () => {
+  let callbacks = 0;
   const archiveRoot = '/absolute/private-archive';
   const basePreflight = {
     status: 'passed_zero_call',
@@ -621,31 +537,28 @@ test('launcher admission uses one stable study identity and full ceiling for ini
       ],
       {
         prepare: () => preflight,
-        admit: (input) => {
-          captures.push(input);
-          return { source: { commit: 'launch' } };
+        admit: () => {
+          callbacks += 1;
         },
-        execute: async () => ({ status: 'complete' }),
+        execute: async () => {
+          callbacks += 1;
+        },
       },
     );
 
-  await invoke(basePreflight);
+  await assert.rejects(invoke(basePreflight), /paid launcher retired: tutor-stub-frame-refuser-narrowing-calibration/u);
   const predecessor = `${archiveRoot}/artifacts/tutor-stub-live/run`;
-  await invoke(
-    {
-      ...basePreflight,
-      destination: `${archiveRoot}/artifacts/tutor-stub-live/recovery`,
-      recovery: { source_root: predecessor },
-      remaining_study_attempts: 61,
-    },
-    ['--recovery-from', predecessor],
+  await assert.rejects(
+    invoke(
+      {
+        ...basePreflight,
+        destination: `${archiveRoot}/artifacts/tutor-stub-live/recovery`,
+        recovery: { source_root: predecessor },
+        remaining_study_attempts: 61,
+      },
+      ['--recovery-from', predecessor],
+    ),
+    /paid launcher retired: tutor-stub-frame-refuser-narrowing-calibration/u,
   );
-
-  assert.equal(captures.length, 2);
-  assert.equal(captures[0].studyId, 'frame-refuser-narrowing-p1');
-  assert.equal(captures[1].studyId, captures[0].studyId);
-  assert.equal(captures[0].studyStateRoot, captures[1].studyStateRoot);
-  assert.equal(captures[0].spendCap, 72);
-  assert.equal(captures[1].spendCap, 72);
-  assert.equal(captures[1].recoveryFrom, predecessor);
+  assert.equal(callbacks, 0);
 });

@@ -6,6 +6,7 @@ import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
 import {
   loadTutorStubResistantLearnerDesign,
   summarizeTutorStubResistantLearnerCalibration,
@@ -72,6 +73,7 @@ export async function executeTutorStubFrameRefuserSatisfiableCalibration({
   summarize = summarizeTutorStubResistantLearnerCalibration,
   progress = (line) => process.stdout.write(`${line}\n`),
 } = {}) {
+  refuseRetiredPaidLaunch('tutor-stub-frame-refuser-satisfiable-calibration');
   const plan = preflight.plan;
   const perDialogueCeiling = tutorStubFrameRefuserSatisfiableArmDesign(loaded.design, 'treatment', { root: ROOT })
     .attemptCeilings.maximumReservationsPerDialogue;
@@ -185,6 +187,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     process.stdout.write(`${TUTOR_STUB_FRAME_REFUSER_SATISFIABLE_USAGE}\n`);
     return null;
   }
+  if (values['accept-charges']) refuseRetiredPaidLaunch('tutor-stub-frame-refuser-satisfiable-calibration');
   if (!values.design || !values.destination) {
     throw new Error(`--design and --destination are required\n\n${TUTOR_STUB_FRAME_REFUSER_SATISFIABLE_USAGE}`);
   }

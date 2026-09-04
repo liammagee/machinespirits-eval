@@ -509,7 +509,10 @@ test('powered summary accounts a disclosed technical loss without a rerun and ou
   assert.equal(shortReport.faces[0].gates.execution_and_typed_failure_accounting, false);
 });
 
-test('powered resume banks recorded units, never reruns the lost unit, and finishes the plan', async () => {
+// The merged runner is retained for historical inspection but its exported
+// executor is now fail-closed. These execution-era fixtures remain as design
+// documentation; the retirement boundary is exercised in retiredPaidLaunchers.
+test.skip('historical powered resume banks recorded units and never reruns the lost unit', async () => {
   const loaded = loadV5();
   const plan = buildTutorStubResistantLearnerPoweredPlan(loaded.design, { dialoguesPerFace: 36 });
   const preflight = {
@@ -596,7 +599,7 @@ test('powered resume banks recorded units, never reruns the lost unit, and finis
   );
 });
 
-test('a ceiling breach halts with the row recorded and the report written', async () => {
+test.skip('historical powered execution records a ceiling breach before halting', async () => {
   const loaded = loadV5();
   const plan = buildTutorStubResistantLearnerPoweredPlan(loaded.design, { dialoguesPerFace: 36 });
   const perDialogueMax = loaded.design.attemptCeilings.maximumReservationsPerDialogue;

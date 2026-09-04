@@ -502,7 +502,7 @@ test('main-block full deterministic acceptance contract rejects an invalid fresh
   );
 });
 
-test('main-block failed-attempt boundary refuses before invoking a model callback', async () => {
+test('retired main-block allowance wrapper refuses before invoking a model callback', async () => {
   let calls = 0;
   await assert.rejects(
     runAfterOutcomeMainBlockAllowanceGuard({
@@ -511,7 +511,7 @@ test('main-block failed-attempt boundary refuses before invoking a model callbac
         calls += 1;
       },
     }),
-    /48-attempt reader allowance exhausted/u,
+    /paid launcher retired: adaptive-warrant-outcome-main-block/u,
   );
   assert.equal(calls, 0);
 });
@@ -630,10 +630,10 @@ async function completeChildWithOneContractInvalidBatch(t, channel) {
   };
 }
 
-test('paid execution refuses before any work when --go-note is absent', async () => {
+test('retired paid execution refuses before any work', async () => {
   await assert.rejects(
     executeOutcomePilot({ acceptCharges: true, outputDir: '/tmp/must-not-exist-outcome-pilot' }),
-    /--go-note is required/u,
+    /paid launcher retired: adaptive-warrant-outcome-pilot/u,
   );
 });
 
@@ -772,7 +772,7 @@ test('an oversized prompt on the real frozen standing surface still fails', () =
   assert.ok(audit.violations.some((violation) => violation.code === 'approximate_token_budget_exceeded'));
 });
 
-test('annotationCaseFingerprint failure blocks reader admission', async () => {
+test('retired reader-admission wrapper refuses before invoking a reader callback', async () => {
   let readerCalls = 0;
   await assert.rejects(
     runReadersAfterFingerprintGuard({
@@ -782,7 +782,7 @@ test('annotationCaseFingerprint failure blocks reader admission', async () => {
         readerCalls += 1;
       },
     }),
-    /expected 2 cases, got 1/u,
+    /paid launcher retired: adaptive-warrant-outcome-pilot/u,
   );
   assert.equal(readerCalls, 0);
 });
@@ -859,7 +859,7 @@ test('annotationCaseFingerprint guard refuses count drift', () => {
   );
 });
 
-test('checkpoint resume skips a completed dialogue', async (t) => {
+test.skip('historical checkpoint resume skips a completed dialogue', async (t) => {
   const directory = temporaryDirectory(t);
   const checkpointPath = path.join(directory, 'checkpoint.json');
   const checkpoint = {
@@ -916,7 +916,7 @@ test('main-block regenerates launch artifacts until a child reader checkpoint ex
   assert.equal(shouldReuseOutcomeMainBlockLaunchArtifacts({ resume: true, readerResume: true }), true);
 });
 
-test('resumed parent starts both readers fresh when neither child checkpoint exists', async (t) => {
+test.skip('historical resumed parent starts both readers fresh when neither child checkpoint exists', async (t) => {
   const rootDir = temporaryDirectory(t);
   const presenceRunDir = path.join(rootDir, 'presence-readers');
   const decisionRunDir = path.join(rootDir, 'decision-readers');
@@ -950,7 +950,7 @@ test('resumed parent starts both readers fresh when neither child checkpoint exi
   assert.equal(reservations.length, 2);
 });
 
-test('resumed parent resumes only a child whose own checkpoint exists', async (t) => {
+test.skip('historical resumed parent resumes only a child whose own checkpoint exists', async (t) => {
   const rootDir = temporaryDirectory(t);
   const presenceRunDir = path.join(rootDir, 'presence-readers');
   const decisionRunDir = path.join(rootDir, 'decision-readers');
@@ -1317,7 +1317,7 @@ test('both child runners quarantine a contract-invalid re-draw, count it failed,
   }
 });
 
-test('launcher quarantines the sealed v3 dialogue-11 coverage shape before counting it complete', async (t) => {
+test.skip('historical launcher quarantines sealed dialogue-11 coverage before completion', async (t) => {
   const directory = temporaryDirectory(t);
   const failure = v3Dialogue11FixtureEvents().find((event) => event.type === 'learner_analysis_unanalyzed');
   const checkpoint = {
@@ -1463,7 +1463,7 @@ test('the main block does not field the presence readers but keeps their plan li
   assert.equal(OUTCOME_RUN_SHAPES['main-block'].planned_calls.total, 4464);
 });
 
-test('an unfielded presence channel launches no presence reader and reserves nothing for it', async (t) => {
+test.skip('historical unfielded presence channel launches no reader and reserves nothing', async (t) => {
   const rootDir = temporaryDirectory(t);
   const launches = [];
   const reservations = [];
@@ -1675,7 +1675,7 @@ test('a refused admission leaves the dialogue quarantined and records why', () =
   assert.match(decisions[0].reason, /overlapping_events/u);
 });
 
-test('a resume does not re-run a dialogue admitted under the ruling', async (t) => {
+test.skip('historical resume does not re-run a dialogue admitted under the ruling', async (t) => {
   const directory = temporaryDirectory(t);
   const checkpointPath = path.join(directory, 'checkpoint.json');
   const checkpoint = {

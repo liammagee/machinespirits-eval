@@ -67,10 +67,10 @@ import {
 } from '../services/tutorStubResistanceSemanticRuntime.js';
 import {
   extractTutorStubResistantLearnerCalibrationRow,
-  runTutorStubResistantLearnerCalibrationChild,
   tutorStubResistantLearnerCalibrationChildSpec,
   tutorStubResistantLearnerCalibrationHaltReason,
 } from '../scripts/run-tutor-stub-resistant-learner-calibration.js';
+import { runTutorStubResistantLearnerChildProcess } from '../services/tutorStubResistantLearnerChildProcess.js';
 import {
   TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_SMOKE_ATTEMPT_CEILING,
   TUTOR_STUB_RESISTANT_LEARNER_BRIDGE_SMOKE_USAGE,
@@ -1083,7 +1083,7 @@ test('the launcher child path boots one B1 and one R1 v3 job through a zero-call
       OPENROUTER_API_KEY: '',
       ANTHROPIC_API_KEY: '',
     };
-    const exit = await runTutorStubResistantLearnerCalibrationChild(spec);
+    const exit = await runTutorStubResistantLearnerChildProcess(spec);
     assert.equal(exit.spawn_error, null);
     const stderr = fs.readFileSync(spec.stderr, 'utf8');
     assert.ok(
