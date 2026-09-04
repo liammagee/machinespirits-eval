@@ -117,6 +117,10 @@ config/poetics-calibration/phase2-deliberation*/
 config/poetics-calibration/phase2-transcripts*/
 config/poetics-calibration/phase2-d42-readable-projection-v1/
 
+# Hero-demo run transcripts are tracked as .jsonl.gz. Unpacked .jsonl copies are
+# byte-identical to the gz (about 8 MB each) — the renderer reads either form.
+notes/poetics/hero-demo-runs/**/*.jsonl
+
 # Prototype trees — archived off main 2026-05-17 (tag archive/adaptive-persona-mvp);
 # status and evidence boundary: notes/2026-08-04-adaptive-persona-mvp-archive-status.md
 # regenerable from scripts, never tracked on main (mirrors the exports/ convention)
