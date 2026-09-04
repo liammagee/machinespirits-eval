@@ -120,30 +120,23 @@ test('prospective-v9 synthetic rows bind determinate semantic measurement withou
   assert.ok(cases.every((row) => row.semantic_measurement.indeterminate === false));
 });
 
-test('historical observer, endpoint, certificate, and request bytes remain exact', () => {
+test('sealed observer and certificate bytes remain exact', () => {
+  // Only sealed inputs keep a byte pin (CLAUDE.md, 2026-08-21). The registrations,
+  // the endpoint contracts and the go requests were pinned here too; a one-line
+  // correction to any of them turned this test red and pushed the next agent to
+  // write a numbered copy instead of editing in place.
   const expected = {
-    'config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json':
-      '72f293cee1e364818bd6baa30a36df2d908af8d3c9f6df664731039d09d8e0a8',
-    'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v1.json':
-      'da33ca69e4092a66db3169ee19d645152a99b1c3ffaac231c8fbed09846f3d59',
     'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v1.endpoint-go.json':
       '702e3fd849c3664d3edcc95dd63b4fbc3138cfa21121b96090b586095acb6899',
-    'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json':
-      '35577d0ca7bf66d3ba7b4fa059e837155e9c811ea97b8befe1a01faf48db8d4c',
-    'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.json':
-      'b7900bd692074d971b96426428e44c50e05c9f7ab4bc6fdab1d05b836e5e347e',
     'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.endpoint-go.json':
       '24bd1ee6ed2b34c472e96b28b02eb9aaffded17b6762993913c354101e2cfb54',
-    'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json':
-      '0972e76083a7a89592a25d55820527e2b061afad0fdf72036f08790dd61dfe61',
-    'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v2.json':
-      '476db5ea5d2bdb9a3bc9a1d3df5b0c5e0d3a641cbd1883129e4fe0f583037310',
   };
   for (const [relativePath, sha256] of Object.entries(expected)) {
     assert.equal(fileSha256(relativePath), sha256, relativePath);
   }
   assert.equal(fileSha256(HELDOUT), 'ad61f7b104c8202889c9f9eb00090a900aafea5d5bf55d7e3b89cf41db300f93');
-  assert.equal(fileSha256(REGISTRATION), 'a003aa69f94e257e1f966ba51734ccd7f9b83842a4c8f617ddead763e3499819');
-  assert.equal(fileSha256(CONTRACT), 'fb6d03720dff5a2f7badf13a606e7fcbf8d79d2b31ac01339fa6d32f2acb2fd3');
   assert.equal(fileSha256(CERTIFICATE), '6eb6c6529af429cd01ef5755357d6289b5eef32b1b7b4158e0920d663fc62880');
+  // The registration and the endpoint contract are read, not pinned.
+  assert.match(fileSha256(REGISTRATION), /^[0-9a-f]{64}$/u);
+  assert.match(fileSha256(CONTRACT), /^[0-9a-f]{64}$/u);
 });
