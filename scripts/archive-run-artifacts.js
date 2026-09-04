@@ -7,7 +7,9 @@
  * taken: the first Phase-B run's transcripts are gone from this machine, and
  * the last time anyone copied tutor-stub runs into the archive was July 2026.
  * This script exists so copying is one command rather than a thing to
- * remember.
+ * remember. With no path it covers every run under `exports/`, at any depth:
+ * the E.7 character pilot sat outside `tutor-stub-outcome/` and was lost
+ * while the default looked only there (2026-09-03).
  *
  * Two layers per run, treated differently because they differ by a factor of a
  * thousand in size:
@@ -29,7 +31,8 @@
  * side and nothing is written outside the destination root.
  *
  * Usage:
- *   npm run archive:runs
+ *   npm run archive:runs                  # every run under exports/
+ *   npm run archive:check                 # list what is missing; exit 1 if anything is
  *   npm run archive:runs -- exports/learner-profile-world-deconfound/prospective-plan
  *   node scripts/archive-run-artifacts.js exports/tutor-stub-outcome/<run>
  *   node scripts/archive-run-artifacts.js --all exports/tutor-stub-outcome
@@ -113,20 +116,25 @@ function looksLikeRun(dir) {
     .some((n) => n === 'results.jsonl' || n === 'traces' || n === 'run-manifest.json' || n.startsWith('report.'));
 }
 
-/** Run directories under a parent, including parents whose runs sit one level down. */
+/**
+ * Run directories under a parent, at any depth. A directory that is a run, or
+ * whose direct children are runs (a cohort), is one unit and the walk stops
+ * there, so a cohort keeps its one ledger line. Any other directory is
+ * descended, so `--all exports` finds a run wherever a runner put it.
+ */
 export function runDirs(root, all) {
   if (!all) return [root];
-  return fs
-    .readdirSync(root, { withFileTypes: true })
-    .filter((e) => e.isDirectory())
-    .map((e) => path.join(root, e.name))
-    .filter((d) => {
-      if (looksLikeRun(d)) return true;
-      return fs
-        .readdirSync(d, { withFileTypes: true })
-        .some((e) => e.isDirectory() && looksLikeRun(path.join(d, e.name)));
-    })
-    .sort();
+  const found = [];
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const dir = path.join(root, entry.name);
+    const isCohort = fs
+      .readdirSync(dir, { withFileTypes: true })
+      .some((e) => e.isDirectory() && looksLikeRun(path.join(dir, e.name)));
+    if (looksLikeRun(dir) || isCohort) found.push(dir);
+    else found.push(...runDirs(dir, true));
+  }
+  return found.sort();
 }
 
 /** Every file to copy as-is, and every traces dir to pack, under one run. */
@@ -243,7 +251,7 @@ function parseArgs(argv) {
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (!opts.paths.length) {
-    opts.paths.push('exports/tutor-stub-outcome');
+    opts.paths.push('exports');
     opts.all = true;
   }
   const dest = resolveArchiveDir(opts.dest);
@@ -255,7 +263,9 @@ function main() {
     process.exit(2);
   }
 
-  const runs = opts.paths.flatMap((p) => runDirs(path.resolve(p), opts.all));
+  const present = opts.paths.filter((p) => fs.existsSync(p));
+  for (const p of opts.paths) if (!present.includes(p)) console.error(`no such directory: ${p}`);
+  const runs = present.flatMap((p) => runDirs(path.resolve(p), opts.all));
   const total = { copied: 0, packed: 0, skipped: 0, missing: 0, written: 0, ledger: 0 };
   for (const runDir of runs) {
     const s = archiveRun(runDir, { ...opts, dest, onEvent: (line) => console.log(line) });

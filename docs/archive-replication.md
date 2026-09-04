@@ -30,7 +30,12 @@ treat them as one folder:
 - **Hot DBs → consistent snapshots, then Syncthing.** A scheduled job copies each live
   DB via SQLite's online `.backup` API (safe while in use, does not touch the source)
   into `snapshots/`, and Syncthing carries those static files. We never sync the live
-  DB itself.
+  DB itself. The rolling copy is replaced every run, so on its own it protects against
+  disk loss only: a row deleted by mistake is gone from it at the next run. Since
+  2026-09-03 the job also writes one compressed copy per UTC day to `snapshots/dated/`
+  (`<db>.<YYYY-MM-DD>.zst`, gzip when zstd is absent) and prunes copies older than
+  `MS_SNAPSHOT_KEEP_DAYS` (default 28) by the date in the file name. The evaluations DB
+  packs to about 72 MB a day, so the window costs about 2 GB on each peer.
 - **Checksummed historical bundles → `archives/`.** Public repository manifests
   identify each archive and every restored member; `scripts/artifact-bundle.js`
   verifies and restores an explicitly supplied local archive. The bundle,
@@ -70,7 +75,9 @@ Policy:
 1. **Snapshot job.** `scripts/snapshot-archive.sh` is installed at
    `~/.machinespirits-data/snapshot-archive.sh`; the launchd agent
    `com.machinespirits.archive-snapshot` runs it every 6 h (and on load), writing
-   `snapshots/{evaluations,tutor-writing-pad,learner-writing-pad,writing-pads}.db`.
+   `snapshots/{evaluations,tutor-writing-pad,learner-writing-pad,writing-pads}.db`
+   and the dated copies under `snapshots/dated/`. Re-copy the script from `scripts/`
+   after changing it; launchd runs the copy in the data home, not the repo file.
 2. **Syncthing** (`brew install syncthing`, started as a login service) with the folder
    **`machinespirits-archive` → `~/.machinespirits-data`**, `.stignore` applied.
 

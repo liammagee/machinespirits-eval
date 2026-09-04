@@ -136,6 +136,26 @@ test('a run whose blocks sit one level down is found by --all', () => {
   });
 });
 
+test('a run nested under plain directories is found by --all, and a cohort stays one unit', () => {
+  withTempCwd(() => {
+    const exports = path.join(process.cwd(), 'exports');
+    makeRun(process.cwd(), 'pilot-1');
+    for (const name of ['run-a', 'run-b']) {
+      const dir = path.join(exports, 'arc', '2026-06', name);
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, 'report.md'), '# report\n');
+    }
+    fs.mkdirSync(path.join(exports, 'arc', 'notes-only'), { recursive: true });
+    fs.writeFileSync(path.join(exports, 'arc', 'notes-only', 'readme.txt'), 'no run here\n');
+    fs.mkdirSync(path.join(exports, 'solo-pilot'), { recursive: true });
+    fs.writeFileSync(path.join(exports, 'solo-pilot', 'summary.json'), '{}\n');
+    fs.writeFileSync(path.join(exports, 'solo-pilot', 'report.md'), '# report\n');
+    fs.writeFileSync(path.join(exports, 'stray.json'), '{}\n');
+    const found = runDirs(exports, true).map((d) => path.relative(exports, d));
+    assert.deepEqual(found, [path.join('arc', '2026-06'), 'solo-pilot', 'tutor-stub-outcome']);
+  });
+});
+
 test('a missing archive directory resolves to null rather than a stray path', () => {
   const previous = process.env.EVAL_ARCHIVE_DIR;
   process.env.EVAL_ARCHIVE_DIR = path.join(os.tmpdir(), 'no-such-archive-dir-0f1a');
@@ -165,15 +185,21 @@ test('default archive discovery anchors to the repository root rather than the p
   }
 });
 
-test('archive CLI keeps the no-argument tutor-stub default and accepts one explicit cohort root', () => {
+test('archive CLI covers every run under exports/ by default and accepts one explicit cohort root', () => {
   withTempCwd(({ dest }) => {
     makeRun(process.cwd(), 'pilot-1');
+    const elsewhere = path.join(process.cwd(), 'exports', 'character-pilot');
+    fs.mkdirSync(elsewhere, { recursive: true });
+    fs.writeFileSync(path.join(elsewhere, 'report.md'), '# report\n');
+    fs.writeFileSync(path.join(elsewhere, 'summary.json'), '{}\n');
     const defaultResult = spawnSync(process.execPath, [ARCHIVE_SCRIPT, '--check', '--dest', dest], {
       cwd: process.cwd(),
       encoding: 'utf8',
     });
     assert.equal(defaultResult.status, 1);
-    assert.match(defaultResult.stdout, /1 run\(s\): 4 artifact\(s\) missing/u);
+    // tutor-stub-outcome is one cohort unit (2 light files, 1 traces pack, 1 ledger line);
+    // character-pilot is a run of its own (2 light files, 1 ledger line).
+    assert.match(defaultResult.stdout, /2 run\(s\): 7 artifact\(s\) missing/u);
 
     const cohort = path.join(process.cwd(), 'exports', 'learner-profile-world-deconfound', 'prospective-plan');
     fs.mkdirSync(path.join(cohort, 'traces'), { recursive: true });

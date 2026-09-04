@@ -127,7 +127,7 @@
     "model-shootout": "node scripts/model-shootout.js",
     "shootout:model": "node scripts/model-shootout.js",
     "archive:runs": "node scripts/archive-run-artifacts.js",
-    "archive:check": "node scripts/archive-run-artifacts.js --check --all exports/tutor-stub-outcome",
+    "archive:check": "node scripts/archive-run-artifacts.js --check",
     "seeds": "node scripts/seed-ledger.js",
     "seeds:list": "node scripts/seed-ledger.js list",
     "seeds:next": "node scripts/seed-ledger.js next --count 12",
