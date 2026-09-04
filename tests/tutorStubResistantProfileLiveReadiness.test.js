@@ -98,15 +98,23 @@ test('historical resistant-profile readiness HOLD fails closed after the public 
   assert.match(result.stderr, /endpoint GO preflight digest does not match the executable preflight/u);
 });
 
-test('axis held-out readiness fails closed after its consumed route source evolves', () => {
+test('axis held-out readiness records a drifted consumed route source instead of failing closed', () => {
   const result = spawnSync(
     process.execPath,
     ['scripts/check-tutor-stub-resistant-profile-live-readiness.js', '--hold', AXIS_HOLD_PATH, '--json'],
     { cwd: ROOT, encoding: 'utf8' },
   );
 
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure SHA mismatch: services\/cliProviderBridge\.js/u);
+  assert.equal(result.status, 0, result.stderr);
+  const drift =
+    /file digest drift: source closure services\/cliProviderBridge\.js recorded ([0-9a-f]{12}) observed ([0-9a-f]{12})/u.exec(
+      result.stderr,
+    );
+  assert.ok(drift, result.stderr);
+  assert.notEqual(drift[1], drift[2]);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.status, 'HOLD');
+  assert.equal(report.liveRunAuthorized, false);
 });
 
 test('live-readiness checker refuses a drifted HOLD packet before authorization', () => {
