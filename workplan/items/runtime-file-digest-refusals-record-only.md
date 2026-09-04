@@ -278,10 +278,19 @@ a go request, a code file, a schema or a prompt, so it fails the IN test. The
 name is close to `development-corpus`, which is on the OUT list, but does not
 match it. Neither list fits, so I left both.
 
-### Two pins I chose not to touch
+### Two refusals I chose not to touch
 
-- `rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js` pins a diagnosis note.
-- `run-tutor-stub-first-draft-campaign.js` throws on `require_clean_worktree`.
+`rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js:387` throws
+`diagnosis note bytes drifted from the pinned sha256` on
+`notes/2026-08-30-frame-refuser-depth-v6-diagnosis.md`. That note is in git and
+is edited in place, so it looks like the banned shape, but the four anchor
+surfaces are quoted verbatim from it and the rehearsal reads it as its own
+frozen evidence. The v6 merged registration in the same file was converted.
+
+`run-tutor-stub-first-draft-campaign.js:326` calls
+`gitWorktreeState({ required: true })` when the config sets
+`require_clean_worktree`, which refuses to start on a dirty tree. This is not a
+digest check, so it is outside the brief, but it is the same class of stop.
 
 ### A test pin that survives
 
