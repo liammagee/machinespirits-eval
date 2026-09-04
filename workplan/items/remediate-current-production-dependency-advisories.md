@@ -33,3 +33,10 @@ explicit compatibility decision instead of an automatic major Express update.
 Apply patched versions without widening the application's public API. Prefer a
 documented transitive override for `qs` if the current Express test surface
 passes; do not take the Express 5 major upgrade in this card.
+
+2026-09-03 Codex: Updated `fast-uri`, `ip-address`, and `hono` to compatible
+patched releases and pinned `qs` 6.16.0 through an override while retaining
+Express 4. A clean install, the focused server/surface tests, the full hermetic
+suite, and all maintained risk-coverage groups pass. `npm audit --omit=dev`
+reports zero production vulnerabilities. The card remains active until its
+pull request is opened for review.

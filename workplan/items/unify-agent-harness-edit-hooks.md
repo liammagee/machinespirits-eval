@@ -37,3 +37,10 @@ configuration from the edited file, find an install at or above that root,
 skip files outside an ESLint project, format lint-clean JavaScript, and block
 only when actual ESLint errors remain. Parse hook input as JSON without
 interpolating file paths into a shell command.
+
+2026-09-03 Codex: Implemented one repository-owned hook runner and pointed
+both `.claude/settings.json` and `.codex/hooks.json` at it. Focused tests cover
+configuration parity, protected environment files, worktree dependency lookup,
+metacharacter-bearing filenames, missing installs, format repair, and genuine
+lint failures. The full hermetic suite and all maintained risk-coverage groups
+pass; the card remains active until its pull request is opened for review.

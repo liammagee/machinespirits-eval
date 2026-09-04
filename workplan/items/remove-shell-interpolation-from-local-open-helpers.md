@@ -28,3 +28,9 @@ command line, so quoting alone does not create a safe process boundary.
 
 Use a non-shell child-process call with the target as a distinct argument.
 Retain the current best-effort behavior when the host cannot open the preview.
+
+2026-09-03 Codex: Replaced shell-built `open` and screenshot commands with
+argument-vector process calls. Focused tests prove a metacharacter-bearing
+target remains one argument and guard the affected sources against regression.
+The full lint and hermetic suites pass; the card remains active until its pull
+request is opened for review.

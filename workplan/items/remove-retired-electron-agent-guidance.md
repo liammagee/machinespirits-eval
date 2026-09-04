@@ -35,3 +35,9 @@ Replace these operational instructions with the current browser-surface and
 source-of-truth contract. Historical plans and completed cards remain
 unchanged. Add a small regression assertion so live agent guidance cannot
 silently reintroduce commands for the retired target.
+
+2026-09-03 Codex: Updated the live Claude, Gemini, and documentation-map
+guidance to describe the current repository and browser surfaces. The shared
+hook regression test now rejects reintroduction of the retired Electron paths
+or commands in those live documents. The full hermetic suite passes; the card
+remains active until its pull request is opened for review.
