@@ -37,6 +37,7 @@ import {
   buildTutorStubResistanceActionRegisterConfirmationBatchPlan,
   buildTutorStubResistanceActionRegisterConfirmationRecoveryJob,
 } from './run-tutor-stub-resistance-action-register-confirmation.js';
+import { recordSourceStatus } from '../services/recordedSourceProvenance.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v3.json';
@@ -1155,9 +1156,13 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
   const status = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
     cwd: ROOT,
     encoding: 'utf8',
-  }).trim();
-  if (!expectedSourceCommit || current !== expectedSourceCommit || status) {
-    throw new Error('confirmation analysis requires its exact clean GO-request source');
+  });
+  // CLAUDE.md (2026-08-21): the dirty tree is recorded, not refused. The commit
+  // pin stays: it compares a recorded commit with the checkout, and analysis is
+  // pure computation over sealed batches either way.
+  recordSourceStatus({ label: 'confirmation analysis', statusOutput: status });
+  if (!expectedSourceCommit || current !== expectedSourceCommit) {
+    throw new Error('confirmation analysis requires its exact GO-request source commit');
   }
   const loaded = loadTutorStubResistanceActionRegisterConfirmation({
     registrationPath: path.resolve(ROOT, registrationPath),

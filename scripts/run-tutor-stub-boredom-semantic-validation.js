@@ -7,6 +7,7 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { recordSourceStatus } from '../services/recordedSourceProvenance.js';
 import {
   boredomSemanticValidationFileSha256,
   executeTutorStubBoredomSemanticValidation,
@@ -65,9 +66,9 @@ function readJson(root, relativePath, label) {
 // it. A refusal here turned a one-line fix into a re-approval ceremony.
 function recordProvenance(root) {
   const rev = (spec) => execFileSync('git', ['rev-parse', spec], { cwd: root, encoding: 'utf8' }).trim();
-  const status = execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim();
-  const dirtyPaths = status ? status.split('\n').map((line) => line.slice(3).trim()) : [];
-  return { head: rev('HEAD'), tree: rev('HEAD^{tree}'), dirty: dirtyPaths.length > 0, dirtyPaths };
+  const status = execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' });
+  const { dirty, dirtyPaths } = recordSourceStatus({ label: 'boredom semantic validation', statusOutput: status });
+  return { head: rev('HEAD'), tree: rev('HEAD^{tree}'), dirty, dirtyPaths };
 }
 
 function printPlan(plan) {

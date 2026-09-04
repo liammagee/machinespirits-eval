@@ -12,6 +12,7 @@ import {
   validateTutorStubResistantProfileRouteCanaryAuthorization,
   validateTutorStubResistantProfileRouteCanaryRequest,
 } from '../services/tutorStubResistantProfileRouteCanary.js';
+import { recordSourceStatus } from '../services/recordedSourceProvenance.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_REQUEST = 'config/tutor-stub-resistant-profile-route-canary-request.v1.json';
@@ -64,9 +65,9 @@ function readJson(root, relativePath, label) {
 // it. A refusal here turned a one-line fix into a re-approval ceremony.
 function recordProvenance(root) {
   const rev = (spec) => execFileSync('git', ['rev-parse', spec], { cwd: root, encoding: 'utf8' }).trim();
-  const status = execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim();
-  const dirtyPaths = status ? status.split('\n').map((line) => line.slice(3).trim()) : [];
-  return { head: rev('HEAD'), tree: rev('HEAD^{tree}'), dirty: dirtyPaths.length > 0, dirtyPaths };
+  const status = execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' });
+  const { dirty, dirtyPaths } = recordSourceStatus({ label: 'resistant profile route canary', statusOutput: status });
+  return { head: rev('HEAD'), tree: rev('HEAD^{tree}'), dirty, dirtyPaths };
 }
 
 function printPlan(plan, json) {

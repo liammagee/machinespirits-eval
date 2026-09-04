@@ -23,6 +23,7 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V4,
   loadTutorStubResistanceSemanticValidationV4,
 } from '../services/tutorStubResistanceSemanticValidationV4.js';
+import { recordSourceStatus } from '../services/recordedSourceProvenance.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -57,8 +58,8 @@ function sourceSnapshot() {
   const status = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
     cwd: ROOT,
     encoding: 'utf8',
-  }).trim();
-  return { commit, tree, dirty: Boolean(status) };
+  });
+  return { commit, tree, ...recordSourceStatus({ label: 'semantic validation', statusOutput: status }) };
 }
 
 async function main() {
@@ -97,7 +98,9 @@ async function main() {
   const requestSha256 = sha256(request.absolute);
   const goRequest = JSON.parse(fs.readFileSync(request.absolute, 'utf8'));
   const snapshot = sourceSnapshot();
-  if (snapshot.dirty) throw new Error('semantic validation requires a clean source checkout');
+  // CLAUDE.md (2026-08-21): a dirty tree is recorded by sourceSnapshot, never a
+  // refusal. The commit and tree pin below stays: it compares a recorded commit
+  // with the checkout, which is not a file digest.
   if (snapshot.commit !== args['source-commit'] || snapshot.tree !== args['source-tree']) {
     throw new Error('semantic validation source commit/tree does not match the command pin');
   }

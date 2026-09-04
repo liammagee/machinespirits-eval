@@ -17,6 +17,7 @@ import { loadTutorStubResistanceActionRegisterPrefixBundle } from '../services/t
 import { runTutorStubResistanceActionRegisterEndpointPreflight } from '../services/tutorStubResistanceActionRegisterPreflight.js';
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
+import { recordSourceStatus } from '../services/recordedSourceProvenance.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION_V1 = 'config/tutor-stub-resistance-action-register-crossed-registration.v1.json';
@@ -333,8 +334,8 @@ export function buildTutorStubResistanceActionRegisterBatchPlan({
   const sourceStatus = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
     cwd: ROOT,
     encoding: 'utf8',
-  }).trim();
-  assertTutorStubResistanceActionRegisterCleanSource(sourceStatus);
+  });
+  const sourceRecord = recordTutorStubResistanceActionRegisterSource(sourceStatus);
   if (expectedSourceCommit && expectedSourceCommit !== sourceCommit) {
     throw new Error(`live source drift: expected ${expectedSourceCommit}, found ${sourceCommit}`);
   }
@@ -346,6 +347,8 @@ export function buildTutorStubResistanceActionRegisterBatchPlan({
     source: {
       commit: sourceCommit,
       tree: sourceTree,
+      dirty: sourceRecord.dirty,
+      dirty_paths: sourceRecord.dirtyPaths,
       registration_path: path.relative(ROOT, loaded.registration.path),
       registration_sha256: loaded.registration.sha256,
       prefix_bundle_path: path.relative(ROOT, loaded.path),
@@ -369,10 +372,12 @@ export function buildTutorStubResistanceActionRegisterBatchPlan({
   };
 }
 
-export function assertTutorStubResistanceActionRegisterCleanSource(sourceStatus) {
-  if (String(sourceStatus || '').trim()) {
-    throw new Error('resistance action/register live batch requires a clean source checkout');
-  }
+// CLAUDE.md (2026-08-21): provenance is recorded, not enforced. Write down the
+// commit, the tree and whether the checkout was dirty; never refuse to run over
+// it. This used to throw, which turned a one-line defect correction into a
+// re-approval ceremony before the batch could run again.
+export function recordTutorStubResistanceActionRegisterSource(sourceStatus) {
+  return recordSourceStatus({ label: 'resistance action/register live batch', statusOutput: sourceStatus });
 }
 
 function traceResult(command) {
@@ -544,7 +549,7 @@ export async function recoverTutorStubResistanceActionRegisterBatch({
   ) {
     throw new Error('batch recovery source, status, or ceiling drifted');
   }
-  assertTutorStubResistanceActionRegisterCleanSource(currentSourceStatus);
+  recordTutorStubResistanceActionRegisterSource(currentSourceStatus);
   const registeredJobIds = new Set(plan.jobs?.map((job) => job.id) || []);
   if (
     registeredJobIds.size !== BATCH_SIZE ||

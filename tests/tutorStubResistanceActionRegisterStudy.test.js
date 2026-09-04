@@ -44,7 +44,7 @@ import {
   validateTutorStubResistanceActionRegisterPrefixBundle,
 } from '../services/tutorStubResistanceActionRegisterExecution.js';
 import {
-  assertTutorStubResistanceActionRegisterCleanSource,
+  recordTutorStubResistanceActionRegisterSource,
   buildTutorStubResistanceActionRegisterBatchPlan,
   buildTutorStubResistanceActionRegisterRecoveryJob,
   runTutorStubResistanceActionRegisterZeroCall,
@@ -1597,10 +1597,13 @@ test('v2 execution prebinds exactly six unique jobs in each 234-cap create-once 
     );
   }
   assert.notEqual(a.destination, b.destination);
-  assert.throws(
-    () => assertTutorStubResistanceActionRegisterCleanSource(' M services/drift.js'),
-    /requires a clean source checkout/u,
-  );
+  assert.deepEqual(recordTutorStubResistanceActionRegisterSource(' M services/drift.js'), {
+    dirty: true,
+    dirtyPaths: ['services/drift.js'],
+  });
+  assert.deepEqual(recordTutorStubResistanceActionRegisterSource(''), { dirty: false, dirtyPaths: [] });
+  assert.equal(typeof a.source.dirty, 'boolean');
+  assert.ok(Array.isArray(a.source.dirty_paths));
 });
 
 test('v2 combined analyzer refuses partial assembly and completes all 12 exact cells only after both seals', (t) => {

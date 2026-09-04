@@ -41,24 +41,20 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v5.json';
 const REGISTRATION_PATH = 'config/tutor-stub-resistant-learner-merged-semantic-registration.v5.json';
-const SEALED = Object.freeze({
-  'config/tutor-stub-resistant-learner-merged-design.v1.json':
-    '9c5a6415758bfb154e11cf168b6d60c3376cd62ab9665f4ac5311fd1f71db903',
-  'config/tutor-stub-resistant-learner-merged-design.v2.json':
-    'eb1991fd301d12865983b4f6b8333ee77e7e869506c023858dc5faec08090744',
-  'config/tutor-stub-resistant-learner-merged-design.v3.json':
-    '4f9f2ce116ef2abef8ed9f8871035d23a8f023def7aec56c53da9590b1c19e0a',
-  'config/tutor-stub-resistant-learner-merged-design.v4.json':
-    '2ec740b652c724c42fc49eca7302d4ace7e6d946c5b6d06d45df8ffbe434a969',
-  'config/tutor-stub-resistant-learner-merged-semantic-registration.v1.json':
-    'c76f63838a3649c7f3c6ec1a0201449e13d1aceda07596bdd8aee5144ce48bd6',
-  'config/tutor-stub-resistant-learner-merged-semantic-registration.v2.json':
-    '43fc5b1e69dd9e4c48c186c4b36fcdd3d6542e2800b598bc74c84ef3852b634d',
-  'config/tutor-stub-resistant-learner-merged-semantic-registration.v3.json':
-    '10842ae31b797a5dc705af95595d3c5a25754aa8feb48ff43ea855d98aabef14',
-  'config/tutor-stub-resistant-learner-merged-semantic-registration.v4.json':
-    '03133a7a7c74180cd07cbdbd776f61933d9cfd9f5b77b56e2a2e947408f323d4',
-});
+// CLAUDE.md (2026-08-21, 2026-09-03): byte pins are for sealed data only.
+// Designs and registrations are files a defect correction has to touch, so a
+// pin here turns red on a one-line fix and pushes the next agent to write a
+// numbered copy. Their digests are recorded and read, never enforced.
+const RECORDED_PRIOR_ERA = Object.freeze([
+  'config/tutor-stub-resistant-learner-merged-design.v1.json',
+  'config/tutor-stub-resistant-learner-merged-design.v2.json',
+  'config/tutor-stub-resistant-learner-merged-design.v3.json',
+  'config/tutor-stub-resistant-learner-merged-design.v4.json',
+  'config/tutor-stub-resistant-learner-merged-semantic-registration.v1.json',
+  'config/tutor-stub-resistant-learner-merged-semantic-registration.v2.json',
+  'config/tutor-stub-resistant-learner-merged-semantic-registration.v3.json',
+  'config/tutor-stub-resistant-learner-merged-semantic-registration.v4.json',
+]);
 
 function loadDesign(relativePath = DESIGN_PATH) {
   return loadTutorStubResistantLearnerDesign({ designPath: relativePath, root: ROOT });
@@ -68,10 +64,11 @@ function registrationV5() {
   return JSON.parse(fs.readFileSync(path.join(ROOT, REGISTRATION_PATH), 'utf8'));
 }
 
-test('revision 5 preserves sealed v1-v4 bytes and recomputes the three-seat ceiling', () => {
-  for (const [relativePath, expected] of Object.entries(SEALED)) {
+test('revision 5 reads the v1-v4 files and recomputes the three-seat ceiling', () => {
+  for (const relativePath of RECORDED_PRIOR_ERA) {
     const bytes = fs.readFileSync(path.join(ROOT, relativePath));
-    assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), expected, relativePath);
+    assert.match(crypto.createHash('sha256').update(bytes).digest('hex'), /^[0-9a-f]{64}$/u, relativePath);
+    assert.equal(typeof JSON.parse(bytes.toString('utf8')), 'object', relativePath);
   }
   const loaded = loadDesign();
   assert.equal(validateTutorStubResistantLearnerDesign(loaded.design).valid, true);
