@@ -22,6 +22,23 @@ import path from 'node:path';
 export function recordFileDigest({ root, filePath, recordedSha256, label }) {
   const absolute = root ? path.resolve(root, filePath) : path.resolve(filePath);
   const observedSha256 = crypto.createHash('sha256').update(fs.readFileSync(absolute)).digest('hex');
+  return recordObservedDigest({ label, filePath, recordedSha256, observedSha256 });
+}
+
+/**
+ * Record a digest already computed by the caller.
+ *
+ * Same record and same drift line as {@link recordFileDigest}, for the case
+ * where the file was read one frame up and only the two digests reach here.
+ *
+ * @param {object} options
+ * @param {string} options.label Short name for the file, used in the record.
+ * @param {string} options.filePath Path of the file the digests describe.
+ * @param {string} [options.recordedSha256] Digest written down earlier, if any.
+ * @param {string} options.observedSha256 Digest computed from the file now.
+ * @returns {{label: string, path: string, recordedSha256: string|null, observedSha256: string, drifted: boolean}}
+ */
+export function recordObservedDigest({ label, filePath, recordedSha256, observedSha256 }) {
   const recorded = typeof recordedSha256 === 'string' ? recordedSha256 : null;
   const drifted = recorded !== null && recorded !== observedSha256;
   if (drifted) {

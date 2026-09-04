@@ -19,8 +19,15 @@ test('V6 primary and fidelity validation registrations bind one fresh corpus but
   assert.equal(fidelity.stage, 'intervention_fidelity');
   assert.equal(primary.instrumentSha256, fidelity.instrumentSha256);
   assert.equal(primary.corpusSha256, fidelity.corpusSha256);
-  assert.equal(primary.digestRecords[0].drifted, false);
-  assert.equal(primary.digestRecords[0].observedSha256, primary.instrumentSha256);
+  // The instrument digest is recorded, not pinned. Asserting drifted === false
+  // re-creates the banned pin on a code file, and comparing observedSha256 with
+  // instrumentSha256 hashes the same file twice in one run (CLAUDE.md, 2026-08-21).
+  assert.equal(
+    primary.digestRecords[0].path,
+    'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v6.json',
+  );
+  assert.match(primary.digestRecords[0].observedSha256, /^[0-9a-f]{64}$/u);
+  assert.equal(typeof primary.digestRecords[0].drifted, 'boolean');
   assert.notEqual(primary.registrationSha256, fidelity.registrationSha256);
   assert.equal(primary.registration.executionReadiness.plannedModelCalls, 360);
   assert.equal(fidelity.registration.executionReadiness.plannedModelCalls, 360);

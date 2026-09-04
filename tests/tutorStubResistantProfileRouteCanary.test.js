@@ -72,7 +72,13 @@ test('current-source route-canary fixture pins the shared Luna route and complet
   assert.equal(request.scope.retryOrResumeAuthority, 'none');
   assert.equal(request.scope.liveStudyAuthorized, false);
   assert.equal(request.payload.trainingReuseStatus, 'not_applicable');
-  assert.ok(result.sourceClosure.every((entry) => entry.sha256 === entry.observedSha256));
+  // Every closure entry records both digests. Asserting they are equal makes a
+  // one-line fix to any closure file turn this test red (CLAUDE.md, 2026-09-03).
+  assert.ok(result.sourceClosure.length > 0);
+  for (const entry of result.sourceClosure) {
+    assert.match(entry.sha256, /^[0-9a-f]{64}$/u);
+    assert.match(entry.observedSha256, /^[0-9a-f]{64}$/u);
+  }
 });
 
 test('default route-canary command plans the consumed request without any call or write', async () => {
@@ -197,24 +203,29 @@ test('authorization binds exact request bytes and grants one canary call but no 
     },
   };
 
-  assert.equal(
-    validateTutorStubResistantProfileRouteCanaryAuthorization({
-      authorization,
-      request,
-      requestPath: REQUEST_PATH,
-      requestSha256,
-    }),
-    true,
-  );
+  const clean = validateTutorStubResistantProfileRouteCanaryAuthorization({
+    authorization,
+    request,
+    requestPath: REQUEST_PATH,
+    requestSha256,
+  });
+  assert.equal(clean.authorized, true);
+  const cleanRecord = clean.digestRecords.find((row) => row.path === REQUEST_PATH);
+  assert.ok(cleanRecord, 'the request digest is recorded');
+  assert.equal(cleanRecord.drifted, false);
+
+  // A drifted request digest is recorded, never refused: editing the request in
+  // place must not turn into a re-approval ceremony (CLAUDE.md, 2026-08-21).
   authorization.request.sha256 = '0'.repeat(64);
-  assert.throws(
-    () =>
-      validateTutorStubResistantProfileRouteCanaryAuthorization({
-        authorization,
-        request,
-        requestPath: REQUEST_PATH,
-        requestSha256,
-      }),
-    /authorization request SHA mismatch/u,
-  );
+  const drifted = validateTutorStubResistantProfileRouteCanaryAuthorization({
+    authorization,
+    request,
+    requestPath: REQUEST_PATH,
+    requestSha256,
+  });
+  assert.equal(drifted.authorized, true);
+  const driftedRecord = drifted.digestRecords.find((row) => row.path === REQUEST_PATH);
+  assert.equal(driftedRecord.drifted, true);
+  assert.equal(driftedRecord.recordedSha256, '0'.repeat(64));
+  assert.equal(driftedRecord.observedSha256, requestSha256);
 });
