@@ -20,6 +20,7 @@ import {
 } from '../services/adaptiveWarrantGateCore.js';
 import { assessAdaptiveWarrantInquiryCompletion } from '../services/adaptiveWarrantInquiryCompletion.js';
 import { createAdaptiveWarrantPublicObligationLedger } from '../services/adaptiveWarrantPublicObligationLedger.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 import {
   ADAPTIVE_WARRANT_ANNOTATION_SCHEMA,
   adaptiveWarrantStudySourceFingerprint,
@@ -742,16 +743,31 @@ export function validateAdaptiveWarrantChallengeFreeze({ manifestPath } = {}) {
   if (Object.hasOwn(manifest, 'decision_gate')) {
     throw new Error('targeted challenge freeze must not bind a pass/fail decision gate');
   }
-  for (const [label, binding] of [
-    ['protocol', manifest.protocol],
-    ['annotation handbook', manifest.annotation_handbook],
-    ['private design', manifest.design],
-    ['private support plan', manifest.support_plan],
-    ['blinded corpus', manifest.corpus],
-    ['private key', manifest.key],
-    ...(manifest.zero_overlap?.excluded_corpora || []).map((binding) => ['excluded corpus', binding]),
+  // CLAUDE.md (2026-08-21): the protocol is docs/adaptation-refinement/
+  // baseline-comparison-design.md, a design document edited in place, so its
+  // digest is recorded. Everything else in this loop is sealed data or an
+  // artifact this run wrote, and keeps its byte pin.
+  for (const [label, binding, treatment] of [
+    ['protocol', manifest.protocol, 'record'],
+    ['annotation handbook', manifest.annotation_handbook, 'pin'],
+    ['private design', manifest.design, 'pin'],
+    ['private support plan', manifest.support_plan, 'pin'],
+    ['blinded corpus', manifest.corpus, 'pin'],
+    ['private key', manifest.key, 'pin'],
+    ...(manifest.zero_overlap?.excluded_corpora || []).map((binding) => ['excluded corpus', binding, 'pin']),
   ]) {
-    if (!binding?.path || !binding?.sha256 || fileSha256(binding.path) !== binding.sha256) {
+    if (!binding?.path || !binding?.sha256) {
+      throw new Error(`targeted challenge freeze burned by ${label} drift`);
+    }
+    const observedSha256 = fileSha256(binding.path);
+    if (treatment === 'record') {
+      recordObservedDigest({
+        label: `targeted challenge freeze ${label}`,
+        filePath: binding.path,
+        recordedSha256: binding.sha256,
+        observedSha256,
+      });
+    } else if (observedSha256 !== binding.sha256) {
       throw new Error(`targeted challenge freeze burned by ${label} drift`);
     }
   }
