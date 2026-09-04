@@ -135,6 +135,7 @@ node scripts/eval-cli.js run --profiles <cells> --ego-model codex.gpt-5.6-luna -
 - The CLI bridge now reaches **tutor-core's dialogue engine** (standard-runner cells like 40/93), not just id-director/learner/adaptive/judge seams — via the external-AI-provider hook (`tutor-core/services/externalAIProvider.js`, registered by `evaluationRunner.js`). `--ego-model` / `--superego-model` CLI overrides therefore work for ALL cells.
 - `eval-cli run` prints a **non-blocking stderr warning** when a run resolves to the nemotron/kimi pairing with no explicit model override (`services/stackDefaultWarning.js`). Existing cell YAML is unchanged — the weak stack remains available as an explicit choice.
 - **Interpretation rule: nulls generated on nemotron/kimi are stack-bounded until replicated on a strong model.** Do not present a nemotron/kimi null as an architecture verdict without a strong-stack replication (or an explicit stack-bounded caveat).
+- **Model-bound rule for the default stack (2026-09-04).** A null, or a step that blocks, first seen with Sonnet 5 or codex Luna in a seat is reported as bound to that model until one small run with Opus 5 or codex Sol in the same seat shows the same thing. The first line of the note says which model held the seat and whether the check ran. For judge and reader seats the check is a few calls on Fable or Opus; for tutor seats it is one pair, about 100 calls each arm. Do not buy the check for a result that will not be cited.
 
 ### How to Read a Cell's Architecture
 
