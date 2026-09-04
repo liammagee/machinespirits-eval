@@ -94,6 +94,10 @@ written record of what was measured before the design was cut, not a code or
 schema file. Worth a second opinion; it is the one entry in this change I would
 call arguable.
 
+`tutorStubFirstDraftCampaign.js:205, 236, 250` pins a frozen extract of an
+earlier run's dialogue trace. The code resolves it as kind `sealed_trace`. It is
+recorded run data, so the pin stays.
+
 ### A source commit or tree recorded in a go request
 
 These compare provenance a go request wrote down against the current checkout.
@@ -103,6 +107,9 @@ The brief left them alone and so did I.
   `goRequest.source.launchCommit` and `launchTree`.
 - `tutorStubResistanceSplitMeasurementValidationRuntime.js:239-240` and
   `296-297` — the same two fields, on the v3 and the split go requests.
+- `tutorStubResistanceSemanticValidationRuntime.js:176` and `260` — the archive
+  manifest's `source` block against the plan's. Both hold the commit and the tree
+  the run was launched from.
 
 ### Not a file digest
 
@@ -138,6 +145,9 @@ blocks, because the plan bytes on disk no longer equal the recomputed plan.
 
 - `tutorStubResistanceRecoverySemanticValidationRuntime.js:307, 759, 887`
 - `tutorStubResistanceSplitMeasurementValidationRuntime.js:365-368, 564, 1150, 1284`
+- `tutorStubResistanceSemanticValidationRuntime.js:195` and `354` — an archive
+  entry, and this run's own `report.json` reached through a transition id derived
+  from its bytes.
 
 That is a run-artifact check, not a source pin, so it is out of this card's
 scope. If it bites, the fix is to compare the fields that matter rather than to
