@@ -454,13 +454,24 @@ export function getRecognitionMoment(id) {
  * Get recognition moments for a writing pad
  * @param {string} writingPadId - Writing pad ID
  * @param {object} options - Query options
+ * @param {string|null} [options.sessionId] - Exact session, or null for legacy unscoped rows; omit for all
  * @returns {array} - Recognition moments
  */
 export function getRecognitionMoments(writingPadId, options = {}) {
-  const { limit = 10, transformativeOnly = false } = options;
+  const { limit = 10, transformativeOnly = false, sessionId } = options;
 
   let query = 'SELECT * FROM recognition_moments WHERE writing_pad_id = ?';
   const params = [writingPadId];
+
+  // Omission preserves the historical all-session read. Supplying a concrete
+  // ID is an exact session read; explicit null selects only legacy unscoped
+  // rows rather than silently mixing them into a live dialogue.
+  if (sessionId === null) {
+    query += ' AND session_id IS NULL';
+  } else if (sessionId !== undefined) {
+    query += ' AND session_id = ?';
+    params.push(sessionId);
+  }
 
   if (transformativeOnly) {
     query += ' AND transformative = 1';

@@ -720,6 +720,46 @@ describe('recognitionGamificationService', () => {
       expect(result.momentCount).toBe(1);
       expect(result.avgStruggleDepth).toBeCloseTo(0.5);
     });
+
+    it('uses the same resolved latest session for recognition moments and learner resistance', () => {
+      const pad = seedWritingPad(testDb, learnerId);
+      const mockPad = buildMockWritingPad({ id: pad.id });
+      getWritingPad.mockReturnValue(mockPad);
+
+      seedRecognitionMoment(testDb, pad.id, {
+        session_id: 'old-session',
+        created_at: '2024-01-01T00:00:00.000Z',
+      });
+      seedRecognitionMoment(testDb, pad.id, {
+        session_id: 'recent-session',
+        created_at: '2024-06-01T00:00:00.000Z',
+      });
+      seedLearnerEvent(testDb, learnerId, pad.id, {
+        session_id: 'old-session',
+        event_type: 'resistance',
+        resistance_interpretation: 'productive',
+      });
+      seedLearnerEvent(testDb, learnerId, pad.id, {
+        session_id: 'recent-session',
+        event_type: 'resistance',
+        resistance_interpretation: 'confused',
+      });
+
+      const result = computeRecognitionFlow(learnerId);
+      expect(result.momentCount).toBe(1);
+      expect(result.resistanceProductivity).toBe(0);
+    });
+
+    it('does not pool legacy null-session moments into a synthetic current session', () => {
+      const pad = seedWritingPad(testDb, learnerId);
+      const mockPad = buildMockWritingPad({ id: pad.id });
+      getWritingPad.mockReturnValue(mockPad);
+      seedRecognitionMoment(testDb, pad.id, { session_id: null, struggle_depth: 0.5 });
+
+      const result = computeRecognitionFlow(learnerId);
+      expect(result.flowState).toBe('none');
+      expect(result.flowScore).toBe(0);
+    });
   });
 
   // ==========================================================================

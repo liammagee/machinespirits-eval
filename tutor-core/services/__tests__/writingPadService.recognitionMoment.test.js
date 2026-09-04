@@ -77,4 +77,17 @@ describe('writingPadService recognition-moment accessors — bug 4 (synthesis_re
   it('getRecognitionMoment returns null for an unknown id without throwing', () => {
     expect(getRecognitionMoment('does-not-exist')).toBeNull();
   });
+
+  it('keeps all-session reads backward compatible while exact session reads exclude legacy null rows', () => {
+    const pad = seedWritingPad(testDb, 'learner-session-scope');
+    seedRecognitionMoment(testDb, pad.id, { session_id: null });
+    seedRecognitionMoment(testDb, pad.id, { session_id: 'dialogue-a' });
+    seedRecognitionMoment(testDb, pad.id, { session_id: 'dialogue-b' });
+
+    expect(getRecognitionMoments(pad.id)).toHaveLength(3);
+    expect(getRecognitionMoments(pad.id, { sessionId: 'dialogue-a' }).map((moment) => moment.session_id)).toEqual([
+      'dialogue-a',
+    ]);
+    expect(getRecognitionMoments(pad.id, { sessionId: null }).map((moment) => moment.session_id)).toEqual([null]);
+  });
 });
