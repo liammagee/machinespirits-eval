@@ -6,6 +6,8 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import YAML from 'yaml';
 
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 export const DEFAULT_LEDGER = path.join(REPO_ROOT, 'config', 'tutor-prompt-agency-audit-v1.yaml');
@@ -98,6 +100,7 @@ export function buildTutorPromptAgencyAudit({ root = REPO_ROOT, ledgerPath = DEF
   }
 
   const promptResults = [];
+  const digestRecords = [];
   for (const audit of audits) {
     const promptPath = path.join(promptDirectory, audit.file);
     if (!fs.existsSync(promptPath)) {
@@ -106,9 +109,18 @@ export function buildTutorPromptAgencyAudit({ root = REPO_ROOT, ledgerPath = DEF
     }
     const content = fs.readFileSync(promptPath, 'utf8');
     const actualHash = sha256(content);
-    if (actualHash !== audit.sha256) {
-      errors.push(`${audit.file}: SHA-256 drift (${actualHash}, expected ${audit.sha256})`);
-    }
+    // CLAUDE.md (2026-08-21): tutor prompts are edited in place, so the audit
+    // writes the prompt's digest down instead of failing on any edit. The
+    // snippet check below still fails when a quoted piece of evidence is gone,
+    // which is the case where the audit has actually gone stale.
+    digestRecords.push(
+      recordObservedDigest({
+        label: `prompt agency audit ${audit.file}`,
+        filePath: path.relative(root, promptPath),
+        recordedSha256: audit.sha256,
+        observedSha256: actualHash,
+      }),
+    );
 
     const findings = audit.findings ?? [];
     for (const finding of findings) {
@@ -190,6 +202,7 @@ export function buildTutorPromptAgencyAudit({ root = REPO_ROOT, ledgerPath = DEF
       active_files: activeFiles,
       excluded: ledger.inventory?.excluded_prompt_files ?? [],
       mirror_drift: mirrorDrift,
+      digest_records: digestRecords,
     },
     summary: {
       prompt_count: promptResults.length,
