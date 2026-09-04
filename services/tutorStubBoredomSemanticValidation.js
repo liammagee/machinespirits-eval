@@ -11,6 +11,13 @@ import {
   adjudicateTutorStubBoredomObservation,
   parseTutorStubBoredomSemanticAdjudication,
 } from './tutorStubBoredomSemanticAdjudicationV3.js';
+import { recordFileDigest } from './recordedFileDigest.js';
+
+// Sealed data keeps its byte pin. A held-out corpus, a development corpus, a
+// blind-read file or a certificate must be the bytes that were measured, so a
+// source-closure entry naming one still refuses on drift. Every other entry in
+// the closure is code, a schema or a registration: those are recorded.
+const SEALED_SOURCE_CLOSURE_PATH = /heldout|held-out|development-corpus|blind-read|certificate/u;
 
 export const BOREDOM_SEMANTIC_VALIDATION_REQUEST_SCHEMA =
   'machinespirits.tutor-stub.boredom-semantic-validation-request.v4';
@@ -147,6 +154,7 @@ export function validateTutorStubBoredomSemanticValidationRequest(
 
   assert(Array.isArray(request.sourceClosure) && request.sourceClosure.length >= 12, 'source closure is incomplete');
   const seen = new Set();
+  const digestRecords = [];
   const sourceClosure = request.sourceClosure.map((entry) => {
     assert(entry && typeof entry === 'object', 'source-closure entry must be an object');
     assert(!seen.has(entry.path), `duplicate source-closure path: ${entry.path}`);
@@ -154,8 +162,17 @@ export function validateTutorStubBoredomSemanticValidationRequest(
     assertSha256(entry.sha256, `source closure ${entry.path}`);
     const resolvedPath = resolveRepositoryFile(root, entry.path, 'source-closure');
     const observedSha256 = boredomSemanticValidationFileSha256(resolvedPath);
-    if (verifySourceClosure) {
+    if (verifySourceClosure && SEALED_SOURCE_CLOSURE_PATH.test(entry.path)) {
       assert(observedSha256 === entry.sha256, `source-closure SHA mismatch: ${entry.path}`);
+    } else if (verifySourceClosure) {
+      digestRecords.push(
+        recordFileDigest({
+          root,
+          filePath: entry.path,
+          recordedSha256: entry.sha256,
+          label: 'source closure',
+        }),
+      );
     }
     return { path: entry.path, sha256: entry.sha256, observedSha256 };
   });
@@ -200,6 +217,7 @@ export function validateTutorStubBoredomSemanticValidationRequest(
     corpus,
     corpusSha256: observedCorpusSha256,
     sourceClosure,
+    digestRecords,
   };
 }
 

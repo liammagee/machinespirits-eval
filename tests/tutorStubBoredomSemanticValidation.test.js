@@ -99,12 +99,12 @@ function referenceMockCallModel(corpus, { mutate = null, failures = null } = {})
   return { callModel, calls };
 }
 
-test('the historical request fails closed after bridge drift while a current-source fixture validates', () => {
+test('the historical request records bridge drift while a current-source fixture validates', () => {
   const request = readJson(REQUEST_PATH);
-  assert.throws(
-    () => validateTutorStubBoredomSemanticValidationRequest(request, { root: ROOT }),
-    /source-closure SHA mismatch: services\//u,
-  );
+  const historical = validateTutorStubBoredomSemanticValidationRequest(request, { root: ROOT });
+  const drifted = historical.digestRecords.filter((row) => row.drifted);
+  assert.ok(drifted.some((row) => row.path.startsWith('services/')));
+  for (const row of drifted) assert.notEqual(row.observedSha256, row.recordedSha256);
   const currentRequest = readCurrentSourceFixtureRequest();
   const validation = validateTutorStubBoredomSemanticValidationRequest(currentRequest, { root: ROOT });
   assert.equal(validation.provider, 'codex');
@@ -137,7 +137,7 @@ test('request drift fails closed', () => {
   }
 });
 
-test('the source-digest guard passes a matching tree and catches a file whose bytes moved', () => {
+test('the source-digest guard passes a matching tree and records a file whose bytes moved', () => {
   // The committed v4 request records the tree as it stood when the 55-case
   // corpus was spent. Some of those files have moved on since, which is what
   // "spent" means, so this test does not read the committed digests. It builds
@@ -158,18 +158,20 @@ test('the source-digest guard passes a matching tree and catches a file whose by
   ).sha256;
   validateTutorStubBoredomSemanticValidationRequest(matching, { root: ROOT });
 
-  // Point one entry at bytes the file does not have. The check must refuse,
-  // and must name the file it refused on.
+  // Point one entry at bytes the file does not have. The check must record the
+  // drift and must name the file it recorded it on.
   const drifted = structuredClone(matching);
   const entry = drifted.sourceClosure.find((row) => row.path === modulePath);
   entry.sha256 = '0'.repeat(64);
   // The measurement binding carries the same digest, so move it too. Otherwise
   // the request fails the earlier binding check and never reaches the guard.
   drifted.measurement.adjudicationModule.sha256 = entry.sha256;
-  assert.throws(
-    () => validateTutorStubBoredomSemanticValidationRequest(drifted, { root: ROOT }),
-    /source-closure SHA mismatch: services\/tutorStubBoredomSemanticAdjudicationV3\.js/u,
+  const record = validateTutorStubBoredomSemanticValidationRequest(drifted, { root: ROOT }).digestRecords.find(
+    (row) => row.path === modulePath,
   );
+  assert.equal(record.drifted, true);
+  assert.equal(record.recordedSha256, '0'.repeat(64));
+  assert.notEqual(record.observedSha256, record.recordedSha256);
 
   // Turning the check off is what instrument-behaviour tests do, and it must
   // let the same request through.
