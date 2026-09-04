@@ -184,3 +184,7 @@ approval machinery beyond "the user says go".
   now records the September detector work: the re-read of the v6/v7 held-out figure, form-v1..v5
   with their leave-one-world-out numbers, the form-v3 live pair, the labeller comparison with its
   Opus 5 check, the four-row sheet, and the hold instrument's template wall.
+- **Paper sentence, 2026-09-04.** §6.24 (v3.0.304) now also records the reader-seat check
+  from PR #1001: Opus 5 re-read the 16 recorded Sonnet 5 hold speech checks, 13/16 agree,
+  kappa 0.48, retries reader-bound, every final verdict kept. The scope line and provenance
+  name the re-read. Tag `paper/v3.0.304` and the ref-status follow-up come after merge.
