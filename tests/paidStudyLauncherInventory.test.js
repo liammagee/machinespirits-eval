@@ -11,9 +11,10 @@ test('repository paid-launcher inventory is complete', () => {
   assert.deepEqual(result.issues, []);
   assert.equal(result.discovered.length, result.entries);
   assert.deepEqual(result.durableCounts, {
-    referenceImplementation: 3,
-    migrationRequired: 6,
-    retireOrMigrate: 10,
+    referenceImplementation: 6,
+    migrationRequired: 0,
+    retireOrMigrate: 0,
+    retired: 13,
   });
 });
 
@@ -29,7 +30,7 @@ test('inventory ratchet catches a new paid launcher and invalid broad exemption'
     `${JSON.stringify({
       policyEffectiveAfter: '2026-08-22',
       discoveryMarkers: ['--accept-charges'],
-      durableMigration: { referenceImplementation: [], migrationRequired: [], retireOrMigrate: [] },
+      durableMigration: { referenceImplementation: [], migrationRequired: [], retireOrMigrate: [], retired: [] },
       launchers: [],
     })}\n`,
   );
@@ -46,6 +47,7 @@ test('inventory ratchet catches a new paid launcher and invalid broad exemption'
         referenceImplementation: [],
         migrationRequired: [],
         retireOrMigrate: ['scripts/run-new-study.js'],
+        retired: [],
       },
       launchers: [
         {
@@ -83,7 +85,7 @@ test('durable migration inventory is a complete, exclusive partition', (t) => {
     `${JSON.stringify({
       policyEffectiveAfter: '2026-08-22',
       discoveryMarkers: ['--accept-charges'],
-      durableMigration: { referenceImplementation: [], migrationRequired: [], retireOrMigrate: [] },
+      durableMigration: { referenceImplementation: [], migrationRequired: [], retireOrMigrate: [], retired: [] },
       launchers: [entry],
     })}\n`,
   );
@@ -100,6 +102,7 @@ test('durable migration inventory is a complete, exclusive partition', (t) => {
         referenceImplementation: [],
         migrationRequired: ['scripts/run-new-study.js'],
         retireOrMigrate: ['scripts/run-new-study.js'],
+        retired: [],
       },
       launchers: [entry],
     })}\n`,

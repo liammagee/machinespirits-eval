@@ -7,6 +7,7 @@ import { execFileSync, spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import { resistantLearnerObservationMarkers } from '../services/resistantLearnerObservation.js';
 import {
@@ -469,6 +470,7 @@ export async function runDefiantWarrantPilot({
   parallelism = 4,
   resume = false,
 } = {}) {
+  refuseRetiredPaidLaunch('tutor-stub-defiant-warrant-pilot');
   const loaded = loadTutorStubDefiantWarrantDesign({ designPath, root: ROOT });
   const plan = buildTutorStubDefiantWarrantPlan(loaded.design);
   const maxProcessAttempts = loaded.design.execution.technicalRecovery.maximumProcessAttemptsPerUnit;
@@ -782,6 +784,7 @@ async function main() {
   if (values.help) return void console.log(usage());
   const modes = [values.preflight, values.live, values.resume, values.analyze].filter(Boolean);
   if (modes.length !== 1) throw new Error(usage());
+  if (values.live || values.resume) refuseRetiredPaidLaunch('tutor-stub-defiant-warrant-pilot');
   const common = { designPath: values.design, destination: values.destination };
   if (values.preflight) {
     console.log(JSON.stringify(buildDefiantWarrantPreflight(common), null, 2));

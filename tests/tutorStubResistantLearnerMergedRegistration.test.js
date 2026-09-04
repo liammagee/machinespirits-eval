@@ -395,7 +395,7 @@ test('merged child configuration reaches both face runtimes and ships the regist
   );
 });
 
-test('merged approval is unversioned and execution refuses an existing destination before a child starts', async () => {
+test('merged approval is unversioned and retired execution refuses before a child starts', async () => {
   const loaded = load();
   const destination = fs.mkdtempSync(path.join(os.tmpdir(), 'merged-create-once-'));
   const preflight = {
@@ -426,7 +426,7 @@ test('merged approval is unversioned and execution refuses an existing destinati
         childCalls += 1;
       },
     }),
-    /create-once/u,
+    /paid launcher retired: tutor-stub-resistant-learner-merged-calibration/u,
   );
   assert.equal(childCalls, 0);
   fs.rmSync(destination, { recursive: true, force: true });

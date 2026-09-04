@@ -5,17 +5,17 @@
     "referenceImplementation": [
       "scripts/run-tutor-stub-action-outcome-collection-pilot.js",
       "scripts/run-tutor-stub-action-outcome-failed-unit-recovery.js",
-      "scripts/run-invested-rival-learner-replication.js"
-    ],
-    "migrationRequired": [
-      "scripts/run-tutor-stub-action-outcome-model-judge-shadow.js",
-      "scripts/run-tutor-stub-frame-refuser-narrowing-calibration.js",
-      "scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js",
+      "scripts/run-invested-rival-learner-replication.js",
       "scripts/run-local-qwen-invested-rival.js",
       "scripts/run-invested-rival-luna-reference.js",
       "scripts/run-invested-rival-learner-iteration.js"
     ],
-    "retireOrMigrate": [
+    "migrationRequired": [],
+    "retireOrMigrate": [],
+    "retired": [
+      "scripts/run-tutor-stub-action-outcome-model-judge-shadow.js",
+      "scripts/run-tutor-stub-frame-refuser-narrowing-calibration.js",
+      "scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js",
       "scripts/run-adaptive-warrant-outcome-main-block.js",
       "scripts/run-adaptive-warrant-outcome-pilot.js",
       "scripts/run-adaptive-warrant-steering-decomposition.js",
@@ -32,20 +32,20 @@
     {
       "path": "scripts/run-adaptive-warrant-outcome-main-block.js",
       "registered": "2026-08-17",
-      "disposition": "pre_policy_exemption",
-      "reason": "Predates the standing 2026-08-22 policy."
+      "disposition": "retired",
+      "reason": "Historical pre-policy launcher; future paid dispatch is disabled while sealed artifacts remain available for inspection."
     },
     {
       "path": "scripts/run-adaptive-warrant-outcome-pilot.js",
       "registered": "2026-08-17",
-      "disposition": "pre_policy_exemption",
-      "reason": "Predates the standing 2026-08-22 policy."
+      "disposition": "retired",
+      "reason": "Historical pre-policy launcher; future paid dispatch is disabled while sealed artifacts remain available for inspection."
     },
     {
       "path": "scripts/run-adaptive-warrant-steering-decomposition.js",
       "registered": "2026-08-17",
-      "disposition": "pre_policy_exemption",
-      "reason": "Predates the standing 2026-08-22 policy."
+      "disposition": "retired",
+      "reason": "Historical pre-policy launcher; future paid dispatch is disabled while sealed artifacts remain available for inspection."
     },
     {
       "path": "scripts/run-tutor-stub-action-outcome-collection-pilot.js",
@@ -62,50 +62,50 @@
     {
       "path": "scripts/run-tutor-stub-action-outcome-model-judge-shadow.js",
       "registered": "2026-09-02",
-      "disposition": "shared_contract",
-      "reason": "Post-policy blinded model-judge shadow study; adopts services/paidStudyLaunchContract.js for merged-design admission, create-once private output, one reservation per independent case-seat call, and an append-only ledger."
+      "disposition": "retired",
+      "reason": "The completed fixed-call shadow design forbids replacement attempts and has no recovery reserve; future paid dispatch is disabled pending a prospective successor design."
     },
     {
       "path": "scripts/run-tutor-stub-defiant-warrant-pilot.js",
       "registered": "2026-08-29",
-      "disposition": "historical_live_exemption",
-      "reason": "Produced the live defiant-warrant Gate-1 v1 run on 2026-08-29 and serves the registered v2 re-run under the operator's standing plain GO; attended launch with the design's spend ceiling, no commit-bound admission per the 2026-08-21 rule."
+      "disposition": "retired",
+      "reason": "Historical defiant-warrant launcher; future paid dispatch is disabled while sealed results remain available for inspection."
     },
     {
       "path": "scripts/run-tutor-stub-frame-refuser-depth-calibration.js",
       "registered": "2026-08-27",
-      "disposition": "historical_live_exemption",
-      "reason": "Used by the completed revision-4 Gate 1 calibration; preserve its attended-launch and resume semantics."
+      "disposition": "retired",
+      "reason": "Historical depth-calibration launcher; future paid dispatch is disabled while sealed results remain available for inspection."
     },
     {
       "path": "scripts/run-tutor-stub-frame-refuser-narrowing-calibration.js",
       "registered": "2026-08-30",
-      "disposition": "shared_contract",
-      "reason": "Post-policy archived-row instrument calibration; adopts services/paidStudyLaunchContract.js for admission, create-once state, per-reader reservations, and the append-only ledger."
+      "disposition": "retired",
+      "reason": "The fixed calibration preserves failed assignments and has no replacement reserve; future paid dispatch is disabled pending a prospective successor design."
     },
     {
       "path": "scripts/run-tutor-stub-frame-refuser-satisfiable-calibration.js",
       "registered": "2026-08-29",
-      "disposition": "shared_contract",
-      "reason": "First post-policy tutor-stub calibration launcher; adopts services/paidStudyLaunchContract.js for admission, create-once state, reservations, and the append-only ledger."
+      "disposition": "retired",
+      "reason": "The fixed calibration has no recovery reserve; future paid dispatch is disabled pending a prospective successor design."
     },
     {
       "path": "scripts/run-local-qwen-invested-rival.js",
       "registered": "2026-09-01",
       "disposition": "shared_contract",
-      "reason": "Post-policy local-Qwen learner study; adopts services/paidStudyLaunchContract.js for merged-design admission, create-once state, study-wide reservations, and append-only ledgers."
+      "reason": "Post-policy local-Qwen learner study; uses per-dispatch durable reservations, dispatch markers, response persistence, terminal dispositions, and bounded missing-only recovery under the unchanged registered ceilings."
     },
     {
       "path": "scripts/run-invested-rival-luna-reference.js",
       "registered": "2026-09-01",
       "disposition": "shared_contract",
-      "reason": "Post-policy Luna learner reference extension; reuses hash-pinned sealed Qwen evidence and adopts the shared admission, create-once state, attempt ceiling, and append-only ledgers."
+      "reason": "Post-policy Luna learner reference extension; reuses sealed Qwen evidence and uses per-dispatch durable reservations, response persistence, terminal dispositions, and missing-only recovery under the unchanged 23-attempt ceiling."
     },
     {
       "path": "scripts/run-invested-rival-learner-iteration.js",
       "registered": "2026-09-01",
       "disposition": "shared_contract",
-      "reason": "Post-policy Luna development and held-out Luna/Qwen learner study; adopts the shared admission, create-once state, study-wide 110-attempt ceiling, and append-only ledger."
+      "reason": "Post-policy Luna development and held-out Luna/Qwen learner study; uses per-dispatch durable reservations, response persistence, terminal dispositions, and missing-only recovery under the unchanged 110-attempt ceiling."
     },
     {
       "path": "scripts/run-invested-rival-learner-replication.js",
@@ -116,32 +116,32 @@
     {
       "path": "scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js",
       "registered": "2026-08-22",
-      "disposition": "historical_live_exemption",
-      "reason": "Produced the sealed manipulation-validation V1 result on 2026-08-22."
+      "disposition": "retired",
+      "reason": "Historical manipulation-validation launcher; future paid dispatch is disabled while sealed results remain available for inspection."
     },
     {
       "path": "scripts/run-tutor-stub-resistance-warm-nonwarm-confirmation.js",
       "registered": "2026-08-23",
-      "disposition": "historical_live_exemption",
-      "reason": "Produced the sealed warm/nonwarm confirmation V1 result on 2026-08-23."
+      "disposition": "retired",
+      "reason": "Historical warm/nonwarm launcher; future paid dispatch is disabled while sealed results remain available for inspection."
     },
     {
       "path": "scripts/run-tutor-stub-resistant-learner-calibration-v2.js",
       "registered": "2026-08-24",
-      "disposition": "historical_live_exemption",
-      "reason": "Served the sealed rival-DAG Gate 1b/1c calibration sequence."
+      "disposition": "retired",
+      "reason": "Historical rival-DAG calibration launcher; future paid dispatch is disabled while sealed results remain available for inspection."
     },
     {
       "path": "scripts/run-tutor-stub-resistant-learner-calibration.js",
       "registered": "2026-08-23",
-      "disposition": "historical_live_exemption",
-      "reason": "Produced the sealed resistant-learner Gate 1 calibration attempts on 2026-08-23."
+      "disposition": "retired",
+      "reason": "Historical resistant-learner calibration launcher; future paid dispatch is disabled while sealed results remain available for inspection."
     },
     {
       "path": "scripts/run-tutor-stub-resistant-learner-merged-calibration.js",
       "registered": "2026-08-24",
-      "disposition": "historical_live_exemption",
-      "reason": "Served sealed merged calibrations and the revision-5 powered run recovery path."
+      "disposition": "retired",
+      "reason": "Historical merged-calibration launcher; future paid dispatch is disabled while sealed results remain available for inspection."
     }
   ]
 }

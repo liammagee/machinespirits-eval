@@ -6,6 +6,7 @@ import { execFileSync, spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import { loadTutorStubResistanceManipulationValidation } from '../services/tutorStubResistanceActionRegisterManipulationValidation.js';
 
@@ -255,6 +256,9 @@ async function main() {
       'accept-charges': { type: 'boolean', default: false },
     },
   });
+  if (values['accept-charges']) {
+    refuseRetiredPaidLaunch('tutor-stub-resistance-action-register-manipulation-validation');
+  }
   if (
     !values.design ||
     !values.destination ||

@@ -16,6 +16,8 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
+
 import {
   DECISION_READER_INSTRUMENT_BINDINGS,
   OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
@@ -349,6 +351,7 @@ export function guardOutcomeMainBlockReaderAllowance({ callsAttempted = 0 } = {}
 }
 
 export async function runAfterOutcomeMainBlockAllowanceGuard({ callsAttempted = 0, launch } = {}) {
+  refuseRetiredPaidLaunch('adaptive-warrant-outcome-main-block');
   const guard = guardOutcomeMainBlockReaderAllowance({ callsAttempted });
   if (typeof launch !== 'function') throw new Error('outcome main-block reader launch callback is required');
   return { guard, result: await launch() };
@@ -554,6 +557,7 @@ export async function executeOutcomeMainBlock({
   runReaderProcess = spawnLogged,
   seedFreshnessRoots,
 } = {}) {
+  refuseRetiredPaidLaunch('adaptive-warrant-outcome-main-block');
   if (!acceptCharges) throw new Error('outcome main block refuses: --accept-charges is required');
   const goNote = validateOutcomeMainBlockGoNote(goNotePath);
   const guarded = verifyOutcomeMainBlockManifest({ manifestPath, learnerProfile });
@@ -858,6 +862,7 @@ async function main() {
     process.stdout.write(usage());
     return;
   }
+  if (values['accept-charges']) refuseRetiredPaidLaunch('adaptive-warrant-outcome-main-block');
   if (!values['accept-charges']) {
     const guarded = verifyOutcomeMainBlockManifest({
       manifestPath: values.manifest,

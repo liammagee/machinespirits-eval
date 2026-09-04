@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -16,6 +17,16 @@ import {
 } from '../services/localQwenRefusalContinuity.js';
 import { renderContinuityReport } from '../services/localQwenRefusalContinuityReport.js';
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { buildDurableEvaluationStatus } from '../services/durableAttemptJournal.js';
+import { createDurablePaidModelAttemptBudget } from '../services/durablePaidModelAttemptBudget.js';
+import {
+  blockLongRunningWorkflow,
+  completeLongRunningWorkflowPhase,
+  createLongRunningWorkflowStatus,
+  recordLongRunningWorkflowRecovery,
+  updateLongRunningWorkflowProgress,
+  writeLongRunningWorkflowStatusAtomic,
+} from '../services/longRunningWorkflowStatus.js';
 import { loadRubric } from '../services/evalConfigLoader.js';
 import { loadLearnerRubric } from '../services/learnerRubricEvaluator.js';
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
@@ -23,6 +34,7 @@ import { loadDialogueRubric } from '../services/rubricEvaluator.js';
 import {
   buildBenchmarkJobs,
   normalizeScores,
+  parseBenchmarkScore,
   parseSplitQualityScore,
   readBenchmarkArm,
   scoreBenchmarkArms,
@@ -31,7 +43,32 @@ import { discoverLoadedModel, manageServer } from './run-local-qwen-resistant-le
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_CONFIG = 'config/tutor-stub-local-learners/qwen-invested-rival-theorist.v1.yaml';
+const INVESTED_RIVAL_WORKFLOW_PHASES = Object.freeze([
+  'PREFLIGHT',
+  'GENERATING',
+  'AUDITING',
+  'PACKAGING',
+  'WORKFLOW_COMPLETE',
+]);
 const writeJson = (file, value) => fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
+
+function writeJsonAtomic(file, value) {
+  const temporary = `${file}.tmp-${process.pid}-${crypto.randomUUID()}`;
+  const descriptor = fs.openSync(temporary, 'wx');
+  try {
+    fs.writeFileSync(descriptor, `${JSON.stringify(value, null, 2)}\n`);
+    fs.fsyncSync(descriptor);
+  } finally {
+    fs.closeSync(descriptor);
+  }
+  fs.renameSync(temporary, file);
+  const directory = fs.openSync(path.dirname(file), 'r');
+  try {
+    fs.fsyncSync(directory);
+  } finally {
+    fs.closeSync(directory);
+  }
+}
 
 function normalized(text) {
   return String(text || '')
@@ -53,21 +90,14 @@ export function investedRivalDeliveredSourceContext(plan, arm) {
   ].join('\n');
 }
 
-function paidStudyBudget(admission, limit, priorAttemptCount = 0) {
-  return {
-    reserve(detail = {}) {
-      const reservation = admission.reserveModelAttempts(1, detail);
-      return {
-        call: priorAttemptCount + reservation.study_reserved,
-        limit,
-        remaining: reservation.remaining,
-        studyReserved: priorAttemptCount + reservation.study_reserved,
-      };
-    },
-    snapshot() {
-      return { used: priorAttemptCount + admission.studyReserved, limit };
-    },
-  };
+export function investedRivalPaidBudget(admission, limit, priorAttemptCount = 0, unitPrefix = null, hooks = {}) {
+  return createDurablePaidModelAttemptBudget({
+    admission,
+    limit,
+    priorAttemptBase: priorAttemptCount,
+    unitPrefix,
+    hooks,
+  });
 }
 
 export function configuredServiceModel(service, arm) {
@@ -371,6 +401,84 @@ async function scoreArms({
   completionTechnicalAttemptLimit = 1,
 }) {
   let newPhysicalAttempts = 0;
+  let returnedCandidate = null;
+  const callJudge = async (...args) => {
+    const [agent, systemPrompt, userPrompt, role, options] = args;
+    const projectionActive = completionRootProjection && role === 'local-qwen-benchmark-quality-turns';
+    const attemptLimit = projectionActive ? completionTechnicalAttemptLimit : 1;
+    const technicalFailures = [];
+    for (let attempt = 1; attempt <= attemptLimit; attempt += 1) {
+      const reservation = budget.reserve({ role, stage: 'assessment', unitId: options.durableUnitId });
+      newPhysicalAttempts += 1;
+      fs.appendFileSync(path.join(outDir, 'attempts.jsonl'), `${JSON.stringify(reservation)}\n`);
+      budget.markDispatched?.();
+      let rawOutput;
+      try {
+        const callOptions = investedRivalJudgeCallOptions(role, options, plainJsonQuality);
+        const response = await callAIWithCliBridge(agent, systemPrompt, userPrompt, role, {
+          ...callOptions,
+          ...(projectionActive
+            ? {
+                outputSchema: allowUnknownRootOutputFields(options.outputSchema),
+                onRawOutput: (output) => {
+                  rawOutput = output;
+                },
+              }
+            : {}),
+        });
+        if (!projectionActive) {
+          returnedCandidate = { role, reservation };
+          return response;
+        }
+        options.onRawOutput(rawOutput);
+        const projection = projectRegisteredRootOutput(response.text, options.outputSchema);
+        returnedCandidate = { role, reservation };
+        return {
+          ...response,
+          text: projection.text,
+          outputProjection: {
+            rule: 'registered_root_fields_only_then_original_strict_schema',
+            discardedRootKeys: projection.discardedRootKeys,
+            registeredValuesChanged: false,
+          },
+          technicalFailures,
+        };
+      } catch (error) {
+        if (projectionActive) {
+          const retryBase = path.join(outDir, 'evaluation', `B-quality-turns-technical-attempt-${attempt}`);
+          if (rawOutput !== undefined) writeJson(`${retryBase}.transport.json`, rawOutput);
+          writeJson(`${retryBase}.error.json`, {
+            message: error.message,
+            code: error.code,
+            classification: error.classification,
+            reason: error.reason,
+          });
+        }
+        if (!projectionActive || attempt >= attemptLimit || !retryableCompletionTransportError(error)) throw error;
+        budget.fail?.(error);
+        technicalFailures.push({
+          attempt,
+          message: error.message,
+          code: error.code,
+          classification: error.classification,
+          reason: error.reason,
+        });
+      }
+    }
+    throw new Error('completion transport exhausted without a result');
+  };
+  callJudge.persistResponse = (responsePath) => {
+    if (!returnedCandidate) throw new Error('cannot persist an assessment response without a returned candidate');
+    budget.persistResponse?.(responsePath);
+  };
+  callJudge.complete = () => {
+    budget.complete?.();
+    returnedCandidate = null;
+  };
+  callJudge.fail = (error) => {
+    budget.fail?.(error);
+    returnedCandidate = null;
+  };
   const evaluation = await scoreBenchmarkArms(arms, path.join(outDir, 'evaluation'), {
     ceiling,
     extendedQuality: true,
@@ -381,65 +489,8 @@ async function scoreArms({
     priorSplitQualityParts,
     priorAttempts,
     splitQuality,
-    callJudge: async (...args) => {
-      const [agent, systemPrompt, userPrompt, role, options] = args;
-      const projectionActive = completionRootProjection && role === 'local-qwen-benchmark-quality-turns';
-      const attemptLimit = projectionActive ? completionTechnicalAttemptLimit : 1;
-      const technicalFailures = [];
-      for (let attempt = 1; attempt <= attemptLimit; attempt += 1) {
-        const reservation = budget.reserve({ role });
-        newPhysicalAttempts += 1;
-        fs.appendFileSync(path.join(outDir, 'attempts.jsonl'), `${JSON.stringify(reservation)}\n`);
-        let rawOutput;
-        try {
-          const callOptions = investedRivalJudgeCallOptions(role, options, plainJsonQuality);
-          const response = await callAIWithCliBridge(agent, systemPrompt, userPrompt, role, {
-            ...callOptions,
-            ...(projectionActive
-              ? {
-                  outputSchema: allowUnknownRootOutputFields(options.outputSchema),
-                  onRawOutput: (output) => {
-                    rawOutput = output;
-                  },
-                }
-              : {}),
-          });
-          if (!projectionActive) return response;
-          options.onRawOutput(rawOutput);
-          const projection = projectRegisteredRootOutput(response.text, options.outputSchema);
-          return {
-            ...response,
-            text: projection.text,
-            outputProjection: {
-              rule: 'registered_root_fields_only_then_original_strict_schema',
-              discardedRootKeys: projection.discardedRootKeys,
-              registeredValuesChanged: false,
-            },
-            technicalFailures,
-          };
-        } catch (error) {
-          if (projectionActive) {
-            const retryBase = path.join(outDir, 'evaluation', `B-quality-turns-technical-attempt-${attempt}`);
-            if (rawOutput !== undefined) writeJson(`${retryBase}.transport.json`, rawOutput);
-            writeJson(`${retryBase}.error.json`, {
-              message: error.message,
-              code: error.code,
-              classification: error.classification,
-              reason: error.reason,
-            });
-          }
-          if (!projectionActive || attempt >= attemptLimit || !retryableCompletionTransportError(error)) throw error;
-          technicalFailures.push({
-            attempt,
-            message: error.message,
-            code: error.code,
-            classification: error.classification,
-            reason: error.reason,
-          });
-        }
-      }
-      throw new Error('completion transport exhausted without a result');
-    },
+    durableUnitPrefix: 'assessment',
+    callJudge,
   });
   return {
     ...evaluation,
@@ -451,9 +502,297 @@ async function scoreArms({
   };
 }
 
+function investedRivalWorkflowUnits(phase, state) {
+  if (phase === 'GENERATING') {
+    return {
+      complete: state.completedArms,
+      active: state.armActive ? 1 : 0,
+      failed: 0,
+      missing: Math.max(0, 2 - state.completedArms - (state.armActive ? 1 : 0)),
+    };
+  }
+  if (phase === 'AUDITING') {
+    return {
+      complete: state.completedAssessments,
+      active: state.assessmentActive ? 1 : 0,
+      failed: 0,
+      missing: Math.max(0, state.assessmentUnits - state.completedAssessments - (state.assessmentActive ? 1 : 0)),
+    };
+  }
+  if (phase === 'PACKAGING') {
+    return { complete: state.packageComplete ? 1 : 0, active: state.packageComplete ? 0 : 1, failed: 0, missing: 0 };
+  }
+  return { complete: 0, active: 0, failed: 0, missing: 0 };
+}
+
+export function createInvestedRivalWorkflowTracker({
+  plan,
+  outDir,
+  admission,
+  recovery = false,
+  priorAttemptBase = 0,
+  completedArms = 0,
+  completedAssessments = 0,
+  assessmentUnits = plan?.judge_calls,
+  baselineCompletedCalls = 0,
+  baselineFailedCalls = 0,
+  effectiveCeiling = plan?.total_attempt_ceiling,
+  recoverySourceDir = null,
+  at,
+} = {}) {
+  const state = {
+    completedArms,
+    armActive: false,
+    completedAssessments,
+    assessmentActive: false,
+    assessmentUnits,
+    packageComplete: false,
+    recentDurationsMs: [],
+  };
+  const filePath = path.join(outDir, 'workflow-status.json');
+  const durableStatusPath = path.join(outDir, 'status.json');
+  const predecessorLedgerPath = recoverySourceDir ? path.join(recoverySourceDir, 'run-ledger.jsonl') : null;
+  const ledgerCounts = () => {
+    const events =
+      admission.ledger_path && fs.existsSync(admission.ledger_path) ? readJsonLines(admission.ledger_path) : [];
+    return {
+      completed: baselineCompletedCalls + events.filter((event) => event.type === 'attempt_completed').length,
+      failed:
+        baselineFailedCalls +
+        events.filter((event) =>
+          ['attempt_failed', 'attempt_cancelled_before_dispatch', 'attempt_interrupted_after_dispatch'].includes(
+            event.type,
+          ),
+        ).length,
+      reserved: priorAttemptBase + admission.studyReserved,
+      hard_ceiling: effectiveCeiling,
+    };
+  };
+  const startedAt = at || new Date();
+  let status = createLongRunningWorkflowStatus({
+    workflowId: `${plan.id}-completion`,
+    phasePlan: INVESTED_RIVAL_WORKFLOW_PHASES,
+    at: startedAt,
+    units: investedRivalWorkflowUnits('GENERATING', state),
+    calls: ledgerCounts(),
+    modelActivity: { state: 'inactive', explanation: 'Preflight and recovery checks make no model calls.' },
+    nextAction: {
+      description: 'Verify the registered invested-rival study and any preserved evidence.',
+      stopping_condition: 'Stop before dispatch if the plan, evidence, routes, or remaining ceiling drift.',
+    },
+  });
+  status = completeLongRunningWorkflowPhase(status, {
+    phase: 'PREFLIGHT',
+    nextPhase: 'GENERATING',
+    at: startedAt,
+    startNextImmediately: true,
+    units: investedRivalWorkflowUnits('GENERATING', state),
+    calls: ledgerCounts(),
+    modelActivity: { state: 'inactive', explanation: 'Preflight passed; no generation call is active.' },
+    nextAction: {
+      description: 'Generate only arms and turns not already preserved as valid.',
+      stopping_condition: 'Stop on route drift, a substantive failure, or the hard call ceiling.',
+    },
+  });
+  if (recovery) {
+    status = recordLongRunningWorkflowRecovery(status, {
+      at: startedAt,
+      operation: 'Continue the invested-rival study from preserved evidence.',
+      reason: 'A predecessor stopped before the registered workflow was complete.',
+      scope: `Reuse valid outputs and run only missing work under the unchanged ${effectiveCeiling}-attempt ceiling.`,
+      modelActivity: status.model_activity,
+    });
+  }
+  const persist = () => {
+    writeLongRunningWorkflowStatusAtomic(filePath, status);
+    const predecessorEvents =
+      predecessorLedgerPath && fs.existsSync(predecessorLedgerPath)
+        ? readJsonLines(predecessorLedgerPath, 'invested-rival predecessor attempt ledger')
+        : [];
+    const currentEvents =
+      admission.ledger_path && fs.existsSync(admission.ledger_path)
+        ? readJsonLines(admission.ledger_path, 'invested-rival workflow attempt ledger')
+        : [];
+    const attemptEvents = [...predecessorEvents, ...currentEvents];
+    const unitIds = new Set(
+      attemptEvents
+        .filter((event) => event.type === 'model_attempt_dispatch_reserved')
+        .map((event) => event.unit_id)
+        .filter(Boolean),
+    );
+    const generationUnitIds = new Set([...unitIds].filter((unitId) => unitId.startsWith('generation/')));
+    const complete = status.current_phase === 'WORKFLOW_COMPLETE';
+    const generationOpen = status.current_phase === 'GENERATING';
+    const plannedTurns = generationOpen ? plan.max_exchanges * plan.arms.length * 2 : generationUnitIds.size;
+    const plannedUnits = complete
+      ? new Set(
+          attemptEvents
+            .filter((event) => event.type === 'attempt_completed')
+            .map((event) => event.unit_id)
+            .filter(Boolean),
+        ).size
+      : plannedTurns + assessmentUnits;
+    const durableStatus = buildDurableEvaluationStatus({
+      events: attemptEvents,
+      plannedUnits,
+      plannedTurns,
+      completedTurns: generationUnitIds.size,
+      hardCeiling: effectiveCeiling,
+      workflowState: complete ? 'complete' : status.current_phase === 'BLOCKED' ? 'blocked' : 'running',
+      scientificVerdict: complete ? 'descriptive_result_packaged' : 'registered_measurement_pending',
+      modelActivity: status.model_activity.state,
+      now: new Date(status.last_material_progress_at),
+    });
+    if (complete && (durableStatus.planes.unit.active !== 0 || durableStatus.planes.unit.missing !== 0)) {
+      throw new Error('completed invested-rival workflow retains active or missing durable work units');
+    }
+    writeJsonAtomic(durableStatusPath, durableStatus);
+    return status;
+  };
+  const refresh = ({ durationMs, modelActivity, nextAction } = {}) => {
+    if (Number.isFinite(durationMs) && durationMs > 0) {
+      state.recentDurationsMs = [...state.recentDurationsMs, durationMs].slice(-8);
+    }
+    status = updateLongRunningWorkflowProgress(status, {
+      units: investedRivalWorkflowUnits(status.current_phase, state),
+      calls: ledgerCounts(),
+      recentUnitDurationsMs: state.recentDurationsMs,
+      ...(modelActivity ? { modelActivity } : {}),
+      ...(nextAction ? { nextAction } : {}),
+    });
+    return persist();
+  };
+  persist();
+  return {
+    filePath,
+    durableStatusPath,
+    attemptStarted({ detail }) {
+      const assessment = detail.stage === 'assessment' || detail.unitId?.startsWith('assessment/');
+      if (assessment) state.assessmentActive = true;
+      return refresh({
+        modelActivity: {
+          state: 'active',
+          explanation: assessment ? 'One registered Opus packet is in flight.' : 'One dialogue call is in flight.',
+        },
+      });
+    },
+    attemptCompleted({ detail, durationMs }) {
+      const assessment = detail.stage === 'assessment' || detail.unitId?.startsWith('assessment/');
+      if (assessment) {
+        state.assessmentActive = false;
+        state.completedAssessments += 1;
+      }
+      return refresh({
+        durationMs: assessment ? durationMs : undefined,
+        modelActivity: { state: 'inactive', explanation: 'The latest call is durably complete.' },
+      });
+    },
+    attemptFailed({ detail, error }) {
+      if (detail.stage === 'assessment' || detail.unitId?.startsWith('assessment/')) state.assessmentActive = false;
+      return refresh({
+        modelActivity: { state: 'inactive', explanation: 'The latest call failed and no call is active.' },
+        nextAction: {
+          description: `Use only the registered recovery path: ${error?.message || 'model call failed'}`,
+          stopping_condition: 'Stop on substantive failure, route drift, or exhausted recovery capacity.',
+        },
+      });
+    },
+    armStarted() {
+      state.armActive = true;
+      return refresh({ modelActivity: { state: 'active', explanation: 'One registered dialogue arm is running.' } });
+    },
+    armCompleted(durationMs) {
+      state.armActive = false;
+      state.completedArms += 1;
+      return refresh({
+        durationMs,
+        modelActivity: { state: 'inactive', explanation: 'The latest dialogue arm is complete.' },
+      });
+    },
+    generationCompleted() {
+      if (state.completedArms !== 2 || state.armActive) {
+        throw new Error('cannot complete invested-rival generation before both arms are complete');
+      }
+      status = completeLongRunningWorkflowPhase(status, {
+        phase: 'GENERATING',
+        nextPhase: 'AUDITING',
+        startNextImmediately: true,
+        units: investedRivalWorkflowUnits('AUDITING', state),
+        calls: ledgerCounts(),
+        recentUnitDurationsMs: [],
+        modelActivity: { state: 'inactive', explanation: 'Both dialogue arms are complete; assessment is next.' },
+        nextAction: {
+          description: 'Assess only packets not already preserved as valid.',
+          stopping_condition: `Stop on a substantive judge failure or when all ${assessmentUnits} packets are valid.`,
+        },
+      });
+      state.recentDurationsMs = [];
+      return persist();
+    },
+    assessmentCompleted() {
+      if (state.completedAssessments !== state.assessmentUnits || state.assessmentActive) {
+        throw new Error('cannot complete invested-rival assessment before every packet is valid');
+      }
+      status = completeLongRunningWorkflowPhase(status, {
+        phase: 'AUDITING',
+        nextPhase: 'PACKAGING',
+        startNextImmediately: true,
+        units: investedRivalWorkflowUnits('PACKAGING', state),
+        calls: ledgerCounts(),
+        modelActivity: { state: 'inactive', explanation: 'All assessments are valid; packaging is zero-call.' },
+        nextAction: {
+          description: 'Build and seal the invested-rival report.',
+          stopping_condition: 'Stop after the report, completion record, and run seal are durable.',
+        },
+      });
+      return persist();
+    },
+    packagingCompleted() {
+      state.packageComplete = true;
+      status = completeLongRunningWorkflowPhase(status, {
+        phase: 'PACKAGING',
+        nextPhase: 'WORKFLOW_COMPLETE',
+        startNextImmediately: true,
+        units: { complete: 1, active: 0, failed: 0, missing: 0 },
+        calls: ledgerCounts(),
+        modelActivity: { state: 'inactive', explanation: 'The run is sealed and no model-backed phase remains.' },
+        nextAction: {
+          description: 'Preserve the completed private archive.',
+          stopping_condition: 'Stop unless a separate follow-up is requested.',
+        },
+      });
+      return persist();
+    },
+    blocked(error) {
+      state.armActive = false;
+      state.assessmentActive = false;
+      status = blockLongRunningWorkflow(status, {
+        blockedPhase: status.current_phase,
+        operation: 'Run the current registered invested-rival phase.',
+        error: error?.message || String(error),
+        units: investedRivalWorkflowUnits(status.current_phase, state),
+        calls: ledgerCounts(),
+        modelActivity: { state: 'inactive', explanation: 'The runner stopped and no model call remains active.' },
+        nextAction: {
+          description: 'Inspect the preserved failure and use only its registered recovery path.',
+          stopping_condition: 'Stop before changing scientific inputs or exceeding the ceiling.',
+        },
+        humanActionRequired: false,
+      });
+      return persist();
+    },
+  };
+}
+
 async function runFresh(plan, outDir, admission, generationRecovery = null) {
-  const priorAttemptCount = generationRecovery?.stop.budget.used || 0;
-  const budget = paidStudyBudget(admission, plan.total_attempt_ceiling, priorAttemptCount);
+  const preservedAttemptCount = generationRecovery?.stop.budget.used || 0;
+  const priorAttemptCount = generationRecovery?.sameStudy ? 0 : preservedAttemptCount;
+  let workflow;
+  const budget = investedRivalPaidBudget(admission, plan.total_attempt_ceiling, priorAttemptCount, null, {
+    onAttemptStarted: (attempt) => workflow?.attemptStarted(attempt),
+    onAttemptCompleted: (attempt) => workflow?.attemptCompleted(attempt),
+    onAttemptFailed: (attempt) => workflow?.attemptFailed(attempt),
+  });
   const arms = [...(generationRecovery?.priorArms || [])];
   try {
     const provenance = sourceProvenance(plan, {
@@ -469,7 +808,7 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
         ? {
             recoverySource: generationRecovery.sourceDir,
             recoveredGeneration: generationRecovery.failure,
-            priorAttemptCount,
+            priorAttemptCount: preservedAttemptCount,
             linkedRecoveryStudyId: admission.study_id,
             linkedRecoveryAttemptCeiling: admission.spend_cap,
             privateLedgerPolicy: 'drop_unsupported_quote_rows_preserve_public_speech',
@@ -478,6 +817,23 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
         : {}),
     });
     writePreparation(outDir, plan, provenance);
+    const acceptedGenerationCalls =
+      arms.reduce((sum, arm) => sum + (arm.snapshot?.turns?.length || 0) * 2, 0) +
+      (generationRecovery?.firstLearnerReply ? 1 : 0) +
+      Object.keys(generationRecovery?.partial?.savedReplies || {}).length;
+    const completedAssessmentPackets = generationRecovery?.priorAssessmentPackets || 0;
+    workflow = createInvestedRivalWorkflowTracker({
+      plan,
+      outDir,
+      admission,
+      recovery: Boolean(generationRecovery),
+      priorAttemptBase: priorAttemptCount,
+      completedArms: arms.length,
+      completedAssessments: completedAssessmentPackets,
+      baselineCompletedCalls: acceptedGenerationCalls + completedAssessmentPackets,
+      baselineFailedCalls: Math.max(0, preservedAttemptCount - acceptedGenerationCalls - completedAssessmentPackets),
+      recoverySourceDir: generationRecovery?.sourceDir || null,
+    });
     const service = yaml.parse(fs.readFileSync(path.join(ROOT, plan.service_config), 'utf8'));
     service.workspace.path = plan.mtp_chat_root;
     service.timing.jsonl_path = path.join(outDir, 'service-timings.jsonl');
@@ -486,6 +842,7 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
     for (const arm of plan.arms) {
       if (arms.some((completed) => completed.id === arm.id)) continue;
       const started = Date.now();
+      workflow.armStarted();
       let ownsServer = false;
       try {
         await manageServer(plan.mtp_chat_root, arm.profile, 'start', servicePath);
@@ -496,12 +853,15 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
           plan,
           arm: runtimeArm,
           outDir: path.join(outDir, arm.id),
-          budget,
+          budget: budget.scope(`generation/${arm.id}`),
           ...(generationRecovery ? { unsupportedQuotationPolicy: 'drop' } : {}),
           ...(generationRecovery?.firstLearnerReply && arm.id === 'A'
             ? {
                 firstLearnerReply: generationRecovery.firstLearnerReply,
               }
+            : {}),
+          ...(generationRecovery?.partial?.armId === arm.id
+            ? { savedReplies: generationRecovery.partial.savedReplies }
             : {}),
         });
       } finally {
@@ -514,9 +874,19 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
           wallTimeMs: Date.now() - started,
         }),
       );
+      workflow.armCompleted(Date.now() - started);
     }
     writeJson(path.join(outDir, 'arms.json'), arms);
-    const evaluation = await scoreArms({ plan, arms, outDir, budget });
+    workflow.generationCompleted();
+    const evaluation = await scoreArms({
+      plan,
+      arms,
+      outDir,
+      budget,
+      priorScores: generationRecovery?.priorScores || [],
+      priorAttempts: completedAssessmentPackets,
+    });
+    workflow.assessmentCompleted();
     const finalProvenance = { ...provenance, budget: budget.snapshot() };
     reportResult({ outDir, plan, arms, evaluation, provenance: finalProvenance });
     writeJson(path.join(outDir, 'completed.json'), {
@@ -536,6 +906,7 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
       reserved_attempts: admission.reserved,
       ...(generationRecovery ? { recovery_from: generationRecovery.sourceDir } : {}),
     });
+    workflow.packagingCompleted();
     return { outDir, dryRun: false, attempts: budget.snapshot().used };
   } catch (error) {
     let recoveryPermitted = false;
@@ -562,6 +933,7 @@ async function runFresh(plan, outDir, admission, generationRecovery = null) {
       ...(generationRecovery ? { recovery_from: generationRecovery.sourceDir } : {}),
       ...(recoveryPermitted ? { recovery_permitted: true } : {}),
     });
+    workflow?.blocked(error);
     throw error;
   }
 }
@@ -634,6 +1006,209 @@ function readJsonLines(file) {
     .map((line) => JSON.parse(line));
 }
 
+export function countInvestedRivalRunReservations(events) {
+  return events.reduce((sum, event) => {
+    if (event.type === 'model_attempt_dispatch_reserved') return sum + 1;
+    if (event.type === 'model_attempt_reserved') return sum + Number(event.count || 0);
+    return sum;
+  }, 0);
+}
+
+function sha256File(file) {
+  return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+}
+
+function investedRivalAcceptedResponsePaths(events, sourceDir) {
+  const reservations = new Map(
+    events
+      .filter((event) => event.type === 'model_attempt_dispatch_reserved')
+      .map((event) => [event.attempt_id, event]),
+  );
+  const persisted = new Map(
+    events.filter((event) => event.type === 'attempt_response_persisted').map((event) => [event.attempt_id, event]),
+  );
+  const accepted = new Set();
+  for (const terminal of events.filter((event) => event.type === 'attempt_completed')) {
+    const reservation = reservations.get(terminal.attempt_id);
+    const response = persisted.get(terminal.attempt_id);
+    if (!reservation || !response || !path.isAbsolute(response.response_path || '')) {
+      throw new Error(`completed invested-rival attempt ${terminal.attempt_id} has no durable response record`);
+    }
+    const responsePath = path.resolve(response.response_path);
+    const relative = path.relative(sourceDir, responsePath);
+    if (!relative || relative.startsWith('..') || path.isAbsolute(relative) || !fs.existsSync(responsePath)) {
+      throw new Error(`durable invested-rival response is missing or outside the predecessor: ${responsePath}`);
+    }
+    if (sha256File(responsePath) !== response.response_sha256) {
+      throw new Error(`durable invested-rival response hash drift: ${responsePath}`);
+    }
+    accepted.add(responsePath);
+  }
+  return accepted;
+}
+
+function readDurableInvestedRivalPrefix(plan, armDir, acceptedResponses) {
+  const savedReplies = {};
+  let gapFound = false;
+  for (let turn = 1; turn <= plan.max_exchanges; turn += 1) {
+    for (const speaker of ['learner', 'tutor']) {
+      const requestPath = path.join(armDir, `${turn}-${speaker}.request.json`);
+      const responsePath = path.join(armDir, `${turn}-${speaker}.response.json`);
+      const hasRequest = fs.existsSync(requestPath);
+      const hasResponse = acceptedResponses.has(path.resolve(responsePath));
+      if (hasResponse && !hasRequest) throw new Error(`durable recovery response has no request: ${responsePath}`);
+      if (!gapFound && hasRequest && hasResponse) {
+        savedReplies[`${turn}-${speaker}`] = {
+          source: responsePath,
+          request: JSON.parse(fs.readFileSync(requestPath, 'utf8')),
+          response: JSON.parse(fs.readFileSync(responsePath, 'utf8')),
+        };
+        continue;
+      }
+      if (hasRequest || fs.existsSync(responsePath)) gapFound = true;
+      if (gapFound && hasResponse) throw new Error(`durable invested-rival recovery prefix is not contiguous`);
+    }
+  }
+  return savedReplies;
+}
+
+function readDurableInvestedRivalAssessments(plan, sourceDir, arms, acceptedResponses) {
+  const evaluationDir = path.join(sourceDir, 'evaluation');
+  const priorScores = [];
+  if (!fs.existsSync(evaluationDir)) return { priorScores, completedPackets: 0 };
+  const jobs = buildBenchmarkJobs(arms, {
+    extendedQuality: true,
+    assessmentContext: plan.assessmentContext,
+    publicSourceContextByArm: publicSourceContexts(plan, arms),
+  });
+  for (const job of jobs) {
+    const base = path.join(evaluationDir, `${job.arm}-${job.kind}`);
+    const responsePath = `${base}.response.txt`;
+    if (!acceptedResponses.has(path.resolve(responsePath))) continue;
+    if (
+      !fs.existsSync(`${base}.provider.json`) ||
+      !fs.existsSync(`${base}.prompt.txt`) ||
+      !fs.existsSync(`${base}.schema.json`) ||
+      fs.existsSync(`${base}.error.json`) ||
+      fs.readFileSync(`${base}.prompt.txt`, 'utf8') !== job.prompt ||
+      JSON.stringify(JSON.parse(fs.readFileSync(`${base}.schema.json`, 'utf8'))) !== JSON.stringify(job.outputSchema)
+    ) {
+      throw new Error(`durable invested-rival assessment packet drift for ${job.arm}/${job.kind}`);
+    }
+    const text = fs.readFileSync(responsePath, 'utf8');
+    if (JSON.parse(fs.readFileSync(`${base}.provider.json`, 'utf8')).text !== text) {
+      throw new Error(`durable invested-rival assessment response mismatch for ${job.arm}/${job.kind}`);
+    }
+    const arm = arms.find((candidate) => candidate.id === job.arm);
+    const parsed = parseBenchmarkScore(job.kind, text, arm.snapshot.turns.length, {
+      extendedQuality: true,
+      allowOneBasedIndices: true,
+      outputSchema: job.outputSchema,
+    });
+    priorScores.push({
+      arm: job.arm,
+      kind: job.kind,
+      raw: parsed.parsed,
+      scored: normalizeScores(job.kind, parsed.parsed),
+      indexNormalization: parsed.indexNormalization || null,
+    });
+  }
+  return { priorScores, completedPackets: priorScores.length };
+}
+
+export function readDurableInvestedRivalRecovery(plan, sourcePath) {
+  if (!sourcePath || !path.isAbsolute(sourcePath)) {
+    throw new Error('durable invested-rival recovery source must be absolute');
+  }
+  const sourceDir = path.resolve(sourcePath);
+  const sourcePlan = JSON.parse(fs.readFileSync(path.join(sourceDir, 'plan.json'), 'utf8'));
+  const { provenance: sourceProvenanceRecord, ...sourceScientificPlan } = sourcePlan;
+  if (JSON.stringify(sourceScientificPlan) !== JSON.stringify(plan)) {
+    throw new Error('durable invested-rival recovery plan drift');
+  }
+  const events = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
+  const launch = events.find((event) => event.type === 'launch_admitted');
+  const seal = events.at(-1);
+  const reservations = events.filter((event) => event.type === 'model_attempt_dispatch_reserved');
+  const terminalTypes = new Set([
+    'attempt_completed',
+    'attempt_failed',
+    'attempt_cancelled_before_dispatch',
+    'attempt_interrupted_after_dispatch',
+  ]);
+  const terminals = events.filter((event) => terminalTypes.has(event.type));
+  if (
+    launch?.study_id !== plan.id ||
+    launch?.spend_cap !== plan.total_attempt_ceiling ||
+    seal?.type !== 'run_sealed' ||
+    seal?.status !== 'technical_failure' ||
+    seal?.recovery_permitted !== true ||
+    terminals.length !== reservations.length ||
+    new Set(terminals.map((event) => event.attempt_id)).size !== terminals.length ||
+    terminals.some((terminal) => !reservations.some((reservation) => reservation.attempt_id === terminal.attempt_id))
+  ) {
+    throw new Error('durable invested-rival recovery requires a sealed interrupted-launch predecessor');
+  }
+  const acceptedResponses = investedRivalAcceptedResponsePaths(events, sourceDir);
+  const priorArms = [];
+  let partial = null;
+  let reachedMissing = false;
+  for (const arm of plan.arms) {
+    const armDir = path.join(sourceDir, arm.id);
+    const dialoguePath = path.join(armDir, 'dialogue.json');
+    if (fs.existsSync(dialoguePath)) {
+      if (partial || reachedMissing) throw new Error('durable completed arms are not a fixed execution prefix');
+      const recovered = readBenchmarkArm({ ...arm, path: dialoguePath });
+      const acceptedArmResponses = fs
+        .readdirSync(armDir)
+        .filter((name) => /^\d+-(?:learner|tutor)\.response\.json$/u.test(name))
+        .filter((name) => acceptedResponses.has(path.resolve(armDir, name))).length;
+      if (acceptedArmResponses !== recovered.snapshot.turns.length * 2) {
+        throw new Error(`completed durable arm ${arm.id} contains an unaccepted response`);
+      }
+      priorArms.push(recovered);
+      continue;
+    }
+    if (fs.existsSync(armDir)) {
+      if (partial || reachedMissing) throw new Error('durable recovery has more than one partial arm');
+      partial = { armId: arm.id, savedReplies: readDurableInvestedRivalPrefix(plan, armDir, acceptedResponses) };
+      reachedMissing = true;
+      continue;
+    }
+    reachedMissing = true;
+  }
+  const assessment =
+    priorArms.length === plan.arms.length
+      ? readDurableInvestedRivalAssessments(plan, sourceDir, priorArms, acceptedResponses)
+      : { priorScores: [], completedPackets: 0 };
+  const acceptedGenerationResponses = priorArms.reduce(
+    (sum, arm) => sum + arm.snapshot.turns.length * 2,
+    Object.keys(partial?.savedReplies || {}).length,
+  );
+  const aggregateAttempts = Number.isSafeInteger(seal.study_reserved) ? seal.study_reserved : reservations.length;
+  const responseFreeAttempts = aggregateAttempts - acceptedGenerationResponses - assessment.completedPackets;
+  if (
+    aggregateAttempts > plan.total_attempt_ceiling ||
+    responseFreeAttempts < 0 ||
+    responseFreeAttempts > plan.recovery_attempt_reserve
+  ) {
+    throw new Error('durable invested-rival recovery exceeds the registered reserve');
+  }
+  return {
+    durable: true,
+    sameStudy: true,
+    sourceDir,
+    sourcePlan,
+    sourceProvenance: sourceProvenanceRecord,
+    stop: { budget: { used: aggregateAttempts, limit: plan.total_attempt_ceiling } },
+    priorArms,
+    partial,
+    priorScores: assessment.priorScores,
+    priorAssessmentPackets: assessment.completedPackets,
+    responseFreeAttempts,
+  };
+}
+
 function recoveredArmElapsedMs(snapshot, sourceDir) {
   const tracePath = path.isAbsolute(snapshot.trace) ? snapshot.trace : path.resolve(ROOT, snapshot.trace);
   const timestamps = readJsonLines(tracePath)
@@ -671,9 +1246,7 @@ export function readArmBoundaryRecovery(plan, sourceDir) {
     throw new Error('arm-boundary recovery requires the preserved configured-model identity failure');
   }
   const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
-  const reserved = runEvents
-    .filter((event) => event.type === 'model_attempt_reserved')
-    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const reserved = countInvestedRivalRunReservations(runEvents);
   if (reserved + provenance.priorAttemptCount !== stop.budget.used) {
     throw new Error('arm-boundary recovery accounting differs from the preserved predecessor');
   }
@@ -738,9 +1311,7 @@ export function readLocalModelRouteRecovery(plan, sourceDir) {
     throw new Error('local-route recovery requires the preserved first abliterated request failure');
   }
   const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
-  const reserved = runEvents
-    .filter((event) => event.type === 'model_attempt_reserved')
-    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const reserved = countInvestedRivalRunReservations(runEvents);
   if (reserved !== 1 || reserved + provenance.priorAttemptCount !== stop.budget.used) {
     throw new Error('local-route recovery accounting differs from the preserved predecessor');
   }
@@ -890,9 +1461,7 @@ export function readLinkedAssessmentRecovery(plan, sourceDir) {
     throw new Error('linked assessment recovery requires both preserved eight-exchange arms at 37/48 attempts');
   }
   const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
-  const runReserved = runEvents
-    .filter((event) => event.type === 'model_attempt_reserved')
-    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const runReserved = countInvestedRivalRunReservations(runEvents);
   const runSeal = runEvents.findLast((event) => event.type === 'run_sealed');
   if (
     runReserved !== 20 ||
@@ -981,9 +1550,7 @@ export function readQualityJsonTransportRecovery(plan, sourceDir) {
     throw new Error('quality transport recovery requires both preserved arms at 38/48 attempts');
   }
   const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
-  const runReserved = runEvents
-    .filter((event) => event.type === 'model_attempt_reserved')
-    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const runReserved = countInvestedRivalRunReservations(runEvents);
   const runSeal = runEvents.findLast((event) => event.type === 'run_sealed');
   if (
     runReserved !== 1 ||
@@ -1120,9 +1687,7 @@ export function readQualitySplitRecovery(plan, sourceDir) {
     throw new Error('quality split recovery requires both preserved arms at 39/48 attempts');
   }
   const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
-  const runReserved = runEvents
-    .filter((event) => event.type === 'model_attempt_reserved')
-    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const runReserved = countInvestedRivalRunReservations(runEvents);
   const runSeal = runEvents.findLast((event) => event.type === 'run_sealed');
   if (
     runReserved !== 1 ||
@@ -1224,9 +1789,7 @@ export function readQualitySplitStructuredRecovery(plan, sourceDir) {
     throw new Error('structured split-quality recovery requires both preserved arms at 40/48 attempts');
   }
   const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
-  const runReserved = runEvents
-    .filter((event) => event.type === 'model_attempt_reserved')
-    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const runReserved = countInvestedRivalRunReservations(runEvents);
   const runSeal = runEvents.findLast((event) => event.type === 'run_sealed');
   if (
     runReserved !== 1 ||
@@ -1371,9 +1934,7 @@ export function readFinalQualityRecovery(plan, sourceDir) {
     throw new Error('final quality recovery requires both preserved arms at 46/48 attempts');
   }
   const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
-  const runReserved = runEvents
-    .filter((event) => event.type === 'model_attempt_reserved')
-    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const runReserved = countInvestedRivalRunReservations(runEvents);
   const runSeal = runEvents.findLast((event) => event.type === 'run_sealed');
   if (
     runReserved !== 6 ||
@@ -1487,9 +2048,7 @@ export function readFinalCompletionRecovery(plan, sourceDir) {
     throw new Error('final completion recovery requires both preserved arms at the original 48-attempt ceiling');
   }
   const runEvents = readJsonLines(path.join(sourceDir, 'run-ledger.jsonl'));
-  const runReserved = runEvents
-    .filter((event) => event.type === 'model_attempt_reserved')
-    .reduce((sum, event) => sum + Number(event.count || 0), 0);
+  const runReserved = countInvestedRivalRunReservations(runEvents);
   const runSeal = runEvents.findLast((event) => event.type === 'run_sealed');
   if (
     runReserved !== 2 ||
@@ -1591,7 +2150,12 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
   const { stop, arms, eligibility, priorScores } = recovery;
   const priorAttemptCount = recovery.linked ? stop.budget.used : 0;
   const effectiveAttemptCeiling = recovery.effectiveAttemptCeiling || plan.total_attempt_ceiling;
-  const budget = paidStudyBudget(admission, effectiveAttemptCeiling, priorAttemptCount);
+  let workflow;
+  const budget = investedRivalPaidBudget(admission, effectiveAttemptCeiling, priorAttemptCount, null, {
+    onAttemptStarted: (attempt) => workflow?.attemptStarted(attempt),
+    onAttemptCompleted: (attempt) => workflow?.attemptCompleted(attempt),
+    onAttemptFailed: (attempt) => workflow?.attemptFailed(attempt),
+  });
   try {
     if (admission.studyReserved !== (recovery.linked ? 0 : stop.budget.used)) {
       throw new Error('study-wide attempt ledger differs from the preserved predecessor');
@@ -1623,6 +2187,29 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
     });
     writeJson(path.join(outDir, 'plan.json'), { ...plan, provenance });
     writeJson(path.join(outDir, 'arms.json'), arms);
+    const assessmentUnits = recovery.splitQuality === true ? plan.judge_calls + arms.length : plan.judge_calls;
+    const completedAssessmentPackets =
+      priorScores.reduce(
+        (sum, score) => sum + (score.kind === 'quality' && recovery.splitQuality === true ? 2 : 1),
+        0,
+      ) + (recovery.priorSplitQualityParts || []).length;
+    const baselineCompletedCalls =
+      arms.reduce((sum, arm) => sum + (arm.snapshot?.turns?.length || 0) * 2, 0) + completedAssessmentPackets;
+    workflow = createInvestedRivalWorkflowTracker({
+      plan,
+      outDir,
+      admission,
+      recovery: true,
+      priorAttemptBase: priorAttemptCount,
+      completedArms: arms.length,
+      completedAssessments: completedAssessmentPackets,
+      assessmentUnits,
+      baselineCompletedCalls,
+      baselineFailedCalls: Math.max(0, stop.budget.used - baselineCompletedCalls),
+      effectiveCeiling: effectiveAttemptCeiling,
+      recoverySourceDir: sourceDir,
+    });
+    workflow.generationCompleted();
     const evaluation = await scoreArms({
       plan,
       arms,
@@ -1640,6 +2227,7 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
       completionRootProjection: recovery.finalCompletionRecovery === true,
       completionTechnicalAttemptLimit: recovery.completionTechnicalAttemptLimit || 1,
     });
+    workflow.assessmentCompleted();
     const finalProvenance = { ...provenance, budget: budget.snapshot() };
     reportResult({ outDir, plan, arms, evaluation, provenance: finalProvenance });
     writeJson(path.join(outDir, 'completed.json'), {
@@ -1654,6 +2242,7 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
       reserved_attempts: admission.reserved,
       recovery_from: sourceDir,
     });
+    workflow.packagingCompleted();
     return { outDir, dryRun: false, recovery: true, attempts: budget.snapshot().used };
   } catch (error) {
     writeJson(path.join(outDir, 'stopped.json'), {
@@ -1668,6 +2257,7 @@ async function recoverAssessments(plan, sourceDir, outDir, admission, recovery) 
       reserved_attempts: admission.reserved,
       recovery_from: sourceDir,
     });
+    workflow?.blocked(error);
     throw error;
   }
 }
@@ -1707,6 +2297,7 @@ export async function main(argv = process.argv.slice(2)) {
       'recover-quality-split-structured': { type: 'boolean', default: false },
       'recover-final-quality': { type: 'boolean', default: false },
       'recover-final-completion': { type: 'boolean', default: false },
+      'recovery-from': { type: 'string' },
       from: { type: 'string' },
       'accept-charges': { type: 'boolean', default: false },
       'launch-commit': { type: 'string' },
@@ -1716,6 +2307,38 @@ export async function main(argv = process.argv.slice(2)) {
     },
   });
   const plan = buildInvestedRivalPlan(ROOT, values.config || DEFAULT_CONFIG);
+  if (values['recovery-from']) {
+    const legacyRecoverySelected = [
+      'recover-assessments',
+      'recover-generation',
+      'recover-arm-boundary',
+      'recover-local-model-route',
+      'recover-linked-assessments',
+      'recover-quality-json-transport',
+      'recover-quality-split',
+      'recover-quality-split-structured',
+      'recover-final-quality',
+      'recover-final-completion',
+    ].some((key) => values[key]);
+    if (!values.live || !values.output || values.from || legacyRecoverySelected) {
+      throw new Error('--recovery-from requires --live and a fresh --output, without a historical recovery mode');
+    }
+    const sourceDir = path.resolve(ROOT, values['recovery-from']);
+    const outDir = path.resolve(ROOT, values.output);
+    const recovery = readDurableInvestedRivalRecovery(plan, sourceDir);
+    const admission = admitLiveRun(plan, values, outDir, sourceDir);
+    admission.record({
+      type: 'durable_missing_only_recovery',
+      recovery_from: sourceDir,
+      prior_attempts_preserved: recovery.stop.budget.used,
+      reused_completed_arms: recovery.priorArms.map((arm) => arm.id),
+      reused_partial_responses: Object.keys(recovery.partial?.savedReplies || {}).length,
+      reused_completed_assessments: recovery.priorScores.map((score) => `${score.arm}/${score.kind}`),
+      aggregate_attempt_ceiling: plan.total_attempt_ceiling,
+      response_free_attempts: recovery.responseFreeAttempts,
+    });
+    return runFresh(plan, outDir, admission, recovery);
+  }
   if (values['recover-final-completion']) {
     if (
       !values.live ||

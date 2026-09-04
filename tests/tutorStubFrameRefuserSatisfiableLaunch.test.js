@@ -347,98 +347,64 @@ test('exhibit-discharge non-delivery crosses the child boundary as a retained ty
   assert.equal(outcome.replacement_allowed, false);
 });
 
-test('the executable path reserves every unit through the shared ledger and writes the registered report', async (t) => {
-  const loaded = load();
-  loaded.relativePath = DESIGN_PATH;
-  const plan = buildTutorStubResistantLearnerCalibrationPlan(loaded.design, { root: REPO_ROOT });
+test('the retired executable path refuses before reservation, child work, or writes', async (t) => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), 'satisfiable-launch-'));
   t.after(() => fs.rmSync(base, { recursive: true, force: true }));
   const destination = path.join(base, 'run');
-  fs.mkdirSync(destination);
-  const events = [];
   let reserved = 0;
-  let closed = false;
+  let childCalls = 0;
   const admission = {
-    source: { commit: 'launch', tree: 'tree' },
-    authorization: { commit: 'go', path: 'notes/go.md' },
-    get reserved() {
-      return reserved;
-    },
-    reserveModelAttempts(count, detail) {
+    reserveModelAttempts(count) {
       reserved += count;
-      events.push({ type: 'reservation', count, ...detail });
-    },
-    record(event) {
-      events.push(event);
-    },
-    close(event) {
-      closed = true;
-      events.push(event);
     },
   };
-  const report = await executeTutorStubFrameRefuserSatisfiableCalibration({
-    loaded,
-    destination,
-    preflight: { plan, hard_attempt_ceiling: 9504 },
-    admission,
-    childSpec: ({ job }) => ({ job }),
-    runChild: async () => ({ code: 0, signal: null, spawn_error: null }),
-    extractRow: ({ job }) => ({ job, status: 'complete', attempts: 1 }),
-    summarize: ({ rows: reportedRows }) => ({ schema: 'synthetic', status: 'passed', rows: reportedRows }),
-    progress: () => {},
-  });
-  assert.equal(report.status, 'passed');
-  assert.equal(report.execution.complete_units, 48);
-  assert.equal(report.execution.reserved_model_attempts, 9504);
-  assert.equal(report.execution.observed_model_attempts, 48);
-  assert.equal(events.filter((event) => event.type === 'reservation').length, 48);
-  assert.equal(closed, true);
-  assert.equal(fs.existsSync(path.join(destination, 'plan.json')), true);
-  assert.equal(fs.existsSync(path.join(destination, 'report.json')), true);
+  await assert.rejects(
+    executeTutorStubFrameRefuserSatisfiableCalibration({
+      destination,
+      admission,
+      runChild: async () => {
+        childCalls += 1;
+      },
+    }),
+    /paid launcher retired: tutor-stub-frame-refuser-satisfiable-calibration/u,
+  );
+  assert.equal(reserved, 0);
+  assert.equal(childCalls, 0);
+  assert.equal(fs.existsSync(destination), false);
 });
 
-test('launcher main admits through the shared contract and has no approval or resume ceremony', async () => {
-  const captured = {};
-  const result = await satisfiableLauncherMain(
-    [
-      '--design',
-      DESIGN_PATH,
-      '--destination',
-      '/absolute/satisfiable-root',
-      '--launch-commit',
-      'launch',
-      '--go-note-commit',
-      'go',
-      '--go-note-path',
-      'notes/go.md',
-      '--accept-charges',
-    ],
-    {
-      runPreflight: async ({ loaded, destination }) => ({
-        status: 'passed_zero_call',
-        study_id: loaded.design.studyId,
-        destination,
-        hard_attempt_ceiling: 9504,
-        plan: { jobs: [] },
-      }),
-      destinationExists: () => false,
-      admit: (input) => {
-        captured.admission = input;
-        return { source: { commit: 'launch' } };
+test('launcher main retires the paid path before preflight or admission', async () => {
+  let callbacks = 0;
+  await assert.rejects(
+    satisfiableLauncherMain(
+      [
+        '--design',
+        DESIGN_PATH,
+        '--destination',
+        '/absolute/satisfiable-root',
+        '--launch-commit',
+        'launch',
+        '--go-note-commit',
+        'go',
+        '--go-note-path',
+        'notes/go.md',
+        '--accept-charges',
+      ],
+      {
+        runPreflight: async () => {
+          callbacks += 1;
+        },
+        admit: () => {
+          callbacks += 1;
+        },
+        execute: async () => {
+          callbacks += 1;
+        },
       },
-      execute: async (input) => {
-        captured.execution = input;
-        return { status: 'passed' };
-      },
-    },
+    ),
+    /paid launcher retired: tutor-stub-frame-refuser-satisfiable-calibration/u,
   );
-  assert.equal(result.status, 'passed');
-  assert.equal(captured.admission.designPath, DESIGN_PATH);
-  assert.equal(captured.admission.spendCap, 9504);
-  assert.equal(captured.admission.studyId, 'frame-refuser-satisfiable');
-  assert.equal(captured.admission.studyStateRoot, '/absolute/.paid-study-state');
-  assert.equal(captured.admission.launchCommit, 'launch');
-  assert.equal(captured.execution.admission.source.commit, 'launch');
+  assert.equal(callbacks, 0);
   assert.doesNotMatch(TUTOR_STUB_FRAME_REFUSER_SATISFIABLE_USAGE, /APPROVE CALIBRATION|--resume/u);
   assert.match(TUTOR_STUB_FRAME_REFUSER_SATISFIABLE_USAGE, /shared standing launch contract/u);
 });

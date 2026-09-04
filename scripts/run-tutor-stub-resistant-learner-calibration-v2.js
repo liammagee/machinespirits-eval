@@ -7,6 +7,7 @@ import { createInterface } from 'node:readline/promises';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
 import {
   loadTutorStubResistantLearnerDesign,
   summarizeTutorStubResistantLearnerCalibration,
@@ -208,6 +209,7 @@ export async function main(argv = process.argv.slice(2)) {
     process.stdout.write(`${TUTOR_STUB_RESISTANT_LEARNER_PROTOCOL_V2_USAGE}\n`);
     return;
   }
+  if (!values['dry-run']) refuseRetiredPaidLaunch('tutor-stub-resistant-learner-calibration-v2');
   if (!values['b1-design'] || !values['r1-design'] || !values.destination) {
     throw new Error(
       `${TUTOR_STUB_RESISTANT_LEARNER_PROTOCOL_V2_USAGE}\n\nBoth supported v2 or v3 designs and an absolute destination are required.`,

@@ -2,11 +2,13 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
+import { runTutorStubResistantLearnerChildProcess } from '../services/tutorStubResistantLearnerChildProcess.js';
 import {
   readTutorStubRegisteredStudyOutcome,
   TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_STATUS,
@@ -264,21 +266,8 @@ export function tutorStubResistantLearnerCalibrationChildSpec({
 }
 
 export function runTutorStubResistantLearnerCalibrationChild(spec) {
-  return new Promise((resolve) => {
-    const stdout = fs.openSync(spec.stdout, 'wx');
-    const stderr = fs.openSync(spec.stderr, 'wx');
-    const child = spawn(process.execPath, spec.args, { cwd: ROOT, env: spec.env, stdio: ['ignore', stdout, stderr] });
-    child.on('error', (error) => {
-      fs.closeSync(stdout);
-      fs.closeSync(stderr);
-      resolve({ code: null, signal: null, spawn_error: error.message });
-    });
-    child.on('close', (code, signal) => {
-      fs.closeSync(stdout);
-      fs.closeSync(stderr);
-      resolve({ code, signal, spawn_error: null });
-    });
-  });
+  refuseRetiredPaidLaunch('tutor-stub-resistant-learner-calibration');
+  return runTutorStubResistantLearnerChildProcess(spec);
 }
 
 export function extractTutorStubResistantLearnerCalibrationRow({ job, spec, exit }) {
@@ -418,6 +407,7 @@ async function main() {
       'dry-run': { type: 'boolean', default: false },
     },
   });
+  if (values['accept-charges']) refuseRetiredPaidLaunch('tutor-stub-resistant-learner-calibration');
   if (!values['b1-design'] || !values['r1-design']) {
     throw new Error('combined resistant-learner calibration requires --b1-design and --r1-design');
   }
