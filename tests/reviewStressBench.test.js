@@ -44,6 +44,20 @@ function writeTrace(dir) {
   plant(8, 'frustrated', 'reinforce_and_test');
   sw(8, 'settled_claim', true);
   outcome(8, 'guarded_original_accepted');
+  // Two held turns (t3, t5): one kept after a retry whose second draft copied the sample line, one released with the quote found.
+  ev.push({
+    type: 'learner_stress_hold_speech_check',
+    turn: 3,
+    plantTurn: 2,
+    retried: true,
+    finalHolds: true,
+    drafts: [
+      { verdict: 'kept', holds: false, copy: false },
+      { verdict: 'kept', holds: true, copy: true },
+    ],
+  });
+  ev.push({ type: 'learner_stress_hold_verdict', turn: 3, plantTurn: 2, verdict: 'kept', quoteFound: null });
+  ev.push({ type: 'learner_stress_hold_verdict', turn: 5, plantTurn: 4, verdict: 'released', quoteFound: true });
   const tracePath = path.join(dir, '2026-09-01T00-00-00-000Z.jsonl');
   fs.writeFileSync(tracePath, ev.map((e) => JSON.stringify(e)).join('\n') + '\n');
   return tracePath;
@@ -103,6 +117,32 @@ test('the review keeps detection, card, reply and repair apart', () => {
   assert.match(md, /\| Reply delivery \| 3\/4 \|/);
   assert.match(md, /\| Repair right \| ruled by the author \|/, 'the bench never judges its own repairs');
   assert.match(md, /### t4 — irritated .* read=neutral MISS \*\*\[CARD forced mockery\]\*\* \*\*\[TEMPLATE\]\*\*/);
+});
+
+test('held turns are tallied: verdicts, speech-check retries, copies of the sample line', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'stress-review-hold-'));
+  const dir = path.join(tmp, 'traces', 'world_999_test', 'hold-d0');
+  fs.mkdirSync(dir, { recursive: true });
+  const review = reviewStressTrace(writeTrace(dir), { labelRoot: path.join(tmp, 'traces') });
+  assert.deepEqual(review.hold, {
+    heldTurns: 2,
+    kept: 1,
+    released: 1,
+    releasedQuoteFound: 1,
+    missingVerdict: 0,
+    speechChecked: 1,
+    retried: 1,
+    finalDrops: 0,
+    unreadable: 0,
+    copies: 1,
+  });
+  const summary = summarizeStressReviews([review, review]);
+  assert.equal(summary.pooled.hold.heldTurns, 4);
+  assert.equal(summary.pooled.hold.retried, 2);
+  assert.equal(summary.perTrace[0].hold.copies, 1);
+  const md = renderStressReviewMarkdown([review, review], summary);
+  assert.match(md, /\| Held turns kept \| 2\/4 \|/);
+  assert.match(md, /\| Held turns retried \| 2\/2 \|.*2 drafts flagged as a copy of the sample line/);
 });
 
 test('a trace without plants is not a bench run', () => {

@@ -86,6 +86,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "root=$(git rev-parse --show-toplevel 2>/dev/null || pwd); exec node \"$root/scripts/plain-speech-stop-hook.js\"",
+            "timeout": 20
+          }
+        ]
+      }
     ]
   },
   "worktree": {

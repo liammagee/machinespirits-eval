@@ -82,18 +82,55 @@ like" lines in 030, and the deadline-demand shape ("Meeting's at eight … I'm
 sending the email unless") in 030/036/041. Adding a feature changed the fit
 of the others; that is what a linear model with a shared threshold does.
 
+## Pool change, same day: the two Sonnet d1 re-run traces dropped
+
+User call, 2026-09-03: drop the re-run traces from the pool. Those are the
+two Sonnet dialogues on 042 and 043 that ran again as `d1` after the
+world-text fixes at step 6. The pool is now 106 traces (703 planted turns,
+1086 neutral): archive worlds 030/033/034, lesson worlds 038/039/040, and
+four step-6 traces (041 Sonnet and codex, 042 codex, 043 codex). The two
+dropped traces join the hero traces as hold-outs, never trained on. Both cue
+sets were retrained on this pool so the comparison stays clean; only the
+form-v3 one ships.
+
+Gate, 042 held out, on this pool:
+
+| | form-v2 cues | form-v3 cues |
+|---|---|---|
+| fired as pressure, right kind | 0/10 | 1/10 |
+| wrong-fires at quiet plants | 0/2 | 0/2 |
+| neutral false alarms | 2/28 | 2/28 |
+
+The one read is the reading-off-a-card line (p 0.75). The Oh-come-on line
+still fires the cue but sits under the threshold (it read 0.59 with the d1
+traces in the pool). One plant, not two: the gate holds by direction only.
+
+The dropped traces as pure hold-outs of the final model, form-v2 cues to
+form-v3 cues: 042 d1 0/5 to 1/5, 043 d1 2/5 to 3/5, 0/2 wrong-fires. The
+not-five line reads irritated at 0.51 without ever being trained on.
+
+Elsewhere on this pool, form-v2 cues to form-v3 cues: 030 227/295 to
+215/295, 033 63/214 to 67/214, 043 3/8 to 4/8, 041 3/8 to 2/8, 036 7/10 to
+6/10, 034 two wrong-kind reads to silent; the other folds unchanged. Hero
+hold-outs 29/42 to 28/42, 0/6 wrong-fires. The same pattern as the table
+above, one or two plants smaller.
+
+The merged form-v4 artifact was trained with the d1 traces. It is left as
+merged; its no-d1 twin exists only as the comparison column here.
+
 ## Shipped
 
-`config/manner-trigger/form-v5.json` (version form-v5, cue set form-v3),
-opt-in by path like form-v3 and form-v4, pinned by
-`tests/tutorStubFormStateDetector.test.js`. Nothing live has run on it.
-form-v4 stays as it was.
+`config/manner-trigger/form-v5.json` (version form-v5, cue set form-v3,
+pool without the d1 traces), opt-in by path like form-v3 and form-v4,
+pinned by `tests/tutorStubFormStateDetector.test.js`. Nothing live has run
+on it. form-v4 stays as it was.
 
 ## What this shows and does not show
 
-It shows the shape transfers: the cue was written from the three step-6
-lines, and the 042 fold reads 042's two lines without training on 042. It
-does not show much else. Two more plants of 26 on the new worlds; the
+It shows the shape transfers, thinly: the cue was written from the three
+step-6 lines, and the 042 fold reads one of 042's two lines without
+training on 042 (two with the d1 traces in the pool). It does not show much
+else. Two more plants of 26 on the new worlds; the
 deadline-demand losses are one for one against the irritated gains on the
 small folds. The plant that fails everywhere, the turn-2 demand, is not a
 detection miss (form-v4 reads it for the Sonnet learner), so no cue moves

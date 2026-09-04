@@ -4,7 +4,10 @@
  *
  * Runs `npm run lint:all` — root and tutor-core ESLint, the import-cycle
  * check, and both Prettier checks, matching CI's lint job — before the push
- * leaves the machine, and blocks the push when they fail. Ref governance is a
+ * leaves the machine, and blocks the push when they fail. When the lint lane
+ * passes it also runs `npm run test:ratchets` — the line-cap tests, about a
+ * second — so a refactor that CI would reject for a facade cap stops here
+ * (PR #985, 2026-09-03, went red twice on one). Ref governance is a
  * separately selected CI/local-CI lane. See
  * services/lintPrePushHook.js for why this one blocks where the
  * workplan-trailer hook only reports.
@@ -15,9 +18,9 @@
  * `git push --no-verify` skips every pre-push hook, which is the escape
  * hatch if one is ever needed — with a stated reason.
  *
- * After a passing lint it also prints, report-only, what under `exports/`
- * is not yet in the private archive (`npm run archive:check`). It never
- * blocks on that: a build server has no exports/ and no archive next door.
+ * After both pass it also prints, report-only, what under `exports/` is not
+ * yet in the private archive (`npm run archive:check`). It never blocks on
+ * that: a build server has no exports/ and no archive next door.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -34,6 +37,7 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NAME = 'lint pre-push hook';
 const LINT_SCRIPT = 'lint:all';
+const RATCHET_SCRIPT = 'test:ratchets';
 const ARCHIVE_SCRIPT = path.join(ROOT, 'scripts', 'archive-run-artifacts.js');
 
 function usage() {
@@ -118,6 +122,19 @@ function prePush() {
     console.error('');
     process.exitCode = 1;
     return;
+  }
+  if (scripts[RATCHET_SCRIPT]) {
+    console.error(`${NAME}: npm run ${RATCHET_SCRIPT} (the line-cap tests, about a second)`);
+    const ratchets = spawnSync('npm', ['run', RATCHET_SCRIPT], { cwd: ROOT, stdio: 'inherit' });
+    if (ratchets.error) throw ratchets.error;
+    if (ratchets.status !== 0) {
+      console.error('');
+      console.error(`${NAME}: push blocked — a source file is over its line cap; CI would fail this push.`);
+      console.error('Move code out of the capped file (the failing test names it), then push again.');
+      console.error('');
+      process.exitCode = 1;
+      return;
+    }
   }
   warnUnarchivedRuns();
 }

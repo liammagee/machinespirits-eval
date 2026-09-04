@@ -181,8 +181,8 @@ test('a kept verdict over a conceding line is read, sent back once, and the seco
   const { runtime, trace, prompts, readerPrompts } = buildRuntime({
     replies: [CONCEDING, HOLDING],
     readings: [
-      '{"holds": false, "reason": "the words five sixths, so it is not two fifths adopt the answer"}',
-      '{"holds": true, "reason": "the words Two fifths still insist"}',
+      '{"holds": false, "copy": false, "reason": "the words five sixths, so it is not two fifths adopt the answer"}',
+      '{"holds": true, "copy": true, "reason": "the words Two fifths still insist"}',
     ],
     env: SPEECH_CHECK_ON,
   });
@@ -202,6 +202,7 @@ test('a kept verdict over a conceding line is read, sent back once, and the seco
   assert.doesNotMatch(readerPrompts[0], /HOLD: kept/);
   assert.equal(prompts.length, 2, 'one retry');
   assert.match(prompts[1], /Your last draft did not match its own verdict/);
+  assert.match(prompts[1], /a line of your own words/, 'the retry asks for her own words, not the sample');
   assert.match(prompts[1], /adopt the answer/, 'the reading is fed back');
   assert.match(prompts[1], /two fifths of the strip would reach/, 'the retry may release with a quote instead');
   assert.equal(generated.text, 'No. One and one is two, two and three is five. Two fifths. Question five?');
@@ -213,7 +214,10 @@ test('a kept verdict over a conceding line is read, sent back once, and the seco
   assert.equal(check.drafts[0].holds, false);
   assert.match(check.drafts[0].text, /five sixths/);
   assert.equal(check.drafts[1].holds, true);
+  assert.equal(check.drafts[0].copy, false);
+  assert.equal(check.drafts[1].copy, true, 'a copy of the sample line is recorded, not enforced');
   assert.equal(check.finalHolds, true);
+  assert.equal(check.finalCopy, true);
   assert.equal(check.agree, true);
   const events = trace.filter((event) => event.type === 'learner_stress_hold_speech_check');
   assert.equal(events.length, 1);
@@ -221,6 +225,11 @@ test('a kept verdict over a conceding line is read, sent back once, and the seco
     trace.filter((event) => event.type === 'learner_stress_hold_verdict').length,
     1,
     'one verdict, for the spoken draft',
+  );
+  assert.equal(
+    trace.filter((event) => event.type === 'learner_stress_hold').length,
+    1,
+    'the hold event fires once per turn, not once per draft (step 7c)',
   );
 });
 

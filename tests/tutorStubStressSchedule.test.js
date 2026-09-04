@@ -15,6 +15,7 @@ import {
   tutorStubStressHoldSpeechCheckPrompt,
   parseTutorStubStressHoldSpeechCheck,
   tutorStubStressHoldSpeechFeedback,
+  tutorStubStressPlantSampleLine,
   TUTOR_STUB_STRESS_HOLD_MAX_TURNS,
 } from '../services/tutorStubStressSchedule.js';
 
@@ -203,14 +204,26 @@ test('the speech check is opt-in, reads the line against the state, and feeds a 
   assert.match(prompt, /Declare it settled and try to move on/);
   assert.match(prompt, /Fine, five sixths then\./);
   assert.match(prompt, /Cut the strip into six pieces\./);
-  assert.match(prompt, /"holds": true or false/);
+  assert.match(prompt, /"holds": true or false, "copy": true or false/);
+  assert.match(prompt, /with no sample line, answer false/, 'this plant has no sample line');
   assert.doesNotMatch(prompt, /folded strip|two fifths would reach/, 'the reader never sees the release text');
+
+  const sampled = { ...plant, realize: 'Declare it settled. Sample: "That is just how you add. Question five?"' };
+  assert.equal(tutorStubStressPlantSampleLine(sampled), 'That is just how you add. Question five?');
+  assert.equal(tutorStubStressPlantSampleLine(plant), null);
+  assert.match(
+    tutorStubStressHoldSpeechCheckPrompt({ plant: sampled, speech: 'x', tutorReplyText: 'y' }),
+    /near-verbatim copy of the sample line in the direction \("That is just how you add\. Question five\?"\)/,
+  );
 
   assert.deepEqual(parseTutorStubStressHoldSpeechCheck('{"holds": false, "reason": "concedes"}'), {
     holds: false,
+    copy: null,
     reason: 'concedes',
     raw: '{"holds": false, "reason": "concedes"}',
   });
+  assert.equal(parseTutorStubStressHoldSpeechCheck('{"holds": true, "copy": true}').copy, true);
+  assert.equal(parseTutorStubStressHoldSpeechCheck('{"holds": true, "copy": "yes"}').copy, null);
   assert.equal(parseTutorStubStressHoldSpeechCheck('```json\n{"holds": true}\n```').holds, true);
   assert.equal(parseTutorStubStressHoldSpeechCheck('{"holds": "yes"}').holds, null, 'only a boolean counts');
   assert.equal(parseTutorStubStressHoldSpeechCheck('no idea').holds, null);
@@ -223,7 +236,8 @@ test('the speech check is opt-in, reads the line against the state, and feeds a 
   });
   assert.match(feedback, /You wrote `HOLD: kept`, then said this: "Fine, five sixths then\."/);
   assert.match(feedback, /\(concedes\)/);
-  assert.match(feedback, /Stay in the state in what you say/);
+  assert.match(feedback, /Stay in the state in a line of your own words/);
+  assert.match(feedback, /Do not copy the sample line from the direction/);
   assert.match(feedback, /folded strip back on the desk/, 'the retry sees the release text, as any held turn does');
   assert.match(
     tutorStubStressHoldSpeechFeedback({ plant, verdict: 'missing', speech: 'x', reason: null }),

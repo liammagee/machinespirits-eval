@@ -184,6 +184,32 @@ test('pre-push reports unarchived runs after a passing lint and never blocks on 
   assert.doesNotMatch(complete.stderr, /archive check/u);
 });
 
+test('pre-push runs the line-cap ratchets after lint when the checkout has the script', (t) => {
+  const dir = temporaryDir(t, 'lint-hook-ratchets-');
+  const binDir = path.join(dir, 'bin');
+  fs.mkdirSync(binDir, { recursive: true });
+  const logPath = path.join(dir, 'npm-calls.jsonl');
+  installNpmStub(binDir, { exitCode: 0, logPath });
+  const hookScript = stageHookCheckout(path.join(dir, 'checkout'), {
+    scripts: { 'lint:all': 'true', 'test:ratchets': 'true' },
+  });
+  const result = runHook(hookScript, {
+    input: `refs/heads/topic ${COMMIT} refs/heads/topic ${ZERO}\n`,
+    env: { PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}` },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const calls = fs
+    .readFileSync(logPath, 'utf8')
+    .trim()
+    .split('\n')
+    .map((line) => JSON.parse(line));
+  assert.deepEqual(calls, [
+    ['run', 'lint:all'],
+    ['run', 'test:ratchets'],
+  ]);
+  assert.match(result.stderr, /test:ratchets/u);
+});
+
 test('pre-push skips deletion-only pushes and checkouts without the script', (t) => {
   const dir = temporaryDir(t, 'lint-hook-skip-');
   const binDir = path.join(dir, 'bin');

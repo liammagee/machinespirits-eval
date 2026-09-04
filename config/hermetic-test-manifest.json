@@ -422,6 +422,7 @@
         "tests/pilot.test.js",
         "tests/pilotStorePathDiscipline.test.js",
         "tests/pilotTutorSessionAdapter.test.js",
+        "tests/plainSpeechStopHook.test.js",
         "tests/plan3DagSfsAudit.test.js",
         "tests/poeticsAdminAuth.test.js",
         "tests/poeticsArcImagePrompts.test.js",
