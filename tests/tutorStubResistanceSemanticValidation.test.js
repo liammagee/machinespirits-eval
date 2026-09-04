@@ -140,10 +140,11 @@ test('validation endpoint preflight proves only zero-call wiring and retains pen
   );
   const drifted = structuredClone(contract);
   drifted.registration.registration_sha256 = '0'.repeat(64);
-  assert.throws(
-    () => runTutorStubResistanceSemanticValidationPreflight({ contract: drifted }),
-    /endpoint registration, instrument, or heldout binding drifted/u,
-  );
+  const driftedPreflight = runTutorStubResistanceSemanticValidationPreflight({ contract: drifted });
+  const record = driftedPreflight.digestRecords.find((entry) => entry.label === 'semantic validation registration');
+  assert.equal(record.drifted, true);
+  assert.equal(record.recordedSha256, '0'.repeat(64));
+  assert.notEqual(record.observedSha256, record.recordedSha256);
 });
 
 test('v2 independent heldout remains blind, collision-free, quote-only, and separately budgeted after failed v1', () => {

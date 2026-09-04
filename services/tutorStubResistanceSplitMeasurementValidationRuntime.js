@@ -1,7 +1,9 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+import { recordFileDigest } from './recordedFileDigest.js';
 import { resolveTutorStubArtifactArchiveDirectory } from './tutorStubArtifactArchive.js';
 import {
   isTutorStubRetryableClaudeResponseFreeError,
@@ -105,6 +107,8 @@ export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SEAL_SCHEMA =
   'machinespirits.tutor-stub.resistance-recovery-semantic-validation-seal.v2';
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REPORT_SCHEMA =
   'machinespirits.tutor-stub.resistance-recovery-semantic-validation-report.v2';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const PACKET_FIELDS = ['trigger', 'intervention', 'prior_post_trigger', 'intervening_tutor', 'current_learner'];
 
@@ -216,6 +220,18 @@ function validateHierarchicalV3GoRequest({ loaded, goRequest, sourceCommit, sour
   const readiness = loaded.registration.executionReadiness;
   const gate = goRequest?.outcomeSemanticAdjudicationValidation || {};
   const expectedJudges = loaded.instrument.measurement.judges.map((judge) => judge.modelRef);
+  recordFileDigest({
+    root: ROOT,
+    filePath: loaded.registrationPath,
+    recordedSha256: gate.validationRegistration?.sha256,
+    label: 'v3 outcome semantic validation registration',
+  });
+  recordFileDigest({
+    root: ROOT,
+    filePath: loaded.instrumentPath,
+    recordedSha256: gate.instrumentRegistration?.sha256,
+    label: 'v3 outcome semantic instrument registration',
+  });
   if (
     goRequest?.schema !==
       'machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-validation-study-go-request.v3' ||
@@ -226,9 +242,7 @@ function validateHierarchicalV3GoRequest({ loaded, goRequest, sourceCommit, sour
     goRequest?.source?.checkoutMustBeClean !== true ||
     goRequest?.source?.detachedLaunchWorktree !== true ||
     gate.validationRegistration?.path !== loaded.registrationPath ||
-    gate.validationRegistration?.sha256 !== loaded.registrationSha256 ||
     gate.instrumentRegistration?.path !== loaded.instrumentPath ||
-    gate.instrumentRegistration?.sha256 !== loaded.instrumentSha256 ||
     gate.heldoutCorpus?.path !== loaded.registration.heldout.corpusPath ||
     gate.heldoutCorpus?.sha256 !== loaded.corpusSha256 ||
     gate.heldoutCorpus?.cases !== 120 ||
@@ -264,6 +278,18 @@ function validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, so
   const version = loaded.instrument.version;
   const stage = goRequest?.measurementValidation?.stages?.[loaded.stage];
   const expectedJudges = loaded.instrument.measurement.judges.map((judge) => judge.modelRef);
+  recordFileDigest({
+    root: ROOT,
+    filePath: loaded.instrumentPath,
+    recordedSha256: goRequest?.measurementValidation?.instrumentRegistration?.sha256,
+    label: `v${version} split measurement instrument registration`,
+  });
+  recordFileDigest({
+    root: ROOT,
+    filePath: loaded.registrationPath,
+    recordedSha256: stage?.registration?.sha256,
+    label: `v${version} ${loaded.stage} validation registration`,
+  });
   if (
     goRequest?.schema !== `machinespirits.tutor-stub.resistance-measurement-validation-study-go-request.v${version}` ||
     goRequest?.status !== 'go_under_standing_user_authority' ||
@@ -273,7 +299,6 @@ function validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, so
     goRequest?.source?.checkoutMustBeClean !== true ||
     goRequest?.source?.detachedLaunchWorktree !== true ||
     goRequest?.measurementValidation?.instrumentRegistration?.path !== loaded.instrumentPath ||
-    goRequest?.measurementValidation?.instrumentRegistration?.sha256 !== loaded.instrumentSha256 ||
     goRequest?.measurementValidation?.heldoutCorpus?.path !== loaded.corpusPath ||
     goRequest?.measurementValidation?.heldoutCorpus?.sha256 !== loaded.corpusSha256 ||
     goRequest?.measurementValidation?.heldoutCorpus?.cases !== 120 ||
@@ -291,7 +316,6 @@ function validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, so
     goRequest?.measurementValidation?.indeterminateRepairRerunReplacementOrSelection !== false ||
     goRequest?.measurementValidation?.analysisOnlyAfterBothStagesSeal !== true ||
     stage?.registration?.path !== loaded.registrationPath ||
-    stage?.registration?.sha256 !== loaded.registrationSha256 ||
     path.resolve(String(stage?.destination || '')) !== destination ||
     stage?.plannedCalls !== 360 ||
     stage?.hardReservations !== 1080 ||

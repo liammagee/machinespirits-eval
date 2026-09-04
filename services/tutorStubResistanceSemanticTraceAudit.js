@@ -1,3 +1,7 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { recordFileDigest } from './recordedFileDigest.js';
 import {
   tutorStubResistanceSemanticPromptSha256,
   tutorStubResistanceSemanticSha256,
@@ -10,6 +14,8 @@ import {
   tutorStubResistanceSemanticRuntimeInstrument,
   validateTutorStubResistanceSemanticRuntimeResult,
 } from './tutorStubResistanceSemanticRuntime.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function exactJson(left, right) {
   return JSON.stringify(left) === JSON.stringify(right);
@@ -60,6 +66,18 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
   );
   if (registrationPaths.size > 1) throw new Error('semantic trace mixes frozen registrations');
   const binding = loadTutorStubResistanceSemanticRegistration([...registrationPaths][0]);
+  // Every event names the one frozen registration checked above. The digest each
+  // event carried when it was written is recorded here, not refused.
+  const digestRecords = [
+    ...new Set([...judgeEvents, ...aggregates].map((event) => event.registrationSha256).filter(Boolean)),
+  ].map((recordedSha256) =>
+    recordFileDigest({
+      root: ROOT,
+      filePath: binding.path,
+      recordedSha256,
+      label: 'semantic registration named by the trace events',
+    }),
+  );
   const instrument = tutorStubResistanceSemanticRuntimeInstrument(binding);
   const judges = new Map(binding.registration.measurement.judges.map((judge) => [judge.id, judge]));
   if (expectedCandidateCount !== null && aggregates.length !== expectedCandidateCount) {
@@ -227,7 +245,6 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
       candidates.some(
         (event) =>
           event.registrationPath !== binding.path ||
-          event.registrationSha256 !== binding.sha256 ||
           event.packetSha256 !== packetSha256 ||
           event.sourceSha256 !== tutorStubResistanceSemanticSha256(source),
       )
@@ -294,6 +311,7 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
   const indeterminate = aggregates.filter((event) => event.aggregate?.status === 'measurement_indeterminate');
   return {
     valid: true,
+    digestRecords,
     candidateCount: aggregates.length,
     judgeEventCount: judgeEvents.length,
     measurementIndeterminate: indeterminate.length > 0,

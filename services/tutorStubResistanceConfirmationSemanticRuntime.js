@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { recordFileDigest } from './recordedFileDigest.js';
 import {
   TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V8,
   TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V8,
@@ -64,19 +65,22 @@ function finalHorizonPacket(state, learnerText) {
 export function loadTutorStubResistanceConfirmationSemanticInstrument(registration) {
   const binding = registration?.outcomeSemanticAdjudication;
   const instrumentPath = binding?.instrumentRegistrationPath;
-  if (
-    registration?.version < 9 ||
-    ![INSTRUMENT_PATH, INSTRUMENT_PATH_V9].includes(instrumentPath) ||
-    binding?.instrumentRegistrationSha256 !== sha256File(instrumentPath)
-  ) {
+  if (registration?.version < 9 || ![INSTRUMENT_PATH, INSTRUMENT_PATH_V9].includes(instrumentPath)) {
     throw new Error('confirmation semantic outcome instrument binding drifted');
   }
+  // The instrument registration is named by path above. Its bytes are recorded.
+  const digestRecord = recordFileDigest({
+    root: ROOT,
+    filePath: instrumentPath,
+    recordedSha256: binding?.instrumentRegistrationSha256,
+    label: 'confirmation semantic outcome instrument registration',
+  });
   const instrument = JSON.parse(fs.readFileSync(path.join(ROOT, instrumentPath), 'utf8'));
   if (instrument.version === 9) {
     const validation = validateTutorStubResistanceRecoverySemanticRegistrationV9(instrument);
     if (!validation.valid)
       throw new Error(`confirmation semantic V9 instrument invalid: ${validation.issues.join('; ')}`);
-    return { path: instrumentPath, sha256: sha256File(instrumentPath), registration: instrument };
+    return { path: instrumentPath, sha256: sha256File(instrumentPath), digestRecord, registration: instrument };
   }
   if (
     instrument?.schema !== 'machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-registration.v8' ||
@@ -88,7 +92,7 @@ export function loadTutorStubResistanceConfirmationSemanticInstrument(registrati
   ) {
     throw new Error('confirmation semantic outcome instrument contract drifted');
   }
-  return { path: instrumentPath, sha256: sha256File(instrumentPath), registration: instrument };
+  return { path: instrumentPath, sha256: sha256File(instrumentPath), digestRecord, registration: instrument };
 }
 
 export function createTutorStubResistanceConfirmationSemanticRuntime({

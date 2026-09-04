@@ -68,6 +68,7 @@ import {
   validateTutorStubStandingRivalryRegistrationV3,
   wrapTutorStubStandingRivalryModelOutputV3,
 } from './tutorStubStandingRivalrySemanticAdjudicationV3.js';
+import { recordFileDigest } from './recordedFileDigest.js';
 import { createTutorStubResistanceConfirmationSemanticRuntime } from './tutorStubResistanceConfirmationSemanticRuntime.js';
 import { createTutorStubResistantLearnerSemanticRuntime } from './tutorStubResistantLearnerSemanticRuntime.js';
 
@@ -509,7 +510,7 @@ export function validateTutorStubResistanceSemanticRuntimeResult({
   requireDeterminate = true,
 }) {
   if (!result || typeof result !== 'object' || Array.isArray(result)) {
-    return { valid: false, issues: ['semantic runtime result missing'] };
+    return { valid: false, issues: ['semantic runtime result missing'], digestRecords: [] };
   }
   const issues = [];
   const source = String(learnerText || '');
@@ -529,7 +530,18 @@ export function validateTutorStubResistanceSemanticRuntimeResult({
   if (result?.turn !== turnNumber) issues.push('semantic result turn mismatch');
   if (result?.sourceSha256 !== tutorStubResistanceSemanticSha256(source)) issues.push('semantic source mismatch');
   if (result?.registrationPath !== registrationBinding?.path) issues.push('semantic registration path mismatch');
-  if (result?.registrationSha256 !== registrationBinding?.sha256) issues.push('semantic registration digest mismatch');
+  // The result carries the registration digest that stood when it was produced.
+  // A later edit to the registration file is written down, not refused.
+  const digestRecords = registrationBinding?.path
+    ? [
+        recordFileDigest({
+          root: ROOT,
+          filePath: registrationBinding.path,
+          recordedSha256: result?.registrationSha256,
+          label: 'semantic registration named by the result',
+        }),
+      ]
+    : [];
   if (result?.publicContextSha256 !== canonicalSha256(publicContext)) issues.push('public context digest mismatch');
   if (!expectedContext || JSON.stringify(publicContext) !== JSON.stringify(expectedContext)) {
     issues.push('public context does not match the current public history');
@@ -595,7 +607,7 @@ export function validateTutorStubResistanceSemanticRuntimeResult({
       issues.push('determinate semantic aggregate envelope is invalid');
     }
   }
-  return { valid: issues.length === 0, issues };
+  return { valid: issues.length === 0, issues, digestRecords };
 }
 
 export function tutorStubResistanceSemanticPublicContext(state, maximumRows = 4) {

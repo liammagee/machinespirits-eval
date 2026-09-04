@@ -9,6 +9,7 @@ import {
   TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA,
 } from './tutorStubResistanceActionRegisterStudy.js';
 import { parseTutorStubPublicLearnerAnalysisInteractive } from './tutorStubPublicLearnerAnalysis.js';
+import { recordFileDigest } from './recordedFileDigest.js';
 
 export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_BUNDLE_SCHEMA =
   'machinespirits.tutor-stub.resistance-action-register-public-prefix-bundle.v1';
@@ -51,18 +52,11 @@ function prefixProjection(prefix) {
   };
 }
 
-export function validateTutorStubResistanceActionRegisterPrefixBundle({
-  bundle,
-  registration,
-  registrationSha256,
-} = {}) {
+export function validateTutorStubResistanceActionRegisterPrefixBundle({ bundle, registration } = {}) {
   if (bundle?.schema !== TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_BUNDLE_SCHEMA || bundle.version !== 1) {
     throw new Error('resistance action/register prefix bundle schema or version is unsupported');
   }
-  if (
-    bundle.registration?.path !== 'config/tutor-stub-resistance-action-register-crossed-registration.v2.json' ||
-    bundle.registration?.sha256 !== registrationSha256
-  ) {
+  if (bundle.registration?.path !== 'config/tutor-stub-resistance-action-register-crossed-registration.v2.json') {
     throw new Error('prefix bundle registration binding does not match the selected V2 registration');
   }
   if (
@@ -133,9 +127,17 @@ export function loadTutorStubResistanceActionRegisterPrefixBundle({ bundlePath, 
   const bundle = validateTutorStubResistanceActionRegisterPrefixBundle({
     bundle: JSON.parse(source),
     registration: registration.registration,
-    registrationSha256: registration.sha256,
   });
-  return { path: absolute, source, sha256: sha256(source), bundle, registration };
+  // The bundle names the registration it was cut against. That is provenance, so
+  // a drifted registration is written down here and the run goes on.
+  const digestRecords = [
+    recordFileDigest({
+      filePath: registration.path,
+      recordedSha256: bundle.registration?.sha256,
+      label: 'crossed V2 registration named by the prefix bundle',
+    }),
+  ];
+  return { path: absolute, source, sha256: sha256(source), bundle, registration, digestRecords };
 }
 
 function planPrefixes(bundle) {

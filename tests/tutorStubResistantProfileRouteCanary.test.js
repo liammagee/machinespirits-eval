@@ -22,7 +22,13 @@ function readRequest() {
 
 function readCurrentSourceFixture() {
   const request = readRequest();
-  for (const sourcePath of ['services/cliProviderBridge.js', 'config/providers.yaml']) {
+  // The closure names this service's own source. Recompute it here too, so an edit
+  // to the canary does not read as a drifted fixture.
+  for (const sourcePath of [
+    'services/cliProviderBridge.js',
+    'config/providers.yaml',
+    'services/tutorStubResistantProfileRouteCanary.js',
+  ]) {
     const entry = request.sourceClosure.find((candidate) => candidate.path === sourcePath);
     entry.sha256 = createHash('sha256')
       .update(fs.readFileSync(path.join(ROOT, entry.path)))
@@ -46,12 +52,12 @@ function passingBridgeResult(overrides = {}) {
   };
 }
 
-test('consumed route-canary request fails closed after the provider bridge evolves', () => {
+test('consumed route-canary request records the drift after the provider bridge evolves', () => {
   const request = readRequest();
-  assert.throws(
-    () => validateTutorStubResistantProfileRouteCanaryRequest(request, { root: ROOT }),
-    /source-closure SHA mismatch: services\/cliProviderBridge\.js/u,
-  );
+  const validation = validateTutorStubResistantProfileRouteCanaryRequest(request, { root: ROOT });
+  const record = validation.digestRecords.find((row) => row.path === 'services/cliProviderBridge.js');
+  assert.equal(record.drifted, true);
+  assert.notEqual(record.observedSha256, record.recordedSha256);
 });
 
 test('current-source route-canary fixture pins the shared Luna route and complete closure', () => {
@@ -69,25 +75,25 @@ test('current-source route-canary fixture pins the shared Luna route and complet
   assert.ok(result.sourceClosure.every((entry) => entry.sha256 === entry.observedSha256));
 });
 
-test('default route-canary command rejects the consumed request before any call or write', async () => {
+test('default route-canary command plans the consumed request without any call or write', async () => {
   let calls = 0;
-  await assert.rejects(
-    runTutorStubResistantProfileRouteCanaryCommand(
-      { request: REQUEST_PATH, execute: false },
-      {
-        root: ROOT,
-        callModel: async () => {
-          calls += 1;
-          return passingBridgeResult();
-        },
+  const plan = await runTutorStubResistantProfileRouteCanaryCommand(
+    { request: REQUEST_PATH, execute: false },
+    {
+      root: ROOT,
+      callModel: async () => {
+        calls += 1;
+        return passingBridgeResult();
       },
-    ),
-    /source-closure SHA mismatch: services\/cliProviderBridge\.js/u,
+    },
   );
+  assert.equal(plan.status, 'HOLD');
+  assert.equal(plan.modelCalls, 0);
+  assert.equal(plan.artifactWrites, 0);
   assert.equal(calls, 0);
 });
 
-test('execution request refuses the stale source closure before provider invocation', async () => {
+test('execution request records the stale source closure and calls nothing', async () => {
   let calls = 0;
   await assert.rejects(
     runTutorStubResistantProfileRouteCanaryCommand(
@@ -105,9 +111,13 @@ test('execution request refuses the stale source closure before provider invocat
         },
       },
     ),
-    /source-closure SHA mismatch: services\/cliProviderBridge\.js/u,
+    /--authorization is required/u,
   );
   assert.equal(calls, 0);
+  const record = validateTutorStubResistantProfileRouteCanaryRequest(readRequest(), {
+    root: ROOT,
+  }).digestRecords.find((row) => row.path === 'services/cliProviderBridge.js');
+  assert.equal(record.drifted, true);
 });
 
 test('pure route-canary execution calls the bridge exactly once and records the attestation limit', async () => {

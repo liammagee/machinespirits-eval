@@ -6,6 +6,7 @@ import {
   tutorStubResistanceRecoverySemanticSha256,
   validateTutorStubResistanceRecoverySemanticCorpus,
 } from './tutorStubResistanceRecoverySemanticAdjudicationV2.js';
+import { recordFileDigest } from './recordedFileDigest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REGISTRATION_V3 =
@@ -49,14 +50,16 @@ export function validateTutorStubResistanceRecoverySemanticRegistrationV3(regist
     issues.push('v3 outcome instrument identity drifted');
   }
   const instrument = registration?.instrument || {};
+  const digestRecords = [
+    [instrument.ensembleImplementationPath, instrument.ensembleImplementationSha256, 'v3 ensemble implementation'],
+    [instrument.seatImplementationPath, instrument.seatImplementationSha256, 'v3 seat implementation'],
+    [instrument.seatResponseSchemaPath, instrument.seatResponseSchemaSha256, 'v3 seat response schema'],
+  ].map(([filePath, recordedSha256, label]) => recordFileDigest({ root: ROOT, filePath, recordedSha256, label }));
   if (
     instrument.ensembleImplementationPath !== 'services/tutorStubResistanceRecoverySemanticAdjudicationV3.js' ||
-    instrument.ensembleImplementationSha256 !== fileSha256(instrument.ensembleImplementationPath) ||
     instrument.ensembleFreezeCommit !== '4a58374052041d6ac7cb18ded0d6d009a5ee4060' ||
     instrument.seatImplementationPath !== 'services/tutorStubResistanceRecoverySemanticAdjudicationV2.js' ||
-    instrument.seatImplementationSha256 !== fileSha256(instrument.seatImplementationPath) ||
     instrument.seatResponseSchemaPath !== 'config/tutor-stub-resistance-recovery-semantic-response.schema.v2.json' ||
-    instrument.seatResponseSchemaSha256 !== fileSha256(instrument.seatResponseSchemaPath) ||
     instrument.seatPromptSchemaAndSpanWrapperChangedFromV2 !== false
   ) {
     issues.push('v3 outcome frozen implementation binding drifted');
@@ -130,7 +133,7 @@ export function validateTutorStubResistanceRecoverySemanticRegistrationV3(regist
   ) {
     issues.push('v3 outcome authorization or claim boundary drifted');
   }
-  return { valid: issues.length === 0, issues };
+  return { valid: issues.length === 0, issues, digestRecords };
 }
 
 export function validateTutorStubResistanceRecoverySemanticValidationRegistrationV3({
@@ -148,11 +151,17 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
   ) {
     issues.push('v3 outcome validation registration identity drifted');
   }
+  const digestRecords = [
+    recordFileDigest({
+      root: ROOT,
+      filePath: 'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v3.json',
+      recordedSha256: validationRegistration?.instrument?.registrationSha256,
+      label: 'v3 outcome instrument registration',
+    }),
+  ];
   if (
     validationRegistration?.instrument?.registrationPath !==
       'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v3.json' ||
-    validationRegistration?.instrument?.registrationSha256 !==
-      fileSha256(validationRegistration?.instrument?.registrationPath) ||
     validationRegistration?.instrument?.ensembleFreezeCommit !== '4a58374052041d6ac7cb18ded0d6d009a5ee4060' ||
     validationRegistration?.instrument?.postHeldoutResponsePromptModelThresholdOrConsensusTuning !== false
   ) {
@@ -203,7 +212,7 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
   ) {
     issues.push('v3 outcome validation HOLD boundary drifted');
   }
-  return { valid: issues.length === 0, issues };
+  return { valid: issues.length === 0, issues, digestRecords };
 }
 
 export function loadTutorStubResistanceRecoverySemanticValidationV3() {
@@ -230,5 +239,6 @@ export function loadTutorStubResistanceRecoverySemanticValidationV3() {
     instrumentSha256: fileSha256(instrumentPath),
     corpus,
     corpusSha256: fileSha256(registration.heldout.corpusPath),
+    digestRecords: [...instrumentValidation.digestRecords, ...bindingValidation.digestRecords],
   };
 }

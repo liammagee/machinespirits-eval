@@ -19,6 +19,8 @@ test('V7 primary and fidelity validation registrations bind one fresh corpus but
   assert.equal(fidelity.stage, 'intervention_fidelity');
   assert.equal(primary.instrumentSha256, fidelity.instrumentSha256);
   assert.equal(primary.corpusSha256, fidelity.corpusSha256);
+  assert.equal(primary.digestRecords[0].drifted, false);
+  assert.equal(primary.digestRecords[0].observedSha256, primary.instrumentSha256);
   assert.notEqual(primary.registrationSha256, fidelity.registrationSha256);
   assert.equal(primary.registration.executionReadiness.plannedModelCalls, 360);
   assert.equal(fidelity.registration.executionReadiness.plannedModelCalls, 360);
