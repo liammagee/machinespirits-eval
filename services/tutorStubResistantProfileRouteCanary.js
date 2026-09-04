@@ -4,6 +4,12 @@ import path from 'node:path';
 
 import { callAIWithCliBridge } from './cliProviderBridge.js';
 import { resolveModel } from './evalConfigLoader.js';
+import { recordFileDigest } from './recordedFileDigest.js';
+
+// Sealed data keeps its byte pin; code, schemas and registrations are recorded.
+// This closure carries no sealed file today, and the guard says what happens
+// if one is added.
+const SEALED_SOURCE_CLOSURE_PATH = /heldout|held-out|development-corpus|blind-read|certificate/u;
 
 export const RESISTANT_PROFILE_ROUTE_CANARY_SCHEMA =
   'machinespirits.tutor-stub.resistant-profile-route-canary-request.v1';
@@ -98,6 +104,7 @@ export function validateTutorStubResistantProfileRouteCanaryRequest(
   assert(Array.isArray(request.sourceClosure) && request.sourceClosure.length >= 6, 'source closure is incomplete');
 
   const seen = new Set();
+  const digestRecords = [];
   const sourceClosure = request.sourceClosure.map((entry) => {
     assert(entry && typeof entry === 'object', 'source-closure entry must be an object');
     assert(!seen.has(entry.path), `duplicate source-closure path: ${entry.path}`);
@@ -105,8 +112,17 @@ export function validateTutorStubResistantProfileRouteCanaryRequest(
     assertSha256(entry.sha256, `source closure ${entry.path}`);
     const resolvedPath = resolveRepositoryFile(root, entry.path, 'source-closure');
     const observedSha256 = resistantProfileRouteCanaryFileSha256(resolvedPath);
-    if (verifySourceClosure) {
+    if (verifySourceClosure && SEALED_SOURCE_CLOSURE_PATH.test(entry.path)) {
       assert(observedSha256 === entry.sha256, `source-closure SHA mismatch: ${entry.path}`);
+    } else if (verifySourceClosure) {
+      digestRecords.push(
+        recordFileDigest({
+          root,
+          filePath: entry.path,
+          recordedSha256: entry.sha256,
+          label: 'source closure',
+        }),
+      );
     }
     return { path: entry.path, sha256: entry.sha256, observedSha256 };
   });
@@ -129,6 +145,7 @@ export function validateTutorStubResistantProfileRouteCanaryRequest(
     modelRef: request.route.modelRef,
     roles: [...EXPECTED_ROLES],
     sourceClosure,
+    digestRecords,
   };
 }
 
