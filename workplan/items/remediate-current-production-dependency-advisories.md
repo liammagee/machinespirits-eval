@@ -1,7 +1,7 @@
 ---
 id: remediate-current-production-dependency-advisories
 title: Remediate current production dependency advisories
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -42,3 +42,7 @@ Express 4. A clean install, the focused server/surface tests, the full hermetic
 suite, and all maintained risk-coverage groups pass. `npm audit --omit=dev`
 reports zero production vulnerabilities. Implementation is under review in
 PR #983.
+
+2026-09-03 Codex: Closed after PR #983 merged as `f99cde85`; its workplan,
+browser-surface, validation, lint, risk-coverage, PTY/loopback, and eight Node
+22/24 shard checks all passed.

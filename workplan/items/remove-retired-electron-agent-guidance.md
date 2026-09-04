@@ -1,7 +1,7 @@
 ---
 id: remove-retired-electron-agent-guidance
 title: Remove retired Electron instructions from live agent guidance
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -43,3 +43,7 @@ guidance to describe the current repository and browser surfaces. The shared
 hook regression test now rejects reintroduction of the retired Electron paths
 or commands in those live documents. The full hermetic suite passes; the card
 is under review in PR #983.
+
+2026-09-03 Codex: Closed after PR #983 merged as `f99cde85`; its workplan,
+browser-surface, validation, lint, risk-coverage, PTY/loopback, and eight Node
+22/24 shard checks all passed.

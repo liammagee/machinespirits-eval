@@ -1,7 +1,7 @@
 ---
 id: unify-agent-harness-edit-hooks
 title: Share safe edit-hook logic across Claude and Codex
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -46,3 +46,7 @@ configuration parity, protected environment files, worktree dependency lookup,
 metacharacter-bearing filenames, missing installs, format repair, and genuine
 lint failures. The full hermetic suite and all maintained risk-coverage groups
 pass. Implementation is under review in PR #983.
+
+2026-09-03 Codex: Closed after PR #983 merged as `f99cde85`; its workplan,
+browser-surface, validation, lint, risk-coverage, PTY/loopback, and eight Node
+22/24 shard checks all passed.
