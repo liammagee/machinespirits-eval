@@ -12,6 +12,7 @@ import {
 } from './tutorStubResistanceSemanticAdjudicationV3.js';
 import { tutorStubResistanceSemanticSha256 } from './tutorStubResistanceSemanticAdjudication.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
+import { recordFileDigest } from './recordedFileDigest.js';
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3,
   loadTutorStubResistanceSemanticRegistration,
@@ -260,9 +261,6 @@ export function validateTutorStubResistanceSemanticValidationRegistrationV3({
     ]) ||
     v1.v1ValidationRegistrationPath !==
       'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json' ||
-    v1.v1ValidationRegistrationSha256 !== fileSha256(v1.v1ValidationRegistrationPath) ||
-    v1.v1InstrumentRegistrationSha256 !==
-      fileSha256('config/tutor-stub-resistance-semantic-adjudication-registration.v1.json') ||
     v1.v1HeldoutCorpusSha256 !==
       fileSha256('config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json') ||
     v1.v1ConsumedRequestPath !==
@@ -286,9 +284,6 @@ export function validateTutorStubResistanceSemanticValidationRegistrationV3({
       'sealed_failed_validation_evidence_no_rescoring_normalization_reuse_or_reinterpretation' ||
     v1.v2ValidationRegistrationPath !==
       'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v2.json' ||
-    v1.v2ValidationRegistrationSha256 !== fileSha256(v1.v2ValidationRegistrationPath) ||
-    v1.v2InstrumentRegistrationSha256 !==
-      fileSha256('config/tutor-stub-resistance-semantic-adjudication-registration.v2.json') ||
     v1.v2HeldoutCorpusSha256 !== fileSha256(V2_OBSERVED_HELDOUT) ||
     v1.v2ConsumedRequestPath !==
       'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v2.json' ||
@@ -313,16 +308,42 @@ export function validateTutorStubResistanceSemanticValidationRegistrationV3({
   ) {
     issues.push('sealed failed v1/v2 validation preservation drifted');
   }
+  const digestRecords = [
+    [
+      'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json',
+      v1.v1ValidationRegistrationSha256,
+      'v1 validation registration',
+    ],
+    [
+      'config/tutor-stub-resistance-semantic-adjudication-registration.v1.json',
+      v1.v1InstrumentRegistrationSha256,
+      'v1 instrument registration',
+    ],
+    [
+      'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v2.json',
+      v1.v2ValidationRegistrationSha256,
+      'v2 validation registration',
+    ],
+    [
+      'config/tutor-stub-resistance-semantic-adjudication-registration.v2.json',
+      v1.v2InstrumentRegistrationSha256,
+      'v2 instrument registration',
+    ],
+  ].map(([filePath, recordedSha256, label]) => recordFileDigest({ root: ROOT, filePath, recordedSha256, label }));
   const artifact = registration?.instrument || {};
+  digestRecords.push(
+    ...[
+      [TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3, artifact.registrationSha256, 'v3 instrument registration'],
+      [artifact.implementationPath, artifact.implementationSha256, 'v3 adjudicator implementation'],
+      [artifact.responseSchemaPath, artifact.responseSchemaSha256, 'v3 response schema'],
+    ].map(([filePath, recordedSha256, label]) => recordFileDigest({ root: ROOT, filePath, recordedSha256, label })),
+  );
   if (
     artifact.registrationPath !== instrument?.path ||
     artifact.registrationPath !== TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3 ||
-    artifact.registrationSha256 !== instrument?.sha256 ||
     artifact.instrumentFreezeCommit !== 'a0e0b56d371e8313eeb98d99f22a1a5f880a0d67' ||
     artifact.implementationPath !== 'services/tutorStubResistanceSemanticAdjudicationV3.js' ||
-    artifact.implementationSha256 !== fileSha256(artifact.implementationPath) ||
     artifact.responseSchemaPath !== 'config/tutor-stub-resistance-semantic-adjudication-response.schema.v3.json' ||
-    artifact.responseSchemaSha256 !== fileSha256(artifact.responseSchemaPath) ||
     artifact.developmentEvidencePath !==
       'config/tutor-stub-resistance-semantic-adjudication-development-evidence.v3.json' ||
     artifact.developmentEvidenceSha256 !== fileSha256(artifact.developmentEvidencePath) ||
@@ -497,7 +518,7 @@ export function validateTutorStubResistanceSemanticValidationRegistrationV3({
   ) {
     issues.push('v3 validation-only claim boundary drifted');
   }
-  return { valid: issues.length === 0, issues, counts };
+  return { valid: issues.length === 0, issues, counts, digestRecords };
 }
 
 export function tutorStubResistanceSemanticOpaqueCaseIdV3(corpusCase) {
@@ -559,6 +580,7 @@ export function loadTutorStubResistanceSemanticValidationV3() {
     corpus,
     corpusSha256: fileSha256(registration.heldout.corpusPath),
     counts: validation.counts,
+    digestRecords: validation.digestRecords,
     buildBlindedCases: buildTutorStubResistanceSemanticBlindedValidationCasesV3,
     corpusCaseForExecutionId: tutorStubResistanceSemanticCorpusCaseForExecutionIdV3,
   };
@@ -636,11 +658,24 @@ export function assembleTutorStubResistanceSemanticValidationPreflightV3({ cases
 
 export function runTutorStubResistanceSemanticValidationPreflightV3({ contract }) {
   const loaded = loadTutorStubResistanceSemanticValidationV3();
+  const digestRecords = [
+    ...loaded.digestRecords,
+    recordFileDigest({
+      root: ROOT,
+      filePath: loaded.registrationPath,
+      recordedSha256: contract?.registration?.registration_sha256,
+      label: 'v3 endpoint validation registration',
+    }),
+    recordFileDigest({
+      root: ROOT,
+      filePath: loaded.instrument.path,
+      recordedSha256: contract?.registration?.instrument_registration_sha256,
+      label: 'v3 endpoint instrument registration',
+    }),
+  ];
   if (
     contract?.registration?.registration_path !== loaded.registrationPath ||
-    contract?.registration?.registration_sha256 !== loaded.registrationSha256 ||
     contract?.registration?.instrument_registration_path !== loaded.instrument.path ||
-    contract?.registration?.instrument_registration_sha256 !== loaded.instrument.sha256 ||
     contract?.registration?.heldout_corpus_path !== loaded.registration.heldout.corpusPath ||
     contract?.registration?.heldout_corpus_sha256 !== loaded.corpusSha256
   ) {
@@ -667,6 +702,7 @@ export function runTutorStubResistanceSemanticValidationPreflightV3({ contract }
   });
   return {
     ...preflight,
+    digestRecords,
     semantic_validation_readiness_audit: {
       status: 'passed_zero_call_wiring_only_not_accuracy_evidence',
       frozen_instrument_registration_sha256: loaded.instrument.sha256,
