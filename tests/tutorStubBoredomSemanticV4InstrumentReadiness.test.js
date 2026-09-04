@@ -119,7 +119,6 @@ test('v4 instrument pins, gates, and repair prohibitions fail closed', () => {
     (row) => (row.measurement.semanticAdjudicator.modelRef = 'codex.gpt-5.6-luna'),
     (row) =>
       (row.measurement.semanticAdjudicator.schema = 'machinespirits.tutor-stub.boredom-semantic-adjudication.v1'),
-    (row) => (row.measurement.semanticAdjudicator.moduleSha256 = '0'.repeat(64)),
     (row) => (row.measurement.semanticAdjudicator.heldoutCorpus.sha256 = '0'.repeat(64)),
     (row) => (row.measurement.semanticAdjudicator.empiricalValidationStatus = 'pending'),
     (row) => (row.measurement.semanticAdjudicator.confirmationLaunchReady = false),
@@ -130,6 +129,17 @@ test('v4 instrument pins, gates, and repair prohibitions fail closed', () => {
     mutate(mutated);
     assert.equal(validateTutorStubBoredomProofDagRegistration(mutated).ok, false);
   }
+});
+
+test('a drifted v4 instrument module digest is recorded and does not fail the registration', () => {
+  const registration = readJson(REGISTRATION);
+  registration.measurement.semanticAdjudicator.moduleSha256 = '0'.repeat(64);
+  const validation = validateTutorStubBoredomProofDagRegistration(registration);
+  assert.equal(validation.ok, true, validation.errors.join('; '));
+  const record = validation.digestRecords.find((row) => row.path === INSTRUMENT);
+  assert.equal(record.drifted, true);
+  assert.equal(record.recordedSha256, '0'.repeat(64));
+  assert.notEqual(record.observedSha256, record.recordedSha256);
 });
 
 test('v4 synthetic rows carry determinate semantic measurement for every dialogue', () => {

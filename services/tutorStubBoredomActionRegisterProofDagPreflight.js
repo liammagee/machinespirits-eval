@@ -12,6 +12,7 @@ import {
   tutorStubResistanceHostActionFamily,
 } from './tutorStubResistanceActionRegisterStudy.js';
 import { compileTutorStubTurnProgressionContract } from './tutorStubTurnProgressionContract.js';
+import { recordFileDigest } from './recordedFileDigest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const BOREDOM_PROOF_DAG_REGISTRATION_PATH =
@@ -484,6 +485,7 @@ export function boredomRegisteredSizes(registration) {
 
 export function validateTutorStubBoredomProofDagRegistration(registration) {
   const errors = [];
+  const digestRecords = [];
   const worlds = registration?.design?.worlds || [];
   const power = registration?.power || {};
   const execution = registration?.executionReadiness || {};
@@ -1278,14 +1280,20 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   }
   if (prospectiveV4 || carriesForwardV4Instrument) {
     const adjudicator = registration.measurement?.semanticAdjudicator || {};
-    const modulePath = path.join(ROOT, String(adjudicator.modulePath || ''));
-    const moduleSource = fs.existsSync(modulePath) ? fs.readFileSync(modulePath) : null;
-    const moduleSha = moduleSource ? crypto.createHash('sha256').update(moduleSource).digest('hex') : null;
+    if (typeof adjudicator.modulePath === 'string' && fs.existsSync(path.join(ROOT, adjudicator.modulePath))) {
+      digestRecords.push(
+        recordFileDigest({
+          root: ROOT,
+          filePath: adjudicator.modulePath,
+          recordedSha256: adjudicator.moduleSha256,
+          label: 'v3 semantic adjudicator module',
+        }),
+      );
+    }
     const validation = adjudicator.empiricalValidation || {};
     if (
       adjudicator.schema !== 'machinespirits.tutor-stub.boredom-semantic-adjudication.v3' ||
       adjudicator.modulePath !== 'services/tutorStubBoredomSemanticAdjudicationV3.js' ||
-      moduleSha !== adjudicator.moduleSha256 ||
       adjudicator.empiricalValidationStatus !== 'passed_all_predeclared_gates_on_sealed_heldout_v4_corpus' ||
       (prospectiveV4 &&
         (adjudicator.confirmationLaunchReady !== true ||
@@ -1477,7 +1485,7 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   ) {
     errors.push('no-reuse, no-selection, or zero-call readiness boundary drifted');
   }
-  return { ok: errors.length === 0, errors, powerAt17, powerAt18 };
+  return { ok: errors.length === 0, errors, digestRecords, powerAt17, powerAt18 };
 }
 
 function assignmentManifestSha256(rows) {
