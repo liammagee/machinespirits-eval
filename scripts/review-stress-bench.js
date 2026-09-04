@@ -112,6 +112,7 @@ export function reviewStressTrace(tracePath, { labelRoot = process.cwd() } = {})
   const forces = byTurn('tutor_card_force');
   const outcomes = byTurn('tutor_response_guard_accounting');
   const closed = ev.some((e) => e.type === 'dialogue_closure_transition');
+  const hold = tallyStressHold(ev);
 
   const plants = plantEvents.map((plant) => {
     const turn = plant.turn;
@@ -177,8 +178,40 @@ export function reviewStressTrace(tracePath, { labelRoot = process.cwd() } = {})
     scheduleId: plantEvents[0].scheduleId || null,
     turnCount: Object.keys(turns).length,
     closed,
+    hold,
     plants,
   };
+}
+
+/**
+ * Held turns (hold copies of a schedule, 2026-09-02): one verdict event per
+ * held turn, and with the speech check on, one speech-check event with every
+ * draft. Retried = the reader said the first draft dropped the state and the
+ * sim rewrote once; copies = drafts the reader flagged as a near-verbatim
+ * copy of the sample line (step 7c, 2026-09-03). Zero-filled when the run
+ * held nothing, so the sheet can skip the rows.
+ */
+export function tallyStressHold(events) {
+  const verdicts = events.filter((e) => e.type === 'learner_stress_hold_verdict');
+  const checks = events.filter((e) => e.type === 'learner_stress_hold_speech_check');
+  return {
+    heldTurns: verdicts.length,
+    kept: verdicts.filter((e) => e.verdict === 'kept').length,
+    released: verdicts.filter((e) => e.verdict === 'released').length,
+    releasedQuoteFound: verdicts.filter((e) => e.verdict === 'released' && e.quoteFound === true).length,
+    missingVerdict: verdicts.filter((e) => e.verdict === 'missing').length,
+    speechChecked: checks.length,
+    retried: checks.filter((e) => e.retried === true).length,
+    finalDrops: checks.filter((e) => e.finalHolds === false).length,
+    unreadable: checks.filter((e) => e.finalHolds === null).length,
+    copies: checks.reduce((n, e) => n + (e.drafts || []).filter((d) => d.copy === true).length, 0),
+  };
+}
+
+function sumHold(reviews) {
+  const out = tallyStressHold([]);
+  for (const r of reviews) for (const k of Object.keys(out)) out[k] += r.hold?.[k] || 0;
+  return out;
 }
 
 function tally(plants) {
@@ -257,6 +290,7 @@ export function summarizeStressReviews(reviews) {
     pooled: {
       ...tally(reviews.flatMap((r) => r.plants)),
       ...(judged ? tallyJudgments(reviews.flatMap((r) => r.plants)) : {}),
+      hold: sumHold(reviews),
     },
     perTrace: reviews.map((r) => ({
       label: r.label,
@@ -265,6 +299,7 @@ export function summarizeStressReviews(reviews) {
       models: r.models || {},
       ...tally(r.plants),
       ...(judged ? tallyJudgments(r.plants) : {}),
+      hold: r.hold || tallyStressHold([]),
     })),
   };
 }
@@ -296,6 +331,17 @@ export function renderStressReviewMarkdown(reviews, summary) {
   md.push(
     `| Card was the gold kind | ${frac(t.cardRight, t.scored)} | the active card names the move the plant calls for |`,
   );
+  if (t.hold?.heldTurns) {
+    const h = t.hold;
+    md.push(
+      `| Held turns kept | ${frac(h.kept, h.heldTurns)} | the sim's private verdict said it kept the planted state (${h.released} released, ${h.releasedQuoteFound} with the quote found in the reply, ${h.missingVerdict} no verdict) |`,
+    );
+    if (h.speechChecked) {
+      md.push(
+        `| Held turns retried | ${frac(h.retried, h.speechChecked)} | the reader said the first draft dropped the state and the sim rewrote once (${h.finalDrops} still dropped after, ${h.unreadable} unreadable, ${h.copies} drafts flagged as a copy of the sample line) |`,
+      );
+    }
+  }
   md.push(
     `| Reply delivery | ${frac(t.replyModel, t.scored)} | the model shipped the reply (${t.replyTemplate} template fallbacks) |`,
   );

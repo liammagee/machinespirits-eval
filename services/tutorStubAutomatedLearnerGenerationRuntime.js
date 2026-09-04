@@ -16,6 +16,7 @@ import {
 import {
   loadTutorStubStressSchedule,
   tutorStubStressTraceEvent,
+  markTutorStubStressPlantTurn,
   tutorStubStressDirective,
   tutorStubStressPlantForTurn,
   tutorStubStressHoldSpeechCheckEnabled,
@@ -326,9 +327,8 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   }
   function stressPlantForLearnerTurn(state, turnNumber, { recordTrace = true } = {}) {
     const schedule = activeStressSchedule();
-    if (!schedule) return null;
-    const plant = tutorStubStressPlantForTurn(schedule, turnNumber);
-    if (plant && recordTrace && state?.trace) {
+    const plant = schedule ? tutorStubStressPlantForTurn(schedule, turnNumber) : null;
+    if (plant && recordTrace && state?.trace && markTutorStubStressPlantTurn(state.trace, turnNumber)) {
       appendTraceEvent(state.trace, tutorStubStressTraceEvent(schedule, plant, turnNumber));
     }
     return plant;
