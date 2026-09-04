@@ -1,7 +1,7 @@
 ---
 id: remediate-development-toolchain-advisories
 title: Remediate the remaining development-toolchain advisories
-status: active
+status: review
 type: maintenance
 priority: P2
 owner: codex
@@ -52,12 +52,13 @@ and severities before implementation.
   `@humanfs/node` 0.16.8, `brace-expansion` 5.0.9, `postcss` 8.5.28, and
   `nanoid` 3.3.18. A clean install passed, and GitHub's reviewed advisory API
   returned no advisory affecting any of those exact versions. The npm audit
-  endpoint timed out on both a 20-second bounded request and an escalated
-  120-second request, so this disposition does not claim that a fresh full
-  audit found no unknown new advisories.
+  endpoint returned a network timeout on a 20-second bounded request; an
+  escalated request configured with a 120-second fetch timeout remained silent
+  after 140 seconds and was terminated. This disposition therefore does not
+  claim that a fresh full audit found no unknown new advisories.
 - 2026-09-04: `lint:all`, workplan source validation, the hermetic-test
   manifest, all 52 structural ratchet tests, tutor-core (150/150), real-browser
   tutor acceptance, and the full paper/atlas/arc build passed. Root shard 1
-  passed 5,614 tests with no failures; shard 2's nine failures were all the
-  expected clean-checkout precondition while this implementation was uncommitted
-  and will be rerun from the clean committed branch.
+  passed 5,614 tests with no failures. Shard 2's nine dirty-checkout
+  precondition failures disappeared after commit and rebase: the clean branch
+  passed 4,662 tests with no failures and nine expected private-artifact skips.
