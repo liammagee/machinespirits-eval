@@ -128,6 +128,15 @@ Byte pins are for sealed data inputs only (a held-out corpus, a validation
 certificate). Never for code, never for the registration. A pin that
 recomputes its own expectation is worse than no pin; delete it.
 
+Also banned, from the CLAUDE.md rule of 2026-09-03: a new numbered sibling
+file for a design, judge prompt, adjudicator, or corpus (`foo.v7.json`,
+`FooV8.js`). Amend the file in place and commit. A new study gets a new
+name. The structural ratchet (`npm run test:ratchets`) counts numbered
+siblings under `config/`, `services/`, and `scripts/` and fails when a
+count goes up. The historical GO-request checker and packager were deleted
+on the same date (PR after #991); the consumed request JSONs under `config/`
+stay as records.
+
 ## What replaces the tamper check
 
 Git and the reviewer. A design file changed after signing is a new commit.

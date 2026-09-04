@@ -60,12 +60,10 @@ const FOCUSED_PATH_PREFIXES = [
 // and test contracts. A filename pattern cannot safely select one validator.
 const STUDY_GO_RUNTIME_PATH = /^config\/[^/]*study-go-request[^/]*\.json$/u;
 
-const VALIDATOR_ONLY_GROUPS = [
-  {
-    paths: new Set(['tests/tutorStubResistantProfileStudyGoRequest.test.js']),
-    tests: ['tests/tutorStubResistantProfileStudyGoRequest.test.js'],
-  },
-];
+// Nothing is allowlisted. The one entry this held (the go-request contract
+// test) was deleted with the checker and packager on 2026-09-03. A path that
+// wants validator-only CI must be added here with its test, on purpose.
+const VALIDATOR_ONLY_GROUPS = [];
 
 export function fullCiClassification(reason) {
   return {
@@ -73,7 +71,6 @@ export function fullCiClassification(reason) {
     fullRequired: true,
     refGovernanceRequired: true,
     validationRequired: true,
-    authorizationRequired: false,
     validatorPaths: [],
     validatorTests: [],
     reason,
@@ -149,7 +146,6 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
       fullRequired: false,
       refGovernanceRequired: safeChangedFiles.some(pathRequiresRefGovernance),
       validationRequired: safeChangedFiles.some(pathRequiresValidationFramework),
-      authorizationRequired: false,
       validatorPaths: validatorOnly.paths,
       validatorTests: validatorOnly.tests,
       reason: `allowlisted validator-only change: ${validatorOnly.paths.join(', ')}`,
@@ -163,7 +159,6 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
       fullRequired: true,
       refGovernanceRequired: safeChangedFiles.some(pathRequiresRefGovernance),
       validationRequired: true,
-      authorizationRequired: false,
       validatorPaths: [],
       validatorTests: [],
       reason: `full CI boundary changed: ${fullPaths.join(', ')}`,
@@ -175,7 +170,6 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
     fullRequired: false,
     refGovernanceRequired: safeChangedFiles.some(pathRequiresRefGovernance),
     validationRequired: safeChangedFiles.some(pathRequiresValidationFramework),
-    authorizationRequired: false,
     validatorPaths: [],
     validatorTests: [],
     reason: `focused authored metadata only: ${safeChangedFiles.join(', ')}`,
@@ -297,7 +291,7 @@ function main() {
   if (args.githubOutput) {
     fs.appendFileSync(
       args.githubOutput,
-      `profile=${result.profile}\nfull_required=${result.fullRequired}\nref_governance_required=${result.refGovernanceRequired}\nvalidation_required=${result.validationRequired}\nauthorization_required=${result.authorizationRequired}\nvalidator_required=${result.validatorTests.length > 0}\nvalidator_tests=${result.validatorTests.join(' ')}\nvalidator_paths=${result.validatorPaths.join(' ')}\n`,
+      `profile=${result.profile}\nfull_required=${result.fullRequired}\nref_governance_required=${result.refGovernanceRequired}\nvalidation_required=${result.validationRequired}\nvalidator_required=${result.validatorTests.length > 0}\nvalidator_tests=${result.validatorTests.join(' ')}\nvalidator_paths=${result.validatorPaths.join(' ')}\n`,
     );
   }
   console.log(JSON.stringify(result));

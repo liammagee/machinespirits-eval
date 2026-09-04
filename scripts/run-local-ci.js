@@ -254,12 +254,6 @@ export function localCiLaneCatalog(
     '--validate-focused',
   ];
   const focusedCommands = [{ program: 'node', args: focusedValidationArgs }];
-  if (classification?.authorizationRequired) {
-    focusedCommands.push({
-      program: 'node',
-      args: ['--test', 'tests/tutorStubResistantProfileStudyGoRequest.test.js'],
-    });
-  }
 
   const validatorCommands = [{ program: 'node', args: focusedValidationArgs }];
   if (classification?.validatorTests.length) {

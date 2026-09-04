@@ -37,6 +37,24 @@ hours and caught nothing. When you feel the urge to add a gate, ask whether it
 would have caught a real defect. The answer is almost always a regression test,
 not a signature.
 
+## Edit in place; no numbered copies (hard rule, 2026-09-03)
+
+Amend a design, judge prompt, adjudicator, or corpus file **in place** and
+commit. A new numbered sibling file (`foo.v7.json`, `FooV8.js`, `foo-v3.js`)
+is banned. A new study gets a new name. Provenance is the commit hash in the
+run ledger, never a copy. Never write a test that hashes a source, design, or
+registration file and compares it with a literal; that test turns red on a
+one-line fix and pushes the next agent to make a copy. Byte pins are for sealed
+data only (held-out corpus, validation certificate).
+
+**Why.** The crossed registration for the resistant learner became ten files,
+v1 to v10, 3,487 lines; the v4 to v5 step changed 19 of them. The recovery
+adjudicator became eight files, V2 to V9, 6,211 lines; V6, V7 and V8 are about
+1,120 lines each, and the V7 to V8 step added one sentence. A model wrote each file whole. `npm run test:ratchets`
+counts numbered siblings under `config/`, `services/`, and `scripts/` and fails
+when a count goes up. Raising the cap in the same commit, with the reason in
+the commit message, is the only escape.
+
 ## Self-heal on mechanical failures (all agents, 2026-08-23)
 
 When a check fails for a mechanical reason, fix it and rerun without asking.

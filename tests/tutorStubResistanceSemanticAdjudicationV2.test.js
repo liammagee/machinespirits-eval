@@ -47,23 +47,17 @@ function pairFor(corpusCase) {
   );
 }
 
-test('v1 instrument, schema, development, heldout, and consumed request bytes remain frozen', () => {
+test('v1 sealed corpus bytes remain frozen', () => {
+  // Pins on code, schema, registration and request files were removed on
+  // 2026-09-03 (CLAUDE.md, edit in place). Only sealed data inputs stay pinned.
   assert.deepEqual(
     {
-      implementation: sha256('services/tutorStubResistanceSemanticAdjudication.js'),
-      schema: sha256('config/tutor-stub-resistance-semantic-adjudication-response.schema.v1.json'),
-      registration: sha256('config/tutor-stub-resistance-semantic-adjudication-registration.v1.json'),
       development: sha256('config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json'),
       heldout: sha256('config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json'),
-      request: sha256('config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json'),
     },
     {
-      implementation: '4c1123b7272e33bdfc63205c85058d9b02753b7c89d3c05af2137b0f72783456',
-      schema: '39a9d12655ec26b1255ab72cfd1f5818dc9e0084daf4c9fafc39c0dbb8ea044f',
-      registration: 'd479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d',
       development: '159fdafe39d67c200868f67a27ea5392366c614e4b2b73f186c3051cb734a5e9',
       heldout: '9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7',
-      request: 'b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826',
     },
   );
 });
@@ -80,8 +74,6 @@ test('v2 freezes a quote-only example-free prompt and discloses all observed v1 
     developmentEvidence.inputs[1].sealed_report_sha256,
     registration.supersession.v1FailedValidationReportSha256,
   );
-  assert.equal(sha256(registration.instrument.implementationPath), registration.instrument.implementationSha256);
-  assert.equal(sha256(registration.instrument.responseSchemaPath), registration.instrument.responseSchemaSha256);
   assert.equal(
     sha256(registration.instrument.developmentEvidencePath),
     registration.instrument.developmentEvidenceSha256,

@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -17,7 +16,6 @@ import {
   runTutorStubResistantLearnerMergedPreflight,
 } from '../services/tutorStubResistantLearnerMergedLaunch.js';
 import {
-  buildTutorStubResistantLearnerSemanticPrompt,
   createTutorStubResistantLearnerSemanticRuntime,
   foldTutorStubResistantLearnerMergedEvidencePunctuation,
 } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
@@ -42,10 +40,6 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESIGN_PATH = 'config/tutor-stub-resistant-learner-merged-design.v1.json';
 const B1_V3_PATH = 'config/tutor-stub-resistant-learner-b1-design.v3.json';
 const R1_V3_PATH = 'config/tutor-stub-resistant-learner-r1-design.v3.json';
-
-function sha256(value) {
-  return crypto.createHash('sha256').update(value).digest('hex');
-}
 
 function load(relativePath = DESIGN_PATH) {
   return { ...loadTutorStubResistantLearnerDesign({ designPath: relativePath, root: ROOT }), relativePath };
@@ -332,43 +326,13 @@ test('merged punctuation folding admits the real apostrophe pair and exact-rung 
   assert.equal(rung2.result.fields.final_graded_engagement_rung.value, '2');
 });
 
-test('sealed v3 files and semantic prompt bytes remain unchanged end to end', () => {
-  const expectedFiles = {
-    [B1_V3_PATH]: 'd80e7e7e26e41a72e175364c17c268e75168de13a41c9adc32882a13ac917502',
-    [R1_V3_PATH]: '6fc375f210998a00fd86a2f247918b7b7222c58eba91269e833a79b6901b986a',
-    'config/tutor-stub-resistant-learner-semantic-registration.v2.json':
-      '1d0ac9e887ae9e22b4b9976f9721070154a479480971180e316a9a29eb0f30dc',
-    'config/tutor-stub-resistant-learner-b1-trigger-registration.v3.json':
-      '4bdc12a07d6af075d2a5e2ab46c24feee8fc44ad4adab5fdf73b5b449a867c4f',
-    'config/tutor-stub-resistant-learner-r1-turn-gate-registration.v3.json':
-      '39645a785128c2a2142a1002d196ddd008fba5b73189406203f2158e270ce194',
-  };
-  for (const [relativePath, digest] of Object.entries(expectedFiles)) {
-    assert.equal(sha256(fs.readFileSync(path.join(ROOT, relativePath))), digest, relativePath);
-  }
-  const expectedPromptHashes = {
-    B1: 'fdf1ead26496f3796a50ec158444d4fb03206158c06edbeabb6824f1c22d0783',
-    R1: '27d6ac4b12e517d03b3829e64a1d19d65158962c5c60a750d26a13c7e59b3569',
-  };
-  for (const [study, relativePath] of [
-    ['B1', B1_V3_PATH],
-    ['R1', R1_V3_PATH],
-  ]) {
+test('each v3 face design still plans eighteen calibration jobs', () => {
+  // The digest pins on the v3 design, registration and prompt bytes that lived
+  // here were removed on 2026-09-03 (CLAUDE.md, edit in place). Provenance is
+  // the commit hash in the run ledger; git diff is the tamper check.
+  for (const relativePath of [B1_V3_PATH, R1_V3_PATH]) {
     const loaded = load(relativePath);
-    assert.equal(buildTutorStubResistantLearnerCalibrationPlan(loaded.design).jobs.length, 18);
-    const prompt = buildTutorStubResistantLearnerSemanticPrompt({
-      caseId: 'sealed-fixture',
-      study,
-      instrument: 'primary',
-      publicPacket: {
-        trigger: 'I am working on the rival record.',
-        intervention: 'Whether the booking or receipt differs, which public date separates them?',
-        post_1: 'The public record leaves one possibility open.',
-      },
-      judge: loaded.design.models.finalSemanticReaders[0],
-      design: loaded.design,
-    });
-    assert.equal(sha256(JSON.stringify(prompt)), expectedPromptHashes[study]);
+    assert.equal(buildTutorStubResistantLearnerCalibrationPlan(loaded.design).jobs.length, 18, relativePath);
   }
 });
 
@@ -430,11 +394,6 @@ test('merged approval is unversioned and retired execution refuses before a chil
   );
   assert.equal(childCalls, 0);
   fs.rmSync(destination, { recursive: true, force: true });
-});
-
-test('the agreed draft note is committed without byte changes', () => {
-  const source = fs.readFileSync(path.join(ROOT, 'notes/2026-08-24-resistant-learner-merged-registration-draft.md'));
-  assert.equal(sha256(source), '533b97b6f97639287358e2a10adc811d0f990f17ea5ebdf9e857d96417a1efbc');
 });
 
 test('the merged design routes the faceA trigger seat to the rival-attention v3 adjudicator', async () => {

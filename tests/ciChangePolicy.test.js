@@ -86,29 +86,22 @@ test('runtime, dependency, workflow, database, evaluator, and tutor paths fail c
   }
 });
 
-test('the self-running validator test uses validator-only CI', () => {
-  const changedFiles = ['tests/tutorStubResistantProfileStudyGoRequest.test.js', 'workplan/items/example.md'];
-  const result = classifyCiChanges({ changedFiles });
-  assert.equal(result.profile, 'validator-only');
-  assert.equal(result.fullRequired, false);
-  assert.deepEqual(result.validatorPaths, changedFiles.slice(0, 1));
-  assert.deepEqual(result.validatorTests, ['tests/tutorStubResistantProfileStudyGoRequest.test.js']);
-  assert.equal(pathAllowsValidatorOnlyCi(changedFiles[0]), true);
-  assert.deepEqual(selectValidatorOnlyCi([changedFiles[0]]).tests, result.validatorTests);
-});
-
-test('validator-only CI fails closed when shared code, runtime, endpoint, or unregistered validators are mixed in', () => {
-  const registered = 'tests/tutorStubResistantProfileStudyGoRequest.test.js';
-  for (const widenedPath of [
-    'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
-    'services/tutorStubResistanceAxisDiscriminationPreflight.js',
-    'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json',
+test('no path is allowlisted for validator-only CI', () => {
+  // The one allowlisted entry (the go-request contract test) was deleted with
+  // the checker and packager on 2026-09-03. A test file that changes on its own
+  // now takes the full profile like any other test.
+  for (const file of [
+    'tests/tutorStubResistantProfileStudyGoRequest.test.js',
+    'tests/ciChangePolicy.test.js',
     'scripts/check-unregistered-validator.js',
   ]) {
-    const result = classifyCiChanges({ changedFiles: [registered, widenedPath] });
-    assert.equal(result.profile, 'full', widenedPath);
-    assert.equal(result.fullRequired, true, widenedPath);
-    assert.deepEqual(result.validatorTests, [], widenedPath);
+    assert.equal(pathAllowsValidatorOnlyCi(file), false, file);
+    assert.equal(selectValidatorOnlyCi([file]), null, file);
+    const result = classifyCiChanges({ changedFiles: [file, 'workplan/items/example.md'] });
+    assert.equal(result.profile, 'full', file);
+    assert.equal(result.fullRequired, true, file);
+    assert.deepEqual(result.validatorPaths, [], file);
+    assert.deepEqual(result.validatorTests, [], file);
   }
 });
 
@@ -260,7 +253,7 @@ test('ordinary research prose keeps the validation framework while protected res
     changedFiles: ['config/tutor-stub-example-study-go-request.v1.json'],
   });
   assert.equal(studyGo.profile, 'full');
-  assert.equal(studyGo.authorizationRequired, false);
+  assert.equal('authorizationRequired' in studyGo, false);
 });
 
 test('focused validation parses changed JSON and rejects malformed or widened changes', () => {

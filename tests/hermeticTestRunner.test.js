@@ -199,7 +199,6 @@ test('root sharding is deterministic, exhaustive, and isolated from forwarded ru
 test('four-way shard overrides retain the measured hosted corrections', () => {
   const expectedMembership = new Map([
     ['tests/tutorStubResistanceSemanticValidationRuntime.test.js', 2],
-    ['tests/tutorStubResistanceActionRegisterConfirmationGoRequest.test.js', 1],
     ['tests/tutorStubHumanDiscourseLayer.test.js', 1],
   ]);
 
