@@ -22,7 +22,7 @@ import { TUTOR_STUB_PLANT_STATE_TO_PRESSURE, TUTOR_STUB_PLANT_STATE_TO_QUIET } f
 // The default feature set for new artifacts. Older artifacts name their own
 // featureVersion and keep computing with that set, so form-v1 stays loadable.
 export const TUTOR_STUB_FORM_FEATURE_VERSION = 'form-v2';
-export const TUTOR_STUB_FORM_FEATURE_VERSIONS = Object.freeze(['form-v1', 'form-v2']);
+export const TUTOR_STUB_FORM_FEATURE_VERSIONS = Object.freeze(['form-v1', 'form-v2', 'form-v3']);
 
 export const TUTOR_STUB_FORM_STATES = Object.freeze([
   'jumping_ahead',
@@ -205,7 +205,33 @@ const CUES_V2 = CUES_V1.map(([name, re]) => {
   ],
 ]);
 
-const CUE_SETS = Object.freeze({ 'form-v1': CUES_V1, 'form-v2': CUES_V2 });
+// form-v3 (2026-09-03): one conjunction for the shape three of the five
+// step-6 irritated lines took and no earlier cue carried — the learner quotes
+// the tutor's phrase and, outside the quote marks, either demands the thing
+// said plainly (say/tell ... plainly, straight, normally, once; in plain or
+// normal words), or challenges the speech itself (who talks like that, hear
+// yourself, listen to yourself, reading that off a card, doing the X voice, come
+// on). A quote plus a demand for CONTENT ("just tell me what to write") is not
+// this shape; that stays a demand. form-v3 also stops a straight apostrophe
+// from opening a quoted span, so "I'm not five" no longer swallows the line
+// up to the next quote mark (form-v1/v2 keep the old matcher, so their
+// artifacts compute as they did).
+const MANNER_CHALLENGE =
+  /\b(?:say|tell|put|give|explain)\b[^.?!]{0,30}\b(?:plainly|plain|straight|normally|properly|simply|once)\b|\bin (?:normal|plain|simple|proper|ordinary|my own|our own) words\b|\bwords or nothing\b|\bwho talks\b|\btalk(?:s|ing)? like that\b|\bhear yourself\b|\blisten to yourself\b|\breading (?:that|it|this|me) off\b|\boff (?:a|the|your) (?:card|sheet|script)\b|\b(?:oh,? )?come on\b|\b(?:doing|do|did) the \w+ voice\b/;
+const CUES_V3 = CUES_V2.concat([
+  ['quote_manner_challenge', (t, { quoted, outside }) => (quoted.length && MANNER_CHALLENGE.test(outside) ? 1 : 0)],
+]);
+
+const CUE_SETS = Object.freeze({ 'form-v1': CUES_V1, 'form-v2': CUES_V2, 'form-v3': CUES_V3 });
+
+// Quoted spans. form-v1/v2 let a straight apostrophe open a span (kept for
+// their artifacts); form-v3 takes double quotes and curly single quotes only.
+const QUOTE_SPAN_V1 = /[“"']([^“”"']{3,60})[”"']/g;
+const QUOTE_SPAN_V3 = /[“"]([^“”"]{3,80})[”"]|(?<![\p{L}\p{N}])‘([^‘’]{3,80})’/gu;
+
+function quotedSpans(raw, featureVersion) {
+  return raw.match(featureVersion === 'form-v3' ? QUOTE_SPAN_V3 : QUOTE_SPAN_V1) || [];
+}
 
 const NUMERIC_FEATURE_NAMES = Object.freeze([
   'question_count',
@@ -251,10 +277,14 @@ export function computeTutorStubFormFeatures(
   const own = contentTokens(raw);
   const tutor = contentTokens(tutorText);
   const prior = contentTokens(priorLearnerTexts[priorLearnerTexts.length - 1] || '');
-  const quoted = raw.match(/[“"']([^“”"']{3,60})[”"']/g) || [];
+  const quoted = quotedSpans(raw, featureVersion);
   const quotedTokens = contentTokens(quoted.join(' '));
+  const cueContext = {
+    quoted,
+    outside: quoted.length ? t.replace(featureVersion === 'form-v3' ? QUOTE_SPAN_V3 : QUOTE_SPAN_V1, ' ') : t,
+  };
   const cueValues = cuesFor(featureVersion).map(([, cue]) =>
-    (typeof cue === 'function' ? cue(t) : cue.test(t)) ? 1 : 0,
+    (typeof cue === 'function' ? cue(t, cueContext) : cue.test(t)) ? 1 : 0,
   );
   return [
     ...cueValues,

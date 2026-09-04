@@ -9,7 +9,7 @@
  *     [--holdout-trace <file>]... [--holdout-dir <dir>]... \
  *     [--out config/manner-trigger/form-v1.json] \
  *     [--epochs 300] [--lr 0.05] [--l2 0.0005] [--threshold 0.5] [--neutral-weight 0.35] \
- *     [--seed 7] [--json] [--per-plant]
+ *     [--feature-version form-v2] [--seed 7] [--json] [--per-plant]
  *
  * Pool traces (--train-dir) supply training examples. Holdout traces are never
  * trained on. Every planted learner turn is one example labelled with its
@@ -26,13 +26,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  TUTOR_STUB_FORM_FEATURE_NAMES,
   TUTOR_STUB_FORM_FEATURE_VERSION,
+  TUTOR_STUB_FORM_FEATURE_VERSIONS,
   TUTOR_STUB_FORM_STATES,
   TUTOR_STUB_FORM_STATE_TO_PRESSURE,
   computeTutorStubFormFeatures,
   compileTutorStubFormDetector,
   predictTutorStubFormState,
+  tutorStubFormFeatureNames,
 } from '../services/tutorStubFormStateDetector.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -72,7 +73,7 @@ function findTraces(dir) {
   return out.sort();
 }
 
-export function loadTraceExamples(tracePath) {
+export function loadTraceExamples(tracePath, featureVersion = TUTOR_STUB_FORM_FEATURE_VERSION) {
   const lines = fs.readFileSync(tracePath, 'utf8').split('\n').filter(Boolean);
   let world = null;
   const turns = [];
@@ -104,7 +105,11 @@ export function loadTraceExamples(tracePath) {
         turn: t.turn,
         state: plants[t.turn] || 'neutral',
         text: t.learner,
-        features: computeTutorStubFormFeatures(t.learner, { tutorText: lastTutor, priorLearnerTexts: priorLearner }),
+        features: computeTutorStubFormFeatures(
+          t.learner,
+          { tutorText: lastTutor, priorLearnerTexts: priorLearner },
+          featureVersion,
+        ),
       });
       priorLearner.push(t.learner);
     }
@@ -124,8 +129,12 @@ function mulberry(seed) {
   };
 }
 
-export function trainWeights(examples, { epochs, lr, l2, neutralWeight, seed }) {
-  const dim = TUTOR_STUB_FORM_FEATURE_NAMES.length;
+export function trainWeights(
+  examples,
+  { epochs, lr, l2, neutralWeight, seed },
+  featureVersion = TUTOR_STUB_FORM_FEATURE_VERSION,
+) {
+  const dim = tutorStubFormFeatureNames(featureVersion).length;
   const rand = mulberry(seed);
   const order = examples.map((_, i) => i);
   const weights = {};
@@ -230,6 +239,7 @@ function main() {
     '--threshold',
     '--neutral-weight',
     '--seed',
+    '--feature-version',
     '--json',
     '--per-plant',
   ]);
@@ -246,6 +256,12 @@ function main() {
   };
   const threshold = numberFlag(args, '--threshold', 0.5);
   const outArg = args.includes('--out') ? args[args.indexOf('--out') + 1] : null;
+  const featureVersion = args.includes('--feature-version')
+    ? args[args.indexOf('--feature-version') + 1]
+    : TUTOR_STUB_FORM_FEATURE_VERSION;
+  if (!TUTOR_STUB_FORM_FEATURE_VERSIONS.includes(featureVersion))
+    throw new Error(`--feature-version must be one of ${TUTOR_STUB_FORM_FEATURE_VERSIONS.join('/')}`);
+  const featureNames = tutorStubFormFeatureNames(featureVersion);
 
   const poolFiles = collectFlag(args, '--train-dir').flatMap(findTraces);
   if (!poolFiles.length) throw new Error('no training traces found under --train-dir');
@@ -255,21 +271,20 @@ function main() {
   ];
   for (const f of holdoutFiles) if (!fs.existsSync(f)) throw new Error(`holdout trace not found: ${f}`);
 
-  const pool = poolFiles.map(loadTraceExamples).filter((t) => t.plants > 0);
-  const holdout = holdoutFiles.map(loadTraceExamples).filter((t) => t.plants > 0);
+  const pool = poolFiles.map((f) => loadTraceExamples(f, featureVersion)).filter((t) => t.plants > 0);
+  const holdout = holdoutFiles.map((f) => loadTraceExamples(f, featureVersion)).filter((t) => t.plants > 0);
   const poolExamples = pool.flatMap((t) => t.examples);
   const holdoutExamples = holdout.flatMap((t) => t.examples);
   const worlds = [...new Set([...pool, ...holdout].map((t) => t.world))].sort();
 
-  const compile = (weights, version) =>
-    compileTutorStubFormDetector({ version, featureVersion: TUTOR_STUB_FORM_FEATURE_VERSION, threshold, weights });
+  const compile = (weights, version) => compileTutorStubFormDetector({ version, featureVersion, threshold, weights });
 
   const folds = {};
   for (const world of worlds) {
     const train = poolExamples.filter((ex) => ex.world !== world);
     const test = [...poolExamples, ...holdoutExamples].filter((ex) => ex.world === world);
     if (!train.length || !test.some((ex) => ex.state !== 'neutral')) continue;
-    const detector = compile(trainWeights(train, hyper), `loo-${world}`);
+    const detector = compile(trainWeights(train, hyper, featureVersion), `loo-${world}`);
     const result = evaluate(detector, test);
     folds[world] = {
       trainedOnWorlds: [...new Set(train.map((ex) => ex.world))].sort(),
@@ -280,15 +295,15 @@ function main() {
     };
   }
 
-  const finalWeights = trainWeights(poolExamples, hyper);
+  const finalWeights = trainWeights(poolExamples, hyper, featureVersion);
   const finalDetector = compile(finalWeights, 'form-v1');
   const finalHoldout = holdoutExamples.length ? evaluate(finalDetector, holdoutExamples) : null;
 
   const artifact = {
     schema: 'machinespirits.tutor-stub.form-state-detector.v1',
-    version: TUTOR_STUB_FORM_FEATURE_VERSION,
-    featureVersion: TUTOR_STUB_FORM_FEATURE_VERSION,
-    featureNames: TUTOR_STUB_FORM_FEATURE_NAMES,
+    version: featureVersion,
+    featureVersion,
+    featureNames,
     threshold,
     weights: finalWeights,
     trainedOn: {
