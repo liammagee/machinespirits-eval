@@ -650,6 +650,22 @@
       "frozen": true
     },
     {
+      "path": "scripts/analyze-superego-critique-causal-followup.js",
+      "family": "evaluation-core",
+      "purpose": "Test aggregate critique-revision association, audit omitted channels, and prepare a blinded semantic review packet without model calls.",
+      "flags": [
+        "--help",
+        "--input",
+        "--json",
+        "--logs",
+        "--output",
+        "--packet-dir",
+        "--permutations",
+        "--sample-per-profile",
+        "--seed"
+      ]
+    },
+    {
       "path": "scripts/analyze-superego-framing-trajectory.js",
       "family": "evaluation-core",
       "purpose": "Compare coded superego reframing trajectories with structural incorporation proxies.",
