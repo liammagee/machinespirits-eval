@@ -60,3 +60,11 @@ after a fresh checkout reset file mtimes. Replaced it with a tracked-corpus
 existing focused documentation-contract test to adjust; the command was run
 directly against the repository corpus and the normal source, formatting, and
 structural checks remained green.
+
+2026-09-04 Codex: A second review showed that widening the body-text regex
+would also produce false positives: `2318.37903` is a substring of ACM DOI
+`10.1145/3772318.3790326`, not an arXiv ID. The dedup command now extracts only
+the machine-readable `arxiv=` header field, splits its comma-separated IDs, and
+sorts uniquely. It captures the actual older fresh entry `2510.05188` and the
+current 26xx entries while leaving `2509.16713` and `2512.17060` as documented
+back-references rather than fresh-entry dedup keys.

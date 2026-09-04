@@ -66,8 +66,9 @@ rules below bind everything from 2026-06-11 on.
 
    ```bash
    # all arxiv IDs in tracked canonical roundups — exclude these from a new roundup
-   git grep -ohE '26[0-9]{2}\.[0-9]{4,5}' -- \
-     'notes/daily-notes/*-research-roundup.html' | sort -u
+   git grep -ohE 'arxiv=[^ ]+' -- \
+     'notes/daily-notes/*-research-roundup.html' \
+     | sed 's/^arxiv=//' | tr ',' '\n' | sort -u
    ```
 
    A paper genuinely worth re-surfacing (major revision, new relevance) goes in
