@@ -1,7 +1,7 @@
 ---
 id: remove-go-packager-working-tree-source-pins
 title: Remove working-tree source pins from the historical GO packager
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -17,6 +17,8 @@ links:
   notes:
     - docs/paid-study-authorization-policy.md
     - scripts/package-tutor-stub-resistant-profile-study-go-request.js
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/991
 tags:
   - paid-study
   - provenance
@@ -54,3 +56,7 @@ recorded launch commit and never compares them with the working tree. The three
 affected suites explicitly separate current-source validator fixtures from
 launch-commit replay fixtures; all 24 focused packager tests pass. No sealed
 request artifact changed.
+
+2026-09-03 — PR #991 merged with every required hosted check green. The clean
+post-implementation hermetic run passed 10,295 root tests and 145 tutor-core
+tests with zero failures; 27 registered skips remained unchanged.

@@ -1,7 +1,7 @@
 ---
 id: plain-speech-stop-hook
 title: Stop hook that blocks a reply which breaks the style rule
-status: review
+status: done
 type: infra
 priority: P1
 owner: claude
@@ -16,6 +16,8 @@ links:
     - .claude/settings.json
     - scripts/plain-speech-stop-hook.js
     - tests/plainSpeechStopHook.test.js
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/989
 tags:
   - tooling
   - claude
@@ -46,3 +48,6 @@ Hooks load at session start, so the check is live from the next session.
 
 - 2026-09-03: hook, ten tests, settings entry, manifest update. Checked on
   two real replies from this session (5 and 7 findings) and on a clean recap.
+- 2026-09-03: PR #989 merged with all required checks green. Post-merge
+  verification passed all 10 focused hook tests, including one-block retry and
+  clean-reply behavior.
