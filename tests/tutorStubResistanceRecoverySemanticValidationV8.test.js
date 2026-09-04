@@ -18,6 +18,8 @@ test('V8 registrations bind one wholly fresh corpus but separate sequential stag
   assert.equal(primary.stage, 'primary_recovery');
   assert.equal(fidelity.stage, 'intervention_fidelity');
   assert.equal(primary.corpusSha256, fidelity.corpusSha256);
+  assert.equal(primary.digestRecords[0].drifted, false);
+  assert.equal(primary.digestRecords[0].observedSha256, primary.instrumentSha256);
   assert.equal(primary.registration.lifecycle.stageOrder, 'primary_then_fidelity');
   assert.deepEqual(primary.registration.lifecycle.responseFreeRetryDelaysMs, [15000, 45000]);
 });
