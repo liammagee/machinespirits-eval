@@ -6,6 +6,24 @@ generator and any human editor follow so the folder stays a clean,
 non-overlapping timeline instead of a pile of synonym-named, overlapping-window
 digests.
 
+## Scheduler status
+
+The upstream generator is the external Claude Cloud routine **Research
+roundup** (`trig_01Jr63yDpgZ5JPvpVv6mtqai`), not a repository workflow or a
+local Codex automation. As inspected in the Claude Routines UI on 2026-09-04,
+the routine is explicitly disabled: status **Paused**, **Enabled Off**, with
+all triggers paused. Its configured cadence remains Monday at 4:00 AM CDT; its
+last run succeeded on 2026-08-17 (26 of 30 recorded runs succeeded).
+
+While that explicit pause remains in force, a missing roundup is expected and
+must not be diagnosed from the PR-triggered email or workplan-ingest workflows;
+those downstream workflows only run after the external routine opens a PR. If
+the routine is re-enabled, the first new note must cover
+`(2026-08-17, run date]`, then resume the delta rule below, and must deduplicate
+against the arXiv IDs already present in this folder. Update this dated status
+paragraph whenever the external routine is paused, resumed, replaced, or
+retired so silence remains distinguishable from a missed active run.
+
 ## The drift this prevents
 
 The first two notes showed the failure mode:
@@ -41,14 +59,26 @@ rules below bind everything from 2026-06-11 on.
    State the window in a machine-readable header comment (rule 5).
 
 3. **Dedup by arxiv ID (hard rule).** No arxiv ID appears in two roundups.
-   Before publishing, compute the IDs already covered in the last 30 days and
-   exclude them from the new note:
+   Before publishing, compute the IDs already covered by every tracked
+   canonical roundup and exclude them from the new note. Use the tracked corpus,
+   not filesystem modification times: a fresh checkout resets mtimes and can
+   otherwise make old papers look eligible again.
 
    ```bash
-   # arxiv IDs already covered in the last 30 days — exclude these from a new roundup
-   find notes/daily-notes -name '*research-roundup*.html' -mtime -30 \
-     -exec grep -ohE '26[0-9]{2}\.[0-9]{4,5}' {} + | sort -u
+   # all arxiv IDs in tracked canonical roundups — exclude these from a new roundup
+   {
+     git grep -ohE 'arxiv=[^ ]+' -- \
+       'notes/daily-notes/*-research-roundup.html' \
+       | sed 's/^arxiv=//' | tr ',' '\n'
+     git grep -ohE 'arxiv\.org/abs/[0-9]{4}\.[0-9]{4,5}' -- \
+       'notes/daily-notes/*-research-roundup.html' \
+       | sed 's#^.*/abs/##'
+   } | sort -u
    ```
+
+   The link-target pass covers the canonical 2026-06-09 roundup, which predates
+   the `arxiv=` header. Keeping it scoped to actual `arxiv.org/abs/` targets
+   avoids treating DOI fragments and other dotted numbers as arXiv IDs.
 
    A paper genuinely worth re-surfacing (major revision, new relevance) goes in
    the new note **as a back-reference** ("revisits 2606.xxxxx, first noted
