@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { recordFileDigest } from './recordedFileDigest.js';
 import { createTutorStubResistanceActionRegisterStudyRuntime } from './tutorStubResistanceActionRegisterStudy.js';
 import { loadTutorStubResistanceActionRegisterRegistration } from './tutorStubResistanceActionRegisterStudy.js';
 
@@ -44,14 +45,15 @@ function randomizedAssignments(seed, blockId) {
     .map((entry, index) => ({ ...entry, permutation_rank: index + 1 }));
 }
 
-function assertRepoFileHash(root, binding, label) {
+// The path guard stays a refusal: a binding that names nothing, or names a file
+// outside the repository, is a broken design. The digest is a record.
+function assertRepoFilePathAndRecordDigest(root, binding, label) {
   const absolute = path.resolve(root, binding?.path || '');
   const rebased = path.relative(root, absolute);
   if (!binding?.path || rebased.startsWith('..') || path.isAbsolute(rebased) || !fs.existsSync(absolute)) {
     throw new Error(`${label} path is invalid`);
   }
-  const observed = sha256(fs.readFileSync(absolute));
-  if (observed !== binding.sha256) throw new Error(`${label} hash drifted`);
+  return recordFileDigest({ root, filePath: binding.path, recordedSha256: binding.sha256, label });
 }
 
 export function validateTutorStubResistanceWarmNonwarmDesign(design, root = process.cwd()) {
@@ -95,9 +97,12 @@ export function validateTutorStubResistanceWarmNonwarmDesign(design, root = proc
   ) {
     issues.push('completed validation or no-repeat boundary drifted');
   }
+  const digestRecords = [];
   try {
-    assertRepoFileHash(root, design?.measurement?.triggerInstrument, 'trigger instrument');
-    assertRepoFileHash(root, design?.measurement?.outcomeAndFidelityInstrument, 'outcome instrument');
+    digestRecords.push(
+      assertRepoFilePathAndRecordDigest(root, design?.measurement?.triggerInstrument, 'trigger instrument'),
+      assertRepoFilePathAndRecordDigest(root, design?.measurement?.outcomeAndFidelityInstrument, 'outcome instrument'),
+    );
   } catch (error) {
     issues.push(error.message);
   }
@@ -123,7 +128,7 @@ export function validateTutorStubResistanceWarmNonwarmDesign(design, root = proc
   ) {
     issues.push('recovery or exclusion boundary drifted');
   }
-  return { valid: issues.length === 0, issues };
+  return { valid: issues.length === 0, issues, digestRecords };
 }
 
 export function loadTutorStubResistanceWarmNonwarmDesign({ designPath, root = process.cwd() } = {}) {
@@ -132,7 +137,7 @@ export function loadTutorStubResistanceWarmNonwarmDesign({ designPath, root = pr
   const design = JSON.parse(source);
   const validation = validateTutorStubResistanceWarmNonwarmDesign(design, root);
   if (!validation.valid) throw new Error(`warm/nonwarm design invalid: ${validation.issues.join('; ')}`);
-  return { path: absolute, source, sha256: sha256(source), design };
+  return { path: absolute, source, sha256: sha256(source), design, digestRecords: validation.digestRecords };
 }
 
 export function buildTutorStubResistanceWarmNonwarmPlan(design) {

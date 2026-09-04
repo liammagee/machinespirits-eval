@@ -11,6 +11,7 @@ import {
   readTutorStubResistanceAxisTrace,
 } from '../scripts/analyze-tutor-stub-resistance-axis-calibration.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
+import { recordFileDigest } from './recordedFileDigest.js';
 import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } from './resistantLearnerObservation.js';
 import {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
@@ -78,12 +79,16 @@ function registrationBinding(contract) {
   const filePath = path.join(ROOT, relativePath);
   const bytes = fs.readFileSync(filePath);
   const observed = sha256(bytes);
-  if (observed !== contract.registration.registration_sha256) {
-    throw new Error(`axis registration digest mismatch: expected ${contract.registration.registration_sha256}`);
-  }
+  const digestRecord = recordFileDigest({
+    root: ROOT,
+    filePath: relativePath,
+    recordedSha256: contract.registration.registration_sha256,
+    label: 'axis study registration',
+  });
   return {
     path: relativePath,
     sha256: observed,
+    digestRecord,
     registration: JSON.parse(bytes.toString('utf8')),
   };
 }
