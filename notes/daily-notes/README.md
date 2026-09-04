@@ -66,10 +66,19 @@ rules below bind everything from 2026-06-11 on.
 
    ```bash
    # all arxiv IDs in tracked canonical roundups — exclude these from a new roundup
-   git grep -ohE 'arxiv=[^ ]+' -- \
-     'notes/daily-notes/*-research-roundup.html' \
-     | sed 's/^arxiv=//' | tr ',' '\n' | sort -u
+   {
+     git grep -ohE 'arxiv=[^ ]+' -- \
+       'notes/daily-notes/*-research-roundup.html' \
+       | sed 's/^arxiv=//' | tr ',' '\n'
+     git grep -ohE 'arxiv\.org/abs/[0-9]{4}\.[0-9]{4,5}' -- \
+       'notes/daily-notes/*-research-roundup.html' \
+       | sed 's#^.*/abs/##'
+   } | sort -u
    ```
+
+   The link-target pass covers the canonical 2026-06-09 roundup, which predates
+   the `arxiv=` header. Keeping it scoped to actual `arxiv.org/abs/` targets
+   avoids treating DOI fragments and other dotted numbers as arXiv IDs.
 
    A paper genuinely worth re-surfacing (major revision, new relevance) goes in
    the new note **as a back-reference** ("revisits 2606.xxxxx, first noted

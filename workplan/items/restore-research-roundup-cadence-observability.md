@@ -65,6 +65,14 @@ structural checks remained green.
 would also produce false positives: `2318.37903` is a substring of ACM DOI
 `10.1145/3772318.3790326`, not an arXiv ID. The dedup command now extracts only
 the machine-readable `arxiv=` header field, splits its comma-separated IDs, and
-sorts uniquely. It captures the actual older fresh entry `2510.05188` and the
-current 26xx entries while leaving `2509.16713` and `2512.17060` as documented
-back-references rather than fresh-entry dedup keys.
+sorts uniquely. At that intermediate stage it captured the actual older fresh
+entry `2510.05188` and current 26xx entries while leaving `2509.16713` and
+`2512.17060` as documented back-references rather than fresh-entry dedup keys.
+
+2026-09-04 Codex: Final review identified the metadata-free canonical
+`2026-06-09-research-roundup.html`. The documented command now unions metadata
+IDs with IDs extracted only from actual `arxiv.org/abs/<id>` link targets across
+the tracked canonical roundup corpus, then sorts uniquely. This recovers all
+six fresh June 9 IDs without reopening unrestricted body-number matching or
+admitting DOI fragments. Link-only older references remain eligible as dedup
+keys, so a previously back-referenced paper cannot silently return as fresh.
