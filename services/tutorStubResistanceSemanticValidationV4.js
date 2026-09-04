@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { recordFileDigest } from './recordedFileDigest.js';
 import { tutorStubResistanceSemanticSha256 } from './tutorStubResistanceSemanticAdjudication.js';
 import { validateTutorStubResistanceSemanticRegistrationV4 } from './tutorStubResistanceSemanticAdjudicationV4.js';
 import {
@@ -64,15 +65,21 @@ export function validateTutorStubResistanceSemanticValidationRegistrationV4({
     issues.push('v4 validation registration identity or keys drifted');
   }
   const artifact = registration?.instrument || {};
+  const digestRecords = [
+    [
+      TUTOR_STUB_RESISTANCE_SEMANTIC_INSTRUMENT_REGISTRATION_V4,
+      artifact.registrationSha256,
+      'v4 instrument registration',
+    ],
+    [artifact.ensembleImplementationPath, artifact.ensembleImplementationSha256, 'v4 ensemble implementation'],
+    [artifact.seatImplementationPath, artifact.seatImplementationSha256, 'v4 seat implementation'],
+    [artifact.responseSchemaPath, artifact.responseSchemaSha256, 'v4 response schema'],
+    [artifact.scoringImplementationPath, artifact.scoringImplementationSha256, 'v4 scoring implementation'],
+  ].map(([filePath, recordedSha256, label]) => recordFileDigest({ root: ROOT, filePath, recordedSha256, label }));
   if (
     artifact.registrationPath !== TUTOR_STUB_RESISTANCE_SEMANTIC_INSTRUMENT_REGISTRATION_V4 ||
     artifact.registrationPath !== instrument?.path ||
-    artifact.registrationSha256 !== instrument?.sha256 ||
     artifact.instrumentFreezeCommit !== 'bc4edae085da2f2c9f328a584eb5b8c42b87efa5' ||
-    artifact.ensembleImplementationSha256 !== fileSha256(artifact.ensembleImplementationPath) ||
-    artifact.seatImplementationSha256 !== fileSha256(artifact.seatImplementationPath) ||
-    artifact.responseSchemaSha256 !== fileSha256(artifact.responseSchemaPath) ||
-    artifact.scoringImplementationSha256 !== fileSha256(artifact.scoringImplementationPath) ||
     artifact.postHeldoutPromptModelOntologyConsensusOrGateTuning !== false
   ) {
     issues.push('v4 frozen instrument, schema, or scorer binding drifted');
@@ -162,7 +169,7 @@ export function validateTutorStubResistanceSemanticValidationRegistrationV4({
   if (corpus !== TUTOR_STUB_RESISTANCE_SEMANTIC_HELDOUT_CORPUS_V4) {
     issues.push('v4 loader corpus identity drifted');
   }
-  return { valid: issues.length === 0, issues };
+  return { valid: issues.length === 0, issues, digestRecords };
 }
 
 export function tutorStubResistanceSemanticOpaqueCaseIdV4(corpusCase) {

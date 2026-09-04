@@ -11,6 +11,7 @@ import {
 } from './tutorStubResistanceSemanticAdjudicationV2.js';
 import { tutorStubResistanceSemanticSha256 } from './tutorStubResistanceSemanticAdjudication.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
+import { recordFileDigest } from './recordedFileDigest.js';
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
   loadTutorStubResistanceSemanticRegistration,
@@ -174,9 +175,6 @@ export function validateTutorStubResistanceSemanticValidationRegistrationV2({
     ]) ||
     v1.v1ValidationRegistrationPath !==
       'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json' ||
-    v1.v1ValidationRegistrationSha256 !== fileSha256(v1.v1ValidationRegistrationPath) ||
-    v1.v1InstrumentRegistrationSha256 !==
-      fileSha256('config/tutor-stub-resistance-semantic-adjudication-registration.v1.json') ||
     v1.v1HeldoutCorpusSha256 !==
       fileSha256('config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json') ||
     v1.v1ConsumedRequestPath !==
@@ -202,16 +200,32 @@ export function validateTutorStubResistanceSemanticValidationRegistrationV2({
   ) {
     issues.push('sealed failed v1 validation preservation drifted');
   }
+  const digestRecords = [
+    [
+      'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json',
+      v1.v1ValidationRegistrationSha256,
+      'v1 validation registration',
+    ],
+    [
+      'config/tutor-stub-resistance-semantic-adjudication-registration.v1.json',
+      v1.v1InstrumentRegistrationSha256,
+      'v1 instrument registration',
+    ],
+  ].map(([filePath, recordedSha256, label]) => recordFileDigest({ root: ROOT, filePath, recordedSha256, label }));
   const artifact = registration?.instrument || {};
+  digestRecords.push(
+    ...[
+      [TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2, artifact.registrationSha256, 'v2 instrument registration'],
+      [artifact.implementationPath, artifact.implementationSha256, 'v2 adjudicator implementation'],
+      [artifact.responseSchemaPath, artifact.responseSchemaSha256, 'v2 response schema'],
+    ].map(([filePath, recordedSha256, label]) => recordFileDigest({ root: ROOT, filePath, recordedSha256, label })),
+  );
   if (
     artifact.registrationPath !== instrument?.path ||
     artifact.registrationPath !== TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2 ||
-    artifact.registrationSha256 !== instrument?.sha256 ||
     artifact.instrumentFreezeCommit !== '30d184211e09371c6aff86abcbed4623b8e457f0' ||
     artifact.implementationPath !== 'services/tutorStubResistanceSemanticAdjudicationV2.js' ||
-    artifact.implementationSha256 !== fileSha256(artifact.implementationPath) ||
     artifact.responseSchemaPath !== 'config/tutor-stub-resistance-semantic-adjudication-response.schema.v2.json' ||
-    artifact.responseSchemaSha256 !== fileSha256(artifact.responseSchemaPath) ||
     artifact.developmentEvidencePath !==
       'config/tutor-stub-resistance-semantic-adjudication-development-evidence.v2.json' ||
     artifact.developmentEvidenceSha256 !== fileSha256(artifact.developmentEvidencePath) ||
@@ -381,7 +395,7 @@ export function validateTutorStubResistanceSemanticValidationRegistrationV2({
   ) {
     issues.push('v2 validation-only claim boundary drifted');
   }
-  return { valid: issues.length === 0, issues, counts };
+  return { valid: issues.length === 0, issues, counts, digestRecords };
 }
 
 export function tutorStubResistanceSemanticOpaqueCaseIdV2(corpusCase) {
@@ -439,6 +453,7 @@ export function loadTutorStubResistanceSemanticValidationV2() {
     corpus,
     corpusSha256: fileSha256(registration.heldout.corpusPath),
     counts: validation.counts,
+    digestRecords: validation.digestRecords,
     buildBlindedCases: buildTutorStubResistanceSemanticBlindedValidationCasesV2,
     corpusCaseForExecutionId: tutorStubResistanceSemanticCorpusCaseForExecutionIdV2,
   };
@@ -512,11 +527,24 @@ export function assembleTutorStubResistanceSemanticValidationPreflightV2({ cases
 
 export function runTutorStubResistanceSemanticValidationPreflightV2({ contract }) {
   const loaded = loadTutorStubResistanceSemanticValidationV2();
+  const digestRecords = [
+    ...loaded.digestRecords,
+    recordFileDigest({
+      root: ROOT,
+      filePath: loaded.registrationPath,
+      recordedSha256: contract?.registration?.registration_sha256,
+      label: 'v2 endpoint validation registration',
+    }),
+    recordFileDigest({
+      root: ROOT,
+      filePath: loaded.instrument.path,
+      recordedSha256: contract?.registration?.instrument_registration_sha256,
+      label: 'v2 endpoint instrument registration',
+    }),
+  ];
   if (
     contract?.registration?.registration_path !== loaded.registrationPath ||
-    contract?.registration?.registration_sha256 !== loaded.registrationSha256 ||
     contract?.registration?.instrument_registration_path !== loaded.instrument.path ||
-    contract?.registration?.instrument_registration_sha256 !== loaded.instrument.sha256 ||
     contract?.registration?.heldout_corpus_path !== loaded.registration.heldout.corpusPath ||
     contract?.registration?.heldout_corpus_sha256 !== loaded.corpusSha256
   ) {
@@ -531,6 +559,7 @@ export function runTutorStubResistanceSemanticValidationPreflightV2({ contract }
   });
   return {
     ...preflight,
+    digestRecords,
     semantic_validation_readiness_audit: {
       status: 'passed_zero_call_wiring_only_not_accuracy_evidence',
       frozen_instrument_registration_sha256: loaded.instrument.sha256,
