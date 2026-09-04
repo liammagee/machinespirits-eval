@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import { resolveModel } from '../services/evalConfigLoader.js';
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
 import { dispatchTutorStubCliBridgeRequest } from '../services/tutorStubCliRequest.js';
 import {
   buildTutorStubActionOutcomeModelJudgePlan,
@@ -207,6 +208,7 @@ export async function executeTutorStubActionOutcomeModelJudge({
   callBridge = callAIWithCliBridge,
   progress = (line) => process.stdout.write(`${line}\n`),
 } = {}) {
+  refuseRetiredPaidLaunch('tutor-stub-action-outcome-model-judge-shadow');
   const { destination, loaded, inputs, plan, executionUnits } = preflight;
   const promptDirectory = path.join(destination, 'prompts');
   const resultDirectory = path.join(destination, 'results');
@@ -335,6 +337,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     process.stdout.write(`${TUTOR_STUB_ACTION_OUTCOME_MODEL_JUDGE_USAGE}\n`);
     return null;
   }
+  if (values['accept-charges']) refuseRetiredPaidLaunch('tutor-stub-action-outcome-model-judge-shadow');
   if (!values['packet-root'] || !values['archive-root'] || !values.destination) {
     throw new Error(
       `--packet-root, --archive-root, and --destination are required\n\n${TUTOR_STUB_ACTION_OUTCOME_MODEL_JUDGE_USAGE}`,

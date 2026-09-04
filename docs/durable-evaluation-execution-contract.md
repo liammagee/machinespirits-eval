@@ -20,9 +20,12 @@ an operator pause or process failure.
 journal, cross-process lock, stale in-flight reconciliation, durable pause state
 machine, and the status projection used for user-visible counts and clock
 estimates. `services/paidStudyLaunchContract.js` allocates reversible unit
-capacity and passes the journal to a child. `services/tutorStubTraceRuntime.js`
-reserves immediately before provider dispatch, records dispatch, persists the
-trace response, and then terminalizes the shared attempt.
+capacity and passes the journal to a child.
+`services/durablePaidModelAttemptBudget.js` adapts that journal to the budget
+interface used by the invested-rival generation and assessment paths.
+`services/tutorStubTraceRuntime.js` and the invested-rival runners reserve
+immediately before provider dispatch, record dispatch, persist the response,
+and then terminalize the shared attempt.
 
 The action-outcome failed-unit recovery is the first concrete consumer. Its
 partial-dialogue continuation treats `--auto-turns` as a total horizon and may
@@ -40,15 +43,14 @@ launcher dies, closeout first reconciles every per-dispatch reservation, assigns
 each one a terminal disposition, and includes those reservations in the study
 total before another recovery can be admitted.
 
-This is shared infrastructure, but it is not yet universal. Other paid runners
-continue to use their existing ledgers and recovery rules until the migration
-card `durable-evaluation-runner-migration` explicitly moves and tests each one.
-No runner should claim these guarantees merely because this service exists.
-`config/paid-study-launcher-inventory.json` therefore keeps a separate
-`durableMigration` partition: shared launch admission alone is not durable
-execution evidence, and every inventoried launcher must be classified as a
-reference implementation, migration-required, or retire-or-migrate before
-reuse.
+`config/paid-study-launcher-inventory.json` is the executable boundary. Its
+`durableMigration` partition distinguishes the six launchers whose own dispatch
+and recovery paths have exercised this contract from thirteen historical or
+fixed-ceiling launchers retired from future paid dispatch. A retired launcher
+remains readable for zero-call inspection and analysis, but
+`services/retiredPaidLauncher.js` stops its paid path before admission,
+destination creation, or provider dispatch. Reuse requires a prospective
+successor design and a new launcher; retirement never rewrites sealed evidence.
 
 The contract does not introduce a new approval ceremony. Study authorization
 remains the registered design, merged launch source, user GO, and hard spend

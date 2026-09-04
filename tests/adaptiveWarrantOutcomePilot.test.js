@@ -8,7 +8,6 @@ import path from 'node:path';
 
 import {
   OUTCOME_PILOT_CALL_PLAN,
-  OUTCOME_PILOT_CHECKPOINT_SCHEMA,
   OUTCOME_PILOT_FREEZE_SCHEMA,
   OUTCOME_PILOT_PER_DIALOGUE_CAP,
   OUTCOME_RULED_COMPLETE_STATUS,
@@ -16,15 +15,12 @@ import {
   createOutcomePilotBudget,
   executeOutcomePilot,
   guardOutcomeAnnotationFingerprints,
-  guardOutcomeDialogueLearnerAnalysisCoverage,
   loadFrozenBatchPreparers,
   preflightOutcomePilotPromptAudits,
   prepareOrReuseOutcomePilotReaderCollection,
   renderOutcomePilotPromptConfiguration,
   reuseOutcomePilotOriginalFreeze,
   reuseOutcomePilotReaderCollection,
-  runOutcomeGeneration,
-  runReaderProcesses,
   runReadersAfterFingerprintGuard,
   validateOutcomeFreezeFormForFrozenDecisionRunner,
   resolveOutcomeResumeLaunchCommit,
@@ -143,17 +139,6 @@ function fingerprintKey(corpusCase, { dialogueId = `dialogue-${corpusCase.sample
     turn: turn ?? corpusCase.current_learner_turn.turn,
     source_fingerprint: annotationCaseFingerprint(corpusCase),
   };
-}
-
-function v3Dialogue11FixtureEvents() {
-  return fs
-    .readFileSync(
-      path.join(ROOT, 'tests/fixtures/adaptive-warrant-outcome-v3-dialogue-11-learner-analysis.jsonl'),
-      'utf8',
-    )
-    .trim()
-    .split('\n')
-    .map((line) => JSON.parse(line));
 }
 
 function reusableCollectionFixture(t, channel = 'presence') {
@@ -502,7 +487,7 @@ test('main-block full deterministic acceptance contract rejects an invalid fresh
   );
 });
 
-test('main-block failed-attempt boundary refuses before invoking a model callback', async () => {
+test('retired main-block allowance wrapper refuses before invoking a model callback', async () => {
   let calls = 0;
   await assert.rejects(
     runAfterOutcomeMainBlockAllowanceGuard({
@@ -511,7 +496,7 @@ test('main-block failed-attempt boundary refuses before invoking a model callbac
         calls += 1;
       },
     }),
-    /48-attempt reader allowance exhausted/u,
+    /paid launcher retired: adaptive-warrant-outcome-main-block/u,
   );
   assert.equal(calls, 0);
 });
@@ -630,10 +615,10 @@ async function completeChildWithOneContractInvalidBatch(t, channel) {
   };
 }
 
-test('paid execution refuses before any work when --go-note is absent', async () => {
+test('retired paid execution refuses before any work', async () => {
   await assert.rejects(
     executeOutcomePilot({ acceptCharges: true, outputDir: '/tmp/must-not-exist-outcome-pilot' }),
-    /--go-note is required/u,
+    /paid launcher retired: adaptive-warrant-outcome-pilot/u,
   );
 });
 
@@ -772,7 +757,7 @@ test('an oversized prompt on the real frozen standing surface still fails', () =
   assert.ok(audit.violations.some((violation) => violation.code === 'approximate_token_budget_exceeded'));
 });
 
-test('annotationCaseFingerprint failure blocks reader admission', async () => {
+test('retired reader-admission wrapper refuses before invoking a reader callback', async () => {
   let readerCalls = 0;
   await assert.rejects(
     runReadersAfterFingerprintGuard({
@@ -782,7 +767,7 @@ test('annotationCaseFingerprint failure blocks reader admission', async () => {
         readerCalls += 1;
       },
     }),
-    /expected 2 cases, got 1/u,
+    /paid launcher retired: adaptive-warrant-outcome-pilot/u,
   );
   assert.equal(readerCalls, 0);
 });
@@ -859,36 +844,6 @@ test('annotationCaseFingerprint guard refuses count drift', () => {
   );
 });
 
-test('checkpoint resume skips a completed dialogue', async (t) => {
-  const directory = temporaryDirectory(t);
-  const checkpointPath = path.join(directory, 'checkpoint.json');
-  const checkpoint = {
-    schema: OUTCOME_PILOT_CHECKPOINT_SCHEMA,
-    status: 'generation',
-    call_budget: {
-      plan: { generation: 540, presence_readers: 288, decision_readers: 288, total: 1116 },
-      actual: { generation: 26, presence_readers: 0, decision_readers: 0, total: 26 },
-      delta: { generation: 514, presence_readers: 288, decision_readers: 288, total: 1090 },
-      events: [],
-    },
-    dialogues: [{ id: 'done-dialogue', status: 'complete' }],
-    quarantined_dialogues: [],
-  };
-  const budget = createOutcomePilotBudget({ checkpointPath, checkpoint });
-  let launches = 0;
-  await runOutcomeGeneration({
-    jobs: [{ id: 'done-dialogue', command: ['false'] }],
-    checkpoint,
-    budget,
-    runDialogue: async () => {
-      launches += 1;
-      return { status: 1 };
-    },
-  });
-  assert.equal(launches, 0);
-  assert.equal(checkpoint.dialogues.length, 1);
-});
-
 test('main-block reader resume reuses the preflight launch stamp before freeze emission and checks it afterward', () => {
   const launchCommit = '1'.repeat(40);
   const semanticPreflight = { bindings: { source_commit: launchCommit } };
@@ -914,70 +869,6 @@ test('main-block regenerates launch artifacts until a child reader checkpoint ex
   assert.equal(shouldReuseOutcomeMainBlockLaunchArtifacts({ resume: false, readerResume: false }), false);
   assert.equal(shouldReuseOutcomeMainBlockLaunchArtifacts({ resume: true, readerResume: false }), false);
   assert.equal(shouldReuseOutcomeMainBlockLaunchArtifacts({ resume: true, readerResume: true }), true);
-});
-
-test('resumed parent starts both readers fresh when neither child checkpoint exists', async (t) => {
-  const rootDir = temporaryDirectory(t);
-  const presenceRunDir = path.join(rootDir, 'presence-readers');
-  const decisionRunDir = path.join(rootDir, 'decision-readers');
-  const launches = [];
-  const reservations = [];
-  await runReaderProcesses({
-    semanticCommand: ['node', 'semantic-reader'],
-    decisionCommand: ['node', 'decision-reader'],
-    presenceRunDir,
-    decisionRunDir,
-    rootDir,
-    resume: true,
-    checkpoint: { call_budget: { plan: { ...OUTCOME_PILOT_CALL_PLAN }, actual: { total: 0 } } },
-    budget: { reserveMany: (...args) => reservations.push(args) },
-    runProcess: async (command, options) => {
-      launches.push({ command, options });
-      return { status: 0 };
-    },
-  });
-  assert.deepEqual(
-    launches.map((launch) => launch.command),
-    [
-      ['node', 'semantic-reader'],
-      ['node', 'decision-reader'],
-    ],
-  );
-  assert.deepEqual(
-    launches.map((launch) => launch.options.logPath),
-    [path.join(rootDir, 'presence-readers-launcher.log'), path.join(rootDir, 'decision-readers-launcher.log')],
-  );
-  assert.equal(reservations.length, 2);
-});
-
-test('resumed parent resumes only a child whose own checkpoint exists', async (t) => {
-  const rootDir = temporaryDirectory(t);
-  const presenceRunDir = path.join(rootDir, 'presence-readers');
-  const decisionRunDir = path.join(rootDir, 'decision-readers');
-  fs.mkdirSync(presenceRunDir, { recursive: true });
-  fs.writeFileSync(path.join(presenceRunDir, 'semantic-reader-run.json'), '{}\n');
-  const launches = [];
-  await runReaderProcesses({
-    semanticCommand: ['node', 'semantic-reader'],
-    decisionCommand: ['node', 'decision-reader'],
-    presenceRunDir,
-    decisionRunDir,
-    rootDir,
-    resume: true,
-    checkpoint: { call_budget: { plan: { ...OUTCOME_PILOT_CALL_PLAN }, actual: { total: 0 } } },
-    budget: { reserveMany: () => {} },
-    runProcess: async (command, options) => {
-      launches.push({ command, options });
-      return { status: 0 };
-    },
-  });
-  assert.deepEqual(
-    launches.map((launch) => launch.command),
-    [
-      ['node', 'semantic-reader', '--resume'],
-      ['node', 'decision-reader'],
-    ],
-  );
 });
 
 test('resumed parent reuses a complete collection without calling its preparer', (t) => {
@@ -1317,62 +1208,6 @@ test('both child runners quarantine a contract-invalid re-draw, count it failed,
   }
 });
 
-test('launcher quarantines the sealed v3 dialogue-11 coverage shape before counting it complete', async (t) => {
-  const directory = temporaryDirectory(t);
-  const failure = v3Dialogue11FixtureEvents().find((event) => event.type === 'learner_analysis_unanalyzed');
-  const checkpoint = {
-    schema: OUTCOME_PILOT_CHECKPOINT_SCHEMA,
-    status: 'generation',
-    call_budget: {
-      plan: { ...OUTCOME_PILOT_CALL_PLAN },
-      actual: { generation: 0, presence_readers: 0, decision_readers: 0, total: 0 },
-      delta: { ...OUTCOME_PILOT_CALL_PLAN },
-      events: [],
-    },
-    dialogues: [],
-    quarantined_dialogues: [],
-  };
-  const budget = createOutcomePilotBudget({
-    checkpointPath: path.join(directory, 'checkpoint.json'),
-    checkpoint,
-  });
-  const row = {
-    childStatus: 'ok',
-    childEvidence: { ok: true, status: 'complete' },
-    turnCount: 8,
-    learnerAnalysisCoverage: 0.875,
-    learnerAnalysisUnanalyzedTurns: [failure.turn],
-    tracePath: null,
-  };
-  const guard = guardOutcomeDialogueLearnerAnalysisCoverage(row);
-  assert.deepEqual(guard, {
-    status: 'failed',
-    coverage: 0.875,
-    unanalyzed_turns: [5],
-    reason: 'learner_analysis_coverage_below_one: turns 5',
-  });
-  await runOutcomeGeneration({
-    jobs: [
-      {
-        id: 'dialogue-11',
-        ordinal: 11,
-        world: 'world_102',
-        seed: 516,
-        condition: 'gated',
-        command: [],
-        jobDir: path.join(directory, 'dialogues', 'dialogue-11'),
-      },
-    ],
-    checkpoint,
-    budget,
-    runDialogue: async () => ({ status: 0, error: null }),
-    collectJobResult: () => row,
-  });
-  assert.equal(checkpoint.dialogues[0].status, 'quarantined');
-  assert.equal(checkpoint.dialogues[0].error, 'learner_analysis_coverage_below_one: turns 5');
-  assert.equal(checkpoint.quarantined_dialogues.length, 1);
-});
-
 test('representative freeze validates in the form accepted by the frozen decision runner', () => {
   const binding = { path: '/tmp/frozen', sha256: 'a'.repeat(64) };
   const freeze = {
@@ -1461,36 +1296,6 @@ test('the main block does not field the presence readers but keeps their plan li
   assert.equal(OUTCOME_RUN_SHAPES['main-block'].presence_readers_fielded, false);
   assert.equal(OUTCOME_RUN_SHAPES['main-block'].planned_calls.presence_readers, 1152);
   assert.equal(OUTCOME_RUN_SHAPES['main-block'].planned_calls.total, 4464);
-});
-
-test('an unfielded presence channel launches no presence reader and reserves nothing for it', async (t) => {
-  const rootDir = temporaryDirectory(t);
-  const launches = [];
-  const reservations = [];
-  await runReaderProcesses({
-    semanticCommand: null,
-    decisionCommand: ['node', 'decision-reader'],
-    presenceRunDir: path.join(rootDir, 'presence-readers'),
-    decisionRunDir: path.join(rootDir, 'decision-readers'),
-    rootDir,
-    fieldPresence: false,
-    readerCwd: rootDir,
-    checkpoint: { call_budget: { plan: { ...OUTCOME_PILOT_CALL_PLAN }, actual: { total: 0 } } },
-    budget: { reserveMany: (...args) => reservations.push(args) },
-    runProcess: async (command, options) => {
-      launches.push({ command, options });
-      return { status: 0 };
-    },
-  });
-  assert.deepEqual(
-    launches.map((launch) => launch.command),
-    [['node', 'decision-reader']],
-  );
-  assert.deepEqual(launches[0].options.cwd, rootDir);
-  assert.deepEqual(
-    reservations.map(([channel]) => channel),
-    ['decision_readers'],
-  );
 });
 
 // Ledger 25: the frozen preparers and reader runners ask their own checkout for
@@ -1673,34 +1478,4 @@ test('a refused admission leaves the dialogue quarantined and records why', () =
   assert.equal(checkpoint.quarantined_dialogues.length, 1);
   assert.equal(decisions[0].admitted, false);
   assert.match(decisions[0].reason, /overlapping_events/u);
-});
-
-test('a resume does not re-run a dialogue admitted under the ruling', async (t) => {
-  const directory = temporaryDirectory(t);
-  const checkpointPath = path.join(directory, 'checkpoint.json');
-  const checkpoint = {
-    schema: OUTCOME_PILOT_CHECKPOINT_SCHEMA,
-    status: 'generation',
-    call_budget: {
-      plan: { generation: 540, presence_readers: 288, decision_readers: 288, total: 1116 },
-      actual: { generation: 26, presence_readers: 0, decision_readers: 0, total: 26 },
-      delta: { generation: 514, presence_readers: 288, decision_readers: 288, total: 1090 },
-      events: [],
-    },
-    dialogues: [{ id: 'ruled-dialogue', status: OUTCOME_RULED_COMPLETE_STATUS }],
-    quarantined_dialogues: [],
-  };
-  const budget = createOutcomePilotBudget({ checkpointPath, checkpoint });
-  let launches = 0;
-  await runOutcomeGeneration({
-    jobs: [{ id: 'ruled-dialogue', command: ['false'] }],
-    checkpoint,
-    budget,
-    runDialogue: async () => {
-      launches += 1;
-      return { status: 1 };
-    },
-  });
-  assert.equal(launches, 0);
-  assert.equal(checkpoint.dialogues.length, 1);
 });

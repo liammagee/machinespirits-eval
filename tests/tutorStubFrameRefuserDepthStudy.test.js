@@ -369,50 +369,25 @@ test('typed approval accepts only the exact registered phrase and the usage reje
   );
 });
 
-test('launcher main records the typed approval and hands execute the sealed preflight', async () => {
-  const captured = {};
-  const report = await depthLauncherMain(
-    ['--design', DESIGN_PATH, '--destination', '/absolute/depth-root', '--launch', '--parallelism', '2'],
-    {
-      runPreflight: async ({ loaded, destination }) => ({
-        status: 'passed_zero_call',
-        phase: 'calibration',
-        study_id: loaded.design.studyId,
-        destination,
-        jobs: 48,
-        planned_role_calls: 3072,
-        hard_attempt_ceiling: 9504,
-        plan: { jobs: [] },
+test('launcher main retires paid launch and resume before preflight or execution', async () => {
+  let callbacks = 0;
+  for (const mode of ['--launch', '--resume']) {
+    await assert.rejects(
+      depthLauncherMain(['--design', DESIGN_PATH, '--destination', '/absolute/depth-root', mode], {
+        runPreflight: async () => {
+          callbacks += 1;
+        },
+        execute: async () => {
+          callbacks += 1;
+        },
       }),
-      destinationExists: () => false,
-      isTTY: true,
-      operatorApproval: async () => ({
-        signedBy: 'operator',
-        approvalPhrase: 'APPROVE CALIBRATION 9504',
-        method: 'attended_interactive_phrase',
-      }),
-      sourceProvenance: () => ({ commit: 'c', tree: 't', dirty: false, enforcement: 'recorded_not_pinned' }),
-      execute: async (input) => {
-        Object.assign(captured, input);
-        return { status: 'passed' };
-      },
-    },
-  );
-  assert.equal(report.status, 'passed');
-  assert.equal(captured.approval.typed_phrase, 'APPROVE CALIBRATION 9504');
-  assert.equal(captured.approval.method, 'attended_interactive_phrase');
-  assert.equal(captured.parallelism, 2);
-  assert.equal(captured.provenance.enforcement, 'recorded_not_pinned');
+      /paid launcher retired: tutor-stub-frame-refuser-depth-calibration/u,
+    );
+  }
+  assert.equal(callbacks, 0);
   await assert.rejects(
     depthLauncherMain(['--design', DESIGN_PATH, '--destination', '/absolute/depth-root'], {}),
     /exactly one of --dry-run, --launch, or --resume/u,
-  );
-  await assert.rejects(
-    depthLauncherMain(['--design', DESIGN_PATH, '--destination', '/absolute/depth-root', '--launch'], {
-      runPreflight: async () => ({ status: 'passed_zero_call', hard_attempt_ceiling: 9504, plan: { jobs: [] } }),
-      isTTY: false,
-    }),
-    /attended TTY/u,
   );
 });
 
@@ -520,119 +495,19 @@ test('the treatment condition-discharge exhaustion is a retained typed failure, 
   );
 });
 
-function depthResumeHarness() {
-  const loaded = loadDesign();
-  loaded.relativePath = DESIGN_PATH;
-  const design = loaded.design;
-  const plan = buildTutorStubResistantLearnerCalibrationPlan(design);
-  const destination = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'depth-resume-')), 'run-root');
-  const spawned = [];
-  return {
-    loaded,
-    design,
-    plan,
-    destination,
-    spawned,
-    fullRows: new Map(syntheticDepthRows(design).map((row) => [row.job.id, { ...row, attempts: 8 }])),
-    base: {
-      loaded,
-      destination,
-      parallelism: 1,
-      preflight: { plan, hard_attempt_ceiling: design.attemptCeilings.calibrationMaximumReservations },
-      approval: {
-        approved_by: 'operator',
-        typed_phrase: 'APPROVE CALIBRATION 9504',
-        method: 'attended_interactive_phrase',
-      },
-      provenance: { commit: 'commit', tree: 'tree', dirty: false },
-      childSpec: ({ job, destination: dest }) => {
-        spawned.push(job.id);
-        const jobRoot = path.join(dest, 'jobs', job.id);
-        fs.mkdirSync(jobRoot, { recursive: true });
-        return { jobRoot, job_id: job.id };
-      },
-      runChild: async () => ({ code: 0, signal: null, spawn_error: null }),
-    },
-  };
-}
-
-test('resume keeps recorded outcomes, re-types the mislabeled exhaustion, and runs only pending jobs', async () => {
-  const harness = depthResumeHarness();
-  const { plan, destination, spawned, fullRows, base } = harness;
-  // Index 7 is a treatment job with both arms recorded before it, mirroring
-  // the halted live run: paid completes, then the mislabeled exhaustion.
-  const mislabeledJob = plan.jobs[7];
-  assert.equal(mislabeledJob.arm_id, 'treatment');
-  const mislabeledRow = {
-    job: mislabeledJob,
-    status: 'failed',
-    attempts: 9,
-    delivery: [{ turn: 1, delivered: false, repairAttempts: 1 }],
-    outcome: null,
-  };
-  const extractRow = ({ job }) => (job.id === mislabeledJob.id ? mislabeledRow : fullRows.get(job.id));
-
-  const halted = await executeTutorStubFrameRefuserDepthCalibration({ ...base, extractRow });
-  assert.equal(halted.status, 'failed');
-  assert.equal(halted.halt_reason, `technical failure in ${mislabeledJob.id}`);
-  assert.equal(halted.execution.complete_units, 7);
-  assert.equal(halted.execution.failed_units, 1);
-  assert.equal(halted.execution.missing_units, 40);
-  const recordedIds = plan.jobs.slice(0, 8).map((job) => job.id);
-  assert.deepEqual(spawned, recordedIds);
-
-  spawned.length = 0;
-  const resumed = await executeTutorStubFrameRefuserDepthCalibration({
-    ...base,
-    parallelism: 2,
-    extractRow,
-    resume: true,
-  });
-  // No recorded dialogue re-ran: the six paid job ids never respawned.
-  assert.equal(spawned.length, 40);
-  assert.deepEqual(
-    spawned.filter((id) => recordedIds.includes(id)),
-    [],
-  );
-  assert.equal(resumed.status, 'passed');
-  assert.equal(resumed.execution.complete_units, 47);
-  assert.equal(resumed.execution.retained_substantive_units, 1);
-  assert.equal(resumed.execution.failed_units, 0);
-  assert.equal(resumed.execution.missing_units, 0);
-  assert.equal(resumed.execution.model_attempts, 7 * 8 + 9 + 40 * 8);
-  const retyped = resumed.rows.find((row) => row.job.id === mislabeledJob.id);
-  assert.equal(retyped.status, TUTOR_STUB_RETAINED_SUBSTANTIVE_FAILURE_STATUS);
-  assert.equal(retyped.registered_failure.code, 'tutor_stub_tutor_condition_discharge_non_delivery');
-  assert.equal(retyped.registered_failure.retyped_on_resume, true);
-  const treatment = resumed.arms.find((arm) => arm.arm_id === 'treatment');
-  assert.equal(treatment.gates.execution_and_typed_failure_accounting, true);
-  assert.equal(treatment.statistics.retained_typed_failures, 1);
-  assert.equal(fs.existsSync(path.join(destination, 'report.halted-1.json')), true);
-  const ledger = fs
-    .readFileSync(path.join(destination, 'run-ledger.jsonl'), 'utf8')
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => JSON.parse(line));
-  const resumeEntry = ledger.find((entry) => entry.type === 'resume');
-  assert.equal(resumeEntry.recorded_units, 8);
-  assert.equal(resumeEntry.pending_units, 40);
-  assert.deepEqual(resumeEntry.retyped_units, [mislabeledJob.id]);
-  assert.match(resumeEntry.note, /never re-run/u);
-  assert.equal(ledger.filter((entry) => entry.type === 'unit_complete').length, 48);
-});
-
-test('resume refuses a recorded technical failure the trace cannot re-type', async () => {
-  const harness = depthResumeHarness();
-  const { plan, fullRows, base } = harness;
-  // No delivery verdict on record: the child died before the gate spoke, so
-  // nothing licenses a typed re-read and the resume must fail closed.
-  const technicalJob = plan.jobs[0];
-  const technicalRow = { job: technicalJob, status: 'failed', attempts: 3, delivery: [], outcome: null };
-  const extractRow = ({ job }) => (job.id === technicalJob.id ? technicalRow : fullRows.get(job.id));
-  const halted = await executeTutorStubFrameRefuserDepthCalibration({ ...base, extractRow });
-  assert.equal(halted.status, 'failed');
-  await assert.rejects(
-    executeTutorStubFrameRefuserDepthCalibration({ ...base, extractRow, resume: true }),
-    /cannot re-type; refusing to resume/u,
-  );
+test('retired depth executor refuses fresh and resume calls before child work', async () => {
+  let childCalls = 0;
+  for (const resume of [false, true]) {
+    await assert.rejects(
+      executeTutorStubFrameRefuserDepthCalibration({
+        destination: '/absolute/depth-root',
+        resume,
+        runChild: async () => {
+          childCalls += 1;
+        },
+      }),
+      /paid launcher retired: tutor-stub-frame-refuser-depth-calibration/u,
+    );
+  }
+  assert.equal(childCalls, 0);
 });

@@ -402,6 +402,8 @@ export function buildDurableEvaluationStatus({
   hardCeiling,
   workflowState = 'running',
   scientificVerdict = 'pending_measurement',
+  modelActivity = null,
+  unitPhase = null,
   secondsPerRemainingTurn = [60, 180],
   postRunSeconds = [120, 600],
   now = new Date(),
@@ -415,13 +417,56 @@ export function buildDurableEvaluationStatus({
   const attemptCounts = Object.fromEntries(DURABLE_ATTEMPT_TERMINAL_DISPOSITIONS.map((value) => [value, 0]));
   for (const disposition of terminalByAttempt.values()) attemptCounts[disposition] += 1;
   const activeAttempts = reservations.filter((event) => !terminalByAttempt.has(event.attempt_id)).length;
-  const completedUnitEvents = events.filter((event) => event.type === 'partial_dialogue_continuation_completed');
-  const failedUnitEvents = events.filter((event) => event.type === 'partial_dialogue_recovery_failed');
-  const dispatchedUnitIds = new Set(
-    events.filter((event) => event.type === 'partial_dialogue_continuation_dispatched').map((event) => event.unit),
+  const dispatchedAttemptIds = new Set(
+    events.filter((event) => event.type === 'model_attempt_dispatch_started').map((event) => event.attempt_id),
   );
-  const completeUnitIds = new Set(completedUnitEvents.map((event) => event.unit));
-  const failedUnitIds = new Set(failedUnitEvents.map((event) => event.unit).filter(Boolean));
+  const persistedAttemptIds = new Set(
+    events.filter((event) => event.type === 'attempt_response_persisted').map((event) => event.attempt_id),
+  );
+  const unresolvedDispatchedAttempts = reservations.filter(
+    (event) =>
+      !terminalByAttempt.has(event.attempt_id) &&
+      dispatchedAttemptIds.has(event.attempt_id) &&
+      !persistedAttemptIds.has(event.attempt_id),
+  ).length;
+  const projectedModelActivity = modelActivity || (unresolvedDispatchedAttempts > 0 ? 'unverifiable' : 'inactive');
+  if (!['active', 'inactive', 'unverifiable'].includes(projectedModelActivity)) {
+    throw new Error(`invalid durable evaluation model activity: ${projectedModelActivity}`);
+  }
+  const unitEvents = unitPhase ? events.filter((event) => event.phase === unitPhase) : events;
+  const completedUnitEvents = unitEvents.filter(
+    (event) =>
+      event.type === 'partial_dialogue_continuation_completed' ||
+      event.type === 'unit_completed' ||
+      event.type === 'workflow_unit_completed' ||
+      event.type === 'workflow_unit_reused' ||
+      (event.type === 'attempt_completed' && event.unit_id),
+  );
+  const failedUnitEvents = unitEvents.filter(
+    (event) =>
+      event.type === 'partial_dialogue_recovery_failed' ||
+      event.type === 'workflow_unit_failed' ||
+      (['attempt_failed', 'attempt_cancelled_before_dispatch', 'attempt_interrupted_after_dispatch'].includes(
+        event.type,
+      ) &&
+        event.unit_id),
+  );
+  const eventUnitId = (event) => event.unit || event.unit_id;
+  const dispatchedUnitIds = new Set(
+    unitEvents
+      .filter(
+        (event) =>
+          event.type === 'partial_dialogue_continuation_dispatched' ||
+          event.type === 'workflow_unit_started' ||
+          event.type === 'model_attempt_dispatch_started',
+      )
+      .map(eventUnitId)
+      .filter(Boolean),
+  );
+  const completeUnitIds = new Set(completedUnitEvents.map(eventUnitId).filter(Boolean));
+  const failedUnitIds = new Set(
+    failedUnitEvents.map(eventUnitId).filter((unitId) => unitId && !completeUnitIds.has(unitId)),
+  );
   const activeUnits = [...dispatchedUnitIds].filter(
     (unitId) => !completeUnitIds.has(unitId) && !failedUnitIds.has(unitId),
   ).length;
@@ -463,7 +508,7 @@ export function buildDurableEvaluationStatus({
       },
       workflow: {
         state: workflowState,
-        model_activity: activeAttempts > 0 ? 'active' : 'inactive',
+        model_activity: projectedModelActivity,
         human_input_required: failedUnitIds.size > 0,
       },
       scientific_verdict: {

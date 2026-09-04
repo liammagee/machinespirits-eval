@@ -16,6 +16,8 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
+
 import {
   DECISION_READER_INSTRUMENT_BINDINGS,
   extractOutcomeDialogueFromTraceRows,
@@ -379,6 +381,7 @@ export function guardSteeringDecompositionReaderAllowance({ callsAttempted = 0 }
 }
 
 export async function runAfterSteeringDecompositionAllowanceGuard({ callsAttempted = 0, launch } = {}) {
+  refuseRetiredPaidLaunch('adaptive-warrant-steering-decomposition');
   const guard = guardSteeringDecompositionReaderAllowance({ callsAttempted });
   if (typeof launch !== 'function') throw new Error('steering-decomposition reader launch callback is required');
   return { guard, result: await launch() };
@@ -688,6 +691,7 @@ export async function executeSteeringDecomposition({
   runReaderProcess = spawnLogged,
   seedFreshnessRoots,
 } = {}) {
+  refuseRetiredPaidLaunch('adaptive-warrant-steering-decomposition');
   if (!acceptCharges) throw new Error('steering decomposition refuses: --accept-charges is required');
   const goNote = validateSteeringDecompositionGoNote(goNotePath);
   const guarded = verifySteeringDecompositionManifest({ manifestPath });
@@ -1009,6 +1013,7 @@ async function main() {
     process.stdout.write(usage());
     return;
   }
+  if (values['accept-charges']) refuseRetiredPaidLaunch('adaptive-warrant-steering-decomposition');
   if (values['dry-run']) {
     const result = buildSteeringDecompositionDryRun({ manifestPath: values.manifest });
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);

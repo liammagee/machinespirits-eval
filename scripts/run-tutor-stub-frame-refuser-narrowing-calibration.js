@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import { resolveModel } from '../services/evalConfigLoader.js';
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
 import { dispatchTutorStubCliBridgeRequest } from '../services/tutorStubCliRequest.js';
 import {
   buildTutorStubFrameRefuserNarrowingPlan,
@@ -352,6 +353,7 @@ export async function executeTutorStubFrameRefuserNarrowingCalibration({
   summarize = summarizeTutorStubFrameRefuserNarrowingCalibration,
   progress = (line) => process.stdout.write(`${line}\n`),
 } = {}) {
+  refuseRetiredPaidLaunch('tutor-stub-frame-refuser-narrowing-calibration');
   const { destination, loaded, plan, executionUnits, priorRecords, failedUnits, recovery } = preflight;
   fs.mkdirSync(path.join(destination, 'results'), { recursive: false });
   writeOnce(path.join(destination, 'plan.json'), {
@@ -523,6 +525,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     process.stdout.write(`${TUTOR_STUB_FRAME_REFUSER_NARROWING_USAGE}\n`);
     return null;
   }
+  if (values['accept-charges']) refuseRetiredPaidLaunch('tutor-stub-frame-refuser-narrowing-calibration');
   if (!values.design || !values['archive-root'] || !values.destination) {
     throw new Error(
       `--design, --archive-root, and --destination are required\n\n${TUTOR_STUB_FRAME_REFUSER_NARROWING_USAGE}`,

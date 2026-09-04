@@ -11,10 +11,8 @@ import {
   loadTutorStubResistantLearnerDesign,
 } from '../services/tutorStubResistantLearnerCalibration.js';
 import { readTutorStubRegisteredStudyOutcome } from '../services/tutorStubRegisteredStudyOutcome.js';
-import {
-  runTutorStubResistantLearnerCalibrationChild,
-  tutorStubResistantLearnerCalibrationChildSpec,
-} from './run-tutor-stub-resistant-learner-calibration.js';
+import { runTutorStubResistantLearnerChildProcess } from '../services/tutorStubResistantLearnerChildProcess.js';
+import { tutorStubResistantLearnerCalibrationChildSpec } from './run-tutor-stub-resistant-learner-calibration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const B1_DESIGN_PATH = 'config/tutor-stub-resistant-learner-b1-design.v3.json';
@@ -209,7 +207,7 @@ export async function executeTutorStubResistantLearnerBridgeSmoke({
   selected,
   provenance = sourceProvenance(),
   childSpec = tutorStubResistantLearnerCalibrationChildSpec,
-  runChild = runTutorStubResistantLearnerCalibrationChild,
+  runChild = runTutorStubResistantLearnerChildProcess,
 } = {}) {
   if (fs.existsSync(destination)) throw new Error('bridge smoke destination is create-once');
   fs.mkdirSync(path.dirname(destination), { recursive: true });

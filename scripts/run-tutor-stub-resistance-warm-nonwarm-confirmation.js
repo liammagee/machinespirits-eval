@@ -7,6 +7,7 @@ import { execFileSync, spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
 import { fisherExactTwoSidedP } from '../services/edgedRegisterCalibration.js';
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import {
@@ -480,6 +481,7 @@ export async function runTutorStubResistanceWarmNonwarmConfirmation({
   goNotePath,
   parallelism = 4,
 } = {}) {
+  refuseRetiredPaidLaunch('tutor-stub-resistance-warm-nonwarm-confirmation');
   const preflight = buildTutorStubResistanceWarmNonwarmExecutionPreflight({
     designPath,
     destination,
@@ -643,6 +645,7 @@ async function main() {
     strict: true,
   });
   if (values.help) return void console.log(usage());
+  if (values.live) refuseRetiredPaidLaunch('tutor-stub-resistance-warm-nonwarm-confirmation');
   const common = {
     designPath: values.design,
     destination: values.destination,

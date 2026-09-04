@@ -7,6 +7,7 @@ import { createInterface } from 'node:readline/promises';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
+import { refuseRetiredPaidLaunch } from '../services/retiredPaidLauncher.js';
 import {
   loadTutorStubResistantLearnerDesign,
   summarizeTutorStubResistantLearnerCalibration,
@@ -169,6 +170,7 @@ export async function executeTutorStubFrameRefuserDepthCalibration({
   extractRow = extractTutorStubResistantLearnerCalibrationRow,
   resume = false,
 } = {}) {
+  refuseRetiredPaidLaunch('tutor-stub-frame-refuser-depth-calibration');
   const plan = preflight.plan;
   const ledgerPath = path.join(destination, 'run-ledger.jsonl');
   // The depth design carries only the calibration totals; the per-dialogue
@@ -352,6 +354,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
   if (modes.length !== 1) {
     throw new Error('select exactly one of --dry-run, --launch, or --resume');
   }
+  if (values.launch || values.resume) refuseRetiredPaidLaunch('tutor-stub-frame-refuser-depth-calibration');
   if (!values.design || !values.destination) {
     throw new Error(`--design and --destination are required\n\n${TUTOR_STUB_FRAME_REFUSER_DEPTH_USAGE}`);
   }
