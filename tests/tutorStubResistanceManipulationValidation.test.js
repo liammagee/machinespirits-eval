@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -7,7 +9,6 @@ import {
   configureTutorStubResistanceManipulationValidationFromCli,
   loadTutorStubResistanceManipulationValidation,
 } from '../services/tutorStubResistanceActionRegisterManipulationValidation.js';
-import { recordFileDigest } from '../services/recordedFileDigest.js';
 import { assembleTutorStubResistanceManipulationValidationReport } from '../scripts/run-tutor-stub-resistance-action-register-manipulation-validation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -100,18 +101,35 @@ test('the contrast repair audit note is carried as a digest record beside the tw
   );
   const note = loaded.digestRecords.find((row) => row.label === 'contrast repair audit');
   assert.equal(note.path, loaded.design.execution.contrastRepairAuditPath);
-  assert.equal(note.drifted, false);
-  assert.equal(note.recordedSha256, note.observedSha256);
+  assert.equal(note.recordedSha256, loaded.design.execution.contrastRepairAuditSha256);
+  assert.match(note.observedSha256, /^[0-9a-f]{64}$/u);
+  assert.equal(typeof note.drifted, 'boolean');
 });
 
-test('a drifted contrast repair audit note is recorded and does not throw', () => {
-  const record = recordFileDigest({
-    root: ROOT,
-    filePath: 'notes/2026-08-22-v10-plain-warm-contrast-zero-call-audit.md',
-    recordedSha256: '0'.repeat(64),
-    label: 'contrast repair audit',
-  });
-  assert.equal(record.drifted, true);
-  assert.equal(record.recordedSha256, '0'.repeat(64));
-  assert.notEqual(record.observedSha256, record.recordedSha256);
+test('a drifted contrast repair audit note is recorded by the loader, not refused', () => {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'manip-validation-audit-drift-'));
+  try {
+    for (const relative of [
+      'config/tutor-stub-resistance-action-register-crossed-registration.v9.json',
+      'config/tutor-stub-resistance-action-register-crossed-registration.v10.json',
+      'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json',
+      'notes/2026-08-22-v10-plain-warm-contrast-zero-call-audit.md',
+    ]) {
+      const target = path.join(fixture, relative);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.copyFileSync(path.join(ROOT, relative), target);
+    }
+    const design = JSON.parse(fs.readFileSync(path.join(ROOT, DESIGN), 'utf8'));
+    design.execution.contrastRepairAuditSha256 = '0'.repeat(64);
+    fs.writeFileSync(path.join(fixture, DESIGN), JSON.stringify(design, null, 2));
+
+    const loaded = loadTutorStubResistanceManipulationValidation({ designPath: DESIGN, root: fixture });
+    const note = loaded.digestRecords.find((row) => row.label === 'contrast repair audit');
+    assert.equal(note.drifted, true);
+    assert.equal(note.recordedSha256, '0'.repeat(64));
+    assert.notEqual(note.observedSha256, note.recordedSha256);
+    assert.equal(loaded.plan.jobs.length, 60);
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
 });

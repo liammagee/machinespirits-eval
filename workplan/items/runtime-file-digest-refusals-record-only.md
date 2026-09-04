@@ -39,8 +39,7 @@ already returns, in `digestRecords`. Line numbers are as of this branch.
 | `tutorStubBoredomSemanticValidation.js` | 165-176 | every source-closure entry whose path is not sealed | converted |
 | `tutorStubBoredomSemanticValidation.js` | 99 | frozen held-out corpus | kept refusing (sealed data) |
 | `tutorStubResistanceActionRegisterExecution.js` | 134 | crossed V2 registration named by the prefix bundle | converted |
-| `tutorStubResistanceActionRegisterManipulationValidation.js` | 68-73 | base registration, fidelity instrument registration | converted |
-| `tutorStubResistanceActionRegisterManipulationValidation.js` | 63-66 | contrast repair audit note | converted (follow-up) |
+| `tutorStubResistanceActionRegisterManipulationValidation.js` | 59-66 | base registration, fidelity instrument registration, contrast repair audit note | converted |
 | `tutorStubResistanceActionRegisterStudy.js` | 1123 | v10 base registration | converted |
 | `tutorStubResistanceAxisDiscriminationPreflight.js` | 82 | axis study registration | converted |
 | `tutorStubResistanceConfirmationSemanticRuntime.js` | 72 | confirmation outcome instrument registration | converted |
@@ -75,9 +74,26 @@ Both source-closure loops keep a refusal for sealed entries. A module constant
 closure names a sealed file today, so the guard says what happens if one is
 added.
 
+The contrast repair audit note is the one call the first version of this card
+flagged as arguable. It kept its pin; a follow-up converted it. The pin cannot
+stop anyone editing `notes/2026-08-22-v10-plain-warm-contrast-zero-call-audit.md`.
+All it does is make a paid validation run refuse to start after the edit. The
+note is in git, so what was measured is already durable, and any change to it
+shows in the diff. A held-out corpus is pinned because the science depends on
+nobody reading or altering it before the run. This note writes up a run that
+already finished, and nothing downstream reads it as data.
+
 Tests that expected a throw now assert the record: the call returns, the record
 is drifted, and the recorded and observed digests differ. Test names stay close
 to the old ones.
+
+A test must not put the pin back. Asserting that a record has not drifted
+compares a live digest with a stored one, which is the shape CLAUDE.md bans, and
+a typo fix in the file then turns `npm test` red. The drift test builds a
+fixture root under `os.tmpdir()`, writes a design whose recorded digest is
+wrong, and checks the loader records the drift and returns. Two mutations
+confirm it: editing the note leaves the file green, and re-adding the refusal
+turns it red.
 
 ## Left as is
 
@@ -86,19 +102,6 @@ to the old ones.
 `tutorStubBoredomSemanticValidation.js:99` pins the frozen held-out corpus.
 Every `heldout.corpusSha256` check in the validation family is untouched. So is
 the certificate check. This is what byte pins are for.
-
-The contrast repair audit note at
-`tutorStubResistanceActionRegisterManipulationValidation.js:63-66` first kept
-its pin, and the first version of this card flagged the call as arguable. A
-follow-up converted it. The reason: the pin cannot stop anyone editing
-`notes/2026-08-22-v10-plain-warm-contrast-zero-call-audit.md`. All it does is
-make a paid validation run refuse to start after the edit. The note is committed
-to git, so the record of what was measured is already durable, and any change to
-it shows in the diff. Held-out corpora are pinned because the science depends on
-nobody reading or altering them before the run. This note writes up a run that
-already finished, and nothing downstream reads it as data. The audit note now
-rides in `digestRecords` beside the base registration and the fidelity
-instrument registration.
 
 `tutorStubFirstDraftCampaign.js:205, 236, 250` pins a frozen extract of an
 earlier run's dialogue trace. The code resolves it as kind `sealed_trace`. It is
