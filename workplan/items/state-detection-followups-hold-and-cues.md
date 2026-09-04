@@ -22,6 +22,7 @@ links:
     - "https://github.com/liammagee/machinespirits-eval/pull/944"
     - "https://github.com/liammagee/machinespirits-eval/pull/982"
     - "https://github.com/liammagee/machinespirits-eval/pull/985"
+    - "https://github.com/liammagee/machinespirits-eval/pull/996"
   notes:
     - notes/poetics/hero-demo-runs/2026-09-02-step6-model-labels.md
     - notes/poetics/hero-demo-runs/2026-09-02-step6-form-v3-live.md
@@ -34,6 +35,8 @@ links:
     - notes/poetics/hero-demo-runs/2026-09-03-model-second-reader-7b-7c.md
     - notes/poetics/hero-demo-runs/2026-09-03-step7d-hold-memory-limited-live.md
     - notes/poetics/hero-demo-runs/2026-09-04-step7-template-fallback-cause.md
+    - notes/poetics/hero-demo-runs/2026-09-04-step7e-opus-tutor-seat-check.md
+    - notes/poetics/hero-demo-runs/2026-09-04-hold-speech-check-opus-reread.md
   exports:
     - exports/tutor-stub-outcome/step6-form-v3-live/
     - exports/tutor-stub-outcome/step7-hold-live/
@@ -41,6 +44,8 @@ links:
     - exports/tutor-stub-outcome/step7c-hold-overconfident/
     - exports/tutor-stub-outcome/step6-pool-widening-2026-09-03/
     - exports/tutor-stub-outcome/step7d-hold-memory-limited/
+    - exports/tutor-stub-outcome/step7e-hold-opus-tutor/
+    - exports/tutor-stub-outcome/hold-speech-recheck-opus/
 tags:
   - adaptive-tutor
   - detector
@@ -69,6 +74,11 @@ card's verdict.
   the reader and a retry (two more calls per held turn). It has never met a
   model reply on the held turns, because turns 2 and 4 on world-037 fall to
   the template reply in every run. More 037 pairs cannot change that.
+- The template wall is not bound to Sonnet 5: with Opus 5 in the tutor seat
+  the same turns fell the same way (step 7e). The codex seat is the one seat
+  that clears it; the other ways are code changes.
+- Model second readers (Sonnet, Opus, Fable) each range from kappa 0.50 to
+  0.83 across the four packets; no reader is above the others throughout.
 
 # Open steps (offline only, no paid call without its own go)
 
@@ -83,9 +93,9 @@ card's verdict.
 3. Then choose: a powered run (about six dialogues per version) with a
    launch line that gives the held turn a model line (the cause note lists
    four ways: the clue-insertion flag, the codex tutor seat, a cue and
-   matcher fix, or a recovery prompt that names the failed check), or write
-   the six pairs up as a lean in the hold notes and close this card. Do not
-   widen to world-036.
+   matcher fix, or a recovery prompt that names the failed check; the Opus
+   tutor seat is ruled out by step 7e), or write the seven pairs up as a
+   lean in the hold notes and close this card. Do not widen to world-036.
 
 # Also landed on PR #985, not detector work
 
@@ -148,3 +158,12 @@ approval machinery beyond "the user says go".
   launch line. Four ways to a model line are listed in the note; none chosen
   here, no runtime change. Note
   `notes/poetics/hero-demo-runs/2026-09-04-step7-template-fallback-cause.md`.
+- **Hold pair on 037 with Opus 5 in the tutor seat, 2026-09-04, paid (step 7e).** The model check the new CLAUDE.md rule asks for (PR #996). Ceiling 200 dialogue + 20 judge calls; used 42 + 41 dialogue, 2 judge, 3 second-reader; turn cap 12; everything else as 7d. Template fallback: with-card t2, t4, t5; without-card t4, t5; t3 with-card saved by the plain recovery. The drafts fail the same three ways as on Sonnet (reworded clue, quotation marks dropped, clue in two sentences). Holds kept 3/4 (without t3 released). Repair HIT 2/6 with, 3/6 without; five pairs pooled 16/24 vs 14/24. Second reads of this packet: Sonnet kappa 0.83, Opus 0.66, Fable 0.50. Fable reads of the 7b, 7c, 7d packets the same day, 3 calls: 0.64, 0.82, 0.67. The wall is not model-bound on the Claude side; next is offline or the codex seat, no re-run as is. Note `notes/poetics/hero-demo-runs/2026-09-04-step7e-opus-tutor-seat-check.md`; artifacts `exports/tutor-stub-outcome/step7e-hold-opus-tutor/`, archived.
+- **Opus 5 re-read of the recorded hold speech checks, 2026-09-04, 16 paid reader calls.** The
+  reader-seat check the CLAUDE.md model-bound rule asks for. `scripts/replay-hold-speech-check.js`
+  sent the 16 recorded Sonnet prompts of steps 7c, 7d and 7e to Opus 5 (7b predates the check).
+  13 of 16 agree, kappa 0.48. All three differences run one way: Sonnet reads a line that
+  concedes the answer and still pushes to move on as dropping the state; Opus reads it as
+  holding. Retry counts are reader-bound (5 under Sonnet, 2 under Opus); every final verdict
+  stayed `kept` under both, so the hold-kept tallies stand. Note:
+  `notes/poetics/hero-demo-runs/2026-09-04-hold-speech-check-opus-reread.md`.
