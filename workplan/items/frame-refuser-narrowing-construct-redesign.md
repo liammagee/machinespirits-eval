@@ -7,7 +7,7 @@ priority: P3
 owner: unassigned
 source: manual
 created: 2026-08-30
-updated: 2026-08-31
+updated: 2026-09-04
 verification: >-
   A zero-call construct review either rejects refusal narrowing as a separately
   measurable outcome or produces a prospective validation plan with observable
@@ -26,6 +26,7 @@ links:
     - https://github.com/liammagee/machinespirits-eval/pull/878
   notes:
     - notes/2026-08-30-frame-refuser-depth-construct-finding.md
+    - notes/2026-09-04-frame-refuser-narrowing-construct-review.md
 tags:
   - draft
   - under-review
@@ -119,3 +120,38 @@ inherits no budget, no roster, no anchor text, and no verdict from
 `frame-refuser-satisfiable-condition`, all closed. Promotion is a fresh
 human decision at the decision gate above, and any study it licenses
 needs its own card-level registration.
+
+## Zero-call construct review (2026-09-04)
+
+The review the verification field asks for has run. It is recorded in
+`notes/2026-09-04-frame-refuser-narrowing-construct-review.md`. It
+re-read the 72 stored reader records and the 24 public packets of the
+completed P1 root offline. No model call.
+
+What it found, in short:
+
+- The seats agreed on every trigger and on bound tightness (0.87 to
+  0.91 exact). Tightness was 3 on 561 of 603 scored states, so it
+  carries no variance.
+- Of 149 open-demand mismatches, 91 are about a demand raised earlier
+  and not mentioned in the current turn. Of 220 concession mismatches,
+  191 are about a concession made earlier and not repeated. The
+  instrument failed on silence, not on sentences.
+- The persona never withdraws a demand (0 of 216 turns), restates its
+  standing condition in nearly every turn, and makes its one visible
+  concession in the first reply after the intervention. After that the
+  refusal is stationary. A pattern screen finds that first-reply
+  concession in both arms (5 of 12 treatment, 9 of 12 reference); a
+  screen, not a read.
+
+Recommended disposition at the decision gate: **Drop.** No graded
+narrowing construct separates from reader bookkeeping on this persona,
+and two instruments have now failed at the same concede-then-withhold
+seam from opposite sides. The note also records the minimum design if
+the user advances anyway: a fixed demand inventory per world, a binary
+own-words-grant endpoint, two human readers on a new sealed set, and a
+kill rule if the endpoint appears in more than three quarters of both
+arms.
+
+The card stays `triaged`. Closing it, or promoting it to the minimum
+design, is the user's decision. No call is authorized by this entry.
