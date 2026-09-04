@@ -88,6 +88,7 @@ test('semantic runtime validation returns a typed missing-result issue without t
   assert.deepEqual(validateTutorStubResistanceSemanticRuntimeResult({ result: null }), {
     valid: false,
     issues: ['semantic runtime result missing'],
+    digestRecords: [],
   });
 });
 
@@ -421,13 +422,21 @@ test('zero-call trace audit binds both judge calls to one packet and reproduces 
     turnNumber: 3,
   });
   const trace = semanticTrace(value);
-  assert.deepEqual(auditTutorStubResistanceSemanticTrace({ events: trace, expectedCandidateCount: 1 }), {
+  const { digestRecords, ...audit } = auditTutorStubResistanceSemanticTrace({
+    events: trace,
+    expectedCandidateCount: 1,
+  });
+  assert.deepEqual(audit, {
     valid: true,
     candidateCount: 1,
     judgeEventCount: 2,
     measurementIndeterminate: false,
     fisherAnalysisWithheld: false,
   });
+  assert.deepEqual(
+    digestRecords.map((row) => row.drifted),
+    [false],
+  );
 
   const changedSecondSource = structuredClone(trace);
   const secondJudge = changedSecondSource.find(
@@ -675,7 +684,6 @@ test('semantic treatment eligibility rejects stale bindings while keeping safety
   assert.equal(eligible().eligible, true);
   for (const mutate of [
     (semantic) => (semantic.turn = 2),
-    (semantic) => (semantic.registrationSha256 = '0'.repeat(64)),
     (semantic) => (semantic.packetSha256 = '0'.repeat(64)),
     (semantic) => (semantic.aggregateSha256 = '0'.repeat(64)),
   ]) {
@@ -728,4 +736,28 @@ test('semantic treatment eligibility rejects stale bindings while keeping safety
     assert.equal(replayed.shadow.resistance_kind, 'frame_refuser');
     assert.equal(replayed.timing.canVetoSemanticClassification, false);
   }
+});
+
+test('a drifted semantic registration digest is recorded and does not fail the result', async () => {
+  const value = fixtureRuntime();
+  const result = await value.runtime.adjudicateCandidate({
+    state: value.state,
+    learnerText: value.corpusCase.source,
+    turnNumber: 3,
+  });
+  const semantic = structuredClone(result);
+  semantic.registrationSha256 = '0'.repeat(64);
+  const validation = validateTutorStubResistanceSemanticRuntimeResult({
+    result: semantic,
+    learnerText: value.corpusCase.source,
+    turnNumber: 3,
+    registrationBinding: binding,
+    expectedPublicContext: result.publicContext,
+    requireDeterminate: false,
+  });
+  assert.equal(validation.valid, true, validation.issues.join('; '));
+  const record = validation.digestRecords.find((row) => row.path === binding.path);
+  assert.equal(record.drifted, true);
+  assert.equal(record.recordedSha256, '0'.repeat(64));
+  assert.notEqual(record.observedSha256, record.recordedSha256);
 });
