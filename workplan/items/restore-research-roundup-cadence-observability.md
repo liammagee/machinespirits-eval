@@ -1,7 +1,7 @@
 ---
 id: restore-research-roundup-cadence-observability
 title: Restore observability for the research-roundup cadence
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: codex
@@ -76,3 +76,8 @@ the tracked canonical roundup corpus, then sorts uniquely. This recovers all
 six fresh June 9 IDs without reopening unrestricted body-number matching or
 admitting DOI fragments. Link-only older references remain eligible as dedup
 keys, so a previously back-referenced paper cannot silently return as fresh.
+
+2026-09-04 Codex: Closed after PR #1002 merged as `76d29fd2`. Independent
+review approved the final metadata-plus-link extraction, and every required
+hosted check passed, including the Node 22/24 matrix, lint, risk coverage,
+PTY/loopback, validation, workplan, and hermetic-contract lanes.

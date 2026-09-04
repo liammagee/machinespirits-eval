@@ -1,7 +1,7 @@
 ---
 id: remediate-development-toolchain-advisories
 title: Remediate the remaining development-toolchain advisories
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: codex
@@ -12,6 +12,8 @@ branch: codex/remediate-dev-toolchain-advisories
 verification: "A clean full npm audit reports zero high or critical vulnerabilities, or each remaining development-only advisory has a documented upstream constraint and bounded disposition; lint, formatting, tests, and maintained artifact builds remain green."
 claim_status: planned
 links:
+  prs:
+    - 1003
   items:
     - remediate-current-production-dependency-advisories
     - upgrade-eslint-toolchain-past-minimatch-advisories
@@ -62,3 +64,8 @@ and severities before implementation.
   passed 5,614 tests with no failures. Shard 2's nine dirty-checkout
   precondition failures disappeared after commit and rebase: the clean branch
   passed 4,662 tests with no failures and nine expected private-artifact skips.
+- 2026-09-04: Closed after PR #1003 merged as `1a1768c6`. Independent review
+  confirmed the four exact locked versions are outside their reviewed advisory
+  ranges with no suspicious lockfile churn, and every required hosted check
+  passed, including Node 22/24, lint, risk coverage, PTY/loopback, validation,
+  workplan, hermetic-contract, and real-browser tutor-surface lanes.
