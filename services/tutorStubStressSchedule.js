@@ -303,7 +303,18 @@ export function tutorStubStressHoldSpeechCheckEnabled(env = process.env) {
   return /^(?:1|true|on|yes)$/iu.test(String(env?.[TUTOR_STUB_STRESS_HOLD_SPEECH_CHECK_ENV] || ''));
 }
 
+/**
+ * The sample line inside a plant's direction (`Sample: "..."`), or null. The
+ * speech check names it so a near-verbatim copy is recorded as a copy (step 7c,
+ * 2026-09-03: the retry copied the sample line instead of speaking).
+ */
+export function tutorStubStressPlantSampleLine(plant) {
+  const match = String(plant?.realize || '').match(/Sample:\s*[“"]([^”"]+)[”"]/u);
+  return match ? match[1].trim() : null;
+}
+
 export function tutorStubStressHoldSpeechCheckPrompt({ plant, speech, tutorReplyText = '' }) {
+  const sample = tutorStubStressPlantSampleLine(plant);
   return [
     'You read one line of speech from a learner in a lesson and say whether it still holds a given state.',
     '',
@@ -324,8 +335,11 @@ export function tutorStubStressHoldSpeechCheckPrompt({ plant, speech, tutorReply
     'Do these words still hold that state? Holding means the learner is still in it: still pushing, still refusing, still insisting, still asking for the same thing, in her own voice.',
     "Dropping means the words give it up: they concede the point, adopt the other speaker's answer or method, soften into agreement, or move on as if settled.",
     'A line can be short or grudging and still hold. Judge the words, not the tone.',
+    sample
+      ? `Also say whether the spoken line is a near-verbatim copy of the sample line in the direction ("${sample}"): the same sentences with at most small changes. A copy can still hold the state; it is recorded as a copy.`
+      : 'Also say whether the spoken line is a near-verbatim copy of a sample line in the direction; with no sample line, answer false.',
     '',
-    'Answer with one JSON object only: {"holds": true or false, "reason": "<one short sentence quoting the words that decide it>"}',
+    'Answer with one JSON object only: {"holds": true or false, "copy": true or false, "reason": "<one short sentence quoting the words that decide it>"}',
   ].join('\n');
 }
 
@@ -335,14 +349,15 @@ export function parseTutorStubStressHoldSpeechCheck(rawText) {
   const body = fenced ? fenced[1] : raw;
   const start = body.indexOf('{');
   const end = body.lastIndexOf('}');
-  if (start < 0 || end <= start) return { holds: null, reason: null, raw };
+  if (start < 0 || end <= start) return { holds: null, copy: null, reason: null, raw };
   try {
     const parsed = JSON.parse(body.slice(start, end + 1));
     const holds = typeof parsed.holds === 'boolean' ? parsed.holds : null;
+    const copy = typeof parsed.copy === 'boolean' ? parsed.copy : null;
     const reason = typeof parsed.reason === 'string' ? parsed.reason.trim() || null : null;
-    return { holds, reason, raw };
+    return { holds, copy, reason, raw };
   } catch {
-    return { holds: null, reason: null, raw };
+    return { holds: null, copy: null, reason: null, raw };
   }
 }
 
@@ -355,7 +370,7 @@ export function tutorStubStressHoldSpeechFeedback({ plant, verdict, speech, reas
     `Those words drop the state you were directed to hold${reason ? ` (${reason})` : ''}.`,
     '',
     'Rewrite the turn. Do one of these two things, not both:',
-    `- Stay in the state in what you say. The direction was: ${plant.realize}`,
+    `- Stay in the state in a line of your own words: what this pupil would say here, after what was just said. Do not copy the sample line from the direction. The direction was: ${plant.realize}`,
     `- Or, if the other speaker's last reply really did this: ${plant.hold.releaseWhen} — then write \`${TUTOR_STUB_STRESS_HOLD_VERDICT_PREFIX} released "<their exact words>"\` on the first line and let the change show.`,
     'Do not write `kept` and then give the point away in the same breath.',
   ].join('\n');
@@ -374,11 +389,13 @@ export function tutorStubStressHoldSpeechCheckTraceEvent(schedule, plant, turnNu
       verdict: draft.verdict,
       text: draft.text,
       holds: draft.reading ? draft.reading.holds : null,
+      copy: draft.reading ? (draft.reading.copy ?? null) : null,
       reason: draft.reading ? draft.reading.reason : null,
     })),
     retried,
     finalVerdict: final.verdict,
     finalHolds: final.reading ? final.reading.holds : null,
+    finalCopy: final.reading ? (final.reading.copy ?? null) : null,
     agree: final.reading && final.reading.holds !== null ? (final.verdict === 'kept') === final.reading.holds : null,
   };
 }

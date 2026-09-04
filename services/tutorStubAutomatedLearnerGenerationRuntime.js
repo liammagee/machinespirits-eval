@@ -324,12 +324,24 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     }
     return stressScheduleCache;
   }
+  // The plant event is recorded once per learner turn: a speech-check retry
+  // rebuilds the prompt, and step 7c (2026-09-03) showed the event firing once
+  // per draft. Keyed on the trace array so a fresh run starts clean.
+  const recordedStressPlantTurns = new WeakMap();
   function stressPlantForLearnerTurn(state, turnNumber, { recordTrace = true } = {}) {
     const schedule = activeStressSchedule();
     if (!schedule) return null;
     const plant = tutorStubStressPlantForTurn(schedule, turnNumber);
     if (plant && recordTrace && state?.trace) {
-      appendTraceEvent(state.trace, tutorStubStressTraceEvent(schedule, plant, turnNumber));
+      let seen = recordedStressPlantTurns.get(state.trace);
+      if (!seen) {
+        seen = new Set();
+        recordedStressPlantTurns.set(state.trace, seen);
+      }
+      if (!seen.has(turnNumber)) {
+        seen.add(turnNumber);
+        appendTraceEvent(state.trace, tutorStubStressTraceEvent(schedule, plant, turnNumber));
+      }
     }
     return plant;
   }
