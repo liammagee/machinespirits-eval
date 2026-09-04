@@ -23,6 +23,7 @@ links:
     - "https://github.com/liammagee/machinespirits-eval/pull/982"
     - "https://github.com/liammagee/machinespirits-eval/pull/985"
     - "https://github.com/liammagee/machinespirits-eval/pull/996"
+    - "https://github.com/liammagee/machinespirits-eval/pull/1010"
   notes:
     - notes/poetics/hero-demo-runs/2026-09-02-step6-model-labels.md
     - notes/poetics/hero-demo-runs/2026-09-02-step6-form-v3-live.md
@@ -179,3 +180,7 @@ approval machinery beyond "the user says go".
   few right reads and fires far more off plant; form-v3 stays shipped. New
   `scripts/compare-learner-state-labels.js` joins label files with a form-v3 replay. Note:
   `notes/poetics/hero-demo-runs/2026-09-04-step6a-opus-labeller-check.md`.
+- **Paper paragraph, 2026-09-04.** §6.24 of `docs/research/paper-full-2.0.md` (v3.0.303, PR #1010)
+  now records the September detector work: the re-read of the v6/v7 held-out figure, form-v1..v5
+  with their leave-one-world-out numbers, the form-v3 live pair, the labeller comparison with its
+  Opus 5 check, the four-row sheet, and the hold instrument's template wall.
