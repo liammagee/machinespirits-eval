@@ -40,6 +40,7 @@ import {
 } from '../services/adaptiveWarrantSemanticEvents.js';
 import { adaptiveWarrantSemanticInstrumentBindings } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES } from '../services/adaptiveWarrantOutcomeLearnerProfiles.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 import {
   OUTCOME_DEFAULT_RUN_SHAPE,
   OUTCOME_RUN_SHAPES,
@@ -184,9 +185,17 @@ function verifyInheritedPins(base) {
     const present = fs.existsSync(resolved);
     return { label, path: file, expected, actual: present ? sha256(fs.readFileSync(resolved)) : null };
   });
-  const failed = rows.filter((row) => row.actual !== row.expected);
-  if (failed.length) {
-    throw new Error(`inherited pin no longer matches: ${failed.map((row) => row.label).join(', ')}`);
+  // CLAUDE.md (2026-08-21): every pin in this list is a code file, a world
+  // design, a config file or the standing-permission menu text. None of them is
+  // sealed data, so each digest is recorded rather than enforced. Correcting a
+  // defect in one of the three preparer scripts used to stop the re-seal.
+  for (const row of rows) {
+    recordObservedDigest({
+      label: `guarded manifest inherited pin ${row.label}`,
+      filePath: row.path,
+      recordedSha256: row.expected,
+      observedSha256: row.actual,
+    });
   }
   return rows.map(({ label, path: file, expected }) => ({ label, path: file, sha256: expected }));
 }

@@ -19,6 +19,7 @@ import {
   buildTutorStubPublicLearnerAnalysisProviderOutputSchema,
   parseTutorStubPublicLearnerAnalysisStrict,
 } from '../services/tutorStubPublicLearnerAnalysis.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_FREEZE_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-schema-acceptance-freeze.v1';
@@ -385,14 +386,31 @@ export async function runAdaptiveWarrantSemanticSchemaAcceptancePing({
   ) {
     throw new Error('semantic schema-acceptance freeze mismatch');
   }
-  for (const binding of [
-    freeze.preflight,
-    freeze.corpus,
-    freeze.packet,
-    freeze.response_schema,
-    freeze.authorization,
+  // CLAUDE.md (2026-08-21): byte pins are for sealed data inputs only. The
+  // preflight artifact, the synthetic corpus and the request packet are files the
+  // prepare phase wrote, so they keep their pins. The authorization request is a
+  // go request and the response schema is a JSON schema, so both are recorded:
+  // correcting either one used to stop the ping on "artifact drift".
+  const digestRecords = [];
+  for (const [label, binding, treatment] of [
+    ['preflight', freeze.preflight, 'pin'],
+    ['corpus', freeze.corpus, 'pin'],
+    ['packet', freeze.packet, 'pin'],
+    ['response schema', freeze.response_schema, 'record'],
+    ['authorization request', freeze.authorization, 'record'],
   ]) {
-    if (!binding?.path || fileSha256(binding.path) !== binding.sha256) {
+    if (!binding?.path) throw new Error('semantic schema-acceptance artifact drift');
+    const observedSha256 = fileSha256(binding.path);
+    if (treatment === 'record') {
+      digestRecords.push(
+        recordObservedDigest({
+          label: `semantic schema-acceptance ${label}`,
+          filePath: binding.path,
+          recordedSha256: binding.sha256,
+          observedSha256,
+        }),
+      );
+    } else if (observedSha256 !== binding.sha256) {
       throw new Error('semantic schema-acceptance artifact drift');
     }
   }

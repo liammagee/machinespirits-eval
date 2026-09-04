@@ -20,6 +20,7 @@ import {
   prepareAdaptiveWarrantSemanticAnnotationBatches,
 } from './prepare-adaptive-warrant-semantic-annotations.js';
 import { runAdaptiveWarrantSemanticReaders } from './run-adaptive-warrant-semantic-readers.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_SMOKE_FREEZE_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-schema-smoke-freeze.v1';
@@ -360,15 +361,32 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
   ) {
     throw new Error('semantic schema smoke freeze mismatch');
   }
-  for (const binding of [
-    freeze.corpus,
-    freeze.handbook,
-    freeze.brittleness_preflight,
-    freeze.schema_acceptance_ping,
-    freeze.collection_manifest,
-    freeze.authorization_request,
+  // CLAUDE.md (2026-08-21): byte pins are for sealed data inputs only. The
+  // blinded synthetic corpus keeps its pin, and so do the three artifacts the
+  // earlier phases wrote. The reader handbook is a prompt and the authorization
+  // request is a go request, so both are recorded: correcting either one used to
+  // stop the smoke run on "artifact drift".
+  const digestRecords = [];
+  for (const [label, binding, treatment] of [
+    ['corpus', freeze.corpus, 'pin'],
+    ['handbook', freeze.handbook, 'record'],
+    ['brittleness preflight', freeze.brittleness_preflight, 'pin'],
+    ['schema acceptance ping', freeze.schema_acceptance_ping, 'pin'],
+    ['collection manifest', freeze.collection_manifest, 'pin'],
+    ['authorization request', freeze.authorization_request, 'record'],
   ]) {
-    if (!binding?.path || fileSha256(binding.path) !== binding.sha256) {
+    if (!binding?.path) throw new Error('semantic schema smoke artifact drift');
+    const observedSha256 = fileSha256(binding.path);
+    if (treatment === 'record') {
+      digestRecords.push(
+        recordObservedDigest({
+          label: `semantic schema smoke ${label}`,
+          filePath: binding.path,
+          recordedSha256: binding.sha256,
+          observedSha256,
+        }),
+      );
+    } else if (observedSha256 !== binding.sha256) {
       throw new Error('semantic schema smoke artifact drift');
     }
   }
