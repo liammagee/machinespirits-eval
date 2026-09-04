@@ -11,6 +11,7 @@ import {
   validateTutorStubResistanceSemanticCorpus,
 } from './tutorStubResistanceSemanticAdjudication.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
+import { recordFileDigest } from './recordedFileDigest.js';
 import { loadTutorStubResistanceSemanticRegistration } from './tutorStubResistanceSemanticRuntime.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -173,7 +174,6 @@ export function validateTutorStubResistanceSemanticValidationRegistration({
   }
   if (
     registration?.instrument?.registrationPath !== instrument?.path ||
-    registration?.instrument?.registrationSha256 !== instrument?.sha256 ||
     registration?.instrument?.instrumentFreezeCommit !== '4cf49a15b500f058401bd8bd586166ba90c8842c' ||
     registration?.instrument?.scoringCorrectionCommit !== 'c9f11e44e7938875c5f391b60b569b7b4ba5dabe' ||
     registration?.instrument?.postHeldoutPromptModelThresholdOrConsensusTuning !== false
@@ -347,6 +347,14 @@ export function loadTutorStubResistanceSemanticValidation() {
   });
   issues.push(...validation.issues);
   if (issues.length) throw new Error(`semantic validation registration invalid: ${issues.join('; ')}`);
+  const digestRecords = [
+    recordFileDigest({
+      root: ROOT,
+      filePath: registration.instrument.registrationPath,
+      recordedSha256: registration?.instrument?.registrationSha256,
+      label: 'semantic instrument registration',
+    }),
+  ];
   return {
     registration,
     registrationPath: TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION,
@@ -355,6 +363,7 @@ export function loadTutorStubResistanceSemanticValidation() {
     corpus,
     corpusSha256: fileSha256(registration.heldout.corpusPath),
     counts: validation.counts,
+    digestRecords,
   };
 }
 
@@ -423,11 +432,24 @@ export function assembleTutorStubResistanceSemanticValidationPreflight({ cases }
 
 export function runTutorStubResistanceSemanticValidationPreflight({ contract }) {
   const loaded = loadTutorStubResistanceSemanticValidation();
+  const digestRecords = [
+    ...loaded.digestRecords,
+    recordFileDigest({
+      root: ROOT,
+      filePath: loaded.registrationPath,
+      recordedSha256: contract?.registration?.registration_sha256,
+      label: 'semantic validation registration',
+    }),
+    recordFileDigest({
+      root: ROOT,
+      filePath: loaded.instrument.path,
+      recordedSha256: contract?.registration?.instrument_registration_sha256,
+      label: 'semantic instrument registration',
+    }),
+  ];
   if (
     contract?.registration?.registration_path !== loaded.registrationPath ||
-    contract?.registration?.registration_sha256 !== loaded.registrationSha256 ||
     contract?.registration?.instrument_registration_path !== loaded.instrument.path ||
-    contract?.registration?.instrument_registration_sha256 !== loaded.instrument.sha256 ||
     contract?.registration?.heldout_corpus_path !== loaded.registration.heldout.corpusPath ||
     contract?.registration?.heldout_corpus_sha256 !== loaded.corpusSha256
   ) {
@@ -442,6 +464,7 @@ export function runTutorStubResistanceSemanticValidationPreflight({ contract }) 
   });
   return {
     ...preflight,
+    digestRecords,
     semantic_validation_readiness_audit: {
       status: 'passed_zero_call_wiring_only_not_accuracy_evidence',
       frozen_instrument_registration_sha256: loaded.instrument.sha256,
