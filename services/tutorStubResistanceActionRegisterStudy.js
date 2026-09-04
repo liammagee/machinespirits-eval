@@ -7,6 +7,7 @@ import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } 
 import { beginTutorStubActionBeforeRegisterShadow } from './tutorStubActionBeforeRegisterShadow.js';
 import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
+import { recordFileDigest } from './recordedFileDigest.js';
 import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
 import { selectTutorStubActorialPerformance } from './tutorStubResponseConfiguration.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResistanceSemanticAdjudicationV3.js';
@@ -1113,13 +1114,18 @@ export function loadTutorStubResistanceActionRegisterRegistration(filePath) {
   const absolute = path.resolve(filePath);
   const source = fs.readFileSync(absolute, 'utf8');
   const raw = JSON.parse(source);
+  const digestRecords = [];
   let resolved = raw;
   if (raw?.version === 10 && raw?.baseRegistrationPath) {
     const basePath = path.resolve(path.dirname(absolute), path.basename(raw.baseRegistrationPath));
     const baseSource = fs.readFileSync(basePath, 'utf8');
-    if (sha256(baseSource) !== raw.baseRegistrationSha256) {
-      throw new Error('v10 base registration digest drifted');
-    }
+    digestRecords.push(
+      recordFileDigest({
+        filePath: basePath,
+        recordedSha256: raw.baseRegistrationSha256,
+        label: 'v10 base registration',
+      }),
+    );
     const deepMerge = (base, override) => {
       if (Array.isArray(override) || !override || typeof override !== 'object') return structuredClone(override);
       const output = structuredClone(base || {});
@@ -1142,6 +1148,7 @@ export function loadTutorStubResistanceActionRegisterRegistration(filePath) {
     path: absolute,
     source,
     sha256: sha256(source),
+    digestRecords,
     registration: normalizeRegistration(resolved),
   };
 }
