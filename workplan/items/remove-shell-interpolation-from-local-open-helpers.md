@@ -1,7 +1,7 @@
 ---
 id: remove-shell-interpolation-from-local-open-helpers
 title: Remove shell interpolation from local file-opening helpers
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -36,3 +36,7 @@ argument-vector process calls. Focused tests prove a metacharacter-bearing
 target remains one argument and guard the affected sources against regression.
 The full lint and hermetic suites pass. Implementation is under review in
 PR #983.
+
+2026-09-03 Codex: Closed after PR #983 merged as `f99cde85`; its workplan,
+browser-surface, validation, lint, risk-coverage, PTY/loopback, and eight Node
+22/24 shard checks all passed.
