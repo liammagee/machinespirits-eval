@@ -37,6 +37,7 @@ links:
     - notes/poetics/hero-demo-runs/2026-09-04-step7-template-fallback-cause.md
     - notes/poetics/hero-demo-runs/2026-09-04-step7e-opus-tutor-seat-check.md
     - notes/poetics/hero-demo-runs/2026-09-04-hold-speech-check-opus-reread.md
+    - notes/poetics/hero-demo-runs/2026-09-04-step6a-opus-labeller-check.md
   exports:
     - exports/tutor-stub-outcome/step6-form-v3-live/
     - exports/tutor-stub-outcome/step7-hold-live/
@@ -46,6 +47,7 @@ links:
     - exports/tutor-stub-outcome/step7d-hold-memory-limited/
     - exports/tutor-stub-outcome/step7e-hold-opus-tutor/
     - exports/tutor-stub-outcome/hold-speech-recheck-opus/
+    - exports/form-state-detector/
 tags:
   - adaptive-tutor
   - detector
@@ -167,3 +169,13 @@ approval machinery beyond "the user says go".
   holding. Retry counts are reader-bound (5 under Sonnet, 2 under Opus); every final verdict
   stayed `kept` under both, so the hold-kept tallies stand. Note:
   `notes/poetics/hero-demo-runs/2026-09-04-hold-speech-check-opus-reread.md`.
+- **Opus 5 check of the step 6a model labeller, 2026-09-04, 287 paid calls under a 300 ceiling.**
+  The labeller-seat check the CLAUDE.md model-bound rule asks for. Same 14 traces, same
+  prompt, `claude-code.claude-opus-5`. Right kind at pressure plants 53/66 (Sonnet 53/66,
+  form-v3 49/66); quiet plants 10/12 (8/12, 7/12); off-plant fires 57/205 (35/205, 19/205).
+  Sonnet and Opus agree on 231/287 turns, kappa 0.69; both fire together on 29 unplanted
+  turns, mostly "so what do I write" lines. Opus also reads the closing summary turns as
+  bored or forgetting. The step 6a finding stands on a second model: a model reader gains a
+  few right reads and fires far more off plant; form-v3 stays shipped. New
+  `scripts/compare-learner-state-labels.js` joins label files with a form-v3 replay. Note:
+  `notes/poetics/hero-demo-runs/2026-09-04-step6a-opus-labeller-check.md`.
