@@ -429,6 +429,9 @@
     "yaml": "2.9.0",
     "zod": "^4.4.1"
   },
+  "overrides": {
+    "qs": "6.16.0"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "22.14.0",

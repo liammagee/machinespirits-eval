@@ -9,9 +9,10 @@ design systems, defect ledger) is the techne doc
 
 ## The six layers
 
-1. **Agent instructions** — `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`: the same
-   project memory cut for each agent. `.claude/style-rule.md` is the prose
-   rule a hook injects on every turn.
+1. **Agent instructions** — `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`:
+   provider-specific operating instructions that share the authority contracts
+   in this map. `.claude/style-rule.md` is the prose rule a Claude hook injects
+   on every turn.
 2. **Repo root** — frozen plans and pre-registrations (a status line in the
    first three lines says which), theory notes, `README.md`, `CONTRIBUTING.md`,
    `DEPLOYMENT.md`. `TODO.md` is a historical archive. Frozen docs are cited by
