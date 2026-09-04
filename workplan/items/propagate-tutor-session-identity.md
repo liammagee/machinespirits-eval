@@ -1,7 +1,7 @@
 ---
 id: propagate-tutor-session-identity
 title: Propagate tutor session identity into recognition events
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -14,6 +14,8 @@ claim_status: planned
 links:
   notes:
     - tutor-core/services/tutorDialogueEngine.js
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/998
 tags:
   - tutor-core
   - provenance
@@ -38,4 +40,4 @@ behavioral persistence contract, not a mechanical cleanup.
   quick-generation recognition writes; added exact-session and legacy-null
   reads; and aligned latest-session tutor/learner flow analysis. Hermetic
   tutor-core tests, lint, formatting, manifest synchronization, and workplan
-  validation pass. Awaiting PR review.
+  validation pass. PR #998 merged as `96d5d7f8`; card closed.
