@@ -267,15 +267,19 @@ test('shipped form-v5 artifact is form-v3 cues on the step-6 pool', () => {
   assert.equal(artifact.version, 'form-v5');
   assert.equal(artifact.featureVersion, 'form-v3');
   assert.deepEqual([...artifact.featureNames], [...tutorStubFormFeatureNames('form-v3')]);
-  // Same pool as form-v4; the hero worlds 035/036/037 stay held out.
+  // The form-v4 pool minus the two Sonnet d1 re-run traces on 042 and 043
+  // (dropped 2026-09-03); the hero worlds 035/036/037 stay held out.
   for (const world of ['world_041_log_and_pebble', 'world_042_half_a_moon', 'world_043_tails_is_due'])
     assert.ok(artifact.trainedOn.worlds.includes(world), world);
   for (const world of ['world_035_nine_oclock_ghost', 'world_036_class_plant', 'world_037_fraction_sum'])
     assert.ok(!artifact.trainedOn.worlds.includes(world), world);
   // The transfer evidence is the 042 fold, recorded in the provenance: 042
-  // held out went 0/10 to 2/10 with no new wrong-fires.
-  assert.match(artifact.trainedOn.provenance, /042 held out went 0\/10 to 2\/10/);
-  assert.equal(artifact.trainedOn.leaveOneWorldOut.world_042_half_a_moon.rightKind, '2/10');
+  // held out went 0/10 to 1/10 with no new wrong-fires (2/10 when the two
+  // d1 re-run traces were still in the pool).
+  assert.match(artifact.trainedOn.provenance, /042 held out went 0\/10 to 1\/10/);
+  assert.match(artifact.trainedOn.provenance, /minus the two Sonnet d1 re-run traces/);
+  assert.equal(artifact.trainedOn.traces, 106);
+  assert.equal(artifact.trainedOn.leaveOneWorldOut.world_042_half_a_moon.rightKind, '1/10');
   assert.equal(artifact.trainedOn.leaveOneWorldOut.world_042_half_a_moon.wrongFiresAtQuiet, '0/2');
   const v5 = compileTutorStubFormDetector(artifact);
   assert.equal(v5.version, 'form-v5');
@@ -283,16 +287,28 @@ test('shipped form-v5 artifact is form-v3 cues on the step-6 pool', () => {
   const v4 = compileTutorStubFormDetector(
     JSON.parse(fs.readFileSync(path.join(ROOT, 'config/manner-trigger/form-v4.json'), 'utf8')),
   );
-  // The three lines are in form-v5's pool, so this pins behaviour, not
-  // transfer. form-v4 reads all three as nothing.
+  // The card line is in form-v5's pool (042 codex d0), so it pins behaviour;
+  // the not-five line comes from a dropped d1 trace, never trained on, and
+  // reads irritated at p 0.51. form-v4 reads all three as nothing.
   for (const line of [
-    'Oh come on — "What does that show?" — could you just tell me straight what that shows instead of quizzing me with the torch again?',
     'Are you reading that off a card? “The available public evidence does not yet settle the case.” It’s a torch and two balls—just say plainly what I should write.',
     'Stop doing the slow bit. I\'m not five. "No memory, starts fresh." Say it once, normally, and I\'ll write it.',
   ]) {
     assert.equal(readTutorStubFormState(v5, line).state, 'irritated', line);
     assert.equal(readTutorStubFormState(v4, line).state, 'neutral', line);
   }
+  // The Oh-come-on line (dropped d1 trace) fires the cue but sits under the
+  // threshold on this pool; it read irritated at 0.59 with the d1 traces in.
+  const comeOn =
+    'Oh come on — "What does that show?" — could you just tell me straight what that shows instead of quizzing me with the torch again?';
+  assert.equal(
+    computeTutorStubFormFeatures(comeOn, {}, 'form-v3')[
+      tutorStubFormFeatureNames('form-v3').indexOf('quote_manner_challenge')
+    ],
+    1,
+  );
+  assert.equal(readTutorStubFormState(v5, comeOn).state, 'neutral');
+  assert.equal(readTutorStubFormState(v4, comeOn).state, 'neutral');
   // Without the quote the same words stay unread under form-v5 as well.
   assert.notEqual(
     readTutorStubFormState(v5, 'Are you reading that off a card? Just tell me what the torch shows.').state,
