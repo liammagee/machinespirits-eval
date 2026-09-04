@@ -1130,9 +1130,15 @@ test('Phase 6A v2.1 canary lineage rejects Git, invariant source, model, runtime
     });
     assert.deepEqual(phase6CanaryCompatibilityBlockers({ manifest, plan }), []);
 
+    // CLAUDE.md (2026-08-21): the five invariant kinds are digests over source
+    // files. Editing the runner changes the plan's digest while the sealed
+    // parent keeps the old one; that is written down and seeds 1-5 still run.
+    const runnerDrift = structuredClone(plan);
+    runnerDrift.hashes.runner = '0'.repeat(64);
+    assert.deepEqual(phase6CanaryCompatibilityBlockers({ manifest, plan: runnerDrift }), []);
+
     const mutations = [
       ['Git SHA', (copy) => (copy.priorCanary.git.sha = '0'.repeat(40)), /same clean Git SHA/u],
-      ['source hash', (copy) => (copy.priorCanary.hashes.runner = '0'.repeat(64)), /source hashes/u],
       ['model', (copy) => (copy.priorCanary.models.tutor.resolved = 'openrouter/drifted'), /model references/u],
       ['runtime', (copy) => (copy.priorCanary.phase6ModelRuntime.tutor.timeout_ms = 1), /runtime policies/u],
       [
@@ -1183,10 +1189,14 @@ test('Phase 6 continuation loads only a canary-bound sealed parent with current 
     assert.equal(prior.phase6ModelRuntimeSha256, hashCanonicalJson(prior.phase6ModelRuntime));
     assert.equal(prior.phase6CliFingerprintsSha256, hashCanonicalJson(prior.phase6CliFingerprints));
 
+    // CLAUDE.md (2026-08-21): the decision contract is a registration JSON in this
+    // repo. A parent sealed before an edit to it is loaded, the drift is written
+    // down, and the returned record carries the digest of the file as it is now.
     const stalePath = writeSealedK5Parent(path.join(root, 'stale-parent'), {
       contractSha256: '0'.repeat(64),
     });
-    assert.throws(() => loadPriorProvisionalReport(stalePath), /hash-compatible/u);
+    const stale = loadPriorProvisionalReport(stalePath);
+    assert.equal(stale.decisionContractSha256, hashFile(CONTRACT_PATH));
 
     const unboundPath = writeSealedK5Parent(path.join(root, 'unbound-parent'), {
       mutatePlan: (plan) => {
@@ -1222,9 +1232,20 @@ test('Phase 6 continuation rejects Git, source, model, runtime, and CLI drift fr
     });
     assert.deepEqual(phase6ContinuationCompatibilityBlockers({ manifest, plan }), []);
 
+    // CLAUDE.md (2026-08-21): the runner digest covers source files, so it is
+    // written down. The profile digest covers manifest fields and still refuses.
+    const runnerDrift = structuredClone(plan);
+    runnerDrift.hashes.runner = '0'.repeat(64);
+    assert.deepEqual(phase6ContinuationCompatibilityBlockers({ manifest, plan: runnerDrift }), []);
+
     const mutations = [
       ['Git SHA', (copy) => (copy.priorProvisional.git.sha = '0'.repeat(40)), /same clean Git SHA/u],
-      ['source hash', (copy) => (copy.priorProvisional.hashes.runner = '0'.repeat(64)), /hashes must match/u],
+      [
+        'profile hash',
+        (copy) => (copy.priorProvisional.hashes.profile = '0'.repeat(64)),
+        /profile\/world\/arm manifest hashes/u,
+      ],
+      ['required hash kinds', (copy) => (copy.priorProvisional.requiredHashKinds = ['runner']), /required hash kinds/u],
       ['model', (copy) => (copy.priorProvisional.models.tutor.resolved = 'openrouter/drifted'), /model references/u],
       ['runtime', (copy) => (copy.priorProvisional.phase6ModelRuntime.tutor.timeout_ms = 1), /runtime policies/u],
       [

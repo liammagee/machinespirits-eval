@@ -622,14 +622,38 @@ test('retired paid execution refuses before any work', async () => {
   );
 });
 
-test('manifest guard refuses a menu SHA mismatch', (t) => {
+// CLAUDE.md (2026-08-21): the menu JSON is a registration file, not sealed
+// data, so a changed digest is written down and the run carries on. A missing
+// binding and a missing file are still refusals.
+test('manifest guard records a menu SHA change instead of refusing', (t) => {
   const directory = temporaryDirectory(t);
   const source = path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json');
   const manifest = JSON.parse(fs.readFileSync(source, 'utf8'));
   manifest.standing_permission.menu_json_sha256 = '0'.repeat(64);
   const manifestPath = path.join(directory, 'pilot-manifest.json');
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-  assert.throws(() => verifyOutcomePilotManifestBindings({ manifestPath }), /menu JSON SHA mismatch/u);
+  let records = null;
+  try {
+    records = verifyOutcomePilotManifestBindings({ manifestPath }).digestRecords;
+  } catch (error) {
+    // The machine-local sealed samples are absent in a fresh checkout, so the
+    // guard can still stop further on. It must not stop on the menu digest.
+    assert.doesNotMatch(error.message, /menu JSON SHA mismatch/u);
+    return;
+  }
+  const menuRecord = records.find((record) => record.label === 'outcome pilot menu JSON');
+  assert.equal(menuRecord.recordedSha256, '0'.repeat(64));
+  assert.equal(menuRecord.drifted, true);
+});
+
+test('manifest guard still refuses a missing menu binding', (t) => {
+  const directory = temporaryDirectory(t);
+  const source = path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(source, 'utf8'));
+  delete manifest.standing_permission.menu_json_sha256;
+  const manifestPath = path.join(directory, 'pilot-manifest.json');
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  assert.throws(() => verifyOutcomePilotManifestBindings({ manifestPath }), /menu JSON binding is missing/u);
 });
 
 test(

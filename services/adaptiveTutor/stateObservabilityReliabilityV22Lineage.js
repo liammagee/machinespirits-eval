@@ -17,6 +17,7 @@ import {
   validateAdaptiveStateObservabilityReliabilityResult,
 } from './stateObservabilityReliabilityV22.js';
 import { adaptiveStateObservabilityReliabilityV22StaticExecutionContract } from './stateObservabilityReliabilityV22Contracts.js';
+import { recordSourceSetDigests } from '../recordedFileDigest.js';
 
 export const ADAPTIVE_STATE_OBSERVABILITY_RELIABILITY_FILES = Object.freeze({
   plan: 'observability-reliability-plan.json',
@@ -195,6 +196,22 @@ export function validateAdaptiveStateObservabilityReliabilityV22Parent({
   const metadata = verification.plan?.metadata || {};
   const sealMetadata = verification.seal?.metadata || {};
   assertHistoricalCleanGitAttestation(verification.plan?.provenance?.git);
+  // CLAUDE.md (2026-08-21): every path inside these two contracts is a source
+  // file in services/ or scripts/ or a config YAML, and this file is one of
+  // them. The file members are written down. The design members, policy and
+  // prompt, still refuse.
+  const reliabilityContractDrift = recordSourceSetDigests({
+    label: 'reliability contract',
+    recorded: verification.plan?.hashes,
+    observed: currentContract,
+    fileKinds: ['runner', 'analyzer', 'profile', 'world', 'config', 'benchmark_config', 'reliability_config'],
+  });
+  const s1ContractDrift = recordSourceSetDigests({
+    label: 'reliability S1 relevant contract',
+    recorded: metadata.s1RelevantHashes,
+    observed: currentS1Contract.hashes,
+    fileKinds: ['runner', 'analyzer', 'policy', 'profile', 'world', 'config'],
+  });
   if (
     verification.seal?.status !== 'complete' ||
     verification.plan?.runner !== 'scripts/execute-adaptive-state-observability-reliability-v22.js' ||
@@ -207,13 +224,14 @@ export function validateAdaptiveStateObservabilityReliabilityV22Parent({
     metadata.s0ParentSealInventorySha256 !== s0Parent.seal_inventory_sha256 ||
     metadata.s0ConfigSha256 !== s0Parent.config_sha256 ||
     verification.plan?.lineage?.parentRunId !== metadata.diagnosesStoppedPreflightRunId ||
-    hashCanonicalJson(verification.plan?.hashes) !== hashCanonicalJson(currentContract) ||
+    reliabilityContractDrift.mismatches.length ||
     hashCanonicalJson(verification.plan?.intent?.observabilityReliability) !== hashCanonicalJson(plan) ||
     hashCanonicalJson(verification.plan?.jobs) !== hashCanonicalJson(plan.jobs) ||
     hashCanonicalJson(verification.plan?.randomization?.jobOrder) !==
       hashCanonicalJson(plan.jobs.map((row) => row.id)) ||
     metadata.reliabilityPlanSha256 !== plan.content_sha256 ||
-    metadata.s1RelevantHashesSha256 !== hashCanonicalJson(currentS1Contract.hashes) ||
+    s1ContractDrift.mismatches.length ||
+    metadata.s1RelevantHashesSha256 !== hashCanonicalJson(metadata.s1RelevantHashes) ||
     hashCanonicalJson(metadata.cliFingerprints) !== hashCanonicalJson(currentCli) ||
     metadata.cliFingerprintsSha256 !== hashCanonicalJson(currentCli) ||
     report.status !== 'pass' ||

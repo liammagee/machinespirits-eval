@@ -1489,9 +1489,18 @@ test('v4 source pin binds the frozen closure bytes rather than the checkout head
     path: relative,
     sha256: sha256(fs.readFileSync(path.join(temp, relative))),
   }));
-  assert.equal(
-    assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit: pinnedCommit, closure, root: temp }),
-    2,
+  const verifiedClosure = assertTutorStubBoredomProofDagSourceClosure({
+    expectedSourceCommit: pinnedCommit,
+    closure,
+    root: temp,
+  });
+  assert.equal(verifiedClosure.verified, 2);
+  assert.deepEqual(
+    verifiedClosure.digestRecords.map((record) => [record.path, record.drifted]),
+    [
+      ['services/pinned-one.js', false],
+      ['services/pinned-two.js', false],
+    ],
   );
 
   assert.throws(
@@ -1511,15 +1520,17 @@ test('v4 source pin binds the frozen closure bytes rather than the checkout head
       }),
     /closure file is absent: services\/absent\.js/u,
   );
-  assert.throws(
-    () =>
-      assertTutorStubBoredomProofDagSourceClosure({
-        expectedSourceCommit: pinnedCommit,
-        closure: [{ ...closure[0], sha256: 'f'.repeat(64) }],
-        root: temp,
-      }),
-    /closure drift against the frozen request: services\/pinned-one\.js/u,
-  );
+  // CLAUDE.md (2026-08-21): a frozen-request digest is recorded, not enforced. A
+  // wrong recorded value marks the record drifted and lets the batch run on.
+  const driftedRecord = assertTutorStubBoredomProofDagSourceClosure({
+    expectedSourceCommit: pinnedCommit,
+    closure: [{ ...closure[0], sha256: 'f'.repeat(64) }],
+    root: temp,
+  });
+  assert.equal(driftedRecord.verified, 1);
+  assert.equal(driftedRecord.digestRecords[0].drifted, true);
+  assert.equal(driftedRecord.digestRecords[0].recordedSha256, 'f'.repeat(64));
+  assert.equal(driftedRecord.digestRecords[0].observedSha256, closure[0].sha256);
 
   // Bytes that match a rewritten closure entry but not the pinned commit still fail closed.
   fs.writeFileSync(path.join(temp, 'services', 'pinned-one.js'), 'export const one = 99;\n');
@@ -2139,28 +2150,33 @@ test('the runner takes its batch ids from the registration, not from a written r
     });
   // v7 is spent, and its analysis was corrected afterwards to apply a rule the
   // registration always carried, so its frozen request no longer matches the
-  // tree and no v7 plan can be built at all. That is the seal working, not a
-  // fault: the analyzer sits inside the frozen closure exactly so that changing
-  // the analysis after seeing the data cannot happen quietly, and so that the
-  // analysis cannot be edited between two batches of one live run.
+  // tree. The closure digest now records that difference instead of refusing to
+  // build, per CLAUDE.md (2026-08-21): a file digest is recorded, not enforced.
+  // What a v7 build still writes into the plan is the recorded and the observed
+  // digest of every closure file, so a changed analyzer is visible in the plan.
   //
-  // The batch id property outlives the seal, because ids are checked before the
-  // closure is. A registered id must get past the id check and fail later, on
-  // drift. An id past the registered range must fail on the id check itself.
-  // The runner used to accept execution_batch_1 through 9 and refuse the rest,
-  // and it refused them all with one message, so two runs of batch ten agreed
-  // byte for byte and read as stable.
+  // The property under test is the batch id range. A registered id must not be
+  // refused as unregistered, whatever else the build makes of it. An id past
+  // the registered range must fail on the id check itself. The runner used to
+  // accept execution_batch_1 through 9 and refuse the rest, and it refused them
+  // all with one message, so two runs of batch ten agreed byte for byte and
+  // read as stable.
   for (let index = 1; index <= batches; index += 1) {
-    assert.throws(
-      () => build(`execution_batch_${index}`),
-      /closure drift against the frozen request/u,
-      `execution_batch_${index} must be a registered id`,
+    let message = '';
+    try {
+      build(`execution_batch_${index}`);
+    } catch (error) {
+      message = String(error?.message || '');
+    }
+    assert.equal(
+      /must be one of the [0-9]+ registered ids/u.test(message),
+      false,
+      `execution_batch_${index} must be a registered id, refused with: ${message}`,
     );
   }
   assert.throws(() => build(`execution_batch_${batches + 1}`), /must be one of the 21 registered ids/u);
   // What each registered batch deals is read off the plan the registration
-  // derives offline, which the seal does not gate, rather than off a build it
-  // now refuses.
+  // derives offline rather than off a build.
   const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V7) });
   assert.equal(loaded.plan.batches.length, batches);
   assert.equal(new Set(loaded.plan.jobs.map((job) => job.batch_id)).size, batches);

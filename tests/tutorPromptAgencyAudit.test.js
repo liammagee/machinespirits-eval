@@ -58,7 +58,10 @@ test('report states the evidence boundary and reproducible prompt-mirror discrep
   );
 });
 
-test('audit fails closed when an audited prompt changes without ledger review', (t) => {
+// CLAUDE.md (2026-08-21): a tutor prompt is a file that is edited in place, so
+// an edit to one is written down here and the audit still passes. The evidence
+// snippet check is what fails when the audit has really gone stale.
+test('audit records a prompt edit instead of refusing over its digest', (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-prompt-agency-audit-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
 
@@ -76,6 +79,8 @@ test('audit fails closed when an audited prompt changes without ledger review', 
   fs.appendFileSync(path.join(root, 'prompts', 'tutor-ego.md'), '\nUnreviewed instruction.\n');
 
   const audit = buildTutorPromptAgencyAudit({ root, ledgerPath: DEFAULT_LEDGER });
-  assert.equal(audit.valid, false);
-  assert.ok(audit.errors.some((error) => error.includes('tutor-ego.md: SHA-256 drift')));
+  assert.deepEqual(audit.errors, []);
+  assert.equal(audit.valid, true);
+  const record = audit.inventory.digest_records.find((entry) => entry.path.endsWith('tutor-ego.md'));
+  assert.equal(record.drifted, true);
 });

@@ -30,6 +30,7 @@ import { parseArgs } from 'node:util';
 import { scoreGuardedPilotPrimaryEndpoint } from './score-guarded-pilot-primary-endpoint.js';
 import { GUARDED_MAIN_BLOCK_SHAPE } from './score-guarded-pilot-gate.js';
 import { LATE_PRESENCE_PREPARATION_SCHEMA } from './prepare-late-presence-read.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 export const LATE_PRESENCE_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.late-presence-read-score.v1';
 export const LATE_PRESENCE_MERGED_ASSEMBLY_SCHEMA =
@@ -37,6 +38,7 @@ export const LATE_PRESENCE_MERGED_ASSEMBLY_SCHEMA =
 /** The one label this read may carry, wherever it is cited (relay 124 §2). */
 export const LATE_PRESENCE_LABEL = 'late-scored registered endpoint, disclosed instrument amendment';
 
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const DEFAULT_FROZEN_CHECKOUT = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
   '../../ms-guarded-readers-pinned',
@@ -409,9 +411,15 @@ export function scoreLatePresenceRead({ runDir, frozenCheckout = DEFAULT_FROZEN_
   }
   const retakePrepPath = path.join(runBase, 'late-presence', 'retakes', 'retake-preparation-manifest.json');
   const retakePrep = readJson(retakePrepPath);
-  if (retakePrep.ruling.sha256 !== fileSha256(RULING_004_PATH)) {
-    throw new Error('retake preparation does not pin the committed ruling 004 record');
-  }
+  // CLAUDE.md (2026-08-21): ruling 004 is a JSON record in docs/ that is edited
+  // in place, so its digest is written down. The ruling_id, run_id and
+  // quarantined-reading count checks above still refuse on a real change.
+  recordObservedDigest({
+    label: 'ruling 004 record',
+    filePath: path.relative(ROOT, RULING_004_PATH),
+    recordedSha256: retakePrep.ruling.sha256,
+    observedSha256: fileSha256(RULING_004_PATH),
+  });
   return import(
     `file://${path.resolve(frozenCheckout, 'scripts/prepare-adaptive-warrant-semantic-annotations.js')}`
   ).then(async (preparer) => {

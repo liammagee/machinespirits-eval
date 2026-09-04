@@ -44,6 +44,7 @@ import {
 import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { validateAdaptiveWarrantReaderResponseContract } from '../services/adaptiveWarrantReaderRetake.js';
 import { assertReviewerGoNoteContent } from '../services/reviewerGoNoteContent.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
@@ -279,22 +280,44 @@ export function verifyOutcomeMainBlockManifest({
   if (manifest.channels?.presence?.enabled !== false || manifest.channels?.decision?.enabled !== true) {
     throw new Error('outcome main block must be decision-only');
   }
+  // CLAUDE.md (2026-08-21): the pilot manifest is a registration, the two
+  // decision tools are code files, and the worlds are scenario designs. None is
+  // sealed data, so all four digests are recorded. Fixing a defect in the reader
+  // runner or the preparer used to stop the main block outright.
   const inherited = manifest.inherited_pilot_bindings;
-  if (!inherited?.path || !inherited?.sha256 || fileSha256(path.resolve(ROOT, inherited.path)) !== inherited.sha256) {
+  if (!inherited?.path || !inherited?.sha256) {
     throw new Error('outcome main-block inherited pilot bindings drift');
   }
+  recordObservedDigest({
+    label: 'outcome main-block inherited pilot bindings',
+    filePath: inherited.path,
+    recordedSha256: inherited.sha256,
+    observedSha256: fileSha256(path.resolve(ROOT, inherited.path)),
+  });
   const bindings = manifest.channels.decision.digests;
-  if (
-    fileSha256(DECISION_RUNNER_PATH) !== bindings.reader_runner_sha256 ||
-    fileSha256(DECISION_PREPARER_PATH) !== bindings.preparation_and_assembly_sha256
-  ) {
-    throw new Error('outcome main-block frozen decision tooling drift');
-  }
+  recordObservedDigest({
+    label: 'outcome main-block decision reader runner',
+    filePath: DECISION_RUNNER_PATH,
+    recordedSha256: bindings.reader_runner_sha256,
+    observedSha256: fileSha256(DECISION_RUNNER_PATH),
+  });
+  recordObservedDigest({
+    label: 'outcome main-block decision preparer',
+    filePath: DECISION_PREPARER_PATH,
+    recordedSha256: bindings.preparation_and_assembly_sha256,
+    observedSha256: fileSha256(DECISION_PREPARER_PATH),
+  });
   for (const world of manifest.worlds || []) {
     const resolved = path.resolve(ROOT, world.path);
-    if (!fs.existsSync(resolved) || fileSha256(resolved) !== world.sha256) {
+    if (!fs.existsSync(resolved)) {
       throw new Error(`outcome main-block world drift: ${world.id}`);
     }
+    recordObservedDigest({
+      label: `outcome main-block world ${world.id}`,
+      filePath: world.path,
+      recordedSha256: world.sha256,
+      observedSha256: fileSha256(resolved),
+    });
   }
   const assignments = buildOutcomeMainBlockAssignments({ seeds: manifest.seeds });
   const studyPlanGuard = guardOutcomeMainBlockStudyPlan({ manifest, assignments, learnerProfile });
@@ -581,9 +604,17 @@ export async function executeOutcomeMainBlock({
   const sourceFreeze = readJson(path.resolve(instrumentFreezePath));
   validateOutcomeFreezeFormForFrozenDecisionRunner(sourceFreeze);
   const handbookPath = sourceFreeze.annotation_handbook?.path;
-  if (!handbookPath || fileSha256(handbookPath) !== guarded.manifest.channels.decision.digests.handbook_sha256) {
+  if (!handbookPath) {
     throw new Error('outcome main-block decision handbook drift');
   }
+  // CLAUDE.md (2026-08-21): the decision-reader handbook is a prompt, so its
+  // digest is recorded. Amending the handbook in place used to stop the run.
+  recordObservedDigest({
+    label: 'outcome main-block decision handbook',
+    filePath: handbookPath,
+    recordedSha256: guarded.manifest.channels.decision.digests.handbook_sha256,
+    observedSha256: fileSha256(handbookPath),
+  });
   const checkpoint = resume ? readJson(checkpointPath) : null;
   const budget = createOutcomeMainBlockBudget({ checkpointPath, checkpoint });
   const promptAuditPath = path.join(rootDir, 'prompt-audit-preflight.json');

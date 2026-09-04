@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 import {
   ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA,
@@ -108,22 +109,45 @@ function validateFreeze({ freeze, manifest, repoRoot, resume }) {
   if (manifest.semantic_brittleness_preflight?.sha256 !== preflightBinding.sha256) {
     throw new Error('decision collection does not bind the frozen brittleness preflight');
   }
+  // CLAUDE.md (2026-08-21): byte pins are for sealed data inputs only. The
+  // blinded corpus and the answer key keep theirs, and so do the plans the
+  // freeze run itself wrote. The design, the registration and the reader
+  // handbooks are recorded instead: amending one of those in place used to stop
+  // the launch with "V3 diagnostic freeze artifact drift".
   const frozenBindings = diagnostic
     ? [
-        freeze.design,
-        freeze.corpus,
-        freeze.handbook,
-        freeze.decision_handbook,
-        freeze.private_key,
-        freeze.private_support_plan,
+        ['design', freeze.design, 'record'],
+        ['corpus', freeze.corpus, 'pin'],
+        ['handbook', freeze.handbook, 'record'],
+        ['decision handbook', freeze.decision_handbook, 'record'],
+        ['private key', freeze.private_key, 'pin'],
+        ['private support plan', freeze.private_support_plan, 'pin'],
       ]
-    : [freeze.protocol, freeze.corpus, freeze.annotation_handbook, freeze.key, freeze.study_plan];
-  for (const binding of frozenBindings) {
-    if (!binding?.path || fileSha256(binding.path) !== binding.sha256) {
+    : [
+        ['protocol', freeze.protocol, 'record'],
+        ['corpus', freeze.corpus, 'pin'],
+        ['annotation handbook', freeze.annotation_handbook, 'record'],
+        ['key', freeze.key, 'pin'],
+        ['study plan', freeze.study_plan, 'pin'],
+      ];
+  const digestRecords = [];
+  for (const [label, binding, treatment] of frozenBindings) {
+    if (!binding?.path) throw new Error('V3 diagnostic freeze artifact drift');
+    const observedSha256 = fileSha256(binding.path);
+    if (treatment === 'record') {
+      digestRecords.push(
+        recordObservedDigest({
+          label: `decision reader freeze ${label}`,
+          filePath: binding.path,
+          recordedSha256: binding.sha256,
+          observedSha256,
+        }),
+      );
+    } else if (observedSha256 !== binding.sha256) {
       throw new Error('V3 diagnostic freeze artifact drift');
     }
   }
-  return { commit, sourceCommit };
+  return { commit, sourceCommit, digestRecords };
 }
 
 function parseJsonObject(text, batchId) {

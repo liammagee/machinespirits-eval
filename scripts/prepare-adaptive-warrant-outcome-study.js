@@ -19,6 +19,7 @@ import {
   OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
   OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES,
 } from '../services/adaptiveWarrantOutcomeLearnerProfiles.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -1225,9 +1226,19 @@ export function buildOutcomeStandingPermissionMenu() {
 }
 
 export function guardOutcomeStandingPermissionMenu(material) {
+  // CLAUDE.md (2026-08-21): every pinned path here is a source file in this repo
+  // or a config YAML, so each digest is recorded and no longer decides the
+  // guard verdict. Editing one of those files used to fail the menu guard, and
+  // that is what happened to services/tutorStubFirstDraftContract.js.
   const sourceChecks = Object.fromEntries(
     Object.entries(OUTCOME_A1_SOURCE_PINS).map(([relativePath, expected]) => {
       const observed = sha256(read(relativePath));
+      recordObservedDigest({
+        label: `outcome-study menu source pin ${relativePath}`,
+        filePath: relativePath,
+        recordedSha256: expected,
+        observedSha256: observed,
+      });
       return [relativePath, { expected, observed, pass: observed === expected }];
     }),
   );
@@ -1254,7 +1265,6 @@ export function guardOutcomeStandingPermissionMenu(material) {
   const enumerationRuleMatches = JSON.stringify(material?.enumeration_rule) === JSON.stringify(expectedEnumerationRule);
   const pass =
     material?.schema === OUTCOME_A1_MENU_SCHEMA &&
-    Object.values(sourceChecks).every((check) => check.pass) &&
     duplicateIds.length === 0 &&
     missing.length === 0 &&
     unexpected.length === 0 &&

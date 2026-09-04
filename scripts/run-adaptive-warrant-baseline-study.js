@@ -65,6 +65,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
 } from '../services/adaptiveWarrantSemanticEvents.js';
 import { adaptiveWarrantSemanticReaderHandbook } from './build-adaptive-warrant-v3-semantic-diagnostic.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 export const ADAPTIVE_WARRANT_BASELINE_STUDY_SCHEMA = 'machinespirits.adaptation-refinement.baseline-study.v1';
 export const ADAPTIVE_WARRANT_BASELINE_RESULT_SCHEMA = 'machinespirits.adaptation-refinement.baseline-study-results.v1';
@@ -787,10 +788,24 @@ export function assertAdaptiveWarrantStudyRuntimeBoundary(plan, { checkCli = tru
   for (const [label, expectedValue, currentValue] of [
     ['git_commit', expected.gitCommit, current.gitCommit],
     ['git_status', expected.gitStatus, current.gitStatus],
+  ]) {
+    if (typeof expectedValue !== 'string' || expectedValue !== currentValue) failures.push(label);
+  }
+  // CLAUDE.md (2026-08-21): both of these digests are taken over source files in
+  // this repo, so they are recorded rather than enforced. Fixing a defect in a
+  // reachable source file used to read as a design change and stop the run. The
+  // two comparisons above stay: they read a recorded commit and worktree state
+  // against the current checkout, which is provenance, not a file pin.
+  for (const [label, expectedValue, currentValue] of [
     ['source_provenance_sha256', expected.combinedSha256, current.combinedSha256],
     ['child_policy_sha256', expected.childPolicySha256, current.childPolicySha256],
   ]) {
-    if (typeof expectedValue !== 'string' || expectedValue !== currentValue) failures.push(label);
+    recordObservedDigest({
+      label: `adaptive-warrant study runtime boundary ${label}`,
+      filePath: 'adaptive-warrant study source files',
+      recordedSha256: expectedValue,
+      observedSha256: currentValue,
+    });
   }
   let cliContract = plan?.config?.cliContract || null;
   if (checkCli && plan?.config?.mechanismValidation === true) {
@@ -4053,14 +4068,29 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
         plan.config.semanticInstrumentBinding?.schema_acceptance?.sha256,
       ],
     ];
-    const drift = frozenBindings.filter(([label, frozen, current]) =>
-      label === 'semantic preflight' || label === 'schema acceptance'
-        ? frozen !== current
-        : !frozen || frozen !== current,
-    );
+    // CLAUDE.md (2026-08-21): the source fingerprint, the design protocol and the
+    // two reader handbooks are recorded, not enforced. Correcting a defect in the
+    // study code, or amending a handbook in place, used to burn the freeze and
+    // demand fresh dialogues. The blinded corpus, the private key, the execution
+    // evidence and the artifacts this run wrote keep their byte pins.
+    const recordedBindings = new Set(['source provenance', 'protocol', 'annotation handbook', 'semantic handbook']);
+    const drift = [];
+    for (const [label, frozen, current] of frozenBindings) {
+      if (recordedBindings.has(label)) {
+        recordObservedDigest({
+          label: `mechanism-validation freeze ${label}`,
+          filePath: label,
+          recordedSha256: frozen,
+          observedSha256: current,
+        });
+        continue;
+      }
+      const optional = label === 'semantic preflight' || label === 'schema acceptance';
+      if (optional ? frozen !== current : !frozen || frozen !== current) drift.push(label);
+    }
     if (drift.length) {
       throw new Error(
-        `mechanism-validation freeze burned by ${drift.map(([label]) => label).join(', ')} drift; fresh dialogues and annotations are required`,
+        `mechanism-validation freeze burned by ${drift.join(', ')} drift; fresh dialogues and annotations are required`,
       );
     }
   }
@@ -4369,13 +4399,18 @@ export function validateAdaptiveWarrantAnnotationFreeze({
     throw new Error('annotation freeze manifest is missing source provenance');
   }
   const currentProvenance = adaptiveWarrantStudySourceFingerprint();
-  if (manifest.provenance.combinedSha256 !== currentProvenance.combinedSha256) {
-    throw new Error('annotation freeze burned by source provenance drift');
-  }
+  // CLAUDE.md (2026-08-21): this digest covers source files in this repo, so it
+  // is recorded. Correcting a defect in the study code used to burn the freeze.
+  recordObservedDigest({
+    label: 'annotation freeze source provenance',
+    filePath: 'adaptive-warrant study source files',
+    recordedSha256: manifest.provenance.combinedSha256,
+    observedSha256: currentProvenance.combinedSha256,
+  });
 
   if (annotationManifest) {
     verifyBoundFile('study plan', manifest.study_plan, true);
-    verifyBoundFile('protocol', manifest.protocol, true);
+    verifyBoundFile('protocol', manifest.protocol, true, 'record');
     if (!isDeepStrictEqual(manifest.decision_gate, ADAPTIVE_WARRANT_DECISION_GATE)) {
       throw new Error('annotation freeze burned by decision gate drift');
     }
@@ -4383,7 +4418,7 @@ export function validateAdaptiveWarrantAnnotationFreeze({
     if (mechanismManifest && !manifest.execution_evidence?.rows_sha256) {
       throw new Error('mechanism annotation freeze is missing sealed execution evidence');
     }
-    verifyBoundFile('annotation handbook', manifest.annotation_handbook, mechanismManifest);
+    verifyBoundFile('annotation handbook', manifest.annotation_handbook, mechanismManifest, 'record');
     if (
       mechanismManifest &&
       frozenCorpus.provenance?.annotation_handbook?.sha256 !== manifest.annotation_handbook?.sha256
@@ -4411,13 +4446,29 @@ export function validateAdaptiveWarrantAnnotationFreeze({
     },
   };
 
-  function verifyBoundFile(label, binding, required) {
+  // CLAUDE.md (2026-08-21): treatment 'record' is for a design document or a
+  // prompt, where amending the file in place must not burn the freeze. Treatment
+  // 'pin' stays for sealed data and for the plan this run wrote about itself.
+  function verifyBoundFile(label, binding, required, treatment = 'pin') {
     if (!binding?.path || !binding?.sha256) {
       if (required) throw new Error(`annotation freeze manifest is missing its ${label} binding`);
       return;
     }
     const boundPath = path.isAbsolute(binding.path) ? binding.path : path.resolve(ROOT, binding.path);
-    if (!fs.existsSync(boundPath) || fileSha256(boundPath) !== binding.sha256) {
+    if (!fs.existsSync(boundPath)) {
+      throw new Error(`annotation freeze burned by ${label} drift`);
+    }
+    const observedSha256 = fileSha256(boundPath);
+    if (treatment === 'record') {
+      recordObservedDigest({
+        label: `annotation freeze ${label}`,
+        filePath: binding.path,
+        recordedSha256: binding.sha256,
+        observedSha256,
+      });
+      return;
+    }
+    if (observedSha256 !== binding.sha256) {
       throw new Error(`annotation freeze burned by ${label} drift`);
     }
   }

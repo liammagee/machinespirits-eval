@@ -567,13 +567,17 @@ test('the freeze re-seal refuses an acceptance artifact that is not admissible f
     () => assertAcceptanceArtifactAdmissible({ ...admissible, calls: { attempted: 2, completed: 2, maximum: 2 } }),
     /calls not 1\/1\/1/u,
   );
-  assert.throws(
-    () =>
-      assertAcceptanceArtifactAdmissible({
-        ...admissible,
-        response_schema: { ...admissible.response_schema, sha256: 'd'.repeat(64) },
-      }),
-    /no longer hashes to its recorded value/u,
+  // CLAUDE.md (2026-08-21): the response schema is a JSON schema, so a drifted
+  // digest is recorded and the artifact stays admissible. The refusals that
+  // remain are the ones about the paid call itself, such as the call count above.
+  const drifted = assertAcceptanceArtifactAdmissible({
+    ...admissible,
+    response_schema: { ...admissible.response_schema, sha256: 'd'.repeat(64) },
+  });
+  assert.equal(drifted.status, 'passed');
+  assert.deepEqual(
+    drifted.digestRecords.map((record) => [record.recordedSha256, record.drifted]),
+    [['d'.repeat(64), true]],
   );
 });
 

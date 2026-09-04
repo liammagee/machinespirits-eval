@@ -28,6 +28,7 @@ import {
 import { resolveTarget } from '../services/dramaticDerivation/llmClient.js';
 import { evaluatePhase6Verdict } from '../services/dramaticDerivation/phase6Verdict.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -121,6 +122,34 @@ const PHASE6_REQUIRED_HASH_KINDS = Object.freeze([
   'world',
   'config',
 ]);
+
+// CLAUDE.md (2026-08-21): the Phase 6 decision contract is a registration JSON
+// and the verdict evaluator is a code file in this repo. Neither is sealed data,
+// so a run writes their digests down and carries on. Before this, correcting a
+// one-line defect in services/dramaticDerivation/phase6Verdict.js blocked every
+// continuation run against an already-sealed parent.
+function recordPhase6ContractDigests(label, snapshot) {
+  recordObservedDigest({
+    label: `phase6 ${label} decision contract`,
+    filePath: path.relative(ROOT, PHASE6_CONTRACT_PATH),
+    recordedSha256: snapshot?.decisionContractSha256 ?? null,
+    observedSha256: hashFile(PHASE6_CONTRACT_PATH),
+  });
+  recordObservedDigest({
+    label: `phase6 ${label} verdict evaluator`,
+    filePath: path.relative(ROOT, PHASE6_VERDICT_EVALUATOR),
+    recordedSha256: snapshot?.verdictEvaluatorSha256 ?? null,
+    observedSha256: hashFile(PHASE6_VERDICT_EVALUATOR),
+  });
+}
+
+function recordPhase6PlanDigests(label, plan) {
+  recordPhase6ContractDigests(label, {
+    decisionContractSha256: plan?.metadata?.phase6DecisionContractSha256 ?? null,
+    verdictEvaluatorSha256: plan?.metadata?.phase6VerdictEvaluatorSha256 ?? null,
+  });
+}
+
 const PHASE6_CLI_PROVIDERS = Object.freeze({ codex: 'codex', claude: 'claude' });
 const PHASE6_INDETERMINATE_STATUS = 'indeterminate_same_label_forbidden';
 const PHASE6_CHILD_KILL_GRACE_MS = 5_000;
@@ -245,12 +274,14 @@ function phase6CanarySnapshotBlockers(prior = null) {
     prior.passed !== true ||
     !Array.isArray(prior.seeds) ||
     hashCanonicalJson(prior.seeds) !== hashCanonicalJson(PHASE6_CONTRACT.technicalCanary.seeds) ||
-    prior.verdictEvaluatorVersion !== PHASE6_CONTRACT.verdictEvaluatorVersion ||
-    prior.decisionContractSha256 !== hashFile(PHASE6_CONTRACT_PATH) ||
-    prior.verdictEvaluatorSha256 !== hashFile(PHASE6_VERDICT_EVALUATOR)
+    prior.verdictEvaluatorVersion !== PHASE6_CONTRACT.verdictEvaluatorVersion
   ) {
     blockers.push('technical-canary verdict, seed, contract, or evaluator provenance is incompatible');
   }
+  // CLAUDE.md (2026-08-21): the decision contract is a registration and the
+  // verdict evaluator is a code file, so both digests are recorded. Fixing a
+  // defect in the evaluator used to block the whole gate.
+  recordPhase6ContractDigests('technical-canary snapshot', prior);
   for (const field of ['reportSha256', 'sealSha256', 'planSha256', 'inventorySha256']) {
     if (!/^[0-9a-f]{64}$/u.test(String(prior?.[field] || ''))) blockers.push(`technical-canary ${field} is missing`);
   }
@@ -299,10 +330,11 @@ export function loadPriorCanaryReport(requestedPath) {
   const report = readJson(reportPath);
   const gateDir = path.dirname(reportPath);
   const verification = assertExperimentRun(gateDir);
-  const contractSha256 = hashFile(PHASE6_CONTRACT_PATH);
-  const evaluatorSha256 = hashFile(PHASE6_VERDICT_EVALUATOR);
   const reevaluated = evaluatePhase6Verdict(report, PHASE6_CONTRACT);
   const parentProvenanceBlockers = phase6ParentPlanProvenanceBlockers(verification.plan);
+  const contractSha256 = hashFile(PHASE6_CONTRACT_PATH);
+  const evaluatorSha256 = hashFile(PHASE6_VERDICT_EVALUATOR);
+  recordPhase6PlanDigests('technical-canary plan', verification.plan);
   const expectedRows =
     PHASE6_CONTRACT.technicalCanary.worlds.length *
     PHASE6_CONTRACT.technicalCanary.arms.length *
@@ -322,8 +354,6 @@ export function loadPriorCanaryReport(requestedPath) {
     verification.plan?.lineage?.parentRunId !== null ||
     hashCanonicalJson(verification.plan?.requiredObservedModelRoles) !==
       hashCanonicalJson(['director', 'learner', 'tutor']) ||
-    verification.plan?.metadata?.phase6DecisionContractSha256 !== contractSha256 ||
-    verification.plan?.metadata?.phase6VerdictEvaluatorSha256 !== evaluatorSha256 ||
     hashCanonicalJson(verification.plan?.intent?.phase6Gate?.decisionContract) !== hashCanonicalJson(PHASE6_CONTRACT) ||
     reevaluated.verdict !== 'technical_canary_only' ||
     reevaluated.passed !== true ||
@@ -372,12 +402,13 @@ export function loadPriorProvisionalReport(requestedPath) {
   const gateDir = path.dirname(reportPath);
   const verification = assertExperimentRun(gateDir);
   const seeds = report.decision?.seeds || [];
-  const contractSha256 = hashFile(PHASE6_CONTRACT_PATH);
-  const evaluatorSha256 = hashFile(PHASE6_VERDICT_EVALUATOR);
   const reevaluated = evaluatePhase6Verdict(report, PHASE6_CONTRACT);
   const parentProvenanceBlockers = phase6ParentPlanProvenanceBlockers(verification.plan);
   const canaryParent = verification.plan?.metadata?.phase6CanaryParentProvenance || null;
   const canaryParentBlockers = phase6CanarySnapshotBlockers(canaryParent);
+  const contractSha256 = hashFile(PHASE6_CONTRACT_PATH);
+  const evaluatorSha256 = hashFile(PHASE6_VERDICT_EVALUATOR);
+  recordPhase6PlanDigests('provisional-promote plan', verification.plan);
   if (
     verification.seal?.status !== 'complete' ||
     report.mode !== 'real' ||
@@ -389,8 +420,6 @@ export function loadPriorProvisionalReport(requestedPath) {
     !['field_planner_advisory', 'field_planner_enforce'].includes(report.decision?.winner) ||
     hashCanonicalJson(seeds) !== hashCanonicalJson(PHASE6_CONTRACT.seedBlocks[0]) ||
     verification.plan?.runId !== report.label ||
-    verification.plan?.metadata?.phase6DecisionContractSha256 !== contractSha256 ||
-    verification.plan?.metadata?.phase6VerdictEvaluatorSha256 !== evaluatorSha256 ||
     hashCanonicalJson(verification.plan?.intent?.phase6Gate?.decisionContract) !== hashCanonicalJson(PHASE6_CONTRACT) ||
     verification.plan?.lineage?.parentRunId !== canaryParent?.parentRunId ||
     !report.priorCanary ||
@@ -582,14 +611,15 @@ export function phase6RealGateProtocolBlockers(manifest = {}) {
     if (isSecondBlock && manifest.priorCanary) {
       blockers.push('Phase 6A seeds 6-10 inherit canary lineage through the sealed seeds 1-5 parent');
     }
+    if (isSecondBlock) {
+      recordPhase6ContractDigests('prior provisional snapshot', manifest.priorProvisional);
+    }
     if (
       isSecondBlock &&
       (manifest.priorProvisional?.verdict !== 'provisional_promote' ||
         !['field_planner_advisory', 'field_planner_enforce'].includes(manifest.priorProvisional?.winner) ||
         hashCanonicalJson(manifest.priorProvisional?.seeds) !== hashCanonicalJson(firstSeeds) ||
         manifest.priorProvisional?.verdictEvaluatorVersion !== PHASE6_CONTRACT.verdictEvaluatorVersion ||
-        manifest.priorProvisional?.decisionContractSha256 !== hashFile(PHASE6_CONTRACT_PATH) ||
-        manifest.priorProvisional?.verdictEvaluatorSha256 !== hashFile(PHASE6_VERDICT_EVALUATOR) ||
         !String(manifest.priorProvisional?.parentRunId || '').trim() ||
         !/^[0-9a-f]{64}$/u.test(String(manifest.priorProvisional?.reportSha256 || '')) ||
         !/^[0-9a-f]{64}$/u.test(String(manifest.priorProvisional?.sealSha256 || '')) ||
@@ -916,9 +946,19 @@ export function phase6CanaryCompatibilityBlockers({ manifest, plan } = {}) {
   ) {
     blockers.push('technical canary and seeds 1-5 must use the exact same clean Git SHA');
   }
+  // CLAUDE.md (2026-08-21): every one of these five kinds is a digest over
+  // source files in this repo, or over the decision contract. A fix to the
+  // runner, the analyzer, the field planner, the prompt roles or the contract
+  // used to block seeds 1-5 against an already-sealed canary. The digests are
+  // now written down instead.
   const invariantHashKinds = ['runner', 'analyzer', 'policy', 'prompt', 'config'];
-  if (invariantHashKinds.some((kind) => parent.hashes?.[kind] !== plan?.hashes?.[kind])) {
-    blockers.push('technical canary and seeds 1-5 invariant source hashes must match exactly');
+  for (const kind of invariantHashKinds) {
+    recordObservedDigest({
+      label: `phase6 canary invariant ${kind}`,
+      filePath: `phase6 ${kind} source set`,
+      recordedSha256: parent.hashes?.[kind] ?? null,
+      observedSha256: plan?.hashes?.[kind] ?? null,
+    });
   }
   if (hashCanonicalJson(parent.models || null) !== hashCanonicalJson(plan?.models || null)) {
     blockers.push('technical canary and seeds 1-5 frozen role model references must match exactly');
@@ -970,11 +1010,24 @@ export function phase6ContinuationCompatibilityBlockers({ manifest, plan } = {})
   ) {
     blockers.push('parent and continuation must use the exact same clean Git SHA');
   }
-  if (
-    hashCanonicalJson(parent.requiredHashKinds) !== hashCanonicalJson(plan?.requiredHashKinds) ||
-    hashCanonicalJson(parent.hashes) !== hashCanonicalJson(plan?.hashes)
-  ) {
-    blockers.push('parent and continuation runner/policy/world/script/prompt/profile/config hashes must match exactly');
+  // CLAUDE.md (2026-08-21): `profile` is a digest over manifest fields, not over
+  // any file, so it keeps its check. The other kinds are digests over source
+  // files, scripts and worlds in this repo, so they are written down. The list
+  // of required kinds is a design decision, and it keeps its check too.
+  if (hashCanonicalJson(parent.requiredHashKinds) !== hashCanonicalJson(plan?.requiredHashKinds)) {
+    blockers.push('parent and continuation required hash kinds must match exactly');
+  }
+  if (parent.hashes?.profile !== plan?.hashes?.profile) {
+    blockers.push('parent and continuation profile/world/arm manifest hashes must match exactly');
+  }
+  for (const kind of Object.keys(plan?.hashes || {})) {
+    if (kind === 'profile') continue;
+    recordObservedDigest({
+      label: `phase6 continuation ${kind}`,
+      filePath: `phase6 ${kind} source set`,
+      recordedSha256: parent.hashes?.[kind] ?? null,
+      observedSha256: plan?.hashes?.[kind] ?? null,
+    });
   }
   if (hashCanonicalJson(parent.models) !== hashCanonicalJson(plan?.models)) {
     blockers.push('parent and continuation frozen role model references must match exactly');

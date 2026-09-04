@@ -12,6 +12,7 @@ import {
   runTutorStubResistanceActionRegisterConfirmationPreflight,
 } from '../services/tutorStubResistanceActionRegisterConfirmation.js';
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
+import { recordSourceStatus } from '../services/recordedSourceProvenance.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v3.json';
@@ -53,18 +54,22 @@ function repoPath(value, label) {
   return absolute;
 }
 
+// CLAUDE.md (2026-08-21): provenance is recorded, not enforced. The dirty tree is
+// written into the plan and printed once; it never blocks the batch. The commit
+// pin below stays, because it compares a recorded commit with the checkout and
+// is not a file digest.
 function sourceSnapshot(expectedSourceCommit) {
   const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const tree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const status = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
     cwd: ROOT,
     encoding: 'utf8',
-  }).trim();
-  if (status) throw new Error('confirmation live batch requires a clean source checkout');
+  });
+  const { dirty, dirtyPaths } = recordSourceStatus({ label: 'confirmation live batch', statusOutput: status });
   if (expectedSourceCommit && expectedSourceCommit !== commit) {
     throw new Error(`confirmation source drift: expected ${expectedSourceCommit}, found ${commit}`);
   }
-  return { commit, tree };
+  return { commit, tree, dirty, dirty_paths: dirtyPaths };
 }
 
 function traceResult(command) {

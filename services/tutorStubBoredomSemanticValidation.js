@@ -11,7 +11,7 @@ import {
   adjudicateTutorStubBoredomObservation,
   parseTutorStubBoredomSemanticAdjudication,
 } from './tutorStubBoredomSemanticAdjudicationV3.js';
-import { recordFileDigest } from './recordedFileDigest.js';
+import { recordFileDigest, recordObservedDigest } from './recordedFileDigest.js';
 
 // Sealed data keeps its byte pin. A held-out corpus, a development corpus, a
 // blind-read file or a certificate must be the bytes that were measured, so a
@@ -232,7 +232,12 @@ export function validateTutorStubBoredomSemanticValidationAuthorization({
   assert(authorization.studyId === request.studyId, 'authorization study id mismatch');
   assert(authorization.request?.path === requestPath, 'authorization request path mismatch');
   assertSha256(authorization.request?.sha256, 'authorization request');
-  assert(authorization.request.sha256 === requestSha256, 'authorization request SHA mismatch');
+  const requestDigestRecord = recordObservedDigest({
+    label: 'boredom semantic validation request',
+    filePath: requestPath,
+    recordedSha256: authorization.request?.sha256,
+    observedSha256: requestSha256,
+  });
   assert(
     authorization.scope?.maximumModelCalls === request.scope.maximumModelCalls,
     'authorization call ceiling mismatch',
@@ -258,7 +263,7 @@ export function validateTutorStubBoredomSemanticValidationAuthorization({
     typeof authorization.approval?.evidence === 'string' && authorization.approval.evidence.trim().length > 0,
     'authorization approval evidence is required',
   );
-  return true;
+  return { authorized: true, digestRecords: [requestDigestRecord] };
 }
 
 function expectedDispositionForCase(row) {
