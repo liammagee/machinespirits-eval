@@ -8,7 +8,7 @@ owner: claude
 source: review
 created: 2026-09-04
 updated: 2026-09-04
-verification: "No service under services/tutorStub*.js throws on a drifted digest of a code, schema, prompt, design, registration or go-request file. Each such site records the observed and recorded digests. Sealed corpus and certificate pins are unchanged. lint:all, test:ratchets and the hermetic suite pass."
+verification: "No site in services/ or scripts/ throws on a drifted digest of a code, schema, prompt, design, registration or go-request file in this repo. Each such site records the observed and recorded digests. Sealed data, run artifacts and recorded-value comparisons are unchanged. lint:all, test:ratchets, wp:source-check and the hermetic suite pass."
 claim_status: planned
 links:
   items:
@@ -67,6 +67,8 @@ already returns, in `digestRecords`. Line numbers are as of this branch.
 | `tutorStubResistanceSplitMeasurementValidationRuntime.js` | 281, 287 | split-measurement instrument and stage validation registrations | converted |
 | `tutorStubResistanceWarmNonwarmConfirmation.js` | 50-56 | trigger instrument, outcome and fidelity instrument | converted |
 | `tutorStubResistantProfileRouteCanary.js` | 115-126 | every source-closure entry whose path is not sealed | converted |
+| `tutorStubBoredomSemanticValidation.js` | 235 | the go request, hashed one frame up in its `scripts/` runner | converted |
+| `tutorStubResistantProfileRouteCanary.js` | 166 | the go request, hashed one frame up in its `scripts/` runner | converted |
 
 Both source-closure loops keep a refusal for sealed entries. A module constant
 `SEALED_SOURCE_CLOSURE_PATH` matches `heldout`, `held-out`, `development-corpus`,
@@ -136,16 +138,6 @@ The brief left them alone and so did I.
 - `tutorStubResistanceSplitMeasurementValidationRuntime.js:342-352` compares run
   destinations and stage order, no digest.
 
-### The digest arrives from a caller in `scripts/`
-
-Two sites compare a digest handed in as an argument, where the file read happens
-one frame up in a `scripts/` runner. Criterion 1 does not hold in the service, so
-I did not guess at them.
-
-- `tutorStubBoredomSemanticValidation.js:235` —
-  `assert(authorization.request.sha256 === requestSha256, ...)`.
-- `tutorStubResistantProfileRouteCanary.js:166` — the same assertion.
-
 ### What still blocks after this change
 
 Resume and archive checks compare whole plan objects, and a plan object embeds
@@ -162,12 +154,157 @@ That is a run-artifact check, not a source pin, so it is out of this card's
 scope. If it bites, the fix is to compare the fields that matter rather than to
 widen this change.
 
-### Outside `services/tutorStub*.js`
+## Round two: the rest of the repo
 
-Two tests still hold the banned shape. They are out of the brief's scope and are
-listed here so the next reader can see them.
+A second sweep looked at every run-time file-hash comparison in `scripts/` and
+`services/`, not only `services/tutorStub*.js`. The sweep found 115 candidate
+sites in 50 files: a genuine file-hash call within ten lines back, and a
+`throw`, a `fail(`, an `errors.push` or a `process.exit` within eight lines
+forward.
 
-- `tests/tutorStubResistanceSemanticValidation.test.js:137-140` asserts a source
-  file's digest equals a literal.
-- `tests/tutorStubBoredomSemanticV4InstrumentReadiness.test.js:63` asserts a
-  registration field equals the live digest of a service file.
+### What decided each site
+
+A site converts when all three hold. The code hashes a file on disk at run
+time; it blocks on a mismatch; and the hashed file is a registration, a design,
+a go request, a code file, a JSON schema or a prompt **in this repo**.
+
+Three rules pruned most of the 115.
+
+**Run artifacts are not source files.** A pin binding an analysis to a
+`batch-plan.json`, a `batch-result.json`, a reader response, a packet, a trace,
+an archive or a DB export stays. No edit anywhere in the repo changes those
+bytes, so the pin never blocks a bug fix. It is a record check, not a design
+pin.
+
+**Sealed data keeps its pin.** Any path holding `heldout`, `held-out`,
+`development-corpus`, `blind-read` or `certificate` is untouched. So is the
+annotation handbook: `build-adaptive-warrant-challenge-corpus.js:748-772`
+already lists `'annotation handbook'` as `'pin'` in the same table as
+`'blinded corpus'` and `'private key'`, and the handbook itself lives outside
+this repo under `../machinespirits-eval-private/`.
+
+**A comparison of two written-down values is not a file digest.** Lines like
+`request.bindings.corpus_sha256 !== manifest.corpus.sha256` read two recorded
+fields. They sit in the same `||` chain as a real digest term, so the sweep
+flags them, and they all stay.
+
+### Converted outside `services/tutorStub*.js`
+
+| File | What is now recorded |
+| --- | --- |
+| `analyze-tutor-stub-resistance-action-register-baseline.js` | batch trace sources |
+| `analyze-tutor-stub-resistance-action-register-confirmation.js` | the confirmation analysis source |
+| `analyze-tutor-stub-resistance-recovery-offset-cleaning.js` | the source instrument registration |
+| `audit-tutor-prompt-agency.js` | each audited tutor prompt |
+| `build-adaptive-warrant-challenge-corpus.js` | the targeted-challenge freeze protocol |
+| `execute-adaptive-state-benchmark-v2-s1.js` | the superseded source config |
+| `prepare-adaptive-warrant-outcome-study.js` | the outcome-study menu source pins |
+| `prepare-learner-profile-world-deconfound.js` | the world configs, the launch plan, the two certified artifacts, the frozen design |
+| `rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js` | the v6 merged semantic registration |
+| `replay-learner-profile-recovery-l1.js` | the quiet detector and the pressure trigger |
+| `run-adaptive-warrant-baseline-study.js` | the runtime-boundary sources, the placeholder set, the contract, the mechanism-validation freeze, the annotation-freeze provenance |
+| `run-adaptive-warrant-decision-readers.js` | the decision-reader freeze bindings |
+| `run-adaptive-warrant-outcome-main-block.js` | the inherited pilot bindings, the reader runner, the decision preparer, the world configs, reviewer note 097a |
+| `run-adaptive-warrant-outcome-pilot.js` | the go note, the pilot bindings, the pinned checkouts |
+| `run-adaptive-warrant-semantic-readers.js` | the semantic-reader freeze bindings |
+| `run-adaptive-warrant-semantic-schema-acceptance-ping.js` | the synthetic fixtures and the acceptance bindings |
+| `run-adaptive-warrant-semantic-schema-smoke.js` | the synthetic fixtures and the smoke bindings |
+| `run-adaptive-warrant-steering-decomposition.js` | the inherited pilot bindings, the reader runner, the decision preparer, the world configs, reviewer note 103 |
+| `run-derivation-phase6-gate.js` | the decision contracts, the verdict evaluators, the canary invariants, the continuations |
+| `run-tutor-stub-boredom-action-register-proof-dag.js` | the source closure and the recovery registration |
+| `run-tutor-stub-boredom-semantic-validation.js` | the go request |
+| `run-tutor-stub-first-draft-campaign.js` | the two campaign configs, the world-quality files, the focused test suites, the model-free fixtures |
+| `run-tutor-stub-resistance-action-register-confirmation.js` | the live-batch go request |
+| `run-tutor-stub-resistance-action-register-crossed.js` | the live-batch go request |
+| `run-tutor-stub-resistance-semantic-validation.js` | the go request |
+| `run-tutor-stub-resistant-profile-route-canary.js` | the go request |
+| `score-late-presence-read.js` | ruling 004 |
+| `seal-guarded-warrant-instrument-freeze.js` | the acceptance response schema, the inherited bindings, the schema copy |
+| `seal-guarded-warrant-outcome-manifest.js` | the inherited manifest pins |
+| `services/adaptiveTutor/stateBenchmarkStage1Executor.js` | the S0 parent source set |
+| `services/adaptiveTutor/stateBenchmarkStage2Lineage.js` | the S1 parent config |
+| `services/adaptiveTutor/stateObservabilityPreflightLineage.js` | the preflight contract and its S1-relevant contract |
+| `services/adaptiveTutor/stateObservabilityReliabilityV22Lineage.js` | the reliability contract and its S1-relevant contract |
+| `services/adaptiveWarrantReaderRetake.js` | reviewer ruling 094a |
+
+Rulings in `docs/` are treated as registration-class documents. Ruling 004 in
+`score-late-presence-read.js` and ruling 094a in `adaptiveWarrantReaderRetake.js`
+get the same treatment: the digest is written down, and the path check and the
+missing-file check still refuse.
+
+### Helpers
+
+`services/recordedFileDigest.js` grew `recordObservedDigest`, for the case where
+the caller already holds both digests, and `recordSourceSetDigests`, for a set
+of files a lineage check reads together. `services/recordedSourceProvenance.js`
+is new: it writes down a recorded commit and tree beside the current checkout.
+
+## Report
+
+These need a second opinion. I did not act on any of them.
+
+### Two `config/` edits
+
+The brief said not to edit any file under `config/`. Two one-line additions to
+`config/hermetic-test-manifest.json` register the new test files
+`tests/recordedFileDigest.test.js` and `tests/recordedSourceProvenance.test.js`.
+Without them the hermetic runner does not select the new tests. This file is a
+test manifest, not a record of a measurement.
+
+### Authorization ceremonies
+
+Three sites bind a paid-run approval request to the digest of a manifest file.
+That is the shape `CLAUDE.md` bans outright, but it is not on the brief's IN
+list, and weakening a paid-run approval path is not a call I should make alone.
+
+- `run-adaptive-warrant-semantic-readers.js:89`
+- `prepare-adaptive-warrant-annotation-batches.js:832`
+- `run-adaptive-warrant-baseline-study.js:609-732`
+
+### One loop, two roles
+
+`services/program2ExperimentSafety.js:388` hashes a list of paths in one loop.
+Some entries are run-output evidence, where the pin is right. Others are repo
+config files, where it is the banned shape. Splitting the loop by a path prefix
+would invent a policy nobody stated.
+
+### Development evidence
+
+`tutorStubResistanceSemanticValidationV2.js:231` and
+`tutorStubResistanceSemanticValidationV3.js:349` hash
+`config/tutor-stub-resistance-semantic-adjudication-development-evidence.v2.json`
+and its v3 sibling. A development-evidence JSON is not a registration, a design,
+a go request, a code file, a schema or a prompt, so it fails the IN test. The
+name is close to `development-corpus`, which is on the OUT list, but does not
+match it. Neither list fits, so I left both.
+
+### Two pins I chose not to touch
+
+- `rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js` pins a diagnosis note.
+- `run-tutor-stub-first-draft-campaign.js` throws on `require_clean_worktree`.
+
+### A test pin that survives
+
+`tests/learnerProfileRecoveryL1.test.js:34-38` hashes
+`services/tutorStubQuietDetectorV1.js` and compares it with the literal
+`318da00fff7fc8049fc21640f2978cc119ff3a45a53a5dd126e3df66656ec6c4`. This is the
+reintroduction trap: a one-line fix to the detector turns `npm test` red. The
+brief said not to delete a test, so it stays.
+
+The two other test pins this card first listed are gone. In
+`tests/tutorStubResistanceSemanticValidation.test.js` the one assertion that
+hashed `registration.v1.json` against a literal was removed; the test and its
+other assertions stay, including the drift assertion on the line below. In
+`tests/tutorStubBoredomSemanticV4InstrumentReadiness.test.js` the pin became a
+format check, and a second test was added to read the unpinned files back.
+
+### Endpoint contract and endpoint go request, versus certificate and corpus
+
+`tutorStubBoredomSemanticV4InstrumentReadiness.test.js` held one test pinning
+four files. Two of them are sealed data, and they keep their literal digests:
+the validation certificate and the held-out corpus. The other two are the
+endpoint contract and the superseded HOLD request, both edited in place. Those
+now get a format check and a read-back, so a typo fix in either no longer turns
+`npm test` red. The same split runs through the rest of this card: an endpoint
+contract and a go request are registration files and are recorded; a
+certificate and a corpus are sealed and stay pinned.
