@@ -19,6 +19,8 @@ links:
   notes:
     - notes/daily-notes/README.md
     - .github/workflows/email-roundup.yml
+  prs:
+    - 1002
 tags:
   - research
   - automation
