@@ -110,19 +110,18 @@ test('automatic local CI selection matches hosted full, validator-only, and reti
     false,
   );
 
-  const pr700Files = ['tests/tutorStubResistantProfileStudyGoRequest.test.js', 'workplan/items/example.md'];
+  // No path is allowlisted for validator-only CI since 2026-09-03; a lone
+  // test file change takes the full profile.
+  const pr700Files = ['tests/ciChangePolicy.test.js', 'workplan/items/example.md'];
   const pr700 = buildAutoPlan(pr700Files);
-  assert.equal(pr700.selection.profile, 'validator-only');
-  assert.deepEqual(
-    pr700.plan.map((lane) => lane.id),
-    ['install', 'contract', 'validator-only', 'workplan'],
-  );
-  const pr700Commands = displays(pr700.plan);
-  assert.ok(pr700Commands.includes('node --test tests/tutorStubResistantProfileStudyGoRequest.test.js'));
-  assert.ok(pr700Commands.includes('./node_modules/.bin/eslint tests/tutorStubResistantProfileStudyGoRequest.test.js'));
+  assert.equal(pr700.selection.profile, 'full');
   assert.equal(
-    pr700Commands.some((command) => command === 'npm run lint'),
+    pr700.plan.some((lane) => lane.id === 'validator-only'),
     false,
+  );
+  assert.equal(
+    pr700.plan.some((lane) => lane.id === 'node-tests'),
+    true,
   );
 
   const pr701Files = [
@@ -131,7 +130,6 @@ test('automatic local CI selection matches hosted full, validator-only, and reti
   ];
   const pr701 = buildAutoPlan(pr701Files);
   assert.equal(pr701.selection.profile, 'full');
-  assert.equal(pr701.selection.classification.authorizationRequired, false);
   assert.equal(
     pr701.plan.some((lane) => lane.id === 'node-tests'),
     true,

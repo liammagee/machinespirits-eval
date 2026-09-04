@@ -126,31 +126,17 @@ function pairFor(corpusCase) {
   );
 }
 
-test('v1 and v2 instrument, heldout, request, and registration bytes remain frozen', () => {
+test('v1 and v2 sealed corpus bytes remain frozen', () => {
+  // Pins on code, schema, registration and request files were removed on
+  // 2026-09-03 (CLAUDE.md, edit in place). Only sealed data inputs stay pinned.
   assert.deepEqual(
     {
-      v1Implementation: sha256('services/tutorStubResistanceSemanticAdjudication.js'),
-      v1Schema: sha256('config/tutor-stub-resistance-semantic-adjudication-response.schema.v1.json'),
-      v1Registration: sha256('config/tutor-stub-resistance-semantic-adjudication-registration.v1.json'),
       v1Heldout: sha256('config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json'),
-      v1Request: sha256('config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json'),
-      v2Implementation: sha256('services/tutorStubResistanceSemanticAdjudicationV2.js'),
-      v2Schema: sha256('config/tutor-stub-resistance-semantic-adjudication-response.schema.v2.json'),
-      v2Registration: sha256('config/tutor-stub-resistance-semantic-adjudication-registration.v2.json'),
       v2Heldout: sha256('config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json'),
-      v2Request: sha256('config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v2.json'),
     },
     {
-      v1Implementation: '4c1123b7272e33bdfc63205c85058d9b02753b7c89d3c05af2137b0f72783456',
-      v1Schema: '39a9d12655ec26b1255ab72cfd1f5818dc9e0084daf4c9fafc39c0dbb8ea044f',
-      v1Registration: 'd479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d',
       v1Heldout: '9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7',
-      v1Request: 'b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826',
-      v2Implementation: '2b9faa679fedf1e98c25e6e5f3569da6c2ef83f3654642c08dc3c00e6fc15bfd',
-      v2Schema: 'eaeebc729a56ce7802bf9030a60cdf4cc60734f3aabe0760c7ddd6a64d011205',
-      v2Registration: '4cf2b38f3424960d983e2dd5e1a9938e0397e5038fa5f4c8d96bb5d8a78306be',
       v2Heldout: 'a52d10f60ceeeb9e1e92415c6add6d0dee4dbf69608053652ff9c23f08216535',
-      v2Request: 'b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6',
     },
   );
 });
@@ -169,8 +155,6 @@ test('v3 freeze binds failed v1/v2 evidence, unchanged gates, and the 651 to 113
   assert.equal(registration.prospectiveValidationBudget.programmeLedgerBeforeV3Validation, 651);
   assert.equal(registration.prospectiveValidationBudget.programmeMaximumAfterV3Validation, 1131);
   assert.equal(registration.authorization.validationModelCallsAuthorized, false);
-  assert.equal(sha256(registration.instrument.implementationPath), registration.instrument.implementationSha256);
-  assert.equal(sha256(registration.instrument.responseSchemaPath), registration.instrument.responseSchemaSha256);
   assert.equal(
     sha256(registration.instrument.developmentEvidencePath),
     registration.instrument.developmentEvidenceSha256,

@@ -55,10 +55,9 @@ const SHARD_OVERRIDES = new Map([
     4,
     new Map([
       // Measured 2026-09-03: the hash split put 292s of the 842s of root work
-      // on shard 4 against 161s on shard 2. Moving these two files gives
-      // 192/214/218/217.
+      // on shard 4 against 161s on shard 2. Moving this file (and the
+      // go-request test, since deleted) gave 192/214/218/217.
       ['tests/tutorStubResistanceSemanticValidationRuntime.test.js', 1],
-      ['tests/tutorStubResistanceActionRegisterConfirmationGoRequest.test.js', 0],
       // Three post-merge hosted runs kept shard 1 light and shard 3 heavy.
       // This was shard 3's stable dominant file (57-62s on Node 22 and 39s
       // on Node 24), so move only it to shard 1.

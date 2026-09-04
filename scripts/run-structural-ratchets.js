@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Run the structural ratchet tests: every test file under tests/ that caps a
- * source file's line count (`split('\n').length <` or `<=`). They finish in
+ * source file's line count (`split('\n').length <` or `<=`), plus any test
+ * that opens with a `// structural-ratchet:` marker line (the numbered-sibling
+ * file count, tests/numberedSiblingFileRatchet.test.js). They finish in
  * about a second, and they are the checks a refactor trips without touching
  * behaviour. The pre-push lint hook runs them after the lint lane so a push
  * that CI would reject for a line cap stops on the machine instead (PR #985,
@@ -18,12 +20,17 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TESTS_DIR = path.join(ROOT, 'tests');
 const RATCHET_PATTERN = /split\('\\n'\)\.length\s*<=?\s*/u;
+const RATCHET_MARKER = /^\/\/ structural-ratchet:/u;
+
+export function isStructuralRatchetSource(source) {
+  return RATCHET_MARKER.test(source) || RATCHET_PATTERN.test(source);
+}
 
 export function findStructuralRatchetTests(testsDir = TESTS_DIR) {
   return fs
     .readdirSync(testsDir)
     .filter((name) => name.endsWith('.test.js'))
-    .filter((name) => RATCHET_PATTERN.test(fs.readFileSync(path.join(testsDir, name), 'utf8')))
+    .filter((name) => isStructuralRatchetSource(fs.readFileSync(path.join(testsDir, name), 'utf8')))
     .sort()
     .map((name) => path.join('tests', name));
 }
@@ -38,7 +45,7 @@ function main() {
     console.error('structural ratchets: no line-cap tests found under tests/');
     return;
   }
-  console.error(`structural ratchets: ${files.length} test file(s) with a line cap`);
+  console.error(`structural ratchets: ${files.length} test file(s) (line caps and numbered-sibling count)`);
   const result = spawnSync(process.execPath, ['--test', ...files], { cwd: ROOT, stdio: 'inherit' });
   if (result.error) throw result.error;
   process.exitCode = result.status ?? 1;

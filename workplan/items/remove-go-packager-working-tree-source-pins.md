@@ -60,3 +60,8 @@ request artifact changed.
 2026-09-03 — PR #991 merged with every required hosted check green. The clean
 post-implementation hermetic run passed 10,295 root tests and 145 tutor-core
 tests with zero failures; 27 registered skips remained unchanged.
+
+Later the same day, `in-place-edits-numbered-file-ratchet` (PR #994) deleted the
+packager, the checker and their three tests outright: the 2026-08-21 rule already
+bans them and nothing else imports them. The consumed request JSONs under
+`config/` stay as records; git holds the launch-commit provenance.

@@ -19,7 +19,6 @@ jobs:
       full_required: ${{ steps.manual.outputs.full_required || steps.changes.outputs.full_required }}
       profile: ${{ steps.manual.outputs.profile || steps.changes.outputs.profile }}
       ref_governance_required: ${{ steps.manual.outputs.ref_governance_required || steps.main.outputs.ref_governance_required || steps.changes.outputs.ref_governance_required }}
-      authorization_required: ${{ steps.changes.outputs.authorization_required }}
       validator_required: ${{ steps.manual.outputs.validator_required || steps.changes.outputs.validator_required }}
       validator_tests: ${{ steps.changes.outputs.validator_tests }}
       validator_paths: ${{ steps.changes.outputs.validator_paths }}
@@ -116,10 +115,6 @@ jobs:
           --base "$BASE_SHA"
           --head "$HEAD_SHA"
           --validate-focused
-
-      - name: Run the existing study-GO authorization contract
-        if: needs.classify.outputs.authorization_required == 'true'
-        run: node --test tests/tutorStubResistantProfileStudyGoRequest.test.js
 
   validator-only:
     name: Focused validator checks
