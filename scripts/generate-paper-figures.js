@@ -22,9 +22,10 @@
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
+import { execFileSync } from 'node:child_process';
 import Database from 'better-sqlite3';
 import { createEvaluationScriptContext } from '../services/evaluationStore/scriptContext.js';
+import { openLocalTarget } from './lib/openLocalTarget.js';
 
 const ROOT = path.join(import.meta.dirname, '..');
 const { databasePath: DB_PATH, dialogueLogs } = createEvaluationScriptContext({ rootDir: ROOT });
@@ -634,8 +635,23 @@ function htmlToPng(htmlPath, pngPath) {
     const absPng = path.resolve(pngPath);
     // Remove existing file first — capture-website-cli refuses to overwrite
     if (fs.existsSync(absPng)) fs.unlinkSync(absPng);
-    execSync(
-      `npx capture-website-cli "file://${absHtml}" --output "${absPng}" --width ${figWidth} --full-page --type png --scale-factor 2 --delay 0.5`,
+    execFileSync(
+      'npx',
+      [
+        'capture-website-cli',
+        `file://${absHtml}`,
+        '--output',
+        absPng,
+        '--width',
+        String(figWidth),
+        '--full-page',
+        '--type',
+        'png',
+        '--scale-factor',
+        '2',
+        '--delay',
+        '0.5',
+      ],
       { stdio: 'pipe' },
     );
     return true;
@@ -791,7 +807,7 @@ console.log(`\nRendered ${rendered.length} file(s) to ${outputDir}/`);
 if (shouldOpen && rendered.length > 0) {
   const toOpen = rendered.find((f) => f.endsWith('.html')) || rendered[0];
   try {
-    execSync(`open "${toOpen}"`);
+    openLocalTarget(toOpen);
   } catch {
     /* ignored */
   }

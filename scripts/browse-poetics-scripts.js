@@ -13,7 +13,6 @@ import 'dotenv/config';
 import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
-import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
@@ -24,6 +23,7 @@ import {
   EVAL_SURFACE_MOUNT_PREFIXES,
 } from '../services/evalSurfaces.js';
 import { installApplicationShutdownHandlers } from '../services/applicationShutdown.js';
+import { openLocalTarget } from './lib/openLocalTarget.js';
 import { startDefaultEvaluationStore } from '../services/evaluationStore/lifecycle.js';
 import chatRoutes from '../routes/chatRoutes.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
@@ -11427,7 +11427,13 @@ function main() {
   const server = app.listen(args.port, args.host, () => {
     const url = launchUrl(args);
     console.log(`poetics script browser: ${url}`);
-    if (args.open) exec(`open ${JSON.stringify(url)}`);
+    if (args.open) {
+      try {
+        openLocalTarget(url);
+      } catch {
+        // Opening a browser is a best-effort developer convenience.
+      }
+    }
   });
   const shutdown = installApplicationShutdownHandlers({ app, server });
   server.once('close', shutdown.dispose);
