@@ -102,6 +102,23 @@ export const TUTOR_STUB_STRESS_HOLD_MAX_TURNS = 6;
  * writes `learner_stress_hold` instead, so the plant set the judge, review and
  * trainers see is unchanged by a hold.
  */
+// The plant event is recorded once per learner turn: a speech-check retry
+// rebuilds the prompt, and step 7c (2026-09-03) showed the event firing once
+// per draft. Keyed on the trace array so a fresh run starts clean. Returns
+// true the first time a turn is seen for a trace, false after.
+const recordedStressPlantTurns = new WeakMap();
+export function markTutorStubStressPlantTurn(trace, turnNumber) {
+  if (!trace || typeof trace !== 'object') return true;
+  let seen = recordedStressPlantTurns.get(trace);
+  if (!seen) {
+    seen = new Set();
+    recordedStressPlantTurns.set(trace, seen);
+  }
+  if (seen.has(turnNumber)) return false;
+  seen.add(turnNumber);
+  return true;
+}
+
 export function tutorStubStressTraceEvent(schedule, plant, turnNumber) {
   const base = { schema: TUTOR_STUB_STRESS_SCHEDULE_SCHEMA, scheduleId: schedule.scheduleId, turn: turnNumber };
   if (plant.held > 0) {
