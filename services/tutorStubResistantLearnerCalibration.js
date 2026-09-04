@@ -3507,6 +3507,7 @@ function mergedAgreementSummary(rows, faceDesign) {
     pairs,
     verdict_scope: agreementScope || 'all_registered_fields',
     endpoint_panel: {
+      mechanism: endpointModalMechanism ? 'modal_backstop' : 'legacy_per_pair_conditional',
       cases_with_at_least_two_eligible_votes: casesWithAtLeastTwoEligibleEndpointVotes,
       minimum_cases_with_at_least_two_eligible_votes: endpointEligibilityMinimum,
       pairwise_exact_agreements: endpointPairs,
@@ -3778,6 +3779,101 @@ function wilson95Interval(successes, n) {
   return { lower: Math.max(0, center - margin), upper: Math.min(1, center + margin) };
 }
 
+/**
+ * The three reader gates every merged-face calibration shares: enough
+ * determinate endpoints, enough eligible votes per seat and instrument, and
+ * pairwise exact endpoint agreement at the registered floor. They depend only
+ * on the reader panel and the transcripts it reads, never on a live learner,
+ * so the offline preflight (services/tutorStubReaderAgreementPreflight.js)
+ * computes them over archived transcripts before a run buys a learner call.
+ * The live summarizers below call this same function, so the two cannot drift.
+ */
+export function summarizeTutorStubResistantLearnerReaderGates({ rows, faceDesign }) {
+  const completed = rows.filter((row) => row.status === 'complete');
+  const rules = faceDesign.calibration;
+  const endpoint = faceDesign.measurement.endpointField;
+  const determinate = completed.filter((row) => panelField(row, 'primary', endpoint)?.status === 'determinate');
+  const rungCounts = Object.fromEntries(
+    ['0', '1', '2'].map((rung) => [
+      rung,
+      determinate.filter((row) => panelField(row, 'primary', endpoint)?.value === rung).length,
+    ]),
+  );
+  const agreement = mergedAgreementSummary(completed, faceDesign);
+  const seatMinimum = rateFloorCount(
+    completed.length,
+    rules.minimumEligibleVoteRatePerSeatAndInstrument,
+    rules.minimumEligibleVotesFloor,
+  );
+  const determinateMinimum = rateFloorCount(
+    completed.length,
+    rules.minimumDeterminateOutcomeRate,
+    rules.minimumDeterminateOutcomeFloor,
+  );
+  const endpointPairs = agreement.endpoint_panel.pairwise_exact_agreements;
+  // The gates carry the names the live summarizer for that design uses, so a
+  // preflight row and a live row read the same. The depth and satisfiable
+  // designs register a floor on every seat pair and a per-seat eligibility
+  // floor. The merged design (revision 5) registers no per-pair floor: it
+  // gates on endpoint determinacy and on the modal rule (enough cases with two
+  // eligible endpoint votes, mean pairwise agreement at the backstop), which
+  // mergedAgreementSummary reports as `passed`. Comparing a pair against an
+  // unregistered floor would read as a silent fail, so the rule is chosen from
+  // what the design registers, never assumed.
+  const perPairFloor = Number.isFinite(rules.minimumPairwiseExactEndpointAgreement)
+    ? rules.minimumPairwiseExactEndpointAgreement
+    : null;
+  const agreementRule = perPairFloor !== null ? 'per_pair_floor' : agreement.endpoint_panel.mechanism;
+  const determinateGate = determinate.length >= determinateMinimum;
+  const seatGate = Object.values(agreement.seat_eligibility).every((seat) =>
+    Object.values(seat).every((count) => count === null || count >= seatMinimum),
+  );
+  const gates =
+    agreementRule === 'per_pair_floor'
+      ? {
+          determinate_outcome: determinateGate,
+          eligible_vote_rate_per_seat_and_instrument: seatGate,
+          pairwise_exact_endpoint_agreement:
+            endpointPairs.length === 3 &&
+            endpointPairs.every(
+              (pair) =>
+                Number.isFinite(pair.conditional_exact_agreement) && pair.conditional_exact_agreement >= perPairFloor,
+            ),
+        }
+      : agreementRule === 'modal_backstop'
+        ? {
+            primary_endpoint_determinacy: determinateGate,
+            primary_endpoint_reader_eligibility_and_validity_backstop: agreement.passed === true,
+          }
+        : {
+            determinate_outcome: determinateGate,
+            eligible_vote_rate_per_seat_and_instrument: seatGate,
+            reader_agreement: agreement.passed === true,
+          };
+  return {
+    completed,
+    determinate,
+    rung_counts: rungCounts,
+    agreement,
+    agreement_rule: agreementRule,
+    seat_minimum: seatMinimum,
+    determinate_minimum: determinateMinimum,
+    endpoint_pairs: endpointPairs,
+    gates,
+    floors: {
+      minimum_determinate_outcome_rate: rules.minimumDeterminateOutcomeRate,
+      minimum_determinate_outcome_floor: rules.minimumDeterminateOutcomeFloor,
+      minimum_eligible_vote_rate_per_seat_and_instrument: rules.minimumEligibleVoteRatePerSeatAndInstrument,
+      minimum_eligible_votes_floor: rules.minimumEligibleVotesFloor,
+      minimum_pairwise_exact_endpoint_agreement: perPairFloor,
+      minimum_cases_with_at_least_two_eligible_endpoint_votes:
+        agreement.endpoint_panel.minimum_cases_with_at_least_two_eligible_votes,
+      minimum_mean_pairwise_exact_agreement_backstop:
+        agreement.endpoint_panel.minimum_mean_pairwise_exact_agreement_backstop,
+    },
+  };
+}
+
 export function summarizeTutorStubResistantLearnerMergedPoweredRun({ rows, design, dialoguesPerFace }) {
   if (!isMergedDesign(design)) throw new Error('the powered summary requires the merged v1 design');
   const floor = design.poweredRun?.practicalFloor?.probabilityRungAtLeast1PerFace ?? null;
@@ -3897,15 +3993,8 @@ export function summarizeTutorStubFrameRefuserDepthCalibration({ rows, design, r
     const completed = armRows.filter((row) => row.status === 'complete');
     const retained = armRows.filter((row) => row.status === 'retained_substantive_failure');
     const rules = armDesign.calibration;
-    const endpoint = armDesign.measurement.endpointField;
-    const determinate = completed.filter((row) => panelField(row, 'primary', endpoint)?.status === 'determinate');
-    const rungCounts = Object.fromEntries(
-      ['0', '1', '2'].map((rung) => [
-        rung,
-        determinate.filter((row) => panelField(row, 'primary', endpoint)?.value === rung).length,
-      ]),
-    );
-    const agreement = mergedAgreementSummary(completed, armDesign);
+    const reader = summarizeTutorStubResistantLearnerReaderGates({ rows: completed, faceDesign: armDesign });
+    const { determinate, rung_counts: rungCounts, agreement } = reader;
     // Delivery is read over completed AND retained rows: a typed non-delivery
     // failure is exactly the case the delivered-contrast floors must see.
     const delivery = depthDeliverySummary([...completed, ...retained]);
@@ -3916,29 +4005,11 @@ export function summarizeTutorStubFrameRefuserDepthCalibration({ rows, design, r
     const bridgeDelivered = completed.filter(
       (row) => panelField(row, 'fidelity', 'delivered_test_bounded_distinction')?.value === 'yes',
     ).length;
-    const seatMinimum = rateFloorCount(
-      completed.length,
-      rules.minimumEligibleVoteRatePerSeatAndInstrument,
-      rules.minimumEligibleVotesFloor,
-    );
-    const endpointPairs = agreement.endpoint_panel.pairwise_exact_agreements;
     const gates = {
       execution_and_typed_failure_accounting:
         completed.length + retained.length === rules.dialogues &&
         retained.every((row) => Boolean(row.registered_failure?.code)),
-      determinate_outcome:
-        determinate.length >=
-        rateFloorCount(completed.length, rules.minimumDeterminateOutcomeRate, rules.minimumDeterminateOutcomeFloor),
-      eligible_vote_rate_per_seat_and_instrument: Object.values(agreement.seat_eligibility).every((seat) =>
-        Object.values(seat).every((count) => count === null || count >= seatMinimum),
-      ),
-      pairwise_exact_endpoint_agreement:
-        endpointPairs.length === 3 &&
-        endpointPairs.every(
-          (pair) =>
-            Number.isFinite(pair.conditional_exact_agreement) &&
-            pair.conditional_exact_agreement >= rules.minimumPairwiseExactEndpointAgreement,
-        ),
+      ...reader.gates,
       ...(armId === 'treatment'
         ? {
             treatment_delivery_rate:
@@ -4061,15 +4132,8 @@ export function summarizeTutorStubFrameRefuserSatisfiableCalibration({ rows, des
     const completed = armRows.filter((row) => row.status === 'complete');
     const retained = armRows.filter((row) => row.status === 'retained_substantive_failure');
     const rules = armDesign.calibration;
-    const endpoint = armDesign.measurement.endpointField;
-    const determinate = completed.filter((row) => panelField(row, 'primary', endpoint)?.status === 'determinate');
-    const rungCounts = Object.fromEntries(
-      ['0', '1', '2'].map((rung) => [
-        rung,
-        determinate.filter((row) => panelField(row, 'primary', endpoint)?.value === rung).length,
-      ]),
-    );
-    const agreement = mergedAgreementSummary(completed, armDesign);
+    const reader = summarizeTutorStubResistantLearnerReaderGates({ rows: completed, faceDesign: armDesign });
+    const { determinate, rung_counts: rungCounts, agreement } = reader;
     const delivery = depthDeliverySummary([...completed, ...retained]);
     const prohibited = completed.filter((row) => panelField(row, 'fidelity', 'prohibited_delivery')?.value === 'yes');
     const jurisdictionRetained = completed.filter(
@@ -4079,29 +4143,11 @@ export function summarizeTutorStubFrameRefuserSatisfiableCalibration({ rows, des
       (row) => panelField(row, 'fidelity', 'delivered_test_bounded_distinction')?.value === 'yes',
     ).length;
     const dischargeOpportunity = completed.filter(satisfiableDischargeOpportunity).length;
-    const seatMinimum = rateFloorCount(
-      completed.length,
-      rules.minimumEligibleVoteRatePerSeatAndInstrument,
-      rules.minimumEligibleVotesFloor,
-    );
-    const endpointPairs = agreement.endpoint_panel.pairwise_exact_agreements;
     const gates = {
       execution_and_typed_failure_accounting:
         completed.length + retained.length === rules.dialogues &&
         retained.every((row) => Boolean(row.registered_failure?.code)),
-      determinate_outcome:
-        determinate.length >=
-        rateFloorCount(completed.length, rules.minimumDeterminateOutcomeRate, rules.minimumDeterminateOutcomeFloor),
-      eligible_vote_rate_per_seat_and_instrument: Object.values(agreement.seat_eligibility).every((seat) =>
-        Object.values(seat).every((count) => count === null || count >= seatMinimum),
-      ),
-      pairwise_exact_endpoint_agreement:
-        endpointPairs.length === 3 &&
-        endpointPairs.every(
-          (pair) =>
-            Number.isFinite(pair.conditional_exact_agreement) &&
-            pair.conditional_exact_agreement >= rules.minimumPairwiseExactEndpointAgreement,
-        ),
+      ...reader.gates,
       ...(armId === 'treatment'
         ? {
             treatment_delivery_rate:

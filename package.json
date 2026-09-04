@@ -84,6 +84,7 @@
     "tutor:stub:acceptance:web": "node scripts/run-tutor-stub-surface-acceptance.mjs --host web",
     "tutor:stub:register-priors": "node scripts/build-tutor-stub-register-priors.js",
     "tutor:stub:export-rating-candidates": "node scripts/export-tutor-stub-rating-candidates.js",
+    "tutor:stub:reader-preflight": "node scripts/run-reader-agreement-preflight.js",
     "data:governance": "node scripts/data-governance.js",
     "program2:export-trl-v1": "node scripts/program2-export-trl-v1.mjs",
     "eval": "node scripts/eval-cli.js",
