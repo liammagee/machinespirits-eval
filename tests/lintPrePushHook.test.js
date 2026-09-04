@@ -142,6 +142,48 @@ test('pre-push passes when the combined lint script passes', (t) => {
   assert.deepEqual(JSON.parse(fs.readFileSync(logPath, 'utf8').trim()), ['run', 'lint:all']);
 });
 
+function installArchiveCheckStub(checkoutDir, { exitCode, summary }) {
+  fs.writeFileSync(
+    path.join(checkoutDir, 'scripts', 'archive-run-artifacts.js'),
+    `console.log('  missing  exports/character-pilot/report.md');
+console.log('');
+console.log(${JSON.stringify(summary)});
+process.exit(${exitCode});
+`,
+  );
+}
+
+test('pre-push reports unarchived runs after a passing lint and never blocks on them', (t) => {
+  const dir = temporaryDir(t, 'lint-hook-archive-');
+  const binDir = path.join(dir, 'bin');
+  fs.mkdirSync(binDir, { recursive: true });
+  const logPath = path.join(dir, 'npm-calls.jsonl');
+  installNpmStub(binDir, { exitCode: 0, logPath });
+  const hookScript = stageHookCheckout(path.join(dir, 'checkout'), { scripts: { 'lint:all': 'true' } });
+  const checkout = path.dirname(path.dirname(hookScript));
+  const env = { PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}` };
+  const input = `refs/heads/topic ${COMMIT} refs/heads/topic ${ZERO}\n`;
+
+  installArchiveCheckStub(checkout, {
+    exitCode: 1,
+    summary: '2 run(s): 5 artifact(s) missing from /tmp/archive, 3 already there',
+  });
+  const missing = runHook(hookScript, { input, env });
+  assert.equal(missing.status, 0, missing.stderr);
+  assert.match(missing.stderr, /archive check: 2 run\(s\): 5 artifact\(s\) missing/u);
+  assert.match(missing.stderr, /npm run archive:runs/u);
+
+  installArchiveCheckStub(checkout, { exitCode: 2, summary: 'archive not found' });
+  const noArchive = runHook(hookScript, { input, env });
+  assert.equal(noArchive.status, 0, noArchive.stderr);
+  assert.doesNotMatch(noArchive.stderr, /archive check/u);
+
+  installArchiveCheckStub(checkout, { exitCode: 0, summary: '2 run(s): 0 artifact(s) missing' });
+  const complete = runHook(hookScript, { input, env });
+  assert.equal(complete.status, 0, complete.stderr);
+  assert.doesNotMatch(complete.stderr, /archive check/u);
+});
+
 test('pre-push skips deletion-only pushes and checkouts without the script', (t) => {
   const dir = temporaryDir(t, 'lint-hook-skip-');
   const binDir = path.join(dir, 'bin');

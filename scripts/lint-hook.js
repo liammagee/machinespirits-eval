@@ -14,6 +14,10 @@
  *
  * `git push --no-verify` skips every pre-push hook, which is the escape
  * hatch if one is ever needed — with a stated reason.
+ *
+ * After a passing lint it also prints, report-only, what under `exports/`
+ * is not yet in the private archive (`npm run archive:check`). It never
+ * blocks on that: a build server has no exports/ and no archive next door.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -30,6 +34,7 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NAME = 'lint pre-push hook';
 const LINT_SCRIPT = 'lint:all';
+const ARCHIVE_SCRIPT = path.join(ROOT, 'scripts', 'archive-run-artifacts.js');
 
 function usage() {
   return `Usage: node scripts/lint-hook.js <command>
@@ -66,6 +71,25 @@ function readPushUpdates() {
   return parseLintPrePushInput(fs.readFileSync(0, 'utf8'));
 }
 
+/**
+ * Report-only: which runs under exports/ are not yet in the private archive.
+ * Silent when this checkout has no archive script, when there is no archive
+ * directory to compare against (the check exits 2), or when nothing is missing.
+ */
+function warnUnarchivedRuns() {
+  if (!fs.existsSync(ARCHIVE_SCRIPT)) return;
+  const result = spawnSync(process.execPath, [ARCHIVE_SCRIPT, '--check'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    timeout: 20_000,
+  });
+  if (result.error || result.status !== 1) return;
+  const summary = (result.stdout || '').trim().split('\n').pop() || 'runs missing from the archive';
+  console.error('');
+  console.error(`${NAME}: archive check: ${summary}`);
+  console.error(`${NAME}: the push goes ahead; copy them with "npm run archive:runs" and commit in the archive repo.`);
+}
+
 function prePush() {
   const updates = readPushUpdates();
   if (updates.length > 0 && !lintPrePushInputCarriesCommits(updates)) {
@@ -93,7 +117,9 @@ function prePush() {
     console.error('  npm run lint:fix && npm run format');
     console.error('');
     process.exitCode = 1;
+    return;
   }
+  warnUnarchivedRuns();
 }
 
 function main() {
