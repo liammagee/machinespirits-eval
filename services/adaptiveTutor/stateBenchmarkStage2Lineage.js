@@ -12,6 +12,7 @@ import {
   buildAdaptiveStateStage1SplitManifest,
 } from './stateBenchmarkStage1Analysis.js';
 import { cliFingerprint, executionRunPlan } from '../../scripts/execute-adaptive-state-benchmark-v2-s1.js';
+import { recordObservedDigest } from '../recordedFileDigest.js';
 
 export const ADAPTIVE_STATE_S2_AUTHORIZATION_V21_SCHEMA = 'machinespirits.adaptive-state-s2-authorization.v2.1';
 export const ADAPTIVE_STATE_S2_DATASET_V21_SCHEMA = 'machinespirits.adaptive-state-s2-confirmation-dataset.v2.1';
@@ -356,10 +357,19 @@ export function validateAdaptiveStateS1PromotionParent({
   ) {
     throw new Error('stateBenchmarkStage2: S1 run plan does not bind its sealed S0 parent');
   }
+  // CLAUDE.md (2026-08-21): the benchmark config is a YAML file in this repo, not
+  // sealed data, so its digest is written down and a sealed S1 parent survives an
+  // edit to it. The critical-path comparison below is over an in-memory plan and
+  // still refuses.
+  recordObservedDigest({
+    label: 'stage2 S1 parent config',
+    filePath: path.relative(path.resolve('.'), path.resolve(configPath)),
+    recordedSha256: verification.plan?.hashes?.config ?? null,
+    observedSha256: hashFile(path.resolve(configPath)),
+  });
   if (
     verification.plan?.metadata?.stage !== 's1_technical_pilot' ||
     verification.plan?.metadata?.paid !== true ||
-    verification.plan?.hashes?.config !== hashFile(path.resolve(configPath)) ||
     hashCanonicalJson(verification.plan?.intent?.criticalPath) !== hashCanonicalJson(criticalPlan)
   ) {
     throw new Error('stateBenchmarkStage2: S1 run plan is stale or does not bind the recomputed paid matrix');

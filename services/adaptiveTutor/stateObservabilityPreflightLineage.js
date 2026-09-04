@@ -16,6 +16,7 @@ import {
   validateAdaptiveStateStage0DatasetContentSha256,
 } from './stateBenchmarkStage0Executor.js';
 import { validateAdaptiveStateCriticalPathPlan } from './stateBenchmarkV2.js';
+import { recordSourceSetDigests } from '../recordedFileDigest.js';
 
 export const ADAPTIVE_STATE_OBSERVABILITY_PREFLIGHT_FILES = Object.freeze({
   plan: 'observability-preflight-plan.json',
@@ -279,6 +280,23 @@ export function validateAdaptiveStateObservabilityPreflightParent({
   assertHistoricalCleanGitAttestation(verification.plan?.provenance?.git);
   const metadata = verification.plan?.metadata || {};
   const sealMetadata = verification.seal?.metadata || {};
+  // CLAUDE.md (2026-08-21): every path inside these two contracts is a source
+  // file in services/ or scripts/ or a config YAML. This very file is one of
+  // them, so before the change a one-line fix here made its own lineage check
+  // refuse every sealed preflight. The file members are now written down. The
+  // design members, policy and prompt, still refuse.
+  const preflightContractDrift = recordSourceSetDigests({
+    label: 'preflight contract',
+    recorded: verification.plan?.hashes,
+    observed: currentPreflightContract,
+    fileKinds: ['runner', 'analyzer', 'profile', 'world', 'config'],
+  });
+  const s1ContractDrift = recordSourceSetDigests({
+    label: 'preflight S1 relevant contract',
+    recorded: metadata.s1RelevantHashes,
+    observed: currentS1Contract.hashes,
+    fileKinds: ['runner', 'analyzer', 'policy', 'profile', 'world', 'config'],
+  });
   if (
     verification.seal?.status !== 'complete' ||
     verification.plan?.runner !== 'scripts/execute-adaptive-state-observability-preflight-v2.js' ||
@@ -306,7 +324,7 @@ export function validateAdaptiveStateObservabilityPreflightParent({
     metadata.currentS0SealInventorySha256 !== s0Parent.seal_inventory_sha256 ||
     !/^[0-9a-f]{64}$/u.test(String(metadata.diagnosesStoppedS1PlanSha256 || '')) ||
     !/^[0-9a-f]{64}$/u.test(String(metadata.diagnosesStoppedS1SealInventorySha256 || '')) ||
-    hashCanonicalJson(verification.plan?.hashes) !== hashCanonicalJson(currentPreflightContract) ||
+    preflightContractDrift.mismatches.length ||
     hashCanonicalJson(verification.plan?.intent?.observabilityPreflight) !== hashCanonicalJson(plan) ||
     hashCanonicalJson(verification.plan?.jobs) !== hashCanonicalJson(plan.jobs) ||
     hashCanonicalJson(verification.plan?.randomization?.jobOrder) !==
@@ -330,7 +348,8 @@ export function validateAdaptiveStateObservabilityPreflightParent({
     hashCanonicalJson(rebuiltReport) !== hashCanonicalJson(report) ||
     hashCanonicalJson(callLedger) !== hashCanonicalJson(result.calls) ||
     hashCanonicalJson(caseLedger) !== hashCanonicalJson(result.cases) ||
-    metadata.s1RelevantHashesSha256 !== hashCanonicalJson(currentS1Contract.hashes) ||
+    s1ContractDrift.mismatches.length ||
+    metadata.s1RelevantHashesSha256 !== hashCanonicalJson(metadata.s1RelevantHashes) ||
     hashCanonicalJson(metadata.cliFingerprints) !== hashCanonicalJson(currentCli) ||
     metadata.cliFingerprintsSha256 !== hashCanonicalJson(currentCli) ||
     sealMetadata.preflightPlanSha256 !== plan.content_sha256 ||

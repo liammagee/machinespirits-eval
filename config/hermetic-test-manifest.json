@@ -463,6 +463,7 @@
         "tests/qaOedipusArms.test.js",
         "tests/reasoningOntology.test.js",
         "tests/recognitionOriginSubtype.test.js",
+        "tests/recordedFileDigest.test.js",
         "tests/recordedSourceProvenance.test.js",
         "tests/recursiveTutorCueMapRisk.test.js",
         "tests/recursiveTutorLearningBenchmark.test.js",
