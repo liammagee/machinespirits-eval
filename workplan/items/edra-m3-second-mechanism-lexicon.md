@@ -7,7 +7,7 @@ priority: P2
 owner: codex
 source: manual
 created: 2026-08-27
-updated: 2026-08-28
+updated: 2026-09-04
 verification: >-
   Forward-only semantic v5 tutor-mechanism and learner-action measurement
   requires two independent, high-confidence judges with quoted before/after
@@ -139,3 +139,7 @@ Suggested worker: Codex Sol at Ultra reasoning effort.
   implementation, measurement-boundary, paper-caveat, and outcome-blind-screen
   work is complete. A future v5 study would require its own explicit priority,
   completed clean-anchor set, prospective design, and model-run authority.
+- 2026-09-04 — No re-run. The user reviewed the §7.9 withdrawal and chose not
+  to re-run the tutor-adaptation lift. Nothing else in the paper cites the
+  0.333 estimate, and a new run under semantic v5 would be a new study. This
+  question is closed.

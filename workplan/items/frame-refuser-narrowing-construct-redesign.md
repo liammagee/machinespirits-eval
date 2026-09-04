@@ -1,7 +1,7 @@
 ---
 id: frame-refuser-narrowing-construct-redesign
 title: "Draft: redesign refusal-narrowing measurement"
-status: triaged
+status: dropped
 type: research
 priority: P3
 owner: unassigned
@@ -153,5 +153,9 @@ own-words-grant endpoint, two human readers on a new sealed set, and a
 kill rule if the endpoint appears in more than three quarters of both
 arms.
 
-The card stays `triaged`. Closing it, or promoting it to the minimum
-design, is the user's decision. No call is authorized by this entry.
+## Dropped (2026-09-04)
+
+The user read the review and chose drop. The card closes with no further
+work. The construct finding stays in the note above and in the paper. The
+minimum design in the note is a record, not a plan; a new study would need
+its own card.
