@@ -150,19 +150,34 @@ test('paid gate requires the one-line authorization flip and the tracked frozen 
     /requires the certificate bytes tracked at HEAD/u,
   );
 
+  // CLAUDE.md (2026-08-21): the certified qd-v1 file is a service source file.
+  // A one-line fix to it is written down and the gate still opens. Naming a
+  // different file still refuses, and so does a missing one.
   const driftedCertificate = structuredClone(certificate);
   driftedCertificate.frozen_artifacts.quiet_detector_v1.sha256 = '0'.repeat(64);
+  const overDrift = validateLearnerProfileWorldDeconfoundPaidGate({
+    design: yaml.parse(authorizedRaw),
+    designRaw: authorizedRaw,
+    certificate: driftedCertificate,
+    certificateRaw: JSON.stringify(driftedCertificate),
+    certificateTracked: true,
+    root: ROOT,
+  });
+  assert.equal(overDrift.frozenPlanHash, FROZEN_PLAN_HASH);
+
+  const movedCertificate = structuredClone(certificate);
+  movedCertificate.frozen_artifacts.quiet_detector_v1.path = 'services/tutorStubQuietDetector.js';
   assert.throws(
     () =>
       validateLearnerProfileWorldDeconfoundPaidGate({
         design: yaml.parse(authorizedRaw),
         designRaw: authorizedRaw,
-        certificate: driftedCertificate,
-        certificateRaw: JSON.stringify(driftedCertificate),
+        certificate: movedCertificate,
+        certificateRaw: JSON.stringify(movedCertificate),
         certificateTracked: true,
         root: ROOT,
       }),
-    /qd-v1 hash no longer matches/u,
+    /qd-v1 certificate path drifted/u,
   );
 });
 

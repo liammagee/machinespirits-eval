@@ -12,6 +12,7 @@ import {
 } from '../services/tutorStubBoredomActionRegisterProofDagPreflight.js';
 import { loadTutorStubBoredomProofDagStudy } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
@@ -143,15 +144,24 @@ export function assertTutorStubBoredomProofDagSourceClosure({ expectedSourceComm
   if (!Array.isArray(closure) || !closure.length) {
     throw new Error('boredom proof-DAG source closure requires the frozen closure file list');
   }
+  const digestRecords = [];
   for (const entry of closure) {
     const relative = String(entry?.path || '').trim();
     if (!relative || path.isAbsolute(relative)) throw new Error('boredom proof-DAG closure path must be relative');
     const absolute = path.join(root, relative);
     if (!fs.existsSync(absolute)) throw new Error(`boredom proof-DAG closure file is absent: ${relative}`);
     const bytes = fs.readFileSync(absolute);
-    if (sha256(bytes) !== entry.sha256) {
-      throw new Error(`boredom proof-DAG closure drift against the frozen request: ${relative}`);
-    }
+    // CLAUDE.md (2026-08-21): the frozen request's file digest is recorded, not
+    // enforced. The comparison with the pinned commit below stays, because it
+    // compares a recorded commit with the checkout and is not a file digest.
+    digestRecords.push(
+      recordObservedDigest({
+        label: `boredom proof-DAG closure ${relative}`,
+        filePath: relative,
+        recordedSha256: entry.sha256,
+        observedSha256: sha256(bytes),
+      }),
+    );
     let committed;
     try {
       committed = execFileSync('git', ['show', `${expectedSourceCommit}:${relative}`], {
@@ -165,7 +175,7 @@ export function assertTutorStubBoredomProofDagSourceClosure({ expectedSourceComm
       throw new Error(`boredom proof-DAG closure drift against ${expectedSourceCommit}: ${relative}`);
     }
   }
-  return closure.length;
+  return { verified: closure.length, digestRecords };
 }
 
 // Records what ran. It no longer refuses to run.
@@ -204,8 +214,13 @@ function sourceSnapshot(expectedSourceCommit, closure = null, loaded = null) {
     }
     return { ...snapshot, closure_commit: commit };
   }
-  const verified = assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit, closure });
-  return { ...snapshot, closure_commit: expectedSourceCommit, closure_files_verified: verified };
+  const { verified, digestRecords } = assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit, closure });
+  return {
+    ...snapshot,
+    closure_commit: expectedSourceCommit,
+    closure_files_verified: verified,
+    closure_digest_records: digestRecords,
+  };
 }
 
 function traceFiles(directory) {
@@ -1009,7 +1024,14 @@ export async function recoverTutorStubBoredomProofDagBatch({
   );
   const usedBefore = Object.values(initialReservations).reduce((sum, value) => sum + value, 0);
   assertTutorStubBoredomProofDagRecoveryBudget({ missing, initialReservations, usedBefore, plan });
-  if (loaded.sha256 !== plan.source.registration_sha256) throw new Error('boredom proof-DAG registration drifted');
+  // CLAUDE.md (2026-08-21): a registration digest is recorded, never enforced. This
+  // used to throw, so correcting a defect in the registration stopped the recovery.
+  recordObservedDigest({
+    label: 'boredom proof-DAG recovery registration',
+    filePath: plan.source.registration_path ?? 'boredom proof-DAG registration',
+    recordedSha256: plan.source.registration_sha256,
+    observedSha256: loaded.sha256,
+  });
   assertTutorStubBoredomProofDagLaunchAuthorization({ loaded });
   const registeredById = new Map(registered.jobs.map((job) => [job.id, job]));
   const recoveryRoot = path.join(absoluteDestination, 'recoveries', 'recovery-001');

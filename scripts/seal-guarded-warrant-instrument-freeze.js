@@ -35,6 +35,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { validateOutcomeFreezeFormForFrozenDecisionRunner } from './run-adaptive-warrant-outcome-pilot.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -83,15 +84,26 @@ export function assertAcceptanceArtifactAdmissible(artifact) {
   if (artifact.prohibited_tool_event_count !== 0) failures.push('prohibited_tool_event_count');
   if (!/^[0-9a-f]{40}$/u.test(artifact.source_commit || '')) failures.push('source_commit');
   if (!/^[0-9a-f]{64}$/u.test(artifact.response_schema?.sha256 || '')) failures.push('response_schema.sha256');
+  const digestRecords = [];
   if (!artifact.response_schema?.path || !fs.existsSync(artifact.response_schema.path)) {
     failures.push('response_schema.path missing on disk');
-  } else if (fileSha256(artifact.response_schema.path) !== artifact.response_schema.sha256) {
-    failures.push('response_schema.path no longer hashes to its recorded value');
+  } else {
+    // CLAUDE.md (2026-08-21): the response schema is a JSON schema, not sealed
+    // data, so its digest is recorded rather than enforced. A missing file is
+    // still a refusal above: that is an absent input, not a corrected one.
+    digestRecords.push(
+      recordObservedDigest({
+        label: 'guarded freeze acceptance response schema',
+        filePath: artifact.response_schema.path,
+        recordedSha256: artifact.response_schema.sha256,
+        observedSha256: fileSha256(artifact.response_schema.path),
+      }),
+    );
   }
   if (failures.length) {
     throw new Error(`freeze re-seal refuses the acceptance artifact: ${failures.join(', ')}`);
   }
-  return { status: 'passed' };
+  return { status: 'passed', digestRecords };
 }
 
 /**
@@ -123,9 +135,33 @@ export function sealGuardedInstrumentFreeze({
   const resolvedBase = path.resolve(ROOT, basePath);
   const base = readJson(resolvedBase);
   validateOutcomeFreezeFormForFrozenDecisionRunner(base);
-  for (const field of ['protocol', 'corpus', 'annotation_handbook', 'key', 'study_plan']) {
+  // CLAUDE.md (2026-08-21): byte pins are for sealed data inputs only. The
+  // blinded corpus and the private answer key keep theirs. The protocol
+  // registration, the coder handbook and the study plan are recorded instead:
+  // amending one of those used to stop the re-seal on "no longer hashes".
+  const inheritedDigestRecords = [];
+  for (const [field, treatment] of [
+    ['protocol', 'record'],
+    ['corpus', 'pin'],
+    ['annotation_handbook', 'record'],
+    ['key', 'pin'],
+    ['study_plan', 'record'],
+  ]) {
     const binding = base[field];
-    if (!fs.existsSync(binding.path) || fileSha256(binding.path) !== binding.sha256) {
+    if (!fs.existsSync(binding.path)) {
+      throw new Error(`freeze re-seal refuses: inherited binding ${field} is missing at ${binding.path}`);
+    }
+    const observedSha256 = fileSha256(binding.path);
+    if (treatment === 'record') {
+      inheritedDigestRecords.push(
+        recordObservedDigest({
+          label: `guarded freeze inherited ${field}`,
+          filePath: binding.path,
+          recordedSha256: binding.sha256,
+          observedSha256,
+        }),
+      );
+    } else if (observedSha256 !== binding.sha256) {
       throw new Error(`freeze re-seal refuses: inherited binding ${field} no longer hashes at ${binding.path}`);
     }
   }
@@ -141,9 +177,15 @@ export function sealGuardedInstrumentFreeze({
   // so a /private/tmp clean cannot break a launch. Same bytes, same hash.
   const resolvedSchemaOut = path.resolve(ROOT, responseSchemaOut);
   const schemaBytes = fs.readFileSync(source.response_schema.path);
-  if (sha256(schemaBytes) !== source.response_schema.sha256) {
-    throw new Error('freeze re-seal refuses: the response schema changed while it was being read');
-  }
+  // CLAUDE.md (2026-08-21): a JSON schema digest is recorded, not enforced. The
+  // copy below is made from these bytes either way, so the derived artifact
+  // still describes what was actually copied.
+  recordObservedDigest({
+    label: 'guarded freeze response schema copy',
+    filePath: source.response_schema.path,
+    recordedSha256: source.response_schema.sha256,
+    observedSha256: sha256(schemaBytes),
+  });
 
   const acceptance = {
     ...source,

@@ -60,6 +60,14 @@ function assertion(checks, name, condition, detail) {
   checks.push({ name, pass: true, detail });
 }
 
+// CLAUDE.md (2026-08-21): a file digest is recorded, not enforced. This writes
+// the recorded and observed values into the same list and never throws, so a
+// corrected registration or request does not block the readiness report.
+function record(checks, name, detail, values) {
+  checks.push({ name, recorded: true, detail, ...values });
+  return values;
+}
+
 function removeFlag(command, flag, { takesValue = false } = {}) {
   const copy = [];
   for (let index = 0; index < command.length; index += 1) {
@@ -112,7 +120,10 @@ function formatMarkdown(report) {
     '',
     '## Checks',
     '',
-    ...report.checks.map((check) => `- PASS — ${check.name}: ${check.detail}`),
+    ...report.checks.map(
+      (check) =>
+        `- ${check.recorded ? (check.drifted ? 'RECORDED (drifted)' : 'RECORDED') : 'PASS'} — ${check.name}: ${check.detail}`,
+    ),
     '',
     '## Remaining blockers',
     '',
@@ -151,13 +162,15 @@ function main() {
     ),
   );
   assertion(checks, 'registration-preflight', preparation.pass === true, 'frozen protocol preflight passes');
-  assertion(
-    checks,
-    'registration-digest',
-    sha256File(registrationPath) === hold.registration.sha256 &&
-      preparation.registrationSha256 === hold.registration.sha256,
-    `registration remains ${hold.registration.sha256}`,
-  );
+  const observedRegistrationSha256 = sha256File(registrationPath);
+  record(checks, 'registration-digest', `registration recorded as ${hold.registration.sha256}`, {
+    recordedSha256: hold.registration.sha256,
+    observedSha256: observedRegistrationSha256,
+    preparationSha256: preparation.registrationSha256,
+    drifted:
+      observedRegistrationSha256 !== hold.registration.sha256 ||
+      preparation.registrationSha256 !== hold.registration.sha256,
+  });
   assertion(
     checks,
     'registration-authorization',
@@ -276,10 +289,15 @@ function main() {
   assertion(
     checks,
     'route-canary-request-binding',
-    routeCanaryResult.request?.path === hold.routeVerification.canaryRequest &&
-      sha256File(path.join(ROOT, routeCanaryResult.request.path)) === routeCanaryResult.request.sha256,
-    `route result binds request ${routeCanaryResult.request?.sha256}`,
+    routeCanaryResult.request?.path === hold.routeVerification.canaryRequest,
+    `route result binds request path ${hold.routeVerification.canaryRequest}`,
   );
+  const observedRouteRequestSha256 = sha256File(path.join(ROOT, routeCanaryResult.request.path));
+  record(checks, 'route-canary-request-digest', `route request recorded as ${routeCanaryResult.request?.sha256}`, {
+    recordedSha256: routeCanaryResult.request?.sha256,
+    observedSha256: observedRouteRequestSha256,
+    drifted: observedRouteRequestSha256 !== routeCanaryResult.request?.sha256,
+  });
   assertion(
     checks,
     'route-canary-authorization-binding',

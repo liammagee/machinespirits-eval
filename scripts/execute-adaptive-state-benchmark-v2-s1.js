@@ -40,6 +40,7 @@ import {
   cliFingerprint,
 } from '../services/adaptiveTutor/stateBenchmarkStage1Contracts.js';
 import { validateAdaptiveStateObservabilityReliabilityV22Parent } from '../services/adaptiveTutor/stateObservabilityReliabilityV22Lineage.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 export {
   adaptiveStateStage1StaticExecutionContract,
@@ -169,11 +170,20 @@ export function validateAdaptiveStateStage1SupersededStoppedRun({
   ) {
     throw new Error("S1 supersedes source does not share the replacement run's sealed S0 parent");
   }
+  // CLAUDE.md (2026-08-21): the benchmark config is a YAML file in this repo, so
+  // its digest is written down and an edit to it no longer stops a replacement
+  // run. The two plans must still agree with each other on config_sha256, and
+  // the design and matrix comparisons below are over in-memory plans.
+  recordObservedDigest({
+    label: 'S1 supersedes source config',
+    filePath: path.relative(ROOT, path.resolve(configPath)),
+    recordedSha256: sealedPlan.hashes?.config ?? null,
+    observedSha256: hashFile(path.resolve(configPath)),
+  });
   if (
     hashCanonicalJson(stage1SemanticDesignContract(criticalPlan)) !==
       hashCanonicalJson(stage1SemanticDesignContract(replacementPlan)) ||
     criticalPlan.config_sha256 !== replacementPlan.config_sha256 ||
-    sealedPlan.hashes?.config !== hashFile(path.resolve(configPath)) ||
     hashCanonicalJson(stage1MatrixContract(criticalPlan)) !== hashCanonicalJson(stage1MatrixContract(replacementPlan))
   ) {
     throw new Error('S1 supersedes source does not share the replacement v2.1 design, config, and exact matrix');

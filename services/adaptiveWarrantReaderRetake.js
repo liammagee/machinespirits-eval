@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+import { recordObservedDigest } from './recordedFileDigest.js';
+
 export const ADAPTIVE_WARRANT_READER_QUARANTINE_MANIFEST_SCHEMA =
   'machinespirits.adaptation-refinement.reader-response-quarantine-manifest.v1';
 
@@ -93,11 +95,20 @@ export function loadReviewerAuthorizedReaderRetakes({
     !manifest.authority.path.endsWith(
       'docs/adaptation-refinement/relay/094a-reviewer-ruling-contract-invalid-response-retake.md',
     ) ||
-    !fs.existsSync(manifest.authority.path) ||
-    fileSha256(manifest.authority.path) !== manifest.authority.sha256
+    !fs.existsSync(manifest.authority.path)
   ) {
     throw new Error('reader quarantine manifest authority drift');
   }
+  // CLAUDE.md (2026-08-21): ruling 094a is a reviewer ruling in docs/ that is
+  // edited in place. Fixing a typo in it used to stop the retake, so the digest
+  // is written down. Naming a different ruling, or losing the file, still
+  // refuses, and so does the reviewer-authorized 094a contract check above.
+  recordObservedDigest({
+    label: 'reader retake authority ruling 094a',
+    filePath: manifest.authority.path,
+    recordedSha256: manifest.authority.sha256,
+    observedSha256: fileSha256(manifest.authority.path),
+  });
   const runRoot = path.resolve(path.dirname(outputDir));
   const quarantineDirectory = path.resolve(manifest.quarantine_directory);
   if (

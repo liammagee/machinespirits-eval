@@ -201,18 +201,35 @@ test('authorization binding fails closed on digest, scope, and approval drift', 
       evidence: 'User task message authorizing the empirical semantic-instrument validation.',
     },
   };
-  assert.equal(
-    validateTutorStubBoredomSemanticValidationAuthorization({
-      authorization,
-      request,
-      requestPath: REQUEST_PATH,
-      requestSha256,
-    }),
-    true,
-  );
+  const clean = validateTutorStubBoredomSemanticValidationAuthorization({
+    authorization,
+    request,
+    requestPath: REQUEST_PATH,
+    requestSha256,
+  });
+  assert.equal(clean.authorized, true);
+  const cleanRecord = clean.digestRecords.find((row) => row.path === REQUEST_PATH);
+  assert.ok(cleanRecord, 'the request digest is recorded');
+  assert.equal(cleanRecord.drifted, false);
+
+  // A drifted request digest is recorded, never refused: editing the request in
+  // place must not turn into a re-approval ceremony (CLAUDE.md, 2026-08-21).
+  const editedRequest = structuredClone(authorization);
+  editedRequest.request.sha256 = 'b'.repeat(64);
+  const drifted = validateTutorStubBoredomSemanticValidationAuthorization({
+    authorization: editedRequest,
+    request,
+    requestPath: REQUEST_PATH,
+    requestSha256,
+  });
+  assert.equal(drifted.authorized, true);
+  const driftedRecord = drifted.digestRecords.find((row) => row.path === REQUEST_PATH);
+  assert.equal(driftedRecord.drifted, true);
+  assert.equal(driftedRecord.recordedSha256, 'b'.repeat(64));
+  assert.equal(driftedRecord.observedSha256, requestSha256);
+
   for (const mutate of [
     (row) => (row.status = 'DRAFT'),
-    (row) => (row.request.sha256 = 'b'.repeat(64)),
     (row) => (row.scope.maximumModelCalls = 9999),
     (row) => (row.scope.modelRef = 'codex.gpt-5.6-luna'),
     (row) => (row.scope.liveStudyAuthorized = true),

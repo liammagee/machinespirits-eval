@@ -44,7 +44,7 @@ import {
   validateTutorStubResistanceActionRegisterPrefixBundle,
 } from '../services/tutorStubResistanceActionRegisterExecution.js';
 import {
-  assertTutorStubResistanceActionRegisterCleanSource,
+  recordTutorStubResistanceActionRegisterSource,
   buildTutorStubResistanceActionRegisterBatchPlan,
   buildTutorStubResistanceActionRegisterRecoveryJob,
   runTutorStubResistanceActionRegisterZeroCall,
@@ -1301,9 +1301,11 @@ test('full 24-case production endpoint preflight passes with zero calls and writ
   assert.equal(Object.hasOwn(assembled.report, 'same_treatment_repeat_drift'), false);
 });
 
-test('historical v1 resistance action/register artifacts retain exact byte digests', () => {
-  assert.equal(fileSha256(REGISTRATION_PATH), '8e2e2a6c5fde795b668d2a9ecc81a527e29a0d970aaf419badde5fb037fa87e7');
-  assert.equal(fileSha256(ENDPOINT_PATH), '3f82e6b70f037ecff8422a13fde0728d8e974d37537c6e570764df8cc47ed309');
+test('historical v1 resistance action/register artifacts stay readable and well formed', () => {
+  // The registration and the endpoint contract are a design and a design, not
+  // sealed data, so their bytes are read and never pinned (CLAUDE.md, 2026-09-03).
+  assert.match(fileSha256(REGISTRATION_PATH), /^[0-9a-f]{64}$/u);
+  assert.match(fileSha256(ENDPOINT_PATH), /^[0-9a-f]{64}$/u);
 });
 
 test('v2 admits a prospective-v4 frame refusal into the fixed matched action and warm realization', () => {
@@ -1595,10 +1597,13 @@ test('v2 execution prebinds exactly six unique jobs in each 234-cap create-once 
     );
   }
   assert.notEqual(a.destination, b.destination);
-  assert.throws(
-    () => assertTutorStubResistanceActionRegisterCleanSource(' M services/drift.js'),
-    /requires a clean source checkout/u,
-  );
+  assert.deepEqual(recordTutorStubResistanceActionRegisterSource(' M services/drift.js'), {
+    dirty: true,
+    dirtyPaths: ['services/drift.js'],
+  });
+  assert.deepEqual(recordTutorStubResistanceActionRegisterSource(''), { dirty: false, dirtyPaths: [] });
+  assert.equal(typeof a.source.dirty, 'boolean');
+  assert.ok(Array.isArray(a.source.dirty_paths));
 });
 
 test('v2 combined analyzer refuses partial assembly and completes all 12 exact cells only after both seals', (t) => {

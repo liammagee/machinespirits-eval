@@ -190,10 +190,13 @@ test(
   },
 );
 
-test('standing-permission byte guard refuses the generated menu after frozen source drift', () => {
+// CLAUDE.md (2026-08-21): the pinned sources are code and config files in this
+// repo, so a drifted digest is written down in source_checks and no longer
+// decides the guard verdict. The byte checks over the menu itself still do.
+test('standing-permission byte guard records frozen source drift and still passes', () => {
   const menu = buildOutcomeStandingPermissionMenu();
   const result = guardOutcomeStandingPermissionMenu(menu);
-  assert.equal(result.status, 'failed');
+  assert.equal(result.status, 'passed');
   assert.equal(result.source_checks['services/tutorStubFirstDraftContract.js'].pass, false);
   assert.equal(menu.entries.length, 63);
   assert.equal(menu.enumeration_rule.per_string_classification.length, 87);

@@ -891,6 +891,36 @@ test('stale or non-v2.1 S0 parent and analyzer model mismatch are rejected', asy
   );
 });
 
+// CLAUDE.md (2026-08-21): the S0 parent's runner, analyzer, policy, prompt,
+// world and config digests all cover files in this repo, so drift in one of them
+// is written down and the parent stays usable. The profile digest covers a value
+// read out of the config object, so it still refuses.
+test('S0 parent survives config-file drift and still refuses a changed complexity cap', () => {
+  const driftedConfigPath = path.join(temporaryRoot, 'drifted-benchmark-config.yaml');
+  fs.writeFileSync(
+    driftedConfigPath,
+    `${fs.readFileSync(CONFIG_PATH, 'utf8')}\n# a comment added after the parent was sealed\n`,
+  );
+  const recorded = validateAdaptiveStateStage1Parent({
+    parentRunDir: parent.run_dir,
+    config,
+    configPath: driftedConfigPath,
+    repoRoot: ROOT,
+  });
+  assert.equal(recorded.run_id, parent.run_id);
+
+  assert.throws(
+    () =>
+      validateAdaptiveStateStage1Parent({
+        parentRunDir: parent.run_dir,
+        config: { ...config, complexity_cap: { ...config.complexity_cap, changed_after_sealing: true } },
+        configPath: CONFIG_PATH,
+        repoRoot: ROOT,
+      }),
+    /stale against current v2\.1 sources \(profile\)/u,
+  );
+});
+
 test('pure S1 executor imports no provider bridge or live analyzer implementation', () => {
   const source = fs.readFileSync(path.join(ROOT, 'services/adaptiveTutor/stateBenchmarkStage1Executor.js'), 'utf8');
   assert.doesNotMatch(source, /cliProviderBridge|stateBenchmarkCliRealizer|tutorStubPublicLearnerAnalysis/u);

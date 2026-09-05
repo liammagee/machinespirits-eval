@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { callAIWithCliBridge } from './cliProviderBridge.js';
 import { resolveModel } from './evalConfigLoader.js';
-import { recordFileDigest } from './recordedFileDigest.js';
+import { recordFileDigest, recordObservedDigest } from './recordedFileDigest.js';
 
 // Sealed data keeps its byte pin; code, schemas and registrations are recorded.
 // This closure carries no sealed file today, and the guard says what happens
@@ -163,7 +163,12 @@ export function validateTutorStubResistantProfileRouteCanaryAuthorization({
   assert(authorization.studyId === request.studyId, 'authorization study id mismatch');
   assert(authorization.request?.path === requestPath, 'authorization request path mismatch');
   assertSha256(authorization.request?.sha256, 'authorization request');
-  assert(authorization.request.sha256 === requestSha256, 'authorization request SHA mismatch');
+  const requestDigestRecord = recordObservedDigest({
+    label: 'resistant profile route canary request',
+    filePath: requestPath,
+    recordedSha256: authorization.request?.sha256,
+    observedSha256: requestSha256,
+  });
   assert(authorization.scope?.maximumModelCalls === 1, 'authorization must permit exactly one model call');
   assert(authorization.scope?.modelRef === request.route.modelRef, 'authorization model route mismatch');
   assert(authorization.scope?.effort === request.route.effort, 'authorization effort mismatch');
@@ -175,7 +180,7 @@ export function validateTutorStubResistantProfileRouteCanaryAuthorization({
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/u.test(authorization.approval?.approvedAt || ''),
     'authorization approval timestamp must be UTC ISO-8601',
   );
-  return true;
+  return { authorized: true, digestRecords: [requestDigestRecord] };
 }
 
 function parseRouteResponse(text) {

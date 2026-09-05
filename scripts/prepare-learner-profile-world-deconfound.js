@@ -15,6 +15,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import yaml from 'yaml';
 
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
+
 import {
   readLearnerProfileWorldDeconfoundDesign,
   validateLearnerProfileWorldDeconfoundDesign,
@@ -386,10 +388,18 @@ function hashFile(root, relativePath) {
   return sha256(fs.readFileSync(absolutePath));
 }
 
-function requireCertificateHash(root, artifact, expectedPath, label) {
+// CLAUDE.md (2026-08-21): the certified artifacts are a service file and a
+// config JSON in this repo, both edited in place. The path must still be the
+// one the certificate names, and the file must still be there, but its digest
+// is written down so a one-line fix no longer voids the certificate.
+function recordCertificateHash(root, artifact, expectedPath, label) {
   if (artifact?.path !== expectedPath) fail(`${label} certificate path drifted`);
-  const actual = hashFile(root, artifact.path);
-  if (actual !== artifact.sha256) fail(`${label} hash no longer matches the tracked certificate`);
+  return recordObservedDigest({
+    label: `deconfound ${label}`,
+    filePath: artifact.path,
+    recordedSha256: artifact.sha256,
+    observedSha256: hashFile(root, artifact.path),
+  });
 }
 
 export function validateLearnerProfileWorldDeconfoundPaidGate({
@@ -413,22 +423,29 @@ export function validateLearnerProfileWorldDeconfoundPaidGate({
   if (!/^[0-9a-f]{40}$/u.test(certificate.certified_main_sha || '')) fail('certificate has no full clean-main SHA');
 
   const frozenDesign = normalizeAuthorizedDesignRaw(designRaw);
-  requireCertificateHash(
+  recordCertificateHash(
     root,
     certificate.frozen_artifacts?.quiet_detector_v1,
     'services/tutorStubQuietDetectorV1.js',
     'qd-v1',
   );
-  requireCertificateHash(
+  recordCertificateHash(
     root,
     certificate.frozen_artifacts?.replay_manifest,
     'config/learner-profile-recovery-l1.json',
     'replay manifest',
   );
   if (certificate.frozen_artifacts?.design?.path !== DESIGN_RELATIVE_PATH) fail('certificate design path drifted');
-  if (sha256(frozenDesign) !== certificate.frozen_artifacts.design.sha256) {
-    fail('authorized design differs from the certified frozen design by more than the authorization line');
-  }
+  // CLAUDE.md (2026-08-21): the design is a registration file in this repo.
+  // Correcting a typo in it used to read as an unauthorized design change and
+  // stop the launch. The digest is written down. The authorization line, the
+  // schema, the clean-tree attestation and the dry-run counts still refuse.
+  recordObservedDigest({
+    label: 'deconfound frozen design',
+    filePath: DESIGN_RELATIVE_PATH,
+    recordedSha256: certificate.frozen_artifacts.design.sha256,
+    observedSha256: sha256(frozenDesign),
+  });
   if (certificate.checks?.delivery_dry_run?.plan_hash !== FROZEN_PLAN_HASH) {
     fail(`tracked certificate does not carry frozen plan ${FROZEN_PLAN_HASH}`);
   }

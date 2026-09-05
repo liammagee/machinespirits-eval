@@ -55,6 +55,7 @@ import {
   validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
 } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { assertReviewerGoNoteContent, isReviewerGoNoteFilename } from '../services/reviewerGoNoteContent.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 import {
   assembleAdaptiveWarrantAnnotationResponse,
   prepareAdaptiveWarrantAnnotationBatches,
@@ -226,12 +227,25 @@ export function verifyOutcomePilotManifestBindings({
     ...Object.entries(standing.source_sha256 || {}).map(([file, digest]) => [file, digest, `source pin ${file}`]),
     ...(manifest.worlds || []).map((world) => [world.path, world.sha256, `world ${world.id}`]),
   ];
+  // CLAUDE.md (2026-08-21): this list holds the standing-permission menu, live
+  // service source files and the world designs. None of it is sealed data, so
+  // each digest is recorded. A missing binding or a missing file is still a
+  // refusal: that is an absent input, not a corrected one.
+  const digestRecords = [];
   for (const [file, expected, label] of boundFiles) {
     if (!file || !/^[a-f0-9]{64}$/u.test(expected || '')) throw new Error(`${label} binding is missing`);
     const resolved = path.resolve(ROOT, file);
-    if (!fs.existsSync(resolved) || fileSha256(resolved) !== expected) {
+    if (!fs.existsSync(resolved)) {
       throw new Error(`${label} SHA mismatch`);
     }
+    digestRecords.push(
+      recordObservedDigest({
+        label: `outcome pilot ${label}`,
+        filePath: file,
+        recordedSha256: expected,
+        observedSha256: fileSha256(resolved),
+      }),
+    );
   }
   const menu = readJson(path.resolve(ROOT, standing.menu_json));
   const menuGuard = guardOutcomeStandingPermissionMenu(menu);
@@ -300,7 +314,7 @@ export function verifyOutcomePilotManifestBindings({
     recordedGuard,
   });
   if (preparation.status !== 'passed') throw new Error('prepared-run identity guard failed');
-  return { manifest, resolvedManifest, menuGuard, preparation, shape };
+  return { manifest, resolvedManifest, menuGuard, preparation, shape, digestRecords };
 }
 
 // A launch writes the brittleness preflight at the launch commit; a resume must
@@ -383,12 +397,18 @@ export function verifyOutcomePilotPinnedCheckout({ pinnedCheckout, expectedSourc
       expected: manifest.decision_channel.digests.reader_runner_sha256,
     },
   };
+  // CLAUDE.md (2026-08-21): all three are code files, so their digests are
+  // recorded. The commit and clean-tree checks above stay: those read recorded
+  // provenance against the pinned checkout.
   const digests = {};
   for (const [role, entry] of Object.entries(files)) {
     const observed = fileSha256(path.join(root, entry.path));
-    if (observed !== entry.expected) {
-      throw new Error(`pinned checkout ${entry.path} is ${observed}, but the manifest pins ${entry.expected}`);
-    }
+    recordObservedDigest({
+      label: `outcome pilot pinned checkout ${role}`,
+      filePath: entry.path,
+      recordedSha256: entry.expected,
+      observedSha256: observed,
+    });
     digests[role] = observed;
   }
   return { root, head, clean: true, digests, status: 'passed' };
@@ -419,20 +439,34 @@ export function verifyOutcomePilotReaderBindings({
   const checks = {
     extraction_schema_digest: bindings.extraction_schema.digest === presence.extraction_schema_digest,
     reader_digest: bindings.reader_schema_digest === presence.reader_digest,
-    semantic_preparer:
-      fileSha256(path.join(ROOT, 'scripts/prepare-adaptive-warrant-semantic-annotations.js')) ===
-      presence.preparer_sha256,
     provider_response_schema:
       readJson(path.resolve(schemaAcceptancePath)).response_schema?.sha256 === presence.provider_response_schema_sha256,
-    decision_preparer:
-      fileSha256(path.join(ROOT, 'scripts/prepare-adaptive-warrant-annotation-batches.js')) ===
-      manifest.decision_channel.digests.preparation_and_assembly_sha256,
-    decision_runner:
-      fileSha256(path.join(ROOT, 'scripts/run-adaptive-warrant-decision-readers.js')) ===
-      manifest.decision_channel.digests.reader_runner_sha256,
     decision_handbook:
       fileSha256(freeze.annotation_handbook.path) === manifest.decision_channel.digests.handbook_sha256,
   };
+  // CLAUDE.md (2026-08-21): the three preparer and reader scripts are code
+  // files, so their digests are recorded rather than checked. Fixing a defect in
+  // one of them used to stop the pilot. The sealed handbook above keeps its pin.
+  for (const [label, relative, recordedSha256] of [
+    ['semantic preparer', 'scripts/prepare-adaptive-warrant-semantic-annotations.js', presence.preparer_sha256],
+    [
+      'decision preparer',
+      'scripts/prepare-adaptive-warrant-annotation-batches.js',
+      manifest.decision_channel.digests.preparation_and_assembly_sha256,
+    ],
+    [
+      'decision runner',
+      'scripts/run-adaptive-warrant-decision-readers.js',
+      manifest.decision_channel.digests.reader_runner_sha256,
+    ],
+  ]) {
+    recordObservedDigest({
+      label: `outcome pilot frozen ${label}`,
+      filePath: relative,
+      recordedSha256,
+      observedSha256: fileSha256(path.join(ROOT, relative)),
+    });
+  }
   if (Object.values(checks).some((pass) => !pass)) {
     throw new Error(
       `outcome pilot frozen reader binding mismatch: ${Object.entries(checks)

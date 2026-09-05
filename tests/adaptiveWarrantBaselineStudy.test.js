@@ -2388,15 +2388,13 @@ test('mechanism corpus freezes all 96 observe decisions and excludes active pred
     fs.writeFileSync(keyPath, frozenKeyText);
     fs.writeFileSync(manifestPath, frozenManifestText);
 
+    // CLAUDE.md (2026-08-21): the annotation handbook is a prompt, so its digest
+    // is recorded and a changed handbook no longer burns the freeze. Amending the
+    // handbook text used to stop the study. The sealed corpus and key above keep
+    // their pins, and this test still asserts those refusals.
     fs.appendFileSync(path.join(rootDir, 'annotation-handbook.md'), '\npost-freeze mutation\n');
-    assert.throws(
-      () => validateAdaptiveWarrantAnnotationFreeze({ rootDir, corpusPath, keyPath }),
-      /annotation handbook drift/u,
-    );
-    assert.throws(
-      () => writeStudyArtifacts({ rootDir, plan, rows, status: 'complete' }),
-      /freeze burned by annotation handbook drift/u,
-    );
+    assert.equal(validateAdaptiveWarrantAnnotationFreeze({ rootDir, corpusPath, keyPath }).audit.ok, true);
+    assert.doesNotThrow(() => writeStudyArtifacts({ rootDir, plan, rows, status: 'complete' }));
   } finally {
     fs.rmSync(rootDir, { recursive: true, force: true });
   }

@@ -16,6 +16,7 @@ import {
   buildTutorStubResistanceActionRegisterBatchPlan,
   buildTutorStubResistanceActionRegisterRecoveryJob,
 } from './run-tutor-stub-resistance-action-register-crossed.js';
+import { recordSourceStatus } from '../services/recordedSourceProvenance.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v2.json';
@@ -269,11 +270,14 @@ function exactBatch(root, expectedRepeat, expectedTraceSourceCommit, expectedTra
   const observedTraceSourceStatus = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
     cwd: traceSourceRoot,
     encoding: 'utf8',
-  }).trim();
+  });
+  // CLAUDE.md (2026-08-21): a dirty trace-source tree is recorded, not refused.
+  // The commit and tree comparison stays: it is a recorded commit against the
+  // checkout, not a file digest.
+  recordSourceStatus({ label: `batch ${expectedRepeat} trace source`, statusOutput: observedTraceSourceStatus });
   if (
     observedTraceSourceCommit !== expectedTraceSourceCommit ||
     observedTraceSourceTree !== expectedTraceSourceTree ||
-    observedTraceSourceStatus !== '' ||
     fs.realpathSync(absolute) !== fs.realpathSync(path.resolve(traceSourceRoot, plan.destination))
   ) {
     throw new Error(`batch ${expectedRepeat} does not resolve to its exact trace-source checkout and tree`);

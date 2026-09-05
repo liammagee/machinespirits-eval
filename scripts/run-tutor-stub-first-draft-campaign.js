@@ -37,6 +37,7 @@ import {
   tutorStubFirstDraftPreflightCertificatePath,
   validateTutorStubFirstDraftPreflightCertificate,
 } from '../services/tutorStubFirstDraftPreflightCertificate.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_WORKING_CONFIG = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens.yaml');
@@ -337,8 +338,16 @@ function freezeDevelopmentState(loaded) {
 function assertFrozenDevelopmentState(frozen, loaded, cell = null) {
   if (!frozen) throw new Error('development campaign has no frozen provenance state');
   const currentHead = gitHead();
-  const currentConfigHash = sha256File(loaded.configPath);
-  if (currentHead !== frozen.gitHead || currentConfigHash !== frozen.configSha256) {
+  // CLAUDE.md (2026-08-21): the campaign config digest is recorded, not enforced.
+  // Correcting a defect in the config used to end the campaign. The commit
+  // comparison stays: it reads a recorded commit against the checkout.
+  recordObservedDigest({
+    label: 'development campaign config',
+    filePath: loaded.configPath,
+    recordedSha256: frozen.configSha256,
+    observedSha256: sha256File(loaded.configPath),
+  });
+  if (currentHead !== frozen.gitHead) {
     throw new Error('development state changed after campaign start; stop rather than mix code or configuration');
   }
   const currentWorktree = gitWorktreeState({ required: frozen.cleanWorktreeRequired === true });
@@ -352,8 +361,14 @@ function assertFrozenDevelopmentState(frozen, loaded, cell = null) {
 
 function assertFrozenAcceptanceState(frozen) {
   const currentHead = gitHead();
-  const currentConfigHash = sha256File(frozen.configPath);
-  if (currentHead !== frozen.gitHead || currentConfigHash !== frozen.configSha256) {
+  // CLAUDE.md (2026-08-21): the campaign config digest is recorded, not enforced.
+  recordObservedDigest({
+    label: 'acceptance campaign config',
+    filePath: frozen.configPath,
+    recordedSha256: frozen.configSha256,
+    observedSha256: sha256File(frozen.configPath),
+  });
+  if (currentHead !== frozen.gitHead) {
     throw new Error(
       'acceptance state changed after campaign start; stop rather than mixing code or configuration between cells',
     );

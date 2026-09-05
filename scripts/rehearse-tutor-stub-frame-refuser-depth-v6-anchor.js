@@ -11,6 +11,7 @@ import { resolveModel } from '../services/evalConfigLoader.js';
 import { resolveTutorStubArtifactArchiveDirectory } from '../services/tutorStubArtifactArchive.js';
 import { buildTutorStubResistantLearnerFinalHorizonPacket } from '../services/tutorStubResistantLearnerSemanticRuntime.js';
 import { dispatchTutorStubCliBridgeRequest } from '../services/tutorStubCliRequest.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION_PATH = 'config/tutor-stub-resistant-learner-merged-semantic-registration.v6.json';
@@ -336,9 +337,15 @@ function isV5SolHigh(row) {
 export function loadAmendedFaceContract(root = ROOT) {
   const registrationPath = path.join(root, REGISTRATION_PATH);
   const registrationBytes = readFileReadonly(registrationPath);
-  if (sha256(registrationBytes) !== REGISTRATION_SHA256) {
-    throw new Error('sealed v6 semantic registration bytes drifted from the pinned sha256');
-  }
+  // CLAUDE.md (2026-08-21): a registration digest is recorded, never enforced.
+  // This used to throw, so correcting a defect in the registration voided the
+  // rehearsal until someone re-signed it.
+  const registrationDigest = recordObservedDigest({
+    label: 'v6 merged semantic registration',
+    filePath: REGISTRATION_PATH,
+    recordedSha256: REGISTRATION_SHA256,
+    observedSha256: sha256(registrationBytes),
+  });
   const registration = JSON.parse(registrationBytes.toString('utf8'));
   if (registration.version !== 6) throw new Error('rehearsal requires merged semantic registration version 6');
   const face = registration.instrument.faces[FACE_ID];
@@ -350,6 +357,7 @@ export function loadAmendedFaceContract(root = ROOT) {
   }
   return {
     registration,
+    digestRecords: [registrationDigest],
     contract: {
       mode: 'exact_rung',
       registration: REGISTRATION_PATH,

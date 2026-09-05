@@ -7,6 +7,7 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { recordSourceStatus } from '../services/recordedSourceProvenance.js';
 import {
   boredomSemanticValidationFileSha256,
   executeTutorStubBoredomSemanticValidation,
@@ -60,20 +61,14 @@ function readJson(root, relativePath, label) {
   }
 }
 
-function committedBytes(root, relativePath, label) {
-  let committed;
-  try {
-    committed = execFileSync('git', ['show', `HEAD:${relativePath}`], { cwd: root });
-  } catch {
-    refuse(`${label} is not committed at HEAD: ${relativePath}`);
-  }
-  const onDisk = fs.readFileSync(path.resolve(root, relativePath));
-  if (!committed.equals(onDisk)) refuse(`${label} differs from committed HEAD bytes: ${relativePath}`);
-}
-
-function assertCleanWorktree(root) {
-  const status = execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim();
-  if (status) refuse('the worktree is dirty');
+// CLAUDE.md (2026-08-21): provenance is recorded, not enforced. Write down the
+// commit, the tree and whether the checkout was dirty; never refuse to run over
+// it. A refusal here turned a one-line fix into a re-approval ceremony.
+function recordProvenance(root) {
+  const rev = (spec) => execFileSync('git', ['rev-parse', spec], { cwd: root, encoding: 'utf8' }).trim();
+  const status = execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' });
+  const { dirty, dirtyPaths } = recordSourceStatus({ label: 'boredom semantic validation', statusOutput: status });
+  return { head: rev('HEAD'), tree: rev('HEAD^{tree}'), dirty, dirtyPaths };
 }
 
 function printPlan(plan) {
@@ -123,20 +118,18 @@ export async function runTutorStubBoredomSemanticValidationCommand(
 
   if (args.acceptBoundedValidationCalls !== true) refuse('--accept-bounded-validation-calls is required');
   if (!args.authorization) refuse('--authorization is required');
-  assertCleanWorktree(root);
+  const provenance = recordProvenance(root);
 
   const authorizationPath = repositoryRelative(root, args.authorization, 'authorization');
   const authorization = readJson(root, authorizationPath, 'authorization');
-  committedBytes(root, requestPath, 'request');
-  committedBytes(root, authorizationPath, 'authorization');
-  for (const entry of request.sourceClosure) committedBytes(root, entry.path, 'source-closure file');
   const requestSha256 = boredomSemanticValidationFileSha256(path.resolve(root, requestPath));
-  validateTutorStubBoredomSemanticValidationAuthorization({
+  const authorized = validateTutorStubBoredomSemanticValidationAuthorization({
     authorization,
     request,
     requestPath,
     requestSha256,
   });
+  const digestRecords = [...validation.digestRecords, ...authorized.digestRecords];
 
   const artifactRoot = path.resolve(root, request.artifactRoot);
   if (fs.existsSync(artifactRoot)) refuse(`artifact root already exists: ${request.artifactRoot}`);
@@ -167,7 +160,9 @@ export async function runTutorStubBoredomSemanticValidationCommand(
         path: authorizationPath,
         sha256: boredomSemanticValidationFileSha256(path.resolve(root, authorizationPath)),
       },
-      executionHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
+      executionHead: provenance.head,
+      provenance,
+      digestRecords,
       artifact: path.relative(root, resultPath),
     };
     fs.writeFileSync(resultPath, `${JSON.stringify(sealed, null, 2)}\n`, { flag: 'wx' });
@@ -181,6 +176,8 @@ export async function runTutorStubBoredomSemanticValidationCommand(
       retryOrResumeAuthority: request.scope.retryOrResumeAuthority,
       errorCode: error?.code || error?.name || 'ERROR',
       errorMessage: String(error?.message || error),
+      provenance,
+      digestRecords,
     };
     fs.writeFileSync(path.join(artifactRoot, 'validation-failure.json'), `${JSON.stringify(failure, null, 2)}\n`, {
       flag: 'wx',

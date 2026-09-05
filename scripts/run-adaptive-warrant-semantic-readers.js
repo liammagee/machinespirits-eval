@@ -20,6 +20,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA,
   assembleAdaptiveWarrantSemanticAnnotationResponse,
 } from './prepare-adaptive-warrant-semantic-annotations.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 import { ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_FREEZE_SCHEMA } from './build-adaptive-warrant-v3-semantic-diagnostic.js';
 import {
   loadReviewerAuthorizedReaderRetakes,
@@ -165,24 +166,50 @@ function validateFreeze({ freeze, manifest, repoRoot, resume }) {
   if (manifest.schema_acceptance_ping?.sha256 !== schemaAcceptanceBinding.sha256) {
     throw new Error('semantic collection or authorization does not bind the frozen schema-acceptance ping');
   }
+  // CLAUDE.md (2026-08-21): byte pins are for sealed data inputs only. The
+  // blinded corpus and the private key keep theirs, and so do the plans and
+  // predictions the freeze run wrote into its own output directory. The design,
+  // the registration and the reader handbooks are recorded instead: amending one
+  // of those in place used to stop the launch on "freeze artifact drift".
   const artifactBindings = diagnostic
     ? [
-        freeze.design,
-        freeze.corpus,
-        freeze.handbook,
-        freeze.decision_handbook,
-        freeze.private_key,
-        freeze.private_support_plan,
+        ['design', freeze.design, 'record'],
+        ['corpus', freeze.corpus, 'pin'],
+        ['handbook', freeze.handbook, 'record'],
+        ['decision handbook', freeze.decision_handbook, 'record'],
+        ['private key', freeze.private_key, 'pin'],
+        ['private support plan', freeze.private_support_plan, 'pin'],
       ]
     : natural
-      ? [freeze.protocol, freeze.corpus, freeze.semantic_handbook, freeze.semantic_predictions, freeze.study_plan]
-      : [freeze.corpus, freeze.handbook];
-  for (const binding of artifactBindings) {
-    if (!binding?.path || fileSha256(binding.path) !== binding.sha256) {
+      ? [
+          ['protocol', freeze.protocol, 'record'],
+          ['corpus', freeze.corpus, 'pin'],
+          ['semantic handbook', freeze.semantic_handbook, 'record'],
+          ['semantic predictions', freeze.semantic_predictions, 'pin'],
+          ['study plan', freeze.study_plan, 'pin'],
+        ]
+      : [
+          ['corpus', freeze.corpus, 'pin'],
+          ['handbook', freeze.handbook, 'record'],
+        ];
+  const digestRecords = [];
+  for (const [label, binding, treatment] of artifactBindings) {
+    if (!binding?.path) throw new Error('semantic diagnostic freeze artifact drift');
+    const observedSha256 = fileSha256(binding.path);
+    if (treatment === 'record') {
+      digestRecords.push(
+        recordObservedDigest({
+          label: `semantic reader freeze ${label}`,
+          filePath: binding.path,
+          recordedSha256: binding.sha256,
+          observedSha256,
+        }),
+      );
+    } else if (observedSha256 !== binding.sha256) {
       throw new Error('semantic diagnostic freeze artifact drift');
     }
   }
-  return { commit, sourceCommit };
+  return { commit, sourceCommit, digestRecords };
 }
 
 function packetBindings(manifest) {

@@ -669,6 +669,7 @@ test('a sealed passing preflight is a current-runtime S1 prerequisite', async (t
         s0LineageMode: 'current_s0_is_diagnostic_parent',
         cliFingerprints,
         cliFingerprintsSha256: hashCanonicalJson(cliFingerprints),
+        s1RelevantHashes: s1Contract.hashes,
         s1RelevantHashesSha256: hashCanonicalJson(s1Contract.hashes),
         preflightPlanSha256: plan.content_sha256,
       },

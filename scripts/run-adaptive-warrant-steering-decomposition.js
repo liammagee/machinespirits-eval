@@ -42,6 +42,7 @@ import {
 import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { validateAdaptiveWarrantReaderResponseContract } from '../services/adaptiveWarrantReaderRetake.js';
 import { assertReviewerGoNoteContent } from '../services/reviewerGoNoteContent.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
@@ -292,32 +293,49 @@ export function verifySteeringDecompositionManifest({ manifestPath = DEFAULT_MAN
   if (manifest.channels?.presence?.enabled !== false || manifest.channels?.decision?.enabled !== true) {
     throw new Error('steering decomposition must be decision-only');
   }
+  // CLAUDE.md (2026-08-21): the pilot manifest is a registration, the two
+  // decision tools are code files, and the worlds are scenario designs. All four
+  // digests are recorded. Fixing a defect in the reader runner or the preparer
+  // used to stop the decomposition run.
   const inherited = manifest.inherited_pilot_bindings;
-  if (!inherited?.path || !inherited?.sha256 || fileSha256(path.resolve(ROOT, inherited.path)) !== inherited.sha256) {
+  if (!inherited?.path || !inherited?.sha256) {
     throw new Error('steering-decomposition inherited pilot bindings drift');
   }
-  // Source-file digests are recorded, not enforced (CLAUDE.md, no officious
-  // authorization): a bug fix in the reader tooling must never read as a
-  // design change. The registered digests stay in the manifest as history.
+  recordObservedDigest({
+    label: 'steering-decomposition inherited pilot bindings',
+    filePath: inherited.path,
+    recordedSha256: inherited.sha256,
+    observedSha256: fileSha256(path.resolve(ROOT, inherited.path)),
+  });
   const bindings = manifest.channels.decision.digests;
-  const toolingDigests = {
-    reader_runner: { registered: bindings.reader_runner_sha256, observed: fileSha256(DECISION_RUNNER_PATH) },
-    preparation_and_assembly: {
-      registered: bindings.preparation_and_assembly_sha256,
-      observed: fileSha256(DECISION_PREPARER_PATH),
-    },
-  };
-  toolingDigests.drifted = Object.values(toolingDigests).some((row) => row.registered !== row.observed);
+  recordObservedDigest({
+    label: 'steering-decomposition decision reader runner',
+    filePath: DECISION_RUNNER_PATH,
+    recordedSha256: bindings.reader_runner_sha256,
+    observedSha256: fileSha256(DECISION_RUNNER_PATH),
+  });
+  recordObservedDigest({
+    label: 'steering-decomposition decision preparer',
+    filePath: DECISION_PREPARER_PATH,
+    recordedSha256: bindings.preparation_and_assembly_sha256,
+    observedSha256: fileSha256(DECISION_PREPARER_PATH),
+  });
   for (const world of manifest.worlds || []) {
     const resolved = path.resolve(ROOT, world.path);
-    if (!fs.existsSync(resolved) || fileSha256(resolved) !== world.sha256) {
+    if (!fs.existsSync(resolved)) {
       throw new Error(`steering-decomposition world drift: ${world.id}`);
     }
+    recordObservedDigest({
+      label: `steering-decomposition world ${world.id}`,
+      filePath: world.path,
+      recordedSha256: world.sha256,
+      observedSha256: fileSha256(resolved),
+    });
   }
   const assignments = buildSteeringDecompositionAssignments({ seeds: manifest.seeds });
   const studyPlanGuard = guardSteeringDecompositionStudyPlan({ manifest, assignments });
   if (studyPlanGuard.status !== 'passed') throw new Error('steering-decomposition study-plan guard failed');
-  return { manifest, resolvedManifest, assignments, studyPlanGuard, toolingDigests };
+  return { manifest, resolvedManifest, assignments, studyPlanGuard };
 }
 
 export function printSteeringDecompositionPlan(manifest = null) {

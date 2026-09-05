@@ -25,6 +25,7 @@ import {
   validateAdaptiveStateStage0DatasetContentSha256,
 } from './stateBenchmarkStage0Executor.js';
 import { validateAdaptiveStateStage0ReportContentSha256 } from './stateBenchmarkStage0Analysis.js';
+import { recordSourceSetDigests } from '../recordedFileDigest.js';
 import {
   adaptiveStateTransitionAtomicSurface,
   isolateAdaptiveStatePublicRealizerInput,
@@ -197,10 +198,18 @@ export function validateAdaptiveStateStage1Parent({
   }
   const resolvedConfigPath = path.resolve(configPath || path.join(repoRoot, 'config/adaptive-state-benchmark-v2.yaml'));
   const currentHashes = currentStage0Hashes(config, repoRoot);
-  const hashMismatches = Object.entries(currentHashes)
-    .filter(([kind, digest]) => executionPlan.hashes?.[kind] !== digest)
-    .map(([kind]) => kind);
-  if (executionPlan.hashes?.config !== hashFile(resolvedConfigPath)) hashMismatches.push('config');
+  // CLAUDE.md (2026-08-21): runner, analyzer, policy, prompt and world are
+  // digests over source files in services/ and scripts/, and config is a digest
+  // over config/adaptive-state-benchmark-v2.yaml. A run writes each one down and
+  // carries on, so a one-line fix to a stage 0 source no longer makes every
+  // sealed S0 parent unusable. The profile digest covers a value read out of the
+  // config object rather than a file, so it still refuses.
+  const { mismatches: hashMismatches } = recordSourceSetDigests({
+    label: 'stage1 S0 parent',
+    recorded: executionPlan.hashes,
+    observed: { ...currentHashes, config: hashFile(resolvedConfigPath) },
+    fileKinds: ['runner', 'analyzer', 'policy', 'prompt', 'world', 'config'],
+  });
   if (hashMismatches.length) {
     throw new Error(
       `stateBenchmarkStage1: S0 parent is stale against current v2.1 sources (${[...new Set(hashMismatches)].join(', ')})`,

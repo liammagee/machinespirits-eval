@@ -18,8 +18,15 @@ test('V8 registrations bind one wholly fresh corpus but separate sequential stag
   assert.equal(primary.stage, 'primary_recovery');
   assert.equal(fidelity.stage, 'intervention_fidelity');
   assert.equal(primary.corpusSha256, fidelity.corpusSha256);
-  assert.equal(primary.digestRecords[0].drifted, false);
-  assert.equal(primary.digestRecords[0].observedSha256, primary.instrumentSha256);
+  // The instrument digest is recorded, not pinned. Asserting drifted === false
+  // re-creates the banned pin on a code file, and comparing observedSha256 with
+  // instrumentSha256 hashes the same file twice in one run (CLAUDE.md, 2026-08-21).
+  assert.equal(
+    primary.digestRecords[0].path,
+    'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json',
+  );
+  assert.match(primary.digestRecords[0].observedSha256, /^[0-9a-f]{64}$/u);
+  assert.equal(typeof primary.digestRecords[0].drifted, 'boolean');
   assert.equal(primary.registration.lifecycle.stageOrder, 'primary_then_fidelity');
   assert.deepEqual(primary.registration.lifecycle.responseFreeRetryDelaysMs, [15000, 45000]);
 });

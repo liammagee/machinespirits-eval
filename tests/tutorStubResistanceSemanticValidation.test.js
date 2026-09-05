@@ -41,12 +41,6 @@ const CERTIFICATE_V2 =
 const ENDPOINT_V3 = 'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.json';
 const CERTIFICATE_V3 =
   'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.endpoint-go.json';
-const sha256 = (repoPath) =>
-  crypto
-    .createHash('sha256')
-    .update(fs.readFileSync(path.join(ROOT, repoPath)))
-    .digest('hex');
-
 test('independent heldout is frozen, separated from development evidence, and absent from blind packets', () => {
   const loaded = loadTutorStubResistanceSemanticValidation();
   assert.equal(loaded.corpusSha256, '9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7');
@@ -134,10 +128,6 @@ test('validation endpoint preflight proves only zero-call wiring and retains pen
   );
   assert.match(preflight.semantic_validation_readiness_audit.status, /wiring_only_not_accuracy_evidence/u);
   assert.equal(certificateValidation.ok, true, certificateValidation.errors.join('; '));
-  assert.equal(
-    sha256('config/tutor-stub-resistance-semantic-adjudication-registration.v1.json'),
-    'd479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d',
-  );
   const drifted = structuredClone(contract);
   drifted.registration.registration_sha256 = '0'.repeat(64);
   const driftedPreflight = runTutorStubResistanceSemanticValidationPreflight({ contract: drifted });

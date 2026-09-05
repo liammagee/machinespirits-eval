@@ -12,6 +12,7 @@ import {
   tutorStubResistanceRecoverySemanticOpaqueCaseId,
 } from '../services/tutorStubResistanceRecoverySemanticValidation.js';
 import { loadTutorStubResistanceRecoverySemanticValidationV3 } from '../services/tutorStubResistanceRecoverySemanticValidationV3.js';
+import { recordObservedDigest } from '../services/recordedFileDigest.js';
 
 const SOURCE_FIELDS = Object.freeze([
   'trigger',
@@ -121,9 +122,14 @@ function verifySealedSource(root, loaded) {
     throw new Error('source plan binding disagrees across plan, seal, and report');
   }
   if (canonicalSha256(seal) !== report.seal_sha256) throw new Error('source report seal digest does not reproduce');
-  if (report.instrument_registration_sha256 !== loaded.instrumentSha256) {
-    throw new Error('source report instrument binding differs from the frozen V3 registration');
-  }
+  // CLAUDE.md (2026-08-21): the instrument registration digest is recorded, not
+  // enforced. The heldout corpus digest below stays: that one is sealed data.
+  recordObservedDigest({
+    label: 'offset cleaning source instrument registration',
+    filePath: 'V3 instrument registration',
+    recordedSha256: report.instrument_registration_sha256,
+    observedSha256: loaded.instrumentSha256,
+  });
   if (report.heldout_corpus_sha256 !== loaded.corpusSha256) {
     throw new Error('source report corpus binding differs from the frozen V3 heldout');
   }
