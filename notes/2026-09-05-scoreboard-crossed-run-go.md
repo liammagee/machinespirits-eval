@@ -270,6 +270,14 @@ node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/
   was written for this cell. Commands C, D, E and F did not run. Calls in
   this second run: 468 dispatched, 460 finished, of the 960 ceiling. Study
   total: 1,459 dispatched of 3,436. Any further run needs a new word.
+- 2026-09-05 17:51 UTC: the user ruled on the reader's hedge scope in the
+  chat: "Yes, a hedge in the next sentence covers the sentence before it." The
+  board reader now skips a sentence when a hedge word stands in the sentence
+  right after it. A question mark in the next sentence does not count, and a
+  hedge two sentences on does not count. The stopped turn (board r6, turn 6)
+  is a regression test and passes the licence audit. The change touches one
+  reader function and no design file, so the GO stands. No paid call. A
+  third run of world 102 still needs a new word.
 
 ## After the run
 

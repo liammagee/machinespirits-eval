@@ -77,3 +77,9 @@ digest. Results are conduct claims until Phase 4.
   reader seat ran. Phase 2 does not open. The next step needs a ruling on the
   reader's hedge scope and a new word. Report: the second-run section of
   `notes/2026-09-05-scoreboard-crossed-run-report.md`.
+- 2026-09-05: the user ruled that a hedge in the next sentence covers the
+  sentence before it. The Phase 0 reader is changed in place under that rule,
+  and the Phase 0 counts hold with zero calls (both bars unchanged). Under
+  the ruled reader the stopped turn of the second Phase 1 run passes the
+  licence audit, so the board tutor in that run made no unlicensed move.
+  Phase 2 does not open. A third run of world 102 waits on a new word.

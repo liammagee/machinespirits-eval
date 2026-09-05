@@ -272,12 +272,26 @@ const NAMING_HEDGE = /\b(not|never|neither|cannot|can't|does not|doesn't|unprove
  * Osprey at bay three, then a dash, then is there a record ... not just ...?"
  * read as a commitment to the secret. Two board dialogues of the 2026-09-05
  * crossed run were cut at turn 6 on that misread.
+ *
+ * A hedge word in the next sentence also covers the sentence before it. The
+ * user ruled this on 2026-09-05 after the second run of world 102 stopped at
+ * turn 6 of one board dialogue: "Osprey's authorization plus their presence ...
+ * does put them in a position to have cleared bay three ..." read as a naming,
+ * and the hedge came one sentence later: "it doesn't yet show Nadia's box ...
+ * in that log." Only a hedge word carries back this way. A question mark in the
+ * next sentence does not, because most tutor turns end with a question, and
+ * that would hide a plain naming followed by any question. Only the sentence
+ * right after counts, not one further on.
  */
 function tutorNamesAnswer(text, world, nodeIndex) {
   if (!world || !text) return null;
-  for (const sentence of sentences(text, { coarse: true })) {
+  const coarse = sentences(text, { coarse: true });
+  for (let i = 0; i < coarse.length; i += 1) {
+    const sentence = coarse[i];
     if (/\?$/u.test(sentence)) continue;
     if (NAMING_HEDGE.test(norm(sentence))) continue;
+    const next = coarse[i + 1];
+    if (next && NAMING_HEDGE.test(norm(next))) continue;
     for (const clause of sentences(sentence)) {
       const node = answerNode(clause, world);
       if (node === OTHER) continue;
