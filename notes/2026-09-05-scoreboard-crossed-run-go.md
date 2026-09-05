@@ -329,6 +329,21 @@ node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/
   no policy name and no profile name appears. No reader call had been made.
   The fix changes what the reader sees, not what is scored, so the GO stands.
   Command C starts from commit 32da9e4b, clean tree, with `--max-calls 192`.
+- 2026-09-05 21:54 UTC: command C ended. It ran from 20:14 UTC at commit
+  33da0aed (the GO note bullet above committed), clean tree, from the run
+  worktree. 192 calls planned, 192 returned, 0 failed, no retry, no top-up.
+  Luna in both reader seats, effort medium. The zero-call `--score` pass at
+  21:55 UTC wrote `score.json` in the run root: 48 dialogues, tutor seat
+  Sonnet 5, reader seat Luna, self-judging no. Kill 1 FIRED on the 48
+  (permission-seeking 1 of 12 against 1 of 12; overconfident 5 of 12 against
+  6 of 12). Kill 2 not fired. Indeterminate: no; every cell has 64 or more
+  reader consensus cases. Endpoint 2: 98% against 88% on the
+  permission-seeking shape with zero challenges from either tutor, 47%
+  against 53% on the overconfident shape. Endpoint 3: 2% against 12%, and
+  52% against 52%. Study total: 1,968 calls dispatched of 3,436. Archive:
+  private repo `b4498b0ef`, pushed. Commands D, E and F did not run and
+  are not run for a result that will not be cited. No more calls under this
+  GO. Report: `notes/2026-09-05-scoreboard-crossed-run-report.md`.
 
 ## After the run
 

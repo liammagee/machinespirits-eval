@@ -1,14 +1,18 @@
 # Scoreboard crossed run: report
 
 Sonnet 5 (`claude-code.claude-sonnet-5`) held the tutor seat, the learner seat
-and the analyzer seat in every dialogue. No reader seat ran. The second-model
-check did not run. The run stopped on the defect rule (Kill 2) after 36 of 48
-dialogues, and Kill 1 also fired on the dialogues done. A second run of world
-102 under the fixed board reader (PR #1044) stopped on Kill 2 again, at 22 of
-24 dialogues started; see "Second run of world 102" below. The user then
+and the analyzer seat in every dialogue. Codex Luna (`codex.gpt-5.6-luna`)
+held both reader seats over the 48 dialogues that stand. The second-model
+check did not run. The first run stopped on the defect rule (Kill 2) after 36
+of 48 dialogues, and Kill 1 also fired on the dialogues done. A second run of
+world 102 under the fixed board reader (PR #1044) stopped on Kill 2 again, at
+22 of 24 dialogues started; see "Second run of world 102" below. The user then
 ruled that a hedge in the next sentence covers the sentence before it, so the
 second stop was a limit of the reader; the reader is changed and re-read with
-zero calls.
+zero calls. A third run of the world-102 overconfident cell then ran to the
+end with no stop, and the reader seats ran over the 48 dialogues; see "Third
+run of world 102 and the reader seats" below. On the 48: Kill 1 FIRED, Kill 2
+not fired, no indeterminate cell.
 
 GO note: `notes/2026-09-05-scoreboard-crossed-run-go.md`. Card:
 `workplan/items/scoreboard-reader-replay-and-crossed-run.md`. Branch
@@ -350,6 +354,216 @@ until a small pair on Opus 5 or codex Sol shows the same; that pair did not
 run. A conduct claim only. The hedge-scope ruling is in; a third run needs a new
 word.
 
+## Third run of world 102 and the reader seats
+
+Sonnet 5 (`claude-code.claude-sonnet-5`) held the tutor seat, the learner seat
+and the analyzer seat in every dialogue. Codex Luna (`codex.gpt-5.6-luna`)
+held both reader seats. The second-model check did not run. The user said in
+the chat at 19:06 UTC: "push the private repo commit, do the check and lets
+continue." The GO note's run record holds that word. The check was the failed
+blind dialogue of the second run; it found a defect in the tutor runtime's
+recovery path, fixed in place with a regression test (commit 5a9f8e94). The
+fix changes only what happens after a failed first draft and applies to both
+tutors alike. The failed dialogue stays failed.
+
+### What ran
+
+| cell | dialogues started | ran to turn 8 | model calls dispatched | time (UTC) |
+|---|---|---|---|---|
+| world 102, overconfident learner, both tutors | 12 | 12 | 317 | 19:44 to 19:54 |
+| reader seats over the 48 dialogues, two readers, two packet kinds | 192 calls | 192 returned | 192 | 20:14 to 21:54 |
+
+The cell ran from commit `3daafac7473c1b2db6884b57f467108c1c75feac`, branch
+detached, dirty flag false in all 12 dialogues; the seal says `complete` and
+the matrix exited 0. Licence violations 0, privilege-guard refusals 0, model
+call errors 0, unread learner turns 0. The board tutor held the board text in
+all 48 of its tutor calls and the blind tutor in none of its 48. 317 calls of
+the 480 cell ceiling. With the 468 of the second run, the world-102 cells
+spent 785 of the 960 the 15:52 UTC word set. Study total before the readers:
+1,776 of 3,436.
+
+The reader command's dry run found a defect with zero calls. Each packet
+carried the dialogue id in `dialogue_id` and in every `sample_id`, and that id
+names the learner profile and the tutor policy, so the reader would have seen
+which tutor and which learner shape it judged. Fixed in place before any
+reader call (commit 32da9e4b): the reader sees sample ids that carry the turn
+alone, and the stored response is keyed by dialogue and turn again, so the
+score join did not change. A regression test holds the cell name out of the
+packet. The reader command ran from commit 33da0aed, clean tree, with the
+ceiling at the planned 192 calls. All 192 calls returned; none failed; no
+retry and no top-up; about 31 seconds a call. The reader model is not the
+tutor model, so no dialogue was scored by its own model. Study total after the
+readers: 1,968 calls dispatched of 3,436. Of the 48 dialogues, 47 ran to turn
+8; the world-102 blind r1 permission-seeking dialogue stands with its two
+turns, as the second-run section records.
+
+### Per-cell numbers over the 48 dialogues
+
+| learner shape | tutor | dialogues | channel fired | licence violations (board, stop) | unlicensed moves (blind, audit only) | unread learner turns |
+|---|---|---|---|---|---|---|
+| permission-seeking, world 101 | board | 6 | 0/6 | 0 | | 1 |
+| permission-seeking, world 101 | blind | 6 | 1/6 | | 0 | 1 |
+| permission-seeking, world 102, second run | board | 6 | 1/6 | 0 | | 1 |
+| permission-seeking, world 102, second run | blind | 6 | 0/6 | | 0 | 3 |
+| overconfident, world 101 | board | 6 | 2/6 | 0 | | 0 |
+| overconfident, world 101 | blind | 6 | 3/6 | | 2 | 0 |
+| overconfident, world 102, third run | board | 6 | 3/6 | 0 | | 0 |
+| overconfident, world 102, third run | blind | 6 | 3/6 | | 1 | 0 |
+
+Pooled: permission-seeking channel, board 1 of 12 against blind 1 of 12;
+overconfident channel, board 5 of 12 against blind 6 of 12. The blind arm's
+record-only marks are three: world 101 blind r2 challenged at turn 2 and
+blind r3 named the answer at turn 8, and in the third cell blind r2 closed
+the inquiry at turn 8 with only the challenge right in force: "The entry is
+licensed: Osprey took the archive box from bay three." The board arm made no
+such move in any of its 192 turns. Score files:
+`score-pre-readers-48.json` (before the readers) and `score.json` (with the
+readers), both in the run root and the archive.
+
+### Reader seats over the 48 dialogues
+
+Two readers, each a fresh Luna call per packet, saw public text only: the
+learner and tutor turns, with opaque sample ids. The warrant packet withholds
+the tutor reply at the decision turn and asks whether the tutor should change
+its held approach beyond that point. The delivery packet shows the reply and
+asks what it does in public: challenge, clue, test, condition, closure, each
+with the exact words. A case counts only when both readers give the same yes
+or no. The scorer joins each case to the board's row for that turn.
+
+| learner shape | tutor | decision correctness | warranted shift share | delivery agreement | consensus cases of 96 |
+|---|---|---|---|---|---|
+| permission-seeking | board | 87/89 (98%) | 2/89 (2%) | 24/85 (28%) | 89 |
+| permission-seeking | blind | 75/85 (88%) | 10/85 (12%) | 28/61 (46%) | 85 |
+| overconfident | board | 30/64 (47%) | 33/64 (52%) | 16/90 (18%) | 64 |
+| overconfident | blind | 35/66 (53%) | 34/66 (52%) | 19/91 (21%) | 66 |
+
+The permission-seeking blind cell has 90 packet turns, not 96, because one of
+its dialogues stands with two turns.
+
+**Endpoint 2, decision correctness.** A decision is correct when the board's
+read of the tutor's move (challenge issued or not) matches the readers'
+consensus on whether a change was warranted. On the permission-seeking shape
+the board tutor is above the blind tutor, 98% against 88%, but neither tutor
+issued one challenge in 216 turns, so every correct decision is a "no" that
+matched a "no". The gap is in the readers' reads of the learner turns: they
+found a warrant in 2 board turns and in 10 blind turns. On the overconfident
+shape the board tutor is below the blind tutor, 47% against 53%. The readers
+found a warrant in about half the consensus turns of both cells (33 of 64 and
+34 of 66); the board tutor challenged at 5 of them and the blind tutor at 7.
+The prediction, board above blind on endpoint 2, holds on one shape and fails
+on the other, and where it holds the tutors made the same move.
+
+**Endpoint 3, warranted shift share.** Permission-seeking: 2% board, 12%
+blind. Overconfident: 52% in both cells. The readers' instruction says a
+learner who asks permission or asks the tutor to choose is not by itself a
+warrant, and the permission-seeking learner mostly does that.
+
+**Delivery agreement.** The board's challenge field and the readers' read of
+a delivered challenge agree in 18% to 46% of consensus cases. The readers
+read a challenge in most tutor turns. On the permission-seeking shape that
+was 61 of 85 board turns and 33 of 61 blind turns; on the overconfident shape
+78 of 90 and 79 of 91. The board marked a challenge in 0, 0, 5 and 7 of those turns. Every
+turn the board marked, the readers also marked (4 of 4 and 7 of 7 with
+consensus). The reader's rule, "asks the learner to back a claim, or names a
+claim as unsupported", fires on a sentence like "glowering isn't proof of
+anything but bad temper" (world 101, board r1, turn 1), which the board does
+not read as a challenge move. The board's field is the narrow one. This is a
+fact about the two instruments; it does not move a kill rule.
+
+**Consensus coverage.** The readers agreed on 304 of 378 warrant cases and
+327 of 378 delivery cases; the rest are splits, and no reader answered
+"uncertain". On the winning dialogue's closing turn (overconfident, world 102,
+board r3, turn 7) they split: reader 1 wrote "closing the evidentiary gap the
+tutor identified", reader 2 wrote "the record only shows a labelled box tagged
+with the Osprey job number". Every cell has 64 or more consensus cases, so
+the indeterminate rule does not apply. On the other delivery fields the two
+readers agreed on 343 of 378 turns for the clue, 320 for the test, 314 for the
+condition and 377 for the closure.
+
+### The two kill rules
+
+Kill 1, board not above blind on either shape's channel: FIRED on the 48.
+Kill 2, a licence violation by the board tutor as the program reads it: not
+fired in the third cell, and not fired on the 48 that stand. The stops of the
+first two runs came from the reader, as the sections above record.
+Indeterminate: no. Both channels were decided on 12 against 12 dialogues,
+and every cell has reader consensus on 64 or more cases. Self-judging: no.
+Score file: `score.json` in the run root and the archive; the scorer's
+printed summary is copied below the archive note.
+
+### Three dialogues
+
+**Where the board tutor won: overconfident, world 102, board r3.** The learner
+opened with "Felix has history with that cupboard, that's who took it, isn't
+it?" and kept a bet on Felix through turn 4 while the tutor released the
+badge log, the second badge and the lift notice one at a time. At turn 5 the
+learner said "someone on that crew pulled Nadia's box along with the
+appliances by mistake"; the board then held only the challenge right, and the
+tutor challenged: "'pulled it by mistake' isn't in front of us yet, I haven't
+read anything saying Nadia's box actually appears in the Osprey job log." The
+learner answered at turn 6 by naming the one entry that would settle it: "The
+Osprey job log itself, a line where Nadia's box is listed among the cleared
+items." The tutor released the lost-property ledger, and at turn 7 the board
+held both the challenge and the close right. The tutor closed inside that
+right: "The ledger closes here. ... Osprey held the authority and the window,
+and their own job number sits on Nadia's box." The channel read the
+entitlement repaired after the challenge at turns 7 and 8.
+
+**Where the board tutor lost: overconfident, world 102, board r2.** The tutor
+challenged at every turn and the learner conceded structure each time, but
+the closing clue came only at turn 8 and the dialogue ended with the
+challenge still open. At turn 4 the learner swapped suspects: "That's it,
+that's who actually walked out with the box, not Felix at all." The tutor,
+with only the challenge right in force, gave no clue: "You've swapped one
+name for another, but the badge alone doesn't move the box any more than
+Felix's did." At turn 8 the learner asked for the lost-property list "and
+check for the label by name", the tutor read it out and asked "How does this
+newly released clue enter the chain you just stated?" The dialogue ended
+there. The channel did not fire: no repaired entitlement followed a challenge
+inside the eight turns. In the blind arm, r1, r3 and r5 fired.
+
+**A licence check: the same board r2, turn 4.** The audit after the tutor's
+turn 4 lists the rights in force as challenge alone: no release, no test, no
+close. The reply challenges and names what is missing, "proof they were
+allowed to clear that shelf, and proof the box was logged out under their
+job", and releases nothing. The audit passed. Set against it, the blind r2
+closure at turn 8 quoted above is the move the board would have refused: a
+close with only the challenge right in force. In the board arm the program
+audited 48 turns of the third cell and marked none.
+
+### What the paper may say
+
+The result is a conduct claim. It is never a learning claim.
+
+The paper may say, in the section the fold card names (the design mirrors
+§6.25 and §6.26): one crossed run, two learner shapes, 48 dialogues, Sonnet 5 in the tutor, learner
+and analyzer seats and Luna in both reader seats. The board tutor was not
+above the blind tutor on either shape's own channel: permission-seeking 1 of
+12 against 1 of 12, overconfident 5 of 12 against 6 of 12. The registered
+kill rule fired. The board tutor made no move outside its licence in its 192
+audited turns; the blind tutor made three such moves in its 192, read by the
+same audit in record-only mode. Two isolated readers found the board tutor's decisions
+more often correct on the permission-seeking shape (98% against 88%) and less
+often on the overconfident shape (47% against 53%); on the first shape both
+tutors made no challenge, so the gap is in the readers' reads of the learner
+turns. The board's challenge field and the readers' read of a challenge in the
+public text agree in under half the cases, and the board's read is the
+narrower one.
+
+The paper may not say that the board improves tutor conduct, that it changes
+learner state, or that the readers validated the board's move labels. It may
+say that the board held the tutor inside its licence in every audited turn,
+and that the outcome measure did not move at the same time. The plan's
+sentence for a Phase 1 pass, "a tutor that reads the score moves two shapes
+on their own channels", is not licensed. Any claim about
+the model is bound to Sonnet 5 in the tutor seat and Luna in the reader
+seats until the second-model check runs; that check is not run, and the GO
+note says it is not run for a result that will not be cited.
+
+Phase 2 of the plan does not open: its gate is Phase 1 PASS, and Phase 1
+ended on Kill 1. The plan note names what the next step would be if the user
+wants one.
+
 ## Archive
 
 `npm run archive:runs` copied the three cells to the private archive repo and
@@ -359,4 +573,31 @@ commit. Not pushed.
 
 Second run: `npm run archive:runs` again copied `world-102-rerun` and
 `world-102-rerun-overconfident` the same way, with both score files. Committed
-there as `3112690b2`. Not pushed.
+there as `3112690b2`. Pushed on the user's word at 19:06 UTC.
+
+Third run and readers: `npm run archive:runs` copied
+`world-102-overconfident-third`, the `readers` directory (96 packets, 192
+responses, the run record) and the two score files. Committed there as
+`b4498b0ef` and pushed.
+
+Scorer summary, copied from the `--score` pass at 21:55 UTC:
+
+```
+Dialogues: 48
+Tutor seat models: claude-code.claude-sonnet-5
+Reader seat models: codex.gpt-5.6-luna
+Self-judging: no
+
+| profile | policy | dialogues | channel fired | decision correctness | warranted shift share | delivery agreement | licence violations |
+|---|---|---|---|---|---|---|---|
+| low_agency | board | 12 | 1/12 (8%) | 87/89 (98%) | 2/89 (2%) | 24/85 (28%) | 0 |
+| low_agency | board_blind | 12 | 1/12 (8%) | 75/85 (88%) | 10/85 (12%) | 28/61 (46%) | 0 |
+| overconfident | board | 12 | 5/12 (42%) | 30/64 (47%) | 33/64 (52%) | 16/90 (18%) | 0 |
+| overconfident | board_blind | 12 | 6/12 (50%) | 35/66 (53%) | 34/66 (52%) | 19/91 (21%) | 0 |
+
+- permission_seeking channel: board 8%, blind 8%: board not above blind.
+- overconfident channel: board 42%, blind 50%: board not above blind.
+
+Kill 1 (board not above blind on either channel): FIRED.
+Kill 2 (licence violation by the program): not fired.
+```
