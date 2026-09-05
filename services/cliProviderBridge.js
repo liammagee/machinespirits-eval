@@ -1323,7 +1323,15 @@ async function callCodexCli({
       }
       if (model && model !== 'auto') args.push('-m', model);
       if (singleAttempt) {
-        args.push('-c', 'model_providers.openai.request_max_retries=0', '-c', 'model_providers.openai.stream_max_retries=0');
+        // Built-in provider IDs are reserved. A named OpenAI-authenticated
+        // configuration keeps the CLI's auth-selected endpoint and disables retries.
+        args.push(
+          '-c', 'model_provider="bounded-openai"',
+          '-c', 'model_providers.bounded-openai.name="OpenAI"',
+          '-c', 'model_providers.bounded-openai.requires_openai_auth=true',
+          '-c', 'model_providers.bounded-openai.request_max_retries=0',
+          '-c', 'model_providers.bounded-openai.stream_max_retries=0',
+        );
       }
       if (subscriptionOnly) args.push('-c', 'forced_login_method="chatgpt"');
       if (schemaFile) args.push('--output-schema', schemaFile);

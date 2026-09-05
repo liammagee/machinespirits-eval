@@ -75,3 +75,11 @@ tests pass. The pre-push benchmark also requested six additional model calls for
 the shared bridge change; its documented reasoned bypass is used because the
 optional controls are covered by offline process-boundary tests and those extra
 calls are outside this fixed quality-only study. Normal lint and hosted CI remain.
+
+2026-09-05: the first CLI assessment attempt failed before a turn because current
+Codex forbids overriding built-in provider IDs. Empty stdout and the exact
+configuration-loader error are retained. The bridge now uses a named OpenAI-auth
+configuration with the same ChatGPT-selected endpoint and zero retries. A read-only
+login-status command verified this configuration before another attempt. The
+missing-only recovery recognizes that exact saved pre-turn error without altering
+its historical seal; regression coverage includes this failure and recovery.

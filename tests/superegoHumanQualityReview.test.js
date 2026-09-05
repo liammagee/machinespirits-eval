@@ -550,3 +550,50 @@ test('automated review rejects changed sealed data, API routes and ceilings befo
   assert.equal(agreement.indeterminate_consensus, 3);
   assert.throws(() => validateAutomatedQualityRatings(packet, { rater_type: 'model', packet_id: 'other' }), /match/);
 });
+
+test('saved pre-turn CLI config failure can be recovered after repair without editing its seal', async (t) => {
+  const { options } = await automatedFixture(t);
+  let calls = 0;
+  const raw = {
+    transport: {
+      stdout: '',
+      stderr:
+        'Error loading config.toml: model_providers contains reserved built-in provider IDs: `openai`. Built-in providers cannot be overridden.\n',
+      exitCode: 1,
+    },
+    cli_error: { message: 'codex CLI exited with code 1', code: 'CLI_PROVIDER_EXIT_FAILED', recoverable: false },
+  };
+  await assert.rejects(
+    executePilot({
+      ...options,
+      dispatch: async () => {
+        calls++;
+        return raw;
+      },
+    }),
+    /CLI failed/,
+  );
+  // Reproduce the historical classification written before the repair.
+  const file = path.join(options.destination, 'run-ledger.jsonl');
+  const events = readEvents(file);
+  events.at(-1).recovery_permitted = false;
+  fs.writeFileSync(file, events.map(JSON.stringify).join('\n') + '\n');
+  const original = fs.readFileSync(file);
+  const destination = path.join(options.root, 'config-recovered');
+  await executePilot({
+    ...options,
+    recoveryFrom: options.destination,
+    destination,
+    dispatch: async (request) => {
+      calls++;
+      return cliRating(request);
+    },
+  });
+  assert.equal(calls, 17);
+  assert.deepEqual(fs.readFileSync(file), original);
+  assert.equal(
+    readEvents(path.join(destination, 'run-ledger.jsonl')).filter((e) => e.type === 'technical_failure_reclassified')
+      .length,
+    1,
+  );
+});

@@ -1391,9 +1391,12 @@ describe('bounded subscription Codex judging', () => {
       },
     );
     assert.equal(result.text, '{}');
-    assert.ok(launch.args.includes('model_providers.openai.request_max_retries=0'));
-    assert.ok(launch.args.includes('model_providers.openai.stream_max_retries=0'));
+    assert.ok(launch.args.includes('model_providers.bounded-openai.request_max_retries=0'));
+    assert.ok(launch.args.includes('model_providers.bounded-openai.stream_max_retries=0'));
     assert.ok(launch.args.includes('forced_login_method="chatgpt"'));
+    assert.ok(launch.args.includes('model_provider="bounded-openai"'));
+    assert.ok(launch.args.includes('model_providers.bounded-openai.requires_openai_auth=true'));
+    assert.ok(!launch.args.some((arg) => arg.startsWith('model_providers.openai.')));
     for (const name of ['OPENAI_API_KEY', 'CODEX_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_ORG_ID'])
       assert.equal(launch.options.env[name], undefined);
     assert.equal(captured.exitCode, 0);

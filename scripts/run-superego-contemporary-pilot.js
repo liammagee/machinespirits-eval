@@ -157,6 +157,7 @@ export function recoverPilot(design, plan, predecessor) {
   }
   const results = new Map(),
     requests = new Map();
+  let configurationFailures = 0;
   for (const segment of segments) {
     for (const reservation of segment.events.filter((e) => e.type === 'model_attempt_dispatch_reserved')) {
       const job = plan.jobs.find((j) => j.id === reservation.unit_id);
@@ -202,6 +203,7 @@ export function recoverPilot(design, plan, predecessor) {
         if (results.has(job.id)) throw new Error('Duplicate retained answer');
         results.set(job.id, result);
       } catch (error) {
+        if (error.configurationFailure) configurationFailures++;
         if (!error.recoverable) throw error;
       }
     }
@@ -218,7 +220,7 @@ export function recoverPilot(design, plan, predecessor) {
       results.set(job.id, { invalid_response: 'missing_dependency', dependencies: event.dependencies });
     }
   }
-  return { results, requests, segments };
+  return { results, requests, segments, configurationFailures };
 }
 
 export function loadAutomatedQualitySource(root, design, sourceFrom) {
@@ -258,7 +260,16 @@ export async function executePilot({
     : preparePilot(root, design);
   if (!isDeepStrictEqual(plan, expectedPlan)) throw new Error('Plan differs from registered preparation');
   const recovered = recoverPilot(design, plan, recoveryFrom);
-  if (recovered.segments.length && recovered.segments.at(-1).events.at(-1).recovery_permitted !== true)
+  const repairedConfigurationFailure =
+    automatedQuality &&
+    recovered.configurationFailures === 1 &&
+    recovered.segments.at(-1)?.events.at(-1)?.status === 'technical_failure' &&
+    recovered.results.size === 0;
+  if (
+    recovered.segments.length &&
+    recovered.segments.at(-1).events.at(-1).recovery_permitted !== true &&
+    !repairedConfigurationFailure
+  )
     throw new Error('Predecessor stopped for investigation or completed its paid work');
   const results = recovered.results;
   const generation = plan.jobs.filter((j) => j.category === 'generation');
@@ -303,6 +314,12 @@ export async function executePilot({
     retainedResponseUnits: recoveryFrom ? [...results.keys()] : [],
   });
   const budget = createDurablePaidModelAttemptBudget({ admission, limit: design.attempts.hard_ceiling });
+  if (repairedConfigurationFailure)
+    admission.record({
+      type: 'technical_failure_reclassified',
+      reason:
+        'Saved empty stdout and exact CLI configuration-loader error prove pre-turn failure; missing-only recovery after code repair.',
+    });
   const stage = phase === 'generation' ? 'GENERATING' : 'AUDITING';
   let status = createLongRunningWorkflowStatus({
     workflowId: design.id,
