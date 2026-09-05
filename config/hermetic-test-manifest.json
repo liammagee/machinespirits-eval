@@ -810,6 +810,7 @@
         "tests/tutorStubTurnOrchestration.test.js",
         "tests/tutorStubTurnProgressionContract.test.js",
         "tests/tutorStubTutorPromptContext.test.js",
+        "tests/tutorStubTutorRepairRuntimePrivilege.test.js",
         "tests/tutorStubTutorTurnPipeline.test.js",
         "tests/tutorStubTypedActionAdapter.test.js",
         "tests/tutorStubTypedActionAssignment.test.js",
