@@ -51,6 +51,48 @@ const stableSettings = (design) => ({
   ...(design.response_failure_policy ? { response_failure_policy: design.response_failure_policy } : {}),
 });
 
+// Public catalog reads only: no key, prompt, provider inference or run admission.
+// Keep unsupported registered controls explicit rather than silently dropping them.
+export async function checkReplayRouteParameters(design, plan, fetchMetadata = globalThis.fetch) {
+  const routes = new Map();
+  for (const job of plan.jobs) {
+    const route = design.models[job.seat];
+    const required = ['temperature', 'top_p', 'max_tokens', 'reasoning'];
+    if (job.category !== 'generation') required.push('response_format');
+    const key = `${route.model}/${route.provider_slug}`;
+    const item = routes.get(key) || { route, required: new Set() };
+    required.forEach((parameter) => item.required.add(parameter));
+    routes.set(key, item);
+  }
+  const results = await Promise.all(
+    [...routes.values()].map(async ({ route, required }) => {
+      const url = `${new URL(design.endpoint).origin}/api/v1/models/${route.model}/endpoints`;
+      const response = await fetchMetadata(url, { redirect: 'error', signal: AbortSignal.timeout(15000) });
+      if (!response.ok) throw new Error(`Route metadata unavailable for ${route.model}: HTTP ${response.status}`);
+      const { data } = await response.json();
+      if (data?.id !== route.model || !Array.isArray(data.endpoints))
+        throw new Error(`Invalid route metadata for ${route.model}`);
+      const endpoints = data.endpoints.filter(
+        (endpoint) =>
+          endpoint.provider_name === route.provider &&
+          (endpoint.tag === route.provider_slug || endpoint.tag?.startsWith(`${route.provider_slug}/`)),
+      );
+      const supports = (endpoint) =>
+        [...required].every((parameter) => endpoint.supported_parameters?.includes(parameter));
+      if (!endpoints.some(supports)) {
+        const missing = [...required].filter(
+          (parameter) => !endpoints.some((endpoint) => endpoint.supported_parameters?.includes(parameter)),
+        );
+        throw new Error(
+          `Registered route ${route.model} via ${route.provider} cannot support all request controls: ${missing.join(', ') || 'no single eligible endpoint'}. No paid admission or call was made.`,
+        );
+      }
+      return { model: route.model, provider: route.provider, parameters: [...required] };
+    }),
+  );
+  return results;
+}
+
 // Exactly one HTTP request. No SDK retry, status retry, fallback, or model repair.
 export async function dispatchReplayRequest(endpoint, request, timeoutMs, fetchImpl = globalThis.fetch) {
   const key = process.env.OPENROUTER_API_KEY;
@@ -461,6 +503,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     console.log(JSON.stringify({ units: plan.units.length, jobs: plan.jobs.length, calls: 0 }));
     return { design, plan };
   }
+  await checkReplayRouteParameters(design, plan, overrides.metadataFetch);
   return executeReplay({
     root,
     design: loadReplayDesign(root, { mode: values.mode }),

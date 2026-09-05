@@ -23,6 +23,7 @@ import {
   executeReplay,
   checkReplayBudget,
   loadRecoveryResponses,
+  checkReplayRouteParameters,
   main,
 } from '../scripts/run-superego-critique-causal-replay.js';
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
@@ -991,6 +992,24 @@ test('paid calibration CLI selects the calibration design and summary through th
       studyStateRoot: options.studyStateRoot,
       preparePlan: async () => ({ design, plan }),
       onProgress: () => {},
+      metadataFetch: async (url) => {
+        const route = Object.values(design.models).find((r) => url.endsWith(`/${r.model}/endpoints`));
+        return {
+          ok: true,
+          json: async () => ({
+            data: {
+              id: route.model,
+              endpoints: [
+                {
+                  provider_name: route.provider,
+                  tag: route.provider_slug,
+                  supported_parameters: ['temperature', 'top_p', 'max_tokens', 'reasoning', 'response_format'],
+                },
+              ],
+            },
+          }),
+        };
+      },
       dispatch: async (_url, request) => {
         calls++;
         assert.notEqual(request.model, design.models.generator.model);
@@ -1002,6 +1021,98 @@ test('paid calibration CLI selects the calibration design and summary through th
   assert.equal(result.report.readiness, 'not_validated_against_independent_humans');
   assert.equal(result.report.primary, undefined);
   assert.equal(readJson(path.join(options.destination, 'settings.json')).mode, 'calibration');
+});
+
+test('public route metadata rejects unsupported controls before paid admission, reservation or dispatch', async (t) => {
+  const { root, design, plan, options } = calibrationFixture(t);
+  let metadataReads = 0;
+  let calls = 0;
+  await assert.rejects(
+    main(
+      [
+        '--mode',
+        'calibration',
+        '--launch',
+        '--accept-charges',
+        '--output',
+        options.destination,
+        '--go-note',
+        'notes/test-go.md',
+        '--go-note-commit',
+        options.goNoteCommit,
+      ],
+      {
+        root,
+        studyStateRoot: options.studyStateRoot,
+        preparePlan: async () => ({ design, plan }),
+        metadataFetch: async (url, init) => {
+          metadataReads++;
+          assert.equal(init.body, undefined);
+          assert.equal(init.headers, undefined);
+          assert.match(url, /\/api\/v1\/models\/.+\/endpoints$/);
+          const route = Object.values(design.models).find((r) => url.endsWith(`/${r.model}/endpoints`));
+          // The actual GPT-5.4 endpoint list omits temperature and top_p.
+          return {
+            ok: true,
+            json: async () => ({
+              data: {
+                id: route.model,
+                endpoints: [
+                  {
+                    provider_name: route.provider,
+                    tag: route.provider_slug,
+                    supported_parameters: ['max_tokens', 'reasoning', 'response_format'],
+                  },
+                ],
+              },
+            }),
+          };
+        },
+        dispatch: async () => {
+          calls++;
+          throw new Error('Must not dispatch');
+        },
+      },
+    ),
+    /cannot support all request controls: temperature, top_p/,
+  );
+  assert.equal(metadataReads, 2);
+  assert.equal(calls, 0);
+  assert.equal(fs.existsSync(options.destination), false);
+  assert.equal(fs.existsSync(options.studyStateRoot), false);
+});
+
+test('route compatibility requires one pinned endpoint to support the full control set and fails on unavailable metadata', async (t) => {
+  const { design, plan } = calibrationFixture(t);
+  const metadata = async (url) => {
+    const route = Object.values(design.models).find((r) => url.endsWith(`/${r.model}/endpoints`));
+    return {
+      ok: true,
+      json: async () => ({
+        data: {
+          id: route.model,
+          endpoints: [
+            { provider_name: route.provider, tag: route.provider_slug, supported_parameters: ['temperature', 'top_p'] },
+            {
+              provider_name: route.provider,
+              tag: `${route.provider_slug}/fast`,
+              supported_parameters: ['max_tokens', 'reasoning', 'response_format'],
+            },
+            {
+              provider_name: 'Unregistered',
+              tag: 'unregistered',
+              supported_parameters: ['temperature', 'top_p', 'max_tokens', 'reasoning', 'response_format'],
+            },
+          ],
+        },
+      }),
+    };
+  };
+  await assert.rejects(checkReplayRouteParameters(design, plan, metadata), /no single eligible endpoint/);
+  await assert.rejects(
+    checkReplayRouteParameters(design, plan, async () => ({ ok: false, status: 503 })),
+    /Route metadata unavailable/,
+  );
 });
 
 test('amended calibration decodes one JSON fence and retains invalid answers without repairing evidence', (t) => {
