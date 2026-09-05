@@ -278,6 +278,33 @@ node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/
   is a regression test and passes the licence audit. The change touches one
   reader function and no design file, so the GO stands. No paid call. A
   third run of world 102 still needs a new word.
+- 2026-09-05 19:06 UTC: the user said in the chat: "push the private repo
+  commit, do the check and lets continue." That word covers the third run of
+  world 102: the overconfident cell only, 12 dialogues, in the sibling root
+  `world-102-overconfident-third`, then command C over the 48 dialogues. The
+  check was the blind r1 dialogue of the world-102 permission-seeking cell,
+  which failed at turn 3 on the speaker-privilege guard. It found a defect in
+  the tutor runtime. The reader and the licence rules take no part in it. The
+  recovery prompt rebuilt the first-draft contract in a smaller form and did
+  not run it through the speaker advisory sanitiser, as the speaking path
+  does. The contract's learner-move line is planner text and carried the
+  premise id `p_noon`, so the guard refused the recovery prompt and the
+  dialogue failed. Fixed in place in `services/tutorStubTutorRepairRuntime.js`
+  with a regression test, commit 5a9f8e94. The fix changes only what happens
+  after a failed first draft, and it applies to both tutors alike. The failed
+  dialogue stays failed on disk and in the archive; no retry. Cell ceiling:
+  480 calls, 12 dialogues at `--model-call-budget 40`; expected about 330.
+  With the 468 dispatched in the second run this stays under the 960 the
+  15:52 UTC word set for the world-102 cells, so the study ceiling stays
+  3,436; 1,459 were spent before this word. Same seed, same models, Sonnet 5
+  in every seat, same world path. Kill 1, Kill 2 and the indeterminate rule
+  apply unchanged. Command C then reads the 48 dialogues from `world-101`,
+  `world-101-overconfident`, `world-102-rerun` and
+  `world-102-overconfident-third` with `--max-calls 192`. Provenance at
+  launch: the fix commit on branch `claude/recovery-prompt-premise-id`, clean
+  tree; each trace records the exact commit. The run command is command B
+  with `--profiles overconfident` and `--trace-dir
+  exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-102-overconfident-third`.
 
 ## After the run
 
