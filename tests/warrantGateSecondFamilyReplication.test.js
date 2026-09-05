@@ -537,7 +537,7 @@ function completedCase() {
 // the lifecycle methods on the reservation object hid the 2026-09-05 defect
 // (`reservation.markDispatched is not a function`) from every test while the
 // first paid reader call died on it. Only the capacity bookkeeping is local.
-function ledgerBudget({ root, limit = 20 }) {
+function ledgerBudget({ root, limit = 20, workers = 1 }) {
   const runLedgerPath = path.join(root, 'run-ledger.jsonl');
   const studyLedgerPath = path.join(root, 'state', 'study-ledger.jsonl');
   fs.mkdirSync(path.dirname(studyLedgerPath), { recursive: true });
@@ -571,16 +571,20 @@ function ledgerBudget({ root, limit = 20 }) {
     },
   };
   const log = [];
-  const budget = createDurablePaidModelAttemptBudget({
-    admission,
-    limit,
-    unitPrefix: 'reader',
-    hooks: {
-      onAttemptCompleted: (attempt) => log.push({ state: 'complete', unit: attempt.detail.unitId }),
-      onAttemptFailed: (attempt) => log.push({ state: 'failed', unit: attempt.detail.unitId, error: attempt.error }),
-    },
-  });
-  return { budget, log, released, runLedgerPath, studyLedgerPath };
+  // Several budgets over ONE admission is the parallel-reader shape: the
+  // budget holds a single active try, the admission holds the ceiling.
+  const budgets = Array.from({ length: workers }, () =>
+    createDurablePaidModelAttemptBudget({
+      admission,
+      limit,
+      unitPrefix: 'reader',
+      hooks: {
+        onAttemptCompleted: (attempt) => log.push({ state: 'complete', unit: attempt.detail.unitId }),
+        onAttemptFailed: (attempt) => log.push({ state: 'failed', unit: attempt.detail.unitId, error: attempt.error }),
+      },
+    }),
+  );
+  return { budget: budgets[0], budgets, log, released, runLedgerPath, studyLedgerPath };
 }
 
 function readLedger(filePath) {
@@ -751,6 +755,208 @@ test('reader dispatch retries a response-free attempt under the allowance, accep
     ledger.released.map((entry) => entry.reason),
     [...Array(3).fill('attempt_completed'), 'attempt_failed', ...Array(3).fill('attempt_completed')],
   );
+});
+
+function readerRunRecord(manifest) {
+  return {
+    status: 'running',
+    study_id: manifest.study_id,
+    source_commit: manifest.source_commit,
+    model: SECOND_FAMILY_SEATS.decision_readers,
+    calls_attempted: 0,
+    calls_completed: 0,
+    exposed_sample_ids: [],
+    batches: [],
+  };
+}
+
+test('four reader workers over one admission read every batch once, with four calls in flight at a time', async (t) => {
+  const { root, prepared } = prepareCollection(t);
+  const manifest = prepared.manifest;
+  const runDir = path.join(root, 'run');
+  const runPath = path.join(runDir, 'run.json');
+  const run = readerRunRecord(manifest);
+  const ledger = ledgerBudget({ root, workers: 4 });
+
+  let inFlight = 0;
+  let peakInFlight = 0;
+  let release = null;
+  const allDispatched = new Promise((resolve) => {
+    release = resolve;
+  });
+  const seen = [];
+  const callModel = async (agent, systemPrompt, userPrompt) => {
+    const packet = JSON.parse(userPrompt);
+    seen.push(`${packet.reader_id}:${packet.batch_id}`);
+    inFlight += 1;
+    peakInFlight = Math.max(peakInFlight, inFlight);
+    if (inFlight >= 4) release();
+    await allDispatched;
+    inFlight -= 1;
+    const reader = manifest.readers.find((row) => row.reader_id === packet.reader_id);
+    const batch = reader.batches.find((row) => row.batch_id === packet.batch_id);
+    return { text: validResponse(manifest, reader, batch), provider: 'codex', model: 'gpt-5.6-sol' };
+  };
+
+  const finished = await runSecondFamilyReaders({
+    collectionManifest: manifest,
+    collectionManifestPath: prepared.manifestPath,
+    outputDir: runDir,
+    runPath,
+    run,
+    budgets: ledger.budgets,
+    attemptCap: 8,
+    callModel,
+  });
+
+  assert.equal(peakInFlight, 4);
+  assert.equal(finished.status, 'complete');
+  assert.equal(finished.calls_attempted, 6);
+  assert.equal(finished.calls_completed, 6);
+  // No batch is read twice and none is skipped, whatever order the workers
+  // finished in.
+  assert.equal(new Set(seen).size, 6);
+  assert.deepEqual(
+    [...seen].sort(),
+    manifest.readers.flatMap((reader) => reader.batches.map((batch) => `${reader.reader_id}:${batch.batch_id}`)).sort(),
+  );
+
+  const events = readLedger(ledger.runLedgerPath);
+  const count = (type) => events.filter((event) => event.type === type).length;
+  assert.equal(count('model_attempt_dispatch_reserved'), 6);
+  assert.equal(count('model_attempt_dispatch_started'), 6);
+  assert.equal(count('attempt_completed'), 6);
+  assert.equal(count('attempt_failed'), 0);
+  assert.equal(count('attempt_interrupted_after_dispatch'), 0);
+  assert.equal(new Set(finished.batches.map((row) => row.attempt_id)).size, 6);
+  assert.equal(
+    readLedger(ledger.studyLedgerPath).filter((event) => event.type === 'study_model_attempt_dispatch_reserved').length,
+    6,
+  );
+});
+
+test('a contract failure lets the calls already in flight finish and record, and starts no new call', async (t) => {
+  const { root, prepared } = prepareCollection(t);
+  const manifest = prepared.manifest;
+  const runDir = path.join(root, 'run');
+  const runPath = path.join(runDir, 'run.json');
+  const run = readerRunRecord(manifest);
+  const ledger = ledgerBudget({ root, workers: 4 });
+  const failingBatchId = manifest.readers[0].batches[1].batch_id;
+
+  let inFlight = 0;
+  let release = null;
+  const allDispatched = new Promise((resolve) => {
+    release = resolve;
+  });
+  const seen = [];
+  const callModel = async (agent, systemPrompt, userPrompt) => {
+    const packet = JSON.parse(userPrompt);
+    seen.push(`${packet.reader_id}:${packet.batch_id}`);
+    inFlight += 1;
+    if (inFlight >= 4) release();
+    await allDispatched;
+    inFlight -= 1;
+    if (packet.batch_id === failingBatchId) {
+      return { text: JSON.stringify({ schema: 'wrong', cases_by_sample_id: {} }), provider: 'codex' };
+    }
+    const reader = manifest.readers.find((row) => row.reader_id === packet.reader_id);
+    const batch = reader.batches.find((row) => row.batch_id === packet.batch_id);
+    return { text: validResponse(manifest, reader, batch), provider: 'codex', model: 'gpt-5.6-sol' };
+  };
+
+  await assert.rejects(
+    runSecondFamilyReaders({
+      collectionManifest: manifest,
+      collectionManifestPath: prepared.manifestPath,
+      outputDir: runDir,
+      runPath,
+      run,
+      budgets: ledger.budgets,
+      attemptCap: 8,
+      callModel,
+    }),
+    (error) => error.code === 'reader_contract_failure' && error.recoveryPermitted === true,
+  );
+
+  // Four calls went out together. The three good ones are recorded; the two
+  // batches nobody had taken yet were never called.
+  assert.equal(seen.length, 4);
+  assert.equal(run.calls_attempted, 4);
+  assert.equal(run.calls_completed, 3);
+  assert.equal(run.status, 'incomplete_contract_failure');
+  assert.equal(readJson(runPath).status, 'incomplete_contract_failure');
+  assert.equal(run.batches.filter((row) => row.status === 'complete').length, 3);
+  const failed = run.batches.filter((row) => row.status === 'failed');
+  assert.equal(failed.length, 1);
+  assert.equal(failed[0].failure_kind, 'contract');
+  assert.ok(fs.existsSync(failed[0].quarantine_path));
+
+  const events = readLedger(ledger.runLedgerPath);
+  const count = (type) => events.filter((event) => event.type === type).length;
+  assert.equal(count('model_attempt_dispatch_reserved'), 4);
+  assert.equal(count('attempt_completed'), 3);
+  assert.equal(count('attempt_failed'), 1);
+  assert.equal(count('attempt_interrupted_after_dispatch'), 0);
+});
+
+test('a stop thrown outside the dispatch try still waits for the calls in flight to record', async (t) => {
+  const { root, prepared } = prepareCollection(t);
+  const manifest = prepared.manifest;
+  const runDir = path.join(root, 'run');
+  const runPath = path.join(runDir, 'run.json');
+  const run = readerRunRecord(manifest);
+  // Six batches, four workers, room in the ledger for four calls. Four calls
+  // go out together; three come back at once and the fourth lags. A worker
+  // that comes back early takes a fifth batch, and its reserve throws over
+  // the ceiling while the lagging call is still in the air. That call must
+  // still record before the run stops.
+  const ledger = ledgerBudget({ root, limit: 4, workers: 4 });
+
+  let arrived = 0;
+  let release = null;
+  const allDispatched = new Promise((resolve) => {
+    release = resolve;
+  });
+  const seen = [];
+  const callModel = async (agent, systemPrompt, userPrompt) => {
+    const packet = JSON.parse(userPrompt);
+    seen.push(`${packet.reader_id}:${packet.batch_id}`);
+    arrived += 1;
+    const lagging = arrived === 4;
+    if (arrived >= 4) release();
+    await allDispatched;
+    if (lagging) await new Promise((resolve) => setTimeout(resolve, 50));
+    const reader = manifest.readers.find((row) => row.reader_id === packet.reader_id);
+    const batch = reader.batches.find((row) => row.batch_id === packet.batch_id);
+    return { text: validResponse(manifest, reader, batch), provider: 'codex', model: 'gpt-5.6-sol' };
+  };
+
+  await assert.rejects(
+    runSecondFamilyReaders({
+      collectionManifest: manifest,
+      collectionManifestPath: prepared.manifestPath,
+      outputDir: runDir,
+      runPath,
+      run,
+      budgets: ledger.budgets,
+      attemptCap: 8,
+      callModel,
+    }),
+    /aggregate spend cap exceeded before call/,
+  );
+
+  // All four paid calls are recorded, the lagging one included. No fifth
+  // call went out.
+  assert.equal(seen.length, 4);
+  assert.equal(run.calls_attempted, 4);
+  assert.equal(run.calls_completed, 4);
+  assert.equal(run.batches.filter((row) => row.status === 'complete').length, 4);
+  assert.equal(readJson(runPath).calls_completed, 4);
+  const events = readLedger(ledger.runLedgerPath);
+  const count = (type) => events.filter((event) => event.type === type).length;
+  assert.equal(count('attempt_completed'), 4);
+  assert.equal(count('attempt_interrupted_after_dispatch'), 0);
 });
 
 test('a reader response outside the contract is quarantined and stops the run for the operator', async (t) => {

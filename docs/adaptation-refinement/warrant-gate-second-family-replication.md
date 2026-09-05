@@ -360,3 +360,38 @@ shape admits one recovery and refuses a second; a seal with a stop code
 or a blank error still refuses; a crash that left a dispatch cut off
 refuses on this rule. Checked at zero calls against every seal in the
 study ledger: only r6 matches. The relaunch command is unchanged.
+
+## Amendment 2026-09-05: the reader phase reads four batches at a time
+
+What changes. Nothing about the study. The reader dispatch loop now runs
+four workers over one queue of the 1,136 batches instead of one worker over
+two nested lists. Every registered thing is untouched: the same two readers,
+the same 568 cases, the same batch size of one, the same packets, the same
+strict acceptance, the same reader attempt cap of 1,184, the same ceiling of
+3,360. A batch is one decision point read on its own packet, so the readers
+never see each other and order carries no information. The scoring step
+already keyed its assembly by reader and batch, so the order of arrival was
+never read.
+
+Why. Serial dispatch at the measured codex Sol median of about 7 seconds a
+call puts the reader phase near two and a quarter hours. Four workers put it
+near thirty-five minutes.
+
+How the ceiling still holds. Each worker carries its own budget object,
+because a budget holds one open try and refuses a second. All four budgets
+share one admission, and the admission's arithmetic counts capacity that is
+allocated but not yet spent. Four calls in flight are therefore four calls
+already charged against 3,360, and the ceiling cannot be passed by calls in
+the air. The cap check and the counter increment sit in one synchronous
+block, so two workers cannot claim the same free slot.
+
+How a stop behaves. The first failure is kept in a shared flag. Calls
+already dispatched run to the end and are recorded; no new call starts after
+it. The stop is thrown once every worker is idle, so the launcher never seals
+a run with paid calls still in the air. Any later failure is attached to the
+thrown stop rather than dropped. Three tests: four workers read six batches
+once each with four calls in flight and a ledger of six reserved and six
+completed; a contract failure with four calls in flight records the three
+good ones, quarantines the bad one and starts no fifth call; a stop raised
+outside the dispatch path still waits for a lagging call to record. The
+third fails on the old loop with three of four calls recorded.
