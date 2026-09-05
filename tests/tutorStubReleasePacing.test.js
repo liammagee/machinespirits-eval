@@ -521,7 +521,7 @@ process.stdin.on('end', () => {
     assert.match(prompts, /\[Tutor-only host plan\]/u);
     assert.match(
       prompts,
-      /SOURCE — After PART, open, read, show, test, or place this public exhibit exactly once: The archive names Marin as the founder's child/u,
+      /SOURCE — Open, read, show, test, or place this exhibit, copied word for word, once: The archive names Marin as the founder's child/u,
     );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
