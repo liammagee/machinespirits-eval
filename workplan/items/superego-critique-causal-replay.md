@@ -1,15 +1,16 @@
 ---
 id: superego-critique-causal-replay
 title: Register and implement the prospective four-arm superego critique replay
-status: review
+status: blocked
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-09-04
-updated: 2026-09-04
+updated: 2026-09-05
 verification: Reproduce the frozen-unit plan without calls; verify runner ceilings, blinding, durable missing-only recovery and focused regressions; review design and hosted CI before explicit GO and separate launch authority.
-branch: codex/superego-critique-causal-replay
+branch: codex/superego-critique-causal-replay-launch-closeout
+blocked_by: DeepInfra rejects the registered JSON-object response format; the first attempt is sealed with recovery disabled.
 claim_status: planned
 links:
   items:
@@ -17,6 +18,7 @@ links:
   notes:
     - notes/superego-critique-causal-replay-design.md
     - notes/2026-09-04-superego-critique-causal-replay-go.md
+    - notes/2026-09-05-superego-critique-causal-replay-launch.md
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/1018
     - https://github.com/liammagee/machinespirits-eval/pull/1021
@@ -60,3 +62,21 @@ notes/2026-09-04-superego-critique-causal-replay-go.md: 3,686 planned calls,
 design and runtime are unchanged. PR #1021 remains open; the design must be
 merged before launch. No model calls, semantic labels or launch occurred.
 Await a separate explicit launch instruction.
+
+2026-09-05 Codex: PR #1021 is merged. The user's subsequent separate "Go"
+authorized launch under the unchanged design and $300/3,876-attempt ceilings.
+Zero-call preflight reproduced the frozen plan and verified all source traces.
+The first request returned HTTP 405: DeepInfra does not support `json_object`
+for the pinned Nemotron model. The runner stopped and sealed recovery disabled.
+One attempt remains reserved ($0.001408 worst-case reservation; actual cost
+unreported), with zero valid generations or judgments. No retry or scientific
+conclusion is authorized by this failure. See the launch note for accounting,
+claim boundaries and the exact evidence paths. The study remains blocked.
+
+Archival: all ten run artifact files (1,513,445 bytes) verified byte-for-byte
+against the private copy; maintained archive check reports zero missing.
+Committed and pushed as private archive commit
+`9ee055463abb540b2e1eba6e8f391189b7add88b` on
+`codex/superego-critique-causal-replay-archive`. The canonical shared study
+ledger and both original repository checkouts were preserved. This is a
+technical launch failure, with no causal or semantic result.
