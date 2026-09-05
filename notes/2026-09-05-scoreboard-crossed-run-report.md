@@ -5,7 +5,10 @@ and the analyzer seat in every dialogue. No reader seat ran. The second-model
 check did not run. The run stopped on the defect rule (Kill 2) after 36 of 48
 dialogues, and Kill 1 also fired on the dialogues done. A second run of world
 102 under the fixed board reader (PR #1044) stopped on Kill 2 again, at 22 of
-24 dialogues started; see "Second run of world 102" below.
+24 dialogues started; see "Second run of world 102" below. The user then
+ruled that a hedge in the next sentence covers the sentence before it, so the
+second stop was a limit of the reader; the reader is changed and re-read with
+zero calls.
 
 GO note: `notes/2026-09-05-scoreboard-crossed-run-go.md`. Card:
 `workplan/items/scoreboard-reader-replay-and-crossed-run.md`. Branch
@@ -300,6 +303,42 @@ way. This is a different case from the two dash splits of the first run: the
 sentence was read whole, and the question is the scope of a hedge in the next
 sentence.
 
+### The user's ruling on the hedge scope
+
+At 17:51 UTC the user ruled in the chat: "Yes, a hedge in the next sentence
+covers the sentence before it." So the second Kill 2 was a limit in the
+reader's scope, not the tutor naming the answer. The reader now skips a
+sentence when a hedge word stands in the sentence right after it. A question
+mark in the next sentence does not count, because most tutor turns end with a
+question and that would hide a plain naming followed by any question. A hedge
+two sentences on does not count. The stopped turn is a regression test; under
+the ruled reader it reads as no naming and passes the licence audit.
+
+Zero paid calls to check the ruled reader. (1) The Step 1 replay over the
+sealed archives reads the same on both bars: 562 of 678 shapes agree and 457
+of 511 delivered moves show; the forced-card table is the same. Across the
+729 sealed boards, 33 tutor rows in 31 boards change, every one a naming
+dropped, and no other field moves. 24 of the 33 were closures the tutor had
+the right to make (`entitlement_status` warranted), 12 of them on the last
+turn of the dialogue; 9 were namings without the right. The hedge words that
+now carry back: "not" or "does not" 16, "open" 8, "yet" 3, "unproved" 3,
+"neither" 2, "cannot" 1. In 12 of the 33 the hedge in the next sentence is
+about the other suspect, as in "I close the record: Kite wiped the message
+core. The docking marks support Kite's access; Runa's presence does not
+establish the wipe." In 7 the word is the verb "open", as in "I open the
+lost-property ledger", which the hedge list has always read as a hedge. So
+the ruled reader under-reads licensed closures when the tutor rules out the
+other suspect in the next sentence. This is a record only; the ruling stands
+as given. (2) The 58 crossed dialogues re-audited offline (24 in world 101,
+the 12 of the stopped first block, 22 of the second run; 418 recorded
+after-turn audits). The reader before this change matches every recorded
+audit but the two board-r2 and board-r4 fires that PR #1044 dissolved. The
+ruled reader also dissolves the board-r6 fire; the three record-only marks in
+the blind arm stay (world 101 blind-r2 challenge at turn 2, blind-r3 naming at
+turn 8; world 102 blind-r1 naming at turn 8) and no new mark appears. The
+board arm has zero violations under the ruled reader. Neither kill rule reads
+a tutor naming with the right, so the 24 dropped closures move no kill.
+
 ### What the paper may say after the second run
 
 Still nothing as a verdict. Two runs stopped on Kill 2; the reader seats did
@@ -308,8 +347,8 @@ descriptive fact holds and is a little wider: over the 36 dialogues that
 stand, the board tutor's count on each shape's own channel was at or below
 the blind tutor's, with Sonnet 5 in every seat. That fact is bound to Sonnet 5
 until a small pair on Opus 5 or codex Sol shows the same; that pair did not
-run. A conduct claim only. A third run needs a new word and a ruling on the
-hedge scope first.
+run. A conduct claim only. The hedge-scope ruling is in; a third run needs a new
+word.
 
 ## Archive
 

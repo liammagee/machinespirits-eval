@@ -53,7 +53,10 @@ verification: "Step 1 report note states PASS or FAIL against the two
   seat and says the second-model check did not run. 2026-09-05, 16:43 UTC:
   the world-102 rerun under the fixed reader stopped on Kill 2 again at 22 of
   24 dialogues started; Kill 1 fired on the 36 that stand; no reader seat ran;
-  the report says so in its second-run section."
+  the report says so in its second-run section. 2026-09-05, 17:51 UTC: the
+  user ruled that a hedge in the next sentence covers the sentence before it;
+  the reader is changed in place, the stopped turn is a regression test, and
+  the zero-call re-reads hold both Step 1 bars."
 ---
 
 **What this is.**
@@ -202,3 +205,24 @@ are read.
   of `notes/2026-09-05-scoreboard-crossed-run-report.md`. Open question for
   the user: does a hedge in the next sentence count for the sentence before
   it? No third run without a new word.
+- 2026-09-05: user ruling (chat, 17:51 UTC) on the hedge scope: "Yes, a hedge
+  in the next sentence covers the sentence before it." The board reader now
+  skips a sentence when a hedge word stands in the sentence right after it. A
+  question mark in the next sentence does not count, because most tutor turns
+  end with a question. A hedge two sentences on does not count. The stopped
+  turn (board r6, turn 6) is a regression test and passes the licence audit;
+  three more tests hold the two edges. Zero paid calls to check: (1) the Step
+  1 replay reads the same, both bars unchanged (562 of 678 shapes agree, 457
+  of 511 delivered moves show, same forced-card table); 33 tutor rows in 31 of
+  the 729 sealed boards drop a naming and no other field changes. Of the 33,
+  24 were closures with the right (12 at the last turn) and 9 were without.
+  In 12 the next sentence rules out the other suspect ("Kite did it. Runa did
+  not."); in 7 the next sentence uses the verb "open". Neither kill rule reads
+  a tutor naming with the right, so the dropped closures move no kill. (2)
+  The 58 crossed-run dialogues re-audited offline, 418 after-turn audits: the
+  old reader matches every recorded audit except the two fires PR #1044
+  dissolved; the ruled reader also dissolves the board-r6 fire; the three
+  record-only marks in the blind arms stay; no new mark; the board arm has
+  zero violations. The change touches one reader function and no design
+  file, so the GO stands. A third run of world 102 (about 330 calls, then the
+  reader seats at 192) waits on the user's word.
