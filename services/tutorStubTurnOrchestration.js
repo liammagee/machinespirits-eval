@@ -19,6 +19,10 @@ import { tutorStubBoredomUnreadableTurnIsPassedOver } from './tutorStubBoredomAc
 import { TUTOR_STUB_RIVAL_ATTENTION_OBSERVATION_V3 } from './tutorStubRivalAttentionSemanticAdjudicationV3.js';
 import { applyTutorStubR1TutorDeliveryGate } from './tutorStubR1TutorDeliveryGate.js';
 import { applyTutorStubDefiantWarrantConductGate } from './tutorStubDefiantWarrantConductGate.js';
+import {
+  auditTutorStubScoreboardAfterTurn,
+  observeTutorStubScoreboardBeforeTutor,
+} from './tutorStubScoreboardPolicy.js';
 
 export function tutorStubResistantLearnerFinalSemanticReadersRequired({
   study,
@@ -856,6 +860,21 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       });
       precomputedResponse = null;
     }
+    // Scoreboard arms (board / board_blind): read the public board as it stands
+    // before the tutor speaks. Both arms build and record it; only the board
+    // arm projects it into the prompt (tutorStubTutorTurnPreparation.js).
+    observeTutorStubScoreboardBeforeTutor({
+      state,
+      tutorTurn,
+      turnId,
+      learnerText,
+      classification,
+      tutorLearnerDag,
+      humanDiscourseFrame,
+      releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
+      registerSelection,
+      appendTraceEvent,
+    });
     const realizeTutorCandidate = (registeredTutorDeliveryRepairInstruction = null, roleBase = 'tutor_stub_tutor') =>
       callTutor({
         learnerText,
@@ -1344,6 +1363,9 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       turn: tutorTurn,
       turnRecord,
     });
+    // Scoreboard arms: check the tutor's moves against the licence in force.
+    // A board-arm violation throws and ends the dialogue (kill rule, Step 2).
+    auditTutorStubScoreboardAfterTurn({ state, tutorTurn, turnId, turnRecord, appendTraceEvent });
     appendTutorStubTurnFailureTraceRecords(state);
     return {
       ...response,

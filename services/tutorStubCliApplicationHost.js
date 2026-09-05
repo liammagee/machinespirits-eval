@@ -551,6 +551,7 @@ import { captureGitProvenanceSummary, hashCanonicalJson } from './experimentRunA
 import { buildTutorStubStateObservation } from './adaptiveTutor/tutorStubStateAdapter.js';
 import { createScaffoldLifecycle, SCAFFOLD_LIFECYCLE_SCHEMA } from './adaptiveTutor/scaffoldLifecycle.js';
 import { createTutorStubTutorTurnPipeline, TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS } from './tutorStubTutorTurnPipeline.js';
+import { tutorStubScoreboardPolicyActive } from './tutorStubScoreboardPolicy.js';
 import { createTutorStubTraceRuntime } from './tutorStubTraceRuntime.js';
 import { createTutorStubLearningSummaryRuntime } from './tutorStubSessionOrchestration.js';
 import { createTutorStubSessionStateRuntime } from './tutorStubSessionStateRuntime.js';
@@ -914,9 +915,9 @@ export async function runTutorStubCliApplicationHost({
               '- Engagement-stance policy: negative. The runtime will sample locally only from ironic, sarcastic, and face_threat.',
               '- Do not choose or justify an engagement stance in the model output for this policy.',
             ]
-          : policy === 'bland'
+          : policy === 'bland' || tutorStubScoreboardPolicyActive(policy)
             ? [
-                '- Engagement-stance policy: bland. The runtime uses a fixed plain register as a non-adaptive baseline.',
+                `- Engagement-stance policy: ${policy}. The runtime uses a fixed plain register as a non-adaptive baseline.`,
                 '- Do not choose or justify an engagement stance in the model output for this policy.',
               ]
             : policy in TUTOR_STUB_FIXED_REGISTER_POLICIES

@@ -275,6 +275,8 @@ const LOCAL_REGISTER_POLICIES = new Set([
   'state',
   'random',
   'bland',
+  'board',
+  'board_blind',
   'negative',
   'fixed_warm',
   'fixed_sarcastic',

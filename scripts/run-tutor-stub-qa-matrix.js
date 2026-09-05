@@ -27,6 +27,7 @@ import {
   verifyExperimentRun,
 } from '../services/experimentRunArtifacts.js';
 import { recordTutorStubModelObservation } from '../services/tutorStubEvalIntegrity.js';
+import { resolveTutorStubWarrantGateMode } from '../services/tutorStubWarrantGate.js';
 import { tutorStubPolicyRequiresDeterministicDraw } from '../services/tutorStubPolicySampler.js';
 import { normalizeTutorStubReleaseSpeed } from '../services/tutorStubReleasePacing.js';
 import {
@@ -94,6 +95,11 @@ const { values: args } = parseArgs({
     'history-turns': { type: 'string', default: process.env.TUTOR_STUB_EVAL_HISTORY_TURNS || '4' },
     'baseline-policy': { type: 'string', default: 'bland' },
     'primary-horizon': { type: 'string', default: '16' },
+    'warrant-gate': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_WARRANT_GATE || process.env.TUTOR_STUB_WARRANT_GATE || 'off',
+    },
+    'no-stop-on-grounded': { type: 'boolean', default: false },
     'minimum-effect': { type: 'string', default: '0.05' },
     'qa-max-outcome-spread': { type: 'string', default: '0.12' },
     'qa-min-worst-outcome': { type: 'string', default: '0.75' },
@@ -162,6 +168,8 @@ Options:
                          strong-change threshold for composed +state/+field policies (default: 0.7)
   --release-speed <n>    base clue-release speed, 0.5-2 (default: 1)
   --primary-horizon <n>  preregistered learner-turn horizon (default: 16)
+  --warrant-gate <mode>  warrant gate mode passed to every child run (off|observe|...; default: off or TUTOR_STUB_WARRANT_GATE)
+  --no-stop-on-grounded  run every dialogue to --turns even after grounded closure
   --minimum-effect <n>   preregistered minimum outcome effect (default: 0.05)
   --dry-run              pass --dry-run to auto-eval children
   --print-plan           print the reproducible plan and exit
@@ -337,6 +345,8 @@ function autoEvalArgsForProfile({ profile, traceDir, indexRoot, policies, parent
   if (args['interleave-policies']) command.push('--interleave-policies');
   pushOptionalFlag(command, '--first-message', args['first-message']);
   if (args['dry-run']) command.push('--dry-run');
+  command.push('--warrant-gate', resolveTutorStubWarrantGateMode(args['warrant-gate']));
+  if (args['no-stop-on-grounded']) command.push('--no-stop-on-grounded');
   if (args['no-html-report']) command.push('--no-html-report');
   if (args['no-ledger']) command.push('--no-ledger');
   if (args['no-dag']) command.push('--no-dag');
@@ -441,6 +451,8 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
     analysisModel: args['analysis-model'],
     autoLearnerModel: args['auto-learner-model'],
     modelCallBudget: positiveInt(args['model-call-budget'], '--model-call-budget'),
+    warrantGateMode: resolveTutorStubWarrantGateMode(args['warrant-gate']),
+    stopOnGrounded: !args['no-stop-on-grounded'],
     world: args.world,
     dagMode: args['dag-mode'],
     expectedDialogueRows: profiles.length * policies.length * runs,
@@ -491,6 +503,8 @@ function qaDesign(plan) {
     analysisModel: plan.analysisModel,
     autoLearnerModel: plan.autoLearnerModel,
     modelCallBudget: plan.modelCallBudget,
+    warrantGateMode: plan.warrantGateMode,
+    stopOnGrounded: plan.stopOnGrounded,
     world: plan.world,
     dagMode: plan.dagMode,
     warnings: plan.warnings,
@@ -773,6 +787,8 @@ function renderPlanMarkdown(plan) {
     `DAG mode: ${plan.dagMode}`,
     `Register palette: ${plan.registerPalette}`,
     `Model-call budget per dialogue: ${plan.modelCallBudget}`,
+    `Warrant gate: ${plan.warrantGateMode}`,
+    `Stop on grounded: ${plan.stopOnGrounded ? 'yes' : 'no'}`,
     `QA gates: ${JSON.stringify(plan.qaThresholds)}`,
     `Dry run: ${plan.dryRun ? 'yes' : 'no'}`,
     '',

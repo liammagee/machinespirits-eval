@@ -356,6 +356,12 @@
       "flags": ["--no-coded", "--null", "--seed", "--source", "--traces", "--trials"]
     },
     {
+      "path": "scripts/analyze-figure-lattice-scoreboard.js",
+      "family": "figure-falsifier",
+      "purpose": "Re-run the frozen figure lattice over its 122 carded turns with board fields added as attributes.",
+      "flags": ["--out"]
+    },
+    {
       "path": "scripts/analyze-figure-lattice.js",
       "family": "figure-falsifier",
       "purpose": "Run the registered figure-lattice closure and coded-attribute comparison.",

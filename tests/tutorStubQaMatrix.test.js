@@ -1356,3 +1356,54 @@ test('qa matrix adaptive suite includes continuous register policies', () => {
   ]);
   assert.equal(plan.expectedDialogueRows, 8);
 });
+
+test('the warrant gate mode and the no-stop-on-grounded flag pass through to every child run', () => {
+  const plan = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-qa-matrix.js',
+        '--print-plan',
+        '--json',
+        '--suite',
+        'scoreboard',
+        '--profiles',
+        'low_agency,overconfident',
+        '--runs',
+        '6',
+        '--turns',
+        '8',
+        '--warrant-gate',
+        'observe',
+        '--no-stop-on-grounded',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    ),
+  );
+  assert.deepEqual(plan.policies, ['board', 'board_blind']);
+  assert.equal(plan.warrantGateMode, 'observe');
+  assert.equal(plan.stopOnGrounded, false);
+  assert.equal(plan.expectedDialogueRows, 24);
+  assert.equal(plan.jobs.length, 2);
+  for (const job of plan.jobs) {
+    const gateIndex = job.command.indexOf('--warrant-gate');
+    assert.ok(gateIndex > 0);
+    assert.equal(job.command[gateIndex + 1], 'observe');
+    assert.ok(job.command.includes('--no-stop-on-grounded'));
+  }
+  // The default stays off and the child runs stop on grounded closure as before.
+  const defaults = JSON.parse(
+    execFileSync(
+      process.execPath,
+      ['scripts/run-tutor-stub-qa-matrix.js', '--print-plan', '--json', '--suite', 'scoreboard', '--runs', '1'],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        env: { ...process.env, TUTOR_STUB_WARRANT_GATE: '', TUTOR_STUB_EVAL_WARRANT_GATE: '' },
+      },
+    ),
+  );
+  assert.equal(defaults.warrantGateMode, 'off');
+  assert.equal(defaults.stopOnGrounded, true);
+  assert.ok(defaults.jobs.every((job) => !job.command.includes('--no-stop-on-grounded')));
+});

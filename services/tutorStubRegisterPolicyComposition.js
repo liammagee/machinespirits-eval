@@ -14,6 +14,10 @@ export const TUTOR_STUB_REGISTER_PRIMARY_POLICIES = Object.freeze([
   'negative',
   'fixed_warm',
   'fixed_sarcastic',
+  // Scoreboard arms (notes/2026-09-04-scoreboard-replay-prompt.md, Step 2):
+  // the same tutor with and without the public board in its prompt.
+  'board',
+  'board_blind',
 ]);
 
 export const TUTOR_STUB_REGISTER_OVERLAY_POLICIES = Object.freeze(['state', 'field', 'edge_timing']);
@@ -24,7 +28,15 @@ export const TUTOR_STUB_FIXED_REGISTER_POLICIES = Object.freeze({
   fixed_sarcastic: 'sarcastic',
 });
 
-const CONTROL_POLICIES = new Set(['bland', 'random', 'negative', 'fixed_warm', 'fixed_sarcastic']);
+const CONTROL_POLICIES = new Set([
+  'bland',
+  'random',
+  'negative',
+  'fixed_warm',
+  'fixed_sarcastic',
+  'board',
+  'board_blind',
+]);
 
 function normalizePolicyName(value) {
   return String(value || '')

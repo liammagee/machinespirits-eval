@@ -47,7 +47,7 @@
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
       "claim": "speaking prompt assembly; conduct-card and contract-licence slots; speaker-privilege recovery",
-      "sha256": "34945f04a5713eefe5d5a028e70a596b0b42fdda7135fa6c962ad8eaff49d230"
+      "sha256": "9bdbe7d7950dbf79b9eea7d5af22c109aa64e9ad276da22a3930cae8dfacb1e5"
     },
     {
       "file": "services/tutorStubTutorAttemptRuntime.js",
@@ -97,7 +97,7 @@
     {
       "file": "services/tutorStubResponseConfigurationSelectionRuntime.js",
       "claim": "final response-configuration composition, precedence, and selection trace envelope",
-      "sha256": "9a13664dd5bd975fb0a62829e3396e875ac7860e99a05de5ec47f97855f78a9e"
+      "sha256": "dcfcaa3c3dd679c54b35a49ce00e837866c2e143a1603fc1c3306941271efc09"
     },
     {
       "file": "services/tutorStubWorldPromptContext.js",
