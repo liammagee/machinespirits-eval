@@ -1,11 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'yaml';
-import { randomStream, readJson } from './superegoCritiqueCausalReplay.js';
+import { randomStream, readJson, sha256 } from './superegoCritiqueCausalReplay.js';
 
 export const DESIGN_PATH = 'notes/superego-contemporary-pilot-design.md';
 export const ARMS = ['draft_only', 'generic_revision', 'actual_critique', 'matched_wrong_critique'];
 export const UNKNOWN = 'measurement_indeterminate';
+export const retainsMissingGeneration = (design) => design.generation_failure_policy === 'retain_missing';
 const text = { type: 'string', minLength: 1 };
 const choice = (values) => ({ type: 'string', enum: values });
 const object = (properties) => ({
@@ -93,6 +94,13 @@ const shuffle = (values, random) => {
   return result;
 };
 export function preparePilot(root, design = loadPilotDesign(root)) {
+  if (
+    ![undefined, 'text', 'json'].includes(design.public_output_format) ||
+    ![undefined, 'retain_missing', 'stop'].includes(design.generation_failure_policy) ||
+    ![undefined, true, false].includes(design.automated_judging) ||
+    (retainsMissingGeneration(design) && design.automated_judging !== false)
+  )
+    throw new Error('Unsupported generation or measurement policy');
   const scenarios = yaml.parse(fs.readFileSync(path.join(root, design.scenario_source), 'utf8')).scenarios;
   const random = randomStream(design.master_seed);
   const units = design.scenarios.flatMap((registered) => {
@@ -134,7 +142,7 @@ export function preparePilot(root, design = loadPilotDesign(root)) {
       shuffle(outputs, random).map((out, i) => ({ ...out, id: `${category[0]}${String(i + 1).padStart(3, '0')}` })),
     ]),
   );
-  for (const category of ['quality', 'semantic'])
+  for (const category of design.automated_judging === false ? [] : ['quality', 'semantic'])
     for (const out of presentations[category])
       jobs.push({
         id: `${out.unit}/${out.arm}/${category}`,
@@ -154,11 +162,19 @@ export function preparePilot(root, design = loadPilotDesign(root)) {
     design.attempts.total_planned + design.attempts.recovery_reserve !== design.attempts.hard_ceiling ||
     ['generation', 'quality', 'semantic'].reduce((sum, c) => sum + design.attempts[`${c}_reserve`], 0) !==
       design.attempts.recovery_reserve ||
-    design.models.generation.model === design.models.judging.model ||
-    design.models.generation.provider === design.models.judging.provider
+    (design.automated_judging !== false &&
+      (design.models.generation.model === design.models.judging.model ||
+        design.models.generation.provider === design.models.judging.provider))
   )
     throw new Error('Pilot size or generator/judge separation invalid');
-  return { study_id: design.id, seed: design.master_seed, units, jobs, presentations };
+  return {
+    study_id: design.id,
+    seed: design.master_seed,
+    units,
+    jobs,
+    presentations,
+    ...(design.automated_judging === false ? { human_quality_first: true } : {}),
+  };
 }
 export function numbered(text, prefix) {
   return text
@@ -170,6 +186,13 @@ export function publicOutput(job, results) {
   const value = results.get(`${job.unit}/${job.arm === 'draft_only' ? 'draft' : job.arm}`);
   if (!value?.response) throw new Error(`Missing valid public output for ${job.id}`);
   return value.response;
+}
+export function missingPilotDependencies(plan, job, results) {
+  const unit = plan.units.find((u) => u.id === job.unit);
+  const dependencies = job.kind === 'draft' ? [] : [`${unit.id}/draft`];
+  if (job.kind === 'revision' && job.arm !== 'generic_revision')
+    dependencies.push(`${job.arm === 'actual_critique' ? unit.id : unit.donor}/critique`);
+  return dependencies.filter((id) => !results.has(id) || results.get(id).invalid_response);
 }
 export function pilotPayload(plan, job, results) {
   const unit = plan.units.find((u) => u.id === job.unit);
@@ -205,7 +228,13 @@ export function buildPilotRequest(design, plan, job, results) {
   const route = design.models[generation ? 'generation' : 'judging'];
   const schema = grammar(SCHEMAS[job.kind === 'revision' ? 'draft' : job.kind]);
   const content = JSON.stringify(pilotPayload(plan, job, results));
-  const system = PROMPTS[job.kind];
+  const plain = generation && design.public_output_format === 'text' && job.kind !== 'critique';
+  const system = plain
+    ? PROMPTS[job.kind].replace(
+        /Return (?:the response field only|one public response under 4000 UTF-8 bytes)\./u,
+        'Return only the public tutor reply as ordinary text, without a JSON wrapper. Stay under 4000 UTF-8 bytes.',
+      )
+    : PROMPTS[job.kind];
   const body = generation
     ? {
         model: route.model,
@@ -214,7 +243,7 @@ export function buildPilotRequest(design, plan, job, results) {
         system,
         messages: [{ role: 'user', content }],
         stream: false,
-        output_config: { format: { type: 'json_schema', schema } },
+        ...(plain ? {} : { output_config: { format: { type: 'json_schema', schema } } }),
       }
     : {
         model: route.model,
@@ -273,6 +302,7 @@ export function validRating(kind, result, payload) {
   );
 }
 export function parsePilotResponse(design, request, job, raw, payload) {
+  if (raw.body_read_error) throw new Error('Response body read failed; retained partial body, no replacement');
   let envelope;
   try {
     envelope = JSON.parse(raw.body);
@@ -293,8 +323,6 @@ export function parsePilotResponse(design, request, job, raw, payload) {
   }
   if (envelope.model !== request.body.model) throw new Error('Observed model drift');
   const generation = job.category === 'generation';
-  if (generation ? envelope.stop_reason !== 'end_turn' : envelope.status !== 'completed')
-    throw new Error('Refusal or truncation; no replacement');
   const usage = envelope.usage;
   const input = generation
     ? (usage?.input_tokens ?? NaN) + (usage?.cache_creation_input_tokens || 0) + (usage?.cache_read_input_tokens || 0)
@@ -308,11 +336,26 @@ export function parsePilotResponse(design, request, job, raw, payload) {
     usage.output_tokens > design.max_output_tokens
   )
     throw new Error('Missing or out-of-bounds token usage');
+  if (generation ? envelope.stop_reason !== 'end_turn' : envelope.status !== 'completed') {
+    const reason = generation ? envelope.stop_reason : envelope.status;
+    if (generation && retainsMissingGeneration(design) && ['max_tokens', 'refusal'].includes(reason))
+      return { invalid_response: reason === 'max_tokens' ? 'truncated' : 'refused' };
+    throw new Error(`Provider stopped with ${reason}; no replacement (refusal or truncation)`);
+  }
   const blocks = generation
     ? envelope.content
     : envelope.output?.flatMap((item) => (item.type === 'message' ? item.content : []));
-  if (blocks?.some((b) => b.type === 'refusal')) throw new Error('Refusal; no replacement');
+  if (blocks?.some((b) => b.type === 'refusal')) {
+    if (generation && retainsMissingGeneration(design)) return { invalid_response: 'refused' };
+    throw new Error('Refusal; no replacement');
+  }
   const texts = blocks?.filter((b) => b.type === (generation ? 'text' : 'output_text'));
+  if (generation && design.public_output_format === 'text' && job.kind !== 'critique') {
+    const response = texts?.length === 1 ? texts[0].text : null;
+    return nonempty(response) && Buffer.byteLength(response) <= design.max_public_bytes
+      ? { response }
+      : { invalid_response: 'invalid_generation' };
+  }
   let value;
   try {
     if (texts?.length !== 1) throw new Error('Expected one text block');
@@ -329,17 +372,23 @@ export function parsePilotResponse(design, request, job, raw, payload) {
   return validRating(job.kind, value, payload) ? value : { invalid_response: 'invalid_rating_or_reference' };
 }
 export function humanPacket(plan, results, category) {
-  return {
+  const packet = {
+    study_id: plan.study_id,
     category,
     instructions: PROMPTS[category],
-    items: plan.presentations[category].map((out) => ({
-      id: out.id,
-      ...pilotPayload(plan, { ...out, category, kind: category }, results),
-    })),
+    items: plan.presentations[category].map((out) => {
+      const job = { ...out, category, kind: category };
+      const source = results.get(`${out.unit}/${out.arm === 'draft_only' ? 'draft' : out.arm}`);
+      if (category === 'quality' && source?.invalid_response) return { id: out.id, unavailable: true };
+      return { id: out.id, ...pilotPayload(plan, job, results) };
+    }),
   };
+  return { ...packet, packet_id: sha256(JSON.stringify(packet)) };
 }
 export function validateHumanRatings(plan, results, category, document) {
   const packet = humanPacket(plan, results, category);
+  if (plan.human_quality_first && (document?.study_id !== packet.study_id || document?.packet_id !== packet.packet_id))
+    throw new Error('Human ratings belong to a different public packet');
   if (document?.raters?.length !== 2 || new Set(document.raters.map((r) => r.coder_id)).size !== 2)
     throw new Error('Two independent human readers required');
   for (const reader of document.raters) {
@@ -352,7 +401,11 @@ export function validateHumanRatings(plan, results, category, document) {
     )
       throw new Error('Incomplete human reference file');
     for (const item of packet.items)
-      if (!validRating(category, reader.ratings.find((r) => r.id === item.id)?.rating, item))
+      if (
+        item.unavailable
+          ? reader.ratings.find((r) => r.id === item.id)?.rating !== null
+          : !validRating(category, reader.ratings.find((r) => r.id === item.id)?.rating, item)
+      )
         throw new Error(`Missing or invalid human reference: ${item.id}`);
   }
   return document;
