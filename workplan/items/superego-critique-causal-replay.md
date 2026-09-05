@@ -16,15 +16,18 @@ links:
     - superego-critique-causal-link-followup
   notes:
     - notes/superego-critique-causal-replay-design.md
+    - notes/2026-09-04-superego-critique-causal-replay-go.md
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/1018
+    - https://github.com/liammagee/machinespirits-eval/pull/1021
 ---
 
 New prospective study arising from merged PRs #1017/#1018. Historical source
-items, results and traces remain unchanged. Design-phase authority covers
+items, results and traces remain unchanged. Design-phase authority covered
 implementation, zero-call verification, commit, push, PR and CI monitoring.
-There is no authorization to label the calibration packet, call providers,
-sign a GO note or launch the study.
+The user has now approved the study and authorized recording the GO note.
+Separate launch authority remains required; no provider calls or calibration
+packet labeling are authorized by this recording step.
 
 Acceptance: one unversioned executable design; a deterministic frozen sample
 and donor schedule; separate semantic and blind-quality lanes; explicit
@@ -47,6 +50,13 @@ Verification: 44/44 focused tests across the new runner and shared launch,
 launcher-inventory and historical follow-up boundaries; 52/52 structural
 ratchets; full lint:all; workplan source check; manifest/inventory checks;
 byte-identical 194-unit plan reproduction. Provider calls: 0. Local evidence:
-exports/superego-critique-causal-replay-final-plan/. Hosted CI is the remaining
-engineering check; explicit GO and a separate launch instruction remain human
-boundaries. No signed GO note exists.
+exports/superego-critique-causal-replay-final-plan/. Hosted CI passed on the
+design implementation commit 33bd6251: 18 successful checks and 3 skipped.
+
+2026-09-04 Codex: The user replied "Go" to the review-ready design and proposed
+note. Recorded that exact approval in
+notes/2026-09-04-superego-critique-causal-replay-go.md: 3,686 planned calls,
+190 recovery attempts, 3,876 total attempts and US $300 maximum. The study
+design and runtime are unchanged. PR #1021 remains open; the design must be
+merged before launch. No model calls, semantic labels or launch occurred.
+Await a separate explicit launch instruction.
