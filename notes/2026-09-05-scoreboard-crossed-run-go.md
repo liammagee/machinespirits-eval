@@ -240,6 +240,36 @@ node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/
   apply unchanged. Provenance at launch: main 9b1a64d2 plus this note commit, clean tree; each trace records the exact commit.
   Between the world-101 run commit 4b7a8362 and this commit the only tutor
   stub file that changed is the board reader, `services/tutorStubScoreboard.js`.
+- 2026-09-05 15:59 UTC: command B started for world 102 from commit 06dd49db,
+  clean tree, into `world-102-rerun`. The permission-seeking cell ran 12
+  dialogues and ended 16:24 UTC. Licence violations: 0. Eleven dialogues ran
+  to turn 8. The blind tutor's first dialogue failed at turn 3: the runtime's
+  speaker-privilege guard refused a recovery prompt that carried a private
+  premise id (`p_noon`). That is a guard in the tutor runtime, not a licence
+  rule and not the reader. The dialogue stays failed; no retry. The cell seal
+  says `incomplete` (11 ok, 1 failed). Unread learner turns: 4 of 90 (board
+  r4 turn 5, blind r3 turn 5, blind r4 turn 1, blind r5 turn 1), each after
+  three `invalid_semantic_events` tries, the class the 13:05 UTC ruling covers.
+  One analysis-seat timeout at blind r5 turn 6 healed on the second try. The
+  matrix exited 1 on the seal and stopped before the second profile.
+- 2026-09-05 16:34 UTC: the overconfident cell for world 102 started in the
+  sibling root `world-102-rerun-overconfident`, same command with only the
+  profile and the root changed, same commit, clean tree.
+- 2026-09-05 16:39 UTC: Kill 2 fired. In board r6 at turn 6 the program read
+  the tutor's first sentence as naming the answer with no right to close (rule
+  `TEXT-answer-named`, rights in force: challenge). Span: "Half of that holds:
+  Osprey's authorization plus their presence for the inspection does put them
+  in a position to have cleared bay three;". The tutor's next sentence says
+  the notice "doesn't yet show Nadia's box" in the log; the reader checks one
+  sentence at a time, so that hedge did not count. The runtime ended the
+  dialogue. The operator stopped the matrix at 16:43 UTC (pkill on the matrix,
+  the dialogue runner and the tutor-stub processes of that root). No patch to
+  the live run. At the stop: board r1 to r6 at 6, 7, 8, 7, 8 and 6 turns;
+  board r2 also failed at turn 8 on a tutor-seat CLI timeout; blind r1 and r2
+  at turn 1, blind r3 and r4 at turn 0, blind r5 and r6 not started. No seal
+  was written for this cell. Commands C, D, E and F did not run. Calls in
+  this second run: 468 dispatched, 460 finished, of the 960 ceiling. Study
+  total: 1,459 dispatched of 3,436. Any further run needs a new word.
 
 ## After the run
 
