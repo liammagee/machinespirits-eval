@@ -120,15 +120,17 @@ only the judge hit item 3.
 
 The human repair read sits at the bottom of the model range on this packet (0.50, level with
 Sonnet) and agrees with Opus and Fable more than with the judge. The lean the models kept, the
-human does not: 3/6 against 3/6. One packet, one human, one read. The §6.24 sentence "a human
-second read is still open" can now say what the read found; whether the five-pair lean is
-kept as a lean, narrowed to the model readers, or dropped is the author's call and is not
-made here.
+human does not: 3/6 against 3/6. One packet, one human, one read.
+
+Author ruling, 2026-09-05: the pooled count over the five pairs, 20/30 against 17/30, stays
+the judge's reading, and the human null is stated beside it. One pair read by one human
+neither drops the lean nor confirms it. Paper §6.24 amended at v3.0.306; card closed.
 
 ## Open
 
 - Whether to give the model readers the earlier turns too, as the human had. One packet with
-  both packet shapes would say if the context changes the model reads.
+  both packet shapes would say if the context changes the model reads. Not authorized; the
+  card closed without it.
 
 Closed the same day: the realized 0/12 was the page's wording (withdrawn, redone, 12/12
 after one corrected item), and

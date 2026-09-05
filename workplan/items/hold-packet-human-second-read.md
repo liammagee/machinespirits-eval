@@ -1,7 +1,7 @@
 ---
 id: hold-packet-human-second-read
 title: Human second read of one blind hold packet (037)
-status: review
+status: done
 type: research
 priority: P3
 owner: human
@@ -91,3 +91,14 @@ schedule) 8/8, step 4 16/16. So every eased disagreement recorded in this arc
 sat on a scripted next line. Repair 9/12, kappa 0.50, uptake and the card
 effect (3/6 vs 3/6) are unchanged. Archive updated. The §6.24 line and the fate
 of the lean stay with the author.
+
+# Closed 2026-09-05
+
+Author ruling, same day: the pooled count over the five pairs, 20/30 with the
+card against 17/30 without, is kept as the judge's reading, and the human null
+(3/6 against 3/6, kappa 0.50 against the judge, 11/12 with Opus and Fable) is
+stated beside it. One pair read by one human neither drops the lean nor
+confirms it. Paper §6.24 amended at v3.0.306: the line "a human second read is
+still open" is replaced by the result, and the scope and provenance lines name
+the read and this card. No new pair, no second human packet, no model read
+with the earlier turns shown. Card closed.
