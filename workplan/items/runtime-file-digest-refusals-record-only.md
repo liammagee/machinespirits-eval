@@ -313,14 +313,24 @@ allowed. It holds no code digest. A change to it is a change to the study's
 measurement rules, and the go covers the study only until the study changes.
 The user ruled on 2026-09-04 to keep the pin. No code changed.
 
-### 5 and 6. Two refusals I chose not to touch
+### 5. Diagnosis note pin (ruled: convert to a record)
 
-`rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js:387` throws
+`rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js:387` threw
 `diagnosis note bytes drifted from the pinned sha256` on
 `notes/2026-08-30-frame-refuser-depth-v6-diagnosis.md`. That note is in git and
 is edited in place, so it looks like the banned shape, but the four anchor
 surfaces are quoted verbatim from it and the rehearsal reads it as its own
 frozen evidence. The v6 merged registration in the same file was converted.
+
+The script never reads the note's content: the four amendment surfaces and the
+30-row roster are constants in the script, so the note's bytes never changed
+what runs. The rehearsal ran on 2026-08-30 and the line closed on 2026-08-31.
+The user ruled on 2026-09-05 to convert it. The loader now records the digest
+through `recordObservedDigest`, returns it in `digestRecords`, and the plan
+writes `observed_sha256` and `drifted` beside the recorded sha under
+`diagnosis_note`. No test touched the pin.
+
+### 6. A clean-worktree stop, not a digest
 
 `run-tutor-stub-first-draft-campaign.js:326` calls
 `gitWorktreeState({ required: true })` when the config sets
@@ -365,5 +375,5 @@ hermetic failure is the partial-clone test noted on the ratchet card.
 ## Reopened 2026-09-04
 
 Reopened for the item-by-item walk-through of the seven sites reported in
-PR #1019. Rulings on items 1 to 4 are recorded above and carried in PR #1026.
-Items 5 to 7 are still to be ruled.
+PR #1019. Rulings on items 1 to 5 are recorded above and carried in PR #1026.
+Items 6 and 7 are still to be ruled.
