@@ -22,6 +22,7 @@ import {
 } from '../scripts/review-stress-bench.js';
 import {
   buildBlindPacket,
+  heldTurnsFromTrace,
   cohenKappa,
   compareSubmission,
   renderComparison,
@@ -45,7 +46,7 @@ plants:
     also_acceptable: simplify
 `;
 
-function writeTrace(dir, { closeAfterTurn3 = true } = {}) {
+function writeTrace(dir, { closeAfterTurn3 = true, holdTurn4 = false } = {}) {
   fs.mkdirSync(dir, { recursive: true });
   const ev = [
     {
@@ -98,6 +99,10 @@ function writeTrace(dir, { closeAfterTurn3 = true } = {}) {
   ];
   if (!closeAfterTurn3)
     ev.push({ type: 'turn_complete', turn: 4, turnRecord: { learner: 'Okay, the radiator one.', tutor: 'Good.' } });
+  if (holdTurn4 === 'hold')
+    ev.push({ type: 'learner_stress_hold', turn: 4, plantTurn: 3, state: 'lost', held: 1, holdTurns: 1 });
+  else if (holdTurn4)
+    ev.push({ type: 'learner_stress_hold_verdict', turn: 4, plantTurn: 3, state: 'lost', verdict: 'kept' });
   fs.writeFileSync(path.join(dir, 'd0.jsonl'), ev.map((e) => JSON.stringify(e)).join('\n') + '\n');
 }
 
@@ -228,20 +233,27 @@ test('judgments attach to the sheet and the packet hides run, gold and judge', (
   }));
   const result = compareSubmission(key, submission);
   assert.equal(result.agreement.realized.agree, 2);
-  assert.equal(key.items.find((m) => m.turn === 2).nextIsPlant, true, 'turn 3 is itself the next plant');
-  assert.equal(key.items.find((m) => m.turn === 3).nextIsPlant, false);
-  assert.equal(result.agreement.eased.n, 1, 'eased is not scored where the next line is the next plant');
-  assert.equal(result.agreement.eased.skippedNextIsPlant, 1);
+  assert.equal(key.items.find((m) => m.turn === 2).nextScripted, 'plant', 'turn 3 is itself the next plant');
+  assert.equal(key.items.find((m) => m.turn === 3).nextScripted, null, 'no hold event, so turn 4 has no direction');
+  assert.equal(result.agreement.eased.n, 1, 'eased is not scored where the next line is scripted');
+  assert.equal(result.agreement.eased.skippedScripted, 1);
+  assert.equal(result.agreement.eased.skippedPlant, 1);
+  assert.equal(result.agreement.eased.skippedHold, 0);
   assert.match(
     renderComparison(result, key.judge),
-    /Eased: 1 item skipped, because the next line is itself the next plant/,
+    /Eased: 1 item skipped, because the next line is scripted \(1 the next plant, 0 a held turn\)/,
   );
-  const bareKey = { ...key, items: key.items.map(({ nextIsPlant: _drop, ...m }) => m) };
+  const bareKey = { ...key, items: key.items.map(({ nextScripted: _drop, ...m }) => m) };
   assert.equal(
-    compareSubmission(bareKey, submission).agreement.eased.skippedNextIsPlant,
+    compareSubmission(bareKey, submission).agreement.eased.skippedScripted,
     1,
-    'older keys derive the flag',
+    'older keys derive the flag from their own items and the trace',
   );
+  const lostTrace = { ...bareKey, items: bareKey.items.map((m) => ({ ...m, tracePath: m.tracePath + '.missing' })) };
+  const lost = compareSubmission(lostTrace, submission);
+  assert.equal(lost.agreement.eased.holdUnknown, 1, 'no trace: the turn-3 item cannot say whether turn 4 was held');
+  assert.equal(lost.agreement.eased.n, 1, 'an unknown hold is still scored');
+  assert.match(renderComparison(lost, key.judge), /Eased: held turns unknown for 1 item \(trace not readable\)/);
   assert.equal(result.agreement.move.agree, 0);
   assert.equal(result.agreement.repair.agree, 1, 'speed_up is also-acceptable → HIT agrees; continue → MISS disagrees');
   assert.match(renderComparison(result, key.judge), /Cohen's kappa/);
@@ -254,4 +266,21 @@ test('judgments attach to the sheet and the packet hides run, gold and judge', (
   );
   assert.equal(cohenKappa([]), null);
   assert.deepEqual(seededShuffle([1, 2, 3, 4], 5), seededShuffle([1, 2, 3, 4], 5));
+});
+
+test('a held turn after a plant counts as a scripted next line for eased', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'judge-stress-hold-'));
+  writeTrace(path.join(root, 'traces/world_test/with-d0'), { closeAfterTurn3: false, holdTurn4: true });
+  const reviews = [
+    reviewStressTrace(path.join(root, 'traces/world_test/with-d0/d0.jsonl'), { labelRoot: path.join(root, 'traces') }),
+  ];
+  assert.deepEqual([...heldTurnsFromTrace(reviews[0].tracePath)], [4]);
+  const { key } = buildBlindPacket({ reviews, judgments: null, seed: 3 });
+  assert.equal(key.items.find((m) => m.turn === 2).nextScripted, 'plant');
+  assert.equal(key.items.find((m) => m.turn === 3).nextScripted, 'hold', 'turn 4 carries a hold verdict');
+  assert.equal(heldTurnsFromTrace(path.join(root, 'nope.jsonl')), null, 'unreadable trace reads as unknown');
+  // The first hold pair (2026-09-02) wrote only the `learner_stress_hold` event; it names the turn too.
+  const older = fs.mkdtempSync(path.join(os.tmpdir(), 'judge-stress-hold-old-'));
+  writeTrace(path.join(older, 'traces/world_test/with-d0'), { closeAfterTurn3: false, holdTurn4: 'hold' });
+  assert.deepEqual([...heldTurnsFromTrace(path.join(older, 'traces/world_test/with-d0/d0.jsonl'))], [4]);
 });

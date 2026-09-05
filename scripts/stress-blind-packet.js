@@ -67,7 +67,10 @@ export function buildBlindPacket({ reviews, judgments, seed = 7 }) {
         learner: p.learner,
         tutor: p.tutor,
         learnerNext: p.learnerNext ?? null,
-        nextIsPlant: r.plants.some((q) => q.turn === p.turn + 1),
+        nextScripted: nextLineScripted(
+          { tracePath: r.tracePath, turn: p.turn },
+          { items: r.plants.map((q) => ({ tracePath: r.tracePath, turn: q.turn })) },
+        ),
         judge: j
           ? {
               realized: j.realized,
@@ -158,16 +161,59 @@ export function cohenKappa(pairs) {
   return Math.round(((po - pe) / (1 - pe)) * 1000) / 1000;
 }
 
+const heldTurnsCache = new Map();
+
 /**
- * True when the learner's next line is itself the next planted moment. "Eased" asks whether the
- * planted condition still shows in that next line, and on such an item the next line was directed
- * to show a different condition, so the question has no answer there. Keys built before the flag
- * existed derive it from their own items: same run, turn + 1.
+ * Turns the schedule held, read from the trace. Every governed held turn writes a
+ * `learner_stress_hold` event; runs from 11207c94 on also write a `learner_stress_hold_verdict`
+ * for it. Either names the turn. Null when the trace cannot be read, so the caller can say the
+ * holds are unknown rather than silently treat them as free lines.
  */
-export function nextLineIsPlant(item, key) {
-  if (typeof item.nextIsPlant === 'boolean') return item.nextIsPlant;
+const HELD_TURN_EVENT_TYPES = new Set(['learner_stress_hold', 'learner_stress_hold_verdict']);
+export function heldTurnsFromTrace(tracePath) {
+  if (!tracePath) return null;
+  const abs = path.resolve(tracePath);
+  if (heldTurnsCache.has(abs)) return heldTurnsCache.get(abs);
+  let held = null;
+  try {
+    const turns = fs
+      .readFileSync(abs, 'utf8')
+      .split('\n')
+      .filter((line) => line.includes('learner_stress_hold'))
+      .map((line) => {
+        try {
+          return JSON.parse(line);
+        } catch {
+          return null;
+        }
+      })
+      .filter((e) => e && HELD_TURN_EVENT_TYPES.has(e.type) && Number.isInteger(e.turn))
+      .map((e) => e.turn);
+    held = new Set(turns);
+  } catch {
+    held = null;
+  }
+  heldTurnsCache.set(abs, held);
+  return held;
+}
+
+/**
+ * Why the learner's next line is scripted, if it is: 'plant' when it is the next planted moment,
+ * 'hold' when the schedule held the planted condition through it, null when the learner wrote it
+ * with no direction. "Eased" asks whether the planted condition still shows in that next line; on
+ * a scripted line the answer is fixed by the schedule, so the question is not scored there
+ * (reader ruling 2026-09-05, widened the same day from plants to every scripted line). Keys built
+ * before the flag existed derive it: plants from their own items (same run, turn + 1), holds from
+ * the trace. Returns 'unknown' when the next line is not a plant and the trace cannot be read.
+ */
+export function nextLineScripted(item, key) {
+  if (item.nextScripted === null || typeof item.nextScripted === 'string') return item.nextScripted;
   const same = (m) => (m.tracePath ?? m.label) === (item.tracePath ?? item.label);
-  return (key?.items || []).some((m) => m !== item && same(m) && m.turn === item.turn + 1);
+  const next = item.turn + 1;
+  if ((key?.items || []).some((m) => m !== item && same(m) && m.turn === next)) return 'plant';
+  const held = heldTurnsFromTrace(item.tracePath);
+  if (held === null) return 'unknown';
+  return held.has(next) ? 'hold' : null;
 }
 
 export function compareSubmission(key, submission) {
@@ -182,7 +228,7 @@ export function compareSubmission(key, submission) {
       turn: m.turn,
       state: m.state,
       gold: m.gold,
-      nextIsPlant: nextLineIsPlant(m, key),
+      nextScripted: nextLineScripted(m, key),
       reader: {
         realized: s.realized || null,
         move: readerMove,
@@ -195,9 +241,13 @@ export function compareSubmission(key, submission) {
   });
   const withJudge = rows.filter((r) => r.judge);
   const pair = (field) => withJudge.map((r) => [r.reader[field], r.judge[field]]);
-  const easedRows = withJudge.filter((r) => !r.nextIsPlant);
+  const scripted = (why) => withJudge.filter((r) => r.nextScripted === why).length;
+  const easedRows = withJudge.filter((r) => !r.nextScripted || r.nextScripted === 'unknown');
   const eased = agreement(easedRows.map((r) => [r.reader.eased, r.judge.eased]));
-  eased.skippedNextIsPlant = withJudge.length - easedRows.length;
+  eased.skippedScripted = withJudge.length - easedRows.length;
+  eased.skippedPlant = scripted('plant');
+  eased.skippedHold = scripted('hold');
+  eased.holdUnknown = scripted('unknown');
   const repairPairs = withJudge
     .filter((r) => r.reader.repair !== null && r.judge.repair !== null)
     .map((r) => [r.reader.repair === 'HIT', r.judge.repair === 'HIT']);
@@ -234,9 +284,15 @@ export function renderComparison(result, judgeName) {
     line('uptake', a.uptake),
     line('eased', a.eased),
     '',
-    ...(a.eased.skippedNextIsPlant
+    ...(a.eased.skippedScripted
       ? [
-          `Eased: ${a.eased.skippedNextIsPlant} item${a.eased.skippedNextIsPlant === 1 ? '' : 's'} skipped, because the next line is itself the next plant and "eased" has no answer there.`,
+          `Eased: ${a.eased.skippedScripted} item${a.eased.skippedScripted === 1 ? '' : 's'} skipped, because the next line is scripted (${a.eased.skippedPlant} the next plant, ${a.eased.skippedHold} a held turn) and "eased" has no answer there.`,
+          '',
+        ]
+      : []),
+    ...(a.eased.holdUnknown
+      ? [
+          `Eased: held turns unknown for ${a.eased.holdUnknown} item${a.eased.holdUnknown === 1 ? '' : 's'} (trace not readable), scored as if the next line had no direction.`,
           '',
         ]
       : []),

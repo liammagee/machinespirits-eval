@@ -94,6 +94,15 @@ reply. No second call was made.
 | step 6 | 12/12 | 10/12 | 10/12 | 10/12 | 11/12 | 0.83 |
 | step 7 | 12/12 | 6/12 | 8/12 | 11/12 | 11/12 | 0.50 |
 
+Eased, re-scored 2026-09-05: the reader ruled that "eased" is not scored where the
+learner's next line is scripted (the next plant or a held turn). Step 4 re-scores 16/16 for
+both readers, eight items skipped as the next plant. Step 6 has no hold schedule: 8/8 for
+both readers, four items skipped. Step 7, the first hold pair: 4/4 for both readers, eight
+items skipped (four the next plant, four a held turn). The step 6 and step 7 reader files
+live in the archive repo, and the step 7 key names a trace path from a worktree since
+removed, so that packet was scored from a copy of the key pointed at the archived traces.
+Compare files regenerated in the archive.
+
 Repair HIT by version of the tutor, all three readers:
 
 | packet | judge (codex) | Sonnet 5 | Opus 5 |

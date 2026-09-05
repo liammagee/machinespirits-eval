@@ -70,5 +70,22 @@ all twelve items; the other three answers stand. Eased: skipped on the four
 items whose next line is itself the next plant (items 2, 6, 7, 8);
 `scripts/stress-blind-packet.js compare` now skips such items and says how
 many. On the eight left the human agrees with the judge 7/8, each model 8/8.
-Repair, kappa, uptake and the card effect are unchanged. Still to land: the
-redone question 1 count.
+Repair, kappa, uptake and the card effect are unchanged. The redone question
+1 count and the wider skip landed the same day (next section).
+
+# Redo and widened skip 2026-09-05, same day
+
+Question 1 redone on the reworded page: 11/12 yes. Item 12 (with the card,
+turn 2, jumping ahead) the reader ruled no where every model reader ruled yes;
+no reason was recorded on the page. Eased: after the discussion the reader
+widened the skip from the four adjacent-plant items to every item whose next
+line is scripted, the next plant or a held turn. On 7f that is eight of twelve
+(items 1, 2, 5, 6, 7, 8, 9, 12). On the four left the human and every model
+reader agree with the judge 4/4. `compare` now reads the held turns from the
+trace (either hold event) and reports the plant and hold skips apart. The
+earlier packets re-scored on the same rule at zero cost: 7b to 7e 4/4 for every
+model reader, step 7 (the first hold pair) 4/4 for both readers, step 6 (no hold
+schedule) 8/8, step 4 16/16. So every eased disagreement recorded in this arc
+sat on a scripted next line. Repair 9/12, kappa 0.50, uptake and the card
+effect (3/6 vs 3/6) are unchanged. Archive updated. The §6.24 line and the fate
+of the lean stay with the author.

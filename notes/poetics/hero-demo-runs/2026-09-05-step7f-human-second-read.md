@@ -23,17 +23,18 @@ Agreement with the judge, human beside the three model reads of the same packet:
 
 | question | human | Sonnet 5 | Opus 5 | Fable 5.1 |
 |---|---|---|---|---|
-| realized, first read, withdrawn | 0/12 | 12/12 | 12/12 | 12/12 |
+| realized, question 1 redone | 11/12 | 12/12 | 12/12 | 12/12 |
 | move, exact tag | 3/12 | 8/12 | 7/12 | 6/12 |
 | repair HIT or not | 9/12 | 9/12 | 9/12 | 9/12 |
 | uptake | 8/12 | 10/12 | 10/12 | 10/12 |
-| eased, 8 scorable items | 7/8 | 8/8 | 8/8 | 8/8 |
+| eased, 4 items with an unscripted next line | 4/4 | 4/4 | 4/4 | 4/4 |
 | kappa, repair HIT vs not | 0.50 | 0.50 | 0.68 | 0.68 |
 
-Realized is the first read's count and is withdrawn: see below. Eased is scored on eight
-items; the four whose next line is itself the next plant (items 2, 6, 7, 8) are skipped by
-the reader's ruling of 2026-09-05, and the compare script now reports them so. Over all
-twelve the counts were 7/12, 12/12, 12/12 and 8/12.
+Realized is the redone count; the first read gave 0/12 on a page wording fault and is
+withdrawn (see below). Eased is scored on the four items whose next line the learner wrote
+with no direction; the other eight have a scripted next line (the next plant or a held turn)
+and are skipped by the reader's rulings of 2026-09-05. Over all twelve the counts were 7/12,
+12/12, 12/12 and 8/12.
 
 Human against the other readers on repair HIT or not: Opus 11/12 (kappa 0.83), Fable 11/12
 (0.83), Sonnet 8/12 (0.33). The one item where the human and Opus part is item 11 (without
@@ -70,22 +71,40 @@ mean whether the learner was successful with the lesson. That is a fault in the 
 reading of the sim, so the 0/12 is withdrawn and kept only in `reader-human.meta.json`. The
 page now asks "Does the learner's line at turn N do what the direction says?" and tells the
 reader to compare the line with the direction and its sample, and not to judge whether the
-learner learned anything. The reader is redoing question 1 on all twelve items; the other
-three answers stand. The redone count goes in this note when it lands.
+learner learned anything. The reader redid question 1 on all twelve items the same day; the
+other three answers stand. Redone: yes on eleven, no on item 12, so 11/12 against the judge.
+Item 12 is the turn-2 jumping_ahead plant with the card, where the line follows the sample
+near word for word:
 
-**Eased: four items not scorable.** The human said persists on items 2, 6, 7 and 8, where
-the judge, Sonnet and Opus said eased and Fable said unclear. All four are the plants whose
-next line is itself the next plant (turns 6 and 7, turns 9 and 10 are adjacent in the
-schedule). The next line is a new scripted stress, so "does the condition still show" cannot
-be read from it as a result of the tutor's reply. The reader ruled these four out of the
-eased count. `stress-blind-packet.js compare` now skips any item whose next line is the next
-plant and says how many it skipped; new packets carry the flag from the build, and older keys
-derive it from their own items. On the eight that remain the human agrees with the judge on
-seven and each model on all eight; Fable's four misses over twelve were all on the skipped
-items. The one left is item 1 (turn 4, opposed, followed by the held turn 5): the human said
-eased and every other reader said persists. The held line concedes "five sixths" and in the
-same breath asks to move on, the same line shape that split Sonnet and Opus in the
-speech-check re-read.
+```text
+Direction sample: "Just tell me what to write. Is it two fifths or not? Priya says five sixths. Which one do I put down?"
+Learner line:     Can we just skip the strips? Just tell me what to write — is it two fifths or not? Priya says five sixths. Which one do I put down?
+```
+
+The judge and the three models said yes there. The reader's no stands as read; no reason was
+recorded on the page.
+
+**Eased: eight items not scorable.** The question asks whether the planted condition still
+shows in the learner's next line. On this schedule eight of the twelve next lines are
+written by the schedule, so the answer there is fixed before the tutor speaks. Four are the
+plants whose next line is itself the next plant (items 2, 6, 7, 8: turns 6 and 7, turns 9
+and 10 are adjacent). The human said persists on all four, the judge, Sonnet and Opus said
+eased, Fable said unclear. Item 2 shows the split: forgetting at turn 9, and turn 10 is the
+opposed plant, so forgetting is gone because the script replaced it, and the judge read the
+question as written while the human read the learner as still resisting. The other four are
+the plants whose next line is a held turn (items 1, 5, 9, 12: plants at turns 2 and 4, held
+through turns 3 and 5), where the direction itself says the condition persists. The reader
+first ruled the plant cases out and then, the same day, widened the ruling to every scripted
+next line, because a held line is scripted in the same way. `stress-blind-packet.js compare`
+now skips any item whose next line is the next plant or a held turn and says how many of
+each; new packets carry the flag from the build, and older keys derive it from their own
+items and the trace's hold events (either form). On the four items that remain (3, 4, 10, 11:
+turns 7 and 10, next lines 8 and 11 with no direction) the human and every model agree with
+the judge on all four. The same rule re-run on the earlier packets gives 4/4 for every model
+reader on 7b, 7c, 7d and 7e, 4/4 for both readers on step 7 (the first hold pair), 8/8 on
+step 6 (no hold schedule) and 16/16 on step 4, so every eased disagreement recorded in this
+arc sat on a scripted next line. The compare files in those run folders were regenerated;
+the earlier notes keep their out-of-12 rows with a dated line under each.
 
 **Move.** The human used change_tone as the main tag four times (items 4, 9, 11, 12) and a
 secondary tag on ten of twelve items; the models used change_tone as the main tag on no item.
@@ -106,13 +125,11 @@ made here.
 
 ## Open
 
-- The redone question 1 count, once the reader has been through the twelve items again on
-  the page.
 - Whether to give the model readers the earlier turns too, as the human had. One packet with
   both packet shapes would say if the context changes the model reads.
 
-Closed the same day: the realized 0/12 was the page's wording (withdrawn, redo in progress),
-and eased is not scored on a plant whose next line is the next plant (compare script
-changed, four items skipped on this packet).
+Closed the same day: the realized 0/12 was the page's wording (withdrawn, redone, 11/12), and
+eased is not scored where the next line is scripted (compare script changed twice, plants
+then every scripted line; eight items skipped on this packet, four scored).
 
 No paid call was made. No re-run.
