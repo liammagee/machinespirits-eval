@@ -11,7 +11,10 @@ stopped on a response-free GPT-5.4 parameter-routing rejection; see
 After #1048 merged, the user approved the native-sampling and routing-recovery
 amendment below. Approval is recorded in
 `notes/2026-09-05-superego-critique-calibration-native-sampling-go.md`.
-The amendment must merge before a separately authorized launch.
+After #1050 merged, the user separately authorized continuation with "merged;
+GO". Collection and one bounded transport recovery stopped after two
+response-free transport failures. Further paid recovery awaits explicit user
+approval; see `notes/2026-09-05-superego-critique-calibration-transport-failures.md`.
 Original GO notes, study settings and failure artifacts remain unchanged; the
 four-arm replay stays paused.
 Workplan item: `superego-critique-causal-replay`.
