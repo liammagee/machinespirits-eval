@@ -7,7 +7,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubResponseConfigurationLines } from '../services/tutorStubResponseConfigurationPresentation.js';
-import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { removeTempDir, runInteractive } from './helpers/tutorStubInteractiveHarness.js';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -186,7 +186,7 @@ test('real technical-debug process preserves exact response-configuration termin
     assert.equal(Buffer.byteLength(block), 949);
     assert.equal(sha256(block), '9ee64b109d7b735ef9fbd74ff3bef61d1e1b1944be94cb4ab1a9ff5fe21ef0b6');
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 

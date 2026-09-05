@@ -10,7 +10,7 @@ import {
   projectTutorStubDagSnapshot,
   projectTutorStubDagSnapshotLines,
 } from '../services/tutorStubDagSnapshotPresentation.js';
-import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { removeTempDir, runInteractive } from './helpers/tutorStubInteractiveHarness.js';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -250,7 +250,7 @@ test('a live technical session preserves the exact Marrick tutor-DAG terminal bl
     assert.match(dagBlock, /^tutor DAG > turn 1: 0\/6 proof leaves released\n/u);
     assert.match(dagBlock, /\[ \] p_holder t20\/director: soleHolderOf\(wornBurin, edony\)\n\n$/u);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 

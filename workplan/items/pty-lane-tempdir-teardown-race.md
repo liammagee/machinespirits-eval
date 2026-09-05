@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-08-09
-updated: 2026-08-09
+updated: 2026-09-05
 verification: >-
   npm run test:pty:ci passes with the five interactive test files removing
   their temp directories through one retrying helper, and a cleanup that
@@ -60,3 +60,15 @@ helper when a lane of theirs goes red for it.
 
 - 2026-08-09 — found via a red check on PR #600, fixed there. Lane green at
   50/50 locally.
+- 2026-09-05 — the root test shard 2 of 4 went red with the same error, this
+  time `ENOTEMPTY … rmdir '/tmp/tutor-stub-learner-classification-presentation-…'`
+  from `tests/tutorStubLearnerClassificationPresentation.test.js` on PR #1067,
+  a branch that changes only the paper, notes and cards. All four byte
+  assertions in that test passed; the `finally` block threw. This is the
+  follow-up the Scope section named. Nine more files that drive the shared
+  interactive harness now clean up through `removeTempDir`: the learner
+  classification, technical debug, closeout report, field report, technical
+  analysis, learner DAG, DAG snapshot, turn analysis and response
+  configuration presentation tests. Each held one bare `fs.rmSync(tmp, …)`.
+  The remaining bare calls sit in files that do not spawn an interactive run,
+  and they move when a lane of theirs goes red.

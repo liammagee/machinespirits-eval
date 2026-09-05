@@ -8,6 +8,7 @@ import {
   os,
   path,
   plainTerminalText,
+  removeTempDir,
   ROOT,
   spawnSync,
   test,
@@ -220,6 +221,6 @@ test('the debug-report runtime retains report assembly and effects while live cl
     assert.equal(Buffer.byteLength(normalized), 1208);
     assert.equal(createHash('sha256').update(normalized).digest('hex'), LIVE_CLOSEOUT_HASH);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });

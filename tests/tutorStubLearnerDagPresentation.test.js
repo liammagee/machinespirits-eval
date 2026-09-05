@@ -10,7 +10,7 @@ import {
   projectTutorStubLearnerDagLines,
   projectTutorStubLearnerDagPromptSummary,
 } from '../services/tutorStubLearnerDagPresentation.js';
-import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { removeTempDir, runInteractive } from './helpers/tutorStubInteractiveHarness.js';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -153,7 +153,7 @@ test('real technical-debug process preserves exact learner-DAG terminal bytes', 
     assert.match(block, /grounded 4, voiced 0, hypotheses 0, answer candidates 0/u);
     assert.doesNotMatch(block, /learner-DAG model warning/u);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
+    removeTempDir(tmp);
   }
 });
 

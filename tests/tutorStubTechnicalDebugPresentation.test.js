@@ -8,7 +8,7 @@ import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContrac
 import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubTechnicalDebugLines } from '../services/tutorStubTechnicalDebugPresentation.js';
-import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { removeTempDir, runInteractive } from './helpers/tutorStubInteractiveHarness.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({
@@ -244,6 +244,6 @@ test('the debug-report runtime retains gating, live preparation, trace persisten
     assert.equal(Buffer.byteLength(normalized), 1316);
     assert.equal(sha256(normalized), '5f5d63300c55e4402bfc1a8f9ac7aa911655151757612d7f2ba3de16985eac6d');
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
