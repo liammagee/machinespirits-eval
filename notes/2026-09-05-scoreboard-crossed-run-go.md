@@ -221,6 +221,55 @@ node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/
   1 also fired on the zero-call score over those 36. Report:
   `notes/2026-09-05-scoreboard-crossed-run-report.md`. Paid calls made: 990
   of the 2,476 ceiling.
+- 2026-09-05 15:52 UTC: the user said "Do that" in the chat to the next step
+  the card names: run world 102 again in both shapes, then the reader seats.
+  That word amends the study in one point. The world-102 cells run again
+  under the board reader as fixed in PR #1044 (merge 2dc26da5). The first
+  world-102 permission-seeking cell, 12 dialogues with two ended at turn 6 by
+  the reader defect, stays on disk and in the archive. The report gives its
+  zero-call numbers as a stopped block; it does not enter the score. The new
+  cells use command B with `--trace-dir
+  exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-102-rerun`,
+  because the matrix refuses a root that already holds a plan. Same seed,
+  same models, same budget, same world path; the plan print shows 24 rows.
+  Ceiling for the two new cells: 960 calls; expected about 648. Command C then
+  reads the 48 dialogues from `world-101`, `world-101-overconfident` and
+  `world-102-rerun` with `--max-calls 192`. Commands D, E and F follow as
+  written. The study's total hard ceiling rises from 2,476 to 3,436 calls;
+  990 were spent before this word. Kill 1, Kill 2 and the indeterminate rule
+  apply unchanged. Provenance at launch: main 9b1a64d2 plus this note commit, clean tree; each trace records the exact commit.
+  Between the world-101 run commit 4b7a8362 and this commit the only tutor
+  stub file that changed is the board reader, `services/tutorStubScoreboard.js`.
+- 2026-09-05 15:59 UTC: command B started for world 102 from commit 06dd49db,
+  clean tree, into `world-102-rerun`. The permission-seeking cell ran 12
+  dialogues and ended 16:24 UTC. Licence violations: 0. Eleven dialogues ran
+  to turn 8. The blind tutor's first dialogue failed at turn 3: the runtime's
+  speaker-privilege guard refused a recovery prompt that carried a private
+  premise id (`p_noon`). That is a guard in the tutor runtime, not a licence
+  rule and not the reader. The dialogue stays failed; no retry. The cell seal
+  says `incomplete` (11 ok, 1 failed). Unread learner turns: 4 of 90 (board
+  r4 turn 5, blind r3 turn 5, blind r4 turn 1, blind r5 turn 1), each after
+  three `invalid_semantic_events` tries, the class the 13:05 UTC ruling covers.
+  One analysis-seat timeout at blind r5 turn 6 healed on the second try. The
+  matrix exited 1 on the seal and stopped before the second profile.
+- 2026-09-05 16:34 UTC: the overconfident cell for world 102 started in the
+  sibling root `world-102-rerun-overconfident`, same command with only the
+  profile and the root changed, same commit, clean tree.
+- 2026-09-05 16:39 UTC: Kill 2 fired. In board r6 at turn 6 the program read
+  the tutor's first sentence as naming the answer with no right to close (rule
+  `TEXT-answer-named`, rights in force: challenge). Span: "Half of that holds:
+  Osprey's authorization plus their presence for the inspection does put them
+  in a position to have cleared bay three;". The tutor's next sentence says
+  the notice "doesn't yet show Nadia's box" in the log; the reader checks one
+  sentence at a time, so that hedge did not count. The runtime ended the
+  dialogue. The operator stopped the matrix at 16:43 UTC (pkill on the matrix,
+  the dialogue runner and the tutor-stub processes of that root). No patch to
+  the live run. At the stop: board r1 to r6 at 6, 7, 8, 7, 8 and 6 turns;
+  board r2 also failed at turn 8 on a tutor-seat CLI timeout; blind r1 and r2
+  at turn 1, blind r3 and r4 at turn 0, blind r5 and r6 not started. No seal
+  was written for this cell. Commands C, D, E and F did not run. Calls in
+  this second run: 468 dispatched, 460 finished, of the 960 ceiling. Study
+  total: 1,459 dispatched of 3,436. Any further run needs a new word.
 
 ## After the run
 
@@ -241,7 +290,9 @@ node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/
 - Any edit to `docs/research/paper-full-2.0.md`.
 - Any dialogue beyond the 48 plus the 8 of the second-model pair, or any
   reader call beyond the ceilings above.
-- A re-run, a resample, a top-up, or a patch to a live run.
+- A re-run, a resample, a top-up, or a patch to a live run. The one
+  exception is the world-102 rerun that the user's word of 15:52 UTC
+  covers; see the run record.
 - Any seat on nemotron or kimi.
 - Any run through `services/retiredPaidLauncher.js` or through the §6.25
   reader runner with its approval ceremony.

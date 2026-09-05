@@ -70,3 +70,10 @@ digest. Results are conduct claims until Phase 4.
   needs a fix and a zero-call re-read of the Phase 0 counts before Phase 2 is
   written. Phase 2 does not open. Report:
   `notes/2026-09-05-scoreboard-crossed-run-report.md`.
+- 2026-09-05: Phase 1 ran again for world 102 under the fixed reader and
+  stopped on its defect rule a second time, at 22 of 24 dialogues started. This
+  time the sentence was read whole; the hedge that would clear it sits in the
+  next sentence. Its outcome rule fired on the 36 dialogues that stand. No
+  reader seat ran. Phase 2 does not open. The next step needs a ruling on the
+  reader's hedge scope and a new word. Report: the second-run section of
+  `notes/2026-09-05-scoreboard-crossed-run-report.md`.

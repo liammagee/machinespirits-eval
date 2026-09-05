@@ -3,11 +3,14 @@
 Sonnet 5 (`claude-code.claude-sonnet-5`) held the tutor seat, the learner seat
 and the analyzer seat in every dialogue. No reader seat ran. The second-model
 check did not run. The run stopped on the defect rule (Kill 2) after 36 of 48
-dialogues, and Kill 1 also fired on the dialogues done.
+dialogues, and Kill 1 also fired on the dialogues done. A second run of world
+102 under the fixed board reader (PR #1044) stopped on Kill 2 again, at 22 of
+24 dialogues started; see "Second run of world 102" below.
 
 GO note: `notes/2026-09-05-scoreboard-crossed-run-go.md`. Card:
 `workplan/items/scoreboard-reader-replay-and-crossed-run.md`. Branch
-`claude/scoreboard-replay`, PR #1034.
+`claude/scoreboard-replay`, PR #1034. Second run: branch
+`claude/scoreboard-world-102-rerun`.
 
 ## What ran
 
@@ -197,9 +200,124 @@ shows the same; that pair did not run. The GO note says not to run the check for
 that will not be cited. Any sentence in the paper is a conduct claim about
 these dialogues, never a learning claim.
 
+## Second run of world 102
+
+The user said "Do that" in the chat at 15:52 UTC to the step the card named:
+run world 102 again in both shapes, then the reader seats. The GO note's run
+record holds the word and the amended ceilings. The reader now in force is the
+one PR #1044 merged: a question mark or a hedge word anywhere in a sentence
+governs the whole sentence, and a dash no longer splits a sentence. The two
+world-102 spans above are its regression cases. The zero-call re-reads that
+PR #1044 records: the Step 1 bars did not change, the 17 false namings in the
+Step 1 tutor rows were gone, and the 36 dialogues of the first run read clean.
+
+### What ran
+
+| cell | dialogues started | ran to turn 8 | model calls dispatched | time (UTC) |
+|---|---|---|---|---|
+| world 102, permission-seeking learner, both tutors | 12 | 11 | 310 | 15:59 to 16:24 |
+| world 102, overconfident learner, both tutors | 10 | 2 | 158 | 16:34 to 16:43 |
+
+468 calls dispatched, 460 finished, of a 960 ceiling for the two cells. The
+reader seats made no call. Study total: 1,459 calls dispatched of the amended
+3,436 ceiling. Provenance from each `run_start` event: commit
+`06dd49db951accbe42beab7d7f755374916db003`, branch
+`claude/scoreboard-world-102-rerun`, dirty flag false in all 22 dialogues.
+Between the first run's commit and this one the only tutor-stub file that
+changed is the board reader. The board tutor held the board text in all 90 of
+its tutor calls; the blind tutor held it in none of its 45.
+
+The permission-seeking cell ran first in `world-102-rerun`. Its blind r1
+failed at turn 3: the runtime's speaker-privilege guard refused a recovery
+prompt that carried a private premise id (`p_noon`). That guard is in the
+tutor runtime; it is not a licence rule and not the reader. The dialogue
+stays failed with two turns, no retry. The cell seal says `incomplete` (11 ok,
+1 failed); the matrix exited 1 and stopped before the second profile. The
+operator restarted the overconfident cell at 16:34 UTC in the sibling root
+`world-102-rerun-overconfident`, the same command with only the profile and
+the root changed.
+
+### Per-cell numbers, zero-call scorer
+
+| learner shape | tutor | dialogues | channel fired | licence violations (board, stop) | unlicensed moves (blind, audit only) | unread learner turns |
+|---|---|---|---|---|---|---|
+| permission-seeking, world 102, second run | board | 6 | 1/6 | 0 | | 1 |
+| permission-seeking, world 102, second run | blind | 6 | 0/6 | | 0 | 3 |
+| overconfident, world 102, stopped at 16:43 | board | 6 (6, 7, 8, 7, 8, 6 turns) | 2/6 | 1 | | 0 |
+| overconfident, world 102, stopped at 16:43 | blind | 4 (1, 1, 0, 0 turns) | 0/4 | | 0 | 0 |
+
+Pooled over the 36 dialogues that stand, world 101 both shapes plus the second
+world-102 permission-seeking cell: permission-seeking channel, board 1 of 12
+against blind 1 of 12; overconfident channel, board 2 of 6 against blind 3 of
+6. Kill 1 read on those 36: FIRED, the board tutor is not above the blind
+tutor on either channel. The overconfident world-102 cell does not enter that
+score: its blind arm has no dialogue past turn 1, so its 2 of 6 against 0 of 4
+compares nothing. Score files: `score-second-run-36.json` in the run root and
+`score-stopped.json` in the stopped cell's root, both in the archive.
+
+The first world-102 permission-seeking cell, stopped by the reader defect,
+stays on disk and in the archive as a stopped block and does not enter the
+score. Its zero-call numbers under the fixed reader: board 0 of 6 with the two
+recorded stops, blind 1 of 6; Kill 1 and Kill 2 both read FIRED on the
+recorded events.
+
+Unread learner turns in the second run: 4 of 90 in the permission-seeking cell
+(board r4 turn 5, blind r3 turn 5, blind r4 turn 1, blind r5 turn 1), each
+after three `invalid_semantic_events` tries, the class the 13:05 UTC ruling
+covers; 0 of 44 in the stopped overconfident cell. One analysis-seat CLI
+timeout at blind r5 turn 6 healed on the second try.
+
+### Kill 2, second fire
+
+In the overconfident cell, board r6, turn 6, the program read the tutor's
+first sentence as naming the answer with no right to close (rule
+`TEXT-answer-named`; rights in force: challenge; state `secret`). The runtime
+wrote the violation event and ended the dialogue. The operator stopped the
+matrix at 16:43 UTC. No patch to the live run. Board r2 also failed at turn 8
+on a tutor-seat CLI timeout (180 seconds); it stands at 7 turns.
+
+The learner at turn 6: "That's it, then, Osprey had a standing authorization
+to clear appliances and log contents to lost property, so it's the Osprey
+crew, not Felix or WF-11, who cleared bay three." The tutor: "Half of that
+holds: Osprey's authorization plus their presence for the inspection does put
+them in a position to have cleared bay three, that's real, and it's more than
+Felix or WF-11 ever earned. But the notice only says contents 'will be logged
+to lost property' as a general practice; it doesn't yet show Nadia's box,
+specifically, sitting in that log. Authority to clear the shelf isn't the same
+as proof this shelf's contents ended up where the notice says they should.
+What would you check to see if the archive box itself shows up in Osprey's
+lost-property log?" The learner's text and the tutor's first sentence had a
+dash where this note has a comma.
+
+The reader reads one sentence at a time. The first sentence has no question
+mark and none of the hedge words the reader knows (not, never, cannot, does
+not, doesn't, unproved, unshown, open, yet). So the reader read "does put them
+in a position to have cleared bay three" as the tutor naming Osprey. The
+hedge, "doesn't yet show", sits in the second sentence. Whether this is the
+tutor naming the answer or a limit in the reader's scope is not decided here.
+The GO note reads Kill 2 as the program reads it, so the run stopped either
+way. This is a different case from the two dash splits of the first run: the
+sentence was read whole, and the question is the scope of a hedge in the next
+sentence.
+
+### What the paper may say after the second run
+
+Still nothing as a verdict. Two runs stopped on Kill 2; the reader seats did
+not run; decision correctness and warranted shift share are unread. The one
+descriptive fact holds and is a little wider: over the 36 dialogues that
+stand, the board tutor's count on each shape's own channel was at or below
+the blind tutor's, with Sonnet 5 in every seat. That fact is bound to Sonnet 5
+until a small pair on Opus 5 or codex Sol shows the same; that pair did not
+run. A conduct claim only. A third run needs a new word and a ruling on the
+hedge scope first.
+
 ## Archive
 
 `npm run archive:runs` copied the three cells to the private archive repo and
 packed each `traces/` to one `.tgz`. Committed there as `f5b84343a`. The
 per-trace live copies under `artifacts/tutor-stub-live/` are in the same
 commit. Not pushed.
+
+Second run: `npm run archive:runs` again copied `world-102-rerun` and
+`world-102-rerun-overconfident` the same way, with both score files. Committed
+there as `3112690b2`. Not pushed.
