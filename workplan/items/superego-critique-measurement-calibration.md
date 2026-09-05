@@ -16,6 +16,9 @@ links:
     - superego-critique-causal-replay
   notes:
     - notes/superego-critique-causal-replay-design.md
+    - notes/2026-09-05-superego-critique-measurement-calibration-go.md
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/1038
 ---
 
 The user requested validation and reconsideration after the expense/model review.
@@ -49,3 +52,12 @@ labels remain zero. Focused replay/shared-contract/inventory/historical-analyzer
 tests passed 56/56; the final calibration boundary checks passed 8/8 after
 simplifying summary dispatch. Structural ratchets passed 52/52; targeted
 ESLint, workplan source, manifest and diff checks passed. Hosted CI is pending.
+
+2026-09-05 Codex: The user replied "GO" to the proposed calibration note.
+Recorded that approval in the linked GO note: 48 historical items, 192 planned
+judging calls, 12 technical replacements, 204 attempts and US $15 maximum.
+The design and runner are unchanged. Hosted CI on implementation commit
+4e3c735b passed all 18 selected checks, with three skipped. PR #1038 is open.
+The approval records the calibration design only; a separate explicit launch
+instruction remains required. No calibration, human coding, provider call or
+four-arm replay was launched by this recording step.
