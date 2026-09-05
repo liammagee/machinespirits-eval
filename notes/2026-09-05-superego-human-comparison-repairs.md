@@ -26,6 +26,8 @@ used to investigate it and no historical response was repaired or relabeled.
   and download the existing human-rating format. The form does not call any
   network service, assign scores, include the treatment key, or expose another
   reader's ratings. The final report is written as ordinary Markdown and JSON.
+  Entering an ID after starting preserves that reader's work; changing readers
+  clears the displayed ratings, covered by an offline event-handler regression.
 - Reader files identify the exact blinded public packet. Files from a different
   cohort or different public text are rejected even when neutral IDs coincide.
   This data identity check is unrelated to approvals or source-file hashes.
@@ -61,7 +63,7 @@ was manufactured during this work.
 
 ## Verification and limitations
 
-All 46 focused tests pass across the historical and prospective runner, shared
+All 47 focused tests pass across the historical and prospective runner, shared
 launch contract, durable budget and launcher inventory. They exercise the public CLI and shared admission/budget helpers,
 including truncated whitespace, dependency loss, missing-only recovery, partial
 response retention, blinding, two-reader completeness and disagreement bounds.

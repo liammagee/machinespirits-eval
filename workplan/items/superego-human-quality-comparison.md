@@ -38,7 +38,7 @@ measurement scope are visible in the design, amended in place. The original GO
 and failed cohort remain historical records. This card records a prospective
 comparison; it does not reopen the old cohort for resampling.
 
-2026-09-05: implementation complete; 46 focused regressions pass across historical
+2026-09-05: implementation complete; 47 focused regressions pass across historical
 and prospective behavior, the shared launch contract, durable attempt accounting
 and launcher inventory. Targeted ESLint, formatting, diff checks, workplan source
 validation and the test-manifest check pass. A fresh zero-call preparation

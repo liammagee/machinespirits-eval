@@ -298,3 +298,44 @@ test('proposed human comparison is bounded independently of deferred automated j
   assert.equal(proposedDesign.attempts.hard_ceiling, 66);
   assert.equal(proposedDesign.max_dollars, 4.6464);
 });
+
+test('entering the first reader ID preserves work while changing reader clears the displayed ratings', () => {
+  // Execute the page's event handler against inert in-memory controls, not a browser.
+  const node = () => ({ value: '', dataset: {}, append() {}, setAttribute() {}, addEventListener() {} });
+  const nodes = Object.fromEntries(
+    ['packet', 'coder', 'status', 'rubric', 'items', 'load', 'draft', 'finish'].map((id) => [id, node()]),
+  );
+  nodes.packet.textContent = JSON.stringify({
+    category: 'quality',
+    packet_id: 'offline-packet',
+    instructions: 'Fixture',
+    items: [
+      {
+        id: 'q001',
+        context: { learner: 'Learner', teaching_material: 'Context' },
+        candidate: [{ id: 'P1', text: 'Response' }],
+      },
+    ],
+  });
+  const script = humanQualityReviewHtml(JSON.parse(nodes.packet.textContent)).match(/<script>([\s\S]*?)<\/script>/u)[1];
+  const context = vm.createContext({
+    document: { getElementById: (id) => nodes[id], createElement: node },
+    Option: class {
+      constructor(label, value) {
+        this.label = label;
+        this.value = value;
+      }
+    },
+    localStorage: { setItem() {} },
+  });
+  vm.runInContext(script, context);
+  vm.runInContext(
+    "saved.q001.quality.value='7'; saved.q001.rationale.value='My evidence'; coder.value='reader-a'; coder.onchange();",
+    context,
+  );
+  assert.equal(vm.runInContext('saved.q001.quality.value', context), '7');
+  assert.equal(vm.runInContext('saved.q001.rationale.value', context), 'My evidence');
+  vm.runInContext("coder.value='reader-b'; coder.onchange();", context);
+  assert.equal(vm.runInContext('saved.q001.quality.value', context), '');
+  assert.equal(vm.runInContext('saved.q001.rationale.value', context), '');
+});
