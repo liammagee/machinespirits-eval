@@ -30,6 +30,11 @@ Per question, exact agreement out of 12:
 | uptake | 12 | 11 | 10 | 10 |
 | eased | 10 | 12 | 12 | 10 |
 
+Eased, re-scored 2026-09-05: the reader ruled that "eased" is not scored where the
+learner's next line is scripted (the next plant or a held turn); on these packets that is
+eight of twelve. On the four that remain, 4/4 in every column. Compare files regenerated;
+the row above is the out-of-12 count as first reported.
+
 Opus agrees with the codex judge at the level the arc set as its bar
 (kappa 0.80 and above on both packets). Sonnet sits under it on both; its
 disagreements are move tags (it reads `backtrack` where the judge reads

@@ -77,7 +77,8 @@ proposes a ten-piece countertest; the judge rules off_track_probe, MISS.
 | 7f | 0.50 | 0.68 | 0.68 |
 
 One call per cell. Opus and Fable gave the same twelve answers on this packet. The human
-read is still open.
+read of this packet was done the same day: kappa 0.50 against the judge, 3/6 with against
+3/6 without; see `2026-09-05-step7f-human-second-read.md`.
 
 ## Not done here
 
