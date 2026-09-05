@@ -307,6 +307,17 @@ test('live mechanism authorization binds the frozen model destination, private p
     assert.equal(request.contract.source.worktree_clean, true);
     assert.equal(request.authorization_template.approved_source_provenance_sha256, 'a'.repeat(64));
     assert.equal(request.authorization_template.approved_child_policy_sha256, 'b'.repeat(64));
+    assert.equal(request.source_provenance_record.source_provenance_sha256, 'a'.repeat(64));
+    assert.equal(request.source_provenance_record.child_policy_sha256, 'b'.repeat(64));
+    assert.equal(request.contract.source.source_provenance_sha256, undefined);
+    assert.equal(request.contract.source.child_policy_sha256, undefined);
+    // The approval digest covers the contract only, so changing a source file
+    // leaves a signed authorization valid instead of asking for a new signature.
+    const editedSourceRequest = buildAdaptiveWarrantLaunchAuthorizationRequest({
+      ...plan,
+      provenance: { ...plan.provenance, combinedSha256: 'c'.repeat(64), childPolicySha256: 'd'.repeat(64) },
+    });
+    assert.equal(editedSourceRequest.approval_digest, request.approval_digest);
     assert.equal(request.contract.execution.study_plan_execution_sha256.length, 64);
     assert.equal(request.contract.execution.maximum_model_calls, 1536);
 
@@ -413,10 +424,28 @@ test('live mechanism authorization binds the frozen model destination, private p
         ),
       /private_payload_scope_sha256/u,
     );
+    // CLAUDE.md (2026-08-21): an edit to a reachable source file changes both of
+    // these digests. A signed launch authorization survives that edit, so both
+    // cases are accepted and the drift is written down. A value that is not a
+    // 64-character lower-case digest is still refused.
+    assert.equal(
+      validateAdaptiveWarrantLaunchAuthorization(
+        { ...authorization, approved_source_provenance_sha256: 'c'.repeat(64) },
+        request,
+      ).accepted,
+      true,
+    );
+    assert.equal(
+      validateAdaptiveWarrantLaunchAuthorization(
+        { ...authorization, approved_child_policy_sha256: 'c'.repeat(64) },
+        request,
+      ).accepted,
+      true,
+    );
     assert.throws(
       () =>
         validateAdaptiveWarrantLaunchAuthorization(
-          { ...authorization, approved_source_provenance_sha256: 'c'.repeat(64) },
+          { ...authorization, approved_source_provenance_sha256: 'not-a-digest' },
           request,
         ),
       /approved_source_provenance_sha256/u,
@@ -424,7 +453,7 @@ test('live mechanism authorization binds the frozen model destination, private p
     assert.throws(
       () =>
         validateAdaptiveWarrantLaunchAuthorization(
-          { ...authorization, approved_child_policy_sha256: 'c'.repeat(64) },
+          { ...authorization, approved_child_policy_sha256: 'not-a-digest' },
           request,
         ),
       /approved_child_policy_sha256/u,

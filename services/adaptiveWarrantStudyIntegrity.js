@@ -284,10 +284,15 @@ export function canonicalAdaptiveWarrantStudyPlan(plan, { workspaceRoot = MODULE
       .filter(([key]) => !PLAN_TOP_LEVEL_VOLATILE_KEYS.has(key) && !['config', 'jobs', 'provenance'].includes(key))
       .map(([key, value]) => [key, normalizePlanValue(value, { workspaceRoot, studyRoot })]),
   );
+  // CLAUDE.md (2026-08-21): the identity covers the design, the config, the job
+  // order and the commands. It does not cover the digest of the source files or
+  // of the child policy files. Those two are digests over code in this repo, so
+  // they are written down in plan.provenance and on each job, never folded into
+  // an identity that a launch authorization or a resume check refuses on. The
+  // commit and the dirty flag stay: they are provenance, not a file pin.
   return {
     schema: ADAPTIVE_WARRANT_STUDY_PLAN_IDENTITY_SCHEMA,
     plan: stableTopLevel,
-    source_provenance_sha256: plan.provenance?.combinedSha256 || null,
     config: canonicalPlanConfig(plan.config, { workspaceRoot, studyRoot, ignoreDryRun }),
     jobs: plan.jobs.map((job, index) => ({
       ordinal: Number.isFinite(Number(job?.ordinal)) ? Number(job.ordinal) : index + 1,
@@ -302,7 +307,6 @@ export function canonicalAdaptiveWarrantStudyPlan(plan, { workspaceRoot = MODULE
       mechanism_validation: job?.mechanismValidation === true,
       expected_git_sha: job?.expectedGitSha ?? null,
       expected_git_dirty: typeof job?.expectedGitDirty === 'boolean' ? job.expectedGitDirty : null,
-      expected_child_policy_sha256: job?.expectedChildPolicySha256 ?? null,
       command: normalizedJobCommand(job, plan, { workspaceRoot, studyRoot, ignoreDryRun }),
     })),
   };

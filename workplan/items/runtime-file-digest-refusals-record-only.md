@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: review
 created: 2026-09-04
-updated: 2026-09-04
+updated: 2026-09-05
 verification: "No site in services/ or scripts/ throws on a drifted digest of a code, schema, prompt, design, registration or go-request file in this repo. Each such site records the observed and recorded digests. Sealed data, run artifacts and recorded-value comparisons are unchanged. lint:all, test:ratchets, wp:source-check and the hermetic suite pass."
 claim_status: planned
 links:
@@ -241,34 +241,62 @@ is new: it writes down a recorded commit and tree beside the current checkout.
 
 ## Report
 
-These need a second opinion. I did not act on any of them.
+Items 1 and 2 were ruled on 2026-09-04 in a walk-through. Items 3 to 7 still
+need a ruling.
 
-### Two `config/` edits
+### 1. Two `config/` edits (ruled: keep)
 
 The brief said not to edit any file under `config/`. Two one-line additions to
 `config/hermetic-test-manifest.json` register the new test files
 `tests/recordedFileDigest.test.js` and `tests/recordedSourceProvenance.test.js`.
 Without them the hermetic runner does not select the new tests. This file is a
-test manifest, not a record of a measurement.
+test manifest, not a record of a measurement. The edit was made in `0948cbbe`
+and `c490c83c`; the user ruled to keep it.
 
-### Authorization ceremonies
+### 2. Authorization ceremonies (ruled: one converted, two out of scope)
 
-Three sites bind a paid-run approval request to the digest of a manifest file.
-That is the shape `CLAUDE.md` bans outright, but it is not on the brief's IN
-list, and weakening a paid-run approval path is not a call I should make alone.
+Three sites looked like a paid-run approval bound to a digest.
 
-- `run-adaptive-warrant-semantic-readers.js:89`
-- `prepare-adaptive-warrant-annotation-batches.js:832`
-- `run-adaptive-warrant-baseline-study.js:609-732`
+- `run-adaptive-warrant-semantic-readers.js:89` and
+  `prepare-adaptive-warrant-annotation-batches.js:832` hash
+  `diagnostic-freeze-manifest.json`, which
+  `build-adaptive-warrant-v3-semantic-diagnostic.js` writes into the run's own
+  output directory. A run artifact never changes on a repo edit, so it is on
+  the OUT list. No change.
+- `run-adaptive-warrant-baseline-study.js:609-732` put the source-file digest
+  and the child-policy digest inside the signed contract, and the plan identity
+  in `services/adaptiveWarrantStudyIntegrity.js` folded the same two digests
+  into the fingerprint the contract carries. A one-line source fix changed
+  both, so the signed authorization was refused and `--resume` threw
+  `resume plan drift`. Converted in `4c7e7eb0`: the two digests now sit beside
+  the contract in `source_provenance_record`, the plan identity omits them,
+  and `validateAdaptiveWarrantLaunchAuthorization` records observed against
+  approved to stderr instead of refusing. The format check on the two
+  `approved_*` fields stays, so a malformed value still fails under the same
+  label. The recomputed `approval_digest` check at line 658 stays: it catches
+  a request file whose contract was edited after the signature, which the
+  `tamperedRequest` test covers.
 
-### One loop, two roles
+### 3. One loop, two roles (ruled: split by role)
 
 `services/program2ExperimentSafety.js:388` hashes a list of paths in one loop.
-Some entries are run-output evidence, where the pin is right. Others are repo
-config files, where it is the banned shape. Splitting the loop by a path prefix
-would invent a policy nobody stated.
+The certifier names each entry by role. `launch_plan`, `pilot_bundle:N` and
+`pilot_trace:<job>` are run artifacts written into the run's output directory,
+so a hash mismatch there still refuses. `world` points at a
+`config/drama-derivation/world-*.yaml` and `gate_spec` at a
+`config/adaptive-tutor-evidence/*-gates.json`, both edited in place in git.
+For those two roles a well-formed hash that moved is now written to stderr
+through `recordObservedDigest`, returned in a `records` array, and kept by the
+launcher as `evidenceDrift` in the launch attempt record. A missing or
+escaping file still refuses for every role, and so does a missing or malformed
+digest on any role. The launcher runs the futility check on the gate spec
+inside the certificate, so that pin never changed what runs. The user ruled on
+2026-09-04 to convert both. `docs/program2-launch-certificates.md` and the
+launcher's certificate reminder line now say so. The dated note
+`notes/program-2/2026-07-26-launch-safety-contract.md` still says the
+gate-spec file cannot change after certification; it is a record and was left.
 
-### Development evidence
+### 4. Development evidence (ruled: keep the pin)
 
 `tutorStubResistanceSemanticValidationV2.js:231` and
 `tutorStubResistanceSemanticValidationV3.js:349` hash
@@ -278,27 +306,57 @@ a go request, a code file, a schema or a prompt, so it fails the IN test. The
 name is close to `development-corpus`, which is on the OUT list, but does not
 match it. Neither list fits, so I left both.
 
-### Two refusals I chose not to touch
+The file is a small frozen manifest. It lists the corpora the instrument was
+developed on with their digests and case counts, discloses that the v1 and v2
+held-out corpora were consumed, and states that v3 held-out reuse is not
+allowed. It holds no code digest. A change to it is a change to the study's
+measurement rules, and the go covers the study only until the study changes.
+The user ruled on 2026-09-04 to keep the pin. No code changed.
 
-`rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js:387` throws
+### 5. Diagnosis note pin (ruled: convert to a record)
+
+`rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js:387` threw
 `diagnosis note bytes drifted from the pinned sha256` on
 `notes/2026-08-30-frame-refuser-depth-v6-diagnosis.md`. That note is in git and
 is edited in place, so it looks like the banned shape, but the four anchor
 surfaces are quoted verbatim from it and the rehearsal reads it as its own
 frozen evidence. The v6 merged registration in the same file was converted.
 
+The script never reads the note's content: the four amendment surfaces and the
+30-row roster are constants in the script, so the note's bytes never changed
+what runs. The rehearsal ran on 2026-08-30 and the line closed on 2026-08-31.
+The user ruled on 2026-09-05 to convert it. The loader now records the digest
+through `recordObservedDigest`, returns it in `digestRecords`, and the plan
+writes `observed_sha256` and `drifted` beside the recorded sha under
+`diagnosis_note`. No test touched the pin.
+
+### 6. A clean-worktree stop, not a digest (ruled: leave it)
+
 `run-tutor-stub-first-draft-campaign.js:326` calls
 `gitWorktreeState({ required: true })` when the config sets
 `require_clean_worktree`, which refuses to start on a dirty tree. This is not a
 digest check, so it is outside the brief, but it is the same class of stop.
 
-### A test pin that survives
+Three stops hang on it: a start blocker when the tree is dirty, a per-cell
+throw when the tree became dirty after start, and a per-cell throw when HEAD
+moved. 28 of 59 campaign configs set the flag; the loader forces v8 and v9 to.
+The line has not moved since 2026-08-17. The user ruled on 2026-09-05 to leave
+all three. No code changed.
+
+### 7. A test pin that survives (ruled: leave it)
 
 `tests/learnerProfileRecoveryL1.test.js:34-38` hashes
 `services/tutorStubQuietDetectorV1.js` and compares it with the literal
 `318da00fff7fc8049fc21640f2978cc119ff3a45a53a5dd126e3df66656ec6c4`. This is the
 reintroduction trap: a one-line fix to the detector turns `npm test` red. The
 brief said not to delete a test, so it stays.
+
+The V1 file is not the live detector. It is a frozen copy of the qd-v1 quiet
+detector, added on 2026-08-17 in PR #654 so the L1 recovery can replay a
+historical run with the exact bytes used then. The replay validator and the
+deconfound paid gate record this digest and continue; the validator refuses
+only on the version string. The user ruled on 2026-09-05 to leave the test as
+it is. No code changed.
 
 The two other test pins this card first listed are gone. In
 `tests/tutorStubResistanceSemanticValidation.test.js` the one assertion that
@@ -326,3 +384,15 @@ data pins at `tutorStubBoredomSemanticValidation.js:99` and the run-artifact
 pins are unchanged; `npm run lint:all`, `npm run test:ratchets` and
 `npm run wp:source-check` pass; CI on that commit is green. The one local
 hermetic failure is the partial-clone test noted on the ratchet card.
+
+## Reopened 2026-09-04
+
+Reopened for the item-by-item walk-through of the seven sites reported in
+PR #1019. Rulings on items 1 to 7 are recorded above and carried in PR #1026.
+
+## Closed 2026-09-05
+
+All seven items walked and ruled. Items 3 and 5 changed code: the world and
+gate-spec evidence roles record, and the diagnosis-note pin in the frame-refuser
+rehearsal records. Items 1, 2, 4, 6 and 7 stay as they were. Carried in
+PR #1026.

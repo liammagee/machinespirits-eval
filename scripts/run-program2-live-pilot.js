@@ -105,7 +105,7 @@ export function formatProgram2LaunchCertificateReminder({
     `  --source-sha ${sourceSha || '<clean-40-character-sha>'} \\`,
     `  --report ${displayRootPath(certificateFile)}`,
     `Then rerun the paid launcher with --launch-certificate ${displayRootPath(certificateFile)}.`,
-    `Regenerate after any source, plan, world, gate, or pilot-evidence change. Guide: ${PROGRAM2_LAUNCH_CERTIFICATE_GUIDE}`,
+    `Regenerate after any source, plan, or pilot-evidence change; a world or gate edit is recorded, not refused. Guide: ${PROGRAM2_LAUNCH_CERTIFICATE_GUIDE}`,
   ].join('\n');
 }
 
@@ -1455,6 +1455,9 @@ async function main() {
     file: path.relative(ROOT, suppliedCertificatePath),
     sha256: createHash('sha256').update(certificateBytes).digest('hex'),
     phase: launchCertificate.phase,
+    // CLAUDE.md (2026-08-21): world and gate-spec drift is written down here,
+    // beside the certificate digest, never refused on.
+    evidenceDrift: bindingValidation.records.filter((record) => record.drifted),
   };
   const launchSha = assertLaunchAuthorization(values['expected-sha']);
   artifact.launchSha = launchSha;

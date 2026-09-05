@@ -382,10 +382,18 @@ export function loadAmendedFaceContract(root = ROOT) {
 }
 
 export function loadRehearsalCases({ archiveRoot, root = ROOT } = {}) {
+  // CLAUDE.md (2026-08-21): the diagnosis note is a dated note in git, not
+  // sealed data. The four amendment surfaces and the roster are constants in
+  // this script, so the note's bytes never change what runs. Its digest is
+  // recorded, never enforced. This used to throw, so a typo fix in the note
+  // stopped the rehearsal.
   const noteBytes = readFileReadonly(path.join(root, DIAGNOSIS_NOTE_PATH));
-  if (sha256(noteBytes) !== DIAGNOSIS_NOTE_SHA256) {
-    throw new Error('diagnosis note bytes drifted from the pinned sha256');
-  }
+  const diagnosisNoteDigest = recordObservedDigest({
+    label: 'frame-refuser depth v6 diagnosis note',
+    filePath: DIAGNOSIS_NOTE_PATH,
+    recordedSha256: DIAGNOSIS_NOTE_SHA256,
+    observedSha256: sha256(noteBytes),
+  });
   const rowsById = new Map();
   const runReports = {};
   for (const [runTag, runRoot] of Object.entries(RUN_ROOTS)) {
@@ -490,7 +498,7 @@ export function loadRehearsalCases({ archiveRoot, root = ROOT } = {}) {
   ) {
     throw new Error('worked example (c) does not match its archived source turn');
   }
-  return { cases, runReports };
+  return { cases, runReports, digestRecords: [diagnosisNoteDigest] };
 }
 
 function rehearsalOutputSchema({ caseId }) {
@@ -832,7 +840,12 @@ export function buildRehearsalPlan({ archiveRoot, out, root = ROOT } = {}) {
       maximum_reader_transport_retries: tasks.length,
       hard_attempt_ceiling: tasks.length * 2,
       sealed_registration: { path: REGISTRATION_PATH, sha256: REGISTRATION_SHA256, version: 6 },
-      diagnosis_note: { path: DIAGNOSIS_NOTE_PATH, sha256: DIAGNOSIS_NOTE_SHA256 },
+      diagnosis_note: {
+        path: DIAGNOSIS_NOTE_PATH,
+        sha256: DIAGNOSIS_NOTE_SHA256,
+        observed_sha256: loaded.digestRecords[0].observedSha256,
+        drifted: loaded.digestRecords[0].drifted,
+      },
       amendment_surfaces: {
         a_rung2_anchor_clause: AMENDMENT_A_RUNG2_ANCHOR_CLAUSE,
         b_rung1_anchor_mirror: AMENDMENT_B_RUNG1_ANCHOR_MIRROR,

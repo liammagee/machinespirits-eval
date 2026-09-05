@@ -607,23 +607,31 @@ export function buildAdaptiveWarrantLaunchAuthorizationRequest(plan) {
     source: {
       git_commit: plan?.provenance?.gitCommit || null,
       worktree_clean: !oneLine(plan?.provenance?.gitStatus),
-      source_provenance_sha256: plan?.provenance?.combinedSha256 || null,
-      child_policy_sha256: plan?.provenance?.childPolicySha256 || null,
     },
     network_effect: 'launch model-backed CLI subprocesses and transmit the declared prompt payloads',
+  };
+  // CLAUDE.md (2026-08-21): the source-file and child-policy digests are written
+  // down beside the contract, never inside it. They used to sit in the contract,
+  // so the approval digest moved whenever a reachable source file changed and a
+  // one-line defect fix voided a signed launch authorization. The commit and the
+  // clean-worktree flag stay in the contract: both are provenance the signer read.
+  const sourceProvenanceRecord = {
+    source_provenance_sha256: plan?.provenance?.combinedSha256 || null,
+    child_policy_sha256: plan?.provenance?.childPolicySha256 || null,
   };
   const approvalDigest = canonicalJsonSha256(contract);
   const approvable =
     isLowerHex(contract.source.git_commit, 40) &&
     contract.source.worktree_clean === true &&
-    isLowerHex(contract.source.source_provenance_sha256, 64) &&
-    isLowerHex(contract.source.child_policy_sha256, 64);
+    isLowerHex(sourceProvenanceRecord.source_provenance_sha256, 64) &&
+    isLowerHex(sourceProvenanceRecord.child_policy_sha256, 64);
   return {
     schema: ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_REQUEST_SCHEMA,
     study_id: plan?.studyId || null,
     approvable,
     approval_digest: approvalDigest,
     contract,
+    source_provenance_record: sourceProvenanceRecord,
     authorization_template: {
       schema: ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_SCHEMA,
       approved: false,
@@ -631,8 +639,8 @@ export function buildAdaptiveWarrantLaunchAuthorizationRequest(plan) {
       approved_destinations: destinations,
       private_payload_scope_sha256: contract.private_payload_scope_sha256,
       approved_git_commit: contract.source.git_commit,
-      approved_source_provenance_sha256: contract.source.source_provenance_sha256,
-      approved_child_policy_sha256: contract.source.child_policy_sha256,
+      approved_source_provenance_sha256: sourceProvenanceRecord.source_provenance_sha256,
+      approved_child_policy_sha256: sourceProvenanceRecord.child_policy_sha256,
       approved_study_plan_execution_sha256: contract.execution.study_plan_execution_sha256,
       approved_by: '',
       approved_at: '',
@@ -663,10 +671,10 @@ export function validateAdaptiveWarrantLaunchAuthorization(authorization, reques
     failures.push('request_git_commit');
   }
   if (contract?.source?.worktree_clean !== true) failures.push('request_worktree_clean');
-  if (!isLowerHex(contract?.source?.source_provenance_sha256, 64)) {
+  if (!isLowerHex(request?.source_provenance_record?.source_provenance_sha256, 64)) {
     failures.push('request_source_provenance_sha256');
   }
-  if (!isLowerHex(contract?.source?.child_policy_sha256, 64)) {
+  if (!isLowerHex(request?.source_provenance_record?.child_policy_sha256, 64)) {
     failures.push('request_child_policy_sha256');
   }
   if (!isLowerHex(contract?.private_payload_scope_sha256, 64)) {
@@ -700,18 +708,28 @@ export function validateAdaptiveWarrantLaunchAuthorization(authorization, reques
   ) {
     failures.push('approved_git_commit');
   }
-  if (
-    !isLowerHex(authorization?.approved_source_provenance_sha256, 64) ||
-    authorization.approved_source_provenance_sha256 !== contract?.source?.source_provenance_sha256
-  ) {
+  if (!isLowerHex(authorization?.approved_source_provenance_sha256, 64)) {
     failures.push('approved_source_provenance_sha256');
   }
-  if (
-    !isLowerHex(authorization?.approved_child_policy_sha256, 64) ||
-    authorization.approved_child_policy_sha256 !== contract?.source?.child_policy_sha256
-  ) {
+  if (!isLowerHex(authorization?.approved_child_policy_sha256, 64)) {
     failures.push('approved_child_policy_sha256');
   }
+  // CLAUDE.md (2026-08-21): a signed launch authorization is not voided by an
+  // edit to a source file. Both digests are written down and compared for the
+  // record only; the format checks above still refuse a malformed value. Every
+  // other field of the authorization still refuses on drift.
+  recordObservedDigest({
+    label: 'adaptive-warrant launch authorization source provenance',
+    filePath: 'adaptive-warrant study source files',
+    recordedSha256: authorization?.approved_source_provenance_sha256,
+    observedSha256: request?.source_provenance_record?.source_provenance_sha256,
+  });
+  recordObservedDigest({
+    label: 'adaptive-warrant launch authorization child policy',
+    filePath: 'adaptive-warrant study child policy files',
+    recordedSha256: authorization?.approved_child_policy_sha256,
+    observedSha256: request?.source_provenance_record?.child_policy_sha256,
+  });
   if (
     !isLowerHex(authorization?.approved_study_plan_execution_sha256, 64) ||
     authorization?.approved_study_plan_execution_sha256 !== contract?.execution?.study_plan_execution_sha256
@@ -730,8 +748,8 @@ export function validateAdaptiveWarrantLaunchAuthorization(authorization, reques
     approved_destinations: [...contract.authorized_destinations],
     private_payload_scope_sha256: contract.private_payload_scope_sha256,
     approved_git_commit: contract.source.git_commit,
-    approved_source_provenance_sha256: contract.source.source_provenance_sha256,
-    approved_child_policy_sha256: contract.source.child_policy_sha256,
+    approved_source_provenance_sha256: request.source_provenance_record.source_provenance_sha256,
+    approved_child_policy_sha256: request.source_provenance_record.child_policy_sha256,
     approved_study_plan_execution_sha256: contract.execution.study_plan_execution_sha256,
     approved_by: authorization.approved_by,
     approved_at: authorization.approved_at,
