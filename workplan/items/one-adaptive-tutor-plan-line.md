@@ -7,13 +7,15 @@ priority: P1
 owner: human
 source: manual
 created: 2026-09-04
-updated: 2026-09-04
+updated: 2026-09-05
 claim_status: planned
 links:
   notes:
     - notes/2026-09-04-adaptive-tutor-plan.md
     - notes/2026-09-04-theoretical-blueprint.md
     - notes/2026-09-04-scoreboard-replay-prompt.md
+    - notes/2026-09-05-scoreboard-replay-report.md
+    - notes/2026-09-05-scoreboard-crossed-run-go.md
   paper:
     - "§3, §7.12, §7.16, Appendix E"
   items:
@@ -56,3 +58,8 @@ digest. Results are conduct claims until Phase 4.
 **Gate record.**
 
 - 2026-09-04: plan written; Phase 0 card open; no call made.
+- 2026-09-05: Phase 0 PASS on the two pooled bars with zero calls; the
+  held-out half missed the pairwise bar by one dialogue
+  (`notes/2026-09-05-scoreboard-replay-report.md`). Phase 1 open and
+  prepared: cast preflight PASS, GO note written
+  (`notes/2026-09-05-scoreboard-crossed-run-go.md`), no paid call made.

@@ -1,0 +1,204 @@
+GO: not yet given. No paid call has been made.
+
+# Scoreboard crossed run: GO note
+
+Operator: Liam Magee
+Date: 2026-09-05
+Authorization source: the user's word "go" in the chat. It is not given yet.
+The word covers the study below: the question, the design, the measurement
+rules and the spend ceiling. It stays valid until the study changes. A bug fix
+does not void it.
+Recorded by: Claude Fable 5.1
+
+Brief: `notes/2026-09-04-scoreboard-replay-prompt.md`, Step 2.
+Card: `workplan/items/scoreboard-reader-replay-and-crossed-run.md`.
+Gate: Step 1 PASSED on the two pooled bars
+(`notes/2026-09-05-scoreboard-replay-report.md`). The held-out half missed the
+pairwise bar by one dialogue. The pooled bars are the registered bars, so
+Step 2 is open. The cast preflight passed with zero calls (command below).
+
+## Study
+
+One crossed run. Two learner shapes, each cast as a policy over the board:
+the permission-seeking learner (profile `low_agency`) and the overconfident
+learner (profile `overconfident`). Two tutor conditions: the tutor whose move
+table reads the board (`board`) and the same tutor with the board hidden
+(`board_blind`). Same prompt otherwise. Same seed schedule (run seed
+20260711). Two worlds, the same two the §6.25 run used: world-101, the kestrel
+signal lamp, and world-102, the marigold archive box. Eight learner turns per
+dialogue. Twelve dialogues per cell, six per world.
+
+48 dialogues, 384 tutor turns.
+
+Endpoints, fixed before any call:
+
+1. Board change on each shape's own channel, read by the program from the
+   board. Permission-seeking: a learner commitment undertaken with no licence
+   in force. Overconfident: entitlement moves from pending or unwarranted to
+   warranted after a tutor challenge. Unit: share of dialogues in which the
+   channel fires at least once.
+2. Decision correctness by the §6.25 reader method: two isolated model
+   readers judge, at each learner turn, whether the tutor should change its
+   held approach. The harness compares the tutor's move at that turn, as read
+   by the board, with the two-reader consensus.
+3. Warranted shift share by the §6.26 method: consensus cases judged
+   warranted over all consensus cases, per cell.
+
+Prediction: the board tutor is above the blind tutor on endpoints 1 and 2.
+
+Kill rules:
+
+- Kill 1. The board tutor is not above the blind tutor on either shape's
+  channel. The scorer prints this as "Kill 1 ... FIRED".
+- Kill 2. Any dialogue in which the board tutor makes a move whose licence is
+  not in force, as read by the program. The runtime writes a
+  `scoreboard_licence_violation` event, ends that dialogue and fails its job.
+  The attended operator then stops the matrix. That is a defect. Do not patch
+  a live run. Report the dialogues done so far and stop.
+- Indeterminate means stop. If a channel cannot be decided for a shape, or the
+  readers reach consensus on no case in a cell, the note reports it and no
+  more calls are made.
+
+## Seats
+
+| seat | model | why |
+|---|---|---|
+| tutor, learner analysis, auto-learner (main run) | `claude-code.claude-sonnet-5` | default stack; never nemotron/kimi |
+| reader 1 and reader 2 (main run) | `codex.gpt-5.6-luna` | a different model from the tutor seat, so no self-judging |
+| tutor (second-model pair) | `codex.gpt-5.6-sol` | model-bound rule: one small pair with Sol in the tutor seat |
+| reader check | `claude-code.claude-opus-5` | model-bound rule for the reader seat: a few calls on Opus |
+
+The reader runner refuses a reader model that also held a tutor seat, and
+refuses nemotron or kimi in any seat. Both checks fail before the first call.
+
+## Zero-call preflight, run before the first paid call
+
+```bash
+node scripts/preflight-scoreboard-learner-cast.js
+```
+
+It must print PASS and exit 0. It builds each shape's trigger from the board
+with no model call. If it fails, the cast fails and nothing is launched.
+
+## Planned calls and ceilings
+
+Figures come from `--print-plan` output and from the runner's own count, not
+from the brief's estimate.
+
+| stage | command | dialogues | expected calls | hard ceiling | how the ceiling is enforced |
+|---|---|---|---|---|---|
+| generation, world 101 | A below | 24 | about 648 | 960 | per-dialogue budget 40; `reserve()` throws before the call at 40 |
+| generation, world 102 | B below | 24 | about 648 | 960 | same |
+| reader seats, main run | C below | 48 | 192 | 192 | `--max-calls 192`, checked before every call |
+| second-model pair, world 101 | D below | 8 | about 216 | 320 | per-dialogue budget 40 |
+| reader seats, second-model pair | E below | 8 | 32 | 32 | `--max-calls 32` |
+| Opus reader check, six main dialogues | F below | 6 | 12 | 12 | `--max-calls 12` |
+
+Expected total about 1,748 calls. Hard ceiling total 2,476 calls. The expected
+generation figure uses the §6.25 rate of 27 model calls per 8-turn dialogue
+(tutor 8, auto-learner 8, learner analysis 8, recovery about 2, opening 1).
+The §6.25 run used budget 30; this run uses 40 so that a slow dialogue is not
+cut short, and the ceiling still fails before the call.
+
+Automatic retries: 0. No resampling after a failure. No top-up. A dialogue
+that fails stays failed and is reported as such.
+
+A. Generation, world 101 (plan print: 24 expected dialogue rows, primary
+horizon learner turn 8, DAG mode strict_dag, budget 40, warrant gate observe,
+stop on grounded no):
+
+```bash
+node scripts/run-tutor-stub-qa-matrix.js --suite scoreboard --profiles low_agency,overconfident --runs 6 --turns 8 --primary-horizon 8 --cli-effort medium --warrant-gate observe --no-stop-on-grounded --world world_101_kestrel_signal_lamp --model claude-code.claude-sonnet-5 --analysis-model claude-code.claude-sonnet-5 --auto-learner-model claude-code.claude-sonnet-5 --model-call-budget 40 --trace-dir exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-101
+```
+
+B. Generation, world 102 (same plan figures):
+
+```bash
+node scripts/run-tutor-stub-qa-matrix.js --suite scoreboard --profiles low_agency,overconfident --runs 6 --turns 8 --primary-horizon 8 --cli-effort medium --warrant-gate observe --no-stop-on-grounded --world world_102_marigold_archive_box --model claude-code.claude-sonnet-5 --analysis-model claude-code.claude-sonnet-5 --auto-learner-model claude-code.claude-sonnet-5 --model-call-budget 40 --trace-dir exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-102
+```
+
+Run A and B one after the other, attended. They share one quota window and
+feed one contrast.
+
+C. Reader seats over the 48 dialogues (dry run first; it writes the packets
+and makes no call):
+
+```bash
+node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-101 --traces exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-102 --out exports/tutor-stub-live/scoreboard-crossed-2026-09-05/readers --dry-run
+```
+
+```bash
+node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-101 --traces exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-102 --out exports/tutor-stub-live/scoreboard-crossed-2026-09-05/readers --reader-model codex.gpt-5.6-luna --readers-count 2 --effort medium --max-calls 192
+```
+
+Each dialogue gives two packets. The warrant packet holds, for each learner
+turn, the public record through that turn with the tutor reply withheld. The
+delivery packet holds each learner turn and the tutor reply to it. Packets
+carry public text only: no board, no trace internals.
+
+D. Second-model pair, Sol in the tutor seat (plan print: 8 expected dialogue
+rows):
+
+```bash
+node scripts/run-tutor-stub-qa-matrix.js --suite scoreboard --profiles low_agency,overconfident --runs 2 --turns 8 --primary-horizon 8 --cli-effort medium --warrant-gate observe --no-stop-on-grounded --world world_101_kestrel_signal_lamp --model codex.gpt-5.6-sol --analysis-model claude-code.claude-sonnet-5 --auto-learner-model claude-code.claude-sonnet-5 --model-call-budget 40 --trace-dir exports/tutor-stub-live/scoreboard-crossed-2026-09-05/second-model-world-101
+```
+
+E. Reader seats over the second-model pair:
+
+```bash
+node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/scoreboard-crossed-2026-09-05/second-model-world-101 --out exports/tutor-stub-live/scoreboard-crossed-2026-09-05/second-model-readers --reader-model codex.gpt-5.6-luna --readers-count 2 --effort medium --max-calls 32
+```
+
+F. Opus reader check over six main dialogues: the first job directory of
+each cell in world 101 plus the first two of world 102, passed as six
+`--traces` job paths, one Opus reader:
+
+```bash
+node scripts/run-scoreboard-crossed-readers.js --traces <six job dirs> --out exports/tutor-stub-live/scoreboard-crossed-2026-09-05/opus-reader-check --reader-model claude-code.claude-opus-5 --readers-count 1 --effort medium --max-calls 12
+```
+
+Scoring is zero calls:
+
+```bash
+node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-101 --traces exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-102 --score --readers exports/tutor-stub-live/scoreboard-crossed-2026-09-05/readers --score-out exports/tutor-stub-live/scoreboard-crossed-2026-09-05/score.json
+```
+
+## Settings and why
+
+- `--turns 8` and `--primary-horizon 8`: eight learner turns, the §6.25
+  horizon.
+- `--warrant-gate observe`: the gate records its decision and does not steer.
+  The §6.25 run used the same setting. The board reader reads the recorded
+  decision.
+- `--no-stop-on-grounded`: every dialogue runs to turn 8, as in §6.25, so the
+  cells have equal turn counts.
+- `--cli-effort medium`: the §6.25 setting.
+- `--model-call-budget 40`: see the table above.
+- Run seed 20260711 and safety turns 120 are the matrix defaults; the plan
+  print shows them.
+
+## After the run
+
+1. `npm run archive:runs`, then commit in the private archive repo.
+2. Write `notes/2026-09-05-scoreboard-crossed-run-report.md`. First line:
+   which model held each seat and whether the second-model check ran. Then
+   per-cell numbers, the two kill rules read, three quoted dialogues, what the
+   paper may say. A conduct claim, never a learning claim.
+3. Provenance: the runner writes the commit, the branch and the dirty flag
+   into each trace's `run_start` event. The report copies them. Provenance is
+   recorded, not enforced. The approval is to the study, not to a commit, a
+   digest or a hash. There is no freeze, void or re-sign step.
+
+## What this note does not license
+
+- Step 3, the human seat. It stays on `a1-human-learner-validation`, gated on
+  IRB approval. No pilot code is touched.
+- Any edit to `docs/research/paper-full-2.0.md`.
+- Any dialogue beyond the 48 plus the 8 of the second-model pair, or any
+  reader call beyond the ceilings above.
+- A re-run, a resample, a top-up, or a patch to a live run.
+- Any seat on nemotron or kimi.
+- Any run through `services/retiredPaidLauncher.js` or through the §6.25
+  reader runner with its approval ceremony.
+
+Authorized by: pending. The user says go in the chat before command A.
