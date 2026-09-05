@@ -331,3 +331,67 @@ run record, responses and quarantined texts into the new out dir at
 recovery, re-checks their recorded digests and rewrites the rows; the
 predecessor keeps its copy. Regression test on both. Seeds, worlds,
 conditions, readers, bars and ceiling are unchanged.
+
+## Technical stop 2026-09-05: the admission refused the relaunch at zero calls
+
+What happened. The user merged the reader-loop fix and wrote GO. The
+relaunch under recovery from `-r6` into `-r7` was refused before any
+model call: `recovery requires the latest run to be a sealed technical
+predecessor`. The reader loop's crash was an unclassified `TypeError`,
+so the launcher's catch sealed r6 as `failed` with `recovery_permitted:
+false` and no stop code. The admission allows recovery only when the seal
+carries the flag or one of four evidence rules reads the run ledger and
+finds a known technical shape. None of the four matched a harness crash.
+No r7 directory was made; the ledger stays at 1,997 of 3,360.
+
+Class. Technical. A mis-set flag on a seal is not a design stop. The
+r6 run ledger shows the truth of it: every dispatched attempt ended in a
+completed or failed event, and the one burned reservation was cancelled
+before dispatch, so no model response could have been lost.
+
+What changes. A fifth evidence rule in the admission. A seal is read as a
+recoverable harness crash when its run ledger opens with the admission
+event, ends with a `run_sealed` event that has status `failed`, no stop
+code and a non-empty error, and holds no `attempt_interrupted_after_dispatch`
+event, with every `model_attempt_dispatch_started` attempt settled by a
+completed or failed event. Design stops carry a code and never match.
+Recovery under this rule is one deep, like the others. Tests: the r6
+shape admits one recovery and refuses a second; a seal with a stop code
+or a blank error still refuses; a crash that left a dispatch cut off
+refuses on this rule. Checked at zero calls against every seal in the
+study ledger: only r6 matches. The relaunch command is unchanged.
+
+## Amendment 2026-09-05: the reader phase reads four batches at a time
+
+What changes. Nothing about the study. The reader dispatch loop now runs
+four workers over one queue of the 1,136 batches instead of one worker over
+two nested lists. Every registered thing is untouched: the same two readers,
+the same 568 cases, the same batch size of one, the same packets, the same
+strict acceptance, the same reader attempt cap of 1,184, the same ceiling of
+3,360. A batch is one decision point read on its own packet, so the readers
+never see each other and order carries no information. The scoring step
+already keyed its assembly by reader and batch, so the order of arrival was
+never read.
+
+Why. Serial dispatch at the measured codex Sol median of about 7 seconds a
+call puts the reader phase near two and a quarter hours. Four workers put it
+near thirty-five minutes.
+
+How the ceiling still holds. Each worker carries its own budget object,
+because a budget holds one open try and refuses a second. All four budgets
+share one admission, and the admission's arithmetic counts capacity that is
+allocated but not yet spent. Four calls in flight are therefore four calls
+already charged against 3,360, and the ceiling cannot be passed by calls in
+the air. The cap check and the counter increment sit in one synchronous
+block, so two workers cannot claim the same free slot.
+
+How a stop behaves. The first failure is kept in a shared flag. Calls
+already dispatched run to the end and are recorded; no new call starts after
+it. The stop is thrown once every worker is idle, so the launcher never seals
+a run with paid calls still in the air. Any later failure is attached to the
+thrown stop rather than dropped. Three tests: four workers read six batches
+once each with four calls in flight and a ledger of six reserved and six
+completed; a contract failure with four calls in flight records the three
+good ones, quarantines the bad one and starts no fifth call; a stop raised
+outside the dispatch path still waits for a lagging call to record. The
+third fails on the old loop with three of four calls recorded.

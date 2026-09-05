@@ -600,145 +600,199 @@ function completedBatch(run, readerId, batchId) {
   return run.batches.find((row) => row.reader_id === readerId && row.batch_id === batchId && row.status === 'complete');
 }
 
+export const READER_WORKER_COUNT = 4;
+
 export async function runSecondFamilyReaders({
   collectionManifest,
   collectionManifestPath,
   outputDir,
   runPath,
   run,
-  budget,
+  budget = null,
+  budgets = null,
   readerModel = SECOND_FAMILY_SEATS.decision_readers,
   attemptCap,
   callModel = callAIWithCliBridge,
   effort = 'medium',
   persist = () => {},
 } = {}) {
+  // Reader batches are independent: one batch is one decision point, read on
+  // its own packet. Several may run at once. Each worker needs its OWN budget
+  // object: the budget holds a single active try and throws on a second
+  // reserve. All budgets share one admission, whose ceiling arithmetic counts
+  // capacity that is allocated but not yet spent, so calls in flight cannot
+  // slip past the registered ceiling.
+  const pool = Array.isArray(budgets) && budgets.length ? budgets : budget ? [budget] : [];
+  if (!pool.length) throw new Error('reader dispatch requires at least one model-attempt budget');
   const { provider, model } = parseModelRef(readerModel);
   const resolvedOutput = path.resolve(outputDir);
+  const queue = [];
   for (const reader of collectionManifest.readers) {
-    for (const batch of reader.batches) {
-      if (completedBatch(run, reader.reader_id, batch.batch_id)) continue;
-      let transportFailures = 0;
-      while (true) {
-        if (run.calls_attempted >= attemptCap) {
-          run.status = 'incomplete_reader_attempt_cap';
-          atomicWriteJson(runPath, run);
-          const error = new Error(`reader attempt cap ${attemptCap} reached`);
-          error.recoveryPermitted = false;
-          throw error;
-        }
-        const packet = readJson(batch.packet_path);
-        const outputSchema = readJson(batch.output_schema_path);
-        // The budget adapter keeps the attempt lifecycle on itself; the
-        // reservation it returns is a frozen record with no methods. The
-        // first paid reader call of the second family (2026-09-05) died on
-        // `reservation.markDispatched is not a function`, masked by the same
-        // error from `reservation.fail` in the catch, before any model call.
-        const reservation = budget.reserve({
-          role: 'decision_reader',
-          unitId: `${reader.reader_id}:${batch.batch_id}`,
-        });
-        run.calls_attempted += 1;
-        run.exposed_sample_ids = [...new Set([...run.exposed_sample_ids, ...batch.required_sample_ids])].sort();
+    for (const batch of reader.batches) queue.push({ reader, batch });
+  }
+  let cursor = 0;
+  // The first stop is kept and rethrown once every worker is idle. Calls
+  // already in flight finish and are recorded; no new call starts after it.
+  let stop = null;
+  // Later stops are kept beside the first, never dropped: with several workers
+  // in flight a second failure is evidence, not noise.
+  const alsoStopped = [];
+  const recordStop = (error) => {
+    if (stop) alsoStopped.push(error);
+    else stop = error;
+  };
+
+  async function readOneBatch(workerBudget, reader, batch) {
+    let transportFailures = 0;
+    while (true) {
+      if (run.calls_attempted >= attemptCap) {
+        run.status = 'incomplete_reader_attempt_cap';
         atomicWriteJson(runPath, run);
-        const started = Date.now();
-        let rawResponse = null;
-        let result = null;
-        try {
-          budget.markDispatched();
-          result = await callModel(
-            { provider, model },
-            READER_SYSTEM_PROMPT,
-            JSON.stringify(packet),
-            `second-family-${reader.reader_id}-${batch.batch_id}`,
-            {
-              outputSchema,
-              effort,
-              timeoutMs: 600_000,
-              maxStdoutBytes: 512_000,
-              maxStderrBytes: 64_000,
-            },
+        const error = new Error(`reader attempt cap ${attemptCap} reached`);
+        error.recoveryPermitted = false;
+        recordStop(error);
+        return;
+      }
+      const packet = readJson(batch.packet_path);
+      const outputSchema = readJson(batch.output_schema_path);
+      // The budget adapter keeps the try lifecycle on itself; the
+      // reservation it returns is a frozen record with no methods. The
+      // first paid reader call of the second family (2026-09-05) died on
+      // `reservation.markDispatched is not a function`, masked by the same
+      // error from `reservation.fail` in the catch, before any model call.
+      // Reserve and count in one synchronous block, so parallel workers
+      // cannot both pass the cap check on the same free slot.
+      const reservation = workerBudget.reserve({
+        role: 'decision_reader',
+        unitId: `${reader.reader_id}:${batch.batch_id}`,
+      });
+      run.calls_attempted += 1;
+      run.exposed_sample_ids = [...new Set([...run.exposed_sample_ids, ...batch.required_sample_ids])].sort();
+      atomicWriteJson(runPath, run);
+      const started = Date.now();
+      let rawResponse = null;
+      let result = null;
+      try {
+        workerBudget.markDispatched();
+        result = await callModel(
+          { provider, model },
+          READER_SYSTEM_PROMPT,
+          JSON.stringify(packet),
+          `second-family-${reader.reader_id}-${batch.batch_id}`,
+          {
+            outputSchema,
+            effort,
+            timeoutMs: 600_000,
+            maxStdoutBytes: 512_000,
+            maxStderrBytes: 64_000,
+          },
+        );
+        rawResponse = String(result?.text || '');
+        if (!rawResponse.trim())
+          throw Object.assign(new Error(`${batch.batch_id} returned no text`), { transport: true });
+        const parsed = acceptSecondFamilyReaderResponse({
+          rawText: rawResponse,
+          manifest: collectionManifest,
+          reader,
+          batch,
+        });
+        const outputPath = path.join(resolvedOutput, reader.reader_id, batch.expected_response_filename);
+        atomicWriteJson(outputPath, parsed);
+        workerBudget.persistResponse(outputPath);
+        workerBudget.complete();
+        run.calls_completed += 1;
+        run.batches.push({
+          reader_id: reader.reader_id,
+          batch_id: batch.batch_id,
+          attempt_id: reservation.attemptId || null,
+          status: 'complete',
+          packet_sha256: batch.packet_sha256,
+          output_schema_sha256: batch.output_schema_sha256,
+          response_path: outputPath,
+          response_sha256: fileSha256(outputPath),
+          latency_ms: Date.now() - started,
+          returned_provider: result.provider || null,
+          returned_model: result.model || null,
+          model_attestation_basis: result.modelAttestationBasis || null,
+          model_independently_attested: result.modelIndependentlyAttested === true,
+          prohibited_tool_event_count: Number(result.prohibitedToolEventCount || 0),
+        });
+        atomicWriteJson(runPath, run);
+        persist();
+        return;
+      } catch (error) {
+        workerBudget.fail(error);
+        const transport = rawResponse === null || error.transport === true;
+        const failedRow = {
+          reader_id: reader.reader_id,
+          batch_id: batch.batch_id,
+          attempt_id: reservation.attemptId || null,
+          status: 'failed',
+          failure_kind: transport ? 'transport_response_free' : 'contract',
+          packet_sha256: batch.packet_sha256,
+          output_schema_sha256: batch.output_schema_sha256,
+          latency_ms: Date.now() - started,
+          error: error.message,
+          exposed_sample_ids: [...batch.required_sample_ids],
+        };
+        if (!transport) {
+          const quarantinePath = path.join(
+            resolvedOutput,
+            'quarantine',
+            reader.reader_id,
+            `${batch.batch_id}.attempt-${run.calls_attempted}.txt`,
           );
-          rawResponse = String(result?.text || '');
-          if (!rawResponse.trim())
-            throw Object.assign(new Error(`${batch.batch_id} returned no text`), { transport: true });
-          const parsed = acceptSecondFamilyReaderResponse({
-            rawText: rawResponse,
-            manifest: collectionManifest,
-            reader,
-            batch,
-          });
-          const outputPath = path.join(resolvedOutput, reader.reader_id, batch.expected_response_filename);
-          atomicWriteJson(outputPath, parsed);
-          budget.persistResponse(outputPath);
-          budget.complete();
-          run.calls_completed += 1;
-          run.batches.push({
-            reader_id: reader.reader_id,
-            batch_id: batch.batch_id,
-            attempt_id: reservation.attemptId || null,
-            status: 'complete',
-            packet_sha256: batch.packet_sha256,
-            output_schema_sha256: batch.output_schema_sha256,
-            response_path: outputPath,
-            response_sha256: fileSha256(outputPath),
-            latency_ms: Date.now() - started,
-            returned_provider: result.provider || null,
-            returned_model: result.model || null,
-            model_attestation_basis: result.modelAttestationBasis || null,
-            model_independently_attested: result.modelIndependentlyAttested === true,
-            prohibited_tool_event_count: Number(result.prohibitedToolEventCount || 0),
-          });
-          atomicWriteJson(runPath, run);
-          persist();
-          break;
-        } catch (error) {
-          budget.fail(error);
-          const transport = rawResponse === null || error.transport === true;
-          const failedRow = {
-            reader_id: reader.reader_id,
-            batch_id: batch.batch_id,
-            attempt_id: reservation.attemptId || null,
-            status: 'failed',
-            failure_kind: transport ? 'transport_response_free' : 'contract',
-            packet_sha256: batch.packet_sha256,
-            output_schema_sha256: batch.output_schema_sha256,
-            latency_ms: Date.now() - started,
-            error: error.message,
-            exposed_sample_ids: [...batch.required_sample_ids],
-          };
-          if (!transport) {
-            const quarantinePath = path.join(
-              resolvedOutput,
-              'quarantine',
-              reader.reader_id,
-              `${batch.batch_id}.attempt-${run.calls_attempted}.txt`,
-            );
-            fs.mkdirSync(path.dirname(quarantinePath), { recursive: true });
-            fs.writeFileSync(quarantinePath, rawResponse);
-            failedRow.quarantine_path = quarantinePath;
-            failedRow.quarantine_sha256 = fileSha256(quarantinePath);
-          }
-          run.batches.push(failedRow);
-          atomicWriteJson(runPath, run);
-          persist();
-          if (transport && transportFailures < READER_TRANSPORT_RETRIES_PER_BATCH) {
-            transportFailures += 1;
-            continue;
-          }
-          run.status = transport ? 'incomplete_transport_failure' : 'incomplete_contract_failure';
-          atomicWriteJson(runPath, run);
-          const stop = new Error(
-            transport
-              ? `reader ${reader.reader_id} batch ${batch.batch_id}: ${READER_TRANSPORT_RETRIES_PER_BATCH + 1} response-free attempts`
-              : `reader ${reader.reader_id} batch ${batch.batch_id} returned a response outside the contract; quarantined at ${failedRow.quarantine_path}`,
-          );
-          stop.code = transport ? 'reader_transport_failure' : 'reader_contract_failure';
-          stop.recoveryPermitted = true;
-          throw stop;
+          fs.mkdirSync(path.dirname(quarantinePath), { recursive: true });
+          fs.writeFileSync(quarantinePath, rawResponse);
+          failedRow.quarantine_path = quarantinePath;
+          failedRow.quarantine_sha256 = fileSha256(quarantinePath);
         }
+        run.batches.push(failedRow);
+        atomicWriteJson(runPath, run);
+        persist();
+        if (transport && transportFailures < READER_TRANSPORT_RETRIES_PER_BATCH && !stop) {
+          transportFailures += 1;
+          continue;
+        }
+        run.status = transport ? 'incomplete_transport_failure' : 'incomplete_contract_failure';
+        atomicWriteJson(runPath, run);
+        const stopError = new Error(
+          transport
+            ? `reader ${reader.reader_id} batch ${batch.batch_id}: ${READER_TRANSPORT_RETRIES_PER_BATCH + 1} response-free attempts`
+            : `reader ${reader.reader_id} batch ${batch.batch_id} returned a response outside the contract; quarantined at ${failedRow.quarantine_path}`,
+        );
+        stopError.code = transport ? 'reader_transport_failure' : 'reader_contract_failure';
+        stopError.recoveryPermitted = true;
+        recordStop(stopError);
+        return;
       }
     }
+  }
+
+  async function readerWorker(workerBudget) {
+    // Every worker resolves, whatever happens. An error thrown outside the
+    // dispatch try (a reserve over the ceiling, a failed disk write) would
+    // otherwise reject this worker while the others are still spending, and
+    // the launcher's catch would seal the run with calls in flight.
+    try {
+      while (!stop) {
+        // Pull and advance in one synchronous step: no two workers take the
+        // same batch.
+        const task = queue[cursor];
+        if (!task) return;
+        cursor += 1;
+        if (completedBatch(run, task.reader.reader_id, task.batch.batch_id)) continue;
+        await readOneBatch(workerBudget, task.reader, task.batch);
+      }
+    } catch (error) {
+      recordStop(error);
+    }
+  }
+
+  await Promise.all(pool.map((workerBudget) => readerWorker(workerBudget)));
+  if (stop) {
+    if (alsoStopped.length) stop.concurrentFailures = alsoStopped.map((error) => error.message);
+    throw stop;
   }
   run.status = 'complete';
   run.completed_at = nowIso();
@@ -1186,14 +1240,19 @@ export async function executeSecondFamilyReplication({
     if (run.status !== 'complete') {
       checkpoint.status = 'decision_readers';
       persist();
-      const budget = createDurablePaidModelAttemptBudget({ admission, limit: ceiling, unitPrefix: 'reader' });
+      // One budget per worker, all over the same admission: the budget holds
+      // a single active try, the admission holds the ceiling.
+      const budgets = Array.from({ length: READER_WORKER_COUNT }, () =>
+        createDurablePaidModelAttemptBudget({ admission, limit: ceiling, unitPrefix: 'reader' }),
+      );
+      log(`reader dispatch: ${READER_WORKER_COUNT} workers`);
       await runSecondFamilyReaders({
         collectionManifest: collection.manifest,
         collectionManifestPath: collection.manifestPath,
         outputDir: readerDirs.runDir,
         runPath: readerDirs.runPath,
         run,
-        budget,
+        budgets,
         readerModel: seats.decision_readers,
         attemptCap: counts.reader_attempt_cap,
         callModel,
