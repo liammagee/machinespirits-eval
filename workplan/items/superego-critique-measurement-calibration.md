@@ -1,7 +1,7 @@
 ---
 id: superego-critique-measurement-calibration
 title: Validate superego critique measurement before reconsidering the causal replay
-status: review
+status: blocked
 type: research
 priority: P2
 owner: codex
@@ -9,7 +9,8 @@ source: manual
 created: 2026-09-05
 updated: 2026-09-05
 verification: Verify the unchanged 48-item identities and complete-input derivative; test zero-call preparation, judge separation, calibrated request reservations and missing-only recovery; review the calibration design, independent human reference plan and hosted CI before any paid launch.
-branch: codex/superego-critique-measurement-review
+branch: codex/superego-critique-calibration-closeout
+blocked_by: Registered response-format/evidence failure; the first answer is retained and automatic recovery is disabled.
 claim_status: methods
 links:
   items:
@@ -17,6 +18,7 @@ links:
   notes:
     - notes/superego-critique-causal-replay-design.md
     - notes/2026-09-05-superego-critique-measurement-calibration-go.md
+    - notes/2026-09-05-superego-critique-measurement-calibration-launch.md
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/1038
 ---
@@ -61,3 +63,22 @@ The design and runner are unchanged. Hosted CI on implementation commit
 The approval records the calibration design only; a separate explicit launch
 instruction remains required. No calibration, human coding, provider call or
 four-arm replay was launched by this recording step.
+
+2026-09-05 Codex: After #1038 merged, the user separately instructed "Launch the
+calibration". Preflight reproduced the fixed plan and verified all sealed
+sources. The first Sonnet response contained Markdown-wrapped JSON; the runner
+stopped under the registered invalid-output rule. Offline inspection also found
+two nonmatching candidate quotation spans (a serialized field fragment and an
+apostrophe difference). Zero valid judgments were accepted; one physical
+attempt used $0.018594 reported cost and retained $0.090463 reservation. The
+remaining 191 jobs were never dispatched. No retry, replacement rating or
+four-arm launch occurred. See the launch note for exact accounting and archive
+provenance. Independent human validation remains outstanding.
+
+Packaging: all 15 artifacts (2,602,212 bytes) verified against the private
+archive, including the prepared human packets and canonical-ledger snapshot.
+The maintained archive check reports zero missing. Private archive commit
+09368ef3a6fe7694b0c9a4acee59c9c4ed382d45 is pushed and remotely verified on
+`codex/superego-critique-calibration-archive`. Original files are unchanged.
+Workplan source and diff checks passed; this closeout changes no runtime,
+measurement rule, budget or authorization.
