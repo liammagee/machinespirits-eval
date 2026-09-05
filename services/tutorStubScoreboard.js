@@ -261,16 +261,29 @@ function answerNode(text, world) {
   return OTHER;
 }
 
+const NAMING_HEDGE = /\b(not|never|neither|cannot|can't|does not|doesn't|unproved|unshown|open|yet)\b/u;
+
+/**
+ * Does the tutor's text name the answer? A question mark or a hedge word
+ * anywhere in a sentence governs the whole sentence, including a clause that
+ * a dash joins to it. So the question and the hedge are read on the whole
+ * sentence first, and only then is the naming clause looked for inside it.
+ * Before this, the clause before a dash was read on its own, so "What would put
+ * Osprey at bay three, then a dash, then is there a record ... not just ...?"
+ * read as a commitment to the secret. Two board dialogues of the 2026-09-05
+ * crossed run were cut at turn 6 on that misread.
+ */
 function tutorNamesAnswer(text, world, nodeIndex) {
   if (!world || !text) return null;
-  for (const sentence of sentences(text)) {
+  for (const sentence of sentences(text, { coarse: true })) {
     if (/\?$/u.test(sentence)) continue;
-    const node = answerNode(sentence, world);
-    if (node === OTHER) continue;
-    if (keyNode(sentence, nodeIndex) !== SECRET_NODE) continue;
-    if (/\b(not|never|neither|cannot|can't|does not|doesn't|unproved|unshown|open|yet)\b/u.test(norm(sentence)))
-      continue;
-    return { node, span: clip(sentence) };
+    if (NAMING_HEDGE.test(norm(sentence))) continue;
+    for (const clause of sentences(sentence)) {
+      const node = answerNode(clause, world);
+      if (node === OTHER) continue;
+      if (keyNode(clause, nodeIndex) !== SECRET_NODE) continue;
+      return { node, span: clip(clause) };
+    }
   }
   return null;
 }

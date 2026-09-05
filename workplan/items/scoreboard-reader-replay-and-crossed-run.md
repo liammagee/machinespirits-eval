@@ -151,3 +151,26 @@ are read.
   calls of the 2,476 ceiling. Traces archived in the private repo. Report:
   `notes/2026-09-05-scoreboard-crossed-run-report.md`. The paper may state
   no verdict from this run.
+- 2026-09-05: splitter defect fixed in the board reader. The naming rule read
+  each clause on its own after the splitter cut a sentence at a dash, so the
+  clause before the dash lost the sentence's question mark or its hedge word
+  ("not", "yet") and read as a commitment to the secret. Now the reader reads
+  the question mark and the hedge on the whole sentence first, then looks for
+  the naming clause inside it. A named answer under the new reader is always a
+  named answer under the old one. Regression tests hold the two real turn-6
+  sentences from the world 102 board dialogues (board-r2, board-r4), the real
+  turn-8 naming from board_blind-r1 (still a naming), and one synthetic pair.
+  Zero paid calls to check: (1) the Step 1 replay reads the same, both bars
+  unchanged (562 of 678 shapes agree, 457 of 511 delivered moves show, same
+  forced-card table); 17 tutor rows across the 729 sealed boards drop a false
+  naming and no other field changes. (2) The 36 crossed-run dialogues
+  re-audited offline: with the old reader the offline audit matches every one
+  of the 284 recorded after-turn audits; with the fixed reader the two board
+  violations in world 102 vanish, the three record-only marks in the blind
+  arms stay (two namings at turn 8, one challenge mark at turn 2), and no new
+  mark appears. Kill 2 fired on the reader, not the tutor. Report-only, no
+  change: 64 of 1,949 test marks sit inside a question sentence cut at a
+  dash, but there the clause before the dash is the act itself ("I open the
+  badge log; what does this change?"), so that rule keeps the clause read.
+  The rerun of world 102 (24 dialogues, about 650 calls) plus the reader
+  seats (192 calls) waits on the user's word.
