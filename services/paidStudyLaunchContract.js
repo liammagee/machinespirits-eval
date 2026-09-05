@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { reconcileSharedModelAttemptLedger } from './durableAttemptJournal.js';
 
@@ -221,6 +221,77 @@ function isSealedZeroProviderStartupFailure(event) {
     seal.status === 'technical_failure' &&
     Number(seal.reserved_attempts) === reservedInRun
   );
+}
+
+// This is a rejected request option, not a model answer. Keep the accepted shape
+// narrow: the provider must explicitly name unsupported JSON-object formatting,
+// and there must be no output or token-usage envelope to reinterpret.
+export function isResponseFreeJsonModeRejection(request, raw) {
+  if (request?.response_format?.type !== 'json_object' || ![400, 405].includes(raw?.status)) return false;
+  try {
+    const envelope = JSON.parse(raw.body);
+    const providerEnvelope = JSON.parse(envelope.error?.metadata?.raw);
+    const error = providerEnvelope?.error;
+    return (
+      Object.keys(envelope).every((key) => ['error', 'user_id'].includes(key)) &&
+      Object.keys(providerEnvelope).every((key) => key === 'error') &&
+      Object.keys(envelope.error).every((key) => ['code', 'message', 'metadata'].includes(key)) &&
+      Object.keys(envelope.error.metadata).every((key) => ['raw', 'provider_name', 'is_byok'].includes(key)) &&
+      Object.keys(error).every((key) => ['message', 'type', 'param', 'code'].includes(key)) &&
+      envelope.error?.code === raw.status &&
+      error?.type === 'invalid_request_error' &&
+      error.param === 'response_format' &&
+      /^json_object response format is not supported for model: .+$/u.test(error.message)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isSealedInitialJsonModeRejection(event, studyEvents) {
+  if (
+    event?.type !== 'study_run_sealed' ||
+    event.status !== 'technical_failure' ||
+    event.recovery_permitted !== false ||
+    event.reserved_in_run !== 1 ||
+    event.study_reserved !== 1 ||
+    !path.isAbsolute(event.destination || '') ||
+    path.dirname(event.run_ledger || '') !== event.destination ||
+    studyEvents.filter((e) => e.type === 'study_launch_admitted').length !== 1 ||
+    studyEvents.some((e) => e.type === 'study_model_attempt_reserved') ||
+    studyEvents.filter((e) => e.type === 'study_model_attempt_dispatch_reserved').length !== 1
+  )
+    return false;
+  try {
+    const events = readJsonLines(event.run_ledger, 'initial JSON-mode rejection');
+    const reservations = events.filter((e) => e.type === 'model_attempt_dispatch_reserved');
+    const persisted = events.filter((e) => e.type === 'attempt_response_persisted');
+    const completed = events.filter((e) => e.type === 'attempt_completed');
+    const seal = events.at(-1);
+    if (
+      events[0]?.launch_kind !== 'initial' ||
+      reservations.length !== 1 ||
+      persisted.length !== 1 ||
+      completed.length !== 1 ||
+      events.some((e) => ['model_attempt_reserved', 'job_complete', 'unit_complete'].includes(e.type)) ||
+      persisted[0].attempt_id !== reservations[0].attempt_id ||
+      completed[0].attempt_id !== reservations[0].attempt_id ||
+      seal?.type !== 'run_sealed' ||
+      seal.status !== 'technical_failure' ||
+      seal.completed_jobs !== 0 ||
+      path.dirname(persisted[0].response_path || '') !== path.join(event.destination, 'responses') ||
+      !fs.lstatSync(persisted[0].response_path).isFile()
+    )
+      return false;
+    const bytes = fs.readFileSync(persisted[0].response_path);
+    if (createHash('sha256').update(bytes).digest('hex') !== persisted[0].response_sha256) return false;
+    const bundle = JSON.parse(bytes);
+    return (
+      bundle.attempt_id === reservations[0].attempt_id && isResponseFreeJsonModeRejection(bundle.request, bundle.raw)
+    );
+  } catch {
+    return false;
+  }
 }
 
 function isSealedReportBackedActionOutcomeFailure(event) {
@@ -543,11 +614,13 @@ function validateStudyLedger({ events, studyId, spendCap, recoveryFrom }) {
   const ordinaryRecovery = seal?.recovery_permitted === true;
   const zeroProviderStartupRecovery = isSealedZeroProviderStartupFailure(seal);
   const reportBackedActionOutcomeRecovery = isSealedReportBackedActionOutcomeFailure(seal);
+  const initialJsonModeRecovery = isSealedInitialJsonModeRejection(seal, events);
   const zeroProviderStartupFailures = events.filter(isSealedZeroProviderStartupFailure).length;
   if (
     lastSealIndex < lastLaunchIndex ||
     seal?.destination !== recoveryFrom ||
     (!ordinaryRecovery &&
+      !initialJsonModeRecovery &&
       !reportBackedActionOutcomeRecovery &&
       (!zeroProviderStartupRecovery || zeroProviderStartupFailures !== 1))
   ) {
