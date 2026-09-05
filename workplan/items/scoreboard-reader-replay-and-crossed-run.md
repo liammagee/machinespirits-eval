@@ -151,6 +151,14 @@ are read.
   calls of the 2,476 ceiling. Traces archived in the private repo. Report:
   `notes/2026-09-05-scoreboard-crossed-run-report.md`. The paper may state
   no verdict from this run.
+- 2026-09-05: regression tests for the Kill 2 defect added in
+  `tests/tutorStubScoreboard.test.js`: the two tutor turns the run stopped on
+  (world 102, low_agency, board-r2 and board-r4, turn 6, exact text with the
+  em-dash) must read no answer named and pass the licence audit; a control
+  turn that names the answer (board_blind-r1, turn 8) must still fire the
+  rule. The two tests are red on main until the splitter fix lands; that fix
+  is in another session. Against that session's uncommitted fix all three
+  pass with zero calls.
 - 2026-09-05: splitter defect fixed in the board reader. The naming rule read
   each clause on its own after the splitter cut a sentence at a dash, so the
   clause before the dash lost the sentence's question mark or its hedge word
