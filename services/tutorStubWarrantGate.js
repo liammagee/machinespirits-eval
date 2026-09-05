@@ -104,6 +104,33 @@ export function projectTutorStubWarrantGateOutcomeConfiguration(configuration = 
   };
 }
 
+// Instructional repair keeps structural priority over the gate override in
+// buildTutorStubResponseConfiguration (registered first-family design, relay
+// 063). On an instructional_meta turn the frozen configuration therefore holds
+// the repair family, not the gate's warranted family. Final authority records
+// that hold instead of throwing; the frozen-family mismatch check below stays
+// for every other plane.
+const TUTOR_STUB_INSTRUCTIONAL_META_REPAIR_FAMILIES = new Set(['repair_explanation', 'clarify_term']);
+
+function deferredInstructionalMetaRepairHold({ decision, desiredActionFamily, frozenResponseConfiguration }) {
+  if (!frozenResponseConfiguration) return null;
+  const heldActionFamily = frozenResponseConfiguration.action_family || null;
+  if (heldActionFamily === desiredActionFamily) return null;
+  if (frozenResponseConfiguration.discourse_plane?.plane !== 'instructional_meta') return null;
+  if (!TUTOR_STUB_INSTRUCTIONAL_META_REPAIR_FAMILIES.has(heldActionFamily)) return null;
+  return {
+    schema: 'machinespirits.tutor-stub.warrant-gate-final-authority.v2',
+    applied: false,
+    deferral_reason: 'instructional_meta_repair_priority',
+    desired_action_family: desiredActionFamily,
+    held_action_family: heldActionFamily,
+    warrant_basis: decision.warrant_basis || null,
+    decision_kind: decision.decision_kind || null,
+    configuration_source: 'frozen_pre_optional_gate_configuration',
+    configuration_restored: false,
+  };
+}
+
 export function enforceTutorStubWarrantGateFinalAuthority(
   selection,
   decision = selection?.warrant_gate || null,
@@ -115,6 +142,20 @@ export function enforceTutorStubWarrantGateFinalAuthority(
   const responseConfiguration = selection.response_configuration || null;
   const frozenSelection = frozenPreOptionalSelection ? structuredClone(frozenPreOptionalSelection) : null;
   const frozenResponseConfiguration = frozenSelection?.response_configuration || null;
+  const instructionalMetaRepairHold = deferredInstructionalMetaRepairHold({
+    decision,
+    desiredActionFamily,
+    frozenResponseConfiguration,
+  });
+  if (instructionalMetaRepairHold) {
+    return {
+      ...selection,
+      adaptive_warrant_enforcement: instructionalMetaRepairHold,
+      response_configuration: responseConfiguration
+        ? { ...responseConfiguration, adaptive_warrant_enforcement: instructionalMetaRepairHold }
+        : responseConfiguration,
+    };
+  }
   if (frozenResponseConfiguration && frozenResponseConfiguration.action_family !== desiredActionFamily) {
     throw new Error(
       `Adaptive warrant final authority expected frozen action family ${desiredActionFamily}, got ${

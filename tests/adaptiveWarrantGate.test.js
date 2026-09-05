@@ -2725,6 +2725,105 @@ test('final authority restores the complete frozen gate bundle before first-draf
   assert.equal(firstDraft.performance.tactic, 'unadorned_report');
 });
 
+// Second-family replication, dialogue 35 (world 102, gated, seed 742), turn 5.
+// The learner wrote "The words are plain enough for me — do you want me to
+// write it in as the line ...", which the discourse-plane classifier labels
+// instructional_meta. The gate warranted challenge_resistance on sustained
+// deference, but the response-configuration builder keeps instructional repair
+// over the gate override (relay 063), so the frozen family was
+// repair_explanation. Final authority must record the hold, not throw.
+test('final authority defers to instructional-meta repair priority instead of throwing on the frozen family', () => {
+  const decision = {
+    mode: 'active',
+    revision_warranted: true,
+    decision_kind: 'pedagogical_commitment_transition',
+    warrant_basis: 'sustained_deference:3_turns',
+    policy: {
+      schema: 'machinespirits.adaptation-refinement.repair-policy.v3',
+      family: 'challenge_resistance',
+      decision_kind: 'pedagogical_commitment_transition',
+      review: 'switch',
+      from_family: 'stage_next_step',
+      rationale: 'sustained permission-seeking with no record growth; hand agency back',
+      stance_hint: 'precise',
+      register_revision: false,
+      obligation_directive: null,
+    },
+    override: {
+      action_family: 'challenge_resistance',
+      engagement_stance: 'precise',
+      reason:
+        'Adaptive warrant gate: sustained_deference:3_turns — sustained permission-seeking with no record growth; hand agency back',
+    },
+  };
+  const frozenResponseConfiguration = {
+    schema: 'machinespirits.tutor-stub.response-configuration.v1',
+    engagement_stance: 'plain',
+    action_family: 'repair_explanation',
+    discourse_plane: { plane: 'instructional_meta', proof_effect: 'none' },
+    addressee_profile: 'adult_novice',
+    audience_register: 'adult_novice',
+    lexical_accessibility: 'plain',
+    scene_immersion: 'grounded',
+    actorial_part: 'guide',
+    actorial_part_label: 'guide',
+    selection_reasons: {
+      action_family:
+        'The learner requested an instructional repair; restate the explanation without advancing evidence or proof state.',
+    },
+    compatibility: {},
+  };
+  const frozen = {
+    schema: 'machinespirits.tutor-stub.response-configuration-selection.v5',
+    turn: 5,
+    warrant_gate: decision,
+    engagement_stance: 'plain',
+    action_family: 'repair_explanation',
+    response_configuration: frozenResponseConfiguration,
+  };
+  const postOptional = {
+    ...structuredClone(frozen),
+    typed_action_decision: { contract_id: 'typed-t5', chosen_action: { action_type: 'restate' } },
+  };
+
+  const held = enforceTutorStubWarrantGateFinalAuthority(postOptional, decision, {
+    frozenPreOptionalSelection: frozen,
+  });
+  assert.equal(held.action_family, 'repair_explanation');
+  assert.equal(held.response_configuration.action_family, 'repair_explanation');
+  assert.deepEqual(held.typed_action_decision, postOptional.typed_action_decision);
+  assert.equal(held.adaptive_warrant_enforcement.applied, false);
+  assert.equal(held.adaptive_warrant_enforcement.deferral_reason, 'instructional_meta_repair_priority');
+  assert.equal(held.adaptive_warrant_enforcement.desired_action_family, 'challenge_resistance');
+  assert.equal(held.adaptive_warrant_enforcement.held_action_family, 'repair_explanation');
+  assert.equal(held.adaptive_warrant_enforcement.warrant_basis, 'sustained_deference:3_turns');
+  assert.equal(held.adaptive_warrant_enforcement.configuration_restored, false);
+  assert.equal(held.response_configuration.adaptive_warrant_enforcement.applied, false);
+
+  // Any other plane still fails closed on a frozen-family mismatch.
+  const objectPlane = structuredClone(frozen);
+  objectPlane.response_configuration.discourse_plane = { plane: 'object', proof_effect: 'candidate' };
+  assert.throws(
+    () =>
+      enforceTutorStubWarrantGateFinalAuthority(structuredClone(objectPlane), decision, {
+        frozenPreOptionalSelection: objectPlane,
+      }),
+    /expected frozen action family challenge_resistance, got repair_explanation/,
+  );
+
+  // An instructional-meta turn whose frozen family is not a repair family also fails closed.
+  const metaNonRepair = structuredClone(frozen);
+  metaNonRepair.action_family = 'stage_next_step';
+  metaNonRepair.response_configuration.action_family = 'stage_next_step';
+  assert.throws(
+    () =>
+      enforceTutorStubWarrantGateFinalAuthority(structuredClone(metaNonRepair), decision, {
+        frozenPreOptionalSelection: metaNonRepair,
+      }),
+    /expected frozen action family challenge_resistance, got stage_next_step/,
+  );
+});
+
 test('gate outcomes carry a digest-bound projection instead of recursively nesting final-authority proofs', () => {
   const finalAuthorityAudit = {
     schema: 'machinespirits.tutor-stub.warrant-gate-final-authority-audit.v1',

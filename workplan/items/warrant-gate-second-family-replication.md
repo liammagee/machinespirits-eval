@@ -9,7 +9,7 @@ source: manual
 created: 2026-09-04
 updated: 2026-09-05
 branch: claude/warrant-gate-second-family-replication
-verification: "Launched 2026-09-04 on the user's chat GO. Two attempts at dialogue 01 discarded (32 calls): a harness defect (PR #1025) and an Opus 5 analysis-seat validator failure. Registration amended in place on 2026-09-05: analysis seat back to Luna, seed 736 replaced by 748. Relaunched under a fresh chat GO."
+verification: "Launched 2026-09-04 on the user's chat GO. Two attempts at dialogue 01 discarded (32 calls): a harness defect (PR #1025) and an Opus 5 analysis-seat validator failure. Registration amended in place on 2026-09-05: analysis seat back to Luna, seed 736 replaced by 748. Relaunched under a fresh chat GO. Stopped again at dialogue 02 (quote rule, PR #1033) and at dialogue 35 (final-authority check, this fix); 34/72 complete."
 claim_status: planned
 links:
   notes:
@@ -71,4 +71,18 @@ in the registration linked above; nothing else changes.
   in the original text, uniqueness stays. Regression test on the real turn.
   Registration amended (second amendment). Awaiting the user's word to
   relaunch under recovery with dialogue 02's one retake.
+- 2026-09-05: User merged PR #1033 and wrote GO. Relaunched under recovery
+  into `-2026-09-05-r2`. Dialogues 02 to 34 completed with every turn read.
+  Ten codex CLI timeouts or failed turns healed on retry inside the three
+  tries. Ledger 970 of 3,360 calls at 34 of 72.
+- 2026-09-05: Dialogue 35 (world 102, gated, seed 742) quarantined at turn
+  5; run stopped as recoverable. The learner's wording comment put the turn
+  on the instructional_meta plane, where the builder keeps the repair
+  family over the gate override (first-family design). The final-authority
+  check from PR #654, added after the first family ran, threw on the
+  mismatch. Fixed in place: the check now records the hold as
+  `applied: false` with a named reason and throws on every other plane.
+  Regression test on the real turn-5 shape. Registration amended (third
+  amendment). Awaiting the user's word to relaunch under recovery with
+  dialogue 35's one retake.
 
