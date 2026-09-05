@@ -7,8 +7,8 @@ priority: P2
 owner: claude
 source: review
 created: 2026-09-03
-updated: 2026-09-04
-verification: "Either the turn-2 and turn-4 template fallback on world-037 is explained offline and one recorded run shows a held plant meeting a model reply; or the six pooled with/without pairs are written up as a lean in the hold notes and this card closes with no further paid 037 pair."
+updated: 2026-09-05
+verification: "Either the turn-2 and turn-4 template fallback on world-037 is explained offline and one recorded run shows a held plant meeting a model reply; or the six pooled with/without pairs are written up as a lean in the hold notes and this card closes with no further paid 037 pair. First branch met 2026-09-05 (step 7f): the cause note explains the fallback, and the held turn 3 met a model line with the card. The human second read (step 2) stays open."
 claim_status: exploratory
 depends_on:
   - state-detection-without-word-lists
@@ -24,6 +24,7 @@ links:
     - "https://github.com/liammagee/machinespirits-eval/pull/985"
     - "https://github.com/liammagee/machinespirits-eval/pull/996"
     - "https://github.com/liammagee/machinespirits-eval/pull/1010"
+    - "https://github.com/liammagee/machinespirits-eval/pull/1024"
   notes:
     - notes/poetics/hero-demo-runs/2026-09-02-step6-model-labels.md
     - notes/poetics/hero-demo-runs/2026-09-02-step6-form-v3-live.md
@@ -40,6 +41,7 @@ links:
     - notes/poetics/hero-demo-runs/2026-09-04-hold-speech-check-opus-reread.md
     - notes/poetics/hero-demo-runs/2026-09-04-step6a-opus-labeller-check.md
     - notes/poetics/hero-demo-runs/2026-09-04-step7-offline-matcher-fix.md
+    - notes/poetics/hero-demo-runs/2026-09-05-step7f-hold-cue-fix-live.md
   exports:
     - exports/tutor-stub-outcome/step6-form-v3-live/
     - exports/tutor-stub-outcome/step7-hold-live/
@@ -49,6 +51,7 @@ links:
     - exports/tutor-stub-outcome/step7d-hold-memory-limited/
     - exports/tutor-stub-outcome/step7e-hold-opus-tutor/
     - exports/tutor-stub-outcome/hold-speech-recheck-opus/
+    - exports/tutor-stub-outcome/step7f-hold-cue-fix/
     - exports/form-state-detector/
     - exports/first-draft-audit-replay/
 tags:
@@ -76,14 +79,20 @@ card's verdict.
   dialogue per version, each within 0 to 2 plants. Pooled hold pairs 14/18 vs
   11/18 repair hits.
 - The hold instrument now holds a planted state through a turn, but only with
-  the reader and a retry (two more calls per held turn). It has never met a
-  model reply on the held turns, because turns 2 and 4 on world-037 fall to
-  the template reply in every run. More 037 pairs cannot change that.
+  the reader and a retry (two more calls per held turn). Through step 7e it
+  never met a model reply on the held turns, because turns 2 and 4 on
+  world-037 fell to the template reply in every run.
 - The template wall is not bound to Sonnet 5: with Opus 5 in the tutor seat
-  the same turns fell the same way (step 7e). The codex seat is the one seat
-  that clears it; the other ways are code changes.
+  the same turns fell the same way (step 7e). The cue fix of PR #1024
+  (quotation-mark tolerance, "copied word for word, once", a named recovery
+  packet) moved turns 2 to 4 to model lines on one pair (step 7f): two of
+  eight clue turns fell to the template, both at turn 5, where the duplicate
+  check is unchanged. The held turn 3 met a model line with the card for the
+  first time.
+- Seven pairs pooled: repair hits 20/30 with the card vs 17/30 without. Still
+  a lean, one dialogue per version.
 - Model second readers (Sonnet, Opus, Fable) each range from kappa 0.50 to
-  0.83 across the four packets; no reader is above the others throughout.
+  0.83 across the five packets; no reader is above the others throughout.
 
 # Open steps (offline only, no paid call without its own go)
 
@@ -95,8 +104,15 @@ card's verdict.
    `notes/poetics/hero-demo-runs/2026-09-04-step7-template-fallback-cause.md`.
 2. A human second read of at least one blind packet is still open. The model
    reads (Sonnet, Opus) do not close it.
-3. Offline matcher and packet fix done 2026-09-04; live confirmation
-   needs a paid run. Options 3 and 4 of the cause note are built: the clue
+3. Offline matcher and packet fix done 2026-09-04 (PR #1024); live
+   confirmation done 2026-09-05 (step 7f, log below): the new cue got a
+   copied clue at turns 2 and 3 in three of four first drafts and the one
+   recovery, the tolerance cleared turn 4 in both versions, the duplicate
+   check at turn 5 did not clear, and the held turn 3 met a model line with
+   the card. What remains offline: the turn-5 duplicate check (option 1 of
+   the cause note); the clue-insertion flag and the codex tutor seat stay
+   untried. The record of the offline step: options 3 and 4 of the cause
+   note are built: the clue
    check accepts a draft that differs from the clue text only in quotation
    marks (dropped or straightened), the presented-exhibit cue says "copied
    word for word, once", and the plain recovery packet names the failed
@@ -108,13 +124,10 @@ card's verdict.
    the duplicate check, which is unchanged. Note
    `notes/poetics/hero-demo-runs/2026-09-04-step7-offline-matcher-fix.md`;
    script `scripts/replay-first-draft-audit.js`. What still needs a paid
-   run: whether the new cue and packet get a copied clue at turns 2 and 3,
-   whether the duplicate check clears at turn 5, and a model line on the
-   held turns. Then choose: one hold pair on the current code (the
-   clue-insertion flag and the codex tutor seat stay as the other two
-   ways; the Opus tutor seat is ruled out by step 7e), or write the seven
-   pairs up as a lean in the hold notes and close this card. Do not widen
-   to world-036.
+   run was whether the new cue and packet get a copied clue at turns 2
+   and 3, whether the duplicate check clears at turn 5, and a model line
+   on the held turns; step 7f answered all three. Do not widen to
+   world-036; no re-run as is.
 
 # Also landed on PR #985, not detector work
 
@@ -196,6 +209,7 @@ approval machinery beyond "the user says go".
   few right reads and fires far more off plant; form-v3 stays shipped. New
   `scripts/compare-learner-state-labels.js` joins label files with a form-v3 replay. Note:
   `notes/poetics/hero-demo-runs/2026-09-04-step6a-opus-labeller-check.md`.
+- **Hold pair on 037 on the cue fix, 2026-09-05, paid (step 7f).** Go: user ("run the hold pair beside it"). Clean detached worktree at eea76bdf (origin/main with PR #1024), Sonnet 5 tutor seat, memory_limited brief, hold schedule and speech check as 7d. Ceiling 200 dialogue + 20 judge calls; used 43 + 40 dialogue, 2 judge, 3 second-reader; turn cap 12. Template fallback: t5 in both versions only (7e: five of eight clue turns; 7f: two of eight). Turn 2 exact in both first drafts; turn 3 exact with the card, reworded then copied by the recovery without; turn 4 cleared by the quotation-mark tolerance in both; turn 5 exact text but rejected as duplicate delivery in both, the recovery rewords. Holds kept 4/4; with the card both held turns needed one own-words retry (t3 first draft dropped the demand, t5 conceded), without the card neither did; no copy flags. The held t3 with the card met a model line (the second half of the card's verification line) for the first time in seven pairs. Repair HIT 4/6 with, 3/6 without (judge codex Sol, blind); t2 slow_down missed in both, t4 continue missed with, t7 and t10 missed without. Seven pairs pooled 20/30 vs 17/30. Detection 5/6 right kind with the card (t4 neutral miss). Second reads: Sonnet kappa 0.50, Opus 0.68, Fable 0.68 (Opus and Fable gave the same twelve answers). The owed 6-call tutor PR benchmark for PR #1024 ran on the same commit, 6/6 pass. Note `notes/poetics/hero-demo-runs/2026-09-05-step7f-hold-cue-fix-live.md`; artifacts `exports/tutor-stub-outcome/step7f-hold-cue-fix/`, archived.
 - **Paper paragraph, 2026-09-04.** §6.24 of `docs/research/paper-full-2.0.md` (v3.0.303, PR #1010)
   now records the September detector work: the re-read of the v6/v7 held-out figure, form-v1..v5
   with their leave-one-world-out numbers, the form-v3 live pair, the labeller comparison with its
