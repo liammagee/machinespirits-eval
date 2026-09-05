@@ -9,8 +9,8 @@ source: manual
 created: 2026-09-05
 updated: 2026-09-05
 verification: Verify the unchanged 48-item identities and complete-input derivative; test zero-call preparation, judge separation, calibrated request reservations and missing-only recovery; review the calibration design, independent human reference plan and hosted CI before any paid launch.
-branch: codex/superego-calibration-native-sampling
-blocked_by: Approved native-sampling and HTTP-404 recovery amendment awaits merge and separate launch instruction. Independent human reference ratings remain outstanding.
+branch: codex/superego-calibration-transport-closeout
+blocked_by: Repeated response-free transport failures; automatic approval review rejected further paid recovery pending explicit user approval. Independent human reference ratings remain outstanding.
 claim_status: methods
 links:
   items:
@@ -22,12 +22,14 @@ links:
     - notes/2026-09-05-superego-critique-calibration-response-handling-go.md
     - notes/2026-09-05-superego-critique-calibration-routing-failure.md
     - notes/2026-09-05-superego-critique-calibration-native-sampling-go.md
+    - notes/2026-09-05-superego-critique-calibration-transport-failures.md
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/1038
     - https://github.com/liammagee/machinespirits-eval/pull/1041
     - https://github.com/liammagee/machinespirits-eval/pull/1045
     - https://github.com/liammagee/machinespirits-eval/pull/1046
     - https://github.com/liammagee/machinespirits-eval/pull/1048
+    - https://github.com/liammagee/machinespirits-eval/pull/1050
 ---
 
 The user requested validation and reconsideration after the expense/model review.
@@ -170,3 +172,14 @@ passed. Offline verification reproduced all 319 traces and the exact 48-item /
 GPT routing-rejected answer for replacement. Public metadata checks accept the
 amended controls for both pinned routes. Maximum reservation remains $14.342107;
 paid calls, new model judgments and human labels in this step: zero.
+
+2026-09-05 Codex: verified #1050 merged; the user separately authorized launch
+with "merged; GO". The approved native-sampling continuation ran, retained all
+prior answers, and used one bounded missing-work recovery after a response-free
+transport failure. A second job failed with the same transport error. Automatic
+approval review rejected another paid recovery, so collection remains stopped.
+The linked report records 38/204 attempts, 13 parser-accepted judgments, 22
+retained invalid answers and 157 missing judgments. Reservations are $2.508541;
+known reported cost is $0.4725385, with three attempts' cost unreported. No
+quality judging, generation, human validation or causal claim occurred. All 84
+new artifacts (2,069,390 bytes) verified against the private archive; zero missing.
