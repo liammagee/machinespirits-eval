@@ -9,6 +9,8 @@ import {
 import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
 import {
   auditTutorStubLiveSourceActionAlignmentV1,
+  dropOuterQuotationMarks,
+  straightenQuotationMarks,
   tutorStubLiveResponseConfigurationSurface,
 } from '../services/tutorStubLiveFirstDraftAudit.js';
 import { compileTutorStubSourceAccessibilityContract } from '../services/tutorStubSourceAccessibilityContract.js';
@@ -967,4 +969,124 @@ test('deterministic live fallback places an audited extractive compensation imme
   assert.equal(audit.compensation_visible, true);
   assert.equal(audit.passing_compensation_spans.length, 1);
   assert.match(audit.passing_compensation_spans[0].text, /^Elian drew it for curfew warrants/u);
+});
+
+// Recorded world-037 clue turns (step7d-hold-memory-limited, with-d0,
+// 2026-09-04T01-33-08-379Z). The host text is the rendered SOURCE the plan
+// gave the model; each draft is what the model wrote back.
+const WORLD_037_TURN_2_EXHIBIT = renderTutorStubDueSource({
+  premise: 'p_tops',
+  mode: 'presented_exhibit',
+  role: 'homework sheet',
+  surface:
+    'One plus one on top, two plus three underneath: two fifths. That is what the pupil wrote, and it is what adding whole numbers looks like.',
+});
+const WORLD_037_TURN_2_REWORDED_RECOVERY =
+  "Not yet — let's check what you actually wrote first. One plus one on top, two plus three underneath: two fifths. That's what adding whole numbers looks like, tops with tops, bottoms with bottoms. Pick up the strip: does a half-piece plus a third-piece cover the same ground as two of the five equal strips would?";
+const WORLD_037_TURN_4_ENACTED = renderTutorStubDueSource({
+  premise: 'p_sixths',
+  mode: 'enacted_role',
+  role: 'tutor at the paper strip',
+  scene: { diction: 'contemporary' },
+  surface:
+    'Cut the strip into six equal pieces. The half covers three of them and the third covers two of them. Now the pieces are the same size.',
+});
+const WORLD_037_TURN_4_UNQUOTED_RECOVERY =
+  'That rule works for whole numbers, but pieces need to be the same size first. I can confirm this: Cut the strip into six equal pieces. The half covers three of them and the third covers two of them. Now the pieces are the same size. What does that let you do with those three and two?';
+const WORLD_037_TURN_5_EXHIBIT = renderTutorStubDueSource({
+  premise: 'p_count',
+  mode: 'presented_exhibit',
+  role: 'homework sheet',
+  surface: 'Three sixths and two sixths: count the pieces, five sixths.',
+});
+
+test('quotation-mark normalisation straightens curly marks without changing length and drops one outer pair', () => {
+  assert.equal(straightenQuotationMarks('“a” ‘b’'), '"a" \'b\'');
+  assert.equal(straightenQuotationMarks('“a” ‘b’').length, '“a” ‘b’'.length);
+  assert.equal(dropOuterQuotationMarks('“I attest: the log is open.”'), 'I attest: the log is open.');
+  assert.equal(dropOuterQuotationMarks("'once'"), 'once');
+  assert.equal(dropOuterQuotationMarks('“a” and “b”'), 'a" and "b');
+  assert.equal(dropOuterQuotationMarks('no marks'), 'no marks');
+  assert.equal(dropOuterQuotationMarks('“x”'), 'x');
+  assert.equal(dropOuterQuotationMarks('“”'), '""');
+});
+
+test('live V1 still rejects the recorded turn-2 draft that rewords the exhibit', () => {
+  const audit = auditTutorStubLiveSourceActionAlignmentV1({
+    text: WORLD_037_TURN_2_REWORDED_RECOVERY,
+    firstDraftContract: { evidence: { sources: [WORLD_037_TURN_2_EXHIBIT] } },
+  });
+  assert.equal(audit.ok, false);
+  assert.equal(audit.source_occurrences[0].observed_count, 0);
+  assert.equal(audit.source_occurrences[0].match, null);
+  assert.deepEqual(
+    audit.issues.map((issue) => issue.type),
+    ['due_source_exact_occurrence_count'],
+  );
+});
+
+test('live V1 accepts the recorded turn-4 draft that dropped the outer quotation marks', () => {
+  assert.equal(
+    WORLD_037_TURN_4_ENACTED.text,
+    '“I can confirm this: Cut the strip into six equal pieces. The half covers three of them and the third covers two of them. Now the pieces are the same size.”',
+  );
+  const contract = { evidence: { sources: [WORLD_037_TURN_4_ENACTED] } };
+  const audit = auditTutorStubLiveSourceActionAlignmentV1({
+    text: WORLD_037_TURN_4_UNQUOTED_RECOVERY,
+    firstDraftContract: contract,
+  });
+  assert.equal(audit.ok, true);
+  assert.equal(audit.exact_source_occurrence_passes, 1);
+  assert.equal(audit.source_occurrences[0].match, 'outer_quotation_marks_dropped');
+  const [span] = audit.source_occurrences[0].spans;
+  assert.equal(
+    WORLD_037_TURN_4_UNQUOTED_RECOVERY.slice(span.start, span.end),
+    dropOuterQuotationMarks(WORLD_037_TURN_4_ENACTED.text),
+  );
+  assert.equal(
+    audit.pre_source_boundaries[0].audited_host_text,
+    'That rule works for whole numbers, but pieces need to be the same size first.',
+  );
+  assert.doesNotMatch(audit.audited_host_text, /six equal pieces/u);
+});
+
+test('live V1 accepts a draft whose only difference is straight quotation marks and keeps the marks in the span', () => {
+  const contract = { evidence: { sources: [WORLD_037_TURN_4_ENACTED] } };
+  const straight = `We are both at the paper strip. ${straightenQuotationMarks(WORLD_037_TURN_4_ENACTED.text)} What changes?`;
+  const audit = auditTutorStubLiveSourceActionAlignmentV1({ text: straight, firstDraftContract: contract });
+  assert.equal(audit.ok, true);
+  assert.equal(audit.source_occurrences[0].match, 'quotation_marks_straightened');
+  const [span] = audit.source_occurrences[0].spans;
+  assert.equal(straight.slice(span.start, span.end), straightenQuotationMarks(WORLD_037_TURN_4_ENACTED.text));
+  assert.equal(straight.slice(span.start, span.end).startsWith('"'), true);
+
+  const exact = auditTutorStubLiveSourceActionAlignmentV1({
+    text: `We are both at the paper strip. ${WORLD_037_TURN_4_ENACTED.text} What changes?`,
+    firstDraftContract: contract,
+  });
+  assert.equal(exact.ok, true);
+  assert.equal(exact.source_occurrences[0].match, 'exact');
+});
+
+test('live V1 still rejects a clue that appears twice, with or without its outer marks', () => {
+  const contract = { evidence: { sources: [WORLD_037_TURN_4_ENACTED] } };
+  const bare = dropOuterQuotationMarks(WORLD_037_TURN_4_ENACTED.text);
+  const twice = auditTutorStubLiveSourceActionAlignmentV1({
+    text: `At the strip. ${WORLD_037_TURN_4_ENACTED.text} Again: ${bare} What changes?`,
+    firstDraftContract: contract,
+  });
+  assert.equal(twice.ok, false);
+  assert.equal(twice.source_occurrences[0].observed_count, 2);
+  assert.equal(twice.source_occurrences[0].match, null);
+  assert.deepEqual(
+    twice.issues.map((issue) => issue.type),
+    ['due_source_exact_occurrence_count'],
+  );
+
+  const exhibitTwice = auditTutorStubLiveSourceActionAlignmentV1({
+    text: `I look at the sheet. ${WORLD_037_TURN_5_EXHIBIT.text} ${WORLD_037_TURN_5_EXHIBIT.text} What does that settle?`,
+    firstDraftContract: { evidence: { sources: [WORLD_037_TURN_5_EXHIBIT] } },
+  });
+  assert.equal(exhibitTwice.ok, false);
+  assert.equal(exhibitTwice.source_occurrences[0].observed_count, 2);
 });

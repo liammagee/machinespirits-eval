@@ -20,6 +20,55 @@ function exactOccurrenceSpans(source, needle) {
   return spans;
 }
 
+/**
+ * Straighten curly quotation marks. Each curly mark is one UTF-16 code unit and
+ * each straight mark is one UTF-16 code unit, so the text keeps its length and
+ * every span offset stays valid in the original text.
+ */
+export function straightenQuotationMarks(text) {
+  return String(text || '')
+    .replace(/[\u201C\u201D]/gu, '"')
+    .replace(/[\u2018\u2019]/gu, "'");
+}
+
+/**
+ * Drop one pair of matching outer quotation marks after straightening. The
+ * result is the bare line. It is a substring of the quoted line, so counting
+ * the bare line can never count fewer occurrences than the quoted line.
+ */
+export function dropOuterQuotationMarks(text) {
+  const straight = straightenQuotationMarks(text);
+  if (straight.length < 3) return straight;
+  const first = straight[0];
+  const last = straight[straight.length - 1];
+  if ((first === '"' || first === "'") && first === last) return straight.slice(1, -1);
+  return straight;
+}
+
+/**
+ * Count one host-rendered SOURCE in the draft. Only quotation marks may differ:
+ * curly marks may be straight, and the outer pair around an enacted line may
+ * be absent. Every other character must match, and the line must appear once.
+ * Spans point into the original draft text. When the draft carries the full
+ * quoted line once, the span covers the marks too.
+ */
+function sourceOccurrence(responseText, expectedText) {
+  const draft = straightenQuotationMarks(responseText);
+  const quoted = straightenQuotationMarks(expectedText);
+  const bare = dropOuterQuotationMarks(expectedText);
+  const bareSpans = exactOccurrenceSpans(draft, bare);
+  const quotedSpans = bare === quoted ? bareSpans : exactOccurrenceSpans(draft, quoted);
+  const spans = quotedSpans.length === 1 && bareSpans.length === 1 ? quotedSpans : bareSpans;
+  let match = null;
+  if (spans.length === 1) {
+    const [span] = spans;
+    if (responseText.slice(span.start, span.end) === expectedText) match = 'exact';
+    else if (spans === quotedSpans) match = 'quotation_marks_straightened';
+    else match = 'outer_quotation_marks_dropped';
+  }
+  return { spans, match };
+}
+
 function hostWithoutExactSources(text, occurrenceRows) {
   const spans = occurrenceRows.flatMap((row) => row.spans).sort((left, right) => right.start - left.start);
   let host = text;
@@ -125,7 +174,8 @@ function sourceAccessibilityAudit({ responseText, firstDraftContract, occurrence
 
 /**
  * The plain live speaker has no trustworthy V2 PERFORMANCE ENTRY span. Require
- * each host-rendered SOURCE exactly once, then bind any required carrier to the
+ * each host-rendered SOURCE exactly once, word for word (only quotation marks
+ * may differ, see sourceOccurrence), then bind any required carrier to the
  * nearest real host sentence before that SOURCE. This remains an explicit V1
  * text-boundary audit; it does not infer the structured V2 slot layout.
  */
@@ -134,7 +184,7 @@ export function auditTutorStubLiveSourceActionAlignmentV1({ text = '', firstDraf
   const sources = Array.isArray(firstDraftContract?.evidence?.sources) ? firstDraftContract.evidence.sources : [];
   const occurrenceRows = sources.map((source, sourceIndex) => {
     const expectedText = String(source?.text || '');
-    const spans = exactOccurrenceSpans(responseText, expectedText);
+    const { spans, match } = sourceOccurrence(responseText, expectedText);
     return {
       source: source?.id || null,
       source_index: sourceIndex,
@@ -142,6 +192,7 @@ export function auditTutorStubLiveSourceActionAlignmentV1({ text = '', firstDraf
       expected_count: 1,
       observed_count: spans.length,
       exact_once: spans.length === 1,
+      match,
       spans,
     };
   });
@@ -187,7 +238,8 @@ export function auditTutorStubLiveSourceActionAlignmentV1({ text = '', firstDraf
       source: row.source,
       expected_count: row.expected_count,
       observed_count: row.observed_count,
-      reason: 'the live response must contain the exact host-rendered source once',
+      reason:
+        'the live response must contain the host-rendered source once, word for word; only quotation marks may differ',
     }));
   const boundaryIssues = boundaries.flatMap((boundary) => boundary.issues);
   const accessibility = sourceAccessibilityAudit({
