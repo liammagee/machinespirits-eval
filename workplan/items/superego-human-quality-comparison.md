@@ -9,11 +9,12 @@ source: manual
 created: 2026-09-05
 updated: 2026-09-05
 verification: Verify historical behavior and data preservation, plain public output, terminal missingness without resampling, shared attempt and dollar ceilings, partial-response retention, blinded human exports and a zero-call human report; publish the amended design and focused checks before any new launch.
-branch: codex/superego-human-comparison
+branch: codex/superego-human-generation
 claim_status: planned
 links:
   items:
     - superego-contemporary-pilot
+    - paid-study-infrastructure-review
   notes:
     - notes/superego-contemporary-pilot-design.md
     - notes/2026-09-05-superego-human-comparison-repairs.md
@@ -47,3 +48,10 @@ verification step. Human reporting is independent of semantic/model judgments;
 reader files identify the exact public packet. The old 19 artifact files remain
 byte-identical to their private archive. The recurring cross-study review remains
 a separate queued follow-up. No amended GO or paid launch has occurred.
+
+2026-09-05: PR #1061 merged as d3717580 after all selected hosted CI passed.
+The user requested the infrastructure review card first, then continuation.
+The review is now queued separately. The next generation phase has launch
+direction in this conversation, pending the explicit GO required by the user's
+original instruction before recording approval of this amended study. Zero-call
+preparation may proceed; no approval note or provider call is manufactured.

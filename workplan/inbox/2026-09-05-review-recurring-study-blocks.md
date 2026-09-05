@@ -27,3 +27,6 @@ assume the failures establish anything about critique effectiveness.
 Capture only: do not start this review now, interrupt other work, alter an
 active study, relax its registered rules, or launch additional calls. Preserve
 historical attempts and results. Any recommendations belong to a later review.
+
+2026-09-05: promoted at the user's explicit request to
+`workplan/items/paid-study-infrastructure-review.md`. The review remains queued.
