@@ -11,6 +11,7 @@ import {
   readPublicEvents,
   traceDialogueIdentity,
 } from '../services/tutorStubScoreboard.js';
+import { auditTutorStubScoreboardLicence } from '../services/tutorStubScoreboardPolicy.js';
 import {
   castShapeForProfile,
   pairwiseAgreement,
@@ -401,6 +402,74 @@ test('a forced quiet card is recorded on the tutor row provenance', () => {
   const b = board(events);
   assert.equal(rowAt(b, 'tutor', 2).provenance.cardForce[0].forced, 'quiet:confused');
   assert.equal(rowAt(b, 'tutor', 2).fields.release, 'none');
+});
+
+// ---------------------------------------------------------------------------
+// Regression: the 2026-09-05 crossed run stopped on two tutor turns that the
+// answer-naming rule read as a commitment to the secret. Each turn ends in a
+// sentence with an em-dash; the part before the dash names the secret's
+// suspect and place but is a question or a statement of what is still
+// missing. The spans are copied from the two `scoreboard_licence_violation`
+// events (world 102, low_agency, board-r2 and board-r4, turn 6). Report:
+// notes/2026-09-05-scoreboard-crossed-run-report.md.
+// ---------------------------------------------------------------------------
+
+const WORLD_102_ID = 'world_102_marigold_archive_box';
+const world102 = loadScoreboardWorld(WORLD_102_ID, { rootDir: process.cwd() });
+
+const BOARD_R2_TURN_6 =
+  'That’s the sharper reading, and it’s correct — the notice only says "appliances," and a labelled archive box is not an appliance. ' +
+  'Clearance to power down and clear appliances doesn’t, by its own wording, say anything about shelved boxes. ' +
+  'So the notice alone can’t yet answer the public question. ' +
+  'What I still need is something that ties Osprey’s actual work that day to bay three itself — a record of what they did, not just what they were permitted to do.';
+
+const BOARD_R4_TURN_6 =
+  'Sharp catch, and it’s yours to mark. The notice gives Osprey general authority to clear appliances building-wide — it names no bay, no shelf, no box. ' +
+  'So it clears the authorization question, but bay three itself isn’t in that sentence at all. ' +
+  'Mark it unresolved: authorized in general, unconfirmed at bay three specifically. ' +
+  'What would actually put Osprey’s hands at bay three — is there a job record or work order that says where they worked, not just that they were allowed to?';
+
+// world 102, low_agency, board_blind-r1, turn 8: a real early naming of the
+// answer. The rule must still fire here after the splitter is fixed.
+const BLIND_R1_TURN_8 =
+  'I mark the ledger: Osprey cleared the shelf, and their job record logs Nadia’s box into lost property.';
+
+function board102(tutorText, n = 6) {
+  const events = [
+    runStart('low_agency', { world: { id: WORLD_102_ID, title: world102.title } }),
+    turn(n, 'Could you say whether the notice covers bay three?', tutorText),
+  ];
+  return buildScoreboard({ events, world: world102, arm: 'board', identity: traceDialogueIdentity(events) });
+}
+
+test('regression: a question or a statement of missing evidence with an em-dash does not name the answer (world 102 board-r2 turn 6)', () => {
+  const b = board102(BOARD_R2_TURN_6);
+  const row = rowAt(b, 'tutor', 6);
+  assert.equal(row.fields.commitment_undertaken, 'none');
+  assert.deepEqual(
+    row.marks.filter((m) => m.rule === 'TEXT-answer-named'),
+    [],
+  );
+  assert.deepEqual(auditTutorStubScoreboardLicence(b, { turn: 6 }).violations, []);
+});
+
+test('regression: a question with an em-dash before its question mark does not name the answer (world 102 board-r4 turn 6)', () => {
+  const b = board102(BOARD_R4_TURN_6);
+  const row = rowAt(b, 'tutor', 6);
+  assert.equal(row.fields.commitment_undertaken, 'none');
+  assert.deepEqual(
+    row.marks.filter((m) => m.rule === 'TEXT-answer-named'),
+    [],
+  );
+  assert.deepEqual(auditTutorStubScoreboardLicence(b, { turn: 6 }).violations, []);
+});
+
+test('control: a plain sentence that names the answer still reads as a commitment (world 102 blind-r1 turn 8)', () => {
+  const b = board102(BLIND_R1_TURN_8, 8);
+  const row = rowAt(b, 'tutor', 8);
+  assert.notEqual(row.fields.commitment_undertaken, 'none');
+  assert.equal(row.marks.filter((m) => m.rule === 'TEXT-answer-named').length, 1);
+  assert.equal(auditTutorStubScoreboardLicence(b, { turn: 8 }).violations.length, 1);
 });
 
 // ---------------------------------------------------------------------------
