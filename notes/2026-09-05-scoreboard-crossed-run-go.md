@@ -1,11 +1,11 @@
-GO: not yet given. No paid call has been made.
+GO
 
 # Scoreboard crossed run: GO note
 
 Operator: Liam Magee
 Date: 2026-09-05
-Authorization source: the user's word "go" in the chat. It is not given yet.
-The word covers the study below: the question, the design, the measurement
+Authorization source: the user's word "Go" in the chat, 2026-09-05 UTC, after
+the PR #1034 hand-back. The word covers the study below: the question, the design, the measurement
 rules and the spend ceiling. It stays valid until the study changes. A bug fix
 does not void it.
 Recorded by: Claude Fable 5.1
@@ -201,4 +201,6 @@ node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/
 - Any run through `services/retiredPaidLauncher.js` or through the §6.25
   reader runner with its approval ceremony.
 
-Authorized by: pending. The user says go in the chat before command A.
+Authorized by: Liam Magee, "Go" in the chat, 2026-09-05.
+Recorded: 2026-09-05, before command A. No paid call had been made at that
+point.
