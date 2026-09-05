@@ -305,6 +305,30 @@ node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/
   tree; each trace records the exact commit. The run command is command B
   with `--profiles overconfident` and `--trace-dir
   exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-102-overconfident-third`.
+- 2026-09-05 19:54 UTC: the third world-102 cell ended. It started 19:44 UTC
+  from commit 3daafac7, clean tree. All 12 dialogues ran to turn 8, 96 turns.
+  Licence violations: 0. Privilege-guard refusals: 0. Model call errors: 0.
+  Unread learner turns: 0. The board tutor read the board in 48 of 48 tutor
+  turns and the blind tutor in 0 of 48. Calls: 317 dispatched, 317 finished,
+  of the 480 cell ceiling. The seal says `complete`; the matrix exited 0.
+  Kill 2 did not fire. 48 dialogues now stand. The zero-call score over the
+  48 puts the board tutor at 1 of 12 on the permission-seeking channel
+  against 1 of 12 for the blind tutor, and at 5 of 12 on the overconfident
+  channel against 6 of 12. Kill 1 fired on that read. The reader seats had
+  not run at this point; command C follows under the 19:06 UTC word. Study
+  total: 1,776 dispatched of 3,436.
+- 2026-09-05 19:56 UTC: the command C dry run wrote 96 packets and made no
+  call. A look at one packet found a defect: `dialogue_id` and every
+  `sample_id` carried the dialogue id, which names the learner profile and
+  the tutor policy, and the whole packet is the reader's prompt. That broke
+  the promise above that packets carry public text only. Fixed in place in
+  `services/tutorStubScoreboardCrossedReaders.js` with a regression test,
+  commit 32da9e4b: the model sees sample ids that carry the turn alone, and
+  the stored response is keyed by dialogue and turn again, so the score join
+  does not change. The dry run on the fixed code wrote 96 packets in which
+  no policy name and no profile name appears. No reader call had been made.
+  The fix changes what the reader sees, not what is scored, so the GO stands.
+  Command C starts from commit 32da9e4b, clean tree, with `--max-calls 192`.
 
 ## After the run
 
