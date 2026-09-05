@@ -9,8 +9,8 @@ source: manual
 created: 2026-09-05
 updated: 2026-09-05
 verification: Verify the unchanged 48-item identities and complete-input derivative; test zero-call preparation, judge separation, calibrated request reservations and missing-only recovery; review the calibration design, independent human reference plan and hosted CI before any paid launch.
-branch: codex/superego-calibration-retained-recovery
-blocked_by: Separate calibration launch instruction required after approved shared recovery repair; independent human reference ratings remain outstanding.
+branch: codex/superego-calibration-route-check
+blocked_by: GPT-5.4 routing rejects registered temperature/top_p controls; decoding and HTTP-404 recovery decision required. Independent human reference ratings remain outstanding.
 claim_status: methods
 links:
   items:
@@ -20,10 +20,12 @@ links:
     - notes/2026-09-05-superego-critique-measurement-calibration-go.md
     - notes/2026-09-05-superego-critique-measurement-calibration-launch.md
     - notes/2026-09-05-superego-critique-calibration-response-handling-go.md
+    - notes/2026-09-05-superego-critique-calibration-routing-failure.md
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/1038
     - https://github.com/liammagee/machinespirits-eval/pull/1041
     - https://github.com/liammagee/machinespirits-eval/pull/1045
+    - https://github.com/liammagee/machinespirits-eval/pull/1046
 ---
 
 The user requested validation and reconsideration after the expense/model review.
@@ -124,3 +126,25 @@ Focused verification: 53/53 shared-contract and replay tests passed, including
 retention across later segments, direct-client refusal before reservation, and
 missing/tampered response records. Targeted ESLint, formatting, diff and workplan
 source checks passed (619/619). Hosted CI is pending publication.
+
+2026-09-05 Codex: after #1046 merged, the user separately instructed "Merged;
+continue". Preflight verified the unchanged corpus/plan and the first invalid
+response was retained without redispatch. The next fixed GPT-5.4 request received
+HTTP 404 at OpenRouter's parameter filter, with no model output or usage record.
+The run sealed and stopped. Cumulative accounting is two attempts, one retained
+invalid answer, zero valid judgments, one routing failure and 190 undispatched
+jobs. Reservations total $0.143206; known reported cost remains $0.018594, with
+the new rejection's actual cost unreported. No retry or decoding change occurred.
+
+Public endpoint metadata omits temperature and top_p for the pinned GPT-5.4
+route. Added a free metadata compatibility check before paid admission, with
+regressions proving unsupported controls cannot create a run or reserve/call.
+The registered model routes, decoding and stop rules stay unchanged. The linked
+failure note describes the explicit decision still needed to continue.
+Focused replay tests passed 33/33; targeted lint and format checks passed.
+
+Archived and verified 11 artifacts (561,938 bytes), including both public
+metadata snapshots, the new raw request/error and the cumulative ledger
+snapshot. Private commit 1d6a266ddfe48357059901454c3f36e87d048ec9 is pushed and
+remotely verified. The original archive, raw data, failed seals and GO notes
+remain intact. Human ratings and causal/validity findings remain absent.

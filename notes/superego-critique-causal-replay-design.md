@@ -5,9 +5,12 @@ approved and launched calibration stopped on its first response; PR #1041
 preserves that failure. The response-handling amendment below merged in #1045
 and the user approved it on 2026-09-05. Approval is recorded in
 `notes/2026-09-05-superego-critique-calibration-response-handling-go.md`.
-Shared recovery support is implemented; paid continuation still requires a
-separate launch instruction. Original GO notes and failure artifacts remain
-unchanged; the four-arm replay stays paused.
+The separately instructed continuation retained the invalid response, then
+stopped on a response-free GPT-5.4 parameter-routing rejection. Calibration is
+blocked pending a compatible decoding/recovery decision; see
+`notes/2026-09-05-superego-critique-calibration-routing-failure.md`.
+Original GO notes, study settings and failure artifacts remain unchanged; the
+four-arm replay stays paused.
 Workplan item: `superego-critique-causal-replay`.
 
 ## Question and evidence
