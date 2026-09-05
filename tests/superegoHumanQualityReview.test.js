@@ -99,6 +99,12 @@ test('truncated whitespace is retained; dependent jobs consume no calls and all 
   assert.equal(events.at(-1).complete_jobs, 14);
   assert.equal(events.at(-1).unavailable_jobs, 6);
   assert.equal(events.at(-1).terminal_jobs, 20);
+  assert.equal(events.at(-1).status, 'local_package_ready');
+  assert.equal(events.at(-1).recovery_permitted, false);
+  await assert.rejects(
+    executePilot({ ...f, recoveryFrom: f.destination, destination: path.join(f.root, 'empty-recovery') }),
+    /completed its paid work/,
+  );
   const recovered = recoverPilot(f.design, f.plan, f.destination);
   assert.deepEqual([...recovered.results].sort(), [...generated.results].sort());
   const packet = humanPacket(f.plan, recovered.results, 'quality');
