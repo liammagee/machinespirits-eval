@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import yaml from 'yaml';
 import { format, resolveConfig } from 'prettier';
 import { resolveTutorDialoguesDir } from './evaluationDataPaths.js';
+import { isResponseFreeParameterRejection } from './paidStudyLaunchContract.js';
 import {
   buildSemanticReviewPacket,
   critiqueEnvelope,
@@ -49,6 +50,15 @@ export function loadReplayDesign(root, { mode = 'replay' } = {}) {
   }
   const a = design.attempts;
   const calibration = mode === 'calibration';
+  if (
+    design.request.provider_native_sampling_seats &&
+    (!calibration ||
+      JSON.stringify(design.request.provider_native_sampling_seats) !== JSON.stringify(['semantic_a', 'quality_a']) ||
+      design.request.provider_native_sampling_seats.some(
+        (seat) => design.models[seat].model !== 'openai/gpt-5.4' || design.models[seat].provider_slug !== 'openai',
+      ))
+  )
+    throw new Error('Native sampling amendment covers only the GPT-5.4 calibration seats');
   if (
     JSON.stringify(design.arms) !== JSON.stringify(calibration ? ['historical_revision'] : ARMS) ||
     a.generation_planned !== design.sample_size * (calibration ? 0 : 3) ||
@@ -311,6 +321,14 @@ export function outputFor(plan, job, responses) {
   if (!output) throw new Error(`Missing generated output for ${job.id}`);
   return output.suggestions;
 }
+export function replaySamplingParameters(design, seat) {
+  if (design.mode === 'calibration' && design.request.provider_native_sampling_seats?.includes(seat)) return {};
+  return { temperature: design.request.temperature, top_p: design.request.top_p };
+}
+
+export const recoversCalibrationParameterRejections = (design) =>
+  design.mode === 'calibration' && design.routing_failure_policy === 'retry_response_free_parameter_rejection';
+
 export function buildReplayRequest(design, plan, job, responses) {
   const unit = plan.units.find((u) => u.unit_key === job.unit);
   let system, data;
@@ -347,8 +365,7 @@ export function buildReplayRequest(design, plan, job, responses) {
   return {
     model: route.model,
     messages,
-    temperature: design.request.temperature,
-    top_p: design.request.top_p,
+    ...replaySamplingParameters(design, job.seat),
     max_tokens: design.request.max_tokens,
     reasoning: { enabled: design.request.reasoning_enabled },
     // DeepInfra rejects JSON mode for Nemotron. The prompt and parser still
@@ -432,6 +449,11 @@ export function classifyReplayResponse(design, request, job, raw) {
 }
 
 export function parseReplayResponse(design, request, job, raw) {
+  if (recoversCalibrationParameterRejections(design) && isResponseFreeParameterRejection(request, raw)) {
+    const error = new Error('Response-free HTTP 404 parameter-routing rejection');
+    error.recoverable = true;
+    throw error;
+  }
   let envelope;
   try {
     envelope = JSON.parse(raw.body);

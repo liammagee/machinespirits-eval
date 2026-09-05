@@ -6,9 +6,12 @@ preserves that failure. The response-handling amendment below merged in #1045
 and the user approved it on 2026-09-05. Approval is recorded in
 `notes/2026-09-05-superego-critique-calibration-response-handling-go.md`.
 The separately instructed continuation retained the invalid response, then
-stopped on a response-free GPT-5.4 parameter-routing rejection. Calibration is
-blocked pending a compatible decoding/recovery decision; see
+stopped on a response-free GPT-5.4 parameter-routing rejection; see
 `notes/2026-09-05-superego-critique-calibration-routing-failure.md`.
+After #1048 merged, the user approved the native-sampling and routing-recovery
+amendment below. Approval is recorded in
+`notes/2026-09-05-superego-critique-calibration-native-sampling-go.md`.
+The amendment must merge before a separately authorized launch.
 Original GO notes, study settings and failure artifacts remain unchanged; the
 four-arm replay stays paused.
 Workplan item: `superego-critique-causal-replay`.
@@ -111,6 +114,7 @@ original $300 cap. Neither phase may silently launch the other.
 ```yaml calibration
 id: superego-critique-measurement-calibration
 response_failure_policy: retain_invalid_continue
+routing_failure_policy: retry_response_free_parameter_rejection
 master_seed: 20260905
 sample_size: 48
 arms: [historical_revision]
@@ -120,6 +124,7 @@ historical_model_routes:
   openrouter.kimi-k2.5: moonshotai/kimi-k2.5
 request:
   max_message_bytes: 65536
+  provider_native_sampling_seats: [semantic_a, quality_a]
 attempts:
   generation_planned: 0
   semantic_planned: 96
@@ -155,8 +160,10 @@ before calls; no truncation, invented context or sample replacement.
 The existing builder and parser serve both calibration and prospective judging.
 Each historical revision receives GPT-5.4 and Sonnet 4.6 semantic judgments,
 plus fresh GPT-5.4 and Sonnet 4.6 quality judgments: **192 fixed requests, no
-Nemotron generation**. Models, provider pins, prices, decoding, prompts and
-2,048-output-token limit are those in the study block above. Semantic readers
+Nemotron generation**. Models, provider pins, prices, prompts and
+2,048-output-token limit are those in the study block above. For calibration
+only, GPT-5.4 uses provider-native sampling as amended below; Sonnet retains
+temperature 0 and top_p 1. Semantic readers
 see context, draft, actual critique and revision. Quality readers see only
 context and revision. Seeded independent job orders and opaque presentation IDs
 hide source, model, profile, round and the other readers' labels. Historical
@@ -302,7 +309,7 @@ continuation, rejection of missing/tampered response accounting, and refusal to
 reserve retained jobs through shared admission or the underlying attempt ledger,
 including later recovery segments. The historical failed seal stays unchanged.
 
-There are **191 never-dispatched jobs**, no generation and no replacement of
+At the response-handling amendment there were **191 never-dispatched jobs**, no generation and no replacement of
 the first judgment. With no technical failures, finishing collection would use
 192 total attempts including the retained first attempt. All 12 technical
 replacements remain inside the unchanged **204-attempt / US $15** ceilings;
@@ -310,6 +317,56 @@ the full reservation remains $14.342107 including reserve. The earlier
 $0.018594 reported cost and $0.090463 reservation remain counted. No routes,
 prompts, sample identities, order, thresholds or human-reference rules change.
 The original four-arm replay is not authorized by this amendment.
+
+### Approved native sampling and response-free routing recovery
+
+On 2026-09-05, after #1048 merged, the user answered **"Yes"** to the proposed
+amendment: use GPT-5.4's native sampling defaults and permit recovery of the
+rejected request, preserving both models and the **US $15 / 204-attempt caps**.
+This approves the amendment; launch still requires separate authorization.
+
+For calibration seats `semantic_a` and `quality_a` only, omit `temperature`
+and `top_p` from requests to `openai/gpt-5.4` via OpenAI. Sampling is the
+provider's native behavior; its numeric defaults are not known or pinned, and
+neither temperature-zero operation nor deterministic judgments are claimed.
+Sonnet's `semantic_b` and `quality_b` requests keep temperature 0 and top_p 1.
+All seats retain reasoning disabled, 2,048 maximum output tokens, JSON-object
+response format, the same prompts and input bytes, provider pins, no fallback,
+`require_parameters: true`, and the same price limits. Free metadata preflight
+checks the controls actually sent. It does not prove their values will be
+honored or validate any judgments. The original four-arm replay's executable
+settings remain unchanged and paused.
+
+Permit one replacement for a strictly response-free HTTP 404 parameter-routing
+rejection: the saved error must identify `Filter by Parameters`, with no model
+answer, refusal, usage or other unrecognized envelope content. Other HTTP 404s
+remain stopping failures. Verify the original reservation, dispatch, durable
+response and completed-attempt accounting before shared recovery admission.
+Preserve all old seals and reservations. A repeated failure on the replacement
+stops; it cannot open another retry. Existing total, category, dollar and
+one-replacement-per-job ceilings remain fail-before-call.
+
+Only in-memory comparisons of pre-amendment calibration settings may recognize
+the added native-sampling seats and routing-failure disposition. The saved GPT
+request may lose its original temperature 0 / top_p 1 controls only after the
+response-free rejection is verified. Every other saved field must match the
+current builder. A returned GPT answer under different settings cannot pass
+this exception, be relabeled or be regenerated. Retain the earlier invalid
+Sonnet response without replacement and leave all source identities, job order,
+seed, measurement thresholds, disagreement rules and human-reference rules
+unchanged. This is missing-work collection in a fresh create-once segment.
+
+At amendment approval, two attempts remain charged: one invalid Sonnet answer
+and one response-free GPT routing failure. There are **190 never-dispatched
+jobs and one failed job missing an answer**. Completing these requires 191 new
+attempts if successful, reaching **193 total**, with **11 attempts** then left
+inside the original 204 ceiling. The 12-attempt technical reserve includes the
+one replacement now needed. The **$0.143206** already reserved is not refunded;
+the full conservative reservation including reserve remains **$14.342107**
+under the $15 cap. Known provider-reported cost is $0.018594; the 404's actual
+cost is unreported. No new generation, causal result or semantic-validity claim
+is authorized. Provider-native sampling may vary over time and adds a
+reproducibility limitation; independent human references remain outstanding.
 
 ## Frozen units, exclusions and matching
 

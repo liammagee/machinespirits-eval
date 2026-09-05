@@ -592,14 +592,51 @@ export function sealInterruptedPaidStudyLaunch({
   }
 }
 
+// OpenRouter rejected routing before returning model content or usage. Fail
+// closed on unknown envelope fields; this is not permission to retry answers.
+export function isResponseFreeParameterRejection(request, raw) {
+  if (
+    raw?.status !== 404 ||
+    request?.provider?.require_parameters !== true ||
+    request.provider.allow_fallbacks !== false ||
+    request.provider.only?.length !== 1
+  )
+    return false;
+  try {
+    const envelope = JSON.parse(raw.body);
+    const error = envelope.error;
+    const metadata = error?.metadata;
+    return (
+      Object.keys(envelope).every((key) => key === 'error') &&
+      Object.keys(error).every((key) => ['code', 'message', 'metadata'].includes(key)) &&
+      error.code === 404 &&
+      error.message.startsWith('No endpoints found that can handle the requested parameters.') &&
+      Object.keys(metadata).every((key) => ['routing_funnel', 'failed_routing_step'].includes(key)) &&
+      metadata.failed_routing_step === 'Filter by Parameters' &&
+      Array.isArray(metadata.routing_funnel) &&
+      metadata.routing_funnel.length > 0 &&
+      metadata.routing_funnel.every(
+        (step) =>
+          Object.keys(step).every((key) => ['step', 'endpoint_count'].includes(key)) &&
+          typeof step.step === 'string' &&
+          Number.isInteger(step.endpoint_count) &&
+          step.endpoint_count >= 0,
+      )
+    );
+  } catch {
+    return false;
+  }
+}
+
 // Registered runners can retain a saved response as a terminal invalid job.
 // This admits only missing-work continuation: every dispatched predecessor
-// attempt must have a journal-matched durable response and a retained unit id.
+// attempt must have a journal-matched durable response that is either retained
+// or a verified response-free parameter rejection eligible for one replacement.
 // Scientific classification remains the caller's responsibility. No old seal
 // is edited, and the retained ids become shared fail-before-reservation rules.
-function isSealedRetainedResponseFailure(seal, studyEvents, retainedUnits) {
+function isSealedRetainedResponseFailure(seal, studyEvents, retainedUnits, parameterRejectionUnits) {
   if (
-    !retainedUnits.length ||
+    (!retainedUnits.length && !parameterRejectionUnits.length) ||
     seal?.status !== 'technical_failure' ||
     seal.recovery_permitted !== false ||
     !path.isAbsolute(seal.destination || '') ||
@@ -652,7 +689,7 @@ function isSealedRetainedResponseFailure(seal, studyEvents, retainedUnits) {
           e.study_reserved === reservation.study_reserved,
       );
       if (
-        !retainedUnits.includes(reservation.unit_id) ||
+        (!retainedUnits.includes(reservation.unit_id) && !parameterRejectionUnits.includes(reservation.unit_id)) ||
         saved.length !== 1 ||
         dispatched.length !== 1 ||
         done.length !== 1 ||
@@ -662,14 +699,33 @@ function isSealedRetainedResponseFailure(seal, studyEvents, retainedUnits) {
       )
         return false;
       const bytes = fs.readFileSync(saved[0].response_path);
-      return createHash('sha256').update(bytes).digest('hex') === saved[0].response_sha256;
+      if (createHash('sha256').update(bytes).digest('hex') !== saved[0].response_sha256) return false;
+      if (retainedUnits.includes(reservation.unit_id)) return true;
+      const bundle = JSON.parse(bytes);
+      // At most one replacement of a response-free rejection. Keep the first
+      // reservation charged and refuse another recovery after the replacement.
+      return (
+        bundle.attempt_id === reservation.attempt_id &&
+        bundle.job?.id === reservation.unit_id &&
+        isResponseFreeParameterRejection(bundle.request, bundle.raw) &&
+        studyEvents.filter(
+          (e) => e.type === 'study_model_attempt_dispatch_reserved' && e.unit_id === reservation.unit_id,
+        ).length === 1
+      );
     });
   } catch {
     return false;
   }
 }
 
-function validateStudyLedger({ events, studyId, spendCap, recoveryFrom, retainedResponseUnits }) {
+function validateStudyLedger({
+  events,
+  studyId,
+  spendCap,
+  recoveryFrom,
+  retainedResponseUnits,
+  parameterRejectionUnits,
+}) {
   const created = events.find((event) => event.type === 'study_created');
   if (!created) {
     if (events.length) throw new Error('paid study ledger is missing its creation event');
@@ -692,7 +748,12 @@ function validateStudyLedger({ events, studyId, spendCap, recoveryFrom, retained
   const zeroProviderStartupRecovery = isSealedZeroProviderStartupFailure(seal);
   const reportBackedActionOutcomeRecovery = isSealedReportBackedActionOutcomeFailure(seal);
   const initialJsonModeRecovery = isSealedInitialJsonModeRejection(seal, events);
-  const retainedResponseRecovery = isSealedRetainedResponseFailure(seal, events, retainedResponseUnits);
+  const retainedResponseRecovery = isSealedRetainedResponseFailure(
+    seal,
+    events,
+    retainedResponseUnits,
+    parameterRejectionUnits,
+  );
   const zeroProviderStartupFailures = events.filter(isSealedZeroProviderStartupFailure).length;
   if (
     lastSealIndex < lastLaunchIndex ||
@@ -720,6 +781,7 @@ export function admitPaidStudyLaunch({
   studyStateRoot,
   recoveryFrom,
   retainedResponseUnits = [],
+  parameterRejectionUnits = [],
   ...contract
 }) {
   if (
@@ -729,6 +791,15 @@ export function admitPaidStudyLaunch({
     (!recoveryFrom && retainedResponseUnits.length)
   )
     throw new Error('retained response units require unique unit ids and a recovery predecessor');
+  if (
+    !Array.isArray(parameterRejectionUnits) ||
+    parameterRejectionUnits.some(
+      (unit) => typeof unit !== 'string' || !unit.trim() || retainedResponseUnits.includes(unit),
+    ) ||
+    new Set(parameterRejectionUnits).size !== parameterRejectionUnits.length ||
+    (!recoveryFrom && parameterRejectionUnits.length)
+  )
+    throw new Error('parameter rejection units require unique non-retained unit ids and a recovery predecessor');
   if (!destination || !path.isAbsolute(destination)) throw new Error('destination must be absolute');
   if (path.basename(ledgerName) !== ledgerName || !ledgerName.endsWith('.jsonl')) {
     throw new Error('ledger name must be a JSONL filename');
@@ -756,6 +827,7 @@ export function admitPaidStudyLaunch({
       spendCap: verified.spend_cap,
       recoveryFrom: resolvedRecoveryFrom,
       retainedResponseUnits,
+      parameterRejectionUnits,
     });
     studyLedger = fs.openSync(lease.studyLedgerPath, 'a');
     if (!events.length) {
@@ -798,6 +870,7 @@ export function admitPaidStudyLaunch({
     launch_kind: resolvedRecoveryFrom ? 'recovery' : 'initial',
     ...(resolvedRecoveryFrom ? { recovery_from: resolvedRecoveryFrom } : {}),
     ...(retainedResponseUnits.length ? { retained_response_units: retainedResponseUnits } : {}),
+    ...(parameterRejectionUnits.length ? { parameter_rejection_units: parameterRejectionUnits } : {}),
   });
   appendJsonLine(studyLedger, {
     type: 'study_launch_admitted',
@@ -807,6 +880,7 @@ export function admitPaidStudyLaunch({
     launch_kind: resolvedRecoveryFrom ? 'recovery' : 'initial',
     ...(resolvedRecoveryFrom ? { recovery_from: resolvedRecoveryFrom } : {}),
     ...(retainedResponseUnits.length ? { retained_response_units: retainedResponseUnits } : {}),
+    ...(parameterRejectionUnits.length ? { parameter_rejection_units: parameterRejectionUnits } : {}),
     reserved_before_launch:
       studyReserved +
       readJsonLines(lease.studyLedgerPath, 'paid study attempt ledger').filter(

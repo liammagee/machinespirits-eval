@@ -9,8 +9,8 @@ source: manual
 created: 2026-09-05
 updated: 2026-09-05
 verification: Verify the unchanged 48-item identities and complete-input derivative; test zero-call preparation, judge separation, calibrated request reservations and missing-only recovery; review the calibration design, independent human reference plan and hosted CI before any paid launch.
-branch: codex/superego-calibration-route-check
-blocked_by: GPT-5.4 routing rejects registered temperature/top_p controls; decoding and HTTP-404 recovery decision required. Independent human reference ratings remain outstanding.
+branch: codex/superego-calibration-native-sampling
+blocked_by: Approved native-sampling and HTTP-404 recovery amendment awaits merge and separate launch instruction. Independent human reference ratings remain outstanding.
 claim_status: methods
 links:
   items:
@@ -21,11 +21,13 @@ links:
     - notes/2026-09-05-superego-critique-measurement-calibration-launch.md
     - notes/2026-09-05-superego-critique-calibration-response-handling-go.md
     - notes/2026-09-05-superego-critique-calibration-routing-failure.md
+    - notes/2026-09-05-superego-critique-calibration-native-sampling-go.md
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/1038
     - https://github.com/liammagee/machinespirits-eval/pull/1041
     - https://github.com/liammagee/machinespirits-eval/pull/1045
     - https://github.com/liammagee/machinespirits-eval/pull/1046
+    - https://github.com/liammagee/machinespirits-eval/pull/1048
 ---
 
 The user requested validation and reconsideration after the expense/model review.
@@ -148,3 +150,23 @@ metadata snapshots, the new raw request/error and the cumulative ledger
 snapshot. Private commit 1d6a266ddfe48357059901454c3f36e87d048ec9 is pushed and
 remotely verified. The original archive, raw data, failed seals and GO notes
 remain intact. Human ratings and causal/validity findings remain absent.
+
+2026-09-05 Codex: verified #1048 merged at 052baea7 and created a clean
+worktree from fresh origin/main. The user answered "Yes" to the proposed
+native-sampling and response-free rejection recovery amendment. Recorded that
+approval in the linked GO note and amended the existing design in place.
+GPT-5.4 calibration seats omit temperature/top_p; Sonnet keeps its controls.
+Shared admission verifies durable response-free parameter-rejection accounting
+before allowing one replacement, and preserves all earlier retained answers,
+failed seals, reservations, category caps and the $15 / 204-attempt ceilings.
+No launch is authorized by this amendment.
+
+Focused shared-contract and replay regressions cover the CLI, missing-work
+continuation across both failures, retained-answer protection, malformed/answered
+rejection envelopes, tampered accounting, unchanged protected inputs and refusal
+of a third attempt. A stale CLI fixture was corrected and its focused rerun
+passed. Offline verification reproduced all 319 traces and the exact 48-item /
+192-job plan, retained the invalid Sonnet answer and identified only the missing
+GPT routing-rejected answer for replacement. Public metadata checks accept the
+amended controls for both pinned routes. Maximum reservation remains $14.342107;
+paid calls, new model judgments and human labels in this step: zero.
