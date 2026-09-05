@@ -824,6 +824,7 @@
         "tests/tutorStubWorldScaffold.test.js",
         "tests/validateRecursiveTutorProtocol.test.js",
         "tests/verifyBoredomV5WorldWindow.test.js",
+        "tests/warrantGateSecondFamilyReplication.test.js",
         "tests/warrantStubDependencyBoundary.test.js",
         "tests/workplan.test.js",
         "tests/workplanBoardFocus.test.js",
