@@ -542,6 +542,7 @@
         "tests/testStorePathOwnership.test.js",
         "tests/timingPairGenerator.test.js",
         "tests/traceSchema.test.js",
+        "tests/traceSourceCheckout.test.js",
         "tests/transcriptFormatter.test.js",
         "tests/transcriptProjection.test.js",
         "tests/trapTurnConvention.test.js",
