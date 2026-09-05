@@ -1,7 +1,7 @@
 ---
 id: runtime-file-digest-refusals-record-only
 title: Record file digests at run time instead of refusing on drift
-status: done
+status: active
 type: infra
 priority: P1
 owner: claude
@@ -296,7 +296,7 @@ launcher's certificate reminder line now say so. The dated note
 `notes/program-2/2026-07-26-launch-safety-contract.md` still says the
 gate-spec file cannot change after certification; it is a record and was left.
 
-### 4. Development evidence
+### 4. Development evidence (ruled: keep the pin)
 
 `tutorStubResistanceSemanticValidationV2.js:231` and
 `tutorStubResistanceSemanticValidationV3.js:349` hash
@@ -305,6 +305,13 @@ and its v3 sibling. A development-evidence JSON is not a registration, a design,
 a go request, a code file, a schema or a prompt, so it fails the IN test. The
 name is close to `development-corpus`, which is on the OUT list, but does not
 match it. Neither list fits, so I left both.
+
+The file is a small frozen manifest. It lists the corpora the instrument was
+developed on with their digests and case counts, discloses that the v1 and v2
+held-out corpora were consumed, and states that v3 held-out reuse is not
+allowed. It holds no code digest. A change to it is a change to the study's
+measurement rules, and the go covers the study only until the study changes.
+The user ruled on 2026-09-04 to keep the pin. No code changed.
 
 ### 5 and 6. Two refusals I chose not to touch
 
@@ -354,3 +361,9 @@ data pins at `tutorStubBoredomSemanticValidation.js:99` and the run-artifact
 pins are unchanged; `npm run lint:all`, `npm run test:ratchets` and
 `npm run wp:source-check` pass; CI on that commit is green. The one local
 hermetic failure is the partial-clone test noted on the ratchet card.
+
+## Reopened 2026-09-04
+
+Reopened for the item-by-item walk-through of the seven sites reported in
+PR #1019. Rulings on items 1 to 4 are recorded above and carried in PR #1026.
+Items 5 to 7 are still to be ruled.
