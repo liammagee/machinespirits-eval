@@ -2,9 +2,12 @@
 
 Status: the original replay stopped before any model output. The separately
 approved and launched calibration stopped on its first response; PR #1041
-preserves that failure. The response-handling amendment below is proposed for
-review and has no GO yet. Paid continuation remains blocked. The original GO
-notes and failure artifacts remain unchanged; the four-arm replay stays paused.
+preserves that failure. The response-handling amendment below merged in #1045
+and the user approved it on 2026-09-05. Approval is recorded in
+`notes/2026-09-05-superego-critique-calibration-response-handling-go.md`.
+Shared recovery support is implemented; paid continuation still requires a
+separate launch instruction. Original GO notes and failure artifacts remain
+unchanged; the four-arm replay stays paused.
 Workplan item: `superego-critique-causal-replay`.
 
 ## Question and evidence
@@ -240,14 +243,14 @@ node scripts/run-superego-critique-causal-replay.js --mode calibration --prepare
 Paid mode uses the same `--mode calibration` with `--launch --accept-charges`,
 a committed calibration GO note and its provenance commit, and a fresh output
 directory. It requires separate launch authority after design approval. A GO
-note is not created by preparation. Under the proposed amendment below, invalid
+note is not created by preparation. Under the approved amendment below, invalid
 judgment formatting or evidence is retained without a replacement call; other
 failures retain the existing stop rules. Disagreement stops inference in that
 field, not collection of the predeclared batch.
 The end of judging is `HANDOFF_PENDING` until private archiving is verified;
 scientific readiness remains unresolved until independent reference review.
 
-### Proposed calibration response-handling amendment, 2026-09-05
+### Calibration response-handling amendment, approved 2026-09-05
 
 The first response failed the original strict parser. Its JSON is inside one
 Markdown fence; after removing that wrapper, two quoted spans still fail exact
@@ -278,7 +281,7 @@ coding requirement, no automatic PASS rule and all non-claims remain unchanged.
 This phase diagnoses the instrument; invalidity does not become a zero score or
 a negative causal result.
 
-The outstanding shared-runner change must admit continuation only after verifying
+The shared runner admits continuation only after verifying
 that the stopped segment's dispatches have durable, journal-matched responses,
 that those responses receive terminal retained dispositions, and that no retained
 job can be dispatched again. Enforce the last condition before reservation in
@@ -289,14 +292,12 @@ seed, sources and dollar/attempt caps, with only this explicitly documented
 response-disposition amendment allowed. No boolean bypass of a failed seal and
 no per-study authorization package is proposed.
 
-That shared admission change is **not implemented by this repair**. Automatic
-approval review rejected changing the shared recovery rule without explicit
-approval of its scope. Current regression coverage must prove the original
-sealed failure still blocks admission before any call or destination creation.
-After approval, implement and test the shared no-redispatch boundary before
-continuation. This is a change to measurement/failure disposition, so
-`docs/paid-study-authorization-policy.md` requires a fresh GO for the amended
-study after merge; no GO note or signature is created during this repair.
+The user explicitly approved this amendment and shared repair after #1045
+merged. The linked GO records the original proposed text and the user's assent;
+it does not authorize launch. Regression coverage verifies missing-work-only
+continuation, rejection of missing/tampered response accounting, and refusal to
+reserve retained jobs through shared admission or the underlying attempt ledger,
+including later recovery segments. The historical failed seal stays unchanged.
 
 There are **191 never-dispatched jobs**, no generation and no replacement of
 the first judgment. With no technical failures, finishing collection would use

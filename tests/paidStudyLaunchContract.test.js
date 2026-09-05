@@ -155,6 +155,130 @@ function raceConfig({ value, destination, resultFile, providerLog, unit, recover
   };
 }
 
+function retainedResponseFixture(t) {
+  const value = fixture(t, { cap: 4, noteCap: '4' });
+  const destination = path.join(value.base, 'original');
+  const admission = admitPaidStudyLaunch({ ...value.contract, destination });
+  const unitId = 'retained-judgment';
+  const capacity = admission.allocateModelAttemptCapacity(1, { unit_id: unitId });
+  const client = sharedModelAttemptLedgerClientFromEnv(admission.attemptLedgerEnvironment({ unitId, capacity }));
+  const reservation = client.reserve();
+  client.markDispatched({ attemptId: reservation.attemptId });
+  const responsePath = path.join(destination, 'responses', '1.json');
+  fs.mkdirSync(path.dirname(responsePath));
+  fs.writeFileSync(responsePath, '{"unaccepted_model_answer":"preserve"}\n');
+  client.persistResponse({ attemptId: reservation.attemptId, responsePath });
+  client.terminalize({ attemptId: reservation.attemptId, disposition: 'completed' });
+  admission.releaseModelAttemptCapacity(capacity);
+  admission.close({ type: 'run_sealed', status: 'technical_failure', recovery_permitted: false });
+  return { ...value, destination, unitId, responsePath, admission };
+}
+
+test('retained-response continuation protects the unit before reservation across later segments and shared clients', (t) => {
+  const value = retainedResponseFixture(t);
+  const before = fs.readFileSync(value.admission.ledger_path);
+  const recoveryDestination = path.join(value.base, 'retained-recovery');
+  const recovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: recoveryDestination,
+    recoveryFrom: value.destination,
+    retainedResponseUnits: [value.unitId],
+  });
+  assert.equal(recovery.studyReserved, 1);
+  assert.throws(
+    () => recovery.allocateModelAttemptCapacity(1, { unit_id: value.unitId }),
+    /Cannot redispatch retained/,
+  );
+  assert.throws(() => recovery.reserveModelAttempts(1, { unit: value.unitId }), /Cannot redispatch retained/);
+  // A caller omitting the allocation's unit still cannot reserve it through
+  // the environment API or directly through the durable shared client.
+  const capacity = recovery.allocateModelAttemptCapacity(1);
+  assert.throws(
+    () => recovery.attemptLedgerEnvironment({ unitId: value.unitId, capacity }),
+    /Cannot redispatch retained/,
+  );
+  const environment = JSON.parse(
+    recovery.attemptLedgerEnvironment({ unitId: 'missing-job', capacity }).TUTOR_STUB_SHARED_ATTEMPT_LEDGER,
+  );
+  const directClient = createSharedModelAttemptLedgerClient({ ...environment, unitId: value.unitId });
+  assert.throws(() => directClient.reserve(), /Cannot redispatch retained/);
+  assert.equal(recovery.studyReserved, 1);
+  recovery.releaseModelAttemptCapacity(capacity);
+  recovery.close({ type: 'run_sealed', status: 'paused_recoverable', recovery_permitted: true });
+  const later = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'later'),
+    recoveryFrom: recoveryDestination,
+  });
+  assert.throws(() => later.allocateModelAttemptCapacity(1, { unitId: value.unitId }), /Cannot redispatch retained/);
+  const missingCapacity = later.allocateModelAttemptCapacity(1, { unit_id: 'missing-job' });
+  const missingClient = sharedModelAttemptLedgerClientFromEnv(
+    later.attemptLedgerEnvironment({ unitId: 'missing-job', capacity: missingCapacity }),
+  );
+  const missingAttempt = missingClient.reserve();
+  assert.equal(later.studyReserved, 2);
+  missingClient.terminalize({ attemptId: missingAttempt.attemptId, disposition: 'cancelled_before_dispatch' });
+  later.releaseModelAttemptCapacity(missingCapacity);
+  later.close({ type: 'run_sealed', status: 'paused_recoverable', recovery_permitted: true });
+  assert.deepEqual(fs.readFileSync(value.admission.ledger_path), before);
+});
+
+test('a failed seal cannot be overridden by a retained-unit list without complete durable response accounting', (t) => {
+  const value = retainedResponseFixture(t);
+  const ledger = value.admission.ledger_path;
+  const studyLedger = value.admission.study_ledger_path;
+  const read = (file) => fs.readFileSync(file, 'utf8').trim().split('\n').map(JSON.parse);
+  const write = (file, events) => fs.writeFileSync(file, events.map((e) => JSON.stringify(e)).join('\n') + '\n');
+  const originalRun = fs.readFileSync(ledger);
+  const originalStudy = fs.readFileSync(studyLedger);
+  const originalResponse = fs.readFileSync(value.responsePath);
+  let index = 0;
+  const reject = (retainedResponseUnits = [value.unitId], recoveryFrom = value.destination) => {
+    const destination = path.join(value.base, `rejected-${index++}`);
+    assert.throws(
+      () => admitPaidStudyLaunch({ ...value.contract, destination, recoveryFrom, retainedResponseUnits }),
+      /sealed technical predecessor|unique unit ids/,
+    );
+    assert.equal(fs.existsSync(destination), false);
+  };
+  reject([]);
+  reject(['not-the-retained-unit']);
+  reject([value.unitId, value.unitId]);
+  reject([value.unitId], path.join(value.base, 'not-latest'));
+  fs.writeFileSync(value.responsePath, '{"edited":true}');
+  reject();
+  fs.rmSync(value.responsePath);
+  reject();
+  fs.writeFileSync(value.responsePath, originalResponse);
+  for (const type of ['model_attempt_dispatch_started', 'attempt_response_persisted', 'attempt_completed']) {
+    write(
+      ledger,
+      read(ledger).filter((e) => e.type !== type),
+    );
+    reject();
+    fs.writeFileSync(ledger, originalRun);
+  }
+  const events = read(ledger);
+  const saved = events.find((e) => e.type === 'attempt_response_persisted');
+  saved.attempt_id = 'another-attempt';
+  write(ledger, events);
+  reject();
+  fs.writeFileSync(ledger, originalRun);
+  const canonical = read(studyLedger);
+  canonical.find((e) => e.type === 'study_model_attempt_dispatch_reserved').unit_id = 'another-unit';
+  write(studyLedger, canonical);
+  reject();
+  fs.writeFileSync(studyLedger, originalStudy);
+  const allowed = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'after-restoring-fixture'),
+    recoveryFrom: value.destination,
+    retainedResponseUnits: [value.unitId],
+  });
+  assert.equal(allowed.studyReserved, 1);
+  allowed.close({ type: 'run_sealed', status: 'complete' });
+});
+
 test('standing contract accepts a launch, records its provenance, and reads a separator-tolerant cap', (t) => {
   const value = fixture(t);
   const verified = verifyPaidStudyLaunchContract(value.contract);
