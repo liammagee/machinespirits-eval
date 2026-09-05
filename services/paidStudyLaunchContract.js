@@ -294,6 +294,53 @@ function isSealedInitialJsonModeRejection(event, studyEvents) {
   }
 }
 
+// A launcher crash in harness code, sealed by the launcher's own catch with
+// no stop code, is a technical predecessor when its run ledger shows that no
+// dispatched attempt was left without a completed or failed event. No model
+// response can then have been lost, so a recovery resumes without resampling.
+// Design stops carry a code or set recovery_permitted on purpose and never
+// match. The second family's reader loop died this way on 2026-09-05 before
+// its first call, and the seal flag alone read it as not recoverable.
+function isSealedHarnessCrashWithoutInterruptedDispatch(event) {
+  if (
+    event?.type !== 'study_run_sealed' ||
+    event.status !== 'failed' ||
+    event.recovery_permitted !== false ||
+    !path.isAbsolute(event.destination || '') ||
+    !path.isAbsolute(event.run_ledger || '') ||
+    path.dirname(path.resolve(event.run_ledger)) !== path.resolve(event.destination)
+  ) {
+    return false;
+  }
+  let runEvents;
+  try {
+    runEvents = readJsonLines(path.resolve(event.run_ledger), 'harness-crash run ledger');
+  } catch {
+    return false;
+  }
+  const seal = runEvents.at(-1);
+  if (
+    runEvents[0]?.type !== 'launch_admitted' ||
+    seal?.type !== 'run_sealed' ||
+    seal.status !== 'failed' ||
+    seal.recovery_permitted !== false ||
+    (seal.code ?? null) !== null ||
+    typeof seal.error !== 'string' ||
+    !seal.error.trim()
+  ) {
+    return false;
+  }
+  const settled = new Set(
+    runEvents
+      .filter((candidate) => candidate.type === 'attempt_completed' || candidate.type === 'attempt_failed')
+      .map((candidate) => candidate.attempt_id),
+  );
+  if (runEvents.some((candidate) => candidate.type === 'attempt_interrupted_after_dispatch')) return false;
+  return runEvents
+    .filter((candidate) => candidate.type === 'model_attempt_dispatch_started')
+    .every((candidate) => settled.has(candidate.attempt_id));
+}
+
 function isSealedReportBackedActionOutcomeFailure(event) {
   if (
     event?.type !== 'study_run_sealed' ||
@@ -748,6 +795,7 @@ function validateStudyLedger({
   const zeroProviderStartupRecovery = isSealedZeroProviderStartupFailure(seal);
   const reportBackedActionOutcomeRecovery = isSealedReportBackedActionOutcomeFailure(seal);
   const initialJsonModeRecovery = isSealedInitialJsonModeRejection(seal, events);
+  const harnessCrashRecovery = isSealedHarnessCrashWithoutInterruptedDispatch(seal);
   const retainedResponseRecovery = isSealedRetainedResponseFailure(
     seal,
     events,
@@ -762,6 +810,7 @@ function validateStudyLedger({
       !retainedResponseRecovery &&
       !initialJsonModeRecovery &&
       !reportBackedActionOutcomeRecovery &&
+      !harnessCrashRecovery &&
       (!zeroProviderStartupRecovery || zeroProviderStartupFailures !== 1))
   ) {
     throw new Error('recovery requires the latest run to be a sealed technical predecessor');

@@ -9,7 +9,7 @@ source: manual
 created: 2026-09-04
 updated: 2026-09-05
 branch: claude/warrant-gate-second-family-replication
-verification: "Launched 2026-09-04 on the user's chat GO. Two attempts at dialogue 01 discarded (32 calls): a harness defect (PR #1025) and an Opus 5 analysis-seat validator failure. Registration amended in place on 2026-09-05: analysis seat back to Luna, seed 736 replaced by 748. Relaunched under a fresh chat GO. Stopped again at dialogue 02 (quote rule, PR #1033) and at dialogue 35 (final-authority check, PR #1047) and at dialogue 43 (registered 30-attempt cap, four codex CLI hangs) and at dialogue 53 (unspecified target with a named identifier, validator unchanged; its retake failed too and the user dropped it, fourth amendment). Generation complete 71/71 in r6, 568 cases, 1,136 reader batches planned. Reader loop died before its first call on a lifecycle-method defect (fixed, tests moved onto the real budget adapter); awaiting GO for recovery relaunch."
+verification: "Launched 2026-09-04 on the user's chat GO. Two attempts at dialogue 01 discarded (32 calls): a harness defect (PR #1025) and an Opus 5 analysis-seat validator failure. Registration amended in place on 2026-09-05: analysis seat back to Luna, seed 736 replaced by 748. Relaunched under a fresh chat GO. Stopped again at dialogue 02 (quote rule, PR #1033) and at dialogue 35 (final-authority check, PR #1047) and at dialogue 43 (registered 30-attempt cap, four codex CLI hangs) and at dialogue 53 (unspecified target with a named identifier, validator unchanged; its retake failed too and the user dropped it, fourth amendment). Generation complete 71/71 in r6, 568 cases, 1,136 reader batches planned. Reader loop died before its first call on a lifecycle-method defect (fixed, PR #1062). The relaunch was then refused at zero calls because the crash seal carried recovery_permitted false; a fifth evidence rule in the admission now reads that seal from the run ledger. Awaiting GO for the recovery relaunch."
 claim_status: planned
 links:
   notes:
@@ -138,3 +138,13 @@ in the registration linked above; nothing else changes.
   now copies the reader run into the new out dir with digests re-checked.
   Both in PR #1062. Awaiting the user's word to relaunch under recovery;
   the reader phase resumes at batch 1.
+- 2026-09-05: User merged PR #1062 and wrote GO. The relaunch under
+  recovery from r6 into r7 was refused by the admission at zero calls:
+  the reader-loop crash was an unclassified TypeError, so the launcher's
+  catch sealed r6 with `recovery_permitted: false` and no stop code, and
+  none of the four evidence rules matched. The r6 run ledger shows every
+  dispatched attempt settled and none cut off. Fixed in place with a fifth
+  evidence rule (harness crash, no stop code, no cut-off dispatch), one
+  recovery deep. Three tests on the r6 shape, a coded or blank seal, and
+  a cut-off dispatch. Checked against every seal in the study ledger at
+  zero calls: only r6 matches. Awaiting the user's word to relaunch.

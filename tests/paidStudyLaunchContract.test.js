@@ -932,6 +932,127 @@ test('a sealed technical predecessor hands its remaining study budget to one rec
   assert.equal(studyLedger.filter((event) => event.type === 'study_launch_admitted').length, 2);
 });
 
+function sealCrashedRun({ value, destination, seal, interruptDispatch = false, studyId = value.contract.studyId }) {
+  const initial = admitPaidStudyLaunch({ ...value.contract, studyId, destination });
+  const capacity = initial.allocateModelAttemptCapacity(2, { unit: 'unit-1' });
+  const client = sharedModelAttemptLedgerClientFromEnv(
+    initial.attemptLedgerEnvironment({ unitId: 'unit-1', capacity, maximumTurn: 2 }),
+  );
+  const completed = client.reserve({ role: 'fixture', turn: 1 });
+  client.markDispatched({ attemptId: completed.attemptId, role: 'fixture', turn: 1 });
+  const responsePath = path.join(destination, 'completed-response.json');
+  fs.writeFileSync(responsePath, JSON.stringify({ turn: 1 }));
+  client.persistResponse({ attemptId: completed.attemptId, responsePath, role: 'fixture', turn: 1 });
+  client.terminalize({ attemptId: completed.attemptId, disposition: 'completed', role: 'fixture', turn: 1 });
+  if (interruptDispatch) {
+    // Leave the second attempt dispatched and the capacity open, so the
+    // launcher's own close reconciles it as interrupted after dispatch.
+    const interrupted = client.reserve({ role: 'fixture', turn: 2 });
+    client.markDispatched({ attemptId: interrupted.attemptId, role: 'fixture', turn: 2 });
+  } else {
+    initial.releaseModelAttemptCapacity(capacity, { unit: 'unit-1' });
+  }
+  initial.close({ type: 'run_sealed', ...seal });
+  return { ledgerPath: initial.ledger_path };
+}
+
+const HARNESS_CRASH_SEAL = {
+  status: 'failed',
+  recovery_permitted: false,
+  error: 'reservation.fail is not a function',
+  code: null,
+};
+
+test('a harness crash sealed without a stop code admits one recovery when no dispatch was cut off', (t) => {
+  const value = fixture(t, { cap: 4, noteCap: '4' });
+  const initialDestination = path.join(value.base, 'crashed-initial');
+  sealCrashedRun({ value, destination: initialDestination, seal: HARNESS_CRASH_SEAL });
+
+  const studyLedgerPath = path.join(value.contract.studyStateRoot, value.contract.studyId, 'study-ledger.jsonl');
+  const sealedEvent = fs.readFileSync(studyLedgerPath, 'utf8').trim().split('\n').map(JSON.parse).at(-1);
+  assert.equal(sealedEvent.type, 'study_run_sealed');
+  assert.equal(sealedEvent.recovery_permitted, false);
+
+  const recovery = admitPaidStudyLaunch({
+    ...value.contract,
+    destination: path.join(value.base, 'crashed-recovery'),
+    recoveryFrom: initialDestination,
+  });
+  assert.equal(recovery.studyReserved, 1);
+  recovery.reserveModelAttempts(1, { unit: 'resumed' });
+  recovery.close({ type: 'run_sealed', status: 'complete' });
+
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        destination: path.join(value.base, 'crashed-second-recovery'),
+        recoveryFrom: initialDestination,
+      }),
+    /recovery|sealed technical predecessor/u,
+  );
+});
+
+test('a sealed stop that carries a stop code or a blank error is not read as a harness crash', (t) => {
+  const value = fixture(t, { cap: 4, noteCap: '4' });
+
+  const codedDestination = path.join(value.base, 'coded-initial');
+  sealCrashedRun({
+    value,
+    destination: codedDestination,
+    seal: { ...HARNESS_CRASH_SEAL, code: 'attempt_cap_reached', error: 'registered 30-attempt cap' },
+  });
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        destination: path.join(value.base, 'coded-recovery'),
+        recoveryFrom: codedDestination,
+      }),
+    /sealed technical predecessor/u,
+  );
+
+  const blankDestination = path.join(value.base, 'blank-initial');
+  sealCrashedRun({
+    value,
+    studyId: 'fixture-study-blank',
+    destination: blankDestination,
+    seal: { ...HARNESS_CRASH_SEAL, error: '   ' },
+  });
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        studyId: 'fixture-study-blank',
+        destination: path.join(value.base, 'blank-recovery'),
+        recoveryFrom: blankDestination,
+      }),
+    /sealed technical predecessor/u,
+  );
+});
+
+test('a harness crash sealed after a dispatch was cut off does not admit recovery on this rule', (t) => {
+  const value = fixture(t, { cap: 4, noteCap: '4' });
+  const destination = path.join(value.base, 'interrupted-crash-initial');
+  const { ledgerPath } = sealCrashedRun({ value, destination, seal: HARNESS_CRASH_SEAL, interruptDispatch: true });
+
+  const runEvents = fs.readFileSync(ledgerPath, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.equal(runEvents.filter((event) => event.type === 'attempt_interrupted_after_dispatch').length, 1);
+  assert.equal(runEvents.at(-1).type, 'run_sealed');
+  assert.equal(runEvents.at(-1).code, null);
+  assert.equal(runEvents.at(-1).recovery_permitted, false);
+
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        destination: path.join(value.base, 'interrupted-crash-recovery'),
+        recoveryFrom: destination,
+      }),
+    /sealed technical predecessor/u,
+  );
+});
+
 test('a recoverable pause hands only the remaining reservation capacity to recovery', (t) => {
   const value = fixture(t, { cap: 2, noteCap: '2' });
   const initialDestination = path.join(value.base, 'paused-initial');
