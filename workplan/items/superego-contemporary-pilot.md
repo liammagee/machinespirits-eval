@@ -17,12 +17,14 @@ links:
     - superego-critique-measurement-calibration
   notes:
     - notes/superego-contemporary-pilot-design.md
+    - notes/2026-09-05-superego-contemporary-pilot-go.md
 ---
 
 The user accepted the recommendation to replace continued historical
 calibration spending with a smaller contemporary instrument pilot. Scope here:
 design, focused implementation, zero-call verification, commit, push, PR and
-hosted CI. No new GO signature, provider probe or paid launch is authorized.
+hosted CI. The subsequent GO is recorded below; provider probes and paid
+launches remain outside the current authorization.
 
 Acceptance: six existing philosophy contexts with complete bounded public
 inputs; two fresh drafts each; all four arms; direct Sonnet generation and Sol
@@ -45,3 +47,12 @@ the same 12-unit/156-job plan and $19.008 maximum reservation. A zero-call paylo
 walk with long synthetic outputs stayed within request limits. Human references
 and live route behavior remain unvalidated; no provider call or GO was made.
 Hosted CI and PR review are the remaining design-publication checks.
+
+2026-09-05 approval: the user responded "GO" to the proposed pilot note.
+Recorded the approved text in notes/2026-09-05-superego-contemporary-pilot-go.md:
+156 planned calls plus 12 technical replacements, 168 attempts maximum and
+US $20 maximum provider spend. Study inputs, routes, measurement rules and
+runtime are unchanged. PR #1054's implementation passed all 18 hosted checks
+(three other checks skipped). No provider call or launch has been made.
+Merge and separate explicit generation launch authority remain necessary;
+human references must precede the separately authorized judging launch.
