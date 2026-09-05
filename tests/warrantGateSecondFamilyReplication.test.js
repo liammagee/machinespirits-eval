@@ -27,10 +27,12 @@ import {
   inheritCheckpoint,
   judgeSecondFamilyReplication,
   loadSecondFamilyManifest,
+  relocateInheritedReaderRun,
   runSecondFamilyGeneration,
   runSecondFamilyReaders,
   summarizeSecondFamilyReportOnly,
 } from '../scripts/run-warrant-gate-second-family-replication.js';
+import { createDurablePaidModelAttemptBudget } from '../services/durablePaidModelAttemptBudget.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LAUNCHER = path.join(ROOT, 'scripts', 'run-warrant-gate-second-family-replication.js');
@@ -530,30 +532,64 @@ function completedCase() {
   };
 }
 
-function fakeBudget() {
-  const log = [];
-  return {
-    log,
-    reserve(detail) {
-      const entry = { detail, state: 'reserved' };
-      log.push(entry);
+// The reader loop runs against the real durable budget adapter over a real
+// shared attempt ledger, never a hand-written stand-in. A stand-in that put
+// the lifecycle methods on the reservation object hid the 2026-09-05 defect
+// (`reservation.markDispatched is not a function`) from every test while the
+// first paid reader call died on it. Only the capacity bookkeeping is local.
+function ledgerBudget({ root, limit = 20 }) {
+  const runLedgerPath = path.join(root, 'run-ledger.jsonl');
+  const studyLedgerPath = path.join(root, 'state', 'study-ledger.jsonl');
+  fs.mkdirSync(path.dirname(studyLedgerPath), { recursive: true });
+  const released = [];
+  let sequence = 0;
+  const admission = {
+    get studyReserved() {
+      return readLedger(studyLedgerPath).filter((event) => event.type === 'study_model_attempt_dispatch_reserved')
+        .length;
+    },
+    allocateModelAttemptCapacity(count) {
+      return { id: `capacity-${++sequence}`, count };
+    },
+    attemptLedgerEnvironment({ unitId, capacity, maximumTurn = null }) {
       return {
-        markDispatched() {
-          entry.state = 'dispatched';
-        },
-        persistResponse(responsePath) {
-          entry.responsePath = responsePath;
-        },
-        complete() {
-          entry.state = 'complete';
-        },
-        fail(error) {
-          entry.state = 'failed';
-          entry.error = error.message;
-        },
+        TUTOR_STUB_SHARED_ATTEMPT_LEDGER: JSON.stringify({
+          runLedgerPath,
+          studyLedgerPath,
+          studyId: SECOND_FAMILY_STUDY_ID,
+          destination: root,
+          hardCeiling: limit,
+          unitId,
+          capacityId: capacity.id,
+          capacityLimit: capacity.count,
+          maximumTurn,
+        }),
       };
     },
+    releaseModelAttemptCapacity(capacity, detail) {
+      released.push({ capacity_id: capacity.id, ...detail });
+    },
   };
+  const log = [];
+  const budget = createDurablePaidModelAttemptBudget({
+    admission,
+    limit,
+    unitPrefix: 'reader',
+    hooks: {
+      onAttemptCompleted: (attempt) => log.push({ state: 'complete', unit: attempt.detail.unitId }),
+      onAttemptFailed: (attempt) => log.push({ state: 'failed', unit: attempt.detail.unitId, error: attempt.error }),
+    },
+  });
+  return { budget, log, released, runLedgerPath, studyLedgerPath };
+}
+
+function readLedger(filePath) {
+  if (!fs.existsSync(filePath)) return [];
+  return fs
+    .readFileSync(filePath, 'utf8')
+    .split(/\r?\n/u)
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
 }
 
 function prepareCollection(t) {
@@ -631,7 +667,8 @@ test('reader dispatch retries a response-free attempt under the allowance, accep
     exposed_sample_ids: [],
     batches: [],
   };
-  const budget = fakeBudget();
+  const ledger = ledgerBudget({ root });
+  const budget = ledger.budget;
   const calls = [];
   let droppedOnce = false;
   const callModel = async (agent, systemPrompt, userPrompt, role, opts) => {
@@ -687,10 +724,33 @@ test('reader dispatch retries a response-free attempt under the allowance, accep
   }
   assert.equal(readJson(runPath).status, 'complete');
   assert.deepEqual(
-    budget.log.map((entry) => entry.state),
+    ledger.log.map((entry) => entry.state),
     ['complete', 'complete', 'complete', 'failed', 'complete', 'complete', 'complete'],
   );
   assert.equal(fs.existsSync(path.join(runDir, 'quarantine')), false);
+
+  // Every attempt has its full durable lifecycle on the run ledger, and each
+  // batch row names the reservation that paid for it.
+  const events = readLedger(ledger.runLedgerPath);
+  const count = (type) => events.filter((event) => event.type === type).length;
+  assert.equal(count('model_attempt_dispatch_reserved'), 7);
+  assert.equal(count('model_attempt_dispatch_started'), 7);
+  assert.equal(count('attempt_completed'), 6);
+  assert.equal(count('attempt_failed'), 1);
+  assert.equal(count('attempt_cancelled_before_dispatch'), 0);
+  const reservedIds = new Set(
+    events.filter((event) => event.type === 'model_attempt_dispatch_reserved').map((event) => event.attempt_id),
+  );
+  assert.equal(finished.batches.length, 7);
+  assert.ok(finished.batches.every((row) => reservedIds.has(row.attempt_id)));
+  assert.equal(
+    readLedger(ledger.studyLedgerPath).filter((event) => event.type === 'study_model_attempt_dispatch_reserved').length,
+    7,
+  );
+  assert.deepEqual(
+    ledger.released.map((entry) => entry.reason),
+    [...Array(3).fill('attempt_completed'), 'attempt_failed', ...Array(3).fill('attempt_completed')],
+  );
 });
 
 test('a reader response outside the contract is quarantined and stops the run for the operator', async (t) => {
@@ -727,7 +787,7 @@ test('a reader response outside the contract is quarantined and stops the run fo
       outputDir: runDir,
       runPath,
       run,
-      budget: fakeBudget(),
+      budget: ledgerBudget({ root }).budget,
       attemptCap: 8,
       callModel,
     }),
@@ -760,7 +820,7 @@ test('the reader attempt cap stops dispatch without recovery once the allowance 
       outputDir: path.join(root, 'run'),
       runPath: path.join(root, 'run', 'run.json'),
       run,
-      budget: fakeBudget(),
+      budget: ledgerBudget({ root }).budget,
       attemptCap: 2,
       callModel: async () => {
         callCount += 1;
@@ -794,6 +854,92 @@ function scores({ bare, gated, standing }) {
   }
   return rows;
 }
+
+test('recovery moves the inherited reader run into the new out dir so the ledger accepts every persisted response', (t) => {
+  // The r6 stop of 2026-09-05 left the reader run dir under the predecessor.
+  // A recovered run registers its own out dir as the ledger destination, so
+  // a response written under the predecessor would be rejected after a paid
+  // call. The run record, responses and quarantine copy over, digests intact.
+  const previousRoot = tmpDir(t, 'reader-relocate-prev');
+  const previousRunDir = path.join(previousRoot, 'decision-reader-run');
+  const responsePath = path.join(previousRunDir, 'reader_a', 'batch-0001.response.json');
+  const quarantinePath = path.join(previousRunDir, 'quarantine', 'reader_b', 'batch-0002.attempt-2.txt');
+  fs.mkdirSync(path.dirname(responsePath), { recursive: true });
+  fs.mkdirSync(path.dirname(quarantinePath), { recursive: true });
+  fs.writeFileSync(responsePath, JSON.stringify({ ok: true }));
+  fs.writeFileSync(quarantinePath, 'not json');
+  const sha = (filePath) => createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+  const previousRun = {
+    status: 'running',
+    calls_attempted: 3,
+    calls_completed: 1,
+    exposed_sample_ids: ['case-1', 'case-2'],
+    batches: [
+      {
+        reader_id: 'reader_a',
+        batch_id: 'batch-0001',
+        status: 'complete',
+        response_path: responsePath,
+        response_sha256: sha(responsePath),
+      },
+      {
+        reader_id: 'reader_b',
+        batch_id: 'batch-0002',
+        status: 'failed',
+        quarantine_path: quarantinePath,
+        quarantine_sha256: sha(quarantinePath),
+      },
+      { reader_id: 'reader_b', batch_id: 'batch-0003', status: 'failed', failure_kind: 'transport_response_free' },
+    ],
+  };
+  const previousRunPath = path.join(previousRunDir, 'run.json');
+  fs.writeFileSync(previousRunPath, JSON.stringify(previousRun));
+  const previousBytes = fs.readFileSync(previousRunPath, 'utf8');
+
+  const root = tmpDir(t, 'reader-relocate-next');
+  const checkpoint = { reader_run: { run_dir: previousRunDir, run_path: previousRunPath, status: 'running' } };
+  const relocated = relocateInheritedReaderRun({ checkpoint, rootDir: root });
+  const runDir = path.join(root, 'decision-reader-run');
+  assert.equal(relocated.runDir, runDir);
+  assert.equal(relocated.copied.length, 2);
+  assert.equal(checkpoint.reader_run.run_dir, runDir);
+  assert.equal(checkpoint.reader_run.run_path, path.join(runDir, 'run.json'));
+  assert.equal(checkpoint.reader_run.relocated_from, previousRunDir);
+  const run = JSON.parse(fs.readFileSync(path.join(runDir, 'run.json'), 'utf8'));
+  assert.equal(run.calls_attempted, 3);
+  assert.equal(run.batches[0].response_path, path.join(runDir, 'reader_a', 'batch-0001.response.json'));
+  assert.equal(sha(run.batches[0].response_path), previousRun.batches[0].response_sha256);
+  assert.equal(run.batches[1].quarantine_path, path.join(runDir, 'quarantine', 'reader_b', 'batch-0002.attempt-2.txt'));
+  assert.equal(sha(run.batches[1].quarantine_path), previousRun.batches[1].quarantine_sha256);
+  assert.equal(run.batches[2].response_path, undefined);
+  // The predecessor keeps its record untouched.
+  assert.equal(fs.readFileSync(previousRunPath, 'utf8'), previousBytes);
+  assert.ok(fs.existsSync(responsePath));
+  // A second call on the same out dir is a no-op.
+  assert.equal(relocateInheritedReaderRun({ checkpoint, rootDir: root }), null);
+  // No inherited run: nothing to do.
+  assert.equal(relocateInheritedReaderRun({ checkpoint: { reader_run: null }, rootDir: root }), null);
+
+  // The real budget over the new out dir accepts a response under the
+  // relocated dir and rejects one under the predecessor.
+  const ledger = ledgerBudget({ root });
+  ledger.budget.reserve({ role: 'decision_reader', unitId: 'reader_a:batch-0004' });
+  ledger.budget.markDispatched();
+  const nextResponse = path.join(runDir, 'reader_a', 'batch-0004.response.json');
+  fs.writeFileSync(nextResponse, JSON.stringify({ ok: true }));
+  ledger.budget.persistResponse(nextResponse);
+  ledger.budget.complete();
+  ledger.budget.reserve({ role: 'decision_reader', unitId: 'reader_a:batch-0005' });
+  ledger.budget.markDispatched();
+  const strayResponse = path.join(previousRunDir, 'reader_a', 'batch-0005.response.json');
+  fs.writeFileSync(strayResponse, JSON.stringify({ ok: true }));
+  assert.throws(() => ledger.budget.persistResponse(strayResponse), /inside the registered destination/u);
+  ledger.budget.fail(new Error('outside destination'));
+  assert.deepEqual(
+    ledger.log.map((entry) => entry.state),
+    ['complete', 'failed'],
+  );
+});
 
 test('the replication bar reads the first block as replicated and a flat result as not replicated', () => {
   const firstBlock = judgeSecondFamilyReplication({

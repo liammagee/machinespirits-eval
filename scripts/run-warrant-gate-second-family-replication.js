@@ -629,6 +629,11 @@ export async function runSecondFamilyReaders({
         }
         const packet = readJson(batch.packet_path);
         const outputSchema = readJson(batch.output_schema_path);
+        // The budget adapter keeps the attempt lifecycle on itself; the
+        // reservation it returns is a frozen record with no methods. The
+        // first paid reader call of the second family (2026-09-05) died on
+        // `reservation.markDispatched is not a function`, masked by the same
+        // error from `reservation.fail` in the catch, before any model call.
         const reservation = budget.reserve({
           role: 'decision_reader',
           unitId: `${reader.reader_id}:${batch.batch_id}`,
@@ -640,7 +645,7 @@ export async function runSecondFamilyReaders({
         let rawResponse = null;
         let result = null;
         try {
-          reservation.markDispatched();
+          budget.markDispatched();
           result = await callModel(
             { provider, model },
             READER_SYSTEM_PROMPT,
@@ -665,12 +670,13 @@ export async function runSecondFamilyReaders({
           });
           const outputPath = path.join(resolvedOutput, reader.reader_id, batch.expected_response_filename);
           atomicWriteJson(outputPath, parsed);
-          reservation.persistResponse(outputPath);
-          reservation.complete();
+          budget.persistResponse(outputPath);
+          budget.complete();
           run.calls_completed += 1;
           run.batches.push({
             reader_id: reader.reader_id,
             batch_id: batch.batch_id,
+            attempt_id: reservation.attemptId || null,
             status: 'complete',
             packet_sha256: batch.packet_sha256,
             output_schema_sha256: batch.output_schema_sha256,
@@ -687,11 +693,12 @@ export async function runSecondFamilyReaders({
           persist();
           break;
         } catch (error) {
-          reservation.fail(error);
+          budget.fail(error);
           const transport = rawResponse === null || error.transport === true;
           const failedRow = {
             reader_id: reader.reader_id,
             batch_id: batch.batch_id,
+            attempt_id: reservation.attemptId || null,
             status: 'failed',
             failure_kind: transport ? 'transport_response_free' : 'contract',
             packet_sha256: batch.packet_sha256,
@@ -809,6 +816,54 @@ function resolveReaderPlanDirs(rootDir) {
     runDir: path.join(rootDir, 'decision-reader-run'),
     runPath: path.join(rootDir, 'decision-reader-run', 'run.json'),
   };
+}
+
+// A recovered run registers its own out dir as the ledger destination, and
+// the shared ledger accepts a persisted response only from inside that
+// destination. The predecessor's reader run dir therefore moves into the new
+// out dir before the first reader call: run record, completed responses and
+// quarantined texts are copied, their recorded digests re-checked, and the
+// rows rewritten to the new paths. The predecessor keeps its own copy. The
+// collection (packets, schemas, manifest) is read-only and stays where it is.
+export function relocateInheritedReaderRun({ checkpoint, rootDir }) {
+  const inherited = checkpoint.reader_run;
+  if (!inherited?.run_dir) return null;
+  const previousRunDir = path.resolve(inherited.run_dir);
+  const target = resolveReaderPlanDirs(path.resolve(rootDir));
+  if (previousRunDir === path.resolve(target.runDir)) return null;
+  const run = readJson(inherited.run_path);
+  fs.mkdirSync(target.runDir, { recursive: true });
+  const copied = [];
+  for (const row of run.batches || []) {
+    for (const [pathKey, digestKey] of [
+      ['response_path', 'response_sha256'],
+      ['quarantine_path', 'quarantine_sha256'],
+    ]) {
+      if (!row[pathKey]) continue;
+      const source = path.resolve(row[pathKey]);
+      const relative = path.relative(previousRunDir, source);
+      if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error(`inherited reader ${pathKey} lies outside the predecessor run dir: ${row[pathKey]}`);
+      }
+      const destination = path.join(target.runDir, relative);
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      fs.copyFileSync(source, destination);
+      if (row[digestKey] && fileSha256(destination) !== row[digestKey]) {
+        throw new Error(`inherited reader file changed on copy: ${row[pathKey]}`);
+      }
+      row[pathKey] = destination;
+      copied.push(destination);
+    }
+  }
+  atomicWriteJson(target.runPath, run);
+  checkpoint.reader_run = {
+    ...inherited,
+    run_dir: target.runDir,
+    run_path: target.runPath,
+    relocated_from: previousRunDir,
+    relocated_files: copied.length,
+  };
+  return { runDir: target.runDir, runPath: target.runPath, copied };
 }
 
 function freshCheckpoint({ manifest, manifestPath, seats, learnerProfile, ceiling, admission, rootDir }) {
@@ -1043,6 +1098,11 @@ export async function executeSecondFamilyReplication({
     // Stage 4: cases, fingerprint guard, corpus artifacts, reader plan.
     let built;
     let collection;
+    const relocated = relocateInheritedReaderRun({ checkpoint, rootDir });
+    if (relocated) {
+      persist();
+      log(`reader run relocated from ${checkpoint.reader_run.relocated_from} (${relocated.copied.length} files)`);
+    }
     const readerDirs = checkpoint.reader_collection
       ? {
           collectionDir: checkpoint.reader_collection.collection_dir,

@@ -9,7 +9,7 @@ source: manual
 created: 2026-09-04
 updated: 2026-09-05
 branch: claude/warrant-gate-second-family-replication
-verification: "Launched 2026-09-04 on the user's chat GO. Two attempts at dialogue 01 discarded (32 calls): a harness defect (PR #1025) and an Opus 5 analysis-seat validator failure. Registration amended in place on 2026-09-05: analysis seat back to Luna, seed 736 replaced by 748. Relaunched under a fresh chat GO. Stopped again at dialogue 02 (quote rule, PR #1033) and at dialogue 35 (final-authority check, PR #1047) and at dialogue 43 (registered 30-attempt cap, four codex CLI hangs) and at dialogue 53 (unspecified target with a named identifier, validator unchanged; its retake failed too and the user dropped it, fourth amendment); 52/71 complete."
+verification: "Launched 2026-09-04 on the user's chat GO. Two attempts at dialogue 01 discarded (32 calls): a harness defect (PR #1025) and an Opus 5 analysis-seat validator failure. Registration amended in place on 2026-09-05: analysis seat back to Luna, seed 736 replaced by 748. Relaunched under a fresh chat GO. Stopped again at dialogue 02 (quote rule, PR #1033) and at dialogue 35 (final-authority check, PR #1047) and at dialogue 43 (registered 30-attempt cap, four codex CLI hangs) and at dialogue 53 (unspecified target with a named identifier, validator unchanged; its retake failed too and the user dropped it, fourth amendment). Generation complete 71/71 in r6, 568 cases, 1,136 reader batches planned. Reader loop died before its first call on a lifecycle-method defect (fixed, tests moved onto the real budget adapter); awaiting GO for recovery relaunch."
 claim_status: planned
 links:
   notes:
@@ -120,3 +120,21 @@ in the registration linked above; nothing else changes.
   past it is recorded as dropped and skipped) and derives every downstream
   count from the completed dialogues: 71 dialogues, gated 23, 568 cases,
   1,136 reads. Bias on R1 runs against the gate. Regression test added.
+- 2026-09-05: User merged PR #1057 and wrote GO. Relaunched under recovery
+  into `-2026-09-05-r6` on 83a96239. Dialogues 54 to 72 completed with
+  every turn read and no call errors; 71 of 71 complete, 53 dropped.
+  Gated overrides applied on every checked dialogue, no hold recorded.
+  Dialogue 66 reached the 30-call cap and sealed complete. Case extraction
+  568, reader plan 1,136 batches. Ledger 1,997 of 3,360.
+- 2026-09-05: The reader loop died on its first batch before any codex Sol
+  call: `reservation.fail is not a function`. The loop called the attempt
+  lifecycle on the reservation record; the budget adapter keeps it on
+  itself. Technical, no model call, one ledger slot burned and released.
+  Fixed in place; the reader tests now run on the real budget adapter over
+  a real shared ledger and fail on the old loop. A second defect on the
+  same path found in review at zero calls: the inherited reader run dir
+  stayed under the predecessor, outside the new ledger destination, so the
+  first paid Sol response would have been rejected at persist. Recovery
+  now copies the reader run into the new out dir with digests re-checked.
+  Both in PR #1062. Awaiting the user's word to relaunch under recovery;
+  the reader phase resumes at batch 1.
