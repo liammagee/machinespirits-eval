@@ -108,13 +108,13 @@ horizon learner turn 8, DAG mode strict_dag, budget 40, warrant gate observe,
 stop on grounded no):
 
 ```bash
-node scripts/run-tutor-stub-qa-matrix.js --suite scoreboard --profiles low_agency,overconfident --runs 6 --turns 8 --primary-horizon 8 --cli-effort medium --warrant-gate observe --no-stop-on-grounded --world world_101_kestrel_signal_lamp --model claude-code.claude-sonnet-5 --analysis-model claude-code.claude-sonnet-5 --auto-learner-model claude-code.claude-sonnet-5 --model-call-budget 40 --trace-dir exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-101
+node scripts/run-tutor-stub-qa-matrix.js --suite scoreboard --profiles low_agency,overconfident --runs 6 --turns 8 --primary-horizon 8 --cli-effort medium --warrant-gate observe --no-stop-on-grounded --world docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml --model claude-code.claude-sonnet-5 --analysis-model claude-code.claude-sonnet-5 --auto-learner-model claude-code.claude-sonnet-5 --model-call-budget 40 --trace-dir exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-101
 ```
 
 B. Generation, world 102 (same plan figures):
 
 ```bash
-node scripts/run-tutor-stub-qa-matrix.js --suite scoreboard --profiles low_agency,overconfident --runs 6 --turns 8 --primary-horizon 8 --cli-effort medium --warrant-gate observe --no-stop-on-grounded --world world_102_marigold_archive_box --model claude-code.claude-sonnet-5 --analysis-model claude-code.claude-sonnet-5 --auto-learner-model claude-code.claude-sonnet-5 --model-call-budget 40 --trace-dir exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-102
+node scripts/run-tutor-stub-qa-matrix.js --suite scoreboard --profiles low_agency,overconfident --runs 6 --turns 8 --primary-horizon 8 --cli-effort medium --warrant-gate observe --no-stop-on-grounded --world docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml --model claude-code.claude-sonnet-5 --analysis-model claude-code.claude-sonnet-5 --auto-learner-model claude-code.claude-sonnet-5 --model-call-budget 40 --trace-dir exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-102
 ```
 
 Run A and B one after the other, attended. They share one quota window and
@@ -140,7 +140,7 @@ D. Second-model pair, Sol in the tutor seat (plan print: 8 expected dialogue
 rows):
 
 ```bash
-node scripts/run-tutor-stub-qa-matrix.js --suite scoreboard --profiles low_agency,overconfident --runs 2 --turns 8 --primary-horizon 8 --cli-effort medium --warrant-gate observe --no-stop-on-grounded --world world_101_kestrel_signal_lamp --model codex.gpt-5.6-sol --analysis-model claude-code.claude-sonnet-5 --auto-learner-model claude-code.claude-sonnet-5 --model-call-budget 40 --trace-dir exports/tutor-stub-live/scoreboard-crossed-2026-09-05/second-model-world-101
+node scripts/run-tutor-stub-qa-matrix.js --suite scoreboard --profiles low_agency,overconfident --runs 2 --turns 8 --primary-horizon 8 --cli-effort medium --warrant-gate observe --no-stop-on-grounded --world docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml --model codex.gpt-5.6-sol --analysis-model claude-code.claude-sonnet-5 --auto-learner-model claude-code.claude-sonnet-5 --model-call-budget 40 --trace-dir exports/tutor-stub-live/scoreboard-crossed-2026-09-05/second-model-world-101
 ```
 
 E. Reader seats over the second-model pair:
@@ -176,6 +176,15 @@ node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/
 - `--model-call-budget 40`: see the table above.
 - Run seed 20260711 and safety turns 120 are the matrix defaults; the plan
   print shows them.
+- `--world` takes the yaml path under
+  `docs/adaptation-refinement/outcome-study-a1/worlds/`, not the bare id. The
+  stub and the matrix search `config/drama-derivation/` for a bare id, and
+  worlds 101 and 102 are not there. The §6.25 run passed the path in the same
+  way. The trace records the id from the yaml, so the board reader is not
+  affected. Found on 2026-09-05 when command A stopped before its first child
+  started; no paid call was made. A zero-call dry run with the path form
+  passed and hashed the world file. This is a fix to the run recipe, not a
+  change to the study.
 
 ## After the run
 
