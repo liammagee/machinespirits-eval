@@ -40,7 +40,8 @@ question and dropped the demand), t5 kept after one own-words retry. Reader flag
 
 Repair, judge codex.gpt-5.6-sol blind to gold: HIT 5 / PARTIAL 2 / MISS 5. With the card
 2/6, without 3/6. Detection 3/6 right kind with the card (t7, t9, t10), one wrong kind at t6.
-Previous four pairs pooled 14/18 with vs 11/18 without (7, 7b, 7c, 7d; see 7d note).
+Previous three pairs pooled 14/18 with vs 11/18 without (7b, 7c, 7d; see 7d note; the
+first hold pair, step 7, is not in the pool. Label corrected 2026-09-05).
 Adding this pair: 16/24 vs 14/24.
 
 Example, plant t10 opposed, gold off_track_probe. With the card the tutor says "Priya

@@ -55,8 +55,10 @@ card both first drafts held. Reader flagged no copy of the sample line.
 
 Repair, judge codex.gpt-5.6-sol blind to gold: HIT 7 / PARTIAL 0 / MISS 5. With the card
 4/6 (t6, t7, t9, t10), without 3/6 (t4, t6, t9). Detection with the card 5/6 right kind
-(only t4 read neutral), against 3/6 in step 7e. Previous five pairs pooled 16/24 with vs
-14/24 without; adding this pair: 20/30 vs 17/30.
+(only t4 read neutral), against 3/6 in step 7e. Previous pool (7b, 7c, 7d, 7e) 16/24 with vs
+14/24 without; adding this pair: 20/30 vs 17/30, five pairs on the reworked hold direction.
+(Corrected 2026-09-05: this line and the 7e note counted the unpooled first hold pair in
+the pair label; the 7d note pools 7b, 7c and 7d only.)
 
 Example, plant t7 irritated, gold change_tone. With the card the tutor says "six just works
 because both halves and thirds fit evenly into it, same as picking a box size that both
