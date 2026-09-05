@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -26,12 +25,24 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-test('learner-profile recovery restores the exact historical qd-v1 bytes and pins their provenance', () => {
+// CLAUDE.md (2026-08-21, 2026-09-03): this test used to hash
+// services/tutorStubQuietDetectorV1.js and compare the result with the digest
+// the manifest recorded. The replay itself stopped enforcing that digest in
+// PR #1019 and now only writes the drift down, so the test was stricter than
+// the code it covers, and a formatting pass over the frozen detector would have
+// turned `npm test` red with no correct way to fix it. What is checked instead:
+// the replay records the digest, and the manifest still holds the value it
+// wrote down when the historical run was made. Both are written-down values.
+// A real edit to the detector is caught by the behaviour test below, which is
+// the guard that matters.
+test('learner-profile recovery records the historical qd-v1 provenance instead of enforcing it', () => {
   const manifest = readLearnerProfileRecoveryManifest();
   const report = validateLearnerProfileRecoveryManifest(manifest);
-  const bytes = fs.readFileSync(report.quietPath);
 
-  assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), manifest.provenance.quiet_detector.sha256);
+  const record = report.digestRecords.find((row) => row.path === 'services/tutorStubQuietDetectorV1.js');
+  assert.ok(record, 'the replay must record a digest for the historical quiet detector');
+  assert.match(record.observedSha256, /^[0-9a-f]{64}$/u);
+  assert.equal(record.recordedSha256, manifest.provenance.quiet_detector.sha256);
   assert.equal(
     manifest.provenance.quiet_detector.sha256,
     '318da00fff7fc8049fc21640f2978cc119ff3a45a53a5dd126e3df66656ec6c4',

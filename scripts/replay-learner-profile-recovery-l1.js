@@ -81,18 +81,20 @@ export function validateLearnerProfileRecoveryManifest(manifest, { root = ROOT }
   // source files in services/. A one-line fix to either used to make this
   // replay refuse, so both digests are written down and the replay carries on.
   // The version check above still refuses on a changed detector version.
-  recordObservedDigest({
-    label: 'replay quiet detector',
-    filePath: path.relative(root, quietPath),
-    recordedSha256: manifest.provenance.quiet_detector.sha256,
-    observedSha256: sha256File(quietPath),
-  });
-  recordObservedDigest({
-    label: 'replay pressure trigger',
-    filePath: path.relative(root, triggerPath),
-    recordedSha256: manifest.provenance.pressure_trigger.sha256,
-    observedSha256: sha256File(triggerPath),
-  });
+  const digestRecords = [
+    recordObservedDigest({
+      label: 'replay quiet detector',
+      filePath: path.relative(root, quietPath),
+      recordedSha256: manifest.provenance.quiet_detector.sha256,
+      observedSha256: sha256File(quietPath),
+    }),
+    recordObservedDigest({
+      label: 'replay pressure trigger',
+      filePath: path.relative(root, triggerPath),
+      recordedSha256: manifest.provenance.pressure_trigger.sha256,
+      observedSha256: sha256File(triggerPath),
+    }),
+  ];
 
   const attestation = manifest.historical_execution_attestation;
   if (!attestation || !/^[0-9a-f]{64}$/u.test(attestation.transcript_sha256 || '')) {
@@ -125,7 +127,7 @@ export function validateLearnerProfileRecoveryManifest(manifest, { root = ROOT }
     }
   }
 
-  return { quietPath, triggerPath, expectedTotal };
+  return { quietPath, triggerPath, expectedTotal, digestRecords };
 }
 
 function readTrace(tracePath) {
