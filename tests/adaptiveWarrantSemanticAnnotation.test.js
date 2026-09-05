@@ -417,7 +417,7 @@ test('new reader collections match case prospectively and unmarked historical co
     corpusRole: 'targeted_challenge',
     preflightMode: true,
   });
-  assert.equal(prepared.manifest.quote_match_mode, ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE);
+  assert.equal(prepared.manifest.quote_match_mode, ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.MARKUP_TOLERANT);
   const reader = prepared.manifest.readers[0];
   const batch = reader.batches[0];
   const packet = JSON.parse(fs.readFileSync(batch.packet_path, 'utf8'));
@@ -449,10 +449,10 @@ test('new reader collections match case prospectively and unmarked historical co
   assert.deepEqual(span, { text: original, start: text.indexOf(original), end: text.length });
   assert.deepEqual(fs.readFileSync(responsePath), before, 'assembly must not rewrite the reader response');
   const audit = JSON.parse(fs.readFileSync(current.auditPath));
-  assert.match(audit.normalization, /punctuation_and_case_normalized/u);
+  assert.match(audit.normalization, /punctuation_case_and_markup_normalized/u);
   assert.equal(
     audit.canonicalizations[0].operation,
-    'derive_punctuation_and_case_normalized_unique_literal_utf16_offsets',
+    'derive_punctuation_case_and_markup_normalized_unique_literal_utf16_offsets',
   );
 
   const historical = { ...prepared.manifest };

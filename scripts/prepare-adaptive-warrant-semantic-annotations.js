@@ -130,7 +130,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
   preflightPath = null,
   schemaAcceptancePath = null,
   preflightMode = false,
-  quoteMatchMode = ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE,
+  quoteMatchMode = ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.MARKUP_TOLERANT,
 } = {}) {
   validateAdaptiveWarrantSemanticQuoteMode(quoteMatchMode);
   if (!['targeted_challenge', 'natural_prevalence'].includes(corpusRole)) {
@@ -487,9 +487,11 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
           sample_id: sampleId,
           event_index: eventIndex,
           operation:
-            quoteMatchMode === ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE
-              ? 'derive_punctuation_and_case_normalized_unique_literal_utf16_offsets'
-              : 'derive_punctuation_normalized_unique_literal_utf16_offsets',
+            quoteMatchMode === ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.MARKUP_TOLERANT
+              ? 'derive_punctuation_case_and_markup_normalized_unique_literal_utf16_offsets'
+              : quoteMatchMode === ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE
+                ? 'derive_punctuation_and_case_normalized_unique_literal_utf16_offsets'
+                : 'derive_punctuation_normalized_unique_literal_utf16_offsets',
           start,
           end,
         });
@@ -552,9 +554,11 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
     reader_id: readerId,
     annotation_run_id: annotationRunId,
     normalization:
-      quoteMatchMode === ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE
-        ? 'schema_declared_punctuation_and_case_normalized_literal_span_and_event_order_derivation'
-        : 'schema_declared_punctuation_normalized_literal_span_and_event_order_derivation',
+      quoteMatchMode === ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.MARKUP_TOLERANT
+        ? 'schema_declared_punctuation_case_and_markup_normalized_literal_span_and_event_order_derivation'
+        : quoteMatchMode === ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE
+          ? 'schema_declared_punctuation_and_case_normalized_literal_span_and_event_order_derivation'
+          : 'schema_declared_punctuation_normalized_literal_span_and_event_order_derivation',
     edit_count: canonicalizations.length,
     canonicalizations,
     input_batches: inputs,

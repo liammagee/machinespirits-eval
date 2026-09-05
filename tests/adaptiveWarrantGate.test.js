@@ -137,6 +137,70 @@ test('prospective case-only quotes retain original UTF-16 spans, including Unico
   );
 });
 
+test('markup-tolerant quotes ignore emphasis marks, keep offsets into the learner text, and agree with case folding elsewhere', () => {
+  const markup = { quoteMatchMode: ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.MARKUP_TOLERANT };
+  const cased = { quoteMatchMode: ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE };
+  // Second-family block, dialogue 02, turn 6 (2026-09-05): the Opus 5 learner
+  // wrote "*and*"; the Luna analysis seat quoted the clause without the marks
+  // in three of three tries and the turn stayed unread.
+  const learner =
+    "Something's shifted, I think — is it alright if I just say Kite now has reach *and* a way in, and leave whether that outweighs Runa's arm's reach to you?";
+  const quote = 'Kite now has reach and a way in';
+  const original = 'Kite now has reach *and* a way in';
+  for (const mode of [
+    ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.HISTORICAL,
+    ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE,
+  ]) {
+    assert.equal(
+      deriveAdaptiveWarrantSemanticEvidenceSpan(learner, quote, { quoteMatchMode: mode }).status,
+      'not_literal',
+    );
+  }
+  const derived = deriveAdaptiveWarrantSemanticEvidenceSpan(learner, { text: quote, start: 999, end: 1000 }, markup);
+  assert.equal(derived.status, 'derived_unique_literal');
+  assert.deepEqual(derived.evidence_span, {
+    text: original,
+    start: learner.indexOf(original),
+    end: learner.indexOf(original) + original.length,
+  });
+  assert.equal(learner.slice(derived.evidence_span.start, derived.evidence_span.end), original);
+
+  for (const [source, supplied, expected] of [
+    ['I think **Kite** did it', 'i think kite did it', 'I think **Kite** did it'],
+    ['the `log` shows a gap', 'the log shows a gap', 'the `log` shows a gap'],
+    ['so _that_ is the clue', 'so that is the clue', 'so _that_ is the clue'],
+    ['plain words here', 'PLAIN words', 'plain words'],
+    ['the *clue* is *here*', 'the *clue* is', 'the *clue* is'],
+  ]) {
+    const result = deriveAdaptiveWarrantSemanticEvidenceSpan(source, supplied, markup);
+    assert.equal(result.status, 'derived_unique_literal', supplied);
+    assert.equal(result.evidence_span.text, expected);
+    assert.equal(source.slice(result.evidence_span.start, result.evidence_span.end), expected);
+  }
+  for (const [source, supplied, status] of [
+    ['the clue is here', 'the clue was here', 'not_literal'],
+    ['the clue is here', '***', 'not_literal'],
+    ['the clue is here', '', 'not_literal'],
+    ['*clue* here and clue there', 'clue', 'non_unique_literal'],
+  ]) {
+    assert.equal(deriveAdaptiveWarrantSemanticEvidenceSpan(source, supplied, markup).status, status, supplied);
+  }
+  // No emphasis mark in the source: the two modes return identical results.
+  for (const [source, supplied] of [
+    ['Yes—the “clue” is Nadia’s.', 'The "clue" is Nadia\'s.'],
+    ['İ clue here', 'İ CLUE'],
+    ['[clue].+ is here', '[CLUE].+'],
+    ['the clue is here', 'the clue was here'],
+    ['clue here and clue there', 'clue'],
+  ]) {
+    assert.deepEqual(
+      deriveAdaptiveWarrantSemanticEvidenceSpan(source, supplied, markup),
+      deriveAdaptiveWarrantSemanticEvidenceSpan(source, supplied, cased),
+      supplied,
+    );
+  }
+});
+
 test('prospective uniqueness includes case variants and overlapping matches while historical matching is unchanged', () => {
   const options = { quoteMatchMode: ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE };
   for (const [source, quote] of [

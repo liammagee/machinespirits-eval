@@ -2299,7 +2299,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
   priorPublicLearnerState = null,
   includeBenchmarkTransitionEvent = false,
   includeSemanticEvents = false,
-  semanticQuoteMatchMode = ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE,
+  semanticQuoteMatchMode = ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.MARKUP_TOLERANT,
   callModel,
   parseMode = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK,
   role = 'tutor_stub_public_learner_analysis',
