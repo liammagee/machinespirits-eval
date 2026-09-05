@@ -39,6 +39,7 @@ links:
     - notes/poetics/hero-demo-runs/2026-09-04-step7e-opus-tutor-seat-check.md
     - notes/poetics/hero-demo-runs/2026-09-04-hold-speech-check-opus-reread.md
     - notes/poetics/hero-demo-runs/2026-09-04-step6a-opus-labeller-check.md
+    - notes/poetics/hero-demo-runs/2026-09-04-step7-offline-matcher-fix.md
   exports:
     - exports/tutor-stub-outcome/step6-form-v3-live/
     - exports/tutor-stub-outcome/step7-hold-live/
@@ -49,6 +50,7 @@ links:
     - exports/tutor-stub-outcome/step7e-hold-opus-tutor/
     - exports/tutor-stub-outcome/hold-speech-recheck-opus/
     - exports/form-state-detector/
+    - exports/first-draft-audit-replay/
 tags:
   - adaptive-tutor
   - detector
@@ -93,12 +95,26 @@ card's verdict.
    `notes/poetics/hero-demo-runs/2026-09-04-step7-template-fallback-cause.md`.
 2. A human second read of at least one blind packet is still open. The model
    reads (Sonnet, Opus) do not close it.
-3. Then choose: a powered run (about six dialogues per version) with a
-   launch line that gives the held turn a model line (the cause note lists
-   four ways: the clue-insertion flag, the codex tutor seat, a cue and
-   matcher fix, or a recovery prompt that names the failed check; the Opus
-   tutor seat is ruled out by step 7e), or write the seven pairs up as a
-   lean in the hold notes and close this card. Do not widen to world-036.
+3. Offline matcher and packet fix done 2026-09-04; live confirmation
+   needs a paid run. Options 3 and 4 of the cause note are built: the clue
+   check accepts a draft that differs from the clue text only in quotation
+   marks (dropped or straightened), the presented-exhibit cue says "copied
+   word for word, once", and the plain recovery packet names the failed
+   check and what it requires. A zero-call replay on the ten recorded 037
+   hold dialogues (7 to 7e): of 59 drafts the clue check rejected on turns
+   2 to 5, 20 now pass, all of them at turn 4; 13 of those carry no other
+   hard issue. Turns 2, 3 and 5 gain nothing offline (0 of 39): 33 reword
+   the clue, 6 differ in one letter's case. Turn 5 first drafts all fail
+   the duplicate check, which is unchanged. Note
+   `notes/poetics/hero-demo-runs/2026-09-04-step7-offline-matcher-fix.md`;
+   script `scripts/replay-first-draft-audit.js`. What still needs a paid
+   run: whether the new cue and packet get a copied clue at turns 2 and 3,
+   whether the duplicate check clears at turn 5, and a model line on the
+   held turns. Then choose: one hold pair on the current code (the
+   clue-insertion flag and the codex tutor seat stay as the other two
+   ways; the Opus tutor seat is ruled out by step 7e), or write the seven
+   pairs up as a lean in the hold notes and close this card. Do not widen
+   to world-036.
 
 # Also landed on PR #985, not detector work
 
