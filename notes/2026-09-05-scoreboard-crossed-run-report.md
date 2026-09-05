@@ -321,7 +321,7 @@ the ruled reader it reads as no naming and passes the licence audit.
 Zero paid calls to check the ruled reader. (1) The Step 1 replay over the
 sealed archives reads the same on both bars: 562 of 678 shapes agree and 457
 of 511 delivered moves show; the forced-card table is the same. Across the
-729 sealed boards, 33 tutor rows in 31 boards change, every one a naming
+726 sealed boards, 33 tutor rows in 31 boards change, every one a naming
 dropped, and no other field moves. 24 of the 33 were closures the tutor had
 the right to make (`entitlement_status` warranted), 12 of them on the last
 turn of the dialogue; 9 were namings without the right. The hedge words that
@@ -601,3 +601,13 @@ Self-judging: no
 Kill 1 (board not above blind on either channel): FIRED.
 Kill 2 (licence violation by the program): not fired.
 ```
+
+## Correction, 2026-09-05
+
+One count in this note was wrong. The board files on disk are 729. Three of
+them hold quiet cards from the §6.24 forced-card table, and the replay counts
+no dialogue for them. The replay reads 726 dialogues
+(`summary.json`, field `dialogues`; the replay report gives the same total).
+The line above now reads 726 sealed boards. No other number changes: the 33
+changed tutor rows, the 31 boards and both Step 1 bars are counts over the
+same dialogue set.
