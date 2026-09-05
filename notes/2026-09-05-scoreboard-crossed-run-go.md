@@ -186,6 +186,42 @@ node scripts/run-scoreboard-crossed-readers.js --traces exports/tutor-stub-live/
   passed and hashed the world file. This is a fix to the run recipe, not a
   change to the study.
 
+## Run record, kept in place
+
+- 2026-09-05 12:36 UTC: command A started. The low_agency cell ran all 12
+  dialogues to turn 8 with 0 licence violations. The analyzer seat (Sonnet 5,
+  learner analysis) returned invalid semantic events three times on
+  `board-r2` turn 8 and three times on `board_blind-r5` turn 3, so 94 of 96
+  learner turns have an analyzer reading. The child sealed the cell
+  `learner_analysis_incomplete` and exited 1, and the matrix stopped before the
+  overconfident cell. No dialogue is re-run. The two turns count as unread on
+  the fields the analyzer feeds; the public text of both turns stays in the
+  reader packets. No admission ruling is written.
+- 2026-09-05 12:51 UTC: the overconfident cell for world 101 started with
+  `--profiles overconfident` and `--trace-dir
+  exports/tutor-stub-live/scoreboard-crossed-2026-09-05/world-101-overconfident`.
+  The matrix refuses a root that already holds a plan, so the cell has a
+  sibling root. The plan print shows the same child command as command A:
+  same seed 20260711, same budget, same world path, same models. Commands C
+  and F take this root as one more `--traces` entry. Dialogue count is
+  unchanged at 48.
+
+- 2026-09-05 13:02 UTC: the world-101 overconfident cell ended with all 12
+  dialogues at turn 8, 0 licence violations, 0 unread turns. Command B started
+  at 13:02 UTC with both shapes for world 102.
+- 2026-09-05 13:11 UTC: Kill 2 fired. In the world-102 permission-seeking
+  cell the program read the board tutor as naming the answer with no right to
+  close, in `board-r2` and `board-r4`, both at turn 6. The runtime ended both
+  dialogues and failed their jobs; the cell sealed incomplete and the matrix
+  stopped before the overconfident cell. The two spans come from a
+  defect in the board reader: its sentence splitter breaks a sentence at a
+  dash. The report describes it.
+  No patch to the live run. The world-102 overconfident cell, command D, and
+  the reader commands C, E and F did not run. 36 of 48 dialogues exist. Kill
+  1 also fired on the zero-call score over those 36. Report:
+  `notes/2026-09-05-scoreboard-crossed-run-report.md`. Paid calls made: 990
+  of the 2,476 ceiling.
+
 ## After the run
 
 1. `npm run archive:runs`, then commit in the private archive repo.

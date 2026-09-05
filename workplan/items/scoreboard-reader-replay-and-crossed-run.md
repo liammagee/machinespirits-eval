@@ -14,6 +14,7 @@ links:
     - notes/2026-09-04-scoreboard-replay-prompt.md
     - notes/2026-09-05-scoreboard-replay-report.md
     - notes/2026-09-05-scoreboard-crossed-run-go.md
+    - notes/2026-09-05-scoreboard-crossed-run-report.md
     - notes/2026-09-04-adaptive-tutor-plan.md
     - notes/2026-09-04-theoretical-blueprint.md
   code:
@@ -46,7 +47,10 @@ verification: "Step 1 report note states PASS or FAIL against the two
   held-out half misses the pairwise bar by one dialogue. Cast preflight PASS
   with zero calls. Step 2 GO note written; no paid call made. lint:all, npm
   test, test:ratchets and wp:source-check green on the branch: 10,375 tests
-  pass with 0 fails and 52 ratchet tests pass."
+  pass with 0 fails and 52 ratchet tests pass. 2026-09-05, later: Step 2 ran
+  on the user's go and stopped on Kill 2 at 36 of 48 dialogues; Kill 1 also
+  fired on those 36; no reader seat ran; the report names Sonnet 5 in every
+  seat and says the second-model check did not run."
 ---
 
 **What this is.**
@@ -106,7 +110,7 @@ are read.
   `board_blind` policy, which the benchmark does not run. The gate's record on
   earlier code is 0/6, 0/6, 4/6, 4/6, then 6/6 once. Report:
   `.git/machinespirits-reports/tutor-pr-benchmark/runs/pr-benchmark-2026-09-05T12-28-17-719Z/`.
-  A paired base/head comparison (12 more calls) was not bought.
+  A paired base/head comparison (12 more calls) was not run.
 - 2026-09-05: seat change withdrawn. This PR first moved the learner analysis
   seat to codex Luna in commands A, B and D. Before it merged, the user said go
   in another session (GO note commit cfa60412 on `claude/scoreboard-replay`)
@@ -134,3 +138,16 @@ are read.
   run; the run continues to world 102 under the GO note as written, with no
   seat change. The report discloses, per block, the seal status and the
   unanalyzed turns with their dialogue and turn numbers.
+- 2026-09-05: Step 2 ran on the user's "go" in the chat. Sonnet 5 in the
+  tutor, learner and analyzer seats. World 101 ran both shapes, 24 dialogues,
+  0 licence violations. World 102 ran the permission-seeking shape; the board
+  reader read the board tutor as naming the answer with no right to close in
+  two dialogues at turn 6, so Kill 2 fired and the matrix stopped. The two
+  spans come from a defect in the reader's sentence splitter at a dash, not
+  from the tutor's conduct; the fix is not in this PR. Kill 1 fired on the
+  zero-call score over the 36 dialogues done: permission-seeking 0 of 12
+  against 2 of 12, overconfident 2 of 6 against 3 of 6. No reader seat ran,
+  so decision correctness and warranted shift share are unread. 990 paid
+  calls of the 2,476 ceiling. Traces archived in the private repo. Report:
+  `notes/2026-09-05-scoreboard-crossed-run-report.md`. The paper may state
+  no verdict from this run.
