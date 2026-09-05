@@ -37,9 +37,11 @@ Decomposition (fresh gated arm): 16/24 and 83.8%.
   identical to the first block (sha256 in the manifest).
 - Eight turns. Learner profile `low_agency`. Learner analysis prompt
   profile `handbook_v1`.
-- 12 fresh seeds, **736–747**, claimed in `config/seed-ledger.yaml`. None
+- 12 fresh seeds, **737–748**, claimed in `config/seed-ledger.yaml`. None
   appears in the repo text, the run store or the private archive as of
-  4 September (seed-ledger check with the archive search). Each seed yields
+  5 September (seed-ledger check with the archive search). The first claim
+  was 736–747; seed 736 was burned by two discarded attempts (amendment
+  below) and 748 replaces it. Each seed yields
   one dialogue per condition per world; order is interleaved by the same rule
   as the first block.
 - Decision channel only: two fresh readers per decision-turn case, batch
@@ -56,7 +58,7 @@ Decomposition (fresh gated arm): 16/24 and 83.8%.
 | Seat | First block | This replication |
 |---|---|---|
 | Tutor | codex.gpt-5.6-luna | claude-code.opus-5 |
-| Analysis (classifier, learner record) | codex.gpt-5.6-luna | claude-code.opus-5 |
+| Analysis (classifier, learner record) | codex.gpt-5.6-luna | codex.gpt-5.6-luna (amended 2026-09-05; was claude-code.opus-5) |
 | Learner | codex.gpt-5.6-luna | claude-code.opus-5 |
 | Decision readers | codex.gpt-5.6-luna | codex.gpt-5.6-sol |
 
@@ -85,11 +87,13 @@ Report-only, no bar: P1′ (arming and first challenge in ≥ 80% of gated
 dialogues), P2b (break within three turns after the first challenge),
 arming counts, standing-permission challenge count, M2–M6, M7/M8.
 
-The claim on success is: the passive gate effect holds on a second tutor
-family with a second reader model. The claim on failure is: the first-block
-effect is bound to Luna in the tutor seat, the Luna reader, or both; the
-report cannot say which. No pooling with the first block or the pilot in
-any confirmatory analysis.
+The claim on success is: the passive gate effect holds with a second tutor
+family in the tutor and learner seats and a second reader model. The claim
+on failure is: the first-block effect is bound to Luna in the tutor or
+learner seat, the Luna reader, or some of these; the report cannot say
+which. Neither claim speaks to the analysis seat, which stays on Luna in
+both blocks (amendment below). No pooling with the first block or the
+pilot in any confirmatory analysis.
 
 ## Rails that cost nothing at runtime
 
@@ -128,3 +132,33 @@ registered 3360 unless `--ceiling` lowers it.
 Zero-call build: manifest, this note, launcher, tests, dry run, PR. Human
 review. Only on an explicit human GO in chat: the launch line the launcher
 prints from `--dry-run`. Report lands as a new subsection under §6.25.
+
+## Amendment 2026-09-05: analysis seat back to Luna, seed 736 replaced
+
+User ruling in chat: "luna in the analysis seat, amend and GO."
+
+What happened. The first dialogue (seed 736, world 101, bare) ran under
+Opus 5 in every generating seat. On turn 4 the learner asked whether it
+could log only that Kite's chassis docked at the rail. Opus 5 in the
+analysis seat answered three times with a semantic event whose target was
+`unspecified` and which also named the public identifier `p_clamp`. The
+strict validator rejects that pair (`services/adaptiveWarrantSemanticEvents.js`,
+rule `target:unspecified_cannot_name_public_identifiers`). Turn 6 showed the
+same form on two of three tries and passed on the third. Turn 4 stayed
+unread, the coverage guard quarantined the dialogue, and the run stopped.
+The dialogue also used exactly its 30-call cap. Luna produced this form once
+in the pilot and never in the 576-turn first block. This note forbids
+coercing a response into shape and allows one retake per dialogue; the
+second attempt was that retake. (The first attempt died at its first model
+call on a harness defect, fixed in PR #1025.)
+
+What changes. The analysis seat is `codex.gpt-5.6-luna`, the first-block
+model. The tutor and learner seats stay on `claude-code.opus-5`. Seed 736 is
+replaced by 748 because two discarded attempts exist on disk at 736; both
+are listed in the manifest and neither entered a corpus. Everything else is
+unchanged: worlds, handbook, conditions, turns, readers, bars, ceiling.
+
+What it changes in the claim. A result now bears on the tutor and learner
+seats only. It cannot separate the analysis seat from the first block. The
+report says so in its first line.
+

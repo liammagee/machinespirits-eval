@@ -23,6 +23,7 @@ import {
   buildSecondFamilyJobs,
   describeSecondFamilyArming,
   describeSecondFamilyPlan,
+  inheritCheckpoint,
   judgeSecondFamilyReplication,
   loadSecondFamilyManifest,
   runSecondFamilyGeneration,
@@ -69,7 +70,7 @@ test('the registered manifest describes 72 dialogues, 576 cases and 1,152 reads 
   assert.equal(plan.dialogues_per_seed, 6);
   assert.deepEqual(
     plan.seeds,
-    Array.from({ length: 12 }, (_, index) => 736 + index),
+    Array.from({ length: 12 }, (_, index) => 737 + index),
   );
   assert.equal(plan.turns_per_dialogue, 8);
   assert.equal(plan.learner_profile, 'low_agency');
@@ -102,7 +103,7 @@ test('the default invocation and --dry-run print the plan, spawn nothing and mak
   assert.match(dry.stdout, /Dry-run jobs: 72/u);
   assert.match(
     dry.stdout,
-    /--model claude-code\.opus-5 --analysis-model claude-code\.opus-5 --auto-learner-model claude-code\.opus-5/u,
+    /--model claude-code\.opus-5 --analysis-model codex\.gpt-5\.6-luna --auto-learner-model claude-code\.opus-5/u,
   );
   assert.match(dry.stdout, /--dry-run$/mu);
   assert.equal(fs.existsSync('/nonexistent/second-family-dry'), false);
@@ -145,7 +146,7 @@ test('second-family jobs carry the Opus seats while the first-block builder keep
   assert.equal(jobs.length, 72);
   const first = jobs[0].command.join(' ');
   assert.match(first, /--model claude-code\.opus-5 /u);
-  assert.match(first, /--analysis-model claude-code\.opus-5 /u);
+  assert.match(first, /--analysis-model codex\.gpt-5\.6-luna /u);
   assert.match(first, /--auto-learner-model claude-code\.opus-5 /u);
   assert.match(first, /--model-call-budget 30 /u);
   assert.match(first, /--auto-learner-profile-id low_agency /u);
@@ -319,6 +320,80 @@ test('generation hands each child the study ledger through its environment, reco
   assert.equal(retake.status, 'complete');
   assert.equal(retake.retake_of_quarantined_attempts, 1);
   assert.equal(checkpoint.dialogues.filter((row) => row.status === 'complete').length, 3);
+});
+
+test('recovery recomputes seed freshness and the preflight after an amendment, and refuses to reuse a dialogue completed under other seats', (t) => {
+  const { manifest } = loadSecondFamilyManifest();
+  const previousDestination = tmpDir(t, 'predecessor');
+  const oldSeats = { ...SECOND_FAMILY_SEATS, analysis: 'claude-code.opus-5' };
+  const oldSeeds = [736, ...manifest.seeds.slice(0, -1)];
+  const quarantined = {
+    id: 'second-family-01-world_101_kestrel_signal_lamp-s736-bare',
+    order: 1,
+    seed: 736,
+    condition: 'bare',
+    status: 'quarantined',
+  };
+  const fresh = {
+    schema: 'machinespirits.adaptation-refinement.warrant-outcome-second-family-run.v1',
+    study_id: SECOND_FAMILY_STUDY_ID,
+    seats: { ...SECOND_FAMILY_SEATS },
+    recovered_from: null,
+    seed_freshness: null,
+    prompt_preflight: null,
+    dialogues: [],
+    corpus: null,
+    reader_collection: null,
+    reader_run: null,
+  };
+  const base = {
+    schema: fresh.schema,
+    study_id: SECOND_FAMILY_STUDY_ID,
+    seats: oldSeats,
+    seed_freshness: { status: 'passed', seeds: oldSeeds },
+    prompt_preflight: { path: '/old/prompt-preflight.json', status: 'written' },
+    corpus: null,
+    reader_collection: null,
+    reader_run: null,
+    stop: { code: 'dialogue_quarantined', recovery_permitted: true },
+  };
+
+  // Seeds and analysis seat changed; only quarantined rows in the predecessor.
+  writeJson(path.join(previousDestination, 'checkpoint.json'), { ...base, dialogues: [quarantined] });
+  const inherited = inheritCheckpoint({ previousDestination, fresh, manifest });
+  assert.equal(inherited.seed_freshness, null);
+  assert.equal(inherited.prompt_preflight, null);
+  assert.deepEqual(inherited.dialogues, [quarantined]);
+  assert.deepEqual(inherited.recovered_from.inherited, {
+    seed_freshness: false,
+    prompt_preflight: false,
+    previous_seeds: oldSeeds,
+    previous_seats: oldSeats,
+  });
+  assert.deepEqual(inherited.recovered_from.lineage, [previousDestination]);
+
+  // Same seeds and seats: both records carry over.
+  writeJson(path.join(previousDestination, 'checkpoint.json'), {
+    ...base,
+    seats: { ...SECOND_FAMILY_SEATS },
+    seed_freshness: { status: 'passed', seeds: [...manifest.seeds] },
+    dialogues: [],
+  });
+  const same = inheritCheckpoint({ previousDestination, fresh, manifest });
+  assert.equal(same.seed_freshness.status, 'passed');
+  assert.equal(same.prompt_preflight.path, '/old/prompt-preflight.json');
+  assert.equal(same.recovered_from.inherited.seed_freshness, true);
+  assert.equal(same.recovered_from.inherited.prompt_preflight, true);
+
+  // A dialogue completed under the old analysis seat is never continued from.
+  writeJson(path.join(previousDestination, 'checkpoint.json'), {
+    ...base,
+    dialogues: [{ ...quarantined, status: 'complete' }],
+  });
+  assert.throws(
+    () => inheritCheckpoint({ previousDestination, fresh, manifest }),
+    /completed 1 dialogue\(s\) under different generation seats/u,
+  );
 });
 
 // ---------------------------------------------------------------------------

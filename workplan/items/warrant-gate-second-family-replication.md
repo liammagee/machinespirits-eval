@@ -7,9 +7,9 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-09-04
-updated: 2026-09-04
+updated: 2026-09-05
 branch: claude/warrant-gate-second-family-replication
-verification: "Zero-call setup only so far: card, registration, manifest, plain launcher, dry run and tests. No paid call has run. The paid block waits on the user writing GO in chat; no GO note is needed."
+verification: "Launched 2026-09-04 on the user's chat GO. Two attempts at dialogue 01 discarded (32 calls): a harness defect (PR #1025) and an Opus 5 analysis-seat validator failure. Registration amended in place on 2026-09-05: analysis seat back to Luna, seed 736 replaced by 748. Relaunched under a fresh chat GO."
 claim_status: planned
 links:
   notes:
@@ -33,7 +33,7 @@ in the registration linked above; nothing else changes.
 
 ## Acceptance
 
-- [ ] Registration and manifest fix worlds, conditions, seeds 736-747, seats,
+- [ ] Registration and manifest fix worlds, conditions, seeds 737-748, seats,
   endpoints, bars, stopping rules and the call ceiling; both reach `main`.
 - [ ] Plain launcher dry-runs at zero calls from a clean checkout and its
   focused tests pass.
@@ -51,3 +51,16 @@ in the registration linked above; nothing else changes.
   result is the only positive in the window large enough to replicate at an
   affordable size. Setup is zero-call: this card, the registration, the
   manifest, the launcher, tests and a dry run. No paid call has run.
+- 2026-09-04: User wrote GO in chat. Launched. Dialogue 01 died at its first
+  model call: the tutor-stub child closed attempts without persisting the
+  response (rule of 2026-09-03 never applied to the child). Fixed in PR
+  #1025 with a regression test. Relaunched under recovery on the fix.
+- 2026-09-05: The retake of dialogue 01 ran 8 turns and 30 calls but turn 4
+  stayed unread: Opus 5 in the analysis seat returned target `unspecified`
+  with a named public identifier in 3 of 3 tries, which the strict validator
+  rejects. Quarantined, run stopped. User ruling in chat: Luna in the
+  analysis seat, amend and GO. Registration, manifest, launcher seat, seed
+  ledger and tests amended in place; seed 736 burned, 748 replaces it.
+  Relaunched fresh (no recovery: the discarded dialogue used a different
+  analysis seat).
+
