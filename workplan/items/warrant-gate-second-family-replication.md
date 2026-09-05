@@ -9,7 +9,7 @@ source: manual
 created: 2026-09-04
 updated: 2026-09-05
 branch: claude/warrant-gate-second-family-replication
-verification: "Launched 2026-09-04 on the user's chat GO. Two attempts at dialogue 01 discarded (32 calls): a harness defect (PR #1025) and an Opus 5 analysis-seat validator failure. Registration amended in place on 2026-09-05: analysis seat back to Luna, seed 736 replaced by 748. Relaunched under a fresh chat GO. Stopped again at dialogue 02 (quote rule, PR #1033) and at dialogue 35 (final-authority check, this fix); 34/72 complete."
+verification: "Launched 2026-09-04 on the user's chat GO. Two attempts at dialogue 01 discarded (32 calls): a harness defect (PR #1025) and an Opus 5 analysis-seat validator failure. Registration amended in place on 2026-09-05: analysis seat back to Luna, seed 736 replaced by 748. Relaunched under a fresh chat GO. Stopped again at dialogue 02 (quote rule, PR #1033) and at dialogue 35 (final-authority check, PR #1047) and at dialogue 43 (registered 30-attempt cap, four codex CLI hangs) and at dialogue 53 (unspecified target with a named identifier, validator unchanged; its retake failed too and the user dropped it, fourth amendment); 52/71 complete."
 claim_status: planned
 links:
   notes:
@@ -85,4 +85,38 @@ in the registration linked above; nothing else changes.
   Regression test on the real turn-5 shape. Registration amended (third
   amendment). Awaiting the user's word to relaunch under recovery with
   dialogue 35's one retake.
-
+- 2026-09-05: User merged PR #1047 and wrote GO. Relaunched under recovery
+  into `-2026-09-05-r3` on the merge commit. Dialogue 35's retake and
+  dialogues 36 to 42 completed with every turn read; the deferral branch
+  from the fix never fired. Six codex CLI hangs healed on retry.
+- 2026-09-05: Dialogue 43 (world 101, gated, seed 744) quarantined under the
+  registered 30-attempt cap; run stopped as recoverable. Four codex CLI
+  hangs on the Luna analysis seat (turns 1, 2, 8, 8; each the full 300 s,
+  against about 20 s for a good call) plus two tutor recovery calls used
+  the six spare attempts, so the turn-8 tutor call could not be reserved.
+  All 8 learner turns were read. No code defect. Ledger 1,191 of 3,360 at
+  42 of 72. Awaiting the user's word to relaunch under recovery with
+  dialogue 43's one retake.
+- 2026-09-05: User wrote GO. Relaunched under recovery into
+  `-2026-09-05-r4` on the same commit; dialogue 43's one retake running.
+- 2026-09-05: Dialogues 43 (retake) to 52 completed with every turn read;
+  one codex CLI hang healed on retry. Dialogue 53 (world 102, gated, seed
+  745) quarantined at turn 7; run stopped as recoverable. Luna set the
+  target to `unspecified` and listed WF-11 as a public identifier in 3 of
+  3 reads; the registered validator rejects that pair. Spans literal, no
+  call errors, 26 calls. Same pair cost retries in dialogues 10, 21, 28 and
+  47 and quarantined dialogue 01 on Opus. Two paths put to the user: retake
+  under the unchanged validator, or a fourth amendment (drop identifiers on
+  an unspecified target with a note). Ledger 1,474 of 3,360 at 52 of 72.
+- 2026-09-05: User wrote GO. Relaunched under recovery into
+  `-2026-09-05-r5` on d454ad4c (main had moved; no change on this
+  launcher's path); validator unchanged; dialogue 53's one retake running.
+- 2026-09-05: Dialogue 53's retake failed at turn 4 (two reads over the
+  240-character span limit, one the same unspecified-plus-WF-11 pair) and
+  five tutor recovery calls took it to the 30-call cap before the turn-8
+  tutor call; child sealed incomplete. Ledger 1,504 of 3,360. Three paths
+  put to the user; ruling in chat: drop 53 and continue. Fourth amendment:
+  the launcher now enforces the one-retake rail at recovery (a dialogue
+  past it is recorded as dropped and skipped) and derives every downstream
+  count from the completed dialogues: 71 dialogues, gated 23, 568 cases,
+  1,136 reads. Bias on R1 runs against the gate. Regression test added.

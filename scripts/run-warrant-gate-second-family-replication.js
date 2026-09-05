@@ -69,6 +69,10 @@ export const SECOND_FAMILY_CEILING = 3360;
 export const SECOND_FAMILY_READER_IDS = Object.freeze(['decision-reader-a', 'decision-reader-b']);
 export const SECOND_FAMILY_READER_ALLOWANCE = 48;
 export const SECOND_FAMILY_TURNS_PER_DIALOGUE = 8;
+// Registered rail: one disclosed retake per quarantined dialogue. A dialogue past
+// that is dropped at the next recovery and the block continues without it
+// (fourth amendment, 2026-09-05, dialogue 53).
+export const SECOND_FAMILY_RETAKES_PER_DIALOGUE = 1;
 export const SECOND_FAMILY_SEATS = Object.freeze({
   tutor: 'claude-code.opus-5',
   analysis: 'codex.gpt-5.6-luna',
@@ -423,6 +427,28 @@ function completedDialogue(checkpoint, jobId) {
   return checkpoint.dialogues.find((row) => row.id === jobId && row.status === 'complete') || null;
 }
 
+function droppedDialogue(checkpoint, jobId) {
+  return checkpoint.dialogues.some((row) => row.id === jobId && row.status === 'dropped');
+}
+
+// The registered design is 72 dialogues. A dropped dialogue lowers every
+// downstream count by its eight turns; the manifest keeps the registered plan.
+export function describeSecondFamilyBlockCounts({ manifest, dialogues = [] } = {}) {
+  const completed = dialogues.filter((row) => row.status === 'complete');
+  const dropped = dialogues.filter((row) => row.status === 'dropped');
+  const readers = manifest.channels.decision.readers.length;
+  const cases = completed.length * manifest.assignment.turns_per_dialogue;
+  const reads = cases * readers;
+  return {
+    registered_dialogues: manifest.assignment.dialogues,
+    completed: completed.length,
+    dropped: dropped.map((row) => ({ id: row.id, order: row.order, condition: row.condition, attempts: row.attempts })),
+    cases,
+    reads,
+    reader_attempt_cap: reads + manifest.channels.decision.failed_attempt_allowance,
+  };
+}
+
 export async function runSecondFamilyGeneration({
   jobs,
   checkpoint,
@@ -432,10 +458,33 @@ export async function runSecondFamilyGeneration({
   collectJobResult = collectAdaptiveWarrantStudyJobResult,
   perDialogueCap = OUTCOME_PILOT_PER_DIALOGUE_CAP,
   maximumTurn = SECOND_FAMILY_TURNS_PER_DIALOGUE,
+  retakesPerDialogue = SECOND_FAMILY_RETAKES_PER_DIALOGUE,
+  log = () => {},
 } = {}) {
   for (const job of jobs) {
     if (completedDialogue(checkpoint, job.id)) continue;
+    if (droppedDialogue(checkpoint, job.id)) continue;
     const priorAttempts = checkpoint.dialogues.filter((row) => row.id === job.id).length;
+    if (priorAttempts > retakesPerDialogue) {
+      const droppedRow = {
+        id: job.id,
+        order: job.ordinal,
+        world: job.world,
+        seed: job.seed,
+        condition: job.condition,
+        status: 'dropped',
+        attempts: priorAttempts,
+        retakes_permitted: retakesPerDialogue,
+        dropped_at: nowIso(),
+        reserved_calls: 0,
+        error: `dialogue used its original attempt and its ${retakesPerDialogue} registered retake(s); dropped from the block`,
+      };
+      checkpoint.dialogues.push(droppedRow);
+      admission.record({ type: 'dialogue_dropped', dialogue_id: job.id, attempts: priorAttempts });
+      persist();
+      log(`dialogue ${job.id} dropped after ${priorAttempts} attempts; the block continues without it`);
+      continue;
+    }
     const capacity = admission.allocateModelAttemptCapacity(perDialogueCap, {
       unit_id: job.id,
       world_id: job.world,
@@ -696,7 +745,7 @@ export async function runSecondFamilyReaders({
 // Scoring
 // ---------------------------------------------------------------------------
 
-export function scoreSecondFamily({ completed, built, assembled, assemblyRunPath }) {
+export function scoreSecondFamily({ completed, dropped = [], built, assembled, assemblyRunPath }) {
   const keyBySampleId = new Map(built.key.cases.map((row) => [row.sample_id, row]));
   const left = new Map(assembled.get('decision-reader-a').cases.map((row) => [row.sample_id, row]));
   const right = new Map(assembled.get('decision-reader-b').cases.map((row) => [row.sample_id, row]));
@@ -739,6 +788,8 @@ export function scoreSecondFamily({ completed, built, assembled, assemblyRunPath
     zero_model_calls: true,
     study_id: SECOND_FAMILY_STUDY_ID,
     conditions_scored: [...new Set(dialogueScores.map((row) => row.condition))].sort(),
+    dialogues_scored: completed.length,
+    dialogues_dropped: dropped,
     replication: judgeSecondFamilyReplication({ dialogueScores, decisionByCondition }),
     measure_1_decision_correctness: { overall: decisionOverall, by_condition: decisionByCondition },
     dialogue_measures_2_6: dialogueScores,
@@ -972,14 +1023,22 @@ export async function executeSecondFamilyReplication({
     const jobs = buildSecondFamilyJobs({ manifest, rootDir, learnerProfile, seats });
     checkpoint.status = 'generation';
     persist();
-    await runSecondFamilyGeneration({ jobs, checkpoint, admission, persist, runDialogue, collectJobResult });
+    await runSecondFamilyGeneration({ jobs, checkpoint, admission, persist, runDialogue, collectJobResult, log });
     const completed = checkpoint.dialogues
       .filter((row) => row.status === 'complete')
       .sort((left, right) => left.order - right.order);
-    if (completed.length !== manifest.assignment.dialogues) {
-      throw new Error(`${completed.length} of ${manifest.assignment.dialogues} dialogues complete`);
+    const counts = describeSecondFamilyBlockCounts({ manifest, dialogues: checkpoint.dialogues });
+    if (completed.length + counts.dropped.length !== manifest.assignment.dialogues) {
+      throw new Error(
+        `${completed.length} of ${manifest.assignment.dialogues} dialogues complete (${counts.dropped.length} dropped)`,
+      );
     }
-    log(`generation complete: ${completed.length} dialogues`);
+    if (counts.reads > manifest.channels.decision.planned_calls) {
+      throw new Error(`block needs ${counts.reads} reads, registered ${manifest.channels.decision.planned_calls}`);
+    }
+    checkpoint.block_counts = counts;
+    persist();
+    log(`generation complete: ${completed.length} dialogues, ${counts.dropped.length} dropped, ${counts.cases} cases`);
 
     // Stage 4: cases, fingerprint guard, corpus artifacts, reader plan.
     let built;
@@ -1006,12 +1065,12 @@ export async function executeSecondFamilyReplication({
         rootDir,
         samplingSeed: 'second-family-frozen-order',
         learnerProfile,
-        expectedCaseCount: manifest.case_extraction.expected_case_count,
+        expectedCaseCount: counts.cases,
       });
       const fingerprintGuard = guardOutcomeAnnotationFingerprints({
         cases: built.corpus.cases,
         keyCases: built.key.cases,
-        expectedCount: manifest.case_extraction.expected_case_count,
+        expectedCount: counts.cases,
       });
       if (fingerprintGuard?.status && fingerprintGuard.status !== 'passed') {
         throw new Error(`post-generation fingerprint guard ${fingerprintGuard.status}`);
@@ -1033,8 +1092,7 @@ export async function executeSecondFamilyReplication({
         readerIds: [...SECOND_FAMILY_READER_IDS],
         batchSize: manifest.channels.decision.batch_size,
         annotationModel: seats.decision_readers,
-        maxAnnotationCalls:
-          manifest.channels.decision.planned_calls + manifest.channels.decision.failed_attempt_allowance,
+        maxAnnotationCalls: counts.reader_attempt_cap,
         provenance: {
           source_commit: admission.source.commit,
           source_tree: admission.source.tree,
@@ -1044,10 +1102,8 @@ export async function executeSecondFamilyReplication({
       });
       collection = { manifest: prepared.manifest, manifestPath: prepared.manifestPath };
       const batchCount = prepared.manifest.readers.reduce((total, reader) => total + reader.batches.length, 0);
-      if (batchCount !== manifest.channels.decision.planned_calls) {
-        throw new Error(
-          `reader plan carries ${batchCount} batches, registered ${manifest.channels.decision.planned_calls}`,
-        );
+      if (batchCount !== counts.reads) {
+        throw new Error(`reader plan carries ${batchCount} batches, block needs ${counts.reads}`);
       }
       checkpoint.reader_collection = {
         collection_dir: readerDirs.collectionDir,
@@ -1079,7 +1135,7 @@ export async function executeSecondFamilyReplication({
         run,
         budget,
         readerModel: seats.decision_readers,
-        attemptCap: manifest.channels.decision.planned_calls + manifest.channels.decision.failed_attempt_allowance,
+        attemptCap: counts.reader_attempt_cap,
         callModel,
         persist: () => {
           checkpoint.reader_run = {
@@ -1115,11 +1171,21 @@ export async function executeSecondFamilyReplication({
         }).response,
       );
     }
-    const score = scoreSecondFamily({ completed, built, assembled, assemblyRunPath: assemblyRun.path });
+    const score = scoreSecondFamily({
+      completed,
+      dropped: counts.dropped,
+      built,
+      assembled,
+      assemblyRunPath: assemblyRun.path,
+    });
     const scorePath = path.join(rootDir, 'second-family-score.json');
     atomicWriteJson(scorePath, score);
     checkpoint.score = { path: scorePath, sha256: fileSha256(scorePath), replication: score.replication.overall };
-    seal('complete', { score_path: scorePath, replication: score.replication.overall });
+    seal('complete', {
+      score_path: scorePath,
+      replication: score.replication.overall,
+      dropped_dialogues: counts.dropped.map((row) => row.id),
+    });
     log(`scored: replication ${score.replication.overall}`);
     return { checkpoint, checkpointPath, score, scorePath };
   } catch (error) {

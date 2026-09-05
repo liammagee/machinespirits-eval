@@ -106,7 +106,9 @@ pilot in any confirmatory analysis.
 - No resampling after a failure. A dialogue that fails past its 30-attempt
   cap or fails the coverage guard is quarantined; the run stops. One
   disclosed re-take of that dialogue is permitted on recovery and the
-  checkpoint records it as a re-take.
+  checkpoint records it as a re-take. A dialogue whose re-take also fails
+  is dropped at the next recovery, with the user's word, and the block
+  continues without it (fourth amendment).
 - Indeterminate means stop. A reader attempt that returns no text is a
   transport failure and is retried under the allowance, at most three
   extra tries per batch. A reader response that returns text outside the
@@ -242,3 +244,51 @@ warranted challenges against delivered challenges, and a held turn counts as
 warranted-not-delivered, as it would have in the first block. The report
 states that the final-authority check was made to defer after dialogue 34
 and why.
+
+## Amendment 2026-09-05 (fourth): dialogue 53 dropped after its one retake
+
+What happened. The run relaunched under recovery after the third amendment
+and ran dialogues 35 (retake) to 52 with one further stop, dialogue 43's
+30-call cap under four codex CLI hangs, which its one retake cleared
+(ledger 1,474 of 3,360 calls at 52 of 72). Dialogue 53 (world 102, gated,
+seed 745) was then quarantined at turn 7: Luna set the target to
+`unspecified` and listed WF-11 as a public identifier in 3 of 3 reads, the
+pair the strict validator rejects (rule
+`target:unspecified_cannot_name_public_identifiers`). The user chose the
+retake under the unchanged validator. The retake failed at turn 4: two of
+three reads quoted the whole learner turn as one evidence span (258
+characters, over the registered 240), the third paired an unspecified
+target with WF-11 again. Five tutor recovery calls followed, so the 30-call
+cap was reached before the turn-8 tutor call and the child sealed
+`incomplete`. Ledger 1,504 of 3,360.
+
+Class. Design, not technical. Both attempts failed on the analysis seat's
+output shape, and the validator is the registered instrument. The
+registration allows one retake and forbids coercing a response. Three
+paths were put to the user: a third attempt outside the registration, a
+validator change mid-block, or dropping the dialogue. User ruling in chat,
+2026-09-05: drop 53 and continue.
+
+What changes. The block is 71 dialogues: bare 24, gated 23,
+standing_permission 24. Cases 568, reads 1,136 plus the 48 allowance. The
+launcher now enforces the one-retake rail: at recovery a dialogue with
+more attempts than the registered retake is recorded as `dropped` in the
+checkpoint and the ledger, is never dispatched again, and the run continues
+to the next dialogue. Every downstream count (complete dialogues, cases,
+fingerprint guard, reader batches, reader attempt cap) derives from the
+completed dialogues; the manifest keeps the registered 72 as the design.
+Regression test in `tests/warrantGateSecondFamilyReplication.test.js`: an
+over-retaken dialogue is skipped and recorded, no capacity is allocated for
+it, the block continues, and the counts follow the completed dialogues.
+Seeds, worlds, handbook, conditions, turns, readers, bars and ceiling are
+unchanged. A quarantine still stops the run for the user's word; the drop
+applies only at the relaunch.
+
+What it changes in the claim. Bar R1 counts gated dialogues with a
+deference break against the best control. The gated arm has 23 dialogues
+against 24 in each control, so the loss works against the gate: a gated
+dialogue that could have broken is not counted. Bar R2 is a rate and is
+not affected in direction. The dropped dialogue is a gated one in world
+102 with a low-agency learner; it is not selected on its outcome, since
+neither attempt reached the end. The report states that dialogue 53 was
+dropped and why, and gives gated n=23.

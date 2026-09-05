@@ -553,6 +553,17 @@
         ".tutor-stub-auto-eval/warrant-gate-second-family-2026-09-04 (2 calls, harness defect, fixed in PR #1025)",
         ".tutor-stub-auto-eval/warrant-gate-second-family-2026-09-04-r2 (30 calls, 8 turns, turn 4 unread; never entered any corpus)"
       ]
+    },
+    {
+      "date": "2026-09-05",
+      "what": "Dialogue 53 (world_102_marigold_archive_box, gated, seed 745) dropped after its one registered retake also failed; the block continues with 71 dialogues (gated 23), 568 cases and 1,136 planned reads. The assignment and channel counts above stay as the registered design; the launcher derives every downstream count from the completed dialogues.",
+      "why": "Original attempt quarantined at turn 7 (3 of 3 reads paired target unspecified with WF-11; validator rule target:unspecified_cannot_name_public_identifiers). Retake under the unchanged validator quarantined at turn 4 (two reads over the 240-character span limit, one the same pair) and reached the 30-call cap after five tutor recovery calls. Registration allows one retake and forbids coercion.",
+      "what_it_changes": "Bar R1 compares 23 gated dialogues against 24 in each control, which biases against the gate. Bar R2 is a rate. Report states the drop and gated n=23.",
+      "ruling": "User ruling in chat, 2026-09-05: drop 53 and continue.",
+      "discarded_attempts": [
+        ".tutor-stub-auto-eval/warrant-gate-second-family-2026-09-05-r4 dialogue 53 (26 calls, turn 7 unread)",
+        ".tutor-stub-auto-eval/warrant-gate-second-family-2026-09-05-r5 dialogue 53 retake (30 calls, turn 4 unread, seal incomplete)"
+      ]
     }
   ]
 }
