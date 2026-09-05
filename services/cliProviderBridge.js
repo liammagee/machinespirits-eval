@@ -1242,6 +1242,9 @@ async function callCodexCli({
   maxStderrBytes,
   rawUserPrompt = false,
   executable = null,
+  singleAttempt = false,
+  subscriptionOnly = false,
+  onRawOutput = null,
 }) {
   if (signal?.aborted) throw abortError(role);
   if (rawUserPrompt && (String(systemPrompt || '') || (Array.isArray(messageHistory) && messageHistory.length > 0))) {
@@ -1319,20 +1322,36 @@ async function callCodexCli({
         args.push('-c', `model_instructions_file=${JSON.stringify(replacementInstructionsFile)}`);
       }
       if (model && model !== 'auto') args.push('-m', model);
+      if (singleAttempt) {
+        args.push('-c', 'model_providers.openai.request_max_retries=0', '-c', 'model_providers.openai.stream_max_retries=0');
+      }
+      if (subscriptionOnly) args.push('-c', 'forced_login_method="chatgpt"');
       if (schemaFile) args.push('--output-schema', schemaFile);
       args.push('-o', outFile, '-');
 
       verifyAdaptiveWarrantStudyCliInvocation({ environment: process.env, executable: command });
+      const childEnv = buildCliProviderEnv('codex');
+      if (subscriptionOnly) {
+        for (const key of CLI_PROVIDER_ENV_KEYS.codex) {
+          if (key !== 'CODEX_HOME') delete childEnv[key];
+        }
+      }
       const child = spawnImpl(command, args, {
         stdio: ['pipe', 'pipe', 'pipe'],
         cwd: tmpDir,
-        env: buildCliProviderEnv('codex'),
+        env: childEnv,
       });
       let err = '';
       let stdout = '';
       let stdoutBytes = 0;
       let stderrBytes = 0;
       let outputExceeded = false;
+      let captured = false;
+      const captureRaw = (exitCode = null) => {
+        if (captured) return;
+        captured = true;
+        onRawOutput?.({ stdout, stderr: err, exitCode });
+      };
       const jsonl = createCodexJsonlEventParser((event) => {
         // Only policy-allowed event shapes may cross the streaming boundary.
         // Prohibited events stay internal long enough to count and reject;
@@ -1346,6 +1365,7 @@ async function callCodexCli({
         } catch (_) {
           /* already gone */
         }
+        captureRaw();
         reject(abortError(role));
       };
       signal?.addEventListener('abort', onAbort, { once: true });
@@ -1355,6 +1375,7 @@ async function callCodexCli({
         } catch (_) {
           /* already gone */
         }
+        captureRaw();
         reject(new Error(`codex CLI timed out after ${effectiveTimeout}ms (role=${role})`));
       }, effectiveTimeout);
       child.stderr.on('data', (d) => {
@@ -1363,6 +1384,7 @@ async function callCodexCli({
           outputExceeded = true;
           clearTimeout(cliTimeout);
           child.kill('SIGKILL');
+          captureRaw();
           reject(outputLimitError('codex', 'stderr', stderrLimit));
           return;
         }
@@ -1375,6 +1397,7 @@ async function callCodexCli({
           outputExceeded = true;
           clearTimeout(cliTimeout);
           child.kill('SIGKILL');
+          captureRaw();
           reject(outputLimitError('codex', 'stdout', stdoutLimit));
           return;
         }
@@ -1386,12 +1409,14 @@ async function callCodexCli({
         signal?.removeEventListener('abort', onAbort);
         const launchError = new Error(`codex CLI failed to start (${e?.code || 'spawn_error'})`);
         launchError.code = e?.code || 'CLI_PROVIDER_SPAWN_FAILED';
+        captureRaw();
         reject(launchError);
       });
       child.on('close', (code) => {
         clearTimeout(cliTimeout);
         signal?.removeEventListener('abort', onAbort);
         if (outputExceeded) return;
+        captureRaw(code);
         const parsedStream = jsonl.end();
         const eventAudit = auditCodexStructuredEvents(parsedStream.events, {
           strict: true,
@@ -1416,6 +1441,10 @@ async function callCodexCli({
           exitError.stdoutBytes = Buffer.byteLength(stdout);
           exitError.stderrBytes = Buffer.byteLength(err);
           reject(exitError);
+          return;
+        }
+        if (singleAttempt && parsedStream.events.filter((event) => event.type === 'turn.completed').length !== 1) {
+          reject(new Error('Codex single attempt requires exactly one completed turn'));
           return;
         }
 
@@ -1613,6 +1642,9 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       maxStderrBytes: opts?.maxStderrBytes,
       rawUserPrompt: opts?.rawUserPrompt === true,
       executable: opts?.executable,
+      singleAttempt: opts?.singleAttempt === true,
+      subscriptionOnly: opts?.subscriptionOnly === true,
+      onRawOutput: opts?.onRawOutput,
     });
   }
   if (agentConfig?.provider === 'gemini-cli') {

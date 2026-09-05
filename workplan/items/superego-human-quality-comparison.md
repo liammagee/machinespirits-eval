@@ -1,7 +1,7 @@
 ---
 id: superego-human-quality-comparison
 title: Deliver a usable four-arm human teaching-quality comparison
-status: review
+status: active
 type: experiment
 priority: P2
 owner: codex
@@ -9,7 +9,7 @@ source: manual
 created: 2026-09-05
 updated: 2026-09-05
 verification: Verify fixed generation and cumulative accounting within the registered ceilings, preserve and privately archive all attempts, obtain two independent blinded human quality ratings, and produce the zero-call descriptive comparison with separate reader estimates, disagreement and claim boundaries.
-branch: codex/superego-human-live
+branch: codex/superego-automated-quality
 claim_status: planned
 links:
   items:
@@ -20,6 +20,7 @@ links:
     - notes/2026-09-05-superego-human-comparison-repairs.md
     - notes/2026-09-05-superego-human-comparison-go.md
     - notes/2026-09-05-superego-human-generation-results.md
+    - notes/2026-09-05-superego-automated-quality-go.md
 ---
 
 The user requested unattended technical fixes and a path to meaningful scientific
@@ -74,3 +75,20 @@ ready; the item is now in review awaiting two independent human rating files.
 A focused future-run status correction prevents completed generation-only runs
 from advertising paid recovery; this run's original seal is preserved. Twenty
 relevant runner tests pass. There is no new GO/merge gate before human reporting.
+
+
+2026-09-05: the user requests an additional automated reader of the same public
+packet, specifically through the CLI. The design now registers one blinded
+codex.gpt-5.6-sol quality/accuracy pass (48+4 reserve, 52 attempts, no direct API
+spend) before ratings. Same human rubric, packet and human independence; no new
+generation or semantic labels. Their instruction to iterate without a PR/GO cycle
+covers execution from the committed branch and routine infrastructure fixes; the
+ordinary PR proceeds without becoming another runtime approval gate. The focused
+bridge change exposes single-attempt/subscription-only Codex operation and retains
+raw responses; offline human/model comparison is added alongside the human report.
+
+2026-09-05: zero-call verification passes: 23 old/new runner tests, 46 CLI bridge
+tests, 52 structural ratchets, lint/diff, manifest and launcher inventory checks,
+and 622/622 workplan sources. Preparation verifies 48 quality jobs, the sealed
+public packet and a 7,388-byte maximum request under the 8,192-byte cap. Codex CLI
+0.153.0 is logged in using ChatGPT. No direct API or scoring call has occurred.

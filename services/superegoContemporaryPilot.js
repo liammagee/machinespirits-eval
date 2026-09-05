@@ -195,6 +195,12 @@ export function missingPilotDependencies(plan, job, results) {
   return dependencies.filter((id) => !results.has(id) || results.get(id).invalid_response);
 }
 export function pilotPayload(plan, job, results) {
+  if (plan.automated_quality_packet) {
+    if (job.category !== 'quality') throw new Error('Saved public review permits quality jobs only');
+    const item = plan.automated_quality_packet.items.find((row) => row.id === job.presentation_id);
+    if (!item || item.unavailable) throw new Error('Missing frozen public output');
+    return { context: item.context, candidate: item.candidate };
+  }
   const unit = plan.units.find((u) => u.id === job.unit);
   const payload = { context: unit.context };
   if (job.kind === 'draft') return payload;
@@ -235,6 +241,15 @@ export function buildPilotRequest(design, plan, job, results) {
         'Return only the public tutor reply as ordinary text, without a JSON wrapper. Stay under 4000 UTF-8 bytes.',
       )
     : PROMPTS[job.kind];
+  if (plan.automated_quality_packet) {
+    const request = {
+      provider: route.provider,
+      body: { model: route.model, system, content, schema, effort: 'low', singleAttempt: true, subscriptionOnly: true },
+    };
+    if (Buffer.byteLength(JSON.stringify(request)) > design.max_request_bytes)
+      throw new Error('Request byte ceiling exceeded before call');
+    return request;
+  }
   const body = generation
     ? {
         model: route.model,
@@ -302,6 +317,29 @@ export function validRating(kind, result, payload) {
   );
 }
 export function parsePilotResponse(design, request, job, raw, payload) {
+  if (request.provider === 'codex') {
+    if (raw.cli_error) {
+      const error = new Error(`Codex CLI failed: ${raw.cli_error.message}`);
+      error.recoverable = raw.cli_error.recoverable === true;
+      throw error;
+    }
+    const result = raw.result;
+    if (
+      result?.provider !== 'codex' ||
+      result.model !== request.body.model ||
+      result.effort !== request.body.effort ||
+      result.prohibitedToolEventCount !== 0 ||
+      result.streamEventTypeCounts?.['turn.completed'] !== 1
+    )
+      throw new Error('CLI route, effort or single-turn evidence mismatch');
+    let value;
+    try {
+      value = JSON.parse(result.text);
+    } catch {
+      return { invalid_response: 'invalid_json' };
+    }
+    return validRating('quality', value, payload) ? value : { invalid_response: 'invalid_rating_or_reference' };
+  }
   if (raw.body_read_error) throw new Error('Response body read failed; retained partial body, no replacement');
   let envelope;
   try {

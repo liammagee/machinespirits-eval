@@ -59,3 +59,19 @@ misreported as recoverable paid work. The latter received a focused correction
 and regression without changing sealed data. Generation completed all 60 jobs
 without failures. These incremental findings do not close the broader queued
 incident review or establish the cause of the earlier provider repetition.
+
+2026-09-05: CLI-only quality assessment exposed a preflight gap: Codex bridge
+calls did not expose single-attempt controls or a private raw-output sink. The
+focused optional controls now disable request/stream retries, require one
+completed turn, force subscription authentication when requested, strip API
+credentials and retain successful/failed CLI output. Existing paths keep their
+defaults. This is an incremental repair, not completion of the queued review.
+
+2026-09-05: launch admission rejected the ordinary sentence '$0.' because its
+numeric parser treated a trailing full stop as part of an identifier. Zero model
+calls and no run destination were created. The parser now accepts sentence-ending
+punctuation while rejecting partial decimals/identifiers; all 28 shared-contract
+tests pass. The pre-push benchmark also requested six additional model calls for
+the shared bridge change; its documented reasoned bypass is used because the
+optional controls are covered by offline process-boundary tests and those extra
+calls are outside this fixed quality-only study. Normal lint and hosted CI remain.
