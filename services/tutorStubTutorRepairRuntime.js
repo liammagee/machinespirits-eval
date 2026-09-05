@@ -169,9 +169,17 @@ export function createTutorStubTutorRepairRuntime(dependencies = {}) {
       speakingResponseConfiguration,
       { closureRequired: dialogueClosureFrame?.mandatory === true },
     );
-    const minimalRecoveryPrompt = tutorStubSimplifiedRecoveryPrompt({
-      configuration: simplifiedRecoveryConfiguration,
-      firstDraftContract,
+    // The contract's learner-move line is planner text and can carry a premise
+    // id. The speaking path sanitises the contract advisory; the recovery path
+    // must do the same, or the privilege audit fails the whole dialogue on the
+    // id (world 102, board_blind-r1, turn 3, 2026-09-05).
+    const minimalRecoveryPrompt = sanitizeTutorStubSpeakerAdvisory({
+      world: dag ? world : null,
+      tutorTurn,
+      text: tutorStubSimplifiedRecoveryPrompt({
+        configuration: simplifiedRecoveryConfiguration,
+        firstDraftContract,
+      }),
     });
     const publicRecoveryMachinePacket = [
       dag && world && !instructionalMetaRepair ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,

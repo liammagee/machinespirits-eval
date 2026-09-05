@@ -67,7 +67,7 @@
     {
       "file": "services/tutorStubTutorRepairRuntime.js",
       "claim": "host-part, simplified model, composition, question, source-voice, and self-correction repair ladder",
-      "sha256": "b259faa7bdfd3025a3ee6dcdd94631e6ff9ad070bd9e0a2f5fee1bc35a574b86"
+      "sha256": "d00c5b385d102dd62728bca0f466034a3fdae31401c020af6dfabe7b920e4467"
     },
     {
       "file": "services/tutorStubTutorTerminalRuntime.js",

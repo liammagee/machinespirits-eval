@@ -83,3 +83,16 @@ digest. Results are conduct claims until Phase 4.
   the ruled reader the stopped turn of the second Phase 1 run passes the
   licence audit, so the board tutor in that run made no unlicensed move.
   Phase 2 does not open. A third run of world 102 waits on a new word.
+- 2026-09-05: the third run of the world-102 overconfident cell ran to the
+  end on the user's word of 19:06 UTC, with no stop, and the reader seats ran
+  over the 48 dialogues (Luna, 192 calls, 0 failed). Phase 1 is done. Kill 1
+  FIRED on the 48: the board tutor is not above the blind tutor on either
+  shape's channel (1 of 12 against 1 of 12; 5 of 12 against 6 of 12). Kill 2
+  did not fire: the board tutor made no move outside its licence in its 192
+  audited turns. Endpoint 2 went one way on each shape (98% against 88%, with
+  no challenge from either tutor; 47% against 53%). The result is a conduct
+  claim: the board held the tutor inside its licence while the outcome
+  measure did not move. Sonnet 5 held the tutor, learner and analyzer seats
+  and Luna the reader seats; the second-model check did not run. Phase 2 does
+  not open. Report: the third-run section of
+  `notes/2026-09-05-scoreboard-crossed-run-report.md`.

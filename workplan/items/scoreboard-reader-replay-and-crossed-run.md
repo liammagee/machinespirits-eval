@@ -56,7 +56,12 @@ verification: "Step 1 report note states PASS or FAIL against the two
   the report says so in its second-run section. 2026-09-05, 17:51 UTC: the
   user ruled that a hedge in the next sentence covers the sentence before it;
   the reader is changed in place, the stopped turn is a regression test, and
-  the zero-call re-reads hold both Step 1 bars."
+  the zero-call re-reads hold both Step 1 bars. 2026-09-05, 21:55 UTC: Step 2
+  is done; 48 dialogues stand; the report names Sonnet 5 in the tutor,
+  learner and analyzer seats and Luna in both reader seats, says the
+  second-model check did not run, and reads Kill 1 FIRED and Kill 2 not
+  fired. lint:all, npm test, test:ratchets and wp:source-check green on the
+  branch at that point: 10,457 tests pass with 0 fails and 27 skipped."
 ---
 
 **What this is.**
@@ -226,3 +231,25 @@ are read.
   zero violations. The change touches one reader function and no design
   file, so the GO stands. A third run of world 102 (about 330 calls, then the
   reader seats at 192) waits on the user's word.
+- 2026-09-05: the user's word at 19:06 UTC ("push the private repo commit,
+  do the check and lets continue") covered the third run of the world-102
+  overconfident cell and then the reader seats. The cell ran 19:44 to 19:54
+  UTC from commit 3daafac7, clean tree: 12 of 12 dialogues to turn 8, 317
+  calls, 0 licence violations, 0 model call errors, 0 unread learner turns,
+  seal complete. 48 dialogues stand (47 to turn 8; the world-102 blind r1
+  permission-seeking dialogue stands with two turns). The reader command's
+  dry run found that packets carried the dialogue id, which names the profile
+  and the policy; fixed in place with a regression test (32da9e4b) before any
+  reader call. Command C then ran 20:14 to 21:54 UTC at 33da0aed, clean
+  tree: 192 of 192 Luna calls returned, 0 failed. Zero-call score on the 48:
+  Kill 1 FIRED (permission-seeking 1 of 12 against 1 of 12; overconfident 5
+  of 12 against 6 of 12); Kill 2 not fired; no indeterminate cell; no
+  self-judging. Decision correctness 98% against 88% on the permission-seeking
+  shape with zero challenges from either tutor, 47% against 53% on the
+  overconfident shape; warranted shift share 2% against 12% and 52% against
+  52%; the board's challenge field and the readers' read of a delivered
+  challenge agree in 18% to 46% of cases, the board's being the narrow read.
+  Study total 1,968 calls of 3,436. Archive: private repo `b4498b0ef`,
+  pushed. The second-model check (commands D to F) did not run. Step 2 is
+  done and reads FAIL on its outcome rule; Phase 2 does not open. Report:
+  the third-run section of `notes/2026-09-05-scoreboard-crossed-run-report.md`.
