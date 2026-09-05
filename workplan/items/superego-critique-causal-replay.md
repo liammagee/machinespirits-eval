@@ -10,7 +10,7 @@ created: 2026-09-04
 updated: 2026-09-05
 verification: Reproduce the frozen-unit plan without calls; verify runner ceilings, blinding, durable missing-only recovery and focused regressions; review design and hosted CI before explicit GO and separate launch authority.
 branch: codex/superego-critique-causal-replay-format-repair
-blocked_by: The format/recovery repair is under review; its narrow exception to the registered stopping rule needs GO before paid recovery.
+blocked_by: superego-critique-measurement-calibration
 claim_status: planned
 links:
   items:
@@ -101,3 +101,10 @@ tests preserve original bytes and cumulative accounting, reject changes to
 messages/routes/decoding/limits, exclude error envelopes containing answers or
 usage, and prohibit a third attempt after a repeated failure. Provider calls
 during repair: zero.
+
+2026-09-05 Codex: #1032 is merged. Following the user's request to validate and
+reconsider, measurement review now precedes restart. See
+`superego-critique-measurement-calibration` and the in-place design section for
+the complete-input packet, a proposed $15 diagnostic calibration and the
+independent human-reference requirement. The original attempt, GO notes and
+results remain unchanged; no additional provider call has been made.

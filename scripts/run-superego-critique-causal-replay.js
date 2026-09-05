@@ -26,11 +26,19 @@ import {
   worstCost,
   summarizeReplay,
 } from '../services/superegoCritiqueCausalReplay.js';
+import {
+  prepareCalibrationPlan,
+  calibrationCoderPackets,
+  summarizeCalibration,
+} from '../services/superegoCritiqueMeasurementCalibration.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PHASES = ['PREFLIGHT', 'GENERATING', 'AUDITING', 'EXTRACTING', 'PACKAGING', 'WORKFLOW_COMPLETE'];
 const inactive = { state: 'inactive', explanation: 'No provider request is in flight.' };
 const stableSettings = (design) => ({
+  ...(design.mode === 'calibration'
+    ? { mode: design.mode, historical_model_routes: design.historical_model_routes }
+    : {}),
   seed: design.master_seed,
   models: design.models,
   request: design.request,
@@ -127,7 +135,7 @@ export function loadRecoveryResponses(design, plan, predecessor) {
   return { responses, savedRequests, segments };
 }
 
-export function checkReplayBudget(design, job, events) {
+export function checkReplayBudget(design, job, events, request = null) {
   const reservations = events.filter((e) => e.type === 'study_model_attempt_dispatch_reserved');
   if (reservations.length >= design.attempts.hard_ceiling)
     throw new Error('Hard attempt ceiling exhausted before call');
@@ -146,7 +154,7 @@ export function checkReplayBudget(design, job, events) {
   )
     throw new Error('Unaccountable predecessor reservation');
   const priorDollars = reservations.reduce((sum, e) => sum + e.max_cost_dollars, 0);
-  const cost = worstCost(design, job.seat);
+  const cost = worstCost(design, job.seat, request);
   if (priorDollars + cost > design.max_dollars) throw new Error('Dollar ceiling exhausted before call');
   return { cost, priorDollars, priorAttempts: reservations.length };
 }
@@ -192,7 +200,8 @@ export async function executeReplay({
     description,
     stopping_condition: 'Stop on failure, pause, or completion of the fixed job list.',
   });
-  let status = createLongRunningWorkflowStatus({ workflowId: design.id, phasePlan: PHASES, modelActivity: inactive });
+  const phases = design.attempts.generation_planned ? PHASES : PHASES.filter((phase) => phase !== 'GENERATING');
+  let status = createLongRunningWorkflowStatus({ workflowId: design.id, phasePlan: phases, modelActivity: inactive });
   const statusPath = path.join(admission.destination, 'workflow-status.json');
   let pauseRequested = false;
   let activeJob = null;
@@ -261,7 +270,7 @@ export async function executeReplay({
       seed: plan.seed,
       recovered_jobs: responses.size,
     });
-    transition('GENERATING');
+    transition(design.attempts.generation_planned ? 'GENERATING' : 'AUDITING');
     for (const job of plan.jobs) {
       if (responses.has(job.id)) continue;
       if (pauseRequested) break;
@@ -276,7 +285,7 @@ export async function executeReplay({
       if (JSON.stringify(request) !== JSON.stringify(expectedRequest))
         throw new Error('Saved request exceeds registered scope');
       const route = design.models[job.seat];
-      const limits = checkReplayBudget(design, job, readEvents(admission.study_ledger_path));
+      const limits = checkReplayBudget(design, job, readEvents(admission.study_ledger_path), request);
       const reservation = budget.reserve({
         unitId: job.id,
         role: job.seat,
@@ -328,7 +337,7 @@ export async function executeReplay({
     }
     if (status.current_phase === 'GENERATING') transition('AUDITING');
     transition('EXTRACTING');
-    const report = summarizeReplay(design, plan, responses);
+    const report = (design.mode === 'calibration' ? summarizeCalibration : summarizeReplay)(design, plan, responses);
     writeOnce(path.join(admission.destination, 'report.json'), report);
     transition('PACKAGING');
     writeOnce(path.join(admission.destination, 'archive-inventory.json'), {
@@ -391,6 +400,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
   const { values } = parseArgs({
     args: argv,
     options: {
+      mode: { type: 'string', default: 'replay' },
       prepare: { type: 'boolean' },
       launch: { type: 'boolean' },
       'accept-charges': { type: 'boolean' },
@@ -404,16 +414,18 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
   });
   if (values.help) {
     console.log(
-      'Usage: run-superego-critique-causal-replay.js --prepare --output <new-directory> [--logs <path>]\nPaid: --launch --accept-charges --output <new-directory> --go-note <notes/path.md> --go-note-commit <commit> [--recovery-from <sealed-directory>]\nGO is not a launch instruction. Use paid mode only after separately authorized launch.',
+      'Usage: run-superego-critique-causal-replay.js [--mode replay|calibration] --prepare --output <new-directory> [--logs <path>]\nPaid: --launch --accept-charges --output <new-directory> --go-note <notes/path.md> --go-note-commit <commit> [--recovery-from <sealed-directory>]\nGO is not a launch instruction. Use paid mode only after separately authorized launch.',
     );
     return;
   }
+  if (!['replay', 'calibration'].includes(values.mode)) throw new Error('Unknown study mode');
   if (!values.output || Boolean(values.prepare) === Boolean(values.launch))
     throw new Error('Choose exactly --prepare or --launch and a new --output');
   if (values.launch && (!values['accept-charges'] || !values['go-note'] || !values['go-note-commit']))
     throw new Error('Paid mode requires launch authority, --accept-charges and the committed GO note');
   const root = overrides.root || ROOT;
-  const { design, plan } = await (overrides.preparePlan || prepareReplayPlan)(root, { logs: values.logs });
+  const prepare = values.mode === 'calibration' ? prepareCalibrationPlan : prepareReplayPlan;
+  const { design, plan } = await (overrides.preparePlan || prepare)(root, { logs: values.logs });
   if (values.prepare) {
     fs.mkdirSync(path.resolve(values.output), { recursive: false });
     writeOnce(path.join(path.resolve(values.output), 'plan.json'), plan);
@@ -423,12 +435,16 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
       calls_reserved: 0,
       hard_ceiling: 0,
     });
+    if (values.mode === 'calibration') {
+      for (const [seat, packet] of Object.entries(calibrationCoderPackets(design, plan)))
+        writeOnce(path.join(path.resolve(values.output), `human-${seat}.json`), packet);
+    }
     console.log(JSON.stringify({ units: plan.units.length, jobs: plan.jobs.length, calls: 0 }));
     return { design, plan };
   }
   return executeReplay({
     root,
-    design: loadReplayDesign(root),
+    design: loadReplayDesign(root, { mode: values.mode }),
     plan,
     destination: values.output,
     goNotePath: values['go-note'],

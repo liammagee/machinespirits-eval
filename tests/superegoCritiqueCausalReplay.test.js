@@ -21,6 +21,11 @@ import {
 import { executeReplay, checkReplayBudget, main } from '../scripts/run-superego-critique-causal-replay.js';
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
 import { createDurablePaidModelAttemptBudget } from '../services/durablePaidModelAttemptBudget.js';
+import {
+  buildCalibrationPlan,
+  calibrationCoderPackets,
+  summarizeCalibration,
+} from '../services/superegoCritiqueMeasurementCalibration.js';
 
 const realDesign = loadReplayDesign(process.cwd());
 function fixture(t) {
@@ -709,4 +714,286 @@ test('prepare CLI is zero-call and refuses to overwrite its destination', async 
   assert.equal(calls, 0);
   assert.equal(readJson(path.join(output, 'audit.json')).hard_ceiling, 0);
   await assert.rejects(main(['--prepare', '--output', output], options), /EEXIST/);
+});
+
+function calibrationFixture(t) {
+  const original = fixture(t);
+  const design = {
+    ...structuredClone(original.design),
+    mode: 'calibration',
+    primary: null,
+    arms: ['historical_revision'],
+    max_dollars: 15,
+  };
+  design.request.max_message_bytes = 65536;
+  design.historical_model_routes = {
+    'historical-generator': 'example/generator',
+    'historical-critic': 'example/critic',
+  };
+  design.attempts = {
+    generation_planned: 0,
+    semantic_planned: 4,
+    quality_planned: 4,
+    generation_reserve: 0,
+    semantic_reserve: 2,
+    quality_reserve: 2,
+    total_planned: 8,
+    recovery_reserve: 4,
+    hard_ceiling: 12,
+  };
+  const traceMap = new Map(
+    original.plan.units.map((u) => [
+      u.dialogue_id,
+      {
+        dialogueTrace: [
+          { agent: 'tutor', action: 'context_input', rawContext: u.context },
+          { suggestions: u.draft },
+          u.critique,
+          { suggestions: [...u.draft, { ...u.draft[0], message: 'An additional public suggestion.' }] },
+        ],
+      },
+    ]),
+  );
+  const packet = {
+    identityLedger: {
+      rows: original.plan.units.map((u, i) => ({
+        item_id: `item${i}`,
+        dialogue_id: u.dialogue_id,
+        ordinal: i + 1,
+        trace_indexes: { draft: 1, critique: 2, revision: 3 },
+        ego_model: 'historical-generator',
+        superego_model: 'historical-critic',
+      })),
+    },
+  };
+  const plan = buildCalibrationPlan(design, packet, traceMap);
+  // Offline fixtures carry their own matching attempt cap; this is not a user GO.
+  fs.appendFileSync(
+    path.join(original.root, 'notes/superego-critique-causal-replay-design.md'),
+    `\n\`\`\`yaml calibration\n${JSON.stringify(design)}\n\`\`\`\n`,
+  );
+  fs.writeFileSync(
+    path.join(original.root, 'notes/test-go.md'),
+    'GO\nOffline test fixture only; no real authority.\nnotes/superego-critique-causal-replay-design.md\n12 attempts; $15\n',
+  );
+  execFileSync('git', ['add', 'notes'], { cwd: original.root });
+  execFileSync('git', ['commit', '-m', 'Offline calibration fixture'], { cwd: original.root, stdio: 'pipe' });
+  const goNoteCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: original.root, encoding: 'utf8' }).trim();
+  const options = { ...original.options, design, plan, goNoteCommit };
+  return { ...original, design, plan, options, traceMap, packet };
+}
+
+test('calibration retains identities, complete context and suggestions with separate blinded readers', (t) => {
+  const { design, plan, packet, traceMap } = calibrationFixture(t);
+  const original = JSON.stringify(packet);
+  assert.deepEqual(buildCalibrationPlan(design, packet, traceMap), plan);
+  assert.equal(plan.jobs.length, 8);
+  assert.equal(plan.jobs.filter((job) => job.category === 'generation').length, 0);
+  assert.equal(plan.units[0].revision.length, 2);
+  const packets = calibrationCoderPackets(design, plan);
+  for (const [seat, p] of Object.entries(packets)) {
+    assert.equal(p.rows.length, 2);
+    for (const row of p.rows) {
+      assert.equal(row.coding.rationale, null);
+      assert.equal(row.data.source, undefined);
+      assert.equal(row.data.profile, undefined);
+      assert.equal(row.data.ordinal, undefined);
+      if (seat.startsWith('quality')) {
+        assert.deepEqual(Object.keys(row.data), ['item_id', 'context', 'output']);
+        assert.equal(row.data.output.length, 2);
+      } else {
+        assert.equal(row.data.candidate.length, 2);
+        assert.equal(row.data.draft.length, 1);
+      }
+    }
+  }
+  assert.equal(JSON.stringify(packet), original);
+  const conflicting = structuredClone(design);
+  conflicting.historical_model_routes['historical-critic'] = design.models.semantic_a.model;
+  assert.throws(() => buildCalibrationPlan(conflicting, packet, traceMap), /judge overlaps/);
+  delete conflicting.historical_model_routes['historical-critic'];
+  assert.throws(() => buildCalibrationPlan(conflicting, packet, traceMap), /Unresolved historical/);
+  traceMap.values().next().value.dialogueTrace[0].rawContext = '';
+  assert.throws(() => buildCalibrationPlan(design, packet, traceMap), /Missing recorded calibration context/);
+});
+
+test('calibration reservations use actual request bytes and still reject oversized inputs and dollars before calls', async (t) => {
+  const { design, plan, options } = calibrationFixture(t);
+  const job = plan.jobs[0];
+  const request = buildReplayRequest(design, plan, job, new Map());
+  const route = design.models[job.seat];
+  const expected =
+    Math.ceil(
+      ((Buffer.byteLength(JSON.stringify(request.messages)) + 1024) * route.prompt_price_per_million +
+        2048 * route.completion_price_per_million) *
+        1.1,
+    ) / 1e6;
+  assert.equal(worstCost(design, job.seat, request), expected);
+  assert.throws(() => worstCost(design, job.seat), /actual request/);
+  const oversized = { ...request, messages: [{ role: 'user', content: 'x'.repeat(65537) }] };
+  assert.throws(() => worstCost(design, job.seat, oversized), /byte ceiling/);
+  assert.throws(() => checkReplayBudget(design, { ...job, category: 'generation' }, [], request), /Category/);
+  design.max_dollars = expected - 0.000001;
+  let dispatched = 0;
+  await assert.rejects(
+    executeReplay({
+      ...options,
+      dispatch: async () => {
+        dispatched++;
+      },
+    }),
+    /Dollar ceiling/,
+  );
+  assert.equal(dispatched, 0);
+  assert.equal(
+    readEvents(path.join(options.destination, 'run-ledger.jsonl')).filter(
+      (e) => e.type === 'model_attempt_dispatch_reserved',
+    ).length,
+    0,
+  );
+});
+
+test('calibration recovery preserves valid ratings and the failed attempt without generating new candidates', async (t) => {
+  const { design, plan, options, root } = calibrationFixture(t);
+  let calls = 0;
+  await assert.rejects(
+    executeReplay({
+      ...options,
+      dispatch: async (_endpoint, request) => {
+        calls++;
+        if (calls === 3) {
+          const error = new Error('technical timeout');
+          error.recoverable = true;
+          throw error;
+        }
+        assert.notEqual(request.model, design.models.generator.model);
+        return response(design, request);
+      },
+    }),
+    /technical timeout/,
+  );
+  const retained = fs.readFileSync(path.join(options.destination, 'run-ledger.jsonl'));
+  const result = await executeReplay({
+    ...options,
+    destination: path.join(root, 'calibration-recovery'),
+    recoveryFrom: options.destination,
+    dispatch: async (_endpoint, request) => {
+      calls++;
+      return response(design, request);
+    },
+  });
+  assert.equal(calls, plan.jobs.length + 1);
+  assert.equal(result.report.missing_jobs, 0);
+  assert.equal(result.report.readiness, 'not_validated_against_independent_humans');
+  assert.equal(result.report.primary, undefined);
+  assert.deepEqual(fs.readFileSync(path.join(options.destination, 'run-ledger.jsonl')), retained);
+  const events = readEvents(path.join(result.destination, 'run-ledger.jsonl'));
+  assert.equal(events.find((e) => e.type === 'resuming').recovered_jobs, 2);
+  assert.equal(
+    readJson(path.join(result.destination, 'workflow-status.json')).phase_plan.includes('GENERATING'),
+    false,
+  );
+});
+
+test('calibration reports uncertain agreement and numeric disagreement without pretending either validates measurement', (t) => {
+  const { design, plan } = calibrationFixture(t);
+  const responses = new Map(
+    plan.jobs.map((job) => [
+      job.id,
+      job.category === 'semantic'
+        ? { directive_fulfillment: 'measurement_indeterminate', material_change: 'none' }
+        : { quality: job.seat.endsWith('_a') ? 7 : 8, accuracy: 'not_applicable' },
+    ]),
+  );
+  const report = summarizeCalibration(design, plan, responses);
+  assert.equal(report.fields.directive_fulfillment.exact_agreements, 2);
+  assert.equal(report.fields.directive_fulfillment.determinate_consensus, 0);
+  assert.equal(report.fields.directive_fulfillment.measurement_indeterminate, 2);
+  assert.equal(report.fields.quality.mean_absolute_numeric_difference, 1);
+  assert.equal(report.fields.quality.determinate_consensus, 0);
+  assert.equal(report.fields.accuracy.both_not_applicable, 2);
+  assert.equal(report.fields.accuracy.determinate_consensus, 0);
+  responses.delete(plan.jobs[0].id);
+  assert.equal(summarizeCalibration(design, plan, responses).fields.directive_fulfillment.missing_pairs, 1);
+});
+
+test('honest indeterminate can omit unavailable critique evidence; positive labels and invented spans remain invalid', (t) => {
+  const { design, plan } = calibrationFixture(t);
+  const job = plan.jobs.find((j) => j.category === 'semantic');
+  plan.units.find((u) => u.unit_key === job.unit).critique = {};
+  const request = buildReplayRequest(design, plan, job, new Map());
+  const raw = response(design, request);
+  const envelope = JSON.parse(raw.body);
+  const result = {
+    directive_fulfillment: 'measurement_indeterminate',
+    material_change: 'measurement_indeterminate',
+    critique_spans: [],
+    candidate_spans: [],
+    rationale: 'There is no actionable critique to assess.',
+  };
+  const parse = () =>
+    parseReplayResponse(design, request, job, {
+      ...raw,
+      body: JSON.stringify({
+        ...envelope,
+        choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(result) } }],
+      }),
+    });
+  assert.equal(parse().directive_fulfillment, 'measurement_indeterminate');
+  result.directive_fulfillment = 'none';
+  assert.throws(parse, /evidence spans invalid/);
+  result.directive_fulfillment = 'measurement_indeterminate';
+  result.critique_spans = ['invented'];
+  assert.throws(parse, /evidence spans invalid/);
+});
+
+test('calibration prepare writes only blank human sheets and never initializes provider transport', async (t) => {
+  const { root, design, plan } = calibrationFixture(t);
+  let calls = 0;
+  const output = path.join(root, 'calibration-prepare');
+  await main(['--mode', 'calibration', '--prepare', '--output', output], {
+    root,
+    preparePlan: async () => ({ design, plan }),
+    dispatch: async () => {
+      calls++;
+    },
+  });
+  assert.equal(calls, 0);
+  assert.equal(readJson(path.join(output, 'audit.json')).hard_ceiling, 0);
+  assert.equal(readJson(path.join(output, 'human-semantic_a.json')).rows[0].coding.directive_fulfillment, null);
+  await assert.rejects(main(['--mode', 'typo', '--prepare', '--output', output]), /Unknown study mode/);
+});
+
+test('paid calibration CLI selects the calibration design and summary through the public boundary using mock transport', async (t) => {
+  const { root, design, plan, options } = calibrationFixture(t);
+  let calls = 0;
+  const result = await main(
+    [
+      '--mode',
+      'calibration',
+      '--launch',
+      '--accept-charges',
+      '--output',
+      options.destination,
+      '--go-note',
+      'notes/test-go.md',
+      '--go-note-commit',
+      options.goNoteCommit,
+    ],
+    {
+      root,
+      studyStateRoot: options.studyStateRoot,
+      preparePlan: async () => ({ design, plan }),
+      onProgress: () => {},
+      dispatch: async (_url, request) => {
+        calls++;
+        assert.notEqual(request.model, design.models.generator.model);
+        return response(design, request);
+      },
+    },
+  );
+  assert.equal(calls, 8);
+  assert.equal(result.report.readiness, 'not_validated_against_independent_humans');
+  assert.equal(result.report.primary, undefined);
+  assert.equal(readJson(path.join(options.destination, 'settings.json')).mode, 'calibration');
 });
