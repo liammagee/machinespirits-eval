@@ -277,12 +277,24 @@ Three sites looked like a paid-run approval bound to a digest.
   a request file whose contract was edited after the signature, which the
   `tamperedRequest` test covers.
 
-### 3. One loop, two roles
+### 3. One loop, two roles (ruled: split by role)
 
 `services/program2ExperimentSafety.js:388` hashes a list of paths in one loop.
-Some entries are run-output evidence, where the pin is right. Others are repo
-config files, where it is the banned shape. Splitting the loop by a path prefix
-would invent a policy nobody stated.
+The certifier names each entry by role. `launch_plan`, `pilot_bundle:N` and
+`pilot_trace:<job>` are run artifacts written into the run's output directory,
+so a hash mismatch there still refuses. `world` points at a
+`config/drama-derivation/world-*.yaml` and `gate_spec` at a
+`config/adaptive-tutor-evidence/*-gates.json`, both edited in place in git.
+For those two roles a well-formed hash that moved is now written to stderr
+through `recordObservedDigest`, returned in a `records` array, and kept by the
+launcher as `evidenceDrift` in the launch attempt record. A missing or
+escaping file still refuses for every role, and so does a missing or malformed
+digest on any role. The launcher runs the futility check on the gate spec
+inside the certificate, so that pin never changed what runs. The user ruled on
+2026-09-04 to convert both. `docs/program2-launch-certificates.md` and the
+launcher's certificate reminder line now say so. The dated note
+`notes/program-2/2026-07-26-launch-safety-contract.md` still says the
+gate-spec file cannot change after certification; it is a record and was left.
 
 ### 4. Development evidence
 
