@@ -1,14 +1,14 @@
 ---
 id: scoreboard-reader-replay-and-crossed-run
 title: Scoreboard reader replay and crossed run
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-09-04
 updated: 2026-09-05
-claim_status: planned
+claim_status: killed
 links:
   notes:
     - notes/2026-09-04-scoreboard-replay-prompt.md
@@ -28,7 +28,7 @@ links:
     - scripts/preflight-scoreboard-learner-cast.js
     - scripts/run-scoreboard-crossed-readers.js
   paper:
-    - "§6.24 to §6.30, §7.14"
+    - "§6.24 (public scoreboard paragraph, v3.0.306), §6.25 to §6.30, §7.12"
   items:
     - one-adaptive-tutor-plan-line
     - a1-human-learner-validation
@@ -56,7 +56,10 @@ verification: "Step 1 report note states PASS or FAIL against the two
   the report says so in its second-run section. 2026-09-05, 17:51 UTC: the
   user ruled that a hedge in the next sentence covers the sentence before it;
   the reader is changed in place, the stopped turn is a regression test, and
-  the zero-call re-reads hold both Step 1 bars."
+  the zero-call re-reads hold both Step 1 bars. 2026-09-05, evening: the user
+  chose to close the card. Step 1 stands as a methods result at development
+  tier; Step 2 closed under its own rules with no verdict; no third run on this
+  design; the paper records both in §6.24 at v3.0.306."
 ---
 
 **What this is.**
@@ -226,3 +229,25 @@ are read.
   zero violations. The change touches one reader function and no design
   file, so the GO stands. A third run of world 102 (about 330 calls, then the
   reader seats at 192) waits on the user's word.
+- 2026-09-05, closing: the user chose to close the card ("go with your
+  lean", chat, evening). What stands: Step 1 PASS on both pooled bars with
+  zero calls (562 of 678 shapes agree, 457 of 511 delivered moves show; the
+  held-out half one dialogue under the pairwise bar), a methods result at
+  development tier. Step 2 closed under its own rules with no verdict: the
+  defect rule fired twice, both times on a reader misread later fixed in place
+  (the dash split, PR #1044; the next-sentence hedge, PR #1053), and under the
+  corrected reader the board arm has zero unlicensed moves; the outcome rule
+  fired on the 36 dialogues that stand (permission-seeking 1 of 12 against 1 of
+  12, overconfident 2 of 6 against 3 of 6); no reader seat ran; Sonnet 5 in
+  every seat; the second-model check did not run. The design could not have
+  separated the tutors: the permission-seeking channel sits at floor once the
+  board tutor grants standing by turn 4 or 5, n is 6 per cell, and the board
+  text masked node ids other than the answer and the mirror. A word list
+  inside a one-row stop rule produced two false stops at about 85% row
+  agreement; that class of defect is recorded, not patched further. No third
+  run on this design. Phase 2 of the plan does not open. Any continuation is
+  a new design note (moves declared as data with the licence checked on the
+  declaration, an unmasked board, an endpoint that early grants cannot floor)
+  that goes to the user before any call. Paper: one paragraph in §6.24 plus a
+  scope sentence and a §7.12 pointer, v3.0.306. 1,459 of 3,436 ceiling calls
+  for the study; traces in the private archive.

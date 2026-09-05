@@ -1,7 +1,8 @@
 ---
 id: one-adaptive-tutor-plan-line
 title: One adaptive tutor plan line
-status: triaged
+status: blocked
+blocked_by: "a new design note from the user; no third run on the Phase 1 design"
 type: research
 priority: P1
 owner: human
@@ -18,7 +19,7 @@ links:
     - notes/2026-09-05-scoreboard-crossed-run-go.md
     - notes/2026-09-05-scoreboard-crossed-run-report.md
   paper:
-    - "§3, §7.12, §7.16, Appendix E"
+    - "§6.24 (v3.0.306), §7.12; planned on a pass: §3, §7.16, Appendix E"
   items:
     - scoreboard-reader-replay-and-crossed-run
     - a1-human-learner-validation
@@ -83,3 +84,15 @@ digest. Results are conduct claims until Phase 4.
   the ruled reader the stopped turn of the second Phase 1 run passes the
   licence audit, so the board tutor in that run made no unlicensed move.
   Phase 2 does not open. A third run of world 102 waits on a new word.
+- 2026-09-05, evening: the user closed Phase 1 without a third run. Phase 0
+  stands as a methods result at development tier. Phase 1 closed under its own
+  rules with no verdict: two defect-rule stops, both reader misreads fixed in
+  place; the outcome rule fired on the 36 dialogues that stand; no reader seat
+  ran; Sonnet 5 in every seat; the second-model check did not run. Phase 2
+  does not open and its card is not written. The line is blocked on a new
+  design note (moves declared as data with the licence checked on the
+  declaration, an unmasked board, an endpoint that early grants cannot floor),
+  which goes to the user before any call. The paper records the Phase 0 and
+  Phase 1 result in §6.24 with a §7.12 pointer at v3.0.306; §3, §7.16 and
+  Appendix E get their planned folds only if a later phase passes. Card
+  `scoreboard-reader-replay-and-crossed-run` closed.
