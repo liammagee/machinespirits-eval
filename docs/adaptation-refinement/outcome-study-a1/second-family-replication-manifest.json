@@ -7,11 +7,11 @@
     "registration": "docs/adaptation-refinement/warrant-gate-second-family-replication.md",
     "replicates": "docs/adaptation-refinement/relay/096-reviewer-reregistration-outcome-main-block.md",
     "first_block_manifest": "docs/adaptation-refinement/outcome-study-a1/main-block-manifest.json",
-    "paper_section": "docs/research/paper-full-2.0.md \u00a76.25"
+    "paper_section": "docs/research/paper-full-2.0.md §6.25"
   },
   "seats": {
     "tutor": "claude-code.opus-5",
-    "analysis": "claude-code.opus-5",
+    "analysis": "codex.gpt-5.6-luna",
     "learner": "claude-code.opus-5",
     "decision_readers": "codex.gpt-5.6-sol",
     "first_block_seats": {
@@ -43,7 +43,6 @@
     "note": "Byte-identical to the handbook the first block readers used (seed-514 instrument freeze)."
   },
   "seeds": [
-    736,
     737,
     738,
     739,
@@ -54,9 +53,10 @@
     744,
     745,
     746,
-    747
+    747,
+    748
   ],
-  "seed_freshness": "Seeds 736-747 had no prior use in the repo text, the run store, or the private archive on 2026-09-04 (seed-ledger check with --archive); claimed in config/seed-ledger.yaml.",
+  "seed_freshness": "Seeds 737-748 had no prior use in the repo text, the run store, or the private archive on 2026-09-05 (seed-ledger check with --archive); claimed in config/seed-ledger.yaml. Seed 736 was in the first claim (736-747) and was burned by the two pre-amendment attempts at dialogue 01 on 2026-09-04 and 2026-09-05; it is replaced by 748.",
   "conditions": [
     "bare",
     "gated",
@@ -75,433 +75,433 @@
     {
       "order": 1,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 736,
+      "seed": 737,
       "condition": "bare"
     },
     {
       "order": 2,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 736,
+      "seed": 737,
       "condition": "gated"
     },
     {
       "order": 3,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 736,
+      "seed": 737,
       "condition": "standing_permission"
     },
     {
       "order": 4,
       "world": "world_102_marigold_archive_box",
-      "seed": 736,
+      "seed": 737,
       "condition": "gated"
     },
     {
       "order": 5,
       "world": "world_102_marigold_archive_box",
-      "seed": 736,
+      "seed": 737,
       "condition": "standing_permission"
     },
     {
       "order": 6,
       "world": "world_102_marigold_archive_box",
-      "seed": 736,
+      "seed": 737,
       "condition": "bare"
     },
     {
       "order": 7,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 737,
+      "seed": 738,
       "condition": "gated"
     },
     {
       "order": 8,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 737,
+      "seed": 738,
       "condition": "standing_permission"
     },
     {
       "order": 9,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 737,
+      "seed": 738,
       "condition": "bare"
     },
     {
       "order": 10,
       "world": "world_102_marigold_archive_box",
-      "seed": 737,
+      "seed": 738,
       "condition": "standing_permission"
     },
     {
       "order": 11,
       "world": "world_102_marigold_archive_box",
-      "seed": 737,
+      "seed": 738,
       "condition": "bare"
     },
     {
       "order": 12,
       "world": "world_102_marigold_archive_box",
-      "seed": 737,
+      "seed": 738,
       "condition": "gated"
     },
     {
       "order": 13,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 738,
+      "seed": 739,
       "condition": "standing_permission"
     },
     {
       "order": 14,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 738,
+      "seed": 739,
       "condition": "bare"
     },
     {
       "order": 15,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 738,
+      "seed": 739,
       "condition": "gated"
     },
     {
       "order": 16,
       "world": "world_102_marigold_archive_box",
-      "seed": 738,
+      "seed": 739,
       "condition": "bare"
     },
     {
       "order": 17,
       "world": "world_102_marigold_archive_box",
-      "seed": 738,
+      "seed": 739,
       "condition": "gated"
     },
     {
       "order": 18,
       "world": "world_102_marigold_archive_box",
-      "seed": 738,
+      "seed": 739,
       "condition": "standing_permission"
     },
     {
       "order": 19,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 739,
+      "seed": 740,
       "condition": "bare"
     },
     {
       "order": 20,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 739,
+      "seed": 740,
       "condition": "gated"
     },
     {
       "order": 21,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 739,
+      "seed": 740,
       "condition": "standing_permission"
     },
     {
       "order": 22,
       "world": "world_102_marigold_archive_box",
-      "seed": 739,
+      "seed": 740,
       "condition": "gated"
     },
     {
       "order": 23,
       "world": "world_102_marigold_archive_box",
-      "seed": 739,
+      "seed": 740,
       "condition": "standing_permission"
     },
     {
       "order": 24,
       "world": "world_102_marigold_archive_box",
-      "seed": 739,
+      "seed": 740,
       "condition": "bare"
     },
     {
       "order": 25,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 740,
+      "seed": 741,
       "condition": "gated"
     },
     {
       "order": 26,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 740,
+      "seed": 741,
       "condition": "standing_permission"
     },
     {
       "order": 27,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 740,
+      "seed": 741,
       "condition": "bare"
     },
     {
       "order": 28,
       "world": "world_102_marigold_archive_box",
-      "seed": 740,
+      "seed": 741,
       "condition": "standing_permission"
     },
     {
       "order": 29,
       "world": "world_102_marigold_archive_box",
-      "seed": 740,
+      "seed": 741,
       "condition": "bare"
     },
     {
       "order": 30,
       "world": "world_102_marigold_archive_box",
-      "seed": 740,
+      "seed": 741,
       "condition": "gated"
     },
     {
       "order": 31,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 741,
+      "seed": 742,
       "condition": "standing_permission"
     },
     {
       "order": 32,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 741,
+      "seed": 742,
       "condition": "bare"
     },
     {
       "order": 33,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 741,
+      "seed": 742,
       "condition": "gated"
     },
     {
       "order": 34,
       "world": "world_102_marigold_archive_box",
-      "seed": 741,
+      "seed": 742,
       "condition": "bare"
     },
     {
       "order": 35,
       "world": "world_102_marigold_archive_box",
-      "seed": 741,
+      "seed": 742,
       "condition": "gated"
     },
     {
       "order": 36,
       "world": "world_102_marigold_archive_box",
-      "seed": 741,
+      "seed": 742,
       "condition": "standing_permission"
     },
     {
       "order": 37,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 742,
+      "seed": 743,
       "condition": "bare"
     },
     {
       "order": 38,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 742,
+      "seed": 743,
       "condition": "gated"
     },
     {
       "order": 39,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 742,
+      "seed": 743,
       "condition": "standing_permission"
     },
     {
       "order": 40,
       "world": "world_102_marigold_archive_box",
-      "seed": 742,
+      "seed": 743,
       "condition": "gated"
     },
     {
       "order": 41,
       "world": "world_102_marigold_archive_box",
-      "seed": 742,
+      "seed": 743,
       "condition": "standing_permission"
     },
     {
       "order": 42,
       "world": "world_102_marigold_archive_box",
-      "seed": 742,
+      "seed": 743,
       "condition": "bare"
     },
     {
       "order": 43,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 743,
+      "seed": 744,
       "condition": "gated"
     },
     {
       "order": 44,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 743,
+      "seed": 744,
       "condition": "standing_permission"
     },
     {
       "order": 45,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 743,
+      "seed": 744,
       "condition": "bare"
     },
     {
       "order": 46,
       "world": "world_102_marigold_archive_box",
-      "seed": 743,
+      "seed": 744,
       "condition": "standing_permission"
     },
     {
       "order": 47,
       "world": "world_102_marigold_archive_box",
-      "seed": 743,
+      "seed": 744,
       "condition": "bare"
     },
     {
       "order": 48,
       "world": "world_102_marigold_archive_box",
-      "seed": 743,
+      "seed": 744,
       "condition": "gated"
     },
     {
       "order": 49,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 744,
+      "seed": 745,
       "condition": "standing_permission"
     },
     {
       "order": 50,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 744,
+      "seed": 745,
       "condition": "bare"
     },
     {
       "order": 51,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 744,
+      "seed": 745,
       "condition": "gated"
     },
     {
       "order": 52,
       "world": "world_102_marigold_archive_box",
-      "seed": 744,
+      "seed": 745,
       "condition": "bare"
     },
     {
       "order": 53,
       "world": "world_102_marigold_archive_box",
-      "seed": 744,
+      "seed": 745,
       "condition": "gated"
     },
     {
       "order": 54,
       "world": "world_102_marigold_archive_box",
-      "seed": 744,
+      "seed": 745,
       "condition": "standing_permission"
     },
     {
       "order": 55,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 745,
+      "seed": 746,
       "condition": "bare"
     },
     {
       "order": 56,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 745,
+      "seed": 746,
       "condition": "gated"
     },
     {
       "order": 57,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 745,
+      "seed": 746,
       "condition": "standing_permission"
     },
     {
       "order": 58,
       "world": "world_102_marigold_archive_box",
-      "seed": 745,
+      "seed": 746,
       "condition": "gated"
     },
     {
       "order": 59,
       "world": "world_102_marigold_archive_box",
-      "seed": 745,
+      "seed": 746,
       "condition": "standing_permission"
     },
     {
       "order": 60,
       "world": "world_102_marigold_archive_box",
-      "seed": 745,
+      "seed": 746,
       "condition": "bare"
     },
     {
       "order": 61,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 746,
+      "seed": 747,
       "condition": "gated"
     },
     {
       "order": 62,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 746,
+      "seed": 747,
       "condition": "standing_permission"
     },
     {
       "order": 63,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 746,
+      "seed": 747,
       "condition": "bare"
     },
     {
       "order": 64,
       "world": "world_102_marigold_archive_box",
-      "seed": 746,
+      "seed": 747,
       "condition": "standing_permission"
     },
     {
       "order": 65,
       "world": "world_102_marigold_archive_box",
-      "seed": 746,
+      "seed": 747,
       "condition": "bare"
     },
     {
       "order": 66,
       "world": "world_102_marigold_archive_box",
-      "seed": 746,
+      "seed": 747,
       "condition": "gated"
     },
     {
       "order": 67,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 747,
+      "seed": 748,
       "condition": "standing_permission"
     },
     {
       "order": 68,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 747,
+      "seed": 748,
       "condition": "bare"
     },
     {
       "order": 69,
       "world": "world_101_kestrel_signal_lamp",
-      "seed": 747,
+      "seed": 748,
       "condition": "gated"
     },
     {
       "order": 70,
       "world": "world_102_marigold_archive_box",
-      "seed": 747,
+      "seed": 748,
       "condition": "bare"
     },
     {
       "order": 71,
       "world": "world_102_marigold_archive_box",
-      "seed": 747,
+      "seed": 748,
       "condition": "gated"
     },
     {
       "order": 72,
       "world": "world_102_marigold_archive_box",
-      "seed": 747,
+      "seed": 748,
       "condition": "standing_permission"
     }
   ],
@@ -541,5 +541,18 @@
     "approximate_total": 3200,
     "ceiling": 3360
   },
-  "provenance_policy": "Commit, tree, branch and dirty flag are recorded at launch and never enforced. Byte pins apply to the data inputs listed here (worlds, menu, handbook) only."
+  "provenance_policy": "Commit, tree, branch and dirty flag are recorded at launch and never enforced. Byte pins apply to the data inputs listed here (worlds, menu, handbook) only.",
+  "amendments": [
+    {
+      "date": "2026-09-05",
+      "what": "Analysis seat moved from claude-code.opus-5 to codex.gpt-5.6-luna, the first-block analysis model. Seed 736 replaced by 748.",
+      "why": "In the first dialogue (seed 736, world 101, bare) Opus 5 in the analysis seat returned a semantic event with target_id unspecified together with a non-empty public_identifier_ids list on turn 4 in 3 of 3 tries and on turn 6 in 2 of 3 tries. The strict validator (services/adaptiveWarrantSemanticEvents.js, rule target:unspecified_cannot_name_public_identifiers) rejects that pair, so turn 4 stayed unread, the coverage guard quarantined the dialogue, and the run stopped. The dialogue also used exactly its 30-call cap. Luna hit this form once in the pilot and never in the 576-turn first block. The registration forbids coercing a response into shape and allows one retake per dialogue, which the second attempt used.",
+      "what_it_changes": "Tutor and learner seats are still the second family (Opus 5). The analysis seat, which feeds the gate and the learner record, is the same model as the first block. A result now speaks to the tutor and learner seats only; it cannot separate the analysis seat from the first block.",
+      "ruling": "User ruling in chat, 2026-09-05: luna in the analysis seat, amend and GO.",
+      "discarded_attempts": [
+        ".tutor-stub-auto-eval/warrant-gate-second-family-2026-09-04 (2 calls, harness defect, fixed in PR #1025)",
+        ".tutor-stub-auto-eval/warrant-gate-second-family-2026-09-04-r2 (30 calls, 8 turns, turn 4 unread; never entered any corpus)"
+      ]
+    }
+  ]
 }

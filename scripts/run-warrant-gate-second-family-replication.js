@@ -5,8 +5,10 @@
  *
  * Same design as the first block (relay 096, paper §6.25): 72 dialogues,
  * three conditions, two worlds, eight turns, low-agency learner, two decision
- * readers at batch size 1. Only the model seats change: tutor, analysis and
- * learner on claude-code.opus-5; readers on codex.gpt-5.6-sol.
+ * readers at batch size 1. Only the model seats change: tutor and learner on
+ * claude-code.opus-5; readers on codex.gpt-5.6-sol. The analysis seat stays on
+ * codex.gpt-5.6-luna, the first-block model (amendment of 2026-09-05: Opus 5 in
+ * that seat failed the strict semantic-event validator on record-entry turns).
  *
  * The default invocation prints the plan and makes zero model calls. The paid
  * path needs --accept-charges and --go "<the words the user wrote in chat>";
@@ -69,7 +71,7 @@ export const SECOND_FAMILY_READER_ALLOWANCE = 48;
 export const SECOND_FAMILY_TURNS_PER_DIALOGUE = 8;
 export const SECOND_FAMILY_SEATS = Object.freeze({
   tutor: 'claude-code.opus-5',
-  analysis: 'claude-code.opus-5',
+  analysis: 'codex.gpt-5.6-luna',
   learner: 'claude-code.opus-5',
   decision_readers: 'codex.gpt-5.6-sol',
 });
@@ -802,12 +804,33 @@ function freshCheckpoint({ manifest, manifestPath, seats, learnerProfile, ceilin
   };
 }
 
-function inheritCheckpoint({ previousDestination, fresh }) {
+// Recovery inherits only what still describes the run. After an in-place
+// amendment (2026-09-05: analysis seat, one seed) the predecessor's seed
+// freshness and prompt preflight answer to inputs that no longer apply, so
+// they are recomputed rather than copied. A completed dialogue generated
+// under different generation seats is never reused: that would pool across
+// the amendment, and the launch refuses instead.
+const GENERATION_SEATS = ['tutor', 'analysis', 'learner'];
+
+export function inheritCheckpoint({ previousDestination, fresh, manifest }) {
   const previousPath = path.join(previousDestination, 'checkpoint.json');
   if (!fs.existsSync(previousPath)) throw new Error(`recovery predecessor has no checkpoint at ${previousPath}`);
   const previous = readJson(previousPath);
   if (previous.schema !== SECOND_FAMILY_RUN_SCHEMA || previous.study_id !== SECOND_FAMILY_STUDY_ID) {
     throw new Error('recovery predecessor is not a second-family checkpoint');
+  }
+  const previousSeeds = Array.isArray(previous.seed_freshness?.seeds) ? previous.seed_freshness.seeds : null;
+  const sameSeeds = previousSeeds !== null && JSON.stringify(previousSeeds) === JSON.stringify(manifest.seeds);
+  const sameGenerationSeats = GENERATION_SEATS.every((seat) => previous.seats?.[seat] === fresh.seats[seat]);
+  const completedUnderOtherSeats = sameGenerationSeats
+    ? []
+    : (previous.dialogues || []).filter((row) => row.status === 'complete').map((row) => row.id);
+  if (completedUnderOtherSeats.length) {
+    throw new Error(
+      `recovery predecessor completed ${completedUnderOtherSeats.length} dialogue(s) under different generation seats ` +
+        `(${GENERATION_SEATS.map((seat) => `${seat} ${previous.seats?.[seat]}`).join(', ')}); ` +
+        'an amended seat set is a fresh block, not a continuation',
+    );
   }
   return {
     ...fresh,
@@ -816,9 +839,15 @@ function inheritCheckpoint({ previousDestination, fresh }) {
       checkpoint_sha256: fileSha256(previousPath),
       stop: previous.stop,
       lineage: [...(previous.recovered_from?.lineage || []), previousDestination],
+      inherited: {
+        seed_freshness: sameSeeds,
+        prompt_preflight: sameGenerationSeats,
+        previous_seeds: previousSeeds,
+        previous_seats: previous.seats || null,
+      },
     },
-    seed_freshness: previous.seed_freshness,
-    prompt_preflight: previous.prompt_preflight,
+    seed_freshness: sameSeeds ? previous.seed_freshness : null,
+    prompt_preflight: sameGenerationSeats ? previous.prompt_preflight : null,
     dialogues: [...previous.dialogues],
     corpus: previous.corpus,
     reader_collection: previous.reader_collection,
@@ -885,7 +914,7 @@ export async function executeSecondFamilyReplication({
     rootDir,
   });
   const checkpoint = recoveryFrom
-    ? inheritCheckpoint({ previousDestination: path.resolve(recoveryFrom), fresh })
+    ? inheritCheckpoint({ previousDestination: path.resolve(recoveryFrom), fresh, manifest })
     : fresh;
   const persist = () => atomicWriteJson(checkpointPath, checkpoint);
   persist();
