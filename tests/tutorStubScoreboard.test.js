@@ -618,11 +618,11 @@ test('a dash-joined question is not a naming even when the naming clause comes f
 // with no hedge and no question mark. The hedge ("doesn't yet") sits in the
 // sentence after it.
 const OSPREY_HALF_HOLDS =
-  'Half of that holds: Osprey\'s authorization plus their presence for the inspection does put them in a position to ' +
-  'have cleared bay three — that\'s real, and it\'s more than Felix or WF-11 ever earned. But the notice only says ' +
+  "Half of that holds: Osprey's authorization plus their presence for the inspection does put them in a position to " +
+  "have cleared bay three — that's real, and it's more than Felix or WF-11 ever earned. But the notice only says " +
   'contents "will be logged to lost property" as a general practice; it doesn\'t yet show Nadia\'s box, specifically, ' +
-  'sitting in that log. Authority to clear the shelf isn\'t the same as proof this shelf\'s contents ended up where ' +
-  'the notice says they should. What would you check to see if the archive box itself shows up in Osprey\'s ' +
+  "sitting in that log. Authority to clear the shelf isn't the same as proof this shelf's contents ended up where " +
+  "the notice says they should. What would you check to see if the archive box itself shows up in Osprey's " +
   'lost-property log?';
 
 test('a hedge word in the next sentence covers the sentence before it (board-r6 turn 6, second run)', () => {
@@ -642,11 +642,7 @@ test('the stopped turn passes the licence audit under the ruled reader', () => {
 });
 
 test('a question mark alone in the next sentence does not cover a plain naming', () => {
-  const tutor = rowAt(
-    board102('Osprey took the box from bay three. What would you check next?'),
-    'tutor',
-    6,
-  );
+  const tutor = rowAt(board102('Osprey took the box from bay three. What would you check next?'), 'tutor', 6);
   assert.equal(tutor.fields.commitment_undertaken, 'secret');
   const mark = tutor.marks.find((m) => m.rule === 'TEXT-answer-named');
   assert.ok(mark, 'the naming mark is on the row');
@@ -654,13 +650,17 @@ test('a question mark alone in the next sentence does not cover a plain naming',
 
 test('a hedge two sentences later does not reach back to a plain naming', () => {
   const tutor = rowAt(
-    board102('Osprey took the box from bay three. The tag carries their job number. The log does not yet show the box.'),
+    board102(
+      'Osprey took the box from bay three. The tag carries their job number. The log does not yet show the box.',
+    ),
     'tutor',
     6,
   );
   assert.equal(tutor.fields.commitment_undertaken, 'secret');
   const hedged = rowAt(
-    board102('Osprey took the box from bay three. The log does not yet show the box. The tag carries their job number.'),
+    board102(
+      'Osprey took the box from bay three. The log does not yet show the box. The tag carries their job number.',
+    ),
     'tutor',
     6,
   );
