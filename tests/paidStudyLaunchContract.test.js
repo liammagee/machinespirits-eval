@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import {
   admitPaidStudyLaunch,
   isResponseFreeJsonModeRejection,
+  isResponseFreeParameterRejection,
   paidStudyChatGoIssues,
   paidStudyGoNoteIssues,
   sealInterruptedPaidStudyLaunch,
@@ -155,7 +156,7 @@ function raceConfig({ value, destination, resultFile, providerLog, unit, recover
   };
 }
 
-function retainedResponseFixture(t) {
+function retainedResponseFixture(t, responseFor = () => '{"unaccepted_model_answer":"preserve"}\n') {
   const value = fixture(t, { cap: 4, noteCap: '4' });
   const destination = path.join(value.base, 'original');
   const admission = admitPaidStudyLaunch({ ...value.contract, destination });
@@ -166,7 +167,7 @@ function retainedResponseFixture(t) {
   client.markDispatched({ attemptId: reservation.attemptId });
   const responsePath = path.join(destination, 'responses', '1.json');
   fs.mkdirSync(path.dirname(responsePath));
-  fs.writeFileSync(responsePath, '{"unaccepted_model_answer":"preserve"}\n');
+  fs.writeFileSync(responsePath, responseFor(reservation.attemptId, unitId));
   client.persistResponse({ attemptId: reservation.attemptId, responsePath });
   client.terminalize({ attemptId: reservation.attemptId, disposition: 'completed' });
   admission.releaseModelAttemptCapacity(capacity);
@@ -223,8 +224,106 @@ test('retained-response continuation protects the unit before reservation across
   assert.deepEqual(fs.readFileSync(value.admission.ledger_path), before);
 });
 
+test('parameter-rejection recognition requires response-free routing evidence and excludes answers or usage', () => {
+  const request = { provider: { only: ['openai'], allow_fallbacks: false, require_parameters: true } };
+  const envelope = {
+    error: {
+      code: 404,
+      message: 'No endpoints found that can handle the requested parameters.',
+      metadata: {
+        failed_routing_step: 'Filter by Parameters',
+        routing_funnel: [{ step: 'Filter by Allowed Providers', endpoint_count: 1 }],
+      },
+    },
+  };
+  const raw = (body, status = 404) => ({ status, body: JSON.stringify(body) });
+  assert.equal(isResponseFreeParameterRejection(request, raw(envelope)), true);
+  for (const body of [
+    { ...envelope, choices: [{ message: { content: '{}' } }] },
+    { ...envelope, choices: [{ message: { refusal: 'No' } }] },
+    { ...envelope, usage: { completion_tokens: 0, cost: 0 } },
+    { ...envelope, output: 'answer' },
+    { error: { ...envelope.error, metadata: { ...envelope.error.metadata, raw: 'answer' } } },
+    {
+      error: {
+        ...envelope.error,
+        metadata: { ...envelope.error.metadata, failed_routing_step: 'Filter by Max Price' },
+      },
+    },
+    { error: { code: 404, message: 'No endpoints found' } },
+  ])
+    assert.equal(isResponseFreeParameterRejection(request, raw(body)), false);
+  assert.equal(isResponseFreeParameterRejection(request, raw(envelope, 200)), false);
+  assert.equal(isResponseFreeParameterRejection({}, raw(envelope)), false);
+});
+
+test('shared recovery admits a journal-proven parameter rejection once without changing the failed seal', (t) => {
+  const raw = {
+    status: 404,
+    body: JSON.stringify({
+      error: {
+        code: 404,
+        message: 'No endpoints found that can handle the requested parameters.',
+        metadata: {
+          failed_routing_step: 'Filter by Parameters',
+          routing_funnel: [{ step: 'Filter by Allowed Providers', endpoint_count: 1 }],
+        },
+      },
+    }),
+  };
+  const bundle = (attempt_id, id) =>
+    JSON.stringify({
+      attempt_id,
+      job: { id },
+      request: { provider: { only: ['openai'], allow_fallbacks: false, require_parameters: true } },
+      raw,
+    });
+  const value = retainedResponseFixture(t, bundle);
+  const before = fs.readFileSync(value.admission.ledger_path);
+  const recover = (destination, recoveryFrom = value.destination, parameterRejectionUnits = [value.unitId]) =>
+    admitPaidStudyLaunch({ ...value.contract, destination, recoveryFrom, parameterRejectionUnits });
+  assert.throws(
+    () => recover(path.join(value.base, 'no-opt-in'), value.destination, []),
+    /sealed technical predecessor/,
+  );
+  const saved = fs.readFileSync(value.responsePath);
+  fs.writeFileSync(value.responsePath, '{}');
+  assert.throws(() => recover(path.join(value.base, 'tampered')), /sealed technical predecessor/);
+  fs.writeFileSync(value.responsePath, saved);
+  const destination = path.join(value.base, 'recovery');
+  const recovery = recover(destination);
+  assert.equal(recovery.studyReserved, 1);
+  const capacity = recovery.allocateModelAttemptCapacity(1, { unit_id: value.unitId });
+  const client = sharedModelAttemptLedgerClientFromEnv(
+    recovery.attemptLedgerEnvironment({ unitId: value.unitId, capacity }),
+  );
+  const reservation = client.reserve();
+  client.markDispatched({ attemptId: reservation.attemptId });
+  const responsePath = path.join(destination, 'responses', '2.json');
+  fs.mkdirSync(path.dirname(responsePath));
+  fs.writeFileSync(responsePath, bundle(reservation.attemptId, value.unitId));
+  client.persistResponse({ attemptId: reservation.attemptId, responsePath });
+  client.terminalize({ attemptId: reservation.attemptId, disposition: 'completed' });
+  recovery.releaseModelAttemptCapacity(capacity);
+  recovery.close({ type: 'run_sealed', status: 'technical_failure', recovery_permitted: false });
+  assert.equal(recovery.studyReserved, 2);
+  assert.throws(() => recover(path.join(value.base, 'third'), destination), /sealed technical predecessor/);
+  assert.equal(fs.existsSync(path.join(value.base, 'third')), false);
+  assert.deepEqual(fs.readFileSync(value.admission.ledger_path), before);
+});
+
 test('a failed seal cannot be overridden by a retained-unit list without complete durable response accounting', (t) => {
   const value = retainedResponseFixture(t);
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.contract,
+        destination: path.join(value.base, 'answer-is-not-routing-rejection'),
+        recoveryFrom: value.destination,
+        parameterRejectionUnits: [value.unitId],
+      }),
+    /sealed technical predecessor/,
+  );
   const ledger = value.admission.ledger_path;
   const studyLedger = value.admission.study_ledger_path;
   const read = (file) => fs.readFileSync(file, 'utf8').trim().split('\n').map(JSON.parse);

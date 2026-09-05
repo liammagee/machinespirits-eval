@@ -2,8 +2,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseArgs } from 'node:util';
-import { admitPaidStudyLaunch, isResponseFreeJsonModeRejection } from '../services/paidStudyLaunchContract.js';
+import { parseArgs, isDeepStrictEqual } from 'node:util';
+import {
+  admitPaidStudyLaunch,
+  isResponseFreeJsonModeRejection,
+  isResponseFreeParameterRejection,
+} from '../services/paidStudyLaunchContract.js';
 import { createDurablePaidModelAttemptBudget } from '../services/durablePaidModelAttemptBudget.js';
 import { resolveEvaluationDataHome } from '../services/evaluationDataPaths.js';
 import {
@@ -24,6 +28,8 @@ import {
   buildReplayRequest,
   classifyReplayResponse,
   retainsInvalidCalibrationResponses,
+  recoversCalibrationParameterRejections,
+  replaySamplingParameters,
   worstCost,
   summarizeReplay,
 } from '../services/superegoCritiqueCausalReplay.js';
@@ -49,7 +55,50 @@ const stableSettings = (design) => ({
   arms: design.arms,
   endpoint: design.endpoint,
   ...(design.response_failure_policy ? { response_failure_policy: design.response_failure_policy } : {}),
+  ...(design.routing_failure_policy ? { routing_failure_policy: design.routing_failure_policy } : {}),
 });
+
+// Public catalog reads only: no key, prompt, provider inference or run admission.
+// Keep unsupported registered controls explicit rather than silently dropping them.
+export async function checkReplayRouteParameters(design, plan, fetchMetadata = globalThis.fetch) {
+  const routes = new Map();
+  for (const job of plan.jobs) {
+    const route = design.models[job.seat];
+    const required = [...Object.keys(replaySamplingParameters(design, job.seat)), 'max_tokens', 'reasoning'];
+    if (job.category !== 'generation') required.push('response_format');
+    const key = `${route.model}/${route.provider_slug}`;
+    const item = routes.get(key) || { route, required: new Set() };
+    required.forEach((parameter) => item.required.add(parameter));
+    routes.set(key, item);
+  }
+  const results = await Promise.all(
+    [...routes.values()].map(async ({ route, required }) => {
+      const url = `${new URL(design.endpoint).origin}/api/v1/models/${route.model}/endpoints`;
+      const response = await fetchMetadata(url, { redirect: 'error', signal: AbortSignal.timeout(15000) });
+      if (!response.ok) throw new Error(`Route metadata unavailable for ${route.model}: HTTP ${response.status}`);
+      const { data } = await response.json();
+      if (data?.id !== route.model || !Array.isArray(data.endpoints))
+        throw new Error(`Invalid route metadata for ${route.model}`);
+      const endpoints = data.endpoints.filter(
+        (endpoint) =>
+          endpoint.provider_name === route.provider &&
+          (endpoint.tag === route.provider_slug || endpoint.tag?.startsWith(`${route.provider_slug}/`)),
+      );
+      const supports = (endpoint) =>
+        [...required].every((parameter) => endpoint.supported_parameters?.includes(parameter));
+      if (!endpoints.some(supports)) {
+        const missing = [...required].filter(
+          (parameter) => !endpoints.some((endpoint) => endpoint.supported_parameters?.includes(parameter)),
+        );
+        throw new Error(
+          `Registered route ${route.model} via ${route.provider} cannot support all request controls: ${missing.join(', ') || 'no single eligible endpoint'}. No paid admission or call was made.`,
+        );
+      }
+      return { model: route.model, provider: route.provider, parameters: [...required] };
+    }),
+  );
+  return results;
+}
 
 // Exactly one HTTP request. No SDK retry, status retry, fallback, or model repair.
 export async function dispatchReplayRequest(endpoint, request, timeoutMs, fetchImpl = globalThis.fetch) {
@@ -85,17 +134,28 @@ export function loadRecoveryResponses(design, plan, predecessor) {
     if (JSON.stringify(readJson(path.join(dir, 'plan.json'))) !== JSON.stringify(plan))
       throw new Error('Frozen recovery plan drift');
     const previousSettings = readJson(path.join(dir, 'settings.json'));
-    // The calibration amendment changes only response disposition. Compare all
-    // original protected inputs; never refresh requests, sample, routes or caps.
+    // Compare protected settings, allowing only the two registered calibration
+    // amendments. These are in-memory comparisons; sealed settings stay intact.
     if (retainsInvalidCalibrationResponses(design) && !previousSettings.response_failure_policy)
       previousSettings.response_failure_policy = design.response_failure_policy;
-    if (JSON.stringify(previousSettings) !== JSON.stringify(stableSettings(design)))
+    if (recoversCalibrationParameterRejections(design)) {
+      if (!previousSettings.routing_failure_policy)
+        previousSettings.routing_failure_policy = design.routing_failure_policy;
+      if (
+        !previousSettings.request.provider_native_sampling_seats &&
+        previousSettings.request.temperature === 0 &&
+        previousSettings.request.top_p === 1
+      )
+        previousSettings.request.provider_native_sampling_seats = design.request.provider_native_sampling_seats;
+    }
+    if (!isDeepStrictEqual(previousSettings, stableSettings(design)))
       throw new Error('Study settings changed during recovery');
     segments.unshift({ dir, events });
     current = launch.recovery_from;
   }
   const responses = new Map();
   const savedRequests = new Map();
+  const parameterRejectionUnits = new Set();
   for (const { dir, events } of segments) {
     for (const reservation of events.filter((e) => e.type === 'model_attempt_dispatch_reserved')) {
       const job = plan.jobs.find((j) => j.id === reservation.unit_id);
@@ -130,6 +190,25 @@ export function loadRecoveryResponses(design, plan, predecessor) {
         savedRequests.set(job.id, repaired);
         continue;
       }
+      if (
+        recoversCalibrationParameterRejections(design) &&
+        isResponseFreeParameterRejection(bundle.request, bundle.raw)
+      ) {
+        const expected = buildReplayRequest(design, plan, job, responses);
+        let repaired = bundle.request;
+        if (
+          design.request.provider_native_sampling_seats?.includes(job.seat) &&
+          repaired.temperature === 0 &&
+          repaired.top_p === 1
+        ) {
+          const { temperature: _temperature, top_p: _topP, ...native } = repaired;
+          repaired = native;
+        }
+        if (!isDeepStrictEqual(repaired, expected)) throw new Error('Rejected request differs from registered scope');
+        savedRequests.set(job.id, expected);
+        parameterRejectionUnits.add(job.id);
+        continue;
+      }
       try {
         if (JSON.stringify(bundle.request) !== JSON.stringify(buildReplayRequest(design, plan, job, responses)))
           throw new Error('Retained response request differs from registered builder');
@@ -141,7 +220,12 @@ export function loadRecoveryResponses(design, plan, predecessor) {
       }
     }
   }
-  return { responses, savedRequests, segments };
+  return {
+    responses,
+    savedRequests,
+    segments,
+    parameterRejectionUnits: [...parameterRejectionUnits].filter((id) => !responses.has(id)),
+  };
 }
 
 export function checkReplayBudget(design, job, events, request = null) {
@@ -204,6 +288,7 @@ export async function executeReplay({
     recoveryFrom: recoveryFrom ? path.resolve(recoveryFrom) : undefined,
     retainedResponseUnits:
       recoveryFrom && retainsInvalidCalibrationResponses(design) ? [...recovered.responses.keys()] : [],
+    parameterRejectionUnits: recovered.parameterRejectionUnits || [],
   });
   const budget = createDurablePaidModelAttemptBudget({ admission, limit: design.attempts.hard_ceiling });
   const responses = recovered.responses;
@@ -461,6 +546,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     console.log(JSON.stringify({ units: plan.units.length, jobs: plan.jobs.length, calls: 0 }));
     return { design, plan };
   }
+  await checkReplayRouteParameters(design, plan, overrides.metadataFetch);
   return executeReplay({
     root,
     design: loadReplayDesign(root, { mode: values.mode }),

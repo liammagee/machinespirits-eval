@@ -405,6 +405,74 @@ test('a forced quiet card is recorded on the tutor row provenance', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Regression: the 2026-09-05 crossed run stopped on two tutor turns that the
+// answer-naming rule read as a commitment to the secret. Each turn ends in a
+// sentence with an em-dash; the part before the dash names the secret's
+// suspect and place but is a question or a statement of what is still
+// missing. The spans are copied from the two `scoreboard_licence_violation`
+// events (world 102, low_agency, board-r2 and board-r4, turn 6). Report:
+// notes/2026-09-05-scoreboard-crossed-run-report.md.
+// ---------------------------------------------------------------------------
+
+const WORLD_102_ID = 'world_102_marigold_archive_box';
+const world102 = loadScoreboardWorld(WORLD_102_ID, { rootDir: process.cwd() });
+
+const BOARD_R2_TURN_6 =
+  'That’s the sharper reading, and it’s correct — the notice only says "appliances," and a labelled archive box is not an appliance. ' +
+  'Clearance to power down and clear appliances doesn’t, by its own wording, say anything about shelved boxes. ' +
+  'So the notice alone can’t yet answer the public question. ' +
+  'What I still need is something that ties Osprey’s actual work that day to bay three itself — a record of what they did, not just what they were permitted to do.';
+
+const BOARD_R4_TURN_6 =
+  'Sharp catch, and it’s yours to mark. The notice gives Osprey general authority to clear appliances building-wide — it names no bay, no shelf, no box. ' +
+  'So it clears the authorization question, but bay three itself isn’t in that sentence at all. ' +
+  'Mark it unresolved: authorized in general, unconfirmed at bay three specifically. ' +
+  'What would actually put Osprey’s hands at bay three — is there a job record or work order that says where they worked, not just that they were allowed to?';
+
+// world 102, low_agency, board_blind-r1, turn 8: a real early naming of the
+// answer. The rule must still fire here after the splitter is fixed.
+const BLIND_R1_TURN_8 =
+  'I mark the ledger: Osprey cleared the shelf, and their job record logs Nadia’s box into lost property.';
+
+function board102(tutorText, n = 6) {
+  const events = [
+    runStart('low_agency', { world: { id: WORLD_102_ID, title: world102.title } }),
+    turn(n, 'Could you say whether the notice covers bay three?', tutorText),
+  ];
+  return buildScoreboard({ events, world: world102, arm: 'board', identity: traceDialogueIdentity(events) });
+}
+
+test('regression: a question or a statement of missing evidence with an em-dash does not name the answer (world 102 board-r2 turn 6)', () => {
+  const b = board102(BOARD_R2_TURN_6);
+  const row = rowAt(b, 'tutor', 6);
+  assert.equal(row.fields.commitment_undertaken, 'none');
+  assert.deepEqual(
+    row.marks.filter((m) => m.rule === 'TEXT-answer-named'),
+    [],
+  );
+  assert.deepEqual(auditTutorStubScoreboardLicence(b, { turn: 6 }).violations, []);
+});
+
+test('regression: a question with an em-dash before its question mark does not name the answer (world 102 board-r4 turn 6)', () => {
+  const b = board102(BOARD_R4_TURN_6);
+  const row = rowAt(b, 'tutor', 6);
+  assert.equal(row.fields.commitment_undertaken, 'none');
+  assert.deepEqual(
+    row.marks.filter((m) => m.rule === 'TEXT-answer-named'),
+    [],
+  );
+  assert.deepEqual(auditTutorStubScoreboardLicence(b, { turn: 6 }).violations, []);
+});
+
+test('control: a plain sentence that names the answer still reads as a commitment (world 102 blind-r1 turn 8)', () => {
+  const b = board102(BLIND_R1_TURN_8, 8);
+  const row = rowAt(b, 'tutor', 8);
+  assert.notEqual(row.fields.commitment_undertaken, 'none');
+  assert.equal(row.marks.filter((m) => m.rule === 'TEXT-answer-named').length, 1);
+  assert.equal(auditTutorStubScoreboardLicence(b, { turn: 8 }).violations.length, 1);
+});
+
+// ---------------------------------------------------------------------------
 // Shapes (fixed before any board was read)
 // ---------------------------------------------------------------------------
 
@@ -504,76 +572,20 @@ test('pairwise agreement pools the two shapes and counts a cross-read as a miss'
 });
 
 // ---------------------------------------------------------------------------
-// Answer naming: a question mark or a hedge word after a dash governs the
-// clause before it. Three real tutor turns from the 2026-09-05 crossed run,
-// world 102 (Osprey is the secret; Felix is the mirror).
+// Answer naming: the field values behind the regression cases above, and a
+// synthetic pair that isolates the dash. World 102: Osprey is the secret.
 // ---------------------------------------------------------------------------
 
-const world102 = loadScoreboardWorld('world_102_marigold_archive_box', { rootDir: process.cwd() });
-
-function board102(tutorText) {
-  const events = [
-    {
-      type: 'run_start',
-      metadata: {
-        world: { id: world102.id, title: world102.title },
-        experiment: { runSeed: 1, profile: 'low_agency', policy: 'board', repeat: 1, jobId: 'fixture-102' },
-        autoLearner: { profileId: 'low_agency' },
-        provenance: { git: { sha: 'fixture', branch: 'fixture', dirty: false } },
-      },
-    },
-    turn(1, 'Should I mark the notice as settling it, or leave it open?', tutorText),
-  ];
-  return buildScoreboard({ events, world: world102, arm: null, identity: traceDialogueIdentity(events) });
-}
-
-// board-r2, turn 6. The clause before the dash names Osprey and bay three; the
-// hedge "not just" comes after the dash.
-const OSPREY_STILL_NEED =
-  'That’s the sharper reading, and it’s correct — the notice only says "appliances," and a labelled archive box is ' +
-  'not an appliance. Clearance to power down and clear appliances doesn’t, by its own wording, say anything about ' +
-  'shelved boxes. So the notice alone can’t yet answer the public question. What I still need is something that ties ' +
-  'Osprey’s actual work that day to bay three itself — a record of what they did, not just what they were permitted to do.';
-
-// board-r4, turn 6. The clause before the dash names Osprey and bay three; the
-// question mark comes after the dash.
-const OSPREY_WHAT_WOULD_PUT =
-  'Sharp catch, and it’s yours to mark. The notice gives Osprey general authority to clear appliances building-wide — ' +
-  'it names no bay, no shelf, no box. So it clears the authorization question, but bay three itself isn’t in that ' +
-  'sentence at all. Mark it unresolved: authorized in general, unconfirmed at bay three specifically. What would ' +
-  'actually put Osprey’s hands at bay three — is there a job record or work order that says where they worked, not ' +
-  'just that they were allowed to?';
-
-// board_blind-r1, turn 8. A real early naming: the sentence "I mark the ledger:
-// Osprey cleared the shelf ..." has no question mark and no hedge.
-const OSPREY_MARK_THE_LEDGER =
-  'Yes, that’s how it enters. Osprey held clearance for bay three in the closing window. The lost-property tag ' +
-  'carries their job number, logged 12:14. I mark the ledger: Osprey cleared the shelf, and their job record logs ' +
-  'Nadia’s box into lost property. Does that stated pair — clearance plus the logged box — license naming Osprey as ' +
-  'the ones who took it?';
-
-test('a hedge after a dash keeps the clause before it from reading as a naming (board-r2 turn 6)', () => {
-  const tutor = rowAt(board102(OSPREY_STILL_NEED), 'tutor', 1);
-  assert.equal(tutor.fields.commitment_undertaken, 'none');
-  assert.equal(tutor.fields.entitlement_status, 'none');
-  assert.equal(
-    tutor.marks.some((m) => m.rule === 'TEXT-answer-named'),
-    false,
-  );
+test('the two stopped turns leave entitlement unread as well as commitment (world 102 board-r2, board-r4 turn 6)', () => {
+  for (const text of [BOARD_R2_TURN_6, BOARD_R4_TURN_6]) {
+    const tutor = rowAt(board102(text), 'tutor', 6);
+    assert.equal(tutor.fields.commitment_undertaken, 'none');
+    assert.equal(tutor.fields.entitlement_status, 'none');
+  }
 });
 
-test('a question mark after a dash keeps the clause before it from reading as a naming (board-r4 turn 6)', () => {
-  const tutor = rowAt(board102(OSPREY_WHAT_WOULD_PUT), 'tutor', 1);
-  assert.equal(tutor.fields.commitment_undertaken, 'none');
-  assert.equal(tutor.fields.entitlement_status, 'none');
-  assert.equal(
-    tutor.marks.some((m) => m.rule === 'TEXT-answer-named'),
-    false,
-  );
-});
-
-test('a plain sentence that names the secret still reads as a naming (board_blind-r1 turn 8)', () => {
-  const tutor = rowAt(board102(OSPREY_MARK_THE_LEDGER), 'tutor', 1);
+test('the real naming keys to the secret, reads unwarranted, and keeps its span (world 102 blind-r1 turn 8)', () => {
+  const tutor = rowAt(board102(BLIND_R1_TURN_8, 8), 'tutor', 8);
   assert.equal(tutor.fields.commitment_undertaken, 'secret');
   assert.equal(tutor.fields.entitlement_status, 'unwarranted');
   const mark = tutor.marks.find((m) => m.rule === 'TEXT-answer-named');
@@ -585,13 +597,13 @@ test('a dash-joined question is not a naming even when the naming clause comes f
   const tutor = rowAt(
     board102('Osprey took the box from bay three — or is that still only the notice talking?'),
     'tutor',
-    1,
+    6,
   );
   assert.equal(tutor.fields.commitment_undertaken, 'none');
   const named = rowAt(
     board102('Osprey took the box from bay three. Is that still only the notice talking?'),
     'tutor',
-    1,
+    6,
   );
   assert.equal(named.fields.commitment_undertaken, 'secret', 'the same clause as its own sentence is a naming');
 });

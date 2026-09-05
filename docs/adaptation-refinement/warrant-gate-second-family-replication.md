@@ -196,3 +196,49 @@ turns, readers, bars and ceiling are unchanged.
 What it changes in the claim. Nothing in the bars. The report states that
 the quote rule was widened after dialogue 01 and why.
 
+
+## Amendment 2026-09-05 (third): final authority defers to instructional repair
+
+What happened. The run relaunched under recovery after the second
+amendment and ran dialogues 02 to 34 without a stop (ledger 970 of 3,360
+calls, 34 of 72 complete). Dialogue 35 (world 102, gated, seed 742) died at
+turn 5 with "Adaptive warrant final authority expected frozen action family
+challenge_resistance, got repair_explanation". The learner had written "The
+words are plain enough for me — do you want me to write it in as the
+line...". The discourse-plane classifier labels that turn
+`instructional_meta`. On the same turn the gate warranted a switch to
+`challenge_resistance` on three turns of sustained deference. The
+response-configuration builder keeps instructional repair over the gate
+override (first-family design, relay 063, `buildTutorStubResponseConfiguration`),
+so the frozen configuration held `repair_explanation`. The final-authority
+check added in PR #654 (2026-08-17, after the first-family main block of
+2026-08-13) throws when the frozen family differs from the gate's family.
+The two rules contradicted each other, and the run stopped as recoverable.
+
+Class. Technical, same as the first two amendments: a harness check that
+did not exist when the first family ran. In the first block a turn like
+this delivered the repair family and the gate's decision stood in the trace
+without effect. The check was never exercised on a warranted
+instructional-meta turn: this block had six such turns in 268 delivered,
+and only this one coincided with a warranted revision.
+
+What changes. `enforceTutorStubWarrantGateFinalAuthority` now returns the
+selection unchanged when the frozen configuration is on the
+`instructional_meta` plane with a repair family (`repair_explanation` or
+`clarify_term`) that differs from the warranted family. It records
+`adaptive_warrant_enforcement` with `applied: false` and
+`deferral_reason: instructional_meta_repair_priority`, plus the desired and
+held families and the warrant basis. Every consumer of that record already
+keys on `applied === true`, so typed-action reconciliation, the draft audit
+and the delivery hash treat the turn as the first family did. On every other
+plane the frozen-family check still throws. Regression test on the real
+turn-5 shape in `tests/adaptiveWarrantGate.test.js`. Dialogues 01 to 34
+stand: none of their turns reached this branch. Dialogue 35 takes its one
+registered retake under recovery. Seeds, worlds, handbook, conditions,
+turns, readers, bars and ceiling are unchanged.
+
+What it changes in the claim. Nothing in the bars. Measure 2 counts
+warranted challenges against delivered challenges, and a held turn counts as
+warranted-not-delivered, as it would have in the first block. The report
+states that the final-authority check was made to defer after dialogue 34
+and why.

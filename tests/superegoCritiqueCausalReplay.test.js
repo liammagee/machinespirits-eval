@@ -23,6 +23,7 @@ import {
   executeReplay,
   checkReplayBudget,
   loadRecoveryResponses,
+  checkReplayRouteParameters,
   main,
 } from '../scripts/run-superego-critique-causal-replay.js';
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
@@ -972,6 +973,14 @@ test('calibration prepare writes only blank human sheets and never initializes p
 
 test('paid calibration CLI selects the calibration design and summary through the public boundary using mock transport', async (t) => {
   const { root, design, plan, options } = calibrationFixture(t);
+  nativeSamplingAmendment(design);
+  const designFile = path.join(root, 'notes/superego-critique-causal-replay-design.md');
+  fs.writeFileSync(
+    designFile,
+    fs
+      .readFileSync(designFile, 'utf8')
+      .replace(/```yaml calibration\n[\s\S]*?\n```/u, `\`\`\`yaml calibration\n${JSON.stringify(design)}\n\`\`\``),
+  );
   let calls = 0;
   const result = await main(
     [
@@ -991,9 +1000,33 @@ test('paid calibration CLI selects the calibration design and summary through th
       studyStateRoot: options.studyStateRoot,
       preparePlan: async () => ({ design, plan }),
       onProgress: () => {},
+      metadataFetch: async (url) => {
+        const route = Object.values(design.models).find((r) => url.endsWith(`/${r.model}/endpoints`));
+        return {
+          ok: true,
+          json: async () => ({
+            data: {
+              id: route.model,
+              endpoints: [
+                {
+                  provider_name: route.provider,
+                  tag: route.provider_slug,
+                  supported_parameters: [
+                    'max_tokens',
+                    'reasoning',
+                    'response_format',
+                    ...(route.provider_slug === 'anthropic' ? ['temperature', 'top_p'] : []),
+                  ],
+                },
+              ],
+            },
+          }),
+        };
+      },
       dispatch: async (_url, request) => {
         calls++;
         assert.notEqual(request.model, design.models.generator.model);
+        assert.equal(Object.hasOwn(request, 'temperature'), request.model !== design.models.semantic_a.model);
         return response(design, request);
       },
     },
@@ -1002,6 +1035,113 @@ test('paid calibration CLI selects the calibration design and summary through th
   assert.equal(result.report.readiness, 'not_validated_against_independent_humans');
   assert.equal(result.report.primary, undefined);
   assert.equal(readJson(path.join(options.destination, 'settings.json')).mode, 'calibration');
+});
+
+test('native sampling never reuses or replaces a returned GPT answer generated under the old controls', async (t) => {
+  const { design, plan, options } = calibrationFixture(t);
+  plan.jobs.sort((a, b) => Number(b.seat === 'semantic_a') - Number(a.seat === 'semantic_a'));
+  await assert.rejects(
+    executeReplay({
+      ...options,
+      faultAt: 'after_response_persisted',
+      dispatch: async (_url, request) => response(design, request),
+    }),
+    /Injected fault/,
+  );
+  nativeSamplingAmendment(design);
+  assert.throws(() => loadRecoveryResponses(design, plan, options.destination), /Retained response request differs/);
+});
+
+test('public route metadata rejects unsupported controls before paid admission, reservation or dispatch', async (t) => {
+  const { root, design, plan, options } = calibrationFixture(t);
+  let metadataReads = 0;
+  let calls = 0;
+  await assert.rejects(
+    main(
+      [
+        '--mode',
+        'calibration',
+        '--launch',
+        '--accept-charges',
+        '--output',
+        options.destination,
+        '--go-note',
+        'notes/test-go.md',
+        '--go-note-commit',
+        options.goNoteCommit,
+      ],
+      {
+        root,
+        studyStateRoot: options.studyStateRoot,
+        preparePlan: async () => ({ design, plan }),
+        metadataFetch: async (url, init) => {
+          metadataReads++;
+          assert.equal(init.body, undefined);
+          assert.equal(init.headers, undefined);
+          assert.match(url, /\/api\/v1\/models\/.+\/endpoints$/);
+          const route = Object.values(design.models).find((r) => url.endsWith(`/${r.model}/endpoints`));
+          // The actual GPT-5.4 endpoint list omits temperature and top_p.
+          return {
+            ok: true,
+            json: async () => ({
+              data: {
+                id: route.model,
+                endpoints: [
+                  {
+                    provider_name: route.provider,
+                    tag: route.provider_slug,
+                    supported_parameters: ['max_tokens', 'reasoning', 'response_format'],
+                  },
+                ],
+              },
+            }),
+          };
+        },
+        dispatch: async () => {
+          calls++;
+          throw new Error('Must not dispatch');
+        },
+      },
+    ),
+    /cannot support all request controls: temperature, top_p/,
+  );
+  assert.equal(metadataReads, 2);
+  assert.equal(calls, 0);
+  assert.equal(fs.existsSync(options.destination), false);
+  assert.equal(fs.existsSync(options.studyStateRoot), false);
+});
+
+test('route compatibility requires one pinned endpoint to support the full control set and fails on unavailable metadata', async (t) => {
+  const { design, plan } = calibrationFixture(t);
+  const metadata = async (url) => {
+    const route = Object.values(design.models).find((r) => url.endsWith(`/${r.model}/endpoints`));
+    return {
+      ok: true,
+      json: async () => ({
+        data: {
+          id: route.model,
+          endpoints: [
+            { provider_name: route.provider, tag: route.provider_slug, supported_parameters: ['temperature', 'top_p'] },
+            {
+              provider_name: route.provider,
+              tag: `${route.provider_slug}/fast`,
+              supported_parameters: ['max_tokens', 'reasoning', 'response_format'],
+            },
+            {
+              provider_name: 'Unregistered',
+              tag: 'unregistered',
+              supported_parameters: ['temperature', 'top_p', 'max_tokens', 'reasoning', 'response_format'],
+            },
+          ],
+        },
+      }),
+    };
+  };
+  await assert.rejects(checkReplayRouteParameters(design, plan, metadata), /no single eligible endpoint/);
+  await assert.rejects(
+    checkReplayRouteParameters(design, plan, async () => ({ ok: false, status: 503 })),
+    /Route metadata unavailable/,
+  );
 });
 
 test('amended calibration decodes one JSON fence and retains invalid answers without repairing evidence', (t) => {
@@ -1166,4 +1306,181 @@ test('approved calibration amendment retains the sealed invalid response and col
   );
   assert.equal(attempts.length, 8);
   assert.equal(attempts.filter((e) => e.unit_id === plan.jobs[0].id).length, 1);
+});
+
+function nativeSamplingAmendment(design) {
+  design.response_failure_policy = 'retain_invalid_continue';
+  design.routing_failure_policy = 'retry_response_free_parameter_rejection';
+  design.request.provider_native_sampling_seats = ['semantic_a', 'quality_a'];
+}
+const parameterRejection = () => ({
+  status: 404,
+  body: JSON.stringify({
+    error: {
+      code: 404,
+      message: 'No endpoints found that can handle the requested parameters.',
+      metadata: {
+        failed_routing_step: 'Filter by Parameters',
+        routing_funnel: [{ step: 'Filter by Allowed Providers', endpoint_count: 1 }],
+      },
+    },
+  }),
+});
+
+test('native sampling changes only the GPT calibration controls and uses the same controls in free preflight', async (t) => {
+  const { design, plan } = calibrationFixture(t);
+  const before = plan.jobs.map((job) => buildReplayRequest(design, plan, job, new Map()));
+  nativeSamplingAmendment(design);
+  for (const [i, job] of plan.jobs.entries()) {
+    const request = buildReplayRequest(design, plan, job, new Map());
+    const expected = structuredClone(before[i]);
+    if (job.seat.endsWith('_a')) {
+      delete expected.temperature;
+      delete expected.top_p;
+      assert.equal(Object.hasOwn(request, 'temperature'), false);
+      assert.equal(Object.hasOwn(request, 'top_p'), false);
+    }
+    assert.deepEqual(request, expected);
+    assert.equal(worstCost(design, job.seat, request), worstCost(design, job.seat, before[i]));
+  }
+  const routes = await checkReplayRouteParameters(design, plan, async (url) => {
+    const route = Object.values(design.models).find((r) => url.endsWith(`/${r.model}/endpoints`));
+    return {
+      ok: true,
+      json: async () => ({
+        data: {
+          id: route.model,
+          endpoints: [
+            {
+              provider_name: route.provider,
+              tag: route.provider_slug,
+              supported_parameters: [
+                'max_tokens',
+                'reasoning',
+                'response_format',
+                ...(route.provider_slug === 'anthropic' ? ['temperature', 'top_p'] : []),
+              ],
+            },
+          ],
+        },
+      }),
+    };
+  });
+  assert.equal(routes.find((r) => r.provider === 'OpenAI').parameters.includes('temperature'), false);
+  const replay = loadReplayDesign(process.cwd());
+  const calibration = loadReplayDesign(process.cwd(), { mode: 'calibration' });
+  assert.equal(replay.request.provider_native_sampling_seats, undefined);
+  assert.deepEqual(calibration.request.provider_native_sampling_seats, ['semantic_a', 'quality_a']);
+  assert.equal(replay.routing_failure_policy, undefined);
+});
+
+async function stoppedCalibrationChain(t) {
+  const value = calibrationFixture(t);
+  const { root, plan, design, options } = value;
+  const first = plan.jobs.find((j) => j.seat === 'semantic_b');
+  const second = plan.jobs.find((j) => j.seat === 'semantic_a');
+  plan.jobs = [first, second, ...plan.jobs.filter((j) => j !== first && j !== second)];
+  await assert.rejects(
+    executeReplay({ ...options, dispatch: async (_url, request) => response(design, request, { malformed: true }) }),
+    /invalid structured/,
+  );
+  design.response_failure_policy = 'retain_invalid_continue';
+  const predecessor = path.join(root, 'routing-rejection');
+  await assert.rejects(
+    executeReplay({
+      ...options,
+      destination: predecessor,
+      recoveryFrom: options.destination,
+      dispatch: async () => parameterRejection(),
+    }),
+    /provider error/,
+  );
+  return { ...value, first, second, predecessor };
+}
+
+test('approved native sampling continues both historical failures with retained answers and only one rejected-request replacement', async (t) => {
+  const { root, plan, design, options, first, second, predecessor } = await stoppedCalibrationChain(t);
+  const preservedFiles = [options.destination, predecessor].flatMap((dir) =>
+    ['run-ledger.jsonl', 'settings.json', 'plan.json'].map((file) => path.join(dir, file)),
+  );
+  preservedFiles.push(path.join(options.destination, 'responses/1.json'), path.join(predecessor, 'responses/2.json'));
+  const before = preservedFiles.map((file) => fs.readFileSync(file));
+  nativeSamplingAmendment(design);
+  const recovered = loadRecoveryResponses(design, plan, predecessor);
+  assert.equal(recovered.responses.get(first.id).response_status, 'invalid_response');
+  assert.deepEqual(recovered.parameterRejectionUnits, [second.id]);
+  for (const mutate of [
+    (d) => d.master_seed++,
+    (d) => d.request.max_tokens++,
+    (d) => (d.models.semantic_a.provider_slug = 'other'),
+    (d) => d.max_dollars++,
+  ]) {
+    const changed = structuredClone(design);
+    mutate(changed);
+    assert.throws(() => loadRecoveryResponses(changed, plan, predecessor), /settings changed/);
+  }
+  const destination = path.join(root, 'native-recovery');
+  const sent = [];
+  const result = await executeReplay({
+    ...options,
+    destination,
+    recoveryFrom: predecessor,
+    dispatch: async (_url, request) => {
+      sent.push(request);
+      return response(design, request);
+    },
+  });
+  assert.equal(sent.length, plan.jobs.length - 1);
+  assert.equal(result.report.invalid_jobs, 1);
+  assert.equal(result.report.completed_jobs, plan.jobs.length - 1);
+  assert.equal(result.report.missing_jobs, 0);
+  assert.equal(result.report.readiness, 'not_validated_against_independent_humans');
+  const oldRequest = readJson(path.join(predecessor, 'requests/2.json'));
+  const { temperature: _temperature, top_p: _topP, ...expected } = oldRequest;
+  assert.deepEqual(sent[0], expected);
+  assert.deepEqual(readJson(path.join(destination, 'requests/3.json')), expected);
+  const attempts = readEvents(path.join(root, 'study-state', design.id, 'study-ledger.jsonl')).filter(
+    (e) => e.type === 'study_model_attempt_dispatch_reserved',
+  );
+  assert.equal(attempts.length, plan.jobs.length + 1);
+  assert.equal(attempts.filter((e) => e.unit_id === first.id).length, 1);
+  assert.equal(attempts.filter((e) => e.unit_id === second.id).length, 2);
+  assert.deepEqual(readEvents(path.join(destination, 'run-ledger.jsonl'))[0].parameter_rejection_units, [second.id]);
+  for (const [i, file] of preservedFiles.entries()) assert.deepEqual(fs.readFileSync(file), before[i]);
+});
+
+test('a repeated routing rejection stops at two attempts for the failed job and cannot open a third segment', async (t) => {
+  const { root, design, options, predecessor } = await stoppedCalibrationChain(t);
+  nativeSamplingAmendment(design);
+  const destination = path.join(root, 'repeated-routing');
+  let calls = 0;
+  await assert.rejects(
+    executeReplay({
+      ...options,
+      destination,
+      recoveryFrom: predecessor,
+      dispatch: async () => {
+        calls++;
+        return parameterRejection();
+      },
+    }),
+    /Response-free HTTP 404/,
+  );
+  assert.equal(calls, 1);
+  assert.equal(readEvents(path.join(destination, 'run-ledger.jsonl')).at(-1).recovery_permitted, false);
+  const third = path.join(root, 'third-routing');
+  await assert.rejects(
+    executeReplay({
+      ...options,
+      destination: third,
+      recoveryFrom: destination,
+      dispatch: async () => {
+        calls++;
+        throw new Error('must not dispatch');
+      },
+    }),
+    /sealed technical predecessor/,
+  );
+  assert.equal(calls, 1);
+  assert.equal(fs.existsSync(third), false);
 });
