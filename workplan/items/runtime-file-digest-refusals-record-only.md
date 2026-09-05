@@ -1,13 +1,13 @@
 ---
 id: runtime-file-digest-refusals-record-only
 title: Record file digests at run time instead of refusing on drift
-status: active
+status: done
 type: infra
 priority: P1
 owner: claude
 source: review
 created: 2026-09-04
-updated: 2026-09-04
+updated: 2026-09-05
 verification: "No site in services/ or scripts/ throws on a drifted digest of a code, schema, prompt, design, registration or go-request file in this repo. Each such site records the observed and recorded digests. Sealed data, run artifacts and recorded-value comparisons are unchanged. lint:all, test:ratchets, wp:source-check and the hermetic suite pass."
 claim_status: planned
 links:
@@ -343,13 +343,20 @@ moved. 28 of 59 campaign configs set the flag; the loader forces v8 and v9 to.
 The line has not moved since 2026-08-17. The user ruled on 2026-09-05 to leave
 all three. No code changed.
 
-### 7. A test pin that survives
+### 7. A test pin that survives (ruled: leave it)
 
 `tests/learnerProfileRecoveryL1.test.js:34-38` hashes
 `services/tutorStubQuietDetectorV1.js` and compares it with the literal
 `318da00fff7fc8049fc21640f2978cc119ff3a45a53a5dd126e3df66656ec6c4`. This is the
 reintroduction trap: a one-line fix to the detector turns `npm test` red. The
 brief said not to delete a test, so it stays.
+
+The V1 file is not the live detector. It is a frozen copy of the qd-v1 quiet
+detector, added on 2026-08-17 in PR #654 so the L1 recovery can replay a
+historical run with the exact bytes used then. The replay validator and the
+deconfound paid gate record this digest and continue; the validator refuses
+only on the version string. The user ruled on 2026-09-05 to leave the test as
+it is. No code changed.
 
 The two other test pins this card first listed are gone. In
 `tests/tutorStubResistanceSemanticValidation.test.js` the one assertion that
@@ -381,5 +388,11 @@ hermetic failure is the partial-clone test noted on the ratchet card.
 ## Reopened 2026-09-04
 
 Reopened for the item-by-item walk-through of the seven sites reported in
-PR #1019. Rulings on items 1 to 6 are recorded above and carried in PR #1026.
-Item 7 is still to be ruled.
+PR #1019. Rulings on items 1 to 7 are recorded above and carried in PR #1026.
+
+## Closed 2026-09-05
+
+All seven items walked and ruled. Items 3 and 5 changed code: the world and
+gate-spec evidence roles record, and the diagnosis-note pin in the frame-refuser
+rehearsal records. Items 1, 2, 4, 6 and 7 stay as they were. Carried in
+PR #1026.
