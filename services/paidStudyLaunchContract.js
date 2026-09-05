@@ -29,7 +29,7 @@ function resolveCommit(root, value, label) {
 }
 
 function numericTokens(text) {
-  return [...text.matchAll(/(?<![\w.])(?:\d{1,3}(?:[,_]\d{3})+|\d+)(?:\.\d+)?(?![\w.])/gu)].map((match) =>
+  return [...text.matchAll(/(?<![\w.])(?:\d{1,3}(?:[,_]\d{3})+|\d+)(?:\.\d+)?(?!\w|\.\w)/gu)].map((match) =>
     Number(match[0].replace(/[,_]/gu, '')),
   );
 }

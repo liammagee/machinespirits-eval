@@ -66,3 +66,12 @@ focused optional controls now disable request/stream retries, require one
 completed turn, force subscription authentication when requested, strip API
 credentials and retain successful/failed CLI output. Existing paths keep their
 defaults. This is an incremental repair, not completion of the queued review.
+
+2026-09-05: launch admission rejected the ordinary sentence '$0.' because its
+numeric parser treated a trailing full stop as part of an identifier. Zero model
+calls and no run destination were created. The parser now accepts sentence-ending
+punctuation while rejecting partial decimals/identifiers; all 28 shared-contract
+tests pass. The pre-push benchmark also requested six additional model calls for
+the shared bridge change; its documented reasoned bypass is used because the
+optional controls are covered by offline process-boundary tests and those extra
+calls are outside this fixed quality-only study. Normal lint and hosted CI remain.
