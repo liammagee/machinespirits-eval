@@ -1,5 +1,11 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
+
+import { replayFirstDraftAudit } from '../scripts/replay-first-draft-audit.js';
 
 import {
   TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
@@ -1145,4 +1151,70 @@ test('the recovery packet names the failed clue check and states what it require
 
   const unnamed = tutorResponseRecoveryPrompt({ publicPacket: [], minimalRecoveryPrompt: 'x' });
   assert.match(unnamed, /The previous draft failed a response check and was not shown to the learner\./u);
+});
+
+test('replay script re-runs the clue check on recorded drafts without a model call', () => {
+  const sha = (text) => createHash('sha256').update(String(text).replace(/\s+/gu, ' ').trim()).digest('hex');
+  const clueIssue = { guard: 'live_source_action_alignment_v1', type: 'due_source_exact_occurrence_count' };
+  const duplicateIssue = { guard: 'dramatic_release', type: 'duplicate_clue_delivery' };
+  const attempt = (kind, text, hardIssues, shaOverride = null) => ({
+    kind,
+    attempt: kind === 'original_candidate' ? 1 : 2,
+    candidate: { text },
+    audits: { auditedText: { sha256: shaOverride || sha(text) }, deliveryDecision: { hardIssues } },
+  });
+  const contractEvent = (turn, source) => ({
+    type: 'tutor_first_draft_contract',
+    turn,
+    contract: { evidence: { sources: [source] } },
+  });
+  const accountingEvent = (turn, attempts, outcome) => ({
+    type: 'tutor_response_guard_accounting',
+    turn,
+    accounting: { outcome, attempts, finalDelivery: { source: attempts.at(-1).kind } },
+  });
+  const events = [
+    { type: 'run_start', runId: 'replay-fixture', metadata: { scenarioPicker: { selectedScenarioId: 'world_037' } } },
+    contractEvent(2, WORLD_037_TURN_2_EXHIBIT),
+    accountingEvent(2, [attempt('original_candidate', WORLD_037_TURN_2_REWORDED_RECOVERY, [clueIssue])], 'fallback'),
+    contractEvent(4, WORLD_037_TURN_4_ENACTED),
+    accountingEvent(
+      4,
+      [
+        attempt('original_candidate', WORLD_037_TURN_4_UNQUOTED_RECOVERY, [duplicateIssue, clueIssue]),
+        attempt('plain_recovery_candidate', WORLD_037_TURN_4_UNQUOTED_RECOVERY, [clueIssue]),
+        attempt('plain_recovery_candidate', WORLD_037_TURN_4_UNQUOTED_RECOVERY, [clueIssue], 'not-the-draft'),
+        { kind: 'deterministic_fallback', candidate: { text: 'template' }, audits: {} },
+      ],
+      'fallback',
+    ),
+  ];
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-replay-'));
+  const tracePath = path.join(dir, 'step7-hold-fixture', 'traces', 'world-037', 'with-d0', 'run.jsonl');
+  fs.mkdirSync(path.dirname(tracePath), { recursive: true });
+  fs.writeFileSync(tracePath, `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
+
+  const summary = replayFirstDraftAudit({ traces: [tracePath], exportsRoot: dir, turns: [2, 3, 4, 5] });
+
+  assert.equal(summary.modelCalls, 0);
+  assert.equal(summary.total.rejectedByClueCheck, 4);
+  assert.equal(summary.total.replayed, 3);
+  assert.equal(summary.total.nowPassClueCheck, 2);
+  assert.equal(summary.total.wouldNowDeliver, 1);
+  assert.equal(summary.total.stillFail, 1);
+  assert.equal(summary.total.cannotReplay, 1);
+  assert.deepEqual(summary.total.cannotReplayReasons, { audited_text_digest_mismatch: 1 });
+  assert.deepEqual(summary.total.byMatch, { outer_quotation_marks_dropped: 2 });
+  assert.deepEqual(summary.total.byNearMiss, { reworded_or_missing: 1 });
+  assert.deepEqual(summary.total.otherRecordedHardIssues, { 'dramatic_release:duplicate_clue_delivery': 1 });
+  assert.equal(summary.perTurn['t2:original'].stillFail, 1);
+  assert.equal(summary.perTurn['t4:original'].nowPassClueCheck, 1);
+  assert.equal(summary.perTurn['t4:recovery'].nowPassClueCheck, 1);
+  assert.equal(summary.perRun['step7-hold-fixture/with-d0'].rejectedByClueCheck, 4);
+  assert.deepEqual(
+    summary.missingTurns.map((row) => row.turn),
+    [3, 5],
+  );
+  assert.equal(summary.runs[0].turns.find((row) => row.turn === 4).fallbackAttempts, 1);
+  fs.rmSync(dir, { recursive: true, force: true });
 });
