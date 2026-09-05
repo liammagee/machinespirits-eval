@@ -50,3 +50,12 @@ source-file pins, approval packages, new authorization schemas or repeated
 canaries. Existing spend ceilings and append-only accounting remain required.
 
 2026-09-05: card created at the user's request; review is queued, not started.
+
+2026-09-05: the user authorized continued study iteration and infrastructure
+repairs without a repeated PR/GO cycle. Two concrete findings are recorded in
+`notes/2026-09-05-superego-human-generation-results.md`: avoidable insistence on a
+literal GO after an instruction to proceed, and a completed generation-only run
+misreported as recoverable paid work. The latter received a focused correction
+and regression without changing sealed data. Generation completed all 60 jobs
+without failures. These incremental findings do not close the broader queued
+incident review or establish the cause of the earlier provider repetition.

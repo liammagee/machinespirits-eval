@@ -452,16 +452,11 @@ export async function executePilot({
             e.stage === failure.diagnostic.stage,
         ).length
       : 0;
+    const paidStagePending = phase === 'generation' && design.automated_judging !== false;
     admission.close({
       type: 'run_sealed',
-      status: failure
-        ? 'technical_failure'
-        : pause || phase === 'generation'
-          ? 'paused_recoverable'
-          : 'local_package_ready',
-      recovery_permitted: failure
-        ? !!failure.recoverable && attempts < 2 && repeats < 2
-        : pause || phase === 'generation',
+      status: failure ? 'technical_failure' : pause || paidStagePending ? 'paused_recoverable' : 'local_package_ready',
+      recovery_permitted: failure ? !!failure.recoverable && attempts < 2 && repeats < 2 : pause || paidStagePending,
       reason: failure?.message || (phase === 'generation' ? 'human_reference_handoff' : 'archive_and_review_handoff'),
       complete_jobs: [...results.values()].filter((result) => !result.invalid_response).length,
       unavailable_jobs: [...results.values()].filter((result) => result.invalid_response).length,

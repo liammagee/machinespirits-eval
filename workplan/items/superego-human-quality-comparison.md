@@ -8,8 +8,8 @@ owner: codex
 source: manual
 created: 2026-09-05
 updated: 2026-09-05
-verification: Verify historical behavior and data preservation, plain public output, terminal missingness without resampling, shared attempt and dollar ceilings, partial-response retention, blinded human exports and a zero-call human report; publish the amended design and focused checks before any new launch.
-branch: codex/superego-human-generation
+verification: Verify fixed generation and cumulative accounting within the registered ceilings, preserve and privately archive all attempts, obtain two independent blinded human quality ratings, and produce the zero-call descriptive comparison with separate reader estimates, disagreement and claim boundaries.
+branch: codex/superego-human-live
 claim_status: planned
 links:
   items:
@@ -18,6 +18,8 @@ links:
   notes:
     - notes/superego-contemporary-pilot-design.md
     - notes/2026-09-05-superego-human-comparison-repairs.md
+    - notes/2026-09-05-superego-human-comparison-go.md
+    - notes/2026-09-05-superego-human-generation-results.md
 ---
 
 The user requested unattended technical fixes and a path to meaningful scientific
@@ -55,3 +57,20 @@ The review is now queued separately. The next generation phase has launch
 direction in this conversation, pending the explicit GO required by the user's
 original instruction before recording approval of this amended study. Zero-call
 preparation may proceed; no approval note or provider call is manufactured.
+
+2026-09-05: after PR #1064 merged, the user explicitly instructed continued
+iteration through test results and infrastructure fixes without another PR/GO
+cycle. Their actual instruction is recorded in the linked approval note and
+authorizes launch and bounded technical recovery of the reviewed study. The
+earlier literal-GO handoff is superseded. Generation, accounting, archival and
+human-packet preparation continue; human quality ratings remain independent
+human work. The scientific design and 66-attempt/$4.6464 limits are unchanged.
+
+2026-09-05: generation completed 60/60 jobs with 48/48 public outputs, zero failed
+or missing jobs and no retries. Usage-derived cost $0.623430; reserved $4.224000;
+six reserve attempts remain unused. All 132 artifact/accounting files were
+verified byte-identical and pushed to the private archive. The human packet is
+ready; the item is now in review awaiting two independent human rating files.
+A focused future-run status correction prevents completed generation-only runs
+from advertising paid recovery; this run's original seal is preserved. Twenty
+relevant runner tests pass. There is no new GO/merge gate before human reporting.
