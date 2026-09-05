@@ -1,0 +1,446 @@
+#!/usr/bin/env node
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
+import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
+import { createDurablePaidModelAttemptBudget } from '../services/durablePaidModelAttemptBudget.js';
+import { resolveEvaluationDataHome } from '../services/evaluationDataPaths.js';
+import {
+  createLongRunningWorkflowStatus,
+  updateLongRunningWorkflowProgress,
+  completeLongRunningWorkflowPhase,
+  blockLongRunningWorkflow,
+  writeLongRunningWorkflowStatusAtomic,
+} from '../services/longRunningWorkflowStatus.js';
+import {
+  DESIGN_PATH,
+  readEvents,
+  readJson,
+  writeOnce,
+  sha256,
+  loadReplayDesign,
+  prepareReplayPlan,
+  buildReplayRequest,
+  parseReplayResponse,
+  worstCost,
+  summarizeReplay,
+} from '../services/superegoCritiqueCausalReplay.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const PHASES = ['PREFLIGHT', 'GENERATING', 'AUDITING', 'EXTRACTING', 'PACKAGING', 'WORKFLOW_COMPLETE'];
+const inactive = { state: 'inactive', explanation: 'No provider request is in flight.' };
+const stableSettings = (design) => ({
+  seed: design.master_seed,
+  models: design.models,
+  request: design.request,
+  attempts: design.attempts,
+  max_dollars: design.max_dollars,
+  primary: design.primary,
+  arms: design.arms,
+  endpoint: design.endpoint,
+});
+
+// Exactly one HTTP request. No SDK retry, status retry, fallback, or model repair.
+export async function dispatchReplayRequest(endpoint, request, timeoutMs, fetchImpl = globalThis.fetch) {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) throw new Error('OPENROUTER_API_KEY is absent');
+  try {
+    const response = await fetchImpl(endpoint, {
+      method: 'POST',
+      redirect: 'error',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(request),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    return { status: response.status, body: await response.text() };
+  } catch (error) {
+    const failure = new Error(`Transport failed without a durable response: ${error.name}`);
+    failure.recoverable = true;
+    throw failure;
+  }
+}
+
+export function loadRecoveryResponses(design, plan, predecessor) {
+  const segments = [];
+  const seen = new Set();
+  let current = predecessor;
+  while (current) {
+    const dir = path.resolve(current);
+    if (seen.has(dir)) throw new Error('Recovery chain cycle');
+    seen.add(dir);
+    const events = readEvents(path.join(dir, 'run-ledger.jsonl'));
+    const launch = events.find((e) => e.type === 'launch_admitted');
+    if (!launch || events.at(-1)?.type !== 'run_sealed') throw new Error('Recovery predecessor is not sealed');
+    if (JSON.stringify(readJson(path.join(dir, 'plan.json'))) !== JSON.stringify(plan))
+      throw new Error('Frozen recovery plan drift');
+    if (JSON.stringify(readJson(path.join(dir, 'settings.json'))) !== JSON.stringify(stableSettings(design)))
+      throw new Error('Study settings changed during recovery');
+    segments.unshift({ dir, events });
+    current = launch.recovery_from;
+  }
+  const responses = new Map();
+  const savedRequests = new Map();
+  for (const { dir, events } of segments) {
+    for (const reservation of events.filter((e) => e.type === 'model_attempt_dispatch_reserved')) {
+      const job = plan.jobs.find((j) => j.id === reservation.unit_id);
+      if (!job) throw new Error('Unknown job in predecessor attempts');
+      const requestFile = path.join(dir, 'requests', `${reservation.study_reserved}.json`);
+      if (fs.existsSync(requestFile)) savedRequests.set(job.id, readJson(requestFile));
+      const persisted = events.find(
+        (e) => e.type === 'attempt_response_persisted' && e.attempt_id === reservation.attempt_id,
+      );
+      const responseFile = path.join(dir, 'responses', `${reservation.study_reserved}.json`);
+      if (
+        persisted &&
+        (!fs.existsSync(responseFile) ||
+          path.resolve(persisted.response_path) !== responseFile ||
+          sha256(fs.readFileSync(responseFile)) !== persisted.response_sha256)
+      )
+        throw new Error('Sealed response data mismatch');
+      // Also recover the fsynced response in the narrow write-before-journal crash window.
+      if (!fs.existsSync(responseFile)) continue;
+      const bundle = readJson(responseFile);
+      if (
+        bundle.attempt_id !== reservation.attempt_id ||
+        bundle.job.id !== job.id ||
+        JSON.stringify(bundle.request) !== JSON.stringify(savedRequests.get(job.id))
+      )
+        throw new Error('Response has no matching durable request/reservation');
+      try {
+        const parsed = parseReplayResponse(design, bundle.request, job, bundle.raw);
+        if (responses.has(job.id)) throw new Error('Conflicting duplicate successful response');
+        responses.set(job.id, parsed);
+      } catch (error) {
+        if (!error.recoverable) throw error;
+      }
+    }
+  }
+  return { responses, savedRequests, segments };
+}
+
+export function checkReplayBudget(design, job, events) {
+  const reservations = events.filter((e) => e.type === 'study_model_attempt_dispatch_reserved');
+  if (reservations.length >= design.attempts.hard_ceiling)
+    throw new Error('Hard attempt ceiling exhausted before call');
+  const categoryCap = design.attempts[`${job.category}_planned`] + design.attempts[`${job.category}_reserve`];
+  if (reservations.filter((e) => e.category === job.category).length >= categoryCap)
+    throw new Error('Category attempt ceiling exhausted before call');
+  if (reservations.filter((e) => e.unit_id === job.id).length >= 2)
+    throw new Error('Repeated technical failure: one replacement maximum');
+  if (
+    reservations.some(
+      (e) =>
+        !Number.isFinite(e.max_cost_dollars) ||
+        e.max_cost_dollars < 0 ||
+        !['generation', 'semantic', 'quality'].includes(e.category),
+    )
+  )
+    throw new Error('Unaccountable predecessor reservation');
+  const priorDollars = reservations.reduce((sum, e) => sum + e.max_cost_dollars, 0);
+  const cost = worstCost(design, job.seat);
+  if (priorDollars + cost > design.max_dollars) throw new Error('Dollar ceiling exhausted before call');
+  return { cost, priorDollars, priorAttempts: reservations.length };
+}
+
+export async function executeReplay({
+  root = ROOT,
+  plan,
+  design,
+  destination,
+  goNotePath,
+  goNoteCommit,
+  recoveryFrom = null,
+  studyStateRoot = path.join(resolveEvaluationDataHome(), 'paid-studies'),
+  dispatch = dispatchReplayRequest,
+  signalTarget = process,
+  onProgress = () => {},
+  faultAt = null,
+}) {
+  if (
+    plan.study_id !== design.id ||
+    plan.units.length !== design.sample_size ||
+    plan.jobs.length !== design.attempts.total_planned
+  ) {
+    throw new Error('Prepared plan differs from registered study size');
+  }
+  const recovered = recoveryFrom
+    ? loadRecoveryResponses(design, plan, recoveryFrom)
+    : { responses: new Map(), savedRequests: new Map(), segments: [] };
+  const admission = admitPaidStudyLaunch({
+    root,
+    designPath: DESIGN_PATH,
+    goNotePath,
+    goNoteCommit,
+    spendCap: design.attempts.hard_ceiling,
+    studyId: design.id,
+    studyStateRoot,
+    destination: path.resolve(destination),
+    recoveryFrom: recoveryFrom ? path.resolve(recoveryFrom) : undefined,
+  });
+  const budget = createDurablePaidModelAttemptBudget({ admission, limit: design.attempts.hard_ceiling });
+  const responses = recovered.responses;
+  const nextAction = (description) => ({
+    description,
+    stopping_condition: 'Stop on failure, pause, or completion of the fixed job list.',
+  });
+  let status = createLongRunningWorkflowStatus({ workflowId: design.id, phasePlan: PHASES, modelActivity: inactive });
+  const statusPath = path.join(admission.destination, 'workflow-status.json');
+  let pauseRequested = false;
+  let activeJob = null;
+  let failure = null;
+  let rawPersisted = false;
+  const durations = [];
+  const pause = () => {
+    pauseRequested = true;
+    admission.record({ type: 'pause_requested', job_id: activeJob?.id || null });
+  };
+  const update = (activity = inactive) => {
+    const events = [...recovered.segments.flatMap((s) => s.events), ...readEvents(admission.ledger_path)];
+    const completed = events.filter((e) => e.type === 'attempt_completed').length;
+    const failed = events.filter((e) =>
+      ['attempt_failed', 'attempt_interrupted_after_dispatch', 'attempt_cancelled_before_dispatch'].includes(e.type),
+    ).length;
+    status = updateLongRunningWorkflowProgress(status, {
+      units: {
+        complete: responses.size,
+        active: activeJob && !failure ? 1 : 0,
+        failed: failure ? 1 : 0,
+        missing: Math.max(0, plan.jobs.length - responses.size - (activeJob ? 1 : 0)),
+      },
+      calls: { completed, failed, reserved: admission.studyReserved, hard_ceiling: design.attempts.hard_ceiling },
+      recentUnitDurationsMs: durations.slice(-8),
+      modelActivity: activity,
+      nextAction: nextAction(
+        activeJob ? `${activeJob.category}: ${activeJob.id}` : 'Advance the fixed replay job list.',
+      ),
+    });
+    writeLongRunningWorkflowStatusAtomic(statusPath, status);
+    onProgress(status);
+  };
+  const transition = (nextPhase) => {
+    status = completeLongRunningWorkflowPhase(status, {
+      phase: status.current_phase,
+      nextPhase,
+      startNextImmediately: true,
+      modelActivity: inactive,
+      nextAction: nextAction(`Start ${nextPhase}.`),
+    });
+    update();
+  };
+  signalTarget.on('SIGINT', pause);
+  signalTarget.on('SIGTERM', pause);
+  // Timed status updates explicitly avoid claiming that a pending HTTP request proves live inference.
+  const heartbeat = setInterval(() => {
+    try {
+      status = updateLongRunningWorkflowProgress(status, {
+        modelActivity: activeJob
+          ? { state: 'unverifiable', explanation: 'HTTP request pending; no provider-side live activity evidence.' }
+          : inactive,
+      });
+      writeLongRunningWorkflowStatusAtomic(statusPath, status);
+      onProgress(status);
+    } catch {
+      pauseRequested = true;
+    }
+  }, 60000);
+  heartbeat.unref();
+  try {
+    writeOnce(path.join(admission.destination, 'plan.json'), plan);
+    writeOnce(path.join(admission.destination, 'settings.json'), stableSettings(design));
+    admission.record({
+      type: recoveryFrom ? 'resuming' : 'plan_ready',
+      seed: plan.seed,
+      recovered_jobs: responses.size,
+    });
+    transition('GENERATING');
+    for (const job of plan.jobs) {
+      if (responses.has(job.id)) continue;
+      if (pauseRequested) break;
+      if (job.category !== 'generation' && status.current_phase === 'GENERATING') transition('AUDITING');
+      activeJob = job;
+      rawPersisted = false;
+      const started = Date.now();
+      const expectedRequest = buildReplayRequest(design, plan, job, responses);
+      const request = recovered.savedRequests.get(job.id) || expectedRequest;
+      // Compare saved scientific payload and decoding policy, not source-file digests.
+      // A parser/ledger code repair does not change or reapprove the study.
+      if (JSON.stringify(request) !== JSON.stringify(expectedRequest))
+        throw new Error('Saved request exceeds registered scope');
+      const route = design.models[job.seat];
+      const limits = checkReplayBudget(design, job, readEvents(admission.study_ledger_path));
+      const reservation = budget.reserve({
+        unitId: job.id,
+        role: job.seat,
+        category: job.category,
+        max_cost_dollars: limits.cost,
+        configured_model: route.model,
+        configured_provider: route.provider,
+      });
+      writeOnce(path.join(admission.destination, 'requests', `${reservation.study_reserved}.json`), request);
+      update();
+      if (faultAt === 'after_reservation') throw new Error('Injected fault after reservation');
+      budget.markDispatched();
+      update({
+        state: 'unverifiable',
+        explanation: 'A single HTTP dispatch is pending; server inference is not independently observable.',
+      });
+      const raw = await dispatch(design.endpoint, request, design.request.timeout_ms);
+      const responsePath = path.join(admission.destination, 'responses', `${reservation.study_reserved}.json`);
+      writeOnce(responsePath, { attempt_id: reservation.attemptId, job, request, raw });
+      if (faultAt === 'after_response_write') throw new Error('Injected fault after durable response write');
+      budget.persistResponse(responsePath);
+      rawPersisted = true;
+      budget.complete();
+      if (faultAt === 'after_response_persisted') throw new Error('Injected fault after durable response persistence');
+      const parsed = parseReplayResponse(design, request, job, raw);
+      responses.set(job.id, parsed);
+      admission.record({
+        type: 'job_complete',
+        job_id: job.id,
+        category: job.category,
+        observed_usage: JSON.parse(raw.body).usage,
+        cost_status: JSON.parse(raw.body).usage.cost === undefined ? 'unknown' : 'reported',
+      });
+      durations.push(Date.now() - started);
+      activeJob = null;
+      update();
+    }
+    if (pauseRequested) {
+      admission.record({ type: 'paused', missing_jobs: plan.jobs.length - responses.size });
+      status = blockLongRunningWorkflow(status, {
+        blockedPhase: status.current_phase,
+        error: 'Operator pause at safe boundary',
+        operation: 'replay jobs',
+        modelActivity: inactive,
+        nextAction: nextAction('Resume only missing jobs in a fresh segment.'),
+      });
+      writeLongRunningWorkflowStatusAtomic(statusPath, status);
+      return { status: 'paused_recoverable', completed: responses.size };
+    }
+    if (status.current_phase === 'GENERATING') transition('AUDITING');
+    transition('EXTRACTING');
+    const report = summarizeReplay(design, plan, responses);
+    writeOnce(path.join(admission.destination, 'report.json'), report);
+    transition('PACKAGING');
+    writeOnce(path.join(admission.destination, 'archive-inventory.json'), {
+      study_id: design.id,
+      predecessor: recoveryFrom,
+      directories: ['requests', 'responses'],
+      files: ['plan.json', 'settings.json', 'run-ledger.jsonl', 'workflow-status.json', 'report.json'],
+      status: 'local_package_ready_private_archive_pending',
+    });
+    status = completeLongRunningWorkflowPhase(status, {
+      phase: 'PACKAGING',
+      nextPhase: 'WORKFLOW_COMPLETE',
+      handoffExplanation: 'Local package is complete; private archive verification remains an operator task.',
+      nextAction: {
+        description: 'Archive this segment and all predecessors using the maintained private artifact workflow.',
+        stopping_condition: 'Verify the archive before workflow completion.',
+      },
+      modelActivity: inactive,
+    });
+    writeLongRunningWorkflowStatusAtomic(statusPath, status);
+    onProgress(status);
+    return { status: 'local_package_ready', report, destination: admission.destination };
+  } catch (error) {
+    if (['EIO', 'ENOSPC', 'EMFILE', 'ENFILE', 'EACCES', 'EROFS'].includes(error.code)) error.recoverable = true;
+    failure = error;
+    if (!rawPersisted) budget.fail(error);
+    status = blockLongRunningWorkflow(status, {
+      blockedPhase: status.current_phase,
+      error: error.message,
+      operation: activeJob?.id || 'replay setup/extraction',
+      modelActivity: inactive,
+      nextAction: nextAction(
+        error.recoverable || faultAt
+          ? 'Recover missing work in a fresh segment after verifying the failure.'
+          : 'Inspect retained evidence; no automatic resampling.',
+      ),
+    });
+    update();
+    throw error;
+  } finally {
+    clearInterval(heartbeat);
+    signalTarget.removeListener('SIGINT', pause);
+    signalTarget.removeListener('SIGTERM', pause);
+    const attempts = readEvents(admission.study_ledger_path).filter(
+      (e) => e.type === 'study_model_attempt_dispatch_reserved' && e.unit_id === activeJob?.id,
+    ).length;
+    const recoverable = pauseRequested || Boolean(failure && (failure.recoverable || faultAt) && attempts < 2);
+    admission.close({
+      type: 'run_sealed',
+      status: failure ? 'technical_failure' : pauseRequested ? 'paused_recoverable' : 'local_package_ready',
+      recovery_permitted: recoverable,
+      reason: failure?.message || null,
+      completed_jobs: responses.size,
+      missing_jobs: plan.jobs.length - responses.size,
+    });
+  }
+}
+
+export async function main(argv = process.argv.slice(2), overrides = {}) {
+  const { values } = parseArgs({
+    args: argv,
+    options: {
+      prepare: { type: 'boolean' },
+      launch: { type: 'boolean' },
+      'accept-charges': { type: 'boolean' },
+      output: { type: 'string' },
+      logs: { type: 'string' },
+      'recovery-from': { type: 'string' },
+      'go-note': { type: 'string' },
+      'go-note-commit': { type: 'string' },
+      help: { type: 'boolean', short: 'h' },
+    },
+  });
+  if (values.help) {
+    console.log(
+      'Usage: run-superego-critique-causal-replay.js --prepare --output <new-directory> [--logs <path>]\nPaid: --launch --accept-charges --output <new-directory> --go-note <notes/path.md> --go-note-commit <commit> [--recovery-from <sealed-directory>]\nGO is not a launch instruction. Use paid mode only after separately authorized launch.',
+    );
+    return;
+  }
+  if (!values.output || Boolean(values.prepare) === Boolean(values.launch))
+    throw new Error('Choose exactly --prepare or --launch and a new --output');
+  if (values.launch && (!values['accept-charges'] || !values['go-note'] || !values['go-note-commit']))
+    throw new Error('Paid mode requires launch authority, --accept-charges and the committed GO note');
+  const root = overrides.root || ROOT;
+  const { design, plan } = await (overrides.preparePlan || prepareReplayPlan)(root, { logs: values.logs });
+  if (values.prepare) {
+    fs.mkdirSync(path.resolve(values.output), { recursive: false });
+    writeOnce(path.join(path.resolve(values.output), 'plan.json'), plan);
+    writeOnce(path.join(path.resolve(values.output), 'audit.json'), {
+      ...plan.audit,
+      calls_completed: 0,
+      calls_reserved: 0,
+      hard_ceiling: 0,
+    });
+    console.log(JSON.stringify({ units: plan.units.length, jobs: plan.jobs.length, calls: 0 }));
+    return { design, plan };
+  }
+  return executeReplay({
+    root,
+    design: loadReplayDesign(root),
+    plan,
+    destination: values.output,
+    goNotePath: values['go-note'],
+    goNoteCommit: values['go-note-commit'],
+    recoveryFrom: values['recovery-from'],
+    onProgress: (status) =>
+      console.log(
+        JSON.stringify({
+          phase: status.current_phase,
+          units: status.units,
+          calls: status.calls,
+          model_activity: status.model_activity,
+        }),
+      ),
+    ...overrides,
+  });
+}
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}
