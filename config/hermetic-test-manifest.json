@@ -771,6 +771,7 @@
         "tests/tutorStubRoleHistory.test.js",
         "tests/tutorStubScaffoldState.test.js",
         "tests/tutorStubSceneDiction.test.js",
+        "tests/tutorStubScoreboard.test.js",
         "tests/tutorStubSelfCorrectionDisclosure.test.js",
         "tests/tutorStubSessionHttp.test.js",
         "tests/tutorStubSessionOrchestration.test.js",
