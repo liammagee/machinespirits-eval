@@ -1365,3 +1365,71 @@ describe('cliProviderBridge', () => {
     }
   });
 });
+
+describe('bounded subscription Codex judging', () => {
+  it('disables internal retries, removes API credentials, captures raw output and requires one completed turn', async () => {
+    let launch, captured;
+    const result = await callAIWithCliBridge(
+      { provider: 'codex', model: 'gpt-test' },
+      'rubric',
+      'blinded data',
+      'quality',
+      {
+        effort: 'low',
+        singleAttempt: true,
+        subscriptionOnly: true,
+        onRawOutput: (raw) => {
+          captured = raw;
+        },
+        spawnImpl: (command, args, options) => {
+          launch = { command, args, options };
+          return fakeChild({
+            stdoutText:
+              '{"type":"item.completed","item":{"type":"agent_message","text":"{}"}}\n{"type":"turn.completed","usage":{"input_tokens":10,"output_tokens":3}}\n',
+          });
+        },
+      },
+    );
+    assert.equal(result.text, '{}');
+    assert.ok(launch.args.includes('model_providers.openai.request_max_retries=0'));
+    assert.ok(launch.args.includes('model_providers.openai.stream_max_retries=0'));
+    assert.ok(launch.args.includes('forced_login_method="chatgpt"'));
+    for (const name of ['OPENAI_API_KEY', 'CODEX_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_ORG_ID'])
+      assert.equal(launch.options.env[name], undefined);
+    assert.equal(captured.exitCode, 0);
+    assert.match(captured.stdout, /turn.completed/);
+    for (const suffix of ['', '{"type":"turn.completed"}\n{"type":"turn.completed"}\n']) {
+      await assert.rejects(
+        callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'rubric', 'data', 'quality', {
+          singleAttempt: true,
+          spawnImpl: () =>
+            fakeChild({
+              stdoutText: '{"type":"item.completed","item":{"type":"agent_message","text":"{}"}}\n' + suffix,
+            }),
+        }),
+        /exactly one completed turn/,
+      );
+    }
+  });
+  it('preserves failed CLI output privately without returning a successful rating', async () => {
+    let captured;
+    await assert.rejects(
+      callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'rubric', 'data', 'quality', {
+        singleAttempt: true,
+        onRawOutput: (raw) => {
+          captured = raw;
+        },
+        spawnImpl: () =>
+          fakeChild({
+            stdoutText: '{"type":"turn.failed","error":{"message":"private diagnostic"}}\n',
+            stderrText: 'private stderr',
+            exitCode: 1,
+          }),
+      }),
+      /turn failed/,
+    );
+    assert.match(captured.stdout, /private diagnostic/);
+    assert.equal(captured.stderr, 'private stderr');
+    assert.equal(captured.exitCode, 1);
+  });
+});

@@ -1,7 +1,9 @@
 # Contemporary superego critique pilot
 
-Prospective amendment, 2026-09-05: **human quality comparison; review-ready
-proposal, no amended GO or launch recorded.** The first cohort is permanently
+Generation amendment, 2026-09-05: **human quality comparison, generated and archived.**
+The quality-only Codex CLI assessment below is an additional prospective measurement
+phase authorized on 2026-09-05, before either human rating file or model scores exist.
+The first cohort is permanently
 closed with five accepted drafts and one truncated draft; see the
 [generation record](2026-09-05-superego-contemporary-generation-truncation.md).
 Its original design and GO remain available in Git at the recorded launch
@@ -258,3 +260,120 @@ After two independent readers download their completed files:
 
 The latter command is zero-call and does not require semantic ratings or a
 model judging launch. The runner rejects judging for this registration.
+
+## Additional blinded automated quality assessment (2026-09-05)
+
+The user requested a model assessment of the same 48 outputs to compare with two
+independent human readers, then specified: “do not use the direct API - use the
+CLI”. This adds one model reader. It does not change or reopen generation, replace
+either human, or add semantic measurement. The generation registration above and
+all sealed data remain unchanged. Its earlier automated_judging:false applies to
+the completed generation study; this separately metered measurement phase uses the
+following registration in the same design file.
+
+```yaml automated_quality
+id: superego-contemporary-automated-quality
+source_study_id: superego-contemporary-human-comparison
+source_packet_id: 9fc3913e70c733554a869c53757814d8dbb892573015f13e6baaac6b3aebf9cb
+master_seed: 202609052
+sample_size: 12
+models:
+  judging:
+    provider: codex
+    model: gpt-5.6-sol
+    input_per_million: 0
+    output_per_million: 0
+max_request_bytes: 8192
+max_output_tokens: 0
+framing_tokens: 0
+cache_write_multiplier: 1
+cost_buffer: 1
+timeout_ms: 180000
+attempts:
+  generation_planned: 0
+  quality_planned: 48
+  semantic_planned: 0
+  total_planned: 48
+  generation_reserve: 0
+  quality_reserve: 4
+  semantic_reserve: 0
+  recovery_reserve: 4
+  hard_ceiling: 52
+max_dollars: 0
+```
+
+The zero token-price/output-reservation fields are accounting sentinels for a
+subscription CLI route, not API pricing or a claim of an enforced model token
+cap. No direct API spending, automatic credit purchase, usage reset or alternate
+route is allowed. The run consumes existing ChatGPT/Codex account allowance; its
+marginal dollar cost is not independently exposed. The binding resource bounds
+are 48 planned CLI turns, four technical reserve attempts, 52 total attempts,
+8,192 request bytes, 180 seconds per child, 131,072 stdout bytes and 65,536 stderr
+bytes per child. There is no supported per-request output-token control in this
+CLI path; output size and child duration are enforced instead. The earlier $4.98
+API proposal was superseded before any call by the user's CLI-only instruction.
+
+Use the maintained cliProviderBridge with explicit gpt-5.6-sol, low reasoning,
+ChatGPT-only authentication, fresh empty working directories, ignored user/project
+configuration, ephemeral sessions, disabled tools and strict JSON output. Strip
+API credentials and API route overrides from the child environment. Disable
+request and stream retries. Exactly one completed CLI turn must be observed for
+an accepted response. Preserve raw stdout/stderr, normalized output, usage when
+available, CLI version and configured-model attestation. The CLI does not
+independently attest the backend model: report this limitation. The generator was
+Anthropic Sonnet; it cannot judge its own outputs here.
+
+The model receives only the existing human rubric and each public packet item's
+learner context and P-numbered response. Use exactly the packet's fixed neutral
+presentation order; there is no new sampling or shuffle. The packet data identity
+above binds sealed public data only. Verify it against the archived generation
+before dispatch. Do not send unit/arm mappings, source drafts, internal critiques,
+model identity, hidden scenarios, or human ratings. Request quality (1–10),
+accuracy (1–5/N/A/measurement_indeterminate), supporting P IDs and rationale with
+the same anchors as the two human readers. Scores stay private from both readers
+until they independently finish; do not modify their review packet or forms.
+
+Primary model contrast: actual critique minus generic revision in public teaching
+quality, paired over the same 12 draft units nested in six contexts. The original
+one-point planning target remains descriptive, not a significance test or pass
+threshold. Also report draft and wrong-critique contrasts against generic
+revision. These are supplementary model judgments, not a replacement for the
+registered human primary endpoint. Preserve accuracy separately.
+
+After both human files arrive, use the offline report to compare human A–human B,
+model–human A and model–human B on the exact same response IDs. For quality and
+accuracy separately, report numeric pair counts, exact agreement, agreement
+within one point, mean absolute difference, signed score difference, individual
+scores and rationales. These are descriptive measurements, with no reliability
+acceptance threshold. N/A remains distinct from numeric accuracy. Any disagreement
+or uncertainty is measurement_indeterminate in the exact-consensus lane; never
+average away disagreement. The model cannot overrule either human. Unknown paired
+quality contrasts retain full [-9,+9] unit bounds; no outcome-dependent exclusions,
+new units, additional judges, model tuning or threshold changes are allowed.
+
+Preserve invalid, uncertain, refused, truncated and failed responses. An invalid
+rating or measurement_indeterminate quality/accuracy stops further scoring for
+measurement review, without retrying that observation. A proven response-free
+pre-start child failure permits one missing-job replacement in a fresh segment,
+within the shared cumulative ceiling. A partial/error CLI turn, unknown dispatch
+state, repeated failure or route/policy mismatch stops for inspection; it is not
+silently retried. An infrastructure defect can be fixed under existing authority
+without resampling valid outputs. Use paidStudyLaunchContract and the shared
+durable attempt journal; create-once destinations and append-only accounting
+apply to all segments. Privately archive raw data and reports. No learner,
+transfer, directive-fulfillment, material-strategy, theory, cross-model-general
+or confirmatory efficacy claim follows from these ratings.
+
+CLI retry/auth controls are documented in the official
+[configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference).
+The model's supported reasoning levels are listed in its
+[model documentation](https://developers.openai.com/api/docs/models/gpt-5.6-sol).
+Use the locally verified CLI interface rather than the direct API.
+
+Prepare: `node scripts/run-superego-contemporary-pilot.js --prepare --automated-quality --from /ABS/SEALED-GENERATION --out /ABS/NEW-PLAN`
+
+Run under the user's recorded authorization: `node scripts/run-superego-contemporary-pilot.js --launch --automated-quality --from /ABS/SEALED-GENERATION --accept-charges --go-note notes/2026-09-05-superego-automated-quality-go.md --out /ABS/NEW-ASSESSMENT`
+
+Later compare: add `--model-ratings /ABS/ASSESSMENT/model-ratings.json` to the
+existing `--human-report` command after both genuine human files arrive. No
+provider call is made by that comparison.
