@@ -1,16 +1,28 @@
 # Contemporary superego critique pilot
 
-Prospective design, 2026-09-05. **[GO recorded](2026-09-05-superego-contemporary-pilot-go.md); [generation blocked by truncation](2026-09-05-superego-contemporary-generation-truncation.md).**
-This is a new study. The historical replay, its calibration, approvals,
-attempts and results remain unchanged. This pilot asks whether a separate
-critique improves a current model's public teaching and whether independent
-readers can measure that improvement. It does not finish the old calibration.
+Prospective amendment, 2026-09-05: **human quality comparison; review-ready
+proposal, no amended GO or launch recorded.** The first cohort is permanently
+closed with five accepted drafts and one truncated draft; see the
+[generation record](2026-09-05-superego-contemporary-generation-truncation.md).
+Its original design and GO remain available in Git at the recorded launch
+commit. No old output is repaired, relabeled, replaced or pooled with this cohort.
+
+This amendment keeps the question, six contexts, four arms, 12-draft allocation
+and human quality rubric. It changes public replies to plain text, records an
+unusable output as missing while continuing independent jobs, and brings the
+human quality comparison forward. Automated semantic measurement and model
+judging are deferred. These are prospective protocol changes, not a claim that
+editing code can make the previous incomplete run scientifically complete.
+
+The user requested unattended technical repairs and a path to meaningful
+scientific decisions. This file makes the resulting study concrete for review.
+There is no provider probe, new signature or paid launch during that repair work.
 
 ## Executable registration
 
 ```yaml study
-id: superego-contemporary-pilot
-master_seed: 202609051
+id: superego-contemporary-human-comparison
+master_seed: 202609052
 sample_size: 12
 drafts_per_scenario: 2
 scenario_source: config/cross-suite-trap-scenarios.yaml
@@ -43,12 +55,6 @@ models:
     endpoint: https://api.anthropic.com/v1/messages
     input_per_million: 2
     output_per_million: 10
-  judging:
-    provider: openai
-    model: gpt-5.6-sol
-    endpoint: https://api.openai.com/v1/responses
-    input_per_million: 4
-    output_per_million: 20
 max_output_tokens: 2048
 max_public_bytes: 4000
 max_request_bytes: 16384
@@ -56,239 +62,199 @@ framing_tokens: 1024
 cache_write_multiplier: 1.25
 cost_buffer: 1.10
 timeout_ms: 180000
+public_output_format: text
+generation_failure_policy: retain_missing
+automated_judging: false
 attempts:
   generation_planned: 60
-  quality_planned: 48
-  semantic_planned: 48
-  total_planned: 156
+  quality_planned: 0
+  semantic_planned: 0
+  total_planned: 60
   generation_reserve: 6
-  quality_reserve: 3
-  semantic_reserve: 3
-  recovery_reserve: 12
-  hard_ceiling: 168
-max_dollars: 20
+  quality_reserve: 0
+  semantic_reserve: 0
+  recovery_reserve: 6
+  hard_ceiling: 66
+max_dollars: 4.6464
 ```
 
-## Corpus, sample and allocation
+## The question and the decision
 
-Use all six named scenarios' **opening learner messages only**, twice each,
-with the two explicit adaptations above. The source suite supplies two
-substantive-engagement cases, one affective case, one diagnostic case and two
-scaffolding cases. It is the existing bridge to the suggestion-scenario family,
-so this retains the philosophical teaching setting without restoring incomplete
-historical model requests. Hidden learner states, trigger turns, expected
-actions, success criteria and counterfactual turns are excluded from all calls.
-No simulated intervening conversation, historical scores, revisions or labels
-are imported. The named source contexts and complete public payloads are saved
-in the create-once plan at first launch and compared on technical recovery.
+Does relevant critique improve the tutor's public teaching beyond an ordinary
+second attempt? The first decision is whether human readers see a useful,
+interpretable difference worth studying further. This is a small descriptive
+pilot, not a powered efficacy test, a validation of psychological theory, or
+an evaluation of learning and transfer.
 
-The unit is a newly generated draft for one context. There are 12 drafts nested
-in **six contexts**, not 12 independent learner encounters. Two draws per
-context expose basic generation variability at modest human workload. The 48
-outputs are repeated measurements, not an independent N of 48. This is an
-engineering and measurement pilot, with no powered causal test. It cannot
-justify a 10-point treatment threshold or estimate rare failures precisely.
+The primary endpoint is blind public teaching quality on the existing 1–10
+rubric, actual critique minus generic revision. A one-point difference is the
+prespecified planning target for a larger study, not a significance cutoff.
+Report each reader separately, all four arms, and all three contrasts against
+generic revision. Accuracy has its own 1–5/N/A/indeterminate field. Directive
+fulfillment, material action/strategy change, exact-word uptake and later learner
+or transfer evidence are separate, uncollected channels in this cohort.
 
-Generate all 12 drafts, then one critique per frozen draft (12), then three
-revisions per draft (36). Retain the draft as `draft_only`; generate
-`generic_revision`, `actual_critique`, and `matched_wrong_critique` once each.
-Every revision starts from its own frozen draft in a fresh stateless call.
-The critic uses the same Sonnet model in a separate pass and is never a judge.
-Its zero-to-three directives may include no actionable advice. Empty or poor
-critiques remain observations; do not replace them to manufacture headroom.
+The scientific handoff presents availability by arm, per-reader paired
+contrasts, exact-consensus contrasts, every rationale, disagreements, and
+full-unit missingness bounds. Researchers then choose whether to pursue a
+larger quality study, revise the construct because readers disagree, or stop
+because the comparison gives insufficient reason to spend more. No automated
+success gate, confirmatory promotion or outcome-driven enlargement is used.
 
-The master seed drives the existing Mulberry32 stream and Fisher–Yates
-shuffles. It randomizes draft and critique order, revision unit/arm order, and
-independent quality/semantic presentation orders. Within each topic, shuffle
-scenario IDs and assign each to the next scenario cyclically, retaining the
-same draft replicate number. This fixes donor assignment before any output.
-Wrong critiques are matched on topic and output format, **not on length or
-pedagogical need**. The recognition block has four contexts; dialectic has two.
-Do not choose donors from revision outcomes. IDs and mappings stay outside the
-blinded packets. Model sampling is not guaranteed deterministic.
+## Fixed corpus, allocation and blinding
 
-## Models, transport and fixed decoding
+Use the six registered scenarios' opening learner messages only, with the two
+explicit practice-question adaptations and complete teaching gloss above.
+Exclude hidden learner states, trigger turns, expected actions, success criteria,
+counterfactuals and unseen dialogue. Do not import historical drafts or labels.
 
-Use direct Anthropic and OpenAI APIs, no OpenRouter/DeepInfra, no fallback and
-no SDK retries. `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` are read only when the
-authorized stage needs them; keys are never logged. Availability in this
-account has not been tested by a paid probe.
+Generate two fresh drafts per context: 12 draft units nested in six contexts.
+Every unit has draft_only, generic_revision, actual_critique and
+matched_wrong_critique. The 48 public slots are repeated measurements, not 48
+independent encounters. One invalid draw cannot be exchanged for a better one.
+All 12 planned units remain in accounting and full-unit bounds.
 
-Sonnet: `thinking: {type: disabled}`; omit temperature/top_p/top_k; native
-`output_config.format` JSON schema; `max_tokens: 2048`. Sol: Responses API,
-`reasoning.effort: low`, `max_output_tokens: 2048` including reasoning tokens,
-`store: false`, strict `text.format` JSON schema; omit sampling parameters.
-Neither route uses tools, server-side conversations, explicit prompt caching,
-batch processing or automatic truncation. Every request is stateless.
-The response model must equal the registered ID; unexpected models stop.
+The new fixed master seed distinguishes this fresh cohort from the development
+outputs already inspected. It drives Mulberry32/Fisher–Yates draft, critique,
+revision and presentation orders. Within each topic, shuffle scenario IDs and
+assign the next scenario cyclically as critique donor, keeping replicate number.
+There are four recognition contexts and two dialectic contexts. Donors are fixed
+before outputs, matched on topic and format, not length or pedagogical need.
 
-Current official documentation inspected 2026-09-05:
-[Sonnet models and prices](https://platform.claude.com/docs/en/models/overview),
-[Sonnet parameter changes](https://platform.claude.com/docs/en/models/sonnet-5/whats-new-sonnet-5),
-[Claude model IDs](https://platform.claude.com/docs/en/about-claude/models/model-ids-and-versions),
-[Claude structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs),
-[Sol snapshot, features and pricing](https://developers.openai.com/api/docs/models/gpt-5.6-sol),
-[OpenAI structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
-Dateless IDs here name documented snapshots; serving infrastructure can still
-change. These sources establish a candidate route, not empirical superiority
-on this instrument. Review current prices before launch; a rate increase must
-fit a recalculated ceiling before any request, not be discovered by overspend.
+Generate all 12 drafts, then 12 critiques, then 36 revisions. Each revision
+starts from its own frozen draft in a stateless call. Generic revision receives
+an ordinary improvement instruction. Actual critique receives its own critic's
+feedback; matched wrong critique receives its assigned donor's feedback.
+Empty or unhelpful critiques remain observations. Same-model criticism is an
+intervention, never a judgment of its own quality.
 
-## Measurement and human handoff
+Readers receive only neutral presentation IDs, public tutor paragraphs with P
+IDs, the opening learner message and bounded teaching context. They receive no
+arm mapping, source draft, critique, model label, or other reader's ratings.
+Blinding and reader independence require procedural care; revisions can sometimes
+be recognizable. The operator keeps the full plan and raw artifacts private.
 
-The old 35 returned judgments are development evidence. Offline inspection
-found 20 exact-span failures, two invalid-JSON answers and 13 parser-accepted
-answers. No labels are repaired, promoted or reassigned. In this new instrument,
-paragraphs receive D/P IDs and critique directives receive C IDs. Readers cite
-those IDs; the runner checks membership, not quotation transcription. Human
-review must still determine whether the cited passage supports the judgment.
-The focused fixtures include positive fulfillment by paraphrase, surface-only
-revision, absent directives, invalid references and malformed provider output.
-Fixtures test mechanics; they do not establish human semantic validity.
+## Generation and technical handling
 
-The 12 new drafts and their outputs are held out from prompt tuning. Prompts
-and rubrics are registered before generation; no prompt changes using these
-ratings followed by rerating the same outputs. These are new outputs on public,
-known scenarios, not an unseen-domain validation sample.
+Use direct Anthropic Messages, `claude-sonnet-5`, with thinking disabled,
+2,048 maximum output tokens, no temperature/top_p/top_k, fallback, tools,
+conversation history, caching request or SDK retries. The generator's sampling
+is not guaranteed deterministic. Keep the existing draft and revision teaching
+instructions but request ordinary public text without a JSON wrapper.
 
-After generation, stop for **two independent human readers**. Each rates all
-48 outputs on quality (1–10) and factual accuracy (1–5, N/A or indeterminate)
-using only public output and context. Each reader completes 48 quality and 48
-semantic ratings (96 each; 192 human ratings overall). Each records a rationale and
-evidence IDs. Both quality files must be complete and saved before the semantic
-packet is released. Then both independently rate all 48 candidates against
-their own draft and reference critique for fulfillment (none/partial/full/
-indeterminate) and material change (none/surface/reasoning/action/mixed/
-indeterminate). Same readers may do both stages in this order. Do not distribute
-the private plan, arm key, generated critiques or other readers' ratings during
-the quality stage. The operator's files provide chronological provenance, not
-proof of independence; reader training and independence require human review.
+Critiques still use native JSON schema for zero to three directives and a
+rationale, because downstream intervention construction requires those fields.
+The original 4,000-byte output and 16,384-byte request limits remain. Plain
+public text is retained exactly; it is not trimmed, completed, repaired or
+chosen for quality. Structured critique validation remains separate from human
+quality judgment. No regex or formatting check is a semantic outcome measure.
 
-Each human document is `{raters: [{coder_id, completed_at, ratings: [{id,
-rating}]}]}` with exactly two distinct readers and one rating per presentation.
-Use the fields and rubric in the emitted packets. Timestamps record completion;
-the tool checks quality precedes semantic completion. Blinding is partly a
-procedural responsibility because readers can sometimes recognize revisions.
+The saved failure contained 1,702 trailing U+3000 ideographic spaces. This
+establishes repetitive whitespace, but not its underlying provider cause or that
+structured decoding caused it. Removing the unnecessary public JSON wrapper
+reduces format dependencies; it is not an empirically validated cure. Anthropic
+[documents truncation as an exception to structured-output guarantees](https://platform.claude.com/docs/en/build-with-claude/structured-outputs).
+The regression reproduces the observed failure shape without provider calls.
 
-Only after both reference documents are saved may the separate judging stage
-make 48 public-only quality calls and 48 semantic calls to Sol. Human references
-never enter those calls. Same-model generation and judging is prohibited.
-The model judge is a single independent family, not a two-model consensus panel.
-Its semantic and quality calls have separate inputs and no conversation memory.
+A returned refusal, truncation, invalid public output or invalid critique is a
+terminal unavailable result. Preserve its raw response and usage; do not retry
+it. Skip only jobs that depend on unavailable inputs, recording their dependency
+IDs without spending a call. For example, a missing draft prevents its critique
+and three revisions; its missing critique also prevents the assigned recipient's
+wrong-critique revision. Other fixed jobs continue. No substitute donor or unit
+is selected. This policy applies only to this fresh prospective cohort.
 
-## Endpoints, uncertainty and progression
+The public packet retains all 48 IDs. Unavailable slots are marked unavailable
+and receive `rating: null`, not a low score and not an invented human judgment.
+The two readers must rate every available slot. Missingness by arm is reported;
+complete-case results can be biased and are never presented as the full-corpus
+effect. If all outputs are unavailable, the appropriate decision is that the
+comparison could not be made, not a claim of no effect.
 
-Primary scientific estimand: equal-context mean difference in **blind public
-quality**, actual critique minus generic revision, with equal weight for the
-two drafts in each context. One point on the 1–10 scale is the prospective
-minimum difference worth planning a larger study around; it is **not** a pilot
-significance threshold. Report each human reader and Sol separately, paired
-within the same draft, without treating the 48 outputs as independent cases.
-Report all four arms and the three contrasts against generic revision.
+A response-free transport failure or narrow 429/5xx error envelope permits one
+replacement for that fixed job, using a fresh segment and the same payload,
+route, seed, settings and shared cumulative ceilings. Keep all attempts; never
+redispatch a retained answer. Two transport failures of the same diagnostic
+class stop for defect investigation. Partial response delivery is preserved and
+stops for inspection; it is not silently treated as response-free retry work.
+Authentication, request-format, route/model drift, unknown/out-of-bounds usage,
+request overflow, filesystem/integrity and exhausted-budget failures stop calls.
+Code-defect fixes do not revoke study approval. Changes to scientific inputs or
+dispositions must be prospective. Unsealed interruptions use the existing shared
+reconciliation helper before missing-work recovery.
 
-The human-consensus lane requires exact agreement on each field. Any disagreement
-or uncertainty is `measurement_indeterminate`; never average it into a consensus
-score. Preserve individual scores, including 7 versus 8. For the full 12-unit
-quality estimand, unknown differences contribute [-9,+9] to identification
-bounds. Bounds are not confidence intervals. Report determinate coverage and
-complete-case descriptive means explicitly; they are not the full-corpus effect.
-This replaces the old all-pairs-determinate gate only for this new pilot.
+## Human review and analysis
 
-Secondary: directive fulfillment and material action/strategy change, kept
-separate from quality and accuracy. Record individual labels, exact human
-consensus, model-to-reference agreement and disagreement dispositions. Exact
-word uptake is auxiliary only and does not enter any progression rule.
+Two independent human readers each score the 48 available-or-missing slots.
+This means at most 96 human output ratings total, each with separate quality and
+accuracy fields, supporting P IDs and a short rationale. No automated judge or
+semantic reference labels are prerequisites for this comparison.
 
-Instrument readiness requires at least 87/96 structurally valid model judgments,
-at least 39/48 exact model-to-determinate-human-consensus matches for **each**
-semantic field, and model quality within one point of **both** humans on at least
-39/48 outputs. Unknown, invalid and missing ratings contribute no successes.
-The one-point proximity diagnostic does not create averaged consensus labels.
-These are transparent engineering targets (90%/80% rounded up), not validated
-psychometric standards. Report accuracy separately; no accuracy-based efficacy
-claim follows from this pilot. Failure yields measurement_indeterminate and
-instrument development; success permits **design review only**. No automatic
-promotion, sample enlargement, significance test or confirmatory launch.
+`human-quality-review/review.html` is a self-contained local form. It includes
+the registered rubric, saves progress per reader ID, and downloads one reader's
+rating file. The operator gives each reader only that review folder. Complete
+files identify the exact blinded public packet, reader ID and completion time;
+ratings from another packet are rejected even if neutral IDs repeat. This is a
+sealed-data identity check, unrelated to approval or source files. No rating is generated by Codex
+or another model. Two independent human readers are not replaced by two model
+passes. The offline report accepts both files and validates completeness before
+producing the comparison. It never makes a provider call.
 
-The next study's size must use the chosen meaningful quality difference,
-context-level variability, missingness bounds and conservative sensitivity
-analysis. Six pilot contexts cannot yield a precise variance estimate. Do not
-choose the next size or threshold to make an observed treatment effect pass.
-If prompts change after this pilot, validate on new held-out outputs.
+Preserve individual scores and exact-consensus results. Any quality disagreement
+or uncertainty is measurement_indeterminate in the consensus lane; do not average
+it away. For each paired contrast, an unavailable or indeterminate difference
+contributes [-9,+9] to full-unit identification bounds. All 12 unit weights are
+fixed; two units per context yield equal context weight. Bounds are not
+confidence intervals. Clearly label the descriptive mean among observed pairs
+and report its denominator. All-arm estimates and each context's individual
+paired differences remain inspectable in the report.
 
-## Ceilings, failures, recovery and stop rules
+## Calls, dollars and preservation
 
-60 generation calls + 48 quality + 48 semantic = **156 planned**. Reserve six
-generation, three quality and three semantic replacements: **168 hard attempts**,
-category caps 66/51/51. At most one technical replacement per job, never a
-replacement for an invalid, refused, poor, empty-critique or indeterminate answer.
-No success-based early stop or selection of the best draw. Two response-free
-transport failures of the same diagnostic class stop for defect investigation.
-No budget reset across the human handoff or recovery segments.
+60 planned provider calls: 12 drafts, 12 critiques, 36 revisions. Six technical
+replacements give a **66-attempt hard ceiling**. **Zero judging calls** are in
+this registration. Unavailable dependencies can reduce calls but never cause
+additional sampling. There are no probes or canaries outside the fixed jobs.
 
-**US $20 maximum provider spend**, excluding human labor. Reserve full request
-byte ceiling + 1,024 framing tokens as input, full 2,048 output tokens, a 1.25
-cache-write multiplier on input and 10% buffer. This intentionally overcounts
-typical English input. Maximum per attempt: Sonnet $0.070400; Sol $0.140800.
-Base $17.740800; all reserve $1.267200; **worst permitted reservation $19.008000**.
-Unused $0.992 is headroom, not permission for extra calls. First generation
-stage cannot exceed 66 attempts/$4.646400 under these bounds. No canary or paid
-availability calls outside the job list. Request-size overflow stops before
-reservation; it does not truncate input. A rate increase requires recomputation
-before dispatch; charges without usage remain unknown and fully reserved.
+The **additional provider ceiling is $4.646400**, using the same conservative
+$0.070400 reservation per attempt: 16,384 input bytes plus 1,024 framing tokens,
+$2/input-million with a 1.25 cache-write multiplier, 2,048 output tokens at
+$10/output-million, and a 10% buffer. Base reservation $4.224000; recovery
+reserve $0.422400. Prices and the model ID were checked in the preceding launch;
+recheck [current Anthropic pricing](https://platform.claude.com/docs/en/models/overview)
+before paid dispatch. A price change requires recalculation before a call.
+Human labor is excluded from provider spend.
 
-The runner uses `services/paidStudyLaunchContract.js` and the shared durable
-attempt journal: create-once destinations; append-only cumulative attempt and
-dollar reservations before dispatch; immutable raw requests/responses; recorded
-commit/tree/dirty state; one HTTP dispatch per attempt. Network diagnostics
-retain error name, cause code, dispatch/body-read stage and safe request IDs,
-without headers, credentials or arbitrary provider error objects.
+The closed cohort used six attempts and retains $0.422400 in reservations.
+Both cohorts together can therefore use at most **72 attempts and $5.068800
+reserved**, below the previously approved 168 attempts/$20. The fresh cohort
+has a distinct study ID and ledger; this is not a reset or recovery of the
+closed cohort. No other paid cohort is covered by this amendment.
 
-A response-free 429/5xx error envelope or transport failure can be recovered
-once under the same plan, source data, payload, seed, routes, settings and caps.
-Use the latest sealed predecessor and a fresh destination; valid and invalid
-answers are retained and never dispatched again. A generation answer that fails
-structure/size validation stops the pilot, because later arms need its frozen
-value. Invalid judge answers occupy their fixed jobs and collection continues.
-Refusal, truncation, route drift, missing usage or out-of-bound usage stops for
-inspection without outcome resampling. No new unit substitutes for failed work.
-Durable responses in a write-before-journal crash window are recovered locally;
-reconcile interrupted reservations with the existing shared interruption helper
-before a new segment. Do not bypass a repeated substantive or technical defect.
+Use the existing paidStudyLaunchContract and durable attempt journal, with
+create-once destinations, fail-before-call attempt/category/dollar ceilings,
+append-only attempt accounting and raw requests/responses. Record commit,
+tree and dirty flag as provenance. No source hashes, approval packages,
+numbered designs, endpoint certificates or bespoke authorization machinery.
+Archive all segments and cumulative accounting using the maintained private
+archive workflow, verify copies, then publish an operational report.
 
-Generation ending is HANDOFF_PENDING for human references. Judging ending is
-HANDOFF_PENDING for independent review and private archival verification; it is
-not the completed research programme. Archive every segment and ledger using
-the maintained private artifact workflow, including failures. Human reference
-ratings are research data, not authorization notes. No new authorization
-machinery, source hashes, numbered designs or endpoint certificates are used.
+Generation ends HANDOFF_PENDING for human quality ratings. The human report is
+a scientific decision point; it is not proof of better learning. Preserve the
+historical replay, calibration, all six contemporary attempts and their GO notes
+exactly as they are. No learner/transfer, bilateral-transformation, deployed-tutor,
+psychological-theory, cross-model or equal-total-compute claim is licensed.
 
-## Commands and claim boundary
+## Operator commands
 
-Zero-call preparation:
-`node scripts/run-superego-contemporary-pilot.js --prepare --out /tmp/pilot-plan`
+Prepare without calls:
+`node scripts/run-superego-contemporary-pilot.js --prepare --out /ABS/NEW-PLAN`
 
-After merged design, recorded GO and **separate launch permission**:
+After the amended design is merged, its GO recorded, and launch authorized:
 `node scripts/run-superego-contemporary-pilot.js --launch --accept-charges --phase generation --go-note notes/APPROVED-NOTE.md --out /ABS/NEW-SEGMENT`
 
-Emit blinded quality packet:
-`node scripts/run-superego-contemporary-pilot.js --human-packet quality --from /ABS/LATEST-SEGMENT --out /ABS/NEW-PACKET`
+After two independent readers download their completed files:
+`node scripts/run-superego-contemporary-pilot.js --human-report --from /ABS/GENERATION-SEGMENT --human-quality /ABS/reader-a.json --human-quality-other /ABS/reader-b.json --out /ABS/NEW-REPORT`
 
-After both human quality readers finish, emit semantic packet:
-`node scripts/run-superego-contemporary-pilot.js --human-packet semantic --from /ABS/LATEST-SEGMENT --human-quality /ABS/quality.json --out /ABS/NEW-PACKET`
-
-After both human stages and explicit judging launch permission:
-`node scripts/run-superego-contemporary-pilot.js --launch --accept-charges --phase judging --go-note notes/APPROVED-NOTE.md --recovery-from /ABS/LATEST-SEGMENT --human-quality /ABS/quality.json --human-semantic /ABS/semantic.json --out /ABS/NEW-SEGMENT`
-
-Technical recovery adds `--recovery-from /ABS/LATEST-SEGMENT` to the same stage
-and uses a new output directory. The default shared study state is the maintained
-evaluation data home's `paid-studies` directory. Never redirect it to reset caps.
-
-Claims are limited to instrument feasibility and descriptive output differences
-for these six bounded contexts, prompts, models and single revision passes.
-This does not validate Freud/Hegel as a psychological mechanism, demonstrate
-better learning, transfer, bilateral transformation, deployed tutor behavior,
-cross-model generalization or superiority at equal total compute. Critique adds
-a paid pass; report that cost. Wrong feedback can harm independently of useful
-actual feedback. A strong current generator may leave little improvement room;
-do not select weak drafts to rescue the hypothesis.
+The latter command is zero-call and does not require semantic ratings or a
+model judging launch. The runner rejects judging for this registration.

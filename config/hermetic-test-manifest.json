@@ -535,6 +535,7 @@
         "tests/superegoCritiqueCausalFollowupAnalyzer.test.js",
         "tests/superegoCritiqueCausalReplay.test.js",
         "tests/superegoContemporaryPilot.test.js",
+        "tests/superegoHumanQualityReview.test.js",
         "tests/superegoFramingTrajectoryAnalyzer.test.js",
         "tests/superegoFramingTrajectoryCli.test.js",
         "tests/superegoTaxonomyProvenance.test.js",

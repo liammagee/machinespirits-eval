@@ -16,6 +16,7 @@ links:
   items:
     - superego-critique-causal-replay
     - superego-critique-measurement-calibration
+    - superego-human-quality-comparison
   notes:
     - notes/superego-contemporary-pilot-design.md
     - notes/2026-09-05-superego-contemporary-pilot-go.md
@@ -67,3 +68,8 @@ $0.422400 reserved and $0.066576 usage-derived cost; no critique, revision,
 judging or human packet. The linked failure report records the exact cause,
 unchanged claim boundary and byte-verified private archive. The fixed truncation
 rule blocks recovery; unused budget is not permission to resample.
+
+2026-09-05 follow-up: the user requested unattended technical repairs and a
+simpler path to a human quality comparison. New prospective work is tracked by
+superego-human-quality-comparison. This cohort remains closed to replacement;
+the original design is retained in Git at its recorded launch commit.
