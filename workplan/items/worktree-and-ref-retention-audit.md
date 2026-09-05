@@ -1,14 +1,14 @@
 ---
 id: worktree-and-ref-retention-audit
 title: Classify and safely retire stale worktrees and branch refs
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-09-04
 updated: 2026-09-04
-branch: codex/worktree-ref-retention-closeout-20260904
+branch: codex/worktree-ref-retention-done-20260905
 verification: >-
   Every registered worktree and candidate local or remote branch has a recorded
   merge, keep, delete, archive, or hold disposition; valuable ignored/private
@@ -19,6 +19,8 @@ verification: >-
 links:
   items:
     - workflow-repository-optimization
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/1022
   notes:
     - docs/branch-archive-policy.md
     - docs/ref-status.md
@@ -92,3 +94,11 @@ treating merge ancestry alone as evidence that a research ref is disposable.
   archive pairs still resolved to their planned commits, and the canonical and
   audit worktrees were retained. Regenerated `docs/ref-status.md` reports 36
   archives, 29 paired, 7 grandfathered tag-only, and 0 validation errors.
+- 2026-09-04 — PR #1022 merged as `468f4a95232d` after ref governance,
+  workplan validation, lint, risk coverage, PTY/loopback checks, the validation
+  framework, and all eight Node 22/24 test shards passed. Its head commit and
+  the original audit head are both contained in current `origin/main`.
+- 2026-09-04 — Retired the merged PR and original audit worktrees plus their two
+  local branches after confirming no active process, remote source ref, unique
+  commit, or unpreserved artifact remained. All 23 unrelated registered
+  worktrees were retained. Acceptance is complete and the item is closed.
