@@ -626,7 +626,7 @@ const OSPREY_HALF_HOLDS =
   'lost-property log?';
 
 test('a hedge word in the next sentence covers the sentence before it (board-r6 turn 6, second run)', () => {
-  const tutor = rowAt(board102(OSPREY_HALF_HOLDS), 'tutor', 1);
+  const tutor = rowAt(board102(OSPREY_HALF_HOLDS), 'tutor', 6);
   assert.equal(tutor.fields.commitment_undertaken, 'none');
   assert.equal(tutor.fields.entitlement_status, 'none');
   assert.equal(
@@ -637,7 +637,7 @@ test('a hedge word in the next sentence covers the sentence before it (board-r6 
 
 test('the stopped turn passes the licence audit under the ruled reader', () => {
   const board = board102(OSPREY_HALF_HOLDS);
-  const audit = auditTutorStubScoreboardLicence(board, { turn: 1 });
+  const audit = auditTutorStubScoreboardLicence(board, { turn: 6 });
   assert.equal(audit.ok, true, JSON.stringify(audit.violations));
 });
 
@@ -645,7 +645,7 @@ test('a question mark alone in the next sentence does not cover a plain naming',
   const tutor = rowAt(
     board102('Osprey took the box from bay three. What would you check next?'),
     'tutor',
-    1,
+    6,
   );
   assert.equal(tutor.fields.commitment_undertaken, 'secret');
   const mark = tutor.marks.find((m) => m.rule === 'TEXT-answer-named');
@@ -656,13 +656,13 @@ test('a hedge two sentences later does not reach back to a plain naming', () => 
   const tutor = rowAt(
     board102('Osprey took the box from bay three. The tag carries their job number. The log does not yet show the box.'),
     'tutor',
-    1,
+    6,
   );
   assert.equal(tutor.fields.commitment_undertaken, 'secret');
   const hedged = rowAt(
     board102('Osprey took the box from bay three. The log does not yet show the box. The tag carries their job number.'),
     'tutor',
-    1,
+    6,
   );
   assert.equal(hedged.fields.commitment_undertaken, 'none', 'the same hedge one sentence later covers the naming');
 });
