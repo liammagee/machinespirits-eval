@@ -22,6 +22,7 @@ import {
   SECOND_FAMILY_STUDY_ID,
   buildSecondFamilyJobs,
   describeSecondFamilyArming,
+  describeSecondFamilyBlockCounts,
   describeSecondFamilyPlan,
   inheritCheckpoint,
   judgeSecondFamilyReplication,
@@ -320,6 +321,97 @@ test('generation hands each child the study ledger through its environment, reco
   assert.equal(retake.status, 'complete');
   assert.equal(retake.retake_of_quarantined_attempts, 1);
   assert.equal(checkpoint.dialogues.filter((row) => row.status === 'complete').length, 3);
+});
+
+test('a dialogue past its one registered retake is dropped at recovery, the block continues, and every downstream count follows the completed dialogues', async (t) => {
+  const root = tmpDir(t, 'drop');
+  const { manifest } = loadSecondFamilyManifest();
+  const jobs = buildSecondFamilyJobs({ manifest, rootDir: root }).slice(0, 4);
+  const admission = fakeAdmission();
+  const lost = jobs[1];
+  const quarantinedRow = (retakes) => ({
+    id: lost.id,
+    order: lost.ordinal,
+    world: lost.world,
+    seed: lost.seed,
+    condition: lost.condition,
+    status: 'quarantined',
+    retake_of_quarantined_attempts: retakes,
+    reserved_calls: 30,
+    error: 'child seal status incomplete does not match complete',
+  });
+  // The original attempt and its one retake both failed; the user ruled "drop and continue".
+  const checkpoint = { dialogues: [quarantinedRow(0), quarantinedRow(1)] };
+  const ran = [];
+  const runDialogue = async (command) => {
+    const jobId = path.basename(command[command.indexOf('--parent-run-id') - 1]);
+    ran.push(jobId);
+    const tracePath = path.join(root, 'traces', `${jobId}.jsonl`);
+    fs.mkdirSync(path.dirname(tracePath), { recursive: true });
+    fs.writeFileSync(tracePath, JSON.stringify({ type: 'model_call_budget_reserved', turn: 0 }) + '\n');
+    return { status: 0, signal: null, error: null, logPath: null };
+  };
+  const collectJobResult = (job) => okRow(path.join(root, 'traces', `${job.id}.jsonl`));
+  const logged = [];
+  await runSecondFamilyGeneration({
+    jobs,
+    checkpoint,
+    admission,
+    persist: () => {},
+    runDialogue,
+    collectJobResult,
+    log: (line) => logged.push(line),
+  });
+
+  // Never a third paid attempt: the lost dialogue was not dispatched and no capacity was allocated for it.
+  assert.deepEqual(
+    ran,
+    jobs.filter((job) => job.id !== lost.id).map((job) => job.id),
+  );
+  assert.equal(
+    admission.events.filter((event) => event.type === 'capacity_allocated' && event.unit_id === lost.id).length,
+    0,
+  );
+  const dropped = checkpoint.dialogues.filter((row) => row.status === 'dropped');
+  assert.equal(dropped.length, 1);
+  assert.equal(dropped[0].id, lost.id);
+  assert.equal(dropped[0].attempts, 2);
+  assert.equal(dropped[0].retakes_permitted, 1);
+  assert.equal(dropped[0].reserved_calls, 0);
+  assert.deepEqual(
+    admission.events.filter((event) => event.type === 'dialogue_dropped').map((event) => event.dialogue_id),
+    [lost.id],
+  );
+  assert.ok(logged.some((line) => line.includes(`${lost.id} dropped after 2 attempts`)));
+  assert.equal(checkpoint.dialogues.filter((row) => row.status === 'complete').length, 3);
+
+  // A second recovery pass skips the dropped dialogue again without a new row.
+  await runSecondFamilyGeneration({ jobs, checkpoint, admission, persist: () => {}, runDialogue, collectJobResult });
+  assert.equal(checkpoint.dialogues.filter((row) => row.status === 'dropped').length, 1);
+  assert.equal(ran.length, 3);
+
+  // Downstream counts derive from the completed dialogues, never from the registered 72.
+  const counts = describeSecondFamilyBlockCounts({ manifest, dialogues: checkpoint.dialogues });
+  assert.equal(counts.registered_dialogues, 72);
+  assert.equal(counts.completed, 3);
+  assert.deepEqual(
+    counts.dropped.map((row) => [row.id, row.condition, row.attempts]),
+    [[lost.id, lost.condition, 2]],
+  );
+  assert.equal(counts.cases, 3 * manifest.assignment.turns_per_dialogue);
+  assert.equal(counts.reads, counts.cases * manifest.channels.decision.readers.length);
+  assert.equal(counts.reader_attempt_cap, counts.reads + manifest.channels.decision.failed_attempt_allowance);
+
+  // The live block: 71 complete and 53 dropped gives 568 cases and 1,136 reads under the registered 1,152.
+  const live = describeSecondFamilyBlockCounts({
+    manifest,
+    dialogues: [
+      ...Array.from({ length: 71 }, (_, index) => ({ id: `d${index}`, status: 'complete' })),
+      { id: 'second-family-53', order: 53, condition: 'gated', status: 'dropped', attempts: 2 },
+    ],
+  });
+  assert.deepEqual([live.completed, live.cases, live.reads, live.reader_attempt_cap], [71, 568, 1136, 1184]);
+  assert.ok(live.reads <= manifest.channels.decision.planned_calls);
 });
 
 test('recovery recomputes seed freshness and the preflight after an amendment, and refuses to reuse a dialogue completed under other seats', (t) => {
