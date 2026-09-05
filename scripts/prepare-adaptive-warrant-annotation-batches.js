@@ -379,8 +379,17 @@ export function prepareAdaptiveWarrantAnnotationBatches({
   maxAnnotationCalls = null,
   preflightPath = null,
   preflightMode = false,
+  provenance = null,
 } = {}) {
   if (!CORPUS_ROLES.includes(corpusRole)) throw new Error(`corpusRole must be one of ${CORPUS_ROLES.join(', ')}`);
+  if (provenance !== null) {
+    if (corpusRole !== 'natural_prevalence') {
+      throw new Error('recorded provenance applies to natural_prevalence corpora only');
+    }
+    if (typeof provenance?.source_commit !== 'string' || !provenance.source_commit.trim()) {
+      throw new Error('recorded provenance requires a source_commit string');
+    }
+  }
   if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error('batchSize must be a positive integer');
   exactUniqueIds(readerIds, 'readerIds');
   if (readerIds.length !== 2) throw new Error('annotation collection requires exactly two independent readers');
@@ -439,6 +448,16 @@ export function prepareAdaptiveWarrantAnnotationBatches({
   } else {
     if (preflightMode) {
       semanticPreflight = { mode: 'synthetic_internal_zero_call', source_commit: 'synthetic' };
+    } else if (provenance) {
+      semanticPreflight = {
+        mode: 'not_run_recorded_provenance',
+        note: 'No brittleness preflight exists for this reader model. Provenance is recorded, not enforced.',
+        source_commit: provenance.source_commit,
+        source_tree: provenance.source_tree || null,
+        source_branch: provenance.source_branch || null,
+        source_dirty: provenance.source_dirty ?? null,
+        reader_model: annotationModel,
+      };
     } else {
       if (!preflightPath)
         throw new Error('V3 natural decision-reader preparation requires a passing semantic preflight');

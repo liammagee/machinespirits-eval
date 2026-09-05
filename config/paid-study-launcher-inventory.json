@@ -9,7 +9,8 @@
       "scripts/run-local-qwen-invested-rival.js",
       "scripts/run-invested-rival-luna-reference.js",
       "scripts/run-invested-rival-learner-iteration.js",
-      "scripts/run-superego-critique-causal-replay.js"
+      "scripts/run-superego-critique-causal-replay.js",
+      "scripts/run-warrant-gate-second-family-replication.js"
     ],
     "migrationRequired": [],
     "retireOrMigrate": [],
@@ -149,6 +150,12 @@
       "registered": "2026-09-04",
       "disposition": "shared_contract",
       "reason": "Prospective four-arm frozen critique replay; shared admission, per-dispatch durable accounting, category and dollar ceilings, and missing-work-only recovery with a positive reserve."
+    },
+    {
+      "path": "scripts/run-warrant-gate-second-family-replication.js",
+      "registered": "2026-09-04",
+      "disposition": "shared_contract",
+      "reason": "Second-family replication of the passive warrant-gate main block (paper §6.25): 72 dialogues on claude-code.opus-5 with codex.gpt-5.6-sol decision readers, one admission at ceiling 3,360, child attempts counted through the shared attempt ledger; provenance recorded, never enforced."
     }
   ]
 }
