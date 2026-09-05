@@ -629,6 +629,11 @@ export async function runSecondFamilyReaders({
         }
         const packet = readJson(batch.packet_path);
         const outputSchema = readJson(batch.output_schema_path);
+        // The budget adapter keeps the attempt lifecycle on itself; the
+        // reservation it returns is a frozen record with no methods. The
+        // first paid reader call of the second family (2026-09-05) died on
+        // `reservation.markDispatched is not a function`, masked by the same
+        // error from `reservation.fail` in the catch, before any model call.
         const reservation = budget.reserve({
           role: 'decision_reader',
           unitId: `${reader.reader_id}:${batch.batch_id}`,
@@ -640,7 +645,7 @@ export async function runSecondFamilyReaders({
         let rawResponse = null;
         let result = null;
         try {
-          reservation.markDispatched();
+          budget.markDispatched();
           result = await callModel(
             { provider, model },
             READER_SYSTEM_PROMPT,
@@ -665,12 +670,13 @@ export async function runSecondFamilyReaders({
           });
           const outputPath = path.join(resolvedOutput, reader.reader_id, batch.expected_response_filename);
           atomicWriteJson(outputPath, parsed);
-          reservation.persistResponse(outputPath);
-          reservation.complete();
+          budget.persistResponse(outputPath);
+          budget.complete();
           run.calls_completed += 1;
           run.batches.push({
             reader_id: reader.reader_id,
             batch_id: batch.batch_id,
+            attempt_id: reservation.attemptId || null,
             status: 'complete',
             packet_sha256: batch.packet_sha256,
             output_schema_sha256: batch.output_schema_sha256,
@@ -687,11 +693,12 @@ export async function runSecondFamilyReaders({
           persist();
           break;
         } catch (error) {
-          reservation.fail(error);
+          budget.fail(error);
           const transport = rawResponse === null || error.transport === true;
           const failedRow = {
             reader_id: reader.reader_id,
             batch_id: batch.batch_id,
+            attempt_id: reservation.attemptId || null,
             status: 'failed',
             failure_kind: transport ? 'transport_response_free' : 'contract',
             packet_sha256: batch.packet_sha256,

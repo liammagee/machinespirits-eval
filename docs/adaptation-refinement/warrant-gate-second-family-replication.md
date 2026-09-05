@@ -292,3 +292,33 @@ not affected in direction. The dropped dialogue is a gated one in world
 102 with a low-agency learner; it is not selected on its outcome, since
 neither attempt reached the end. The report states that dialogue 53 was
 dropped and why, and gives gated n=23.
+
+## Technical stop 2026-09-05: reader loop died before its first call
+
+What happened. The run relaunched under recovery after the fourth
+amendment into `-2026-09-05-r6` and ran dialogues 54 to 72 with no
+further stop: 71 of 71 complete, 53 dropped, every learner turn read, no
+call errors. The launcher extracted 568 cases, wrote the corpus artifacts
+and planned 1,136 reader batches. The first reader batch then died with
+`reservation.fail is not a function` before any codex Sol call: the reader
+loop called the attempt lifecycle (`markDispatched`, `persistResponse`,
+`complete`, `fail`) on the reservation record the budget adapter returns,
+while the adapter keeps those methods on itself. The first throw came from
+`markDispatched`; the catch's `fail` threw the same way and masked it. One
+ledger reservation was burned and released as `run_closed` (ledger 1,997
+of 3,360). The reader run record counts the attempt (1 attempted, 0
+completed) against the 1,184 cap.
+
+Class. Technical. No model was called, no output was discarded, no design
+file changed. The launcher's reader tests passed before the run because
+their stand-in budget put the methods on the reservation, the same wrong
+shape as the loop.
+
+What changes. The four calls move to the budget object. The three reader
+tests now run against the real budget adapter over a real shared attempt
+ledger with a local admission, and assert the full ledger lifecycle (7
+reserved, 7 started, 6 completed, 1 failed) and that every batch row names
+its reservation. The unfixed loop fails all three. Relaunch is under
+recovery into a fresh out dir: the corpus, reader plan and reader run
+record carry over, and the reader phase resumes from the first incomplete
+batch. Seeds, worlds, conditions, readers, bars and ceiling are unchanged.
