@@ -16,6 +16,7 @@ links:
     - notes/2026-09-04-scoreboard-replay-prompt.md
     - notes/2026-09-05-scoreboard-replay-report.md
     - notes/2026-09-05-scoreboard-crossed-run-go.md
+    - notes/2026-09-05-scoreboard-crossed-run-report.md
   paper:
     - "§3, §7.12, §7.16, Appendix E"
   items:
@@ -63,3 +64,9 @@ digest. Results are conduct claims until Phase 4.
   (`notes/2026-09-05-scoreboard-replay-report.md`). Phase 1 open and
   prepared: cast preflight PASS, GO note written
   (`notes/2026-09-05-scoreboard-crossed-run-go.md`), no paid call made.
+- 2026-09-05: Phase 1 ran and stopped on its defect rule at 36 of 48
+  dialogues; its outcome rule also fired on the dialogues done. No reader seat
+  ran. The board reader's sentence splitter breaks at a dash; that defect
+  needs a fix and a zero-call re-read of the Phase 0 counts before Phase 2 is
+  written. Phase 2 does not open. Report:
+  `notes/2026-09-05-scoreboard-crossed-run-report.md`.
