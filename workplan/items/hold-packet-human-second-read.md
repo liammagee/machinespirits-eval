@@ -58,3 +58,17 @@ answers and compare in `exports/tutor-stub-outcome/step7f-hold-cue-fix/`
 What stays for the author: the §6.24 line "a human second read is still open",
 and whether the five-pair lean is kept, narrowed to the model readers, or
 dropped on this reading. No paid call is needed for either.
+
+# Two rulings 2026-09-05, same day
+
+The reader answered both divergences. Realized: the page asked "carry out the
+direction" and the reader took it as whether the learner was successful with
+the lesson, so the 0/12 is a page fault and is withdrawn (kept in
+`reader-human.meta.json`). The page now asks whether the learner's line does
+what the direction and its sample say, and the reader is redoing question 1 on
+all twelve items; the other three answers stand. Eased: skipped on the four
+items whose next line is itself the next plant (items 2, 6, 7, 8);
+`scripts/stress-blind-packet.js compare` now skips such items and says how
+many. On the eight left the human agrees with the judge 7/8, each model 8/8.
+Repair, kappa, uptake and the card effect are unchanged. Still to land: the
+redone question 1 count.

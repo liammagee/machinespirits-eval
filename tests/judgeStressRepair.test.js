@@ -228,6 +228,20 @@ test('judgments attach to the sheet and the packet hides run, gold and judge', (
   }));
   const result = compareSubmission(key, submission);
   assert.equal(result.agreement.realized.agree, 2);
+  assert.equal(key.items.find((m) => m.turn === 2).nextIsPlant, true, 'turn 3 is itself the next plant');
+  assert.equal(key.items.find((m) => m.turn === 3).nextIsPlant, false);
+  assert.equal(result.agreement.eased.n, 1, 'eased is not scored where the next line is the next plant');
+  assert.equal(result.agreement.eased.skippedNextIsPlant, 1);
+  assert.match(
+    renderComparison(result, key.judge),
+    /Eased: 1 item skipped, because the next line is itself the next plant/,
+  );
+  const bareKey = { ...key, items: key.items.map(({ nextIsPlant: _drop, ...m }) => m) };
+  assert.equal(
+    compareSubmission(bareKey, submission).agreement.eased.skippedNextIsPlant,
+    1,
+    'older keys derive the flag',
+  );
   assert.equal(result.agreement.move.agree, 0);
   assert.equal(result.agreement.repair.agree, 1, 'speed_up is also-acceptable → HIT agrees; continue → MISS disagrees');
   assert.match(renderComparison(result, key.judge), /Cohen's kappa/);
