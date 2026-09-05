@@ -154,22 +154,31 @@ export function calibrationCoderPackets(design, plan) {
 
 export function summarizeCalibration(design, plan, responses) {
   const fields = ['directive_fulfillment', 'material_change', 'quality', 'accuracy'];
+  const invalidJobs = [...responses.values()].filter((r) => r.response_status === 'invalid_response').length;
   return {
     study_id: design.id,
-    completed_jobs: responses.size,
+    processed_jobs: responses.size,
+    completed_jobs: responses.size - invalidJobs,
+    invalid_jobs: invalidJobs,
     missing_jobs: plan.jobs.length - responses.size,
     readiness: 'not_validated_against_independent_humans',
     fields: Object.fromEntries(
       fields.map((field) => {
         const lane = ['quality', 'accuracy'].includes(field) ? 'quality' : 'semantic';
         const rows = plan.units.map((unit) => {
-          const a = responses.get(`${unit.unit_key}/historical_revision/${lane}_a`)?.[field];
-          const b = responses.get(`${unit.unit_key}/historical_revision/${lane}_b`)?.[field];
+          const responseA = responses.get(`${unit.unit_key}/historical_revision/${lane}_a`);
+          const responseB = responses.get(`${unit.unit_key}/historical_revision/${lane}_b`);
+          const a = responseA?.response_status === 'invalid_response' ? undefined : responseA?.[field];
+          const b = responseB?.response_status === 'invalid_response' ? undefined : responseB?.[field];
+          const invalid = [responseA, responseB].some((r) => r?.response_status === 'invalid_response');
+          const missing = !responseA || !responseB;
           return {
             unit: unit.unit_key,
             a: a ?? null,
             b: b ?? null,
-            consensus: a === undefined || b === undefined ? 'missing_technical' : consensus(a, b),
+            invalid_response: invalid,
+            missing_response: missing,
+            consensus: missing ? 'missing_technical' : invalid ? 'invalid_response' : consensus(a, b),
           };
         });
         const paired = rows.filter((row) => row.a !== null && row.b !== null);
@@ -184,7 +193,9 @@ export function summarizeCalibration(design, plan, responses) {
           {
             denominator: rows.length,
             complete_pairs: paired.length,
-            missing_pairs: rows.length - paired.length,
+            missing_pairs: rows.filter((row) => row.missing_response).length,
+            invalid_pairs: rows.filter((row) => row.invalid_response).length,
+            unavailable_pairs: rows.length - paired.length,
             exact_agreements: paired.filter((row) => row.a === row.b).length,
             determinate_consensus: paired.filter(
               (row) => !['measurement_indeterminate', 'not_applicable'].includes(row.consensus),

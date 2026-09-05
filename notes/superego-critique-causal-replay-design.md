@@ -1,9 +1,10 @@
 # Superego critique causal replay
 
-Status: measurement review precedes any restart of the four-arm study. The
-original launch stopped before any model output. The calibration phase below
-is proposed for review; no calibration GO or launch instruction has been
-recorded. The original GO notes and failure artifacts remain unchanged.
+Status: the original replay stopped before any model output. The separately
+approved and launched calibration stopped on its first response; PR #1041
+preserves that failure. The response-handling amendment below is proposed for
+review and has no GO yet. Paid continuation remains blocked. The original GO
+notes and failure artifacts remain unchanged; the four-arm replay stays paused.
 Workplan item: `superego-critique-causal-replay`.
 
 ## Question and evidence
@@ -103,6 +104,7 @@ original $300 cap. Neither phase may silently launch the other.
 
 ```yaml calibration
 id: superego-critique-measurement-calibration
+response_failure_policy: retain_invalid_continue
 master_seed: 20260905
 sample_size: 48
 arms: [historical_revision]
@@ -238,11 +240,72 @@ node scripts/run-superego-critique-causal-replay.js --mode calibration --prepare
 Paid mode uses the same `--mode calibration` with `--launch --accept-charges`,
 a committed calibration GO note and its provenance commit, and a fresh output
 directory. It requires separate launch authority after design approval. A GO
-note is not created by preparation. The fixed batch stops on technical or
-substantive response failure under the existing recovery rules; disagreement
-stops inference in that field, not the collection of the predeclared batch.
+note is not created by preparation. Under the proposed amendment below, invalid
+judgment formatting or evidence is retained without a replacement call; other
+failures retain the existing stop rules. Disagreement stops inference in that
+field, not collection of the predeclared batch.
 The end of judging is `HANDOFF_PENDING` until private archiving is verified;
 scientific readiness remains unresolved until independent reference review.
+
+### Proposed calibration response-handling amendment, 2026-09-05
+
+The first response failed the original strict parser. Its JSON is inside one
+Markdown fence; after removing that wrapper, two quoted spans still fail exact
+matching. Keep this raw response, the original failed seal and every reservation
+unchanged. Classify the response as `invalid_response`, without accepting its
+labels, normalizing punctuation, rewriting quotes, or asking the model again.
+The amendment is informed by this observed failure and is not presented as a
+rule registered before that response. It applies to the 191 undispatched jobs;
+the retained first response remains an invalid calibration case in all reports.
+
+For calibration only, decode either bare JSON or one complete Markdown JSON
+code fence with no surrounding prose. Do not extract among multiple answers,
+repair JSON, accept paraphrased quotation spans, or alter labels. Continue the
+fixed batch after malformed JSON, invalid label/schema values or invalid exact
+evidence spans, retaining that entire judgment as `invalid_response`. Raw
+answers remain the source evidence; diagnostic classifications are derivatives.
+Refusal, truncation, provider errors, wrong routes, unaccountable usage, source
+drift and filesystem failures still stop under the existing rules. Honest
+semantic uncertainty and inter-reader disagreement remain
+`measurement_indeterminate`, distinct from `invalid_response` and missing work.
+
+Report processed, valid, invalid and missing jobs separately. A pair with an
+invalid response cannot contribute agreement, confusion counts or numerical
+score comparisons. Report invalid pairs and missing pairs separately (a pair
+can contain both); their union is the unavailable-pair count. Preserve the
+48-unit denominator and expose all unavailable reference coverage. The human
+coding requirement, no automatic PASS rule and all non-claims remain unchanged.
+This phase diagnoses the instrument; invalidity does not become a zero score or
+a negative causal result.
+
+The outstanding shared-runner change must admit continuation only after verifying
+that the stopped segment's dispatches have durable, journal-matched responses,
+that those responses receive terminal retained dispositions, and that no retained
+job can be dispatched again. Enforce the last condition before reservation in
+shared budget code, including later recovery segments. Preserve the failed seal;
+record continuation in a fresh create-once destination and append-only ledger.
+The runner must still compare the frozen plan, saved requests, models, decoding,
+seed, sources and dollar/attempt caps, with only this explicitly documented
+response-disposition amendment allowed. No boolean bypass of a failed seal and
+no per-study authorization package is proposed.
+
+That shared admission change is **not implemented by this repair**. Automatic
+approval review rejected changing the shared recovery rule without explicit
+approval of its scope. Current regression coverage must prove the original
+sealed failure still blocks admission before any call or destination creation.
+After approval, implement and test the shared no-redispatch boundary before
+continuation. This is a change to measurement/failure disposition, so
+`docs/paid-study-authorization-policy.md` requires a fresh GO for the amended
+study after merge; no GO note or signature is created during this repair.
+
+There are **191 never-dispatched jobs**, no generation and no replacement of
+the first judgment. With no technical failures, finishing collection would use
+192 total attempts including the retained first attempt. All 12 technical
+replacements remain inside the unchanged **204-attempt / US $15** ceilings;
+the full reservation remains $14.342107 including reserve. The earlier
+$0.018594 reported cost and $0.090463 reservation remain counted. No routes,
+prompts, sample identities, order, thresholds or human-reference rules change.
+The original four-arm replay is not authorized by this amendment.
 
 ## Frozen units, exclusions and matching
 

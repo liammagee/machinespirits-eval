@@ -394,6 +394,43 @@ function spansValid(spans, source, requireNonempty = true) {
   );
 }
 
+export const retainsInvalidCalibrationResponses = (design) =>
+  design.mode === 'calibration' && design.response_failure_policy === 'retain_invalid_continue';
+
+function invalidJudgment(code, message) {
+  const error = new Error(`Substantive failure: ${message}`);
+  error.code = code;
+  return error;
+}
+
+// Raw answers stay immutable. Invalid ratings occupy their fixed job without
+// contributing labels, agreement, or permission to draw a replacement answer.
+export function classifyReplayResponse(design, request, job, raw) {
+  try {
+    const result = parseReplayResponse(design, request, job, raw);
+    if (!retainsInvalidCalibrationResponses(design)) return result;
+    // Provider-authored extra fields cannot impersonate an operational status.
+    const fields =
+      job.category === 'semantic'
+        ? ['directive_fulfillment', 'material_change', 'critique_spans', 'candidate_spans', 'rationale']
+        : ['quality', 'accuracy', 'evidence_spans', 'rationale'];
+    return Object.fromEntries(fields.map((field) => [field, result[field]]));
+  } catch (error) {
+    if (
+      retainsInvalidCalibrationResponses(design) &&
+      ['semantic', 'quality'].includes(job.category) &&
+      [
+        'invalid_structured_output',
+        'invalid_semantic_evidence',
+        'invalid_quality_label',
+        'invalid_quality_evidence',
+      ].includes(error.code)
+    )
+      return { response_status: 'invalid_response', invalid_reason: error.code };
+    throw error;
+  }
+}
+
 export function parseReplayResponse(design, request, job, raw) {
   let envelope;
   try {
@@ -436,9 +473,16 @@ export function parseReplayResponse(design, request, job, raw) {
   }
   let result;
   try {
-    result = JSON.parse(choice.message.content);
+    const content = choice.message.content;
+    // One complete JSON code fence only; no prose extraction, editing JSON,
+    // quote normalization, or selection among multiple candidate answers.
+    const fenced =
+      retainsInvalidCalibrationResponses(design) && typeof content === 'string'
+        ? content.trim().match(/^```(?:json)?\s*\n([\s\S]*?)\n```$/u)
+        : null;
+    result = JSON.parse(fenced ? fenced[1] : content);
   } catch {
-    throw new Error('Substantive failure: invalid structured output');
+    throw invalidJudgment('invalid_structured_output', 'invalid structured output');
   }
   const payload = JSON.parse(request.messages[1].content);
   if (job.category === 'generation') {
@@ -469,12 +513,12 @@ export function parseReplayResponse(design, request, job, raw) {
       typeof result.rationale !== 'string' ||
       !result.rationale.trim()
     )
-      throw new Error('Substantive failure: semantic labels or evidence spans invalid');
+      throw invalidJudgment('invalid_semantic_evidence', 'semantic labels or evidence spans invalid');
   } else if (
     (!Number.isInteger(result?.quality) || result.quality < 1 || result.quality > 10) &&
     result?.quality !== 'measurement_indeterminate'
   ) {
-    throw new Error('Substantive failure: quality label invalid');
+    throw invalidJudgment('invalid_quality_label', 'quality label invalid');
   } else if (
     job.category === 'quality' &&
     (((!Number.isInteger(result?.accuracy) || result.accuracy < 1 || result.accuracy > 5) &&
@@ -483,7 +527,7 @@ export function parseReplayResponse(design, request, job, raw) {
       typeof result.rationale !== 'string' ||
       !result.rationale.trim())
   ) {
-    throw new Error('Substantive failure: accuracy label or quality evidence invalid');
+    throw invalidJudgment('invalid_quality_evidence', 'accuracy label or quality evidence invalid');
   }
   return result;
 }

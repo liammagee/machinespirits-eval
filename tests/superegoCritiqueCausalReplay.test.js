@@ -11,6 +11,7 @@ import {
   selectReplayUnits,
   buildReplayRequest,
   parseReplayResponse,
+  classifyReplayResponse,
   summarizeReplay,
   consensus,
   readEvents,
@@ -18,7 +19,12 @@ import {
   worstCost,
   writeOnce,
 } from '../services/superegoCritiqueCausalReplay.js';
-import { executeReplay, checkReplayBudget, main } from '../scripts/run-superego-critique-causal-replay.js';
+import {
+  executeReplay,
+  checkReplayBudget,
+  loadRecoveryResponses,
+  main,
+} from '../scripts/run-superego-critique-causal-replay.js';
 import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
 import { createDurablePaidModelAttemptBudget } from '../services/durablePaidModelAttemptBudget.js';
 import {
@@ -996,4 +1002,149 @@ test('paid calibration CLI selects the calibration design and summary through th
   assert.equal(result.report.readiness, 'not_validated_against_independent_humans');
   assert.equal(result.report.primary, undefined);
   assert.equal(readJson(path.join(options.destination, 'settings.json')).mode, 'calibration');
+});
+
+test('amended calibration decodes one JSON fence and retains invalid answers without repairing evidence', (t) => {
+  const { design, plan } = calibrationFixture(t);
+  const job = plan.jobs.find((j) => j.category === 'semantic');
+  const request = buildReplayRequest(design, plan, job, new Map());
+  const raw = response(design, request);
+  const envelope = JSON.parse(raw.body);
+  const content = envelope.choices[0].message.content;
+  const withContent = (text) => ({
+    ...raw,
+    body: JSON.stringify({ ...envelope, choices: [{ finish_reason: 'stop', message: { content: text } }] }),
+  });
+  const fenced = withContent(`\`\`\`json\n${content}\n\`\`\``);
+  assert.throws(() => classifyReplayResponse(design, request, job, fenced), /invalid structured/);
+  design.response_failure_policy = 'retain_invalid_continue';
+  assert.deepEqual(classifyReplayResponse(design, request, job, fenced), JSON.parse(content));
+  const spoofed = withContent(JSON.stringify({ ...JSON.parse(content), response_status: 'invalid_response' }));
+  assert.equal(classifyReplayResponse(design, request, job, spoofed).response_status, undefined);
+  for (const bad of [
+    'oops',
+    `Here is the result:\n\`\`\`json\n${content}\n\`\`\``,
+    `\`\`\`json\n${content}\n\`\`\`\n\`\`\`json\n${content}\n\`\`\``,
+  ])
+    assert.equal(classifyReplayResponse(design, request, job, withContent(bad)).response_status, 'invalid_response');
+  const result = { ...JSON.parse(content), directive_fulfillment: 'full', material_change: 'action_only' };
+  const candidate = JSON.parse(request.messages[1].content).candidate[0];
+  for (const quote of ['invented evidence', JSON.stringify(`actionTarget":"${candidate.actionTarget}"`).slice(1, -1)]) {
+    result.candidate_spans = [quote];
+    const invalid = classifyReplayResponse(design, request, job, withContent(JSON.stringify(result)));
+    assert.equal(invalid.invalid_reason, 'invalid_semantic_evidence');
+    assert.equal(invalid.directive_fulfillment, undefined);
+  }
+  const payload = JSON.parse(request.messages[1].content);
+  payload.candidate[0].message = 'You’re ready.';
+  const apostropheRequest = {
+    ...request,
+    messages: [request.messages[0], { ...request.messages[1], content: JSON.stringify(payload) }],
+  };
+  result.candidate_spans = ["You're ready."];
+  assert.equal(
+    classifyReplayResponse(design, apostropheRequest, job, withContent(JSON.stringify(result))).invalid_reason,
+    'invalid_semantic_evidence',
+  );
+  assert.throws(
+    () => classifyReplayResponse(design, request, job, response(design, request, { refusal: true })),
+    /refusal/,
+  );
+  const drift = JSON.parse(raw.body);
+  drift.provider = 'another provider';
+  assert.throws(
+    () => classifyReplayResponse(design, request, job, { ...raw, body: JSON.stringify(drift) }),
+    /route drift/,
+  );
+});
+
+test('amended calibration finishes the fixed batch with invalid ratings distinct from missing and disagreement', async (t) => {
+  const { design, options, plan } = calibrationFixture(t);
+  design.response_failure_policy = 'retain_invalid_continue';
+  let calls = 0;
+  const result = await executeReplay({
+    ...options,
+    dispatch: async (_url, request) => {
+      calls++;
+      return response(design, request, { malformed: calls === 1 });
+    },
+  });
+  assert.equal(calls, 8);
+  assert.equal(result.report.processed_jobs, 8);
+  assert.equal(result.report.completed_jobs, 7);
+  assert.equal(result.report.invalid_jobs, 1);
+  assert.equal(result.report.missing_jobs, 0);
+  assert.equal(result.report.readiness, 'not_validated_against_independent_humans');
+  const field = plan.jobs[0].category === 'semantic' ? 'directive_fulfillment' : 'quality';
+  assert.equal(result.report.fields[field].invalid_pairs, 1);
+  assert.equal(result.report.fields[field].missing_pairs, 0);
+  assert.equal(result.report.fields[field].complete_pairs, 1);
+  assert.equal(result.report.fields[field].measurement_indeterminate, 0);
+  const events = readEvents(path.join(options.destination, 'run-ledger.jsonl'));
+  assert.equal(events.filter((e) => e.type === 'job_invalid_response').length, 1);
+  assert.equal(events.filter((e) => e.type === 'job_complete').length, 7);
+  assert.equal(events.at(-1).completed_jobs, 7);
+  assert.equal(events.at(-1).invalid_jobs, 1);
+});
+
+test('ordinary technical recovery preserves valid and invalid calibration answers and their reservations', async (t) => {
+  const { root, design, options } = calibrationFixture(t);
+  design.response_failure_policy = 'retain_invalid_continue';
+  let calls = 0;
+  await assert.rejects(
+    executeReplay({
+      ...options,
+      dispatch: async (_url, request) => {
+        calls++;
+        if (calls === 3) {
+          const error = new Error('Offline transport failure');
+          error.recoverable = true;
+          throw error;
+        }
+        return response(design, request, { malformed: calls === 1 });
+      },
+    }),
+    /Offline transport/,
+  );
+  const firstBytes = fs.readFileSync(path.join(options.destination, 'responses/1.json'));
+  const firstRequest = readJson(path.join(options.destination, 'requests/1.json'));
+  const result = await executeReplay({
+    ...options,
+    destination: path.join(root, 'missing-only'),
+    recoveryFrom: options.destination,
+    dispatch: async (_url, request) => {
+      calls++;
+      assert.notDeepEqual(request, firstRequest);
+      return response(design, request);
+    },
+  });
+  assert.equal(calls, 9);
+  assert.equal(result.report.completed_jobs, 7);
+  assert.equal(result.report.invalid_jobs, 1);
+  assert.deepEqual(fs.readFileSync(path.join(options.destination, 'responses/1.json')), firstBytes);
+  const events = readEvents(path.join(root, 'study-state', design.id, 'study-ledger.jsonl'));
+  assert.equal(events.filter((e) => e.type === 'study_model_attempt_dispatch_reserved').length, 9);
+});
+
+test('offline classification cannot override the original sealed calibration failure or dispatch paid recovery', async (t) => {
+  const { root, design, plan, options } = calibrationFixture(t);
+  let calls = 0;
+  const dispatch = async (_url, request) => {
+    calls++;
+    return response(design, request, { malformed: true });
+  };
+  await assert.rejects(executeReplay({ ...options, dispatch }), /invalid structured/);
+  const before = fs.readFileSync(path.join(options.destination, 'run-ledger.jsonl'));
+  design.response_failure_policy = 'retain_invalid_continue';
+  const recovered = loadRecoveryResponses(design, plan, options.destination);
+  assert.equal(recovered.responses.size, 1);
+  assert.equal(recovered.responses.get(plan.jobs[0].id).response_status, 'invalid_response');
+  const destination = path.join(root, 'blocked-recovery');
+  await assert.rejects(
+    executeReplay({ ...options, dispatch, destination, recoveryFrom: options.destination }),
+    /sealed technical predecessor/,
+  );
+  assert.equal(calls, 1);
+  assert.equal(fs.existsSync(destination), false);
+  assert.deepEqual(fs.readFileSync(path.join(options.destination, 'run-ledger.jsonl')), before);
 });
