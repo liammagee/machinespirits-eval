@@ -1,8 +1,9 @@
 # Superego critique causal replay
 
-Status: the original study was approved and its separately authorized launch
-stopped before any model output. The compatibility/recovery amendment below is
-proposed for review and GO; **no paid recovery is authorized by this edit**.
+Status: measurement review precedes any restart of the four-arm study. The
+original launch stopped before any model output. The calibration phase below
+is proposed for review; no calibration GO or launch instruction has been
+recorded. The original GO notes and failure artifacts remain unchanged.
 Workplan item: `superego-critique-causal-replay`.
 
 ## Question and evidence
@@ -88,6 +89,160 @@ primary:
   confidence_level: 0.95
   confidence_z: 1.959963984540054
 ```
+
+## Measurement calibration before reconsidering the full run
+
+The user requested validation and reconsideration on 2026-09-05, after reviewing
+costs, the generator choice and the complete-pair rule. This section registers
+**measurement calibration only**; it neither restarts the four-arm replay nor
+converts its original GO into calibration authority. Both phases share this
+one design file and maintained runner. They have distinct study IDs and ledgers;
+the failed replay's one attempt and $0.001408 reservation stay with that replay.
+The calibration cap is an additional maximum, not a reset or increase of the
+original $300 cap. Neither phase may silently launch the other.
+
+```yaml calibration
+id: superego-critique-measurement-calibration
+master_seed: 20260905
+sample_size: 48
+arms: [historical_revision]
+historical_model_routes:
+  anthropic.claude-haiku-4-5: anthropic/claude-haiku-4.5
+  openrouter.nemotron: nvidia/nemotron-3-nano-30b-a3b
+  openrouter.kimi-k2.5: moonshotai/kimi-k2.5
+request:
+  max_message_bytes: 65536
+attempts:
+  generation_planned: 0
+  semantic_planned: 96
+  quality_planned: 96
+  generation_reserve: 0
+  semantic_reserve: 6
+  quality_reserve: 6
+  total_planned: 192
+  recovery_reserve: 12
+  hard_ceiling: 204
+max_dollars: 15
+```
+
+**Offline validation findings.** Reconstruct the original packet and identity
+ledger exactly from the same 319 verified traces. All 48 original rows lack
+recorded context; one row represents a two-suggestion revision through only its
+first suggestion. Of the 48 identities, 35 concern later deliberation rounds
+and three contain the recorded critique-parser failure placeholder. These are
+structural counts, not semantic labels. Thus the original packet alone does
+not supply the replay judge's input, and this selected set is not a representative
+sample of the replay's 194 first-draft units. Do not use its determinate rate as
+an unbiased estimate of full-study coverage.
+
+Retain **all 48 identities**, including parser failures and later rounds; no
+replacement or outcome-based exclusion. The derivative supplies all recorded
+pre-draft `context_input.rawContext` fields, every public draft/revision
+suggestion, and the complete critique including confidence. It contains no
+historical scores, lexical statistics, private reasoning or later learner turns.
+Do not overwrite the original packet or labels. Missing source data, invalid
+source hashes or a request too large for the declared byte limit stops preparation
+before calls; no truncation, invented context or sample replacement.
+
+The existing builder and parser serve both calibration and prospective judging.
+Each historical revision receives GPT-5.4 and Sonnet 4.6 semantic judgments,
+plus fresh GPT-5.4 and Sonnet 4.6 quality judgments: **192 fixed requests, no
+Nemotron generation**. Models, provider pins, prices, decoding, prompts and
+2,048-output-token limit are those in the study block above. Semantic readers
+see context, draft, actual critique and revision. Quality readers see only
+context and revision. Seeded independent job orders and opaque presentation IDs
+hide source, model, profile, round and the other readers' labels. Historical
+model aliases are explicitly resolved above from the recorded routes and repository provider configuration; an unknown alias or any source
+model reused as a judge stops preparation. The private plan alone maps these IDs to the original packet identities.
+
+Some recorded calibration contexts exceed the replay's 16,384-byte ceiling.
+The calibration's 65,536-byte ceiling accommodates them without editing input.
+For **calibration only**, reserve using the actual serialized message byte count
+plus the same 1,024-token framing allowance, at the pinned seat's input rate,
+plus the full 2,048-token output allowance and 10% fee allowance. Round every
+reservation upward to the microdollar. Never refund unused reservation capacity;
+reported actual cost remains separate. Preparation builds every fixed request
+and checks the sum plus six worst-cost replacements in each judging category
+against **$15**. The verified plan reserves $12.426985 for its 192 requests, or
+$14.342107 including the full recovery reserve; these are conservative
+reservations, not measured bills. The largest request is 38,615 bytes and 36
+of the 192 requests exceed the original replay byte limit. Each dispatch
+independently checks this dollar bound, the 102 semantic/102 quality category limits, the 204-attempt total, and the one-replacement
+limit per failed job before calling. No generation reserve exists. Shared launch
+admission, create-once destinations, durable append-only attempt accounting,
+missing-work-only technical recovery and private archiving are inherited from
+the maintained runner. The original JSON-format recovery exception concerns the
+original generator failure only and is not a calibration retry policy.
+
+**What validation requires.** Prepare four blank human coding packets using
+exactly these inputs and label definitions: two semantic readers and two public
+quality readers. Two independent people can each complete and save the quality
+sheet first,
+then receive the semantic sheet. Their saved quality ratings must not be revised
+after seeing critiques; the coordinator withholds semantic sheets until that
+point. Separate people per role are also acceptable. Human readers work
+independently and without access to model ratings or the private identity plan. No agent-authored
+rating is passed off as human reference evidence. Preserve each initial rating;
+human disagreement remains `measurement_indeterminate`, with no tie-breaker used
+to manufacture a reference label. Where humans agree determinately, compare each
+model separately against that reference, including full-versus-nonfull confusion,
+false-full judgments, partial/none distinctions, material-change categories and
+quality/accuracy score differences. Retain the denominator of 48, and report
+unknown, N/A and missing cases separately. Inspect cited evidence for substantive
+errors; exact substring matching only validates quote locations.
+
+The model phase reports exact agreement, determinate consensus, confusion tables,
+missingness and numerical score differences, including agreement on uncertainty
+as a separate count. Two matching indeterminate labels do not count as successful
+measurement; matching accuracy N/A is not determinate accuracy. **There is no
+model-only PASS or automatic launch/promotion rule.** The calibration is a
+fixed diagnostic study, not a test of causal effectiveness. Without independent
+human ratings, the result remains `not_validated_against_independent_humans`.
+No effect-size, power, model-superiority or learner-outcome claim follows from it.
+These 48 existing examples are calibration material, not an untouched validation
+set after prompts have been revised using their ratings. Any later validation
+claim must explicitly address that reuse and reference-label coverage.
+
+**Reconsidered analysis policy.** Retain disagreements as indeterminate; do not
+make readers agree by averaging, a tolerance chosen after ratings, or repeated
+calls. The original all-194-pairs-determinate rule is too brittle to assume it
+will provide an answer. For illustration only, if each pair independently had
+99% probability of being determinate, all 194 would be determinate only 14.2%
+of the time; at 98%, only 2.0%. These calculations are hypothetical, not observed
+judge performance or an independence claim about this corpus.
+
+The recommended next design decision is to emphasize the existing all-unit
+identification bounds and report uncertainty explicitly, rather than dropping
+unknown pairs or treating a descriptive complete-case mean as the full-corpus
+effect. Bounds are not confidence intervals. Any replacement confirmatory rule
+must account for both unidentified outcomes and sampling/model uncertainty; do
+not merely apply the old confidence interval to whichever pairs remain. Until
+calibration is reviewed, retain the original executable decision rule as the
+record of the uncompleted replay; **do not restart it**. No new causal result has
+been observed and no threshold is being chosen against treatment outcomes.
+
+For public quality, report individual rater scores and their differences even
+when exact consensus is indeterminate. A 7-versus-8 disagreement is informative
+about instrument resolution but does not license a consensus of 7.5. Any later
+paired comparisons within each rater remain separate descriptive evidence.
+Nemotron remains a practical continuity/cost choice for the proposed replay,
+not a validated best generator; calibration uses no generation and cannot resolve
+that choice or establish replay-model generalization.
+
+Commands (preparation is provider-free):
+
+```sh
+node scripts/run-superego-critique-causal-replay.js --mode calibration --prepare --output <new-directory>
+```
+
+Paid mode uses the same `--mode calibration` with `--launch --accept-charges`,
+a committed calibration GO note and its provenance commit, and a fresh output
+directory. It requires separate launch authority after design approval. A GO
+note is not created by preparation. The fixed batch stops on technical or
+substantive response failure under the existing recovery rules; disagreement
+stops inference in that field, not the collection of the predeclared batch.
+The end of judging is `HANDOFF_PENDING` until private archiving is verified;
+scientific readiness remains unresolved until independent reference review.
 
 ## Frozen units, exclusions and matching
 

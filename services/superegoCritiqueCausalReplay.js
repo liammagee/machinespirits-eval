@@ -35,18 +35,27 @@ export function writeOnce(file, value) {
   }
 }
 
-export function loadReplayDesign(root) {
+export function loadReplayDesign(root, { mode = 'replay' } = {}) {
+  if (!['replay', 'calibration'].includes(mode)) throw new Error('Unknown study mode');
   const text = fs.readFileSync(path.join(root, DESIGN_PATH), 'utf8');
   const block = text.match(/```yaml study\n([\s\S]*?)\n```/u);
   if (!block) throw new Error('Design is missing its executable study block');
-  const design = yaml.parse(block[1]);
+  let design = yaml.parse(block[1]);
+  if (mode === 'calibration') {
+    const calibration = text.match(/```yaml calibration\n([\s\S]*?)\n```/u);
+    if (!calibration) throw new Error('Design is missing its calibration settings');
+    const settings = yaml.parse(calibration[1]);
+    design = { ...design, ...settings, mode, request: { ...design.request, ...settings.request }, primary: null };
+  }
   const a = design.attempts;
+  const calibration = mode === 'calibration';
   if (
-    JSON.stringify(design.arms) !== JSON.stringify(ARMS) ||
-    a.generation_planned !== design.sample_size * 3 ||
-    a.semantic_planned !== design.sample_size * 8 ||
-    a.quality_planned !== design.sample_size * 8 ||
-    a.total_planned !== design.sample_size * 19 ||
+    JSON.stringify(design.arms) !== JSON.stringify(calibration ? ['historical_revision'] : ARMS) ||
+    a.generation_planned !== design.sample_size * (calibration ? 0 : 3) ||
+    a.semantic_planned !== design.sample_size * (calibration ? 2 : 8) ||
+    a.quality_planned !== design.sample_size * (calibration ? 2 : 8) ||
+    a.total_planned !== design.sample_size * (calibration ? 4 : 19) ||
+    (calibration && a.generation_reserve !== 0) ||
     a.recovery_reserve !== a.generation_reserve + a.semantic_reserve + a.quality_reserve ||
     a.hard_ceiling !== a.total_planned + a.recovery_reserve ||
     a.recovery_reserve <= 0
@@ -94,7 +103,7 @@ export function publicDraft(entry) {
     actionTarget: s.actionTarget ?? s.target ?? null,
   }));
 }
-function validPublic(value) {
+export function validPublic(value) {
   const fields = ['type', 'priority', 'title', 'message', 'actionType', 'actionTarget'];
   return (
     Array.isArray(value) &&
@@ -225,8 +234,8 @@ export function randomizeReplayUnits(units, seed) {
   return { units: randomized, jobs: [...generation, ...judging] };
 }
 
-export async function prepareReplayPlan(root, { logs = null } = {}) {
-  const design = loadReplayDesign(root);
+export async function loadFrozenReplayCorpus(root, { logs = null, mode = 'replay' } = {}) {
+  const design = loadReplayDesign(root, { mode });
   const followup = readJson(path.join(root, design.historical_followup));
   const ledgerBytes = fs.readFileSync(path.join(root, design.source_ledger));
   if (sha256(ledgerBytes) !== followup.provenance.sourceLedgerSha256)
@@ -249,6 +258,11 @@ export async function prepareReplayPlan(root, { logs = null } = {}) {
     const bytes = await format(JSON.stringify(value), { ...prettier, parser: 'json' });
     if (sha256(bytes) !== expected) throw new Error('Historical semantic packet failed exact regeneration');
   }
+  return { design, followup, ledgerBytes, traceMap, links, packet };
+}
+
+export async function prepareReplayPlan(root, options = {}) {
+  const { design, followup, ledgerBytes, traceMap, links, packet } = await loadFrozenReplayCorpus(root, options);
   const calibration = new Set(packet.identityLedger.rows.map((r) => r.dialogue_id));
   const selected = selectReplayUnits(links, traceMap, calibration);
   if (selected.units.length !== design.sample_size)
@@ -291,6 +305,7 @@ const QUALITY_PROMPT = `Independently judge only this public tutor output in its
 export function outputFor(plan, job, responses) {
   const unit = plan.units.find((u) => u.unit_key === job.unit);
   if (!unit) throw new Error('Unknown frozen unit');
+  if (job.arm === 'historical_revision' && plan.mode === 'calibration') return unit.revision;
   if (job.arm === 'draft_only') return unit.draft;
   const output = responses.get(`${job.unit}/${job.arm}/generator`);
   if (!output) throw new Error(`Missing generated output for ${job.id}`);
@@ -348,15 +363,23 @@ export function buildReplayRequest(design, plan, job, responses) {
     },
   };
 }
-export function worstCost(design, seat) {
+export function worstCost(design, seat, request = null) {
   const route = design.models[seat];
+  const inputBytes = requestInputBytes(design, request);
   return (
     Math.ceil(
-      ((design.request.max_message_bytes + design.request.framing_token_allowance) * route.prompt_price_per_million +
+      ((inputBytes + design.request.framing_token_allowance) * route.prompt_price_per_million +
         design.request.max_tokens * route.completion_price_per_million) *
         design.request.fee_multiplier,
     ) / 1e6
   );
+}
+function requestInputBytes(design, request) {
+  if (design.mode !== 'calibration') return design.request.max_message_bytes;
+  if (!Array.isArray(request?.messages)) throw new Error('Calibration reservation requires the actual request');
+  const bytes = Buffer.byteLength(JSON.stringify(request.messages));
+  if (bytes > design.request.max_message_bytes) throw new Error('Request exceeds registered byte ceiling before call');
+  return bytes;
 }
 function textLeaves(value) {
   if (typeof value === 'string') return [value];
@@ -400,14 +423,14 @@ export function parseReplayResponse(design, request, job, raw) {
     !usage ||
     !Number.isInteger(usage.prompt_tokens) ||
     usage.prompt_tokens < 0 ||
-    usage.prompt_tokens > design.request.max_message_bytes + design.request.framing_token_allowance ||
+    usage.prompt_tokens > requestInputBytes(design, request) + design.request.framing_token_allowance ||
     !Number.isInteger(usage.completion_tokens) ||
     usage.completion_tokens < 0 ||
     usage.completion_tokens > design.request.max_tokens ||
     (usage.cost !== undefined &&
       (!Number.isFinite(usage.cost) ||
         usage.cost < 0 ||
-        usage.cost * design.request.fee_multiplier > worstCost(design, job.seat)))
+        usage.cost * design.request.fee_multiplier > worstCost(design, job.seat, request)))
   ) {
     throw new Error('Provider usage exceeds registered bounds or is unaccountable');
   }
@@ -432,7 +455,11 @@ export function parseReplayResponse(design, request, job, raw) {
       !['none', 'surface_only', 'reasoning_only', 'action_only', 'mixed', 'measurement_indeterminate'].includes(
         result?.material_change,
       ) ||
-      !spansValid(result.critique_spans, payload.reference_critique) ||
+      !spansValid(
+        result.critique_spans,
+        payload.reference_critique,
+        result.directive_fulfillment !== 'measurement_indeterminate',
+      ) ||
       !spansValid(
         result.candidate_spans,
         payload.candidate,
