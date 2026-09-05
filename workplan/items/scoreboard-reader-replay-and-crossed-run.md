@@ -128,3 +128,9 @@ are read.
   Record for the seat table: Sonnet 5 in the analysis seat leaves about 2 in
   100 turns unanalyzed under the strict validator; Luna's §6.25 and §6.26
   record has none.
+- 2026-09-05: user ruling (chat, about 13:05 UTC) on the block A seal. The 2
+  in 100 unanalyzed learner turns on the Sonnet 5 analysis seat are acceptable
+  for the report. The seal `learner_analysis_incomplete` is not a stop for this
+  run; the run continues to world 102 under the GO note as written, with no
+  seat change. The report discloses, per block, the seal status and the
+  unanalyzed turns with their dialogue and turn numbers.
