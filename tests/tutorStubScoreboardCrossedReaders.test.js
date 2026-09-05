@@ -166,6 +166,16 @@ test('reader packets carry public text only and withhold the tutor reply at the 
   const json = JSON.stringify(packets);
   assert.ok(!json.includes('not for readers'), 'no trace internals reach the reader');
   assert.ok(!json.includes('entitlement_status'), 'no board fields reach the reader');
+  assert.ok(!json.includes(d.id), 'the dialogue id names the cell, so it never enters a packet');
+  for (const word of ['board_blind', 'overconfident', 'low_agency', 'policy', 'profile']) {
+    assert.ok(!json.includes(word), `the reader is not told the cell: ${word}`);
+  }
+  assert.ok(!/\bboard\b/u.test(json), 'the reader is not told which tutor it reads');
+  assert.deepEqual(
+    packets.warrant.cases.map((c) => c.sample_id),
+    ['t1', 't2'],
+    'sample ids carry the turn alone',
+  );
   const t1 = packets.warrant.cases.find((c) => c.decision_turn === 1);
   assert.deepEqual(
     t1.public_record.map((r) => `${r.turn}:${r.speaker}`),
@@ -237,9 +247,22 @@ test('a live run makes the planned calls once, resumes with none, and the scorer
   assert.equal(first.run.status, 'complete');
   assert.deepEqual(calls[0].agentConfig, { provider: 'codex', model: 'gpt-5.6-luna' });
   assert.equal(calls[0].opts.outputSchema.required[0], 'cases_by_sample_id');
+  assert.deepEqual(calls[0].sampleIds, ['t1', 't2'], 'the model sees turn ids only');
+  assert.ok(!calls.some((c) => /board|overconfident|low_agency/u.test(JSON.stringify(c.sampleIds))));
   const again = await runScoreboardCrossedReaders(opts);
   assert.equal(again.callsMade, 0, 'existing responses are kept; nothing is resampled');
   assert.equal(calls.length, 16);
+  const stored = JSON.parse(
+    fs.readFileSync(
+      path.join(opts.outDir, 'responses', 'reader-1', `${WORLD_ID}-overconfident-board-r1.warrant.json`),
+      'utf8',
+    ),
+  );
+  assert.deepEqual(
+    Object.keys(stored.cases_by_sample_id),
+    [`${WORLD_ID}-overconfident-board-r1:t1`, `${WORLD_ID}-overconfident-board-r1:t2`],
+    'stored responses are keyed by dialogue and turn again',
+  );
 
   const score = scoreScoreboardCrossedRun({ rootDirs: opts.rootDirs, readerDir: opts.outDir, repoRoot: process.cwd() });
   assert.equal(score.dialogues, 4);

@@ -114,6 +114,14 @@ function publicTurns(events) {
   }));
 }
 
+/**
+ * The sample id the reader sees is the turn alone (`t3`). The dialogue id
+ * names the learner profile and the tutor policy, so it never enters a
+ * packet; `sampleKey` joins the two again when a response is stored.
+ */
+export const packetSampleId = (turn) => `t${turn}`;
+export const sampleKey = (dialogueId, packetId) => `${dialogueId}:${packetId}`;
+
 /** Build the two public-text packets for one dialogue. */
 export function buildReaderPackets(dialogue) {
   const turns = publicTurns(dialogue.events);
@@ -127,12 +135,12 @@ export function buildReaderPackets(dialogue) {
       if (prev.learner) record.push({ turn: prev.turn, speaker: 'learner', text: prev.learner });
       if (prev.turn < t.turn && prev.tutor) record.push({ turn: prev.turn, speaker: 'tutor', text: prev.tutor });
     }
-    return { sample_id: `${dialogue.id}:t${t.turn}`, decision_turn: t.turn, public_record: record };
+    return { sample_id: packetSampleId(t.turn), decision_turn: t.turn, public_record: record };
   });
   const deliveryCases = body
     .filter((t) => typeof t.tutor === 'string' && t.tutor.trim())
     .map((t) => ({
-      sample_id: `${dialogue.id}:t${t.turn}`,
+      sample_id: packetSampleId(t.turn),
       turn: t.turn,
       learner_turn: t.learner,
       tutor_reply: t.tutor,
@@ -141,7 +149,6 @@ export function buildReaderPackets(dialogue) {
     warrant: {
       schema: SCOREBOARD_CROSSED_READER_SCHEMA,
       kind: 'warrant',
-      dialogue_id: dialogue.id,
       instructions: [
         'Each case is one decision point: the public record through the learner turn named by decision_turn. The tutor reply at that turn is withheld.',
         'For each case answer commitment_transition_warranted: whether the tutor should change its held approach beyond this point, given only the public record. yes means a change is warranted; no means the held approach should continue; use uncertain only when the record does not decide it.',
@@ -154,7 +161,6 @@ export function buildReaderPackets(dialogue) {
     delivery: {
       schema: SCOREBOARD_CROSSED_READER_SCHEMA,
       kind: 'delivery',
-      dialogue_id: dialogue.id,
       instructions: [
         'Each case is one learner turn and the tutor reply to it. Judge only what the reply does in public.',
         'challenge_delivered: the reply asks the learner to back a claim, or names a claim as unsupported.',
@@ -219,6 +225,16 @@ function parseReaderResponse(text, sampleIds, label) {
   const want = [...sampleIds].sort();
   if (JSON.stringify(got) !== JSON.stringify(want)) throw new Error(`${label} response sample-id mismatch`);
   return parsed;
+}
+
+/** Re-key a parsed response from packet ids (`t3`) to stored keys (`<dialogue id>:t3`). */
+function keyResponseByDialogue(parsed, dialogueId) {
+  return {
+    ...parsed,
+    cases_by_sample_id: Object.fromEntries(
+      Object.entries(parsed.cases_by_sample_id).map(([id, c]) => [sampleKey(dialogueId, id), c]),
+    ),
+  };
 }
 
 export function plannedReaderCalls(dialogues, readerCount = DEFAULT_READER_COUNT) {
@@ -335,7 +351,7 @@ export async function runScoreboardCrossedReaders({
             reader_model: readerModel,
             kind,
             dialogue_id: d.id,
-            ...parsed,
+            ...keyResponseByDialogue(parsed, d.id),
           });
           run.calls_completed += 1;
           callsMade += 1;
@@ -489,7 +505,7 @@ export function scoreScoreboardCrossedRun({ rootDirs, readerDir = null, repoRoot
       const warrant = readResponses(readerDir, d.id, 'warrant');
       const delivery = readResponses(readerDir, d.id, 'delivery');
       for (const row of board.rows.filter((r) => r.speaker === 'tutor')) {
-        const sampleId = `${d.id}:t${row.turn}`;
+        const sampleId = sampleKey(d.id, packetSampleId(row.turn));
         const challenged = has(row.fields.challenge, 'issued');
         const w = consensus(
           warrant.map((resp) => resp.cases_by_sample_id?.[sampleId]?.commitment_transition_warranted),
