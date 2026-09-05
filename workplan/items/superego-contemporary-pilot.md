@@ -1,7 +1,7 @@
 ---
 id: superego-contemporary-pilot
 title: Prepare a contemporary four-arm critique pilot with human reference measurement
-status: review
+status: blocked
 type: experiment
 priority: P2
 owner: codex
@@ -9,7 +9,8 @@ source: manual
 created: 2026-09-05
 updated: 2026-09-05
 verification: Reproduce the 12-draft plan without providers; verify direct-route payloads, ID evidence, blinding, human handoffs, shared attempt and dollar ceilings, create-once recovery and focused mocked regressions; publish the reviewed design and hosted CI before GO or paid launch.
-branch: codex/superego-contemporary-pilot
+branch: codex/superego-contemporary-generation
+blocked_by: The sixth draft exhausted the fixed output-token limit; the registered stop rule prohibits replacement or continuation from a truncated draft.
 claim_status: planned
 links:
   items:
@@ -18,13 +19,14 @@ links:
   notes:
     - notes/superego-contemporary-pilot-design.md
     - notes/2026-09-05-superego-contemporary-pilot-go.md
+    - notes/2026-09-05-superego-contemporary-generation-truncation.md
 ---
 
 The user accepted the recommendation to replace continued historical
 calibration spending with a smaller contemporary instrument pilot. Scope here:
 design, focused implementation, zero-call verification, commit, push, PR and
-hosted CI. The subsequent GO is recorded below; provider probes and paid
-launches remain outside the current authorization.
+hosted CI. Subsequent GO and the separately authorized generation launch are
+recorded below. Judging remains outside the current launch authorization.
 
 Acceptance: six existing philosophy contexts with complete bounded public
 inputs; two fresh drafts each; all four arms; direct Sonnet generation and Sol
@@ -56,3 +58,12 @@ runtime are unchanged. PR #1054's implementation passed all 18 hosted checks
 (three other checks skipped). No provider call or launch has been made.
 Merge and separate explicit generation launch authority remain necessary;
 human references must precede the separately authorized judging launch.
+
+2026-09-05 generation: verified PR #1054 merged, then executed the user's
+explicit "Launch generation" instruction from clean merged main. Five drafts
+passed; the sixth returned HTTP 200 with `max_tokens` at 2,048 output tokens
+and incomplete JSON. The runner stopped without replacement. Six attempts,
+$0.422400 reserved and $0.066576 usage-derived cost; no critique, revision,
+judging or human packet. The linked failure report records the exact cause,
+unchanged claim boundary and byte-verified private archive. The fixed truncation
+rule blocks recovery; unused budget is not permission to resample.

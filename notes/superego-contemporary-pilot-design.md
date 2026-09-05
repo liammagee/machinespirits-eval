@@ -1,6 +1,6 @@
 # Contemporary superego critique pilot
 
-Prospective design, 2026-09-05. **[GO recorded](2026-09-05-superego-contemporary-pilot-go.md); no launch recorded.**
+Prospective design, 2026-09-05. **[GO recorded](2026-09-05-superego-contemporary-pilot-go.md); [generation blocked by truncation](2026-09-05-superego-contemporary-generation-truncation.md).**
 This is a new study. The historical replay, its calibration, approvals,
 attempts and results remain unchanged. This pilot asks whether a separate
 critique improves a current model's public teaching and whether independent
