@@ -356,7 +356,11 @@ detector, added on 2026-08-17 in PR #654 so the L1 recovery can replay a
 historical run with the exact bytes used then. The replay validator and the
 deconfound paid gate record this digest and continue; the validator refuses
 only on the version string. The user ruled on 2026-09-05 to leave the test as
-it is. No code changed.
+it is. No code changed in PR #1026.
+
+Later the same day PR #1030 (card `qdv1-replay-test-pin-record-only`) changed
+this test: it now asserts the digest record the replay writes, not the bytes.
+That card holds the current state of item 7.
 
 The two other test pins this card first listed are gone. In
 `tests/tutorStubResistanceSemanticValidation.test.js` the one assertion that
