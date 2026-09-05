@@ -3,7 +3,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 
-import { reconcileSharedModelAttemptLedger } from './durableAttemptJournal.js';
+import { reconcileSharedModelAttemptLedger, assertNoRetainedResponseRedispatch } from './durableAttemptJournal.js';
 
 function repositoryRelativePath(root, value, label) {
   if (!value || path.isAbsolute(value)) throw new Error(`${label} must be repository-relative`);
@@ -592,7 +592,84 @@ export function sealInterruptedPaidStudyLaunch({
   }
 }
 
-function validateStudyLedger({ events, studyId, spendCap, recoveryFrom }) {
+// Registered runners can retain a saved response as a terminal invalid job.
+// This admits only missing-work continuation: every dispatched predecessor
+// attempt must have a journal-matched durable response and a retained unit id.
+// Scientific classification remains the caller's responsibility. No old seal
+// is edited, and the retained ids become shared fail-before-reservation rules.
+function isSealedRetainedResponseFailure(seal, studyEvents, retainedUnits) {
+  if (
+    !retainedUnits.length ||
+    seal?.status !== 'technical_failure' ||
+    seal.recovery_permitted !== false ||
+    !path.isAbsolute(seal.destination || '') ||
+    path.dirname(seal.run_ledger || '') !== seal.destination
+  )
+    return false;
+  try {
+    const events = readJsonLines(seal.run_ledger, 'retained-response predecessor');
+    const reservations = events.filter((e) => e.type === 'model_attempt_dispatch_reserved');
+    const started = events.filter((e) => e.type === 'model_attempt_dispatch_started');
+    const persisted = events.filter((e) => e.type === 'attempt_response_persisted');
+    const completed = events.filter((e) => e.type === 'attempt_completed');
+    const canonical = studyEvents.filter(
+      (e) => e.type === 'study_model_attempt_dispatch_reserved' && e.destination === seal.destination,
+    );
+    const terminal = events.at(-1);
+    const launch = events.find((e) => e.type === 'launch_admitted');
+    const studyLaunch = studyEvents.findLast((e) => e.type === 'study_launch_admitted');
+    if (
+      !reservations.length ||
+      seal.reserved_in_run !== reservations.length ||
+      started.length !== reservations.length ||
+      persisted.length !== reservations.length ||
+      completed.length !== reservations.length ||
+      canonical.length !== reservations.length ||
+      terminal?.type !== 'run_sealed' ||
+      terminal.status !== seal.status ||
+      terminal.recovery_permitted !== false ||
+      launch?.study_id !== studyLaunch?.study_id ||
+      studyLaunch?.run_ledger !== seal.run_ledger ||
+      events.some((e) =>
+        [
+          'model_attempt_reserved',
+          'attempt_failed',
+          'attempt_interrupted_after_dispatch',
+          'attempt_cancelled_before_dispatch',
+        ].includes(e.type),
+      ) ||
+      new Set(reservations.map((e) => e.unit_id)).size !== reservations.length
+    )
+      return false;
+    return reservations.every((reservation) => {
+      const saved = persisted.filter((e) => e.attempt_id === reservation.attempt_id);
+      const dispatched = started.filter((e) => e.attempt_id === reservation.attempt_id);
+      const done = completed.filter((e) => e.attempt_id === reservation.attempt_id);
+      const accounted = canonical.filter(
+        (e) =>
+          e.attempt_id === reservation.attempt_id &&
+          e.unit_id === reservation.unit_id &&
+          e.study_reserved === reservation.study_reserved,
+      );
+      if (
+        !retainedUnits.includes(reservation.unit_id) ||
+        saved.length !== 1 ||
+        dispatched.length !== 1 ||
+        done.length !== 1 ||
+        accounted.length !== 1 ||
+        path.dirname(saved[0].response_path || '') !== path.join(seal.destination, 'responses') ||
+        !fs.lstatSync(saved[0].response_path).isFile()
+      )
+        return false;
+      const bytes = fs.readFileSync(saved[0].response_path);
+      return createHash('sha256').update(bytes).digest('hex') === saved[0].response_sha256;
+    });
+  } catch {
+    return false;
+  }
+}
+
+function validateStudyLedger({ events, studyId, spendCap, recoveryFrom, retainedResponseUnits }) {
   const created = events.find((event) => event.type === 'study_created');
   if (!created) {
     if (events.length) throw new Error('paid study ledger is missing its creation event');
@@ -615,11 +692,13 @@ function validateStudyLedger({ events, studyId, spendCap, recoveryFrom }) {
   const zeroProviderStartupRecovery = isSealedZeroProviderStartupFailure(seal);
   const reportBackedActionOutcomeRecovery = isSealedReportBackedActionOutcomeFailure(seal);
   const initialJsonModeRecovery = isSealedInitialJsonModeRejection(seal, events);
+  const retainedResponseRecovery = isSealedRetainedResponseFailure(seal, events, retainedResponseUnits);
   const zeroProviderStartupFailures = events.filter(isSealedZeroProviderStartupFailure).length;
   if (
     lastSealIndex < lastLaunchIndex ||
     seal?.destination !== recoveryFrom ||
     (!ordinaryRecovery &&
+      !retainedResponseRecovery &&
       !initialJsonModeRecovery &&
       !reportBackedActionOutcomeRecovery &&
       (!zeroProviderStartupRecovery || zeroProviderStartupFailures !== 1))
@@ -640,8 +719,16 @@ export function admitPaidStudyLaunch({
   studyId,
   studyStateRoot,
   recoveryFrom,
+  retainedResponseUnits = [],
   ...contract
 }) {
+  if (
+    !Array.isArray(retainedResponseUnits) ||
+    retainedResponseUnits.some((unit) => typeof unit !== 'string' || !unit.trim()) ||
+    new Set(retainedResponseUnits).size !== retainedResponseUnits.length ||
+    (!recoveryFrom && retainedResponseUnits.length)
+  )
+    throw new Error('retained response units require unique unit ids and a recovery predecessor');
   if (!destination || !path.isAbsolute(destination)) throw new Error('destination must be absolute');
   if (path.basename(ledgerName) !== ledgerName || !ledgerName.endsWith('.jsonl')) {
     throw new Error('ledger name must be a JSONL filename');
@@ -668,6 +755,7 @@ export function admitPaidStudyLaunch({
       studyId,
       spendCap: verified.spend_cap,
       recoveryFrom: resolvedRecoveryFrom,
+      retainedResponseUnits,
     });
     studyLedger = fs.openSync(lease.studyLedgerPath, 'a');
     if (!events.length) {
@@ -709,6 +797,7 @@ export function admitPaidStudyLaunch({
     study_ledger: lease.studyLedgerPath,
     launch_kind: resolvedRecoveryFrom ? 'recovery' : 'initial',
     ...(resolvedRecoveryFrom ? { recovery_from: resolvedRecoveryFrom } : {}),
+    ...(retainedResponseUnits.length ? { retained_response_units: retainedResponseUnits } : {}),
   });
   appendJsonLine(studyLedger, {
     type: 'study_launch_admitted',
@@ -717,6 +806,7 @@ export function admitPaidStudyLaunch({
     run_ledger: ledgerPath,
     launch_kind: resolvedRecoveryFrom ? 'recovery' : 'initial',
     ...(resolvedRecoveryFrom ? { recovery_from: resolvedRecoveryFrom } : {}),
+    ...(retainedResponseUnits.length ? { retained_response_units: retainedResponseUnits } : {}),
     reserved_before_launch:
       studyReserved +
       readJsonLines(lease.studyLedgerPath, 'paid study attempt ledger').filter(
@@ -746,6 +836,10 @@ export function admitPaidStudyLaunch({
     },
     allocateModelAttemptCapacity(count, detail = {}) {
       ensureOpen();
+      assertNoRetainedResponseRedispatch(
+        readJsonLines(lease.studyLedgerPath, 'paid study ledger'),
+        detail.unit_id || detail.unitId || detail.unit,
+      );
       if (!Number.isInteger(count) || count < 1) throw new Error('model-attempt capacity must be a positive integer');
       if (totalStudyReserved() + activeCapacityTotal() + count > verified.spend_cap) {
         throw new Error(
@@ -776,6 +870,7 @@ export function admitPaidStudyLaunch({
     },
     attemptLedgerEnvironment({ unitId, capacity, maximumTurn = null } = {}) {
       ensureOpen();
+      assertNoRetainedResponseRedispatch(readJsonLines(lease.studyLedgerPath, 'paid study ledger'), unitId);
       const registered = activeCapacities.get(capacity?.id);
       if (!unitId || !registered || registered.count !== capacity.count) {
         throw new Error('attempt ledger environment requires one active matching capacity allocation');
@@ -827,6 +922,10 @@ export function admitPaidStudyLaunch({
     },
     reserveModelAttempts(count = 1, detail = {}) {
       ensureOpen();
+      assertNoRetainedResponseRedispatch(
+        readJsonLines(lease.studyLedgerPath, 'paid study ledger'),
+        detail.unit_id || detail.unitId || detail.unit,
+      );
       if (!Number.isInteger(count) || count < 1)
         throw new Error('model-attempt reservation must be a positive integer');
       if (totalStudyReserved() + count > verified.spend_cap) {

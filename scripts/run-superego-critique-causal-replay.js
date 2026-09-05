@@ -202,6 +202,8 @@ export async function executeReplay({
     studyStateRoot,
     destination: path.resolve(destination),
     recoveryFrom: recoveryFrom ? path.resolve(recoveryFrom) : undefined,
+    retainedResponseUnits:
+      recoveryFrom && retainsInvalidCalibrationResponses(design) ? [...recovered.responses.keys()] : [],
   });
   const budget = createDurablePaidModelAttemptBudget({ admission, limit: design.attempts.hard_ceiling });
   const responses = recovered.responses;
@@ -283,6 +285,7 @@ export async function executeReplay({
       type: recoveryFrom ? 'resuming' : 'plan_ready',
       seed: plan.seed,
       recovered_jobs: responses.size,
+      retained_invalid_jobs: [...responses.values()].filter((r) => r.response_status === 'invalid_response').length,
     });
     transition(design.attempts.generation_planned ? 'GENERATING' : 'AUDITING');
     for (const job of plan.jobs) {

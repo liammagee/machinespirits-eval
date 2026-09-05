@@ -16,6 +16,15 @@ const TERMINAL_EVENT_BY_DISPOSITION = Object.freeze({
   interrupted_after_dispatch: 'attempt_interrupted_after_dispatch',
 });
 
+export function assertNoRetainedResponseRedispatch(studyEvents, unitId) {
+  if (
+    studyEvents.some(
+      (event) => event.type === 'study_launch_admitted' && event.retained_response_units?.includes(unitId),
+    )
+  )
+    throw new Error(`Cannot redispatch retained response unit: ${unitId}`);
+}
+
 function appendDurableJsonLine(filePath, event) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   const descriptor = fs.openSync(filePath, 'a');
@@ -180,6 +189,7 @@ export function createSharedModelAttemptLedgerClient({
       }
       return withDirectoryLock(lockPath, () => {
         const studyEvents = readEvents(studyLedgerPath);
+        assertNoRetainedResponseRedispatch(studyEvents, unitId);
         const studyReservations = studyEvents.filter((event) => event.type === 'study_model_attempt_dispatch_reserved');
         const capacityReservations = studyReservations.filter((event) => event.capacity_id === capacityId);
         if (studyReservations.length >= hardCeiling) {

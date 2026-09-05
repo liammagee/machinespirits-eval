@@ -1126,7 +1126,7 @@ test('ordinary technical recovery preserves valid and invalid calibration answer
   assert.equal(events.filter((e) => e.type === 'study_model_attempt_dispatch_reserved').length, 9);
 });
 
-test('offline classification cannot override the original sealed calibration failure or dispatch paid recovery', async (t) => {
+test('approved calibration amendment retains the sealed invalid response and collects only never-dispatched jobs', async (t) => {
   const { root, design, plan, options } = calibrationFixture(t);
   let calls = 0;
   const dispatch = async (_url, request) => {
@@ -1139,12 +1139,31 @@ test('offline classification cannot override the original sealed calibration fai
   const recovered = loadRecoveryResponses(design, plan, options.destination);
   assert.equal(recovered.responses.size, 1);
   assert.equal(recovered.responses.get(plan.jobs[0].id).response_status, 'invalid_response');
-  const destination = path.join(root, 'blocked-recovery');
-  await assert.rejects(
-    executeReplay({ ...options, dispatch, destination, recoveryFrom: options.destination }),
-    /sealed technical predecessor/,
-  );
-  assert.equal(calls, 1);
-  assert.equal(fs.existsSync(destination), false);
+  const oldResponse = fs.readFileSync(path.join(options.destination, 'responses/1.json'));
+  const firstRequest = readJson(path.join(options.destination, 'requests/1.json'));
+  const destination = path.join(root, 'retained-recovery');
+  const result = await executeReplay({
+    ...options,
+    destination,
+    recoveryFrom: options.destination,
+    dispatch: async (_url, request) => {
+      calls++;
+      assert.notDeepEqual(request, firstRequest);
+      return response(design, request);
+    },
+  });
+  assert.equal(calls, 8);
+  assert.equal(result.report.completed_jobs, 7);
+  assert.equal(result.report.invalid_jobs, 1);
+  assert.equal(result.report.missing_jobs, 0);
+  assert.equal(result.report.readiness, 'not_validated_against_independent_humans');
   assert.deepEqual(fs.readFileSync(path.join(options.destination, 'run-ledger.jsonl')), before);
+  assert.deepEqual(fs.readFileSync(path.join(options.destination, 'responses/1.json')), oldResponse);
+  const events = readEvents(path.join(destination, 'run-ledger.jsonl'));
+  assert.deepEqual(events[0].retained_response_units, [plan.jobs[0].id]);
+  const attempts = readEvents(path.join(root, 'study-state', design.id, 'study-ledger.jsonl')).filter(
+    (e) => e.type === 'study_model_attempt_dispatch_reserved',
+  );
+  assert.equal(attempts.length, 8);
+  assert.equal(attempts.filter((e) => e.unit_id === plan.jobs[0].id).length, 1);
 });

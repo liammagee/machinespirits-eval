@@ -9,8 +9,8 @@ source: manual
 created: 2026-09-05
 updated: 2026-09-05
 verification: Verify the unchanged 48-item identities and complete-input derivative; test zero-call preparation, judge separation, calibrated request reservations and missing-only recovery; review the calibration design, independent human reference plan and hosted CI before any paid launch.
-branch: codex/superego-calibration-response-recovery
-blocked_by: Proposed response-disposition amendment needs GO; automatic approval review blocked the shared admission change pending explicit approval. Original sealed failure still prevents paid continuation.
+branch: codex/superego-calibration-retained-recovery
+blocked_by: Separate calibration launch instruction required after approved shared recovery repair; independent human reference ratings remain outstanding.
 claim_status: methods
 links:
   items:
@@ -19,9 +19,11 @@ links:
     - notes/superego-critique-causal-replay-design.md
     - notes/2026-09-05-superego-critique-measurement-calibration-go.md
     - notes/2026-09-05-superego-critique-measurement-calibration-launch.md
+    - notes/2026-09-05-superego-critique-calibration-response-handling-go.md
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/1038
     - https://github.com/liammagee/machinespirits-eval/pull/1041
+    - https://github.com/liammagee/machinespirits-eval/pull/1045
 ---
 
 The user requested validation and reconsideration after the expense/model review.
@@ -107,3 +109,18 @@ no accepted label; 191 jobs remain never dispatched. Maximum reservation remains
 $14.342107 including reserve. Additional provider calls and human labels: zero.
 Final focused suite: 31/31 passed. Targeted ESLint, formatting, workplan source
 (619/619) and diff checks passed. Hosted CI will verify the pushed repair.
+
+2026-09-05 Codex: verified #1045 merged at 77302bc9. The user replied "Yes I
+approve" to the proposed amendment GO and shared-runner scope. Recorded the
+approved text in the linked GO note; separate launch authority remains required.
+Created a clean worktree from origin/main 2dc26da5. Implemented shared admission
+for retained, durably completed predecessor responses and shared refusal to
+reserve those units again, including later recovery segments and direct attempt
+clients. The calibration runner classifies existing answers before admission
+and supplies every retained unit; valid/invalid answers cannot be resampled.
+Original failed seals, responses, study ledger and historical notes are preserved.
+No additional provider call or human rating is authorized or made by this step.
+Focused verification: 53/53 shared-contract and replay tests passed, including
+retention across later segments, direct-client refusal before reservation, and
+missing/tampered response records. Targeted ESLint, formatting, diff and workplan
+source checks passed (619/619). Hosted CI is pending publication.
