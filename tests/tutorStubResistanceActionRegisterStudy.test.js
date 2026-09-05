@@ -50,6 +50,7 @@ import {
   runTutorStubResistanceActionRegisterZeroCall,
 } from '../scripts/run-tutor-stub-resistance-action-register-crossed.js';
 import { analyzeTutorStubResistanceActionRegisterBaseline } from '../scripts/analyze-tutor-stub-resistance-action-register-baseline.js';
+import { createTraceSourceCheckout } from './helpers/traceSourceCheckout.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION_PATH = path.join(ROOT, 'config/tutor-stub-resistance-action-register-crossed-registration.v1.json');
@@ -1669,19 +1670,26 @@ test('v2 combined analyzer separates corrected analysis source from immutable tr
     fs.rmSync(viewB, { recursive: true, force: true });
     fs.rmSync(traceSourceRoot, { recursive: true, force: true });
   });
-  execFileSync('git', ['clone', '--quiet', '--shared', '--no-checkout', ROOT, traceSourceRoot], {
-    env: { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' },
-  });
   const analysisSourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const traceSourceCommit = execFileSync('git', ['rev-parse', 'HEAD^'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const traceSourceTree = execFileSync('git', ['rev-parse', `${traceSourceCommit}^{tree}`], {
     cwd: ROOT,
     encoding: 'utf8',
   }).trim();
-  execFileSync('git', ['checkout', '--quiet', '--detach', traceSourceCommit], {
-    cwd: traceSourceRoot,
-    env: { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' },
+  // A full clone gets `git clone --shared --no-checkout` plus a detached checkout,
+  // as before. A partial clone (blob:none) first fetches the parent commit's
+  // missing objects from the promisor remote and then shares the object store
+  // without running upload-pack against the source; when that fetch cannot
+  // complete, the test skips with the reason instead of failing.
+  const traceSourceCheckout = createTraceSourceCheckout({
+    sourceRoot: ROOT,
+    commit: traceSourceCommit,
+    destination: traceSourceRoot,
   });
+  if (traceSourceCheckout.skipReason) {
+    t.skip(traceSourceCheckout.skipReason);
+    return;
+  }
   const relocatePlan = (plan) => {
     const relocated = JSON.parse(JSON.stringify(plan).replaceAll(ROOT, traceSourceRoot));
     relocated.source.commit = traceSourceCommit;
