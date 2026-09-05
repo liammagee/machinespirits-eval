@@ -332,9 +332,6 @@ test('study plan identity is root independent and binds order, commands, models,
       plan.config.fixedSeams.push('hostile extra seam');
     },
     (plan) => {
-      plan.provenance.combinedSha256 = 'c'.repeat(64);
-    },
-    (plan) => {
       plan.jobs.reverse();
     },
     (plan) => {
@@ -346,6 +343,15 @@ test('study plan identity is root independent and binds order, commands, models,
     mutate(changed);
     assert.equal(compareAdaptiveWarrantStudyPlans(left, changed).ok, false);
   }
+
+  // CLAUDE.md (2026-08-21): a digest over source files is a record, not part of
+  // the identity. Editing a source file, or the child policy files, leaves the
+  // plan identity unchanged, so a signed launch authorization and a resume
+  // both survive a one-line defect fix.
+  const editedSource = structuredClone(right);
+  editedSource.provenance.combinedSha256 = 'c'.repeat(64);
+  editedSource.jobs[0].expectedChildPolicySha256 = 'd'.repeat(64);
+  assert.equal(compareAdaptiveWarrantStudyPlans(left, editedSource).ok, true);
 
   const dry = studyPlan('/tmp/study-dry', { dryRun: true });
   assert.notEqual(fingerprintAdaptiveWarrantStudyPlan(left).sha256, fingerprintAdaptiveWarrantStudyPlan(dry).sha256);
