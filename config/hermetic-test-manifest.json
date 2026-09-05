@@ -777,6 +777,7 @@
         "tests/tutorStubSessionRecipe.test.js",
         "tests/tutorStubSessionRuntime.test.js",
         "tests/tutorStubSessionStatusPresentation.test.js",
+        "tests/tutorStubSharedAttemptResponsePersistence.test.js",
         "tests/tutorStubShowcase.test.js",
         "tests/tutorStubShowcaseRadar.test.js",
         "tests/tutorStubShowcaseRubricContrast.test.js",
