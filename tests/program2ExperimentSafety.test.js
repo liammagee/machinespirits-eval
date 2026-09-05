@@ -222,6 +222,48 @@ test('evidence bindings reject changed, missing, and escaping files', () => {
   );
 });
 
+test('evidence bindings record, never refuse, drift on the world and gate-spec design files', () => {
+  // CLAUDE.md (2026-08-21): the world YAML and the gate-spec JSON are edited in
+  // place in git. A fix to either must not void a certificate.
+  for (const role of ['world', 'gate_spec']) {
+    const result = validateProgram2CertificateEvidenceBindings(
+      { evidenceBindings: { files: [{ role, file: 'package.json', sha256: '0'.repeat(64) }] } },
+      { root: ROOT },
+    );
+    assert.equal(result.pass, true, role);
+    assert.deepEqual(result.errors, []);
+    assert.equal(result.records.length, 1);
+    assert.equal(result.records[0].drifted, true);
+    assert.equal(result.records[0].recordedSha256, '0'.repeat(64));
+    // A missing design file still refuses: the child process reads the world at run time.
+    assert.equal(
+      validateProgram2CertificateEvidenceBindings(
+        { evidenceBindings: { files: [{ role, file: 'missing.yaml', sha256: '0'.repeat(64) }] } },
+        { root: ROOT },
+      ).pass,
+      false,
+      role,
+    );
+    // A missing or malformed digest is a hand-edited certificate and still refuses.
+    for (const sha256 of [undefined, null, 'not-a-digest']) {
+      const malformed = validateProgram2CertificateEvidenceBindings(
+        { evidenceBindings: { files: [{ role, file: 'package.json', sha256 }] } },
+        { root: ROOT },
+      );
+      assert.equal(malformed.pass, false, `${role} ${String(sha256)}`);
+      assert.deepEqual(malformed.errors, [`${role} hash mismatch`]);
+    }
+  }
+  // Run artifacts keep the refusal under the same label.
+  const traceResult = validateProgram2CertificateEvidenceBindings(
+    { evidenceBindings: { files: [{ role: 'pilot_trace:job-1', file: 'package.json', sha256: '0'.repeat(64) }] } },
+    { root: ROOT },
+  );
+  assert.equal(traceResult.pass, false);
+  assert.deepEqual(traceResult.errors, ['pilot_trace:job-1 hash mismatch']);
+  assert.deepEqual(traceResult.records, []);
+});
+
 test('live futility stops on irreversible gates but never tests a null effect', () => {
   const plan = factorialPlan();
   const coverageFailure = evaluateProgram2LiveFutility({
@@ -337,7 +379,10 @@ test('certificate preparation is an explicit zero-model workflow with an actiona
   assert.match(output, /--phase pilot/u);
   assert.match(output, /--source-sha [0-9a-f]{40}/u);
   assert.match(output, /--launch-certificate .*launch-certificate\.json/u);
-  assert.match(output, /Regenerate after any source, plan, world, gate, or pilot-evidence change/u);
+  assert.match(
+    output,
+    /Regenerate after any source, plan, or pilot-evidence change; a world or gate edit is recorded, not refused/u,
+  );
 });
 
 test('cohort certificate preparation names the required audited pilot inputs', () => {

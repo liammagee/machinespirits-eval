@@ -2,8 +2,10 @@
 
 Every paid Program 2 launch needs a **fresh launch certificate**. Do not copy a
 certificate from an earlier launch. It is bound to the exact source commit,
-plan, world, gates, pilot evidence, and provider budget; changing any of those
-inputs requires another certificate.
+plan, pilot evidence, and provider budget; changing any of those inputs needs
+another certificate. It also records the world and gate-spec file digests, but
+an edit to either of those design files after certification is recorded, not
+refused.
 
 ## 1. Prepare the exact plan
 
@@ -75,15 +77,20 @@ Rerun the launcher with the same `--plan` and `--output-dir`, plus:
 ```
 
 The launcher validates the certificate before Ollama or provider preflight.
-Missing, stale, hash-mismatched, incomplete, or failed certificates stop the
-launch without a paid call.
+Missing, stale, incomplete, or failed certificates stop the launch without a
+paid call, and so does a hash mismatch on the plan or on any bound run
+artifact. A hash mismatch on the world or gate-spec design file is written to
+stderr and to the launch attempt record, and the launch goes on.
 
 ## When to regenerate
 
 Generate a new certificate before every paid launch, and always after changing
-the checkout SHA, plan, output directory, world, gate specification, pilot
-bundle, or any other bound evidence file. Preparing a plan or certificate never
-authorizes a paid launch by itself.
+the checkout SHA, plan, output directory, pilot bundle, or any other bound run
+artifact. The world YAML and the gate-spec JSON are design files edited in
+place in git. An edit to either after certification is written to stderr as
+`file digest drift` and recorded; it does not stop the launch. The launcher
+runs on the gate spec inside the certificate, not on the file. Preparing a plan
+or certificate never authorizes a paid launch by itself.
 
 The rationale and full safety contract are in
 [`notes/program-2/2026-07-26-launch-safety-contract.md`](../notes/program-2/2026-07-26-launch-safety-contract.md).

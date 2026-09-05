@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { recordObservedDigest } from './recordedFileDigest.js';
 
 export const PROGRAM2_LAUNCH_CERTIFICATE_SCHEMA = 'machinespirits.program2.launch-certificate.v1';
 export const PROGRAM2_FUTILITY_SCHEMA = 'machinespirits.program2.live-futility-check.v1';
@@ -370,8 +371,19 @@ export function validateProgram2LaunchCertificate(certificate, { plan, sourceSha
   return { pass: errors.length === 0, errors };
 }
 
+// CLAUDE.md (2026-08-21): a certificate binds two kinds of file. The launch
+// plan, the pilot bundles and the pilot traces are run artifacts: they never
+// change on a repo edit, so a hash mismatch there still refuses the launch.
+// The world YAML and the gate-spec JSON are design files edited in place in
+// git. A fix to one of them must not void a certificate, so their drift is
+// written to stderr and recorded, never refused. The launcher runs on the gate
+// spec inside the certificate, not on the file, so that pin never changed what
+// runs. Missing and escaping files still refuse for every role.
+const RECORDED_EVIDENCE_ROLES = new Set(['world', 'gate_spec']);
+
 export function validateProgram2CertificateEvidenceBindings(certificate, { root }) {
   const errors = [];
+  const records = [];
   const resolvedRoot = path.resolve(root);
   const rootPrefix = `${resolvedRoot}${path.sep}`;
   for (const binding of certificate?.evidenceBindings?.files || []) {
@@ -385,9 +397,22 @@ export function validateProgram2CertificateEvidenceBindings(certificate, { root 
       continue;
     }
     const observed = crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+    if (RECORDED_EVIDENCE_ROLES.has(binding?.role) && /^[0-9a-f]{64}$/u.test(binding?.sha256 ?? '')) {
+      // A well-formed digest that moved is a record. A missing or malformed
+      // digest is a hand-edited certificate and still falls through to refuse.
+      records.push(
+        recordObservedDigest({
+          label: `program-2 launch certificate ${binding.role}`,
+          filePath: String(binding?.file || ''),
+          recordedSha256: binding?.sha256,
+          observedSha256: observed,
+        }),
+      );
+      continue;
+    }
     if (observed !== binding?.sha256) errors.push(`${binding?.role || 'evidence'} hash mismatch`);
   }
-  return { pass: errors.length === 0, errors };
+  return { pass: errors.length === 0, errors, records };
 }
 
 function cueBlindViolation(row) {
