@@ -23,7 +23,7 @@ Agreement with the judge, human beside the three model reads of the same packet:
 
 | question | human | Sonnet 5 | Opus 5 | Fable 5.1 |
 |---|---|---|---|---|
-| realized, question 1 redone | 11/12 | 12/12 | 12/12 | 12/12 |
+| realized, question 1 redone | 12/12 | 12/12 | 12/12 | 12/12 |
 | move, exact tag | 3/12 | 8/12 | 7/12 | 6/12 |
 | repair HIT or not | 9/12 | 9/12 | 9/12 | 9/12 |
 | uptake | 8/12 | 10/12 | 10/12 | 10/12 |
@@ -72,17 +72,19 @@ reading of the sim, so the 0/12 is withdrawn and kept only in `reader-human.meta
 page now asks "Does the learner's line at turn N do what the direction says?" and tells the
 reader to compare the line with the direction and its sample, and not to judge whether the
 learner learned anything. The reader redid question 1 on all twelve items the same day; the
-other three answers stand. Redone: yes on eleven, no on item 12, so 11/12 against the judge.
-Item 12 is the turn-2 jumping_ahead plant with the card, where the line follows the sample
-near word for word:
+other three answers stand. Redone: yes on eleven on the page, and no on item 12. Item 12 is
+the turn-2 jumping_ahead plant with the card, where the line follows the sample near word
+for word:
 
 ```text
 Direction sample: "Just tell me what to write. Is it two fifths or not? Priya says five sixths. Which one do I put down?"
 Learner line:     Can we just skip the strips? Just tell me what to write — is it two fifths or not? Priya says five sixths. Which one do I put down?
 ```
 
-The judge and the three models said yes there. The reader's no stands as read; no reason was
-recorded on the page.
+The judge and the three models said yes there. The reader looked at item 12 again the same
+day and changed the no to yes in chat ("I was wrong"), so realized is 12/12 against the
+judge, level with the three models. The page store keeps the first ruling on the item
+(`realizedRedoFirst`), and `reader-human.meta.json` records the change.
 
 **Eased: eight items not scorable.** The question asks whether the planted condition still
 shows in the learner's next line. On this schedule eight of the twelve next lines are
@@ -128,7 +130,8 @@ made here.
 - Whether to give the model readers the earlier turns too, as the human had. One packet with
   both packet shapes would say if the context changes the model reads.
 
-Closed the same day: the realized 0/12 was the page's wording (withdrawn, redone, 11/12), and
+Closed the same day: the realized 0/12 was the page's wording (withdrawn, redone, 12/12
+after one corrected item), and
 eased is not scored where the next line is scripted (compare script changed twice, plants
 then every scripted line; eight items skipped on this packet, four scored).
 

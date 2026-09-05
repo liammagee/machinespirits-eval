@@ -75,9 +75,11 @@ Repair, kappa, uptake and the card effect are unchanged. The redone question
 
 # Redo and widened skip 2026-09-05, same day
 
-Question 1 redone on the reworded page: 11/12 yes. Item 12 (with the card,
-turn 2, jumping ahead) the reader ruled no where every model reader ruled yes;
-no reason was recorded on the page. Eased: after the discussion the reader
+Question 1 redone on the reworded page: 12/12 yes, level with the three
+models. Item 12 (with the card, turn 2, jumping ahead) the reader first ruled
+no on the page and then, on a second look the same day, changed to yes in
+chat; the first ruling is kept in the page store and the meta file. Eased:
+after the discussion the reader
 widened the skip from the four adjacent-plant items to every item whose next
 line is scripted, the next plant or a held turn. On 7f that is eight of twelve
 (items 1, 2, 5, 6, 7, 8, 9, 12). On the four left the human and every model
