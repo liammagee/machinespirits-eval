@@ -13,6 +13,7 @@ import {
   straightenQuotationMarks,
   tutorStubLiveResponseConfigurationSurface,
 } from '../services/tutorStubLiveFirstDraftAudit.js';
+import { createTutorStubRecoveryAccountingRuntime } from '../services/tutorStubRecoveryAccountingRuntime.js';
 import { compileTutorStubSourceAccessibilityContract } from '../services/tutorStubSourceAccessibilityContract.js';
 import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
 import {
@@ -1089,4 +1090,59 @@ test('live V1 still rejects a clue that appears twice, with or without its outer
   });
   assert.equal(exhibitTwice.ok, false);
   assert.equal(exhibitTwice.source_occurrences[0].observed_count, 2);
+});
+
+test('the recovery packet names the failed clue check and states what it requires', () => {
+  const { tutorResponseRecoveryPrompt } = createTutorStubRecoveryAccountingRuntime({
+    TUTOR_GUARD_ACCOUNTING_SCHEMA: 'test',
+    appendTraceEvent() {},
+    jsonClone: (value) => JSON.parse(JSON.stringify(value)),
+    projectTutorStubGuardAttemptEnvelope() {},
+    tutorStubGuardIssueRows() {
+      return [];
+    },
+  });
+  const audit = auditTutorStubLiveSourceActionAlignmentV1({
+    text: WORLD_037_TURN_2_REWORDED_RECOVERY,
+    firstDraftContract: { evidence: { sources: [WORLD_037_TURN_2_EXHIBIT] } },
+  });
+  const hardIssues = audit.issues.map((issue) => ({ ...issue, guard: 'live_source_action_alignment_v1' }));
+  const prompt = tutorResponseRecoveryPrompt({
+    publicPacket: [`SOURCE — ${WORLD_037_TURN_2_EXHIBIT.text}`],
+    hardIssues,
+    liveSourceActionAlignmentAudit: audit,
+    minimalRecoveryPrompt: 'Answer first, then one question.',
+  });
+  assert.match(
+    prompt,
+    /The previous draft failed this response check and was not shown to the learner: live_source_action_alignment_v1:due_source_exact_occurrence_count\./u,
+  );
+  assert.match(
+    prompt,
+    /requires the SOURCE line to appear exactly once, word for word, with no word changed, added, or dropped \(the rejected draft had it 0 times\)/u,
+  );
+  const failureBlock = prompt.slice(prompt.indexOf('[Response-check failures]'));
+  assert.match(failureBlock, /1\. live_source_action_alignment_v1:due_source_exact_occurrence_count - /u);
+  assert.doesNotMatch(prompt, /Failed check dramatic_release:duplicate_clue_delivery/u);
+
+  const duplicate = tutorResponseRecoveryPrompt({
+    publicPacket: [`SOURCE — ${WORLD_037_TURN_5_EXHIBIT.text}`],
+    hardIssues: [{ guard: 'dramatic_release', type: 'duplicate_clue_delivery' }],
+    dramaticReleaseAudit: {
+      active: true,
+      issues: [{ type: 'duplicate_clue_delivery', reason: 'stated in two sentences' }],
+    },
+    minimalRecoveryPrompt: 'Answer first, then one question.',
+  });
+  assert.match(
+    duplicate,
+    /failed this response check and was not shown to the learner: dramatic_release:duplicate_clue_delivery\./u,
+  );
+  assert.match(
+    duplicate,
+    /Failed check dramatic_release:duplicate_clue_delivery requires the newly public clue in one sentence only/u,
+  );
+
+  const unnamed = tutorResponseRecoveryPrompt({ publicPacket: [], minimalRecoveryPrompt: 'x' });
+  assert.match(unnamed, /The previous draft failed a response check and was not shown to the learner\./u);
 });
