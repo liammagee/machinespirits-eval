@@ -784,7 +784,7 @@ describe('strict public learner analysis', () => {
       },
     });
     assert.equal(calls, 1);
-    assert.equal(raw.semanticQuoteMatchMode, ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.CASE_INSENSITIVE);
+    assert.equal(raw.semanticQuoteMatchMode, ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.MARKUP_TOLERANT);
     assert.equal(raw.rawText, JSON.stringify(analysis));
     assert.equal(raw.parsed.semantic_events.events[0].evidence_span, 'The mark is public.');
     const result = postprocessTutorStubPublicLearnerAnalysis({

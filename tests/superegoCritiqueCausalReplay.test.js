@@ -16,8 +16,11 @@ import {
   readEvents,
   readJson,
   worstCost,
+  writeOnce,
 } from '../services/superegoCritiqueCausalReplay.js';
 import { executeReplay, checkReplayBudget, main } from '../scripts/run-superego-critique-causal-replay.js';
+import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
+import { createDurablePaidModelAttemptBudget } from '../services/durablePaidModelAttemptBudget.js';
 
 const realDesign = loadReplayDesign(process.cwd());
 function fixture(t) {
@@ -127,6 +130,74 @@ function response(design, request, { refusal = false, malformed = false } = {}) 
   };
 }
 
+function jsonModeRejection() {
+  return {
+    status: 405,
+    body: JSON.stringify({
+      error: {
+        code: 405,
+        message: 'Provider returned error',
+        metadata: {
+          provider_name: 'DeepInfra',
+          raw: JSON.stringify({
+            error: {
+              message: 'json_object response format is not supported for model: nvidia/Nemotron-3-Nano-30B-A3B',
+              type: 'invalid_request_error',
+              param: 'response_format',
+              code: null,
+            },
+          }),
+        },
+      },
+    }),
+  };
+}
+
+// Reproduce the old runner's one rejected request with the real shared journal.
+// These are temporary offline fixtures, never the historical study artifacts.
+function sealedLegacyJsonRejection({ options, design, plan }, changeRequest = () => {}) {
+  const admission = admitPaidStudyLaunch({
+    ...options,
+    designPath: 'notes/superego-critique-causal-replay-design.md',
+    studyId: design.id,
+    spendCap: design.attempts.hard_ceiling,
+  });
+  const budget = createDurablePaidModelAttemptBudget({ admission, limit: design.attempts.hard_ceiling });
+  const job = plan.jobs[0];
+  const request = { ...buildReplayRequest(design, plan, job, new Map()), response_format: { type: 'json_object' } };
+  changeRequest(request);
+  writeOnce(path.join(options.destination, 'plan.json'), plan);
+  writeOnce(path.join(options.destination, 'settings.json'), {
+    seed: design.master_seed,
+    models: design.models,
+    request: design.request,
+    attempts: design.attempts,
+    max_dollars: design.max_dollars,
+    primary: design.primary,
+    arms: design.arms,
+    endpoint: design.endpoint,
+  });
+  const reservation = budget.reserve({
+    unitId: job.id,
+    role: job.seat,
+    category: job.category,
+    max_cost_dollars: worstCost(design, job.seat),
+  });
+  writeOnce(path.join(options.destination, 'requests/1.json'), request);
+  budget.markDispatched();
+  const responsePath = path.join(options.destination, 'responses/1.json');
+  writeOnce(responsePath, { attempt_id: reservation.attemptId, job, request, raw: jsonModeRejection() });
+  budget.persistResponse(responsePath);
+  budget.complete();
+  admission.close({
+    type: 'run_sealed',
+    status: 'technical_failure',
+    recovery_permitted: false,
+    completed_jobs: 0,
+    missing_jobs: plan.jobs.length,
+  });
+}
+
 test('frozen eligibility ignores historical outcomes and removes entire calibration dialogues', () => {
   const draft = {
     agent: 'ego',
@@ -204,6 +275,8 @@ test('requests separate treatment, common semantic target, and blind quality; pi
     assert.equal(request.provider.allow_fallbacks, false);
     assert.equal(request.provider.require_parameters, true);
     assert.equal(request.provider.max_price.request, 0);
+    if (job.category === 'generation') assert.equal(Object.hasOwn(request, 'response_format'), false);
+    else assert.deepEqual(request.response_format, { type: 'json_object' });
     assert.equal(JSON.stringify(p).includes('hidden_profile'), false);
     assert.equal(Object.hasOwn(p, 'arm'), false);
     if (job.category === 'quality') assert.deepEqual(Object.keys(p).sort(), ['context', 'item_id', 'output']);
@@ -336,6 +409,104 @@ test('technical recovery keeps all valid jobs and charges the failed attempt acr
   const events = readEvents(path.join(root, 'recovery/run-ledger.jsonl'));
   assert.equal(events.at(-1).missing_jobs, 0);
   assert.equal(events.find((e) => e.type === 'model_attempt_dispatch_reserved').study_reserved, 4);
+});
+
+test('repaired JSON transport recovers the first rejected request without altering evidence or resetting caps', async (t) => {
+  const value = fixture(t);
+  const { options, root, design, plan } = value;
+  sealedLegacyJsonRejection(value);
+  const files = ['run-ledger.jsonl', 'requests/1.json', 'responses/1.json', 'plan.json', 'settings.json'];
+  const before = files.map((name) => fs.readFileSync(path.join(options.destination, name)));
+  const { response_format: _old, ...expected } = readJson(path.join(options.destination, 'requests/1.json'));
+  let calls = 0;
+  const destination = path.join(root, 'repaired');
+  const result = await executeReplay({
+    ...options,
+    destination,
+    recoveryFrom: options.destination,
+    dispatch: async (_url, request) => {
+      if (calls++ === 0) assert.deepEqual(request, expected);
+      return response(design, request);
+    },
+  });
+  assert.equal(calls, plan.jobs.length);
+  assert.equal(result.report.completed_jobs, plan.jobs.length);
+  files.forEach((name, i) => assert.deepEqual(fs.readFileSync(path.join(options.destination, name)), before[i]));
+  const events = readEvents(path.join(destination, 'run-ledger.jsonl'));
+  assert.equal(events.find((e) => e.type === 'model_attempt_dispatch_reserved').study_reserved, 2);
+  const shared = readEvents(path.join(options.studyStateRoot, design.id, 'study-ledger.jsonl'));
+  assert.equal(shared.filter((e) => e.type === 'study_model_attempt_dispatch_reserved').length, plan.jobs.length + 1);
+});
+
+test('JSON-mode repair cannot change prompt, decoding, provider or token cap', async (t) => {
+  const changes = [
+    (request) => {
+      request.messages[0].content += ' Different instruction.';
+    },
+    (request) => {
+      request.temperature = 0.5;
+    },
+    (request) => {
+      request.provider.only = ['different'];
+    },
+    (request) => {
+      request.max_tokens += 1;
+    },
+  ];
+  for (const change of changes) {
+    const value = fixture(t);
+    sealedLegacyJsonRejection(value, change);
+    let calls = 0;
+    await assert.rejects(
+      executeReplay({
+        ...value.options,
+        destination: path.join(value.root, 'bad-repair'),
+        recoveryFrom: value.options.destination,
+        dispatch: async () => {
+          calls++;
+        },
+      }),
+      /Saved request exceeds registered scope/,
+    );
+    assert.equal(calls, 0);
+  }
+});
+
+test('repeated JSON-mode rejection cannot admit a third attempt', async (t) => {
+  const value = fixture(t);
+  sealedLegacyJsonRejection(value);
+  const destination = path.join(value.root, 'failed-repair');
+  let calls = 0;
+  const dispatch = async () => {
+    calls++;
+    return jsonModeRejection();
+  };
+  await assert.rejects(
+    executeReplay({ ...value.options, destination, recoveryFrom: value.options.destination, dispatch }),
+    /Substantive failure/,
+  );
+  await assert.rejects(
+    executeReplay({
+      ...value.options,
+      destination: path.join(value.root, 'third'),
+      recoveryFrom: destination,
+      dispatch,
+    }),
+    /Substantive failure|sealed technical predecessor/,
+  );
+  assert.equal(calls, 1);
+  assert.throws(
+    () =>
+      admitPaidStudyLaunch({
+        ...value.options,
+        designPath: 'notes/superego-critique-causal-replay-design.md',
+        studyId: value.design.id,
+        spendCap: value.design.attempts.hard_ceiling,
+        destination: path.join(value.root, 'third-admission'),
+        recoveryFrom: destination,
+      }),
+    /sealed technical predecessor/,
+  );
 });
 
 for (const faultAt of ['after_reservation', 'after_response_write', 'after_response_persisted']) {

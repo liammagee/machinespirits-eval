@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   admitPaidStudyLaunch,
+  isResponseFreeJsonModeRejection,
   paidStudyChatGoIssues,
   paidStudyGoNoteIssues,
   sealInterruptedPaidStudyLaunch,
@@ -20,6 +21,50 @@ import {
 } from '../services/durableAttemptJournal.js';
 
 const RACE_WORKER = fileURLToPath(new URL('./fixtures/paidStudyLaunchRaceWorker.js', import.meta.url));
+
+test('JSON-mode rejection recognition excludes answers, usage, refusals and unrelated errors', () => {
+  const request = { response_format: { type: 'json_object' } };
+  const envelope = {
+    error: {
+      code: 405,
+      metadata: {
+        raw: JSON.stringify({
+          error: {
+            type: 'invalid_request_error',
+            param: 'response_format',
+            message: 'json_object response format is not supported for model: test-model',
+          },
+        }),
+      },
+    },
+  };
+  const raw = (body, status = 405) => ({ status, body: JSON.stringify(body) });
+  assert.equal(isResponseFreeJsonModeRejection(request, raw(envelope)), true);
+  for (const body of [
+    { ...envelope, choices: [{ message: { content: '{}' } }] },
+    { ...envelope, choices: [{ message: { refusal: 'No' } }] },
+    { ...envelope, output: 'An answer' },
+    { ...envelope, usage: { completion_tokens: 1 } },
+    { error: { ...envelope.error, metadata: { ...envelope.error.metadata, output: 'An answer' } } },
+    {
+      error: {
+        ...envelope.error,
+        metadata: {
+          raw: JSON.stringify({
+            error: JSON.parse(envelope.error.metadata.raw).error,
+            choices: [{ message: { content: '{}' } }],
+          }),
+        },
+      },
+    },
+    { error: { code: 405, message: 'Not allowed' } },
+  ])
+    assert.equal(isResponseFreeJsonModeRejection(request, raw(body)), false);
+  assert.equal(isResponseFreeJsonModeRejection({}, raw(envelope)), false);
+  assert.equal(isResponseFreeJsonModeRejection(request, raw(envelope, 200)), false);
+  assert.equal(isResponseFreeJsonModeRejection(request, raw(envelope, 429)), false);
+  assert.equal(isResponseFreeJsonModeRejection(request, { status: 405, body: 'invalid JSON' }), false);
+});
 
 function git(root, ...args) {
   return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();

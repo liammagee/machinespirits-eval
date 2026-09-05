@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { admitPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
+import { admitPaidStudyLaunch, isResponseFreeJsonModeRejection } from '../services/paidStudyLaunchContract.js';
 import { createDurablePaidModelAttemptBudget } from '../services/durablePaidModelAttemptBudget.js';
 import { resolveEvaluationDataHome } from '../services/evaluationDataPaths.js';
 import {
@@ -107,6 +107,14 @@ export function loadRecoveryResponses(design, plan, predecessor) {
         JSON.stringify(bundle.request) !== JSON.stringify(savedRequests.get(job.id))
       )
         throw new Error('Response has no matching durable request/reservation');
+      if (job.category === 'generation' && isResponseFreeJsonModeRejection(bundle.request, bundle.raw)) {
+        // Remove only the unsupported transport option from this rejected
+        // request. The normal comparison below still rejects any payload,
+        // route, sampling, token-limit or other change. Never edit the original.
+        const { response_format: _unsupported, ...repaired } = bundle.request;
+        savedRequests.set(job.id, repaired);
+        continue;
+      }
       try {
         const parsed = parseReplayResponse(design, bundle.request, job, bundle.raw);
         if (responses.has(job.id)) throw new Error('Conflicting duplicate successful response');

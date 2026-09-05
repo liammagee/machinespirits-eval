@@ -9,8 +9,8 @@ source: manual
 created: 2026-09-04
 updated: 2026-09-05
 verification: Reproduce the frozen-unit plan without calls; verify runner ceilings, blinding, durable missing-only recovery and focused regressions; review design and hosted CI before explicit GO and separate launch authority.
-branch: codex/superego-critique-causal-replay-launch-closeout
-blocked_by: DeepInfra rejects the registered JSON-object response format; the first attempt is sealed with recovery disabled.
+branch: codex/superego-critique-causal-replay-format-repair
+blocked_by: The format/recovery repair is under review; its narrow exception to the registered stopping rule needs GO before paid recovery.
 claim_status: planned
 links:
   items:
@@ -22,6 +22,7 @@ links:
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/1018
     - https://github.com/liammagee/machinespirits-eval/pull/1021
+    - https://github.com/liammagee/machinespirits-eval/pull/1028
 ---
 
 New prospective study arising from merged PRs #1017/#1018. Historical source
@@ -80,3 +81,23 @@ Committed and pushed as private archive commit
 `codex/superego-critique-causal-replay-archive`. The canonical shared study
 ledger and both original repository checkouts were preserved. This is a
 technical launch failure, with no causal or semantic result.
+
+2026-09-05 Codex: The user asked to fix the incompatibility. The proposed repair
+omits the unsupported JSON-mode API option for the Nemotron generator, while
+retaining the existing prompt, strict response validation and judge JSON mode.
+The shared contract can recognize the first and only dispatched request as an
+explicit, durably recorded no-output JSON-mode rejection; recovery removes only
+that rejected field and preserves the original attempt, seal and ceilings.
+The design is amended in place to make that narrow recovery exception explicit.
+No approval note or historical evidence is rewritten, and no provider call is
+made during repair. Paid recovery awaits review and GO for the changed stopping
+rule; completing the planned jobs would use 3,687 total attempts within 3,876.
+
+Repair verification: 43/43 focused replay/shared-contract/inventory tests;
+52/52 structural ratchets; full lint and workplan source checks. Read-only
+reconstruction from the actual archived rejection reproduces the frozen
+194-unit plan and changes only the rejected response-format field. Regression
+tests preserve original bytes and cumulative accounting, reject changes to
+messages/routes/decoding/limits, exclude error envelopes containing answers or
+usage, and prohibit a third attempt after a repeated failure. Provider calls
+during repair: zero.

@@ -162,3 +162,37 @@ What it changes in the claim. A result now bears on the tutor and learner
 seats only. It cannot separate the analysis seat from the first block. The
 report says so in its first line.
 
+## Amendment 2026-09-05 (second): quote rule widened to ignore emphasis marks
+
+What happened. After the relaunch, dialogue 01 (seed 737, world 101, bare)
+completed with all eight turns read. Dialogue 02 (seed 737, world 101, gated)
+ran eight turns and 28 calls, but turn 6 stayed unread. The Opus 5 learner
+wrote "Kite now has reach *and* a way in", with markdown emphasis marks. Luna
+in the analysis seat quoted the clause without the marks in three of three
+tries, and the strict validator rejected each event as
+`evidence_span:not_literal`. The coverage guard quarantined the dialogue and
+the run stopped. The Luna learner of the first block wrote no such mark in
+597 turns; the Opus learner wrote one in its first 24.
+
+Precedent. On 2026-08-16 the reviewer forgave the same rejection when a
+quote differed from the learner's text by letter case only
+(`services/adaptiveWarrantTypographicQuoteRuling.js`); new reads then
+matched quotes case-insensitively. Emphasis marks are the same class: they
+carry no words, and a quote that drops them still names one place in the
+learner's text.
+
+What changes. `deriveAdaptiveWarrantSemanticEvidenceSpan` gains a third
+mode, `punctuation_case_and_markup`, which ignores `*`, `_` and backtick when
+it matches a quote and returns offsets into the learner's original text. The
+uniqueness test is unchanged, and a quote that names no place or two places
+still fails. Live learner-analysis reads and the semantic reader collections
+use this mode by default. The decision readers of this block do not quote
+learner text, so the change touches the analysis seat only. Dialogue 01
+contains no emphasis mark, and on text without marks the new mode returns
+the same result as the old one, so its reads stand. Dialogue 02 takes its
+one registered retake under recovery. Seeds, worlds, handbook, conditions,
+turns, readers, bars and ceiling are unchanged.
+
+What it changes in the claim. Nothing in the bars. The report states that
+the quote rule was widened after dialogue 01 and why.
+

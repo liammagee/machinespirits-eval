@@ -63,4 +63,12 @@ in the registration linked above; nothing else changes.
   ledger and tests amended in place; seed 736 burned, 748 replaces it.
   Relaunched fresh (no recovery: the discarded dialogue used a different
   analysis seat).
+- 2026-09-05: Dialogue 01 completed with all turns read. Dialogue 02 was
+  quarantined: the Opus 5 learner wrote `*and*` on turn 6 and Luna quoted the
+  clause without the marks in 3 of 3 tries, so the strict validator rejected
+  every event as not literal. Fix in place, same class as the 2026-08-16
+  case-fold ruling: the quote rule now ignores emphasis marks, offsets stay
+  in the original text, uniqueness stays. Regression test on the real turn.
+  Registration amended (second amendment). Awaiting the user's word to
+  relaunch under recovery with dialogue 02's one retake.
 

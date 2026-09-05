@@ -336,7 +336,9 @@ export function buildReplayRequest(design, plan, job, responses) {
     top_p: design.request.top_p,
     max_tokens: design.request.max_tokens,
     reasoning: { enabled: design.request.reasoning_enabled },
-    response_format: { type: 'json_object' },
+    // DeepInfra rejects JSON mode for Nemotron. The prompt and parser still
+    // require exactly the same JSON result; judge routes retain JSON mode.
+    ...(job.category === 'generation' ? {} : { response_format: { type: 'json_object' } }),
     stream: false,
     provider: {
       only: [route.provider_slug],
