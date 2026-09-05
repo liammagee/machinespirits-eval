@@ -448,6 +448,7 @@ test('automated CLI quality scores the exact blinded packet and joins the two hu
     { root: f.root },
   );
   const report = readJson(path.join(f.root, 'comparison/human-model-comparison.json'));
+  assert.equal(readJson(path.join(f.root, 'comparison/report.json')).model_judging, 'separate_model_assessment');
   assert.equal(report.human_comparison.length, 3);
   for (const pair of report.human_comparison)
     for (const field of pair.agreement) {

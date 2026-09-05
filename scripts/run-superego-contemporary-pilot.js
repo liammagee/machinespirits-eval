@@ -388,7 +388,9 @@ export async function executePilot({
         active
           ? {
               state: 'unverifiable',
-              explanation: 'One HTTP request is pending; provider inference is not independently observable.',
+              explanation: automatedQuality
+                ? 'One Codex CLI turn is pending; provider inference is not independently observable.'
+                : 'One HTTP request is pending; provider inference is not independently observable.',
             }
           : inactive,
       );
@@ -610,13 +612,16 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     const { results } = recoverPilot(design, plan, values.from);
     const quality = readHumanQuality(plan, results, values['human-quality'], values['human-quality-other']);
     const report = summarizeHumanQuality(plan, results, quality);
+    const ratings = values['model-ratings'] ? readJson(values['model-ratings']) : null;
+    const comparison = ratings
+      ? summarizeAutomatedQuality(plan, humanPacket(plan, results, 'quality'), ratings, quality)
+      : null;
+    if (comparison) report.model_judging = 'separate_model_assessment';
     fs.mkdirSync(path.resolve(values.out), { recursive: false });
     writeOnce(path.join(values.out, 'human-quality.json'), quality);
     writeOnce(path.join(values.out, 'report.json'), report);
     fs.writeFileSync(path.join(values.out, 'report.md'), report.markdown, { flag: 'wx' });
-    if (values['model-ratings']) {
-      const ratings = readJson(values['model-ratings']);
-      const comparison = summarizeAutomatedQuality(plan, humanPacket(plan, results, 'quality'), ratings, quality);
+    if (comparison) {
       writeOnce(path.join(values.out, 'model-ratings.json'), ratings);
       writeOnce(path.join(values.out, 'human-model-comparison.json'), comparison);
       fs.writeFileSync(path.join(values.out, 'human-model-comparison.md'), comparison.markdown, { flag: 'wx' });
