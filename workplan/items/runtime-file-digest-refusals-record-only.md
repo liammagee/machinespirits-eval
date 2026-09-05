@@ -330,12 +330,18 @@ through `recordObservedDigest`, returns it in `digestRecords`, and the plan
 writes `observed_sha256` and `drifted` beside the recorded sha under
 `diagnosis_note`. No test touched the pin.
 
-### 6. A clean-worktree stop, not a digest
+### 6. A clean-worktree stop, not a digest (ruled: leave it)
 
 `run-tutor-stub-first-draft-campaign.js:326` calls
 `gitWorktreeState({ required: true })` when the config sets
 `require_clean_worktree`, which refuses to start on a dirty tree. This is not a
 digest check, so it is outside the brief, but it is the same class of stop.
+
+Three stops hang on it: a start blocker when the tree is dirty, a per-cell
+throw when the tree became dirty after start, and a per-cell throw when HEAD
+moved. 28 of 59 campaign configs set the flag; the loader forces v8 and v9 to.
+The line has not moved since 2026-08-17. The user ruled on 2026-09-05 to leave
+all three. No code changed.
 
 ### 7. A test pin that survives
 
@@ -375,5 +381,5 @@ hermetic failure is the partial-clone test noted on the ratchet card.
 ## Reopened 2026-09-04
 
 Reopened for the item-by-item walk-through of the seven sites reported in
-PR #1019. Rulings on items 1 to 5 are recorded above and carried in PR #1026.
-Items 6 and 7 are still to be ruled.
+PR #1019. Rulings on items 1 to 6 are recorded above and carried in PR #1026.
+Item 7 is still to be ruled.
