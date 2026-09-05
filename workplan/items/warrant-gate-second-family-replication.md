@@ -9,7 +9,7 @@ source: manual
 created: 2026-09-04
 updated: 2026-09-04
 branch: claude/warrant-gate-second-family-replication
-verification: "Zero-call setup only so far: card, registration, manifest, plain launcher, dry run and tests. No paid call has run. The paid block waits on the user's ceiling and a GO note under notes/."
+verification: "Zero-call setup only so far: card, registration, manifest, plain launcher, dry run and tests. No paid call has run. The paid block waits on the user writing GO in chat; no GO note is needed."
 claim_status: planned
 links:
   notes:
@@ -37,8 +37,8 @@ in the registration linked above; nothing else changes.
   endpoints, bars, stopping rules and the call ceiling; both reach `main`.
 - [ ] Plain launcher dry-runs at zero calls from a clean checkout and its
   focused tests pass.
-- [ ] User states the ceiling and commits a GO note under `notes/` (first line
-  `GO`, the registration path, the ceiling number).
+- [ ] User writes GO in chat; the launcher records the words as given. No GO
+  note.
 - [ ] 72/72 dialogues complete and 576 cases assemble with both readers
   contract-valid, or the first non-recoverable failure is preserved without
   rerunning valid outputs.

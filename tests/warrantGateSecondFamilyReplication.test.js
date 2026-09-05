@@ -17,7 +17,6 @@ import {
   buildOutcomePilotJobs,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
 import {
-  DEFAULT_SECOND_FAMILY_REGISTRATION,
   SECOND_FAMILY_CEILING,
   SECOND_FAMILY_SEATS,
   SECOND_FAMILY_STUDY_ID,
@@ -28,7 +27,6 @@ import {
   loadSecondFamilyManifest,
   runSecondFamilyGeneration,
   runSecondFamilyReaders,
-  secondFamilyGoNoteIssues,
   summarizeSecondFamilyReportOnly,
 } from '../scripts/run-warrant-gate-second-family-replication.js';
 
@@ -110,7 +108,7 @@ test('the default invocation and --dry-run print the plan, spawn nothing and mak
   assert.equal(fs.existsSync('/nonexistent/second-family-dry'), false);
 });
 
-test('the CLI refuses a ceiling above the registered one and a paid launch without its GO-note flags, before any admission', (t) => {
+test('the CLI refuses a ceiling above the registered one and a paid launch without a GO from chat, before any admission', (t) => {
   const stateRoot = tmpDir(t, 'state');
   const high = runLauncher(['--ceiling', '5000', '--study-state-root', stateRoot]);
   assert.equal(high.status, 1);
@@ -118,24 +116,23 @@ test('the CLI refuses a ceiling above the registered one and a paid launch witho
 
   const missing = runLauncher(['--accept-charges', '--study-state-root', stateRoot]);
   assert.equal(missing.status, 1);
-  assert.match(missing.stderr, /--go-note-path is required with --accept-charges/u);
+  assert.match(missing.stderr, /--go is required with --accept-charges/u);
   assert.deepEqual(fs.readdirSync(stateRoot), []);
-});
 
-test('the GO-note predicate wants GO first, the registration path and the ceiling number', () => {
-  const good = [
-    'GO',
-    `Study: ${DEFAULT_SECOND_FAMILY_REGISTRATION}`,
-    'Ceiling: 3360 model attempts',
-    'Seats: tutor/analysis/learner claude-code.opus-5; readers codex.gpt-5.6-sol',
-  ].join('\n');
-  assert.deepEqual(secondFamilyGoNoteIssues({ text: good }), []);
-  assert.ok(secondFamilyGoNoteIssues({ text: good.replace('GO\n', 'Go ahead\n') }).some((issue) => /GO/u.test(issue)));
-  assert.ok(secondFamilyGoNoteIssues({ text: good.replace('3360', '3000') }).length > 0);
-  assert.ok(
-    secondFamilyGoNoteIssues({ text: good.replace(DEFAULT_SECOND_FAMILY_REGISTRATION, 'notes/other.md') }).length > 0,
-  );
-  assert.ok(secondFamilyGoNoteIssues({ text: '' }).length > 0);
+  const out = path.join(tmpDir(t, 'out'), 'run');
+  const wrongWord = runLauncher([
+    '--accept-charges',
+    '--go',
+    'Go ahead',
+    '--out',
+    out,
+    '--study-state-root',
+    stateRoot,
+  ]);
+  assert.equal(wrongWord.status, 1);
+  assert.match(wrongWord.stderr, /must start with the word GO/u);
+  assert.equal(fs.existsSync(out), false);
+  assert.deepEqual(fs.readdirSync(stateRoot), []);
 });
 
 // ---------------------------------------------------------------------------

@@ -9,8 +9,8 @@
  * learner on claude-code.opus-5; readers on codex.gpt-5.6-sol.
  *
  * The default invocation prints the plan and makes zero model calls. The paid
- * path needs --accept-charges and a plain GO note under notes/ that names the
- * registration file and the ceiling. Provenance is recorded, never enforced:
+ * path needs --accept-charges and --go "<the words the user wrote in chat>";
+ * the launcher records them as given. Provenance is recorded, never enforced:
  * the run ledger writes down the commit, tree and dirty flag, and nothing here
  * refuses to run over them.
  */
@@ -25,11 +25,7 @@ import { parseArgs } from 'node:util';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import { createDurablePaidModelAttemptBudget } from '../services/durablePaidModelAttemptBudget.js';
-import {
-  admitPaidStudyLaunch,
-  paidStudyGoNoteIssues,
-  sealInterruptedPaidStudyLaunch,
-} from '../services/paidStudyLaunchContract.js';
+import { admitPaidStudyLaunch, sealInterruptedPaidStudyLaunch } from '../services/paidStudyLaunchContract.js';
 
 import { collectAdaptiveWarrantStudyJobResult } from './run-adaptive-warrant-baseline-study.js';
 import { auditOutcomeMainBlockSeedFreshness } from './run-adaptive-warrant-outcome-main-block.js';
@@ -231,24 +227,6 @@ export function renderSecondFamilyPlan(plan) {
     'Model calls made by this invocation: 0',
   ];
   return `${lines.join('\n')}\n`;
-}
-
-// ---------------------------------------------------------------------------
-// GO note
-// ---------------------------------------------------------------------------
-
-export function secondFamilyGoNoteIssues({
-  text,
-  registrationPath = DEFAULT_SECOND_FAMILY_REGISTRATION,
-  ceiling = SECOND_FAMILY_CEILING,
-} = {}) {
-  const issues = paidStudyGoNoteIssues({ text, designPath: registrationPath, spendCap: ceiling });
-  const firstLine = String(text || '')
-    .split('\n')
-    .map((line) => line.trim())
-    .find(Boolean);
-  if (firstLine !== 'GO') issues.push('first non-empty line must read GO');
-  return issues;
 }
 
 // ---------------------------------------------------------------------------
@@ -867,9 +845,8 @@ function readerRunSkeleton({ readerModel, sourceCommit }) {
 export async function executeSecondFamilyReplication({
   manifestPath = DEFAULT_SECOND_FAMILY_MANIFEST,
   registrationPath = DEFAULT_SECOND_FAMILY_REGISTRATION,
-  goNotePath,
-  goNoteCommit,
-  launchCommit,
+  goApproval,
+  launchCommit = null,
   destination,
   recoveryFrom = null,
   studyStateRoot = DEFAULT_STUDY_STATE_ROOT,
@@ -889,8 +866,7 @@ export async function executeSecondFamilyReplication({
     root: ROOT,
     designPath: registrationPath,
     launchCommit,
-    goNoteCommit,
-    goNotePath,
+    goApproval,
     spendCap: ceiling,
     destination: rootDir,
     ledgerName: 'run-ledger.jsonl',
@@ -1143,8 +1119,8 @@ function usage() {
     '  node scripts/run-warrant-gate-second-family-replication.js',
     '      (prints the plan; zero model calls)',
     '  node scripts/run-warrant-gate-second-family-replication.js --accept-charges \\',
-    '      --go-note-path notes/<go-note>.md --go-note-commit <sha> --launch-commit <sha> \\',
-    '      --out <fresh-absolute-dir> [--ceiling 3360] [--recovery-from <previous-out>]',
+    '      --go "<the words the user wrote in chat, starting GO>" \\',
+    '      --out <fresh-absolute-dir> [--launch-commit <sha>] [--ceiling 3360] [--recovery-from <previous-out>]',
     '  node scripts/run-warrant-gate-second-family-replication.js --seal-interrupted <out> --reason "<why>"',
     '',
     'Seat flags (defaults are the registered seats):',
@@ -1162,8 +1138,7 @@ async function main() {
       registration: { type: 'string', default: DEFAULT_SECOND_FAMILY_REGISTRATION },
       'accept-charges': { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
-      'go-note-path': { type: 'string' },
-      'go-note-commit': { type: 'string' },
+      go: { type: 'string' },
       'launch-commit': { type: 'string' },
       out: { type: 'string' },
       'recovery-from': { type: 'string' },
@@ -1223,16 +1198,15 @@ async function main() {
     }
     return;
   }
-  for (const flag of ['go-note-path', 'go-note-commit', 'launch-commit', 'out']) {
+  for (const flag of ['go', 'out']) {
     if (!values[flag]) throw new Error(`--${flag} is required with --accept-charges`);
   }
   if (!path.isAbsolute(values.out)) throw new Error('--out must be an absolute, not yet existing directory');
   const result = await executeSecondFamilyReplication({
     manifestPath: values.manifest,
     registrationPath: values.registration,
-    goNotePath: values['go-note-path'],
-    goNoteCommit: values['go-note-commit'],
-    launchCommit: values['launch-commit'],
+    goApproval: values.go,
+    launchCommit: values['launch-commit'] || null,
     destination: values.out,
     recoveryFrom: values['recovery-from'] || null,
     studyStateRoot: values['study-state-root'],

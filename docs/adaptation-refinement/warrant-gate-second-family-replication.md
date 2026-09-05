@@ -4,7 +4,9 @@
 me. Lets set that up" and "go, set up the replication" (4 Sep, in-session),
 after the passive warrant-gate main block (§6.25) was named the one positive
 result worth replicating. **This note does not authorize the run.** Launch
-needs a plain GO note committed under `notes/` after an explicit human GO.
+needs the user to write GO in chat; the launcher records those words as given
+(`--go`). No GO note is needed (user, 4 Sep: "we really dont need GO notes
+any more").
 
 Workplan card: `workplan/items/warrant-gate-second-family-replication.md`.
 Manifest: `docs/adaptation-refinement/outcome-study-a1/second-family-replication-manifest.json`.
@@ -114,21 +116,15 @@ Commit, tree, branch and dirty flag are recorded at launch and never
 enforced. Byte pins apply to the data inputs only: the two worlds, the
 standing-permission menu, the handbook. A code fix does not void the GO.
 
-## GO-note format
+## The GO
 
-Committed under `notes/`, first line exactly `GO`, and the text names this
-file's path and the ceiling number `3360`. Example:
-
-```
-GO
-Study: docs/adaptation-refinement/warrant-gate-second-family-replication.md
-Ceiling: 3360 model attempts
-Seats: tutor/analysis/learner claude-code.opus-5; readers codex.gpt-5.6-sol
-```
+The user writes GO in chat. The launcher takes the words as given through
+`--go "<the words>"`, checks only that the first word is GO, and writes them
+to the run ledger with the commit, tree and dirty flag. The ceiling is the
+registered 3360 unless `--ceiling` lowers it.
 
 ## Process
 
 Zero-call build: manifest, this note, launcher, tests, dry run, PR. Human
-review. Only on an explicit human GO: the GO note, then the launch line the
-launcher prints from `--dry-run`. Report lands as a new subsection under
-§6.25.
+review. Only on an explicit human GO in chat: the launch line the launcher
+prints from `--dry-run`. Report lands as a new subsection under §6.25.
