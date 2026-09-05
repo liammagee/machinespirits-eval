@@ -1,7 +1,7 @@
 ---
 id: hold-packet-human-second-read
 title: Human second read of one blind hold packet (037)
-status: blocked
+status: review
 type: research
 priority: P3
 owner: human
@@ -9,7 +9,6 @@ source: review
 created: 2026-09-05
 updated: 2026-09-05
 verification: "A human reader, blind to gold and version, scores at least one of the five 037 hold packets (7b to 7f) on repair hit or not; agreement with the codex judge is reported as kappa beside the model readers' 0.50 to 0.83; the hold lean in §6.24 is kept, narrowed or dropped on that reading."
-blocked_by: "Needs a human reader with time for one twelve-item packet"
 claim_status: exploratory
 depends_on:
   - state-detection-followups-hold-and-cues
@@ -17,6 +16,7 @@ links:
   items:
     - state-detection-followups-hold-and-cues
   notes:
+    - notes/poetics/hero-demo-runs/2026-09-05-step7f-human-second-read.md
     - notes/poetics/hero-demo-runs/2026-09-05-step7f-hold-cue-fix-live.md
     - notes/poetics/hero-demo-runs/2026-09-03-model-second-reader-7b-7c.md
   exports:
@@ -36,3 +36,25 @@ The packets are in the run folders under `exports/tutor-stub-outcome/step7*`
 (archived). Twelve items each, one call per reader. Score with
 `scripts/score-blind-packet-model.js` as the template for the sheet. No paid
 call is needed.
+
+# Read done 2026-09-05
+
+Liam Magee read the step 7f packet blind to gold and version, one item per
+screen on a private web page that also showed the earlier turns (the three
+model readers saw the three packet lines only). Against the codex judge on
+repair HIT or not: 9/12, kappa 0.50, level with Sonnet 5 (0.50) and under Opus
+5 and Fable 5.1 (0.68). Against Opus and Fable the human agrees 11/12 (kappa
+0.83). Card effect on the human read: 3/6 with the card, 3/6 without, the first
+read on any packet with no lean (judge 4/6 vs 3/6; the three models keep with
+above without). Two divergences to sort out before the read is cited: the
+human ruled "realized" no or partly on all twelve where every other reader
+ruled yes, which looks like a question-wording fault; and on the four items
+whose next line is the next plant (turns 6 and 9) the human read the condition
+as persisting where the judge read it as eased. Note
+`notes/poetics/hero-demo-runs/2026-09-05-step7f-human-second-read.md`;
+answers and compare in `exports/tutor-stub-outcome/step7f-hold-cue-fix/`
+(`reader-human*.json`, `reader-human-compare.md`), archived.
+
+What stays for the author: the §6.24 line "a human second read is still open",
+and whether the five-pair lean is kept, narrowed to the model readers, or
+dropped on this reading. No paid call is needed for either.
