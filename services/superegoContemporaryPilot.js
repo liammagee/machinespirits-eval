@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'yaml';
 import { randomStream, readJson, sha256 } from './superegoCritiqueCausalReplay.js';
+import { isResponseFreeParameterRejection } from './paidStudyLaunchContract.js';
 
 export const DESIGN_PATH = 'notes/superego-contemporary-pilot-design.md';
 export const ARMS = ['draft_only', 'generic_revision', 'actual_critique', 'matched_wrong_critique'];
@@ -320,7 +321,7 @@ export function parsePilotResponse(design, request, job, raw, payload) {
   if (request.provider === 'codex') {
     if (raw.cli_error) {
       const error = new Error(`Codex CLI failed: ${raw.cli_error.message}`);
-      error.configurationFailure = isResponseFreeCodexConfigFailure(raw);
+      error.configurationFailure = isResponseFreeParameterRejection(request, raw);
       error.recoverable = raw.cli_error.recoverable === true || error.configurationFailure;
       throw error;
     }
@@ -409,17 +410,6 @@ export function parsePilotResponse(design, request, job, raw, payload) {
       : { invalid_response: 'invalid_generation' };
   }
   return validRating(job.kind, value, payload) ? value : { invalid_response: 'invalid_rating_or_reference' };
-}
-export function isResponseFreeCodexConfigFailure(raw) {
-  return (
-    raw?.cli_error?.code === 'CLI_PROVIDER_EXIT_FAILED' &&
-    raw.transport?.exitCode === 1 &&
-    raw.transport.stdout === '' &&
-    !raw.result &&
-    raw.transport.stderr.startsWith(
-      'Error loading config.toml: model_providers contains reserved built-in provider IDs: `openai`.',
-    )
-  );
 }
 export function humanPacket(plan, results, category) {
   const packet = {

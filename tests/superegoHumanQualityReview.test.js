@@ -578,6 +578,12 @@ test('saved pre-turn CLI config failure can be recovered after repair without ed
   const events = readEvents(file);
   events.at(-1).recovery_permitted = false;
   fs.writeFileSync(file, events.map(JSON.stringify).join('\n') + '\n');
+  const sharedFile = path.join(options.studyStateRoot, options.design.id, 'study-ledger.jsonl');
+  const sharedEvents = readEvents(sharedFile);
+  sharedEvents.at(-1).recovery_permitted = false;
+  sharedEvents.at(-1).recoverable = false;
+  fs.writeFileSync(sharedFile, sharedEvents.map(JSON.stringify).join('\n') + '\n');
+  const sharedOriginal = fs.readFileSync(sharedFile, 'utf8');
   const original = fs.readFileSync(file);
   const destination = path.join(options.root, 'config-recovered');
   await executePilot({
@@ -591,6 +597,7 @@ test('saved pre-turn CLI config failure can be recovered after repair without ed
   });
   assert.equal(calls, 17);
   assert.deepEqual(fs.readFileSync(file), original);
+  assert.ok(fs.readFileSync(sharedFile, 'utf8').startsWith(sharedOriginal));
   assert.equal(
     readEvents(path.join(destination, 'run-ledger.jsonl')).filter((e) => e.type === 'technical_failure_reclassified')
       .length,

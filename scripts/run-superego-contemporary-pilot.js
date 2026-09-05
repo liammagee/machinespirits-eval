@@ -158,6 +158,7 @@ export function recoverPilot(design, plan, predecessor) {
   const results = new Map(),
     requests = new Map();
   let configurationFailures = 0;
+  const configurationFailureUnits = [];
   for (const segment of segments) {
     for (const reservation of segment.events.filter((e) => e.type === 'model_attempt_dispatch_reserved')) {
       const job = plan.jobs.find((j) => j.id === reservation.unit_id);
@@ -203,7 +204,10 @@ export function recoverPilot(design, plan, predecessor) {
         if (results.has(job.id)) throw new Error('Duplicate retained answer');
         results.set(job.id, result);
       } catch (error) {
-        if (error.configurationFailure) configurationFailures++;
+        if (error.configurationFailure) {
+          configurationFailures++;
+          configurationFailureUnits.push(job.id);
+        }
         if (!error.recoverable) throw error;
       }
     }
@@ -220,7 +224,7 @@ export function recoverPilot(design, plan, predecessor) {
       results.set(job.id, { invalid_response: 'missing_dependency', dependencies: event.dependencies });
     }
   }
-  return { results, requests, segments, configurationFailures };
+  return { results, requests, segments, configurationFailures, configurationFailureUnits };
 }
 
 export function loadAutomatedQualitySource(root, design, sourceFrom) {
@@ -312,6 +316,7 @@ export async function executePilot({
     studyStateRoot,
     recoveryFrom: recoveryFrom ? path.resolve(recoveryFrom) : undefined,
     retainedResponseUnits: recoveryFrom ? [...results.keys()] : [],
+    parameterRejectionUnits: repairedConfigurationFailure ? recovered.configurationFailureUnits : [],
   });
   const budget = createDurablePaidModelAttemptBudget({ admission, limit: design.attempts.hard_ceiling });
   if (repairedConfigurationFailure)

@@ -642,6 +642,18 @@ export function sealInterruptedPaidStudyLaunch({
 // OpenRouter rejected routing before returning model content or usage. Fail
 // closed on unknown envelope fields; this is not permission to retry answers.
 export function isResponseFreeParameterRejection(request, raw) {
+  if (request?.provider === 'codex') {
+    return (
+      raw?.cli_error?.code === 'CLI_PROVIDER_EXIT_FAILED' &&
+      raw.transport?.exitCode === 1 &&
+      raw.transport.stdout === '' &&
+      !raw.result &&
+      typeof raw.transport.stderr === 'string' &&
+      raw.transport.stderr.startsWith(
+        'Error loading config.toml: model_providers contains reserved built-in provider IDs: `openai`.',
+      )
+    );
+  }
   if (
     raw?.status !== 404 ||
     request?.provider?.require_parameters !== true ||
