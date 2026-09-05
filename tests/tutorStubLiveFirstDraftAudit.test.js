@@ -1,5 +1,11 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
+
+import { replayFirstDraftAudit } from '../scripts/replay-first-draft-audit.js';
 
 import {
   TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
@@ -9,8 +15,11 @@ import {
 import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
 import {
   auditTutorStubLiveSourceActionAlignmentV1,
+  dropOuterQuotationMarks,
+  straightenQuotationMarks,
   tutorStubLiveResponseConfigurationSurface,
 } from '../services/tutorStubLiveFirstDraftAudit.js';
+import { createTutorStubRecoveryAccountingRuntime } from '../services/tutorStubRecoveryAccountingRuntime.js';
 import { compileTutorStubSourceAccessibilityContract } from '../services/tutorStubSourceAccessibilityContract.js';
 import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
 import {
@@ -967,4 +976,245 @@ test('deterministic live fallback places an audited extractive compensation imme
   assert.equal(audit.compensation_visible, true);
   assert.equal(audit.passing_compensation_spans.length, 1);
   assert.match(audit.passing_compensation_spans[0].text, /^Elian drew it for curfew warrants/u);
+});
+
+// Recorded world-037 clue turns (step7d-hold-memory-limited, with-d0,
+// 2026-09-04T01-33-08-379Z). The host text is the rendered SOURCE the plan
+// gave the model; each draft is what the model wrote back.
+const WORLD_037_TURN_2_EXHIBIT = renderTutorStubDueSource({
+  premise: 'p_tops',
+  mode: 'presented_exhibit',
+  role: 'homework sheet',
+  surface:
+    'One plus one on top, two plus three underneath: two fifths. That is what the pupil wrote, and it is what adding whole numbers looks like.',
+});
+const WORLD_037_TURN_2_REWORDED_RECOVERY =
+  "Not yet — let's check what you actually wrote first. One plus one on top, two plus three underneath: two fifths. That's what adding whole numbers looks like, tops with tops, bottoms with bottoms. Pick up the strip: does a half-piece plus a third-piece cover the same ground as two of the five equal strips would?";
+const WORLD_037_TURN_4_ENACTED = renderTutorStubDueSource({
+  premise: 'p_sixths',
+  mode: 'enacted_role',
+  role: 'tutor at the paper strip',
+  scene: { diction: 'contemporary' },
+  surface:
+    'Cut the strip into six equal pieces. The half covers three of them and the third covers two of them. Now the pieces are the same size.',
+});
+const WORLD_037_TURN_4_UNQUOTED_RECOVERY =
+  'That rule works for whole numbers, but pieces need to be the same size first. I can confirm this: Cut the strip into six equal pieces. The half covers three of them and the third covers two of them. Now the pieces are the same size. What does that let you do with those three and two?';
+const WORLD_037_TURN_5_EXHIBIT = renderTutorStubDueSource({
+  premise: 'p_count',
+  mode: 'presented_exhibit',
+  role: 'homework sheet',
+  surface: 'Three sixths and two sixths: count the pieces, five sixths.',
+});
+
+test('quotation-mark normalisation straightens curly marks without changing length and drops one outer pair', () => {
+  assert.equal(straightenQuotationMarks('“a” ‘b’'), '"a" \'b\'');
+  assert.equal(straightenQuotationMarks('“a” ‘b’').length, '“a” ‘b’'.length);
+  assert.equal(dropOuterQuotationMarks('“I attest: the log is open.”'), 'I attest: the log is open.');
+  assert.equal(dropOuterQuotationMarks("'once'"), 'once');
+  assert.equal(dropOuterQuotationMarks('“a” and “b”'), 'a" and "b');
+  assert.equal(dropOuterQuotationMarks('no marks'), 'no marks');
+  assert.equal(dropOuterQuotationMarks('“x”'), 'x');
+  assert.equal(dropOuterQuotationMarks('“”'), '""');
+});
+
+test('live V1 still rejects the recorded turn-2 draft that rewords the exhibit', () => {
+  const audit = auditTutorStubLiveSourceActionAlignmentV1({
+    text: WORLD_037_TURN_2_REWORDED_RECOVERY,
+    firstDraftContract: { evidence: { sources: [WORLD_037_TURN_2_EXHIBIT] } },
+  });
+  assert.equal(audit.ok, false);
+  assert.equal(audit.source_occurrences[0].observed_count, 0);
+  assert.equal(audit.source_occurrences[0].match, null);
+  assert.deepEqual(
+    audit.issues.map((issue) => issue.type),
+    ['due_source_exact_occurrence_count'],
+  );
+});
+
+test('live V1 accepts the recorded turn-4 draft that dropped the outer quotation marks', () => {
+  assert.equal(
+    WORLD_037_TURN_4_ENACTED.text,
+    '“I can confirm this: Cut the strip into six equal pieces. The half covers three of them and the third covers two of them. Now the pieces are the same size.”',
+  );
+  const contract = { evidence: { sources: [WORLD_037_TURN_4_ENACTED] } };
+  const audit = auditTutorStubLiveSourceActionAlignmentV1({
+    text: WORLD_037_TURN_4_UNQUOTED_RECOVERY,
+    firstDraftContract: contract,
+  });
+  assert.equal(audit.ok, true);
+  assert.equal(audit.exact_source_occurrence_passes, 1);
+  assert.equal(audit.source_occurrences[0].match, 'outer_quotation_marks_dropped');
+  const [span] = audit.source_occurrences[0].spans;
+  assert.equal(
+    WORLD_037_TURN_4_UNQUOTED_RECOVERY.slice(span.start, span.end),
+    dropOuterQuotationMarks(WORLD_037_TURN_4_ENACTED.text),
+  );
+  assert.equal(
+    audit.pre_source_boundaries[0].audited_host_text,
+    'That rule works for whole numbers, but pieces need to be the same size first.',
+  );
+  assert.doesNotMatch(audit.audited_host_text, /six equal pieces/u);
+});
+
+test('live V1 accepts a draft whose only difference is straight quotation marks and keeps the marks in the span', () => {
+  const contract = { evidence: { sources: [WORLD_037_TURN_4_ENACTED] } };
+  const straight = `We are both at the paper strip. ${straightenQuotationMarks(WORLD_037_TURN_4_ENACTED.text)} What changes?`;
+  const audit = auditTutorStubLiveSourceActionAlignmentV1({ text: straight, firstDraftContract: contract });
+  assert.equal(audit.ok, true);
+  assert.equal(audit.source_occurrences[0].match, 'quotation_marks_straightened');
+  const [span] = audit.source_occurrences[0].spans;
+  assert.equal(straight.slice(span.start, span.end), straightenQuotationMarks(WORLD_037_TURN_4_ENACTED.text));
+  assert.equal(straight.slice(span.start, span.end).startsWith('"'), true);
+
+  const exact = auditTutorStubLiveSourceActionAlignmentV1({
+    text: `We are both at the paper strip. ${WORLD_037_TURN_4_ENACTED.text} What changes?`,
+    firstDraftContract: contract,
+  });
+  assert.equal(exact.ok, true);
+  assert.equal(exact.source_occurrences[0].match, 'exact');
+});
+
+test('live V1 still rejects a clue that appears twice, with or without its outer marks', () => {
+  const contract = { evidence: { sources: [WORLD_037_TURN_4_ENACTED] } };
+  const bare = dropOuterQuotationMarks(WORLD_037_TURN_4_ENACTED.text);
+  const twice = auditTutorStubLiveSourceActionAlignmentV1({
+    text: `At the strip. ${WORLD_037_TURN_4_ENACTED.text} Again: ${bare} What changes?`,
+    firstDraftContract: contract,
+  });
+  assert.equal(twice.ok, false);
+  assert.equal(twice.source_occurrences[0].observed_count, 2);
+  assert.equal(twice.source_occurrences[0].match, null);
+  assert.deepEqual(
+    twice.issues.map((issue) => issue.type),
+    ['due_source_exact_occurrence_count'],
+  );
+
+  const exhibitTwice = auditTutorStubLiveSourceActionAlignmentV1({
+    text: `I look at the sheet. ${WORLD_037_TURN_5_EXHIBIT.text} ${WORLD_037_TURN_5_EXHIBIT.text} What does that settle?`,
+    firstDraftContract: { evidence: { sources: [WORLD_037_TURN_5_EXHIBIT] } },
+  });
+  assert.equal(exhibitTwice.ok, false);
+  assert.equal(exhibitTwice.source_occurrences[0].observed_count, 2);
+});
+
+test('the recovery packet names the failed clue check and states what it requires', () => {
+  const { tutorResponseRecoveryPrompt } = createTutorStubRecoveryAccountingRuntime({
+    TUTOR_GUARD_ACCOUNTING_SCHEMA: 'test',
+    appendTraceEvent() {},
+    jsonClone: (value) => JSON.parse(JSON.stringify(value)),
+    projectTutorStubGuardAttemptEnvelope() {},
+    tutorStubGuardIssueRows() {
+      return [];
+    },
+  });
+  const audit = auditTutorStubLiveSourceActionAlignmentV1({
+    text: WORLD_037_TURN_2_REWORDED_RECOVERY,
+    firstDraftContract: { evidence: { sources: [WORLD_037_TURN_2_EXHIBIT] } },
+  });
+  const hardIssues = audit.issues.map((issue) => ({ ...issue, guard: 'live_source_action_alignment_v1' }));
+  const prompt = tutorResponseRecoveryPrompt({
+    publicPacket: [`SOURCE — ${WORLD_037_TURN_2_EXHIBIT.text}`],
+    hardIssues,
+    liveSourceActionAlignmentAudit: audit,
+    minimalRecoveryPrompt: 'Answer first, then one question.',
+  });
+  assert.match(
+    prompt,
+    /The previous draft failed this response check and was not shown to the learner: live_source_action_alignment_v1:due_source_exact_occurrence_count\./u,
+  );
+  assert.match(
+    prompt,
+    /requires the SOURCE line to appear exactly once, word for word, with no word changed, added, or dropped \(the rejected draft had it 0 times\)/u,
+  );
+  const failureBlock = prompt.slice(prompt.indexOf('[Response-check failures]'));
+  assert.match(failureBlock, /1\. live_source_action_alignment_v1:due_source_exact_occurrence_count - /u);
+  assert.doesNotMatch(prompt, /Failed check dramatic_release:duplicate_clue_delivery/u);
+
+  const duplicate = tutorResponseRecoveryPrompt({
+    publicPacket: [`SOURCE — ${WORLD_037_TURN_5_EXHIBIT.text}`],
+    hardIssues: [{ guard: 'dramatic_release', type: 'duplicate_clue_delivery' }],
+    dramaticReleaseAudit: {
+      active: true,
+      issues: [{ type: 'duplicate_clue_delivery', reason: 'stated in two sentences' }],
+    },
+    minimalRecoveryPrompt: 'Answer first, then one question.',
+  });
+  assert.match(
+    duplicate,
+    /failed this response check and was not shown to the learner: dramatic_release:duplicate_clue_delivery\./u,
+  );
+  assert.match(
+    duplicate,
+    /Failed check dramatic_release:duplicate_clue_delivery requires the newly public clue in one sentence only/u,
+  );
+
+  const unnamed = tutorResponseRecoveryPrompt({ publicPacket: [], minimalRecoveryPrompt: 'x' });
+  assert.match(unnamed, /The previous draft failed a response check and was not shown to the learner\./u);
+});
+
+test('replay script re-runs the clue check on recorded drafts without a model call', () => {
+  const sha = (text) => createHash('sha256').update(String(text).replace(/\s+/gu, ' ').trim()).digest('hex');
+  const clueIssue = { guard: 'live_source_action_alignment_v1', type: 'due_source_exact_occurrence_count' };
+  const duplicateIssue = { guard: 'dramatic_release', type: 'duplicate_clue_delivery' };
+  const attempt = (kind, text, hardIssues, shaOverride = null) => ({
+    kind,
+    attempt: kind === 'original_candidate' ? 1 : 2,
+    candidate: { text },
+    audits: { auditedText: { sha256: shaOverride || sha(text) }, deliveryDecision: { hardIssues } },
+  });
+  const contractEvent = (turn, source) => ({
+    type: 'tutor_first_draft_contract',
+    turn,
+    contract: { evidence: { sources: [source] } },
+  });
+  const accountingEvent = (turn, attempts, outcome) => ({
+    type: 'tutor_response_guard_accounting',
+    turn,
+    accounting: { outcome, attempts, finalDelivery: { source: attempts.at(-1).kind } },
+  });
+  const events = [
+    { type: 'run_start', runId: 'replay-fixture', metadata: { scenarioPicker: { selectedScenarioId: 'world_037' } } },
+    contractEvent(2, WORLD_037_TURN_2_EXHIBIT),
+    accountingEvent(2, [attempt('original_candidate', WORLD_037_TURN_2_REWORDED_RECOVERY, [clueIssue])], 'fallback'),
+    contractEvent(4, WORLD_037_TURN_4_ENACTED),
+    accountingEvent(
+      4,
+      [
+        attempt('original_candidate', WORLD_037_TURN_4_UNQUOTED_RECOVERY, [duplicateIssue, clueIssue]),
+        attempt('plain_recovery_candidate', WORLD_037_TURN_4_UNQUOTED_RECOVERY, [clueIssue]),
+        attempt('plain_recovery_candidate', WORLD_037_TURN_4_UNQUOTED_RECOVERY, [clueIssue], 'not-the-draft'),
+        { kind: 'deterministic_fallback', candidate: { text: 'template' }, audits: {} },
+      ],
+      'fallback',
+    ),
+  ];
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-replay-'));
+  const tracePath = path.join(dir, 'step7-hold-fixture', 'traces', 'world-037', 'with-d0', 'run.jsonl');
+  fs.mkdirSync(path.dirname(tracePath), { recursive: true });
+  fs.writeFileSync(tracePath, `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
+
+  const summary = replayFirstDraftAudit({ traces: [tracePath], exportsRoot: dir, turns: [2, 3, 4, 5] });
+
+  assert.equal(summary.modelCalls, 0);
+  assert.equal(summary.total.rejectedByClueCheck, 4);
+  assert.equal(summary.total.replayed, 3);
+  assert.equal(summary.total.nowPassClueCheck, 2);
+  assert.equal(summary.total.wouldNowDeliver, 1);
+  assert.equal(summary.total.stillFail, 1);
+  assert.equal(summary.total.cannotReplay, 1);
+  assert.deepEqual(summary.total.cannotReplayReasons, { audited_text_digest_mismatch: 1 });
+  assert.deepEqual(summary.total.byMatch, { outer_quotation_marks_dropped: 2 });
+  assert.deepEqual(summary.total.byNearMiss, { reworded_or_missing: 1 });
+  assert.deepEqual(summary.total.otherRecordedHardIssues, { 'dramatic_release:duplicate_clue_delivery': 1 });
+  assert.equal(summary.perTurn['t2:original'].stillFail, 1);
+  assert.equal(summary.perTurn['t4:original'].nowPassClueCheck, 1);
+  assert.equal(summary.perTurn['t4:recovery'].nowPassClueCheck, 1);
+  assert.equal(summary.perRun['step7-hold-fixture/with-d0'].rejectedByClueCheck, 4);
+  assert.deepEqual(
+    summary.missingTurns.map((row) => row.turn),
+    [3, 5],
+  );
+  assert.equal(summary.runs[0].turns.find((row) => row.turn === 4).fallbackAttempts, 1);
+  fs.rmSync(dir, { recursive: true, force: true });
 });

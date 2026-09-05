@@ -94,3 +94,15 @@ claims:
       Seeds for the power simulations that sized the v7 study, not for any
       dialogue. They stay claimed for the same reason the test-fixture seeds do:
       a real run on either would collide with these scripts in a search.
+
+  - range: [736, 748]
+    claimed_by: passive warrant-gate second-family replication, 72 dialogues
+    source: docs/adaptation-refinement/warrant-gate-second-family-replication.md
+    note: >-
+      Claimed 2026-09-04 as 736-747 before any run. 700-711 was the first
+      choice; 700 is a power-simulation seed, so the block moved. 685-696 was
+      next but 688 is in the private archive. Seed 736 was burned on 2026-09-04
+      and 2026-09-05 by two attempts at dialogue 01 under the pre-amendment
+      analysis seat (Opus 5); both are discarded and neither entered a corpus.
+      The block is now 737-748; 748 was clean on the repo and archive search
+      on 2026-09-05. 736 stays claimed so no other study reuses it.

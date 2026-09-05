@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   admitPaidStudyLaunch,
+  paidStudyChatGoIssues,
   paidStudyGoNoteIssues,
   sealInterruptedPaidStudyLaunch,
   verifyPaidStudyLaunchContract,
@@ -199,6 +200,46 @@ test('standing contract still refuses a missing or unmerged design, a bad GO not
   const missingDesign = fixture(t);
   fs.rmSync(path.join(missingDesign.root, 'config', 'study.json'));
   assert.throws(() => verifyPaidStudyLaunchContract(missingDesign.contract), /not in the checkout/u);
+});
+
+test('a GO given in chat admits without a note and is recorded as given', (t) => {
+  const value = fixture(t);
+  const withoutNote = { ...value.contract, goNoteCommit: undefined, goNotePath: undefined };
+  const verified = verifyPaidStudyLaunchContract({ ...withoutNote, goApproval: 'GO  ' });
+  assert.equal(verified.authorization.channel, 'chat');
+  assert.equal(verified.authorization.text, 'GO');
+  assert.ok(Date.parse(verified.authorization.recorded_at) > 0);
+  assert.equal(verified.source.named_launch_commit, value.launchCommit);
+
+  const recorded = verifyPaidStudyLaunchContract({
+    ...withoutNote,
+    launchCommit: undefined,
+    goApproval: 'GO, run the second family replication',
+  });
+  assert.equal(recorded.authorization.text, 'GO, run the second family replication');
+  assert.equal(recorded.source.named_launch_commit, null);
+
+  for (const text of [undefined, '', 'go', 'Go ahead', 'NO-GO', 'please GO']) {
+    assert.throws(
+      () => verifyPaidStudyLaunchContract({ ...withoutNote, goApproval: text }),
+      /must start with the word GO/u,
+      JSON.stringify(text),
+    );
+  }
+  assert.deepEqual(paidStudyChatGoIssues('GO now'), []);
+  assert.deepEqual(paidStudyChatGoIssues('GOAL'), ['go_token']);
+
+  const destination = path.join(value.base, 'chat-run');
+  const admission = admitPaidStudyLaunch({ ...withoutNote, goApproval: 'GO', destination });
+  admission.close({ type: 'run_sealed', status: 'complete' });
+  const launch = fs
+    .readFileSync(path.join(destination, 'run-ledger.jsonl'), 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .find((event) => event.type === 'launch_admitted');
+  assert.equal(launch.go_note.channel, 'chat');
+  assert.equal(launch.go_note.text, 'GO');
 });
 
 test('the original study GO remains valid after a merged technical code fix', (t) => {

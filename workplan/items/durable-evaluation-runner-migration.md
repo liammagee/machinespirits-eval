@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-09-02
-updated: 2026-09-03
+updated: 2026-09-04
 branch: codex/durable-runner-migration-completion
 verification: "The six maintained paid runners satisfy the durable execution contract with focused crash-boundary, missing-only recovery, plan-identity, response-integrity, and four-plane status tests; all thirteen non-migrated launchers fail closed at every exported and CLI paid-dispatch boundary."
 claim_status: methods
@@ -101,3 +101,17 @@ both CLI and exported paid-dispatch boundaries while preserving zero-call
 inspection and sealed evidence. Focused crash, recovery, status, compatibility,
 inventory, and retirement tests pass; the hermetic manifest and workplan source
 checks are synchronized. No model call was made.
+
+## 2026-09-04 defect: tutor-stub child closed attempts without a persisted response
+
+The 2026-09-03 rule that a completed attempt needs a persisted response was
+applied to the launcher-side readers and the invested-rival runners, but not to
+the tutor-stub child (`services/tutorStubTraceRuntime.js`), which every
+tutor-stub launcher spawns. The first paid dialogue of the second-family
+replication died at its first model call with "cannot complete before response
+persistence" after the response had come back. Fixed in place: the child now
+writes each completed model call to `attempt-responses/` inside the dialogue
+directory and registers it before closing the attempt. Regression test:
+`tests/tutorStubSharedAttemptResponsePersistence.test.js`, which runs the child
+runtime against a real shared ledger. No launcher test had done that; they all
+replaced the child with a mock.

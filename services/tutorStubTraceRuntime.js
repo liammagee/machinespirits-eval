@@ -159,6 +159,17 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
       fs.closeSync(descriptor);
     }
     if (enrichedEvent.attemptDisposition && enrichedEvent.attemptId && trace.sharedAttemptLedger) {
+      if (enrichedEvent.attemptDisposition === 'completed') {
+        // The shared ledger refuses to close an attempt as completed until the
+        // response is on disk inside the run directory (durableAttemptJournal).
+        // Write the redacted model_call record there and register it first.
+        trace.sharedAttemptLedger.persistResponse({
+          attemptId: enrichedEvent.attemptId,
+          responsePath: writeSharedAttemptResponse(trace, entry),
+          role: enrichedEvent.role,
+          turn: enrichedEvent.turn,
+        });
+      }
       trace.sharedAttemptLedger.terminalize({
         attemptId: enrichedEvent.attemptId,
         disposition: enrichedEvent.attemptDisposition,
@@ -167,6 +178,21 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
         traceSequence: entry.seq,
       });
     }
+  }
+
+  function writeSharedAttemptResponse(trace, entry) {
+    const responseDir = path.join(trace.dir, 'attempt-responses');
+    fs.mkdirSync(responseDir, { recursive: true });
+    const fileName = `${String(entry.attemptId).replace(/[^A-Za-z0-9._-]+/gu, '_')}.json`;
+    const responsePath = path.resolve(responseDir, fileName);
+    const descriptor = fs.openSync(responsePath, 'w');
+    try {
+      fs.writeSync(descriptor, `${JSON.stringify(redactTraceSecrets(entry), null, 2)}\n`);
+      fs.fsyncSync(descriptor);
+    } finally {
+      fs.closeSync(descriptor);
+    }
+    return responsePath;
   }
 
   function appendTutorStubTurnFailureTraceRecords(state, { sealed = false } = {}) {

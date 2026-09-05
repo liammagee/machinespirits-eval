@@ -1,14 +1,14 @@
 ---
 id: in-place-edits-numbered-file-ratchet
 title: Edit designs and judges in place; ratchet numbered sibling files
-status: active
+status: done
 type: infra
 priority: P1
 owner: claude
 source: review
 created: 2026-09-03
-updated: 2026-09-03
-verification: "CLAUDE.md and AGENTS.md carry the in-place rule; the go-request checker, packager and their three tests are gone; VALIDATOR_ONLY_GROUPS is empty; the three tests that hashed code, design or registration files no longer do; `npm run test:ratchets` fails when a new numbered sibling file appears under config/, services/ or scripts/; lint:all and the hermetic suite pass."
+updated: 2026-09-04
+verification: "CLAUDE.md and AGENTS.md carry the in-place rule. The go-request checker, packager and their three tests are gone. VALIDATOR_ONLY_GROUPS is empty. The three tests that hashed code, design or registration files no longer do. `npm run test:ratchets` fails when a new numbered sibling file appears under config/, services/ or scripts/. lint:all and the hermetic suite pass."
 claim_status: planned
 links:
   items:
@@ -83,3 +83,14 @@ next touched, or leave it if the study is archived:
 
 66 config JSON files record a digest of a `services/` or `scripts/` file. They
 are records. Leave them.
+
+## Closed 2026-09-04
+
+Merged as PR #994. Checked on main at c4607dc8: CLAUDE.md and AGENTS.md carry
+the in-place rule; the go-request checker and packager are gone;
+`VALIDATOR_ONLY_GROUPS` is empty in `scripts/ci-change-policy.js`; the
+numbered sibling ratchet test exists and `npm run test:ratchets` passes;
+`npm run lint:all` passes; CI on that commit is green. One test in the local
+hermetic run fails for a repository reason only: this checkout is a partial
+clone, and the test clones the repository and checks out the parent commit,
+which needs blobs the clone does not hold. CI on a full clone passes.
