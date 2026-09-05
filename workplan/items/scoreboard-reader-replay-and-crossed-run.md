@@ -98,3 +98,33 @@ are read.
   scorer built and tested with zero calls. GO note:
   `notes/2026-09-05-scoreboard-crossed-run-go.md`. No paid call made. The run
   waits on the user's word "go" in the chat.
+- 2026-09-05: PR #1034 merged. The six-call tutor PR benchmark it owed ran on
+  the merged code (commit ff9f865f, clean tree): 3 of 6 pass. Two zero-call
+  checks say the fails are not from the PR. The candidates that passed 6 of 6
+  at 12:11 UTC on eea76bdf pass again under the new code (re-audit, 0
+  regressed), and every runtime edit in the PR is gated on the `board` or
+  `board_blind` policy, which the benchmark does not run. The gate's record on
+  earlier code is 0/6, 0/6, 4/6, 4/6, then 6/6 once. Report:
+  `.git/machinespirits-reports/tutor-pr-benchmark/runs/pr-benchmark-2026-09-05T12-28-17-719Z/`.
+  A paired base/head comparison (12 more calls) was not bought.
+- 2026-09-05: seat change withdrawn. This PR first moved the learner analysis
+  seat to codex Luna in commands A, B and D. Before it merged, the user said go
+  in another session (GO note commit cfa60412 on `claude/scoreboard-replay`)
+  and command A went live at 12:36 UTC from commit 4b7a8362 with Sonnet 5 in
+  the tutor, auto-learner and analysis seats. A live run is not patched, so the
+  GO note here matches main again.
+- 2026-09-05: block A watch note (world 101, `low_agency`, 12 dialogues of 8
+  turns, done 12:45 UTC). Licence violations: 0. After-turn board audits: 96,
+  no unread field. The pre-tutor board reads show five unread fields each; they
+  belong to the tutor's own row for the turn it has not yet spoken, the
+  expected marker, not a defect. Learner analysis: 2 of 96 turns unanalyzed
+  (`board-r2` turn 8, `board_blind-r5` turn 3); the Sonnet 5 analysis seat
+  returned `invalid_semantic_events` three times on each, the dialogue kept
+  going with the warrant gate in observe mode, and the board reads those two
+  learner turns from public text alone. The dialogue runner sealed the block
+  `learner_analysis_incomplete` and exited 1; the matrix stopped before the
+  second profile. The operator restarted the `overconfident` block at 12:51
+  UTC into `world-101-overconfident`. The reader runner does not read the seal.
+  Record for the seat table: Sonnet 5 in the analysis seat leaves about 2 in
+  100 turns unanalyzed under the strict validator; Luna's §6.25 and §6.26
+  record has none.
