@@ -22,7 +22,8 @@ import {
   loadReplayDesign,
   prepareReplayPlan,
   buildReplayRequest,
-  parseReplayResponse,
+  classifyReplayResponse,
+  retainsInvalidCalibrationResponses,
   worstCost,
   summarizeReplay,
 } from '../services/superegoCritiqueCausalReplay.js';
@@ -47,6 +48,7 @@ const stableSettings = (design) => ({
   primary: design.primary,
   arms: design.arms,
   endpoint: design.endpoint,
+  ...(design.response_failure_policy ? { response_failure_policy: design.response_failure_policy } : {}),
 });
 
 // Exactly one HTTP request. No SDK retry, status retry, fallback, or model repair.
@@ -82,7 +84,12 @@ export function loadRecoveryResponses(design, plan, predecessor) {
     if (!launch || events.at(-1)?.type !== 'run_sealed') throw new Error('Recovery predecessor is not sealed');
     if (JSON.stringify(readJson(path.join(dir, 'plan.json'))) !== JSON.stringify(plan))
       throw new Error('Frozen recovery plan drift');
-    if (JSON.stringify(readJson(path.join(dir, 'settings.json'))) !== JSON.stringify(stableSettings(design)))
+    const previousSettings = readJson(path.join(dir, 'settings.json'));
+    // The calibration amendment changes only response disposition. Compare all
+    // original protected inputs; never refresh requests, sample, routes or caps.
+    if (retainsInvalidCalibrationResponses(design) && !previousSettings.response_failure_policy)
+      previousSettings.response_failure_policy = design.response_failure_policy;
+    if (JSON.stringify(previousSettings) !== JSON.stringify(stableSettings(design)))
       throw new Error('Study settings changed during recovery');
     segments.unshift({ dir, events });
     current = launch.recovery_from;
@@ -124,7 +131,9 @@ export function loadRecoveryResponses(design, plan, predecessor) {
         continue;
       }
       try {
-        const parsed = parseReplayResponse(design, bundle.request, job, bundle.raw);
+        if (JSON.stringify(bundle.request) !== JSON.stringify(buildReplayRequest(design, plan, job, responses)))
+          throw new Error('Retained response request differs from registered builder');
+        const parsed = classifyReplayResponse(design, bundle.request, job, bundle.raw);
         if (responses.has(job.id)) throw new Error('Conflicting duplicate successful response');
         responses.set(job.id, parsed);
       } catch (error) {
@@ -218,19 +227,24 @@ export async function executeReplay({
     const failed = events.filter((e) =>
       ['attempt_failed', 'attempt_interrupted_after_dispatch', 'attempt_cancelled_before_dispatch'].includes(e.type),
     ).length;
+    const invalid = [...responses.values()].filter((r) => r.response_status === 'invalid_response').length;
     status = updateLongRunningWorkflowProgress(status, {
       units: {
-        complete: responses.size,
+        complete: responses.size - invalid,
         active: activeJob && !failure ? 1 : 0,
-        failed: failure ? 1 : 0,
+        failed: invalid + (failure ? 1 : 0),
         missing: Math.max(0, plan.jobs.length - responses.size - (activeJob ? 1 : 0)),
       },
       calls: { completed, failed, reserved: admission.studyReserved, hard_ceiling: design.attempts.hard_ceiling },
       recentUnitDurationsMs: durations.slice(-8),
       modelActivity: activity,
-      nextAction: nextAction(
-        activeJob ? `${activeJob.category}: ${activeJob.id}` : 'Advance the fixed replay job list.',
-      ),
+      ...(!failure
+        ? {
+            nextAction: nextAction(
+              activeJob ? `${activeJob.category}: ${activeJob.id}` : 'Advance the fixed replay job list.',
+            ),
+          }
+        : {}),
     });
     writeLongRunningWorkflowStatusAtomic(statusPath, status);
     onProgress(status);
@@ -310,12 +324,13 @@ export async function executeReplay({
       rawPersisted = true;
       budget.complete();
       if (faultAt === 'after_response_persisted') throw new Error('Injected fault after durable response persistence');
-      const parsed = parseReplayResponse(design, request, job, raw);
+      const parsed = classifyReplayResponse(design, request, job, raw);
       responses.set(job.id, parsed);
       admission.record({
-        type: 'job_complete',
+        type: parsed.response_status === 'invalid_response' ? 'job_invalid_response' : 'job_complete',
         job_id: job.id,
         category: job.category,
+        ...(parsed.invalid_reason ? { invalid_reason: parsed.invalid_reason } : {}),
         observed_usage: JSON.parse(raw.body).usage,
         cost_status: JSON.parse(raw.body).usage.cost === undefined ? 'unknown' : 'reported',
       });
@@ -390,7 +405,8 @@ export async function executeReplay({
       status: failure ? 'technical_failure' : pauseRequested ? 'paused_recoverable' : 'local_package_ready',
       recovery_permitted: recoverable,
       reason: failure?.message || null,
-      completed_jobs: responses.size,
+      completed_jobs: [...responses.values()].filter((r) => r.response_status !== 'invalid_response').length,
+      invalid_jobs: [...responses.values()].filter((r) => r.response_status === 'invalid_response').length,
       missing_jobs: plan.jobs.length - responses.size,
     });
   }

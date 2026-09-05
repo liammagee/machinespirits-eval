@@ -9,8 +9,8 @@ source: manual
 created: 2026-09-05
 updated: 2026-09-05
 verification: Verify the unchanged 48-item identities and complete-input derivative; test zero-call preparation, judge separation, calibrated request reservations and missing-only recovery; review the calibration design, independent human reference plan and hosted CI before any paid launch.
-branch: codex/superego-critique-calibration-closeout
-blocked_by: Registered response-format/evidence failure; the first answer is retained and automatic recovery is disabled.
+branch: codex/superego-calibration-response-recovery
+blocked_by: Proposed response-disposition amendment needs GO; automatic approval review blocked the shared admission change pending explicit approval. Original sealed failure still prevents paid continuation.
 claim_status: methods
 links:
   items:
@@ -21,6 +21,7 @@ links:
     - notes/2026-09-05-superego-critique-measurement-calibration-launch.md
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/1038
+    - https://github.com/liammagee/machinespirits-eval/pull/1041
 ---
 
 The user requested validation and reconsideration after the expense/model review.
@@ -82,3 +83,27 @@ The maintained archive check reports zero missing. Private archive commit
 `codex/superego-critique-calibration-archive`. Original files are unchanged.
 Workplan source and diff checks passed; this closeout changes no runtime,
 measurement rule, budget or authorization.
+
+2026-09-05 Codex: fetched/pruned, verified #1041 merged at 3f2f1810, and
+created a clean isolated repair worktree. Proposed the in-place calibration
+amendment: decode one complete JSON fence, retain malformed/evidence-invalid
+judgments without ratings or replacement calls, and collect the fixed remaining
+jobs. Exact quote matching, independent readers, disagreement, all 48 identities,
+192 requests and 204-attempt/$15 caps remain unchanged. The original response
+remains invalid; raw artifacts, old notes and ledgers are unchanged.
+
+Implemented offline classification and separate valid/invalid/missing reporting.
+Focused mocked tests verify fixed-batch completion, missing-only technical
+recovery, retained reservations, refusal/route stops, and unchanged rejection of
+the original sealed predecessor before admission. Automatic approval review
+rejected the proposed shared admission extension; that extension is not applied.
+The design describes its required durable-response and no-redispatch boundaries
+for explicit review. This PR is a partial repair, not executable continuation
+from the historical failure and not a new GO or launch.
+
+Real-data offline verification reproduced all 319 sealed traces, 48 identities
+and all 192 requests exactly. The first saved response classifies invalid with
+no accepted label; 191 jobs remain never dispatched. Maximum reservation remains
+$14.342107 including reserve. Additional provider calls and human labels: zero.
+Final focused suite: 31/31 passed. Targeted ESLint, formatting, workplan source
+(619/619) and diff checks passed. Hosted CI will verify the pushed repair.
