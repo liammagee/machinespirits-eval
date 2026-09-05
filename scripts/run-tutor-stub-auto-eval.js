@@ -605,6 +605,8 @@ function formatCounts(counts, { limit = 6 } = {}) {
 
 const REPORT_POLICY_ORDER = [
   'bland',
+  'board_blind',
+  'board',
   'fixed_warm',
   'fixed_sarcastic',
   'random',

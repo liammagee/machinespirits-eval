@@ -1,5 +1,6 @@
 import { ensureTutorStubWarrantGate } from './tutorStubWarrantGate.js';
 import { TUTOR_STUB_FIXED_REGISTER_POLICIES } from './tutorStubRegisterPolicyComposition.js';
+import { tutorStubScoreboardPolicyActive } from './tutorStubScoreboardPolicy.js';
 import { buildTutorStubDialogueClosureFrame } from './tutorStubDialogueClosure.js';
 import { projectAdaptiveWarrantEvidenceAvailability } from './adaptiveWarrantInquiryCompletion.js';
 import {
@@ -154,7 +155,9 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
       rawSelection = stateEngagementStanceSelection({ state, classification, tutorLearnerDag });
     } else if (policy in TUTOR_STUB_FIXED_REGISTER_POLICIES) {
       rawSelection = fixedRegisterEngagementStanceSelection({ state, classification, policy });
-    } else if (policy === 'bland') {
+    } else if (policy === 'bland' || tutorStubScoreboardPolicyActive(policy)) {
+      // The scoreboard arms keep the fixed plain register: the board changes
+      // what the tutor knows, not how it sounds.
       rawSelection = fixedBlandEngagementStanceSelection({ state, classification });
     }
     const normalizedRawSelection =

@@ -21,6 +21,15 @@ export const TUTOR_STUB_POLICY_SUITES = Object.freeze({
     policies: Object.freeze(['negative', 'bland', 'random']),
     aliases: Object.freeze([]),
   }),
+  scoreboard: Object.freeze({
+    id: 'scoreboard',
+    label: 'Scoreboard crossed run',
+    purpose:
+      'The same plain-register tutor with the public scoreboard in its prompt (board) and without it (board_blind). Step 2 of notes/2026-09-04-scoreboard-replay-prompt.md.',
+    cost: 'targeted',
+    policies: Object.freeze(['board', 'board_blind']),
+    aliases: Object.freeze([]),
+  }),
   core: Object.freeze({
     id: 'core',
     label: 'Core policy comparison',

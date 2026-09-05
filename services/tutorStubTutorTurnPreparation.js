@@ -5,6 +5,7 @@
  */
 import { buildTutorStubSpeakingResponseConfiguration } from './tutorStubPerformanceObligationContract.js';
 import { tutorStubWorldFrameProjection } from './tutorStubWorldFrame.js';
+import { tutorStubScoreboardAdvisory } from './tutorStubScoreboardPolicy.js';
 
 export const TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS = Object.freeze([
   'context_continuity',
@@ -278,6 +279,10 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
       comprehensionAdvisory,
       directorGuidanceAdvisory,
       coachAdvisory,
+      // Scoreboard arm: the public board as it stands before this turn
+      // (tutorStubScoreboardPolicy.js). Null in every other policy and in the
+      // blind arm, which builds the same board and shows none of it.
+      passthrough ? null : tutorStubScoreboardAdvisory(state, { tutorTurn }),
       pointOfActionAdvisory,
       tuningAdvisory,
       tutorFeedbackAdvisory,
