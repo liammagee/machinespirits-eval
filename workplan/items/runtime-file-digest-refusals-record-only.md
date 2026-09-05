@@ -241,34 +241,50 @@ is new: it writes down a recorded commit and tree beside the current checkout.
 
 ## Report
 
-These need a second opinion. I did not act on any of them.
+Items 1 and 2 were ruled on 2026-09-04 in a walk-through. Items 3 to 7 still
+need a ruling.
 
-### Two `config/` edits
+### 1. Two `config/` edits (ruled: keep)
 
 The brief said not to edit any file under `config/`. Two one-line additions to
 `config/hermetic-test-manifest.json` register the new test files
 `tests/recordedFileDigest.test.js` and `tests/recordedSourceProvenance.test.js`.
 Without them the hermetic runner does not select the new tests. This file is a
-test manifest, not a record of a measurement.
+test manifest, not a record of a measurement. The edit was made in `0948cbbe`
+and `c490c83c`; the user ruled to keep it.
 
-### Authorization ceremonies
+### 2. Authorization ceremonies (ruled: one converted, two out of scope)
 
-Three sites bind a paid-run approval request to the digest of a manifest file.
-That is the shape `CLAUDE.md` bans outright, but it is not on the brief's IN
-list, and weakening a paid-run approval path is not a call I should make alone.
+Three sites looked like a paid-run approval bound to a digest.
 
-- `run-adaptive-warrant-semantic-readers.js:89`
-- `prepare-adaptive-warrant-annotation-batches.js:832`
-- `run-adaptive-warrant-baseline-study.js:609-732`
+- `run-adaptive-warrant-semantic-readers.js:89` and
+  `prepare-adaptive-warrant-annotation-batches.js:832` hash
+  `diagnostic-freeze-manifest.json`, which
+  `build-adaptive-warrant-v3-semantic-diagnostic.js` writes into the run's own
+  output directory. A run artifact never changes on a repo edit, so it is on
+  the OUT list. No change.
+- `run-adaptive-warrant-baseline-study.js:609-732` put the source-file digest
+  and the child-policy digest inside the signed contract, and the plan identity
+  in `services/adaptiveWarrantStudyIntegrity.js` folded the same two digests
+  into the fingerprint the contract carries. A one-line source fix changed
+  both, so the signed authorization was refused and `--resume` threw
+  `resume plan drift`. Converted in `4c7e7eb0`: the two digests now sit beside
+  the contract in `source_provenance_record`, the plan identity omits them,
+  and `validateAdaptiveWarrantLaunchAuthorization` records observed against
+  approved to stderr instead of refusing. The format check on the two
+  `approved_*` fields stays, so a malformed value still fails under the same
+  label. The recomputed `approval_digest` check at line 658 stays: it catches
+  a request file whose contract was edited after the signature, which the
+  `tamperedRequest` test covers.
 
-### One loop, two roles
+### 3. One loop, two roles
 
 `services/program2ExperimentSafety.js:388` hashes a list of paths in one loop.
 Some entries are run-output evidence, where the pin is right. Others are repo
 config files, where it is the banned shape. Splitting the loop by a path prefix
 would invent a policy nobody stated.
 
-### Development evidence
+### 4. Development evidence
 
 `tutorStubResistanceSemanticValidationV2.js:231` and
 `tutorStubResistanceSemanticValidationV3.js:349` hash
@@ -278,7 +294,7 @@ a go request, a code file, a schema or a prompt, so it fails the IN test. The
 name is close to `development-corpus`, which is on the OUT list, but does not
 match it. Neither list fits, so I left both.
 
-### Two refusals I chose not to touch
+### 5 and 6. Two refusals I chose not to touch
 
 `rehearse-tutor-stub-frame-refuser-depth-v6-anchor.js:387` throws
 `diagnosis note bytes drifted from the pinned sha256` on
@@ -292,7 +308,7 @@ frozen evidence. The v6 merged registration in the same file was converted.
 `require_clean_worktree`, which refuses to start on a dirty tree. This is not a
 digest check, so it is outside the brief, but it is the same class of stop.
 
-### A test pin that survives
+### 7. A test pin that survives
 
 `tests/learnerProfileRecoveryL1.test.js:34-38` hashes
 `services/tutorStubQuietDetectorV1.js` and compares it with the literal
