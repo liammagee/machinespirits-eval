@@ -1,20 +1,21 @@
 ---
 id: state-detection-followups-hold-and-cues
 title: "Detector follow-ups after closeout: cue retraining, live hold pairs on 037, stress-event fix, pre-push line-cap guard"
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: review
 created: 2026-09-03
 updated: 2026-09-05
-verification: "Either the turn-2 and turn-4 template fallback on world-037 is explained offline and one recorded run shows a held plant meeting a model reply; or the six pooled with/without pairs are written up as a lean in the hold notes and this card closes with no further paid 037 pair. First branch met 2026-09-05 (step 7f): the cause note explains the fallback, and the held turn 3 met a model line with the card. The human second read (step 2) stays open."
+verification: "Either the turn-2 and turn-4 template fallback on world-037 is explained offline and one recorded run shows a held plant meeting a model reply; or the six pooled with/without pairs are written up as a lean in the hold notes and this card closes with no further paid 037 pair. First branch met 2026-09-05 (step 7f): the cause note explains the fallback, and the held turn 3 met a model line with the card. The human second read (step 2) moved to its own card, hold-packet-human-second-read."
 claim_status: exploratory
 depends_on:
   - state-detection-without-word-lists
 links:
   items:
     - state-detection-without-word-lists
+    - hold-packet-human-second-read
     - lesson-world-transfer
     - adaptation-planted-stress-bench
     - manner-trigger-tuning
@@ -89,8 +90,11 @@ card's verdict.
   eight clue turns fell to the template, both at turn 5, where the duplicate
   check is unchanged. The held turn 3 met a model line with the card for the
   first time.
-- Seven pairs pooled: repair hits 20/30 with the card vs 17/30 without. Still
-  a lean, one dialogue per version.
+- Six hold pairs ran on 037. The five on the reworked direction (7b to 7f)
+  pool to repair hits 20/30 with the card vs 17/30 without; the first pair
+  (step 7) leaked the release text and is not pooled. Still a lean, one
+  dialogue per version. (Counts corrected 2026-09-05: the 7e and 7f notes
+  had counted the unpooled pair in the label.)
 - Model second readers (Sonnet, Opus, Fable) each range from kappa 0.50 to
   0.83 across the five packets; no reader is above the others throughout.
 
@@ -103,7 +107,8 @@ card's verdict.
    (`TUTOR_STUB_CLUE_INSERTION` unset). Note
    `notes/poetics/hero-demo-runs/2026-09-04-step7-template-fallback-cause.md`.
 2. A human second read of at least one blind packet is still open. The model
-   reads (Sonnet, Opus) do not close it.
+   reads (Sonnet, Opus, Fable) do not close it. Moved to
+   `hold-packet-human-second-read` at closeout.
 3. Offline matcher and packet fix done 2026-09-04 (PR #1024); live
    confirmation done 2026-09-05 (step 7f, log below): the new cue got a
    copied clue at turns 2 and 3 in three of four first drafts and the one
@@ -190,7 +195,7 @@ approval machinery beyond "the user says go".
   launch line. Four ways to a model line are listed in the note; none chosen
   here, no runtime change. Note
   `notes/poetics/hero-demo-runs/2026-09-04-step7-template-fallback-cause.md`.
-- **Hold pair on 037 with Opus 5 in the tutor seat, 2026-09-04, paid (step 7e).** The model check the new CLAUDE.md rule asks for (PR #996). Ceiling 200 dialogue + 20 judge calls; used 42 + 41 dialogue, 2 judge, 3 second-reader; turn cap 12; everything else as 7d. Template fallback: with-card t2, t4, t5; without-card t4, t5; t3 with-card saved by the plain recovery. The drafts fail the same three ways as on Sonnet (reworded clue, quotation marks dropped, clue in two sentences). Holds kept 3/4 (without t3 released). Repair HIT 2/6 with, 3/6 without; five pairs pooled 16/24 vs 14/24. Second reads of this packet: Sonnet kappa 0.83, Opus 0.66, Fable 0.50. Fable reads of the 7b, 7c, 7d packets the same day, 3 calls: 0.64, 0.82, 0.67. The wall is not model-bound on the Claude side; next is offline or the codex seat, no re-run as is. Note `notes/poetics/hero-demo-runs/2026-09-04-step7e-opus-tutor-seat-check.md`; artifacts `exports/tutor-stub-outcome/step7e-hold-opus-tutor/`, archived.
+- **Hold pair on 037 with Opus 5 in the tutor seat, 2026-09-04, paid (step 7e).** The model check the new CLAUDE.md rule asks for (PR #996). Ceiling 200 dialogue + 20 judge calls; used 42 + 41 dialogue, 2 judge, 3 second-reader; turn cap 12; everything else as 7d. Template fallback: with-card t2, t4, t5; without-card t4, t5; t3 with-card saved by the plain recovery. The drafts fail the same three ways as on Sonnet (reworded clue, quotation marks dropped, clue in two sentences). Holds kept 3/4 (without t3 released). Repair HIT 2/6 with, 3/6 without; four pooled pairs 16/24 vs 14/24 (7b to 7e). Second reads of this packet: Sonnet kappa 0.83, Opus 0.66, Fable 0.50. Fable reads of the 7b, 7c, 7d packets the same day, 3 calls: 0.64, 0.82, 0.67. The wall is not model-bound on the Claude side; next is offline or the codex seat, no re-run as is. Note `notes/poetics/hero-demo-runs/2026-09-04-step7e-opus-tutor-seat-check.md`; artifacts `exports/tutor-stub-outcome/step7e-hold-opus-tutor/`, archived.
 - **Opus 5 re-read of the recorded hold speech checks, 2026-09-04, 16 paid reader calls.** The
   reader-seat check the CLAUDE.md model-bound rule asks for. `scripts/replay-hold-speech-check.js`
   sent the 16 recorded Sonnet prompts of steps 7c, 7d and 7e to Opus 5 (7b predates the check).
@@ -209,7 +214,7 @@ approval machinery beyond "the user says go".
   few right reads and fires far more off plant; form-v3 stays shipped. New
   `scripts/compare-learner-state-labels.js` joins label files with a form-v3 replay. Note:
   `notes/poetics/hero-demo-runs/2026-09-04-step6a-opus-labeller-check.md`.
-- **Hold pair on 037 on the cue fix, 2026-09-05, paid (step 7f).** Go: user ("run the hold pair beside it"). Clean detached worktree at eea76bdf (origin/main with PR #1024), Sonnet 5 tutor seat, memory_limited brief, hold schedule and speech check as 7d. Ceiling 200 dialogue + 20 judge calls; used 43 + 40 dialogue, 2 judge, 3 second-reader; turn cap 12. Template fallback: t5 in both versions only (7e: five of eight clue turns; 7f: two of eight). Turn 2 exact in both first drafts; turn 3 exact with the card, reworded then copied by the recovery without; turn 4 cleared by the quotation-mark tolerance in both; turn 5 exact text but rejected as duplicate delivery in both, the recovery rewords. Holds kept 4/4; with the card both held turns needed one own-words retry (t3 first draft dropped the demand, t5 conceded), without the card neither did; no copy flags. The held t3 with the card met a model line (the second half of the card's verification line) for the first time in seven pairs. Repair HIT 4/6 with, 3/6 without (judge codex Sol, blind); t2 slow_down missed in both, t4 continue missed with, t7 and t10 missed without. Seven pairs pooled 20/30 vs 17/30. Detection 5/6 right kind with the card (t4 neutral miss). Second reads: Sonnet kappa 0.50, Opus 0.68, Fable 0.68 (Opus and Fable gave the same twelve answers). The owed 6-call tutor PR benchmark for PR #1024 ran on the same commit, 6/6 pass. Note `notes/poetics/hero-demo-runs/2026-09-05-step7f-hold-cue-fix-live.md`; artifacts `exports/tutor-stub-outcome/step7f-hold-cue-fix/`, archived.
+- **Hold pair on 037 on the cue fix, 2026-09-05, paid (step 7f).** Go: user ("run the hold pair beside it"). Clean detached worktree at eea76bdf (origin/main with PR #1024), Sonnet 5 tutor seat, memory_limited brief, hold schedule and speech check as 7d. Ceiling 200 dialogue + 20 judge calls; used 43 + 40 dialogue, 2 judge, 3 second-reader; turn cap 12. Template fallback: t5 in both versions only (7e: five of eight clue turns; 7f: two of eight). Turn 2 exact in both first drafts; turn 3 exact with the card, reworded then copied by the recovery without; turn 4 cleared by the quotation-mark tolerance in both; turn 5 exact text but rejected as duplicate delivery in both, the recovery rewords. Holds kept 4/4; with the card both held turns needed one own-words retry (t3 first draft dropped the demand, t5 conceded), without the card neither did; no copy flags. The held t3 with the card met a model line (the second half of the card's verification line) for the first time in seven pairs. Repair HIT 4/6 with, 3/6 without (judge codex Sol, blind); t2 slow_down missed in both, t4 continue missed with, t7 and t10 missed without. Five pooled pairs 20/30 vs 17/30 (7b to 7f). Detection 5/6 right kind with the card (t4 neutral miss). Second reads: Sonnet kappa 0.50, Opus 0.68, Fable 0.68 (Opus and Fable gave the same twelve answers). The owed 6-call tutor PR benchmark for PR #1024 ran on the same commit, 6/6 pass. Note `notes/poetics/hero-demo-runs/2026-09-05-step7f-hold-cue-fix-live.md`; artifacts `exports/tutor-stub-outcome/step7f-hold-cue-fix/`, archived.
 - **Paper paragraph, 2026-09-04.** §6.24 of `docs/research/paper-full-2.0.md` (v3.0.303, PR #1010)
   now records the September detector work: the re-read of the v6/v7 held-out figure, form-v1..v5
   with their leave-one-world-out numbers, the form-v3 live pair, the labeller comparison with its
@@ -218,3 +223,13 @@ approval machinery beyond "the user says go".
   from PR #1001: Opus 5 re-read the 16 recorded Sonnet 5 hold speech checks, 13/16 agree,
   kappa 0.48, retries reader-bound, every final verdict kept. The scope line and provenance
   name the re-read. Tag `paper/v3.0.304` and the ref-status follow-up come after merge.
+
+# Closed 2026-09-05
+
+The first branch of the verification line was met at step 7f: the cause note
+explains the turn-2 and turn-4 template fallback, and the held turn 3 met a
+model line with the card. The paper carries the result in §6.24 (v3.0.305):
+five pooled pairs 20/30 vs 17/30, the cue fix, turn 5 still on the template.
+What stays untried stays untried: the turn-5 duplicate check, the
+clue-insertion flag, the codex tutor seat. No further paid 037 pair. The human
+second read has its own card, `hold-packet-human-second-read`.

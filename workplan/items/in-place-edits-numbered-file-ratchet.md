@@ -7,13 +7,14 @@ priority: P1
 owner: claude
 source: review
 created: 2026-09-03
-updated: 2026-09-04
+updated: 2026-09-05
 verification: "CLAUDE.md and AGENTS.md carry the in-place rule. The go-request checker, packager and their three tests are gone. VALIDATOR_ONLY_GROUPS is empty. The three tests that hashed code, design or registration files no longer do. `npm run test:ratchets` fails when a new numbered sibling file appears under config/, services/ or scripts/. lint:all and the hermetic suite pass."
 claim_status: planned
 links:
   items:
     - remove-go-packager-working-tree-source-pins
     - shared-paid-study-launch-contract
+    - runtime-file-digest-refusals-record-only
   notes:
     - docs/paid-study-authorization-policy.md
     - scripts/run-structural-ratchets.js
@@ -94,3 +95,12 @@ numbered sibling ratchet test exists and `npm run test:ratchets` passes;
 hermetic run fails for a repository reason only: this checkout is a partial
 clone, and the test clones the repository and checks out the parent commit,
 which needs blobs the clone does not hold. CI on a full clone passes.
+
+## Follow-up closed 2026-09-05
+
+The runtime digest refusals listed above were walked on their own card,
+`runtime-file-digest-refusals-record-only` (PRs #1019 and #1026; the qd-v1
+test pin in PR #1030). Sites that guard code, schema, prompt, design or
+registration files now record the drift. Three pins stay by the user's ruling:
+the dev-evidence pins, the clean-worktree stops, and the manifest lines.
+Nothing on this card is open.
