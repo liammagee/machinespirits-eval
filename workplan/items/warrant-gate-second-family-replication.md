@@ -131,5 +131,10 @@ in the registration linked above; nothing else changes.
   lifecycle on the reservation record; the budget adapter keeps it on
   itself. Technical, no model call, one ledger slot burned and released.
   Fixed in place; the reader tests now run on the real budget adapter over
-  a real shared ledger and fail on the old loop. Awaiting the user's word
-  to relaunch under recovery; the reader phase resumes at batch 1.
+  a real shared ledger and fail on the old loop. A second defect on the
+  same path found in review at zero calls: the inherited reader run dir
+  stayed under the predecessor, outside the new ledger destination, so the
+  first paid Sol response would have been rejected at persist. Recovery
+  now copies the reader run into the new out dir with digests re-checked.
+  Both in PR #1062. Awaiting the user's word to relaunch under recovery;
+  the reader phase resumes at batch 1.

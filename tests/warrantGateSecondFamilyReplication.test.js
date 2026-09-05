@@ -27,6 +27,7 @@ import {
   inheritCheckpoint,
   judgeSecondFamilyReplication,
   loadSecondFamilyManifest,
+  relocateInheritedReaderRun,
   runSecondFamilyGeneration,
   runSecondFamilyReaders,
   summarizeSecondFamilyReportOnly,
@@ -853,6 +854,92 @@ function scores({ bare, gated, standing }) {
   }
   return rows;
 }
+
+test('recovery moves the inherited reader run into the new out dir so the ledger accepts every persisted response', (t) => {
+  // The r6 stop of 2026-09-05 left the reader run dir under the predecessor.
+  // A recovered run registers its own out dir as the ledger destination, so
+  // a response written under the predecessor would be rejected after a paid
+  // call. The run record, responses and quarantine copy over, digests intact.
+  const previousRoot = tmpDir(t, 'reader-relocate-prev');
+  const previousRunDir = path.join(previousRoot, 'decision-reader-run');
+  const responsePath = path.join(previousRunDir, 'reader_a', 'batch-0001.response.json');
+  const quarantinePath = path.join(previousRunDir, 'quarantine', 'reader_b', 'batch-0002.attempt-2.txt');
+  fs.mkdirSync(path.dirname(responsePath), { recursive: true });
+  fs.mkdirSync(path.dirname(quarantinePath), { recursive: true });
+  fs.writeFileSync(responsePath, JSON.stringify({ ok: true }));
+  fs.writeFileSync(quarantinePath, 'not json');
+  const sha = (filePath) => createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+  const previousRun = {
+    status: 'running',
+    calls_attempted: 3,
+    calls_completed: 1,
+    exposed_sample_ids: ['case-1', 'case-2'],
+    batches: [
+      {
+        reader_id: 'reader_a',
+        batch_id: 'batch-0001',
+        status: 'complete',
+        response_path: responsePath,
+        response_sha256: sha(responsePath),
+      },
+      {
+        reader_id: 'reader_b',
+        batch_id: 'batch-0002',
+        status: 'failed',
+        quarantine_path: quarantinePath,
+        quarantine_sha256: sha(quarantinePath),
+      },
+      { reader_id: 'reader_b', batch_id: 'batch-0003', status: 'failed', failure_kind: 'transport_response_free' },
+    ],
+  };
+  const previousRunPath = path.join(previousRunDir, 'run.json');
+  fs.writeFileSync(previousRunPath, JSON.stringify(previousRun));
+  const previousBytes = fs.readFileSync(previousRunPath, 'utf8');
+
+  const root = tmpDir(t, 'reader-relocate-next');
+  const checkpoint = { reader_run: { run_dir: previousRunDir, run_path: previousRunPath, status: 'running' } };
+  const relocated = relocateInheritedReaderRun({ checkpoint, rootDir: root });
+  const runDir = path.join(root, 'decision-reader-run');
+  assert.equal(relocated.runDir, runDir);
+  assert.equal(relocated.copied.length, 2);
+  assert.equal(checkpoint.reader_run.run_dir, runDir);
+  assert.equal(checkpoint.reader_run.run_path, path.join(runDir, 'run.json'));
+  assert.equal(checkpoint.reader_run.relocated_from, previousRunDir);
+  const run = JSON.parse(fs.readFileSync(path.join(runDir, 'run.json'), 'utf8'));
+  assert.equal(run.calls_attempted, 3);
+  assert.equal(run.batches[0].response_path, path.join(runDir, 'reader_a', 'batch-0001.response.json'));
+  assert.equal(sha(run.batches[0].response_path), previousRun.batches[0].response_sha256);
+  assert.equal(run.batches[1].quarantine_path, path.join(runDir, 'quarantine', 'reader_b', 'batch-0002.attempt-2.txt'));
+  assert.equal(sha(run.batches[1].quarantine_path), previousRun.batches[1].quarantine_sha256);
+  assert.equal(run.batches[2].response_path, undefined);
+  // The predecessor keeps its record untouched.
+  assert.equal(fs.readFileSync(previousRunPath, 'utf8'), previousBytes);
+  assert.ok(fs.existsSync(responsePath));
+  // A second call on the same out dir is a no-op.
+  assert.equal(relocateInheritedReaderRun({ checkpoint, rootDir: root }), null);
+  // No inherited run: nothing to do.
+  assert.equal(relocateInheritedReaderRun({ checkpoint: { reader_run: null }, rootDir: root }), null);
+
+  // The real budget over the new out dir accepts a response under the
+  // relocated dir and rejects one under the predecessor.
+  const ledger = ledgerBudget({ root });
+  ledger.budget.reserve({ role: 'decision_reader', unitId: 'reader_a:batch-0004' });
+  ledger.budget.markDispatched();
+  const nextResponse = path.join(runDir, 'reader_a', 'batch-0004.response.json');
+  fs.writeFileSync(nextResponse, JSON.stringify({ ok: true }));
+  ledger.budget.persistResponse(nextResponse);
+  ledger.budget.complete();
+  ledger.budget.reserve({ role: 'decision_reader', unitId: 'reader_a:batch-0005' });
+  ledger.budget.markDispatched();
+  const strayResponse = path.join(previousRunDir, 'reader_a', 'batch-0005.response.json');
+  fs.writeFileSync(strayResponse, JSON.stringify({ ok: true }));
+  assert.throws(() => ledger.budget.persistResponse(strayResponse), /inside the registered destination/u);
+  ledger.budget.fail(new Error('outside destination'));
+  assert.deepEqual(
+    ledger.log.map((entry) => entry.state),
+    ['complete', 'failed'],
+  );
+});
 
 test('the replication bar reads the first block as replicated and a flat result as not replicated', () => {
   const firstBlock = judgeSecondFamilyReplication({

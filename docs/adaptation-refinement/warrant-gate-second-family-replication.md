@@ -321,4 +321,13 @@ reserved, 7 started, 6 completed, 1 failed) and that every batch row names
 its reservation. The unfixed loop fails all three. Relaunch is under
 recovery into a fresh out dir: the corpus, reader plan and reader run
 record carry over, and the reader phase resumes from the first incomplete
-batch. Seeds, worlds, conditions, readers, bars and ceiling are unchanged.
+batch. A second defect on the same path was found in review before the
+relaunch, at zero calls: the inherited reader run dir stayed under the
+predecessor, while the recovered run registers its own out dir as the
+ledger destination and the ledger accepts a persisted response only from
+inside it. The first Sol response would have been rejected after a paid
+call and read as a contract failure. The launcher now copies the reader
+run record, responses and quarantined texts into the new out dir at
+recovery, re-checks their recorded digests and rewrites the rows; the
+predecessor keeps its copy. Regression test on both. Seeds, worlds,
+conditions, readers, bars and ceiling are unchanged.

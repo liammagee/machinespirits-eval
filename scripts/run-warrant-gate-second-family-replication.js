@@ -818,6 +818,54 @@ function resolveReaderPlanDirs(rootDir) {
   };
 }
 
+// A recovered run registers its own out dir as the ledger destination, and
+// the shared ledger accepts a persisted response only from inside that
+// destination. The predecessor's reader run dir therefore moves into the new
+// out dir before the first reader call: run record, completed responses and
+// quarantined texts are copied, their recorded digests re-checked, and the
+// rows rewritten to the new paths. The predecessor keeps its own copy. The
+// collection (packets, schemas, manifest) is read-only and stays where it is.
+export function relocateInheritedReaderRun({ checkpoint, rootDir }) {
+  const inherited = checkpoint.reader_run;
+  if (!inherited?.run_dir) return null;
+  const previousRunDir = path.resolve(inherited.run_dir);
+  const target = resolveReaderPlanDirs(path.resolve(rootDir));
+  if (previousRunDir === path.resolve(target.runDir)) return null;
+  const run = readJson(inherited.run_path);
+  fs.mkdirSync(target.runDir, { recursive: true });
+  const copied = [];
+  for (const row of run.batches || []) {
+    for (const [pathKey, digestKey] of [
+      ['response_path', 'response_sha256'],
+      ['quarantine_path', 'quarantine_sha256'],
+    ]) {
+      if (!row[pathKey]) continue;
+      const source = path.resolve(row[pathKey]);
+      const relative = path.relative(previousRunDir, source);
+      if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error(`inherited reader ${pathKey} lies outside the predecessor run dir: ${row[pathKey]}`);
+      }
+      const destination = path.join(target.runDir, relative);
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      fs.copyFileSync(source, destination);
+      if (row[digestKey] && fileSha256(destination) !== row[digestKey]) {
+        throw new Error(`inherited reader file changed on copy: ${row[pathKey]}`);
+      }
+      row[pathKey] = destination;
+      copied.push(destination);
+    }
+  }
+  atomicWriteJson(target.runPath, run);
+  checkpoint.reader_run = {
+    ...inherited,
+    run_dir: target.runDir,
+    run_path: target.runPath,
+    relocated_from: previousRunDir,
+    relocated_files: copied.length,
+  };
+  return { runDir: target.runDir, runPath: target.runPath, copied };
+}
+
 function freshCheckpoint({ manifest, manifestPath, seats, learnerProfile, ceiling, admission, rootDir }) {
   return {
     schema: SECOND_FAMILY_RUN_SCHEMA,
@@ -1050,6 +1098,11 @@ export async function executeSecondFamilyReplication({
     // Stage 4: cases, fingerprint guard, corpus artifacts, reader plan.
     let built;
     let collection;
+    const relocated = relocateInheritedReaderRun({ checkpoint, rootDir });
+    if (relocated) {
+      persist();
+      log(`reader run relocated from ${checkpoint.reader_run.relocated_from} (${relocated.copied.length} files)`);
+    }
     const readerDirs = checkpoint.reader_collection
       ? {
           collectionDir: checkpoint.reader_collection.collection_dir,
