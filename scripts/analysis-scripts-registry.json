@@ -172,6 +172,12 @@
       ]
     },
     {
+      "path": "scripts/analyze-communication-topology-links.js",
+      "family": "evaluation-core",
+      "purpose": "Audit per-link lexical association between revision-demanding superego critiques and immediate ego revisions.",
+      "flags": ["--db", "--help", "--json", "--logs", "--output"]
+    },
+    {
       "path": "scripts/analyze-cross-judge.js",
       "family": "evaluation-core",
       "purpose": "Compare score distributions and agreement across selected runs and judges.",
@@ -642,6 +648,22 @@
       "purpose": "Score strict adaptive strategy shifts, counterfactual divergence, and refinement proxies.",
       "flags": ["--judge-model", "--out", "--profile", "--run-id"],
       "frozen": true
+    },
+    {
+      "path": "scripts/analyze-superego-critique-causal-followup.js",
+      "family": "evaluation-core",
+      "purpose": "Test aggregate critique-revision association, audit omitted channels, and prepare a blinded semantic review packet without model calls.",
+      "flags": [
+        "--help",
+        "--input",
+        "--json",
+        "--logs",
+        "--output",
+        "--packet-dir",
+        "--permutations",
+        "--sample-per-profile",
+        "--seed"
+      ]
     },
     {
       "path": "scripts/analyze-superego-framing-trajectory.js",

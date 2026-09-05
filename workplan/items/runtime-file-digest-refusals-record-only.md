@@ -1,7 +1,7 @@
 ---
 id: runtime-file-digest-refusals-record-only
 title: Record file digests at run time instead of refusing on drift
-status: active
+status: done
 type: infra
 priority: P1
 owner: claude
@@ -114,11 +114,11 @@ recorded run data, so the pin stays.
 These compare provenance a go request wrote down against the current checkout.
 The brief left them alone and so did I.
 
-- `tutorStubResistanceRecoverySemanticValidationRuntime.js:90-91` —
+- `tutorStubResistanceRecoverySemanticValidationRuntime.js:90-91`:
   `goRequest.source.launchCommit` and `launchTree`.
 - `tutorStubResistanceSplitMeasurementValidationRuntime.js:239-240` and
-  `296-297` — the same two fields, on the v3 and the split go requests.
-- `tutorStubResistanceSemanticValidationRuntime.js:176` and `260` — the archive
+  `296-297`: the same two fields, on the v3 and the split go requests.
+- `tutorStubResistanceSemanticValidationRuntime.js:176` and `260`: the archive
   manifest's `source` block against the plan's. Both hold the commit and the tree
   the run was launched from.
 
@@ -146,7 +146,7 @@ blocks, because the plan bytes on disk no longer equal the recomputed plan.
 
 - `tutorStubResistanceRecoverySemanticValidationRuntime.js:307, 759, 887`
 - `tutorStubResistanceSplitMeasurementValidationRuntime.js:365-368, 564, 1150, 1284`
-- `tutorStubResistanceSemanticValidationRuntime.js:195` and `354` — an archive
+- `tutorStubResistanceSemanticValidationRuntime.js:195` and `354`: an archive
   entry, and this run's own `report.json` reached through a transition id derived
   from its bytes.
 
@@ -173,8 +173,8 @@ Three rules pruned most of the 115.
 **Run artifacts are not source files.** A pin binding an analysis to a
 `batch-plan.json`, a `batch-result.json`, a reader response, a packet, a trace,
 an archive or a DB export stays. No edit anywhere in the repo changes those
-bytes, so the pin never blocks a bug fix. It is a record check, not a design
-pin.
+bytes, so the pin never blocks a bug fix. The pin checks a recorded artifact.
+It does not pin a design file.
 
 **Sealed data keeps its pin.** Any path holding `heldout`, `held-out`,
 `development-corpus`, `blind-read` or `certificate` is untouched. So is the
@@ -345,3 +345,12 @@ now get a format check and a read-back, so a typo fix in either no longer turns
 `npm test` red. The same split runs through the rest of this card: an endpoint
 contract and a go request are registration files and are recorded; a
 certificate and a corpus are sealed and stay pinned.
+
+## Closed 2026-09-04
+
+Merged as PR #1019. Checked on main at c4607dc8: `services/recordedFileDigest.js`
+exists; the two test pins named above now assert the drift record; the sealed
+data pins at `tutorStubBoredomSemanticValidation.js:99` and the run-artifact
+pins are unchanged; `npm run lint:all`, `npm run test:ratchets` and
+`npm run wp:source-check` pass; CI on that commit is green. The one local
+hermetic failure is the partial-clone test noted on the ratchet card.

@@ -181,7 +181,9 @@ function releaseCue(entry, index = 0) {
   if (rendered.mode === 'enacted_role') {
     return `Copy exactly, marks included: ${rendered.text} Keep SOURCE words inside; inherit no deed or ownership.`;
   }
-  return `After PART, open, read, show, test, or place this public exhibit exactly once: ${surface}`;
+  // Slot order is already fixed by the plan header, so the cue spends its
+  // words on the copy rule: word for word, once.
+  return `Open, read, show, test, or place this exhibit, copied word for word, once: ${surface}`;
 }
 
 function endingCue({

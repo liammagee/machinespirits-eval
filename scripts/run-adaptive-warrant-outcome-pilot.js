@@ -728,13 +728,31 @@ function outcomeDialogueId(row, studyLabel = 'outcome-pilot') {
   return `${studyLabel}-${String(row.order).padStart(2, '0')}-${row.world}-s${row.seed}-${row.condition}`;
 }
 
+export const OUTCOME_STUDY_FIRST_BLOCK_SEATS = Object.freeze({
+  tutor: 'codex.gpt-5.6-luna',
+  analysis: 'codex.gpt-5.6-luna',
+  learner: 'codex.gpt-5.6-luna',
+});
+
+export function resolveOutcomeStudySeats(seats = {}) {
+  const resolved = { ...OUTCOME_STUDY_FIRST_BLOCK_SEATS, ...(seats || {}) };
+  for (const seat of ['tutor', 'analysis', 'learner']) {
+    if (typeof resolved[seat] !== 'string' || !resolved[seat].trim()) {
+      throw new Error(`outcome study seat ${seat} must name a model`);
+    }
+  }
+  return Object.freeze(resolved);
+}
+
 export function buildOutcomePilotJobs({
   manifest,
   rootDir,
   dryRun = false,
   studyLabel = 'outcome-pilot',
   learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  seats = OUTCOME_STUDY_FIRST_BLOCK_SEATS,
 } = {}) {
+  const resolvedSeats = resolveOutcomeStudySeats(seats);
   const worlds = new Map(manifest.worlds.map((world) => [world.id, world.path]));
   const configurations = new Map(
     resolveOutcomeStudyRunConfigurations(learnerProfile).map((configuration) => [configuration.id, configuration]),
@@ -763,11 +781,11 @@ export function buildOutcomePilotJobs({
       '--loop-mode',
       'strict',
       '--model',
-      'codex.gpt-5.6-luna',
+      resolvedSeats.tutor,
       '--analysis-model',
-      'codex.gpt-5.6-luna',
+      resolvedSeats.analysis,
       '--auto-learner-model',
-      'codex.gpt-5.6-luna',
+      resolvedSeats.learner,
       '--learner-analysis-prompt-profile',
       configuration.learner_analysis_prompt_profile,
       '--cli-effort',
@@ -832,7 +850,9 @@ export function renderOutcomePilotPromptConfiguration({
   seed = 515,
   traceDir,
   learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  seats = OUTCOME_STUDY_FIRST_BLOCK_SEATS,
 } = {}) {
+  const resolvedSeats = resolveOutcomeStudySeats(seats);
   const configuration = resolveOutcomeStudyRunConfigurations(learnerProfile).find((row) => row.id === condition);
   if (!configuration) throw new Error(`unknown outcome prompt-preflight condition ${condition}`);
   const standingInstructionsIndex = configuration.cli_args.indexOf('--standing-instructions-file');
@@ -850,13 +870,13 @@ export function renderOutcomePilotPromptConfiguration({
     '--auto-safety-turns',
     '80',
     '--model',
-    'codex.gpt-5.6-luna',
+    resolvedSeats.tutor,
     '--classifier-model',
-    'codex.gpt-5.6-luna',
+    resolvedSeats.analysis,
     '--learner-record-model',
-    'codex.gpt-5.6-luna',
+    resolvedSeats.analysis,
     '--auto-learner-model',
-    'codex.gpt-5.6-luna',
+    resolvedSeats.learner,
     '--auto-learner-profile',
     configuration.learner_profile,
     '--tutor-learner-dag',
@@ -930,6 +950,7 @@ export function preflightOutcomePilotPromptAudits({
   manifest,
   outputPath,
   learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  seats = OUTCOME_STUDY_FIRST_BLOCK_SEATS,
 } = {}) {
   if (!manifest?.worlds?.length) throw new Error('outcome prompt preflight requires frozen worlds');
   if (!outputPath) throw new Error('outcome prompt preflight requires an artifact path');
@@ -950,6 +971,7 @@ export function preflightOutcomePilotPromptAudits({
         seed: manifest.seeds[0],
         traceDir,
         learnerProfile,
+        seats,
       });
       return {
         condition: configuration.id,
@@ -971,6 +993,7 @@ export function preflightOutcomePilotPromptAudits({
     created_at: new Date().toISOString(),
     makes_model_calls: false,
     model_calls: 0,
+    seats: resolveOutcomeStudySeats(seats),
     status: renders.every((row) => row.ok) ? 'passed' : 'failed',
     renders,
   };

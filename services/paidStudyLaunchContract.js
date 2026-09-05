@@ -62,8 +62,21 @@ function currentBranch(root) {
   }
 }
 
+// The GO given in chat: the user writes GO, the launcher records the words as
+// given. The only check is that the first word is GO (trailing punctuation
+// allowed, so "GO." and "GO, run it" pass; "NO-GO" and "GOAL" do not).
+export function paidStudyChatGoIssues(text) {
+  const firstWord = String(text ?? '')
+    .trim()
+    .split(/\s+/u)[0]
+    .replace(/[.,:;!]+$/u, '');
+  return firstWord === 'GO' ? [] : ['go_token'];
+}
+
 // The standing contract checks the study authorities only: the design file is
-// present and merged, and the GO note is signed for that design and cap.
+// present and merged, and the GO is given for that design and cap. The GO is
+// either the words the user wrote in chat (goApproval, recorded as given) or,
+// for the older launchers, a note under notes/ at a commit.
 // Launch provenance (commit, tree, branch, dirty flag, design bytes) is
 // recorded in the returned source/design blocks and never enforced. A dirty
 // tree, a branch checkout, or a code commit made after the GO does not stop a
@@ -74,14 +87,18 @@ export function verifyPaidStudyLaunchContract({
   launchCommit,
   goNoteCommit,
   goNotePath,
+  goApproval,
   spendCap,
   mainRef = 'origin/main',
 }) {
   const repositoryRoot = path.resolve(root || '');
   if (!root || !fs.statSync(repositoryRoot).isDirectory()) throw new Error('repository root must be a directory');
   const design = repositoryRelativePath(repositoryRoot, designPath, 'design path');
-  const note = repositoryRelativePath(repositoryRoot, goNotePath, 'GO note path');
-  if (!note.relative.startsWith('notes/')) throw new Error('GO note path must be under notes/');
+  const note = goNotePath ? repositoryRelativePath(repositoryRoot, goNotePath, 'GO note path') : null;
+  if (note && !note.relative.startsWith('notes/')) throw new Error('GO note path must be under notes/');
+  if (!note && paidStudyChatGoIssues(goApproval).length) {
+    throw new Error('the GO from chat must start with the word GO');
+  }
   if (!Number.isFinite(spendCap) || spendCap < 0) throw new Error('spend cap must be a non-negative number');
 
   if (!fs.existsSync(design.absolute)) throw new Error(`design file ${design.relative} is not in the checkout`);
@@ -89,19 +106,25 @@ export function verifyPaidStudyLaunchContract({
   const mainDesign = blobAt(repositoryRoot, resolvedMainCommit, design.relative);
   if (mainDesign === null) throw new Error(`design file ${design.relative} must be merged into ${mainRef}`);
 
-  const resolvedGoNoteCommit = resolveCommit(repositoryRoot, goNoteCommit, 'GO note commit');
-  let goNoteText;
-  try {
-    goNoteText = git(repositoryRoot, ['show', `${resolvedGoNoteCommit}:${note.relative}`]);
-  } catch {
-    throw new Error(`GO note commit does not contain ${note.relative}`);
+  let authorization;
+  if (note) {
+    const resolvedGoNoteCommit = resolveCommit(repositoryRoot, goNoteCommit, 'GO note commit');
+    let goNoteText;
+    try {
+      goNoteText = git(repositoryRoot, ['show', `${resolvedGoNoteCommit}:${note.relative}`]);
+    } catch {
+      throw new Error(`GO note commit does not contain ${note.relative}`);
+    }
+    const issues = paidStudyGoNoteIssues({
+      text: goNoteText,
+      designPath: design.relative,
+      spendCap,
+    });
+    if (issues.length) throw new Error(`signed GO note does not satisfy the standing contract: ${issues.join(', ')}`);
+    authorization = { commit: resolvedGoNoteCommit, path: note.relative };
+  } else {
+    authorization = { channel: 'chat', text: String(goApproval).trim(), recorded_at: new Date().toISOString() };
   }
-  const issues = paidStudyGoNoteIssues({
-    text: goNoteText,
-    designPath: design.relative,
-    spendCap,
-  });
-  if (issues.length) throw new Error(`signed GO note does not satisfy the standing contract: ${issues.join(', ')}`);
 
   const headCommit = resolveCommit(repositoryRoot, 'HEAD', 'HEAD');
   const namedLaunchCommit = launchCommit ? resolveCommit(repositoryRoot, launchCommit, 'launch commit') : null;
@@ -131,7 +154,7 @@ export function verifyPaidStudyLaunchContract({
       checkout_matches_head: headDesign !== null && headDesign.equals(onDiskDesign),
       checkout_matches_main: mainDesign.equals(onDiskDesign),
     },
-    authorization: { commit: resolvedGoNoteCommit, path: note.relative },
+    authorization,
     spend_cap: spendCap,
   };
 }

@@ -91,9 +91,28 @@ export function createTutorStubRecoveryAccountingRuntime({
     const closureRows = rows('dialogue_closure', closureIssues);
     const recoveryTransition = responseConfiguration?.recovery_transition || null;
     const instructionalMetaRepair = responseConfiguration?.discourse_plane?.plane === 'instructional_meta';
+    // Name the failed checks. A packet that says only "failed a response check"
+    // leaves the recovery model to guess which rule the draft broke.
+    const failedCheckNames = [...hardIssueKeys].filter((key) => !key.startsWith(':') && !key.endsWith(':'));
+    const exactOccurrenceIssue = liveSourceActionAlignmentIssues.find(
+      (issue) => issue.type === 'due_source_exact_occurrence_count',
+    );
+    const duplicateClueIssue = dramaticReleaseIssues.find((issue) => issue.type === 'duplicate_clue_delivery');
     return [
       '[Tutor-only repair instruction]',
-      'The previous draft failed a response check and was not shown to the learner.',
+      failedCheckNames.length
+        ? `The previous draft failed ${failedCheckNames.length === 1 ? 'this response check' : 'these response checks'} and was not shown to the learner: ${failedCheckNames.join(', ')}.`
+        : 'The previous draft failed a response check and was not shown to the learner.',
+      exactOccurrenceIssue
+        ? `Failed check live_source_action_alignment_v1:due_source_exact_occurrence_count requires the SOURCE line to appear exactly once, word for word, with no word changed, added, or dropped${
+            Number.isInteger(exactOccurrenceIssue.observed_count)
+              ? ` (the rejected draft had it ${exactOccurrenceIssue.observed_count} ${exactOccurrenceIssue.observed_count === 1 ? 'time' : 'times'})`
+              : ''
+          }. Copy the line as given; only quotation marks may differ.`
+        : null,
+      duplicateClueIssue
+        ? 'Failed check dramatic_release:duplicate_clue_delivery requires the newly public clue in one sentence only; do not restate it in other words in another sentence.'
+        : null,
       'Generate one genuinely different, plain replacement from the compact public packet below. Do not quote, imitate, or discuss the rejected draft.',
       'Return only the replacement tutor reply as ordinary text: no JSON, markdown, alternatives, labels, or commentary.',
       'Follow the complete minimal recovery contract below. Answer the learner before developing the inquiry, remain one continuous public tutor utterance, and use only information in the public packet and replayed public dialogue.',
@@ -186,6 +205,8 @@ export function createTutorStubRecoveryAccountingRuntime({
         dramaticReleaseRows,
         actorialRealizationRows,
         responseCompositionRows,
+        liveTurnProgressionRows,
+        liveSourceActionAlignmentRows,
         repetitionRows,
         closureRows,
       ].filter(Boolean),
