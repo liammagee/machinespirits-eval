@@ -498,7 +498,26 @@ const ADAPTIVE_WARRANT_QUOTE_PUNCTUATION_PATTERN = /[\u2018\u2019\u201c\u201d]/g
 export const ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES = Object.freeze({
   HISTORICAL: 'punctuation_only',
   CASE_INSENSITIVE: 'punctuation_and_case',
+  MARKUP_TOLERANT: 'punctuation_case_and_markup',
 });
+
+// Markdown emphasis marks. A learner on Opus 5 wrote "reach *and* a way in";
+// the analysis seat quoted it as "reach and a way in" three times (second-
+// family block, dialogue 02, turn 6, 2026-09-05). The marks carry no words,
+// so a quote that drops them still names one place in the learner's text.
+const ADAPTIVE_WARRANT_EMPHASIS_MARK_PATTERN = /[*_`]/u;
+
+function stripEmphasisMarksWithIndexMap(value) {
+  const kept = [];
+  const indexMap = [];
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index];
+    if (ADAPTIVE_WARRANT_EMPHASIS_MARK_PATTERN.test(character)) continue;
+    kept.push(character);
+    indexMap.push(index);
+  }
+  return { text: kept.join(''), indexMap };
+}
 
 export function validateAdaptiveWarrantSemanticQuoteMode(quoteMatchMode) {
   if (!Object.values(ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES).includes(quoteMatchMode)) {
@@ -517,7 +536,11 @@ export function normalizeAdaptiveWarrantSemanticQuotePunctuation(value) {
  * Convert the model's only span judgment — one literal quote — into the
  * internal UTF-16 interval. Numeric offsets are deliberately never trusted
  * from a model response. Unmarked historical callers retain punctuation-only
- * matching; new live reads and reader collections explicitly select case folding.
+ * matching; reads before 2026-09-05 selected case folding; live reads and
+ * reader collections now also ignore markdown emphasis marks (MARKUP_TOLERANT).
+ * Every mode keeps the same uniqueness test and returns offsets into the
+ * learner's own text, so the derived span text is the source slice, marks
+ * included.
  */
 export function deriveAdaptiveWarrantSemanticEvidenceSpan(
   learnerText,
@@ -547,6 +570,33 @@ export function deriveAdaptiveWarrantSemanticEvidenceSpan(
     start = first?.index ?? -1;
     end = first ? start + first[1].length : null;
     nonUnique = first !== undefined && !matches.next().done;
+  }
+  if (normalizedSuppliedText && quoteMatchMode === ADAPTIVE_WARRANT_SEMANTIC_QUOTE_MODES.MARKUP_TOLERANT) {
+    // Case folding as above, and emphasis marks dropped from both sides. The
+    // search runs on the stripped source; the index map carries each match
+    // back to the unstripped source so offsets and the returned slice are the
+    // learner's own characters. Marks-free text is unchanged by the strip, so
+    // this mode agrees with CASE_INSENSITIVE wherever no mark occurs.
+    const strippedSource = stripEmphasisMarksWithIndexMap(normalizedSourceText);
+    const strippedQuote = stripEmphasisMarksWithIndexMap(normalizedSuppliedText).text;
+    if (!strippedQuote) {
+      start = -1;
+      end = null;
+      nonUnique = false;
+    } else {
+      const escapedQuote = strippedQuote.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+      const matches = strippedSource.text.matchAll(new RegExp(`(?=(${escapedQuote}))`, 'giu'));
+      const first = matches.next().value;
+      if (first === undefined) {
+        start = -1;
+        end = null;
+        nonUnique = false;
+      } else {
+        start = strippedSource.indexMap[first.index];
+        end = strippedSource.indexMap[first.index + first[1].length - 1] + 1;
+        nonUnique = !matches.next().done;
+      }
+    }
   }
   if (start < 0) {
     return {
