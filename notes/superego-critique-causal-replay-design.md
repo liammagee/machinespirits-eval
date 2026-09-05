@@ -1,7 +1,8 @@
 # Superego critique causal replay
 
-Status: prospective design, awaiting review and explicit GO; **not authorized to
-launch**. GO approves this study only. The user separately authorizes launch.
+Status: the original study was approved and its separately authorized launch
+stopped before any model output. The compatibility/recovery amendment below is
+proposed for review and GO; **no paid recovery is authorized by this edit**.
 Workplan item: `superego-critique-causal-replay`.
 
 ## Question and evidence
@@ -155,6 +156,13 @@ model, provider and decoding settings. Actual and wrong arms use identical
 wrapping. Each request starts a fresh stateless session. There is no agent loop,
 Writing Pad, tools, dialogue continuation, previous-arm output or hidden retry.
 The historical draft is a fixed baseline, not a fresh model draw.
+
+Generation requests ask for JSON through the existing prompt and validate the
+returned JSON locally; they omit the API `response_format` option that the
+pinned DeepInfra/Nemotron route rejected. Semantic and quality requests retain
+`response_format: {type: json_object}`. No prompt, sampling parameter, model,
+provider, output schema or token limit changes. Prompt-only JSON has no provider
+format guarantee: malformed output still stops without regeneration.
 
 The master seed initializes a Mulberry32 stream. Sort identifiers by code-point
 order before shuffling. Draw donor permutations first in sorted stratum order,
@@ -354,6 +362,32 @@ attempt stays charged. Repeating a technical failure for the same job, HTTP
 route drift, evidence-span error or substantive uncertainty stops with no
 automatic replacement. A code defect may be repaired without voiding GO, but
 existing valid or substantive failed responses cannot be resampled.
+
+Proposed amendment, 2026-09-05: permit one operator-directed compatibility
+recovery when the study's **first and only dispatched attempt** was rejected
+with HTTP 400/405, the persisted provider error explicitly identifies unsupported
+`json_object` response formatting, and the envelope contains no model output,
+refusal, or token-usage record. This is the observed first-request failure;
+unknown errors, other 4xx responses and failed model answers remain excluded.
+The shared launch contract verifies the existing sealed response and ledger;
+the original `recovery_permitted: false` seal remains unchanged. This exception
+changes the original stopping rule and requires approval of this amendment
+before use. It does not license repeated unsupported-parameter retries.
+
+Recovery may remove only `response_format` from that rejected generation
+request. The existing request comparison must still match every remaining field
+against the registered builder, including messages, provider, model, sampling
+and token limit. Preserve the original request/error and all ledgers, open a new
+segment, and retain the original attempt and dollar reservation. A second failed
+attempt for the same job cannot admit a third. Successful or substantively
+failed model output is never eligible. No automatic live fallback is added.
+
+The historical first rejection used one attempt and reserved $0.001408, with
+actual cost unknown. Completing all 3,686 planned jobs would therefore use
+3,687 total attempts, consuming one of the 190 reserved recovery attempts and
+leaving 189. The hard category limits, 3,876 total-attempt ceiling and $300
+ceiling remain unchanged. The sample, arm allocation, routes, seed, endpoints,
+thresholds, indeterminate rules and claim boundary are unchanged.
 
 For operator SIGINT/SIGTERM, finish/persist the current request, then seal a
 recoverable pause at the next job boundary. An abrupt process death is sealed
