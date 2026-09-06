@@ -30,12 +30,19 @@ import {
   summarizePilot,
   retainsMissingGeneration,
   missingPilotDependencies,
+  UNKNOWN,
 } from '../services/superegoContemporaryPilot.js';
 import {
   writeHumanQualityReview,
   readHumanQuality,
   summarizeHumanQuality,
 } from '../services/superegoHumanQualityReview.js';
+import {
+  loadAutomatedQualityDesign,
+  prepareAutomatedQuality,
+  automatedQualityRatings,
+  summarizeAutomatedQuality,
+} from '../services/superegoAutomatedQualityReview.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const inactive = { state: 'inactive', explanation: 'No provider request is in flight.' };
@@ -46,6 +53,41 @@ const next = (description) => ({
 const safeCode = (value) => (typeof value === 'string' && /^[A-Za-z0-9_]{1,80}$/u.test(value) ? value : 'unknown');
 
 export async function dispatchPilot(request, timeoutMs, fetchImpl = globalThis.fetch) {
+  if (request.provider === 'codex') {
+    const { callAIWithCliBridge } = await import('../services/cliProviderBridge.js');
+    let transport = null;
+    try {
+      const result = await callAIWithCliBridge(
+        { provider: 'codex', model: request.body.model },
+        request.body.system,
+        request.body.content,
+        'blinded-public-quality',
+        {
+          effort: request.body.effort,
+          outputSchema: request.body.schema,
+          timeoutMs,
+          singleAttempt: true,
+          subscriptionOnly: true,
+          maxStdoutBytes: 131072,
+          maxStderrBytes: 65536,
+          onRawOutput: (raw) => {
+            transport = raw;
+          },
+        },
+      );
+      return { result, transport };
+    } catch (error) {
+      return {
+        transport,
+        cli_error: {
+          message: error.message,
+          code: error.code || null,
+          // Only a proven pre-start process failure is eligible automatically.
+          recoverable: ['ENOENT', 'EAGAIN', 'EMFILE', 'ENFILE'].includes(error.code) && !transport?.stdout,
+        },
+      };
+    }
+  }
   const anthropic = request.provider === 'anthropic';
   const key = process.env[anthropic ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY'];
   if (!key) throw new Error(`Missing ${anthropic ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY'}`);
@@ -115,6 +157,8 @@ export function recoverPilot(design, plan, predecessor) {
   }
   const results = new Map(),
     requests = new Map();
+  let configurationFailures = 0;
+  const configurationFailureUnits = [];
   for (const segment of segments) {
     for (const reservation of segment.events.filter((e) => e.type === 'model_attempt_dispatch_reserved')) {
       const job = plan.jobs.find((j) => j.id === reservation.unit_id);
@@ -160,6 +204,10 @@ export function recoverPilot(design, plan, predecessor) {
         if (results.has(job.id)) throw new Error('Duplicate retained answer');
         results.set(job.id, result);
       } catch (error) {
+        if (error.configurationFailure) {
+          configurationFailures++;
+          configurationFailureUnits.push(job.id);
+        }
         if (!error.recoverable) throw error;
       }
     }
@@ -176,7 +224,18 @@ export function recoverPilot(design, plan, predecessor) {
       results.set(job.id, { invalid_response: 'missing_dependency', dependencies: event.dependencies });
     }
   }
-  return { results, requests, segments };
+  return { results, requests, segments, configurationFailures, configurationFailureUnits };
+}
+
+export function loadAutomatedQualitySource(root, design, sourceFrom) {
+  if (!sourceFrom) throw new Error('Automated review requires --from the sealed generation');
+  const sourceDesign = readJson(path.join(sourceFrom, 'settings.json'));
+  const sourcePlan = preparePilot(root, sourceDesign);
+  const { results } = recoverPilot(sourceDesign, sourcePlan, sourceFrom);
+  const packet = humanPacket(sourcePlan, results, 'quality');
+  if (!isDeepStrictEqual(packet, readJson(path.join(sourceFrom, 'human-quality-packet.json'))))
+    throw new Error('Saved human packet differs from preserved generation');
+  return { plan: prepareAutomatedQuality(design, sourcePlan, packet, sourceDesign), packet };
 }
 
 export async function executePilot({
@@ -190,17 +249,31 @@ export async function executePilot({
   recoveryFrom = null,
   qualityPath = null,
   semanticPath = null,
+  sourceFrom = null,
   studyStateRoot = path.join(resolveEvaluationDataHome(), 'paid-studies'),
   dispatch = dispatchPilot,
   onProgress = () => {},
   signalTarget = process,
 }) {
-  if (!['generation', 'judging'].includes(phase)) throw new Error('Unknown phase');
+  if (!['generation', 'judging', 'quality-review'].includes(phase)) throw new Error('Unknown phase');
+  const automatedQuality = phase === 'quality-review';
   if (phase === 'judging' && design.automated_judging === false)
     throw new Error('Automated judging is outside this design');
-  if (!isDeepStrictEqual(plan, preparePilot(root, design))) throw new Error('Plan differs from registered preparation');
+  const expectedPlan = automatedQuality
+    ? loadAutomatedQualitySource(root, design, sourceFrom).plan
+    : preparePilot(root, design);
+  if (!isDeepStrictEqual(plan, expectedPlan)) throw new Error('Plan differs from registered preparation');
   const recovered = recoverPilot(design, plan, recoveryFrom);
-  if (recovered.segments.length && recovered.segments.at(-1).events.at(-1).recovery_permitted !== true)
+  const repairedConfigurationFailure =
+    automatedQuality &&
+    recovered.configurationFailures === 1 &&
+    recovered.segments.at(-1)?.events.at(-1)?.status === 'technical_failure' &&
+    recovered.results.size === 0;
+  if (
+    recovered.segments.length &&
+    recovered.segments.at(-1).events.at(-1).recovery_permitted !== true &&
+    !repairedConfigurationFailure
+  )
     throw new Error('Predecessor stopped for investigation or completed its paid work');
   const results = recovered.results;
   const generation = plan.jobs.filter((j) => j.category === 'generation');
@@ -218,7 +291,11 @@ export async function executePilot({
         throw new Error('Human references changed during judging recovery');
     }
   }
-  if (dispatch === dispatchPilot && !process.env[phase === 'generation' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY'])
+  if (
+    !automatedQuality &&
+    dispatch === dispatchPilot &&
+    !process.env[phase === 'generation' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY']
+  )
     throw new Error('Stage API key is absent; no paid admission or reservation');
   // Reuse the shared note check for both units; no bespoke authorization format.
   verifyPaidStudyLaunchContract({
@@ -239,8 +316,15 @@ export async function executePilot({
     studyStateRoot,
     recoveryFrom: recoveryFrom ? path.resolve(recoveryFrom) : undefined,
     retainedResponseUnits: recoveryFrom ? [...results.keys()] : [],
+    parameterRejectionUnits: repairedConfigurationFailure ? recovered.configurationFailureUnits : [],
   });
   const budget = createDurablePaidModelAttemptBudget({ admission, limit: design.attempts.hard_ceiling });
+  if (repairedConfigurationFailure)
+    admission.record({
+      type: 'technical_failure_reclassified',
+      reason:
+        'Saved empty stdout and exact CLI configuration-loader error prove pre-turn failure; missing-only recovery after code repair.',
+    });
   const stage = phase === 'generation' ? 'GENERATING' : 'AUDITING';
   let status = createLongRunningWorkflowStatus({
     workflowId: design.id,
@@ -304,7 +388,9 @@ export async function executePilot({
         active
           ? {
               state: 'unverifiable',
-              explanation: 'One HTTP request is pending; provider inference is not independently observable.',
+              explanation: automatedQuality
+                ? 'One Codex CLI turn is pending; provider inference is not independently observable.'
+                : 'One HTTP request is pending; provider inference is not independently observable.',
             }
           : inactive,
       );
@@ -317,7 +403,13 @@ export async function executePilot({
     writeOnce(path.join(admission.destination, 'plan.json'), plan);
     writeOnce(path.join(admission.destination, 'settings.json'), design);
     if (humans) writeOnce(path.join(admission.destination, 'human-references.json'), humans);
-    admission.record({ type: 'stage_started', phase, retained_answers: results.size, seed: plan.seed });
+    admission.record({
+      type: 'stage_started',
+      phase,
+      retained_answers: results.size,
+      seed: plan.seed,
+      source_from: sourceFrom,
+    });
     transition(stage);
     for (const job of stageJobs) {
       if (results.has(job.id)) {
@@ -348,7 +440,12 @@ export async function executePilot({
       });
       writeOnce(path.join(admission.destination, 'requests', `${reservation.study_reserved}.json`), request);
       budget.markDispatched();
-      update({ state: 'unverifiable', explanation: 'One bounded HTTP dispatch is pending.' });
+      update({
+        state: 'unverifiable',
+        explanation: automatedQuality
+          ? 'One bounded Codex CLI turn is pending.'
+          : 'One bounded HTTP dispatch is pending.',
+      });
       const raw = await dispatch(request, design.timeout_ms);
       const responsePath = path.join(admission.destination, 'responses', `${reservation.study_reserved}.json`);
       writeOnce(responsePath, { attempt_id: reservation.attemptId, job, request, raw });
@@ -360,8 +457,13 @@ export async function executePilot({
         type: parsed.invalid_response ? 'job_invalid' : 'job_complete',
         job_id: job.id,
         reason: parsed.invalid_response || null,
-        usage: JSON.parse(raw.body).usage,
+        usage:
+          request.provider === 'codex'
+            ? { input_tokens: raw.result?.inputTokens ?? null, output_tokens: raw.result?.outputTokens ?? null }
+            : JSON.parse(raw.body).usage,
       });
+      if (automatedQuality && (parsed.invalid_response || parsed.quality === UNKNOWN || parsed.accuracy === UNKNOWN))
+        throw new Error('Automated quality measurement indeterminate; retain response and stop without resampling');
       if (job.category === 'generation' && parsed.invalid_response && !retainsMissingGeneration(design))
         throw new Error('Invalid frozen generation; no resampling');
       durations.push(Date.now() - started);
@@ -381,7 +483,13 @@ export async function executePilot({
       return { status: 'paused_recoverable', results };
     }
     transition('EXTRACTING');
-    if (humans)
+    if (automatedQuality) {
+      const ratings = automatedQualityRatings(design, plan, results);
+      writeOnce(path.join(admission.destination, 'model-ratings.json'), ratings);
+      const report = summarizeAutomatedQuality(plan, plan.automated_quality_packet, ratings);
+      writeOnce(path.join(admission.destination, 'report.json'), report);
+      fs.writeFileSync(path.join(admission.destination, 'report.md'), report.markdown, { flag: 'wx' });
+    } else if (humans)
       writeOnce(path.join(admission.destination, 'report.json'), summarizePilot(design, plan, results, humans));
     else {
       const packet = humanPacket(plan, results, 'quality');
@@ -423,6 +531,8 @@ export async function executePilot({
   } catch (error) {
     if (['EIO', 'ENOSPC', 'EMFILE', 'ENFILE', 'EACCES', 'EROFS'].includes(error.code)) error.recoverable = true;
     failure = error;
+    if (automatedQuality && !fs.existsSync(path.join(admission.destination, 'model-ratings.json')))
+      writeOnce(path.join(admission.destination, 'model-ratings.json'), automatedQualityRatings(design, plan, results));
     budget.fail(error);
     if (error.diagnostic) admission.record({ type: 'transport_failed', job_id: active?.id, ...error.diagnostic });
     status = blockLongRunningWorkflow(status, {
@@ -483,11 +593,15 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
       'human-quality': { type: 'string' },
       'human-quality-other': { type: 'string' },
       'human-semantic': { type: 'string' },
+      'automated-quality': { type: 'boolean' },
+      'model-ratings': { type: 'string' },
     },
   });
   const root = overrides.root || ROOT,
-    design = loadPilotDesign(root),
-    plan = preparePilot(root, design);
+    design = values['automated-quality'] ? loadAutomatedQualityDesign(root) : loadPilotDesign(root),
+    plan = values['automated-quality']
+      ? loadAutomatedQualitySource(root, design, values.from).plan
+      : preparePilot(root, design);
   if (
     [values.prepare, values.launch, values['human-report'], !!values['human-packet']].filter(Boolean).length !== 1 ||
     !values.out
@@ -498,10 +612,20 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     const { results } = recoverPilot(design, plan, values.from);
     const quality = readHumanQuality(plan, results, values['human-quality'], values['human-quality-other']);
     const report = summarizeHumanQuality(plan, results, quality);
+    const ratings = values['model-ratings'] ? readJson(values['model-ratings']) : null;
+    const comparison = ratings
+      ? summarizeAutomatedQuality(plan, humanPacket(plan, results, 'quality'), ratings, quality)
+      : null;
+    if (comparison) report.model_judging = 'separate_model_assessment';
     fs.mkdirSync(path.resolve(values.out), { recursive: false });
     writeOnce(path.join(values.out, 'human-quality.json'), quality);
     writeOnce(path.join(values.out, 'report.json'), report);
     fs.writeFileSync(path.join(values.out, 'report.md'), report.markdown, { flag: 'wx' });
+    if (comparison) {
+      writeOnce(path.join(values.out, 'model-ratings.json'), ratings);
+      writeOnce(path.join(values.out, 'human-model-comparison.json'), comparison);
+      fs.writeFileSync(path.join(values.out, 'human-model-comparison.md'), comparison.markdown, { flag: 'wx' });
+    }
     return { status: 'human_quality_report_ready', destination: path.resolve(values.out) };
   }
   if (values.prepare || values['human-packet']) {
@@ -525,7 +649,7 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
       writeOnce(path.join(values.out, 'budget.json'), {
         calls: design.attempts,
         max_dollars: design.max_dollars,
-        per_generation: reservationCost(design, 'generation'),
+        per_generation: design.attempts.generation_planned ? reservationCost(design, 'generation') : null,
         per_judgment: design.automated_judging === false ? null : reservationCost(design, 'quality'),
         worst_case: ['generation', 'quality', 'semantic'].reduce(
           (sum, c) =>
@@ -546,12 +670,13 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     root,
     design,
     plan,
-    phase: values.phase,
+    phase: values['automated-quality'] ? 'quality-review' : values.phase,
     destination: values.out,
     goNotePath: values['go-note'],
     recoveryFrom: values['recovery-from'],
     qualityPath: values['human-quality'],
     semanticPath: values['human-semantic'],
+    sourceFrom: values.from,
   });
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

@@ -345,3 +345,263 @@ test('entering the first reader ID preserves work while changing reader clears t
   assert.equal(vm.runInContext('saved.q001.quality.value', context), '');
   assert.equal(vm.runInContext('saved.q001.rationale.value', context), '');
 });
+
+async function automatedFixture(t) {
+  const f = fixture(t, { prospective: true });
+  const generated = await executePilot(f);
+  const packet = humanPacket(f.plan, generated.results, 'quality');
+  const { loadAutomatedQualityDesign, prepareAutomatedQuality } =
+    await import('../services/superegoAutomatedQualityReview.js');
+  const design = loadAutomatedQualityDesign(root);
+  design.source_study_id = f.plan.study_id;
+  design.source_packet_id = packet.packet_id;
+  design.master_seed = f.plan.seed;
+  design.sample_size = f.plan.units.length;
+  design.attempts.quality_planned = packet.items.length;
+  design.attempts.total_planned = packet.items.length;
+  design.attempts.hard_ceiling = packet.items.length + design.attempts.recovery_reserve;
+  fs.appendFileSync(
+    path.join(f.root, 'notes/superego-contemporary-pilot-design.md'),
+    `\n\`\`\`yaml automated_quality\n${JSON.stringify(design)}\n\`\`\`\n`,
+  );
+  // The existing fixture note contains 0 and 20 as ordinary accounting numerals;
+  // record the exact supplemental fixture cap at a commit, without live authority.
+  const { execFileSync } = await import('node:child_process');
+  fs.writeFileSync(
+    path.join(f.root, 'notes/quality-go.md'),
+    `GO\nOffline fixture only. notes/superego-contemporary-pilot-design.md\n$0; ${design.attempts.hard_ceiling} attempts.\n`,
+  );
+  execFileSync('git', ['add', 'notes'], { cwd: f.root });
+  execFileSync('git', ['commit', '-m', 'Offline quality fixture'], { cwd: f.root, stdio: 'pipe' });
+  const plan = prepareAutomatedQuality(design, f.plan, packet, f.design);
+  const options = {
+    ...f,
+    design,
+    plan,
+    phase: 'quality-review',
+    sourceFrom: f.destination,
+    destination: path.join(f.root, 'automated'),
+    goNotePath: 'notes/quality-go.md',
+  };
+  return { f, generated, packet, options };
+}
+function cliRating(request, modify = (v) => v) {
+  return {
+    transport: { stdout: 'offline raw JSONL', stderr: '', exitCode: 0 },
+    result: {
+      provider: 'codex',
+      model: request.body.model,
+      effort: 'low',
+      prohibitedToolEventCount: 0,
+      streamEventTypeCounts: { 'turn.completed': 1 },
+      text: JSON.stringify(modify(rating('quality'))),
+      inputTokens: 300,
+      outputTokens: 100,
+      modelIndependentlyAttested: false,
+    },
+  };
+}
+
+test('automated CLI quality scores the exact blinded packet and joins the two humans by response ID', async (t) => {
+  const { f, generated, packet, options } = await automatedFixture(t);
+  let calls = 0;
+  const result = await executePilot({
+    ...options,
+    dispatch: async (request) => {
+      calls++;
+      assert.equal(request.provider, 'codex');
+      assert.equal(request.endpoint, undefined);
+      assert.equal(request.body.singleAttempt, true);
+      assert.equal(request.body.subscriptionOnly, true);
+      const payload = JSON.parse(request.body.content);
+      assert.deepEqual(Object.keys(payload).sort(), ['candidate', 'context']);
+      assert.deepEqual(payload, {
+        context: packet.items[calls - 1].context,
+        candidate: packet.items[calls - 1].candidate,
+      });
+      return cliRating(request);
+    },
+  });
+  assert.equal(calls, 16);
+  assert.equal(result.results.size, 16);
+  const ratings = readJson(path.join(options.destination, 'model-ratings.json'));
+  assert.equal(ratings.rater_type, 'model');
+  assert.equal(ratings.raters, undefined);
+  assert.equal(ratings.packet_id, packet.packet_id);
+  assert.equal(readEvents(path.join(options.destination, 'run-ledger.jsonl')).at(-1).recovery_permitted, false);
+  assert.deepEqual(recoverPilot(options.design, options.plan, options.destination).results, result.results);
+  const refs = humanFiles(f, generated.results);
+  await main(
+    [
+      '--human-report',
+      '--from',
+      f.destination,
+      '--human-quality',
+      refs[0],
+      '--human-quality-other',
+      refs[1],
+      '--model-ratings',
+      path.join(options.destination, 'model-ratings.json'),
+      '--out',
+      path.join(f.root, 'comparison'),
+    ],
+    { root: f.root },
+  );
+  const report = readJson(path.join(f.root, 'comparison/human-model-comparison.json'));
+  assert.equal(readJson(path.join(f.root, 'comparison/report.json')).model_judging, 'separate_model_assessment');
+  assert.equal(report.human_comparison.length, 3);
+  for (const pair of report.human_comparison)
+    for (const field of pair.agreement) {
+      assert.equal(field.numeric_pairs, 16);
+      assert.equal(field.mean_absolute_difference, 0);
+      assert.equal(field.indeterminate_consensus, 0);
+    }
+  await assert.rejects(
+    executePilot({ ...options, destination: path.join(f.root, 'repeat'), recoveryFrom: options.destination }),
+    /completed its paid work/,
+  );
+});
+
+test('CLI quality technical recovery reuses only missing jobs; unknown measurements stop without resampling', async (t) => {
+  const { options } = await automatedFixture(t);
+  let calls = 0;
+  const dispatch = async (request) =>
+    ++calls === 3
+      ? {
+          transport: { stdout: '', stderr: '', exitCode: null },
+          cli_error: { message: 'pre-start', recoverable: true },
+        }
+      : cliRating(request);
+  await assert.rejects(executePilot({ ...options, dispatch }), /pre-start/);
+  const retained = fs.readFileSync(path.join(options.destination, 'responses/1.json'));
+  const recovered = path.join(options.root, 'quality-recovery');
+  await executePilot({ ...options, dispatch, recoveryFrom: options.destination, destination: recovered });
+  assert.equal(calls, 17);
+  assert.deepEqual(fs.readFileSync(path.join(options.destination, 'responses/1.json')), retained);
+  assert.equal(
+    readEvents(path.join(recovered, 'run-ledger.jsonl')).filter((r) => r.type === 'model_attempt_dispatch_reserved')
+      .length,
+    14,
+  );
+  const other = await automatedFixture(t);
+  let unknownCalls = 0;
+  await assert.rejects(
+    executePilot({
+      ...other.options,
+      dispatch: async (request) => {
+        unknownCalls++;
+        return cliRating(request, (r) => ({ ...r, quality: UNKNOWN }));
+      },
+    }),
+    /measurement indeterminate/,
+  );
+  assert.equal(unknownCalls, 1);
+  const document = readJson(path.join(other.options.destination, 'model-ratings.json'));
+  assert.equal(document.ratings[0].rating.quality, UNKNOWN);
+  assert.equal(document.ratings.filter((r) => r.disposition === 'missing').length, 15);
+  assert.equal(readEvents(path.join(other.options.destination, 'run-ledger.jsonl')).at(-1).recovery_permitted, false);
+});
+
+test('automated review rejects changed sealed data, API routes and ceilings before dispatch', async (t) => {
+  const { f, packet, options } = await automatedFixture(t);
+  const { prepareAutomatedQuality, readerAgreement, validateAutomatedQualityRatings } =
+    await import('../services/superegoAutomatedQualityReview.js');
+  const changed = structuredClone(packet);
+  changed.items[0].candidate[0].text += ' changed';
+  assert.throws(() => prepareAutomatedQuality(options.design, f.plan, changed, f.design), /sealed human/);
+  const api = structuredClone(options.design);
+  api.models.judging.provider = 'openai';
+  assert.throws(() => prepareAutomatedQuality(api, f.plan, packet, f.design), /separation/);
+  const tooFew = structuredClone(options.design);
+  tooFew.attempts.hard_ceiling = 1;
+  assert.throws(() => prepareAutomatedQuality(tooFew, f.plan, packet, f.design), /ceilings/);
+  let dispatched = 0;
+  const tiny = { ...options.design, max_request_bytes: 10 };
+  await assert.rejects(
+    executePilot({
+      ...options,
+      design: tiny,
+      dispatch: async () => {
+        dispatched++;
+      },
+    }),
+    /byte ceiling/,
+  );
+  assert.equal(dispatched, 0);
+  assert.equal(
+    readEvents(path.join(options.destination, 'run-ledger.jsonl')).filter(
+      (e) => e.type === 'model_attempt_dispatch_reserved',
+    ).length,
+    0,
+  );
+  const left = [
+    { id: 'x', rating: { quality: 7 } },
+    { id: 'y', rating: { quality: 5 } },
+    { id: 'z', rating: { quality: UNKNOWN } },
+  ];
+  const right = [
+    { id: 'z', rating: { quality: 7 } },
+    { id: 'y', rating: { quality: 3 } },
+    { id: 'x', rating: { quality: 8 } },
+  ];
+  const agreement = readerAgreement(left, right, ['x', 'y', 'z'], 'quality');
+  assert.equal(agreement.mean_absolute_difference, 1.5);
+  assert.equal(agreement.mean_left_minus_right, 0.5);
+  assert.equal(agreement.numeric_pairs, 2);
+  assert.equal(agreement.indeterminate_consensus, 3);
+  assert.throws(() => validateAutomatedQualityRatings(packet, { rater_type: 'model', packet_id: 'other' }), /match/);
+});
+
+test('saved pre-turn CLI config failure can be recovered after repair without editing its seal', async (t) => {
+  const { options } = await automatedFixture(t);
+  let calls = 0;
+  const raw = {
+    transport: {
+      stdout: '',
+      stderr:
+        'Error loading config.toml: model_providers contains reserved built-in provider IDs: `openai`. Built-in providers cannot be overridden.\n',
+      exitCode: 1,
+    },
+    cli_error: { message: 'codex CLI exited with code 1', code: 'CLI_PROVIDER_EXIT_FAILED', recoverable: false },
+  };
+  await assert.rejects(
+    executePilot({
+      ...options,
+      dispatch: async () => {
+        calls++;
+        return raw;
+      },
+    }),
+    /CLI failed/,
+  );
+  // Reproduce the historical classification written before the repair.
+  const file = path.join(options.destination, 'run-ledger.jsonl');
+  const events = readEvents(file);
+  events.at(-1).recovery_permitted = false;
+  fs.writeFileSync(file, events.map(JSON.stringify).join('\n') + '\n');
+  const sharedFile = path.join(options.studyStateRoot, options.design.id, 'study-ledger.jsonl');
+  const sharedEvents = readEvents(sharedFile);
+  sharedEvents.at(-1).recovery_permitted = false;
+  sharedEvents.at(-1).recoverable = false;
+  fs.writeFileSync(sharedFile, sharedEvents.map(JSON.stringify).join('\n') + '\n');
+  const sharedOriginal = fs.readFileSync(sharedFile, 'utf8');
+  const original = fs.readFileSync(file);
+  const destination = path.join(options.root, 'config-recovered');
+  await executePilot({
+    ...options,
+    recoveryFrom: options.destination,
+    destination,
+    dispatch: async (request) => {
+      calls++;
+      return cliRating(request);
+    },
+  });
+  assert.equal(calls, 17);
+  assert.deepEqual(fs.readFileSync(file), original);
+  assert.ok(fs.readFileSync(sharedFile, 'utf8').startsWith(sharedOriginal));
+  assert.equal(
+    readEvents(path.join(destination, 'run-ledger.jsonl')).filter((e) => e.type === 'technical_failure_reclassified')
+      .length,
+    1,
+  );
+});

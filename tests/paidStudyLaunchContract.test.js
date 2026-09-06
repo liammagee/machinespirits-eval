@@ -1240,3 +1240,23 @@ test('a repeated pre-provider startup failure cannot open another recovery', (t)
     /sealed technical predecessor/u,
   );
 });
+
+test('ordinary sentence punctuation preserves zero and decimal spend caps without matching partial identifiers', () => {
+  for (const [spendCap, amount] of [
+    [0, '$0.'],
+    [4.98, '$4.98.'],
+    [1200, '1,200.'],
+  ]) {
+    assert.deepEqual(
+      paidStudyGoNoteIssues({
+        text: `GO\nnotes/design.md\nMaximum ${amount}`,
+        designPath: 'notes/design.md',
+        spendCap,
+      }),
+      [],
+    );
+  }
+  for (const text of ['GO\nnotes/design.md\nv0.5', 'GO\nnotes/design.md\n$0.5', 'GO\nnotes/design.md\n0.foo']) {
+    assert.ok(paidStudyGoNoteIssues({ text, designPath: 'notes/design.md', spendCap: 0 }).includes('spend_cap'));
+  }
+});

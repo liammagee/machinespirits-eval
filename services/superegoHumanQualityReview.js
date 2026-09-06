@@ -18,7 +18,7 @@ export function readHumanQuality(plan, results, first, second) {
   return validateHumanRatings(plan, results, 'quality', combined);
 }
 
-function contrast(plan, lookup, arm) {
+export function contrast(plan, lookup, arm) {
   const differences = plan.units.map((unit) => {
     const values = [arm, 'generic_revision'].map((a) => {
       const presentation = plan.presentations.quality.find((p) => p.unit === unit.id && p.arm === a);
