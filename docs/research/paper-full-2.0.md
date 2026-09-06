@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "September 2026"
-version: "3.0.308"
+version: "3.0.309"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -358,6 +358,10 @@ The candidate mechanisms are not arbitrary analytical constructs. Each correspon
 This mapping is a *heuristic translation*, not a claim about AI consciousness. The tutor does not "recognize" the learner in Hegel's metaphysical sense. But the design heuristic derived from recognition theory produces *measurable functional analogues* of the first two components: calibration where there would otherwise be generic responses, and genuine self-transformation where there would otherwise be compliance. The third component---dialectical unfolding across turns---does not manifest as a distinct mechanism: tutors adapt across turns, but this adaptation is identical regardless of experimental condition (Section 6.3). Recognition operates through level-setting (calibration and error correction), not trajectory-shaping.
 
 The contribution of this section is showing that two of the three predicted analogues are not merely *statistically detectable* (the pilot study established this) but *mechanistically traceable* --- each maps to specific internal processes in the architecture that can be observed, classified, and quantified through the methods described in Section 5. The null finding for the third is itself a contribution: it reveals that recognition's temporal dimension---the Hegelian claim that understanding unfolds through staged encounter---does not translate into measurable trajectory differences within the 3--5 turn dialogue window.
+
+### 3.6 Recognition as a Scorekeeping Act
+
+The mechanisms above describe recognition from inside the architecture. The later sections of this paper (§6.20 onward, and §6.31 in particular) needed a description that a program could check from outside, and the one that served is Brandom's [@brandom1994]: recognition as a *scorekeeping act*. On this account recognition is not an attitude the tutor holds but an entry on a public record, and the entry has four parts. *Standing* is who may make it: a party with the right to confer a status does so, and the record says whose entries count. *Content* is what the entry confers: that the learner is entitled to a claim, that a demand has been met, that a debt has been discharged. *Time* is the turn at which the entry is made: a status conferred after the turn where it applied is a different act. *Uptake* is what the other party does with it, ratifying it, contesting it, or walking away; without uptake the act remains a report of what the tutor did. The four parts also place the other theorists this paper draws on. Hegel supplies the relation itself: the party who does the work of understanding is the one formed by it (§3.5, Appendix E). Freud supplies the split between a voice that plays and a law that catches (§4.1, §6.4). Aristotle supplies the requirement that recognition arise from the incidents of the dialogue and not from its tokens (Appendix E.3, E.8), the same line the unit ladder of §7.13 draws between a wording and a figure without naming him. Weber supplies the observation that standing is conferred, never intrinsic, so the authority of the conferring voice is itself a variable (Appendix E.5). Honneth [@honneth1995] supplies the forms that a refusal of recognition takes---care, rights, esteem---and with them a typology of the learner shapes the tutor meets. Goffman [@goffman1981] supplies *footing*, the stance a speaker takes toward what they say and to whom, which is the axis along which manner varies while standing stays fixed. The account is a heuristic in the sense of §3.5: it does not claim that the model undertakes commitments, only that its public text can be read as if it did, and that this reading yields a record a program can keep and audit. The one place the account was measured directly is §6.31, where a tutor that read its rights off such a record stayed within them and the same tutor blind to the record did not; the same section reports that the learner's uptake did not move, so the account licenses a claim about the tutor's conduct, bound to the models that held the seats (Sonnet 5 as tutor, learner and analyzer; Luna as reader), and not a claim about what the learner does with the record.
 
 ## 4. System Architecture
 
@@ -4880,6 +4884,10 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.309** (2026-09-05)
+
+:   **§3.6 new subsection: recognition as a scorekeeping act.** Adds one paragraph that states recognition, in the form this project builds and measures, as an entry on a public record with four parts (standing, content, time, uptake), after Brandom; places Hegel, Freud, Aristotle, Weber, Honneth and Goffman against those parts; and points to §6.31 as the one place the account was measured, where the tutor's conduct moved and the learner's uptake did not. Theory prose only: no new number, no rescoring, no abstract change. Adds `brandom1994` and `goffman1981` to the bibliography. Card `blueprint-fold-paper-3-scorekeeping`. No earlier verdict changes.
 
 **v3.0.308** (2026-09-05)
 

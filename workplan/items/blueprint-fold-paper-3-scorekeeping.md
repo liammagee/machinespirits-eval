@@ -1,14 +1,14 @@
 ---
 id: blueprint-fold-paper-3-scorekeeping
 title: "Fold the scorekeeping account of recognition into paper §3"
-status: triaged
+status: done
 type: paper
 priority: P2
 owner: claude
 source: manual
 created: 2026-09-05
 updated: 2026-09-05
-claim_status: planned
+claim_status: methods
 verification: >-
   Paper §3 carries one paragraph that states recognition as a scorekeeping act
   with four parts (standing, content, time, uptake), names Brandom, Honneth and
@@ -66,3 +66,12 @@ stack-bound to Sonnet 5 in the tutor seat and Luna in the reader seats.
 
 Zero paid calls. No rescoring. No abstract change. Edit §3 in place. The claim
 audit runs before the splice.
+
+**Done 2026-09-05.** §3.6 "Recognition as a Scorekeeping Act" added at
+v3.0.309: one paragraph, no number in it; the four parts named; Brandom,
+Honneth and Goffman placed beside Hegel, Freud, Aristotle and Weber; one clause
+sends the reader to §6.31 and states the result there as a conduct claim bound
+to Sonnet 5 in the tutor, learner and analyzer seats and Luna in the reader
+seats. The bibliography gains `brandom1994` and `goffman1981`. Zero calls.
+Checks green: `lint:all`, `refs:check`, `paper:manifest`,
+`generate-paper-tables`, `wp:source-check`. Claim audit run on the diff: one fix taken (the Aristotle sentence now cites Appendix E.3 and E.8 and says the §7.13 unit ladder draws the same line without naming him); the version stays 3.0.309 because PR #1071, open, takes 3.0.308.
