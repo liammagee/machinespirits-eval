@@ -22,6 +22,11 @@ links:
   items:
     - scoreboard-reader-replay-and-crossed-run
     - scoreboard-crossed-run-paper-fold
+    - blueprint-fold-paper-3-scorekeeping
+    - blueprint-fold-boundary-map-sorting-rule
+    - blueprint-fold-appendix-e-deontic-layer
+    - blueprint-fold-theory-surface-panel
+    - blueprint-fold-build-guide-public-score
     - a1-human-learner-validation
     - pedagogical-figure-ontology
 verification: Each phase of notes/2026-09-04-adaptive-tutor-plan.md has its own
@@ -47,7 +52,7 @@ lets the paper say.
 | 2 | one tutor, all five shapes plus the cooperative learner | to be written | opens on Phase 1 PASS |
 | 3 | transfer: unseen worlds, second stack, author cross | to be written | opens on Phase 2 PASS |
 | 4 | the human seat | `a1-human-learner-validation` | IRB approval; does not wait on Phase 3 |
-| 5 | paper and surfaces | one card per fold; first: `scoreboard-crossed-run-paper-fold` | each phase report |
+| 5 | paper and surfaces | one card per fold; `scoreboard-crossed-run-paper-fold` done, five `blueprint-fold-*` cards open | each phase report |
 
 **Rules carried by every phase card.**
 
@@ -106,3 +111,14 @@ digest. Results are conduct claims until Phase 4.
   `scoreboard-crossed-run-paper-fold`; this note and the blueprint note now
   inherit at v3.0.307. Phase 2 does not open. Phase 4 waits on IRB approval as
   before. The line's next word is the user's.
+- 2026-09-05: the five framing folds that §9 of the blueprint lists now have one
+  card each. All five read `triaged` and all five wait on a word: §3
+  scorekeeping, the three sorting questions in §7.12 and §7.16, the deontic
+  layer in Appendix E, the `/theory` panel, and the build rule in the guide and
+  the ideal-tutor page. Each card records what §6.31 allows and what it forbids,
+  because the blueprint was written on 2026-09-04, before Phase 1 ran. The
+  largest correction sits in the build-guide card. The blueprint's draft rule
+  "keep a public score, and make it the endpoint" is not supported, because the
+  board was the endpoint of Phase 1 and Kill 1 fired. The rule that survives is
+  that the board audits what the tutor may do, at the cost of a clue held back.
+  Phase 2 does not open. The human seat is not started.
