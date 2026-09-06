@@ -74,7 +74,7 @@
 
   <section class="hero">
     <!-- BLUEPRINT:PROVENANCE:START -->
-    <div class="hero__rune"><span>§</span> Build blueprint · inherits <code>paper-full-2.0.md</code> v3.0.300 (August 2026) · refreshed 2026-09-01 · commit 2f99ce4e3</div>
+    <div class="hero__rune"><span>§</span> Build blueprint · inherits <code>paper-full-2.0.md</code> v3.0.311 (September 2026) · refreshed 2026-09-06 · commit 39f58ca9</div>
     <!-- BLUEPRINT:PROVENANCE:END -->
     <h1 class="hero__h1">How to build the <span class="em">ideal AI tutor</span></h1>
     <p class="hero__subtitle">A complete recipe, from first principles. It assumes an API key to a capable language model, something to teach, and ordinary programming skill — and nothing else. Each step gives the design, the code, and a brief you can hand to a coding agent; every choice carries a pointer to the research that backs it.</p>
@@ -495,6 +495,29 @@ planted-moment reports side by side. Check: the comparison runs without
 any judge; the judge is additive only.</code></div>
               <p><strong>Why.</strong> Naming the state to the judge roughly doubled agreement with the authored right answers, and all scores <em>drop</em> — blind judging was rewarding fluent replies to moments they didn't fit. Three biases stack in every bench: the judge prefers its own vendor's prose; your checks prefer the writing style they were tuned on; the model prefers its trained role. Control all three or the bench reads the other two as quality. And re-run the bare-versus-full comparison as a standing habit — it is the only number that keeps the growing harness priced against the simplest tutor that could sit in the chair. Two cheap pre-launch checks would each have saved a registered study in this project: confirm the endpoint is <em>reachable</em> inside your reading window (one null series scored dialogues whose window closed before the measured event was possible), and make the delivery gate read the tutor's actual output, never the study's own copy of the assignment — an echo gate reads 1.00 forever, and one study built on it compared a behaviour with itself. Calibrate every reader-defined endpoint before promotion: two runs over the same archived rows are duplicate executions, not replication, and neither should be rescued by pooling when both miss the agreement gate. Give the study budget the same discipline: acquire one study-wide lease and reserve against one shared ledger before any provider process starts; two honest local counters can still double one ceiling.</p>
               <p><strong>Evidence.</strong> §6.24 (the judge lock; the one-sentence briefing result) · §6.23 (the saturation pilot) · §6.27 (the unreachable window; the echo gate) · §6.28 (failed reader and persona-trigger calibrations) · §7.15 (the cross-session budget incident and repair) · §7.11 (the standing bare-versus-full comparison) · §5.2, §8.2 (rubric design; judge limits) · working notes <code data-ref="HOW-TO-BUILD-A-TUTOR.md">HOW-TO-BUILD-A-TUTOR.md</code> §§5–5a · atlas <em>rubrics-as-instruments</em>, <em>provable-discourse</em>.</p>
+            </div>
+          </div>
+          <div class="claim">
+            <span class="claim__no">9</span>
+            <h3 class="claim__h">Keep a public score, and use it to audit what the tutor may do <span class="chip chip--ochre"><span class="chip__dot"></span> audit only</span></h3>
+            <div class="claim__body">
+              <p><strong>Build.</strong> One row per turn for each speaker, read from public text only: the commitment a speaker undertakes and its entitlement status, a challenge, a condition named, a test, a release, a debt, a forced entry, a standing dispute, and the licences in force for the tutor. A lexicon-and-state program fills it; no model reads it for you. Let the tutor's move table consult the board each turn and challenge or close only when the board shows that right in force; have the runtime audit every reply for those rights and end the dialogue on a violation. It gives you a record a program can check.</p>
+              <span class="lbl-code">In code — licence check before a move</span>
+              <div class="codeblock" data-lang="js"><code>const board  = readBoard(transcript);          // one row per turn, public text only
+const rights = board.licences(turn, 'tutor');  // e.g. { challenge: true, close: false }
+if (move.kind === 'challenge' &amp;&amp; !rights.challenge) return refuse(move);
+if (move.kind === 'close'     &amp;&amp; !rights.close)     return refuse(move);
+audit.push({ turn, move: move.kind, licensed: true });   // the record a program reads</code></div>
+              <span class="lbl-code">With an agent</span>
+              <div class="codeblock codeblock--agent"><code>Add a per-turn scoreboard read from the public transcript by a
+deterministic reader, no model: commitment, entitlement status,
+challenge, condition, test, release, debt, forced entry, dispute,
+licences. Gate the tutor's challenge and close moves on the licences
+the board shows, and log every move with its licence state. Check:
+the audit log is complete without any judge; the board changes what
+the tutor may do, not how it speaks.</code></div>
+              <p><strong>Why.</strong> On the one crossed run that measured it, the tutor that read the board made no move outside its licence in 192 audited turns; the same tutor with the board hidden made three. That is the whole gain, and it is a conduct gain on the tutor's side. Name the cost before you build: neither learner shape's own channel rose above the blind tutor (1 of 12 against 1 of 12; 5 of 12 against 6 of 12), so the study's kill rule fired, and the licence that kept the tutor clean also held a clue back until turn 8 in the dialogues it lost. The board's challenge field agrees with the readers in 18% to 46% of cases and is the narrower label — a lower bound on the move, not a measure of it — and it detects no figure (0 of 7 in the §7.14 lattice). Bound to Sonnet 5 in the tutor, learner and analyzer seats and Luna as reader.</p>
+              <p><strong>Evidence.</strong> §6.31 (the Phase 0 replay and the crossed run; Kill 1 fired, Kill 2 did not) · §7.12 (the sorting rule: a yes on all three questions did not predict a win) · working notes <code data-ref="HOW-TO-BUILD-A-TUTOR.md">HOW-TO-BUILD-A-TUTOR.md</code> §5b · reader <code data-ref="services/tutorStubScoreboard.js">services/tutorStubScoreboard.js</code>.</p>
             </div>
           </div>
         </div>

@@ -1,14 +1,14 @@
 ---
 id: blueprint-fold-build-guide-public-score
 title: "Add a public-score build rule to the tutor build guide and the ideal-tutor page"
-status: triaged
+status: done
 type: content
 priority: P3
 owner: claude
 source: manual
 created: 2026-09-05
 updated: 2026-09-05
-claim_status: planned
+claim_status: methods
 verification: >-
   HOW-TO-BUILD-A-TUTOR.md carries one new numbered rule on keeping a public
   score, placed so it does not collide with the existing rule 6, and the rule
@@ -74,3 +74,5 @@ move the graveyard, before writing the text.
 Zero paid calls. No new claim: every number comes from §6.31. Edit both files in
 place; no numbered copy of the page. The outward publish is not part of this
 card and stays behind its own human gate.
+
+**Done 2026-09-05.** `HOW-TO-BUILD-A-TUTOR.md` carries rule 5b, *Keep a public score, and use it to audit what the tutor may do*, placed before the four-steps-to-contingency section so it does not collide with rule 6. The rule states the audit result (0 unlicensed moves in 192 audited turns against 3 for the blind tutor) beside the null (1 of 12 against 1 of 12 in effort; 5 of 12 against 6 of 12 in warrant), the 18% to 46% agreement lower bound, and the 0 of 7 lattice result of §7.14, and closes on build it for the audit trail, not for movement. `notes/poetics/ideal-tutor-blueprint.html` carries the same rule as claim 9 with an audit-only chip. `npm run blueprint:refresh` re-stamped the band at v3.0.311; `npm run blueprint:check` exits 0 with 17/17 data-refs resolving. Read in the browser at `/blueprint` from a worktree server on port 3512: claim 9 renders with its chip, no console errors. Every number traces to §6.31 (and §7.14 for the lattice). The outward publish stays behind `publish-ideal-tutor-blueprint`. Zero calls.
