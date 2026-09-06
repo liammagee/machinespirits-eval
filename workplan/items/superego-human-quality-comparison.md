@@ -1,7 +1,7 @@
 ---
 id: superego-human-quality-comparison
 title: Deliver a usable four-arm human teaching-quality comparison
-status: review
+status: dropped
 type: experiment
 priority: P2
 owner: codex
@@ -9,13 +9,14 @@ source: manual
 created: 2026-09-05
 updated: 2026-09-05
 verification: Verify fixed generation and cumulative accounting within the registered ceilings, preserve and privately archive all attempts, obtain two independent blinded human quality ratings, and produce the zero-call descriptive comparison with separate reader estimates, disagreement and claim boundaries.
-branch: codex/superego-automated-quality
-claim_status: planned
+branch: codex/superego-pilot-closeout
+claim_status: exploratory
 links:
   items:
     - superego-contemporary-pilot
     - paid-study-infrastructure-review
   notes:
+    - notes/2026-09-05-superego-pilot-closeout.md
     - notes/superego-contemporary-pilot-design.md
     - notes/2026-09-05-superego-human-comparison-repairs.md
     - notes/2026-09-05-superego-human-comparison-go.md
@@ -23,6 +24,12 @@ links:
     - notes/2026-09-05-superego-automated-quality-go.md
     - notes/2026-09-05-superego-automated-quality-results.md
 ---
+
+Current disposition: generation and automated assessment are complete. The user
+authorized closeout with human validation deferred because readers are unavailable.
+`dropped` removes the unfulfilled human comparison from active work; it does not
+assert that the original verification above passed. The model-rated result is
+exploratory. No paper or atlas claim is promoted. See the linked closeout.
 
 The user requested unattended technical fixes and a path to meaningful scientific
 decisions after the contemporary pilot stopped before making any four-arm
@@ -102,3 +109,10 @@ zero direct API calls. All 115 artifact/accounting files were verified byte-iden
 and pushed privately. The model-only results remain separate from the unchanged
 human packet. The offline comparison is ready; status returns to review awaiting
 the same two independent human rating files. See the linked completion report.
+
+2026-09-05: user accepted the three-step closeout. The scientific report and
+reproducible arithmetic are preserved privately; the public closeout records
+scope and limits without exposing model scores to future readers. Human
+validation is deferred and the original acceptance remains unmet. No more
+generation or judging is scheduled. The infrastructure review remains separately
+triaged. Earlier pending handoffs are historical, not current launch instructions.
