@@ -1,7 +1,7 @@
 ---
 id: superego-human-quality-comparison
 title: Deliver a usable four-arm human teaching-quality comparison
-status: active
+status: review
 type: experiment
 priority: P2
 owner: codex
@@ -21,6 +21,7 @@ links:
     - notes/2026-09-05-superego-human-comparison-go.md
     - notes/2026-09-05-superego-human-generation-results.md
     - notes/2026-09-05-superego-automated-quality-go.md
+    - notes/2026-09-05-superego-automated-quality-results.md
 ---
 
 The user requested unattended technical fixes and a path to meaningful scientific
@@ -92,3 +93,12 @@ tests, 52 structural ratchets, lint/diff, manifest and launcher inventory checks
 and 622/622 workplan sources. Preparation verifies 48 quality jobs, the sealed
 public packet and a 7,388-byte maximum request under the 8,192-byte cap. Codex CLI
 0.153.0 is logged in using ChatGPT. No direct API or scoring call has occurred.
+
+
+2026-09-05: automated CLI assessment completed 48/48 ratings, with no invalid or
+indeterminate scores. One pre-turn configuration failure was preserved and
+technically recovered: 49/52 total attempts, three unused reserve attempts and
+zero direct API calls. All 115 artifact/accounting files were verified byte-identical
+and pushed privately. The model-only results remain separate from the unchanged
+human packet. The offline comparison is ready; status returns to review awaiting
+the same two independent human rating files. See the linked completion report.
