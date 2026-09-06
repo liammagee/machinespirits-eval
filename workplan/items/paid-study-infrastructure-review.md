@@ -16,6 +16,7 @@ links:
     - superego-contemporary-pilot
     - superego-human-quality-comparison
   notes:
+    - notes/2026-09-05-superego-pilot-closeout.md
     - notes/2026-09-05-superego-critique-calibration-transport-failures.md
     - notes/2026-09-05-superego-contemporary-generation-truncation.md
     - notes/2026-09-05-superego-human-comparison-repairs.md
@@ -83,3 +84,9 @@ configuration with the same ChatGPT-selected endpoint and zero retries. A read-o
 login-status command verified this configuration before another attempt. The
 missing-only recovery recognizes that exact saved pre-turn error without altering
 its historical seal; regression coverage includes this failure and recovery.
+
+2026-09-05: the user accepted closing the exploratory model-rated pilot with
+human validation deferred. This infrastructure review stays separately triaged
+and unassigned; it is neither completed by the pilot closeout nor a prerequisite
+for it. No new review card, provider call or infrastructure implementation is
+introduced by this disposition.
