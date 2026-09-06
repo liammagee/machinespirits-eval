@@ -1,14 +1,14 @@
 ---
 id: blueprint-fold-theory-surface-panel
 title: "Add the wins-and-losses panel and the theorist table to the /theory surface"
-status: triaged
+status: done
 type: content
 priority: P3
 owner: claude
 source: manual
 created: 2026-09-05
 updated: 2026-09-05
-claim_status: planned
+claim_status: methods
 verification: >-
   The theory synthesis page carries two new blocks: a wins-and-losses panel
   built on the three sorting questions, and the theorist table of §3. Every
@@ -69,3 +69,5 @@ to the models in the seats.
 Zero paid calls. The prose is written by hand; this is not a generated page.
 Every count is read from the paper. Edit the page in place. Run
 `npm run theory:synthesize` to re-stamp the band, then `npm run theory:check`.
+
+**Done 2026-09-05.** `notes/poetics/theory-synthesis.html` carries a new section 08, *Three questions sort the wins*, with the sorting panel (carried results, refused results with the question each fails, the §6.30 subtraction row that answers yes to all three and is still refused, and §6.31 as the worked last row) and the theorist table of §3 (Hegel, Freud, Aristotle, Weber, Goffman, Brandom, Honneth, Lacan, each with the number the paper reports). The forward section moves to 09 and the nav gains a Sorting link. Every count was read back from the paper section it cites. `npm run theory:synthesize` re-stamped the band at v3.0.311; `npm run theory:check` exits 0 with 12/12 data-refs resolving. Read in the browser at `/theory` from a worktree server on port 3512: the section, the nav link, 24 table rows and one worked row render, no console errors. Zero calls.

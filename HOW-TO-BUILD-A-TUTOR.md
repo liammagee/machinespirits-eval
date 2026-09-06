@@ -346,6 +346,37 @@ and charges for both the harness's templates and the tutor's spine — the
 fourth lock, measured. Do not use rubric scores to compare manners; use
 them to detect template mass, which they punish reliably.
 
+## 5b. Keep a public score, and use it to audit what the tutor may do (2026-09-05)
+
+> Keep a public score, and use it to audit what the tutor may do. It gives
+> you a record a program can check. On the one crossed run that measured it,
+> it did not raise the learner's channel, and the licence that kept the tutor
+> clean also held a clue back until turn 8.
+
+The score is one row per turn for each speaker, read from public text only:
+the commitment a speaker undertakes and its entitlement status, a challenge,
+a condition named, a test, a release, a debt, a forced entry, a standing
+dispute, and the licences in force for the tutor. A lexicon-and-state program
+fills it (`services/tutorStubScoreboard.js`); no model reads it for you. The
+tutor's move table consults the board each turn and may challenge or close
+only when the board shows that right in force; the runtime audits every reply
+for those rights and ends the dialogue on a violation.
+
+What it bought, with Sonnet 5 in the tutor, learner and analyzer seats and
+Luna in both reader seats (paper §6.31): the board tutor made no move outside
+its licence in 192 audited turns, where the same tutor with the board hidden
+made three. What it cost: neither learner shape's own channel rose above the
+blind tutor (1 of 12 against 1 of 12 on the permission-seeking learner; 5 of
+12 against 6 of 12 on the overconfident one), so the registered kill rule
+fired; and in the dialogues it lost, the tutor, holding only the challenge
+right, released nothing until turn 8. The board's challenge field agrees with
+the two readers' call of a delivered challenge in 18% to 46% of cases and is
+the narrower label, so read it as a lower bound on the move, not a measure of
+it. It is a record of moves, not a figure detector: the §7.14 lattice with the
+board's fields added still separates 0 of 7 figures.
+
+Build it for the audit trail. Do not build it expecting the learner to move.
+
 ## The four steps to contingency (2026-07-31, three-arm result)
 
 The shadow-policy three-arm test delivered the first measurable contingency

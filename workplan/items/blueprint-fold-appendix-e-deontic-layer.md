@@ -1,14 +1,14 @@
 ---
 id: blueprint-fold-appendix-e-deontic-layer
 title: "Fold the deontic layer into Appendix E as a new subsection"
-status: triaged
+status: done
 type: paper
 priority: P2
 owner: claude
 source: manual
 created: 2026-09-05
 updated: 2026-09-05
-claim_status: planned
+claim_status: methods
 verification: >-
   Appendix E carries one new subsection that puts the scoreboard schema beside
   the recognition node of E.5, and names the release ledger and the proof-debt
@@ -71,3 +71,5 @@ public text alone. It may not say the field was validated against a reader.
 Zero paid calls. No rescoring. No new empirical claim: every number comes from
 §6.31 or from the two report notes. Edit Appendix E in place. The claim audit
 runs before the splice.
+
+**Done 2026-09-05.** Appendix E gains E.5.1, *The public scoreboard as a deontic layer (Brandom)*, beside the recognition node of E.5: the ten fields of §6.31 mapped onto the belief, conferral and authority components; the release field named as the release ledger of §6.13 and the debt field as the proof-debt ledger; the entitlement field stated as a lower-bound proxy for the conferral term with the 18% to 46% board-and-reader agreement range from §6.31; the authority term left untouched and its §7.14 lattice test (0 of 7) recalled; and the board's conduct audit (0 unlicensed moves in 192 turns against 3) set beside the unmoved learner channels. E.11 gains one bullet. Version 3.0.311 with an Appendix F entry. Zero calls. Checks green: `refs:check`, `paper:manifest`, `generate-paper-tables`, `wp:source-check`. Claim audit run on the diff: every number traced to §6.31, §6.13 or §7.14; one fix taken (the debt field now reads as what the tutor still owes back, a released premise it let decay, matching the proof-debt guard of §6.13 rather than a learner obligation).

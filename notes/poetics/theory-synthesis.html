@@ -35,6 +35,7 @@
       <a href="#aristotle">Aristotle</a>
       <a href="#family">Family</a>
       <a href="#ledger">Ledger</a>
+      <a href="#sorting">Sorting</a>
       <a href="#forward">Forward</a>
     </nav>
     <div class="rail__actions">
@@ -48,7 +49,7 @@
 
   <section class="hero">
     <!-- THEORY-SYNTH:PROVENANCE:START -->
-    <div class="hero__rune"><span>§</span> Theory synthesis · inherits <code>paper-full-2.0.md</code> v3.0.172 (June 2026) · refreshed 2026-06-24 · commit afae017e</div>
+    <div class="hero__rune"><span>§</span> Theory synthesis · inherits <code>paper-full-2.0.md</code> v3.0.311 (September 2026) · refreshed 2026-09-06 · commit 7947fceb</div>
     <!-- THEORY-SYNTH:PROVENANCE:END -->
     <h1 class="hero__h1">How four old theories became <span class="em">testable architecture</span></h1>
     <p class="hero__subtitle">Recognition, the divided mind, charisma, and dramatic form — read as design heuristics, built into agents, and then measured. This page is the map between the theory and the machine.</p>
@@ -240,10 +241,68 @@
       </div>
     </section>
 
-    <!-- 08 · FORWARD -------------------------------------------------------->
-    <section class="s" id="forward">
+    <!-- 08 · SORTING --------------------------------------------------------->
+    <style>
+      .boundary { width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.82rem; }
+      .boundary th, .boundary td { border:1px solid var(--rule); padding:0.65rem; text-align:left; vertical-align:top; }
+      .boundary th { color: var(--brick-d); font: 700 0.68rem/1.4 "Space Mono", monospace; text-transform: uppercase; letter-spacing: 0.06em; }
+      .boundary .yes { color: var(--moss, #3b7a4a); font-weight:700; }
+      .boundary .no { color: var(--brick, #b3402f); font-weight:700; }
+      .boundary .na { color: var(--ink-3); }
+      .boundary tr.worked td { background: color-mix(in srgb, var(--ochre) 14%, transparent); }
+      .tblwrap { overflow-x:auto; }
+    </style>
+    <section class="s" id="sorting">
       <div class="diag">
         <div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The sorting rule</p>
+          <h2 class="s__h">Three questions sort the wins from the losses.</h2>
+          <p>Paper §7.12 states the boundary map as a rule with three questions. Does the intervention add structure the model cannot read off the page? Does it change standing or timing, and not manner or description? Is its endpoint a change on a record a program can check, and not a judge's reading of a reply? The rule runs one way. Every refused result in the adaptation programme but the subtraction class of §7.16 answers no to at least one question, and every carried result answers yes to all three. A yes on all three does not predict a win; the last row is the case that shows it.</p>
+          <div class="tblwrap"><table class="boundary">
+            <thead><tr><th>Result</th><th>§</th><th>Adds structure</th><th>Changes standing or timing</th><th>Program-checked endpoint</th><th>What the paper reports</th></tr></thead>
+            <tbody>
+              <tr><td>Live warrant gate, permission-seeking learner</td><td>§6.25</td><td><span class="yes">yes</span>: the learner's entitlement, read off the transcript each turn</td><td><span class="yes">yes</span>: the tutor's next move waits on the gate</td><td><span class="yes">yes</span>: the gate log</td><td>Shift correctness 87.5% gated against 64.8% bare; 19/24 gated dialogues broke deference against 10/24 bare. The same wording pasted as a standing instruction delivered zero challenges over 24 dialogues.</td></tr>
+              <tr><td>The same gate, overconfident learner</td><td>§6.26</td><td><span class="yes">yes</span></td><td><span class="yes">yes</span></td><td><span class="yes">yes</span></td><td>Warranted shift share 40.8% gated against 17.8% bare.</td></tr>
+              <tr><td>Trained warrant move, live on a second world</td><td>§6.21</td><td><span class="yes">yes</span>: the move sits in the weights, not on the page</td><td><span class="yes">yes</span></td><td><span class="yes">yes</span></td><td>Primary endpoint 0.508 against 0.306, +0.202, CI [0.072, 0.338], with zero training-world vocabulary.</td></tr>
+              <tr><td>Licence rule and typed move cards</td><td>§6.24</td><td><span class="yes">yes</span></td><td><span class="yes">yes</span>: what the tutor may do, and when</td><td><span class="yes">yes</span></td><td>v3 move cards 15/29 right repairs against the butler's adjudicated 10/24.</td></tr>
+                            <tr><td>Pacing guards on the proof-DAG</td><td>§6.13</td><td><span class="yes">yes</span></td><td><span class="yes">yes</span>: the release turn</td><td><span class="yes">yes</span>: each guard fires a ledger row</td><td>Release floor and stall clock; the chain that ended one run was mechanical, every link a ledger row.</td></tr>
+              <tr><td>Theory-of-mind and state-schema scaffolds</td><td>§6.8.5–.6, §6.10</td><td><span class="no">no</span>: re-encodes what the model already infers</td><td><span class="na">—</span></td><td><span class="na">—</span></td><td>No measurable within-family gain (§6.8.5); a richer learner profile does not help (§6.8.6); the signal axis does not pay (§6.10).</td></tr>
+              <tr><td>Stall-watcher on the learner's frontier</td><td>§6.13.6</td><td><span class="no">no</span>: the learner voiced every derivable fact the turn its premises completed, latency 0</td><td><span class="na">—</span></td><td><span class="na">—</span></td><td>A measured precondition null: there was nothing to watch.</td></tr>
+              <tr><td>Register router</td><td>§6.13.19, §6.17</td><td><span class="na">—</span></td><td><span class="no">no</span>: changes how the tutor speaks</td><td><span class="na">—</span></td><td>No confirmed profile-contingent benefit across two model families (§6.17).</td></tr>
+              <tr><td>Sarcastic register</td><td>§6.29</td><td><span class="na">—</span></td><td><span class="no">no</span>: manner only</td><td><span class="na">—</span></td><td>Sarcastic and warm deliveries of the same scripted moves are indistinguishable on the proof-DAG.</td></tr>
+              <tr><td>Manner card</td><td>§6.24</td><td><span class="na">—</span></td><td><span class="no">no</span>: manner only</td><td><span class="na">—</span></td><td>Butler 10/24, switch 9/24 after human adjudication.</td></tr>
+              <tr><td>Coached playbooks and the Green Room</td><td>§6.15, §6.16</td><td><span class="na">—</span></td><td><span class="no">no</span>: tells the tutor what to do</td><td><span class="na">—</span></td><td>3 of 17 coached behaviours moved against a 60% bar (§6.16); information format, not information, is the bottleneck (§6.15).</td></tr>
+              <tr><td>Adaptive responsiveness, trajectory</td><td>§6.3</td><td><span class="na">—</span></td><td><span class="na">—</span></td><td><span class="no">no</span>: a judge's reading of the transcript</td><td>The exploratory d = 1.63 did not survive pre-registered replication.</td></tr>
+              <tr><td>Defiant learner's warrant demand, conduct gate</td><td>§6.30, §7.16</td><td><span class="yes">yes</span></td><td><span class="yes">yes</span>: what may be scored</td><td><span class="yes">yes</span>: the violating sentence quoted back</td><td>Yes on all three and still refused: withholding not producible, 0 of 8 as instruction, 0 of 9 under enforcement. This is the subtraction class, which lies outside the three questions (§7.16). The gate itself, which refused to score the contaminated dialogues, is the carried methods result.</td></tr>
+              <tr class="worked"><td>Public scoreboard, licensed tutor</td><td>§6.31</td><td><span class="yes">yes</span>: a shared record the model cannot read off the page</td><td><span class="yes">yes</span>: the licence</td><td><span class="yes">yes</span>: a program's count of licensed and unlicensed moves</td><td>0 unlicensed moves in 192 audited turns against 3 for the blind tutor; each learner shape's own channel 1 of 12 against 1 of 12 and 5 of 12 against 6 of 12; Kill 1 fired. A conduct claim, bound to Sonnet 5 (tutor, learner, analyzer) and Luna (readers).</td></tr>
+            </tbody>
+          </table></div>
+          <p>The theorists sort the same way. Each row gives what the theorist supplies to the scorekeeping account of §3.6, where it lives in the machine, and the one result that fixes its place.</p>
+          <div class="tblwrap"><table class="boundary">
+            <thead><tr><th>Theorist</th><th>Supplies</th><th>Where it lives</th><th>The evidence that fixes its place</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Hegel</strong></td><td>recognition as the relation that makes a subject; the one who does the work is the one who is formed</td><td>the recognition prompts; the anti-reveal floor (<code>t_min</code>), so the tutor does not do the learner's deriving</td><td>the calibration effect pooled across the three-judge panel, d ≈ 1.63 (§1); handing over the secret early forecloses the recognition the learner wants (App. E)</td></tr>
+              <tr><td><strong>Freud</strong></td><td>a split subject: a voice that plays and a law that catches</td><td>the tutor superego; then the harness's typed gates, the law that works</td><td>the superego pays on the weaker generation model (§6.6.3); a learner's self-critique with no Other degrades its output, d = 3.05 (§6.5, §7.9)</td></tr>
+              <tr><td><strong>Aristotle</strong></td><td>plot over character; recognition that arises from the incidents, not from tokens</td><td>the proof-DAG; the practical syllogism as the tutor's desire (App. E.3, E.8)</td><td>grounded anagnorisis is checkable on the DAG (§6.13); recognition by costume did not transfer to held-out human form labels at the pre-registered κ ≥ 0.60 (§7.9); a wording is not a figure (§7.13)</td></tr>
+              <tr><td><strong>Weber</strong></td><td>standing is conferred, never intrinsic</td><td>the charisma rubric; the authority weight in the recognition node (App. E.5); the authority of a refusing voice</td><td>the defend rate rises with the authority of the voice that refuses: Sonnet defended 2/2 under the prosecutor charter where it had defended 0/2 against the bare template (§6.13.18)</td></tr>
+              <tr><td><strong>Goffman</strong></td><td>footing, the stance a speaker takes to what they say and to whom; face; front stage and backstage</td><td>the register and manner axis; public-only scoring</td><td>manner changes conduct, not outcome (§6.13.19, §6.29); the frame-refuser reaches rung ≥ 1 in 70/70 against 45/49 and rung 2 at 0.592 against 0.114 (§6.28); the composer's fixed register is the "liturgy" a reader hears as the tutor's voice (§6.24)</td></tr>
+              <tr><td><strong>Brandom</strong></td><td>commitments, entitlements, challenges; a prompt that describes a commitment is not one the model undertakes</td><td>the warrant gate; the licence as a change of rights; the scoreboard (§6.31)</td><td>the warranted-shift share more than doubles under the live gate, 40.8% against 17.8% (§6.26); the same wording as a standing instruction delivered zero challenges (§6.25)</td></tr>
+              <tr><td><strong>Honneth</strong></td><td>recognition is fought for; refusal has forms, care, rights and esteem; each resistant learner shape is a contested form</td><td>the learner personas; the rung ladder</td><td>the rights channel moves (warrant, §6.25–§6.26; licence, §6.24, §6.31); the care channel does not (warm against sarcastic, flat, §6.29)</td></tr>
+              <tr><td><strong>Lacan</strong></td><td>demand against desire; the barred Other</td><td>withholding as the management of desire; critic divergence read as a finding</td><td>the mirror is an orbit, not a commitment: the mirror term sits in 58.9% of learner lines and serves only as a residual class (§6.13.19)</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">read the last row</span> The public scoreboard (§6.31) answers yes on all three questions, and its registered kill rule fired. The board held the tutor inside its licence, 0 unlicensed moves in 192 audited turns against 3 for the blind tutor, and did not move either learner shape's own channel (1 of 12 against 1 of 12; 5 of 12 against 6 of 12). The claim is about the tutor's conduct, and it is bound to the models in the seats: Sonnet 5 as tutor, learner and analyzer; Luna as reader. Source: <code data-ref="docs/research/paper-full-2.0.md">paper-full-2.0.md</code> §3.6, §6.31, §7.12, §7.16; reader <code data-ref="services/tutorStubScoreboard.js">services/tutorStubScoreboard.js</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 · FORWARD -------------------------------------------------------->
+    <section class="s" id="forward">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">09<span class="glyph">·</span></h2></div>
         <div class="body">
           <p class="s__kicker">For future development</p>
           <h2 class="s__h">Where the theory points next.</h2>

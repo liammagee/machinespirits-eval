@@ -1,14 +1,14 @@
 ---
 id: blueprint-fold-boundary-map-sorting-rule
 title: "Fold the three sorting questions into paper §7.12 and §7.16"
-status: triaged
+status: done
 type: paper
 priority: P2
 owner: claude
 source: manual
 created: 2026-09-05
 updated: 2026-09-05
-claim_status: planned
+claim_status: methods
 verification: >-
   Paper §7.12 and §7.16 state the three sorting questions as one rule, and each
   question points at results the paper already reports on both sides of the
@@ -63,3 +63,5 @@ split §6.31 found: the conduct term moved and the uptake term did not.
 
 Zero paid calls. No result changes its claim tier because of this fold. Edit
 §7.12 and §7.16 in place. The claim audit runs before the splice.
+
+**Done 2026-09-05.** §7.12 carries the three questions as a sorting rule, with each result of the adaptation programme placed under the question it answers or fails and §6.31 as the worked case of a yes on all three beside a fired kill rule; §7.16 reads the redundancy and subtraction classes through the same rule. Both status lines keep their no-new-claim wording. Version 3.0.310. Zero calls. Checks green: `refs:check`, `paper:manifest`, `generate-paper-tables`, `wp:source-check`. Claim audit run on the diff: one fix taken (the sorting sentence now names the subtraction class of §7.16 as the exception to the no-predicts-null half of the rule, so §7.12 and §7.16 agree).
