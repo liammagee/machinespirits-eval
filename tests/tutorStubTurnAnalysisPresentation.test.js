@@ -7,7 +7,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubTurnAnalysisLines } from '../services/tutorStubTurnAnalysisPresentation.js';
-import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { removeTempDir, runInteractive } from './helpers/tutorStubInteractiveHarness.js';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -236,7 +236,7 @@ test('the debug-report runtime keeps normalization, technical dispatch, and term
     assert.equal(Buffer.byteLength(block), 1093);
     assert.equal(sha256(block), 'a379dd60b84a554b4e79a4ad00bcf2d294aaa2a9751112f50148f4b14ad303b9');
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 

@@ -1,14 +1,14 @@
 ---
 id: scoreboard-reader-replay-and-crossed-run
 title: Scoreboard reader replay and crossed run
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-09-04
 updated: 2026-09-05
-claim_status: planned
+claim_status: killed
 links:
   notes:
     - notes/2026-09-04-scoreboard-replay-prompt.md
@@ -28,7 +28,7 @@ links:
     - scripts/preflight-scoreboard-learner-cast.js
     - scripts/run-scoreboard-crossed-readers.js
   paper:
-    - "§6.24 to §6.30, §7.14"
+    - "§6.31; §6.24 to §6.30, §7.14"
   items:
     - one-adaptive-tutor-plan-line
     - a1-human-learner-validation
@@ -181,7 +181,7 @@ are read.
   turn-8 naming from board_blind-r1 (still a naming), and one synthetic pair.
   Zero paid calls to check: (1) the Step 1 replay reads the same, both bars
   unchanged (562 of 678 shapes agree, 457 of 511 delivered moves show, same
-  forced-card table); 17 tutor rows across the 729 sealed boards drop a false
+  forced-card table); 17 tutor rows across the 726 sealed boards drop a false
   naming and no other field changes. (2) The 36 crossed-run dialogues
   re-audited offline: with the old reader the offline audit matches every one
   of the 284 recorded after-turn audits; with the fixed reader the two board
@@ -219,7 +219,7 @@ are read.
   three more tests hold the two edges. Zero paid calls to check: (1) the Step
   1 replay reads the same, both bars unchanged (562 of 678 shapes agree, 457
   of 511 delivered moves show, same forced-card table); 33 tutor rows in 31 of
-  the 729 sealed boards drop a naming and no other field changes. Of the 33,
+  the 726 sealed boards drop a naming and no other field changes. Of the 33,
   24 were closures with the right (12 at the last turn) and 9 were without.
   In 12 the next sentence rules out the other suspect ("Kite did it. Runa did
   not."); in 7 the next sentence uses the verb "open". Neither kill rule reads
@@ -253,3 +253,12 @@ are read.
   pushed. The second-model check (commands D to F) did not run. Step 2 is
   done and reads FAIL on its outcome rule; Phase 2 does not open. Report:
   the third-run section of `notes/2026-09-05-scoreboard-crossed-run-report.md`.
+- 2026-09-05: card closed on the user's word ("close the card and update the
+  paper"). The Phase 0 and Phase 1 results are folded into the paper as a new
+  §6.31 at v3.0.307, with a revision-history entry, on the card
+  `scoreboard-crossed-run-paper-fold`. The registered claim reads killed: the
+  board tutor did not move either shape's channel above the blind tutor. The
+  one recorded effect, 0 unlicensed moves in 192 audited board-tutor turns
+  against 3 for the blind tutor, is a conduct fact on this stack and is
+  reported as that. The second-model check did not run and is not owed for a
+  null. Step 3, the human seat, is not started. Phase 2 does not open.

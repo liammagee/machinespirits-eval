@@ -10,7 +10,7 @@ import {
   projectTutorStubClassifierWorldContext,
   projectTutorStubLearnerClassificationLines,
 } from '../services/tutorStubLearnerClassificationPresentation.js';
-import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { removeTempDir, runInteractive } from './helpers/tutorStubInteractiveHarness.js';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -153,7 +153,7 @@ test('real technical-debug process preserves exact learner-classifier terminal b
     assert.match(block, /The learner adds a specific clarification to the same turn\./u);
     assert.doesNotMatch(block, /learner-classifier warning/u);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
+    removeTempDir(tmp);
   }
 });
 

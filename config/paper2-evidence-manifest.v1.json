@@ -143,12 +143,13 @@
     },
     {
       "id": "tutor-stub-warrant-and-resistant-learner-studies",
-      "paper_sections": ["6.25", "6.26", "6.27", "6.28", "6.29", "6.30"],
+      "paper_sections": ["6.25", "6.26", "6.27", "6.28", "6.29", "6.30", "6.31"],
       "paper_markers": [
         "### 6.25 The Live Warrant Gate:",
         "### 6.28 One Powered Run, Two Faces of Resistance:",
         "### 6.29 The Edged Register with the Teaching Frozen:",
-        "### 6.30 The Defiant Learner's Warrant Demand:"
+        "### 6.30 The Defiant Learner's Warrant Demand:",
+        "### 6.31 One Public Score for Every Learner Shape:"
       ],
       "evidence_class": "archived-artifact-recomputable",
       "semantic_authority_ids": [
@@ -175,7 +176,9 @@
         {
           "kind": "archived-artifact",
           "path": "notes/2026-08-28-edged-register-stub-stage2-sizing-memo.md"
-        }
+        },
+        { "kind": "archived-artifact", "path": "notes/2026-09-05-scoreboard-replay-report.md" },
+        { "kind": "archived-artifact", "path": "notes/2026-09-05-scoreboard-crossed-run-report.md" }
       ]
     },
     {

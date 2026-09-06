@@ -1,6 +1,6 @@
 # Recognition as scorekeeping: a blueprint for the resistant-learner tutor
 
-Date: 2026-09-04. Inherits from `docs/research/paper-full-2.0.md` at v3.0.304.
+Date: 2026-09-04. Inherits from `docs/research/paper-full-2.0.md` at v3.0.307.
 Originates no empirical claim. Written to be folded into §3, §7.12, §7.16,
 Appendix E and the `/theory` surface, in that order. It is not a spin-off paper.
 

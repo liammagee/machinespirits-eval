@@ -1,7 +1,7 @@
 # One adaptive tutor: the plan from here
 
 Date: 2026-09-04. Companion to `notes/2026-09-04-theoretical-blueprint.md`.
-Inherits from `docs/research/paper-full-2.0.md` at v3.0.304. Originates no
+Inherits from `docs/research/paper-full-2.0.md` at v3.0.307. Originates no
 empirical claim. It names the work between the current standpoint and one
 tutor that adapts to resistant learners, in phases with gates. Live work is
 carded: `scoreboard-reader-replay-and-crossed-run` for Phases 0 and 1, `one-adaptive-tutor-plan-line` for the line as a whole, and `a1-human-learner-validation` for the human seat. The paper stays the single paper; each phase folds into
@@ -354,6 +354,11 @@ re-runs of any closed line; a spin-off paper.
   sealed simulated dialogues. Development-tier. No tutor claim.
 - After Phase 1: a tutor that reads the score moves two shapes on their own
   channels, on one stack, two worlds. Bound to the model until the check runs.
+  Outcome, 2026-09-05: not licensed. The run closed on its kill rule (1 of 12
+  against 1 of 12; 5 of 12 against 6 of 12). What the paper says instead, in
+  §6.31: a tutor whose moves the board licenses made no move outside its
+  licence in 192 audited turns where the blind tutor made three. A conduct
+  fact on one stack. Phase 2 does not open on this result.
 - After Phase 2: one tutor meets five shapes within a stated margin of the
   specialists, on one world family. This is the first claim of one adaptive
   tutor, and it is a conduct claim.
@@ -364,12 +369,13 @@ re-runs of any closed line; a spin-off paper.
 
 | card | phase | status | opens when |
 |---|---|---|---|
-| `scoreboard-reader-replay-and-crossed-run` | 0 and 1 | triaged | now; the hand-off prompt is its brief |
+| `scoreboard-reader-replay-and-crossed-run` | 0 and 1 | done, Kill 1 fired | closed 2026-09-05; folded into §6.31 |
 | `one-adaptive-tutor-plan-line` | all | triaged | now; holds this plan and the gate record |
-| Phase 2 card, one tutor for all shapes | 2 | not yet written | the Phase 1 report reads PASS |
+| Phase 2 card, one tutor for all shapes | 2 | not written; does not open | the Phase 1 report reads FAIL on its outcome rule |
 | Phase 3 card, transfer | 3 | not yet written | the Phase 2 report reads PASS |
 | `a1-human-learner-validation` | 4 | blocked | IRB approval, real consent text, real items |
-| Phase 5 cards, paper fold-in | 5 | not yet written | each phase report, one card per fold |
+| `scoreboard-crossed-run-paper-fold` | 5 | done | the Phase 0 and Phase 1 reports; §6.31 at v3.0.307 |
+| further Phase 5 cards, framing folds | 5 | not yet written | the blueprint's §9 list; one card per fold, on the user's word |
 
 Each new card names its endpoint and its kill before any call, links the
 report note it consumes, and names the paper section it folds into. A card

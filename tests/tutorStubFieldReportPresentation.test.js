@@ -4,7 +4,16 @@ import {
   projectTutorStubFieldVisualizationLines,
   projectTutorStubLightweightFieldLines,
 } from '../services/tutorStubFieldPresentation.js';
-import { assert, fs, os, path, ROOT, runInteractive, test } from './helpers/tutorStubInteractiveHarness.js';
+import {
+  assert,
+  fs,
+  os,
+  path,
+  removeTempDir,
+  ROOT,
+  runInteractive,
+  test,
+} from './helpers/tutorStubInteractiveHarness.js';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const COLORS = { cyan: '<cyan>', dim: '<dim>', reset: '</>' };
@@ -179,6 +188,6 @@ test('the debug-report runtime retains field calculation, visualization effects,
     assert.equal(Buffer.byteLength(normalized), 505);
     assert.equal(createHash('sha256').update(normalized).digest('hex'), LIVE_FIELD_REPORT_HASH);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });

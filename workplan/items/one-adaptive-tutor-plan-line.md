@@ -18,9 +18,10 @@ links:
     - notes/2026-09-05-scoreboard-crossed-run-go.md
     - notes/2026-09-05-scoreboard-crossed-run-report.md
   paper:
-    - "§3, §7.12, §7.16, Appendix E"
+    - "§6.31; §3, §7.12, §7.16, Appendix E"
   items:
     - scoreboard-reader-replay-and-crossed-run
+    - scoreboard-crossed-run-paper-fold
     - a1-human-learner-validation
     - pedagogical-figure-ontology
 verification: Each phase of notes/2026-09-04-adaptive-tutor-plan.md has its own
@@ -42,11 +43,11 @@ lets the paper say.
 | phase | what | card | gate |
 |---|---|---|---|
 | 0 | board reader over sealed archives, zero calls | `scoreboard-reader-replay-and-crossed-run` | two fixed endpoints |
-| 1 | one crossed run, two shapes, board tutor against blind tutor | same card | opens on Phase 0 PASS |
+| 1 | one crossed run, two shapes, board tutor against blind tutor | same card | opened on Phase 0 PASS; closed on Kill 1 |
 | 2 | one tutor, all five shapes plus the cooperative learner | to be written | opens on Phase 1 PASS |
 | 3 | transfer: unseen worlds, second stack, author cross | to be written | opens on Phase 2 PASS |
 | 4 | the human seat | `a1-human-learner-validation` | IRB approval; does not wait on Phase 3 |
-| 5 | paper and surfaces | one card per fold | each phase report |
+| 5 | paper and surfaces | one card per fold; first: `scoreboard-crossed-run-paper-fold` | each phase report |
 
 **Rules carried by every phase card.**
 
@@ -96,3 +97,12 @@ digest. Results are conduct claims until Phase 4.
   and Luna the reader seats; the second-model check did not run. Phase 2 does
   not open. Report: the third-run section of
   `notes/2026-09-05-scoreboard-crossed-run-report.md`.
+- 2026-09-05: the third run of world 102 ran on the user's word and completed
+  12 of 12 dialogues with 0 violations. The reader seats ran 192 calls with 0
+  failed. Phase 1 closed on Kill 1: the board tutor fired the permission-seeking channel in
+  1 of 12 dialogues against 1 of 12, the overconfident channel in 5 of 12
+  against 6 of 12. Kill 2 did not fire. The Phase 0 and Phase 1 results are
+  folded into the paper as §6.31 at v3.0.307 on the card
+  `scoreboard-crossed-run-paper-fold`; this note and the blueprint note now
+  inherit at v3.0.307. Phase 2 does not open. Phase 4 waits on IRB approval as
+  before. The line's next word is the user's.
