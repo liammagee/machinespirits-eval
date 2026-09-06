@@ -1,7 +1,7 @@
 ---
 id: warrant-gate-second-family-replication
 title: "Replicate the passive warrant-gate main block on a second model family"
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
@@ -9,8 +9,8 @@ source: manual
 created: 2026-09-04
 updated: 2026-09-05
 branch: claude/warrant-gate-second-family-replication
-verification: "Launched 2026-09-04 on the user's chat GO. Two attempts at dialogue 01 discarded (32 calls): a harness defect (PR #1025) and an Opus 5 analysis-seat validator failure. Registration amended in place on 2026-09-05: analysis seat back to Luna, seed 736 replaced by 748. Relaunched under a fresh chat GO. Stopped again at dialogue 02 (quote rule, PR #1033) and at dialogue 35 (final-authority check, PR #1047) and at dialogue 43 (registered 30-attempt cap, four codex CLI hangs) and at dialogue 53 (unspecified target with a named identifier, validator unchanged; its retake failed too and the user dropped it, fourth amendment). Generation complete 71/71 in r6, 568 cases, 1,136 reader batches planned. Reader loop died before its first call on a lifecycle-method defect (fixed, PR #1062). The relaunch was then refused at zero calls because the crash seal carried recovery_permitted false; a fifth evidence rule in the admission now reads that seal from the run ledger. Reader dispatch parallelised to four workers on the user's word, no registered change. Awaiting GO for the recovery relaunch."
-claim_status: planned
+verification: "CLOSED 2026-09-05, not replicated on either registered bar. Nine launches under recovery, 3,133 of 3,360 calls; 71 of 72 dialogues complete (53 dropped by ruling, gated n=23), 568 cases, 1,136 of 1,136 Sol reads accepted with no failed call, consensus 477/568 (84.0%). R1 deference break: gated 0/23 against bare 3/24 and standing 3/24, gap -3 (bar +5). R2 correctness: gated 85.6% against 88.5% and 86.8%, margin -2.9 points (bar +10). Registered failure reading applies: the first-block effect is bound to Luna in the tutor or learner seat, the Luna reader, or some of these. Paper §6.25 updated at v3.0.308. Run output stays under .tutor-stub-auto-eval/warrant-gate-second-family-2026-09-05-r7; not archived, by the user's instruction. No re-run."
+claim_status: scope-bound
 links:
   notes:
     - docs/adaptation-refinement/warrant-gate-second-family-replication.md
@@ -33,16 +33,18 @@ in the registration linked above; nothing else changes.
 
 ## Acceptance
 
-- [ ] Registration and manifest fix worlds, conditions, seeds 737-748, seats,
+- [x] Registration and manifest fix worlds, conditions, seeds 737-748, seats,
   endpoints, bars, stopping rules and the call ceiling; both reach `main`.
-- [ ] Plain launcher dry-runs at zero calls from a clean checkout and its
+- [x] Plain launcher dry-runs at zero calls from a clean checkout and its
   focused tests pass.
-- [ ] User writes GO in chat; the launcher records the words as given. No GO
+- [x] User writes GO in chat; the launcher records the words as given. No GO
   note.
-- [ ] 72/72 dialogues complete and 576 cases assemble with both readers
+- [x] 72/72 dialogues complete and 576 cases assemble with both readers
   contract-valid, or the first non-recoverable failure is preserved without
-  rerunning valid outputs.
-- [ ] Score report applies the registered bars; §6.25 gains one paragraph
+  rerunning valid outputs. (Met as 71/71 with dialogue 53 dropped by the
+  user's ruling after its one retake: 568 cases, 1,136 reads, both readers
+  contract-valid, no valid output rerun.)
+- [x] Score report applies the registered bars; §6.25 gains one paragraph
   stating whether the effect held on the second family.
 
 ## Log
@@ -156,3 +158,21 @@ in the registration linked above; nothing else changes.
   dispatched calls record and starts no new call. Three tests, one of which
   fails on the old loop. Expected reader phase about 35 minutes against
   about 2 h 15 m serial.
+- 2026-09-05: User merged PR #1065 and wrote GO. Relaunched under recovery
+  from r6 into `-2026-09-05-r7` on 0e838979 at 23:07Z. Four workers read
+  1,136 of 1,136 batches by 01:50Z on 2026-09-06, about 2 h 43 m at about
+  7 reads a minute (median 328 s a Sol call; the 35-minute estimate was
+  low by about four times). No failed or interrupted call; sealed complete.
+  Study ledger 3,133 of 3,360 over nine launches and nine seals. Score
+  report at zero calls: NOT REPLICATED on both bars. R1 gated 0/23 breaks
+  against bare 3/24 and standing 3/24 (gap -3). R2 gated 85.6% (137/160)
+  against bare 88.5% (146/165) and standing 86.8% (132/152), margin -2.9.
+  Consensus 477/568 (84.0%). Report-only: P1' 13/23 armed and challenged,
+  29 challenge turns, standing-permission challenges 0, armed turns 30
+  gated / 17 bare / 25 standing (first family 16 / 61 / 53). The break
+  measure floors on the Opus 5 learner: 390 of 568 turns open with a
+  permission request, 151 more end in a question, 6 break in all (three
+  bare, three standing, none gated). Correctness near ceiling in every
+  condition. Paper §6.25 gains two paragraphs, a title clause and a
+  provenance clause at v3.0.308. Card closed; no re-run; run output not
+  archived (user's instruction).
