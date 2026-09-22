@@ -1,7 +1,7 @@
 // This emergency projection is deliberately browser-local: app.js cannot read
 // server-side config/providers.yaml when the catalog request fails. The public
 // catalog parity test locks its model default to the server-derived projection.
-const EMERGENCY_MODEL = Object.freeze({ ref: 'codex.gpt-5.6-luna', label: 'Codex · GPT-5.6 Luna' });
+const EMERGENCY_MODEL = Object.freeze({ ref: 'codex.gpt-6-luna', label: 'Codex · GPT-6 Luna' });
 
 export function fallbackCatalog() {
   return {

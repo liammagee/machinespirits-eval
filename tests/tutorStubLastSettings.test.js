@@ -492,6 +492,8 @@ test('live settings changes are written for the next interactive session', () =>
         registerOverlayThreshold: loaded.settings.registerOverlayThreshold,
       },
       sampleSettings({
+        classifierModelRef: 'codex.gpt-6-sol',
+        learnerRecordModelRef: 'codex.gpt-6-sol',
         engagementStanceTemperature: 0.55,
         lightAdaptationEnabled: false,
         trainingReuseEnabled: false,
