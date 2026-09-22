@@ -191,8 +191,8 @@ test('real default and configured /settings commands preserve exact no-model ter
     {
       name: 'default',
       args: [],
-      bytes: 2155,
-      hash: 'f8a8958b34727c698b96cff06713660909683839ef625ea934b7331b2e1c0fa8',
+      bytes: 2147,
+      hash: 'b158e243ae7a77b1e195769815e204a883bd70b727f0c6a7dcd76de791ace24a',
     },
     {
       name: 'configured',
@@ -213,8 +213,8 @@ test('real default and configured /settings commands preserve exact no-model ter
         '--motion',
         'full',
       ],
-      bytes: 1984,
-      hash: '80ba187f29aec97ce5e68a77d5d21f9ff49091607b630c671b570d4fa7859de9',
+      bytes: 1976,
+      hash: '4c1461cdd951db0fd2650b207c895c7b90bd8d8c766d18ac79655d94b8fafc1d',
     },
   ];
 

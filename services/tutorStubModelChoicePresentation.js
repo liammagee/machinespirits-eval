@@ -9,8 +9,8 @@ function modelChoicePresentationColors(colors = {}) {
 
 export const PREFERRED_TUTOR_MODEL_REFS = Object.freeze([
   'codex.gpt-5.6-terra',
-  'codex.gpt-5.6-sol',
-  'codex.gpt-5.6-luna',
+  'codex.gpt-6-sol',
+  'codex.gpt-6-luna',
   'codex.gpt-5.5',
   'claude-code.sonnet',
   'claude-code.fable',
@@ -83,7 +83,7 @@ export function assertTutorStubSupportedModelRefs(refs, { unsupportedRefs = new 
     if (unsupportedRefs.has(normalized)) {
       throw new Error(
         `${label}=${ref} is not supported by the local Codex CLI ChatGPT-account route. ` +
-          'Use codex.gpt-5.6-terra for the CLI-backed speaking tutor, codex.gpt-5.6-sol for interpretation, or openai.mini/openrouter.gpt-mini for GPT mini.',
+          'Use codex.gpt-5.6-terra for the CLI-backed speaking tutor, codex.gpt-6-sol for interpretation, or openai.mini/openrouter.gpt-mini for GPT mini.',
       );
     }
   }

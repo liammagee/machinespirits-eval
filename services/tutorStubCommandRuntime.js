@@ -532,7 +532,7 @@ export function createTutorStubCommandRuntime(dependencies = {}) {
         `${C.red}settings error:${C.reset} use /settings, /settings model [provider.alias], /settings stance-temp <n>, /settings dropout <0-1>, /settings light on|off, /settings release-speed <0.5-2>, /settings policy add <state|field|edge_timing>, or /settings forget`,
       );
       console.log(
-        `${C.dim}  examples: /settings model codex.gpt-5.6-luna | /settings temp 0.4 | /settings dropout 0.15 | /settings light off | /settings release-speed 1.5${C.reset}\n`,
+        `${C.dim}  examples: /settings model codex.gpt-6-luna | /settings temp 0.4 | /settings dropout 0.15 | /settings light off | /settings release-speed 1.5${C.reset}\n`,
       );
       return;
     }

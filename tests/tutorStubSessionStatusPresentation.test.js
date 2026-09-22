@@ -349,8 +349,8 @@ test('real normal and passthrough /status commands preserve exact no-model termi
   const passthrough = passthroughResult.stdout.match(/session status >[\s\S]*?\n\n/u)?.[0] || '';
 
   assert.equal(normalResult.status, 0, normalResult.stderr);
-  assert.equal(Buffer.byteLength(normal), 1346);
-  assert.equal(sha256(normal), '49b25a1d28e2a5062179c34adb1b7f8083192f44ca90a4c7e2401b01653bbea4');
+  assert.equal(Buffer.byteLength(normal), 1342);
+  assert.equal(sha256(normal), 'f19d710966a170f6debfcde3b880bf1b8b28819ffd5b3642f8013ffd0a3af230');
   assert.equal(passthroughResult.status, 0, passthroughResult.stderr);
   assert.equal(Buffer.byteLength(passthrough), 406);
   assert.equal(sha256(passthrough), '8756733576dddd064fd719af5324cf0d13735932f01100af9f0d1d14bc704e00');

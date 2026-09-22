@@ -15,5 +15,5 @@ instances:
       one_main_question: true
     model_defaults:
       tutor: codex.gpt-5.6-terra
-      interpretation: codex.gpt-5.6-sol
+      interpretation: codex.gpt-6-sol
       learner: codex.gpt-5.6-terra

@@ -292,7 +292,7 @@ describe('resolveModel (string format)', () => {
   it('resolves "anthropic.opus"', () => {
     const r = resolveModel('anthropic.opus');
     assert.strictEqual(r.provider, 'anthropic');
-    assert.strictEqual(r.model, 'claude-opus-4-8');
+    assert.strictEqual(r.model, 'claude-opus-5-5');
   });
 
   it('resolves "openai.mini"', () => {
@@ -323,6 +323,12 @@ describe('resolveModel (string format)', () => {
     const r = resolveModel('claude-code.sonnet-5');
     assert.strictEqual(r.provider, 'claude-code');
     assert.strictEqual(r.model, 'claude-sonnet-5');
+  });
+
+  it('resolves current Opus while retaining pinned older CLI aliases', () => {
+    assert.strictEqual(resolveModel('claude-code.opus').model, 'claude-opus-5-5');
+    assert.strictEqual(resolveModel('claude-code.opus-5').model, 'claude-opus-5');
+    assert.strictEqual(resolveModel('claude-code.opus-4-8').model, 'claude-opus-4-8');
   });
 
   it('resolves "openrouter.nemotron"', () => {
@@ -362,14 +368,14 @@ describe('resolveModel (string format)', () => {
     assert.strictEqual(r.isConfigured, true);
   });
 
-  it('configures GPT-5.6 Luna as the Codex provider default', () => {
+  it('configures GPT-6 Luna as the Codex provider default', () => {
     const config = getProviderConfig('codex');
-    assert.strictEqual(config.default_model, 'gpt-5.6-luna');
-    assert.strictEqual(config.models['gpt-5.6-luna'], 'gpt-5.6-luna');
+    assert.strictEqual(config.default_model, 'gpt-6-luna');
+    assert.strictEqual(config.models['gpt-6-luna'], 'gpt-6-luna');
     assert.strictEqual(config.isConfigured, true);
   });
 
-  for (const model of ['gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna']) {
+  for (const model of ['gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna', 'gpt-6-sol', 'gpt-6-luna']) {
     it(`resolves "codex.${model}"`, () => {
       const r = resolveModel(`codex.${model}`);
       assert.strictEqual(r.provider, 'codex');

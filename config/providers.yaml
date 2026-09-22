@@ -1,8 +1,8 @@
 # Shared AI Provider Configuration
 # Used by both tutor-agents.yaml and evaluation-rubric.yaml
 #
-# Model IDs are current as of July 2026 (Claude 5 family: Fable 5, Sonnet 5;
-# Opus 4.8; Haiku 4.5). Update when new models release.
+# Bare Opus and current Codex aliases track the active generation; explicit
+# version aliases remain available to reproduce older studies.
 
 providers:
   anthropic:
@@ -12,7 +12,7 @@ providers:
     models:
       haiku: claude-haiku-4-5
       sonnet: claude-sonnet-5
-      opus: claude-opus-4-8
+      opus: claude-opus-5-5
       fable: claude-fable-5
 
   # Spawns the local `claude` CLI as a subprocess and uses the user's Claude
@@ -24,33 +24,37 @@ providers:
   # release. The CLI accepts both bare aliases (`sonnet`) and explicit IDs
   # (`claude-sonnet-5`); we send explicit IDs for reproducibility. The bare
   # aliases track the current generation; the version-pinned aliases
-  # (`sonnet-5`, `opus-4-8`, `fable-5`) exist so archived runs stay resolvable.
+  # (`sonnet-5`, `opus-4-8`, `opus-5`, `opus-5-5`, `fable-5`)
+  # exist so archived runs stay resolvable.
   claude-code:
     default_model: claude-sonnet-5
     models:
       haiku: claude-haiku-4-5
       sonnet: claude-sonnet-5
-      opus: claude-opus-4-8
+      opus: claude-opus-5-5
       fable: claude-fable-5
       sonnet-5: claude-sonnet-5
       opus-4-8: claude-opus-4-8
       opus-5: claude-opus-5
+      opus-5-5: claude-opus-5-5
       fable-5: claude-fable-5
 
   # Spawns the local `codex` CLI as a subprocess and uses the user's Codex
   # login. No OpenRouter/OpenAI API key is required. Intended for high-powered
   # eval slices where local CLI routing is part of the experimental condition.
   codex:
-    default_model: gpt-5.6-luna
+    default_model: gpt-6-luna
     models:
       # The local Codex ChatGPT-account route rejects gpt-5-mini/mini and
       # gpt-5.2-codex (probed 2026-07-12: "not supported when using Codex with
       # a ChatGPT account"). GPT-5.6 needs a current Codex CLI (verified on
-      # 0.144.1). Luna is the standing default for new unpinned Codex work;
+      # 0.144.1). GPT-6 Luna is the standing default for new unpinned Codex work;
       # frozen experiments continue to name their historical models explicitly.
       gpt-5.6-sol: gpt-5.6-sol
       gpt-5.6-terra: gpt-5.6-terra
       gpt-5.6-luna: gpt-5.6-luna
+      gpt-6-sol: gpt-6-sol
+      gpt-6-luna: gpt-6-luna
       gpt-5.5: gpt-5.5
 
   openai:

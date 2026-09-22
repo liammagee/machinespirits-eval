@@ -168,8 +168,8 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
   assert.equal(config.humanDiscoursePreviewFrame.questionSupport.answerability, 'publicly_answerable');
   assert.equal(config.modelRef, 'codex.gpt-5.6-terra');
   assert.equal(config.resolved.model, 'gpt-5.6-terra');
-  assert.equal(config.classifier.classifierModelRef, 'codex.gpt-5.6-sol');
-  assert.equal(config.tutorLearnerDag.modelRef, 'codex.gpt-5.6-sol');
+  assert.equal(config.classifier.classifierModelRef, 'codex.gpt-6-sol');
+  assert.equal(config.tutorLearnerDag.modelRef, 'codex.gpt-6-sol');
   assert.equal(config.cliEffort, 'medium');
   assert.equal(config.opening.realization, 'speaking_tutor_model');
   assert.equal(config.opening.speakingModelRef, 'codex.gpt-5.6-terra');
@@ -229,8 +229,8 @@ test('default model roles put Sol at interpretation and Terra at public generati
   const config = tutorStubDryRun(['--mixed-learner']);
 
   assert.equal(config.modelRef, 'codex.gpt-5.6-terra');
-  assert.equal(config.classifier.modelRef, 'codex.gpt-5.6-sol');
-  assert.equal(config.tutorLearnerDag.modelRef, 'codex.gpt-5.6-sol');
+  assert.equal(config.classifier.modelRef, 'codex.gpt-6-sol');
+  assert.equal(config.tutorLearnerDag.modelRef, 'codex.gpt-6-sol');
   assert.equal(config.mixedLearner.modelRef, 'codex.gpt-5.6-terra');
 });
 
@@ -795,8 +795,8 @@ test(
     assert.match(plain, /Settings · choose what to change/u);
     assert.match(plain, /Tutor voice\s+codex\.gpt-5\.6-terra/u);
     assert.match(plain, /One model for all roles\s+off · roles selected separately/u);
-    assert.match(plain, /Learner interpretation\s+codex\.gpt-5\.6-sol/u);
-    assert.match(plain, /Reasoning tracker\s+codex\.gpt-5\.6-sol/u);
+    assert.match(plain, /Learner interpretation\s+codex\.gpt-6-sol/u);
+    assert.match(plain, /Reasoning tracker\s+codex\.gpt-6-sol/u);
     assert.match(plain, /Learner voice\s+codex\.gpt-5\.6-terra/u);
     assert.match(plain, /Difficulty shift\s+on/u);
     assert.match(plain, /Training reuse\s+on · training candidate/u);
