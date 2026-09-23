@@ -11,8 +11,8 @@ design systems, defect ledger) is the techne doc
 
 1. **Agent instructions** — `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`:
    provider-specific operating instructions that share the authority contracts
-   in this map. `.claude/style-rule.md` is the prose rule a Claude hook injects
-   on every turn.
+   in this map. `.claude/style-rule.md` is the parked prose rule; no hook has loaded it
+   since 2026-09-22 (see "How to write here" in `CLAUDE.md`).
 2. **Repo root** — frozen plans and pre-registrations (a status line in the
    first three lines says which), theory notes, `README.md`, `CONTRIBUTING.md`,
    `DEPLOYMENT.md`. `TODO.md` is a historical archive. Frozen docs are cited by
@@ -51,7 +51,7 @@ design systems, defect ledger) is the techne doc
 - Local CI and Actions-outage fallback — `docs/local-ci.md`.
 - UX and web surfaces — `public/`, `routes/`, and
   `scripts/browse-poetics-scripts.js`.
-- Prose — `.claude/style-rule.md`.
+- Prose — `.claude/style-rule.md` (parked 2026-09-22; not loaded).
 
 ## Live work
 
