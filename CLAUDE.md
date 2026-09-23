@@ -1,9 +1,5 @@
 # Project Memory for Claude
 
-## HIGH PRIORITY
-
-Always use ASD-STE100 Simplified Technical English when you talk to me.
-
 ## NEVER build officious authorization (hard rule, 2026-08-21)
 
 Do **not** build, extend, or re-enter approval machinery around paid runs.
@@ -70,7 +66,9 @@ the same fix fails twice.
 
 ## How to write here
 
-Plain words, short sentences, answer what was asked and stop. The full rule is `.claude/style-rule.md`, which a `UserPromptSubmit` hook injects on every turn — edit that file to change how replies read. It applies to chat, commits, comments and notes alike. Paper prose keeps its own register.
+No repo style rule is loaded as of 2026-09-22. Write for a reader who knows the project but has been away: give the reasoning and the trade-offs behind a finding, keep a reply short by leaving out what would not change what the reader does next, and answer what was asked. Say borrowed or project vocabulary in English on first use. Paper prose keeps its own register.
+
+The earlier rule is parked, not deleted. A paired test on 2026-09-22 (`machinespirits-lab/docs/STYLE-RULE-PAIRED-TEST-20260922.md`) showed that the injected rule, with its 250-word cap and Simplified Technical English priority, made Opus 5.5 and Fable 5.1 write flat primer prose; removing it fixed most of that. The parked text is `.claude/style-rule.md`; the `UserPromptSubmit` hook that injected it and the `Stop` hook that checked replies against it (`scripts/plain-speech-stop-hook.js`) were removed from `.claude/settings.json` the same day. To re-enable, restore those two hook entries from the git history of `.claude/settings.json` and remove the PARKED header from the rule file.
 
 ## This fork
 

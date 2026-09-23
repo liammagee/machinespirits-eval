@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-09-03
-updated: 2026-09-03
+updated: 2026-09-22
 branch: claude/plain-speech-stop-hook
 verification: "tests/plainSpeechStopHook.test.js passes; the hook blocks a reply with a coined label or a motto once, then lets the rewrite through; a clean reply passes without output."
 links:
@@ -51,3 +51,13 @@ Hooks load at session start, so the check is live from the next session.
 - 2026-09-03: PR #989 merged with all required checks green. Post-merge
   verification passed all 10 focused hook tests, including one-block retry and
   clean-reply behavior.
+
+## Unwired 2026-09-22
+
+The `Stop` hook entry and the `UserPromptSubmit` entry that injected the rule
+were removed from `.claude/settings.json` after a paired test
+(`machinespirits-lab/docs/STYLE-RULE-PAIRED-TEST-20260922.md`) showed the
+injected rule made Opus 5.5 and Fable 5.1 write flat primer prose. The script
+`scripts/plain-speech-stop-hook.js` and its test stay in the repo; nothing
+runs the script now. Re-wire it by restoring the two hook entries from the
+git history of `.claude/settings.json`.

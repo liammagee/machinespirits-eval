@@ -1,3 +1,6 @@
+PARKED 2026-09-22. Nothing loads this file. The `UserPromptSubmit` hook that injected it and the `Stop` hook that enforced it were removed from `.claude/settings.json` after the paired test recorded in `machinespirits-lab/docs/STYLE-RULE-PAIRED-TEST-20260922.md`. See "How to write here" in `CLAUDE.md` for the current guidance and how to re-enable this rule.
+
+---
 Plain-language rule for this reply (repo standing rule — edit .claude/style-rule.md to change it):
 
 1. Short plain words over Latinate ones. use not utilise; show not demonstrate; enough not sufficient; more not additional; then not subsequently; before not prior to; help not facilitate; get not obtain; need not require; try not attempt; end not terminate; start not initiate; about not approximately/regarding; many not numerous; part not component; change not modify; check not verify; find out not determine; give not provide; do not perform; happen not occur; but not however; so not therefore; make sure not ensure; now not currently; first not initial; last not final.
