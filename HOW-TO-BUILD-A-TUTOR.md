@@ -946,6 +946,45 @@ accident, ran twice (Lab PRs #288 and #289).
     lesson on it. The replay gate did its job here: it stopped the failed
     line at 13 calls.
 
+### Added 29 September, late: the first person in the learner's seat
+
+Brief 8 (Lab PR #295) put a person in the learner's seat under the current
+reward, holding the face demand, with the loop-written face paragraph in the
+Director's reading and nothing person-written added. One lesson, 120 calls,
+the person's own notes saved before any reading.
+
+12. **A person changes the order, and an instrument built on the model
+    learners' order cannot read them.** Every model learner took the records
+    engine, suffix, queue. The person asked for suffix, queue, engine. The
+    frozen panel asks its questions in the canonical order, so its first
+    question after the suffix asked whether only Elm and Willow remained,
+    importing a record not yet shown, and both readers rightly said no. The
+    panel spent 56 calls saying so, the battery ran out inside the next
+    reader, and no reward score exists for the lesson. The rule: a reader
+    that assumes the path is a reader of model learners. Before any human
+    run, make the reader take the order the lesson actually took.
+
+13. **Under a person's pressure the tutor compresses, and the reviser drops
+    the pacing condition when it is advice.** The person objected to a
+    lecture; Sasha's next reply began "Short version, then" and stayed short
+    and factual to the end, which the person noticed and did not mind. She
+    owned an unexplained credit term, repaired a misread reminder by showing
+    the two records again, and at the bare "Willow" correctly demanded the
+    reasons, which the person says was right. But three Scriptwriter
+    rewrites applied, the first withdrawing the inventory gate outright, and
+    at reply 17 the next record went out before the person had named the
+    surviving pair. The face paragraph carries that gate as advice; this run
+    had no fixed condition. Rule 5 held on the Printroom with model learners
+    and holds here with a person: what the reviser may revise, it will.
+
+The person's closing note records face saved; the standard reader saw
+residual irritation at the end. Both are kept, the person's as the
+reference. What this run does not show: a rate of anything. It shows that
+the loop's texts survive first contact with a person who chooses their own
+path, that the tutor's repairs are real and the person credits them, and
+that the two open defects, the order-bound reader and the revisable pacing
+gate, are the same two the model runs had already named.
+
 Two measurement lessons repeat §6.28's: a pre-match "supplied note" question
 got two readers to agree 30 of 30 and still failed, because it would have
 rewritten five archived results; the named-set question above is the same
