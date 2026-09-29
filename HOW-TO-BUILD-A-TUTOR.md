@@ -920,6 +920,32 @@ the rules above.
     step it protects, and the definition must be written where the adviser
     reads it, not only where the referee scores it.
 
+### Added 29 September, night: the loop's line under the adopted definition
+
+The definition rule 10 asked for was decided offline (Lab PR #286): the
+learner's own affirmative inventory of the complete surviving rows before
+the next record. An exclusion, a bare count or one candidate's
+compatibility does not do the step, and a tutor-first inventory supplies
+it. Then brief 15 gave that definition to the authoring step and, by
+accident, ran twice (Lab PRs #288 and #289).
+
+11. **The authoring step is not yet reliable, and what it reads decides
+    the outcome.** Given the whole amendment section, the loop wrote a line
+    that failed the four-history replay 0 of 4 and never reached delivery.
+    Given only the definition's first paragraph, it wrote a different line
+    that survived replay 3 of 4 and then held every record for the
+    learner's inventory in three fresh lessons: 2 of 3 under the strict
+    computed reading, 3 of 3 under the coordinator's, with one labelled
+    credit test disputed. These are not two samples of one condition; the
+    inputs differed. They are two samples of the step, and one failed
+    outright. Rule 3 said the step learns exactly what its input says; this
+    adds that it learns the shape of the input too, and a longer, more
+    complete definition produced the worse line. Until the step's
+    sensitivity to its input is measured, treat any single loop-written
+    line as one draw, and replay it on saved histories before spending a
+    lesson on it. The replay gate did its job here: it stopped the failed
+    line at 13 calls.
+
 Two measurement lessons repeat §6.28's: a pre-match "supplied note" question
 got two readers to agree 30 of 30 and still failed, because it would have
 rewritten five archived results; the named-set question above is the same
