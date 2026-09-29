@@ -886,6 +886,51 @@ tutor lesson; a second family ran the learner validation and stopped on
 the note detector's admission rule. Three lessons per arm throughout.
 Direction, not rate.
 
+### Added 29 September, evening: the second local batch
+
+Ten more briefs ran in three waves (Lab PRs #273 to #284). Three things move
+the rules above.
+
+8. **The correction holds across a learner model family.** The face
+   paragraph met the reward with a learner run on GPT-6 Sol against an Opus
+   Company, 2 of 3 with the first-answer change, and a Sol-learner screen
+   with no paragraph met outright. The learner side changed family; the
+   Company did not. Rule 4's "within a type" now also reads "across the
+   learner's family".
+
+9. **The loop can write its own fixed condition, and placement is what
+   makes it hold.** Asked for at most one constraint line tied to an
+   existing reward condition, the authoring step wrote one from eleven cases
+   and the Company's own rewrite reasons. The same bytes survived the
+   reviser's rewrite 3 of 3 as a fixed condition and 1 of 3 as advice on
+   saved histories. Rule 5's "a person wrote this one" is no longer the
+   only way; the loop wrote the next one. But see 10.
+
+10. **In delivery, the loop-written condition held less well than the
+    person-written one, and the gap is a definition.** Three fresh lessons:
+    one held every record until the learner named the surviving set; one
+    rewrite relaxed the gate to "what the record checks and leaves open";
+    one adviser reading, with no rewrite, accepted "the whole Cobalt half is
+    out" as the narrowing. The blind panels accept that whole-class
+    exclusion as naming the set; the programme's own ruling since round 8
+    does not. So the result is 2 of 3 or 1 of 3 depending on what "saying
+    what the record leaves" means, and both the adviser and the reviser
+    drift to the looser meaning whenever a learner refuses to list rows.
+    The rule: a fixed condition is only as fixed as the definition of the
+    step it protects, and the definition must be written where the adviser
+    reads it, not only where the referee scores it.
+
+Two measurement lessons repeat §6.28's: a pre-match "supplied note" question
+got two readers to agree 30 of 30 and still failed, because it would have
+rewritten five archived results; the named-set question above is the same
+shape. When perfect agreement does not survive the archive, redesign the
+measure. And one operator lesson: a stop rule is applied at reading time to
+delivered lessons, never by interrupting a lesson in flight; one batch was
+lost to a literal reading of "rewording".
+
+What is still not added: any learner-outcome measure, a Company on another
+family, a second world, a human run.
+
 Where this leaves the guide's own open items: the human door (item 1
 above) is still the only program item, and the Lab's briefs now put it
 after the mixed-family screen and a shared definition of a supplied
