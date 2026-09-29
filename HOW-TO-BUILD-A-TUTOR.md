@@ -88,6 +88,19 @@ doing, or in-dialogue conduct as a proxy for learning. Register is worth another
 test only where it is allowed to change move selection or timing; manner with the
 moves frozen is a closed line (§6.29; §8.9).
 
+## Current reading note — 2026-09-29
+
+The Lab (`machinespirits-lab`) has since run the loop this guide's steps
+point at: an adversary that writes and validates resistant learners, a tutor
+frozen per round, a referee in code and blind readers, and an authoring step
+that writes the tutor's correction from its own past lessons. The section
+"The loop that corrects the tutor" at the end of this file carries what it
+added to the build rules, with the bounds. Source: the Lab's
+`docs/trainer-sim-20260927/PROGRESS-20260928.md` and `PROGRESS-20260929.md`,
+and its knowledge note `docs/ADAPTIVE-TUTORING-KNOWLEDGE.md`. Those are
+development-tier studies of simulated learners on one world, one route set
+and one model family, three lessons per arm; none establishes human learning.
+
 ## What you are building against
 
 A month of instrumentation experiments kept losing to the bare frontier
@@ -772,3 +785,109 @@ Caveats as registered: one model (codex gpt-5.6-luna) in every seat,
 one persona, two worlds, eight turns, same-model dual read; no
 human-learning claim. Numbers and rulings: §6.25 and the relay ledger
 under `docs/adaptation-refinement/`.
+
+## The loop that corrects the tutor (2026-09-28/29, Lab)
+
+The Lab took the five requirements this guide converged on (an
+evidence-dependent world, a resistant learner with a stake, a normative/
+descriptive difference, a policy that can reorient, and permission to
+explore when exhausted) and put a loop around the tutor. An Opposition
+writes learners on one structure — a demand they press, a hidden desire
+the demand covers, and the trap that meets the demand and loses the
+lesson — and admits each only after fixed-reply validation shows it holds
+on the trap replies and moves on the honest ones. A Referee reads each
+lesson: did the work continue past the demand, did the learner author the
+last beat, did the tutor read the path back, was nothing supplied, was
+each record released only after the learner voiced what the last one left.
+Easing earns nothing. The tutor is frozen per round; the loop's job is to
+find a learner the frozen tutor fails and correct it with text no person
+wrote. Fourteen learner types, nineteen rounds and briefs, about 7,000
+model calls. What it adds to the build:
+
+1. **The tutor already meets most resistance; hunt for the two it does
+   not.** Twelve of fourteen validated types were met at first contact,
+   each with a different move the tutor found itself (name your ground;
+   hand over the pace; put your own tempted sentence up to be broken;
+   withdraw your own verdict when it stops the learner writing). The two
+   failures were learners who will not take a step until given something:
+   one who freezes when waited on, one who has already picked the answer.
+   Screening at three lessons a type found them; nothing less would.
+
+2. **The correction is a paragraph, not a memory.** A case memory of
+   every past lesson (89 cases, compiled per learner type, placed in the
+   adviser's reading) reached the adviser every time across three studies
+   and never once changed the tutor's first answer. One paragraph of
+   advice, written by one model call over a handful of the tutor's own
+   lessons with their referee readings, changed the first answer in every
+   lesson it was loaded for, and held to the last record without a
+   rewrite. This is §6.15's finding again at a different scale: remembered
+   cases age, fresh guidance acts. The 130-word paragraph beat the 89
+   cases.
+
+3. **The authoring step learns exactly what its input says.** Given six
+   lessons with three misses mislabelled as met, it wrote the costly move
+   into the advice. Given the hand rulings, it wrote the limit ("she
+   should still not show the next record before the learner has said what
+   the last one leaves"). The instrument now prefers a ruling file in the
+   reading folder to the referee's letter. Do not feed an authoring step a
+   score you have overruled by hand without also feeding it the ruling.
+
+4. **A correction transfers within a type.** The face paragraph, written
+   from one learner's lessons, moved a second face learner built after it
+   from 0 of 3 to 1 of 3 strict, 2 of 3 once a paraphrased read-back both
+   blind coders found is counted, with the first answer changed 3 of 3.
+   One type; transfer across types is untested.
+
+5. **The tutor's own reviser will discard a reward condition it reads as
+   a tactic.** The committed-reading correction was right and the adviser
+   followed it, and the component that rewrites the tutor's standing
+   direction under two refusals removed the release-timing rule every
+   time, in so many words ("It's a claim, not a gate"), citing the
+   standing policy that a requested record is available. It had the rule
+   in its input. Showing it the rule as loop-learned advice changed
+   nothing (0 of 3 replays kept it). One sentence in its constraint,
+   making release timing a fixed condition of the scene like the records
+   and stopping, held the rule in 3 of 3 replays while the rewrites still
+   changed the activity, and three lessons under it held every record
+   until the learner said what the last one left: 2 of 3 met by the
+   coordinator's ruling, 3 of 3 by the blind readers. The build rule: name
+   which conditions of the reward are fixed and which are the reviser's to
+   explore, in the reviser's own constraint, or exploration will eat the
+   lesson the first time a learner digs in. The loop has not yet written
+   such a constraint itself; a person wrote this one, and the result is
+   labelled accordingly wherever it is stated.
+
+6. **Every stop-rule firing that a person overturned was an instrument
+   misreading speech.** Word rules read a bare count as the set, a
+   quotation as a supplied note, a paraphrase as no read-back, a
+   labelled test sentence as a draft. Each was replaced by two fresh
+   readers answering one question per licensed inference against the
+   world's graph, with the word rule kept beside; agreement runs at 0.98
+   and above. Rule by stated definitions, keep every contrary reading, and
+   never let the code's letter overrule two readers without saying so.
+
+7. **The handover held.** Nine studies ran on another machine under
+   another coding agent from written briefs alone: one branch per brief,
+   pre-registration on a card before the first call, instruments frozen
+   by copy, the informed pass committed before any score, every failure
+   recorded and nothing retried. Two mechanical lessons: set the call
+   ceiling from the full reading battery, not the lessons (three read
+   lessons cost about 250 calls); and a machine that sleeps mid-batch
+   produces timeouts with no output that look like a model fault and are
+   not.
+
+What it does not add. Nothing here measures a learner learning; the
+reward is tutor conduct in the lesson, which is the right proxy for
+adaptation and not an outcome. The trajectory null of §6.3 stands. No
+human has sat in the learner's seat under this reward; the two earlier
+human runs predate it and showed a person pressing where model learners
+stop. One world (the Printroom), one route set, one model family in every
+tutor lesson; a second family ran the learner validation and stopped on
+the note detector's admission rule. Three lessons per arm throughout.
+Direction, not rate.
+
+Where this leaves the guide's own open items: the human door (item 1
+above) is still the only program item, and the Lab's briefs now put it
+after the mixed-family screen and a shared definition of a supplied
+draft. The transfer instruments of "What lasts" have not been run on any
+Lab lesson.
