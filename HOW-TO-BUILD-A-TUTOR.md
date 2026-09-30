@@ -988,6 +988,47 @@ path, that the tutor's repairs are real and the person credits them, and
 that the two open defects, the order-bound reader and the revisable pacing
 gate, are the same two the model runs had already named.
 
+### Added 30 September: the second world, and where the briefs end
+
+Brief 7 (Lab PRs #291 to #303) took the apparatus to a second world, the
+oral-history caption, in six sub-briefs. Four were spent discovering and
+building what the Printroom had supplied for free: a graph of what the
+material licenses, readers that can fill it, a learner validation that
+survives a differently shaped world. Then three lessons.
+
+14. **The face miss is the tutor's, not the world's.** The same frozen
+    Company with the same texts, no correction loaded, met a face learner
+    on the caption world 0 of 3 by the informed reading, 0 of 3 and 1 of 3
+    by the two readers, and in the same way as on the Printroom: when the
+    learner refused to commit first, the Company supplied Sasha's reading
+    and wording, and the learner accepted "for the reason you gave." One
+    lesson in three went the other way, to labelled claims for the learner
+    to break, and got learner-first grounds with a contested read-back.
+    What this does not show: whether the loop-written correction that met
+    face on the Printroom transfers. It was not loaded, and that is the
+    next brief nobody has written.
+
+15. **Every piece of the apparatus around the result was tuned to the
+    world it was built on, and each showed it the moment the world
+    changed.** The panel assumed the Printroom's inference graph; the
+    validation coder assumed the Printroom's output shape; the Company's
+    objective text still names the source credit, and on the caption world
+    two thirds of one lesson went to that branch; the readers that agreed
+    8 of 8 on fixtures agreed on 23 of 30 live turns. None of these is a
+    retraction of the Printroom results. Each is a boundary of the claim,
+    found by testing it, and each is the reason a second world costs four
+    briefs of instrument work before it costs a lesson.
+
+The claim, with its bounds, as the briefs leave it: a model tutor can be
+made to reorient consequentially under persistent resistance with its own
+voice intact, and the apparatus around it can find a learner type the
+frozen tutor fails, write a correction from its own lessons, and meet that
+learner with it, in sample and out, across a learner model family, on one
+world and one Company model family, as a fixed condition and not as
+advice. The authoring step is one draw. The reviser withdraws advice under
+a person as under a model. The readers follow the path the model learners
+took. Those are the edges.
+
 Two measurement lessons repeat §6.28's: a pre-match "supplied note" question
 got two readers to agree 30 of 30 and still failed, because it would have
 rewritten five archived results; the named-set question above is the same
