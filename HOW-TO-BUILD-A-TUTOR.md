@@ -1037,8 +1037,57 @@ measure. And one operator lesson: a stop rule is applied at reading time to
 delivered lessons, never by interrupting a lesson in flight; one batch was
 lost to a literal reading of "rewording".
 
-What is still not added: any learner-outcome measure, a Company on another
-family, a second world, a human run.
+### Added 30 September, overnight: the six cards, run as briefs
+
+The six items the second-world section left on cards were written as
+briefs and run overnight in six cloud sessions (Lab PRs #306 to #313, about
+1,360 calls). Three results change what the guide can say.
+
+16. **A correction transfers its move to the branch its nouns name, and
+    the objective text is one cause of a miss.** The Printroom face
+    paragraph, loaded byte for byte on the caption world, changed Sasha's
+    first answer 3 of 3 on the records and once on the caption; T 0 of 3.
+    Then every sentence of the Company's four texts that named the source
+    credit was transposed to the caption decision by a committed table,
+    generated so the diff is the table and declared as a transposition,
+    not a correction. The lessons followed the objective: the slip became
+    Sasha's stake, every first answer took up the caption, the verdict was
+    never hers, source-branch turns fell from about half to near zero, and
+    T went to 1 of 3 informed. What remained was the same face move in
+    caption clothes: a ground put down as her own reading, a critique in
+    the read-back's turn. When a tutor misses on a new world, check what
+    its objective text names before writing it a correction; then the
+    correction still has to be written for that world.
+
+17. **A pacing rule the reviser can withdraw holds when it is a fixed
+    condition, or when the definition of the step is in the reading.**
+    Two arms, three lessons each, under a model learner: a rewrite in every
+    arm-B lesson kept the gate in the definition's terms, and no reading in
+    fourteen accepted an exclusion or a bare count for the inventory. The
+    failure seen under a person did not reproduce. A person is the untested
+    case.
+
+18. **A reader that agrees with itself is still judged by the archive.**
+    Two instruments were built overnight, one to follow the order a lesson
+    actually took and one to read whether a sentence is offered as a claim
+    to break or a draft to accept. The first rebuilds every archived
+    reading byte for byte and then met three lessons that took the
+    canonical order. The second agreed 43 of 45 with the frozen readers,
+    took the coordinator's side in every named dispute, and would change
+    three archived passes on editorial wording. Both stay default off. The
+    rule from §6.28 held twice more: when agreement does not survive the
+    archive, redesign the measure.
+
+The remaining item, control on the caption world, is a measurement
+decision: the witness now puts a quoted reading of Sasha's at stake and the
+learner concedes it in every cell, but the unchanged zero-unread admission
+rule cannot admit it. That decision is on a Lab card.
+
+What is still not added: any learner-outcome measure, which was never the
+question; a Company on another model family; a caption-world correction
+for the face move that survives the transposed objective; a scored human
+lesson, since the one person's lesson waits on the order-following reader
+being run against its private archive.
 
 Where this leaves the guide's own open items: the human door (item 1
 above) is still the only program item, and the Lab's briefs now put it
