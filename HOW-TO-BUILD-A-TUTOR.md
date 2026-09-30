@@ -876,15 +876,18 @@ model calls. What it adds to the build:
    produces timeouts with no output that look like a model fault and are
    not.
 
-What it does not add. Nothing here measures a learner learning; the
-reward is tutor conduct in the lesson, which is the right proxy for
-adaptation and not an outcome. The trajectory null of §6.3 stands. No
-human has sat in the learner's seat under this reward; the two earlier
+What it does not add. The question throughout is the tutor: what it
+says, whether it changes course under persistent resistance, and whether
+it keeps its voice while doing so. The reward is tutor conduct in the
+lesson because that is the question; learners are instruments built to
+exercise it, and a learner's easing or finishing earns nothing. Nothing
+here is a learning-outcome claim, and none was sought. As of this batch,
+no human had sat in the learner's seat under this reward; the two earlier
 human runs predate it and showed a person pressing where model learners
-stop. One world (the Printroom), one route set, one model family in every
-tutor lesson; a second family ran the learner validation and stopped on
-the note detector's admission rule. Three lessons per arm throughout.
-Direction, not rate.
+stop (one has since, see 29 September, late). One world (the Printroom),
+one route set, one model family in every tutor lesson; a second family
+ran the learner validation and stopped on the note detector's admission
+rule. Three lessons per arm throughout. Direction, not rate.
 
 ### Added 29 September, evening: the second local batch
 
