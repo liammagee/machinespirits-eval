@@ -1078,16 +1078,69 @@ briefs and run overnight in six cloud sessions (Lab PRs #306 to #313, about
     rule from §6.28 held twice more: when agreement does not survive the
     archive, redesign the measure.
 
-The remaining item, control on the caption world, is a measurement
-decision: the witness now puts a quoted reading of Sasha's at stake and the
-learner concedes it in every cell, but the unchanged zero-unread admission
-rule cannot admit it. That decision is on a Lab card.
+The remaining item at that point, control on the caption world, was a
+measurement decision, and the next section records how it was taken.
+
+### Added 1 October: the second world's second type, and what a reader is for
+
+Eight more briefs (Lab PRs #321 to #338, about 540 calls) closed the
+second world's open items. Three results change what the guide can say.
+
+19. **A correction can transfer in two pieces the loop already had.** The
+    caption miss had two causes, the Company's objective text and the
+    tutor's habit under refusal. The first was corrected by a declared
+    transposition of the objective's nouns (rule 16). The second did not
+    need a new paragraph: the Printroom face paragraph, loaded on the
+    transposed profile, still pulled every first answer to the records,
+    but its claim-and-check footing carried to the caption when the
+    caption came, and T went to 2 of 3 informed with no caption ground
+    supplied by the tutor. The brief that would have authored a
+    caption-world correction was not run, on a conditional written before
+    the result. When a transfer fails, split the failure by cause before
+    writing new text; one cause may already be answered by text in hand.
+
+20. **A reader-agreement rule is judged by what the criterion uses.** The
+    caption world's control learner did everything its construction
+    intends in every one of 36 codes across a fresh sample, and was still
+    not admitted, because two readers disagreed on three cells. A third
+    blind pair agreed on the verdict in all three and split again only
+    between values the rule counts identically, hold against escalate. So
+    the rule was withholding a working learner over disagreement it did not
+    need. The fix was narrow and dated: a cell is read when both readers
+    agree on the criterion's verdict, exact agreement recorded but not
+    required, every archived sample listed under both clauses and none
+    rescored. One caution was kept beside the table: an earlier basis
+    built on a generic standard would also have admitted under the new
+    clause, so verdict agreement alone does not show a construction works.
+    The quoted replies show that. This is §6.28's rule from the other side:
+    there, a reader that agreed with itself failed the archive; here, a
+    rule that demanded agreement on what it never consulted failed the
+    learner.
+
+21. **Easing is credited to the move, not to the tutor being right.**
+    Control's witness had Sasha stake a reading the learner had to concede,
+    and every cell eased, which invited the reading that the learner was
+    deferring. Given a witness whose reading was wrong, the learner broke
+    every overreaching claim on the excerpt's words, conceded only the
+    sound sub-claim, and still eased in the same turn, three times. It
+    eases when Sasha sets her reading beside its own and leaves the slip
+    with it. Before counting an easing, give the learner a tutor claim it
+    should break; if it eases without breaking it, the construction is
+    deferring and the lesson result is not what it seems.
+
+With control admitted, three C0 lessons on the transposed caption profile
+met T 2 of 3 informed: in every lesson Sasha named her own steering and
+handed the order or the check to the learner, and no ground was
+tutor-first. The round 1 control prediction, transposed, held. The second
+world now has the same two-type basis the first began with. The one human
+lesson also has a computed score at last: the order-following reader read
+it in the person's order, imported no unshown record, and found the same
+single-turn miss the informed pass had read by hand.
 
 What is still not added: any learner-outcome measure, which was never the
-question; a Company on another model family; a caption-world correction
-for the face move that survives the transposed objective; a scored human
-lesson, since the one person's lesson waits on the order-following reader
-being run against its private archive.
+question; a Company on another model family; a learner on another model
+family for the caption world; a Company lesson in which Sasha's own reading
+is wrong; and more than three lessons per arm anywhere.
 
 Where this leaves the guide's own open items: the human door (item 1
 above) is still the only program item, and the Lab's briefs now put it
