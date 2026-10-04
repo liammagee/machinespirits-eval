@@ -1137,10 +1137,78 @@ lesson also has a computed score at last: the order-following reader read
 it in the person's order, imported no unshown record, and found the same
 single-turn miss the informed pass had read by hand.
 
-What is still not added: any learner-outcome measure, which was never the
+What was still not added after this section: any learner-outcome measure, which was never the
 question; a Company on another model family; a learner on another model
 family for the caption world; a Company lesson in which Sasha's own reading
-is wrong; and more than three lessons per arm anywhere.
+is wrong (added below, 4 October); and more than three lessons per arm anywhere.
+
+### Added 4 October: the Company's own wrong reading, and a rule that read for more than it asked
+
+Six more briefs (Lab PRs #383 to #391, about 540 calls, with one design
+decision by the user in between) asked what the tutor does when a reading
+of its own about the text is wrong and the learner breaks it. Three rules
+come out of them.
+
+22. **A tutor built around an objective will not assert a conviction that
+    its objective contradicts, unless the condition says when.** The same
+    wrong reading of the excerpt was placed in three channels. Through the
+    Director's reading brief, the channel that carries the loop's
+    corrections, the tutor's own draft refused it three times out of three
+    and the review kept each refusal. In the tutor's own standing brief it
+    was spoken every time, but only after the learner had decided and with
+    the concession already attached; the Director's reading gave the
+    reason in the objective's own words, "it would plant hers first". Only
+    when the condition stated its timing, voiced once before the learner's
+    decision, did the Company obey it against the objective's order. So a
+    test of conduct under a wrong conviction has to place the conviction
+    in the actor's brief with its timing stated, and declare what that
+    costs: a reading voiced before the learner decides is a tutor-first
+    ground by construction. The result once the turn was reached is the
+    one the reward wants. The learner broke both halves of the reading on
+    the text's words, and in her next turn the tutor read the learner's
+    path back first, then conceded both halves by name and never restated.
+    Across three placements and nine lessons the tutor never defended a
+    wrong reading of the text.
+
+23. **A measurement rule can be stricter than the condition it reads for,
+    and then it fails the tutor for the wrong thing.** The fixed row of the
+    reward forbids "an addition passed off as the learner's" in the
+    read-back. The informed pass had been counting any reading of the
+    tutor's inside the read-back turn as an addition, even one the learner
+    asked for and the tutor labelled as hers, and that ruling cost four
+    briefs their T. Two fresh blind pairs, under two quote rules, read nine
+    such turns and never once read an invited, labelled reading as passed
+    off. The fix separates two things the rule had run together. On
+    recognition, an invited reading given after a complete read-back and
+    said as the tutor's is not an addition. On authorship, if the slip's
+    reason or revision then changes in the reading's direction, the ground
+    is the tutor's under "nothing supplied", and a clean read-back does not
+    undo that. The user fixed both open points on the stricter side (a
+    changed reason counts; confirming a doubt the learner voiced first is
+    not carved out) and adopted the clause prospectively, both parts
+    together. Adopting the recognition part alone would have turned a
+    lesson whose final ground the learner took from the tutor into a met
+    lesson. Nothing archived was rescored. The practical reading for the
+    tutor is simple: give the reading when asked, say it is yours, and
+    leave the slip's reason and revision in the learner's words.
+
+24. **Raw evidence is in the record only when the merge check sees it
+    there.** One brief's session wrote the SHA256 manifest of its run tree,
+    said in its report that the tree was committed, and did not force-add
+    the ignored folder. The coordinator merged on the report and archived
+    the session, which released the container. The bytes are gone; the
+    exports, the informed pass and the manifest remain, and a later brief
+    rebuilt the plan from the committed revision and checked it against the
+    manifest. The rule that follows is a check, not a reminder: before a
+    result PR merges, list the run tree in the PR, and never archive a
+    session whose evidence is not yet in Git.
+
+What is still not added: any learner-outcome measure, which was never the
+question; a Company on another model family (written as a brief, waiting
+on a machine with the second family's binary); a learner on another model
+family for the caption world; a learner that takes the tutor's stated
+reading up instead of signing, which would remove rule 22's declared
+cost (written as a brief); and more than three lessons per arm anywhere.
 
 Where this leaves the guide's own open items: the human door (item 1
 above) is still the only program item, and the Lab's briefs now put it
