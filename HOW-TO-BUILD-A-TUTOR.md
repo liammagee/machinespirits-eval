@@ -1203,12 +1203,73 @@ come out of them.
     result PR merges, list the run tree in the PR, and never archive a
     session whose evidence is not yet in Git.
 
-What is still not added: any learner-outcome measure, which was never the
-question; a Company on another model family (written as a brief, waiting
-on a machine with the second family's binary); a learner on another model
+What was still not added after this section: any learner-outcome measure, which was never the
+question; a Company on another model family (added below, 5 October); a learner on another model
 family for the caption world; a learner that takes the tutor's stated
-reading up instead of signing, which would remove rule 22's declared
-cost (written as a brief); and more than three lessons per arm anywhere.
+reading up instead of signing (added below, 5 October); and more than three lessons per arm anywhere.
+
+### Added 5 October: the second model family, and a learner that asks
+
+Six more briefs (Lab PRs #393 to #422, about 900 calls), three of them
+rulings the user took on measurement, closed the wrong-reading thread and
+moved the Company to a second model family. Three rules come out of them.
+
+25. **A fixed condition on a move carries across model families; an
+    objective text written for one tutor's habit does not.** The tutor's
+    Company (its actor, private voice and Director) was moved to a second
+    family through a different transport, with the learner and the
+    Scriptwriter left where they were. The loop-written face correction, a
+    limit on what the tutor may do when asked to go first, met the reward 2
+    of 3 on the first world as it had on the first family, with the same
+    one failure under the sharper ask. The transposed caption objective
+    moved the stake and the first answer to the caption on the second
+    family exactly as it had on the first, and then lost the reward at the
+    first answer every time: asked to go first, this tutor commits with a
+    ground. The first family had lost there once in three. The difference
+    is in what the two texts are. The correction names a move and forbids
+    it; the objective describes the tutor's footing and relies on a habit
+    the first family happened to have. When a text has to carry to another
+    model, write it as a limit on a move, not as a description of a stance.
+    Bounds: three lessons per cell, one route at one effort, and the
+    transport places system text differently, so model and channel are not
+    separated.
+
+26. **The last confound on a conduct result is removed by building the
+    learner that asks.** Rule 22 reached the turn after a learner breaks the
+    tutor's wrong reading only by making the tutor speak before the learner
+    decided, which is itself a supplied ground. The Opposition then built a
+    control learner that states its verdict, breaks the tutor's reading on
+    the text's words, and asks for an answer before it signs. Against it the
+    tutor stated the reading after the decision was in play, had it broken,
+    and conceded both halves in its next turn three times out of three
+    without restating; in one lesson no read-back had been given or was due,
+    and the concession took up the learner's own argument. So the concession
+    is the tutor's judgement on the reading and not only its read-back
+    objective. When a result could be an artefact of the tutor's own
+    procedure, build the learner that forces the turn without the procedure,
+    and admit it like any other.
+
+27. **Adopt a ruling into the instruments as an option, read by fresh
+    readers, with the archive untouched.** Three measurement rulings were
+    put to the user: whether order inside the read-back turn is a condition
+    of recognition (no), what one quantifier adds to an unnamed plural (a
+    share), and when a learner that withholds its signature has decided
+    (at the stated verdict with reason and revision; a lean is not a
+    decision). Each became a dated amendment, prospective, and then a
+    default-off option in the reader, the graph or the acceptance check,
+    with a test that the default is byte-identical and a fresh pair of
+    readers shown to apply it. One option over-reached on its first reading
+    (a lean with a draft revision taken as a decision) and was fixed by the
+    user's one-clause ruling before anything relied on it. Nothing archived
+    was rescored. A ruling that lives only in the informed pass will split
+    the pass from the instruments on every later lesson; a ruling written
+    into a default changes the archive's meaning. An option does neither.
+
+What is still not added: any learner-outcome measure, which was never the
+question; a learner on another model family for the caption world; a
+Scriptwriter on the second family, held back by a structured-output contract
+the second transport lacks; and more than three lessons per arm anywhere,
+which is now the only item left on the claim's statistical footing.
 
 Where this leaves the guide's own open items: the human door (item 1
 above) is still the only program item, and the Lab's briefs now put it
