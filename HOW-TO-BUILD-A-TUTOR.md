@@ -1327,10 +1327,23 @@ construction could not give. Two rules come out of them.
     the earlier lesson that met the reward with the demand never arising is
     read as the correction delivered early, not as a gap.
 
+    *Read the same day.* The off arm ran: nine lessons, nothing changed but
+    the memory passage, the reward met in 6 of 9 as with the memory on,
+    under both read-back rules, the losses at the same turn for the same
+    reason, and the Director's advice where the memory would have spoken
+    the paragraph's in both arms. By the registered prediction the memory
+    shows no gain at nine lessons on this cell. The bound is narrow (one
+    cell, one paragraph, one learner, one family, the arms a day apart, the
+    paragraph loaded in both, a gain under about three in nine not ruled
+    out), and the loop's own ten-round drop rule has not fired. But the
+    rule above stands with two negatives behind it instead of one: what the
+    loop learned, it learned as a written condition on a move.
+
 What is still not added: any learner-outcome measure, which was never the
 question; a learner on another model family for the caption world; a
-Scriptwriter on the second family; the memory-off arm's reading; and the
-labelled-test sentence on the second family, written for a local run.
+Scriptwriter on the second family; the memory without the paragraph at more
+than three lessons; and the labelled-test sentence on the second family,
+written for a local run.
 
 Where this leaves the guide's own open items: the human door (item 1
 above) is still the only program item, and the Lab's briefs now put it
