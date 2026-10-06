@@ -1265,11 +1265,72 @@ moved the Company to a second model family. Three rules come out of them.
     the pass from the instruments on every later lesson; a ruling written
     into a default changes the archive's meaning. An option does neither.
 
+What was still not added on 5 October: any learner-outcome measure, which
+was never the question; a learner on another model family for the caption
+world; a Scriptwriter on the second family, held back by a structured-output
+contract the second transport lacks; and more than three lessons per arm
+anywhere. The last of these was added on 6 October, below.
+
+### Added 6 October: nine lessons, and what to expect from a case memory
+
+Four more briefs (Lab PRs #442 to #462, about 1,000 calls) ran the
+best-evidenced cell nine times, checked the computed read-back rule against
+the coders over the whole archive, wrote the labelled-test move into the
+caption tutor's text, and asked the Opposition for a learner the face
+construction could not give. Two rules come out of them.
+
+28. **Run the cell enough times to see its rate, and read every loss for
+    its place.** Every rate in the loop had been 0 to 3 of 3. The face cell,
+    met 3 of 3 when its correction was first written, was run nine times on
+    one Company with memory on: the reward was met in 6 of 9, with the
+    first answer changed in the same six, and the three losses sat in one
+    place. In each, the tutor's first answer after the learner's guess kept
+    the guess in play and asked a smaller question instead of putting its
+    own bounded claim down; the learner then asked for the whole list, and
+    the tutor supplied the rows or a count. The same loss had appeared once
+    in the second learner family's three lessons and once in the second
+    model family's. So the cell's rate on this Company is two in three, the
+    first 3 of 3 was high, and the written condition does not reach the
+    second ask. A nine-lesson sample is read as one sample and never split
+    after the fact to make a rate. Bounds: one family, one text, one
+    learner, memory on throughout.
+
+29. **A case memory is a hypothesis about where the learning lives, and it
+    is tested against the written condition, not assumed to have made it.**
+    The loop was designed around a case memory: after each lesson the
+    Referee writes an episode record, and before the next reading the
+    Director is given the two or three past cases most like this learner.
+    Two criteria were set at the start, a loop-written tactic that meets a
+    failed learner, and memory on beating memory off on an archived type.
+    The first was met once, bounded, by a paragraph the loop wrote from its
+    own lessons. The second was tested once at three lessons per type and
+    showed nothing at a ceiling where nothing could show, and has not been
+    tested since, because every later cell loaded the paragraph and the
+    memory together. In the nine-lesson arm the Director cited past cases in
+    three met lessons, in the paragraph's own words, so the citation could
+    not be attributed to the memory over the paragraph. Everything the loop
+    has been shown to learn so far, it learned as a fixed condition on a
+    move. The off arm of the same nine lessons is now pre-registered, with
+    the prediction that if the memory carries the gain the off arm meets
+    the reward in at most 4 of 9, and that 6 of 9 or more means the memory
+    shows no gain at this sample. Until that reads, do not write the memory
+    into a claim; keep it as the design's hypothesis with one negative, and
+    keep the original aim visible as a tested hypothesis rather than an
+    erased one. Two smaller things ride with this. A computed detector that
+    errs one way (the six-word read-back rule missed a paraphrased
+    read-back in 11 of 53 archived lessons and never credited one the coders
+    denied) is replaced by the coders' judgement as an option from a date,
+    with the archive untouched. And a learner whose asked-for concern is the
+    same event as its release (a reading put down first) cannot be built
+    inside its construction; the Opposition drew a line inside the event and
+    produced the predecessor inverted, which admission could not pass, and
+    the earlier lesson that met the reward with the demand never arising is
+    read as the correction delivered early, not as a gap.
+
 What is still not added: any learner-outcome measure, which was never the
 question; a learner on another model family for the caption world; a
-Scriptwriter on the second family, held back by a structured-output contract
-the second transport lacks; and more than three lessons per arm anywhere,
-which is now the only item left on the claim's statistical footing.
+Scriptwriter on the second family; the memory-off arm's reading; and the
+labelled-test sentence on the second family, written for a local run.
 
 Where this leaves the guide's own open items: the human door (item 1
 above) is still the only program item, and the Lab's briefs now put it
