@@ -1372,6 +1372,18 @@ Five more briefs (Lab PRs #485 to #495, about 1,800 calls). Three rules.
     new one, and 8 of 9 against 6 of 9 is inside what nine lessons a side can
     separate.
 
+    *Read the same day, on the second family.* The same line on the Sol
+    tutor, three lessons: the test met in 2 of 3, the same as that tutor
+    without the line. The learner asked a second time in every lesson. In
+    two the rewrite had the tutor say what the record settles, column by
+    column, and leave the rows to the learner. In one the learner asked for
+    "actual names", the rewrite read the line's own closing sentence about
+    explicit requests for the answer as covering a request for the names,
+    and the tutor named the four rows and released a record early. So the
+    line carried in form and was opened through its own exception clause
+    once in three; a condition that names an exception hands the rewrite a
+    door, and the door is where it will be read widest.
+
 31. **Guard the result in code, and do not trust a three-lesson live check.**
     No test had protected the configuration behind the best result as a
     whole: the paragraph's bytes were pinned in one test, and nothing compared
