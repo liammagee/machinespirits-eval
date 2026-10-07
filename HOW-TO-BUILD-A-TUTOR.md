@@ -1396,6 +1396,25 @@ Five more briefs (Lab PRs #485 to #495, about 1,800 calls). Three rules.
     nothing has changed. A live sentinel at three lessons can only say "run
     nine".
 
+    *Read the same day.* The nine were run. The test was met in 7 of 9 and
+    the first answer changed in 6 of 9, inside the band fixed in advance
+    for variation. The two sentinel failures were a draw, and no rate is
+    dated. The provider reports no model identity, so a change of served
+    model cannot be seen directly; nine lessons show only that the delivered
+    behaviour is within variation of the earlier arms. The rule held in both
+    directions: the sentinel said run nine, and nine said the sentinel had
+    been unlucky.
+
+    *Also read the same day.* Asked to write the who-names-first line again
+    with the one lesson that had opened it added to its inputs, the loop's
+    one draw returned a line about when a record may be released, which
+    said nothing about who names first and treated a request for the rows
+    as one the tutor honours. It failed admission and was not edited. The
+    authoring step has now failed admission on one draw in two on this
+    question, as it did once before on an earlier line. A loop that writes
+    its own conditions needs an admission test it can fail, and a rule that
+    a failed draw is not repaired by hand.
+
 32. **A written move travels only where the model already has it.** The one
     sentence that put the labelled-test move at the learner's ask in 3 of 3
     on the first family did nothing for the move on the second family: the
