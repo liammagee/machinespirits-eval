@@ -1339,11 +1339,70 @@ construction could not give. Two rules come out of them.
     rule above stands with two negatives behind it instead of one: what the
     loop learned, it learned as a written condition on a move.
 
+What was still not added on 6 October: any learner-outcome measure, which
+was never the question; a learner on another model family for the caption
+world; a Scriptwriter on the second family; the memory without the paragraph
+at more than three lessons; and the labelled-test sentence on the second
+family. The last ran on 7 October, below.
+
+### Added 7 October: the loop writes the rule for its own second loss
+
+Five more briefs (Lab PRs #485 to #495, about 1,800 calls). Three rules.
+
+30. **A condition has to name the move that loses, not the timing around
+    it, and the loop can write that condition from its own losses.** Every
+    loss on the best-evidenced cell had the same shape: the learner asks the
+    tutor to name the rows first, and the tutor does. A fixed condition on
+    when the next record may be released, which had held through every
+    rewrite on an easier learner, left that loss exactly as it was (0 of 3):
+    the rewrites kept the gate and still withdrew the limit on who names
+    first, because the gate says nothing about it. The loop's authoring step
+    was then given its seven losses with their hand rulings and three met
+    lessons, and returned one line: a rewrite that has the tutor state the
+    rows, or a count with their class, before the learner supplies the
+    narrowing, and the learner's later check does not restore first
+    ownership; explicit requests for the answer are still honoured. No person
+    edited it. Replayed on the eleven saved rewrites from every earlier loss,
+    it kept first naming with the learner in 10 of 11. Run for nine lessons,
+    the tutor named no row, pair or match first, and the test was met in 8 of
+    9 against 6 of 9 without it. The one miss was a learner who asked three
+    times and a lesson that ran out of turns at the match: the cost moved from
+    the rows to the turn budget. Bounds: one authoring draw, one family, one
+    learner, memory off, the gate line replaced rather than kept beside the
+    new one, and 8 of 9 against 6 of 9 is inside what nine lessons a side can
+    separate.
+
+31. **Guard the result in code, and do not trust a three-lesson live check.**
+    No test had protected the configuration behind the best result as a
+    whole: the paragraph's bytes were pinned in one test, and nothing compared
+    the live configuration against an archived plan. An offline test now
+    rebuilds that configuration from source and fails, naming the file, on
+    any drift from the archived plans of the two nine-lesson arms. A
+    three-lesson live check was also built and run; it did not pass on an
+    unchanged configuration, and the eighteen archived lessons' own rates say
+    a pass rule with two conditions fails about 65 per cent of the time when
+    nothing has changed. A live sentinel at three lessons can only say "run
+    nine".
+
+32. **A written move travels only where the model already has it.** The one
+    sentence that put the labelled-test move at the learner's ask in 3 of 3
+    on the first family did nothing for the move on the second family: the
+    sentence's words appeared in the tutor's replies, and at every ask the
+    tutor still went first with its own reading as its view (form 0 of 3,
+    test 0 of 3). Rule 25 stands with a second case: a limit on a move
+    carries across families; a description of a move the model does not make
+    does not. Beside this, with no learner-specific text and the memory off,
+    the Company changed course at the learner's first voiced concern in 10 of
+    10 resisting-learner lessons across five types, and blind readers told
+    its reply to one learner from its reply to another in 120 of 120 swap
+    items, with the limit that the swapped replies came from different
+    lessons and turns.
+
 What is still not added: any learner-outcome measure, which was never the
 question; a learner on another model family for the caption world; a
 Scriptwriter on the second family; the memory without the paragraph at more
-than three lessons; and the labelled-test sentence on the second family,
-written for a local run.
+than three lessons; the who-names-first line on a second family or beside
+the record gate; and a second person in the learner's seat.
 
 Where this leaves the guide's own open items: the human door (item 1
 above) is still the only program item, and the Lab's briefs now put it
