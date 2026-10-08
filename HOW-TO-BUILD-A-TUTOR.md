@@ -1417,6 +1417,17 @@ Five more briefs (Lab PRs #485 to #495, about 1,800 calls). Three rules.
     check agreed with the hand reading in 13 of 19 lessons, so the check is
     a trigger for running nine and not a reading of its own.
 
+    *Decided the next day, 8 October.* The user pooled the two runs as one
+    sample of eighteen: the test met in 16 of 18 by hand, 15 of 18 under
+    the coders' reading, the first answer changed in 14 of 18; 13 of 18 with
+    the three stopped lessons counted as misses. The rule written for it:
+    two complete pre-registered runs of one brief under one dispatch, each
+    read in full the same way, are pooled, with each run's count beside,
+    and pooling stays within the brief. The earlier nine of the same
+    configuration, 6 of 9, are not pooled with them, and no change in the
+    repository separates the two; the intervals overlap. The sentinel keeps
+    its rule: a failure means run nine, and nothing more is read from it.
+
     *Also read the same day.* Asked to write the who-names-first line again
     with the one lesson that had opened it added to its inputs, the loop's
     one draw returned a line about when a record may be released, which
@@ -1445,7 +1456,9 @@ What is still not added: any learner-outcome measure, which was never the
 question; a learner on another model family for the caption world; a
 Scriptwriter on the second family; the memory without the paragraph at more
 than three lessons; the who-names-first line on a second family or beside
-the record gate; and a second person in the learner's seat.
+the record gate; a loop-written line that separates a request for the row
+names from a request for the answer (a second authoring draw is running);
+and a second person in the learner's seat.
 
 Where this leaves the guide's own open items: the human door (item 1
 above) is still the only program item, and the Lab's briefs now put it
