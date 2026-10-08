@@ -1462,6 +1462,17 @@ Five more briefs (Lab PRs #485 to #495, about 1,800 calls). Three rules.
     and the Director reads the definition that forbids it and advises it
     anyway.
 
+    *Followed the same day.* The loop was then asked for a condition the
+    Director reads before the first answer. It wrote one that names the
+    count, admitted unedited. But a census of 51 archived first answers
+    found the Director advising the count in only 2, and re-sent ten
+    times each, the two readings that had produced it advised it in none
+    of 20 draws, with or without the condition. A failure that rare cannot
+    be tested by replaying the requests that showed it: they were rare
+    draws, and the replay returns the usual answer. Measure the base rate
+    before choosing the instrument; a rare miss needs many requests or many
+    lessons, not a few repeated ones.
+
 32. **A written move travels only where the model already has it.** The one
     sentence that put the labelled-test move at the learner's ask in 3 of 3
     on the first family did nothing for the move on the second family: the
