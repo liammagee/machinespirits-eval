@@ -1425,8 +1425,15 @@ Five more briefs (Lab PRs #485 to #495, about 1,800 calls). Three rules.
     read in full the same way, are pooled, with each run's count beside,
     and pooling stays within the brief. The earlier nine of the same
     configuration, 6 of 9, are not pooled with them, and no change in the
-    repository separates the two; the intervals overlap. The sentinel keeps
-    its rule: a failure means run nine, and nothing more is read from it.
+    repository separates the two; the intervals overlap. The sentinel's
+    role stands: a failure means run nine, and nothing more is read from
+    it. Who reads its check is open between two of the user's decisions,
+    one recorded in another session (the two blind coders alone, since
+    every disagreement with the hand reading came from the face readers)
+    and one given to the coordinator half an hour later (keep it as it
+    is); no test changes until the user says which stands. A lesson the
+    account stops partway is now replaced once, declared before dispatch,
+    and the stopped lesson is kept and not counted.
 
     *Also read the same day.* Asked to write the who-names-first line again
     with the one lesson that had opened it added to its inputs, the loop's
