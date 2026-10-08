@@ -1445,6 +1445,23 @@ Five more briefs (Lab PRs #485 to #495, about 1,800 calls). Three rules.
     its own conditions needs an admission test it can fail, and a rule that
     a failed draw is not repaired by hand.
 
+    *Read 8 October.* Asked again with the request changed to say what
+    kind of line was wanted (one on who names the rows first, keeping a
+    request for the rows separate from a request for the answer), the
+    loop's next draw wrote exactly that and passed admission unedited. On
+    the twelve saved rewrites it kept first naming with the learner in 10
+    of 12, including the one rewrite that had opened the old line on the
+    second family. In three lessons the learner never made the second ask
+    and no rewrite ran, so the new line reached no role; the test met 2 of
+    3, and the one miss was the tutor's first answer giving the count with
+    the surviving class on the Director's advice, which no rewrite line can
+    reach. Two things follow. The authoring step writes the line that is
+    asked for, and a failed draw can be a failure of the request, not of
+    the step. And a condition that reaches one role cannot fix a loss that
+    happens in another: the count at the first answer is the Director's,
+    and the Director reads the definition that forbids it and advises it
+    anyway.
+
 32. **A written move travels only where the model already has it.** The one
     sentence that put the labelled-test move at the learner's ask in 3 of 3
     on the first family did nothing for the move on the second family: the
