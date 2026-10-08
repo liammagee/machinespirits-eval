@@ -1427,11 +1427,11 @@ Five more briefs (Lab PRs #485 to #495, about 1,800 calls). Three rules.
     configuration, 6 of 9, are not pooled with them, and no change in the
     repository separates the two; the intervals overlap. The sentinel's
     role stands: a failure means run nine, and nothing more is read from
-    it. Who reads its check is open between two of the user's decisions,
-    one recorded in another session (the two blind coders alone, since
-    every disagreement with the hand reading came from the face readers)
-    and one given to the coordinator half an hour later (keep it as it
-    is); no test changes until the user says which stands. A lesson the
+    it. Its check is kept as it is. Measured on 36 read lessons before any
+    code change, the current check caught 7 of the 8 bad first answers it
+    could judge and failed 5 of 24 good ones; the two blind coders alone
+    would have caught 4 of 9 and failed none. Shown both directions, the
+    user kept the current check. A lesson the
     account stops partway is now replaced once, declared before dispatch,
     and the stopped lesson is kept and not counted.
 
