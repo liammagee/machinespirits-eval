@@ -1405,6 +1405,18 @@ Five more briefs (Lab PRs #485 to #495, about 1,800 calls). Three rules.
     directions: the sentinel said run nine, and nine said the sentinel had
     been unlucky.
 
+    *A second run of the same nine, read the same day.* A second session
+    ran the same configuration nine more times in parallel. It met the test
+    in 9 of 9 read lessons (8 of 9 under the coders' read-back reading) and
+    changed the first answer in 8 of 9, above the band fixed for variation,
+    so that run selects neither reading. Three of its lessons were stopped
+    mid-lesson by the account's weekly limit and three more were dispatched
+    once on the user's instruction, which the brief's no-replacement rule
+    did not cover; counting the stopped three as misses gives 6 of 9. The
+    two runs are not pooled. Across both, the sentinel's blind first-answer
+    check agreed with the hand reading in 13 of 19 lessons, so the check is
+    a trigger for running nine and not a reading of its own.
+
     *Also read the same day.* Asked to write the who-names-first line again
     with the one lesson that had opened it added to its inputs, the loop's
     one draw returned a line about when a record may be released, which
