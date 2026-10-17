@@ -179,4 +179,3 @@ this card's evidence, correction, and focused checks are complete.
 
 - 2026-10-17 — Prepared from the paper-readiness audit for GPT-6.1 Sol/high.
   Task setup only; no repair or model evaluation has been executed.
-
