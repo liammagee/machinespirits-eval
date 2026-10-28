@@ -466,6 +466,7 @@ import {
   TUTOR_STUB_MOVE_CARDS_VERSION,
   TUTOR_STUB_QUIET_CHECK_SCHEMA,
 } from './tutorStubMannerSwitch.js';
+import { resolveTutorStubCardTextVariant, tutorStubCardTextVariantCard } from './tutorStubCardTextVariants.js';
 import {
   createTutorStubQuietDetectorState,
   detectTutorStubQuietState,
@@ -1430,6 +1431,18 @@ export async function runTutorStubCliApplicationHost({
     quietDetectorEnabled: QUIET_DETECTOR_ENABLED,
     gateOn: CARD_FORCE_QUIET_GATE,
   });
+  // Lab comparison (work/parent-cards-comparison-20261021.md in machinespirits-lab,
+  // 2026-10-28): TUTOR_STUB_CARD_TEXT_VARIANT=<name> swaps the TEXT of every move
+  // card (natural or forced) for a named variant; occasions, guards, trigger,
+  // pacing and prompts are unchanged. Unset means the v3 cards. Unknown names
+  // fail here, before any model call. Stamped in-trace on every card event.
+  const CARD_TEXT_VARIANT = resolveTutorStubCardTextVariant(process.env.TUTOR_STUB_CARD_TEXT_VARIANT);
+  // Same occasions as tutorStubMannerCard (a move pressure carries a card, a
+  // neutral or quiet turn does not); only the text differs.
+  const moveCardFor = (switchState, options) =>
+    CARD_TEXT_VARIANT
+      ? tutorStubCardTextVariantCard(CARD_TEXT_VARIANT, switchState?.lastAdvance?.pressure)
+      : tutorStubMannerCard(switchState, options);
 
   // Step 4 of state-detection-without-word-lists: TUTOR_STUB_FORM_DETECTOR=<artifact.json>
   // makes the form detector the live sensor, in place of the word-list cascade
@@ -1488,7 +1501,7 @@ export async function runTutorStubCliApplicationHost({
         state.mannerSwitch.currentDose = null;
       }
     }
-    state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch, cardOptions);
+    state.mannerSwitch.card = moveCardFor(state.mannerSwitch, cardOptions);
     // Crossed-effects experiment knob (card: adaptive-causality-crossed-effects).
     // TUTOR_STUB_CARD_FORCE='9=settled_claim,10=stake' forces the named move card
     // at the named tutor turn ('none' suppresses). A quiet:* card is checked
@@ -1515,7 +1528,7 @@ export async function runTutorStubCliApplicationHost({
             ? null
             : forced.startsWith('quiet:')
               ? tutorStubQuietStateCard(forced.slice(6))
-              : tutorStubMannerCard({ lastAdvance: { pressure: forced } }, cardOptions);
+              : moveCardFor({ lastAdvance: { pressure: forced } }, cardOptions);
       }
       if (recordTrace) {
         appendTraceEvent(state.trace, {
@@ -1528,6 +1541,7 @@ export async function runTutorStubCliApplicationHost({
           gate: gated ? TUTOR_STUB_CARD_FORCE_GATE_VERSION : null,
           displacedNaturalCard: Boolean(naturalCard),
           cardActive: Boolean(state.mannerSwitch.card),
+          cardTextVariant: CARD_TEXT_VARIANT?.name ?? null,
         });
       }
     }
@@ -1595,7 +1609,10 @@ export async function runTutorStubCliApplicationHost({
         turn: tutorTurn,
         ...state.mannerSwitch.lastAdvance,
         cardActive: Boolean(state.mannerSwitch.card),
-        cardsVersion: CARD_DOSE_LADDER
+        cardTextVariant: CARD_TEXT_VARIANT?.name ?? null,
+        cardsVersion: CARD_TEXT_VARIANT
+          ? CARD_TEXT_VARIANT.version
+          : CARD_DOSE_LADDER
           ? 'mc-v4-dose-ladder'
           : CARD_LICENCE_ENABLED
             ? TUTOR_STUB_MOVE_CARDS_LICENCE_VERSION
